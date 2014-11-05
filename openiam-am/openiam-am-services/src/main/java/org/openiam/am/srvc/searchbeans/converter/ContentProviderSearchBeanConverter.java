@@ -24,11 +24,13 @@ public class ContentProviderSearchBeanConverter implements
         		authProvider.setId(searchBean.getAuthProviderId());
         		entity.setAuthProvider(authProvider);
         	}
+        	/*
         	if(StringUtils.isNotBlank(searchBean.getManagedSysId())) {
         		final ManagedSysEntity managedSystem = new ManagedSysEntity();
         		managedSystem.setId(searchBean.getManagedSysId());
         		entity.setManagedSystem(managedSystem);
         	}
+        	*/
         }
         return entity;
     }

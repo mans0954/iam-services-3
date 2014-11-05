@@ -55,7 +55,7 @@ public interface AuthenticationService {
      * @param userId The id of the user.
      * @param contentProviderId the id of the content provider
      */
-    Response globalLogoutWithContentProvider(final LogoutRequest request);
+    Response globalLogoutRequest(final LogoutRequest request);
 
     /**
      * This method logs in a user.  It updates his Login record to reflect this fact.  Unsuccessful logins attempts are counted.  If the user
@@ -98,8 +98,8 @@ public interface AuthenticationService {
             String token,
             final @WebParam(name = "tokenType", targetNamespace = "")
             String tokenType,
-            final @WebParam(name = "contentProviderId", targetNamespace = "")
-            String contentProviderId);
+            final @WebParam(name = "patternId", targetNamespace = "")
+            String patternId);
     
     @WebMethod
     List<AuthStateEntity> findBeans(final @WebParam(name = "request", targetNamespace = "") AuthStateSearchBean searchBean,

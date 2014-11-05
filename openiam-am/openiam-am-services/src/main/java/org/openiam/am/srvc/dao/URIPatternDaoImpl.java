@@ -30,6 +30,9 @@ public class URIPatternDaoImpl extends BaseDaoImpl<URIPatternEntity, String> imp
                 criteria.createAlias("contentProvider", "p");
                 criteria.add(Restrictions.eq("p.id", entity.getContentProvider().getId()));
             }
+            if(entity.getAuthProvider() != null && StringUtils.isNotBlank(entity.getAuthProvider().getId())) {
+                criteria.add(Restrictions.eq("authProvider.id", entity.getAuthProvider().getId()));
+            }
 
             if(entity.getPattern()!=null && StringUtils.isNotEmpty(entity.getPattern())){
                 MatchMode matchMode = MatchMode.ANYWHERE;

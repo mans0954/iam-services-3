@@ -279,8 +279,22 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 			final AuthenticationRequest request = new AuthenticationRequest();
 			request.setPrincipal(primaryLogin.getLogin());
 			
-			request.setContentProviderId(cp.getId());
+			URIPattern uriPattern = null;
+			final URIPatternSearchResult uriPatternToken = (cpNode.getPatternTree() != null) ? cpNode.getPatternTree().find(uri) : null;
 			
+			/* means that no matching pattern has been found for this URI (i.e. none configured) - check against the CP */
+			if(uriPatternToken != null && uriPatternToken.hasPatterns()) {
+				
+				/* check entitlements and auth level on patterns */
+				for(final URIPattern pattern : uriPatternToken.getFoundPatterns()) {
+					uriPattern = pattern;
+					break;
+				}
+			}
+			
+			if(uriPattern != null) {
+				request.setPatternId(uriPattern.getId());
+			}
 			
 			final String password = loginDS.decryptPassword(primaryLogin.getUserId(), primaryLogin.getPassword());
 			request.setPassword(password);

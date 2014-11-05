@@ -123,7 +123,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
     public void saveContentProvider(ContentProviderEntity provider){
        
     	UIThemeEntity theme = null;
-        final ManagedSysEntity managedSys = managedSysDAO.findById(provider.getManagedSystem().getId());        
+        //final ManagedSysEntity managedSys = managedSysDAO.findById(provider.getManagedSystem().getId());        
         if(provider.getUiTheme() != null) {
         	theme = uiThemeDAO.findById(provider.getUiTheme().getId());
         }
@@ -152,7 +152,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
             resourceDao.save(resource);
             
             provider.setResource(resource);
-            provider.setManagedSystem(managedSys);
+            //provider.setManagedSystem(managedSys);
             provider.setUiTheme(theme);
             
             final Set<AuthLevelGroupingContentProviderXrefEntity> incomingXrefs = provider.getGroupingXrefs();
@@ -179,7 +179,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
         		dbEntity.setName(provider.getName());
         		dbEntity.getResource().setURL(cpURL);
         		dbEntity.getResource().setCoorelatedName(provider.getName());
-        		dbEntity.setManagedSystem(managedSys);
+        		//dbEntity.setManagedSystem(managedSys);
         		dbEntity.setUiTheme(theme);
         		dbEntity.setAuthProvider(provider.getAuthProvider());
         		dbEntity.setShowOnApplicationPage(provider.isShowOnApplicationPage());
@@ -320,11 +320,17 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
 
     @Override
     @Transactional
-    public void saveURIPattern(URIPatternEntity pattern) {
+    public void saveURIPattern(final URIPatternEntity pattern) {
         final UIThemeEntity theme = (pattern.getUiTheme() != null) ? uiThemeDAO.findById(pattern.getUiTheme().getId()) : null;
         final ContentProviderEntity contentProvider = contentProviderDao.findById(pattern.getContentProvider().getId());
         pattern.setContentProvider(contentProvider);
         pattern.setUiTheme(theme);
+        
+        if(pattern.getAuthProvider() != null && StringUtils.isNotBlank(pattern.getAuthProvider().getId())) {
+        	pattern.setAuthProvider(authProviderDAO.findById(pattern.getAuthProvider().getId()));
+        } else {
+        	pattern.setAuthProvider(null);
+        }
         
         if(StringUtils.isBlank(pattern.getId())) {
         	

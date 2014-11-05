@@ -36,9 +36,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.am.srvc.dao.AuthProviderDao;
 import org.openiam.am.srvc.dao.ContentProviderDao;
+import org.openiam.am.srvc.dao.URIPatternDao;
 import org.openiam.am.srvc.domain.AuthProviderEntity;
 import org.openiam.am.srvc.domain.AuthProviderTypeEntity;
 import org.openiam.am.srvc.domain.ContentProviderEntity;
+import org.openiam.am.srvc.domain.URIPatternEntity;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
@@ -115,8 +117,8 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
     private AuthStateDAO authStateDao;
 	
 	@Autowired
-	private ContentProviderDao contentProviderDAO;
-    
+	private URIPatternDao uriPatternDAO;
+	
     @Autowired
     private LoginDataService loginManager;
     
@@ -148,14 +150,14 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 
     private static final Log log = LogFactory.getLog(AuthenticationServiceImpl.class);
     
-    private AuthProviderEntity getAuthProvider(final String contentProviderId, final IdmAuditLog event) throws BasicDataServiceException {
+    private AuthProviderEntity getAuthProvider(final String patternId, final IdmAuditLog event) throws BasicDataServiceException {
     	AuthProviderEntity authProvider = null;
-        if(StringUtils.isNotBlank(contentProviderId)) {
-        	final ContentProviderEntity contentProvider = contentProviderDAO.findById(contentProviderId);
-        	if(contentProvider == null) {
-        		event.addWarning(String.format("Content provider with ID %s not found", contentProviderId));
+        if(StringUtils.isNotBlank(patternId)) {
+        	final URIPatternEntity uriPattern = uriPatternDAO.findById(patternId);
+        	if(uriPattern == null) {
+        		event.addWarning(String.format("Content provider with ID %s not found", patternId));
         	} else {
-        		authProvider = contentProvider.getAuthProvider();
+        		authProvider = uriPattern.getContentProvider().getAuthProvider();
         	}
         }
         
@@ -180,9 +182,9 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
     @Transactional
     @ManagedAttribute
     //@Transactional
-	public Response globalLogoutWithContentProvider(final LogoutRequest request) {
+	public Response globalLogoutRequest(final LogoutRequest request) {
     	final String userId = request.getUserId();
-    	final String contentProviderId = request.getContentProviderId();
+    	final String patternId = request.getPatternId();
     	final IdmAuditLog newLogoutEvent = new IdmAuditLog();
         newLogoutEvent.setUserId(userId);
         newLogoutEvent.setAction(AuditAction.LOGOUT.value());
@@ -195,7 +197,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
                 throw new NullPointerException("UserId is null");
             }
             
-            final AuthProviderEntity authProvider = getAuthProvider(contentProviderId, newLogoutEvent);
+            final AuthProviderEntity authProvider = getAuthProvider(patternId, newLogoutEvent);
             final String springBeanName = authProvider.getSpringBeanName();
 	        final String groovyScript = authProvider.getGroovyScriptURL();
 	        AuthenticationModule loginModule = null;
@@ -268,7 +270,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
     public void globalLogout(String userId) throws Throwable {
     	final LogoutRequest request = new LogoutRequest();
     	request.setUserId(userId);
-        globalLogoutWithContentProvider(request);
+    	globalLogoutRequest(request);
     }
 
     @Override
@@ -288,7 +290,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 	        	throw new BasicDataServiceException(ResponseCode.LANGUAGE_REQUIRED);
 	        }
 	        
-	        final AuthProviderEntity authProvider = getAuthProvider(request.getContentProviderId(), newLoginEvent);
+	        final AuthProviderEntity authProvider = getAuthProvider(request.getPatternId(), newLoginEvent);
 	        
 	        final AuthenticationContext authenticationContext = new AuthenticationContext(request);
 	        authenticationContext.setAuthProviderId(authProvider.getId());
@@ -393,18 +395,21 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 
     @Override
     @Transactional
-    public Response renewToken(final String principal, final String token, final String tokenType, final String contentProviderId) {
-    	log.info(String.format("renewToken.contentProviderId=%s", contentProviderId));
+    public Response renewToken(final String principal, final String token, final String tokenType, final String patternId) {
+    	log.info(String.format("renewToken.patternId=%s", patternId));
         final Response resp = new Response(ResponseStatus.SUCCESS);
         PolicyEntity policy = null;
         ManagedSysEntity managedSystem = null;
-        if(StringUtils.isNotBlank(contentProviderId)) {
-        	final ContentProviderEntity contentProvider = contentProviderDAO.findById(contentProviderId);
-        	if(contentProvider != null) {
-        		final AuthProviderEntity authProvider = contentProvider.getAuthProvider();
-        		if(authProvider != null) {
-        			policy = authProvider.getPolicy();
-        			managedSystem = authProvider.getManagedSystem();
+        if(StringUtils.isNotBlank(patternId)) {
+        	final URIPatternEntity uriPattern = uriPatternDAO.findById(patternId);
+        	if(uriPattern != null) {
+        		final ContentProviderEntity contentProvider = uriPattern.getContentProvider();
+        		if(contentProvider != null) {
+	        		final AuthProviderEntity authProvider = contentProvider.getAuthProvider();
+	        		if(authProvider != null) {
+	        			policy = authProvider.getPolicy();
+	        			managedSystem = authProvider.getManagedSystem();
+	        		}
         		}
         	}
         }
@@ -577,7 +582,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 		final IdmAuditLog event = new IdmAuditLog();
 		event.setUserId(null);
 		event.setAction(AuditAction.SEND_SMS_OTP_TOKEN.value());
-		event.addAttribute(AuditAttributeName.CONTENT_PROVIDER_ID, request.getContentProviderId());
+		event.addAttribute(AuditAttributeName.URI_PATTERN_ID, request.getPatternId());
 		event.addAttributeAsJson(AuditAttributeName.PHONE, request.getPhone(), jacksonMapper);
 		event.setUserId(request.getUserId());
 		
@@ -585,7 +590,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 		final Phone phone = request.getPhone();
 		final String userId = request.getUserId();
 		try {
-            final AuthProviderEntity authProvider = getAuthProvider(request.getContentProviderId(), event);
+            final AuthProviderEntity authProvider = getAuthProvider(request.getPatternId(), event);
             final ManagedSysEntity managedSystem = (authProvider != null) ? authProvider.getManagedSystem() : null;
             if(authProvider == null) {
             	throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_FOUND_FOR_CONTENT_PROVIDER);
@@ -640,14 +645,14 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 		final IdmAuditLog event = new IdmAuditLog();
 		event.setUserId(null);
 		event.setAction(AuditAction.CONFIRM_SMS_OTP_TOKEN.value());
-		event.addAttribute(AuditAttributeName.CONTENT_PROVIDER_ID, request.getContentProviderId());
+		event.addAttribute(AuditAttributeName.URI_PATTERN_ID, request.getPatternId());
 		event.addAttributeAsJson(AuditAttributeName.PHONE, request.getPhone(), jacksonMapper);
 		event.setUserId(request.getUserId());
 		
 		final Response response = new Response();
 		final String userId = request.getUserId();
 		try {
-            final AuthProviderEntity authProvider = getAuthProvider(request.getContentProviderId(), event);
+            final AuthProviderEntity authProvider = getAuthProvider(request.getPatternId(), event);
             final ManagedSysEntity managedSystem = (authProvider != null) ? authProvider.getManagedSystem() : null;
             if(authProvider == null) {
             	throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_FOUND_FOR_CONTENT_PROVIDER);
@@ -701,12 +706,12 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 		final IdmAuditLog event = new IdmAuditLog();
 		event.setUserId(null);
 		event.setAction(AuditAction.CLEAR_SMS_OTP_STATUS.value());
-		event.addAttribute(AuditAttributeName.CONTENT_PROVIDER_ID, request.getContentProviderId());
+		event.addAttribute(AuditAttributeName.URI_PATTERN_ID, request.getPatternId());
 		event.setUserId(request.getUserId());
 		
 		final Response response = new Response();
 		try {
-            final AuthProviderEntity authProvider = getAuthProvider(request.getContentProviderId(), event);
+            final AuthProviderEntity authProvider = getAuthProvider(request.getPatternId(), event);
             final ManagedSysEntity managedSystem = (authProvider != null) ? authProvider.getManagedSystem() : null;
             if(authProvider == null) {
             	throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_FOUND_FOR_CONTENT_PROVIDER);
@@ -747,12 +752,12 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 		final IdmAuditLog event = new IdmAuditLog();
 		event.setUserId(null);
 		event.setAction(AuditAction.GET_SMS_OTP_STATUS.value());
-		event.addAttribute(AuditAttributeName.CONTENT_PROVIDER_ID, request.getContentProviderId());
+		event.addAttribute(AuditAttributeName.URI_PATTERN_ID, request.getPatternId());
 		event.setUserId(request.getUserId());
 		
 		boolean retVal = false;
 		try {
-            final AuthProviderEntity authProvider = getAuthProvider(request.getContentProviderId(), event);
+            final AuthProviderEntity authProvider = getAuthProvider(request.getPatternId(), event);
             final ManagedSysEntity managedSystem = (authProvider != null) ? authProvider.getManagedSystem() : null;
             if(authProvider == null) {
             	throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_FOUND_FOR_CONTENT_PROVIDER);

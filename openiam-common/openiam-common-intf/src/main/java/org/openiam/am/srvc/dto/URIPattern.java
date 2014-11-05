@@ -32,7 +32,8 @@ import java.util.Set;
         "themeId",
         "groupingXrefs",
         "resourceCoorelatedName",
-        "servers"
+        "servers",
+        "authProviderId"
 })
 @DozerDTOCorrespondence(URIPatternEntity.class)
 public class URIPattern extends KeyDTO {
@@ -49,6 +50,7 @@ public class URIPattern extends KeyDTO {
 	private Set<AuthLevelGroupingURIPatternXref> groupingXrefs;
 	private String resourceCoorelatedName;
 	private Set<URIPatternServer> servers;
+	private String authProviderId;
 	
 	/*
 	 * federation variables.  Internal use only
@@ -164,10 +166,19 @@ public class URIPattern extends KeyDTO {
 		return retVal;
 	}
 	
+	public String getAuthProviderId() {
+		return authProviderId;
+	}
+	public void setAuthProviderId(String authProviderId) {
+		this.authProviderId = authProviderId;
+	}
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
+		result = prime * result
+				+ ((authProviderId == null) ? 0 : authProviderId.hashCode());
 		result = prime
 				* result
 				+ ((contentProviderId == null) ? 0 : contentProviderId
@@ -188,6 +199,11 @@ public class URIPattern extends KeyDTO {
 		if (getClass() != obj.getClass())
 			return false;
 		URIPattern other = (URIPattern) obj;
+		if (authProviderId == null) {
+			if (other.authProviderId != null)
+				return false;
+		} else if (!authProviderId.equals(other.authProviderId))
+			return false;
 		if (contentProviderId == null) {
 			if (other.contentProviderId != null)
 				return false;

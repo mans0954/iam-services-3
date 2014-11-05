@@ -17,6 +17,7 @@ import org.openiam.am.srvc.searchbeans.ContentProviderSearchBean;
 import org.openiam.am.srvc.searchbeans.URIPatternSearchBean;
 import org.openiam.am.srvc.searchbeans.converter.ContentProviderSearchBeanConverter;
 import org.openiam.am.srvc.searchbeans.converter.URIPatternSearchBeanConverter;
+import org.openiam.am.srvc.service.AuthProviderService;
 import org.openiam.am.srvc.service.ContentProviderService;
 import org.openiam.am.srvc.uriauth.exception.InvalidPatternException;
 import org.openiam.am.srvc.uriauth.model.URIPatternTree;
@@ -51,6 +52,9 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
 
     @Autowired
     private AuthLevelDozerConverter authLevelDozerConverter;
+    
+    @Autowired
+    private AuthProviderService authProviderService;
 
     @Autowired
     private ContentProviderServerDoserConverter contentProviderServerDoserConverter;
@@ -237,9 +241,11 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
             if (provider.getDomainPattern()==null || StringUtils.isBlank(provider.getDomainPattern())) {
                 throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_DOMAIN_PATERN_NOT_SET);
             }
+            /*
             if(StringUtils.isBlank(provider.getManagedSysId())) {
             	throw new  BasicDataServiceException(ResponseCode.MANAGED_SYSTEM_NOT_SET);
             }
+            */
             
             if(CollectionUtils.isEmpty(provider.getGroupingXrefs())) {
             	throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_AUTH_LEVEL_NOT_SET);
@@ -279,6 +285,15 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
                     }
                 }
             }
+            
+            if(StringUtils.isBlank(provider.getAuthProviderId())) {
+            	throw new  BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_SET);
+            }
+            
+            if(authProviderService.getAuthProvider(provider.getAuthProviderId()) == null) {
+            	throw new  BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_SET);
+            }
+            
             final ContentProviderEntity contentProvider = contentProviderDozerConverter.convertToEntity(provider,true);
             contentProviderService.saveContentProvider(contentProvider);
             response.setResponseValue(contentProvider.getId());

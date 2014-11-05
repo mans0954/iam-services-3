@@ -6,13 +6,16 @@ import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.openiam.am.srvc.domain.AuthProviderEntity;
 import org.openiam.am.srvc.dto.ContentProvider;
 import org.openiam.am.srvc.dto.URIPattern;
 import org.openiam.am.srvc.dto.URIPatternMetaType;
 import org.openiam.am.srvc.dto.URIPatternMetaValue;
 import org.openiam.am.srvc.groovy.URIFederationGroovyProcessor;
 import org.openiam.am.srvc.service.AuthAttributeProcessor;
+import org.openiam.am.srvc.service.AuthProviderService;
 import org.openiam.am.srvc.uriauth.dto.URIPatternRuleToken;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +28,9 @@ public abstract class AbstractURIPatternRule implements URIPatternRule {
 	
     @Autowired
     private UserDataService userDataService;
+    
+    @Autowired
+    private AuthProviderService authProviderService;
     
 	@Override
 	@Transactional
@@ -49,7 +55,9 @@ public abstract class AbstractURIPatternRule implements URIPatternRule {
 				}
 				if(value == null) {
 					if(metaValue.getAmAttribute() != null) {
-						value = authAttributeProcessor.process(metaValue.getAmAttribute().getReflectionKey(), userId, contentProvider.getManagedSysId());
+						final AuthProviderEntity authProvider = authProviderService.getAuthProvider(contentProvider.getAuthProviderId());
+						final ManagedSysEntity managedSystem = authProvider.getManagedSystem();
+						value = authAttributeProcessor.process(metaValue.getAmAttribute().getReflectionKey(), userId, managedSystem.getId());
 					}
 				}
 				
