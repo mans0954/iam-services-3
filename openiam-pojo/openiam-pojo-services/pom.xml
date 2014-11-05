@@ -132,19 +132,6 @@
             <scope>provided</scope>
         </dependency>
         
-        <dependency>
-   			<groupId>org.hibernate</groupId>
-   			<artifactId>hibernate-search-orm</artifactId>
-   			<version>${hibernate.search.orm.version}</version>
-   			<scope>provided</scope>
-		</dependency>
-		
-		<dependency>
-   			<groupId>org.hibernate</groupId>
-   			<artifactId>hibernate-search-analyzers</artifactId>
-   			<version>${hibernate.search.analyzers.version}</version>
-		</dependency>
-
 		<dependency>
    			<groupId>org.hibernate</groupId>
    			<artifactId>hibernate-entitymanager</artifactId>
@@ -358,7 +345,10 @@
             <version>3.3.0</version>
         </dependency>
 
-
+        <dependency>
+            <groupId>org.elasticsearch</groupId>
+            <artifactId>elasticsearch</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

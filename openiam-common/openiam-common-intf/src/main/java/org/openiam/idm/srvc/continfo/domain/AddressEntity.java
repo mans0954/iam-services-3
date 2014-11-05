@@ -1,42 +1,31 @@
 package org.openiam.idm.srvc.continfo.domain;
 
-import java.util.Date;
-
-import javax.persistence.*;
-import javax.validation.constraints.Size;
-import javax.xml.bind.annotation.XmlTransient;
-
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
-import org.hibernate.search.annotations.DocumentId;
-import org.hibernate.search.annotations.Field;
-import org.hibernate.search.annotations.FieldBridge;
-import org.hibernate.search.annotations.Indexed;
-import org.hibernate.search.annotations.Store;
-import org.openiam.base.AttributeOperationEnum;
+import org.openiam.base.domain.AbstractMetdataTypeEntity;
+import org.openiam.base.domain.KeyEntity;
 import org.openiam.core.dao.lucene.LuceneId;
 import org.openiam.core.dao.lucene.LuceneLastUpdate;
-import org.openiam.core.dao.lucene.bridge.UserBridge;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.internationalization.Internationalized;
+
+import javax.persistence.*;
+import javax.validation.constraints.Size;
+import java.util.Date;
 
 @Entity
 @Table(name = "ADDRESS")
 @DozerDTOCorrespondence(Address.class)
-@Indexed
+//@Indexed
+@AttributeOverride(name = "id", column = @Column(name = "ADDRESS_ID"))
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class AddressEntity {
-    @Id
-    @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name = "system-uuid", strategy = "uuid")
-    @Column(name = "ADDRESS_ID", length = 32, nullable = false)
-    @LuceneId
-    @DocumentId
-    private String addressId;
+@Internationalized
+public class AddressEntity extends AbstractMetdataTypeEntity {
 
     @Column(name = "ACTIVE")
     @Type(type = "yes_no")
@@ -99,7 +88,7 @@ public class AddressEntity {
 
     @ManyToOne
     @JoinColumn(name = "PARENT_ID")
-    @Field(name="parent", bridge=@FieldBridge(impl=UserBridge.class), store=Store.YES)
+//    @Field(name="parent", bridge=@FieldBridge(impl=UserBridge.class), store=Store.YES)
     private UserEntity parent;
 
     @Column(name = "POSTAL_CD", length = 100)
@@ -122,19 +111,7 @@ public class AddressEntity {
     @Temporal(TemporalType.TIMESTAMP)
     protected Date createDate;
 
-    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
-    @JoinColumn(name = "TYPE_ID", insertable=true, updatable=true)
-    private MetadataTypeEntity metadataType;
-
     public AddressEntity() {
-    }
-
-    public String getAddressId() {
-        return addressId;
-    }
-
-    public void setAddressId(String addressId) {
-        this.addressId = addressId;
     }
 
     public boolean getIsActive() {
@@ -305,18 +282,10 @@ public class AddressEntity {
 		this.createDate = createDate;
 	}
 
-    public MetadataTypeEntity getMetadataType() {
-        return metadataType;
-    }
-
-    public void setMetadataType(MetadataTypeEntity metadataType) {
-        this.metadataType = metadataType;
-    }
-
     @Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = 1;
+		int result = super.hashCode();
 		result = prime * result
 				+ ((address1 == null) ? 0 : address1.hashCode());
 		result = prime * result
@@ -331,8 +300,6 @@ public class AddressEntity {
 				+ ((address6 == null) ? 0 : address6.hashCode());
 		result = prime * result
 				+ ((address7 == null) ? 0 : address7.hashCode());
-		result = prime * result
-				+ ((addressId == null) ? 0 : addressId.hashCode());
 		result = prime * result
 				+ ((bldgNumber == null) ? 0 : bldgNumber.hashCode());
 		result = prime * result + ((city == null) ? 0 : city.hashCode());
@@ -352,7 +319,6 @@ public class AddressEntity {
 		result = prime * result
 				+ ((streetDirection == null) ? 0 : streetDirection.hashCode());
 		result = prime * result + ((suite == null) ? 0 : suite.hashCode());
-        result = prime * result + ((metadataType == null) ? 0 : metadataType.hashCode());
 		return result;
 	}
 
@@ -362,6 +328,8 @@ public class AddressEntity {
 			return true;
 		if (obj == null)
 			return false;
+        if (!super.equals(obj))
+            return false;
 		if (getClass() != obj.getClass())
 			return false;
 		AddressEntity other = (AddressEntity) obj;
@@ -399,11 +367,6 @@ public class AddressEntity {
 			if (other.address7 != null)
 				return false;
 		} else if (!address7.equals(other.address7))
-			return false;
-		if (addressId == null) {
-			if (other.addressId != null)
-				return false;
-		} else if (!addressId.equals(other.addressId))
 			return false;
 		if (bldgNumber == null) {
 			if (other.bldgNumber != null)
@@ -464,11 +427,6 @@ public class AddressEntity {
 				return false;
 		} else if (!suite.equals(other.suite))
 			return false;
-        if (metadataType == null) {
-            if (other.metadataType != null)
-                return false;
-        } else if (!metadataType.equals(other.metadataType))
-            return false;
 		return true;
 	}
 
@@ -476,8 +434,7 @@ public class AddressEntity {
     public String toString() {
         final StringBuilder sb = new StringBuilder();
         sb.append("AddressEntity");
-        sb.append("{addressId='").append(addressId).append('\'');
-        sb.append(", isActive=").append(isActive);
+        sb.append("{isActive=").append(isActive);
         sb.append(", isDefault=").append(isDefault);
         sb.append(", bldgNumber='").append(bldgNumber).append('\'');
         sb.append(", streetDirection='").append(streetDirection).append('\'');
@@ -498,7 +455,7 @@ public class AddressEntity {
         sb.append(", name='").append(name).append('\'');
         sb.append(", lastUpdate=").append(lastUpdate);
         sb.append(", createDate=").append(createDate);
-        sb.append(", metadataType=").append(metadataType);
+        sb.append(", ").append(super.toString());
         sb.append('}');
         return sb.toString();
     }

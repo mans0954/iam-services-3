@@ -98,12 +98,16 @@
 		<class-a>org.openiam.idm.srvc.continfo.domain.AddressEntity</class-a>
 		<class-b>org.openiam.idm.srvc.continfo.dto.Address</class-b>
         <field>
-            <a>metadataType.id</a>
-            <b>metadataTypeId</b>
+            <a>type.id</a>
+            <b>mdTypeId</b>
         </field>
         <field>
-            <a>metadataType.name</a>
-            <b>typeDescription</b>
+            <a>type.displayName</a>
+            <b>metadataTypeName</b>
+        </field>
+        <field>
+            <a>parent.id</a>
+            <b>parentId</b>
         </field>
 	</mapping>
 	<mapping>

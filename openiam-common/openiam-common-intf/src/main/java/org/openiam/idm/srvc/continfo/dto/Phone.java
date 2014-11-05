@@ -1,7 +1,5 @@
 package org.openiam.idm.srvc.continfo.dto;
 
-import java.util.Date;
-
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.KeyDTO;
 import org.openiam.base.KeyNameDTO;
@@ -12,6 +10,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
+import java.util.Date;
 
 // Generated Jun 12, 2007 10:46:13 PM by Hibernate Tools 3.2.0.beta8
 
@@ -177,6 +176,15 @@ public class Phone extends KeyNameDTO {
 
     public void setIsActive(boolean isActive) {
         this.isActive = isActive;
+    }
+
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     /*
