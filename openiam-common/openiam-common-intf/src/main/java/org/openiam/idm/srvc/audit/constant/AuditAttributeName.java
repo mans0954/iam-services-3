@@ -43,5 +43,6 @@ public enum AuditAttributeName {
     GROOVY_SCRIPT,
     PROFILE,
     CONTENT_PROVIDER_ID,
+    URI_PATTERN_ID,
     PHONE;
 }

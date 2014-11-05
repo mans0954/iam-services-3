@@ -10,11 +10,13 @@ import javax.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "URIPatternSearchBean", propOrder = {
         "pattern",
-        "contentProviderId"
+        "contentProviderId",
+        "authProviderId"
 })
 public class URIPatternSearchBean extends AbstractSearchBean<URIPattern, String> {
     private String pattern;
     private String contentProviderId;
+    private String authProviderId;
 
     public String getPattern() {
         return pattern;
@@ -31,4 +33,14 @@ public class URIPatternSearchBean extends AbstractSearchBean<URIPattern, String>
     public void setContentProviderId(String contentProviderId) {
         this.contentProviderId = contentProviderId;
     }
+
+	public String getAuthProviderId() {
+		return authProviderId;
+	}
+
+	public void setAuthProviderId(String authProviderId) {
+		this.authProviderId = authProviderId;
+	}
+    
+    
 }
