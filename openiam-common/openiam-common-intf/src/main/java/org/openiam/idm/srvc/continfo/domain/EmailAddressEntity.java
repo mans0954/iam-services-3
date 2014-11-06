@@ -2,13 +2,19 @@ package org.openiam.idm.srvc.continfo.domain;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
-import org.hibernate.search.annotations.*;
-import org.openiam.core.dao.lucene.LuceneId;
+import org.openiam.base.domain.KeyEntity;
 import org.openiam.core.dao.lucene.LuceneLastUpdate;
-import org.openiam.core.dao.lucene.bridge.UserBridge;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.elasticsearch.annotation.ElasticsearchField;
+import org.openiam.elasticsearch.annotation.ElasticsearchFieldBridge;
+import org.openiam.elasticsearch.annotation.ElasticsearchIndex;
+import org.openiam.elasticsearch.annotation.ElasticsearchMapping;
+import org.openiam.elasticsearch.bridge.UserBrigde;
+import org.openiam.elasticsearch.constants.ESIndexName;
+import org.openiam.elasticsearch.constants.ESIndexType;
+import org.openiam.elasticsearch.constants.ElasticsearchStore;
+import org.openiam.elasticsearch.constants.Index;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -20,16 +26,12 @@ import java.util.Date;
 @Entity
 @Table(name = "EMAIL_ADDRESS")
 @DozerDTOCorrespondence(EmailAddress.class)
-@Indexed
+//@Indexed
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class EmailAddressEntity {
-    @Id
-    @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name = "system-uuid", strategy = "uuid")
-    @Column(name = "EMAIL_ID", length = 32, nullable = false)
-    @LuceneId
-    @DocumentId
-    private String emailId;
+@ElasticsearchIndex(indexName = ESIndexName.USERS)
+@ElasticsearchMapping(typeName = ESIndexType.EMAIL/*, parent = ESIndexType.USER*/)
+@AttributeOverride(name = "id", column = @Column(name = "EMAIL_ID"))
+public class EmailAddressEntity extends KeyEntity {
 
     @Column(name = "ACTIVE")
     @Type(type = "yes_no")
@@ -39,10 +41,11 @@ public class EmailAddressEntity {
     @Size(max = 100, message = "validator.email.description.toolong")
     private String description;
 
-    @Fields ({
-        @Field(analyze = Analyze.YES),
-        @Field(name = "emailAddress", analyze = Analyze.YES, store = Store.YES)
-    })
+//    @Fields ({
+//        @Field(analyze = Analyze.YES),
+//        @Field(name = "emailAddress", analyze = Analyze.YES, store = Store.YES)
+//    })
+    @ElasticsearchField(name = "emailAddress", store = ElasticsearchStore.Yes, index = Index.Analyzed)
     @Column(name = "EMAIL_ADDRESS", length = 320)
     @Size(max = 320, message = "validator.email.toolong")
     private String emailAddress;
@@ -53,7 +56,8 @@ public class EmailAddressEntity {
 
     @ManyToOne
     @JoinColumn(name = "PARENT_ID")
-    @Field(name="parent", bridge=@FieldBridge(impl=UserBridge.class), store=Store.YES)
+//    @Field(name="parent", bridge=@FieldBridge(impl=UserBridge.class), store=Store.YES)
+    @ElasticsearchField(name = "userId", bridge=@ElasticsearchFieldBridge(impl = UserBrigde.class), store = ElasticsearchStore.Yes, index = Index.Not_Analyzed/*, mapToParent=true*/)
     private UserEntity parent;
 
     @Column(name = "NAME", length = 100)
@@ -73,14 +77,6 @@ public class EmailAddressEntity {
     private MetadataTypeEntity metadataType;
 
     public EmailAddressEntity() {
-    }
-
-    public String getEmailId() {
-        return emailId;
-    }
-
-    public void setEmailId(String emailId) {
-        this.emailId = emailId;
     }
 
     public Boolean getIsActive() {
@@ -154,40 +150,85 @@ public class EmailAddressEntity {
         this.metadataType = metadataType;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result
+				+ ((createDate == null) ? 0 : createDate.hashCode());
+		result = prime * result
+				+ ((description == null) ? 0 : description.hashCode());
+		result = prime * result
+				+ ((emailAddress == null) ? 0 : emailAddress.hashCode());
+		result = prime * result + (isActive ? 1231 : 1237);
+		result = prime * result + (isDefault ? 1231 : 1237);
+		result = prime * result
+				+ ((lastUpdate == null) ? 0 : lastUpdate.hashCode());
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
+        result = prime * result + ((metadataType == null) ? 0 : metadataType.hashCode());
+		return result;
+	}
 
-        EmailAddressEntity that = (EmailAddressEntity) o;
-
-        if (createDate != null ? !createDate.equals(that.createDate) : that.createDate != null) return false;
-        if (emailAddress != null ? !emailAddress.equals(that.emailAddress) : that.emailAddress != null) return false;
-        if (emailId != null ? !emailId.equals(that.emailId) : that.emailId != null) return false;
-        if (name != null ? !name.equals(that.name) : that.name != null) return false;
-
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = emailId != null ? emailId.hashCode() : 0;
-        result = 31 * result + (emailAddress != null ? emailAddress.hashCode() : 0);
-        result = 31 * result + (name != null ? name.hashCode() : 0);
-        result = 31 * result + (createDate != null ? createDate.hashCode() : 0);
-        return result;
-    }
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+        if (!super.equals(obj))
+            return false;
+		if (getClass() != obj.getClass())
+			return false;
+		EmailAddressEntity other = (EmailAddressEntity) obj;
+		if (createDate == null) {
+			if (other.createDate != null)
+				return false;
+		} else if (!createDate.equals(other.createDate))
+			return false;
+		if (description == null) {
+			if (other.description != null)
+				return false;
+		} else if (!description.equals(other.description))
+			return false;
+		if (emailAddress == null) {
+			if (other.emailAddress != null)
+				return false;
+		} else if (!emailAddress.equals(other.emailAddress))
+			return false;
+		if (isActive != other.isActive)
+			return false;
+		if (isDefault != other.isDefault)
+			return false;
+		if (lastUpdate == null) {
+			if (other.lastUpdate != null)
+				return false;
+		} else if (!lastUpdate.equals(other.lastUpdate))
+			return false;
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name))
+			return false;
+        if (metadataType == null) {
+            if (other.metadataType != null)
+                return false;
+        } else if (!metadataType.equals(other.metadataType))
+            return false;
+		return true;
+	}
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder();
-        sb.append("EmailAddressEntity");
-        sb.append("{emailAddress='").append(emailAddress).append('\'');
-        sb.append(", isDefault=").append(isDefault);
-        sb.append(", name='").append(name).append('\'');
-        sb.append(", lastUpdate=").append(lastUpdate);
-        sb.append(", metadataType=").append(metadataType);
-        sb.append('}');
-        return sb.toString();
+        return "EmailAddressEntity{" +
+               "isActive=" + isActive +
+               ", description='" + description + '\'' +
+               ", emailAddress='" + emailAddress + '\'' +
+               ", isDefault=" + isDefault +
+               ", parent=" + parent +
+               ", name='" + name + '\'' +
+               ", lastUpdate=" + lastUpdate +
+               ", createDate=" + createDate +
+               ", metadataType=" + metadataType +
+               ", " + super.toString()+"}";
     }
 }

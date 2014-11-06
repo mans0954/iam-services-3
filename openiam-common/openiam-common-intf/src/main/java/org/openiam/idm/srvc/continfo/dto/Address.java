@@ -1,7 +1,6 @@
 package org.openiam.idm.srvc.continfo.dto;
 
-import java.util.Date;
-
+import org.openiam.base.AbstractMetadataTypeDTO;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
@@ -10,6 +9,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
+import java.util.Date;
 
 // Generated Jun 12, 2007 10:46:13 PM by Hibernate Tools 3.2.0.beta8
 
@@ -30,7 +30,6 @@ import javax.xml.bind.annotation.XmlType;
         "address5",
         "address6",
         "address7",
-        "addressId",
         "city",
         "country",
         "description",
@@ -41,16 +40,11 @@ import javax.xml.bind.annotation.XmlType;
         "name",
         "operation",
         "createDate",
-        "lastUpdate",
-        "metadataTypeId",
-        "typeDescription"
+        "lastUpdate"
 })
 @DozerDTOCorrespondence(AddressEntity.class)
-public class Address implements java.io.Serializable {
+public class Address extends AbstractMetadataTypeDTO implements java.io.Serializable {
 
-
-    // Fields
-    protected String addressId;
 
     protected AttributeOperationEnum operation = AttributeOperationEnum.NO_CHANGE;
 
@@ -98,9 +92,6 @@ public class Address implements java.io.Serializable {
     private Date createDate;
     // Constructors
 
-    private String metadataTypeId;
-    private String typeDescription;
-
 
     /**
      * default constructor
@@ -112,7 +103,7 @@ public class Address implements java.io.Serializable {
      * minimal constructor
      */
     public Address(String addressId) {
-        this.addressId = addressId;
+        this.setId(addressId);
     }
     
     
@@ -135,16 +126,7 @@ public class Address implements java.io.Serializable {
         this.state = adr.getState();
         this.streetDirection = adr.getStreetDirection();
         this.suite = adr.getSuite();
-        this.metadataTypeId = adr.getMetadataTypeId();
-    }
-
-    // Property accessors
-    public String getAddressId() {
-        return this.addressId;
-    }
-
-    public void setAddressId(String addressId) {
-        this.addressId = addressId;
+        this.setMdTypeId(adr.getMdTypeId());
     }
 
     public String getCountry() {
@@ -342,26 +324,10 @@ public class Address implements java.io.Serializable {
         this.createDate = createDate;
     }
 
-    public String getMetadataTypeId() {
-        return metadataTypeId;
-    }
-
-    public void setMetadataTypeId(String metadataTypeId) {
-        this.metadataTypeId = metadataTypeId;
-    }
-
-    public String getTypeDescription() {
-        return typeDescription;
-    }
-
-    public void setTypeDescription(String typeDescription) {
-        this.typeDescription = typeDescription;
-    }
-
     @Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = 1;
+		int result = super.hashCode();
 		result = prime * result
 				+ ((address1 == null) ? 0 : address1.hashCode());
 		result = prime * result
@@ -376,8 +342,6 @@ public class Address implements java.io.Serializable {
 				+ ((address6 == null) ? 0 : address6.hashCode());
 		result = prime * result
 				+ ((address7 == null) ? 0 : address7.hashCode());
-		result = prime * result
-				+ ((addressId == null) ? 0 : addressId.hashCode());
 		result = prime * result
 				+ ((bldgNumber == null) ? 0 : bldgNumber.hashCode());
 		result = prime * result + ((city == null) ? 0 : city.hashCode());
@@ -401,8 +365,6 @@ public class Address implements java.io.Serializable {
 		result = prime * result
 				+ ((streetDirection == null) ? 0 : streetDirection.hashCode());
 		result = prime * result + ((suite == null) ? 0 : suite.hashCode());
-
-        result = prime * result + ((metadataTypeId == null) ? 0 : metadataTypeId.hashCode());
 		return result;
 	}
 
@@ -412,6 +374,8 @@ public class Address implements java.io.Serializable {
 			return true;
 		if (obj == null)
 			return false;
+        if (!super.equals(obj))
+            return false;
 		if (getClass() != obj.getClass())
 			return false;
 		Address other = (Address) obj;
@@ -449,11 +413,6 @@ public class Address implements java.io.Serializable {
 			if (other.address7 != null)
 				return false;
 		} else if (!address7.equals(other.address7))
-			return false;
-		if (addressId == null) {
-			if (other.addressId != null)
-				return false;
-		} else if (!addressId.equals(other.addressId))
 			return false;
 		if (bldgNumber == null) {
 			if (other.bldgNumber != null)
@@ -521,11 +480,6 @@ public class Address implements java.io.Serializable {
 				return false;
 		} else if (!suite.equals(other.suite))
 			return false;
-        if (metadataTypeId == null) {
-            if (other.metadataTypeId != null)
-                return false;
-        } else if (!metadataTypeId.equals(other.metadataTypeId))
-            return false;
 		return true;
 	}
 
@@ -550,7 +504,7 @@ public class Address implements java.io.Serializable {
         sb.append(", postalCd='").append(postalCd).append('\'');
         sb.append(", state='").append(state).append('\'');
         sb.append(", name='").append(name).append('\'');
-        sb.append(", typeDescription='").append(typeDescription).append('\'');
+        sb.append(", ").append(super.toString()).append('\'');
         sb.append('}');
         return sb.toString();
     }

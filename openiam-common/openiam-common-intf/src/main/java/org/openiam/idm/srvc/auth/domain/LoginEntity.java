@@ -4,18 +4,21 @@ package org.openiam.idm.srvc.auth.domain;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.*;
-import org.hibernate.search.annotations.*;
 import org.openiam.base.domain.KeyEntity;
-import org.openiam.core.dao.lucene.LuceneId;
 import org.openiam.core.dao.lucene.LuceneLastUpdate;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.elasticsearch.annotation.ElasticsearchField;
+import org.openiam.elasticsearch.annotation.ElasticsearchIndex;
+import org.openiam.elasticsearch.annotation.ElasticsearchMapping;
+import org.openiam.elasticsearch.constants.*;
+import org.openiam.elasticsearch.constants.Index;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.auth.dto.ProvLoginStatusEnum;
 import org.openiam.idm.srvc.pswd.domain.PasswordHistoryEntity;
 
-import javax.persistence.CascadeType;
 import javax.persistence.*;
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import java.util.*;
@@ -24,23 +27,28 @@ import java.util.*;
 @Table(name="LOGIN")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(Login.class)
-@Indexed
+//@Indexed
 @Embeddable
+@ElasticsearchIndex(indexName = ESIndexName.USERS)
+@ElasticsearchMapping(typeName = ESIndexType.LOGIN/*, parent = ESIndexType.USER*/)
 @AttributeOverride(name = "id", column = @Column(name = "LOGIN_ID"))
 public class LoginEntity extends KeyEntity {
 
-    @Field(name = "login", analyze = Analyze.YES, store = Store.YES)
+    //@Field(name = "login", analyze = Analyze.YES, store = Store.YES)
+    @ElasticsearchField(name = "login", store = ElasticsearchStore.Yes, index = Index.Analyzed)
     @Column(name="LOGIN",length=320)
     private String login;
     
     @Column(name="LOWERCASE_LOGIN",length=320)
     private String lowerCaseLogin;
     
-    @Field(name = "managedSysId", analyze = Analyze.NO, store = Store.YES)
+//    @Field(name = "managedSysId", analyze = Analyze.NO, store = Store.YES)
+    @ElasticsearchField(name = "managedSysId", store = ElasticsearchStore.Yes, index = Index.Not_Analyzed)
     @Column(name="MANAGED_SYS_ID",length=50)
     private String managedSysId;
 
-    @Field(name = "userId", analyze = Analyze.NO, store = Store.YES)
+//    @Field(name = "userId", analyze = Analyze.NO, store = Store.YES)
+    @ElasticsearchField(name = "userId", store = ElasticsearchStore.Yes, index = Index.Not_Analyzed/*, mapToParent=true*/)
     @Column(name="USER_ID",length=32)
     protected String userId;
 
@@ -557,11 +565,6 @@ public class LoginEntity extends KeyEntity {
 				return false;
 		} else if (!login.equals(other.login))
 			return false;
-		if (lowerCaseLogin == null) {
-			if (other.lowerCaseLogin != null)
-				return false;
-		} else if (!lowerCaseLogin.equals(other.lowerCaseLogin))
-			return false;
 		if (managedSysId == null) {
 			if (other.managedSysId != null)
 				return false;
@@ -654,7 +657,5 @@ public class LoginEntity extends KeyEntity {
 				+ pswdResetToken + ", pswdResetTokenExp=" + pswdResetTokenExp
 				+ ", lastUpdate=" + lastUpdate + ", smsCodeExpiration=" + smsCodeExpiration + "]";
 	}
-
-	
 }
 

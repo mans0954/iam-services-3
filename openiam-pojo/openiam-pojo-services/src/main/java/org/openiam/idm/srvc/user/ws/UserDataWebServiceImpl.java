@@ -131,12 +131,12 @@ public class UserDataWebServiceImpl implements UserDataWebService {
             if (val == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }
-            if (StringUtils.isBlank(val.getMetadataTypeId())) {
+            if (StringUtils.isBlank(val.getMdTypeId())) {
                 throw new BasicDataServiceException(ResponseCode.ADDRESS_TYPE_REQUIRED);
             }
             AddressSearchBean searchBean = new AddressSearchBean();
             searchBean.setParentId(val.getParentId());
-            searchBean.setMetadataTypeId(val.getMetadataTypeId());
+            searchBean.setMetadataTypeId(val.getMdTypeId());
             List<AddressEntity> entityList = userManager.getAddressList(searchBean, Integer.MAX_VALUE, 0);
             if (CollectionUtils.isNotEmpty(entityList))
                 throw new BasicDataServiceException(ResponseCode.ADDRESS_TYPE_DUPLICATED);
@@ -744,15 +744,15 @@ public class UserDataWebServiceImpl implements UserDataWebService {
             if (val == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }
-            if (StringUtils.isBlank(val.getMetadataTypeId())) {
+            if (StringUtils.isBlank(val.getMdTypeId())) {
                 throw new BasicDataServiceException(ResponseCode.ADDRESS_TYPE_REQUIRED);
             }
 
             AddressSearchBean searchBean = new AddressSearchBean();
             searchBean.setParentId(val.getParentId());
-            searchBean.setMetadataTypeId(val.getMetadataTypeId());
+            searchBean.setMetadataTypeId(val.getMdTypeId());
             List<AddressEntity> entityList = userManager.getAddressList(searchBean, Integer.MAX_VALUE, 0);
-            if (CollectionUtils.isNotEmpty(entityList) && !entityList.get(0).getAddressId().equals(val.getAddressId()))
+            if (CollectionUtils.isNotEmpty(entityList) && !entityList.get(0).getId().equals(val.getId()))
                 throw new BasicDataServiceException(ResponseCode.ADDRESS_TYPE_DUPLICATED);
 
             final AddressEntity entity = addressDozerConverter.convertToEntity(val, false);
@@ -813,7 +813,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
             searchBean.setMetadataTypeId(val.getMetadataTypeId());
             // searchBean.setParentType(ContactConstants.PARENT_TYPE_USER);
             List<EmailAddressEntity> entityList = userManager.getEmailAddressList(searchBean, Integer.MAX_VALUE, 0);
-            if (CollectionUtils.isNotEmpty(entityList) && !entityList.get(0).getEmailId().equals(val.getEmailId()))
+            if (CollectionUtils.isNotEmpty(entityList) && !entityList.get(0).getId().equals(val.getId()))
                 throw new BasicDataServiceException(ResponseCode.EMAIL_ADDRESS_TYPE_DUPLICATED);
 
             final EmailAddressEntity entity = emailAddressDozerConverter.convertToEntity(val, true);

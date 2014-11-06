@@ -1,49 +1,48 @@
 package org.openiam.idm.srvc.continfo.domain;
 
-import java.util.Date;
-
-import javax.persistence.*;
-import javax.validation.constraints.Size;
-import javax.xml.bind.annotation.XmlSchemaType;
-import javax.xml.bind.annotation.XmlTransient;
-
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
-import org.hibernate.search.annotations.Analyze;
-import org.hibernate.search.annotations.DocumentId;
-import org.hibernate.search.annotations.Field;
-import org.hibernate.search.annotations.FieldBridge;
-import org.hibernate.search.annotations.Fields;
-import org.hibernate.search.annotations.Index;
-import org.hibernate.search.annotations.Indexed;
-import org.hibernate.search.annotations.Store;
 import org.openiam.base.domain.KeyEntity;
-import org.openiam.core.dao.lucene.LuceneId;
 import org.openiam.core.dao.lucene.LuceneLastUpdate;
-import org.openiam.core.dao.lucene.bridge.UserBridge;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.elasticsearch.annotation.ElasticsearchField;
+import org.openiam.elasticsearch.annotation.ElasticsearchFieldBridge;
+import org.openiam.elasticsearch.annotation.ElasticsearchIndex;
+import org.openiam.elasticsearch.annotation.ElasticsearchMapping;
+import org.openiam.elasticsearch.bridge.UserBrigde;
+import org.openiam.elasticsearch.constants.ESIndexName;
+import org.openiam.elasticsearch.constants.ESIndexType;
+import org.openiam.elasticsearch.constants.ElasticsearchStore;
+import org.openiam.elasticsearch.constants.Index;
 import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 
+import javax.persistence.*;
+import javax.validation.constraints.Size;
+import javax.xml.bind.annotation.XmlTransient;
+import java.util.Date;
+
 @Entity
 @Table(name = "PHONE")
 @DozerDTOCorrespondence(Phone.class)
-@Indexed
+//@Indexed
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-@AttributeOverride(name = "id", column = @Column(name = "PHONE_ID", length = 32, nullable = false))
+@ElasticsearchIndex(indexName = ESIndexName.USERS)
+@ElasticsearchMapping(typeName = ESIndexType.PHONE/*, parent = ESIndexType.USER*/)
+@AttributeOverride(name = "id", column = @Column(name = "PHONE_ID"))
 public class PhoneEntity extends KeyEntity {
    
     @Column(name="ACTIVE")
     @Type(type = "yes_no")
     private boolean isActive = true;
 
-    @Fields ({
-        @Field(analyze = Analyze.NO),
-        @Field(name = "areaCd", analyze = Analyze.NO, store = Store.YES)
-    })
+//    @Fields ({
+//        @Field(analyze = Analyze.NO),
+//        @Field(name = "areaCd", analyze = Analyze.NO, store = Store.YES)
+//    })
+    @ElasticsearchField(name = "areaCd", store = ElasticsearchStore.Yes, index = Index.Not_Analyzed)
     @Column(name="AREA_CD", length=10)
     @Size(max = 10, message = "validator.phone.area.code.toolong")
     private String areaCd;
@@ -69,17 +68,20 @@ public class PhoneEntity extends KeyEntity {
     @XmlTransient
     @ManyToOne
     @JoinColumn(name="PARENT_ID")
-    @Field(name="parent", bridge=@FieldBridge(impl=UserBridge.class), store=Store.YES)
+    @ElasticsearchField(name = "userId", bridge=@ElasticsearchFieldBridge(impl = UserBrigde.class), store = ElasticsearchStore.Yes, index = Index.Not_Analyzed/*, mapToParent=true*/)
+//    @Field(name="parent", bridge=@FieldBridge(impl=UserBridge.class), store=Store.YES)
     private UserEntity parent;
 
     @Column(name="PHONE_EXT", length=20)
     @Size(max = 20, message = "validator.phone.extension.toolong")
+    @ElasticsearchField(name = "phoneExt", store = ElasticsearchStore.Yes, index = Index.Not_Analyzed)
     private String phoneExt;
 
-    @Fields ({
-        @Field(analyze = Analyze.NO),
-        @Field(name = "phoneNbr", analyze = Analyze.NO, store = Store.YES)
-    })
+//    @Fields ({
+//        @Field(analyze = Analyze.NO),
+//        @Field(name = "phoneNbr", analyze = Analyze.NO, store = Store.YES)
+//    })
+    @ElasticsearchField(name = "phoneNbr", store = ElasticsearchStore.Yes, index = Index.Not_Analyzed)
     @Column(name="PHONE_NBR", length=50)
     @Size(max = 50, message = "validator.phone.number.toolong")
     private String phoneNbr;

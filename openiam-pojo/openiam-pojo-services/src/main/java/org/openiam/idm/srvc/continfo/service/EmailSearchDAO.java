@@ -1,13 +1,21 @@
 package org.openiam.idm.srvc.continfo.service;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.SearchHitField;
+import org.openiam.base.ws.MatchType;
+import org.openiam.base.ws.SearchMode;
 import org.openiam.base.ws.SearchParam;
 import org.openiam.core.dao.lucene.AbstractHibernateSearchDao;
 import org.openiam.idm.searchbeans.EmailSearchBean;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
-import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
@@ -17,26 +25,23 @@ import java.util.List;
 public class EmailSearchDAO extends AbstractHibernateSearchDao<EmailAddressEntity, EmailSearchBean, String> {
 
 	@Override
-	protected Query parse(final EmailSearchBean query) {
-		final BooleanQuery luceneQuery = new BooleanQuery();
+	protected QueryBuilder parse(final EmailSearchBean query) {
+		final BoolQueryBuilder luceneQuery = QueryBuilders.boolQuery();
 		final SearchParam param = query.getEmailMatchToken();
 		if(param != null && param.isValid()) {
-			Query clause = null;
-			switch(param.getMatchType()) {
-				case EXACT:
-					clause = buildExactClause("emailAddressUntokenized", param.getValue());
-					break;
-				case STARTS_WITH:
-					clause = buildTokenizedClause("emailAddress", param.getValue());
-					break;
-				default:
-					break;
-			}
-			
+            QueryBuilder clause = null;
+            if(MatchType.EXACT.equals(param.getMatchType())){
+                clause = buildExactClause("emailAddress", param.getValue());
+            } else {
+                clause = buildTokenizedClause("emailAddress", param.getValue(), param.getMatchType());
+            }
+
 			if(clause != null) {
-				luceneQuery.add(clause, BooleanClause.Occur.MUST);
+                addClause(luceneQuery, clause, SearchMode.AND);
 			}
 		}
+
+
 		return luceneQuery;
 	}
 	
@@ -48,14 +53,16 @@ public class EmailSearchDAO extends AbstractHibernateSearchDao<EmailAddressEntit
 	public List<String> findUserIds(final int from, final int size, final EmailSearchBean query) {
 		final List<String> result = new ArrayList<String>();
     	if ((query != null)) {
-            final Query luceneQuery = parse(query);
+            final QueryBuilder luceneQuery = parse(query);
             if (luceneQuery != null) {
-				final List idList = findIds(buildFullTextSessionQuery(getFullTextSession(null), luceneQuery, from, size, null).setProjection("parent"));
-				for (final Object row : idList) {
-					final Object[] columns = (Object[]) row;
-					final UserEntity id = (UserEntity) columns[0];
-					result.add(id.getId());
-				}
+                SearchResponse searchResponse = esHelper.searchData(luceneQuery, getEntityClass());
+                if(searchResponse!=null && searchResponse.getHits()!=null && searchResponse.getHits().getTotalHits()>0){
+                    for (final SearchHit hit : searchResponse.getHits()) {
+                        final String fieldValue = (String) hit.getSource().get("userId");
+                        if(StringUtils.isNotBlank(fieldValue))
+                            result.add(fieldValue);
+                    }
+                }
             }
     	}
         return result;

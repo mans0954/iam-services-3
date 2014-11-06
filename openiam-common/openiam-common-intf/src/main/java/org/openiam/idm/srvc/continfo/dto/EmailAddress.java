@@ -1,9 +1,7 @@
 package org.openiam.idm.srvc.continfo.dto;
 
-import java.io.Serializable;
-import java.util.Date;
-
 import org.openiam.base.AttributeOperationEnum;
+import org.openiam.base.KeyDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 
@@ -11,6 +9,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
+import java.util.Date;
 
 /**
  * EmailAddress transfer object
@@ -21,7 +20,6 @@ import javax.xml.bind.annotation.XmlType;
         "isActive",
         "description",
         "emailAddress",
-        "emailId",
         "isDefault",
         "parentId",
         "name",
@@ -32,12 +30,10 @@ import javax.xml.bind.annotation.XmlType;
         "typeDescription"
 })
 @DozerDTOCorrespondence(EmailAddressEntity.class)
-public class EmailAddress implements Serializable {
+public class EmailAddress extends KeyDTO {
 
     // Fields
 	private AttributeOperationEnum operation = AttributeOperationEnum.NO_CHANGE;
-
-    private String emailId;
 
     private boolean isActive = true;
 
@@ -71,7 +67,7 @@ public class EmailAddress implements Serializable {
      * minimal constructor
      */
     public EmailAddress(String emailId) {
-        this.emailId = emailId;
+        setId(emailId);
     }
 
     /**
@@ -79,7 +75,7 @@ public class EmailAddress implements Serializable {
      */
     public EmailAddress(String emailId, String description,
                         String emailAddress, boolean isDefault) {
-        this.emailId = emailId;
+        setId(emailId);
         this.description = description;
         this.emailAddress = emailAddress;
         this.isDefault = isDefault;
@@ -99,14 +95,6 @@ public class EmailAddress implements Serializable {
     }
 
     // Property accessors
-    public String getEmailId() {
-        return this.emailId;
-    }
-
-    public void setEmailId(String emailId) {
-        this.emailId = emailId;
-    }
-
     public String getDescription() {
         return this.description;
     }
@@ -201,14 +189,13 @@ public class EmailAddress implements Serializable {
     @Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = 1;
+		int result = super.hashCode();
 		result = prime * result
 				+ ((createDate == null) ? 0 : createDate.hashCode());
 		result = prime * result
 				+ ((description == null) ? 0 : description.hashCode());
 		result = prime * result
 				+ ((emailAddress == null) ? 0 : emailAddress.hashCode());
-		result = prime * result + ((emailId == null) ? 0 : emailId.hashCode());
 		result = prime * result + (isActive ? 1231 : 1237);
 		result = prime * result + (isDefault ? 1231 : 1237);
 		result = prime * result
@@ -229,6 +216,8 @@ public class EmailAddress implements Serializable {
 			return true;
 		if (obj == null)
 			return false;
+        if (!super.equals(obj))
+            return false;
 		if (getClass() != obj.getClass())
 			return false;
 		EmailAddress other = (EmailAddress) obj;
@@ -246,11 +235,6 @@ public class EmailAddress implements Serializable {
 			if (other.emailAddress != null)
 				return false;
 		} else if (!emailAddress.equals(other.emailAddress))
-			return false;
-		if (emailId == null) {
-			if (other.emailId != null)
-				return false;
-		} else if (!emailId.equals(other.emailId))
 			return false;
 		if (isActive != other.isActive)
 			return false;
@@ -284,14 +268,18 @@ public class EmailAddress implements Serializable {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder();
-        sb.append("EmailAddress");
-        sb.append("{emailAddress='").append(emailAddress).append('\'');
-        sb.append(", name='").append(name).append('\'');
-        sb.append(", lastUpdate=").append(lastUpdate);
-        sb.append(", typeDescription='").append(typeDescription).append('\'');
-        sb.append(", isDefault=").append(isDefault);
-        sb.append('}');
-        return sb.toString();
+        return "EmailAddress{" +
+               "operation=" + operation +
+               ", isActive=" + isActive +
+               ", description='" + description + '\'' +
+               ", emailAddress='" + emailAddress + '\'' +
+               ", isDefault=" + isDefault +
+               ", name='" + name + '\'' +
+               ", parentId='" + parentId + '\'' +
+               ", lastUpdate=" + lastUpdate +
+               ", createDate=" + createDate +
+               ", metadataTypeId='" + metadataTypeId + '\'' +
+               ", typeDescription='" + typeDescription + '\'' +
+               ", " + super.toString()+"}";
     }
 }
