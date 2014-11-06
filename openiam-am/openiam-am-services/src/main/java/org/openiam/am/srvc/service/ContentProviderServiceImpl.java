@@ -348,9 +348,11 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
             resourceDao.add(resource);
 
             pattern.setResource(resource);
-            for(final URIPatternServerEntity server : pattern.getServers()) {
-				server.setPattern(pattern);
-			}
+            if(CollectionUtils.isNotEmpty(pattern.getServers())) {
+            	for(final URIPatternServerEntity server : pattern.getServers()) {
+            		server.setPattern(pattern);
+            	}
+            }
             
             final Set<AuthLevelGroupingURIPatternXrefEntity> incomingXrefs = pattern.getGroupingXrefs();
             pattern.setGroupingXrefs(null);

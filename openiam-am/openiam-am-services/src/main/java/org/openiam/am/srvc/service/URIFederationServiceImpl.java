@@ -46,7 +46,6 @@ import org.openiam.am.srvc.uriauth.dto.URIPatternRuleToken;
 import org.openiam.am.srvc.uriauth.dto.URIPatternRuleValue;
 import org.openiam.am.srvc.uriauth.model.ContentProviderNode;
 import org.openiam.am.srvc.uriauth.model.ContentProviderTree;
-import org.openiam.am.srvc.uriauth.model.URIPatternSearchResult;
 import org.openiam.am.srvc.uriauth.rule.URIPatternRule;
 import org.openiam.authmanager.common.model.AuthorizationResource;
 import org.openiam.authmanager.service.AuthorizationManagerService;
@@ -279,18 +278,7 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 			final AuthenticationRequest request = new AuthenticationRequest();
 			request.setPrincipal(primaryLogin.getLogin());
 			
-			URIPattern uriPattern = null;
-			final URIPatternSearchResult uriPatternToken = (cpNode.getPatternTree() != null) ? cpNode.getPatternTree().find(uri) : null;
-			
-			/* means that no matching pattern has been found for this URI (i.e. none configured) - check against the CP */
-			if(uriPatternToken != null && uriPatternToken.hasPatterns()) {
-				
-				/* check entitlements and auth level on patterns */
-				for(final URIPattern pattern : uriPatternToken.getFoundPatterns()) {
-					uriPattern = pattern;
-					break;
-				}
-			}
+			final URIPattern uriPattern = cpNode.getURIPattern(uri);
 			
 			if(uriPattern != null) {
 				request.setPatternId(uriPattern.getId());
@@ -323,18 +311,7 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 				throw new BasicDataServiceException(ResponseCode.URI_FEDERATION_CONTENT_PROVIDER_NOT_FOUND);
 			}
 			cp = cpNode.getContentProvider();
-			
-			final URIPatternSearchResult uriPatternToken = (cpNode.getPatternTree() != null) ? cpNode.getPatternTree().find(uri) : null;
-			
-			/* means that no matching pattern has been found for this URI (i.e. none configured) - check against the CP */
-			if(uriPatternToken != null && uriPatternToken.hasPatterns()) {
-				
-				/* check entitlements and auth level on patterns */
-				for(final URIPattern pattern : uriPatternToken.getFoundPatterns()) {
-					uriPattern = pattern;
-					break;
-				}
-			}
+			uriPattern = cpNode.getURIPattern(uri);
 			
 			if(uriPattern != null && CollectionUtils.isNotEmpty(uriPattern.getGroupingXrefs())) {
 				for(final AuthLevelGroupingURIPatternXref xref : uriPattern.getOrderedGroupingXrefs()) {
@@ -426,53 +403,49 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 				throw new BasicDataServiceException(ResponseCode.URI_FEDERATION_NOT_ENTITLED_TO_CONTENT_PROVIDER);
 			}
 			
-			final URIPatternSearchResult uriPatternToken = (cpNode.getPatternTree() != null) ? cpNode.getPatternTree().find(uri) : null;
+			final URIPattern tempPattern = cpNode.getURIPattern(uri);
 			
 			/* means that no matching pattern has been found for this URI (i.e. none configured) - check against the CP */
-			if(uriPatternToken != null && uriPatternToken.hasPatterns()) {
+			if(tempPattern != null) {
 				
 				/* check entitlements and auth level on patterns */
-				for(final URIPattern pattern : uriPatternToken.getFoundPatterns()) {
-					if(!pattern.getIsPublic() && !isEntitled(userId, pattern.getResourceId())) {
-						throw new BasicDataServiceException(ResponseCode.URI_FEDERATION_NOT_ENTITLED_TO_PATTERN, pattern.getPattern());
-					}
-					//TODO:  set auth levels here
+				if(!tempPattern.getIsPublic() && !isEntitled(userId, tempPattern.getResourceId())) {
+					throw new BasicDataServiceException(ResponseCode.URI_FEDERATION_NOT_ENTITLED_TO_PATTERN, tempPattern.getPattern());
 				}
+				//TODO:  set auth levels here
 			
 				/* do rule processes */
-				for(final URIPattern pattern : uriPatternToken.getFoundPatterns()) {
-					if(CollectionUtils.isNotEmpty(pattern.getMetaEntitySet())) {
-						for(final URIPatternMeta meta : pattern.getMetaEntitySet()) {
-							final URIPatternMetaType type = meta.getMetaType();
-							if(type != null) {
-								final String springBeanName = type.getSpringBeanName();
-								URIPatternRuleToken ruleToken = null;
-								try {
-									final URIPatternRule rule = ctx.getBean(springBeanName, URIPatternRule.class);
-									if(rule != null) {
-										final Set<URIPatternMetaValue> valueSet = meta.getMetaValueSet();
-										ruleToken = rule.process(userId, uri, type, valueSet, pattern, cp);
-										response.addRuleToken(ruleToken);
-									}
-								} catch(Throwable e) {
-									if(ruleToken != null) {
-										if(CollectionUtils.isNotEmpty(ruleToken.getValueList())) {
-											for(final Iterator<URIPatternRuleValue> it = ruleToken.getValueList().iterator(); it.hasNext();) {
-												final URIPatternRuleValue rule = it.next();
-												if(!rule.isPropagateOnError()) {
-													LOG.warn(String.format("Rule %s will not propagate to the proxy due to an error", rule));
-													it.remove();
-												}
+				if(CollectionUtils.isNotEmpty(tempPattern.getMetaEntitySet())) {
+					for(final URIPatternMeta meta : tempPattern.getMetaEntitySet()) {
+						final URIPatternMetaType type = meta.getMetaType();
+						if(type != null) {
+							final String springBeanName = type.getSpringBeanName();
+							URIPatternRuleToken ruleToken = null;
+							try {
+								final URIPatternRule rule = ctx.getBean(springBeanName, URIPatternRule.class);
+								if(rule != null) {
+									final Set<URIPatternMetaValue> valueSet = meta.getMetaValueSet();
+									ruleToken = rule.process(userId, uri, type, valueSet, tempPattern, cp);
+									response.addRuleToken(ruleToken);
+								}
+							} catch(Throwable e) {
+								if(ruleToken != null) {
+									if(CollectionUtils.isNotEmpty(ruleToken.getValueList())) {
+										for(final Iterator<URIPatternRuleValue> it = ruleToken.getValueList().iterator(); it.hasNext();) {
+											final URIPatternRuleValue rule = it.next();
+											if(!rule.isPropagateOnError()) {
+												LOG.warn(String.format("Rule %s will not propagate to the proxy due to an error", rule));
+												it.remove();
 											}
 										}
 									}
-									LOG.error("Error processing rule", e);
-									throw new BasicDataServiceException(ResponseCode.URI_PATTERN_RULE_PROCESS_ERROR, e);
 								}
+								LOG.error("Error processing rule", e);
+								throw new BasicDataServiceException(ResponseCode.URI_PATTERN_RULE_PROCESS_ERROR, e);
 							}
 						}
 					}
-					uriPattern = pattern;
+					uriPattern = tempPattern;
 				}
 			}
 			

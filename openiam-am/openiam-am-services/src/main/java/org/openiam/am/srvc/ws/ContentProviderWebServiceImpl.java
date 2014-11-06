@@ -20,7 +20,7 @@ import org.openiam.am.srvc.searchbeans.converter.URIPatternSearchBeanConverter;
 import org.openiam.am.srvc.service.AuthProviderService;
 import org.openiam.am.srvc.service.ContentProviderService;
 import org.openiam.am.srvc.uriauth.exception.InvalidPatternException;
-import org.openiam.am.srvc.uriauth.model.URIPatternTree;
+import org.openiam.am.srvc.uriauth.model.ContentProviderNode;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
@@ -479,7 +479,7 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
 
             // validate pattern
             try{
-                new URIPatternTree().addPattern(pattern);
+            	ContentProviderNode.validate(pattern.getPattern());
             } catch(InvalidPatternException e){
                 throw new  BasicDataServiceException(ResponseCode.URI_PATTERN_INVALID);
             }
