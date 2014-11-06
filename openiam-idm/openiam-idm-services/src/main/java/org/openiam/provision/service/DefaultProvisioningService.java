@@ -161,6 +161,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         for(String roleId : roles) {
             ResourceSearchBean rsb = new ResourceSearchBean();
             rsb.setDeepCopy(false);
+            // TODO This method shouldn't use Internationalization Aspect
             List<org.openiam.idm.srvc.res.dto.Resource> resources = resourceDataService.getResourcesForRole(roleId, -1, -1, rsb, null);
             for(Resource res : resources) {
                 resourceIds.add(res.getId());
@@ -190,6 +191,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             ResourceSearchBean rsb = new ResourceSearchBean();
             rsb.setDeepCopy(false);
             rsb.setResourceTypeId(ResourceSearchBean.TYPE_MANAGED_SYS);
+            // TODO This method shouldn't use Internationalization Aspect
             List<org.openiam.idm.srvc.res.dto.Resource> resources = resourceDataService.getResourcesForRole(roleId, -1, -1, rsb, null);
             for(Resource res : resources) {
                 resourceIds.add(res.getId());
@@ -850,6 +852,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         final Login primLogin = loginDozerConverter.convertToDTO(lg, false);
         if (CollectionUtils.isNotEmpty(roleList)) {
             for (final RoleEntity role : roleList) {
+                // TODO This method shouldn't use Internationalization Aspect
                 final List<Resource> resourceList = resourceDataService.getResourcesForRole(role.getId(), 0,
                         Integer.MAX_VALUE, null, null);
                 if (CollectionUtils.isNotEmpty(resourceList)) {
@@ -1118,6 +1121,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
         // Set of resources that a person should have based on their active
         // roles
+        // TODO This method shouldn't use Internationalization Aspect
         Set<Resource> resourceSet = getResourcesForRoles(roleSet);
 
         List<Organization> orgs = orgManager.getOrganizationsForUserLocalized(pUser.getId(), null, 0, 100, null);
@@ -1896,6 +1900,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     ResourceSearchBean resourceSearchBean = new ResourceSearchBean();
                     resourceSearchBean.setDeepCopy(false);
                     resourceSearchBean.setResourceTypeId(ResourceSearchBean.TYPE_MANAGED_SYS);
+                    // TODO This method shouldn't use Internationalization Aspect
                     List<ResourceEntity> resources = resourceService.getResourcesForRole(rl.getId(), 0, Integer.MAX_VALUE, resourceSearchBean);
                     if (CollectionUtils.isNotEmpty(resources)) {
                         List<Resource> list = resourceDozerConverter.convertToDTOList(resources, true);

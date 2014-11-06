@@ -265,6 +265,8 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
             usr = matchRule.lookup(config, rowAttr);
         }
 
+        long startTime = System.currentTimeMillis();
+
         int retval = -1;
         ProvisionUser pUser = (usr != null)? new ProvisionUser(usr) : new ProvisionUser();
         pUser.setRequestorUserId(systemUserId);
@@ -299,6 +301,7 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
                 }
                 log.info(" - Execute complete transform script");
             }
+            System.out.println("================ After Transformation => "+(System.currentTimeMillis()-startTime));
 
             if (retval != -1) {
                 if (retval == TransformScript.SKIP_TO_REVIEW) {
@@ -316,7 +319,10 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
                             log.info(" - Updating existing user");
                             pUser.setId(usr.getId());
                             try {
+
                                 provService.modifyUser(pUser);
+
+                                System.out.println("================ After Modify => "+(System.currentTimeMillis()-startTime));
                             } catch (Throwable e) {
                                 log.error(e);
                             }
@@ -325,6 +331,7 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
                             pUser.setId(null);
                             try {
                                 provService.addUser(pUser);
+                                System.out.println("================ After Add => "+(System.currentTimeMillis()-startTime));
                             } catch (Exception e) {
                                 log.error(e);
                             }

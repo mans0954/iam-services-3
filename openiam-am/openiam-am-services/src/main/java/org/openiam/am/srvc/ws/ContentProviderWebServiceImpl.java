@@ -214,8 +214,10 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
 
     @Override
     @Transactional(readOnly = true)
+    // TODO This method works slow in     convertToDTOList
     public List<ContentProvider> findBeans(ContentProviderSearchBean searchBean,Integer from, Integer size) {
         List<ContentProviderEntity> result = contentProviderService.findBeans(contentProviderSearchBeanConverter.convert(searchBean), from, size);
+
         return contentProviderDozerConverter.convertToDTOList(result, searchBean.isDeepCopy());
     }
 
@@ -250,6 +252,7 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
 
             final ContentProviderSearchBean searchBean = new ContentProviderSearchBean();
             searchBean.setProviderName(provider.getName());
+            searchBean.setDeepCopy(false);
             final List<ContentProvider> cpEntityWithNameList = findBeans(searchBean, new Integer(0), Integer.MAX_VALUE);
             if(CollectionUtils.isNotEmpty(cpEntityWithNameList)) {
             	if(StringUtils.isBlank(provider.getId())) {

@@ -111,7 +111,13 @@ public class LanguageMapping implements Serializable, Cloneable {
 	}
     @Override
     public LanguageMapping clone() throws CloneNotSupportedException {
-        return (LanguageMapping)super.clone();
+        LanguageMapping languageMapping = new LanguageMapping();
+        languageMapping.setId(this.id);
+        languageMapping.setLanguageId(this.languageId);
+        languageMapping.setReferenceId(this.referenceId);
+        languageMapping.setReferenceType(this.referenceType);
+        languageMapping.setValue(this.value);
+        return languageMapping;
     }
 	
 }
