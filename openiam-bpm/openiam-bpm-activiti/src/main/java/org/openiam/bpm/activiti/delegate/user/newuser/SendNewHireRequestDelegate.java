@@ -20,6 +20,7 @@ import org.openiam.bpm.activiti.delegate.core.AbstractNotificationDelegate;
 import org.openiam.bpm.activiti.delegate.entitlements.AbstractEntitlementsDelegate;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
+import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
@@ -58,9 +59,10 @@ public class SendNewHireRequestDelegate extends AbstractEntitlementsDelegate {
 	        for (final String candidateId : candidateUserIds) {
 	            final UserEntity entity = getUserEntity(candidateId);
 	            if (entity != null) {
-	                sendNotificationRequest(entity, execution);
+	                sendNotificationRequest(entity, execution, idmAuditLog);
 	            }
 	        }
+	        idmAuditLog.addAttributeAsJson(AuditAttributeName.CANDIDATE_USER_IDS, candidateUserIds, customJacksonMapper);
 	        idmAuditLog.succeed();
 		} catch(Throwable e) {
 			idmAuditLog.setException(e);
@@ -71,7 +73,7 @@ public class SendNewHireRequestDelegate extends AbstractEntitlementsDelegate {
 		}
     }
 
-    private void sendNotificationRequest(final UserEntity user, final DelegateExecution execution) {
+    private void sendNotificationRequest(final UserEntity user, final DelegateExecution execution, final IdmAuditLog idmAuditLog) {
         final NotificationRequest request = new NotificationRequest();
         request.setUserId(user.getId());
         request.setNotificationType(getNotificationType(execution));
@@ -80,6 +82,13 @@ public class SendNewHireRequestDelegate extends AbstractEntitlementsDelegate {
         request.getParamList().add(new NotificationParam("REQUESTOR", user.getDisplayName()));
         request.getParamList().add(new NotificationParam("TARGET_USER", profileModel.getUser().getDisplayName()));
         request.getParamList().add(new NotificationParam("COMMENT", getComment(execution)));
+        
+        final IdmAuditLog child = createNewAuditLog(execution);
+        child.setAction("Send Notification");
+        child.setUserId(user.getId());
+        child.addAttribute(AuditAttributeName.NOTIFICATION_TYPE, getNotificationType(execution));
+        idmAuditLog.addChild(child);
+        
         mailService.sendNotification(request);
     }
 }

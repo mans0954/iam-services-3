@@ -63,8 +63,6 @@ public class WSAdapter extends AbstractSrcAdapter { // implements SourceAdapter
 
 	private Connection con = null;
 
-    private LineObject lineHeader;
-
     @Override
     public SyncResponse startSynch(final SynchConfig config) {
         return startSynch(config, null, null);
@@ -73,6 +71,7 @@ public class WSAdapter extends AbstractSrcAdapter { // implements SourceAdapter
     @Override
     public SyncResponse startSynch(SynchConfig config, SynchReviewEntity sourceReview, SynchReviewEntity resultReview) {
 
+        LineObject lineHeader = null;
 		Date mostRecentRecord = null;
 
 		log.debug("WS SYNCH STARTED ^^^^^^^^");

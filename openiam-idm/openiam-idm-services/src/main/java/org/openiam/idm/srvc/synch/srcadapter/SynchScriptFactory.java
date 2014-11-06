@@ -33,7 +33,6 @@ import org.openiam.idm.srvc.synch.service.IdentitySynchService;
 import org.openiam.idm.srvc.synch.service.PolicyMapTransformScript;
 import org.openiam.idm.srvc.synch.service.TransformScript;
 import org.openiam.idm.srvc.synch.service.ValidationScript;
-import org.openiam.idm.srvc.synch.ws.IdentitySynchWebService;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.util.SpringContextProvider;
 import java.io.IOException;

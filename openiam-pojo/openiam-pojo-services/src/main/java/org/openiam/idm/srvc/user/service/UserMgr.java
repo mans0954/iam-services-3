@@ -38,6 +38,10 @@ import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
 import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
+import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
+import org.openiam.idm.srvc.mngsys.domain.AssociationType;
+import org.openiam.idm.srvc.mngsys.dto.ApproverAssociation;
+import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
 import org.openiam.idm.srvc.org.service.OrganizationService;
 import org.openiam.idm.srvc.pswd.service.PasswordHistoryDAO;
 import org.openiam.idm.srvc.pswd.service.UserIdentityAnswerDAO;
@@ -155,6 +159,8 @@ public class UserMgr implements UserDataService {
     private OrganizationService organizationService;
     @Autowired
     private RoleDataService roleDataService;
+    @Autowired
+    private ApproverAssociationDAO approverAssociationDAO;
 
     @Value("${org.openiam.user.search.max.results}")
     private int MAX_USER_SEARCH_RESULTS;
@@ -464,6 +470,12 @@ public class UserMgr implements UserDataService {
 
         authStateDAO.deleteByUser(id);
         userIdentityAnswerDAO.deleteByUser(id);
+        final List<ApproverAssociationEntity> associations = approverAssociationDAO.getByApprover(id, AssociationType.USER);
+        if(CollectionUtils.isNotEmpty(associations)) {
+        	for(final ApproverAssociationEntity association : associations) {
+        		approverAssociationDAO.delete(association);
+        	}
+        }
         userDao.delete(userDao.findById(id));
     }
 
@@ -531,9 +543,9 @@ public class UserMgr implements UserDataService {
             idList = userSearchDAO.findIds(0, MAX_USER_SEARCH_RESULTS, null, searchBean);
         }
 
-        if (CollectionUtils.isNotEmpty(idList) || (CollectionUtils.isEmpty(idList) && (isOrgFilterSet))) {
-            nonEmptyListOfLists.add(idList);
-        }
+//        if (CollectionUtils.isNotEmpty(idList) || (CollectionUtils.isEmpty(idList) && (isOrgFilterSet))) {
+            nonEmptyListOfLists.add( (CollectionUtils.isNotEmpty(idList))? idList: Collections.EMPTY_LIST);
+//        }
 
         if (CollectionUtils.isNotEmpty(searchBean.getAttributeList())) {
             nonEmptyListOfLists.add(userDao.getUserIdsForAttributes(searchBean.getAttributeList(), 0,
@@ -601,7 +613,7 @@ public class UserMgr implements UserDataService {
 	            if (CollectionUtils.isEmpty(nextSubList))
 	                nextSubList = Collections.EMPTY_LIST;
 	
-	            if (CollectionUtils.isEmpty(finalizedIdList)) {
+	            if (finalizedIdList==null /*CollectionUtils.isEmpty(finalizedIdList)*/) {
 	                finalizedIdList = nextSubList;
 	            } else {
 	                finalizedIdList = ListUtils.intersection(finalizedIdList, nextSubList);

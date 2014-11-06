@@ -144,7 +144,7 @@ public class PasswordGenerator {
     }
 
     public static String generatePassword(Policy policy) {
-        log.debug("Start passwrord generation!");
+        log.debug("Start password generation!");
         Random rand = new Random(System.currentTimeMillis());
         PolicyAttribute paLength = policy.getAttribute(PWD_LEN);
         PolicyAttribute paSpecialChars = policy.getAttribute(NON_ALPHA_CHARS);
@@ -154,11 +154,7 @@ public class PasswordGenerator {
         PolicyAttribute repeatLimit = policy.getAttribute(LIMIT_NUM_REPEAT_CHAR);
         PolicyAttribute notAllowedChars = policy.getAttribute(REJECT_CHARS_IN_PSWD);
 
-        String notAllowedChar = notAllowedChars.getValue1();
-//        List<String> notAllow = new ArrayList<>();
-//        if (notAllowedChar != null && notAllowedChar.length > 0) {
-//            notAllow.addAll(Arrays.asList(notAllowedChar));
-//        }
+        String notAllowedChar = notAllowedChars.getValue1() != null ? notAllowedChars.getValue1() : "";
 
         List<String> listLowerChars = getClearedGroupValues(lowerChars, notAllowedChar);
         List<String> listUpperChars = getClearedGroupValues(upperChars, notAllowedChar);
@@ -289,7 +285,7 @@ public class PasswordGenerator {
                             passwordLength = used;
                         } else if (!flag4 && !flag3 && !flag2 && !flag1 && intLengthMax != null) {
                             log.warn("Can't do password less then " + (specialAsList.size() + upperAsList.size() + numericAsList.size() + lowerAsList.size()));
-                            log.warn("Because sum of requriments more then max password length= " + intLengthMax);
+                            log.warn("Because sum of requirements more then max password length= " + intLengthMax);
                             log.warn("Skip max password length!");
                             break;
                         }
@@ -307,7 +303,7 @@ public class PasswordGenerator {
         for (String s : passwordAsList) {
             sb.append(s);
         }
-        log.debug("Finish passwrord generation!");
+        log.debug("Finish password generation!");
         return sb.toString();
     }
 
