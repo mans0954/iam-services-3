@@ -36,14 +36,14 @@ import org.openiam.internationalization.Internationalized;
 @Internationalized
 public class GroupEntity extends AbstractMetdataTypeEntity {
 
-    @Column(name = "GRP_NAME", length = 80)
-    @Size(max = 80, message = "group.name.too.long")
+    @Column(name = "GRP_NAME", length = 255)
+    @Size(max = 255, message = "group.name.too.long")
     private String name;
 
     @Column(name = "CREATE_DATE", length = 19)
     private Date createDate;
 
-    @Column(name = "CREATED_BY", length = 20)
+    @Column(name = "CREATED_BY", length = 32)
     private String createdBy;
     
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
@@ -64,7 +64,7 @@ public class GroupEntity extends AbstractMetdataTypeEntity {
     @Column(name = "LAST_UPDATE", length = 19)
     private Date lastUpdate;
 
-    @Column(name = "LAST_UPDATED_BY", length = 20)
+    @Column(name = "LAST_UPDATED_BY", length = 32)
     private String lastUpdatedBy;
 
     @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})

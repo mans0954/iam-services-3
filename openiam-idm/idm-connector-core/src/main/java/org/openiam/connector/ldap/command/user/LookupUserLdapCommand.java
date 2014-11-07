@@ -128,17 +128,27 @@ public class LookupUserLdapCommand extends AbstractLookupLdapCommand<ExtensibleU
                             boolean isMultivalued = (attr.size() > 1);
                             while (e.hasMore()) {
                                 Object o = e.next();
-                                if (o instanceof String) {
+                                if (o instanceof String || o instanceof byte[]) {
                                     if (isMultivalued) {
                                         BaseAttributeContainer container = extAttr.getAttributeContainer();
                                         if (container == null) {
                                             container = new BaseAttributeContainer();
                                             extAttr.setAttributeContainer(container);
                                         }
-                                        container.getAttributeList().add(
+                                        if (o instanceof String) {
+                                            container.getAttributeList().add(
                                                 new BaseAttribute(attr.getID(), o.toString(), AttributeOperationEnum.NO_CHANGE));
+                                        } else if (o instanceof byte[]) {
+                                            //TODO: Add multivalued attribute support
+                                            extAttr.setValueAsByteArray((byte[])o);
+                                            extAttr.setMultivalued(false);
+                                        }
                                     } else {
-                                        extAttr.setValue(o.toString());
+                                        if (o instanceof String) {
+                                            extAttr.setValue(o.toString());
+                                        } else if (o instanceof byte[]) {
+                                            extAttr.setValueAsByteArray((byte[])o);
+                                        }
                                     }
                                     addToList = true;
                                 }

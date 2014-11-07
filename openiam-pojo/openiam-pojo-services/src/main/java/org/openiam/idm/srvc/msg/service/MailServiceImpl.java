@@ -3,6 +3,7 @@ package org.openiam.idm.srvc.msg.service;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDataService;
@@ -15,11 +16,14 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+
 import twitter4j.*;
 import twitter4j.conf.ConfigurationBuilder;
 
 import javax.jws.WebService;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Matcher;
@@ -273,6 +277,11 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
             log.warn(String.format("Email details were null for notification type '%s'", req.getNotificationType()));
             return false;
         }
+        
+        if(CollectionUtils.isEmpty(req.getParamList())) {
+        	req.setParamList(new LinkedList<NotificationParam>());
+        }
+        req.getParamList().add(new NotificationParam("APPLICATION_CONTEXT", ac));
 
         Map<String, Object> bindingMap = new HashMap<String, Object>();
         bindingMap.put("user", usr);

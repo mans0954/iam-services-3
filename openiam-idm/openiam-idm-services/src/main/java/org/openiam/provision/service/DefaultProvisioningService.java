@@ -161,6 +161,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         for(String roleId : roles) {
             ResourceSearchBean rsb = new ResourceSearchBean();
             rsb.setDeepCopy(false);
+            // TODO This method shouldn't use Internationalization Aspect
             List<org.openiam.idm.srvc.res.dto.Resource> resources = resourceDataService.getResourcesForRole(roleId, -1, -1, rsb, null);
             for(Resource res : resources) {
                 resourceIds.add(res.getId());
@@ -190,6 +191,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             ResourceSearchBean rsb = new ResourceSearchBean();
             rsb.setDeepCopy(false);
             rsb.setResourceTypeId(ResourceSearchBean.TYPE_MANAGED_SYS);
+            // TODO This method shouldn't use Internationalization Aspect
             List<org.openiam.idm.srvc.res.dto.Resource> resources = resourceDataService.getResourcesForRole(roleId, -1, -1, rsb, null);
             for(Resource res : resources) {
                 resourceIds.add(res.getId());
@@ -850,6 +852,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         final Login primLogin = loginDozerConverter.convertToDTO(lg, false);
         if (CollectionUtils.isNotEmpty(roleList)) {
             for (final RoleEntity role : roleList) {
+                // TODO This method shouldn't use Internationalization Aspect
                 final List<Resource> resourceList = resourceDataService.getResourcesForRole(role.getId(), 0,
                         Integer.MAX_VALUE, null, null);
                 if (CollectionUtils.isNotEmpty(resourceList)) {
@@ -1105,7 +1108,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         updateSupervisors(userEntity, pUser, auditLog);
 
         // update groups
-        updateGroups(userEntity, pUser, auditLog);
+        Set<Group> groupSet = new HashSet<Group>();
+        Set<Group> deleteGroupSet = new HashSet<Group>();
+        updateGroups(userEntity, pUser, groupSet, deleteGroupSet, auditLog);
 
         // update roles
         Set<Role> roleSet = new HashSet<Role>();
@@ -1118,7 +1123,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
         // Set of resources that a person should have based on their active
         // roles
-        Set<Resource> resourceSet = getResourcesForRoles(roleSet);
+        // TODO This method shouldn't use Internationalization Aspect
+        Set<Resource> resourceSet = new HashSet<Resource>();
+        resourceSet.addAll(getResourcesForRoles(roleSet));
+        resourceSet.addAll(getResourcesForGroups(groupSet));
 
         List<Organization> orgs = orgManager.getOrganizationsForUserLocalized(pUser.getId(), null, 0, 100, null);
         for(Organization org : orgs) {
@@ -1131,7 +1139,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
         // Set of resources that are to be removed based on roles that are to be
         // deleted
-        Set<Resource> deleteResourceSet = getResourcesForRoles(deleteRoleSet);
+        Set<Resource> deleteResourceSet = new HashSet<Resource>();
+        deleteResourceSet.addAll(getResourcesForRoles(deleteRoleSet));
+        deleteResourceSet.addAll(getResourcesForGroups(deleteGroupSet));
 
         // update resources, update resources sets
         updateResources(userEntity, pUser, resourceSet, deleteResourceSet, auditLog);
@@ -1204,6 +1214,11 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             //If identity for resource exists and it's status is 'INACTIVE' user should be deprovisioned from target system
             Set<Resource> inactiveResources = new HashSet<Resource>();
             for (Resource res : resourceSet) {
+                // Do provisioning only for ManagedSys resources
+                if(!ResourceSearchBean.TYPE_MANAGED_SYS.equalsIgnoreCase(res.getResourceType().getId())) {
+                   continue;
+                }
+
                 String managedSysId = managedSysDaoService.getManagedSysIdByResource(res.getId(),"ACTIVE");
 
                 if (AttributeOperationEnum.NO_CHANGE.equals(res.getOperation())) { // if not adding resource
@@ -1221,6 +1236,21 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 resourceSet.removeAll(inactiveResources);
                 deleteResourceSet.addAll(inactiveResources); // inactive resources should be marked for deletion
             }
+
+            for (LoginEntity l : userEntity.getPrincipalList()) {
+                boolean resFound = false;
+                String resId = managedSysDaoService.getManagedSysById(l.getManagedSysId()).getResourceId();
+                for (Resource r : resourceSet) {
+                    if (r.getId().equals(resId)) {
+                        resFound = true;
+                        break;
+                    }
+                }
+                if (!resFound) {
+                    deleteResourceSet.add(resourceService.getResourceDTO(resId));
+                }
+            }
+
         }
 
         log.debug("Resources to be added ->> " + resourceSet);
@@ -1233,6 +1263,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 List<Resource> resources = orderResources("DELETE", finalProvUser, deleteResourceSet, bindingMap);
 
                 for (Resource res : resources) {
+                    // Do provisioning only for ManagedSys resources
+                    if(!ResourceSearchBean.TYPE_MANAGED_SYS.equalsIgnoreCase(res.getResourceType().getId())) {
+                        continue;
+                    }
                     // skip provisioning for resource if it in NotProvisioning
                     // set
                     if (pUser.getNotProvisioninResourcesIds().contains(res.getId())) {
@@ -1272,6 +1306,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 List<Resource> resources = orderResources("ADD", finalProvUser, resourceSet, bindingMap);
 
                 for (Resource res : resources) {
+                    // Do provisioning only for ManagedSys resources
+                    if(!ResourceSearchBean.TYPE_MANAGED_SYS.equalsIgnoreCase(res.getResourceType().getId())) {
+                        continue;
+                    }
                     // skip provisioning for resource if it in NotProvisioning
                     // set
                     if (pUser.getNotProvisioninResourcesIds().contains(res.getId())) {
@@ -1883,8 +1921,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     ResourceSearchBean resourceSearchBean = new ResourceSearchBean();
                     resourceSearchBean.setDeepCopy(false);
                     resourceSearchBean.setResourceTypeId(ResourceSearchBean.TYPE_MANAGED_SYS);
+                    // TODO This method shouldn't use Internationalization Aspect
                     List<ResourceEntity> resources = resourceService.getResourcesForRole(rl.getId(), 0, Integer.MAX_VALUE, resourceSearchBean);
                     if (CollectionUtils.isNotEmpty(resources)) {
+                        //TODO check  Deep convert should be FALSE for list
                         List<Resource> list = resourceDozerConverter.convertToDTOList(resources, true);
                         for (Resource r : list) {
                             r.setOperation(rl.getOperation()); // get operation value from role
@@ -1895,6 +1935,36 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             }
         }
         return resourceList;
+    }
+
+    private Set<Resource> getResourcesForGroups(Set<Group> groupSet) {
+        log.debug("GetResourcesForGroups().....");
+        final Set<Resource> resourceSet = new HashSet<Resource>();
+        if (CollectionUtils.isNotEmpty(groupSet)) {
+            for (Group gr : groupSet) {
+                if (gr.getId() != null) {
+                    ResourceSearchBean resourceSearchBean = new ResourceSearchBean();
+                    resourceSearchBean.setDeepCopy(false);
+                    resourceSearchBean.setResourceTypeId(ResourceSearchBean.TYPE_MANAGED_SYS);
+                    List<ResourceEntity> resources = resourceService.getResourcesForGroup(gr.getId(), 0, Integer.MAX_VALUE, resourceSearchBean);
+                    if (CollectionUtils.isNotEmpty(resources)) {
+                        //TODO check  Deep convert  should be FALSE for list
+                        List<Resource> list = resourceDozerConverter.convertToDTOList(resources, true);
+                        resourceSet.addAll(list);
+                    }
+                    List<RoleEntity> roleEntities = roleDataService.getRolesInGroup(gr.getId(), null, 0, Integer.MAX_VALUE);
+                    if (CollectionUtils.isNotEmpty(roleEntities)) {
+                        List<Role> roles = roleDozerConverter.convertToDTOList(roleEntities, false);
+                        Set<Resource> roleResources = getResourcesForRoles(new HashSet<Role>(roles));
+                        resourceSet.addAll(roleResources);
+                    }
+                    for (Resource r : resourceSet) {
+                        r.setOperation(gr.getOperation()); // get operation value from group
+                    }
+                }
+            }
+        }
+        return resourceSet;
     }
 
     @Override

@@ -48,7 +48,28 @@ public class IdmAuditLogWebDataServiceImpl implements IdmAuditLogWebDataService 
 
     private static Logger LOG = Logger.getLogger(IdmAuditLogWebDataServiceImpl.class);
 
-	@Override
+    @Override
+    public Response addLog(IdmAuditLog record) {
+        final Response resp = new Response(ResponseStatus.SUCCESS);
+        try {
+            if(record == null) {
+                throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+            }
+
+            auditLogService.enqueue(record);
+
+        } catch(BasicDataServiceException e) {
+            resp.fail();
+            resp.setErrorCode(e.getCode());
+
+        } catch(Throwable e) {
+            LOG.error("Can't add log", e);
+            resp.fail();
+        }
+        return resp;
+    }
+
+    @Override
 	public Response addLogs(List<IdmAuditLog> events) {
 		final Response resp = new Response(ResponseStatus.SUCCESS);
     	try {

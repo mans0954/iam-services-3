@@ -119,7 +119,9 @@ public class BaseProvisioningHelper {
         }
     }
 
+
     protected String findResourcePropertyByName(final String resId, final String name) {
+        // TODO This method shouldn't use Internationalization Aspect
         Resource r = resourceDataService.getResource(resId, null);
         if (r != null) {
             Set<ResourceProp> rpSet = r.getResourceProps();

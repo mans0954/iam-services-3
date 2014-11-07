@@ -293,6 +293,8 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
                 }
             }
 
+            System.out.println("IdentitySyncServiceImpl finished in => "+(System.currentTimeMillis()-newLastExecTime) +" milliseconds.");
+
 		} catch( ClassNotFoundException cnfe) {
             cnfe.printStackTrace();
 			log.error(cnfe);

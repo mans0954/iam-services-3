@@ -12,6 +12,7 @@ import org.openiam.base.OrderConstants;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.SearchMode;
+import org.openiam.base.ws.SearchParam;
 import org.openiam.base.ws.SortParam;
 import org.openiam.core.dao.UserKeyDao;
 import org.openiam.dozer.converter.*;
@@ -38,6 +39,10 @@ import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
 import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
+import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
+import org.openiam.idm.srvc.mngsys.domain.AssociationType;
+import org.openiam.idm.srvc.mngsys.dto.ApproverAssociation;
+import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
 import org.openiam.idm.srvc.org.service.OrganizationService;
 import org.openiam.idm.srvc.pswd.service.PasswordHistoryDAO;
 import org.openiam.idm.srvc.pswd.service.UserIdentityAnswerDAO;
@@ -155,6 +160,8 @@ public class UserMgr implements UserDataService {
     private OrganizationService organizationService;
     @Autowired
     private RoleDataService roleDataService;
+    @Autowired
+    private ApproverAssociationDAO approverAssociationDAO;
 
     @Value("${org.openiam.user.search.max.results}")
     private int MAX_USER_SEARCH_RESULTS;
@@ -464,6 +471,12 @@ public class UserMgr implements UserDataService {
 
         authStateDAO.deleteByUser(id);
         userIdentityAnswerDAO.deleteByUser(id);
+        final List<ApproverAssociationEntity> associations = approverAssociationDAO.getByApprover(id, AssociationType.USER);
+        if(CollectionUtils.isNotEmpty(associations)) {
+        	for(final ApproverAssociationEntity association : associations) {
+        		approverAssociationDAO.delete(association);
+        	}
+        }
         userDao.delete(userDao.findById(id));
     }
 
@@ -522,17 +535,20 @@ public class UserMgr implements UserDataService {
             if (CollectionUtils.isEmpty(searchBean.getRoleIdSet()) && isRoleFilterSet) {
                 searchBean.setRoleIdSet(new HashSet<String>(DelegationFilterHelper.getRoleFilterFromString(requesterAttributes)));
             }
+
+            if(isMngReportFilterSet){
+                List<String> subordinariesList = userDao.getSubordinatesIds(searchBean.getRequesterId());
+                subordinariesList.add(searchBean.getRequesterId());
+                nonEmptyListOfLists.add(subordinariesList);
+            }
         }
         List<String> idList = null;
-        if(isMngReportFilterSet){
-            idList = userDao.getSubordinatesIds(searchBean.getRequesterId());
-            idList.add(searchBean.getRequesterId());
-        } else {
+        if(isSearchByPrimaryAttributes(searchBean)) {
             idList = userSearchDAO.findIds(0, MAX_USER_SEARCH_RESULTS, null, searchBean);
         }
 
-        if (CollectionUtils.isNotEmpty(idList) || (CollectionUtils.isEmpty(idList) && (isOrgFilterSet))) {
-            nonEmptyListOfLists.add(idList);
+        if (idList!=null) {
+            nonEmptyListOfLists.add( (CollectionUtils.isNotEmpty(idList))? idList: Collections.EMPTY_LIST);
         }
 
         if (CollectionUtils.isNotEmpty(searchBean.getAttributeList())) {
@@ -601,7 +617,7 @@ public class UserMgr implements UserDataService {
 	            if (CollectionUtils.isEmpty(nextSubList))
 	                nextSubList = Collections.EMPTY_LIST;
 	
-	            if (CollectionUtils.isEmpty(finalizedIdList)) {
+	            if (finalizedIdList==null /*CollectionUtils.isEmpty(finalizedIdList)*/) {
 	                finalizedIdList = nextSubList;
 	            } else {
 	                finalizedIdList = ListUtils.intersection(finalizedIdList, nextSubList);
@@ -627,6 +643,30 @@ public class UserMgr implements UserDataService {
         }
 
         return (finalizedIdList != null) ? finalizedIdList : Collections.EMPTY_LIST;
+    }
+
+    private boolean isSearchByPrimaryAttributes(UserSearchBean searchBean) {
+        boolean result = false;
+        if(searchBean!=null){
+
+            result = result || checkSearchParam(searchBean.getFirstNameMatchToken())
+                    || checkSearchParam(searchBean.getLastNameMatchToken())
+                    || checkSearchParam(searchBean.getMaidenNameMatchToken())
+                    || checkSearchParam(searchBean.getEmployeeIdMatchToken())
+                    || checkSearchParam(searchBean.getUserStatus())
+                    || checkSearchParam(searchBean.getAccountStatus())
+                    || checkSearchParam(searchBean.getJobCode())
+                    || checkSearchParam(searchBean.getEmployeeType())
+                    || checkSearchParam(searchBean.getUserType());
+        }
+        return result;
+    }
+
+    private boolean checkSearchParam(SearchParam param){
+        return param != null && param.isValid();
+    }
+    private boolean checkSearchParam(String param){
+        return StringUtils.isNotBlank(param);
     }
 
     @Override
