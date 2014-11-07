@@ -218,8 +218,10 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
 
     @Override
     @Transactional(readOnly = true)
+    // TODO This method works slow in     convertToDTOList
     public List<ContentProvider> findBeans(ContentProviderSearchBean searchBean,Integer from, Integer size) {
         List<ContentProviderEntity> result = contentProviderService.findBeans(contentProviderSearchBeanConverter.convert(searchBean), from, size);
+
         return contentProviderDozerConverter.convertToDTOList(result, searchBean.isDeepCopy());
     }
 
@@ -256,6 +258,7 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
 
             final ContentProviderSearchBean searchBean = new ContentProviderSearchBean();
             searchBean.setProviderName(provider.getName());
+            searchBean.setDeepCopy(false);
             final List<ContentProvider> cpEntityWithNameList = findBeans(searchBean, new Integer(0), Integer.MAX_VALUE);
             if(CollectionUtils.isNotEmpty(cpEntityWithNameList)) {
             	if(StringUtils.isBlank(provider.getId())) {
@@ -333,12 +336,15 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
 
     @Override
     public List<ContentProviderServer> getServersForProvider(String providerId, Integer from, Integer size) {
-        ContentProviderServerEntity example = new ContentProviderServerEntity();
-        ContentProviderEntity provider = new ContentProviderEntity();
+        final ContentProviderServerEntity example = new ContentProviderServerEntity();
+        final ContentProviderEntity provider = new ContentProviderEntity();
         provider.setId(providerId);
         example.setContentProvider(provider);
-
-        return contentProviderServerDoserConverter.convertToDTOList(contentProviderService.getProviderServers(example, from, size), false);
+        
+        final List<ContentProviderServerEntity> entities = contentProviderService.getProviderServers(example, from, size);
+        final List<ContentProviderServer> servers = contentProviderServerDoserConverter.convertToDTOList(entities, false);
+        //log.info(String.format("Content Provider Server Entities: %s, servers: %s", entities, servers));
+        return servers;
     }
 
     @Override
@@ -352,7 +358,8 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
     }
 
     @Override
-    public Response saveProviderServer(ContentProviderServer contentProviderServer) {
+    public Response saveProviderServer(final ContentProviderServer contentProviderServer) {
+    	log.info(String.format("Incoming server: %s", contentProviderServer));
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
             if (contentProviderServer == null)
@@ -362,17 +369,20 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
             if (StringUtils.isBlank(contentProviderServer.getContentProviderId()))
                 throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_NOT_SET);
 
-            ContentProviderServerEntity example = new ContentProviderServerEntity();
-            ContentProviderEntity provider = new ContentProviderEntity();
+            final ContentProviderServerEntity example = new ContentProviderServerEntity();
+            final ContentProviderEntity provider = new ContentProviderEntity();
             provider.setId(contentProviderServer.getContentProviderId());
             example.setContentProvider(provider);
             example.setServerURL(contentProviderServer.getServerURL());
 
-            Integer count = contentProviderService.getNumOfProviderServers(example);
+            final Integer count = contentProviderService.getNumOfProviderServers(example);
             if(count>0){
                 throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_SERVER_EXISTS);
             }
-            contentProviderService.saveProviderServer(contentProviderServerDoserConverter.convertToEntity(contentProviderServer, false));
+            final ContentProviderServerEntity entity = contentProviderServerDoserConverter.convertToEntity(contentProviderServer, false);
+            contentProviderService.saveProviderServer(entity);
+            //log.info(String.format("Finalized Server: %s", entity));
+            response.setResponseValue(entity.getId());
         } catch(BasicDataServiceException e) {
             log.error(e.getMessage(), e);
             response.setStatus(ResponseStatus.FAILURE);
@@ -548,7 +558,7 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
     }
 
     @Override
-    public Response saveMetaDataForPattern(URIPatternMeta uriPatternMeta) {
+    public Response saveMetaDataForPattern(final URIPatternMeta uriPatternMeta) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
             if (uriPatternMeta==null) {
@@ -573,10 +583,12 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
             			 throw new  BasicDataServiceException(ResponseCode.META_NAME_MISSING);
                     }
             		
-            		if(StringUtils.isBlank(value.getGroovyScript()) &&
-            		   StringUtils.isBlank(value.getStaticValue()) &&
-            		   (value.getAmAttribute() == null || StringUtils.isBlank(value.getAmAttribute().getId()))) {
-            			 throw new  BasicDataServiceException(ResponseCode.META_VALUE_MISSING);
+            		if(!value.isEmptyValue()) {
+            			if(StringUtils.isBlank(value.getGroovyScript()) &&
+            			   StringUtils.isBlank(value.getStaticValue()) &&
+            			   (value.getAmAttribute() == null || StringUtils.isBlank(value.getAmAttribute().getId()))) {
+            				throw new  BasicDataServiceException(ResponseCode.META_VALUE_MISSING);
+            			}
             		}
             	}
             }
@@ -591,10 +603,11 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
 
 
             // check metadata values
-            validateMetaDataValues(uriPatternMeta);
+            //validateMetaDataValues(uriPatternMeta);
 
-            URIPatternMetaEntity entity = contentProviderService.saveMetaDataForPattern(uriPatternMetaDozerConverter.convertToEntity(uriPatternMeta,true));
-            response.setResponseValue(uriPatternMetaDozerConverter.convertToDTO(entity, true));
+            final URIPatternMetaEntity entity = uriPatternMetaDozerConverter.convertToEntity(uriPatternMeta,true);
+            contentProviderService.saveMetaDataForPattern(entity);
+            response.setResponseValue(entity.getId());
 
         } catch(BasicDataServiceException e) {
             log.error(e.getMessage(), e);
@@ -608,6 +621,7 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
         return response;
     }
 
+    /*
     private void validateMetaDataValues(URIPatternMeta uriPatternMeta) throws BasicDataServiceException{
         if(CollectionUtils.isNotEmpty(uriPatternMeta.getMetaValueSet())) {
             for (URIPatternMetaValue value: uriPatternMeta.getMetaValueSet()){
@@ -622,6 +636,7 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
             }
         }
     }
+    */
 
     @Override
     public Response deleteMetaDataForPattern(@WebParam(name = "metaId", targetNamespace = "") String metaId) {

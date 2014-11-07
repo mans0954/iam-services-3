@@ -31,6 +31,10 @@ public class URIPatternMetaValueEntity extends AbstractKeyNameEntity {
 	@Column(name = "GROOVY_SCRIPT", length = 200, nullable = true)
 	private String groovyScript;
 	
+	@Column(name = "IS_EMPTY_VALUE")
+    @Type(type = "yes_no")
+	private boolean emptyValue;
+	
 	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name="AM_RES_ATTRIBUTE_ID", referencedColumnName = "AM_RES_ATTRIBUTE_ID", nullable=true, insertable=true, updatable=true)
 	private AuthResourceAMAttributeEntity amAttribute;
@@ -104,6 +108,14 @@ public class URIPatternMetaValueEntity extends AbstractKeyNameEntity {
 		this.propagateThroughProxy = propagateThroughProxy;
 	}
 
+	public boolean isEmptyValue() {
+		return emptyValue;
+	}
+
+	public void setEmptyValue(boolean emptyValue) {
+		this.emptyValue = emptyValue;
+	}
+
 	public boolean isPropagateOnError() {
 		return propagateOnError;
 	}
@@ -118,6 +130,7 @@ public class URIPatternMetaValueEntity extends AbstractKeyNameEntity {
 		int result = super.hashCode();
 		result = prime * result
 				+ ((amAttribute == null) ? 0 : amAttribute.hashCode());
+		result = prime * result + (emptyValue ? 1231 : 1237);
 		result = prime * result
 				+ ((groovyScript == null) ? 0 : groovyScript.hashCode());
 		result = prime * result
@@ -142,6 +155,8 @@ public class URIPatternMetaValueEntity extends AbstractKeyNameEntity {
 			if (other.amAttribute != null)
 				return false;
 		} else if (!amAttribute.equals(other.amAttribute))
+			return false;
+		if (emptyValue != other.emptyValue)
 			return false;
 		if (groovyScript == null) {
 			if (other.groovyScript != null)

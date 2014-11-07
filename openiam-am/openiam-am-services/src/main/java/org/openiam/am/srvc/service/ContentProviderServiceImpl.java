@@ -2,6 +2,8 @@ package org.openiam.am.srvc.service;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openiam.am.srvc.dao.*;
 import org.openiam.am.srvc.domain.*;
 import org.openiam.am.srvc.domain.pk.AuthLevelGroupingContentProviderXrefIdEntity;
@@ -33,6 +35,7 @@ import java.util.*;
 
 @Service("contentProviderService")
 public class ContentProviderServiceImpl implements  ContentProviderService, InitializingBean {
+	private final Log log = LogFactory.getLog(this.getClass());
     private static final String resourceTypeId="CONTENT_PROVIDER";
     private static final String patternResourceTypeId="URL_PATTERN";
     @Autowired
@@ -449,15 +452,22 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
     			value.setMetaEntity(uriPatternMetaEntity);
 	
     			/* satisfy data integrity */
-    			if(value.getAmAttribute() != null && StringUtils.isNotBlank(value.getAmAttribute().getId())) {
+    			if(value.isEmptyValue()) {
+    				value.setStaticValue(null);
+    				value.setAmAttribute(null);
+    				value.setGroovyScript(null);
+    			} else if(value.getAmAttribute() != null && StringUtils.isNotBlank(value.getAmAttribute().getId())) {
     				value.setStaticValue(null);
     				value.setGroovyScript(null);
+    				value.setEmptyValue(false);
     			} else if(StringUtils.isNotBlank(value.getStaticValue())) {
     				value.setAmAttribute(null);
     				value.setGroovyScript(null);
+    				value.setEmptyValue(false);
     			} else if(StringUtils.isNotBlank(value.getGroovyScript())) {
     				value.setAmAttribute(null);
     				value.setStaticValue(null);
+    				value.setEmptyValue(false);
     			}
 
     			/* set am attribute entity, if any */
@@ -495,6 +505,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
         				existingValue.setStaticValue(incomingValue.getStaticValue());
         				existingValue.setName(incomingValue.getName());
         				existingValue.setPropagateThroughProxy(incomingValue.isPropagateThroughProxy());
+        				existingValue.setEmptyValue(incomingValue.isEmptyValue());
         				existingValue.setPropagateOnError(incomingValue.isPropagateOnError());
         			}
         		}

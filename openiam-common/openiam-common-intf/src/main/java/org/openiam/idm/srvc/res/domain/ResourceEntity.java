@@ -40,8 +40,8 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
     @Internationalized
     private ResourceTypeEntity resourceType;
 
-    @Column(name = "NAME", length = 150)
-    @Size(max = 150, message = "resource.name.too.long")
+    @Column(name = "NAME", length = 255)
+    @Size(max = 255, message = "resource.name.too.long")
     private String name;
 
     @Column(name = "DESCRIPTION", length = 100)

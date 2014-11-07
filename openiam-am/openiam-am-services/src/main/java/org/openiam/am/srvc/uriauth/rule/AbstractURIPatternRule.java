@@ -1,6 +1,5 @@
 package org.openiam.am.srvc.uriauth.rule;
 
-import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.util.Set;
 
@@ -16,8 +15,6 @@ import org.openiam.am.srvc.service.AuthAttributeProcessor;
 import org.openiam.am.srvc.service.AuthProviderService;
 import org.openiam.am.srvc.uriauth.dto.URIPatternRuleToken;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
-import org.openiam.idm.srvc.user.domain.UserEntity;
-import org.openiam.idm.srvc.user.service.UserDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,9 +23,6 @@ public abstract class AbstractURIPatternRule implements URIPatternRule {
     @Autowired
     protected AuthAttributeProcessor authAttributeProcessor;
 	
-    @Autowired
-    private UserDataService userDataService;
-    
     @Autowired
     private AuthProviderService authProviderService;
     
@@ -44,25 +38,29 @@ public abstract class AbstractURIPatternRule implements URIPatternRule {
 		if(CollectionUtils.isNotEmpty(valueSet)) {
 			for(final URIPatternMetaValue metaValue : valueSet) {
 				final String key = StringUtils.trimToNull(metaValue.getName());
-				String value = null;
-				final URIFederationGroovyProcessor groovyProcessor = metaValue.getGroovyProcessor();
-				if(groovyProcessor != null) {
-					value = groovyProcessor.getValue(userId, contentProvider, pattern, metaValue, uri);
-				}
-				
-				if(value == null) {
-					value = StringUtils.trimToNull(metaValue.getStaticValue());
-				}
-				if(value == null) {
-					if(metaValue.getAmAttribute() != null) {
-						final AuthProviderEntity authProvider = authProviderService.getAuthProvider(contentProvider.getAuthProviderId());
-						final ManagedSysEntity managedSystem = authProvider.getManagedSystem();
-						value = authAttributeProcessor.process(metaValue.getAmAttribute().getReflectionKey(), userId, managedSystem.getId());
-					}
-				}
-				
-				if(value != null) {
-					token.addValue(key, value, metaValue.isPropagateThroughProxy(), metaValue.isPropagateOnError());
+				if(metaValue.isEmptyValue()) {
+					token.addValue(key, null, metaValue.isPropagateThroughProxy(), metaValue.isPropagateOnError());
+				} else {
+                    String value = null;
+                    final URIFederationGroovyProcessor groovyProcessor = metaValue.getGroovyProcessor();
+                    if(groovyProcessor != null) {
+                        value = groovyProcessor.getValue(userId, contentProvider, pattern, metaValue, uri);
+                    }
+
+                    if(value == null) {
+                        value = StringUtils.trimToNull(metaValue.getStaticValue());
+                    }
+                    if(value == null) {
+                        if(metaValue.getAmAttribute() != null) {
+                            final AuthProviderEntity authProvider = authProviderService.getAuthProvider(contentProvider.getAuthProviderId());
+                            final ManagedSysEntity managedSystem = authProvider.getManagedSystem();
+                            value = authAttributeProcessor.process(metaValue.getAmAttribute().getReflectionKey(), userId, managedSystem.getId());
+                        }
+                    }
+
+                    if(value != null) {
+                        token.addValue(key, value, metaValue.isPropagateThroughProxy(), metaValue.isPropagateOnError());
+                    }
 				}
 			}
 		}

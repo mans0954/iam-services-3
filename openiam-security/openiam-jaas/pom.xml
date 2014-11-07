@@ -95,6 +95,10 @@
                 </exclusion>
                 <exclusion>
                     <groupId>org.hibernate</groupId>
+                    <artifactId>hibernate-search</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.hibernate</groupId>
                     <artifactId>hibernate-entitymanager</artifactId>
                 </exclusion>
                 <exclusion>

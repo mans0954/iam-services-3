@@ -173,6 +173,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
 
     @Override
     @Deprecated
+    @Transactional(readOnly=true)
     public  Group getGroup(final String groupId, final String requesterId) {
         return getGroupLocalize(groupId, requesterId, getDefaultLanguage());
     }
@@ -439,6 +440,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
 
     @Override
     @Deprecated
+    @Transactional(readOnly=true)
     public List<Group> getGroupsForUser(final String userId, final String requesterId, Boolean deepFlag,
             final int from, final int size) {
         return getGroupsForUserLocalize(userId, requesterId, deepFlag, from, size, getDefaultLanguage());

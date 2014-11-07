@@ -657,5 +657,36 @@ public class LoginEntity extends KeyEntity {
 				+ pswdResetToken + ", pswdResetTokenExp=" + pswdResetTokenExp
 				+ ", lastUpdate=" + lastUpdate + ", smsCodeExpiration=" + smsCodeExpiration + "]";
 	}
+
+	public void copyProperties(Login login) {
+		setAuthFailCount(login.getAuthFailCount());
+		setCanonicalName(login.getCanonicalName());
+		setCreateDate(login.getCreateDate());
+		setCreatedBy(login.getCreatedBy());
+		setCurrentLoginHost(login.getCurrentLoginHost());
+		setFirstTimeLogin(login.getFirstTimeLogin());
+		setGracePeriod(login.getGracePeriod());
+		setIsDefault(login.getIsDefault());
+		setIsLocked(login.getIsLocked());
+		setLastAuthAttempt(login.getLastAuthAttempt());
+		setLastLogin(login.getLastLogin());
+		setLastLoginIP(login.getLastLoginIP());
+		setLastUpdate(login.getLastUpdate());
+		setLogin(login.getLogin());
+		setManagedSysId(login.getManagedSysId());
+		setPassword(login.getPassword());
+		setPasswordChangeCount(login.getPasswordChangeCount());
+		setPrevLogin(login.getPrevLogin());
+		setPrevLoginIP(login.getPrevLoginIP());
+		setProvStatus(login.getProvStatus());
+		setPswdResetToken(login.getPswdResetToken());
+		setPswdResetTokenExp(login.getPswdResetTokenExp());
+		setPwdChanged(login.getPwdChanged());
+		setPwdEquivalentToken(login.getPwdEquivalentToken());
+		setPwdExp(login.getPwdExp());
+		setResetPassword(login.getResetPassword());
+		setStatus(login.getStatus());
+		setUserId(login.getUserId());
+	}
 }
 

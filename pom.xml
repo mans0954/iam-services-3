@@ -116,7 +116,7 @@
 		<module>openiam-common</module>
 		<module>openiam-security</module>
 		<module>openiam-auth-manager</module>
-		<module>openiam-subscription</module>
+		<!--<module>openiam-subscription</module>-->
 	</modules>
 	<properties>
 		<activiti.version>5.10</activiti.version>
@@ -436,6 +436,11 @@
 				<artifactId>xbean-spring</artifactId>
 				<version>${xbean.version}</version>
 			</dependency>
+            <dependency>
+                <groupId>commons-lang</groupId>
+                <artifactId>commons-lang</artifactId>
+                <version>2.4</version>
+            </dependency>
 			<!-- groovy dependencies -->
 			<dependency>
 				<groupId>org.codehaus.groovy</groupId>

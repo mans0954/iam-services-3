@@ -111,4 +111,10 @@ public class UserAttributeEntity extends AbstractAttributeEntity {
 						values, isMultivalued, user, super.toString());
 	}
 
+	public void copyValues(UserAttribute userAttr) {
+		setName(userAttr.getName());
+		setIsMultivalued(userAttr.getIsMultivalued());
+		setValue(userAttr.getValue());
+		setValues(userAttr.getValues());
+	}
 }

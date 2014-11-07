@@ -84,4 +84,17 @@ public class ApproverAssociationDAOImpl extends BaseDaoImpl<ApproverAssociationE
 			return Collections.EMPTY_LIST;
 		}
 	}
+
+	@Override
+	public List<ApproverAssociationEntity> getByApprover(String associationId,
+			AssociationType associationType) {
+		if(StringUtils.isNotBlank(associationId) && associationType != null) {
+			final ApproverAssociationEntity example = new ApproverAssociationEntity();
+			example.setApproverEntityId(associationId);
+			example.setApproverEntityType(associationType);
+			return getByExample(example);
+		} else {
+			return Collections.EMPTY_LIST;
+		}
+	}
 }
