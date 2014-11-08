@@ -122,6 +122,8 @@ public class ExtensibleObject implements java.io.Serializable {
                 val = attribute.getAttributeContainer();
             } else if (CollectionUtils.isNotEmpty(attribute.getValueList())) {
                 val = attribute.getValueList();
+            }  else if (attribute.getValueAsByteArray() != null) {
+                val = "BINARY DATA";
             }
             attrVals.put(attribute.getName(), val);
         }

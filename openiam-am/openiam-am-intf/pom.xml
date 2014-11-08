@@ -123,7 +123,6 @@
         <dependency>
             <groupId>org.openiam</groupId>
             <artifactId>openiam-common-intf</artifactId>
-            <version>3.3.0</version>
             <scope>compile</scope>
         </dependency>
 

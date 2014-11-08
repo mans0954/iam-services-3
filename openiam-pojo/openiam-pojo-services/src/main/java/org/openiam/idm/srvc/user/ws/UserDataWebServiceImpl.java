@@ -29,23 +29,21 @@ import javax.jws.WebService;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.dozer.converter.AddressDozerConverter;
-import org.openiam.dozer.converter.EmailAddressDozerConverter;
-import org.openiam.dozer.converter.LanguageDozerConverter;
-import org.openiam.dozer.converter.PhoneDozerConverter;
-import org.openiam.dozer.converter.SupervisorDozerConverter;
-import org.openiam.dozer.converter.UserAttributeDozerConverter;
-import org.openiam.dozer.converter.UserDozerConverter;
-import org.openiam.dozer.converter.UserNoteDozerConverter;
+import org.openiam.dozer.converter.*;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.AddressSearchBean;
 import org.openiam.idm.searchbeans.EmailSearchBean;
 import org.openiam.idm.searchbeans.PhoneSearchBean;
 import org.openiam.idm.searchbeans.PotentialSupSubSearchBean;
 import org.openiam.idm.searchbeans.UserSearchBean;
+import org.openiam.idm.srvc.audit.constant.AuditAction;
+import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.audit.service.AuditLogService;
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
@@ -63,14 +61,10 @@ import org.openiam.idm.srvc.msg.service.MailTemplateParameters;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
-import org.openiam.idm.srvc.user.dto.Supervisor;
-import org.openiam.idm.srvc.user.dto.User;
-import org.openiam.idm.srvc.user.dto.UserAttribute;
-import org.openiam.idm.srvc.user.dto.UserProfileRequestModel;
-import org.openiam.idm.srvc.user.dto.UserStatusEnum;
+import org.openiam.idm.srvc.user.dto.*;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.service.UserProfileService;
-import org.openiam.internationalization.LocalizedServiceGet;
+import org.openiam.util.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -90,6 +84,15 @@ public class UserDataWebServiceImpl implements UserDataWebService {
     private static Logger log = Logger.getLogger(UserDataWebServiceImpl.class);
 
     @Autowired
+    private UserDataService userDataService;
+
+    @Autowired
+    protected SysConfiguration sysConfiguration;
+
+    @Autowired
+    protected AuditLogService auditLogService;
+
+    @Autowired
     @Qualifier("userManager")
     private UserDataService userManager;
 
@@ -103,11 +106,10 @@ public class UserDataWebServiceImpl implements UserDataWebService {
     private EmailAddressDozerConverter emailAddressDozerConverter;
 
     @Autowired
-    private UserNoteDozerConverter userNoteDozerConverter;
-    
+    private LanguageDozerConverter languageConverter;
 
     @Autowired
-    private LanguageDozerConverter languageConverter;
+    private ProfilePictureDozerConverter profilePictureDozerConverter;
 
     @Autowired
     private AddressDozerConverter addressDozerConverter;
@@ -1114,6 +1116,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
             }
 
             userProfileService.saveUserProfile(request);
+
         } catch (PageTemplateException e) {
             response.setCurrentValue(e.getCurrentValue());
             response.setElementName(e.getElementName());
@@ -1127,6 +1130,129 @@ public class UserDataWebServiceImpl implements UserDataWebService {
             log.error("Can't perform operation", e);
             response.setErrorText(e.getMessage());
             response.setStatus(ResponseStatus.FAILURE);
+        }
+        return response;
+    }
+
+    @Override
+    public ProfilePicture getProfilePictureById(String picId, String requesterId) {
+        return profilePictureDozerConverter.convertToDTO(userProfileService.getProfilePictureById(picId), true);
+    }
+
+    @Override
+    public ProfilePicture getProfilePictureByUserId(String userId, String requesterId) {
+        return profilePictureDozerConverter.convertToDTO(userProfileService.getProfilePictureByUserId(userId), true);
+    }
+
+    @Override
+    public Response saveProfilePicture(ProfilePicture pic, String requesterId) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+
+        IdmAuditLog idmAuditLog = new IdmAuditLog();
+        idmAuditLog.setRequestorUserId(requesterId);
+        if (StringUtils.isBlank(pic.getId())) {
+            idmAuditLog.setAction(AuditAction.ADD_PROFILE_PICTURE_FOR_USER.value());
+        } else {
+            idmAuditLog.setAction(AuditAction.UPDATE_PROFILE_PICTURE_FOR_USER.value());
+        }
+        String userId = pic.getUser().getId();
+        UserEntity user = userDataService.getUser(userId);
+        LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), user.getPrincipalList());
+        idmAuditLog.setTargetUser(userId, primaryIdentity.getLogin());
+        idmAuditLog.setAuditDescription(String.format("Add profile pic for user: %s", pic.getUser().getId()));
+
+        try {
+            userProfileService.saveProfilePicture(profilePictureDozerConverter.convertToEntity(pic, true));
+            idmAuditLog.succeed();
+
+        } catch (BasicDataServiceException e) {
+            response.setErrorTokenList(e.getErrorTokenList());
+            response.setErrorCode(e.getCode());
+            response.setStatus(ResponseStatus.FAILURE);
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(e.getCode());
+            idmAuditLog.setException(e);
+
+        } catch (Throwable e) {
+            log.error("Can't perform operation", e);
+            response.setErrorText(e.getMessage());
+            response.setStatus(ResponseStatus.FAILURE);
+            idmAuditLog.fail();
+            idmAuditLog.setException(e);
+
+        } finally {
+            auditLogService.enqueue(idmAuditLog);
+        }
+        return response;
+    }
+
+    @Override
+    public Response deleteProfilePictureById(String picId, String requesterId) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+
+        IdmAuditLog idmAuditLog = new IdmAuditLog();
+        idmAuditLog.setRequestorUserId(requesterId);
+        idmAuditLog.setAction(AuditAction.DELETE_PROFILE_PICTURE_FOR_USER.value());
+        idmAuditLog.setAuditDescription(String.format("Delete profile picture with id: %s", picId));
+
+        try {
+            userProfileService.deleteProfilePictureById(picId);
+            idmAuditLog.succeed();
+
+        } catch (BasicDataServiceException e) {
+            response.setErrorTokenList(e.getErrorTokenList());
+            response.setErrorCode(e.getCode());
+            response.setStatus(ResponseStatus.FAILURE);
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(e.getCode());
+            idmAuditLog.setException(e);
+
+        } catch (Throwable e) {
+            log.error("Can't perform operation", e);
+            response.setErrorText(e.getMessage());
+            response.setStatus(ResponseStatus.FAILURE);
+            idmAuditLog.fail();
+            idmAuditLog.setException(e);
+
+        } finally {
+            auditLogService.enqueue(idmAuditLog);
+        }
+        return response;
+    }
+
+    @Override
+    public Response deleteProfilePictureByUserId(String userId, String requesterId) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+
+        IdmAuditLog idmAuditLog = new IdmAuditLog();
+        idmAuditLog.setRequestorUserId(requesterId);
+        idmAuditLog.setAction(AuditAction.DELETE_PROFILE_PICTURE_FOR_USER.value());
+        UserEntity user = userDataService.getUser(userId);
+        LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), user.getPrincipalList());
+        idmAuditLog.setTargetUser(userId, primaryIdentity.getLogin());
+        idmAuditLog.setAuditDescription(String.format("Delete profile pic for user: %s", userId));
+
+        try {
+            userProfileService.deleteProfilePictureByUserId(userId);
+            idmAuditLog.succeed();
+
+        } catch (BasicDataServiceException e) {
+            response.setErrorTokenList(e.getErrorTokenList());
+            response.setErrorCode(e.getCode());
+            response.setStatus(ResponseStatus.FAILURE);
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(e.getCode());
+            idmAuditLog.setException(e);
+
+        } catch (Throwable e) {
+            log.error("Can't perform operation", e);
+            response.setErrorText(e.getMessage());
+            response.setStatus(ResponseStatus.FAILURE);
+            idmAuditLog.fail();
+            idmAuditLog.setException(e);
+
+        } finally {
+            auditLogService.enqueue(idmAuditLog);
         }
         return response;
     }

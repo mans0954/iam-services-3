@@ -21,7 +21,10 @@ public interface IdmAuditLogWebDataService {
 	
 	@WebMethod
     public Response addLogs(final List<IdmAuditLog> events);
-    
+
+    @WebMethod
+    public Response addLog(final IdmAuditLog record);
+
 	@WebMethod
     public List<IdmAuditLog> findBeans(final @WebParam(name = "searchBean", targetNamespace = "") AuditLogSearchBean searchBean,
     								   final @WebParam(name = "from", targetNamespace = "") int from,

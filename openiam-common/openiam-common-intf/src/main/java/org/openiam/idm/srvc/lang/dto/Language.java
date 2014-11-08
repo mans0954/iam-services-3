@@ -127,7 +127,18 @@ public class Language extends KeyDTO implements Cloneable {
 
     @Override
     public Language clone() throws CloneNotSupportedException {
-        Language cloned = (Language) super.clone();
+        Language cloned = new Language();
+        cloned.setId(this.id);
+        cloned.setRequestorLogin(this.requestorLogin);
+        cloned.setRequestorUserId(this.requestorUserId);
+        cloned.setRequestClientIP(this.requestClientIP);
+        cloned.setRequestorSessionID(this.requestorSessionID);
+        cloned.setIsDefault(this.isDefault);
+        cloned.setIsUsed(this.isUsed);
+        cloned.setLanguageCode(this.languageCode);
+        cloned.setName(this.name);
+        cloned.setUsed(this.isUsed);
+        cloned.setObjectState(this.objectState);
 
         if (locales != null) {
             Map<String, LanguageLocale> clonedLocales = new HashMap<>();

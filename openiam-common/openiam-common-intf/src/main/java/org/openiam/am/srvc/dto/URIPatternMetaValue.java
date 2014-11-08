@@ -21,7 +21,8 @@ import java.lang.ref.WeakReference;
         "metaEntityId",
         "groovyScript",
         "propagateThroughProxy",
-        "propagateOnError"
+        "propagateOnError",
+        "emptyValue"
 })
 @DozerDTOCorrespondence(URIPatternMetaValueEntity.class)
 public class URIPatternMetaValue extends KeyNameDTO {
@@ -30,6 +31,7 @@ public class URIPatternMetaValue extends KeyNameDTO {
 	private String groovyScript;
 	private String metaEntityId;
 	private boolean propagateThroughProxy = true;
+	private boolean emptyValue = false;
 	private boolean propagateOnError = true;
 	
 	/* internal use only!  Is compiled at spring refresh time 
@@ -81,6 +83,14 @@ public class URIPatternMetaValue extends KeyNameDTO {
 	public void setPropagateThroughProxy(boolean propagateThroughProxy) {
 		this.propagateThroughProxy = propagateThroughProxy;
 	}
+	
+	public boolean isEmptyValue() {
+		return emptyValue;
+	}
+
+	public void setEmptyValue(boolean emptyValue) {
+		this.emptyValue = emptyValue;
+	}
 	public boolean isPropagateOnError() {
 		return propagateOnError;
 	}
@@ -93,6 +103,9 @@ public class URIPatternMetaValue extends KeyNameDTO {
 		int result = super.hashCode();
 		result = prime * result
 				+ ((amAttribute == null) ? 0 : amAttribute.hashCode());
+		result = prime * result + (emptyValue ? 1231 : 1237);
+		result = prime * result
+				+ ((groovyProcessor == null) ? 0 : groovyProcessor.hashCode());
 		result = prime * result
 				+ ((groovyScript == null) ? 0 : groovyScript.hashCode());
 		result = prime * result
@@ -116,6 +129,13 @@ public class URIPatternMetaValue extends KeyNameDTO {
 			if (other.amAttribute != null)
 				return false;
 		} else if (!amAttribute.equals(other.amAttribute))
+			return false;
+		if (emptyValue != other.emptyValue)
+			return false;
+		if (groovyProcessor == null) {
+			if (other.groovyProcessor != null)
+				return false;
+		} else if (!groovyProcessor.equals(other.groovyProcessor))
 			return false;
 		if (groovyScript == null) {
 			if (other.groovyScript != null)

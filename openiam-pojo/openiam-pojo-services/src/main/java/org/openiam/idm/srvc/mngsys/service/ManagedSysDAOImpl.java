@@ -89,7 +89,7 @@ public class ManagedSysDAOImpl extends BaseDaoImpl<ManagedSysEntity, String> imp
             log.info("ManagedSys resultSet = " + results.size());
             return results.get(0);
         } else {
-            log.info("No managedSys objects fround.");
+            log.info("No managedSys objects found. [findByName]");
             return null;
         }
 	}
@@ -109,7 +109,7 @@ public class ManagedSysDAOImpl extends BaseDaoImpl<ManagedSysEntity, String> imp
 			log.info("ManagedSys resultSet = " + results.size());	
 			return results.get(0);
 		}
-		log.info("No managedSys objects fround.");
+		log.info("No managedSys objects fround. [findByResource]");
 		return null;
 	
 	}
@@ -129,7 +129,7 @@ public class ManagedSysDAOImpl extends BaseDaoImpl<ManagedSysEntity, String> imp
             log.info("ManagedSys resultSet = " + results.size());
             return results.get(0);
         }
-        log.info("No managedSys objects fround.");
+        log.info("No managedSys objects fround.[findIdByResource]");
         return null;
 
     }
