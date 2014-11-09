@@ -1,6 +1,5 @@
 package org.openiam.connector.ldap.command.user;
 
-import org.apache.commons.lang.StringUtils;
 import org.openiam.base.BaseAttribute;
 import org.openiam.connector.ldap.command.base.AbstractCrudLdapCommand;
 import org.openiam.connector.type.constant.ErrorCode;
@@ -14,7 +13,6 @@ import org.openiam.connector.ldap.dirtype.Directory;
 import org.openiam.connector.ldap.dirtype.DirectorySpecificImplFactory;
 import org.springframework.stereotype.Service;
 
-import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.naming.directory.BasicAttributes;
 import javax.naming.ldap.LdapContext;
@@ -36,8 +34,8 @@ public class AddUserLdapCommand extends AbstractCrudLdapCommand<ExtensibleUser> 
             List<BaseAttribute> supervisorMembershipList = new ArrayList<BaseAttribute>();
 
             Set<ResourceProp> rpSet = getResourceAttributes(managedSys.getResourceId());
-            boolean groupMembershipEnabled = isMembershipEnabled(rpSet, "GROUP_MEMBERSHIP_ENABLED");
-            boolean supervisorMembershipEnabled = isMembershipEnabled(rpSet, "SUPERVISOR_MEMBERSHIP_ENABLED");
+            boolean groupMembershipEnabled = getResourceBoolean(rpSet, "GROUP_MEMBERSHIP_ENABLED", true);
+            boolean supervisorMembershipEnabled = getResourceBoolean(rpSet, "SUPERVISOR_MEMBERSHIP_ENABLED", true);
 
             Directory dirSpecificImp  = DirectorySpecificImplFactory.create(managedSys.getHandler5());
 
@@ -50,18 +48,14 @@ public class AddUserLdapCommand extends AbstractCrudLdapCommand<ExtensibleUser> 
             Pattern pattern = Pattern.compile(identityPatternStr);
             Matcher matcher = pattern.matcher(identity);
             String objectBaseDN;
-            if (matcher.matches()) {
+
+			final boolean isIdentityInDnFormat = matcher.matches();
+			if (isIdentityInDnFormat) {
                 identity = matcher.group(1);
                 String CN = matchObj.getKeyField()+"="+identity;
                 objectBaseDN =  addRequestType.getObjectIdentity().substring(CN.length()+1);
             } else {
-                // if identity is not in DN format try to find OU info in attributes
-                String OU = getOU(addRequestType.getExtensibleObject());
-                if(StringUtils.isNotEmpty(OU)) {
-                    objectBaseDN = OU+","+matchObj.getBaseDn();
-                } else {
-                    objectBaseDN = matchObj.getBaseDn();
-                }
+				objectBaseDN = matchObj.getBaseDn();
             }
 
             log.debug("baseDN=" + objectBaseDN);
@@ -71,11 +65,19 @@ public class AddUserLdapCommand extends AbstractCrudLdapCommand<ExtensibleUser> 
             log.debug("Checking if the identity exists: " + identity);
 
             BasicAttributes basicAttr = getBasicAttributes(addRequestType.getExtensibleObject(), matchObj.getKeyField(),
-                    targetMembershipList, groupMembershipEnabled, supervisorMembershipList, supervisorMembershipEnabled);
+					targetMembershipList, groupMembershipEnabled, supervisorMembershipList, supervisorMembershipEnabled);
 
             //Important!!! For add new record in LDAP we must to create identity in DN format
-            String identityDN = matchObj.getKeyField() + "=" + identity + "," + objectBaseDN;
-            log.debug("Creating users in ldap.." + identityDN);
+            String identityDN = null;
+			if (isIdentityInDnFormat) {
+				identityDN = addRequestType.getObjectIdentity();
+			} else {
+				final String OU = getAttrValue(addRequestType.getExtensibleObject(), OU_ATTRIBUTE);
+				final String keyFieldValue = getAttrValue(addRequestType.getExtensibleObject(), matchObj.getKeyField());
+				identityDN = buildIdentityDn(keyFieldValue, OU, matchObj);
+			}
+
+			log.debug("Creating user in LDAP: " + identityDN);
             ldapctx.createSubcontext(identityDN, basicAttr);
 
             if (groupMembershipEnabled) {
