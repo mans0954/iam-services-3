@@ -675,7 +675,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     Set<EmailAddressEntity> entities = userEntity.getEmailAddresses();
                     if (CollectionUtils.isNotEmpty(entities))  {
                         for (EmailAddressEntity en : entities) {
-                            if (en.getEmailId().equals(e.getEmailId())) {
+                            if (StringUtils.equals(en.getEmailId(), e.getEmailId())) {
                                 userEntity.getEmailAddresses().remove(en);
                                 userMgr.evict(en);
                                 EmailAddressEntity entity = emailAddressDozerConverter.convertToEntity(e, false);
