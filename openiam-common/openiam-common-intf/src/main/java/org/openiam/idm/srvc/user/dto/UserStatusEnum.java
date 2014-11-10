@@ -45,12 +45,7 @@ public enum UserStatusEnum {
     @XmlEnumValue("retired")
     RETIRED("RETIRED"),
     @XmlEnumValue("leave")
-    LEAVE("LEAVE"),
-    @XmlEnumValue("terminate")
-    TERMINATE("TERMINATE");
-
-
-
+    LEAVE("LEAVE");
     private String value;
 
 
