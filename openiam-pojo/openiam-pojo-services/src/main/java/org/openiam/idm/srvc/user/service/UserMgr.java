@@ -1779,6 +1779,7 @@ public class UserMgr implements UserDataService {
         user.setStatus(UserStatusEnum.PENDING_INITIAL_LOGIN);
         user.setSecondaryStatus(null);
         userDao.update(user);
+		userIdentityAnswerDAO.deleteByUser(userId);
     }
 
     @Override
