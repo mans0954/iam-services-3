@@ -21,11 +21,12 @@ public abstract class AbstractSMSOTPModule {
 		SpringContextProvider.resolveProperties(this);
 	}
 	
-	public final void generateSMSToken(final Phone phone, final LoginEntity login) throws BasicDataServiceException, InvalidKeyException, NoSuchAlgorithmException {
+	public final String generateSMSToken(final Phone phone, final LoginEntity login) throws BasicDataServiceException, InvalidKeyException, NoSuchAlgorithmException {
 		validate(phone, login);
 		final String token = generateRFC4226Token(login);
 		final String text = getText(phone, login, token);
 		sendSMS(phone, login, text);
+		return token;
 	}
 	
 	public final String generateRFC4226Token(final LoginEntity login) throws InvalidKeyException, NoSuchAlgorithmException {

@@ -157,7 +157,11 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
         	if(uriPattern == null) {
         		event.addWarning(String.format("Content provider with ID %s not found", patternId));
         	} else {
-        		authProvider = uriPattern.getContentProvider().getAuthProvider();
+        		authProvider = uriPattern.getAuthProvider();
+        		if(authProvider == null) {
+        			event.addWarning(String.format("URI Pattern '%s' does not have an authenticaitno pattern.  Using the content provider's pattern", patternId));
+        			authProvider = uriPattern.getContentProvider().getAuthProvider();
+        		}
         	}
         }
         
@@ -617,7 +621,8 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
             login.setSmsCodeExpiration(new Timestamp(calendar.getTime().getTime()));
             loginManager.updateLogin(login);
             
-            module.generateSMSToken(phone, login);
+            final String token = module.generateSMSToken(phone, login);
+            event.addAttribute(AuditAttributeName.SMS_TOKEN, token);
             
 			response.succeed();
 			event.succeed();

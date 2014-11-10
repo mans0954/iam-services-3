@@ -45,5 +45,6 @@ public enum AuditAttributeName {
     PROFILE,
     CONTENT_PROVIDER_ID,
     URI_PATTERN_ID,
-    PHONE;
+    PHONE,
+    SMS_TOKEN;
 }

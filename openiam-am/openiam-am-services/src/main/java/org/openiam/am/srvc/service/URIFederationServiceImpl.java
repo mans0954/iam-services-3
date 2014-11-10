@@ -377,7 +377,7 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 			}
 			sw.stop();
 			if(LOG.isDebugEnabled()) {
-				LOG.debug(String.format("URI Fedration took: %s ms", sw.getTime()));
+				LOG.debug(String.format("URI Fedration.  Proxy URI: '%s'. Result: '%s', Time: %s ms", proxyURI, response, sw.getTime()));
 			}
 		}
 		return response;
@@ -534,7 +534,7 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 			}
 			sw.stop();
 			if(LOG.isDebugEnabled()) {
-				LOG.debug(String.format("URI Fedration took: %s ms", sw.getTime()));
+				LOG.debug(String.format("URI Fedration.  Proxy URI: '%s'.  UserId: '%s'.  Output: '%s'.  Time: %s ms", proxyURI, userId, response, sw.getTime()));
 			}
 		}
 		return response;

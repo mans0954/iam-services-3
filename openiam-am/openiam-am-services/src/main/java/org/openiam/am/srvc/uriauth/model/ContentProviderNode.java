@@ -43,8 +43,9 @@ public class ContentProviderNode {
 			if(CollectionUtils.isNotEmpty(contentProvider.getPatternSet())) {
 				for(final URIPattern pattern : contentProvider.getPatternSet()) {
 					try {
-						validate(pattern.getPattern());
-						patternMatcher.register(pattern.getPattern(), pattern);
+						final String patten = pattern.getPattern();
+						validate(patten);
+						patternMatcher.register(StringUtils.lowerCase(patten), pattern);
 					} catch (InvalidPatternException e) {
 						LOG.error(String.format("URI Pattern %s for CP %s not valid", pattern, contentProvider), e);
 					}
@@ -58,11 +59,15 @@ public class ContentProviderNode {
 	}
 
 	public URIPattern getURIPattern(final URI uri) {
-		return patternMatcher.lookup(uri.getPath());
+		return getURIPattern(uri.getPath());
 	}
 	
 	public URIPattern getURIPattern(final String path) {
-		return patternMatcher.lookup(path);
+		if(path != null) {
+			return patternMatcher.lookup(StringUtils.lowerCase(path));
+		} else {
+			return null;
+		}
 	}
 
 	@Override
