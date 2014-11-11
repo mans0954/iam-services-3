@@ -234,7 +234,13 @@ public class ProvisionDispatcher implements Sweepable {
                         }
 
                     } else {
-                        idmAuditLog.setFailureReason(ProvLoginStatusEnum.FAIL_DELETE.getValue());
+						idmAuditLog.fail();
+						idmAuditLog.setFailureReason(ProvLoginStatusEnum.FAIL_DELETE.getValue());
+						if (CollectionUtils.isNotEmpty(response.getErrorMessage())) {
+							for(final String error : response.getErrorMessage()) {
+								idmAuditLog.setFailureReason(error);
+							}
+						}
 						loginChanges.setProvStatus(ProvLoginStatusEnum.FAIL_DELETE);
                     }
                 } catch (Throwable th) {
