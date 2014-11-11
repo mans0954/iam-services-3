@@ -229,7 +229,14 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
                                     log.debug(" - Building principal Name for: " + managedSysId);
                                     String newIdentity = ProvisionServiceUtil.buildGroupPrincipalName(attrMap, scriptRunner, bindingMap);
 
-                                    groupTargetSysIdentity = new IdentityDto(IdentityTypeEnum.GROUP);
+									if (StringUtils.isBlank(newIdentity)) {
+										log.debug("Primary identity not found...");
+										tmpRes.setStatus(ResponseStatus.FAILURE);
+										tmpRes.setErrorCode(ResponseCode.IDENTITY_NOT_FOUND);
+										return tmpRes;
+									}
+
+									groupTargetSysIdentity = new IdentityDto(IdentityTypeEnum.GROUP);
                                     groupTargetSysIdentity.setIdentity(newIdentity);
                                     groupTargetSysIdentity.setCreateDate(new Date());
                                     groupTargetSysIdentity.setCreatedBy(systemUserId);
