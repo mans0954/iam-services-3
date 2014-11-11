@@ -89,18 +89,15 @@ public abstract class GenericLdapAdapter extends AbstractSrcAdapter {
                 return resp;
             }
             // get the last execution time
-            if (StringUtils.isNotBlank(config.getLastRecProcessed())) {
+            if ("INCREMENTAL".equalsIgnoreCase(config.getSynchType())) {
                 lastRecProcessed = config.getLastRecProcessed();
-                // get change log field
-                if ("INCREMENTAL".equalsIgnoreCase(config.getSynchType())) {
-                    // update the search filter so that it has the new time
-                    String ldapFilterQuery = config.getQuery();
-                    // replace wildcards with the last exec time
-                    //looking for filter like (&(objectclass=user)(modifyTimeStamp>=?))
-                    config.setQuery(ldapFilterQuery.replace("?", lastRecProcessed));
-
-                    log.debug("Updated ldap filter = " + config.getQuery());
+                if (StringUtils.isBlank(lastRecProcessed)) {
+                    lastRecProcessed = getNullDate();
                 }
+                //looking for filter like (&(objectclass=user)(modifyTimeStamp>=?))
+                String ldapFilterQuery = config.getQuery();
+                config.setQuery(ldapFilterQuery.replace("?", lastRecProcessed));
+                log.debug("Updated ldap filter = " + config.getQuery());
             }
 
             int ctr = 0;
@@ -356,6 +353,8 @@ public abstract class GenericLdapAdapter extends AbstractSrcAdapter {
     }
 
     protected abstract LastRecordTime getRowTime(LineObject rowObj);
+
+    protected abstract String getNullDate();
 
     protected LastRecordTime getTime(org.openiam.idm.srvc.synch.dto.Attribute atr) {
         LastRecordTime lrt = new LastRecordTime();
