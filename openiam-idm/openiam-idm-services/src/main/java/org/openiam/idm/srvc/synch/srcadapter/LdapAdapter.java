@@ -49,4 +49,8 @@ public class LdapAdapter extends GenericLdapAdapter { // implements SourceAdapte
         return new String[] {"*", "modifyTimestamp", "createTimestamp"};
     }
 
+    @Override
+    protected String getNullDate() {
+        return "19700101000000Z"; //Jan, 1, 1970
+    }
 }

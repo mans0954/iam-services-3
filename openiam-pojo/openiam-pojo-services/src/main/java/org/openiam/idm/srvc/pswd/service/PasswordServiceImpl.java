@@ -415,7 +415,7 @@ public class PasswordServiceImpl implements PasswordService {
 			return resp;
 		}
 
-		final PolicyAttribute expirationTime = pl.getAttribute("NUM_DAYS_FORGOT_PASSWORD_TOKEN_VALID");
+		final PolicyAttribute expirationTime = pl.getAttribute("NUM_DAYS_FORGET_PWD_TOKEN_VALID");
 		try {
 			expirationDays = Integer.parseInt(expirationTime.getValue1());
 		} catch(Throwable e) {

@@ -19,7 +19,6 @@ import javax.naming.NamingException;
 import javax.naming.directory.SearchResult;
 import javax.naming.ldap.LdapContext;
 import java.text.MessageFormat;
-import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -43,8 +42,8 @@ public class DeleteUserLdapCommand extends AbstractCrudLdapCommand<ExtensibleUse
             }
 
             // BY DEFAULT - we want to enable group membership
-            boolean groupMembershipEnabled = isMembershipEnabled(rpSet, "GROUP_MEMBERSHIP_ENABLED");
-            boolean supervisorMembershipEnabled = isMembershipEnabled(rpSet, "SUPERVISOR_MEMBERSHIP_ENABLED");
+            boolean groupMembershipEnabled = getResourceBoolean(rpSet, "GROUP_MEMBERSHIP_ENABLED", true);
+            boolean supervisorMembershipEnabled = getResourceBoolean(rpSet, "SUPERVISOR_MEMBERSHIP_ENABLED", true);
 
             Directory dirSpecificImp  = DirectorySpecificImplFactory.create(managedSys.getHandler5());
             String identity = deleteRequestType.getObjectIdentity();
@@ -58,14 +57,16 @@ public class DeleteUserLdapCommand extends AbstractCrudLdapCommand<ExtensibleUse
                 String CN = matchObj.getKeyField()+"="+identity;
                 objectBaseDN =  deleteRequestType.getObjectIdentity().substring(CN.length()+1);
             } else {
-                // if identity is not in DN format try to find OU info in attributes
-                String OU = getOU(deleteRequestType.getExtensibleObject());
-                if(StringUtils.isNotEmpty(OU)) {
-                    objectBaseDN = OU+","+matchObj.getBaseDn();
-                } else {
-                    objectBaseDN = matchObj.getBaseDn();
-                }
-            }
+				objectBaseDN = matchObj.getBaseDn();
+				boolean isLookupUserInOu = getResourceBoolean(rpSet, "LOOKUP_USER_IN_OU", true);
+				if (isLookupUserInOu) {
+					// if identity is not in DN format try to find OU info in attributes
+					String OU = getAttrValue(deleteRequestType.getExtensibleObject(), OU_ATTRIBUTE);
+					if(StringUtils.isNotEmpty(OU)) {
+						objectBaseDN = OU+","+matchObj.getBaseDn();
+					}
+				}
+			}
             //Important!!! For delete operation need to create identity in DN format
 //            String identityDN = matchObj.getKeyField() + "=" + identity+","+objectBaseDN;
 
