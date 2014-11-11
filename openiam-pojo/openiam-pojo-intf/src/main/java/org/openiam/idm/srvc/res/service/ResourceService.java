@@ -18,6 +18,11 @@ public interface ResourceService {
 	public void deleteResource(final String resourceId);
 	public void save(final ResourceEntity resource, final String requestorId);
     public void addRequiredAttributes(ResourceEntity resource);
+    public String getResourcePropValueByName(final String resourceId, final String propName);
+
+    //For system use only
+    public ResourceEntity findResourceByIdNoLocalized(String resourceId);
+
 	public ResourceEntity findResourceById(final String resourceId);
 	public List<ResourceEntity> findResourcesByIds(final Collection<String> resourceIdCollection);
 	public ResourceEntity findResourceByName(final String name);
@@ -27,8 +32,30 @@ public interface ResourceService {
 	public List<ResourceEntity> getParentResources(final  String resourceId, final int from, final int size);
 	public int getNumOfParentResources(final String resourceId);
 	public List<ResourceEntity> getResourcesForRole(final String roleId, final int from, final int size, final ResourceSearchBean searchBean);
+
+    /**
+     * For internal system use only, without @LocalizedServiceGet
+     * @param roleId
+     * @param from
+     * @param size
+     * @param searchBean
+     * @return
+     */
+    public List<Resource> getResourcesForRoleNoLocalized(final String roleId, final int from, final int size, final ResourceSearchBean searchBean);
+
 	public int getNumOfResourceForGroup(final String groupId, final ResourceSearchBean searchBean);
-	public List<ResourceEntity> getResourcesForGroup(final String groupId, final int from, final int size, final ResourceSearchBean searchBean);
+
+    /**
+     * For internal use only, without @LocalizedServiceGet
+     * @param groupId
+     * @param from
+     * @param size
+     * @param searchBean
+     * @return
+     */
+    public List<Resource> getResourcesForGroupNoLocalized(final String groupId, final int from, final int size, final ResourceSearchBean searchBean);
+
+    public List<ResourceEntity> getResourcesForGroup(final String groupId, final int from, final int size, final ResourceSearchBean searchBean);
 	public int getNumOfResourceForUser(final String userId, final ResourceSearchBean searchBean);
 	public List<ResourceEntity> getResourcesForUser(final String userId, final int from, final int size, final ResourceSearchBean searchBean);
     public List<ResourceEntity> getResourcesForUserByType(String userId, String resourceTypeId, final ResourceSearchBean searchBean);

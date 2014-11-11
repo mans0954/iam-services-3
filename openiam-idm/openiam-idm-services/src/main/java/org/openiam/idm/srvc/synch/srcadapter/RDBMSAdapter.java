@@ -25,7 +25,6 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
@@ -35,14 +34,13 @@ import org.openiam.idm.srvc.synch.service.MatchObjectRule;
 import org.openiam.idm.srvc.synch.service.TransformScript;
 import org.openiam.idm.srvc.synch.service.ValidationScript;
 import org.openiam.idm.srvc.synch.util.DatabaseUtil;
-import org.openiam.idm.srvc.user.dto.User;
-import org.openiam.idm.srvc.user.dto.UserStatusEnum;
-import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.service.ProvisionService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.*;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -66,7 +64,7 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
 
     @Value("${rdbmsvadapter.thread.count}")
     private int THREAD_COUNT;
-    
+
     @Value("${rdbmsvadapter.thread.delay.beforestart}")
     private int THREAD_DELAY_BEFORE_START;
 
@@ -80,22 +78,37 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
 
         log.debug("RDBMS SYNCH STARTED ^^^^^^^^");
 
-        SyncResponse res = initializeScripts(config, sourceReview);
-        if (ResponseStatus.FAILURE.equals(res.getStatus())) {
-            return res;
+        SyncResponse res = new SyncResponse(ResponseStatus.SUCCESS);
+        SynchReview review = null;
+        if (sourceReview != null) {
+            review = synchReviewDozerConverter.convertToDTO(sourceReview, false);
         }
-
-        if (sourceReview != null && !sourceReview.isSourceRejected()) {
-            return startSynchReview(config, sourceReview, resultReview);
-        }
-
-        if (!connect(config)) {
-            SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
-            resp.setErrorCode(ResponseCode.FAIL_SQL_ERROR);
-            return resp;
-        }
+        LineObject rowHeaderForReport = null;
+        InputStream input = null;
 
         try {
+            final ValidationScript validationScript = org.mule.util.StringUtils.isNotEmpty(config.getValidationRule()) ? SynchScriptFactory.createValidationScript(config, review) : null;
+            final List<TransformScript> transformScripts = SynchScriptFactory.createTransformationScript(config, review);
+            final MatchObjectRule matchRule = matchRuleFactory.create(config.getCustomMatchRule()); // check if matchRule exists
+
+            if (validationScript == null || transformScripts == null || matchRule == null) {
+                res = new SyncResponse(ResponseStatus.FAILURE);
+                res.setErrorText("The problem in initialization of RDBMSAdapter, please check validationScript= " + validationScript + ", transformScripts=" + transformScripts + ", matchRule=" + matchRule + " all must be set!");
+                res.setErrorCode(ResponseCode.INVALID_ARGUMENTS);
+                return res;
+            }
+
+
+            if (sourceReview != null && !sourceReview.isSourceRejected()) {
+                return startSynchReview(config, sourceReview, resultReview, validationScript, transformScripts, matchRule);
+            }
+
+            if (!connect(config)) {
+                SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
+                resp.setErrorCode(ResponseCode.FAIL_SQL_ERROR);
+                return resp;
+            }
+
 
             java.util.Date lastExec = null;
 
@@ -209,6 +222,30 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
                 waitUntilWorkDone(threadResults);
 
             }
+        } catch (ClassNotFoundException cnfe) {
+            log.error(cnfe);
+            res = new SyncResponse(ResponseStatus.FAILURE);
+            res.setErrorCode(ResponseCode.CLASS_NOT_FOUND);
+            return res;
+        } catch (FileNotFoundException fe) {
+            fe.printStackTrace();
+            log.error(fe);
+//            auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "FileNotFoundException: "+fe.getMessage());
+//            auditLogProvider.persist(auditBuilder);
+            SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
+            resp.setErrorCode(ResponseCode.FILE_EXCEPTION);
+            log.debug("RDBMS SYNCHRONIZATION COMPLETE WITH ERRORS ^^^^^^^^");
+            return resp;
+        } catch (IOException io) {
+            io.printStackTrace();
+            /*
+            synchStartLog.updateSynchAttributes("FAIL", ResponseCode.IO_EXCEPTION.toString(), io.toString());
+            auditHelper.logEvent(synchStartLog);
+			*/
+            SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
+            resp.setErrorCode(ResponseCode.IO_EXCEPTION);
+            log.debug("RDBMS SYNCHRONIZATION COMPLETE WITH ERRORS ^^^^^^^^");
+            return resp;
 
         } catch (SQLException se) {
 
@@ -260,7 +297,7 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
                 }
             }
 
-            processLineObject(rowObj, config, resultReview);
+            processLineObject(rowObj, config, resultReview, validationScript, transformScripts, matchRule);
 
         }
         return mostRecentRecord;

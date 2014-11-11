@@ -34,6 +34,8 @@ public interface OrganizationService {
     @Deprecated
     public List<OrganizationEntity> findOrganizationsByAttributeValue(final String attrName, String attrValue);
 
+    public void fireUpdateOrgMap();
+
     public Organization getOrganizationDTO(final String orgId, final LanguageEntity langauge);
     public OrganizationEntity getOrganizationLocalized(String orgId, final LanguageEntity langauge);
     public OrganizationEntity getOrganizationLocalized(final String orgId, String requesterId, final LanguageEntity langauge);

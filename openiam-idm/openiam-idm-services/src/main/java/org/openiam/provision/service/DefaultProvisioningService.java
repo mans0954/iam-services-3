@@ -161,8 +161,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         for(String roleId : roles) {
             ResourceSearchBean rsb = new ResourceSearchBean();
             rsb.setDeepCopy(false);
-            // TODO This method shouldn't use Internationalization Aspect
-            List<org.openiam.idm.srvc.res.dto.Resource> resources = resourceDataService.getResourcesForRole(roleId, -1, -1, rsb, null);
+            List<org.openiam.idm.srvc.res.dto.Resource> resources = resourceDataService.getResourcesForRoleNoLocalized(roleId, -1, -1, rsb);
             for(Resource res : resources) {
                 resourceIds.add(res.getId());
             }
@@ -176,7 +175,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         for(String groupId : groups) {
             ResourceSearchBean rsb = new ResourceSearchBean();
             rsb.setDeepCopy(false);
-            List<org.openiam.idm.srvc.res.dto.Resource> resources = resourceDataService.getResourcesForGroup(groupId, -1, -1, rsb, null);
+            List<org.openiam.idm.srvc.res.dto.Resource> resources = resourceDataService.getResourcesForGroupNoLocalized(groupId, -1, -1, rsb);
             for(Resource res : resources) {
                 resourceIds.add(res.getId());
             }
@@ -191,8 +190,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             ResourceSearchBean rsb = new ResourceSearchBean();
             rsb.setDeepCopy(false);
             rsb.setResourceTypeId(ResourceSearchBean.TYPE_MANAGED_SYS);
-            // TODO This method shouldn't use Internationalization Aspect
-            List<org.openiam.idm.srvc.res.dto.Resource> resources = resourceDataService.getResourcesForRole(roleId, -1, -1, rsb, null);
+            List<org.openiam.idm.srvc.res.dto.Resource> resources = resourceDataService.getResourcesForRoleNoLocalized(roleId, -1, -1, rsb);
             for(Resource res : resources) {
                 resourceIds.add(res.getId());
             }
@@ -206,7 +204,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         for(String groupId : groupList) {
             ResourceSearchBean rsb = new ResourceSearchBean();
             rsb.setDeepCopy(false);
-            List<org.openiam.idm.srvc.res.dto.Resource> resources = resourceDataService.getResourcesForGroup(groupId, -1, -1, rsb, null);
+            List<org.openiam.idm.srvc.res.dto.Resource> resources = resourceDataService.getResourcesForGroupNoLocalized(groupId, -1, -1, rsb);
             for(Resource res : resources) {
                 resourceIds.add(res.getId());
             }
@@ -852,9 +850,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         final Login primLogin = loginDozerConverter.convertToDTO(lg, false);
         if (CollectionUtils.isNotEmpty(roleList)) {
             for (final RoleEntity role : roleList) {
-                // TODO This method shouldn't use Internationalization Aspect
-                final List<Resource> resourceList = resourceDataService.getResourcesForRole(role.getId(), 0,
-                        Integer.MAX_VALUE, null, null);
+                final List<Resource> resourceList = resourceDataService.getResourcesForRoleNoLocalized(role.getId(), 0,
+                        Integer.MAX_VALUE, new ResourceSearchBean());
                 if (CollectionUtils.isNotEmpty(resourceList)) {
                     for (final Resource resource : resourceList) {
                         ManagedSysDto managedSys = managedSysService.getManagedSysByResource(resource.getId());
@@ -1128,7 +1125,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         resourceSet.addAll(getResourcesForRoles(roleSet));
         resourceSet.addAll(getResourcesForGroups(groupSet));
 
-        List<Organization> orgs = orgManager.getOrganizationsForUserLocalized(pUser.getId(), null, 0, 100, null);
+        List<Organization> orgs = orgManager.getOrganizationsForUser(pUser.getId(), null, 0, 100);
         for(Organization org : orgs) {
             Resource res = resourceDataService.getResource(org.getAdminResourceId(), null);
             if(res != null) {
@@ -1921,15 +1918,12 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     ResourceSearchBean resourceSearchBean = new ResourceSearchBean();
                     resourceSearchBean.setDeepCopy(false);
                     resourceSearchBean.setResourceTypeId(ResourceSearchBean.TYPE_MANAGED_SYS);
-                    // TODO This method shouldn't use Internationalization Aspect
-                    List<ResourceEntity> resources = resourceService.getResourcesForRole(rl.getId(), 0, Integer.MAX_VALUE, resourceSearchBean);
+                    List<Resource> resources = resourceService.getResourcesForRoleNoLocalized(rl.getId(), 0, Integer.MAX_VALUE, resourceSearchBean);
                     if (CollectionUtils.isNotEmpty(resources)) {
-                        //TODO check  Deep convert should be FALSE for list
-                        List<Resource> list = resourceDozerConverter.convertToDTOList(resources, true);
-                        for (Resource r : list) {
+                        for (Resource r : resources) {
                             r.setOperation(rl.getOperation()); // get operation value from role
                         }
-                        resourceList.addAll(list);
+                        resourceList.addAll(resources);
                     }
                 }
             }
@@ -1946,11 +1940,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     ResourceSearchBean resourceSearchBean = new ResourceSearchBean();
                     resourceSearchBean.setDeepCopy(false);
                     resourceSearchBean.setResourceTypeId(ResourceSearchBean.TYPE_MANAGED_SYS);
-                    List<ResourceEntity> resources = resourceService.getResourcesForGroup(gr.getId(), 0, Integer.MAX_VALUE, resourceSearchBean);
+                    List<Resource> resources = resourceService.getResourcesForGroupNoLocalized(gr.getId(), 0, Integer.MAX_VALUE, resourceSearchBean);
                     if (CollectionUtils.isNotEmpty(resources)) {
-                        //TODO check  Deep convert  should be FALSE for list
-                        List<Resource> list = resourceDozerConverter.convertToDTOList(resources, true);
-                        resourceSet.addAll(list);
+                        resourceSet.addAll(resources);
                     }
                     List<RoleEntity> roleEntities = roleDataService.getRolesInGroup(gr.getId(), null, 0, Integer.MAX_VALUE);
                     if (CollectionUtils.isNotEmpty(roleEntities)) {

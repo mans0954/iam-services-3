@@ -13,6 +13,10 @@ import org.openiam.idm.srvc.synch.domain.SynchReviewEntity;
 import org.openiam.idm.srvc.synch.dto.LineObject;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
+import org.openiam.idm.srvc.synch.dto.SynchReview;
+import org.openiam.idm.srvc.synch.service.MatchObjectRule;
+import org.openiam.idm.srvc.synch.service.TransformScript;
+import org.openiam.idm.srvc.synch.service.ValidationScript;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -24,7 +28,9 @@ import javax.naming.directory.Attributes;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 import javax.naming.ldap.*;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 
 public abstract class GenericLdapAdapter extends AbstractSrcAdapter {
@@ -62,16 +68,30 @@ public abstract class GenericLdapAdapter extends AbstractSrcAdapter {
 
         log.debug("LDAP startSynch CALLED.^^^^^^^^");
 
-        SyncResponse res = initializeScripts(config, sourceReview);
-        if (ResponseStatus.FAILURE.equals(res.getStatus())) {
-            return res;
+        SyncResponse res = new SyncResponse(ResponseStatus.SUCCESS);
+        SynchReview review = null;
+        if (sourceReview != null) {
+            review = synchReviewDozerConverter.convertToDTO(sourceReview, false);
         }
-
-        if (sourceReview != null && !sourceReview.isSourceRejected()) {
-            return startSynchReview(config, sourceReview, resultReview);
-        }
+        LineObject rowHeaderForReport = null;
+        InputStream input = null;
 
         try {
+            final ValidationScript validationScript = org.mule.util.StringUtils.isNotEmpty(config.getValidationRule()) ? SynchScriptFactory.createValidationScript(config, review) : null;
+            final List<TransformScript> transformScripts = SynchScriptFactory.createTransformationScript(config, review);
+            final MatchObjectRule matchRule = matchRuleFactory.create(config.getCustomMatchRule()); // check if matchRule exists
+
+            if (validationScript == null || transformScripts == null || matchRule == null) {
+                res = new SyncResponse(ResponseStatus.FAILURE);
+                res.setErrorText("The problem in initialization of LDAPAdapter, please check validationScript= " + validationScript + ", transformScripts=" + transformScripts + ", matchRule=" + matchRule + " all must be set!");
+                res.setErrorCode(ResponseCode.INVALID_ARGUMENTS);
+                return res;
+            }
+
+
+            if (sourceReview != null && !sourceReview.isSourceRejected()) {
+                return startSynchReview(config, sourceReview, resultReview, validationScript, transformScripts, matchRule);
+            }
 
             if (!connect(config)) {
                 SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
@@ -215,12 +235,25 @@ public abstract class GenericLdapAdapter extends AbstractSrcAdapter {
                 log.debug("Search ldap result OU=" + baseou + " found = " + recordsInOUCounter + " records.");
             }
             for (LineObject rowObj : processingData) {
-                processLineObject(rowObj, config, resultReview);
+                processLineObject(rowObj, config, resultReview, validationScript, transformScripts, matchRule);
                 Thread.sleep(100);
             }
             System.out.println("EXECUTION TIME: "+(System.currentTimeMillis()-startTime));
-
-        } catch (NamingException ne) {
+        } catch (ClassNotFoundException cnfe) {
+            log.error(cnfe);
+            res = new SyncResponse(ResponseStatus.FAILURE);
+            res.setErrorCode(ResponseCode.CLASS_NOT_FOUND);
+            return res;
+        } catch (FileNotFoundException fe) {
+            fe.printStackTrace();
+            log.error(fe);
+//            auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "FileNotFoundException: "+fe.getMessage());
+//            auditLogProvider.persist(auditBuilder);
+            SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
+            resp.setErrorCode(ResponseCode.FILE_EXCEPTION);
+            log.debug("LDAP SYNCHRONIZATION COMPLETE WITH ERRORS ^^^^^^^^");
+            return resp;
+        }  catch (NamingException ne) {
             log.error(ne);
             SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.CLASS_NOT_FOUND);

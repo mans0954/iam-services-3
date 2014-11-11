@@ -183,6 +183,14 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
         }
         return (T) getCriteria().add(eq(getPKfieldName(), id)).uniqueResult(); //this.getSession().get(domainClass, id);
     }
+
+    @SuppressWarnings({ "unchecked" })
+    public T findByIdNoLocalized(PrimaryKey id, String ... fetchFields) {
+        if (id == null) {
+            return null;
+        }
+        return (T) getCriteria().add(eq(getPKfieldName(), id)).uniqueResult(); //this.getSession().get(domainClass, id);
+    }
     
     /**
      * So... the reason for this method, is that findById was returning a non-intialized object.  WHen setting attributes on Resources,

@@ -31,7 +31,6 @@ import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
 import org.openiam.internationalization.LocalizedServiceGet;
-import org.openiam.thread.Sweepable;
 import org.openiam.util.AttributeUtil;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +42,7 @@ import java.util.*;
 
 @Service("organizationService")
 @Transactional
-public class OrganizationServiceImpl implements OrganizationService, InitializingBean, Sweepable {
+public class OrganizationServiceImpl implements OrganizationService, InitializingBean {
     private static final Log log = LogFactory.getLog(OrganizationServiceImpl.class);
 	@Autowired
 	private OrganizationTypeDAO orgTypeDAO;
@@ -86,8 +85,6 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
 
     private Map<String, Set<String>> organizationTree;
 
-
-
     @Value("${org.openiam.organization.type.id}")
     private String organizationTypeId;
     @Value("${org.openiam.division.type.id}")
@@ -97,6 +94,7 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
 
     @Override
     @LocalizedServiceGet
+    @Transactional(readOnly = true)
     public OrganizationEntity getOrganizationLocalized(String orgId, final LanguageEntity langauge) {
         return getOrganizationLocalized(orgId, null, langauge);
     }
@@ -113,6 +111,7 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
 
     @Override
     @LocalizedServiceGet
+    @Transactional(readOnly = true)
     public OrganizationEntity getOrganizationByName(final String name, String requesterId, final LanguageEntity langauge) {
         final OrganizationSearchBean searchBean = new OrganizationSearchBean();
         searchBean.setName(name);
@@ -121,18 +120,21 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
     }
     
     @Override
+    @Transactional(readOnly = true)
     public int getNumOfOrganizationsForUser(final String userId, final String requesterId) {
     	return orgDao.getNumOfOrganizationsForUser(userId, getDelegationFilter(requesterId, null));
     }
 
     @Override
     @LocalizedServiceGet
+    @Transactional(readOnly = true)
     public List<OrganizationEntity> getOrganizationsForUser(String userId, String requesterId, final int from, final int size, final LanguageEntity langauge) {
     	return orgDao.getOrganizationsForUser(userId, getDelegationFilter(requesterId, null), from, size);
     }
 
     @Override
     @LocalizedServiceGet
+    @Transactional(readOnly = true)
     public List<OrganizationEntity> findBeans(final OrganizationSearchBean searchBean, String requesterId, int from, int size, final LanguageEntity langauge) {
         Set<String> filter = getDelegationFilter(requesterId, null);
         if (StringUtils.isBlank(searchBean.getKey()))
@@ -145,17 +147,20 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
 
     @Override
     @LocalizedServiceGet
+    @Transactional(readOnly = true)
     public List<OrganizationEntity> getParentOrganizations(String orgId, String requesterId, int from, int size, final LanguageEntity langauge) {
         return orgDao.getParentOrganizations(orgId, getDelegationFilter(requesterId, null), from, size);
     }
 
     @Override
     @LocalizedServiceGet
+    @Transactional(readOnly = true)
     public List<OrganizationEntity> getChildOrganizations(String orgId, String requesterId, int from, int size, final LanguageEntity langauge) {
         return orgDao.getChildOrganizations(orgId, getDelegationFilter(requesterId, null), from, size);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public int count(final OrganizationSearchBean searchBean, String requesterId) {
         Set<String> filter = getDelegationFilter(requesterId, searchBean.getOrganizationTypeId());
         if (StringUtils.isBlank(searchBean.getKey()))
@@ -168,11 +173,13 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
     }
 
     @Override
+    @Transactional(readOnly = true)
     public int getNumOfParentOrganizations(String orgId, String requesterId) {
         return orgDao.getNumOfParentOrganizations(orgId, getDelegationFilter(requesterId, null));
     }
 
     @Override
+    @Transactional(readOnly = true)
     public int getNumOfChildOrganizations(String orgId, String requesterId) {
         return orgDao.getNumOfChildOrganizations(orgId, getDelegationFilter(requesterId, null));
     }
@@ -194,6 +201,7 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
     }
 
     @Override
+    @Transactional
     public void removeAttribute(String attributeId) {
         final OrganizationAttributeEntity entity = orgAttrDao.findById(attributeId);
         if (entity != null) {
@@ -378,6 +386,7 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
     }
 
     @Override
+    @Transactional
     public void save(OrganizationAttributeEntity attribute) {
     	attribute.setElement(metadataDAO.findById(attribute.getElement().getId()));
     	attribute.setOrganization(orgDao.findById(attribute.getOrganization().getId()));
@@ -390,6 +399,7 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
     }
 
     @Override
+    @Transactional
     public void removeChildOrganization(String organizationId, String childOrganizationId) {
         final OrganizationEntity parent = orgDao.findById(organizationId);
         final OrganizationEntity child = orgDao.findById(childOrganizationId);
@@ -400,6 +410,7 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
     }
 
     @Override
+    @Transactional
     public void addChildOrganization(String organizationId, String childOrganizationId) {
         final OrganizationEntity parent = orgDao.findById(organizationId);
         final OrganizationEntity child = orgDao.findById(childOrganizationId);
@@ -410,6 +421,7 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
     }
 
     @Override
+    @Transactional
     public void deleteOrganization(String orgId) {
         final OrganizationEntity entity = orgDao.findById(orgId);
         if (entity != null) {
@@ -427,6 +439,7 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Set<String> getDelegationFilter(String requesterId, String organizationTypeId) {
         Set<String> filterData = null;
         if (StringUtils.isNotBlank(requesterId)) {
@@ -439,6 +452,7 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Set<String> getDelegationFilter(Map<String, UserAttribute> attrMap, String organizationTypeId) {
         Set<String> filterData = new HashSet<String>();
         if(attrMap!=null && !attrMap.isEmpty()){
@@ -447,26 +461,13 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
             filterData.addAll(this.getOrgTreeFlatList(DelegationFilterHelper.getOrgIdFilterFromString(attrMap), isUseOrgInhFlag));
             filterData.addAll(this.getOrgTreeFlatList(DelegationFilterHelper.getDeptFilterFromString(attrMap), isUseOrgInhFlag));
             filterData.addAll(this.getOrgTreeFlatList(DelegationFilterHelper.getDivisionFilterFromString(attrMap), isUseOrgInhFlag));
-
-//            if (StringUtils.isNotBlank(organizationTypeId)) {
-//                if(organizationTypeId.equals(this.organizationTypeId)){
-//                    filterData = this.getOrgTreeFlatList(DelegationFilterHelper.getOrgIdFilterFromString(attrMap), isUseOrgInhFlag);
-//                } else if(organizationTypeId.equals(this.divisionTypeId)){
-//                    filterData = this.getOrgTreeFlatList(DelegationFilterHelper.getDivisionFilterFromString(attrMap), isUseOrgInhFlag);
-//                } else if(organizationTypeId.equals(this.departmentTypeId)){
-//                    filterData = this.getOrgTreeFlatList(DelegationFilterHelper.getDeptFilterFromString(attrMap), isUseOrgInhFlag);
-//                } else {
-//                    filterData = getFullOrgFilterList(attrMap, isUseOrgInhFlag);
-//                }
-//            } else {
-//                filterData = getFullOrgFilterList(attrMap, isUseOrgInhFlag);
-//            }
         }
         return filterData;
     }
 
     @Override
     @LocalizedServiceGet
+    @Transactional(readOnly = true)
     public List<OrganizationEntity> getAllowedParentOrganizationsForType(final String orgTypeId, String requesterId, final LanguageEntity langauge){
         Set<String> filterData = null;
         Set<String> allowedOrgTypes = null;
@@ -474,24 +475,6 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
         if (StringUtils.isNotBlank(requesterId)) {
             requesterAttributes = userDataService.getUserAttributesDto(requesterId);
             filterData = getDelegationFilter(requesterAttributes, organizationTypeId);
-//            allowedOrgTypes = organizationTypeService.findAllowedChildrenByDelegationFilter(requesterAttributes);
-//
-//            boolean isOrgFilterSet = DelegationFilterHelper.isOrgFilterSet(requesterAttributes);
-//            boolean isDivFilterSet = DelegationFilterHelper.isDivisionFilterSet(requesterAttributes);
-//            boolean isDepFilterSet = DelegationFilterHelper.isDeptFilterSet(requesterAttributes);
-//            boolean isUseOrgInhFilterSet = DelegationFilterHelper.isUseOrgInhFilterSet(requesterAttributes);
-//            if(isOrgFilterSet){
-//                allowedOrgTypes.add(organizationTypeId);
-//            }
-//            if(isDivFilterSet
-//                    || (isOrgFilterSet && isUseOrgInhFilterSet)){
-//                allowedOrgTypes.add(divisionTypeId);
-//            }
-//            if(isDepFilterSet
-//                    || (isDivFilterSet && isUseOrgInhFilterSet)
-//                    || (isOrgFilterSet && isUseOrgInhFilterSet)){
-//                allowedOrgTypes.add(departmentTypeId);
-//            }
         }
         allowedOrgTypes = organizationTypeService.getAllowedParentsIds(orgTypeId, requesterAttributes);
 //        allowedOrgTypes.retainAll(allowedParentTypesIds);
@@ -508,6 +491,7 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
 
 	@Override
 	@LocalizedServiceGet
+    @Transactional(readOnly = true)
 	public Organization getOrganizationDTO(String orgId, final LanguageEntity langauge) {
 		return organizationDozerConverter.convertToDTO(getOrganizationLocalized(orgId, langauge), true);
 	}
@@ -561,21 +545,8 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
         return retval;
     }
 
-    @Override
-    @Transactional
-    public void sweep() {
-        final StopWatch sw = new StopWatch();
-        sw.start();
-        final Map<String, Set<String>> tempOrgTreeMap = getAllOrgMap();
-
-        synchronized(this) {
-            organizationTree = tempOrgTreeMap;
-        }
-        sw.stop();
-        log.debug(String.format("Done creating orgs trees. Took: %s ms", sw.getTime()));
-    }
-
-    private Map<String, Set<String>> getAllOrgMap() {
+    @Transactional(readOnly = true)
+    public void fireUpdateOrgMap() {
         List<Org2OrgXrefEntity> xrefList = orgDao.getOrgToOrgXrefList();
 
         final Map<String, Set<String>> parentOrg2ChildOrgMap = new HashMap<String, Set<String>>();
@@ -592,8 +563,7 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
             child2ParentOrgMap.put(memberOrgId, orgId);
             parentOrg2ChildOrgMap.get(orgId).add(memberOrgId);
         }
-
-        return parentOrg2ChildOrgMap;
+        organizationTree = parentOrg2ChildOrgMap;
     }
 
     private Set<String> getOrgTreeFlatList(List<String> rootElementsIdList, boolean isUseOrgInhFlag){
@@ -625,24 +595,29 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
     }
 
     @Override
+    @Transactional(readOnly = true)
     public void afterPropertiesSet() throws Exception {
-        sweep();
+        fireUpdateOrgMap();
     }
 
 
     @Deprecated
+    @Transactional(readOnly = true)
     public Organization getOrganizationDTO(final String orgId){
         return this.getOrganizationDTO(orgId, getDefaultLanguage());
     }
     @Deprecated
+    @Transactional(readOnly = true)
     public OrganizationEntity getOrganization(String orgId){
         return this.getOrganization(orgId, null);
     }
     @Deprecated
+    @Transactional(readOnly = true)
     public OrganizationEntity getOrganization(final String orgId, String requesterId){
         return this.getOrganizationLocalized(orgId, requesterId, getDefaultLanguage());
     }
     @Deprecated
+    @Transactional(readOnly = true)
     public OrganizationEntity getOrganizationByName(final String name, String requesterId){
         return this.getOrganizationByName(name, requesterId, getDefaultLanguage());
     }
@@ -651,22 +626,27 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
         return this.getOrganizationsForUser(userId, requesterId, from, size, getDefaultLanguage());
     }
     @Deprecated
+    @Transactional(readOnly = true)
     public List<OrganizationEntity> getParentOrganizations(final String orgId, String requesterId, final int from, final int size){
         return this.getParentOrganizations(orgId, requesterId, from, size, getDefaultLanguage());
     }
     @Deprecated
+    @Transactional(readOnly = true)
     public List<OrganizationEntity> getChildOrganizations(final String orgId, String requesterId, final int from, final int size){
         return this.getChildOrganizations(orgId, requesterId, from, size, getDefaultLanguage());
     }
     @Deprecated
+    @Transactional(readOnly = true)
     public List<OrganizationEntity> findBeans(final OrganizationSearchBean searchBean, String requesterId, final int from, final int size){
         return this.findBeans(searchBean, requesterId, from, size, getDefaultLanguage());
     }
     @Deprecated
+    @Transactional(readOnly = true)
     public List<OrganizationEntity> getAllowedParentOrganizationsForType(final String orgTypeId, String requesterId){
         return this.getAllowedParentOrganizationsForType(orgTypeId, requesterId, getDefaultLanguage());
     }
     @Deprecated
+    @Transactional(readOnly = true)
     public List<OrganizationEntity> findOrganizationsByAttributeValue(final String attrName, String attrValue){
         return this.findOrganizationsByAttributeValue(attrName, attrValue, getDefaultLanguage());
     }
