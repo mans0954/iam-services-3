@@ -192,9 +192,9 @@ public class CSVAdapter extends AbstractSrcAdapter {
                     try {
                         set += future.get();
                     } catch (InterruptedException e) {
-                        e.printStackTrace();
+                        log.warn(e.getMessage());
                     } catch (ExecutionException e) {
-                        e.printStackTrace();
+                        log.warn("CSVAdapter: future.get() throw problem message");
                     }
                 }
                 System.out.println("CSV ================= All Processed records = " + set);

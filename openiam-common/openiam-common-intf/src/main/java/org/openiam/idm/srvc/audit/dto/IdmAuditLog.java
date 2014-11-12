@@ -3,6 +3,7 @@ package org.openiam.idm.srvc.audit.dto;
 // Generated Nov 30, 2007 3:01:45 AM by Hibernate Tools 3.2.0.b11
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.openiam.base.BaseObject;
 import org.openiam.base.ws.ResponseCode;
@@ -67,6 +68,7 @@ public class IdmAuditLog implements Serializable {
 
     public IdmAuditLog() {
         setTimestamp(new Date());
+        setHash(RandomStringUtils.randomAlphabetic(30));
     }
 
     public String getId() {
@@ -507,7 +509,6 @@ public class IdmAuditLog implements Serializable {
 		result = prime * result
 				+ ((clientIP == null) ? 0 : clientIP.hashCode());
 		result = prime * result + ((hash == null) ? 0 : hash.hashCode());
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result + ((nodeIP == null) ? 0 : nodeIP.hashCode());
 		result = prime * result
 				+ ((this.result == null) ? 0 : this.result.hashCode());
@@ -519,7 +520,6 @@ public class IdmAuditLog implements Serializable {
 		result = prime * result + ((managedSysId == null) ? 0 : managedSysId.hashCode());
 		result = prime * result + ((sessionID == null) ? 0 : sessionID.hashCode());
 		result = prime * result + ((correlationId == null) ? 0 : correlationId.hashCode());
-        result = prime * result + ((CollectionUtils.isEmpty(this.targets)) ? 0 : targets.hashCode());
 
         return result;
 	}
@@ -552,11 +552,6 @@ public class IdmAuditLog implements Serializable {
 			if (other.hash != null)
 				return false;
 		} else if (!hash.equals(other.hash))
-			return false;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
 			return false;
 		if (nodeIP == null) {
 			if (other.nodeIP != null)
