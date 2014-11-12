@@ -157,6 +157,7 @@ public class CSVAdapter extends AbstractSrcAdapter {
                 ExecutorService executor = Executors.newFixedThreadPool(THREAD_COUNT);
                 List<Future<Integer>> list = new ArrayList<Future<Integer>>();
 
+                final String[][] rowsWithoutHeader = Arrays.copyOfRange(rows, 1, rows.length);
                 for (final Part p : partsList) {
                     Callable<Integer> worker = new Callable<Integer>() {
                         @Override
@@ -164,7 +165,7 @@ public class CSVAdapter extends AbstractSrcAdapter {
                             System.out.println("======= CSV Adapter Part [" + p.getStartIndx() + "; " + p.getEndIndx() + "] started.");
 
                             int number = 0;
-                            String[][] rowsForProcessing = Arrays.copyOfRange(rows, p.getStartIndx(), p.getEndIndx());
+                            String[][] rowsForProcessing = Arrays.copyOfRange(rowsWithoutHeader, p.getStartIndx(), p.getEndIndx());
                             for (String[] row : rowsForProcessing) {
                                 LineObject rowObj = rowHeader.copy();
                                 populateRowObject(rowObj, row);
