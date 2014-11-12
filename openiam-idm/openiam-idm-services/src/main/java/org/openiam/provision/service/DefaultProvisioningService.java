@@ -2017,7 +2017,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         // Ensure that we dont send the event back to this system
 
         log.debug("----syncPasswordFromSrc called.------");
-
+        boolean saveAuditLog = true;
 		final IdmAuditLog auditLog = new IdmAuditLog();
 		auditLog.setBaseObject(passwordSync);
 		auditLog.setAction(AuditAction.PASSWORD_INTERCEPTOR.value());
@@ -2091,6 +2091,21 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
 			// make sure all primary identity records were updated
 			List<LoginEntity> principalList = loginManager.getLoginByUser(login.getUserId());
+
+            for (LoginEntity l : principalList) {
+                if (l.getManagedSysId().equalsIgnoreCase(passwordSync.getManagedSystemId())
+                        || l.getManagedSysId().equalsIgnoreCase(sysConfiguration.getDefaultManagedSysId())) {
+                    try {
+                        String oldPassword = loginManager.getPassword(l.getLogin(), l.getManagedSysId());
+                        if (StringUtils.equals(encPassword, oldPassword)) { // Do not reset password if it's equal to existing one
+                            saveAuditLog = false;
+                            return response;
+                        }
+                    } catch (Exception e) {}
+                    break;
+                }
+            }
+
 			for (LoginEntity l : principalList) {
 				// if managedsysId is equal to the source or the openiam default
 				// ID, then only update the database
@@ -2195,7 +2210,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 			response.setStatus(ResponseStatus.SUCCESS);
 			return response;
 		} finally {
-			auditLogService.save(auditLog);
+            if (saveAuditLog) {
+			    auditLogService.save(auditLog);
+            }
 		}
     }
 
