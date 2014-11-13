@@ -425,7 +425,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
     @Transactional(readOnly = true)
     public List<User> getSuperiors(String userId, Integer from, Integer size) {
         final List<UserEntity> superiors = userManager.getSuperiors(userId, from, size);
-        return userDozerConverter.convertToDTOList(superiors, true);
+        return userDozerConverter.convertToDTOList(superiors, false);
     }
 
     @Override
@@ -437,7 +437,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
     @Transactional(readOnly = true)
     public List<User> getSubordinates(String userId, Integer from, Integer size) {
         final List<UserEntity> subordinates = userManager.getSubordinates(userId, from, size);
-        return userDozerConverter.convertToDTOList(subordinates, true);
+        return userDozerConverter.convertToDTOList(subordinates, false);
     }
 
     @Override
