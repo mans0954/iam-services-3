@@ -13,7 +13,9 @@ public interface BaseDao<T, PrimaryKey extends Serializable> {
   T findInitializedObjectById(PrimaryKey id);
 
   T findById(PrimaryKey id, String ... fetchFields);
-  
+
+  T findByIdNoLocalized(PrimaryKey id, String ... fetchFields);
+
   List<T> findByIds(Collection<PrimaryKey> idCollection);
   
   List<T> findByIds(Collection<PrimaryKey> idCollection, final int from, final int size);

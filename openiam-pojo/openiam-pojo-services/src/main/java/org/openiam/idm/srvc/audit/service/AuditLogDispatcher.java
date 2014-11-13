@@ -11,9 +11,6 @@ import org.apache.log4j.Logger;
 import org.openiam.dozer.converter.IdmAuditLogCustomDozerConverter;
 import org.openiam.dozer.converter.IdmAuditLogDozerConverter;
 import org.openiam.dozer.converter.IdmAuditLogTargetDozerConverter;
-import org.openiam.idm.srvc.audit.domain.AuditLogTargetEntity;
-import org.openiam.idm.srvc.audit.domain.IdmAuditLogCustomEntity;
-import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.audit.dto.AuditLogTarget;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLogCustom;
@@ -22,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jms.core.BrowserCallback;
 import org.springframework.jms.core.JmsTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
@@ -57,6 +55,8 @@ public class AuditLogDispatcher implements Sweepable {
     private IdmAuditLogCustomDozerConverter idmAuditLogCustomDozerConverter;
 
     @Override
+    //TODO change when Spring 3.2.2 @Scheduled(fixedDelayString = "${org.openiam.audit.threadsweep}")
+    @Scheduled(fixedDelay=10000)
     public void sweep() {
         jmsTemplate.browse(queue, new BrowserCallback<Object>() {
             @Override
@@ -81,7 +81,7 @@ public class AuditLogDispatcher implements Sweepable {
                                         process(message);
                                         try {
                                             // to give other threads chance to be executed
-                                            Thread.sleep(100);
+                                            Thread.sleep(500);
                                         } catch (InterruptedException e1) {
                                             LOG.warn(e1.getMessage());
                                         }

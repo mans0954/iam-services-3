@@ -1,7 +1,5 @@
 package org.openiam.idm.srvc.synch.srcadapter;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -14,7 +12,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mule.api.MuleException;
 import org.mule.module.client.MuleClient;
-import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.dozer.converter.LoginDozerConverter;
 import org.openiam.dozer.converter.SynchReviewDozerConverter;
@@ -30,6 +27,7 @@ import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDataService;
+import org.openiam.idm.srvc.user.ws.UserDataWebService;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.service.ProvisionService;
 import org.openiam.script.ScriptIntegration;
@@ -57,7 +55,7 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
     @Autowired
     protected String systemAccount;
     @Autowired
-    protected UserDataService userManager;
+    protected UserDataWebService userDataWebService;
     @Autowired
     protected LoginDataService loginManager;
     @Autowired
@@ -88,10 +86,6 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
     @Value("${openiam.idm.ws.path}")
     private String serviceContext;
 
-    protected ValidationScript validationScript;
-    protected List<TransformScript> transformScripts;
-    protected MatchObjectRule matchRule;
-
     public abstract SyncResponse startSynch(SynchConfig config);
 
     /**
@@ -100,7 +94,10 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
     protected SyncResponse startSynchReview(
             SynchConfig config,
             SynchReviewEntity sourceReview,
-            SynchReviewEntity resultReview) {
+            SynchReviewEntity resultReview,
+            ValidationScript validationScript,
+            List<TransformScript> transformScripts,
+            MatchObjectRule matchRule) {
 
         log.debug("SynchReview startSynch CALLED.^^^^^^^^");
         final SynchReviewService synchReviewService = (SynchReviewService)SpringContextProvider.getBean("synchReviewService");
@@ -109,7 +106,7 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
             for (SynchReviewRecordEntity record : sourceReview.getReviewRecords()) {
                 if (!record.isHeader()) {
                     final LineObject rowObj = genLineObjectFromRecord(record, rowHeader);
-                    processLineObject(rowObj, config, resultReview);
+                    processLineObject(rowObj, config, resultReview, validationScript, transformScripts, matchRule);
                 }
             }
 
@@ -193,51 +190,20 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
 
     protected void setCurrentSuperiors(ProvisionUser pUser) {
         if (StringUtils.isNotEmpty(pUser.getId())) {
-            List<UserEntity> entities = userManager.getSuperiors(pUser.getId(), -1, -1);
-            List<User> superiors = userDozerConverter.convertToDTOList(entities, true);
+            List<User> superiors = userDataWebService.getSuperiors(pUser.getId(), -1, -1);
             if (CollectionUtils.isNotEmpty(superiors)) {
                 pUser.setSuperiors(new HashSet<User>(superiors));
             }
         }
     }
 
-    protected SyncResponse initializeScripts(
-            SynchConfig config,
-            SynchReviewEntity sourceReview) {
-        SyncResponse resp = new SyncResponse(ResponseStatus.SUCCESS);
-
-        SynchReview review = null;
-        if (sourceReview != null) {
-            review = synchReviewDozerConverter.convertToDTO(sourceReview, false);
-        }
-
-        try {
-            validationScript = StringUtils.isNotEmpty(config.getValidationRule()) ? SynchScriptFactory.createValidationScript(config, review) : null;
-            transformScripts = SynchScriptFactory.createTransformationScript(config, review);
-            matchRule = matchRuleFactory.create(config.getCustomMatchRule()); // check if matchRule exists
-
-        } catch (FileNotFoundException fe) {
-            log.error(fe);
-            resp = new SyncResponse(ResponseStatus.FAILURE);
-            resp.setErrorCode(ResponseCode.FILE_EXCEPTION);
-
-        } catch (ClassNotFoundException cnfe) {
-            log.error(cnfe);
-            resp = new SyncResponse(ResponseStatus.FAILURE);
-            resp.setErrorCode(ResponseCode.CLASS_NOT_FOUND);
-
-        } catch (IOException io) {
-            log.error(io);
-            resp = new SyncResponse(ResponseStatus.FAILURE);
-            resp.setErrorCode(ResponseCode.IO_EXCEPTION);
-        }
-        return resp;
-    }
-
-    protected void processLineObject(
+     protected void processLineObject(
             LineObject rowObj,
             SynchConfig config,
-            SynchReviewEntity resultReview) {
+            SynchReviewEntity resultReview,
+            ValidationScript validationScript,
+            List<TransformScript> transformScripts,
+            MatchObjectRule matchRule) {
 
         if (validationScript != null) {
             synchronized (mutex) {
@@ -341,7 +307,7 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
             }
         }
         try {
-            Thread.sleep(50);
+            Thread.sleep(100);
         } catch (InterruptedException e) {
             log.error("The thread was interrupted when sleep paused after row [" + rowObj + "] execution.", e);
         }

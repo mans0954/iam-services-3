@@ -215,7 +215,12 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 		return retVal;
 	}
 
-	@Override
+    @Override
+    public List<ResourceEntity> getResourcesForRoleNoLocalized(String roleId, int from, int size, ResourceSearchBean searchBean) {
+        return getResourcesForRole(roleId, from, size, searchBean);
+    }
+
+    @Override
 	public int getNumOfResourcesForRole(String roleId, final ResourceSearchBean searchBean) {
 		final Criteria criteria = getCriteria()
 				.createAlias("roles", "rr")
@@ -254,7 +259,15 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 		return retVal;
 	}
 
-	@Override
+    @Override
+    /**
+     * For internal system use, without @LocalizedDatabaseGet
+     */
+    public List<ResourceEntity> getResourcesForGroupNoLocalized(String groupId, int from, int size, ResourceSearchBean searchBean) {
+        return this.getResourcesForGroup(groupId, from, size, searchBean);
+    }
+
+    @Override
 	public int getNumOfResourcesForGroup(final String groupId, final ResourceSearchBean searchBean) {
 		final Criteria criteria = getCriteria()
 				.createAlias("groups", "rg")

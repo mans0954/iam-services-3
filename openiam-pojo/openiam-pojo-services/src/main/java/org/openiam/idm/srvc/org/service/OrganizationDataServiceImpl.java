@@ -59,7 +59,9 @@ public class OrganizationDataServiceImpl extends AbstractBaseService implements 
     private LanguageDozerConverter languageConverter;
 
     @Override
-    @Deprecated
+    /**
+     * Only for internal system use, without @LocalizedServiceGet
+     */
     public Organization getOrganization(final String orgId, String requesterId) {
         return this.getOrganizationLocalized(orgId, requesterId, getDefaultLanguage());
     }
@@ -78,7 +80,9 @@ public class OrganizationDataServiceImpl extends AbstractBaseService implements 
 	}
 
     @Override
-    @Deprecated
+    /**
+     * for internal use only, without  @LocalizedServiceGet
+     */
     public List<Organization> getOrganizationsForUser(final String userId, final String requesterId, final int from, final int size) {
         return this.getOrganizationsForUserLocalized(userId, requesterId, from, size, getDefaultLanguage());
     }

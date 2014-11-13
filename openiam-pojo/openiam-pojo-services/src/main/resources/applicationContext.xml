@@ -6,13 +6,15 @@
        xmlns:tx="http://www.springframework.org/schema/tx"
        xmlns:util="http://www.springframework.org/schema/util"
        xmlns:context="http://www.springframework.org/schema/context"
-       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:aop="http://www.springframework.org/schema/aop" xmlns:task="http://www.springframework.org/schema/task"
+
        xsi:schemaLocation="http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
        http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee.xsd
        http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
-       http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+       http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+       http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-3.0.xsd">
 
     <import resource="jmsContext.xml" />
 
@@ -26,6 +28,12 @@
     								      org.openiam.dozer.converter,
     								      org.openiam.validator,
     								      org.openiam.internationalization" />
+
+
+    <task:executor id="executor" pool-size="8-25" queue-capacity="100" />
+    <task:scheduler id="scheduler" pool-size="10" />
+
+    <task:annotation-driven executor="executor" scheduler="scheduler" />
 
 	<bean id="springContextProvider" class="org.openiam.util.SpringContextProvider" />
 
@@ -131,86 +139,6 @@
 				<ref bean="phoneSearchDAO" />
 			</list>
 		</property>
-	</bean>
-
-	<!-- Thread Scheduling - not using annotations since the interval must be 
-		configurable -->
-	<bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean"> 
-		<property name="triggers"> 
-			<list>
-				<!--  
-				<bean class="org.springframework.scheduling.quartz.SimpleTriggerBean"> 
-					<property name="startDelay" value="${org.openiam.lucene.reindex.threadsweep}" /> 
-					<property name="repeatInterval" value="${org.openiam.lucene.reindex.threadsweep}" /> 
-					<property name="jobDetail"> 
-						<bean class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"> 
-							<property name="targetObject" ref="luceneReindexService" /> 
-							<property name="targetMethod" value="sweep" /> 
-							<property name="concurrent" value="false" /> 
-						</bean> 
-					</property> 
-				</bean>
-				-->
-				<bean class="org.springframework.scheduling.quartz.SimpleTriggerBean">
-					<property name="startDelay" value="${org.openiam.audit.threadsweep}" />
-					<property name="repeatInterval" value="${org.openiam.audit.threadsweep}" />
-					<property name="jobDetail">
-						<bean class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
-							<property name="targetObject" ref="auditLogDispatcher" />
-							<property name="targetMethod" value="sweep" />
-							<property name="concurrent" value="false" />
-						</bean>
-					</property>
-				</bean>
-                <bean class="org.springframework.scheduling.quartz.SimpleTriggerBean">
-                    <property name="startDelay" value="${org.openiam.prov.threadsweep}" />
-                    <property name="repeatInterval" value="${org.openiam.prov.threadsweep}" />
-                    <property name="jobDetail">
-                        <bean class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
-                            <property name="targetObject" ref="provDispatcher" />
-                            <property name="targetMethod" value="sweep" />
-                            <property name="concurrent" value="false" />
-                        </bean>
-                    </property>
-                </bean>
-
-                <bean class="org.springframework.scheduling.quartz.SimpleTriggerBean">
-                    <property name="startDelay" value="${org.openiam.org.manager.threadsweep}" />
-                    <property name="repeatInterval" value="${org.openiam.org.manager.threadsweep}" />
-                    <property name="jobDetail">
-                        <bean class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
-                            <property name="targetObject" ref="organizationService" />
-                            <property name="targetMethod" value="sweep" />
-                            <property name="concurrent" value="false" />
-                        </bean>
-                    </property>
-                </bean>
-
-                <bean class="org.springframework.scheduling.quartz.SimpleTriggerBean">
-                    <property name="startDelay" value="${org.openiam.org.manager.threadsweep}" />
-                    <property name="repeatInterval" value="${org.openiam.org.manager.threadsweep}" />
-                    <property name="jobDetail">
-                        <bean class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
-                            <property name="targetObject" ref="organizationTypeServiceImpl" />
-                            <property name="targetMethod" value="sweep" />
-                            <property name="concurrent" value="false" />
-                        </bean>
-                    </property>
-                </bean>
-
-                <bean class="org.springframework.scheduling.quartz.SimpleTriggerBean">
-                    <property name="startDelay" value="${org.openiam.metadata.threadsweep}" />
-                    <property name="repeatInterval" value="${org.openiam.metadata.threadsweep}" />
-                    <property name="jobDetail">
-                        <bean class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
-                            <property name="targetObject" ref="metadataDispatcher" />
-                            <property name="targetMethod" value="sweep" />
-                            <property name="concurrent" value="false" />
-                        </bean>
-                    </property>
-                </bean>
-			</list> 
-		</property> 
 	</bean>
 
 	<bean id="seqGenDAO" class="org.openiam.base.id.SequenceGenDAOImpl">

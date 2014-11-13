@@ -8,12 +8,14 @@ import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.idm.srvc.mngsys.service.AttributeNamesLookupService;
-import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
 import org.openiam.idm.srvc.synch.domain.SynchReviewEntity;
 import org.openiam.idm.srvc.synch.dto.LineObject;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.openiam.idm.srvc.synch.dto.SynchReview;
+import org.openiam.idm.srvc.synch.service.MatchObjectRule;
+import org.openiam.idm.srvc.synch.service.TransformScript;
+import org.openiam.idm.srvc.synch.service.ValidationScript;
 import org.springframework.beans.factory.annotation.Value;
 
 import javax.naming.Context;
@@ -24,12 +26,14 @@ import javax.naming.directory.Attributes;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 import javax.naming.ldap.*;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 
 public abstract class GenericLdapAdapter extends AbstractSrcAdapter {
 
-        /*
+     /*
      * The flags for the running tasks are handled by this Thread-Safe Set.
      * It stores the taskIds of the currently executing tasks.
      * This is faster and as reliable as storing the flags in the database,
@@ -43,8 +47,6 @@ public abstract class GenericLdapAdapter extends AbstractSrcAdapter {
     private final static int PAGE_SIZE = 1000;
     private final static int SIZE_LIMIT = 10000;
     private final static int TIME_LIMIT = 0;    //indefinitely
-
-    private LdapContext ctx = null;
 
     private static final Log log = LogFactory.getLog(LdapAdapter.class);
 
@@ -62,18 +64,33 @@ public abstract class GenericLdapAdapter extends AbstractSrcAdapter {
 
         log.debug("LDAP startSynch CALLED.^^^^^^^^");
 
-        SyncResponse res = initializeScripts(config, sourceReview);
-        if (ResponseStatus.FAILURE.equals(res.getStatus())) {
-            return res;
+        SyncResponse res;
+        SynchReview review = null;
+        if (sourceReview != null) {
+            review = synchReviewDozerConverter.convertToDTO(sourceReview, false);
         }
 
-        if (sourceReview != null && !sourceReview.isSourceRejected()) {
-            return startSynchReview(config, sourceReview, resultReview);
-        }
+        LdapContext ctx = null;
 
         try {
 
-            if (!connect(config)) {
+            final ValidationScript validationScript = org.mule.util.StringUtils.isNotEmpty(config.getValidationRule()) ? SynchScriptFactory.createValidationScript(config, review) : null;
+            final List<TransformScript> transformScripts = SynchScriptFactory.createTransformationScript(config, review);
+            final MatchObjectRule matchRule = matchRuleFactory.create(config.getCustomMatchRule()); // check if matchRule exists
+
+            if (validationScript == null || transformScripts == null || matchRule == null) {
+                res = new SyncResponse(ResponseStatus.FAILURE);
+                res.setErrorText("The problem in initialization of LDAPAdapter, please check validationScript= " + validationScript + ", transformScripts=" + transformScripts + ", matchRule=" + matchRule + " all must be set!");
+                res.setErrorCode(ResponseCode.INVALID_ARGUMENTS);
+                return res;
+            }
+
+            if (sourceReview != null && !sourceReview.isSourceRejected()) {
+                return startSynchReview(config, sourceReview, resultReview, validationScript, transformScripts, matchRule);
+            }
+
+            ctx = connect(config);
+            if (ctx == null) {
                 SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
                 resp.setErrorCode(ResponseCode.FAIL_CONNECTION);
                 return resp;
@@ -89,18 +106,15 @@ public abstract class GenericLdapAdapter extends AbstractSrcAdapter {
                 return resp;
             }
             // get the last execution time
-            if (StringUtils.isNotBlank(config.getLastRecProcessed())) {
+            if ("INCREMENTAL".equalsIgnoreCase(config.getSynchType())) {
                 lastRecProcessed = config.getLastRecProcessed();
-                // get change log field
-                if ("INCREMENTAL".equalsIgnoreCase(config.getSynchType())) {
-                    // update the search filter so that it has the new time
-                    String ldapFilterQuery = config.getQuery();
-                    // replace wildcards with the last exec time
-                    //looking for filter like (&(objectclass=user)(modifyTimeStamp>=?))
-                    config.setQuery(ldapFilterQuery.replace("?", lastRecProcessed));
-
-                    log.debug("Updated ldap filter = " + config.getQuery());
+                if (StringUtils.isBlank(lastRecProcessed)) {
+                    lastRecProcessed = getNullDate();
                 }
+                //looking for filter like (&(objectclass=user)(modifyTimeStamp>=?))
+                String ldapFilterQuery = config.getQuery();
+                config.setQuery(ldapFilterQuery.replace("?", lastRecProcessed));
+                log.debug("Updated ldap filter = " + config.getQuery());
             }
 
             int ctr = 0;
@@ -215,12 +229,28 @@ public abstract class GenericLdapAdapter extends AbstractSrcAdapter {
                 log.debug("Search ldap result OU=" + baseou + " found = " + recordsInOUCounter + " records.");
             }
             for (LineObject rowObj : processingData) {
-                processLineObject(rowObj, config, resultReview);
+                processLineObject(rowObj, config, resultReview, validationScript, transformScripts, matchRule);
                 Thread.sleep(100);
             }
             System.out.println("EXECUTION TIME: "+(System.currentTimeMillis()-startTime));
 
-        } catch (NamingException ne) {
+        } catch (ClassNotFoundException cnfe) {
+            log.error(cnfe);
+            res = new SyncResponse(ResponseStatus.FAILURE);
+            res.setErrorCode(ResponseCode.CLASS_NOT_FOUND);
+            return res;
+
+        } catch (FileNotFoundException fe) {
+            fe.printStackTrace();
+            log.error(fe);
+//            auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "FileNotFoundException: "+fe.getMessage());
+//            auditLogProvider.persist(auditBuilder);
+            SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
+            resp.setErrorCode(ResponseCode.FILE_EXCEPTION);
+            log.debug("LDAP SYNCHRONIZATION COMPLETE WITH ERRORS ^^^^^^^^");
+            return resp;
+
+        }  catch (NamingException ne) {
             log.error(ne);
             SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.CLASS_NOT_FOUND);
@@ -236,14 +266,14 @@ public abstract class GenericLdapAdapter extends AbstractSrcAdapter {
 
         } catch (InterruptedException e) {
             e.printStackTrace();
+
         } finally {
             if (resultReview != null) {
                 if (CollectionUtils.isNotEmpty(resultReview.getReviewRecords())) { // add header row
                     resultReview.addRecord(generateSynchReviewRecord(lineHeader, true));
                 }
             }
-
-            closeConnection();
+            closeConnection(ctx);
         }
 
         log.debug("LDAP SYNCHRONIZATION COMPLETE^^^^^^^^");
@@ -291,10 +321,13 @@ public abstract class GenericLdapAdapter extends AbstractSrcAdapter {
     }
 
     public Response testConnection(SynchConfig config) {
+        LdapContext ctx = null;
         try {
-            if (connect(config)) {
+            ctx = connect(config);
+            if (ctx != null) {
                 Response resp = new Response(ResponseStatus.SUCCESS);
                 return resp;
+
             } else {
                 Response resp = new Response(ResponseStatus.FAILURE);
                 resp.setErrorCode(ResponseCode.FAIL_CONNECTION);
@@ -311,13 +344,13 @@ public abstract class GenericLdapAdapter extends AbstractSrcAdapter {
             return resp;
 
         } finally {
-            closeConnection();
+            closeConnection(ctx);
         }
     }
 
-    protected boolean connect(SynchConfig config) throws NamingException {
+    protected LdapContext connect(SynchConfig config) throws NamingException {
 
-        Hashtable<String, String> envDC = new Hashtable();
+        Hashtable<String, String> envDC = new Hashtable<String, String>(11);
         System.setProperty("javax.net.ssl.trustStore", keystore);
 
         String hostUrl = config.getSrcHost(); //   managedSys.getHostUrl();
@@ -335,15 +368,11 @@ public abstract class GenericLdapAdapter extends AbstractSrcAdapter {
             envDC.put(Context.SECURITY_PROTOCOL, "SSL");
         }
 
-        ctx = new InitialLdapContext(envDC, null);
-        if (ctx != null) {
-            return true;
-        }
+        return new InitialLdapContext(envDC, null);
 
-        return false;
     }
 
-    protected void closeConnection() {
+    protected void closeConnection(LdapContext ctx) {
         try {
             if (ctx != null) {
                 ctx.close();
@@ -356,6 +385,8 @@ public abstract class GenericLdapAdapter extends AbstractSrcAdapter {
     }
 
     protected abstract LastRecordTime getRowTime(LineObject rowObj);
+
+    protected abstract String getNullDate();
 
     protected LastRecordTime getTime(org.openiam.idm.srvc.synch.dto.Attribute atr) {
         LastRecordTime lrt = new LastRecordTime();
