@@ -269,6 +269,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
                 entity.setApproverAssociations(dbOrg.getApproverAssociations());
                 entity.setLstUpdate(Calendar.getInstance().getTime());
                 entity.setLstUpdatedBy(requestorId);
+                orgDao.evict(dbOrg); // remove dbOrg from session
             }
         } else {
             entity.setAdminResource(getNewAdminResource(entity, requestorId));
