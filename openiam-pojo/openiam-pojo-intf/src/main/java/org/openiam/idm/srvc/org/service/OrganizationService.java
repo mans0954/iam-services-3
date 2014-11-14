@@ -54,14 +54,16 @@ public interface OrganizationService {
 	public void addUserToOrg(final String orgId, final String userId);
 	public void removeUserFromOrg(String orgId, String userId);
 	public void removeAttribute(final String attributeId);
-	public void save(final OrganizationEntity organization, final String requestorId);
+    public Organization save(final Organization organization, final String requestorId, final boolean skipPrePostProcessors) throws BasicDataServiceException;
+	public Organization save(final Organization organization, final String requestorId) throws BasicDataServiceException;
     public void addRequiredAttributes(OrganizationEntity organization);
 	public void save(final OrganizationAttributeEntity attribute);
 	public void removeChildOrganization(final String organizationId, final String childOrganizationId);
 	public void addChildOrganization(final String organizationId, final String childOrganizationId);
-	public void deleteOrganization(final String orgId);
-	
+	public void deleteOrganization(final String orgId) throws BasicDataServiceException;
+    public void deleteOrganizationWithSkipPrePostProcessors(final String orgId, final boolean skipPrePostProcessors) throws BasicDataServiceException;
 	public void validateOrg2OrgAddition(String parentId, String memberId) throws BasicDataServiceException;
+    public void validate(final Organization organization) throws BasicDataServiceException;
 
     public Set<String> getDelegationFilter(String requesterId, String organizationTypeId);
     public Set<String> getDelegationFilter(Map<String, UserAttribute> attrMap, String organizationTypeId);

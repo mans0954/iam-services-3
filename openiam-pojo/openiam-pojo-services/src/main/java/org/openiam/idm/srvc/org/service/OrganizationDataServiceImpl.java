@@ -48,7 +48,7 @@ import java.util.Map;
             portName = "OrganizationDataWebServicePort",
             serviceName = "OrganizationDataWebService")
 @Service("orgManager")
-public class OrganizationDataServiceImpl extends AbstractBaseService implements OrganizationDataService {
+public class OrganizationDataServiceImpl implements OrganizationDataService {
 
     private static final Log log = LogFactory.getLog(OrganizationDataServiceImpl.class);
 
@@ -63,16 +63,6 @@ public class OrganizationDataServiceImpl extends AbstractBaseService implements 
 
     @Autowired
     private LanguageDozerConverter languageConverter;
-
-    @Autowired
-    @Qualifier("configurableGroovyScriptEngine")
-    private ScriptIntegration scriptRunner;
-
-    @Autowired
-    protected String preProcessorOrganization;
-
-    @Autowired
-    protected String postProcessorOrganization;
 
     @Override
     /**
@@ -262,33 +252,6 @@ public class OrganizationDataServiceImpl extends AbstractBaseService implements 
         return lang;
     }
 
-    private void validate(final Organization organization) throws BasicDataServiceException {
-    	if (organization == null) {
-            throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-        }
-        if (StringUtils.isBlank(organization.getName())) {
-            throw new BasicDataServiceException(ResponseCode.ORGANIZATION_NAME_NOT_SET);
-        }
-
-        final OrganizationEntity found = organizationService.getOrganizationByName(organization.getName(), null, null);
-        if (found != null) {
-            if (StringUtils.isBlank(organization.getId()) && found != null) {
-                throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
-            }
-
-            if (StringUtils.isNotBlank(organization.getId()) && !organization.getId().equals(found.getId())) {
-                throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
-            }
-        }
-        
-        if(StringUtils.isBlank(organization.getOrganizationTypeId())) {
-            throw new BasicDataServiceException(ResponseCode.ORGANIZATION_TYPE_NOT_SET);
-        }
-        
-        final OrganizationEntity entity = organizationDozerConverter.convertToEntity(organization, true);
-        entityValidator.isValid(entity);
-    }
-
     @Override
     public Response saveOrganization(final Organization organization, final String requesterId) {
         return saveOrganizationWithSkipPrePostProcessors(organization, requesterId, false);
@@ -297,34 +260,9 @@ public class OrganizationDataServiceImpl extends AbstractBaseService implements 
     @Override
     public Response saveOrganizationWithSkipPrePostProcessors(final Organization organization, final String requestorId, final boolean skipPrePostProcessors) {
         final Response response = new Response(ResponseStatus.SUCCESS);
-        Map<String, Object> bindingMap = new HashMap<String, Object>();
-
-        if (!skipPrePostProcessors) {
-            OrganizationServicePrePostProcessor preProcessor = getPreProcessScript();
-            if (preProcessor != null &&  preProcessor.save(organization, bindingMap) != OrganizationServicePrePostProcessor.SUCCESS) {
-                response.setStatus(ResponseStatus.FAILURE);
-                response.setErrorCode(ResponseCode.FAIL_PREPROCESSOR);
-                return response;
-            }
-        }
-
         try {
-            validate(organization);
-            final OrganizationEntity entity = organizationDozerConverter.convertToEntity(organization, true);
-            organizationService.save(entity, requestorId);
-
-            if (!skipPrePostProcessors) {
-                OrganizationServicePrePostProcessor postProcessor = getPostProcessScript();
-                if (postProcessor != null) {
-                    final Organization org = organizationDozerConverter.convertToDTO(entity, true);
-                    if (postProcessor.save(org, bindingMap) != OrganizationServicePrePostProcessor.SUCCESS) {
-                        response.setStatus(ResponseStatus.FAILURE);
-                        response.setErrorCode(ResponseCode.FAIL_POSTPROCESSOR);
-                        return response;
-                    }
-                }
-            }
-            response.setResponseValue(entity.getId());
+            Organization org = organizationService.save(organization, requestorId);
+            response.setResponseValue(org.getId());
 
         } catch (BasicDataServiceException e) {
         	response.setStatus(ResponseStatus.FAILURE);
@@ -387,36 +325,12 @@ public class OrganizationDataServiceImpl extends AbstractBaseService implements 
     public Response deleteOrganizationWithSkipPrePostProcessors(final String orgId, final boolean skipPrePostProcessors) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
-
-            if (orgId == null) {
-                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-            }
-
-            Map<String, Object> bindingMap = new HashMap<String, Object>();
-
-            if (!skipPrePostProcessors) {
-                OrganizationServicePrePostProcessor preProcessor = getPreProcessScript();
-                if (preProcessor != null &&  preProcessor.delete(orgId, bindingMap) != OrganizationServicePrePostProcessor.SUCCESS) {
-                    response.setStatus(ResponseStatus.FAILURE);
-                    response.setErrorCode(ResponseCode.FAIL_PREPROCESSOR);
-                    return response;
-                }
-            }
-
-            organizationService.deleteOrganization(orgId);
-
-            if (!skipPrePostProcessors) {
-                OrganizationServicePrePostProcessor postProcessor = getPostProcessScript();
-                if (postProcessor != null &&  postProcessor.delete(orgId, bindingMap) != OrganizationServicePrePostProcessor.SUCCESS) {
-                    response.setStatus(ResponseStatus.FAILURE);
-                    response.setErrorCode(ResponseCode.FAIL_PREPROCESSOR);
-                    return response;
-                }
-            }
+            organizationService.deleteOrganizationWithSkipPrePostProcessors(orgId, skipPrePostProcessors);
 
         } catch (BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
+
         } catch (Throwable e) {
             log.error("Can't save resource type", e);
             response.setStatus(ResponseStatus.FAILURE);
@@ -430,16 +344,18 @@ public class OrganizationDataServiceImpl extends AbstractBaseService implements 
             throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
         }
     }
-    
+
     @Override
 	public Response validateEdit(Organization organization) {
     	 final Response response = new Response(ResponseStatus.SUCCESS);
          try {
-        	 validate(organization);
+        	 organizationService.validate(organization);
+
          } catch (BasicDataServiceException e) {
         	response.setStatus(ResponseStatus.FAILURE);
  			response.setErrorCode(e.getCode());
             response.setErrorTokenList(e.getErrorTokenList());
+
          } catch (Throwable e) {
              log.error("Exception", e);
              response.setStatus(ResponseStatus.FAILURE);
@@ -511,23 +427,5 @@ public class OrganizationDataServiceImpl extends AbstractBaseService implements 
 		}
 		return response;
 	}
-
-    protected OrganizationServicePrePostProcessor getPreProcessScript() {
-        try {
-            return (OrganizationServicePrePostProcessor) scriptRunner.instantiateClass(new HashMap<String, Object>(), preProcessorOrganization);
-        } catch (Exception ce) {
-            log.error(ce);
-            return null;
-        }
-    }
-
-    protected OrganizationServicePrePostProcessor getPostProcessScript() {
-        try {
-            return (OrganizationServicePrePostProcessor) scriptRunner.instantiateClass(new HashMap<String, Object>(), postProcessorOrganization);
-        } catch (Exception ce) {
-            log.error(ce);
-            return null;
-        }
-    }
 
 }

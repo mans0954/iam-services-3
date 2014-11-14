@@ -7,10 +7,12 @@ import org.apache.commons.lang.time.StopWatch;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.ResponseCode;
+import org.openiam.base.ws.ResponseStatus;
 import org.openiam.dozer.converter.OrganizationDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
+import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
@@ -31,9 +33,11 @@ import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
 import org.openiam.internationalization.LocalizedServiceGet;
+import org.openiam.script.ScriptIntegration;
 import org.openiam.util.AttributeUtil;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,7 +46,7 @@ import java.util.*;
 
 @Service("organizationService")
 @Transactional
-public class OrganizationServiceImpl implements OrganizationService, InitializingBean {
+public class OrganizationServiceImpl extends AbstractBaseService implements OrganizationService, InitializingBean {
     private static final Log log = LogFactory.getLog(OrganizationServiceImpl.class);
 	@Autowired
 	private OrganizationTypeDAO orgTypeDAO;
@@ -91,6 +95,16 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
     private String divisionTypeId;
     @Value("${org.openiam.department.type.id}")
     private String departmentTypeId;
+
+    @Autowired
+    @Qualifier("configurableGroovyScriptEngine")
+    private ScriptIntegration scriptRunner;
+
+    @Autowired
+    protected String preProcessorOrganization;
+
+    @Autowired
+    protected String postProcessorOrganization;
 
     @Override
     @LocalizedServiceGet
@@ -211,29 +225,45 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
 
     @Override
     @Transactional
-    public void save(final OrganizationEntity entity, final String requestorId) {
-    	
-    	if(entity.getOrganizationType() != null) {
-    		entity.setOrganizationType(orgTypeDAO.findById(entity.getOrganizationType().getId()));
-    	}
-    	
-    	if(entity.getType() != null && StringUtils.isNotBlank(entity.getType().getId())) {
-    		entity.setType(typeDAO.findById(entity.getType().getId()));
-        } else {
-        	entity.setType(null);
+    public Organization save(final Organization organization, final String requestorId) throws BasicDataServiceException {
+        return save(organization, requestorId, false);
+    }
+
+    @Override
+    @Transactional
+    public Organization save(final Organization organization, final String requestorId, final boolean skipPrePostProcessors) throws BasicDataServiceException {
+        Map<String, Object> bindingMap = new HashMap<String, Object>();
+
+        if (!skipPrePostProcessors) {
+            OrganizationServicePrePostProcessor preProcessor = getPreProcessScript();
+            if (preProcessor != null &&  preProcessor.save(organization, bindingMap) != OrganizationServicePrePostProcessor.SUCCESS) {
+                throw new BasicDataServiceException(ResponseCode.FAIL_PREPROCESSOR);
+            }
         }
-    	
+        final OrganizationEntity entity = organizationDozerConverter.convertToEntity(organization, true);
+        validateEntity(entity);
+
+        if(entity.getOrganizationType() != null) {
+            entity.setOrganizationType(orgTypeDAO.findById(entity.getOrganizationType().getId()));
+        }
+
+        if(entity.getType() != null && StringUtils.isNotBlank(entity.getType().getId())) {
+            entity.setType(typeDAO.findById(entity.getType().getId()));
+        } else {
+            entity.setType(null);
+        }
+
         if (StringUtils.isNotBlank(entity.getId())) {
             final OrganizationEntity dbOrg = orgDao.findById(entity.getId());
             if (dbOrg != null) {
-            	mergeAttributes(entity, dbOrg);
+                mergeAttributes(entity, dbOrg);
                 mergeParents(entity, dbOrg);
                 entity.setChildOrganizations(dbOrg.getChildOrganizations());
                 entity.setParentOrganizations(dbOrg.getParentOrganizations());
                 entity.setUsers(dbOrg.getUsers());
                 entity.setAdminResource(dbOrg.getAdminResource());
                 if(entity.getAdminResource() == null) {
-                	entity.setAdminResource(getNewAdminResource(entity, requestorId));
+                    entity.setAdminResource(getNewAdminResource(entity, requestorId));
                 }
                 entity.getAdminResource().setCoorelatedName(entity.getName());
                 entity.setApproverAssociations(dbOrg.getApproverAssociations());
@@ -241,7 +271,7 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
                 entity.setLstUpdatedBy(requestorId);
             }
         } else {
-        	entity.setAdminResource(getNewAdminResource(entity, requestorId));
+            entity.setAdminResource(getNewAdminResource(entity, requestorId));
             mergeParents(entity, null);
             entity.setCreateDate(Calendar.getInstance().getTime());
             entity.setCreatedBy(requestorId);
@@ -251,9 +281,22 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
             addRequiredAttributes(entity);
 
         }
-        
-        orgDao.merge(entity);
+
+        orgDao.save(entity);
+
+        final Organization org = organizationDozerConverter.convertToDTO(entity, false);
+        if (!skipPrePostProcessors) {
+            OrganizationServicePrePostProcessor postProcessor = getPostProcessScript();
+            if (postProcessor != null) {
+                if (postProcessor.save(org, bindingMap) != OrganizationServicePrePostProcessor.SUCCESS) {
+                    throw new BasicDataServiceException(ResponseCode.FAIL_POSTPROCESSOR);
+                }
+            }
+        }
+
+        return org;
     }
+
     @Override
     @Transactional
     public void addRequiredAttributes(OrganizationEntity organization) {
@@ -422,20 +465,48 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
 
     @Override
     @Transactional
-    public void deleteOrganization(String orgId) {
+    public void deleteOrganization(String orgId) throws BasicDataServiceException {
+        deleteOrganizationWithSkipPrePostProcessors(orgId, false);
+    }
+
+    @Override
+    @Transactional
+    public void deleteOrganizationWithSkipPrePostProcessors(String orgId, boolean skipPrePostProcessors) throws BasicDataServiceException {
+
+        if (orgId == null) {
+            throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+        }
+
+        Map<String, Object> bindingMap = new HashMap<String, Object>();
+
+        if (!skipPrePostProcessors) {
+            OrganizationServicePrePostProcessor preProcessor = getPreProcessScript();
+            if (preProcessor != null &&  preProcessor.delete(orgId, bindingMap) != OrganizationServicePrePostProcessor.SUCCESS) {
+                throw new BasicDataServiceException(ResponseCode.FAIL_PREPROCESSOR);
+            }
+        }
+
         final OrganizationEntity entity = orgDao.findById(orgId);
         if (entity != null) {
-        	final GroupEntity example = new GroupEntity();
-        	example.setCompany(entity);
-        	final List<GroupEntity> groups = groupDAO.getByExample(example);
-        	if(groups != null) {
-        		for(final GroupEntity group : groups) {
-        			group.setCompany(null);
-        			groupDAO.update(group);
-        		}
-        	}
+            final GroupEntity example = new GroupEntity();
+            example.setCompany(entity);
+            final List<GroupEntity> groups = groupDAO.getByExample(example);
+            if(groups != null) {
+                for(final GroupEntity group : groups) {
+                    group.setCompany(null);
+                    groupDAO.update(group);
+                }
+            }
             orgDao.delete(entity);
         }
+
+        if (!skipPrePostProcessors) {
+            OrganizationServicePrePostProcessor postProcessor = getPostProcessScript();
+            if (postProcessor != null &&  postProcessor.delete(orgId, bindingMap) != OrganizationServicePrePostProcessor.SUCCESS) {
+                throw new BasicDataServiceException(ResponseCode.FAIL_POSTPROCESSOR);
+            }
+        }
+
     }
 
     @Override
@@ -655,5 +726,54 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
         LanguageEntity lang = new LanguageEntity();
         lang.setId("1");
         return lang;
+    }
+
+    @Transactional(readOnly = true)
+    public void validate(final Organization organization) throws BasicDataServiceException {
+        validateEntity(organizationDozerConverter.convertToEntity(organization, true));
+    }
+
+    private void validateEntity(final OrganizationEntity organization) throws BasicDataServiceException {
+        if (organization == null) {
+            throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+        }
+        if (StringUtils.isBlank(organization.getName())) {
+            throw new BasicDataServiceException(ResponseCode.ORGANIZATION_NAME_NOT_SET);
+        }
+
+        final OrganizationEntity found = getOrganizationByName(organization.getName(), null, null);
+        if (found != null) {
+            if (StringUtils.isBlank(organization.getId()) && found != null) {
+                throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
+            }
+
+            if (StringUtils.isNotBlank(organization.getId()) && !organization.getId().equals(found.getId())) {
+                throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
+            }
+        }
+
+        if(organization.getOrganizationType() == null) {
+            throw new BasicDataServiceException(ResponseCode.ORGANIZATION_TYPE_NOT_SET);
+        }
+
+        entityValidator.isValid(organization);
+    }
+
+    private OrganizationServicePrePostProcessor getPreProcessScript() {
+        try {
+            return (OrganizationServicePrePostProcessor) scriptRunner.instantiateClass(new HashMap<String, Object>(), preProcessorOrganization);
+        } catch (Exception ce) {
+            log.error(ce);
+            return null;
+        }
+    }
+
+    private OrganizationServicePrePostProcessor getPostProcessScript() {
+        try {
+            return (OrganizationServicePrePostProcessor) scriptRunner.instantiateClass(new HashMap<String, Object>(), postProcessorOrganization);
+        } catch (Exception ce) {
+            log.error(ce);
+            return null;
+        }
     }
 }
