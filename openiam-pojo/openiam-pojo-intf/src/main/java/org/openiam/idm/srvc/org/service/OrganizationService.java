@@ -61,7 +61,7 @@ public interface OrganizationService {
 	public void removeChildOrganization(final String organizationId, final String childOrganizationId);
 	public void addChildOrganization(final String organizationId, final String childOrganizationId);
 	public void deleteOrganization(final String orgId) throws BasicDataServiceException;
-    public void deleteOrganizationWithSkipPrePostProcessors(final String orgId, final boolean skipPrePostProcessors) throws BasicDataServiceException;
+    public void deleteOrganization(final String orgId, final boolean skipPrePostProcessors) throws BasicDataServiceException;
 	public void validateOrg2OrgAddition(String parentId, String memberId) throws BasicDataServiceException;
     public void validate(final Organization organization) throws BasicDataServiceException;
 

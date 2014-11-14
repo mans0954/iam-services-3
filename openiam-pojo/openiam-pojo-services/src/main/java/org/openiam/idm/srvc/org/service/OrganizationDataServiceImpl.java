@@ -261,7 +261,7 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     public Response saveOrganizationWithSkipPrePostProcessors(final Organization organization, final String requestorId, final boolean skipPrePostProcessors) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
-            Organization org = organizationService.save(organization, requestorId);
+            Organization org = organizationService.save(organization, requestorId, skipPrePostProcessors);
             response.setResponseValue(org.getId());
 
         } catch (BasicDataServiceException e) {
@@ -325,7 +325,7 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     public Response deleteOrganizationWithSkipPrePostProcessors(final String orgId, final boolean skipPrePostProcessors) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
-            organizationService.deleteOrganizationWithSkipPrePostProcessors(orgId, skipPrePostProcessors);
+            organizationService.deleteOrganization(orgId, skipPrePostProcessors);
 
         } catch (BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);

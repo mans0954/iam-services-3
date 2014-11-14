@@ -466,12 +466,12 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     @Override
     @Transactional
     public void deleteOrganization(String orgId) throws BasicDataServiceException {
-        deleteOrganizationWithSkipPrePostProcessors(orgId, false);
+        deleteOrganization(orgId, false);
     }
 
     @Override
     @Transactional
-    public void deleteOrganizationWithSkipPrePostProcessors(String orgId, boolean skipPrePostProcessors) throws BasicDataServiceException {
+    public void deleteOrganization(String orgId, boolean skipPrePostProcessors) throws BasicDataServiceException {
 
         if (orgId == null) {
             throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
