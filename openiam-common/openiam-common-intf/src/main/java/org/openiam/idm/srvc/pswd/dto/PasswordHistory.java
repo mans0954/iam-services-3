@@ -7,6 +7,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 
+import org.openiam.base.KeyDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.pswd.domain.PasswordHistoryEntity;
 
@@ -17,29 +18,19 @@ import java.util.Date;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "PasswordHistory", propOrder = {
-        "pwdHistoryId",
         "loginId",
         "dateCreated",
         "password"
 })
 @DozerDTOCorrespondence(PasswordHistoryEntity.class)
-public class PasswordHistory implements java.io.Serializable {
+public class PasswordHistory extends KeyDTO {
 
-    private String pwdHistoryId;
     private String loginId;
     @XmlSchemaType(name = "dateTime")
     private Date dateCreated;
     private String password;
 
     public PasswordHistory() {
-    }
-
-    public String getPwdHistoryId() {
-        return this.pwdHistoryId;
-    }
-
-    public void setPwdHistoryId(String pwdHistoryId) {
-        this.pwdHistoryId = pwdHistoryId;
     }
 
     public Date getDateCreated() {
