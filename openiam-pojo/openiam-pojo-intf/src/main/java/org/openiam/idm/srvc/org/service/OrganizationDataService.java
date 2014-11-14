@@ -119,6 +119,11 @@ public interface OrganizationDataService {
     								 final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     @WebMethod
+    public Response saveOrganizationWithSkipPrePostProcessors(final @WebParam(name = "organization", targetNamespace = "") Organization organization,
+                                     final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
+                                     final @WebParam(name = "skipPrePostProcessors", targetNamespace = "") boolean skipPrePostProcessors);
+
+    @WebMethod
     public Response addUserToOrg(@WebParam(name = "orgId", targetNamespace = "") String orgId,
                                  @WebParam(name = "userId", targetNamespace = "") String userId);
 
@@ -129,6 +134,10 @@ public interface OrganizationDataService {
 
     @WebMethod
     public Response deleteOrganization(@WebParam(name = "orgId", targetNamespace = "") String orgId);
+
+    @WebMethod
+    public Response deleteOrganizationWithSkipPrePostProcessors(final @WebParam(name = "orgId", targetNamespace = "") String orgId,
+                                       final @WebParam(name = "skipPrePostProcessors", targetNamespace = "") boolean skipPrePostProcessors);
 
     @WebMethod
     public Response removeUserFromOrg(@WebParam(name = "orgId", targetNamespace = "") String orgId,

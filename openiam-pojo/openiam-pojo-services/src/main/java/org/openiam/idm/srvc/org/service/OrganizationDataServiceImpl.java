@@ -16,13 +16,19 @@ import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.internationalization.LocalizedServiceGet;
+import org.openiam.provision.dto.ProvisionGroup;
+import org.openiam.script.ScriptIntegration;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.jws.WebParam;
 import javax.jws.WebService;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 //import diamelle.common.continfo.*;
 //import diamelle.base.prop.*;
@@ -42,7 +48,7 @@ import java.util.List;
             portName = "OrganizationDataWebServicePort",
             serviceName = "OrganizationDataWebService")
 @Service("orgManager")
-public class OrganizationDataServiceImpl extends AbstractBaseService implements OrganizationDataService {
+public class OrganizationDataServiceImpl implements OrganizationDataService {
 
     private static final Log log = LogFactory.getLog(OrganizationDataServiceImpl.class);
 
@@ -246,42 +252,18 @@ public class OrganizationDataServiceImpl extends AbstractBaseService implements 
         return lang;
     }
 
-    private void validate(final Organization organization) throws BasicDataServiceException {
-    	if (organization == null) {
-            throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-        }
-        if (StringUtils.isBlank(organization.getName())) {
-            throw new BasicDataServiceException(ResponseCode.ORGANIZATION_NAME_NOT_SET);
-        }
-
-        final OrganizationEntity found = organizationService.getOrganizationByName(organization.getName(), null, null);
-        if (found != null) {
-            if (StringUtils.isBlank(organization.getId()) && found != null) {
-                throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
-            }
-
-            if (StringUtils.isNotBlank(organization.getId()) && !organization.getId().equals(found.getId())) {
-                throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
-            }
-        }
-        
-        if(StringUtils.isBlank(organization.getOrganizationTypeId())) {
-            throw new BasicDataServiceException(ResponseCode.ORGANIZATION_TYPE_NOT_SET);
-        }
-        
-        final OrganizationEntity entity = organizationDozerConverter.convertToEntity(organization, true);
-        entityValidator.isValid(entity);
+    @Override
+    public Response saveOrganization(final Organization organization, final String requesterId) {
+        return saveOrganizationWithSkipPrePostProcessors(organization, requesterId, false);
     }
 
     @Override
-    @Transactional
-    public Response saveOrganization(final Organization organization, final String requestorId) {
+    public Response saveOrganizationWithSkipPrePostProcessors(final Organization organization, final String requestorId, final boolean skipPrePostProcessors) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
-        	validate(organization);
-            final OrganizationEntity entity = organizationDozerConverter.convertToEntity(organization, true);
-            organizationService.save(entity, requestorId);
-            response.setResponseValue(entity.getId());
+            Organization org = organizationService.save(organization, requestorId, skipPrePostProcessors);
+            response.setResponseValue(org.getId());
+
         } catch (BasicDataServiceException e) {
         	response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
@@ -336,16 +318,19 @@ public class OrganizationDataServiceImpl extends AbstractBaseService implements 
 
     @Override
     public Response deleteOrganization(final String orgId) {
+        return deleteOrganizationWithSkipPrePostProcessors(orgId, false);
+    }
+
+    @Override
+    public Response deleteOrganizationWithSkipPrePostProcessors(final String orgId, final boolean skipPrePostProcessors) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
-            if (orgId == null) {
-                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-            }
+            organizationService.deleteOrganization(orgId, skipPrePostProcessors);
 
-            organizationService.deleteOrganization(orgId);
         } catch (BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
+
         } catch (Throwable e) {
             log.error("Can't save resource type", e);
             response.setStatus(ResponseStatus.FAILURE);
@@ -359,16 +344,18 @@ public class OrganizationDataServiceImpl extends AbstractBaseService implements 
             throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
         }
     }
-    
+
     @Override
 	public Response validateEdit(Organization organization) {
     	 final Response response = new Response(ResponseStatus.SUCCESS);
          try {
-        	 validate(organization);
+        	 organizationService.validate(organization);
+
          } catch (BasicDataServiceException e) {
         	response.setStatus(ResponseStatus.FAILURE);
  			response.setErrorCode(e.getCode());
             response.setErrorTokenList(e.getErrorTokenList());
+
          } catch (Throwable e) {
              log.error("Exception", e);
              response.setStatus(ResponseStatus.FAILURE);
@@ -440,4 +427,5 @@ public class OrganizationDataServiceImpl extends AbstractBaseService implements 
 		}
 		return response;
 	}
+
 }
