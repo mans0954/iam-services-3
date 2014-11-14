@@ -16,13 +16,19 @@ import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.internationalization.LocalizedServiceGet;
+import org.openiam.provision.dto.ProvisionGroup;
+import org.openiam.script.ScriptIntegration;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.jws.WebParam;
 import javax.jws.WebService;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 //import diamelle.common.continfo.*;
 //import diamelle.base.prop.*;
@@ -57,6 +63,16 @@ public class OrganizationDataServiceImpl extends AbstractBaseService implements 
 
     @Autowired
     private LanguageDozerConverter languageConverter;
+
+    @Autowired
+    @Qualifier("configurableGroovyScriptEngine")
+    private ScriptIntegration scriptRunner;
+
+    @Autowired
+    protected String preProcessorOrganization;
+
+    @Autowired
+    protected String postProcessorOrganization;
 
     @Override
     /**
@@ -274,14 +290,42 @@ public class OrganizationDataServiceImpl extends AbstractBaseService implements 
     }
 
     @Override
-    @Transactional
-    public Response saveOrganization(final Organization organization, final String requestorId) {
+    public Response saveOrganization(final Organization organization, final String requesterId) {
+        return saveOrganizationWithSkipPrePostProcessors(organization, requesterId, false);
+    }
+
+    @Override
+    public Response saveOrganizationWithSkipPrePostProcessors(final Organization organization, final String requestorId, final boolean skipPrePostProcessors) {
         final Response response = new Response(ResponseStatus.SUCCESS);
+        Map<String, Object> bindingMap = new HashMap<String, Object>();
+
+        if (!skipPrePostProcessors) {
+            OrganizationServicePrePostProcessor preProcessor = getPreProcessScript();
+            if (preProcessor != null &&  preProcessor.save(organization, bindingMap) != OrganizationServicePrePostProcessor.SUCCESS) {
+                response.setStatus(ResponseStatus.FAILURE);
+                response.setErrorCode(ResponseCode.FAIL_PREPROCESSOR);
+                return response;
+            }
+        }
+
         try {
-        	validate(organization);
+            validate(organization);
             final OrganizationEntity entity = organizationDozerConverter.convertToEntity(organization, true);
             organizationService.save(entity, requestorId);
+
+            if (!skipPrePostProcessors) {
+                OrganizationServicePrePostProcessor postProcessor = getPostProcessScript();
+                if (postProcessor != null) {
+                    final Organization org = organizationDozerConverter.convertToDTO(entity, true);
+                    if (postProcessor.save(org, bindingMap) != OrganizationServicePrePostProcessor.SUCCESS) {
+                        response.setStatus(ResponseStatus.FAILURE);
+                        response.setErrorCode(ResponseCode.FAIL_POSTPROCESSOR);
+                        return response;
+                    }
+                }
+            }
             response.setResponseValue(entity.getId());
+
         } catch (BasicDataServiceException e) {
         	response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
@@ -336,13 +380,40 @@ public class OrganizationDataServiceImpl extends AbstractBaseService implements 
 
     @Override
     public Response deleteOrganization(final String orgId) {
+        return deleteOrganizationWithSkipPrePostProcessors(orgId, false);
+    }
+
+    @Override
+    public Response deleteOrganizationWithSkipPrePostProcessors(final String orgId, final boolean skipPrePostProcessors) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
+
             if (orgId == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }
 
+            Map<String, Object> bindingMap = new HashMap<String, Object>();
+
+            if (!skipPrePostProcessors) {
+                OrganizationServicePrePostProcessor preProcessor = getPreProcessScript();
+                if (preProcessor != null &&  preProcessor.delete(orgId, bindingMap) != OrganizationServicePrePostProcessor.SUCCESS) {
+                    response.setStatus(ResponseStatus.FAILURE);
+                    response.setErrorCode(ResponseCode.FAIL_PREPROCESSOR);
+                    return response;
+                }
+            }
+
             organizationService.deleteOrganization(orgId);
+
+            if (!skipPrePostProcessors) {
+                OrganizationServicePrePostProcessor postProcessor = getPostProcessScript();
+                if (postProcessor != null &&  postProcessor.delete(orgId, bindingMap) != OrganizationServicePrePostProcessor.SUCCESS) {
+                    response.setStatus(ResponseStatus.FAILURE);
+                    response.setErrorCode(ResponseCode.FAIL_PREPROCESSOR);
+                    return response;
+                }
+            }
+
         } catch (BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
@@ -440,4 +511,23 @@ public class OrganizationDataServiceImpl extends AbstractBaseService implements 
 		}
 		return response;
 	}
+
+    protected OrganizationServicePrePostProcessor getPreProcessScript() {
+        try {
+            return (OrganizationServicePrePostProcessor) scriptRunner.instantiateClass(new HashMap<String, Object>(), preProcessorOrganization);
+        } catch (Exception ce) {
+            log.error(ce);
+            return null;
+        }
+    }
+
+    protected OrganizationServicePrePostProcessor getPostProcessScript() {
+        try {
+            return (OrganizationServicePrePostProcessor) scriptRunner.instantiateClass(new HashMap<String, Object>(), postProcessorOrganization);
+        } catch (Exception ce) {
+            log.error(ce);
+            return null;
+        }
+    }
+
 }
