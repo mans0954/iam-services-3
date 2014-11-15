@@ -573,4 +573,76 @@
             <b>synchReviewRecordId</b>
         </field>
     </mapping>
+    
+    <mapping>
+    	<class-a>org.openiam.am.srvc.domain.AbstractParameterEntity</class-a>
+    	<class-b>org.openiam.am.srvc.dto.AbstractParameter</class-b>
+    </mapping>
+    
+    <mapping>
+    	<class-a>org.openiam.am.srvc.domain.URIPatternParameterEntity</class-a>
+    	<class-b>org.openiam.am.srvc.dto.URIPatternParameter</class-b>
+    	<field>
+    		<a>pattern.id</a>
+    		<b>patternId</b>
+    	</field>
+    </mapping>
+    
+    <mapping>
+    	<class-a>org.openiam.am.srvc.domain.URIPatternMethodParameterEntity</class-a>
+    	<class-b>org.openiam.am.srvc.dto.URIPatternMethodParameter</class-b>
+    	<field>
+    		<a>patternMethod.id</a>
+    		<b>patternMethodId</b>
+    	</field>
+    </mapping>
+    
+	<mapping>
+        <class-a>org.openiam.am.srvc.domain.AbstractMetaValueEntity</class-a>
+        <class-b>org.openiam.am.srvc.dto.AbstractPatternMetaValue</class-b>
+        <field
+			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentObjectConverter"
+			custom-converter-param="dto2entityShallowDozerMapper">
+            <a>amAttribute</a>
+            <b>amAttribute</b>
+        </field>
+    </mapping>
+    
+    <mapping>
+		<class-a>org.openiam.am.srvc.domain.URIPatternMetaValueEntity</class-a>
+		<class-b>org.openiam.am.srvc.dto.URIPatternMetaValue</class-b>
+		<field>
+			<a>metaEntity.id</a>
+			<b>metaEntityId</b>
+		</field>
+	</mapping>
+	
+	<mapping>
+		<class-a>org.openiam.am.srvc.domain.URIPatternMethodMetaValueEntity</class-a>
+		<class-b>org.openiam.am.srvc.dto.URIPatternMethodMetaValue</class-b>
+		<field>
+			<a>metaEntity.id</a>
+			<b>metaEntityId</b>
+		</field>
+	</mapping>
+	
+	<mapping>
+		<class-a>org.openiam.am.srvc.domain.AbstractMetaEntity</class-a>
+		<class-b>org.openiam.am.srvc.dto.AbstractMeta</class-b>
+		<field
+			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentObjectConverter"
+			custom-converter-param="dto2entityShallowDozerMapper">
+			<a>metaType</a>
+			<b>metaType</b>
+		</field>
+	</mapping>
+	
+	<mapping>
+		<class-a>org.openiam.am.srvc.domain.URIPatternSubstitutionEntity</class-a>
+		<class-b>org.openiam.am.srvc.dto.URIPatternSubstitution</class-b>
+		<field>
+			<a>pattern.id</a>
+			<b>patternId</b>
+		</field>
+	</mapping>
 </mappings>

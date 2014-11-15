@@ -777,6 +777,18 @@
 			<a>authProvider.id</a>
 			<b>authProviderId</b>
 		</field>
+		<field-exclude>
+			<a>methods</a>
+			<b>methods</b>
+		</field-exclude>
+		<field-exclude>
+			<a>params</a>
+			<b>params</b>
+		</field-exclude>
+		<field-exclude>
+			<a>substitutions</a>
+			<b>substitutions</b>
+		</field-exclude>
 	</mapping>
 	<mapping>
 		<class-a>org.openiam.idm.srvc.recon.domain.ReconciliationConfigEntity
@@ -948,58 +960,32 @@
     </mapping>
 
     <mapping>
-        <class-a>org.openiam.am.srvc.domain.URIPatternMetaValueEntity</class-a>
-        <class-b>org.openiam.am.srvc.dto.URIPatternMetaValue</class-b>
-        <field>
-            <a>id</a>
-            <b>id</b>
-        </field>
-        <field>
-            <a>name</a>
-            <b>name</b>
-        </field>
-        <field>
-            <a>staticValue</a>
-            <b>staticValue</b>
-        </field>
-        <field>
-        	<a>groovyScript</a>
-        	<b>groovyScript</b>
-        </field>
-        <field-exclude>
-            <a>amAttribute</a>
-            <b>amAttribute</b>
-        </field-exclude>
-        <field>
-            <a>metaEntity.id</a>
-            <b>metaEntityId</b>
-        </field>
-    </mapping>
-
-    <mapping>
         <class-a>org.openiam.am.srvc.domain.URIPatternMetaEntity</class-a>
         <class-b>org.openiam.am.srvc.dto.URIPatternMeta</class-b>
         <field>
-            <a>id</a>
-            <b>id</b>
-        </field>
-        <field>
-            <a>name</a>
-            <b>name</b>
-        </field>
-        <field>
-            <a>pattern.id</a>
-            <b>uriPatternId</b>
-        </field>
-        <field-exclude>
-            <a>metaType</a>
-            <b>metaType</b>
-        </field-exclude>
+			<a>pattern.id</a>
+			<b>patternId</b>
+		</field>
         <field-exclude>
             <a>metaValueSet</a>
             <b>metaValueSet</b>
         </field-exclude>
     </mapping>
+    
+    <mapping>
+		<class-a>org.openiam.am.srvc.domain.URIPatternMethodMetaEntity</class-a>
+		<class-b>org.openiam.am.srvc.dto.URIPatternMethodMeta</class-b>
+		<field
+			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentObjectConverter"
+			custom-converter-param="dto2entityShallowDozerMapper">
+			<a>patternMethod</a>
+			<b>patternMethod</b>
+		</field>
+		<field-exclude>
+            <a>metaValueSet</a>
+            <b>metaValueSet</b>
+        </field-exclude>
+	</mapping>
     
     <mapping>
     	<class-a>org.openiam.idm.srvc.ui.theme.domain.UIThemeEntity</class-a>
@@ -1087,5 +1073,22 @@
             <a>reviewValues</a>
             <b>reviewValues</b>
         </field-exclude>
+    </mapping>
+    
+    <mapping>
+    	<class-a>org.openiam.am.srvc.domain.URIPatternMethodEntity</class-a>
+    	<class-b>org.openiam.am.srvc.dto.URIPatternMethod</class-b>
+    	<field>
+    		<a>pattern.id</a>
+    		<b>patternId</b>
+    	</field>
+    	<field-exclude>
+    		<a>params</a>
+    		<b>params</b>
+    	</field-exclude>
+    	<field-exclude>
+    		<a>metaEntitySet</a>
+    		<b>metaEntitySet</b>
+    	</field-exclude>
     </mapping>
 </mappings>

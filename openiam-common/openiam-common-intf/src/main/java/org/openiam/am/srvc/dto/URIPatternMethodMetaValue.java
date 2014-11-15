@@ -1,26 +1,22 @@
 package org.openiam.am.srvc.dto;
 
-import org.openiam.am.srvc.domain.URIPatternMetaValueEntity;
-import org.openiam.am.srvc.groovy.URIFederationGroovyProcessor;
-import org.openiam.base.AttributeOperationEnum;
-import org.openiam.base.KeyNameDTO;
-import org.openiam.dozer.DozerDTOCorrespondence;
-
 import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
-import java.io.Serializable;
-import java.lang.ref.WeakReference;
+import org.openiam.am.srvc.domain.URIPatternMethodMetaValueEntity;
+import org.openiam.am.srvc.groovy.URIFederationGroovyProcessor;
+import org.openiam.dozer.DozerDTOCorrespondence;
 
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "URIPatternMetaValue", propOrder = {
+@XmlType(name = "URIPatternMethodMetaValue", propOrder = {
         "metaEntityId"
 })
-@DozerDTOCorrespondence(URIPatternMetaValueEntity.class)
-public class URIPatternMetaValue extends AbstractPatternMetaValue {
+@DozerDTOCorrespondence(URIPatternMethodMetaValueEntity.class)
+public class URIPatternMethodMetaValue extends AbstractPatternMetaValue {
+	
 	private String metaEntityId;
 	
 	/* internal use only!  Is compiled at spring refresh time 
@@ -63,7 +59,7 @@ public class URIPatternMetaValue extends AbstractPatternMetaValue {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		URIPatternMetaValue other = (URIPatternMetaValue) obj;
+		URIPatternMethodMetaValue other = (URIPatternMethodMetaValue) obj;
 		if (metaEntityId == null) {
 			if (other.metaEntityId != null)
 				return false;
@@ -73,13 +69,8 @@ public class URIPatternMetaValue extends AbstractPatternMetaValue {
 	}
 	@Override
 	public String toString() {
-		return "URIPatternMetaValue [metaEntityId=" + metaEntityId
-				+ ", groovyProcessor=" + groovyProcessor + ", staticValue="
-				+ staticValue + ", amAttribute=" + amAttribute
-				+ ", groovyScript=" + groovyScript + ", propagateThroughProxy="
-				+ propagateThroughProxy + ", emptyValue=" + emptyValue
-				+ ", propagateOnError=" + propagateOnError + ", name=" + name
-				+ ", id=" + id + ", objectState=" + objectState
+		return "URIPatternMetaValue [metaEntityId=" + metaEntityId + ", name="
+				+ name + ", id=" + id + ", objectState=" + objectState
 				+ ", requestorSessionID=" + requestorSessionID
 				+ ", requestorUserId=" + requestorUserId + ", requestorLogin="
 				+ requestorLogin + ", requestClientIP=" + requestClientIP + "]";

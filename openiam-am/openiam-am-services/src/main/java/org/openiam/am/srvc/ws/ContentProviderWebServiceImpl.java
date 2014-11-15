@@ -565,7 +565,7 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
                 throw new  BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }
             
-            if(StringUtils.isBlank(uriPatternMeta.getUriPatternId())) {
+            if(StringUtils.isBlank(uriPatternMeta.getPatternId())) {
                 throw new  BasicDataServiceException(ResponseCode.URI_PATTERN_NOT_SET);
             }
 

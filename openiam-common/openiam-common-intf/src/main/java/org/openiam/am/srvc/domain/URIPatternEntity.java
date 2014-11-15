@@ -15,6 +15,7 @@ import org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.ui.theme.domain.UIThemeEntity;
+import org.springframework.http.HttpMethod;
 
 import javax.persistence.*;
 
@@ -56,9 +57,18 @@ public class URIPatternEntity extends KeyEntity {
     @JoinColumn(name="RESOURCE_ID", referencedColumnName = "RESOURCE_ID", insertable = true, updatable = false, nullable=false)
 	private ResourceEntity resource;
 	
-	@OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "pattern")
+	@OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "pattern", orphanRemoval=true)
 	//@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	private Set<URIPatternMetaEntity> metaEntitySet;
+	
+	@OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "pattern", orphanRemoval=true)
+	private Set<URIPatternMethodEntity> methods;
+	
+	@OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "pattern", orphanRemoval=true)
+	private Set<URIPatternParameterEntity> params;
+	
+	@OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "pattern", orphanRemoval=true)
+	private Set<URIPatternSubstitutionEntity> substitutions;
 
 	//@OneToMany(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, mappedBy="uriPattern")
 	@ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
@@ -80,7 +90,23 @@ public class URIPatternEntity extends KeyEntity {
     @ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name="PROVIDER_ID", referencedColumnName = "PROVIDER_ID", insertable = true, updatable = true, nullable=true)
     private AuthProviderEntity authProvider;
-	
+    
+	public Set<URIPatternParameterEntity> getParams() {
+		return params;
+	}
+
+	public void setParams(Set<URIPatternParameterEntity> params) {
+		this.params = params;
+	}
+
+	public Set<URIPatternMethodEntity> getMethods() {
+		return methods;
+	}
+
+	public void setMethods(Set<URIPatternMethodEntity> methods) {
+		this.methods = methods;
+	}
+
 	public ContentProviderEntity getContentProvider() {
 		return contentProvider;
 	}
@@ -126,6 +152,36 @@ public class URIPatternEntity extends KeyEntity {
 			metaEntitySet = new LinkedHashSet<URIPatternMetaEntity>();
 		}
 		metaEntitySet.add(enitity);
+	}
+	
+	public URIPatternMethodEntity getMethod(final HttpMethod httpMethod) {
+		URIPatternMethodEntity retVal = null;
+		if(httpMethod != null) {
+			if(methods != null) {
+				for(final URIPatternMethodEntity method : methods) {
+					if(httpMethod.equals(method.getMethod())) {
+						retVal = method;
+						break;
+					}
+				}
+			}
+		}
+		return retVal;
+	}
+	
+	public URIPatternMetaEntity getMetaEntity(final String id) {
+		URIPatternMetaEntity retVal = null;
+		if(id != null) {
+			if(metaEntitySet != null) {
+				for(final URIPatternMetaEntity meta : metaEntitySet) {
+					if(id.equals(meta.getId())) {
+						retVal = meta;
+						break;
+					}
+				}
+			}
+		}
+		return retVal;
 	}
 	
 	public UIThemeEntity getUiTheme() {
@@ -202,6 +258,14 @@ public class URIPatternEntity extends KeyEntity {
 
 	public void setAuthProvider(AuthProviderEntity authProvider) {
 		this.authProvider = authProvider;
+	}
+
+	public Set<URIPatternSubstitutionEntity> getSubstitutions() {
+		return substitutions;
+	}
+
+	public void setSubstitutions(Set<URIPatternSubstitutionEntity> substitutions) {
+		this.substitutions = substitutions;
 	}
 
 	@Override

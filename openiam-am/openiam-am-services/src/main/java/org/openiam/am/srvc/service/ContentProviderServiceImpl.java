@@ -51,7 +51,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
     @Autowired
     private URIPatternMetaDao uriPatternMetaDao;
     @Autowired
-    private URIPatternMetaTypeDao uriPatternMetaTypeDao;
+    private URIPatternMetaTypeDao patternMetaTypeDAO;
     @Autowired
     private URIPatternMetaValueDao uriPatternMetaValueDao;
     @Autowired
@@ -320,6 +320,32 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
     public URIPatternEntity getURIPattern(String patternId) {
         return uriPatternDao.findById(patternId);
     }
+    
+    private void populateMetaValue(final AbstractMetaValueEntity value) {
+    	if(value.isEmptyValue()) {
+			value.setStaticValue(null);
+			value.setAmAttribute(null);
+			value.setGroovyScript(null);
+		} else if(value.getAmAttribute() != null && StringUtils.isNotBlank(value.getAmAttribute().getId())) {
+			value.setStaticValue(null);
+			value.setGroovyScript(null);
+			value.setEmptyValue(false);
+		} else if(StringUtils.isNotBlank(value.getStaticValue())) {
+			value.setAmAttribute(null);
+			value.setGroovyScript(null);
+			value.setEmptyValue(false);
+		} else if(StringUtils.isNotBlank(value.getGroovyScript())) {
+			value.setAmAttribute(null);
+			value.setStaticValue(null);
+			value.setEmptyValue(false);
+		}
+
+		/* set am attribute entity, if any */
+		if(value.getAmAttribute() != null && StringUtils.isNotBlank(value.getAmAttribute().getId())) {
+			final AuthResourceAMAttributeEntity attribute = authResourceAMAttributeDao.findById(value.getAmAttribute().getId());
+			value.setAmAttribute(attribute);
+		}
+    }
 
     @Override
     @Transactional
@@ -333,6 +359,72 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
         	pattern.setAuthProvider(authProviderDAO.findById(pattern.getAuthProvider().getId()));
         } else {
         	pattern.setAuthProvider(null);
+        }
+        
+        if(CollectionUtils.isNotEmpty(pattern.getSubstitutions())) {
+        	for(final URIPatternSubstitutionEntity substitution : pattern.getSubstitutions()) {
+        		substitution.setPattern(pattern);
+        	}
+        }
+        
+        if(CollectionUtils.isNotEmpty(pattern.getServers())) {
+        	for(final URIPatternServerEntity server : pattern.getServers()) {
+        		server.setPattern(pattern);
+        	}
+        }
+        
+        if(CollectionUtils.isNotEmpty(pattern.getMethods())) {
+        	for(final URIPatternMethodEntity patternMethod : pattern.getMethods()) {
+        		patternMethod.setPattern(pattern);
+        		if(CollectionUtils.isNotEmpty(patternMethod.getParams())) {
+        			for(final URIPatternMethodParameterEntity parameter : patternMethod.getParams()) {
+        				parameter.setPatternMethod(patternMethod);
+        			}
+        		}
+        		if(CollectionUtils.isNotEmpty(patternMethod.getMetaEntitySet())) {
+        			for(final URIPatternMethodMetaEntity meta : patternMethod.getMetaEntitySet()) {
+        				meta.setPatternMethod(patternMethod);
+        				if(meta.getMetaType() != null && StringUtils.isNotBlank(meta.getMetaType().getId())) {
+        					meta.setMetaType(patternMetaTypeDAO.findById(meta.getMetaType().getId()));
+        				} else {
+        					meta.setMetaType(null);
+        				}
+        				if(CollectionUtils.isNotEmpty(meta.getMetaValueSet())) {
+        					for(final URIPatternMethodMetaValueEntity value : meta.getMetaValueSet()) {
+        						value.setMetaEntity(meta);
+        						
+        						/* satisfy data integrity */
+        						populateMetaValue(value);
+        					}
+        				}
+        			}
+        		}
+        	}
+        }
+        
+        if(CollectionUtils.isNotEmpty(pattern.getMetaEntitySet())) {
+        	for(final URIPatternMetaEntity meta : pattern.getMetaEntitySet()) {
+        		meta.setPattern(pattern);
+    			if(meta.getMetaType() != null && StringUtils.isNotBlank(meta.getMetaType().getId())) {
+					meta.setMetaType(patternMetaTypeDAO.findById(meta.getMetaType().getId()));
+				} else {
+					meta.setMetaType(null);
+				}
+				if(CollectionUtils.isNotEmpty(meta.getMetaValueSet())) {
+					for(final URIPatternMetaValueEntity value : meta.getMetaValueSet()) {
+						value.setMetaEntity(meta);
+						
+						/* satisfy data integrity */
+						populateMetaValue(value);
+					}
+				}
+    		}
+        }
+        
+        if(CollectionUtils.isNotEmpty(pattern.getParams())) {
+        	for(final URIPatternParameterEntity param : pattern.getParams()) {
+        		param.setPattern(pattern);
+        	}
         }
         
         if(StringUtils.isBlank(pattern.getId())) {
@@ -351,11 +443,6 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
             resourceDao.add(resource);
 
             pattern.setResource(resource);
-            if(CollectionUtils.isNotEmpty(pattern.getServers())) {
-            	for(final URIPatternServerEntity server : pattern.getServers()) {
-            		server.setPattern(pattern);
-            	}
-            }
             
             final Set<AuthLevelGroupingURIPatternXrefEntity> incomingXrefs = pattern.getGroupingXrefs();
             pattern.setGroupingXrefs(null);
@@ -390,17 +477,68 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
         			}
         		}
         		
+        		if(CollectionUtils.isEmpty(pattern.getSubstitutions())) {
+        			dbEntity.getSubstitutions().clear();
+        			pattern.setSubstitutions(dbEntity.getSubstitutions());
+        		}
+        		
         		if(CollectionUtils.isEmpty(pattern.getServers())) {
         			dbEntity.getServers().clear();
         			pattern.setServers(dbEntity.getServers());
+        		}
+        		
+        		if(CollectionUtils.isEmpty(pattern.getMetaEntitySet())) {
+        			dbEntity.getMetaEntitySet().clear();
+        			pattern.setMetaEntitySet(dbEntity.getMetaEntitySet());
         		} else {
-        			for(final URIPatternServerEntity server : pattern.getServers()) {
-        				server.setPattern(pattern);
+        			for(final URIPatternMetaEntity meta : pattern.getMetaEntitySet()) {
+        				if(CollectionUtils.isEmpty(meta.getMetaValueSet())) {
+        					if(meta.getId() != null) {
+        						final URIPatternMetaEntity dbMeta = dbEntity.getMetaEntity(meta.getId());
+        						if(dbMeta != null) {
+        							dbMeta.getMetaValueSet().clear();
+        							meta.setMetaValueSet(dbMeta.getMetaValueSet());
+        						}
+        					}
+        				}
         			}
         		}
         		
+        		if(CollectionUtils.isEmpty(pattern.getParams())) {
+        			dbEntity.getParams().clear();
+        			pattern.setParams(dbEntity.getParams());
+        		}
+        		
+        		if(CollectionUtils.isEmpty(pattern.getMethods())) {
+        			 dbEntity.getMethods().clear();
+        			 pattern.setMethods(dbEntity.getMethods());
+        		} else {
+                	for(final URIPatternMethodEntity patternMethod : pattern.getMethods()) {
+                		final URIPatternMethodEntity dbMethod = dbEntity.getMethod(patternMethod.getMethod());
+            			if(dbMethod != null) {
+            				//set the PK, since the UI could have added/remved the same method, in which case the PK would have been lost
+            				patternMethod.setId(dbMethod.getId());
+            				
+	                		if(CollectionUtils.isEmpty(patternMethod.getParams())) {
+	                			dbMethod.getParams().clear();
+	                			patternMethod.setParams(dbMethod.getParams());
+	                		}
+	                		if(CollectionUtils.isEmpty(patternMethod.getMetaEntitySet())) {
+	                			dbMethod.getMetaEntitySet().clear();
+	                			patternMethod.setMetaEntitySet(dbMethod.getMetaEntitySet());
+	                		} else {
+	                			for(final URIPatternMethodMetaEntity meta : patternMethod.getMetaEntitySet()) {
+	                				if(CollectionUtils.isEmpty(meta.getMetaValueSet())) {
+	                					
+	                				}
+	                			}
+	                		}
+            			}
+            		}
+                }
+        		
         		pattern.setPageTemplates(dbEntity.getPageTemplates());
-        		pattern.setMetaEntitySet(dbEntity.getMetaEntitySet());
+        		//pattern.setMetaEntitySet(dbEntity.getMetaEntitySet());
         		uriPatternDao.merge(pattern);
         	}
         }
@@ -452,33 +590,11 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
     			value.setMetaEntity(uriPatternMetaEntity);
 	
     			/* satisfy data integrity */
-    			if(value.isEmptyValue()) {
-    				value.setStaticValue(null);
-    				value.setAmAttribute(null);
-    				value.setGroovyScript(null);
-    			} else if(value.getAmAttribute() != null && StringUtils.isNotBlank(value.getAmAttribute().getId())) {
-    				value.setStaticValue(null);
-    				value.setGroovyScript(null);
-    				value.setEmptyValue(false);
-    			} else if(StringUtils.isNotBlank(value.getStaticValue())) {
-    				value.setAmAttribute(null);
-    				value.setGroovyScript(null);
-    				value.setEmptyValue(false);
-    			} else if(StringUtils.isNotBlank(value.getGroovyScript())) {
-    				value.setAmAttribute(null);
-    				value.setStaticValue(null);
-    				value.setEmptyValue(false);
-    			}
-
-    			/* set am attribute entity, if any */
-    			if(value.getAmAttribute() != null && StringUtils.isNotBlank(value.getAmAttribute().getId())) {
-    				final AuthResourceAMAttributeEntity attribute = authResourceAMAttributeDao.findById(value.getAmAttribute().getId());
-    				value.setAmAttribute(attribute);
-    			}
+    			populateMetaValue(value);
     		}
     	}
         
-        final URIPatternMetaTypeEntity metaType = uriPatternMetaTypeDao.findById(uriPatternMetaEntity.getMetaType().getId());
+        final URIPatternMetaTypeEntity metaType = patternMetaTypeDAO.findById(uriPatternMetaEntity.getMetaType().getId());
     	final URIPatternEntity pattern = uriPatternDao.findById(uriPatternMetaEntity.getPattern().getId());
         if(StringUtils.isBlank(uriPatternMetaEntity.getId())) {
         	/* set meta type */
@@ -556,7 +672,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
 
     @Override
     public List<URIPatternMetaTypeEntity> getAllMetaType() {
-        return uriPatternMetaTypeDao.findAll();
+        return patternMetaTypeDAO.findAll();
     }
 
     /*

@@ -17,10 +17,9 @@ import java.util.Set;
 @DozerDTOCorrespondence(URIPatternMeta.class)
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @AttributeOverrides({
-	@AttributeOverride(name = "id", column = @Column(name = "URI_PATTERN_META_ID")),
-	@AttributeOverride(name = "name", column = @Column(name = "URI_PATTERN_NAME", length = 100, nullable = false))
+	@AttributeOverride(name = "id", column = @Column(name = "URI_PATTERN_META_ID"))
 })
-public class URIPatternMetaEntity extends AbstractKeyNameEntity {
+public class URIPatternMetaEntity extends AbstractMetaEntity {
 
 	/**
 	 * 
@@ -30,13 +29,8 @@ public class URIPatternMetaEntity extends AbstractKeyNameEntity {
 	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name="URI_PATTERN_ID", referencedColumnName = "URI_PATTERN_ID")
 	private URIPatternEntity pattern;
-
-	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    @JoinColumn(name="URI_PATTERN_META_TYPE_ID", referencedColumnName = "URI_PATTERN_META_TYPE_ID")
-	private URIPatternMetaTypeEntity metaType;
 	
 	@OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "metaEntity", orphanRemoval=true)
-	//@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	private Set<URIPatternMetaValueEntity> metaValueSet;
 
 	public URIPatternEntity getPattern() {
@@ -45,14 +39,6 @@ public class URIPatternMetaEntity extends AbstractKeyNameEntity {
 	
 	public void setPattern(URIPatternEntity pattern) {
 		this.pattern = pattern;
-	}
-	
-	public URIPatternMetaTypeEntity getMetaType() {
-		return metaType;
-	}
-	
-	public void setMetaType(URIPatternMetaTypeEntity metaType) {
-		this.metaType = metaType;
 	}
 
     public Set<URIPatternMetaValueEntity> getMetaValueSet() {
@@ -67,8 +53,6 @@ public class URIPatternMetaEntity extends AbstractKeyNameEntity {
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
-		result = prime * result
-				+ ((metaType == null) ? 0 : metaType.hashCode());
 		result = prime * result + ((pattern == null) ? 0 : pattern.hashCode());
 		return result;
 	}
@@ -82,11 +66,6 @@ public class URIPatternMetaEntity extends AbstractKeyNameEntity {
 		if (getClass() != obj.getClass())
 			return false;
 		URIPatternMetaEntity other = (URIPatternMetaEntity) obj;
-		if (metaType == null) {
-			if (other.metaType != null)
-				return false;
-		} else if (!metaType.equals(other.metaType))
-			return false;
 		if (pattern == null) {
 			if (other.pattern != null)
 				return false;
@@ -97,11 +76,9 @@ public class URIPatternMetaEntity extends AbstractKeyNameEntity {
 
 	@Override
 	public String toString() {
-		return String
-				.format("URIPatternMetaEntity [pattern=%s, metaType=%s, toString()=%s]",
-						pattern, metaType, super.toString());
+		return "URIPatternMetaEntity [pattern=" + pattern + ", metaType="
+				+ metaType + ", name=" + name + ", id=" + id + "]";
 	}
 
-	
 	
 }

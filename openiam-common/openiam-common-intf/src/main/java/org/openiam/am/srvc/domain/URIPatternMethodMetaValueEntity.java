@@ -1,38 +1,39 @@
 package org.openiam.am.srvc.domain;
 
+import javax.persistence.AttributeOverride;
+import javax.persistence.AttributeOverrides;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Type;
 import org.openiam.am.srvc.dto.URIPatternMetaValue;
-import org.openiam.base.AttributeOperationEnum;
-import org.openiam.base.domain.AbstractKeyNameEntity;
+import org.openiam.am.srvc.dto.URIPatternMethodMetaValue;
 import org.openiam.dozer.DozerDTOCorrespondence;
 
-import javax.persistence.*;
-
-import java.io.Serializable;
-
 @Entity
-@Table(name = "URI_PATTERN_META_VALUE")
-@DozerDTOCorrespondence(URIPatternMetaValue.class)
+@Table(name = "PATTERN_METHOD_META_VALUE")
+@DozerDTOCorrespondence(URIPatternMethodMetaValue.class)
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @AttributeOverrides({
-	@AttributeOverride(name = "id", column = @Column(name = "URI_PATTERN_META_VALUE_ID"))
+	@AttributeOverride(name = "id", column = @Column(name = "PATTERN_METHOD_META_VALUE_ID"))
 })
-public class URIPatternMetaValueEntity extends AbstractMetaValueEntity {
+public class URIPatternMethodMetaValueEntity extends AbstractMetaValueEntity {
 
-	private static final long serialVersionUID = 1L;
-	
 	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    @JoinColumn(name="URI_PATTERN_META_ID", referencedColumnName = "URI_PATTERN_META_ID", insertable=true, updatable=true, nullable=false)
-	private URIPatternMetaEntity metaEntity;
+    @JoinColumn(name="URI_PATTERN_METHOD_META_ID", referencedColumnName = "URI_PATTERN_METHOD_META_ID", insertable=true, updatable=true, nullable=false)
+	private URIPatternMethodMetaEntity metaEntity;
 
-	public URIPatternMetaEntity getMetaEntity() {
+	public URIPatternMethodMetaEntity getMetaEntity() {
 		return metaEntity;
 	}
 
-	public void setMetaEntity(URIPatternMetaEntity metaEntity) {
+	public void setMetaEntity(URIPatternMethodMetaEntity metaEntity) {
 		this.metaEntity = metaEntity;
 	}
 
@@ -53,7 +54,7 @@ public class URIPatternMetaValueEntity extends AbstractMetaValueEntity {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		URIPatternMetaValueEntity other = (URIPatternMetaValueEntity) obj;
+		URIPatternMethodMetaValueEntity other = (URIPatternMethodMetaValueEntity) obj;
 		if (metaEntity == null) {
 			if (other.metaEntity != null)
 				return false;
@@ -64,13 +65,13 @@ public class URIPatternMetaValueEntity extends AbstractMetaValueEntity {
 
 	@Override
 	public String toString() {
-		return "URIPatternMetaValueEntity [metaEntity=" + metaEntity
+		return "URIPatternMethodMetaValueEntity [metaEntity=" + metaEntity
 				+ ", propagateThroughProxy=" + propagateThroughProxy
 				+ ", propagateOnError=" + propagateOnError + ", staticValue="
 				+ staticValue + ", groovyScript=" + groovyScript
 				+ ", emptyValue=" + emptyValue + ", amAttribute=" + amAttribute
 				+ ", name=" + name + ", id=" + id + "]";
 	}
-
+	
 	
 }

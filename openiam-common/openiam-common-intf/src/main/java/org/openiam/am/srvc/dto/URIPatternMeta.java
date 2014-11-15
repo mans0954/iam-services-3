@@ -7,34 +7,26 @@ import org.openiam.dozer.DozerDTOCorrespondence;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+
 import java.io.Serializable;
 import java.util.Set;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "URIPatternMeta", propOrder = {
-        "uriPatternId",
-        "metaType",
+        "patternId",
         "metaValueSet"
 })
 @DozerDTOCorrespondence(URIPatternMetaEntity.class)
-public class URIPatternMeta extends KeyNameDTO {
+public class URIPatternMeta extends AbstractMeta {
 
-	private String uriPatternId;
-	private URIPatternMetaType metaType;
+	private String patternId;
 	private Set<URIPatternMetaValue> metaValueSet;
 	
-	public String getUriPatternId() {
-		return uriPatternId;
+	public String getPatternId() {
+		return patternId;
 	}
-	public void setUriPatternId(String uriPatternId) {
-		this.uriPatternId = uriPatternId;
-	}
-
-    public URIPatternMetaType getMetaType() {
-		return metaType;
-	}
-	public void setMetaType(URIPatternMetaType metaType) {
-		this.metaType = metaType;
+	public void setPatternId(String patternId) {
+		this.patternId = patternId;
 	}
 	public Set<URIPatternMetaValue> getMetaValueSet() {
 		return metaValueSet;
@@ -47,9 +39,9 @@ public class URIPatternMeta extends KeyNameDTO {
 		final int prime = 31;
 		int result = super.hashCode();
 		result = prime * result
-				+ ((metaType == null) ? 0 : metaType.hashCode());
+				+ ((metaValueSet == null) ? 0 : metaValueSet.hashCode());
 		result = prime * result
-				+ ((uriPatternId == null) ? 0 : uriPatternId.hashCode());
+				+ ((patternId == null) ? 0 : patternId.hashCode());
 		return result;
 	}
 	@Override
@@ -61,23 +53,26 @@ public class URIPatternMeta extends KeyNameDTO {
 		if (getClass() != obj.getClass())
 			return false;
 		URIPatternMeta other = (URIPatternMeta) obj;
-		if (metaType == null) {
-			if (other.metaType != null)
+		if (metaValueSet == null) {
+			if (other.metaValueSet != null)
 				return false;
-		} else if (!metaType.equals(other.metaType))
+		} else if (!metaValueSet.equals(other.metaValueSet))
 			return false;
-		if (uriPatternId == null) {
-			if (other.uriPatternId != null)
+		if (patternId == null) {
+			if (other.patternId != null)
 				return false;
-		} else if (!uriPatternId.equals(other.uriPatternId))
+		} else if (!patternId.equals(other.patternId))
 			return false;
 		return true;
 	}
 	@Override
 	public String toString() {
-		return String.format(
-				"URIPatternMeta [uriPatternId=%s, metaType=%s, toString()=%s]",
-				uriPatternId, metaType, super.toString());
+		return "URIPatternMeta [patternId=" + patternId
+				+ ", metaValueSet=" + metaValueSet + ", metaType=" + metaType
+				+ ", name=" + name + ", id=" + id + ", objectState="
+				+ objectState + ", requestorSessionID=" + requestorSessionID
+				+ ", requestorUserId=" + requestorUserId + ", requestorLogin="
+				+ requestorLogin + ", requestClientIP=" + requestClientIP + "]";
 	}
 	
 	

@@ -874,7 +874,7 @@
 		</field>
 		<field
 			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
-			custom-converter-param="dto2entityShallowDozerMapper">
+			custom-converter-param="dto2entityDeepDozerMapper">
 			<a>metaEntitySet</a>
 			<b>metaEntitySet</b>
 		</field>
@@ -897,6 +897,24 @@
 		<field>
 			<a>authProvider.id</a>
 			<b>authProviderId</b>
+		</field>
+		<field
+			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
+			custom-converter-param="dto2entityDeepDozerMapper">
+			<a>methods</a>
+			<b>methods</b>
+		</field>
+		<field
+			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
+			custom-converter-param="dto2entityDeepDozerMapper">
+			<a>params</a>
+			<b>params</b>
+		</field>
+		<field
+			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
+			custom-converter-param="dto2entityShallowDozerMapper">
+			<a>substitutions</a>
+			<b>substitutions</b>
 		</field>
 	</mapping>
 	<mapping>
@@ -1081,57 +1099,28 @@
 	</mapping>
 
 	<mapping>
-		<class-a>org.openiam.am.srvc.domain.URIPatternMetaValueEntity
-		</class-a>
-		<class-b>org.openiam.am.srvc.dto.URIPatternMetaValue</class-b>
-		<field>
-			<a>id</a>
-			<b>id</b>
-		</field>
-		<field>
-			<a>name</a>
-			<b>name</b>
-		</field>
-		<field>
-			<a>staticValue</a>
-			<b>staticValue</b>
-		</field>
-		<field>
-			<a>groovyScript</a>
-			<b>groovyScript</b>
-		</field>
-		<field
-			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentObjectConverter"
-			custom-converter-param="dto2entityShallowDozerMapper">
-			<a>amAttribute</a>
-			<b>amAttribute</b>
-		</field>
-		<field>
-			<a>metaEntity.id</a>
-			<b>metaEntityId</b>
-		</field>
-	</mapping>
-
-	<mapping>
 		<class-a>org.openiam.am.srvc.domain.URIPatternMetaEntity</class-a>
 		<class-b>org.openiam.am.srvc.dto.URIPatternMeta</class-b>
 		<field>
-			<a>id</a>
-			<b>id</b>
-		</field>
-		<field>
-			<a>name</a>
-			<b>name</b>
-		</field>
-		<field>
 			<a>pattern.id</a>
-			<b>uriPatternId</b>
+			<b>patternId</b>
 		</field>
+		<field
+			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
+			custom-converter-param="dto2entityDeepDozerMapper">
+			<a>metaValueSet</a>
+			<b>metaValueSet</b>
+		</field>
+	</mapping>
+	
+	<mapping>
+		<class-a>org.openiam.am.srvc.domain.URIPatternMethodMetaEntity</class-a>
+		<class-b>org.openiam.am.srvc.dto.URIPatternMethodMeta</class-b>
 		<field
 			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentObjectConverter"
 			custom-converter-param="dto2entityShallowDozerMapper">
-			<a>metaType</a>
-			<b>metaType</b>
+			<a>patternMethod</a>
+			<b>patternMethod</b>
 		</field>
 		<field
 			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
@@ -1225,5 +1214,26 @@
             <a>synchReview.synchReviewId</a>
             <b>synchReviewId</b>
         </field>
+    </mapping>
+    
+    <mapping>
+    	<class-a>org.openiam.am.srvc.domain.URIPatternMethodEntity</class-a>
+    	<class-b>org.openiam.am.srvc.dto.URIPatternMethod</class-b>
+    	<field>
+    		<a>pattern.id</a>
+    		<b>patternId</b>
+    	</field>
+    	<field
+			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
+			custom-converter-param="dto2entityShallowDozerMapper">
+    		<a>params</a>
+    		<b>params</b>
+    	</field>
+    	<field
+			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
+			custom-converter-param="dto2entityDeepDozerMapper">
+    		<a>metaEntitySet</a>
+    		<b>metaEntitySet</b>
+    	</field>
     </mapping>
 </mappings>

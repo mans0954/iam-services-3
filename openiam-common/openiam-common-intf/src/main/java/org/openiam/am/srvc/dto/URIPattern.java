@@ -4,6 +4,9 @@ import org.apache.commons.collections.CollectionUtils;
 import org.openiam.am.srvc.comparator.AuthLevelGroupingXrefComparator;
 import org.openiam.am.srvc.domain.AuthLevelGroupingURIPatternXrefEntity;
 import org.openiam.am.srvc.domain.URIPatternEntity;
+import org.openiam.am.srvc.domain.URIPatternMethodEntity;
+import org.openiam.am.srvc.domain.URIPatternParameterEntity;
+import org.openiam.am.srvc.domain.URIPatternSubstitutionEntity;
 import org.openiam.base.KeyDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.meta.dto.MetadataElementPageTemplate;
@@ -12,6 +15,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,7 +37,10 @@ import java.util.Set;
         "groupingXrefs",
         "resourceCoorelatedName",
         "servers",
-        "authProviderId"
+        "authProviderId",
+        "methods",
+        "params",
+        "substitutions"
 })
 @DozerDTOCorrespondence(URIPatternEntity.class)
 public class URIPattern extends KeyDTO {
@@ -51,6 +58,9 @@ public class URIPattern extends KeyDTO {
 	private String resourceCoorelatedName;
 	private Set<URIPatternServer> servers;
 	private String authProviderId;
+	private Set<URIPatternMethod> methods;
+	private Set<URIPatternParameter> params;
+	private Set<URIPatternSubstitution> substitutions;
 	
 	/*
 	 * federation variables.  Internal use only
@@ -61,6 +71,18 @@ public class URIPattern extends KeyDTO {
 	@XmlTransient
 	private List<RoundRobinServer> serverList;
 	
+	public Set<URIPatternParameter> getParams() {
+		return params;
+	}
+	public void setParams(Set<URIPatternParameter> params) {
+		this.params = params;
+	}
+	public Set<URIPatternMethod> getMethods() {
+		return methods;
+	}
+	public void setMethods(Set<URIPatternMethod> methods) {
+		this.methods = methods;
+	}
 	public String getContentProviderId() {
 		return contentProviderId;
 	}
@@ -173,6 +195,12 @@ public class URIPattern extends KeyDTO {
 		this.authProviderId = authProviderId;
 	}
 	
+	public Set<URIPatternSubstitution> getSubstitutions() {
+		return substitutions;
+	}
+	public void setSubstitutions(Set<URIPatternSubstitution> substitutions) {
+		this.substitutions = substitutions;
+	}
 	@Override
 	public int hashCode() {
 		final int prime = 31;
