@@ -112,7 +112,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
                 return null;
             }
 
-            return jksManager.decodeKey(this.decrypt(masterKey, uk.getKey()));
+            return jksManager.decodeKey(this.decrypt(masterKey, uk.getValue()));
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             throw new EncryptionException(e);
@@ -356,25 +356,25 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         byte[] answerKey = jksManager.getNewPrivateKey();
         // create new USER KEYS
         UserKey uk = new UserKey();
-        uk.setKey(this.encrypt(masterKey, jksManager.encodeKey(pwdKey)));
+        uk.setValue(this.encrypt(masterKey, jksManager.encodeKey(pwdKey)));
         uk.setName(KeyName.password.name());
         uk.setUserId(userSecurityWrapper.getUserId());
         newUserKeyList.add(uk);
 
         uk = new UserKey();
-        uk.setKey(this.encrypt(masterKey, jksManager.encodeKey(tokenKey)));
+        uk.setValue(this.encrypt(masterKey, jksManager.encodeKey(tokenKey)));
         uk.setName(KeyName.token.name());
         uk.setUserId(userSecurityWrapper.getUserId());
         newUserKeyList.add(uk);
 
         uk = new UserKey();
-        uk.setKey(this.encrypt(masterKey, jksManager.encodeKey(dataKey)));
+        uk.setValue(this.encrypt(masterKey, jksManager.encodeKey(dataKey)));
         uk.setName(KeyName.dataKey.name());
         uk.setUserId(userSecurityWrapper.getUserId());
         newUserKeyList.add(uk);
 
         uk = new UserKey();
-        uk.setKey(this.encrypt(masterKey, jksManager.encodeKey(answerKey)));
+        uk.setValue(this.encrypt(masterKey, jksManager.encodeKey(answerKey)));
         uk.setName(KeyName.challengeResponse.name());
         uk.setUserId(userSecurityWrapper.getUserId());
         newUserKeyList.add(uk);
@@ -463,7 +463,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
     private void decryptSecurityDataForUser(byte[] masterKey, UserSecurityWrapper userSecurityWrapper) throws Exception {
         log.warn("Decrypting user data ...");
         for (UserKey uk : userSecurityWrapper.getUserKeyList()) {
-            byte[] key = jksManager.decodeKey(this.decrypt(masterKey, uk.getKey()));
+            byte[] key = jksManager.decodeKey(this.decrypt(masterKey, uk.getValue()));
             if (KeyName.password.name().equals(uk.getName())) {
                 decryptUserPasswords(key, userSecurityWrapper);
             } else if (KeyName.challengeResponse.name().equals(uk.getName())) {

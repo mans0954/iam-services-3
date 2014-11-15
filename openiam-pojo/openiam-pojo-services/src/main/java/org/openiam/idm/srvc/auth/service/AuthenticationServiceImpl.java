@@ -499,7 +499,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
         UserStatusEnum secondaryStatus = u.getSecondaryStatus();
 
         if (en == UserStatusEnum.DELETED || en == UserStatusEnum.INACTIVE
-                || en == UserStatusEnum.LEAVE || en == UserStatusEnum.TERMINATE) {
+                || en == UserStatusEnum.LEAVE || en == UserStatusEnum.TERMINATED) {
             return false;
 
         }

@@ -7,6 +7,7 @@ import javax.persistence.*;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
+import org.openiam.base.domain.KeyEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.pswd.dto.PasswordHistory;
@@ -15,13 +16,14 @@ import org.openiam.idm.srvc.pswd.dto.PasswordHistory;
 @Table(name = "PWD_HISTORY")
 @DozerDTOCorrespondence(PasswordHistory.class)
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class PasswordHistoryEntity {
+@AttributeOverride(name = "id", column = @Column(name = "PWD_HISTORY_ID"))
+public class PasswordHistoryEntity extends KeyEntity {
 
-	@Id
-    @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name = "system-uuid", strategy = "uuid")
-	@Column(name = "PWD_HISTORY_ID", length = 32, nullable = false)
-	private String pwdHistoryId;
+//	@Id
+//    @GeneratedValue(generator = "system-uuid")
+//    @GenericGenerator(name = "system-uuid", strategy = "uuid")
+//	@Column(name = "PWD_HISTORY_ID", length = 32, nullable = false)
+//	private String pwdHistoryId;
 
     @ManyToOne
     @JoinColumn(name="LOGIN_ID")
@@ -37,12 +39,12 @@ public class PasswordHistoryEntity {
 	@Column(name = "PASSWORD", length = 255, nullable = false)
     private String password;
     
-	public String getPwdHistoryId() {
-		return pwdHistoryId;
-	}
-	public void setPwdHistoryId(String pwdHistoryId) {
-		this.pwdHistoryId = pwdHistoryId;
-	}
+//	public String getPwdHistoryId() {
+//		return pwdHistoryId;
+//	}
+//	public void setPwdHistoryId(String pwdHistoryId) {
+//		this.pwdHistoryId = pwdHistoryId;
+//	}
 
     public LoginEntity getLogin() {
         return login;
@@ -67,21 +69,27 @@ public class PasswordHistoryEntity {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null)
+            return false;
+        if (!super.equals(o))
+            return false;
+        if (getClass() != o.getClass()) return false;
 
         PasswordHistoryEntity that = (PasswordHistoryEntity) o;
 
         if (dateCreated != null ? !dateCreated.equals(that.dateCreated) : that.dateCreated != null) return false;
         if (password != null ? !password.equals(that.password) : that.password != null) return false;
-        if (pwdHistoryId != null ? !pwdHistoryId.equals(that.pwdHistoryId) : that.pwdHistoryId != null) return false;
+//        if (pwdHistoryId != null ? !pwdHistoryId.equals(that.pwdHistoryId) : that.pwdHistoryId != null) return false;
 
         return true;
     }
 
     @Override
     public int hashCode() {
-        int result = pwdHistoryId != null ? pwdHistoryId.hashCode() : 0;
+        int result = super.hashCode();
+//        int result = pwdHistoryId != null ? pwdHistoryId.hashCode() : 0;
         result = 31 * result + (dateCreated != null ? dateCreated.hashCode() : 0);
         result = 31 * result + (password != null ? password.hashCode() : 0);
         return result;
