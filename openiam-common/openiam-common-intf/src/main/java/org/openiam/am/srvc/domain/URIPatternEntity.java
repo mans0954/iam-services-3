@@ -91,6 +91,9 @@ public class URIPatternEntity extends KeyEntity {
     @JoinColumn(name="PROVIDER_ID", referencedColumnName = "PROVIDER_ID", insertable = true, updatable = true, nullable=true)
     private AuthProviderEntity authProvider;
     
+    @Column(name="REDIRECT_TO", length=400)
+    private String redirectTo;
+    
 	public Set<URIPatternParameterEntity> getParams() {
 		return params;
 	}
@@ -267,6 +270,14 @@ public class URIPatternEntity extends KeyEntity {
 	public void setSubstitutions(Set<URIPatternSubstitutionEntity> substitutions) {
 		this.substitutions = substitutions;
 	}
+	
+	public String getRedirectTo() {
+		return redirectTo;
+	}
+
+	public void setRedirectTo(String redirectTo) {
+		this.redirectTo = redirectTo;
+	}
 
 	@Override
 	public int hashCode() {
@@ -281,6 +292,8 @@ public class URIPatternEntity extends KeyEntity {
 		result = prime * result
 				+ ((resource == null) ? 0 : resource.hashCode());
 		result = prime * result + ((uiTheme == null) ? 0 : uiTheme.hashCode());
+		result = prime * result
+				+ ((redirectTo == null) ? 0 : redirectTo.hashCode());
 		return result;
 	}
 
@@ -319,6 +332,11 @@ public class URIPatternEntity extends KeyEntity {
 			if (other.uiTheme != null)
 				return false;
 		} else if (!uiTheme.equals(other.uiTheme))
+			return false;
+		if (redirectTo == null) {
+			if (other.redirectTo != null)
+				return false;
+		} else if (!redirectTo.equals(other.redirectTo))
 			return false;
 		return true;
 	}

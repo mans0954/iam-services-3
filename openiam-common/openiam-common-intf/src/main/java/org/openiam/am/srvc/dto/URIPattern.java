@@ -40,7 +40,8 @@ import java.util.Set;
         "authProviderId",
         "methods",
         "params",
-        "substitutions"
+        "substitutions",
+        "redirectTo"
 })
 @DozerDTOCorrespondence(URIPatternEntity.class)
 public class URIPattern extends KeyDTO {
@@ -61,6 +62,7 @@ public class URIPattern extends KeyDTO {
 	private Set<URIPatternMethod> methods;
 	private Set<URIPatternParameter> params;
 	private Set<URIPatternSubstitution> substitutions;
+	private String redirectTo;
 	
 	/*
 	 * federation variables.  Internal use only
@@ -201,6 +203,15 @@ public class URIPattern extends KeyDTO {
 	public void setSubstitutions(Set<URIPatternSubstitution> substitutions) {
 		this.substitutions = substitutions;
 	}
+	
+	public String getRedirectTo() {
+		return redirectTo;
+	}
+
+	public void setRedirectTo(String redirectTo) {
+		this.redirectTo = redirectTo;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -213,6 +224,8 @@ public class URIPattern extends KeyDTO {
 						.hashCode());
 		result = prime * result + (isPublic ? 1231 : 1237);
 		result = prime * result + ((pattern == null) ? 0 : pattern.hashCode());
+		result = prime * result
+				+ ((redirectTo == null) ? 0 : redirectTo.hashCode());
 		result = prime * result
 				+ ((resourceId == null) ? 0 : resourceId.hashCode());
 		result = prime * result + ((themeId == null) ? 0 : themeId.hashCode());
@@ -244,6 +257,11 @@ public class URIPattern extends KeyDTO {
 				return false;
 		} else if (!pattern.equals(other.pattern))
 			return false;
+		if (redirectTo == null) {
+			if (other.redirectTo != null)
+				return false;
+		} else if (!redirectTo.equals(other.redirectTo))
+			return false;
 		if (resourceId == null) {
 			if (other.resourceId != null)
 				return false;
@@ -258,12 +276,23 @@ public class URIPattern extends KeyDTO {
 	}
 	@Override
 	public String toString() {
-		return String
-				.format("URIPattern [contentProviderId=%s, pattern=%s, isPublic=%s, resourceId=%s, themeId=%s, toString()=%s]",
-						contentProviderId, pattern, isPublic, resourceId,
-						themeId, super.toString());
+		return "URIPattern [contentProviderId=" + contentProviderId
+				+ ", contentProviderName=" + contentProviderName + ", pattern="
+				+ pattern + ", isPublic=" + isPublic + ", resourceId="
+				+ resourceId + ", resourceName=" + resourceName
+				+ ", metaEntitySet=" + metaEntitySet + ", pageTemplates="
+				+ pageTemplates + ", themeId=" + themeId + ", groupingXrefs="
+				+ groupingXrefs + ", resourceCoorelatedName="
+				+ resourceCoorelatedName + ", servers=" + servers
+				+ ", authProviderId=" + authProviderId + ", methods=" + methods
+				+ ", params=" + params + ", substitutions=" + substitutions
+				+ ", redirectTo=" + redirectTo + ", serverIdx=" + serverIdx
+				+ ", serverList=" + serverList + ", id=" + id
+				+ ", objectState=" + objectState + ", requestorSessionID="
+				+ requestorSessionID + ", requestorUserId=" + requestorUserId
+				+ ", requestorLogin=" + requestorLogin + ", requestClientIP="
+				+ requestClientIP + "]";
 	}
-	
 	
 	
 }
