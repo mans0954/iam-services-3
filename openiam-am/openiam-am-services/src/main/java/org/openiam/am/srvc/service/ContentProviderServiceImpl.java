@@ -322,22 +322,31 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
     }
     
     private void populateMetaValue(final AbstractMetaValueEntity value) {
-    	if(value.isEmptyValue()) {
+    	if(StringUtils.isNotBlank(value.getFetchedValue())) {
+    		value.setStaticValue(null);
+			value.setAmAttribute(null);
+			value.setGroovyScript(null);
+			value.setEmptyValue(false);
+    	} else if(value.isEmptyValue()) {
 			value.setStaticValue(null);
 			value.setAmAttribute(null);
 			value.setGroovyScript(null);
+			value.setFetchedValue(null);
 		} else if(value.getAmAttribute() != null && StringUtils.isNotBlank(value.getAmAttribute().getId())) {
 			value.setStaticValue(null);
 			value.setGroovyScript(null);
 			value.setEmptyValue(false);
+			value.setFetchedValue(null);
 		} else if(StringUtils.isNotBlank(value.getStaticValue())) {
 			value.setAmAttribute(null);
 			value.setGroovyScript(null);
 			value.setEmptyValue(false);
+			value.setFetchedValue(null);
 		} else if(StringUtils.isNotBlank(value.getGroovyScript())) {
 			value.setAmAttribute(null);
 			value.setStaticValue(null);
 			value.setEmptyValue(false);
+			value.setFetchedValue(null);
 		}
 
 		/* set am attribute entity, if any */

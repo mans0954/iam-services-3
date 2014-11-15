@@ -13,7 +13,8 @@ import org.openiam.base.KeyNameDTO;
         "groovyScript",
         "propagateThroughProxy",
         "propagateOnError",
-        "emptyValue"
+        "emptyValue",
+        "fetchedValue"
 })
 public abstract class AbstractPatternMetaValue extends KeyNameDTO {
 
@@ -23,6 +24,7 @@ public abstract class AbstractPatternMetaValue extends KeyNameDTO {
 	protected boolean propagateThroughProxy = true;
 	protected boolean emptyValue = false;
 	protected boolean propagateOnError = true;
+	protected String fetchedValue;
 	public String getStaticValue() {
 		return staticValue;
 	}
@@ -59,6 +61,13 @@ public abstract class AbstractPatternMetaValue extends KeyNameDTO {
 	public void setPropagateOnError(boolean propagateOnError) {
 		this.propagateOnError = propagateOnError;
 	}
+	
+	public String getFetchedValue() {
+		return fetchedValue;
+	}
+	public void setFetchedValue(String fetchedValue) {
+		this.fetchedValue = fetchedValue;
+	}
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -66,6 +75,8 @@ public abstract class AbstractPatternMetaValue extends KeyNameDTO {
 		result = prime * result
 				+ ((amAttribute == null) ? 0 : amAttribute.hashCode());
 		result = prime * result + (emptyValue ? 1231 : 1237);
+		result = prime * result
+				+ ((fetchedValue == null) ? 0 : fetchedValue.hashCode());
 		result = prime * result
 				+ ((groovyScript == null) ? 0 : groovyScript.hashCode());
 		result = prime * result + (propagateOnError ? 1231 : 1237);
@@ -104,6 +115,12 @@ public abstract class AbstractPatternMetaValue extends KeyNameDTO {
 				return false;
 		} else if (!staticValue.equals(other.staticValue))
 			return false;
+		
+		if (fetchedValue == null) {
+			if (other.fetchedValue != null)
+				return false;
+		} else if (!fetchedValue.equals(other.fetchedValue))
+			return false;
 		return true;
 	}
 	@Override
@@ -112,11 +129,12 @@ public abstract class AbstractPatternMetaValue extends KeyNameDTO {
 				+ ", amAttribute=" + amAttribute + ", groovyScript="
 				+ groovyScript + ", propagateThroughProxy="
 				+ propagateThroughProxy + ", emptyValue=" + emptyValue
-				+ ", propagateOnError=" + propagateOnError + ", name=" + name
-				+ ", id=" + id + ", objectState=" + objectState
-				+ ", requestorSessionID=" + requestorSessionID
-				+ ", requestorUserId=" + requestorUserId + ", requestorLogin="
-				+ requestorLogin + ", requestClientIP=" + requestClientIP + "]";
+				+ ", propagateOnError=" + propagateOnError + ", fetchedValue="
+				+ fetchedValue + ", name=" + name + ", id=" + id
+				+ ", objectState=" + objectState + ", requestorSessionID="
+				+ requestorSessionID + ", requestorUserId=" + requestorUserId
+				+ ", requestorLogin=" + requestorLogin + ", requestClientIP="
+				+ requestClientIP + "]";
 	}
 	
 	
