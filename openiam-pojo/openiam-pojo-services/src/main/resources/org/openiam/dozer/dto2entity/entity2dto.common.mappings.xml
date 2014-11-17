@@ -645,4 +645,14 @@
 			<b>patternId</b>
 		</field>
 	</mapping>
+	
+	<!-- -->
+	<mapping>
+		<class-a>org.openiam.am.srvc.domain.URIPatternErrorMappingEntity</class-a>
+		<class-b>org.openiam.am.srvc.dto.URIPatternErrorMapping</class-b>
+		<field>
+			<a>pattern.id</a>
+			<b>patternId</b>
+		</field>
+	</mapping>
 </mappings>

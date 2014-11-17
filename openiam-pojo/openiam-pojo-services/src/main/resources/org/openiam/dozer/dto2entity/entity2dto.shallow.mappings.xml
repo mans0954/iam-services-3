@@ -789,6 +789,10 @@
 			<a>substitutions</a>
 			<b>substitutions</b>
 		</field-exclude>
+		<field-exclude>
+			<a>errorMappings</a>
+			<b>errorMappings</b>
+		</field-exclude>
 	</mapping>
 	<mapping>
 		<class-a>org.openiam.idm.srvc.recon.domain.ReconciliationConfigEntity

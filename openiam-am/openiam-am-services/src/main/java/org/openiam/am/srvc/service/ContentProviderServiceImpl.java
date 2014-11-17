@@ -436,6 +436,12 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
         	}
         }
         
+        if(CollectionUtils.isNotEmpty(pattern.getErrorMappings())) {
+        	for(final URIPatternErrorMappingEntity errorMapping : pattern.getErrorMappings()) {
+        		errorMapping.setPattern(pattern);
+        	}
+        }
+        
         if(StringUtils.isBlank(pattern.getId())) {
         	
             ResourceTypeEntity resourceType = resourceTypeDAO.findById(patternResourceTypeId);
@@ -495,6 +501,11 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
         			dbEntity.getServers().clear();
         			pattern.setServers(dbEntity.getServers());
         		}
+        		
+        		if(CollectionUtils.isEmpty(pattern.getErrorMappings())) {
+                	dbEntity.getErrorMappings().clear();
+                	pattern.setErrorMappings(dbEntity.getErrorMappings());
+                }
         		
         		if(CollectionUtils.isEmpty(pattern.getMetaEntitySet())) {
         			dbEntity.getMetaEntitySet().clear();

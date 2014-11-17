@@ -69,6 +69,9 @@ public class URIPatternEntity extends KeyEntity {
 	
 	@OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "pattern", orphanRemoval=true)
 	private Set<URIPatternSubstitutionEntity> substitutions;
+	
+	@OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "pattern", orphanRemoval=true)
+	private Set<URIPatternErrorMappingEntity> errorMappings;
 
 	//@OneToMany(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, mappedBy="uriPattern")
 	@ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
@@ -277,6 +280,14 @@ public class URIPatternEntity extends KeyEntity {
 
 	public void setRedirectTo(String redirectTo) {
 		this.redirectTo = redirectTo;
+	}
+
+	public Set<URIPatternErrorMappingEntity> getErrorMappings() {
+		return errorMappings;
+	}
+
+	public void setErrorMappings(Set<URIPatternErrorMappingEntity> errorMappings) {
+		this.errorMappings = errorMappings;
 	}
 
 	@Override

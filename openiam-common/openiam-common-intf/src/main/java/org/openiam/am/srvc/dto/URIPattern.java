@@ -4,6 +4,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.openiam.am.srvc.comparator.AuthLevelGroupingXrefComparator;
 import org.openiam.am.srvc.domain.AuthLevelGroupingURIPatternXrefEntity;
 import org.openiam.am.srvc.domain.URIPatternEntity;
+import org.openiam.am.srvc.domain.URIPatternErrorMappingEntity;
 import org.openiam.am.srvc.domain.URIPatternMethodEntity;
 import org.openiam.am.srvc.domain.URIPatternParameterEntity;
 import org.openiam.am.srvc.domain.URIPatternSubstitutionEntity;
@@ -41,7 +42,8 @@ import java.util.Set;
         "methods",
         "params",
         "substitutions",
-        "redirectTo"
+        "redirectTo",
+        "errorMappings"
 })
 @DozerDTOCorrespondence(URIPatternEntity.class)
 public class URIPattern extends KeyDTO {
@@ -63,6 +65,7 @@ public class URIPattern extends KeyDTO {
 	private Set<URIPatternParameter> params;
 	private Set<URIPatternSubstitution> substitutions;
 	private String redirectTo;
+	private Set<URIPatternErrorMapping> errorMappings;
 	
 	/*
 	 * federation variables.  Internal use only
@@ -211,7 +214,13 @@ public class URIPattern extends KeyDTO {
 	public void setRedirectTo(String redirectTo) {
 		this.redirectTo = redirectTo;
 	}
-
+	
+	public Set<URIPatternErrorMapping> getErrorMappings() {
+		return errorMappings;
+	}
+	public void setErrorMappings(Set<URIPatternErrorMapping> errorMappings) {
+		this.errorMappings = errorMappings;
+	}
 	@Override
 	public int hashCode() {
 		final int prime = 31;
