@@ -22,7 +22,6 @@ import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
 import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
-import org.openiam.idm.srvc.msg.service.MailService;
 import org.openiam.idm.srvc.prov.request.domain.RequestApproverEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;
@@ -65,7 +64,7 @@ public class RejectProfileProvisionDelegate extends RejectEntitlementsNotifierDe
 	         final Collection<String> userIds = activitiHelper.getOnRejectUserIds(execution, null, profileModel.getSupervisorIds());
 	         
 	         final UserEntity requestor = getUserEntity(reqeustorId);
-	         sendEmails(requestor, execution, profileModel.getUser(), userIds, emails);
+	         sendEmails(profileModel, requestor, execution, profileModel.getUser(), userIds, emails);
 	         idmAuditLog.succeed();
 		} catch(Throwable e) {
 			idmAuditLog.setException(e);
@@ -76,26 +75,27 @@ public class RejectProfileProvisionDelegate extends RejectEntitlementsNotifierDe
 		}
      }
      
-     private void sendEmails(final UserEntity requestor, final DelegateExecution execution, final User user, final Collection<String> userIds, final Collection<String> emailAddresses) {
+     private void sendEmails(final NewUserProfileRequestModel profileModel, final UserEntity requestor, final DelegateExecution execution, final User user, final Collection<String> userIds, final Collection<String> emailAddresses) {
          if(CollectionUtils.isNotEmpty(userIds)) {
              for(final String userId : userIds) {
-                     sendEmail(requestor, execution, user, userId, null);
+                     sendEmail(profileModel, requestor, execution, user, userId, null);
              }
          }
          
          if(CollectionUtils.isNotEmpty(emailAddresses)) {
              for(final String email : emailAddresses) {
-                     sendEmail(requestor, execution, user, null, email);
+                     sendEmail(profileModel, requestor, execution, user, null, email);
              }
          }
      }
      
-     private void sendEmail(final UserEntity requestor, final DelegateExecution execution, final User user, final String userId, final String email) {
+     private void sendEmail(final NewUserProfileRequestModel profileModel, final UserEntity requestor, final DelegateExecution execution, final User user, final String userId, final String email) {
 	     final NotificationRequest request = new NotificationRequest();
 	     request.setUserId(userId);
 	     request.setNotificationType(getNotificationType(execution));
 	     request.setTo(email);
 	     
+	     request.getParamList().add(new NotificationParam("TARGET_REQUEST", profileModel));
 	     request.getParamList().add(new NotificationParam("REQUEST_REASON", getTaskDescription(execution)));
 	     request.getParamList().add(new NotificationParam("TARGET_USER", user.getDisplayName()));
 	     request.getParamList().add(new NotificationParam("COMMENT", getComment(execution)));
