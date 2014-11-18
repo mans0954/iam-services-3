@@ -20,7 +20,7 @@ public enum ProvisionMethodEnum {
     AUTO("AUTO"),
     @XmlEnumValue("manual")
     MANUAL("MANUAL");
-;
+
     private String value;
   
     ProvisionMethodEnum(String val) {
@@ -32,6 +32,5 @@ public enum ProvisionMethodEnum {
     public void setValue(String val) {
     	value = val;
     }  
-
 
 }
