@@ -1,9 +1,12 @@
 package org.openiam.connector.linux.command.base;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.google.gdata.data.introspection.Collection;
+import org.apache.commons.collections.CollectionUtils;
 import org.openiam.connector.common.command.AbstractCommand;
 import org.openiam.connector.linux.data.LinuxGroup;
 import org.openiam.connector.linux.data.LinuxUser;
@@ -20,6 +23,7 @@ import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.dto.PolicyMapObjectTypeOptions;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
+import org.openiam.util.StringUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.StringUtils;
 
@@ -67,11 +71,26 @@ public abstract class AbstractLinuxCommand<Request extends RequestType, Response
                     .getResourceId().length() == 0)) {
                 log.debug("ManagedSys found; Name=" + managedSys.getName());
 
-                if ((ssh = sshConnectionFactory.getSSH(managedSysId)) == null)
-                    ssh = sshConnectionFactory.addSSH(managedSysId,
-                            managedSys.getHostUrl(), managedSys.getPort(),
-                            managedSys.getUserId(),
-                            this.getDecryptedPassword(managedSys.getPswd()));
+                if ((ssh = sshConnectionFactory.getSSH(managedSysId)) == null) {
+                    File f = null;
+                    if (org.apache.commons.lang.StringUtils.isNotBlank(managedSys.getConnectionString())) {
+                        try {
+                            f = new File(managedSys.getConnectionString());
+                            ssh = sshConnectionFactory.addSSH(managedSysId,
+                                    managedSys.getHostUrl(), managedSys.getPort(),
+                                    managedSys.getUserId(),
+                                    f);
+                        } catch (Exception e) {
+                            log.error("Can't read public key file!");
+                        }
+                    }
+                    if (f == null) {
+                        ssh = sshConnectionFactory.addSSH(managedSysId,
+                                managedSys.getHostUrl(), managedSys.getPort(),
+                                managedSys.getUserId(),
+                                this.getDecryptedPassword(managedSys.getPswd()));
+                    }
+                }
             }
         }
         if (ssh == null)
@@ -85,15 +104,13 @@ public abstract class AbstractLinuxCommand<Request extends RequestType, Response
      * password to be sent twice over STDIN This is more secure than changing
      * the password via arguments to useradd/usermodify, as these would appear
      * within the process list
-     * 
-     * @param sshAgent
-     *            Handle to SSH connection
-     * @param user
-     *            User with new password set
+     *
+     * @param sshAgent Handle to SSH connection
+     * @param user     User with new password set
      * @throws org.openiam.connector.linux.ssh.SSHException
      */
     protected void sendPassword(SSHAgent sshAgent, LinuxUser user,
-            String sudoPassword) throws SSHException {
+                                String sudoPassword) throws SSHException {
         String pass = user.getPassword();
         String doubledPass = pass + "\n" + pass + "\n" + sudoPassword + "\n";
         sshAgent.executeCommand(user.getUserSetPasswordCommand(), doubledPass);
@@ -101,11 +118,9 @@ public abstract class AbstractLinuxCommand<Request extends RequestType, Response
 
     /**
      * Extracts a LinuxUser from the given list of Extensible Objects,
-     * 
-     * @param login
-     *            Login name of new user
-     * @param obj
-     *            List containing attributes
+     *
+     * @param login Login name of new user
+     * @param obj   List containing attributes
      * @return A LinuxUser with the relevant fields populated
      */
     protected LinuxUser objectToLinuxUser(String login, ExtensibleObject obj) {
@@ -190,7 +205,7 @@ public abstract class AbstractLinuxCommand<Request extends RequestType, Response
     }
 
     protected ObjectValue getObjectValue(String searchRule,
-            String userAsString, SSHAgent ssh) {
+                                         String userAsString, SSHAgent ssh) {
         ObjectValue obj = new ObjectValue();
         String[] linuxUser = userAsString.split(";");
         if (linuxUser != null && linuxUser.length > 0) {

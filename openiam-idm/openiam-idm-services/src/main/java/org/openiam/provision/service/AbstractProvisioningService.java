@@ -81,6 +81,7 @@ import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.PasswordSync;
 import org.openiam.provision.dto.ProvisionActionEvent;
+import org.openiam.provision.dto.ProvisionActionTypeEnum;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.provision.type.ExtensibleAttribute;
@@ -1750,13 +1751,13 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     }
 
     @Override
-    public Response add(ProvisionActionEvent event) {
+    public Response addEvent(ProvisionActionEvent event, ProvisionActionTypeEnum type) {
         Map<String, Object> bindingMap = new HashMap<String, Object>();
         Response response = new Response(ResponseStatus.SUCCESS);
         response.setResponseValue(ProvisionServiceEventProcessor.CONTINUE);
         ProvisionServiceEventProcessor eventProcessorScript = getEventProcessor(bindingMap, eventProcessor);
         if (eventProcessorScript != null) {
-            response = eventProcessorScript.process(event);
+            response = eventProcessorScript.process(event, type);
         }
         return response;
     }
