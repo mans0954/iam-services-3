@@ -21,18 +21,6 @@
  */
 package org.openiam.idm.srvc.recon.service;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -40,11 +28,11 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.dozer.converter.*;
+import org.openiam.dozer.converter.GroupDozerConverter;
+import org.openiam.dozer.converter.ManagedSystemObjectMatchDozerConverter;
 import org.openiam.idm.parser.csv.UserCSVParser;
 import org.openiam.idm.parser.csv.UserSearchBeanCSVParser;
 import org.openiam.idm.searchbeans.ManualReconciliationSearchBean;
-import org.openiam.idm.searchbeans.ReconConfigSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
@@ -54,11 +42,9 @@ import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
 import org.openiam.idm.srvc.recon.domain.ReconciliationConfigEntity;
-import org.openiam.idm.srvc.recon.domain.ReconciliationSituationEntity;
 import org.openiam.idm.srvc.recon.dto.ReconExecStatusOptions;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.idm.srvc.recon.dto.ReconciliationResponse;
-import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;
 import org.openiam.idm.srvc.recon.result.dto.ReconciliationResultBean;
 import org.openiam.idm.srvc.recon.result.dto.ReconciliationResultField;
 import org.openiam.idm.srvc.recon.result.dto.ReconciliationResultRow;
@@ -68,15 +54,17 @@ import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.synch.srcadapter.MatchRuleFactory;
 import org.openiam.provision.service.ConnectorAdapter;
-import org.openiam.provision.service.PostProcessor;
 import org.openiam.provision.service.PrePostExecutor;
 import org.openiam.script.ScriptIntegration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author suneet
@@ -87,9 +75,6 @@ public class ReconciliationServiceImpl implements ReconciliationService {
     public static final String RECONCILIATION_CONFIG = "RECONCILIATION_CONFIG";
     @Autowired
     protected ReconciliationSituationDAO reconSituationDAO;
-
-    @Autowired
-    protected ReconciliationConfigDAO reconConfigDao;
 
     @Autowired
     protected LoginDataService loginManager;
@@ -110,10 +95,6 @@ public class ReconciliationServiceImpl implements ReconciliationService {
     @Autowired
     protected SysConfiguration sysConfiguration;
     @Autowired
-    private ReconciliationConfigDozerConverter reconConfigDozerMapper;
-    @Autowired
-    private ReconciliationSituationDozerConverter reconSituationDozerMapper;
-    @Autowired
     protected UserCSVParser userCSVParser;
     @Autowired
     public UserSearchBeanCSVParser userSearchCSVParser;
@@ -127,11 +108,15 @@ public class ReconciliationServiceImpl implements ReconciliationService {
     protected MatchRuleFactory matchRuleFactory;
     @Autowired
     protected AuditLogService auditLogService;
+	@Autowired
+	ReconciliationConfigService reconConfigService;
 
+	@Autowired
+	@Qualifier("reconciliationUserProcessor")
+    private ReconciliationProcessor userProcessor;
     @Autowired
-    private ReconciliationUserProcessor userProcessor;
-    @Autowired
-    private ReconciliationGroupProcessor groupProcessor;
+	@Qualifier("reconciliationGroupProcessor")
+    private ReconciliationProcessor groupProcessor;
 
     private static final Log log = LogFactory.getLog(ReconciliationServiceImpl.class);
 
@@ -144,142 +129,11 @@ public class ReconciliationServiceImpl implements ReconciliationService {
     */
     private static Set<String> runningTask = Collections.newSetFromMap(new ConcurrentHashMap());
 
-    @Transactional
-    public ReconciliationConfig addConfig(ReconciliationConfig config) {
-        if (config == null) {
-            throw new IllegalArgumentException("config parameter is null");
-        }
-        Set<ReconciliationSituation> sitSet = null;
-        if (!CollectionUtils.isEmpty(config.getSituationSet())) {
-            sitSet = new HashSet<ReconciliationSituation>(config.getSituationSet());
-        }
-        config.setReconConfigId(null);
-        ReconciliationConfig result = reconConfigDozerMapper.convertToDTO(
-                reconConfigDao.add(reconConfigDozerMapper.convertToEntity(config, false)), false);
-        saveSituationSet(sitSet, result.getReconConfigId());
-        result.setSituationSet(sitSet);
-        return result;
-    }
-
-    @Transactional
-    private void saveSituationSet(Set<ReconciliationSituation> sitSet, String configId) {
-        if (sitSet != null) {
-            for (ReconciliationSituation s : sitSet) {
-                if (StringUtils.isEmpty(s.getReconConfigId())) {
-                    s.setReconConfigId(configId);
-                }
-                if (StringUtils.isEmpty(s.getReconSituationId())) {
-                    s.setReconSituationId(null);
-                    s.setReconSituationId(reconSituationDAO.add(reconSituationDozerMapper.convertToEntity(s, false))
-                            .getReconSituationId());
-                } else {
-                    reconSituationDAO.update(reconSituationDozerMapper.convertToEntity(s, false));
-                }
-            }
-        }
-    }
-
-    @Transactional
-    public void updateConfig(ReconciliationConfig config) {
-        if (config == null) {
-            throw new IllegalArgumentException("config parameter is null");
-        }
-
-        ReconciliationConfigEntity configEntity = reconConfigDozerMapper.convertToEntity(config, false);
-
-        for (ReconciliationSituation s : config.getSituationSet()) {
-            if (StringUtils.isEmpty(s.getReconConfigId())) {
-                s.setReconConfigId(configEntity.getReconConfigId());
-            }
-            ReconciliationSituationEntity situationEntity;
-            if (StringUtils.isEmpty(s.getReconSituationId())) {
-                situationEntity = reconSituationDozerMapper.convertToEntity(s, false);
-                reconSituationDAO.save(situationEntity);
-            } else {
-                situationEntity = reconSituationDAO.findById(s.getReconSituationId());
-                situationEntity.setScript(s.getScript());
-                situationEntity.setSituation(s.getSituation());
-                situationEntity.setSituationResp(s.getSituationResp());
-                situationEntity.setCustomCommandScript(s.getCustomCommandScript());
-                reconSituationDAO.save(situationEntity);
-            }
-            configEntity.getSituationSet().add(situationEntity);
-        }
-
-        reconConfigDao.update(configEntity);
-
-    }
-
-    @Transactional
-    public void removeConfig(String configId) {
-        if (configId == null) {
-            throw new IllegalArgumentException("configId parameter is null");
-        }
-        ReconciliationConfigEntity config = reconConfigDao.findById(configId);
-        reconConfigDao.delete(config);
-
-    }
-
-    @Transactional(readOnly = true)
-    public ReconciliationConfig getConfigByResourceByType(String resourceId, String type) {
-        if (resourceId == null) {
-            throw new IllegalArgumentException("resourceId parameter is null");
-        }
-        ReconciliationConfigEntity result = reconConfigDao.findByResourceIdByType(resourceId, type);
-        if (result == null)
-            return null;
-        else
-            return reconConfigDozerMapper.convertToDTO(result, true);
-
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<ReconciliationConfig> findReconConfig(ReconConfigSearchBean searchBean, int from, int size) {
-        List<ReconciliationConfigEntity> reconciliationConfigEntities = reconConfigDao.getByExample(searchBean, from, size);
-        if(reconciliationConfigEntities == null) {
-            return Collections.EMPTY_LIST;
-        }
-        return reconConfigDozerMapper.convertToDTOList(reconciliationConfigEntities, false);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public int countReconConfig(final ReconConfigSearchBean searchBean) {
-        return reconConfigDao.count(searchBean);
-    }
-
-    @Transactional(readOnly = true)
-    public List<ReconciliationConfig> getConfigsByResource(final String resourceId) {
-        if (resourceId == null) {
-            throw new IllegalArgumentException("resourceId parameter is null");
-        }
-        List<ReconciliationConfigEntity> result = reconConfigDao.findByResourceId(resourceId);
-        if (result == null)
-            return new LinkedList<ReconciliationConfig>();
-        else
-            return reconConfigDozerMapper.convertToDTOList(result, false);
-    }
-
-    @Transactional(readOnly = true)
-    public ReconciliationConfig getConfigById(String configId) {
-        if (configId == null) {
-            throw new IllegalArgumentException("configId parameter is null");
-        }
-        ReconciliationConfigEntity result = reconConfigDao.findById(configId);
-        if (result == null)
-            return null;
-        else
-            return reconConfigDozerMapper.convertToDTO(result, true);
-    }
-
-    @Transactional(propagation = Propagation.REQUIRED)
     public ReconciliationResponse startReconciliation(ReconciliationConfig config) {
 
-        ReconciliationConfigEntity configEntity = reconConfigDao.findById(config.getReconConfigId());
+		ReconciliationConfig reconConfig = reconConfigService.getConfigById(config.getReconConfigId());
 
-        IdmAuditLog idmAuditLog = new IdmAuditLog();
-
+		IdmAuditLog idmAuditLog = new IdmAuditLog();
         idmAuditLog.setRequestorUserId(config.getRequesterId());
         idmAuditLog.setAction(AuditAction.RECONCILIATION.value());
         ManagedSysEntity managedSysEntity = managedSysService.getManagedSysById(config.getManagedSysId());
@@ -301,15 +155,15 @@ public class ReconciliationServiceImpl implements ReconciliationService {
             auditLogService.enqueue(idmAuditLog);
             return processCheckResponse;
         }
-        ReconciliationResponse reconciliationResponse = null;
+		boolean reconFailed = false;
+		ReconciliationResponse reconciliationResponse = null;
         try {
             log.debug("Reconciliation started for configId=" + config.getReconConfigId() + " - resource="
                     + config.getResourceId());
 
-            configEntity.setExecStatus(ReconExecStatusOptions.STARTED);
+			reconConfigService.updateExecStatus(reconConfig.getReconConfigId(), ReconExecStatusOptions.STARTED);
 
-
-            Map<String, Object> bindingMap = new HashMap<String, Object>();
+			Map<String, Object> bindingMap = new HashMap<String, Object>();
             bindingMap.put("RECONCILIATION_CONFIG", config);
             String preProcessScript = config.getPreProcessor();
             if (StringUtils.isNotEmpty(preProcessScript)) {
@@ -346,18 +200,23 @@ public class ReconciliationServiceImpl implements ReconciliationService {
             log.error(e);
             e.printStackTrace();
             idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "Error: " + e.getMessage());
-            ReconciliationResponse resp = new ReconciliationResponse(ResponseStatus.FAILURE);
-            resp.setErrorText(e.getMessage());
-            configEntity.setExecStatus(ReconExecStatusOptions.FAILED);
-            return resp;
+			reconciliationResponse = new ReconciliationResponse(ResponseStatus.FAILURE);
+			reconciliationResponse.setErrorText(e.getMessage());
+            reconFailed = true;
 
         } finally {
             endTask(config.getReconConfigId());
             auditLogService.enqueue(idmAuditLog);
-            if(reconciliationResponse == null || configEntity.getExecStatus() == ReconExecStatusOptions.STARTED) {
-                configEntity.setExecStatus(ReconExecStatusOptions.FINISHED);
-            }
-            reconConfigDao.save(configEntity);
+
+			ReconExecStatusOptions actualStatus = reconConfigService.getExecStatus(config.getReconConfigId());
+			final ReconExecStatusOptions execStatus =
+					reconFailed ? ReconExecStatusOptions.FAILED :
+					(actualStatus == ReconExecStatusOptions.STOPPING) ? ReconExecStatusOptions.STOPPED :
+					(actualStatus == ReconExecStatusOptions.STARTED) ? ReconExecStatusOptions.FINISHED :
+					null;
+			if (execStatus != null) {
+				reconConfigService.updateExecStatus(config.getReconConfigId(), execStatus);
+			}
 
             Map<String, Object> bindingMap = new HashMap<String, Object>();
             bindingMap.put(RECONCILIATION_CONFIG, config);
@@ -375,7 +234,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
             }
         }
 
-        return new ReconciliationResponse(ResponseStatus.SUCCESS);
+        return reconciliationResponse;
     }
 
     @Override
