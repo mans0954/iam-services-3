@@ -3,10 +3,12 @@ package org.openiam.connector.linux.ssh;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import java.io.File;
 import java.util.HashMap;
 
-/** Class to manage multiple SSH connections. The Factory stores an SSH agent for each given ID (managed system ID).
- *  New agents can be added and bound to a specified ID.
+/**
+ * Class to manage multiple SSH connections. The Factory stores an SSH agent for each given ID (managed system ID).
+ * New agents can be added and bound to a specified ID.
  */
 
 public class SSHConnectionFactory {
@@ -17,6 +19,7 @@ public class SSHConnectionFactory {
 
     /**
      * Fetch an SSHAgent associated with the given ID
+     *
      * @param id Managed system ID to which the SSHAgent is connected
      * @return Null if the agent does not exist or the connection cannot be formed
      */
@@ -42,9 +45,10 @@ public class SSHConnectionFactory {
 
     /**
      * Closes an SSH connection and removes it from the map
+     *
      * @param id Managed system ID to which the SSHAgent is connected
      */
-    public  void removeSSH(String id) {
+    public void removeSSH(String id) {
         SSHAgent ssh = connections.get(id);
         if (ssh != null) {
             ssh.logout();
@@ -55,16 +59,33 @@ public class SSHConnectionFactory {
 
     /**
      * Register an SSH connection and add it to the SSH agent list
-     * @param id Managed system ID to which the SSHAgent is connected
-     * @param host URL or IP of managed connection
-     * @param port Port to which to connect
+     *
+     * @param id       Managed system ID to which the SSHAgent is connected
+     * @param host     URL or IP of managed connection
+     * @param port     Port to which to connect
      * @param username Username of SSH account
      * @param password Password of SSH account
-     * @return  The newly added SSH agent
+     * @return The newly added SSH agent
      */
-    public  SSHAgent addSSH(String id, String host, Integer port, String username, String password) {
+    public SSHAgent addSSH(String id, String host, Integer port, String username, String password) {
         log.debug("Creating new SSH connection for ID:" + id);
         SSHAgent ssh = new SSHAgent(host, port, username, password);
+        try {
+            if (!ssh.connect())
+                ssh = null;
+
+            connections.put(id, ssh);
+        } catch (SSHException e) {
+            log.error(e.getMessage());
+            ssh = null;
+        }
+
+        return ssh;
+    }
+
+    public SSHAgent addSSH(String id, String host, Integer port, String username, File f) {
+        log.debug("Creating new SSH connection for ID:" + id);
+        SSHAgent ssh = new SSHAgent(host, port, username, f);
         try {
             if (!ssh.connect())
                 ssh = null;

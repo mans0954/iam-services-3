@@ -30,7 +30,6 @@ import org.openiam.idm.srvc.mngsys.dto.ApproverAssociation;
 import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
 import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
-import org.openiam.idm.srvc.msg.service.MailService;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.prov.request.domain.RequestApproverEntity;
 import org.openiam.idm.srvc.prov.request.dto.RequestUser;
@@ -133,54 +132,7 @@ public class AcceptProfileProvisionDelegate extends AcceptEntitlementsNotifierDe
 	    request.setUserId(userId);
 	    request.setNotificationType(getNotificationType(execution));
 	    request.setTo(email);
-	    
-	    /*
-	    final List<Organization> organizations = new LinkedList<>();
-	    if(CollectionUtils.isNotEmpty(profileRequestModel.getOrganizationIds())) {
-	    	for(final String id : profileRequestModel.getOrganizationIds()) {
-	    		final Organization entity = getOrganization(id);
-	    		if(entity != null) {
-	    			organizations.add(entity);
-	    		}
-	    	}
-	    }
-	    
-	    final List<Role> roles = new LinkedList<>();
-	    if(CollectionUtils.isNotEmpty(profileRequestModel.getRoleIds())) {
-	    	for(final String id : profileRequestModel.getRoleIds()) {
-	    		final Role entity = getRole(id);
-	    		if(entity != null) {
-	    			roles.add(entity);
-	    		}
-	    	}
-	    }
-	    
-	    final List<Group> groups = new LinkedList<>();
-	    if(CollectionUtils.isNotEmpty(profileRequestModel.getGroupIds())) {
-	    	for(final String id : profileRequestModel.getGroupIds()) {
-	    		final Group entity = getGroup(id);
-	    		if(entity != null) {
-	    			groups.add(entity);
-	    		}
-	    	}
-	    }
-	    
-	    final List<User> supervisors = new LinkedList<>();
-	    if(CollectionUtils.isNotEmpty(profileRequestModel.getSupervisorIds())) {
-	    	for(final String id : profileRequestModel.getSupervisorIds()) {
-	    		final User entity = getUser(id);
-	    		if(entity != null) {
-	    			supervisors.add(entity);
-	    		}
-	    	}
-	    }
-	   
-	    request.getParamList().add(new NotificationParam("ORGANIZATIONS", organizations));
-	    request.getParamList().add(new NotificationParam("ROLES", roles));
-	    request.getParamList().add(new NotificationParam("GROUPS", groups));
-	    request.getParamList().add(new NotificationParam("SUPERVISORS", supervisors));
-	    */
-	    request.getParamList().add(new NotificationParam("REQUEST_MODEL", profileRequestModel));
+	    request.getParamList().add(new NotificationParam("TARGET_REQUEST", profileRequestModel));
 	    request.getParamList().add(new NotificationParam("COMMENT", getComment(execution)));
 	    request.getParamList().add(new NotificationParam("REQUEST_REASON", getTaskDescription(execution)));
 	    request.getParamList().add(new NotificationParam("TARGET_USER", newUser.getDisplayName()));
