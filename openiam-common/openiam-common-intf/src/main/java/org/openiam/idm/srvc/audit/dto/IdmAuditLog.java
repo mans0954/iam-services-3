@@ -224,6 +224,24 @@ public class IdmAuditLog implements Serializable {
 		return parentLogs;
 	}
 
+    /**
+     * Sorting by timestamp - DESC
+     * @return
+     */
+    public Collection<IdmAuditLog> getParentLogsSorted() {
+        if(parentLogs != null) {
+            List<IdmAuditLog> sortedItems = new ArrayList<IdmAuditLog>(parentLogs);
+            Collections.sort(sortedItems, new Comparator<IdmAuditLog>(){
+                @Override
+                public int compare(IdmAuditLog o1, IdmAuditLog o2) {
+                    return o2.getTimestamp().compareTo(o1.getTimestamp());
+                }
+            } );
+            return sortedItems;
+        }
+        return parentLogs;
+    }
+
 	public void setParentLogs(Set<IdmAuditLog> parentLogs) {
 		this.parentLogs = parentLogs;
 	}
