@@ -290,7 +290,12 @@ public abstract class AbstractUserDisplayMapper extends AbstractActivitiJob {
 			if(CollectionUtils.isNotEmpty(template.getPageElements())) {
 				for(final PageElement pageElement : template.getPageElements()) {
 					if(StringUtils.isNotBlank(pageElement.getDisplayName()) && CollectionUtils.isNotEmpty(pageElement.getUserValues())) {
-						final String str = toString(pageElement.getUserValues());
+						String str = null;
+						if(StringUtils.equalsIgnoreCase("password", pageElement.getTypeId())) {
+							str = "*****";
+						} else {
+							str = toString(pageElement.getUserValues());
+						}
 						if(StringUtils.isNotBlank(str)) {
 							retVal.put(pageElement.getDisplayName(), str);
 						}
