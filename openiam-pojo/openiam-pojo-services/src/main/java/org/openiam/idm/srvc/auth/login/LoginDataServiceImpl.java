@@ -344,6 +344,7 @@ public class LoginDataServiceImpl implements LoginDataService {
     }
 
     @Override
+	@Transactional(readOnly = true)
     public String decryptPassword(String userId, String password)
             throws Exception {
         if (password != null) {

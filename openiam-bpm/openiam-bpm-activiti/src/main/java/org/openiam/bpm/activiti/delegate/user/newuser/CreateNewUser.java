@@ -13,6 +13,7 @@ import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
+import org.openiam.idm.srvc.auth.ws.LoginResponse;
 import org.openiam.idm.srvc.provision.NewUserModelToProvisionConverter;
 import org.openiam.idm.srvc.pswd.service.PasswordGenerator;
 import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;
@@ -44,6 +45,8 @@ public class CreateNewUser extends AbstractEntitlementsDelegate {
 	public void execute(DelegateExecution execution) throws Exception {
 		final NewUserProfileRequestModel request = getObjectVariable(execution, ActivitiConstants.REQUEST, NewUserProfileRequestModel.class);
 		final IdmAuditLog idmAuditLog = createNewAuditLog(execution);
+        LoginResponse loginResponse = loginService.getPrimaryIdentity(getRequestorId(execution));
+        idmAuditLog.setRequestorPrincipal(loginResponse.getPrincipal().getLogin());
         idmAuditLog.setAction(AuditAction.CREATE_USER.value());
         idmAuditLog.addAttributeAsJson(AuditAttributeName.PROFILE, request, customJacksonMapper);
 		try {
@@ -51,7 +54,8 @@ public class CreateNewUser extends AbstractEntitlementsDelegate {
 	        user.setEmailCredentialsToNewUsers(false);
 			user.setStatus(UserStatusEnum.PENDING_INITIAL_LOGIN);
 			user.setSecondaryStatus(null);
-			
+            user.setRequestorUserId(idmAuditLog.getUserId());
+            user.setRequestorLogin(idmAuditLog.getPrincipal());
 			final ProvisionUserResponse response = provisionService.addUser(user);
 			if(ResponseStatus.SUCCESS.equals(response.getStatus()) && response.getUser() != null && StringUtils.isNotBlank(response.getUser().getId())) {
 				final String userId = response.getUser().getId();

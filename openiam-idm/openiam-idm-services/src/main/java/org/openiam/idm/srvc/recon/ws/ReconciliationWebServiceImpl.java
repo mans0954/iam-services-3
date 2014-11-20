@@ -30,6 +30,7 @@ import org.openiam.idm.searchbeans.ReconConfigSearchBean;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.idm.srvc.recon.dto.ReconciliationResponse;
+import org.openiam.idm.srvc.recon.service.ReconciliationConfigService;
 import org.openiam.idm.srvc.recon.service.ReconciliationProcessor;
 import org.openiam.idm.srvc.recon.service.ReconciliationService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,13 +45,17 @@ import java.util.List;
 @WebService(endpointInterface = "org.openiam.idm.srvc.recon.ws.ReconciliationWebService", targetNamespace = "http://www.openiam.org/service/recon", portName = "ReconciliationWebServicePort", serviceName = "ReconciliationWebService")
 @Component("reconServiceWS")
 public class ReconciliationWebServiceImpl implements ReconciliationWebService {
-    @Autowired
+
+	@Autowired
     protected ReconciliationService reconService;
+
+	@Autowired
+	protected ReconciliationConfigService reconConfigService;
 
     public ReconciliationConfigResponse addConfig(ReconciliationConfig config) {
         ReconciliationConfigResponse response = new ReconciliationConfigResponse(
                 ResponseStatus.SUCCESS);
-        ReconciliationConfig cfg = reconService.addConfig(config);
+        ReconciliationConfig cfg = reconConfigService.addConfig(config);
         if (cfg == null || cfg.getReconConfigId() == null) {
             response.setStatus(ResponseStatus.FAILURE);
         } else {
@@ -65,7 +70,7 @@ public class ReconciliationWebServiceImpl implements ReconciliationWebService {
                 ResponseStatus.SUCCESS);
 
         try {
-            reconService.updateConfig(config);
+			reconConfigService.updateConfig(config);
         } catch (Exception e) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorText(e.getMessage());
@@ -77,7 +82,7 @@ public class ReconciliationWebServiceImpl implements ReconciliationWebService {
     public ReconciliationConfigResponse getConfigByResourceUserType(final String resourceId) {
         ReconciliationConfigResponse response = new ReconciliationConfigResponse(
                 ResponseStatus.SUCCESS);
-        ReconciliationConfig cfg = reconService.getConfigByResourceByType(resourceId, "USER");
+        ReconciliationConfig cfg = reconConfigService.getConfigByResourceByType(resourceId, "USER");
         if (cfg != null) {
             response.setConfig(cfg);
         }
@@ -87,7 +92,7 @@ public class ReconciliationWebServiceImpl implements ReconciliationWebService {
 
     @Override
     public ReconciliationConfigResponse findReconConfig(ReconConfigSearchBean searchBean, int from, int size, Language language) {
-        List<ReconciliationConfig> cfgList = reconService.findReconConfig(searchBean, from, size);
+        List<ReconciliationConfig> cfgList = reconConfigService.findReconConfig(searchBean, from, size);
         ReconciliationConfigResponse response = new ReconciliationConfigResponse(ResponseStatus.SUCCESS);
         response.setConfigList(cfgList);
         return response;
@@ -95,14 +100,14 @@ public class ReconciliationWebServiceImpl implements ReconciliationWebService {
 
     @Override
     public int countReconConfig(@WebParam(name = "searchBean", targetNamespace = "") ReconConfigSearchBean searchBean) {
-        return reconService.countReconConfig(searchBean);
+        return reconConfigService.countReconConfig(searchBean);
     }
 
     @Override
     public ReconciliationConfigResponse getConfigsByResourceId(@WebParam(name = "resourceId", targetNamespace = "") String resourceId) {
         ReconciliationConfigResponse response = new ReconciliationConfigResponse(
                 ResponseStatus.SUCCESS);
-        List<ReconciliationConfig> cfgList = reconService.getConfigsByResource(resourceId);
+        List<ReconciliationConfig> cfgList = reconConfigService.getConfigsByResource(resourceId);
         response.setConfigList(cfgList);
         return response;
     }
@@ -110,7 +115,7 @@ public class ReconciliationWebServiceImpl implements ReconciliationWebService {
     @Override
     public Response removeConfig(String configId, String requesterId) {
         Response response = new Response(ResponseStatus.SUCCESS);
-        reconService.removeConfig(configId);
+		reconConfigService.removeConfig(configId);
         return response;
     }
 
@@ -131,7 +136,7 @@ public class ReconciliationWebServiceImpl implements ReconciliationWebService {
     public ReconciliationConfigResponse getConfigById(String configId) {
         ReconciliationConfigResponse response = new ReconciliationConfigResponse(
                 ResponseStatus.SUCCESS);
-        ReconciliationConfig cfg = reconService.getConfigById(configId);
+        ReconciliationConfig cfg = reconConfigService.getConfigById(configId);
         if (cfg == null || cfg.getReconConfigId() == null) {
             response.setStatus(ResponseStatus.FAILURE);
         } else {

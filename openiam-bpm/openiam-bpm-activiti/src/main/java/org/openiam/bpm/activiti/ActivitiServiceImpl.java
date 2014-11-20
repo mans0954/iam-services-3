@@ -747,6 +747,19 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
         taskListWrapper.addCandidateTasks(candidateTasks, runtimeService);
         return taskListWrapper;
     }
+    @Override
+    @WebMethod
+    @Transactional
+    public List<TaskWrapper> getTasksForMemberAssociation(String memberAssociationId) {
+        List<TaskWrapper> memberAssociationTaskList = new LinkedList<TaskWrapper>();
+        final List<Task> taskList = taskService.createTaskQuery().processVariableValueEquals(ActivitiConstants.MEMBER_ASSOCIATION_ID.getName(), memberAssociationId).list();
+        if(CollectionUtils.isNotEmpty(taskList)) {
+            for(final Task task : taskList) {
+                memberAssociationTaskList.add(new TaskWrapper(task, runtimeService));
+            }
+        }
+        return memberAssociationTaskList;
+    }
 
     @Override
     @WebMethod

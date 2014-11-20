@@ -569,6 +569,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     }
 
     @Override
+	@Transactional(readOnly = true)
     public List<AttributeMap> getResourceAttributeMaps(final String resourceId) {
         if (resourceId == null) {
             throw new IllegalArgumentException("resourceId is null");
