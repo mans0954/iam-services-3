@@ -1250,6 +1250,11 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
         }
 
+		if (CollectionUtils.isNotEmpty(deleteResourceSet) && CollectionUtils.isNotEmpty(resourceSet)) {
+			// Exclude delete/add of the same resource
+			deleteResourceSet.removeAll(resourceSet);
+		}
+
         log.debug("Resources to be added ->> " + resourceSet);
         log.debug("Delete the following resources ->> " + deleteResourceSet);
 
