@@ -534,10 +534,10 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
         			 pattern.setMethods(dbEntity.getMethods());
         		} else {
                 	for(final URIPatternMethodEntity patternMethod : pattern.getMethods()) {
-                		final URIPatternMethodEntity dbMethod = dbEntity.getMethod(patternMethod.getMethod());
+                		final URIPatternMethodEntity dbMethod = dbEntity.getMethod(patternMethod.getId());
             			if(dbMethod != null) {
             				//set the PK, since the UI could have added/remved the same method, in which case the PK would have been lost
-            				patternMethod.setId(dbMethod.getId());
+            				//patternMethod.setId(dbMethod.getId());
             				
 	                		if(CollectionUtils.isEmpty(patternMethod.getParams())) {
 	                			dbMethod.getParams().clear();
@@ -548,8 +548,14 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
 	                			patternMethod.setMetaEntitySet(dbMethod.getMetaEntitySet());
 	                		} else {
 	                			for(final URIPatternMethodMetaEntity meta : patternMethod.getMetaEntitySet()) {
-	                				if(CollectionUtils.isEmpty(meta.getMetaValueSet())) {
-	                					
+	                				if(meta.getId() != null) {
+	                					final URIPatternMethodMetaEntity dbMeta = dbMethod.getMetaEntity(meta.getId());
+	                					if(dbMeta != null) {
+	                						if(CollectionUtils.isEmpty(meta.getMetaValueSet())) {
+	                							dbMeta.getMetaValueSet().clear();
+	                							meta.setMetaValueSet(dbMeta.getMetaValueSet());
+	                						}
+	                					}
 	                				}
 	                			}
 	                		}

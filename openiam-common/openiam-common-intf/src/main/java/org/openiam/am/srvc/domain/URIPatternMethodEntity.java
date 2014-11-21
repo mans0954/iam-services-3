@@ -43,6 +43,21 @@ public class URIPatternMethodEntity extends KeyEntity {
 	
 	@OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "patternMethod", orphanRemoval=true)
 	private Set<URIPatternMethodMetaEntity> metaEntitySet;
+	
+	public URIPatternMethodMetaEntity getMetaEntity(final String id) {
+		URIPatternMethodMetaEntity retVal = null;
+		if(id != null) {
+			if(this.metaEntitySet != null) {
+				for(final URIPatternMethodMetaEntity meta : this.metaEntitySet) {
+					if(id.equals(meta.getId())) {
+						retVal = meta;
+						break;
+					}
+				}
+			}
+		}
+		return retVal;
+	}
 
 	public Set<URIPatternMethodMetaEntity> getMetaEntitySet() {
 		return metaEntitySet;

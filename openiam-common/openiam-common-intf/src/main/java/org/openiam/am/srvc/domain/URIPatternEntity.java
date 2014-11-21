@@ -160,12 +160,12 @@ public class URIPatternEntity extends KeyEntity {
 		metaEntitySet.add(enitity);
 	}
 	
-	public URIPatternMethodEntity getMethod(final HttpMethod httpMethod) {
+	public URIPatternMethodEntity getMethod(final String id) {
 		URIPatternMethodEntity retVal = null;
-		if(httpMethod != null) {
+		if(id != null) {
 			if(methods != null) {
 				for(final URIPatternMethodEntity method : methods) {
-					if(httpMethod.equals(method.getMethod())) {
+					if(id.equals(method.getId())) {
 						retVal = method;
 						break;
 					}
