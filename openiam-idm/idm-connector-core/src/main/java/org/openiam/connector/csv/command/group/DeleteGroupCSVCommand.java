@@ -4,6 +4,7 @@ import org.openiam.am.srvc.constants.CSVSource;
 import org.openiam.connector.csv.command.base.AbstractCrudCSVCommand;
 import org.openiam.connector.type.constant.ErrorCode;
 import org.openiam.idm.parser.csv.CSVParser;
+import org.openiam.idm.parser.csv.GroupCsvParser;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
@@ -20,7 +21,7 @@ import java.util.List;
 public class DeleteGroupCSVCommand extends AbstractCrudCSVCommand<ExtensibleGroup> {
     @Autowired
     @Qualifier("groupCsvParser")
-    protected CSVParser<Group> groupCsvParser;
+    protected GroupCsvParser groupCsvParser;
 
     @Override
     protected void performObjectOperation(String id, ExtensibleGroup object, ManagedSysEntity managedSys) throws ConnectorDataException {

@@ -1,16 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <beans xmlns="http://www.springframework.org/schema/beans"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:aop="http://www.springframework.org/schema/aop"
-    xmlns:tx="http://www.springframework.org/schema/tx"
-    xmlns:jee="http://www.springframework.org/schema/jee"
-    xmlns:context="http://www.springframework.org/schema/context"
-    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
-    					http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd
-    					http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd
-    					http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-2.5.xsd
-    					http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd">
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:jee="http://www.springframework.org/schema/jee"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:jaxws="http://cxf.apache.org/jaxws"
+       xsi:schemaLocation="http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+       http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee.xsd
+       http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+       http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+       http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd">
+
 	<context:annotation-config />
 	<context:component-scan base-package="org.openiam.authmanager" />
 	<tx:annotation-driven/>
@@ -19,7 +24,7 @@
 	<bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
     	<property name="triggers">
         	<list>
-        		<bean class="org.springframework.scheduling.quartz.SimpleTriggerBean">
+        		<bean class="org.springframework.scheduling.quartz.SimpleTriggerFactoryBean">
         			 <property name="startDelay" value="${org.openiam.authorization.manager.threadsweep}" />
         			 <property name="repeatInterval" value="${org.openiam.authorization.manager.threadsweep}" />
         			 <property name="jobDetail">
@@ -30,7 +35,7 @@
 						</bean>
         			 </property>
         		</bean>
-        		<bean class="org.springframework.scheduling.quartz.SimpleTriggerBean">
+        		<bean class="org.springframework.scheduling.quartz.SimpleTriggerFactoryBean">
         			 <property name="startDelay" value="${org.openiam.authorization.manager.threadsweep}" />
         			 <property name="repeatInterval" value="${org.openiam.authorization.manager.threadsweep}" />
         			 <property name="jobDetail">
@@ -54,7 +59,7 @@
   	
   	<bean id="authManagerUserCache" class="org.springframework.cache.ehcache.EhCacheFactoryBean">
   		<property name="cacheManager">
-  			<ref local="authManagerCacheManager"/>
+  			<ref bean="authManagerCacheManager"/>
   		</property>
   		<property name="cacheName">
   			<value>org.openiam.authorization.manager.USER_CACHE</value>
@@ -63,7 +68,7 @@
   	
   	<bean id="userLoginCache" class="org.springframework.cache.ehcache.EhCacheFactoryBean">
   		<property name="cacheManager">
-  			<ref local="authManagerCacheManager"/>
+  			<ref bean="authManagerCacheManager"/>
   		</property>
   		<property name="cacheName">
   			<value>org.openiam.authorization.manager.LOGIN_CACHE</value>

@@ -5,6 +5,7 @@ import org.hibernate.SessionFactory;
 import org.hibernate.event.spi.*;
 import org.hibernate.internal.util.ReflectHelper;
 import org.hibernate.metadata.ClassMetadata;
+import org.hibernate.persister.entity.EntityPersister;
 import org.openiam.base.domain.KeyEntity;
 import org.openiam.elasticsearch.annotation.ElasticsearchIndex;
 import org.openiam.elasticsearch.model.ElasticsearchReindexRequest;
@@ -33,6 +34,12 @@ public class OpeniamHibernateEventListener implements InitializingBean,
     private ElasticsearchReindexService elasticsearchReindexService;
 
     private Map<String, Class<?>> entityMapper = new HashMap<String, Class<?>>();
+
+    @Override
+    //TODO check implementation
+    public boolean requiresPostCommitHanding(EntityPersister entityPersister) {
+        return false;
+    }
 
     @Override
     public void onPostDelete(PostDeleteEvent event) {
