@@ -18,6 +18,8 @@ import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
+import org.openiam.idm.srvc.res.service.ResourceService;
+import org.openiam.idm.srvc.res.service.ResourceServiceImpl;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.idm.srvc.ui.theme.UIThemeDAO;
 import org.openiam.idm.srvc.ui.theme.domain.UIThemeEntity;
@@ -38,6 +40,8 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
 	private final Log log = LogFactory.getLog(this.getClass());
     private static final String resourceTypeId="CONTENT_PROVIDER";
     private static final String patternResourceTypeId="URL_PATTERN";
+    private static final String patternMethodResourceTypeId = "URI_PATTERN_METHOD";
+    
     @Autowired
     private ContentProviderDao contentProviderDao;
     @Autowired
@@ -87,6 +91,9 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
     @Autowired
     @Qualifier("customJacksonMapper")
     private CustomJacksonMapper mapper;
+    
+    @Autowired
+    private ResourceService resourceService;
     
     private URIPatternJSONWrapper patternWrapper;
 
@@ -355,6 +362,10 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
 			value.setAmAttribute(attribute);
 		}
     }
+    
+    private String getCoorelatedName(final URIPatternMethodEntity method) {
+    	return String.format("%s - %s - %s", method.getPattern().getContentProvider().getName(),  method.getPattern().getPattern(), method.getMethod());
+    }
 
     @Override
     @Transactional
@@ -363,6 +374,11 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
         final ContentProviderEntity contentProvider = contentProviderDao.findById(pattern.getContentProvider().getId());
         pattern.setContentProvider(contentProvider);
         pattern.setUiTheme(theme);
+        
+		final ResourceTypeEntity patternMethodResourceType = resourceTypeDAO.findById(patternMethodResourceTypeId);
+        if(patternMethodResourceType==null){
+            throw new NullPointerException("Cannot create resource for URI pattern. Resource type is not found");
+        }
         
         if(pattern.getAuthProvider() != null && StringUtils.isNotBlank(pattern.getAuthProvider().getId())) {
         	pattern.setAuthProvider(authProviderDAO.findById(pattern.getAuthProvider().getId()));
@@ -407,6 +423,17 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
         					}
         				}
         			}
+        		}
+        		
+        		if(patternMethod.getId() == null) {
+                    final ResourceEntity resource = new ResourceEntity();
+                    resource.setName(System.currentTimeMillis() + "_" + pattern.getPattern() + "_" + patternMethod.getMethod());
+                    resource.setResourceType(patternMethodResourceType);
+                    resource.setId(null);
+                    resource.setIsPublic(false);
+                    resource.setCoorelatedName(getCoorelatedName(patternMethod));
+                    resourceDao.add(resource);
+                    patternMethod.setResource(resource);
         		}
         	}
         }
@@ -536,6 +563,8 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
                 	for(final URIPatternMethodEntity patternMethod : pattern.getMethods()) {
                 		final URIPatternMethodEntity dbMethod = dbEntity.getMethod(patternMethod.getId());
             			if(dbMethod != null) {
+            				patternMethod.setResource(dbMethod.getResource());
+            				patternMethod.getResource().setCoorelatedName(getCoorelatedName(patternMethod));
             				//set the PK, since the UI could have added/remved the same method, in which case the PK would have been lost
             				//patternMethod.setId(dbMethod.getId());
             				

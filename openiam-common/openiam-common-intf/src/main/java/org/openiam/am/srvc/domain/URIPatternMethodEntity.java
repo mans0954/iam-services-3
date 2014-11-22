@@ -19,6 +19,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.openiam.am.srvc.dto.URIPatternMethod;
 import org.openiam.base.domain.KeyEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.internationalization.Internationalized;
 import org.springframework.http.HttpMethod;
@@ -33,6 +34,10 @@ public class URIPatternMethodEntity extends KeyEntity {
 	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name="URI_PATTERN_ID", referencedColumnName = "URI_PATTERN_ID", insertable=true, updatable=false, nullable=false)
 	private URIPatternEntity pattern;
+	
+	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @JoinColumn(name="RESOURCE_ID", referencedColumnName = "RESOURCE_ID", insertable = true, updatable = false, nullable=false)
+	private ResourceEntity resource;
 	
     @Column(name = "HTTP_METHOD_ID", length = 32, insertable=true, updatable=false, nullable=false)
     @Enumerated(EnumType.STRING)
@@ -90,12 +95,21 @@ public class URIPatternMethodEntity extends KeyEntity {
 		this.method = method;
 	}
 
+	public ResourceEntity getResource() {
+		return resource;
+	}
+
+	public void setResource(ResourceEntity resource) {
+		this.resource = resource;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
 		result = prime * result + ((pattern == null) ? 0 : pattern.hashCode());
 		result = prime * result + ((method == null) ? 0 : method.hashCode());
+		result = prime * result + ((resource == null) ? 0 : resource.hashCode());
 		return result;
 	}
 
@@ -115,13 +129,17 @@ public class URIPatternMethodEntity extends KeyEntity {
 			return false;
 		if (method != other.method)
 			return false;
+		if (resource == null) {
+			if (other.resource != null)
+				return false;
+		} else if (!resource.equals(other.resource))
+			return false;
 		return true;
 	}
 
 	@Override
 	public String toString() {
-		return "URIPatternMethodEntity [pattern=" + pattern + ", method="
-				+ method + "]";
+		return "URIPatternMethodEntity [pattern=" + pattern + ", method=" + method + ", resource=" + resource + "]";
 	}
     
     
