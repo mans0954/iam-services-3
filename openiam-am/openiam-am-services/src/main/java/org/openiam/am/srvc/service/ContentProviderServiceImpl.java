@@ -590,6 +590,25 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
 	                		}
             			}
             		}
+                	
+                	//find patterns that no longer exist, and remove the resource, as it no longer serves a purpose
+                	/*
+                	if(CollectionUtils.isNotEmpty(dbEntity.getMethods())) {
+                		for(final URIPatternMethodEntity dbMethod : dbEntity.getMethods()) {
+                			boolean contains = false;
+                			for(final URIPatternMethodEntity patternMethod : pattern.getMethods()) {
+                				contains = StringUtils.equals(dbMethod.getId(), patternMethod.getId());
+                				if(contains) {
+                					break; 
+                				}
+                			}
+                			
+                			if(!contains) {
+                				resourceService.deleteResource(dbMethod.getResource().getId());
+                			}
+                		}
+                	}
+                	*/
                 }
         		
         		pattern.setPageTemplates(dbEntity.getPageTemplates());
