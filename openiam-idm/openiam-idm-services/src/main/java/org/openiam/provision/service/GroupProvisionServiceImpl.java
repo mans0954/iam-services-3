@@ -66,7 +66,6 @@ import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
@@ -157,6 +156,9 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
     @Qualifier("defaultProvision")
     protected ProvisionService provisionService;
 
+    @Autowired
+    protected ProvisionQueueService provQueueService;
+
     @Override
     public Response add(@WebParam(name = "group", targetNamespace = "") final ProvisionGroup group) throws Exception {
         return provisioning(group, true);
@@ -168,6 +170,8 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
     }
 
     private Response provisioning(final ProvisionGroup group, final boolean isAdd) {
+        final List<ProvisionDataContainer> dataList = new LinkedList<>();
+
         Response response = new Response();
         response.setStatus(ResponseStatus.FAILURE);
         try {
@@ -177,211 +181,13 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
             response = transactionTemplate.execute(new TransactionCallback<Response>() {
                 @Override
                 public Response doInTransaction(TransactionStatus status) {
-                    // bind the objects to the scripting engine
-                    Map<String, Object> bindingMap = new HashMap<String, Object>();
-                    bindingMap.put("sysId", sysConfiguration.getDefaultManagedSysId());
-
-                    bindingMap.put("operation", isAdd ? "ADD" : "MODIFY");
-                    bindingMap.put(AbstractProvisioningService.GROUP, group);
-                    bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_IDENTITY_STATUS, null);
-                    bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_IDENTITY, null);
-
-                    Response tmpRes = new Response();
-                    if (callPreProcessor(isAdd ? "ADD" : "MODIFY", group, bindingMap) != ProvisioningConstants.SUCCESS) {
-                        tmpRes.setStatus(ResponseStatus.FAILURE);
-                        tmpRes.setErrorCode(ResponseCode.FAIL_PREPROCESSOR);
-                        return tmpRes;
-                    }
-                    Set<Resource> resources = group.getResources();
-                    if (resources != null) {
-                        for(Resource res : resources) {
-                            if (group.getNotProvisioninResourcesIds().contains(res.getId())) {
-                                continue;
-                            }
-                            ManagedSysDto managedSys = managedSystemService.getManagedSysByResource(res.getId());
-
-
-                        if (managedSys != null) {
-                            String managedSysId = managedSys.getId();
-                            // do check if provisioning user has source resource
-                            // => we should skip it from double provisioning
-                            // reconciliation case
-                            if (group.getSrcSystemId() != null && managedSysId.equals(group.getSrcSystemId())) {
-                                continue;
-                            }
-                            IdentityDto groupTargetSysIdentity = identityService.getIdentity(group.getId(), managedSysId);
-                            if(groupTargetSysIdentity == null) {
-                                List<AttributeMap> attrMap = managedSysService.getResourceAttributeMaps(res.getId());
-                                bindingMap.put("sysId", sysConfiguration.getDefaultManagedSysId());
-                                bindingMap.put("operation", isAdd ? "ADD" : "MODIFY");
-                                bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_IDENTITY_STATUS, null);
-                                bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_IDENTITY, null);
-                                bindingMap.put(AbstractProvisioningService.TARGET_SYS_RES_ID, res.getId());
-                                bindingMap.put(AbstractProvisioningService.TARGET_SYS_MANAGED_SYS_ID, managedSysId);
-                                bindingMap.put(AbstractProvisioningService.GROUP, group);
-                                ManagedSystemObjectMatch matchObj = null;
-                                ManagedSystemObjectMatch[] matchObjAry = managedSystemService.managedSysObjectParam(managedSysId, ManagedSystemObjectMatch.GROUP);
-                                if (matchObjAry != null && matchObjAry.length > 0) {
-                                    matchObj = matchObjAry[0];
-                                    bindingMap.put(AbstractProvisioningService.MATCH_PARAM, matchObj);
-                                }
-                                try {
-                                    log.debug(" - Building principal Name for: " + managedSysId);
-                                    String newIdentity = ProvisionServiceUtil.buildGroupPrincipalName(attrMap, scriptRunner, bindingMap);
-
-									if (StringUtils.isBlank(newIdentity)) {
-										log.debug("Primary identity not found...");
-										tmpRes.setStatus(ResponseStatus.FAILURE);
-										tmpRes.setErrorCode(ResponseCode.IDENTITY_NOT_FOUND);
-										return tmpRes;
-									}
-
-									groupTargetSysIdentity = new IdentityDto(IdentityTypeEnum.GROUP);
-                                    groupTargetSysIdentity.setIdentity(newIdentity);
-                                    groupTargetSysIdentity.setCreateDate(new Date());
-                                    groupTargetSysIdentity.setCreatedBy(systemUserId);
-                                    groupTargetSysIdentity.setManagedSysId(managedSysId);
-                                    groupTargetSysIdentity.setReferredObjectId(group.getId());
-                                    groupTargetSysIdentity.setStatus(LoginStatusEnum.ACTIVE);
-
-                                    String groupTargetSysIdentityId = identityService.save(groupTargetSysIdentity);
-
-                                    groupTargetSysIdentity.setId(groupTargetSysIdentityId);
-                                } catch (ScriptEngineException e) {
-                                    e.printStackTrace();
-                                }
-                            }
-
-                            //Provisioning Members
-                            List<UserEntity> members = userDataService.getUsersForGroup(group.getId(), systemUserId, 0, Integer.MAX_VALUE);
-                            for(UserEntity member : members) {
-                                if(! isMemberAvailableInResource(member, res.getId())) {
-                                    User user = userDozerConverter.convertToDTO(member, true);
-                                    user.addResource(res);
-                                    provisionService.modifyUser(new ProvisionUser(user));
-                                }
-                            }
-
-                            // bind the objects to the scripting engine
-                            bindingMap.put("operation", isAdd ? "ADD" : "MODIFY");
-                            bindingMap.put("sysId", managedSysId);
-                            bindingMap.put("managedSysId", managedSysId);
-                            bindingMap.put("group", group);
-                            bindingMap.put("identity", groupTargetSysIdentity);
-                            bindingMap.put("requesterId", systemUserId);
-
-                            List<AttributeMap> attrMapEntities = managedSystemService
-                                    .getAttributeMapsByManagedSysId(managedSysId);
-
-                            ManagedSystemObjectMatch matchObj = null;
-                            ManagedSystemObjectMatch[] objList = managedSystemService.managedSysObjectParam(managedSysId,
-                                    ManagedSystemObjectMatch.GROUP);
-                            if (objList.length > 0) {
-                                matchObj = objList[0];
-                            }
-
-                            ExtensibleObject extObj = buildFromRules(attrMapEntities, bindingMap);
-
-                            // get the attributes at the target system
-                            // this lookup only for getting attributes from the
-                            // system
-                            String requestId = "R" + UUIDGen.getUUID();
-                            Map<String, String> currentValueMap = new HashMap<String, String>();
-
-                            boolean isExistedInTargetSystem = getCurrentObjectAtTargetSystem(requestId, groupTargetSysIdentity, extObj, managedSys,
-                                    matchObj, currentValueMap);
-
-                            boolean connectorSuccess = false;
-
-                            // pre-processing
-                            bindingMap.put("targetSystemAttributes", currentValueMap);
-
-                            ResourceProp preProcessProp = res.getResourceProperty("GROUP_PRE_PROCESS");
-                            String preProcessScript = preProcessProp != null ? preProcessProp.getValue() : null;
-                            if (StringUtils.isNotBlank(preProcessScript)) {
-
-                                PreProcessor<ProvisionGroup> ppScript = createPreProcessScript(preProcessScript, bindingMap);
-                                if (ppScript != null) {
-                                    int executePreProcessResult = executePreProcess(ppScript, bindingMap, group,
-                                            isExistedInTargetSystem ? "MODIFY" : "ADD");
-                                    if (executePreProcessResult == ProvisioningConstants.FAIL) {
-                                        tmpRes.setStatus(ResponseStatus.FAILURE);
-                                        tmpRes.setErrorCode(ResponseCode.FAIL_PREPROCESSOR);
-                                        return tmpRes;
-                                    }
-                                }
-
-                            }
-
-
-                           if (!isExistedInTargetSystem) {
-
-                                connectorSuccess = requestAddModify(groupTargetSysIdentity, requestId, managedSys, matchObj, extObj, true);
-
-                            } else { // if user exists in target system
-
-                                // updates the attributes with the correct operation codes
-                                extObj = DefaultProvisioningService.updateAttributeList(extObj, currentValueMap);
-
-                                if (groupTargetSysIdentity.getOperation() == AttributeOperationEnum.REPLACE
-                                        && groupTargetSysIdentity.getOrigPrincipalName() != null) {
-                                    extObj.getAttributes().add(
-                                            new ExtensibleAttribute("ORIG_IDENTITY", groupTargetSysIdentity.getOrigPrincipalName(),
-                                                    AttributeOperationEnum.REPLACE.getValue(), "String"));
-                                }
-                                connectorSuccess = requestAddModify(groupTargetSysIdentity, requestId, managedSys, matchObj, extObj, false);
-                            }
-
-
-                            // post processing
-                            ResourceProp postProcessProp = res.getResourceProperty("GROUP_POST_PROCESS");
-                            String postProcessScript = postProcessProp != null ? postProcessProp.getValue() : null;
-                            if (StringUtils.isNotBlank(postProcessScript)) {
-                                PostProcessor ppScript = createPostProcessScript(postProcessScript, bindingMap);
-                                if (ppScript != null) {
-                                    int executePostProcessResult = executePostProcess(ppScript, bindingMap, group,
-                                            isExistedInTargetSystem ? "MODIFY" : "ADD", connectorSuccess);
-
-                                    if (executePostProcessResult == ProvisioningConstants.FAIL) {
-                                        tmpRes.setStatus(ResponseStatus.FAILURE);
-                                        tmpRes.setErrorCode(ResponseCode.FAIL_POSTPROCESSOR);
-                                        return tmpRes;
-                                    }
-                                }
-                            }
-
-                            if (connectorSuccess) {
-                                tmpRes.setStatus(ResponseStatus.SUCCESS);
-                                tmpRes.setErrorCode(ResponseCode.SUCCESS);
-                                return tmpRes;
-                            }
-
-                            tmpRes.setStatus(ResponseStatus.FAILURE);
-                            tmpRes.setErrorCode(ResponseCode.FAIL_CONNECTOR);
-
-
-
-
-
-                        }  else {
-                            // TODO WARNING
-                        }}
-                    }
-                    // SET POST ATTRIBUTES FOR DEFAULT SYS SCRIPT
-
-                    int callPostProcessorResult = callPostProcessor(isAdd ? "ADD" : "MODIFY", group, bindingMap);
-               //     auditLog.addAttribute(AuditAttributeName.DESCRIPTION, "callPostProcessor result="
-               //             + (callPostProcessorResult == 1 ? "SUCCESS" : "FAIL"));
-                    if (callPostProcessorResult != ProvisioningConstants.SUCCESS) {
-                        tmpRes.setStatus(ResponseStatus.FAILURE);
-                        tmpRes.setErrorCode(ResponseCode.FAIL_POSTPROCESSOR);
-               //         auditLog.addAttribute(AuditAttributeName.DESCRIPTION, "PostProcessor error.");
-                        return tmpRes;
-                    }
-                    tmpRes.setStatus(ResponseStatus.SUCCESS);
-                    return tmpRes;
+                    return addModifyGroup(group, dataList, isAdd);
                 }
             });
+
+            if (response.isSuccess()) {
+
+            }
 
         } catch(Throwable t){
             t.printStackTrace();
@@ -389,6 +195,237 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
         return response;
     }
 
+    private Response addModifyGroup(final ProvisionGroup pGroup, List<ProvisionDataContainer> dataList, final boolean isAdd) {
+        // bind the objects to the scripting engine
+        Map<String, Object> bindingMap = new HashMap<String, Object>();
+        bindingMap.put("sysId", sysConfiguration.getDefaultManagedSysId());
+        bindingMap.put("operation", isAdd ? "ADD" : "MODIFY");
+        bindingMap.put(AbstractProvisioningService.GROUP, pGroup);
+        bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_IDENTITY_STATUS, null);
+        bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_IDENTITY, null);
+
+        Response response = new Response();
+        if (callPreProcessor(isAdd ? "ADD" : "MODIFY", pGroup, bindingMap) != ProvisioningConstants.SUCCESS) {
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(ResponseCode.FAIL_PREPROCESSOR);
+            return response;
+        }
+
+        Group group = !isAdd ? groupDataWebService.getGroup(pGroup.getId(), null) : new Group();
+
+        updateGroup(group, pGroup);
+        //updateResources(group, pGroup);
+        //updateGroups(group, pGroup);
+        //updateRoles(group, pGroup);
+        //updateResources(group, pGroup);
+        //updateAttributes(group, pGroup);
+
+        groupDataWebService.saveGroup(group, null);
+
+        //updateIdentities(group, pGroup);
+
+        Set<Resource> resources = group.getResources();
+        if (resources != null) {
+            for(Resource res : resources) {
+                if (pGroup.getNotProvisioninResourcesIds().contains(res.getId())) {
+                    continue;
+                }
+
+                ManagedSysDto managedSys = managedSystemService.getManagedSysByResource(res.getId());
+                if (managedSys != null) {
+                    if (managedSys.getSkipGroupProvision()) {
+                        continue;
+                    }
+                    final String managedSysId = managedSys.getId();
+                    // do check if provisioning user has source resource
+                    // => we should skip it from double provisioning
+                    // reconciliation case
+                    if (pGroup.getSrcSystemId() != null && managedSysId.equals(pGroup.getSrcSystemId())) {
+                        continue;
+                    }
+                    IdentityDto groupTargetSysIdentity = identityService.getIdentityByManagedSys(pGroup.getId(), managedSysId);
+                    if(groupTargetSysIdentity == null) {
+                        List<AttributeMap> attrMap = managedSysService.getResourceAttributeMaps(res.getId());
+                        bindingMap.put("sysId", sysConfiguration.getDefaultManagedSysId());
+                        bindingMap.put("operation", isAdd ? "ADD" : "MODIFY");
+                        bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_IDENTITY_STATUS, null);
+                        bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_IDENTITY, null);
+                        bindingMap.put(AbstractProvisioningService.TARGET_SYS_RES_ID, res.getId());
+                        bindingMap.put(AbstractProvisioningService.TARGET_SYS_MANAGED_SYS_ID, managedSysId);
+                        bindingMap.put(AbstractProvisioningService.GROUP, pGroup);
+                        ManagedSystemObjectMatch matchObj = null;
+                        ManagedSystemObjectMatch[] matchObjAry = managedSystemService.managedSysObjectParam(managedSysId, ManagedSystemObjectMatch.GROUP);
+                        if (matchObjAry != null && matchObjAry.length > 0) {
+                            matchObj = matchObjAry[0];
+                            bindingMap.put(AbstractProvisioningService.MATCH_PARAM, matchObj);
+                        }
+                        try {
+                            log.debug(" - Building principal Name for: " + managedSysId);
+                            String newIdentity = ProvisionServiceUtil.buildGroupPrincipalName(attrMap, scriptRunner, bindingMap);
+
+                            if (StringUtils.isBlank(newIdentity)) {
+                                log.debug("Primary identity not found...");
+                                response.setStatus(ResponseStatus.FAILURE);
+                                response.setErrorCode(ResponseCode.IDENTITY_NOT_FOUND);
+                                return response;
+                            }
+
+                            groupTargetSysIdentity = new IdentityDto(IdentityTypeEnum.GROUP);
+                            groupTargetSysIdentity.setIdentity(newIdentity);
+                            groupTargetSysIdentity.setCreateDate(new Date());
+                            groupTargetSysIdentity.setCreatedBy(systemUserId);
+                            groupTargetSysIdentity.setManagedSysId(managedSysId);
+                            groupTargetSysIdentity.setReferredObjectId(pGroup.getId());
+                            groupTargetSysIdentity.setStatus(LoginStatusEnum.ACTIVE);
+
+                            String groupTargetSysIdentityId = identityService.save(groupTargetSysIdentity);
+
+                            groupTargetSysIdentity.setId(groupTargetSysIdentityId);
+                        } catch (ScriptEngineException e) {
+                            e.printStackTrace();
+                            response.setStatus(ResponseStatus.FAILURE);
+                            response.setErrorCode(ResponseCode.INTERNAL_ERROR);
+                            return response;
+                        }
+                    }
+
+                    // bind the objects to the scripting engine
+                    bindingMap.put("operation", isAdd ? "ADD" : "MODIFY");
+                    bindingMap.put("sysId", managedSysId);
+                    bindingMap.put("managedSysId", managedSysId);
+                    bindingMap.put("group", pGroup);
+                    bindingMap.put("identity", groupTargetSysIdentity);
+                    bindingMap.put("requesterId", systemUserId);
+
+                    List<AttributeMap> attrMapEntities = managedSystemService
+                            .getAttributeMapsByManagedSysId(managedSysId);
+
+                    ManagedSystemObjectMatch matchObj = null;
+                    ManagedSystemObjectMatch[] objList = managedSystemService.managedSysObjectParam(managedSysId,
+                            ManagedSystemObjectMatch.GROUP);
+                    if (objList.length > 0) {
+                        matchObj = objList[0];
+                    }
+
+                    ExtensibleObject extObj = buildFromRules(attrMapEntities, bindingMap);
+
+                    // get the attributes at the target system
+                    // this lookup only for getting attributes from the
+                    // system
+                    String requestId = "R" + UUIDGen.getUUID();
+                    Map<String, String> currentValueMap = new HashMap<String, String>();
+
+                    boolean isExistedInTargetSystem = getCurrentObjectAtTargetSystem(requestId, groupTargetSysIdentity, extObj, managedSys,
+                            matchObj, currentValueMap);
+
+                    boolean connectorSuccess = false;
+
+                    // pre-processing
+                    bindingMap.put("targetSystemAttributes", currentValueMap);
+
+                    ResourceProp preProcessProp = res.getResourceProperty("GROUP_PRE_PROCESS");
+                    String preProcessScript = preProcessProp != null ? preProcessProp.getValue() : null;
+                    if (StringUtils.isNotBlank(preProcessScript)) {
+
+                        PreProcessor<ProvisionGroup> ppScript = createPreProcessScript(preProcessScript, bindingMap);
+                        if (ppScript != null) {
+                            int executePreProcessResult = executePreProcess(ppScript, bindingMap, pGroup,
+                                    isExistedInTargetSystem ? "MODIFY" : "ADD");
+                            if (executePreProcessResult == ProvisioningConstants.FAIL) {
+                                response.setStatus(ResponseStatus.FAILURE);
+                                response.setErrorCode(ResponseCode.FAIL_PREPROCESSOR);
+                                return response;
+                            }
+                        }
+
+                    }
+
+
+                    if (!isExistedInTargetSystem) {
+
+                        connectorSuccess = requestAddModify(groupTargetSysIdentity, requestId, managedSys, matchObj, extObj, true);
+
+                    } else { // if user exists in target system
+
+                        // updates the attributes with the correct operation codes
+                        extObj = DefaultProvisioningService.updateAttributeList(extObj, currentValueMap);
+
+                        if (groupTargetSysIdentity.getOperation() == AttributeOperationEnum.REPLACE
+                                && groupTargetSysIdentity.getOrigPrincipalName() != null) {
+                            extObj.getAttributes().add(
+                                    new ExtensibleAttribute("ORIG_IDENTITY", groupTargetSysIdentity.getOrigPrincipalName(),
+                                            AttributeOperationEnum.REPLACE.getValue(), "String"));
+                        }
+                        connectorSuccess = requestAddModify(groupTargetSysIdentity, requestId, managedSys, matchObj, extObj, false);
+                    }
+
+                    if (connectorSuccess) {
+                        //Provisioning Members
+                        if (pGroup.isUpdateMembers()) {
+                            List<UserEntity> members = userDataService.getUsersForGroup(pGroup.getId(), systemUserId, 0, Integer.MAX_VALUE);
+                            for (UserEntity member : members) {
+                                if (!isMemberAvailableInResource(member, res.getId())) {
+                                    User user = userDozerConverter.convertToDTO(member, true);
+                                    user.addResource(res);
+                                    provisionService.modifyUser(new ProvisionUser(user));
+                                }
+                            }
+                        }
+                    }
+
+                    // post processing
+                    ResourceProp postProcessProp = res.getResourceProperty("GROUP_POST_PROCESS");
+                    String postProcessScript = postProcessProp != null ? postProcessProp.getValue() : null;
+                    if (StringUtils.isNotBlank(postProcessScript)) {
+                        PostProcessor ppScript = createPostProcessScript(postProcessScript, bindingMap);
+                        if (ppScript != null) {
+                            int executePostProcessResult = executePostProcess(ppScript, bindingMap, pGroup,
+                                    isExistedInTargetSystem ? "MODIFY" : "ADD", connectorSuccess);
+
+                            if (executePostProcessResult == ProvisioningConstants.FAIL) {
+                                response.setStatus(ResponseStatus.FAILURE);
+                                response.setErrorCode(ResponseCode.FAIL_POSTPROCESSOR);
+                                return response;
+                            }
+                        }
+                    }
+
+                    if (connectorSuccess) {
+                        response.setStatus(ResponseStatus.SUCCESS);
+                        response.setErrorCode(ResponseCode.SUCCESS);
+                        return response;
+                    }
+
+                    response.setStatus(ResponseStatus.FAILURE);
+                    response.setErrorCode(ResponseCode.FAIL_CONNECTOR);
+
+                }  else {
+                    // TODO WARNING
+                }
+            }}
+        // SET POST ATTRIBUTES FOR DEFAULT SYS SCRIPT
+
+        int callPostProcessorResult = callPostProcessor(isAdd ? "ADD" : "MODIFY", pGroup, bindingMap);
+        //     auditLog.addAttribute(AuditAttributeName.DESCRIPTION, "callPostProcessor result="
+        //             + (callPostProcessorResult == 1 ? "SUCCESS" : "FAIL"));
+        if (callPostProcessorResult != ProvisioningConstants.SUCCESS) {
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(ResponseCode.FAIL_POSTPROCESSOR);
+            //         auditLog.addAttribute(AuditAttributeName.DESCRIPTION, "PostProcessor error.");
+            return response;
+        }
+        response.setStatus(ResponseStatus.SUCCESS);
+        return response;
+    }
+
+    private void updateGroup(Group group, ProvisionGroup pGroup) {
+        group.setName(pGroup.getName());
+        group.setCompanyId(pGroup.getCompanyId());
+        group.setManagedSysId(pGroup.getManagedSysId());
+        group.setDescription(pGroup.getDescription());
+        group.setStatus(pGroup.getStatus());
+        group.setAdminResourceId(pGroup.getAdminResourceId());
+    }
 
     private boolean isMemberAvailableInResource(final UserEntity member, final String resourceId) {
         boolean result = false;
@@ -782,7 +819,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
         String requestId = "R" + UUIDGen.getUUID();
 
         // get the user object associated with this principal
-        IdentityDto identityDto = identityService.getIdentity(groupId, managedSystemId);
+        IdentityDto identityDto = identityService.getIdentityByManagedSys(groupId, managedSystemId);
         if (identityDto == null) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(ResponseCode.PRINCIPAL_NOT_FOUND);
@@ -795,7 +832,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
             return response;
         }
 
-        Group groupDto = groupDataWebService.getGroup(groupId, requestId);
+        Group groupDto = groupDataWebService.getGroup(groupId, null);
 
         ProvisionGroup pGroup = new ProvisionGroup(groupDto);
         // SET PRE ATTRIBUTES FOR DEFAULT SYS SCRIPT
@@ -989,7 +1026,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
             groupDto.setStatus(status.getValue());
             groupDto.setLastUpdatedBy(requesterId);
             groupDto.setLastUpdate(new Date(System.currentTimeMillis()));
-            groupDataWebService.saveGroup(groupDto,requestId);
+            groupDataWebService.saveGroup(groupDto, null);
         }
         // SET POST ATTRIBUTES FOR DEFAULT SYS SCRIPT
 

@@ -37,8 +37,8 @@ import java.util.Set;
         "searchScope", "resourceId", "primaryRepository", "secondaryRepositoryId", "updateSecondary",
         "mngSysObjectMatchs", "driverUrl", "connectionString", "addHandler", "modifyHandler", "deleteHandler",
         "passwordHandler", "suspendHandler", "resumeHandler", "searchHandler", "lookupHandler",
-        "testConnectionHandler", "reconcileResourceHandler", "attributeNamesHandler", "handler5", "rules", "groups",
-        "roles" })
+        "testConnectionHandler", "reconcileResourceHandler", "attributeNamesHandler", "handler5", "skipGroupProvision",
+        "rules", "groups", "roles" })
 @DozerDTOCorrespondence(ManagedSysEntity.class)
 public class ManagedSysDto implements java.io.Serializable {
 
@@ -80,6 +80,7 @@ public class ManagedSysDto implements java.io.Serializable {
     private String reconcileResourceHandler;
     private String attributeNamesHandler;
     private String handler5;
+    private Boolean skipGroupProvision;
 
     private List<ManagedSysRuleDto> rules = new ArrayList<ManagedSysRuleDto>(0);
 
@@ -433,6 +434,14 @@ public class ManagedSysDto implements java.io.Serializable {
         this.handler5 = handler5;
     }
 
+    public Boolean getSkipGroupProvision() {
+        return skipGroupProvision;
+    }
+
+    public void setSkipGroupProvision(Boolean skipGroupProvision) {
+        this.skipGroupProvision = skipGroupProvision;
+    }
+
     @Override
     public String toString() {
         return "ManagedSysDto{" + "managedSysId='" + id + '\'' + ", name='" + name + '\'' + ", description='"
@@ -449,7 +458,8 @@ public class ManagedSysDto implements java.io.Serializable {
                 + ", searchHandler='" + searchHandler + '\'' + ", lookupHandler='" + lookupHandler + '\''
                 + ", testConnectionHandler='" + testConnectionHandler + '\'' + ", reconcileResourceHandler='"
                 + reconcileResourceHandler + ", attributeNamesHandler='" + attributeNamesHandler + '\''
-                + ", handler5='" + handler5 + '\'' + ", mngSysObjectMatchs=" + mngSysObjectMatchs + '}';
+                + ", handler5='" + handler5 + '\'' + ", skipGroupProvision='" + skipGroupProvision + '\''
+                + ", mngSysObjectMatchs=" + mngSysObjectMatchs + '}';
     }
 
     public List<ManagedSysRuleDto> getRules() {

@@ -91,9 +91,15 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
     	 return ((Number) getExampleCriteria(searchBean).setProjection(rowCount())
                  .uniqueResult()).intValue();
     }
-    
+
+    @Override
     public void flush() {
     	getSession().flush();
+    }
+
+    @Override
+    public void clear() {
+        getSession().clear();
     }
 
     @Override

@@ -22,6 +22,8 @@
 package org.openiam.provision.dto;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.openiam.base.AttributeOperationEnum;
+import org.openiam.idm.srvc.auth.dto.IdentityDto;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.dto.GroupAttribute;
 import org.openiam.idm.srvc.res.dto.Resource;
@@ -43,7 +45,10 @@ import java.util.*;
         "srcSystemId",
         "skipPreprocessor",
         "skipPostProcessor",
-        "parentAuditLogId"
+        "parentAuditLogId",
+        "identityList",
+        "notProvisioninResourcesIds",
+        "updateMembers"
 })
 public class ProvisionGroup extends org.openiam.idm.srvc.grp.dto.Group {
 	private static final long serialVersionUID = -33009889049229700L;
@@ -53,13 +58,17 @@ public class ProvisionGroup extends org.openiam.idm.srvc.grp.dto.Group {
     private boolean skipPreprocessor = false;
     private boolean skipPostProcessor = false;
 
+    // flags to update users being the group members
+    private boolean updateMembers = false;
+
     private String sessionId;
 
     private String requestId;
 	/* ID of the system where this request came from */
     private String srcSystemId;
 
-    @XmlTransient
+    protected List<IdentityDto> identityList = new LinkedList<IdentityDto>();
+
     protected Set<String> notProvisioninResourcesIds = new HashSet<String>();
 
     //AuditLogEntity ID of parent AuditLog
@@ -155,6 +164,14 @@ public class ProvisionGroup extends org.openiam.idm.srvc.grp.dto.Group {
         this.skipPostProcessor = skipPostProcessor;
     }
 
+    public boolean isUpdateMembers() {
+        return updateMembers;
+    }
+
+    public void setUpdateMembers(boolean updateMembers) {
+        this.updateMembers = updateMembers;
+    }
+
     public String getSessionId() {
         return sessionId;
     }
@@ -192,4 +209,23 @@ public class ProvisionGroup extends org.openiam.idm.srvc.grp.dto.Group {
             notProvisioninResourcesIds.add(notProvisioninResourceId);
         }
     }
+
+    public List<IdentityDto> getIdentityList() {
+        return identityList;
+    }
+
+    public void addIdentity(IdentityDto identity) {
+        if(identity != null) {
+            if(this.identityList == null) {
+                this.identityList = new LinkedList<>();
+            }
+            identity.setOperation(AttributeOperationEnum.ADD);
+            this.identityList.add(identity);
+        }
+    }
+
+    public void setIdentityList(List<IdentityDto> identityList) {
+        this.identityList = identityList;
+    }
+
 }

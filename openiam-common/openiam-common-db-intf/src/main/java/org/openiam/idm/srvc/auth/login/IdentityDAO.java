@@ -11,5 +11,5 @@ public interface IdentityDAO extends BaseDao<IdentityEntity, String> {
    List<IdentityEntity> findByReferredId(String referredId);
    List<IdentityEntity> findByType(IdentityTypeEnum type);
    IdentityEntity findByManagedSysId(String referredId, String managedSysId);
-
+   IdentityEntity getByIdentityManagedSys(String principal, String managedSysId);
 }

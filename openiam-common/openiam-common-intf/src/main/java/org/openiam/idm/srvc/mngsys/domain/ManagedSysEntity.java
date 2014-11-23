@@ -3,6 +3,7 @@ package org.openiam.idm.srvc.mngsys.domain;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Type;
 import org.openiam.am.srvc.constants.SearchScopeType;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
@@ -90,6 +91,9 @@ public class ManagedSysEntity implements Serializable {
     private String attributeNamesHandler;
     @Column(name = "HNDLR_5", length = 100)
     private String handler5;
+    @Column(name = "SKIP_GROUP_PROV", nullable = false)
+    @Type(type = "yes_no")
+    private boolean skipGroupProvision = true;
 
     @OneToMany(mappedBy = "managedSys")
     private Set<ManagedSystemObjectMatchEntity> mngSysObjectMatchs = new HashSet<ManagedSystemObjectMatchEntity>();
@@ -392,6 +396,14 @@ public class ManagedSysEntity implements Serializable {
         this.roles = roles;
     }
 
+    public Boolean getSkipGroupProvision() {
+        return skipGroupProvision;
+    }
+
+    public void setSkipGroupProvision(Boolean skipGroupProvision) {
+        this.skipGroupProvision = skipGroupProvision;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o)
@@ -469,6 +481,8 @@ public class ManagedSysEntity implements Serializable {
             return false;
         if (userId != null ? !userId.equals(that.userId) : that.userId != null)
             return false;
+        if (skipGroupProvision != that.skipGroupProvision)
+            return false;
 
         return true;
     }
@@ -506,6 +520,7 @@ public class ManagedSysEntity implements Serializable {
         result = 31 * result + (reconcileResourceHandler != null ? reconcileResourceHandler.hashCode() : 0);
         result = 31 * result + (attributeNamesHandler != null ? attributeNamesHandler.hashCode() : 0);
         result = 31 * result + (handler5 != null ? handler5.hashCode() : 0);
+        result = 31 * result + (skipGroupProvision ? 1231 : 1237);
         return result;
     }
 }
