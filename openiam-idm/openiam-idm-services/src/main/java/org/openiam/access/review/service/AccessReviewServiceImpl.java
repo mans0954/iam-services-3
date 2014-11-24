@@ -15,8 +15,10 @@ import org.openiam.bpm.activiti.ActivitiService;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.lang.dto.Language;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysSearchBean;
+import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.res.dto.ResourceType;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
@@ -42,7 +44,7 @@ public class AccessReviewServiceImpl implements AccessReviewService {
     @Autowired
     private LoginDataService loginDS;
     @Autowired
-    private ManagedSystemWebService managedSystemService;
+    private ManagedSystemService managedSystemService;
     @Autowired
     private ResourceDataService resourceService;
     @Autowired
@@ -99,12 +101,12 @@ public class AccessReviewServiceImpl implements AccessReviewService {
     }
 
 
-    private Map<String, ManagedSysDto> getManagedSysMap() {
-        Map<String, ManagedSysDto> managedSysMap = new HashMap<String, ManagedSysDto>();
-        ManagedSysSearchBean searchBean = new ManagedSysSearchBean();
-        List<ManagedSysDto> results = managedSystemService.getManagedSystems(searchBean, Integer.MAX_VALUE, 0);
+    private Map<String, ManagedSysEntity> getManagedSysMap() {
+        Map<String, ManagedSysEntity> managedSysMap = new HashMap<>();
+//        ManagedSysSearchBean searchBean = new ManagedSysSearchBean();
+        List<ManagedSysEntity> results = managedSystemService.getAllManagedSys();
         if (CollectionUtils.isNotEmpty(results)) {
-            for(ManagedSysDto mngsys : results){
+            for(ManagedSysEntity mngsys : results){
                 managedSysMap.put(mngsys.getResourceId(), mngsys);
             }
         }

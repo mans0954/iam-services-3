@@ -7,6 +7,7 @@ import org.openiam.authmanager.common.model.AbstractAuthorizationEntity;
 import org.openiam.authmanager.common.model.AuthorizationGroup;
 import org.openiam.authmanager.common.model.AuthorizationRole;
 import org.openiam.access.review.constant.AccessReviewData;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 
 import java.util.HashSet;
@@ -24,7 +25,7 @@ public class ResourceEntitlementStrategy extends EntitlementsStrategy {
     @Override
     public Set<AccessViewBean> getRoles(AccessViewBean parent) {
         Set<AccessViewBean> retVal = new HashSet<>();
-        ManagedSysDto mngsys = accessReviewData.getMngsysMap().get(parent.getId());
+        ManagedSysEntity mngsys = accessReviewData.getMngsysMap().get(parent.getId());
         if(mngsys!=null){
             Set<String> rolesIds = this.getCompiledRoles();
            // rolesIds.addAll(getCompiledRolesForResource(parent.getId()));
@@ -45,7 +46,7 @@ public class ResourceEntitlementStrategy extends EntitlementsStrategy {
     @Override
     public Set<AccessViewBean> getGroups(AccessViewBean parent) {
         Set<AccessViewBean> retVal = new HashSet<>();
-        ManagedSysDto mngsys = accessReviewData.getMngsysMap().get(parent.getId());
+        ManagedSysEntity mngsys = accessReviewData.getMngsysMap().get(parent.getId());
         if(mngsys!=null){
             Set<String> groupIds = this.getCompiledGroups();
             //groupIds.addAll(getCompiledGroupsForResource(parent.getId()));

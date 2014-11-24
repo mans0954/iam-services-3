@@ -13,6 +13,7 @@ import org.openiam.base.TreeNode;
 import org.openiam.bpm.response.TaskWrapper;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.res.dto.ResourceType;
 
@@ -30,10 +31,10 @@ public class AccessReviewData {
     private final  String groupClass = AuthorizationGroup.class.getSimpleName();
     private final  String resourceClass = AuthorizationResource.class.getSimpleName();
 
-    private String view="resources";
+    private String view=AccessReviewConstant.RESOURCE_VIEW;
     private UserEntitlementsMatrix matrix;
     private Set<String> targetResourceIds;
-    private Map<String, ManagedSysDto> mngsysMap;
+    private Map<String, ManagedSysEntity> mngsysMap;
     private Map<String, ResourceType>  resourceTypeMap;
     private List<LoginEntity> loginList;
     private AccessViewFilterBean filter;
@@ -52,11 +53,11 @@ public class AccessReviewData {
         this.matrix = matrix;
     }
 
-    public Map<String, ManagedSysDto> getMngsysMap() {
+    public Map<String, ManagedSysEntity> getMngsysMap() {
         return mngsysMap;
     }
 
-    public void setMngsysMap(Map<String, ManagedSysDto> mngsysMap) {
+    public void setMngsysMap(Map<String, ManagedSysEntity> mngsysMap) {
         this.mngsysMap = mngsysMap;
     }
 

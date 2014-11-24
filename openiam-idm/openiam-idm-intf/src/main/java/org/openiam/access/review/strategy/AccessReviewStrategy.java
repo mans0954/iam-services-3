@@ -2,6 +2,7 @@ package org.openiam.access.review.strategy;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.StopWatch;
 import org.openiam.access.review.model.AccessViewBean;
 import org.openiam.access.review.model.AccessViewFilterBean;
 import org.openiam.authmanager.common.model.AbstractAuthorizationEntity;
@@ -53,7 +54,12 @@ public abstract class AccessReviewStrategy {
     }
 
     public List<TreeNode<AccessViewBean>> buildView() {
-        return buildView(null);
+        final StopWatch sw = new StopWatch();
+        sw.start();
+        List<TreeNode<AccessViewBean>> treeNodeList = buildView(null);
+        sw.stop();
+        log.info(String.format("Done building access review tree. Took: %s ms", sw.getTime()));
+        return treeNodeList;
     }
     public abstract List<TreeNode<AccessViewBean>> buildView(AccessViewBean parent);
 

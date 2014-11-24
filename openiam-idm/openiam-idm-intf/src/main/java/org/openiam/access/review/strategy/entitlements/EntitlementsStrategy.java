@@ -10,6 +10,7 @@ import org.openiam.authmanager.common.model.AuthorizationRole;
 import org.openiam.access.review.constant.AccessReviewConstant;
 import org.openiam.access.review.constant.AccessReviewData;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 
 import java.util.*;
@@ -30,7 +31,7 @@ public abstract class EntitlementsStrategy {
         this.accessReviewData=accessReviewData;
     }
 
-    protected void setIdentityForResource(AccessViewBean bean, ManagedSysDto mngsys, List<LoginEntity> loginList){
+    protected void setIdentityForResource(AccessViewBean bean, ManagedSysEntity mngsys, List<LoginEntity> loginList){
         if(CollectionUtils.isNotEmpty(loginList) && mngsys!=null) {
             for(final LoginEntity login : loginList) {
                 if(mngsys.getId().equals(login.getManagedSysId())){
