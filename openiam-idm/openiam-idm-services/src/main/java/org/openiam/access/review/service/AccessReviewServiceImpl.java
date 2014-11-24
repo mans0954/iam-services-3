@@ -67,6 +67,11 @@ public class AccessReviewServiceImpl implements AccessReviewService {
         return new AccessViewResponse(dataList, dataList.size(), exceptionList);
     }
 
+    @Override
+    public AccessViewResponse getAccessReviewSubTree(AccessViewFilterBean filter, String viewType, Language language) {
+        return null;
+    }
+
     private AccessReviewStrategy getAccessReviewStrategy(AccessViewFilterBean filter, String viewType, Language language) {
         final List<LoginEntity> loginList = loginDS.getLoginByUser(filter.getUserId());
         UserEntitlementsMatrix userEntitlementsMatrix = adminService.getUserEntitlementsMatrix(filter.getUserId());
