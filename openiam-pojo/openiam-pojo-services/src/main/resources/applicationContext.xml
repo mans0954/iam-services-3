@@ -39,7 +39,7 @@
 
 	<bean id="customJacksonMapper" class="org.openiam.idm.util.CustomJacksonMapper" />
 	
-	<bean id="jsonHttpMessageConverter" class="org.springframework.http.converter.json.MappingJacksonHttpMessageConverter">
+	<bean id="jsonHttpMessageConverter" class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
 		<property name="prefixJson" value="false"/>
 		<property name="supportedMediaTypes" value="application/json"/>
 		<property name="objectMapper" ref="customJacksonMapper" />
@@ -161,7 +161,7 @@
 					</property> 
 				</bean>
 				-->
-				<bean class="org.springframework.scheduling.quartz.SimpleTriggerBean">
+				<bean class="org.springframework.scheduling.quartz.SimpleTriggerFactoryBean">
 					<property name="startDelay" value="${org.openiam.audit.threadsweep}" />
 					<property name="repeatInterval" value="${org.openiam.audit.threadsweep}" />
 					<property name="jobDetail">
@@ -172,7 +172,7 @@
 						</bean>
 					</property>
 				</bean>
-                <bean class="org.springframework.scheduling.quartz.SimpleTriggerBean">
+                <bean class="org.springframework.scheduling.quartz.SimpleTriggerFactoryBean">
                     <property name="startDelay" value="${org.openiam.prov.threadsweep}" />
                     <property name="repeatInterval" value="${org.openiam.prov.threadsweep}" />
                     <property name="jobDetail">
@@ -184,7 +184,7 @@
                     </property>
                 </bean>
 
-                <bean class="org.springframework.scheduling.quartz.SimpleTriggerBean">
+                <bean class="org.springframework.scheduling.quartz.SimpleTriggerFactoryBean">
                     <property name="startDelay" value="${org.openiam.org.manager.threadsweep}" />
                     <property name="repeatInterval" value="${org.openiam.org.manager.threadsweep}" />
                     <property name="jobDetail">
@@ -196,7 +196,7 @@
                     </property>
                 </bean>
 
-                <bean class="org.springframework.scheduling.quartz.SimpleTriggerBean">
+                <bean class="org.springframework.scheduling.quartz.SimpleTriggerFactoryBean">
                     <property name="startDelay" value="${org.openiam.org.manager.threadsweep}" />
                     <property name="repeatInterval" value="${org.openiam.org.manager.threadsweep}" />
                     <property name="jobDetail">
@@ -208,7 +208,7 @@
                     </property>
                 </bean>
 
-                <bean class="org.springframework.scheduling.quartz.SimpleTriggerBean">
+                <bean class="org.springframework.scheduling.quartz.SimpleTriggerFactoryBean">
                     <property name="startDelay" value="${org.openiam.metadata.threadsweep}" />
                     <property name="repeatInterval" value="${org.openiam.metadata.threadsweep}" />
                     <property name="jobDetail">

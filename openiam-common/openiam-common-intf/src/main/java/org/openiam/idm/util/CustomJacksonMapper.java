@@ -1,15 +1,15 @@
 package org.openiam.idm.util;
 
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.DeserializationConfig.Feature;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 
 public class CustomJacksonMapper extends ObjectMapper {
 
 	public CustomJacksonMapper() {
 		super();
-		this.configure(Feature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT, true)
-		 .configure(Feature.FAIL_ON_NULL_FOR_PRIMITIVES, false)
-		 .configure(Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		this.configure(JsonParser.Feature.ALLOW_COMMENTS, true);
 	}
 	
 	public String mapToStringQuietly(final Object o) {

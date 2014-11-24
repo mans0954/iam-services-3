@@ -3,6 +3,7 @@ package org.openiam.connector.csv.command.group;
 import org.openiam.am.srvc.constants.CSVSource;
 import org.openiam.connector.type.constant.ErrorCode;
 import org.openiam.idm.parser.csv.CSVParser;
+import org.openiam.idm.parser.csv.GroupCsvParser;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
@@ -22,7 +23,7 @@ import java.util.Map;
 public class LookupGroupCSVCommand extends AbstractLookupCSVCommand<Group, ExtensibleGroup> {
     @Autowired
     @Qualifier("groupCsvParser")
-    protected CSVParser<Group> groupCsvParser;
+    protected GroupCsvParser groupCsvParser;
 
     @Override
     protected List<ReconciliationObject<Group>> getObjectList(ManagedSysEntity managedSys, List<AttributeMapEntity> attrMapList) throws ConnectorDataException {
