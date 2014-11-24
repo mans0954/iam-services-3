@@ -1094,5 +1094,13 @@
     		<a>metaEntitySet</a>
     		<b>metaEntitySet</b>
     	</field-exclude>
+    	<field>
+    		<a>resource.id</a>
+    		<b>resourceId</b>
+    	</field>
+    	<field>
+    		<a>resource.coorelatedName</a>
+    		<b>resourceCoorelatedName</b>
+    	</field>
     </mapping>
 </mappings>

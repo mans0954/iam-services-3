@@ -8,10 +8,12 @@ import org.openiam.base.KeyNameDTO;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "AbstractMeta", propOrder = {
-        "metaType"
+        "metaType",
+        "contentType"
 })
 public abstract class AbstractMeta extends KeyNameDTO {
 
+	protected String contentType;
 	protected URIPatternMetaType metaType;
 
 	public URIPatternMetaType getMetaType() {
@@ -22,10 +24,20 @@ public abstract class AbstractMeta extends KeyNameDTO {
 		this.metaType = metaType;
 	}
 
+	public String getContentType() {
+		return contentType;
+	}
+
+	public void setContentType(String contentType) {
+		this.contentType = contentType;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
+		result = prime * result
+				+ ((contentType == null) ? 0 : contentType.hashCode());
 		result = prime * result
 				+ ((metaType == null) ? 0 : metaType.hashCode());
 		return result;
@@ -40,6 +52,11 @@ public abstract class AbstractMeta extends KeyNameDTO {
 		if (getClass() != obj.getClass())
 			return false;
 		AbstractMeta other = (AbstractMeta) obj;
+		if (contentType == null) {
+			if (other.contentType != null)
+				return false;
+		} else if (!contentType.equals(other.contentType))
+			return false;
 		if (metaType == null) {
 			if (other.metaType != null)
 				return false;
@@ -50,12 +67,12 @@ public abstract class AbstractMeta extends KeyNameDTO {
 
 	@Override
 	public String toString() {
-		return "AbstractMeta [metaType=" + metaType + ", name=" + name
-				+ ", id=" + id + ", objectState=" + objectState
-				+ ", requestorSessionID=" + requestorSessionID
+		return "AbstractMeta [contentType=" + contentType + ", metaType="
+				+ metaType + ", name=" + name + ", id=" + id + ", objectState="
+				+ objectState + ", requestorSessionID=" + requestorSessionID
 				+ ", requestorUserId=" + requestorUserId + ", requestorLogin="
 				+ requestorLogin + ", requestClientIP=" + requestClientIP + "]";
 	}
-	
+
 	
 }

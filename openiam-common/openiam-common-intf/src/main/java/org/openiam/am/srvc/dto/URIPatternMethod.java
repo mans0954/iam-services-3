@@ -17,7 +17,9 @@ import org.springframework.http.HttpMethod;
 	"patternId",
 	"method",
 	"params",
-	"metaEntitySet"
+	"metaEntitySet",
+	"resourceId",
+	"resourceCoorelatedName"
 })
 @DozerDTOCorrespondence(URIPatternMethodEntity.class)
 public class URIPatternMethod extends KeyDTO {
@@ -26,6 +28,8 @@ public class URIPatternMethod extends KeyDTO {
 	private HttpMethod method;
 	private Set<URIPatternMethodParameter> params;
 	private Set<URIPatternMethodMeta> metaEntitySet;
+	private String resourceId;
+	private String resourceCoorelatedName;
 	
 	public Set<URIPatternMethodMeta> getMetaEntitySet() {
 		return metaEntitySet;
@@ -52,13 +56,27 @@ public class URIPatternMethod extends KeyDTO {
 	public void setMethod(HttpMethod method) {
 		this.method = method;
 	}
+	public String getResourceId() {
+		return resourceId;
+	}
+	public void setResourceId(String resourceId) {
+		this.resourceId = resourceId;
+	}
+	public String getResourceCoorelatedName() {
+		return resourceCoorelatedName;
+	}
+	public void setResourceCoorelatedName(String resourceCoorelatedName) {
+		this.resourceCoorelatedName = resourceCoorelatedName;
+	}
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
+		result = prime * result + ((method == null) ? 0 : method.hashCode());
 		result = prime * result
 				+ ((patternId == null) ? 0 : patternId.hashCode());
-		result = prime * result + ((method == null) ? 0 : method.hashCode());
+		result = prime * result
+				+ ((resourceId == null) ? 0 : resourceId.hashCode());
 		return result;
 	}
 	@Override
@@ -70,20 +88,27 @@ public class URIPatternMethod extends KeyDTO {
 		if (getClass() != obj.getClass())
 			return false;
 		URIPatternMethod other = (URIPatternMethod) obj;
+		if (method != other.method)
+			return false;
 		if (patternId == null) {
 			if (other.patternId != null)
 				return false;
 		} else if (!patternId.equals(other.patternId))
 			return false;
-		if (method != other.method)
+		if (resourceId == null) {
+			if (other.resourceId != null)
+				return false;
+		} else if (!resourceId.equals(other.resourceId))
 			return false;
 		return true;
 	}
 	@Override
 	public String toString() {
 		return "URIPatternMethod [patternId=" + patternId + ", method="
-				+ method + "]";
+				+ method + ", resourceId=" + resourceId
+				+ ", resourceCoorelatedName=" + resourceCoorelatedName + "]";
 	}
+	
 	
 	
 }
