@@ -1,6 +1,5 @@
 package org.openiam.bpm.request;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -11,12 +10,9 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.StringUtils;
-import org.codehaus.jackson.JsonGenerationException;
-import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.openiam.base.BaseObject;
-import org.openiam.bpm.util.ActivitiRequestType;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 
 @XmlAccessorType(XmlAccessType.FIELD)

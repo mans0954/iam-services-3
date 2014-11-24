@@ -1,8 +1,9 @@
 package org.openiam.authmanager.common.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang.StringUtils;
-import org.codehaus.jackson.annotate.JsonIgnore;
-import org.codehaus.jackson.annotate.JsonProperty;
+
 import org.openiam.authmanager.model.MenuEntitlementType;
 import org.openiam.authmanager.util.AuthorizationConstants;
 import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
