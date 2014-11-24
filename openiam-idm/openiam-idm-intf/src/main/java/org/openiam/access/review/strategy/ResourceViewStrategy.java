@@ -1,8 +1,8 @@
-package org.openiam.authmanager.util.strategy.access.review;
+package org.openiam.access.review.strategy;
 
 
-import org.openiam.authmanager.model.AccessViewBean;
-import org.openiam.authmanager.util.strategy.helper.AccessReviewData;
+import org.openiam.access.review.constant.AccessReviewData;
+import org.openiam.access.review.model.AccessViewBean;
 import org.openiam.base.TreeNode;
 
 import java.util.Collections;
@@ -18,11 +18,10 @@ public class ResourceViewStrategy extends AccessReviewStrategy {
         super(accessReviewData);
     }
 
-    @Override
-    public List<TreeNode<AccessViewBean>> buildView() {
+    public List<TreeNode<AccessViewBean>> buildView(AccessViewBean parent){
         try{
             // get direct resources
-            Set<AccessViewBean> resourceIds = this.getResourceEntitlementStrategy().getResources(null);
+            Set<AccessViewBean> resourceIds = this.getResourceEntitlementStrategy().getResources(parent);
             List<TreeNode<AccessViewBean>> dataList = proceedSubTree(getResourceBeanList(resourceIds, true, false), 0);
             return applyFilter(dataList);
         } catch (Exception ex){

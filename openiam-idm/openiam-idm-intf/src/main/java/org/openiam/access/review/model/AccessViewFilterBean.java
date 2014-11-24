@@ -1,18 +1,35 @@
-package org.openiam.authmanager.model;
+package org.openiam.access.review.model;
 
 import org.apache.commons.lang.StringUtils;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlType;
 import java.io.Serializable;
 
 /**
  * Created by: Alexander Duckardt
  * Date: 1/11/14.
  */
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "AccessViewFilterBean", propOrder = {
+        "userId",
+        "name",
+        "description",
+        "risk",
+        "maxHierarchyLevel",
+        "showExceptionsFlag",
+        "showRolesFlag",
+        "showGroupsFlag",
+        "showManagesSysFlag",
+        "compiledFlag"
+})
 public class AccessViewFilterBean implements Serializable {
     private String userId;
     private String name;
     private String description;
     private String risk;
+    private Integer maxHierarchyLevel = 10;
     private Boolean showExceptionsFlag=false;
     private Boolean showRolesFlag=false;
     private Boolean showGroupsFlag=false;
@@ -81,6 +98,14 @@ public class AccessViewFilterBean implements Serializable {
 
     public void setRisk(String risk) {
         this.risk = risk;
+    }
+
+    public Integer getMaxHierarchyLevel() {
+        return maxHierarchyLevel;
+    }
+
+    public void setMaxHierarchyLevel(Integer maxHierarchyLevel) {
+        this.maxHierarchyLevel = maxHierarchyLevel;
     }
 
     public void computeCompiledFlag(){

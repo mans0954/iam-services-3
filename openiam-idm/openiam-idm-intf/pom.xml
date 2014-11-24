@@ -139,6 +139,10 @@
             <artifactId>openiam-common-db-intf</artifactId>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>org.openiam</groupId>
+            <artifactId>openiam-auth-manager-intf</artifactId>
+        </dependency>
     </dependencies>
 
 

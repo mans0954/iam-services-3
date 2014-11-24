@@ -1,11 +1,26 @@
-package org.openiam.authmanager.model;
+package org.openiam.access.review.model;
 
 import org.openiam.base.KeyNameDTO;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlType;
 
 /**
  * Created by: Alexander Duckardt
  * Date: 12/31/13.
  */
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "AccessViewBean", propOrder = {
+        "hasChild",
+        "beanType",
+        "description",
+        "risk",
+        "status",
+        "identity",
+        "loginId",
+        "managedSys"
+})
 public class AccessViewBean extends KeyNameDTO implements Comparable<AccessViewBean> {
     private Boolean hasChild=false;
     private String beanType = this.getClass().getSimpleName();

@@ -1,4 +1,4 @@
-package org.openiam.authmanager.util.strategy.helper;
+package org.openiam.access.review.constant;
 
 /**
  * Created by: Alexander Duckardt
@@ -25,5 +25,9 @@ public class AccessReviewConstant {
     public static final String ROLE_ICON_DESCR="Role";
     public static final String GROUP_ICON_DESCR="Group";
 
+
+    public static final String GROUP_VIEW="groups";
+    public static final String RESOURCE_VIEW="resources";
+    public static final String ROLE_VIEW="roles";
 
 }

@@ -1,9 +1,9 @@
-package org.openiam.authmanager.util.strategy.entitlements;
+package org.openiam.access.review.strategy.entitlements;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.openiam.access.review.model.AccessViewBean;
 import org.openiam.authmanager.common.model.AbstractAuthorizationEntity;
-import org.openiam.authmanager.model.AccessViewBean;
-import org.openiam.authmanager.util.strategy.helper.AccessReviewData;
+import org.openiam.access.review.constant.AccessReviewData;
 
 import java.util.Set;
 

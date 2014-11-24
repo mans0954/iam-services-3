@@ -1,20 +1,21 @@
-package org.openiam.authmanager.util.strategy.access.review;
+package org.openiam.access.review.strategy;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.openiam.access.review.model.AccessViewBean;
+import org.openiam.access.review.model.AccessViewFilterBean;
 import org.openiam.authmanager.common.model.AbstractAuthorizationEntity;
 import org.openiam.authmanager.common.model.AuthorizationGroup;
 import org.openiam.authmanager.common.model.AuthorizationResource;
 import org.openiam.authmanager.common.model.AuthorizationRole;
-import org.openiam.authmanager.model.AccessViewBean;
-import org.openiam.authmanager.model.AccessViewFilterBean;
-import org.openiam.authmanager.util.strategy.entitlements.EntitlementsStrategy;
-import org.openiam.authmanager.util.strategy.entitlements.GroupEntitlementStrategy;
-import org.openiam.authmanager.util.strategy.entitlements.ResourceEntitlementStrategy;
-import org.openiam.authmanager.util.strategy.entitlements.RoleEntitlementStrategy;
-import org.openiam.authmanager.util.strategy.helper.AccessReviewConstant;
-import org.openiam.authmanager.util.strategy.helper.AccessReviewData;
+import org.openiam.access.review.strategy.entitlements.EntitlementsStrategy;
+import org.openiam.access.review.strategy.entitlements.GroupEntitlementStrategy;
+import org.openiam.access.review.strategy.entitlements.ResourceEntitlementStrategy;
+import org.openiam.access.review.strategy.entitlements.RoleEntitlementStrategy;
+import org.openiam.access.review.constant.AccessReviewConstant;
+import org.openiam.access.review.constant.AccessReviewData;
 import org.openiam.base.TreeNode;
+import org.openiam.bpm.response.TaskWrapper;
 import org.openiam.bpm.util.ActivitiRequestType;
 import org.openiam.idm.srvc.res.dto.ResourceType;
 import org.slf4j.Logger;
@@ -51,7 +52,10 @@ public abstract class AccessReviewStrategy {
         return new GroupViewStrategy(accessReviewData);
     }
 
-    public abstract List<TreeNode<AccessViewBean>> buildView();
+    public List<TreeNode<AccessViewBean>> buildView() {
+        return buildView(null);
+    }
+    public abstract List<TreeNode<AccessViewBean>> buildView(AccessViewBean parent);
 
     public List<TreeNode<AccessViewBean>> getExceptionsList(){
         return Collections.EMPTY_LIST;
@@ -85,7 +89,7 @@ public abstract class AccessReviewStrategy {
                     node.setIconDescription(iconDescr);
                     node.setIsDeletable(getResourceEntitlementStrategy().isDirectEntitled(resource));
                     node.setIsException(isParentException || isException(bean.getId()));
-                     node.setIsTerminate(isTerminating(bean.getBeanType(), bean.getId()));
+                    node.setIsTerminate(isTerminating(bean.getBeanType(), bean.getId()));
                     result.add(node);
                 }
             }

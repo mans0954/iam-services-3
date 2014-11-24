@@ -1,15 +1,15 @@
-package org.openiam.authmanager.util.strategy.entitlements;
+package org.openiam.access.review.strategy.entitlements;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.openiam.access.review.model.AccessViewBean;
 import org.openiam.authmanager.common.model.AbstractAuthorizationEntity;
 import org.openiam.authmanager.common.model.AuthorizationGroup;
 import org.openiam.authmanager.common.model.AuthorizationResource;
 import org.openiam.authmanager.common.model.AuthorizationRole;
-import org.openiam.authmanager.model.AccessViewBean;
-import org.openiam.authmanager.util.strategy.helper.AccessReviewConstant;
-import org.openiam.authmanager.util.strategy.helper.AccessReviewData;
-import org.openiam.idm.srvc.auth.dto.Login;
+import org.openiam.access.review.constant.AccessReviewConstant;
+import org.openiam.access.review.constant.AccessReviewData;
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 
 import java.util.*;
@@ -30,9 +30,9 @@ public abstract class EntitlementsStrategy {
         this.accessReviewData=accessReviewData;
     }
 
-    protected void setIdentityForResource(AccessViewBean bean, ManagedSysDto mngsys, List<Login> loginList){
+    protected void setIdentityForResource(AccessViewBean bean, ManagedSysDto mngsys, List<LoginEntity> loginList){
         if(CollectionUtils.isNotEmpty(loginList) && mngsys!=null) {
-            for(final Login login : loginList) {
+            for(final LoginEntity login : loginList) {
                 if(mngsys.getId().equals(login.getManagedSysId())){
                     bean.setIdentity(login.getLogin());
                     bean.setLoginId(login.getLoginId());

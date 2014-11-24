@@ -1,9 +1,9 @@
-package org.openiam.authmanager.util.strategy.access.review;
+package org.openiam.access.review.strategy;
 
 
-import org.openiam.authmanager.model.AccessViewBean;
-import org.openiam.authmanager.util.strategy.helper.AccessReviewConstant;
-import org.openiam.authmanager.util.strategy.helper.AccessReviewData;
+import org.openiam.access.review.constant.AccessReviewConstant;
+import org.openiam.access.review.constant.AccessReviewData;
+import org.openiam.access.review.model.AccessViewBean;
 import org.openiam.base.TreeNode;
 
 import java.util.Collections;
@@ -19,9 +19,9 @@ public class RoleViewStrategy extends AccessReviewStrategy {
     }
 
     @Override
-    public List<TreeNode<AccessViewBean>> buildView() {
+    public List<TreeNode<AccessViewBean>> buildView(AccessViewBean parent) {
         try{
-            List<TreeNode<AccessViewBean>> dataList = proceedSubTree(getRoleBeanList(getRoleEntitlementStrategy().getRoles(null),
+            List<TreeNode<AccessViewBean>> dataList = proceedSubTree(getRoleBeanList(getRoleEntitlementStrategy().getRoles(parent),
                                                                                      false, null, AccessReviewConstant.INITIAL_LEVEL),
                                                                      AccessReviewConstant.INITIAL_LEVEL);
             return applyFilter(dataList);

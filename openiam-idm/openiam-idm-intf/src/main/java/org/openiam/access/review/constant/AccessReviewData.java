@@ -1,17 +1,17 @@
-package org.openiam.authmanager.util.strategy.helper;
+package org.openiam.access.review.constant;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.openiam.access.review.model.AccessViewBean;
+import org.openiam.access.review.model.AccessViewFilterBean;
 import org.openiam.authmanager.common.model.AbstractAuthorizationEntity;
 import org.openiam.authmanager.common.model.AuthorizationGroup;
 import org.openiam.authmanager.common.model.AuthorizationResource;
 import org.openiam.authmanager.common.model.AuthorizationRole;
-import org.openiam.authmanager.model.AccessViewBean;
-import org.openiam.authmanager.model.AccessViewFilterBean;
 import org.openiam.authmanager.model.UserEntitlementsMatrix;
 import org.openiam.base.TreeNode;
 import org.openiam.bpm.response.TaskWrapper;
-import org.openiam.idm.srvc.auth.dto.Login;
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.res.dto.ResourceType;
@@ -35,7 +35,7 @@ public class AccessReviewData {
     private Set<String> targetResourceIds;
     private Map<String, ManagedSysDto> mngsysMap;
     private Map<String, ResourceType>  resourceTypeMap;
-    private List<Login> loginList;
+    private List<LoginEntity> loginList;
     private AccessViewFilterBean filter;
     private List<TreeNode<AccessViewBean>> filteredNodes=new ArrayList<TreeNode<AccessViewBean>>();
     private Set<AccessViewBean> addedElements = new HashSet<AccessViewBean>();
@@ -68,11 +68,11 @@ public class AccessReviewData {
         this.resourceTypeMap = resourceTypeMap;
     }
 
-    public List<Login> getLoginList() {
+    public List<LoginEntity> getLoginList() {
         return loginList;
     }
 
-    public void setLoginList(List<Login> loginList) {
+    public void setLoginList(List<LoginEntity> loginList) {
         this.loginList = loginList;
     }
 

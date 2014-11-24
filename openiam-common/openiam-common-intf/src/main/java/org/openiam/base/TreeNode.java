@@ -3,6 +3,10 @@ package org.openiam.base;
 import org.apache.commons.collections.CollectionUtils;
 import org.codehaus.jackson.annotate.JsonIgnore;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.XmlType;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -12,8 +16,21 @@ import java.util.List;
  * Created by: Alexander Duckardt
  * Date: 12/31/13.
  */
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "TreeNode", propOrder = {
+//        "parent",
+        "children",
+        "data",
+        "icon",
+        "iconType",
+        "iconDescription",
+        "isException",
+        "isDeletable",
+        "isTerminate"
+})
 public class TreeNode<Bean extends KeyDTO> implements Serializable {
     @JsonIgnore
+    @XmlTransient
     private TreeNode<Bean> parent;
     private List<TreeNode<Bean>> children = new ArrayList<TreeNode<Bean>>();
     private Bean data;
@@ -23,6 +40,9 @@ public class TreeNode<Bean extends KeyDTO> implements Serializable {
     private boolean isException=false;
     private boolean isDeletable=false;
     private boolean isTerminate=false;
+
+    public TreeNode(){
+    }
 
     public TreeNode(Bean data){
         this(data, null);

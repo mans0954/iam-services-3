@@ -1,8 +1,8 @@
-package org.openiam.authmanager.util.strategy.access.review;
+package org.openiam.access.review.strategy;
 
 
-import org.openiam.authmanager.model.AccessViewBean;
-import org.openiam.authmanager.util.strategy.helper.AccessReviewData;
+import org.openiam.access.review.constant.AccessReviewData;
+import org.openiam.access.review.model.AccessViewBean;
 import org.openiam.base.TreeNode;
 
 import java.util.Collections;
@@ -18,7 +18,7 @@ public class GroupViewStrategy extends AccessReviewStrategy  {
     }
 
     @Override
-    public List<TreeNode<AccessViewBean>> buildView() {
+    public List<TreeNode<AccessViewBean>> buildView(AccessViewBean parent) {
         return Collections.EMPTY_LIST;
     }
 }
