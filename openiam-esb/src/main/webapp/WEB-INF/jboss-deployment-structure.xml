@@ -1,19 +1,14 @@
-<jboss-deployment-structure>
-  <deployment>
-    <!-- Exclusions allow you to prevent the server from automatically adding some dependencies     -->
-    <exclusions>
-        <module name="org.apache" />
-        <module name="org.hibernate" />
-        <module name="org.apache.cxf" />
-    </exclusions>
-    <!-- This allows you to define additional dependencies, it is the same as using the Dependencies: manifest attribute -->
-    <dependencies>
-        <module name="org.jboss.ironjacamar.jdbcadapters" slot="main" />
-      	<module name="com.mysql" />
-      	<module name="oracle.jdbc" />
-      	<module name="com.hazelcast" />
-      	<module name="org.bouncycastle" slot="main" export="true" />
-      </dependencies>
-  </deployment>
-
+<?xml version="1.0" encoding="UTF-8"?>
+<jboss-deployment-structure xmlns="urn:jboss:deployment-structure:1.2">
+    <deployment>
+        <exclude-subsystems>
+            <subsystem name="jaxrs" />
+            <subsystem name="jaxws" />
+            <subsystem name="webservices" />
+        </exclude-subsystems>
+        <dependencies>
+            <module name="com.hazelcast" />
+        </dependencies>
+    </deployment>
 </jboss-deployment-structure>
+

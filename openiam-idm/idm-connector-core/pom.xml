@@ -87,22 +87,11 @@
 			<artifactId>aspectjweaver</artifactId>
 		</dependency>
 
-
-		<dependency>
-			<groupId>org.apache.cxf</groupId>
-			<artifactId>cxf-rt-core</artifactId>
-			<scope>provided</scope>
-		</dependency>
         <dependency>
             <groupId>org.apache.cxf</groupId>
-            <artifactId>cxf-api</artifactId>
+            <artifactId>cxf-core</artifactId>
             <scope>provided</scope>
         </dependency>
-		<!--<dependency>-->
-			<!--<groupId>org.apache.cxf</groupId>-->
-			<!--<artifactId>cxf-common-utilities</artifactId>-->
-			<!--<scope>provided</scope>-->
-		<!--</dependency>-->
 		<dependency>
 			<groupId>org.apache.cxf</groupId>
 			<artifactId>cxf-rt-frontend-jaxws</artifactId>

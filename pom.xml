@@ -120,14 +120,14 @@
 	</modules>
 	<properties>
 		<activiti.version>5.10</activiti.version>
-		<spring.version>3.1.1.RELEASE</spring.version>
-		<cxf.version>2.7.13</cxf.version>
+		<spring.version>4.1.2.RELEASE</spring.version>
+		<cxf.version>3.0.2</cxf.version>
 		<activemq.version>5.3.2</activemq.version>
 		<xbean.version>3.6</xbean.version>
-		<groovy.version>1.8.6</groovy.version>
+		<groovy.version>2.3.7</groovy.version>
 		<googleapps.version>1.41.5</googleapps.version>
-		<hibernate.version>4.2.13.Final</hibernate.version>
-		<hibernate.entity.manager.version>4.2.13.Final</hibernate.entity.manager.version>
+		<hibernate.version>4.3.5.Final</hibernate.version>
+		<hibernate.entity.manager.version>4.3.5.Final</hibernate.entity.manager.version>
 		<!--  -->
 		<!--<hibernate.search.orm.version>4.4.3.Final</hibernate.search.orm.version>-->
 		<!--<hibernate.search.analyzers.version>4.4.3.Final</hibernate.search.analyzers.version>-->
@@ -136,8 +136,8 @@
 		<validation-api.version>1.0.0.GA</validation-api.version>
 		<hibernate-validator.version>4.3.0.Final</hibernate-validator.version>
 		<servletapi.version>3.0</servletapi.version>
-		<ehcache.version>2.6.6</ehcache.version>
-		<log4j.version>1.2.16</log4j.version>
+		<ehcache-core.version>2.6.9</ehcache-core.version>
+      	<log4j.version>1.2.16</log4j.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<ganymed.version>251beta1</ganymed.version>
 		<javax.xml.version>2.1</javax.xml.version>
@@ -154,14 +154,13 @@
 		<geronimo.jms.version>1.1.1</geronimo.jms.version>
 		<apache.commons.csv.version>1.4.1</apache.commons.csv.version>
 		<!-- groovy.wslite.version>0.5.3</groovy.wslite.version -->
-		<aspectj.version>1.6.8</aspectj.version>
+		<aspectj.version>1.8.4</aspectj.version>
 		<mysql.version>5.1.6</mysql.version>
 		<testng.version>6.1.1</testng.version>
 		<opensaml.version>2.4.1</opensaml.version>
 		<httpclient.version>4.3.1</httpclient.version>
 		<xalan.serializer>2.7.1</xalan.serializer>
 		<aopalliance.version>1.0</aopalliance.version>
-		<asm.version>2.2.3</asm.version>
 		<c3p0.version>0.9.1.2</c3p0.version>
 		<!-- <javassist.version>3.12.1.GA</javassist.version> -->
 		<joda.time.version>1.6.2</joda.time.version>
@@ -228,6 +227,11 @@
 				<artifactId>spring-orm</artifactId>
 				<version>${spring.version}</version>
 			</dependency>
+ <!--           <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-asm</artifactId>
+                <version>3.1.4.RELEASE</version>
+            </dependency>-->
 			<dependency>
 				<groupId>org.springframework</groupId>
 				<artifactId>spring-test</artifactId>
@@ -269,9 +273,10 @@
 			<dependency>
 				<groupId>net.sf.ehcache</groupId>
 				<artifactId>ehcache-core</artifactId>
-				<version>${ehcache.version}</version>
+				<version>${ehcache-core.version}</version>
 			</dependency>
-			<!-- log4j dependencies -->
+
+            <!-- log4j dependencies -->
 			<dependency>
 				<groupId>log4j</groupId>
 				<artifactId>log4j</artifactId>
@@ -318,7 +323,12 @@
 				<version>${javaee.web.api.version}</version>
 				<scope>provided</scope>
 			</dependency>
-			<!-- commons dependencies -->
+            <dependency>
+                <groupId>javax</groupId>
+                <artifactId>javaee-api</artifactId>
+                <version>7.0</version>
+            </dependency>
+            <!-- commons dependencies -->
 			<dependency>
 				<groupId>commons-collections</groupId>
 				<artifactId>commons-collections</artifactId>
@@ -354,25 +364,14 @@
 
 
             <!-- org.apache.cxf dependencies -->
-            <!-- org.apache.cxf dependencies -->
             <dependency>
                 <groupId>org.apache.cxf</groupId>
-                <artifactId>cxf-rt-core</artifactId>
-                <version>${cxf.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.cxf</groupId>
-                <artifactId>cxf-api</artifactId>
+                <artifactId>cxf-core</artifactId>
                 <version>${cxf.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-frontend-jaxws</artifactId>
-                <version>${cxf.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.cxf</groupId>
-                <artifactId>cxf-rt-transports-http</artifactId>
                 <version>${cxf.version}</version>
             </dependency>
             <dependency>
@@ -389,16 +388,16 @@
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-databinding-jaxb</artifactId>
                 <version>${cxf.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.cxf</groupId>
-                <artifactId>cxf-common-utilities</artifactId>
-                <version>${cxf.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.cxf</groupId>
-                <artifactId>cxf-bundle-jaxrs</artifactId>
-                <version>${cxf.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.sun.xml.bind</groupId>
+                        <artifactId>jaxb-core</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.sun.xml.bind</groupId>
+                        <artifactId>jaxb-impl</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.apache.cxf</groupId>
@@ -411,6 +410,23 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-rs-extension-providers</artifactId>
+                <version>${cxf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-databinding-aegis</artifactId>
+                <version>${cxf.version}</version>
+            </dependency>
+
+
+
+
+
+
+
 
          <!-- apache httpclient -->
 			<dependency>
@@ -452,8 +468,7 @@
 				<artifactId>groovy-all</artifactId>
 				<version>${groovy.version}</version>
 			</dependency>
-			<!-- dependency> <groupId>com.github.groovy-wslite</groupId> <artifactId>groovy-wslite</artifactId> 
-				<version>${groovy.wslite.version}</version> </dependency -->
+
 			<!-- aspectj dependencies -->
 			<dependency>
 				<groupId>org.aspectj</groupId>
@@ -566,11 +581,7 @@
 				<artifactId>aopalliance</artifactId>
 				<version>${aopalliance.version}</version>
 			</dependency>
-			<dependency>
-				<groupId>asm</groupId>
-				<artifactId>asm</artifactId>
-				<version>${asm.version}</version>
-			</dependency>
+
 			<dependency>
 				<groupId>c3p0</groupId>
 				<artifactId>c3p0</artifactId>
@@ -782,11 +793,10 @@
                    	 <scope>test</scope>
                 	</dependency>
 
-
             <dependency>
-                <groupId>quartz</groupId>
+                <groupId>org.quartz-scheduler</groupId>
                 <artifactId>quartz</artifactId>
-                <version>1.5.2</version>
+                <version>2.2.1</version>
             </dependency>
 
             <dependency>
@@ -799,6 +809,22 @@
                 <groupId>org.elasticsearch</groupId>
                 <artifactId>elasticsearch</artifactId>
                 <version>${es.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>rhino</groupId>
+                <artifactId>js</artifactId>
+                <version>1.7R1</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
+                <version>2.4.3</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.dataformat</groupId>
+                <artifactId>jackson-dataformat-xml</artifactId>
+                <version>2.4.3</version>
             </dependency>
         </dependencies>
 	</dependencyManagement>
@@ -1045,9 +1071,10 @@
 			<url>http://mandubian-mvn.googlecode.com/svn/trunk/mandubian-mvn/repository</url>
 		</repository>
 
-
-
-
+        <repository>
+            <id>Java.Net</id>
+            <url>http://download.java.net/maven/2/</url>
+        </repository>
 
 	</repositories>
 

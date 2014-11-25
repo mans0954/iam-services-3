@@ -3,7 +3,6 @@ package org.openiam.bpm.activiti.model;
 import java.io.Serializable;
 
 import org.apache.log4j.Logger;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.openiam.idm.util.CustomJacksonMapper;
 
 public class ActivitiJSONStringWrapper implements Serializable {
