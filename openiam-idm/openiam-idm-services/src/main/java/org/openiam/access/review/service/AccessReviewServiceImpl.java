@@ -1,6 +1,7 @@
 package org.openiam.access.review.service;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.time.StopWatch;
 import org.openiam.access.review.constant.AccessReviewConstant;
 import org.openiam.access.review.constant.AccessReviewData;
 import org.openiam.access.review.model.AccessViewBean;
@@ -27,10 +28,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by alexander on 21.11.14.
@@ -54,6 +52,8 @@ public class AccessReviewServiceImpl implements AccessReviewService {
 
     @Override
     public AccessViewResponse getAccessReviewTree(AccessViewFilterBean filter, String viewType,final Language language) {
+        final StopWatch sw = new StopWatch();
+        sw.start();
         AccessReviewStrategy strategy = getAccessReviewStrategy(filter, viewType, language);
         List<TreeNode<AccessViewBean>> dataList = new ArrayList<>();
         List<TreeNode<AccessViewBean>> exceptionList = null;
@@ -66,12 +66,35 @@ public class AccessReviewServiceImpl implements AccessReviewService {
             rootElement.add(dataList);
             log.debug(rootElement.toString());
         }
+        sw.stop();
+        log.info(String.format("Done building access review tree. Took: %s ms", sw.getTime()));
         return new AccessViewResponse(dataList, dataList.size(), exceptionList);
     }
 
     @Override
-    public AccessViewResponse getAccessReviewSubTree(AccessViewFilterBean filter, String viewType, Language language) {
-        return null;
+    public AccessViewResponse getAccessReviewSubTree(String parentId, String parentBeanType, AccessViewFilterBean filter, String viewType, Language language) {
+        AccessViewResponse response = this.getAccessReviewTree(filter, viewType, language);
+        List<TreeNode<AccessViewBean>> childrenList = new ArrayList<>();
+        if(response==null)
+            return AccessViewResponse.EMPTY_RESPONSE;
+        if(CollectionUtils.isNotEmpty(response.getBeans())){
+            List<TreeNode<AccessViewBean>> treeNodes = response.getBeans();
+//            Iterator<TreeNode<AccessViewBean>> iter = treeNodes.iterator();
+
+            for(int i=0; i<treeNodes.size();i++){
+                TreeNode<AccessViewBean> node = treeNodes.get(i);
+                AccessViewBean data = node.getData();
+                if(data.getBeanType().equals(parentBeanType)
+                        && data.getId().equals(parentId)
+                        && CollectionUtils.isNotEmpty(node.getChildren())){
+                    childrenList = node.getChildren();
+                    break;
+                } else if(CollectionUtils.isNotEmpty(node.getChildren())){
+                    treeNodes.addAll(node.getChildren());
+                }
+            }
+        }
+        return new AccessViewResponse(childrenList, childrenList.size(), null);
     }
 
     private AccessReviewStrategy getAccessReviewStrategy(AccessViewFilterBean filter, String viewType, Language language) {

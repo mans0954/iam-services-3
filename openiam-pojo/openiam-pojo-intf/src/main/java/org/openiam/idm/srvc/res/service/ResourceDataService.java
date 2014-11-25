@@ -63,6 +63,17 @@ public interface ResourceDataService {
     		@WebParam(name = "resourceId", targetNamespace = "") String resourceId,
     		final @WebParam(name = "language", targetNamespace = "") Language language);
 
+    /**
+     * Find   resource list.
+     *
+     * @param resourceIds
+     *            the resource id list
+     * @return resource
+     */
+    @WebMethod
+    public List<Resource> getResourcesByIds(final @WebParam(name = "resourceIds", targetNamespace = "") List<String> resourceIds,
+                                            final @WebParam(name = "language", targetNamespace = "") Language language);
+
     @WebMethod
     String getResourcePropValueByName(@WebParam(name = "resourceId", targetNamespace = "") String resourceId, @WebParam(name = "propName", targetNamespace = "") String propName);
 

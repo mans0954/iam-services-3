@@ -1355,7 +1355,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                 if (operation == null) {
                     continue;
                 } else if (operation == AttributeOperationEnum.ADD) {
-                    ResourceEntity resEntity = resourceService.findResourceById(r.getId());
+                    ResourceEntity resEntity = resourceService.findResourceByIdNoLocalized(r.getId());
                     userEntity.getResources().add(resEntity);
                     resourceSet.add(r);
                     // Audit Log ---------------------------------------------------
@@ -1369,7 +1369,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     parentLog.addChild(auditLog);
                     // --------------------------------------------------------------
                 } else if (operation == AttributeOperationEnum.DELETE) {
-                    ResourceEntity re = resourceService.findResourceById(r.getId());
+                    ResourceEntity re = resourceService.findResourceByIdNoLocalized(r.getId());
                     userEntity.getResources().remove(re);
                     resourceSet.remove(r);
                     deleteResourceSet.add(r);

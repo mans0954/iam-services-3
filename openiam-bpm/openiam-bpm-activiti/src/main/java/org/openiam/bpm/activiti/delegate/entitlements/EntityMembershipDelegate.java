@@ -3,9 +3,17 @@ package org.openiam.bpm.activiti.delegate.entitlements;
 import org.activiti.engine.ActivitiException;
 import org.activiti.engine.delegate.DelegateExecution;
 import org.activiti.engine.impl.el.FixedValue;
+import org.apache.commons.collections.CollectionUtils;
+import org.openiam.access.review.constant.AccessReviewConstant;
+import org.openiam.access.review.model.AccessViewBean;
+import org.openiam.access.review.model.AccessViewFilterBean;
+import org.openiam.access.review.model.AccessViewResponse;
+import org.openiam.access.review.service.AccessReviewService;
 import org.openiam.base.AttributeOperationEnum;
+import org.openiam.base.TreeNode;
 import org.openiam.base.ws.Response;
 import org.openiam.bpm.util.ActivitiRequestType;
+import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.grp.dto.Group;
@@ -20,8 +28,13 @@ import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.provision.dto.ProvisionUser;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
-	
+    @Autowired
+    private AccessReviewService accessReviewService;
+
 	public EntityMembershipDelegate() {
 		super();
 	}
@@ -112,18 +125,98 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
 						break;
 					case RESOURCE_CERTIFICATION:
 					case DISENTITLE_USR_FROM_RESOURCE:
-						action = AuditAction.REMOVE_USER_FROM_RESOURCE;
-						if(provisioningEnabled) {
-							resource = getResource(associationId);
-							user = getUser(memberAssociationId);
-							if(resource != null && user != null) {
-								 final ProvisionUser pUser = new ProvisionUser(user);
-								 pUser.markResourceAsDeleted(resource.getId());
-								 response = provisionService.modifyUser(pUser);
-							}
-						} else {
-							response = resourceDataService.removeUserFromResource(associationId, memberAssociationId, systemUserId);
-						}
+                        action = AuditAction.REMOVE_USER_FROM_RESOURCE;
+                        resource = getResource(associationId);
+                        user = getUser(memberAssociationId);
+                        if(resource!=null){
+                            List<String> resourceToDelete = new ArrayList<>();
+                            List<String> groupToDelete = new ArrayList<>();
+                            List<String> roleToDelete = new ArrayList<>();
+
+                            if(ResourceSearchBean.TYPE_MANAGED_SYS.equals(resource.getResourceType().getId())){
+                                // delete whole access subtree
+                                AccessViewFilterBean filterBean = new AccessViewFilterBean();
+                                filterBean.setUserId(memberAssociationId);
+                                AccessViewResponse accessViewResponse = accessReviewService.getAccessReviewSubTree(associationId, AccessReviewConstant.RESOURCE_TYPE, filterBean, AccessReviewConstant.RESOURCE_VIEW, null);
+                                if(accessViewResponse!=null && CollectionUtils.isNotEmpty(accessViewResponse.getBeans())){
+                                    // look through the tree for direct entitlements
+                                    List<TreeNode<AccessViewBean>> treeNodes = accessViewResponse.getBeans();
+                                    for(int i=0; i<treeNodes.size();i++){
+                                        TreeNode<AccessViewBean> node = treeNodes.get(i);
+                                        AccessViewBean data = node.getData();
+
+                                        if(CollectionUtils.isNotEmpty(node.getChildren())){
+                                            treeNodes.addAll(node.getChildren());
+                                        }
+
+                                        if(node.getIsDeletable()){
+                                           switch (data.getBeanType()){
+                                               case AccessReviewConstant.RESOURCE_TYPE:
+                                                   resourceToDelete.add(data.getId());
+                                                   break;
+                                               case AccessReviewConstant.GROUP_TYPE:
+                                                   groupToDelete.add(data.getId());
+                                                   break;
+                                               case AccessReviewConstant.ROLE_TYPE:
+                                                   roleToDelete.add(data.getId());
+                                                   break;
+                                           }
+                                        }
+                                    }
+                                }
+                                // try to update user
+                                if(provisioningEnabled) {
+                                    if(resource != null && user != null) {
+                                        final ProvisionUser pUser = new ProvisionUser(user);
+                                        pUser.markResourceAsDeleted(resource.getId());
+
+                                        if(CollectionUtils.isNotEmpty(resourceToDelete)){
+                                            for(String id: resourceToDelete){
+                                                pUser.markResourceAsDeleted(id);
+                                            }
+                                        }
+                                        if(CollectionUtils.isNotEmpty(groupToDelete)){
+                                            for(String id: groupToDelete){
+                                                pUser.markGroupAsDeleted(id);
+                                            }
+                                        }
+                                        if(CollectionUtils.isNotEmpty(roleToDelete)){
+                                            for(String id: roleToDelete){
+                                                pUser.markRoleAsDeleted(id);
+                                            }
+                                        }
+                                        response = provisionService.modifyUser(pUser);
+                                    }
+                                } else {
+                                    response = resourceDataService.removeUserFromResource(associationId, memberAssociationId, systemUserId);
+                                    if(CollectionUtils.isNotEmpty(resourceToDelete)){
+                                        for(String id: resourceToDelete){
+                                            response = resourceDataService.removeUserFromResource(id, memberAssociationId, systemUserId);
+                                        }
+                                    }
+                                    if(CollectionUtils.isNotEmpty(groupToDelete)){
+                                        for(String id: groupToDelete){
+                                            response = groupDataService.removeUserFromGroup(id, memberAssociationId, systemUserId);
+                                        }
+                                    }
+                                    if(CollectionUtils.isNotEmpty(roleToDelete)){
+                                        for(String id: roleToDelete){
+                                            response = roleDataService.removeUserFromRole(id, memberAssociationId, systemUserId);
+                                        }
+                                    }
+                                }
+                            }else{
+                                if(provisioningEnabled) {
+                                    if(resource != null && user != null) {
+                                        final ProvisionUser pUser = new ProvisionUser(user);
+                                        pUser.markResourceAsDeleted(resource.getId());
+                                        response = provisionService.modifyUser(pUser);
+                                    }
+                                } else {
+                                    response = resourceDataService.removeUserFromResource(associationId, memberAssociationId, systemUserId);
+                                }
+                            }
+                        }
 						break;
 					case ADD_USER_TO_GROUP:
 						action = AuditAction.ADD_USER_TO_GROUP;
@@ -141,6 +234,7 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
 						}
 						break;
 					case REMOVE_USER_FROM_GROUP:
+                        //TODO:
 						action = AuditAction.REMOVE_USER_FROM_GROUP;
 						if(provisioningEnabled) {
 							group = getGroup(associationId);
@@ -170,6 +264,7 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
 						}
 						break;
 					case REMOVE_USER_FROM_ROLE:
+                        //TODO:
 						action = AuditAction.REMOVE_USER_FROM_ROLE;
 						if(provisioningEnabled) {
 							role = getRole(associationId);

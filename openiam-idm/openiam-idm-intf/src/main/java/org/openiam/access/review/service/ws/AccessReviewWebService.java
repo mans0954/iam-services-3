@@ -17,4 +17,10 @@ public interface AccessReviewWebService {
     public AccessViewResponse getAccessReviewTree(final @WebParam(name = "filter", targetNamespace = "") AccessViewFilterBean filter,
                                                   final @WebParam(name = "viewType", targetNamespace = "") String viewType,
                                                   final @WebParam(name = "language", targetNamespace = "") Language language);
+    @WebMethod
+    public AccessViewResponse getAccessReviewSubTree(final @WebParam(name = "parentId", targetNamespace = "") String parentId,
+                                                     final @WebParam(name = "parentBeanType", targetNamespace = "") String parentBeanType,
+                                                     final @WebParam(name = "filter", targetNamespace = "") AccessViewFilterBean filter,
+                                                     final @WebParam(name = "viewType", targetNamespace = "") String viewType,
+                                                     final @WebParam(name = "language", targetNamespace = "") Language language);
 }

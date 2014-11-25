@@ -50,7 +50,7 @@ public class GroupEntitlementStrategy extends EntitlementsStrategy {
 
     @Override
     public boolean isDirectEntitled(AbstractAuthorizationEntity entity){
-        if(CollectionUtils.isNotEmpty(this.accessReviewData.getMatrix().getResourceIds()))
+        if(CollectionUtils.isNotEmpty(this.accessReviewData.getMatrix().getGroupIds()))
             return this.accessReviewData.getMatrix().getGroupIds().contains(entity.getId());
         return false;
     }

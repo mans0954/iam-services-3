@@ -54,11 +54,7 @@ public abstract class AccessReviewStrategy {
     }
 
     public List<TreeNode<AccessViewBean>> buildView() {
-        final StopWatch sw = new StopWatch();
-        sw.start();
         List<TreeNode<AccessViewBean>> treeNodeList = buildView(null);
-        sw.stop();
-        log.info(String.format("Done building access review tree. Took: %s ms", sw.getTime()));
         return treeNodeList;
     }
     public abstract List<TreeNode<AccessViewBean>> buildView(AccessViewBean parent);

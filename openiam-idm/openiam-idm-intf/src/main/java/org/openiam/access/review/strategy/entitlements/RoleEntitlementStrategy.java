@@ -38,7 +38,7 @@ public class RoleEntitlementStrategy extends EntitlementsStrategy {
 
     @Override
     public boolean isDirectEntitled(AbstractAuthorizationEntity entity){
-        if(CollectionUtils.isNotEmpty(this.accessReviewData.getMatrix().getResourceIds()))
+        if(CollectionUtils.isNotEmpty(this.accessReviewData.getMatrix().getRoleIds()))
             return this.accessReviewData.getMatrix().getRoleIds().contains(entity.getId());
         return false;
     }
