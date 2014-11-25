@@ -125,24 +125,6 @@ public interface ContentProviderWebService {
     @WebMethod
     public Response deleteProviderPattern(@WebParam(name = "providerId", targetNamespace = "") String providerId);
 
-
-    @WebMethod
-    public  List<URIPatternMeta> getMetaDataForPattern(@WebParam(name = "patternId", targetNamespace = "") String patternId,
-                                                       @WebParam(name = "from", targetNamespace = "") Integer from,
-                                                       @WebParam(name = "size", targetNamespace = "") Integer size);
-
-    @WebMethod
-    public  Integer getNumOfMetaDataForPattern(@WebParam(name = "patternId", targetNamespace = "") String patternId);
-
-    @WebMethod
-    public URIPatternMeta getURIPatternMeta(@WebParam(name = "metaId", targetNamespace = "") String metaId);
-
-    @WebMethod
-    public Response saveMetaDataForPattern(@WebParam(name = "uriPatternMeta", targetNamespace = "") URIPatternMeta uriPatternMeta);
-
-    @WebMethod
-    public Response deleteMetaDataForPattern(@WebParam(name = "metaId", targetNamespace = "") String metaId);
-
     @WebMethod
     public List<URIPatternMetaType> getAllMetaType();
 }

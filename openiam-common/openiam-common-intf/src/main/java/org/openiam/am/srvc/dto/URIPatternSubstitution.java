@@ -23,8 +23,8 @@ public class URIPatternSubstitution extends KeyDTO {
 	private String patternId;
 	private String query;
 	private String replaceWith;
-	private String exactMatch;
-	private String fastSearch;
+	private boolean exactMatch;
+	private boolean fastSearch;
 	private Integer order;
 	public String getPatternId() {
 		return patternId;
@@ -44,18 +44,7 @@ public class URIPatternSubstitution extends KeyDTO {
 	public void setReplaceWith(String replaceWith) {
 		this.replaceWith = replaceWith;
 	}
-	public String getExactMatch() {
-		return exactMatch;
-	}
-	public void setExactMatch(String exactMatch) {
-		this.exactMatch = exactMatch;
-	}
-	public String getFastSearch() {
-		return fastSearch;
-	}
-	public void setFastSearch(String fastSearch) {
-		this.fastSearch = fastSearch;
-	}
+	
 	public Integer getOrder() {
 		return order;
 	}
@@ -63,16 +52,25 @@ public class URIPatternSubstitution extends KeyDTO {
 	public void setOrder(Integer order) {
 		this.order = order;
 	}
+	public boolean isExactMatch() {
+		return exactMatch;
+	}
+	public void setExactMatch(boolean exactMatch) {
+		this.exactMatch = exactMatch;
+	}
+	public boolean isFastSearch() {
+		return fastSearch;
+	}
+	public void setFastSearch(boolean fastSearch) {
+		this.fastSearch = fastSearch;
+	}
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
-		result = prime * result
-				+ ((exactMatch == null) ? 0 : exactMatch.hashCode());
-		result = prime * result
-				+ ((order == null) ? 0 : order.hashCode());
-		result = prime * result
-				+ ((fastSearch == null) ? 0 : fastSearch.hashCode());
+		result = prime * result + (exactMatch ? 1231 : 1237);
+		result = prime * result + (fastSearch ? 1231 : 1237);
+		result = prime * result + ((order == null) ? 0 : order.hashCode());
 		result = prime * result
 				+ ((patternId == null) ? 0 : patternId.hashCode());
 		result = prime * result + ((query == null) ? 0 : query.hashCode());
@@ -89,20 +87,14 @@ public class URIPatternSubstitution extends KeyDTO {
 		if (getClass() != obj.getClass())
 			return false;
 		URIPatternSubstitution other = (URIPatternSubstitution) obj;
-		if (exactMatch == null) {
-			if (other.exactMatch != null)
-				return false;
-		} else if (!exactMatch.equals(other.exactMatch))
+		if (exactMatch != other.exactMatch)
+			return false;
+		if (fastSearch != other.fastSearch)
 			return false;
 		if (order == null) {
 			if (other.order != null)
 				return false;
 		} else if (!order.equals(other.order))
-			return false;
-		if (fastSearch == null) {
-			if (other.fastSearch != null)
-				return false;
-		} else if (!fastSearch.equals(other.fastSearch))
 			return false;
 		if (patternId == null) {
 			if (other.patternId != null)
@@ -125,12 +117,8 @@ public class URIPatternSubstitution extends KeyDTO {
 	public String toString() {
 		return "URIPatternSubstitution [patternId=" + patternId + ", query="
 				+ query + ", replaceWith=" + replaceWith + ", exactMatch="
-				+ exactMatch + ", fastSearch=" + fastSearch
-				+ ", order=" + order + ", id=" + id
-				+ ", objectState=" + objectState + ", requestorSessionID="
-				+ requestorSessionID + ", requestorUserId=" + requestorUserId
-				+ ", requestorLogin=" + requestorLogin + ", requestClientIP="
-				+ requestClientIP + "]";
+				+ exactMatch + ", fastSearch=" + fastSearch + ", order="
+				+ order + "]";
 	}
 	
 	

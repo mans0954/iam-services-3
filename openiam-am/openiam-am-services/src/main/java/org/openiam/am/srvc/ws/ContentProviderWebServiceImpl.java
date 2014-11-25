@@ -25,6 +25,7 @@ import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.exception.BasicDataServiceException;
+import org.openiam.exception.EsbErrorToken;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.jws.WebParam;
 import javax.jws.WebService;
+
 import java.util.List;
 
 @Service("contentProviderWS")
@@ -365,7 +367,7 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
             if (contentProviderServer == null)
                 throw new  BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             if (StringUtils.isBlank(contentProviderServer.getServerURL()))
-                throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_SERVER_URL_NOT_SET);
+                throw new  BasicDataServiceException(ResponseCode.SERVER_URL_NOT_SET);
             if (StringUtils.isBlank(contentProviderServer.getContentProviderId()))
                 throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_NOT_SET);
 
@@ -458,6 +460,10 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
     public URIPattern getURIPattern(String patternId) {
         return uriPatternDozerConverter.convertToDTO(contentProviderService.getURIPattern(patternId), true);
     }
+    
+    private boolean isValidRedirectURL(final String redirectURL) {
+    	return (redirectURL != null && (redirectURL.startsWith("/") || redirectURL.startsWith("http") || redirectURL.startsWith("https")));
+    }
 
     @Override
     public Response saveURIPattern(@WebParam(name = "pattern", targetNamespace = "") URIPattern pattern) {
@@ -493,13 +499,154 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
             } catch(InvalidPatternException e){
                 throw new  BasicDataServiceException(ResponseCode.URI_PATTERN_INVALID);
             }
+            
+            if(CollectionUtils.isNotEmpty(pattern.getErrorMappings())) {
+            	for(final URIPatternErrorMapping mapping : pattern.getErrorMappings()) {
+            		if(!isValidRedirectURL(mapping.getRedirectURL())) {
+            			response.addFieldMapping("errorCode", Integer.valueOf(mapping.getErrorCode()).toString());
+            			response.addFieldMapping("redirectURL", mapping.getRedirectURL());
+            			throw new BasicDataServiceException(ResponseCode.INVALID_ERROR_REDIRECT_URL);
+            		}
+            	}
+            }
+            
+            if(CollectionUtils.isNotEmpty(pattern.getSubstitutions())) {
+            	for(final URIPatternSubstitution substitution : pattern.getSubstitutions()) {
+            		if(StringUtils.isBlank(substitution.getQuery())) {
+            			throw new BasicDataServiceException(ResponseCode.URI_PATTTERN_SUBSTITUTION_QUERY_REQUIRED);
+            		}
+            		
+            		if(StringUtils.isBlank(substitution.getReplaceWith())) {
+        				response.addFieldMapping("query", substitution.getQuery());
+            			throw new BasicDataServiceException(ResponseCode.URI_PATTTERN_SUBSTITUTION_REPLACE_WITH_REQUIRED);
+            		}
+            	}
+            }
+            
+            if(CollectionUtils.isNotEmpty(pattern.getServers())) {
+            	for(final URIPatternServer server : pattern.getServers()) {
+            		if(StringUtils.isBlank(server.getServerURL())) {
+            			throw new BasicDataServiceException(ResponseCode.SERVER_URL_NOT_SET);
+            		}
+            	}
+            }
+            
+            if(CollectionUtils.isNotEmpty(pattern.getMetaEntitySet())) {
+            	for(final URIPatternMeta meta : pattern.getMetaEntitySet()) {
+            		if(StringUtils.isBlank(meta.getName())) {
+            			throw new BasicDataServiceException(ResponseCode.URI_PATTERN_META_NAME_NOT_SET);
+            		}
+            		
+            		if(meta.getMetaType()==null || StringUtils.isBlank(meta.getMetaType().getId())) {
+        				response.addFieldMapping("metaName", meta.getName());
+            			throw new  BasicDataServiceException(ResponseCode.URI_PATTERN_META_TYPE_NOT_SET);
+            		}
+            		
+            		if(CollectionUtils.isNotEmpty(meta.getMetaValueSet())) {
+            			for(final URIPatternMetaValue value : meta.getMetaValueSet()) {
+            				if (StringUtils.isBlank(value.getName())) {
+            					throw new  BasicDataServiceException(ResponseCode.PATTERN_META_NAME_MISSING);
+            				}
+            				
+            				if(value.isEmptyValue()) {
+            					value.setGroovyScript(null);
+            					value.setAmAttribute(null);
+            					value.setStaticValue(null);
+            					value.setFetchedValue(null);
+            				} else {
+            					if(StringUtils.isBlank(value.getGroovyScript()) && 
+            					   StringUtils.isBlank(value.getStaticValue()) &&
+            					   StringUtils.isBlank(value.getFetchedValue()) && 
+            					   (value.getAmAttribute() == null || StringUtils.isBlank(value.getAmAttribute().getId()))) {
+            						response.addFieldMapping("uriPatternMetaName", meta.getName());
+                    				response.addFieldMapping("uriPatternMetaValueName", value.getName());
+            						throw new  BasicDataServiceException(ResponseCode.PATTERN_META_VALUE_MISSING);
+            					}
+            				}
+            			}
+            		}
+            	}
+            }
+            
+            if(CollectionUtils.isNotEmpty(pattern.getParams())) {
+            	for(final URIPatternParameter param : pattern.getParams()) {
+            		if(StringUtils.isBlank(param.getName())) {
+            			throw new BasicDataServiceException(ResponseCode.PATTERN_URI_PARAM_NAME_REQUIRED);
+            		}
+            	}
+            }
+            
+            if(CollectionUtils.isNotEmpty(pattern.getMethods())) {
+            	for(final URIPatternMethod method : pattern.getMethods()) {
+            		if(method.getMethod() == null) {
+            			throw new BasicDataServiceException(ResponseCode.URI_PATTERN_METHOD_REQUIRED);
+            		}
+            		
+            		if(CollectionUtils.isNotEmpty(method.getParams())) {
+            			for(final URIPatternMethodParameter param : method.getParams()) {
+            				if(StringUtils.isBlank(param.getName())) {
+            					response.addFieldMapping("method", method.getMethod().toString());
+            					throw new BasicDataServiceException(ResponseCode.URI_PATTERN_PARAMETER_NAME_REQUIRED);
+            				}
+            			}
+            		}
+            		
+            		if(CollectionUtils.isNotEmpty(method.getMetaEntitySet())) {
+            			for(final URIPatternMethodMeta meta : method.getMetaEntitySet()) {
+            				if(StringUtils.isBlank(meta.getName())) {
+            					response.addFieldMapping("method", method.getMethod().toString());
+            					throw new BasicDataServiceException(ResponseCode.URI_PATTERN_PARAMTER_META_NAME_REQUIRED);
+                    		}
+            				
+            				if(meta.getMetaType()==null || StringUtils.isBlank(meta.getMetaType().getId())) {
+            					response.addFieldMapping("method", method.getMethod().toString());
+            					response.addFieldMapping("metaName", meta.getName());
+            					throw new BasicDataServiceException(ResponseCode.URI_PATTERN_PARAMTER_META_TYPE_REQUIRED);
+            				}
+            				
+            				if(CollectionUtils.isNotEmpty(meta.getMetaValueSet())) {
+                    			for(final URIPatternMethodMetaValue value : meta.getMetaValueSet()) {
+                    				if (StringUtils.isBlank(value.getName())) {
+                    					response.addFieldMapping("method", method.getMethod().toString());
+                    					throw new  BasicDataServiceException(ResponseCode.PATTERN_METHOD_META_VALUE_NAME_MISSING);
+                    				}
+                    				
+                    				if(value.isEmptyValue()) {
+                    					value.setGroovyScript(null);
+                    					value.setAmAttribute(null);
+                    					value.setStaticValue(null);
+                    					value.setFetchedValue(null);
+                    				} else {
+                    					if(StringUtils.isBlank(value.getGroovyScript()) && 
+                    					   StringUtils.isBlank(value.getStaticValue()) &&
+                    					   StringUtils.isBlank(value.getFetchedValue()) && 
+                    					   (value.getAmAttribute() == null || StringUtils.isBlank(value.getAmAttribute().getId()))) {
+                    						response.addFieldMapping("method", method.getMethod().toString());
+                        					response.addFieldMapping("metaName", meta.getName());
+                        					response.addFieldMapping("metaValueName", value.getName());
+                    						throw new BasicDataServiceException(ResponseCode.PATTERN_METHOD_META_VALUE_MISSING);
+                    					}
+                    				}
+                    			}
+                    		}
+            			}
+            		}
+            	}
+            }
+            
+            if(StringUtils.isNotBlank(pattern.getRedirectTo())) {
+            	if(!isValidRedirectURL(pattern.getRedirectTo())) {
+            		throw new BasicDataServiceException(ResponseCode.INVALID_PATTERN_REDIRECT_URL);
+            	}
+            }
 
             final URIPatternEntity entity = uriPatternDozerConverter.convertToEntity(pattern,true);
             contentProviderService.saveURIPattern(entity);
             response.setResponseValue(entity.getId());
 
         } catch(BasicDataServiceException e) {
-            log.error(e.getMessage(), e);
+            log.warn(e.getMessage(), e);
+            response.setErrorTokenList(e.getErrorTokenList());
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
         } catch(Throwable e) {
@@ -518,134 +665,6 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
                 throw new  BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 
             contentProviderService.deleteProviderPattern(providerId);
-
-        } catch(BasicDataServiceException e) {
-            log.error(e.getMessage(), e);
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorCode(e.getCode());
-        } catch(Throwable e) {
-            log.error(e.getMessage(), e);
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorText(e.getMessage());
-        }
-        return response;
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<URIPatternMeta> getMetaDataForPattern(String patternId, Integer from, Integer size) {
-        URIPatternMetaEntity example = new URIPatternMetaEntity();
-        URIPatternEntity pattern = new URIPatternEntity();
-        pattern.setId(patternId);
-        example.setPattern(pattern);
-
-        return uriPatternMetaDozerConverter.convertToDTOList(contentProviderService.getMetaDataList(example, from, size), true);
-    }
-
-    @Override
-    public Integer getNumOfMetaDataForPattern(String patternId) {
-        URIPatternMetaEntity example = new URIPatternMetaEntity();
-        URIPatternEntity pattern = new URIPatternEntity();
-        pattern.setId(patternId);
-        example.setPattern(pattern);
-
-        return contentProviderService.getNumOfMetaData(example);
-    }
-    @Override
-    @Transactional(readOnly = true)
-    public URIPatternMeta getURIPatternMeta(String metaId){
-        return uriPatternMetaDozerConverter.convertToDTO(contentProviderService.getURIPatternMeta(metaId), true);
-    }
-
-    @Override
-    public Response saveMetaDataForPattern(final URIPatternMeta uriPatternMeta) {
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        try {
-            if (uriPatternMeta==null) {
-                throw new  BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-            }
-            
-            if(StringUtils.isBlank(uriPatternMeta.getPatternId())) {
-                throw new  BasicDataServiceException(ResponseCode.URI_PATTERN_NOT_SET);
-            }
-
-            if(StringUtils.isBlank(uriPatternMeta.getName())) {
-                throw new  BasicDataServiceException(ResponseCode.URI_PATTERN_META_NAME_NOT_SET);
-            }
-
-            if(uriPatternMeta.getMetaType()==null || StringUtils.isBlank(uriPatternMeta.getMetaType().getId())) {
-                throw new  BasicDataServiceException(ResponseCode.URI_PATTERN_META_TYPE_NOT_SET);
-            }
-            
-            if(CollectionUtils.isNotEmpty(uriPatternMeta.getMetaValueSet())) {
-            	for(final URIPatternMetaValue value : uriPatternMeta.getMetaValueSet()) {
-            		if (StringUtils.isBlank(value.getName())) {
-            			 throw new  BasicDataServiceException(ResponseCode.META_NAME_MISSING);
-                    }
-            		
-            		if(!value.isEmptyValue()) {
-            			if(StringUtils.isBlank(value.getGroovyScript()) &&
-            			   StringUtils.isBlank(value.getStaticValue()) &&
-            			   (value.getAmAttribute() == null || StringUtils.isBlank(value.getAmAttribute().getId()))) {
-            				throw new  BasicDataServiceException(ResponseCode.META_VALUE_MISSING);
-            			}
-            		}
-            	}
-            }
-
-//            // checjk if meta data already exists
-//            URIPatternMetaEntity example = uriPatternMetaDozerConverter.convertToEntity(uriPatternMeta,true);
-//            example.setId(null);
-//
-//            Integer count = contentProviderService.getNumOfMetaData(example);
-//            if(count>0)
-//                throw new  BasicDataServiceException(ResponseCode.URI_PATTERN_META_EXISTS);
-
-
-            // check metadata values
-            //validateMetaDataValues(uriPatternMeta);
-
-            final URIPatternMetaEntity entity = uriPatternMetaDozerConverter.convertToEntity(uriPatternMeta,true);
-            contentProviderService.saveMetaDataForPattern(entity);
-            response.setResponseValue(entity.getId());
-
-        } catch(BasicDataServiceException e) {
-            log.error(e.getMessage(), e);
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorCode(e.getCode());
-        } catch(Throwable e) {
-            log.error(e.getMessage(), e);
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorText(e.getMessage());
-        }
-        return response;
-    }
-
-    /*
-    private void validateMetaDataValues(URIPatternMeta uriPatternMeta) throws BasicDataServiceException{
-        if(CollectionUtils.isNotEmpty(uriPatternMeta.getMetaValueSet())) {
-            for (URIPatternMetaValue value: uriPatternMeta.getMetaValueSet()){
-                if (StringUtils.isBlank(value.getName())) {
-                    throw new BasicDataServiceException(ResponseCode.URL_PATTERN_META_VALUE_NAME_NOT_SET);
-                }
-                if ((value.getAmAttribute() == null || StringUtils.isBlank(value.getAmAttribute().getId())) &&
-                	(StringUtils.isBlank(value.getStaticValue())) &&
-                	(StringUtils.isBlank(value.getGroovyScript()))) {
-                    throw new BasicDataServiceException(ResponseCode.URL_PATTERN_META_VALUE_MAP_NOT_SET);
-                }
-            }
-        }
-    }
-    */
-
-    @Override
-    public Response deleteMetaDataForPattern(@WebParam(name = "metaId", targetNamespace = "") String metaId) {
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        try {
-            if (StringUtils.isBlank(metaId))
-                throw new  BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-
-            contentProviderService.deleteMetaDataForPattern(metaId);
 
         } catch(BasicDataServiceException e) {
             log.error(e.getMessage(), e);

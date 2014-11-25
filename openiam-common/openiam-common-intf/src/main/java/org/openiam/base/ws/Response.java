@@ -28,9 +28,12 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;
+
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Base class that is used for responses from a web service.
@@ -43,7 +46,8 @@ import java.util.List;
         "errorCode",
         "responseValue",
         "errorText",
-        "errorTokenList"
+        "errorTokenList",
+        "fieldMappings"
 })
 public class Response implements Serializable {
 
@@ -51,6 +55,7 @@ public class Response implements Serializable {
     protected ResponseStatus status;
     protected ResponseCode errorCode;
     protected String errorText;
+    protected Map<String, String> fieldMappings;
 
     protected Object responseValue;
     private List<EsbErrorToken> errorTokenList;
@@ -124,8 +129,29 @@ public class Response implements Serializable {
             errorTokenList = new ArrayList<EsbErrorToken>();
         errorTokenList.add(errorToken);
     }
+    
+    public String getFieldMapping(final String field) {
+    	return (field != null && fieldMappings != null) ? fieldMappings.get(field) : null;
+    }
+    
+    public void addFieldMapping(final String field, final String value) {
+    	if(field != null && value != null) {
+    		if(this.fieldMappings == null) {
+    			this.fieldMappings = new HashMap<>();
+    		}
+    		this.fieldMappings.put(field, value);
+    	}
+    }
 
-    @Override
+    public Map<String, String> getFieldMappings() {
+		return fieldMappings;
+	}
+
+	public void setFieldMappings(Map<String, String> fieldMappings) {
+		this.fieldMappings = fieldMappings;
+	}
+
+	@Override
     public String toString() {
         return "Response{" +
                 "status=" + status +
