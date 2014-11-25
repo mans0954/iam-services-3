@@ -27,7 +27,8 @@
     								      org.openiam.provision.*,
     								      org.openiam.dozer.converter,
     								      org.openiam.validator,
-    								      org.openiam.internationalization" />
+    								      org.openiam.internationalization,
+    								      org.openiam.access.review.*" />
 
 
     <task:executor id="executor" pool-size="8-25" queue-capacity="100" />
