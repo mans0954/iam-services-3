@@ -326,7 +326,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
             if(StringUtils.isBlank(idmAuditLog.getResult())) {
                 idmAuditLog.fail();
             }
-            auditLogService.save(idmAuditLog);
+            auditLogService.enqueue(idmAuditLog);
         }
     }
 
@@ -650,6 +650,11 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }
 
+            final OrganizationEntity entity = orgDao.findById(orgId);
+            if (entity != null) {
+                idmAuditLog.setTargetOrg(orgId, entity.getName());
+            }
+
             Map<String, Object> bindingMap = new HashMap<String, Object>();
 
             if (!skipPrePostProcessors) {
@@ -660,9 +665,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
                 }
             }
 
-            final OrganizationEntity entity = orgDao.findById(orgId);
             if (entity != null) {
-                idmAuditLog.setTargetOrg(orgId, entity.getName());
                 final GroupEntity example = new GroupEntity();
                 example.setCompany(entity);
                 final List<GroupEntity> groups = groupDAO.getByExample(example);
