@@ -58,4 +58,6 @@ public interface BaseDao<T, PrimaryKey extends Serializable> {
   int count(T t);
   
   void flush();
+  void clear();
+
 }

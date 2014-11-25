@@ -115,6 +115,9 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
 	@Autowired
 	ReconciliationConfigService reconConfigService;
 
+    private static final int BATCH_STOPPING_STEP = 10;
+    private static final int CLEAR_SESSION_STEP = 20;
+
     @Override
     public ReconciliationResponse startReconciliation(final ReconciliationConfig config, final IdmAuditLog idmAuditLog) throws IOException, ScriptEngineException {
         Date startDate = new Date();
@@ -217,13 +220,15 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
         int counter = 0;
         for (LoginEntity identity : idmIdentities) {
             counter++;
+            if (counter % CLEAR_SESSION_STEP == 0) {
+                reconConfigService.clearSession();
+            }
             if (identity.getUserId() != null) {
                 // checking for STOPING status for every 10 users
-                if (counter == 10) {
+                if (counter % BATCH_STOPPING_STEP == 0) {
 					if (processReconciliationStop(config.getReconConfigId(), idmAuditLog)) {
                         return new ReconciliationResponse(ResponseStatus.SUCCESS);
                     }
-                    counter = 0;
                 }
                 processedUserIds.add(identity.getUserId()); // Collect user
                 // IDs to avoid
@@ -336,15 +341,17 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
                 int counter = 0;
                 for (ObjectValue userValue : usersFromRemoteSys) {
                     counter++;
+                    if (counter % CLEAR_SESSION_STEP == 0) {
+                        reconConfigService.clearSession();
+                    }
                     // AUDITLOG start processing user Y from target systems to
                     // IDM
 
                     // checking for STOPPING status every 10 users
-                    if (counter == 10) {
+                    if (counter % BATCH_STOPPING_STEP == 0) {
 						if (processReconciliationStop(config.getReconConfigId(), idmAuditLog)) {
 							return new ReconciliationResponse(ResponseStatus.SUCCESS);
                         }
-                        counter=0;
                     }
                     List<ExtensibleAttribute> extensibleAttributes = userValue.getAttributeList() != null ? userValue
                             .getAttributeList() : new LinkedList<ExtensibleAttribute>();

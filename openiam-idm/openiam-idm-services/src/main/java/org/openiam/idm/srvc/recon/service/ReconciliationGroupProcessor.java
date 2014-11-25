@@ -94,6 +94,9 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
 	@Autowired
 	ReconciliationConfigService reconConfigService;
 
+    private static final int BATCH_STOPPING_STEP = 10;
+    private static final int CLEAR_SESSION_STEP = 20;
+
     @Override
     public ReconciliationResponse startReconciliation(ReconciliationConfig config, IdmAuditLog idmAuditLog) throws IOException, ScriptEngineException {
         log.debug("Reconciliation started for configId=" + config.getReconConfigId() + " - resource="
@@ -164,12 +167,14 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
             int counter = 0;
             for (Group group : idmGroups) {
                 counter++;
+                if (counter % CLEAR_SESSION_STEP == 0) {
+                    reconConfigService.clearSession();
+                }
                 // checking for STOPING status for every 10 users
-                if (counter == 10) {
+                if (counter % BATCH_STOPPING_STEP == 0) {
 					if (processReconciliationStop(config.getReconConfigId(), idmAuditLog)) {
 						return new ReconciliationResponse(ResponseStatus.SUCCESS);
 					}
-                    counter = 0;
                 }
 
                 processedGroupIds.add(group.getId());
@@ -276,15 +281,17 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
                 int counter = 0;
                 for (ObjectValue groupValue : groupsFromRemoteSys) {
                     counter++;
+                    if (counter % CLEAR_SESSION_STEP == 0) {
+                        reconConfigService.clearSession();
+                    }
                     // AUDITLOG start processing user Y from target systems to
                     // IDM
 
                     // checking for STOPPING status every 10 users
-                    if (counter == 10) {
+                    if (counter % BATCH_STOPPING_STEP == 0) {
 						if (processReconciliationStop(config.getReconConfigId(), idmAuditLog)) {
 							return new ReconciliationResponse(ResponseStatus.SUCCESS);
 						}
-                        counter = 0;
                     }
 
                     List<ExtensibleAttribute> extensibleAttributes = groupValue.getAttributeList() != null ? groupValue

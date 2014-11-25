@@ -269,4 +269,10 @@ public class ReconciliationConfigServiceImpl implements ReconciliationConfigServ
 		config.setExecStatus(status);
 		reconConfigDao.update(config);
 	}
+
+    @Override
+    public void clearSession() {
+        reconConfigDao.flush();
+        reconConfigDao.clear();
+    }
 }

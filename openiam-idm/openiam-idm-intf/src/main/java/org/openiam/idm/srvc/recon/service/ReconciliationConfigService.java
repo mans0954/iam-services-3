@@ -33,4 +33,5 @@ public interface ReconciliationConfigService {
 
     int countReconConfig(final ReconConfigSearchBean searchBean);
 
+    public void clearSession();
 }
