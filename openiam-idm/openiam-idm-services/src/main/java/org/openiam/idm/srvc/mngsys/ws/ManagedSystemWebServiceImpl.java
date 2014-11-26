@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.mngsys.ws;
 
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.jws.WebParam;
@@ -568,14 +569,21 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     }
 
     @Override
-    public List<AttributeMap> getResourceAttributeMaps(String resourceId) {
+	@Transactional(readOnly = true)
+    public List<AttributeMap> getResourceAttributeMaps(final String resourceId) {
         if (resourceId == null) {
             throw new IllegalArgumentException("resourceId is null");
         }
         List<AttributeMapEntity> amEList = managedSystemService
                 .getResourceAttributeMaps(resourceId);
-        return amEList == null ? null : attributeMapDozerConverter
-                .convertToDTOList(amEList, true);
+        List<AttributeMap> mapList = new LinkedList<AttributeMap>();
+        if(amEList != null) {
+            for(AttributeMapEntity ame : amEList) {
+                AttributeMap am = attributeMapDozerConverter.convertToDTO(ame, true);
+                mapList.add(am);
+            }
+        }
+        return mapList;
     }
 
     @Override

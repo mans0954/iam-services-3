@@ -4,7 +4,6 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.collection.PersistentCollection;
-import org.hibernate.collection.PersistentSet;
 import org.openiam.am.srvc.dao.AuthProviderDao;
 import org.openiam.am.srvc.dao.ContentProviderDao;
 import org.openiam.am.srvc.dao.URIPatternDao;
@@ -14,7 +13,6 @@ import org.openiam.am.srvc.domain.URIPatternEntity;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.dozer.converter.ResourceDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
-import org.openiam.hibernate.HibernateUtils;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.searchbeans.ResourceTypeSearchBean;
@@ -68,7 +66,7 @@ public class ResourceServiceImpl implements ResourceService {
     private ResourcePropDAO resourcePropDao;
 
     @Autowired
-    private ResourceDozerConverter dozerConverter;
+    private ResourceDozerConverter resourceConverter;
 
     @Autowired
     private AuthProviderDao authProviderDAO;
@@ -99,6 +97,12 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Value("${org.openiam.resource.admin.resource.type.id}")
     private String adminResourceTypeId;
+
+    @Override
+    @Transactional(readOnly = true)
+    public String getResourcePropValueByName(final String resourceId, final String propName) {
+        return resourcePropDao.findValueByName(resourceId, propName);
+    }
 
     @Override
     @Transactional
@@ -295,6 +299,12 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @Transactional(readOnly = true)
+    public ResourceEntity findResourceByIdNoLocalized(String resourceId) {
+        return resourceDao.findByIdNoLocalized(resourceId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public int count(ResourceSearchBean searchBean) {
         // final ResourceEntity entity =
         // resourceSearchBeanConverter.convert(searchBean);
@@ -480,6 +490,13 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<Resource> getResourcesForRoleNoLocalized(String roleId, int from, int size, ResourceSearchBean searchBean) {
+        List<ResourceEntity> resourceEntities = resourceDao.getResourcesForRoleNoLocalized(roleId, from, size, searchBean);
+        return resourceConverter.convertToDTOList(resourceEntities, searchBean.isDeepCopy());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public int getNumOfResourceForGroup(String groupId, final ResourceSearchBean searchBean) {
         return resourceDao.getNumOfResourcesForGroup(groupId, searchBean);
     }
@@ -489,6 +506,13 @@ public class ResourceServiceImpl implements ResourceService {
     public List<ResourceEntity> getResourcesForGroup(String groupId, int from, int size,
                                                      final ResourceSearchBean searchBean) {
         return resourceDao.getResourcesForGroup(groupId, from, size, searchBean);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Resource> getResourcesForGroupNoLocalized(String groupId, int from, int size, ResourceSearchBean searchBean) {
+        List<ResourceEntity> resourceEntities = resourceDao.getResourcesForGroupNoLocalized(groupId, from, size, searchBean);
+        return resourceConverter.convertToDTOList(resourceEntities, searchBean.isDeepCopy());
     }
 
     @Override
@@ -653,7 +677,7 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     public Resource getResourceDTO(String resourceId) {
-        return dozerConverter.convertToDTO(resourceDao.findById(resourceId), true);
+        return resourceConverter.convertToDTO(resourceDao.findById(resourceId), true);
     }
 
     @Override

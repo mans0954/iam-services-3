@@ -38,7 +38,7 @@ public class SendEditUserRequestDelegate extends AbstractEntitlementsDelegate {
             final NotificationRequest request = new NotificationRequest();
             request.setUserId(toNotify.getId());
             request.setNotificationType(getNotificationType(execution));
-            UserProfileRequestModel profileModel = getObjectVariable(execution, ActivitiConstants.REQUEST, UserProfileRequestModel.class);
+            final UserProfileRequestModel profileModel = getObjectVariable(execution, ActivitiConstants.REQUEST, UserProfileRequestModel.class);
             request.getParamList().add(new NotificationParam("TO_NOTIFY", toNotify));
             request.getParamList().add(new NotificationParam("TARGET_USER", targetUser));
             request.getParamList().add(new NotificationParam("TARGET_REQUEST", profileModel));

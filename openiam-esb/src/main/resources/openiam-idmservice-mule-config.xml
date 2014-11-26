@@ -156,6 +156,20 @@
 		</service>
 	</model>
 
+    <model name="accessReviewServiceModel">
+        <service name="AccessReviewWebService">
+            <inbound>
+                <inbound-endpoint address="${webservice.path}AccessReviewWebService"
+                                  exchange-pattern="request-response">
+                    <cxf:jaxws-service />
+                </inbound-endpoint>
+            </inbound>
+            <component>
+                <spring-object bean="accessReviewWS" />
+            </component>
+        </service>
+    </model>
+
 	<model name="connectorWebServiceModel">
 		<service name="connectorWebService">
 			<inbound>

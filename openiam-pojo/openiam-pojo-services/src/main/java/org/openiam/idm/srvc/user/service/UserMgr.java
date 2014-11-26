@@ -456,19 +456,6 @@ public class UserMgr implements UserDataService {
         if (id == null) {
             throw new NullPointerException("user id is null");
         }
-        // removes all the dependant objects.
-        // removeAllAttributes(id);
-       // removeAllPhones(id);
-       // removeAllAddresses(id);
-       // removeAllNotes(id);
-       // removeAllEmailAddresses(id);
-
-        // userKeyDao.deleteByUserId(id);
-        //List<UserEntity> supervisors = getSuperiors(id, 0, Integer.MAX_VALUE);
-        //for(UserEntity se : supervisors) {
-        //   removeSupervisor(se.getId(), id);
-        //}
-
         authStateDAO.deleteByUser(id);
         userIdentityAnswerDAO.deleteByUser(id);
         final List<ApproverAssociationEntity> associations = approverAssociationDAO.getByApprover(id, AssociationType.USER);
@@ -1779,6 +1766,7 @@ public class UserMgr implements UserDataService {
         user.setStatus(UserStatusEnum.PENDING_INITIAL_LOGIN);
         user.setSecondaryStatus(null);
         userDao.update(user);
+		userIdentityAnswerDAO.deleteByUser(userId);
     }
 
     @Override

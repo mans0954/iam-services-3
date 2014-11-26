@@ -6,7 +6,6 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.mule.api.MuleContext;
 import org.openiam.base.SysConfiguration;
 import org.openiam.connector.type.request.CrudRequest;
 import org.openiam.connector.type.response.ObjectResponse;
@@ -110,30 +109,13 @@ public class BaseProvisioningHelper {
             .getLog(BaseProvisioningHelper.class);
 
     public void setCurrentSuperiors(ProvisionUser pUser) {
-        if (org.mule.util.StringUtils.isNotEmpty(pUser.getId())) {
-            List<UserEntity> entities = userMgr.getSuperiors(pUser.getId(), -1, -1);
-            List<User> superiors = userDozerConverter.convertToDTOList(entities, false);
-            if (CollectionUtils.isNotEmpty(superiors)) {
+        if (StringUtils.isNotEmpty(pUser.getId())) {
+            List<UserEntity> entities = userMgr.getSuperiors(pUser.getId(), 0, Integer.MAX_VALUE);
+            if (CollectionUtils.isNotEmpty(entities)) {
+                List<User> superiors = userDozerConverter.convertToDTOList(entities, false);
                 pUser.setSuperiors(new HashSet<User>(superiors));
             }
         }
-    }
-
-
-    protected String findResourcePropertyByName(final String resId, final String name) {
-        // TODO This method shouldn't use Internationalization Aspect
-        Resource r = resourceDataService.getResource(resId, null);
-        if (r != null) {
-            Set<ResourceProp> rpSet = r.getResourceProps();
-            if (CollectionUtils.isNotEmpty(rpSet)) {
-                for (ResourceProp rp : rpSet) {
-                    if (StringUtils.equalsIgnoreCase(rp.getName(), name))  {
-                        return rp.getValue();
-                    }
-                }
-            }
-        }
-        return null;
     }
 
     protected String getResProperty(Set<ResourceProp> resPropSet,

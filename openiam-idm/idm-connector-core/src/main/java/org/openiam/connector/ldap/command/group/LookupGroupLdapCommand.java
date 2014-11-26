@@ -53,7 +53,7 @@ public class LookupGroupLdapCommand extends AbstractLookupLdapCommand<Extensible
                 objectBaseDN =  lookupRequest.getSearchValue().substring(CN.length()+1);
             } else {
                 // if identity is not in DN format try to find OU info in attributes
-                String OU = getOU(lookupRequest.getExtensibleObject());
+                String OU = getAttrValue(lookupRequest.getExtensibleObject(), OU_ATTRIBUTE);
                 if(StringUtils.isNotEmpty(OU)) {
                    objectBaseDN = OU+","+matchObj.getBaseDn();
                 } else {

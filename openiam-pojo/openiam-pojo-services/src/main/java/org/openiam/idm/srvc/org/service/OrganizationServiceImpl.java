@@ -3,14 +3,17 @@ package org.openiam.idm.srvc.org.service;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.time.StopWatch;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.ResponseCode;
+import org.openiam.dozer.converter.OrganizationAttributeDozerConverter;
 import org.openiam.dozer.converter.OrganizationDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
+import org.openiam.idm.srvc.audit.constant.AuditAction;
+import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
@@ -19,6 +22,7 @@ import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
 import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
+import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
 import org.openiam.idm.srvc.org.domain.Org2OrgXrefEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
@@ -31,10 +35,12 @@ import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
 import org.openiam.internationalization.LocalizedServiceGet;
-import org.openiam.thread.Sweepable;
+import org.openiam.script.ScriptIntegration;
 import org.openiam.util.AttributeUtil;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,14 +49,17 @@ import java.util.*;
 
 @Service("organizationService")
 @Transactional
-public class OrganizationServiceImpl implements OrganizationService, InitializingBean, Sweepable {
+public class OrganizationServiceImpl extends AbstractBaseService implements OrganizationService, InitializingBean {
     private static final Log log = LogFactory.getLog(OrganizationServiceImpl.class);
 	@Autowired
 	private OrganizationTypeDAO orgTypeDAO;
 	
 	@Autowired
 	private MetadataElementDAO metadataDAO;
-	
+
+    @Autowired
+    private ApproverAssociationDAO approverAssociationDAO;
+
     @Autowired
     private OrganizationDAO orgDao;
 
@@ -68,6 +77,9 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
     
     @Autowired
     private OrganizationDozerConverter organizationDozerConverter;
+
+    @Autowired
+    private OrganizationAttributeDozerConverter organizationAttributeDozerConverter;
     
     @Autowired
     private MetadataElementDAO metadataElementDAO;
@@ -86,8 +98,6 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
 
     private Map<String, Set<String>> organizationTree;
 
-
-
     @Value("${org.openiam.organization.type.id}")
     private String organizationTypeId;
     @Value("${org.openiam.division.type.id}")
@@ -95,8 +105,19 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
     @Value("${org.openiam.department.type.id}")
     private String departmentTypeId;
 
+    @Autowired
+    @Qualifier("configurableGroovyScriptEngine")
+    private ScriptIntegration scriptRunner;
+
+    @Autowired
+    protected String preProcessorOrganization;
+
+    @Autowired
+    protected String postProcessorOrganization;
+
     @Override
     @LocalizedServiceGet
+    @Transactional(readOnly = true)
     public OrganizationEntity getOrganizationLocalized(String orgId, final LanguageEntity langauge) {
         return getOrganizationLocalized(orgId, null, langauge);
     }
@@ -113,6 +134,7 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
 
     @Override
     @LocalizedServiceGet
+    @Transactional(readOnly = true)
     public OrganizationEntity getOrganizationByName(final String name, String requesterId, final LanguageEntity langauge) {
         final OrganizationSearchBean searchBean = new OrganizationSearchBean();
         searchBean.setName(name);
@@ -121,18 +143,21 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
     }
     
     @Override
+    @Transactional(readOnly = true)
     public int getNumOfOrganizationsForUser(final String userId, final String requesterId) {
     	return orgDao.getNumOfOrganizationsForUser(userId, getDelegationFilter(requesterId, null));
     }
 
     @Override
     @LocalizedServiceGet
+    @Transactional(readOnly = true)
     public List<OrganizationEntity> getOrganizationsForUser(String userId, String requesterId, final int from, final int size, final LanguageEntity langauge) {
     	return orgDao.getOrganizationsForUser(userId, getDelegationFilter(requesterId, null), from, size);
     }
 
     @Override
     @LocalizedServiceGet
+    @Transactional(readOnly = true)
     public List<OrganizationEntity> findBeans(final OrganizationSearchBean searchBean, String requesterId, int from, int size, final LanguageEntity langauge) {
         Set<String> filter = getDelegationFilter(requesterId, null);
         if (StringUtils.isBlank(searchBean.getKey()))
@@ -145,17 +170,20 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
 
     @Override
     @LocalizedServiceGet
+    @Transactional(readOnly = true)
     public List<OrganizationEntity> getParentOrganizations(String orgId, String requesterId, int from, int size, final LanguageEntity langauge) {
         return orgDao.getParentOrganizations(orgId, getDelegationFilter(requesterId, null), from, size);
     }
 
     @Override
     @LocalizedServiceGet
+    @Transactional(readOnly = true)
     public List<OrganizationEntity> getChildOrganizations(String orgId, String requesterId, int from, int size, final LanguageEntity langauge) {
         return orgDao.getChildOrganizations(orgId, getDelegationFilter(requesterId, null), from, size);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public int count(final OrganizationSearchBean searchBean, String requesterId) {
         Set<String> filter = getDelegationFilter(requesterId, searchBean.getOrganizationTypeId());
         if (StringUtils.isBlank(searchBean.getKey()))
@@ -168,11 +196,13 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
     }
 
     @Override
+    @Transactional(readOnly = true)
     public int getNumOfParentOrganizations(String orgId, String requesterId) {
         return orgDao.getNumOfParentOrganizations(orgId, getDelegationFilter(requesterId, null));
     }
 
     @Override
+    @Transactional(readOnly = true)
     public int getNumOfChildOrganizations(String orgId, String requesterId) {
         return orgDao.getNumOfChildOrganizations(orgId, getDelegationFilter(requesterId, null));
     }
@@ -194,6 +224,7 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
     }
 
     @Override
+    @Transactional
     public void removeAttribute(String attributeId) {
         final OrganizationAttributeEntity entity = orgAttrDao.findById(attributeId);
         if (entity != null) {
@@ -203,49 +234,102 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
 
     @Override
     @Transactional
-    public void save(final OrganizationEntity entity, final String requestorId) {
-    	
-    	if(entity.getOrganizationType() != null) {
-    		entity.setOrganizationType(orgTypeDAO.findById(entity.getOrganizationType().getId()));
-    	}
-    	
-    	if(entity.getType() != null && StringUtils.isNotBlank(entity.getType().getId())) {
-    		entity.setType(typeDAO.findById(entity.getType().getId()));
-        } else {
-        	entity.setType(null);
-        }
-    	
-        if (StringUtils.isNotBlank(entity.getId())) {
-            final OrganizationEntity dbOrg = orgDao.findById(entity.getId());
-            if (dbOrg != null) {
-            	mergeAttributes(entity, dbOrg);
-                mergeParents(entity, dbOrg);
-                entity.setChildOrganizations(dbOrg.getChildOrganizations());
-                entity.setParentOrganizations(dbOrg.getParentOrganizations());
-                entity.setUsers(dbOrg.getUsers());
-                entity.setAdminResource(dbOrg.getAdminResource());
-                if(entity.getAdminResource() == null) {
-                	entity.setAdminResource(getNewAdminResource(entity, requestorId));
-                }
-                entity.getAdminResource().setCoorelatedName(entity.getName());
-                entity.setApproverAssociations(dbOrg.getApproverAssociations());
-                entity.setLstUpdate(Calendar.getInstance().getTime());
-                entity.setLstUpdatedBy(requestorId);
-            }
-        } else {
-        	entity.setAdminResource(getNewAdminResource(entity, requestorId));
-            mergeParents(entity, null);
-            entity.setCreateDate(Calendar.getInstance().getTime());
-            entity.setCreatedBy(requestorId);
-            orgDao.save(entity);
-            entity.addApproverAssociation(createDefaultApproverAssociations(entity, requestorId));
-
-            addRequiredAttributes(entity);
-
-        }
-        
-        orgDao.merge(entity);
+    public Organization save(final Organization organization, final String requestorId) throws BasicDataServiceException {
+        return save(organization, requestorId, false);
     }
+
+    @Override
+    @Transactional
+    public Organization save(final Organization organization, final String requestorId, final boolean skipPrePostProcessors) throws BasicDataServiceException {
+
+        // Audit Log -----------------------------------------------------------------------------------
+        final IdmAuditLog idmAuditLog = new IdmAuditLog();
+        idmAuditLog.setRequestorUserId(requestorId);
+        if (StringUtils.isNotBlank(organization.getId())) {
+            idmAuditLog.setAction(AuditAction.EDIT_ORG.value());
+            idmAuditLog.setTargetOrg(organization.getId(), organization.getName());
+        } else {
+            idmAuditLog.setAction(AuditAction.ADD_ORG.value());
+        }
+
+        try {
+            Map<String, Object> bindingMap = new HashMap<String, Object>();
+            if (!skipPrePostProcessors) {
+                OrganizationServicePrePostProcessor preProcessor = getPreProcessScript();
+                if (preProcessor != null &&  preProcessor.save(organization, bindingMap, idmAuditLog) != OrganizationServicePrePostProcessor.SUCCESS) {
+                    idmAuditLog.fail();
+                    idmAuditLog.setFailureReason(ResponseCode.FAIL_PREPROCESSOR);
+                    throw new BasicDataServiceException(ResponseCode.FAIL_PREPROCESSOR);
+                }
+            }
+
+            OrganizationEntity newEntity = organizationDozerConverter.convertToEntity(organization, true);
+            validateEntity(newEntity);
+            OrganizationEntity curEntity;
+            if (StringUtils.isBlank(organization.getId())) {
+                curEntity = newEntity;
+                curEntity.setAdminResource(getNewAdminResource(curEntity, requestorId));
+                curEntity.setCreateDate(Calendar.getInstance().getTime());
+                curEntity.setCreatedBy(requestorId);
+                curEntity.addApproverAssociation(createDefaultApproverAssociations(curEntity, requestorId));
+                addRequiredAttributes(curEntity);
+
+            } else {
+                curEntity = orgDao.findById(organization.getId());
+                mergeOrgProperties(curEntity, newEntity);
+                mergeAttributes(curEntity, newEntity);
+                mergeParents(curEntity, newEntity);
+                mergeChildren(curEntity, newEntity);
+                mergeUsers(curEntity, newEntity);
+                mergeApproverAssociations(curEntity, newEntity);
+
+                if(curEntity.getAdminResource() == null) {
+                    curEntity.setAdminResource(getNewAdminResource(curEntity, requestorId));
+                }
+
+                curEntity.getAdminResource().setCoorelatedName(curEntity.getName());
+                curEntity.setLstUpdate(Calendar.getInstance().getTime());
+                curEntity.setLstUpdatedBy(requestorId);
+
+            }
+
+            if (newEntity.getOrganizationType() == null) {
+                curEntity.setOrganizationType(null);
+            } else if (curEntity.getOrganizationType() == null || StringUtils.equals(curEntity.getOrganizationType().getId(), newEntity.getOrganizationType().getId())) {
+                curEntity.setOrganizationType(orgTypeDAO.findById(newEntity.getOrganizationType().getId()));
+            }
+
+            if (newEntity.getType() == null) {
+                curEntity.setType(null);
+            } else if (curEntity.getType() == null || StringUtils.equals(curEntity.getType().getId(), newEntity.getType().getId())) {
+                curEntity.setType(typeDAO.findById(newEntity.getType().getId()));
+            }
+
+            orgDao.save(curEntity);
+            final Organization org = organizationDozerConverter.convertToDTO(curEntity, false);
+
+            if (!skipPrePostProcessors) {
+                OrganizationServicePrePostProcessor postProcessor = getPostProcessScript();
+                if (postProcessor != null) {
+                    if (postProcessor.save(org, bindingMap, idmAuditLog) != OrganizationServicePrePostProcessor.SUCCESS) {
+                        idmAuditLog.fail();
+                        idmAuditLog.setFailureReason(ResponseCode.FAIL_POSTPROCESSOR);
+                        throw new BasicDataServiceException(ResponseCode.FAIL_POSTPROCESSOR);
+                    }
+                }
+            }
+
+            idmAuditLog.succeed();
+            return org;
+
+        } finally {
+            if(StringUtils.isBlank(idmAuditLog.getResult())) {
+                idmAuditLog.fail();
+            }
+            auditLogService.enqueue(idmAuditLog);
+        }
+    }
+
     @Override
     @Transactional
     public void addRequiredAttributes(OrganizationEntity organization) {
@@ -282,83 +366,217 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
 		return association;
 	}
 
-    private void mergeParents(final OrganizationEntity bean, final OrganizationEntity dbObject) {
-        final Set<OrganizationEntity> renewedSet = new HashSet<OrganizationEntity>();
-
-        final Set<OrganizationEntity> beanParents = (bean.getParentOrganizations() != null) ? bean.getParentOrganizations() : new HashSet<OrganizationEntity>();
-        final Set<OrganizationEntity> dbParents = (dbObject!=null && dbObject.getParentOrganizations() != null) ? dbObject.getParentOrganizations() : new HashSet<OrganizationEntity>();
-
-        /* add */
-        for(final Iterator<OrganizationEntity> it = beanParents.iterator(); it.hasNext();) {
-            boolean contains = false;
-            final OrganizationEntity beanParent = it.next();
-            for(final Iterator<OrganizationEntity> dbIt = dbParents.iterator(); dbIt.hasNext();) {
-                final OrganizationEntity dbParent = dbIt.next();
-                if(StringUtils.equals(dbParent.getId(), beanParent.getId())) {
-                    contains = true;
-                    renewedSet.add(dbParent);
-                }
+    private void mergeParents(final OrganizationEntity curEntity, final OrganizationEntity newEntity) {
+        if (curEntity.getParentOrganizations() == null) {
+            curEntity.setParentOrganizations(new HashSet<OrganizationEntity>());
+        }
+        if (newEntity != null && newEntity.getParentOrganizations() != null) {
+            List<String> currIds = new ArrayList<String>();
+            for (OrganizationEntity cpo : curEntity.getParentOrganizations()) {
+                currIds.add(cpo.getId());
             }
+            final Set<OrganizationEntity> toAdd = new HashSet<OrganizationEntity>();
+            final Set<OrganizationEntity> toRemove = new HashSet<OrganizationEntity>();
+            if (CollectionUtils.isNotEmpty(newEntity.getParentOrganizations())) {
+                Iterator<OrganizationEntity> iterator = newEntity.getParentOrganizations().iterator();
+                while (iterator.hasNext()) {
+                    OrganizationEntity nop = iterator.next();
+                    if (currIds.contains(nop.getId())) {
+                        currIds.remove(nop.getId());
+                        // parent org exists
+                    } else {
+                        // add
+                        toAdd.add(orgDao.findById(nop.getId()));
+                    }
+                    //remove
+                    for (OrganizationEntity cop : curEntity.getParentOrganizations()) {
+                        if (currIds.contains(cop.getId())) {
+                            toRemove.add(cop);
+                            break;
+                        }
+                    }
+                    curEntity.getParentOrganizations().removeAll(toRemove);
+                    curEntity.getParentOrganizations().addAll(toAdd);
+                }
 
-            if(!contains) {
-                final OrganizationEntity dbParOrg = orgDao.findById(beanParent.getId());
-//                dbParOrg.getChildOrganizations().add(bean);
-                renewedSet.add(dbParOrg);
+            } else {
+                curEntity.getParentOrganizations().clear();
             }
         }
-        bean.setParentOrganizations(renewedSet);
     }
 
-    private void mergeAttributes(final OrganizationEntity bean, final OrganizationEntity dbObject) {
-		
-    	Set<OrganizationAttributeEntity> beanProps = (bean.getAttributes() != null) ? bean.getAttributes() : new HashSet<OrganizationAttributeEntity>();
-        Set<OrganizationAttributeEntity> dbProps = (dbObject.getAttributes() != null) ? new HashSet<OrganizationAttributeEntity>(dbObject.getAttributes()) : new HashSet<OrganizationAttributeEntity>();
-
-        /* update */
-        Iterator<OrganizationAttributeEntity> dbIteroator = dbProps.iterator();
-        while(dbIteroator.hasNext()) {
-        	final OrganizationAttributeEntity dbProp = dbIteroator.next();
-        	
-        	boolean contains = false;
-            for (final OrganizationAttributeEntity beanProp : beanProps) {
-                if (StringUtils.equals(dbProp.getId(), beanProp.getId())) {
-                    dbProp.setValue(beanProp.getValue());
-                    dbProp.setElement(getEntity(beanProp.getElement()));
-                    dbProp.setName(beanProp.getName());
-                    dbProp.setIsMultivalued(beanProp.getIsMultivalued());
-                    dbProp.setValues(beanProp.getValues());
-                    contains = true;
-                    break;
-                }
+    private void mergeChildren(final OrganizationEntity curEntity, final OrganizationEntity newEntity) {
+        if (curEntity.getChildOrganizations() == null) {
+            curEntity.setChildOrganizations(new HashSet<OrganizationEntity>());
+        }
+        if (newEntity != null && newEntity.getChildOrganizations() != null) {
+            List<String> currIds = new ArrayList<String>();
+            for (OrganizationEntity coc : curEntity.getChildOrganizations()) {
+                currIds.add(coc.getId());
             }
-            
-            /* remove */
-            if(!contains) {
-            	dbIteroator.remove();
+            final Set<OrganizationEntity> toAdd = new HashSet<OrganizationEntity>();
+            final Set<OrganizationEntity> toRemove = new HashSet<OrganizationEntity>();
+            if (CollectionUtils.isNotEmpty(newEntity.getChildOrganizations())) {
+                Iterator<OrganizationEntity> iterator = newEntity.getChildOrganizations().iterator();
+                while (iterator.hasNext()) {
+                    OrganizationEntity noc = iterator.next();
+                    if (currIds.contains(noc.getId())) {
+                        currIds.remove(noc.getId());
+                        // child org exists
+                    } else {
+                        // add
+                        toAdd.add(orgDao.findById(noc.getId()));
+                    }
+                    //remove
+                    for (OrganizationEntity coc : curEntity.getChildOrganizations()) {
+                        if (currIds.contains(coc.getId())) {
+                            toRemove.add(coc);
+                            break;
+                        }
+                    }
+                    curEntity.getChildOrganizations().removeAll(toRemove);
+                    curEntity.getChildOrganizations().addAll(toAdd);
+                }
+
+            } else {
+                curEntity.getChildOrganizations().clear();
             }
         }
+    }
 
-        /* add */
-        final Set<OrganizationAttributeEntity> toAdd = new HashSet<>();
-        for (final OrganizationAttributeEntity beanProp : beanProps) {
-            boolean contains = false;
-            dbIteroator = dbProps.iterator();
-            while(dbIteroator.hasNext()) {
-            	final OrganizationAttributeEntity dbProp = dbIteroator.next();
-                if (StringUtils.equals(dbProp.getId(), beanProp.getId())) {
-                    contains = true;
-                }
+    private void mergeUsers(final OrganizationEntity curEntity, final OrganizationEntity newEntity) {
+        if (curEntity.getUsers() == null) {
+            curEntity.setUsers(new HashSet<UserEntity>());
+        }
+        if (newEntity != null && newEntity.getUsers() != null) {
+            List<String> currIds = new ArrayList<String>();
+            for (UserEntity cou : curEntity.getUsers()) {
+                currIds.add(cou.getId());
             }
+            final Set<UserEntity> toAdd = new HashSet<UserEntity>();
+            final Set<UserEntity> toRemove = new HashSet<UserEntity>();
+            if (CollectionUtils.isNotEmpty(newEntity.getUsers())) {
+                Iterator<UserEntity> iterator = newEntity.getUsers().iterator();
+                while (iterator.hasNext()) {
+                    UserEntity nou = iterator.next();
+                    if (currIds.contains(nou.getId())) {
+                        currIds.remove(nou.getId());
+                        // user exists
+                    } else {
+                        // add
+                        toAdd.add(userDAO.findById(nou.getId()));
+                    }
+                    //remove
+                    for (UserEntity cou : curEntity.getUsers()) {
+                        if (currIds.contains(cou.getId())) {
+                            toRemove.add(cou);
+                            break;
+                        }
+                    }
+                    curEntity.getUsers().removeAll(toRemove);
+                    curEntity.getUsers().addAll(toAdd);
+                }
 
-            if (!contains) {
-                beanProp.setOrganization(bean);
-                beanProp.setElement(getEntity(beanProp.getElement()));
-                toAdd.add(beanProp);
+            } else {
+                curEntity.getUsers().clear();
             }
         }
-        dbProps.addAll(toAdd);
-        
-        bean.setAttributes(dbProps);
+    }
+
+    private void mergeApproverAssociations(final OrganizationEntity curEntity, final OrganizationEntity newEntity) {
+        if (curEntity.getApproverAssociations() == null) {
+            curEntity.setApproverAssociations(new HashSet<ApproverAssociationEntity>());
+        }
+        if (newEntity != null && newEntity.getApproverAssociations() != null) {
+            List<String> currIds = new ArrayList<String>();
+            for (ApproverAssociationEntity caa : curEntity.getApproverAssociations()) {
+                currIds.add(caa.getId());
+            }
+            final Set<ApproverAssociationEntity> toAdd = new HashSet<ApproverAssociationEntity>();
+            final Set<ApproverAssociationEntity> toRemove = new HashSet<ApproverAssociationEntity>();
+            if (CollectionUtils.isNotEmpty(newEntity.getApproverAssociations())) {
+                Iterator<ApproverAssociationEntity> iterator = newEntity.getApproverAssociations().iterator();
+                while (iterator.hasNext()) {
+                    ApproverAssociationEntity naa = iterator.next();
+                    if (currIds.contains(naa.getId())) {
+                        currIds.remove(naa.getId());
+                        // approver association exists
+                    } else {
+                        // add
+                        toAdd.add(approverAssociationDAO.findById(naa.getId()));
+                    }
+                    //remove
+                    for (ApproverAssociationEntity cou : curEntity.getApproverAssociations()) {
+                        if (currIds.contains(cou.getId())) {
+                            toRemove.add(cou);
+                            break;
+                        }
+                    }
+                    curEntity.getApproverAssociations().removeAll(toRemove);
+                    curEntity.getApproverAssociations().addAll(toAdd);
+                }
+
+            } else {
+                curEntity.getApproverAssociations().clear();
+            }
+        }
+    }
+
+    private void mergeOrgProperties(final OrganizationEntity curEntity, final OrganizationEntity newEntity) {
+        BeanUtils.copyProperties(newEntity, curEntity,
+                new String[] {"attributes", "parentOrganizations", "childOrganizations", "users", "approverAssociations",
+                "adminResource", "organizationType", "type", "lstUpdate", "lstUpdatedBy", "createDate", "createdBy"});
+    }
+
+    private void mergeAttributes(final OrganizationEntity curEntity, final OrganizationEntity newEntity) {
+        if (curEntity.getAttributes() == null) {
+            curEntity.setAttributes(new HashSet<OrganizationAttributeEntity>());
+        }
+        if (newEntity != null && newEntity.getAttributes() != null) {
+            final List<String> currIds = new ArrayList<String>();
+            for (OrganizationAttributeEntity oa : curEntity.getAttributes()) {
+                currIds.add(oa.getId());
+            }
+            final Set<OrganizationAttributeEntity> toAdd = new HashSet<OrganizationAttributeEntity>();
+            final Set<OrganizationAttributeEntity> toRemove = new HashSet<OrganizationAttributeEntity>();
+            if (CollectionUtils.isNotEmpty(newEntity.getAttributes())) {
+                Iterator<OrganizationAttributeEntity> iterator = newEntity.getAttributes().iterator();
+                while (iterator.hasNext()) {
+                    OrganizationAttributeEntity noa = iterator.next();
+                    if (StringUtils.isBlank(noa.getId())) {
+                        //add
+                        noa.setOrganization(curEntity);
+                        noa.setElement(getEntity(noa.getElement()));
+                        toAdd.add(noa);
+
+                    } else if (currIds.contains(noa.getId())) {
+                        currIds.remove(noa.getId()); // least ids will be deleted
+                        //update
+                        for (OrganizationAttributeEntity oae : curEntity.getAttributes()) {
+                            if (StringUtils.equals(oae.getId(), noa.getId())) {
+                                oae.setValue(noa.getValue());
+                                oae.setElement(getEntity(noa.getElement()));
+                                oae.setName(noa.getName());
+                                oae.setIsMultivalued(noa.getIsMultivalued());
+                                oae.setValues(noa.getValues());
+                                break;
+                            }
+                        }
+                    }
+                }
+                //remove
+                for (OrganizationAttributeEntity oae : curEntity.getAttributes()) {
+                    if (currIds.contains(oae.getId())) {
+                        toRemove.add(oae);
+                    }
+                }
+                curEntity.getAttributes().removeAll(toRemove);
+                curEntity.getAttributes().addAll(toAdd);
+
+            } else {
+                curEntity.getAttributes().clear();
+            }
+        }
 	}
     
     private MetadataElementEntity getEntity(final MetadataElementEntity bean) {
@@ -378,6 +596,7 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
     }
 
     @Override
+    @Transactional
     public void save(OrganizationAttributeEntity attribute) {
     	attribute.setElement(metadataDAO.findById(attribute.getElement().getId()));
     	attribute.setOrganization(orgDao.findById(attribute.getOrganization().getId()));
@@ -390,6 +609,7 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
     }
 
     @Override
+    @Transactional
     public void removeChildOrganization(String organizationId, String childOrganizationId) {
         final OrganizationEntity parent = orgDao.findById(organizationId);
         final OrganizationEntity child = orgDao.findById(childOrganizationId);
@@ -400,6 +620,7 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
     }
 
     @Override
+    @Transactional
     public void addChildOrganization(String organizationId, String childOrganizationId) {
         final OrganizationEntity parent = orgDao.findById(organizationId);
         final OrganizationEntity child = orgDao.findById(childOrganizationId);
@@ -410,23 +631,74 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
     }
 
     @Override
-    public void deleteOrganization(String orgId) {
-        final OrganizationEntity entity = orgDao.findById(orgId);
-        if (entity != null) {
-        	final GroupEntity example = new GroupEntity();
-        	example.setCompany(entity);
-        	final List<GroupEntity> groups = groupDAO.getByExample(example);
-        	if(groups != null) {
-        		for(final GroupEntity group : groups) {
-        			group.setCompany(null);
-        			groupDAO.update(group);
-        		}
-        	}
-            orgDao.delete(entity);
-        }
+    @Transactional
+    public void deleteOrganization(String orgId) throws BasicDataServiceException {
+        deleteOrganization(orgId, false);
     }
 
     @Override
+    @Transactional
+    public void deleteOrganization(String orgId, boolean skipPrePostProcessors) throws BasicDataServiceException {
+
+        // Audit Log -----------------------------------------------------------------------------------
+        final IdmAuditLog idmAuditLog = new IdmAuditLog();
+        idmAuditLog.setAction(AuditAction.DELETE_ORG.value());
+
+        try {
+            if (orgId == null) {
+                idmAuditLog.setFailureReason(ResponseCode.INVALID_ARGUMENTS);
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+            }
+
+            final OrganizationEntity entity = orgDao.findById(orgId);
+            if (entity != null) {
+                idmAuditLog.setTargetOrg(orgId, entity.getName());
+            }
+
+            Map<String, Object> bindingMap = new HashMap<String, Object>();
+
+            if (!skipPrePostProcessors) {
+                OrganizationServicePrePostProcessor preProcessor = getPreProcessScript();
+                if (preProcessor != null &&  preProcessor.delete(orgId, bindingMap, idmAuditLog) != OrganizationServicePrePostProcessor.SUCCESS) {
+                    idmAuditLog.setFailureReason(ResponseCode.FAIL_PREPROCESSOR);
+                    throw new BasicDataServiceException(ResponseCode.FAIL_PREPROCESSOR);
+                }
+            }
+
+            if (entity != null) {
+                final GroupEntity example = new GroupEntity();
+                example.setCompany(entity);
+                final List<GroupEntity> groups = groupDAO.getByExample(example);
+                if(groups != null) {
+                    for(final GroupEntity group : groups) {
+                        group.setCompany(null);
+                        groupDAO.update(group);
+                    }
+                }
+                orgDao.delete(entity);
+            }
+
+            if (!skipPrePostProcessors) {
+                OrganizationServicePrePostProcessor postProcessor = getPostProcessScript();
+                if (postProcessor != null &&  postProcessor.delete(orgId, bindingMap, idmAuditLog) != OrganizationServicePrePostProcessor.SUCCESS) {
+                    idmAuditLog.setFailureReason(ResponseCode.FAIL_POSTPROCESSOR);
+                    throw new BasicDataServiceException(ResponseCode.FAIL_POSTPROCESSOR);
+                }
+            }
+
+            idmAuditLog.succeed();
+
+        } finally {
+            if(StringUtils.isBlank(idmAuditLog.getResult())) {
+                idmAuditLog.fail();
+            }
+            auditLogService.enqueue(idmAuditLog);
+        }
+
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Set<String> getDelegationFilter(String requesterId, String organizationTypeId) {
         Set<String> filterData = null;
         if (StringUtils.isNotBlank(requesterId)) {
@@ -439,6 +711,7 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Set<String> getDelegationFilter(Map<String, UserAttribute> attrMap, String organizationTypeId) {
         Set<String> filterData = new HashSet<String>();
         if(attrMap!=null && !attrMap.isEmpty()){
@@ -447,26 +720,13 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
             filterData.addAll(this.getOrgTreeFlatList(DelegationFilterHelper.getOrgIdFilterFromString(attrMap), isUseOrgInhFlag));
             filterData.addAll(this.getOrgTreeFlatList(DelegationFilterHelper.getDeptFilterFromString(attrMap), isUseOrgInhFlag));
             filterData.addAll(this.getOrgTreeFlatList(DelegationFilterHelper.getDivisionFilterFromString(attrMap), isUseOrgInhFlag));
-
-//            if (StringUtils.isNotBlank(organizationTypeId)) {
-//                if(organizationTypeId.equals(this.organizationTypeId)){
-//                    filterData = this.getOrgTreeFlatList(DelegationFilterHelper.getOrgIdFilterFromString(attrMap), isUseOrgInhFlag);
-//                } else if(organizationTypeId.equals(this.divisionTypeId)){
-//                    filterData = this.getOrgTreeFlatList(DelegationFilterHelper.getDivisionFilterFromString(attrMap), isUseOrgInhFlag);
-//                } else if(organizationTypeId.equals(this.departmentTypeId)){
-//                    filterData = this.getOrgTreeFlatList(DelegationFilterHelper.getDeptFilterFromString(attrMap), isUseOrgInhFlag);
-//                } else {
-//                    filterData = getFullOrgFilterList(attrMap, isUseOrgInhFlag);
-//                }
-//            } else {
-//                filterData = getFullOrgFilterList(attrMap, isUseOrgInhFlag);
-//            }
         }
         return filterData;
     }
 
     @Override
     @LocalizedServiceGet
+    @Transactional(readOnly = true)
     public List<OrganizationEntity> getAllowedParentOrganizationsForType(final String orgTypeId, String requesterId, final LanguageEntity langauge){
         Set<String> filterData = null;
         Set<String> allowedOrgTypes = null;
@@ -474,24 +734,6 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
         if (StringUtils.isNotBlank(requesterId)) {
             requesterAttributes = userDataService.getUserAttributesDto(requesterId);
             filterData = getDelegationFilter(requesterAttributes, organizationTypeId);
-//            allowedOrgTypes = organizationTypeService.findAllowedChildrenByDelegationFilter(requesterAttributes);
-//
-//            boolean isOrgFilterSet = DelegationFilterHelper.isOrgFilterSet(requesterAttributes);
-//            boolean isDivFilterSet = DelegationFilterHelper.isDivisionFilterSet(requesterAttributes);
-//            boolean isDepFilterSet = DelegationFilterHelper.isDeptFilterSet(requesterAttributes);
-//            boolean isUseOrgInhFilterSet = DelegationFilterHelper.isUseOrgInhFilterSet(requesterAttributes);
-//            if(isOrgFilterSet){
-//                allowedOrgTypes.add(organizationTypeId);
-//            }
-//            if(isDivFilterSet
-//                    || (isOrgFilterSet && isUseOrgInhFilterSet)){
-//                allowedOrgTypes.add(divisionTypeId);
-//            }
-//            if(isDepFilterSet
-//                    || (isDivFilterSet && isUseOrgInhFilterSet)
-//                    || (isOrgFilterSet && isUseOrgInhFilterSet)){
-//                allowedOrgTypes.add(departmentTypeId);
-//            }
         }
         allowedOrgTypes = organizationTypeService.getAllowedParentsIds(orgTypeId, requesterAttributes);
 //        allowedOrgTypes.retainAll(allowedParentTypesIds);
@@ -508,6 +750,7 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
 
 	@Override
 	@LocalizedServiceGet
+    @Transactional(readOnly = true)
 	public Organization getOrganizationDTO(String orgId, final LanguageEntity langauge) {
 		return organizationDozerConverter.convertToDTO(getOrganizationLocalized(orgId, langauge), true);
 	}
@@ -561,21 +804,8 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
         return retval;
     }
 
-    @Override
-    @Transactional
-    public void sweep() {
-        final StopWatch sw = new StopWatch();
-        sw.start();
-        final Map<String, Set<String>> tempOrgTreeMap = getAllOrgMap();
-
-        synchronized(this) {
-            organizationTree = tempOrgTreeMap;
-        }
-        sw.stop();
-        log.debug(String.format("Done creating orgs trees. Took: %s ms", sw.getTime()));
-    }
-
-    private Map<String, Set<String>> getAllOrgMap() {
+    @Transactional(readOnly = true)
+    public void fireUpdateOrgMap() {
         List<Org2OrgXrefEntity> xrefList = orgDao.getOrgToOrgXrefList();
 
         final Map<String, Set<String>> parentOrg2ChildOrgMap = new HashMap<String, Set<String>>();
@@ -592,8 +822,7 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
             child2ParentOrgMap.put(memberOrgId, orgId);
             parentOrg2ChildOrgMap.get(orgId).add(memberOrgId);
         }
-
-        return parentOrg2ChildOrgMap;
+        organizationTree = parentOrg2ChildOrgMap;
     }
 
     private Set<String> getOrgTreeFlatList(List<String> rootElementsIdList, boolean isUseOrgInhFlag){
@@ -625,24 +854,29 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
     }
 
     @Override
+    @Transactional(readOnly = true)
     public void afterPropertiesSet() throws Exception {
-        sweep();
+        fireUpdateOrgMap();
     }
 
 
     @Deprecated
+    @Transactional(readOnly = true)
     public Organization getOrganizationDTO(final String orgId){
         return this.getOrganizationDTO(orgId, getDefaultLanguage());
     }
     @Deprecated
+    @Transactional(readOnly = true)
     public OrganizationEntity getOrganization(String orgId){
         return this.getOrganization(orgId, null);
     }
     @Deprecated
+    @Transactional(readOnly = true)
     public OrganizationEntity getOrganization(final String orgId, String requesterId){
         return this.getOrganizationLocalized(orgId, requesterId, getDefaultLanguage());
     }
     @Deprecated
+    @Transactional(readOnly = true)
     public OrganizationEntity getOrganizationByName(final String name, String requesterId){
         return this.getOrganizationByName(name, requesterId, getDefaultLanguage());
     }
@@ -651,22 +885,27 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
         return this.getOrganizationsForUser(userId, requesterId, from, size, getDefaultLanguage());
     }
     @Deprecated
+    @Transactional(readOnly = true)
     public List<OrganizationEntity> getParentOrganizations(final String orgId, String requesterId, final int from, final int size){
         return this.getParentOrganizations(orgId, requesterId, from, size, getDefaultLanguage());
     }
     @Deprecated
+    @Transactional(readOnly = true)
     public List<OrganizationEntity> getChildOrganizations(final String orgId, String requesterId, final int from, final int size){
         return this.getChildOrganizations(orgId, requesterId, from, size, getDefaultLanguage());
     }
     @Deprecated
+    @Transactional(readOnly = true)
     public List<OrganizationEntity> findBeans(final OrganizationSearchBean searchBean, String requesterId, final int from, final int size){
         return this.findBeans(searchBean, requesterId, from, size, getDefaultLanguage());
     }
     @Deprecated
+    @Transactional(readOnly = true)
     public List<OrganizationEntity> getAllowedParentOrganizationsForType(final String orgTypeId, String requesterId){
         return this.getAllowedParentOrganizationsForType(orgTypeId, requesterId, getDefaultLanguage());
     }
     @Deprecated
+    @Transactional(readOnly = true)
     public List<OrganizationEntity> findOrganizationsByAttributeValue(final String attrName, String attrValue){
         return this.findOrganizationsByAttributeValue(attrName, attrValue, getDefaultLanguage());
     }
@@ -675,5 +914,54 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
         LanguageEntity lang = new LanguageEntity();
         lang.setId("1");
         return lang;
+    }
+
+    @Transactional(readOnly = true)
+    public void validate(final Organization organization) throws BasicDataServiceException {
+        validateEntity(organizationDozerConverter.convertToEntity(organization, true));
+    }
+
+    private void validateEntity(final OrganizationEntity organization) throws BasicDataServiceException {
+        if (organization == null) {
+            throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+        }
+        if (StringUtils.isBlank(organization.getName())) {
+            throw new BasicDataServiceException(ResponseCode.ORGANIZATION_NAME_NOT_SET);
+        }
+
+        final OrganizationEntity found = getOrganizationByName(organization.getName(), null, null);
+        if (found != null) {
+            if (StringUtils.isBlank(organization.getId()) && found != null) {
+                throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
+            }
+
+            if (StringUtils.isNotBlank(organization.getId()) && !organization.getId().equals(found.getId())) {
+                throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
+            }
+        }
+
+        if(organization.getOrganizationType() == null) {
+            throw new BasicDataServiceException(ResponseCode.ORGANIZATION_TYPE_NOT_SET);
+        }
+
+        entityValidator.isValid(organization);
+    }
+
+    private OrganizationServicePrePostProcessor getPreProcessScript() {
+        try {
+            return (OrganizationServicePrePostProcessor) scriptRunner.instantiateClass(new HashMap<String, Object>(), preProcessorOrganization);
+        } catch (Exception ce) {
+            log.error(ce);
+            return null;
+        }
+    }
+
+    private OrganizationServicePrePostProcessor getPostProcessScript() {
+        try {
+            return (OrganizationServicePrePostProcessor) scriptRunner.instantiateClass(new HashMap<String, Object>(), postProcessorOrganization);
+        } catch (Exception ce) {
+            log.error(ce);
+            return null;
+        }
     }
 }

@@ -7,13 +7,12 @@ import org.openiam.connector.type.constant.ErrorCode;
 import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.request.PasswordRequest;
 import org.openiam.connector.type.response.ResponseType;
-import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.connector.ldap.command.base.AbstractLdapCommand;
 import org.openiam.connector.ldap.dirtype.Directory;
 import org.openiam.connector.ldap.dirtype.DirectorySpecificImplFactory;
-import org.openiam.provision.type.ExtensibleAttribute;
+import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.springframework.stereotype.Service;
 
 import javax.naming.NameNotFoundException;
@@ -23,7 +22,7 @@ import javax.naming.OperationNotSupportedException;
 import javax.naming.directory.*;
 import javax.naming.ldap.LdapContext;
 import java.text.MessageFormat;
-import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -54,13 +53,16 @@ public class SetPasswordLdapCommand extends AbstractLdapCommand<PasswordRequest,
                 objectBaseDN =  passwordRequest.getObjectIdentity().substring(CN.length()+1);
 
             } else {
-                // if identity is not in DN format try to find OU info in attributes
-                String OU = getOU(passwordRequest.getExtensibleObject());
-                if(StringUtils.isNotEmpty(OU)) {
-                    objectBaseDN = OU+","+matchObj.getBaseDn();
-                } else {
-                    objectBaseDN = matchObj.getBaseDn();
-                }
+				objectBaseDN = matchObj.getBaseDn();
+				Set<ResourceProp> rpSet = getResourceAttributes(managedSys.getResourceId());
+				boolean isLookupUserInOu = getResourceBoolean(rpSet, "LOOKUP_USER_IN_OU", true);
+				if (isLookupUserInOu) {
+					// if identity is not in DN format try to find OU info in attributes
+					String OU = getAttrValue(passwordRequest.getExtensibleObject(), OU_ATTRIBUTE);
+					if(StringUtils.isNotEmpty(OU)) {
+						objectBaseDN = OU+","+matchObj.getBaseDn();
+					}
+				}
             }
 
             NamingEnumeration results = null;

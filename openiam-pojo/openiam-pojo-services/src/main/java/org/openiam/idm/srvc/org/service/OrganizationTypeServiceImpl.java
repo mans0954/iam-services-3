@@ -13,7 +13,6 @@ import org.openiam.idm.srvc.org.domain.OrganizationTypeEntity;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
-import org.openiam.thread.Sweepable;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,7 +23,7 @@ import java.util.*;
 
 @Service
 @Transactional
-public class OrganizationTypeServiceImpl implements OrganizationTypeService, InitializingBean, Sweepable {
+public class OrganizationTypeServiceImpl implements OrganizationTypeService, InitializingBean {
     private static final Log log = LogFactory.getLog(OrganizationTypeServiceImpl.class);
 	@Autowired
 	private OrganizationTypeDAO organizationTypeDAO;
@@ -264,25 +263,11 @@ public class OrganizationTypeServiceImpl implements OrganizationTypeService, Ini
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        sweep();
+        fireUpdateOrgTypeMap();
     }
 
-    @Override
-    @Transactional
-    public void sweep() {
-        final StopWatch sw = new StopWatch();
-        sw.start();
-        final OrgTypeResponse orgTypeResponse = getAllOrgTypeMap();
-
-        synchronized(this) {
-            this.parent2childOrgTypeCached = orgTypeResponse.getParentOrg2ChildOrgTypeMap();
-            this.child2parentOrgTypeCached = orgTypeResponse.getChild2ParentOrgMap();
-        }
-        sw.stop();
-        log.debug(String.format("Done creating orgs trees. Took: %s ms", sw.getTime()));
-    }
-
-    private OrgTypeResponse getAllOrgTypeMap() {
+    @Transactional(readOnly = true)
+    public void fireUpdateOrgTypeMap() {
         List<OrgType2OrgTypeXrefEntity> xrefList = organizationTypeDAO.getOrgTypeToOrgTypeXrefList();
 
         final Map<String, Set<String>> parentOrg2ChildOrgTypeMap = new HashMap<String, Set<String>>();
@@ -303,7 +288,8 @@ public class OrganizationTypeServiceImpl implements OrganizationTypeService, Ini
             child2ParentOrgMap.get(memberOrgTypeId).add(orgTypeId);
             parentOrg2ChildOrgTypeMap.get(orgTypeId).add(memberOrgTypeId);
         }
-        return new OrgTypeResponse(parentOrg2ChildOrgTypeMap, child2ParentOrgMap);
+        this.parent2childOrgTypeCached =parentOrg2ChildOrgTypeMap;
+        this.child2parentOrgTypeCached = child2ParentOrgMap;
     }
 
 

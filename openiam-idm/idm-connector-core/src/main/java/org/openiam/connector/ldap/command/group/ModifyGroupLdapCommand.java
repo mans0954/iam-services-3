@@ -14,7 +14,6 @@ import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleGroup;
 import org.openiam.provision.type.ExtensibleObject;
-import org.openiam.provision.type.ExtensibleUser;
 import org.springframework.stereotype.Service;
 
 import javax.naming.NameNotFoundException;
@@ -58,7 +57,7 @@ public class ModifyGroupLdapCommand extends AbstractCrudLdapCommand<ExtensibleGr
 
             } else {
                 // if identity is not in DN format try to find OU info in attributes
-                String OU = getOU(crudRequest.getExtensibleObject());
+                String OU = getAttrValue(crudRequest.getExtensibleObject(), OU_ATTRIBUTE);
                 if(StringUtils.isNotEmpty(OU)) {
                     objectBaseDN = OU+","+matchObj.getBaseDn();
                 } else {
@@ -67,8 +66,8 @@ public class ModifyGroupLdapCommand extends AbstractCrudLdapCommand<ExtensibleGr
             }
 
             Set<ResourceProp> rpSet = getResourceAttributes(managedSys.getResourceId());
-            boolean groupMembershipEnabled = isMembershipEnabled(rpSet, "GROUP_MEMBERSHIP_ENABLED");
-            boolean supervisorMembershipEnabled = isMembershipEnabled(rpSet, "SUPERVISOR_MEMBERSHIP_ENABLED");
+            boolean groupMembershipEnabled = getResourceBoolean(rpSet, "GROUP_MEMBERSHIP_ENABLED", true);
+            boolean supervisorMembershipEnabled = getResourceBoolean(rpSet, "SUPERVISOR_MEMBERSHIP_ENABLED", true);
 
             Directory dirSpecificImp = DirectorySpecificImplFactory.create(managedSys.getHandler5());
 
@@ -114,7 +113,7 @@ public class ModifyGroupLdapCommand extends AbstractCrudLdapCommand<ExtensibleGr
                     } else {
                         // valid value
 
-                        if ("ou".equalsIgnoreCase(att.getName())) {
+                        if (OU_ATTRIBUTE.equalsIgnoreCase(att.getName())) {
                             //skip ou for group
                         } else if ("unicodePwd".equalsIgnoreCase(att.getName())) {
                             Attribute a = generateActiveDirectoryPassword(att.getValue());

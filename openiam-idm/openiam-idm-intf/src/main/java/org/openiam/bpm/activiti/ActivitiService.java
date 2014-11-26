@@ -45,6 +45,8 @@ public interface ActivitiService {
 	
 	@WebMethod
 	public TaskListWrapper getTasksForUser(final String userId);
+    @WebMethod
+    public List<TaskWrapper> getTasksForMemberAssociation(String memberAssociationId);
 	
 	@WebMethod
 	public int getNumOfAssignedTasks(final String userId);

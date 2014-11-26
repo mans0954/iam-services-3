@@ -4,14 +4,14 @@
     <parent>
         <artifactId>openiam-security</artifactId>
         <groupId>org.openiam</groupId>
-        <version>3.2.4.RELEASE</version>
+        <version>3.2.5.RELEASE</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.openiam</groupId>
     <artifactId>openiam-jaas</artifactId>
     <packaging>jar</packaging>
     <name>openiam-jaas</name>
-    <version>3.2.4.RELEASE</version>
+    <version>3.2.5.RELEASE</version>
     <description>OpenIAM JAAS</description>
     <ciManagement>
         <system>am</system>

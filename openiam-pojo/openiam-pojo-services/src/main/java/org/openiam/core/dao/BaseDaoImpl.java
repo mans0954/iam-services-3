@@ -92,8 +92,14 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
                  .uniqueResult()).intValue();
     }
     
+    @Override
     public void flush() {
     	getSession().flush();
+    }
+
+    @Override
+    public void clear() {
+        getSession().clear();
     }
 
     @Override
@@ -178,6 +184,14 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
     @SuppressWarnings({ "unchecked" })
     @LocalizedDatabaseGet
     public T findById(PrimaryKey id) {
+        if (id == null) {
+            return null;
+        }
+        return (T) getCriteria().add(eq(getPKfieldName(), id)).uniqueResult(); //this.getSession().get(domainClass, id);
+    }
+
+    @SuppressWarnings({ "unchecked" })
+    public T findByIdNoLocalized(PrimaryKey id, String ... fetchFields) {
         if (id == null) {
             return null;
         }

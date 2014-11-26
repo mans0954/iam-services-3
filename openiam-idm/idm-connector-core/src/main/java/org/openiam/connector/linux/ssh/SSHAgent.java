@@ -13,7 +13,7 @@ import java.io.*;
 /**
  * The SSHAgent allows a Java application to execute commands on a remote server
  * via SSH
- * 
+ *
  * @author shaines
  */
 public class SSHAgent {
@@ -23,15 +23,29 @@ public class SSHAgent {
     private String hostname;
     private String username;
     private String password;
+    private File f;
     private int port;
 
     private Connection connection;
 
     public SSHAgent(String hostname, Integer port, String username,
-            String password) {
+                    String password) {
         this.hostname = hostname;
         this.username = username;
         this.password = password;
+
+        if (port != null && port > 0)
+            this.port = port;
+        else
+            this.port = 22;
+    }
+
+
+    public SSHAgent(String hostname, Integer port, String username,
+                    File f) {
+        this.hostname = hostname;
+        this.username = username;
+        this.f = f;
 
         if (port != null && port > 0)
             this.port = port;
@@ -44,10 +58,15 @@ public class SSHAgent {
             // Connect to the server
             connection = new Connection(hostname, port);
             connection.connect();
-
+            boolean result;
             // Authenticate
-            boolean result = connection.authenticateWithPassword(username,
-                    password);
+            if (f == null) {
+                result = connection.authenticateWithPassword(username,
+                        password);
+            } else {
+                result = connection.authenticateWithPublicKey(username, f, null);
+            }
+
             log.debug("Connection result: " + result);
             return result;
         } catch (Exception e) {
@@ -63,11 +82,9 @@ public class SSHAgent {
 
     /**
      * Executes the specified command and returns the response from the server
-     * 
-     * @param command
-     *            The command to execute
-     * @param moreArgs
-     *            Arguments to be piped into STDIO. Accepts newlines
+     *
+     * @param command  The command to execute
+     * @param moreArgs Arguments to be piped into STDIO. Accepts newlines
      * @return The response that is returned from the server (or null)
      * @throws SSHException
      */
@@ -145,7 +162,7 @@ public class SSHAgent {
     /**
      * Returns true if the underlying authentication is complete, otherwise
      * returns false
-     * 
+     *
      * @return
      */
     public boolean isAuthenticationComplete() {

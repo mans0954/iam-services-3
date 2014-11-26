@@ -28,10 +28,7 @@ import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.prov.request.dto.BulkOperationRequest;
 import org.openiam.idm.srvc.pswd.dto.PasswordValidationResponse;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
-import org.openiam.provision.dto.AccountLockEnum;
-import org.openiam.provision.dto.PasswordSync;
-import org.openiam.provision.dto.ProvisionActionEvent;
-import org.openiam.provision.dto.ProvisionUser;
+import org.openiam.provision.dto.*;
 import org.openiam.provision.resp.LookupUserResponse;
 import org.openiam.provision.resp.ManagedSystemViewerResponse;
 import org.openiam.provision.resp.PasswordResponse;
@@ -384,6 +381,7 @@ public interface ProvisionService {
             @WebParam(name = "idmAuditLog", targetNamespace = "") final IdmAuditLog idmAuditLog);
 
     @WebMethod
-    Response add(@WebParam(name = "event", targetNamespace = "") ProvisionActionEvent event);
+    Response addEvent(@WebParam(name = "event", targetNamespace = "") ProvisionActionEvent event,
+                      @WebParam(name = "type", targetNamespace = "") ProvisionActionTypeEnum type);
 
 }

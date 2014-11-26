@@ -40,5 +40,6 @@ public enum AuditAttributeName {
     ACTIVITI_TASK_NAME,
     EVENT_NAME,
     GROOVY_SCRIPT,
-    PROFILE;
+    PROFILE,
+    EMAIL;
 }

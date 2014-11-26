@@ -12,6 +12,7 @@ import org.openiam.connector.ldap.dirtype.Directory;
 import org.openiam.connector.ldap.dirtype.DirectorySpecificImplFactory;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
+import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.springframework.stereotype.Service;
 
 import javax.naming.NameNotFoundException;
@@ -20,6 +21,7 @@ import javax.naming.directory.ModificationItem;
 import javax.naming.directory.SearchResult;
 import javax.naming.ldap.LdapContext;
 import java.text.MessageFormat;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -48,13 +50,16 @@ public class SuspendLdapCommand extends AbstractLdapCommand<SuspendResumeRequest
                 String CN = matchObj.getKeyField()+"="+identity;
                 objectBaseDN =  suspendRequestType.getObjectIdentity().substring(CN.length()+1);
             } else {
-                // if identity is not in DN format try to find OU info in attributes
-                String OU = getOU(suspendRequestType.getExtensibleObject());
-                if(StringUtils.isNotEmpty(OU)) {
-                    objectBaseDN = OU+","+matchObj.getBaseDn();
-                } else {
-                    objectBaseDN = matchObj.getBaseDn();
-                }
+				objectBaseDN = matchObj.getBaseDn();
+				Set<ResourceProp> rpSet = getResourceAttributes(managedSys.getResourceId());
+				boolean isLookupUserInOu = getResourceBoolean(rpSet, "LOOKUP_USER_IN_OU", true);
+				if (isLookupUserInOu) {
+					// if identity is not in DN format try to find OU info in attributes
+					String OU = getAttrValue(suspendRequestType.getExtensibleObject(), OU_ATTRIBUTE);
+					if(StringUtils.isNotEmpty(OU)) {
+						objectBaseDN = OU+","+matchObj.getBaseDn();
+					}
+				}
             }
             // check if this object exists in the target system
             // dont try to disable and object that does not exist

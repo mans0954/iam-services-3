@@ -64,6 +64,20 @@ public interface ResourceDataService {
     		final @WebParam(name = "language", targetNamespace = "") Language language);
 
     /**
+     * Find   resource list.
+     *
+     * @param resourceIds
+     *            the resource id list
+     * @return resource
+     */
+    @WebMethod
+    public List<Resource> getResourcesByIds(final @WebParam(name = "resourceIds", targetNamespace = "") List<String> resourceIds,
+                                            final @WebParam(name = "language", targetNamespace = "") Language language);
+
+    @WebMethod
+    String getResourcePropValueByName(@WebParam(name = "resourceId", targetNamespace = "") String resourceId, @WebParam(name = "propName", targetNamespace = "") String propName);
+
+    /**
      * Find all resource types.
      * 
      * @return the all resource types
@@ -165,6 +179,22 @@ public interface ResourceDataService {
 	    final @WebParam(name = "language", targetNamespace = "") Language language
     );
 
+    /**
+     * For system use only
+     *
+     * @param roleId
+     * @param from
+     * @param size
+     * @param searchBean
+     * @return
+     */
+    @WebMethod
+    List<Resource> getResourcesForRoleNoLocalized(
+            final @WebParam(name = "roleId", targetNamespace = "") String roleId,
+            final @WebParam(name = "from", targetNamespace = "") int from,
+            final @WebParam(name = "size", targetNamespace = "") int size,
+            final @WebParam(name = "searchBean", targetNamespace = "") ResourceSearchBean searchBean
+    );
     /**
      * Search a Resource
      * 
@@ -368,6 +398,15 @@ public interface ResourceDataService {
     		final@WebParam(name = "searchBean", targetNamespace = "") ResourceSearchBean searchBean,
     		final @WebParam(name = "language", targetNamespace = "") Language language);
 
+    @WebMethod
+    /**
+     * For internal system use only
+     */
+    List<Resource> getResourcesForGroupNoLocalized(
+            final @WebParam(name = "groupId", targetNamespace = "") String groupId,
+            final @WebParam(name = "from", targetNamespace = "") int from,
+            final @WebParam(name = "size", targetNamespace = "") int size,
+            final@WebParam(name = "searchBean", targetNamespace = "") ResourceSearchBean searchBean);
     /**
      * Gets the number of Resources that a User is Entitled to
      * 

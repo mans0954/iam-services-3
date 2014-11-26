@@ -9,25 +9,20 @@ import org.openiam.connector.type.ObjectValue;
 import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.request.SearchRequest;
 import org.openiam.connector.type.response.SearchResponse;
-import org.openiam.dozer.converter.GroupDozerConverter;
 import org.openiam.exception.ScriptEngineException;
 import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
-import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.auth.dto.IdentityDto;
 import org.openiam.idm.srvc.auth.dto.IdentityTypeEnum;
 import org.openiam.idm.srvc.auth.login.IdentityService;
-import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
-import org.openiam.idm.srvc.grp.service.GroupDataService;
-import org.openiam.idm.srvc.key.constant.KeyName;
-import org.openiam.idm.srvc.key.service.KeyManagementService;
+import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
 import org.openiam.idm.srvc.mngsys.dto.*;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
+import org.openiam.idm.srvc.recon.command.BaseReconciliationCommand;
 import org.openiam.idm.srvc.recon.command.ReconciliationCommandFactory;
-import org.openiam.idm.srvc.recon.domain.ReconciliationConfigEntity;
 import org.openiam.idm.srvc.recon.dto.ReconExecStatusOptions;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.idm.srvc.recon.dto.ReconciliationResponse;
@@ -46,7 +41,6 @@ import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleGroup;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.util.MuleContextProvider;
-import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
@@ -62,20 +56,10 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
     private static final Log log = LogFactory.getLog(ReconciliationGroupProcessor.class);
 
     @Autowired
-    private AuditLogService auditLogService;
-
-    @Autowired
     private ResourceDataService resourceDataService;
 
     @Autowired
     private ManagedSystemWebService managedSysService;
-
-    @Autowired
-    private KeyManagementService keyManagementService;
-
-    @Autowired
-    @Qualifier("cryptor")
-    private Cryptor cryptor;
 
     @Autowired
     private ProvisionConnectorWebService connectorService;
@@ -85,8 +69,8 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
     private ScriptIntegration scriptRunner;
 
     @Autowired
-    @Qualifier("groupManager")
-    private GroupDataService groupManager;
+    @Qualifier("groupWS")
+    private GroupDataWebService groupDataWebService;
 
     @Autowired
     private ConnectorAdapter connectorAdapter;
@@ -100,9 +84,6 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
     private ReconciliationCommandFactory commandFactory;
 
     @Autowired
-    private ReconciliationConfigDAO reconConfigDao;
-
-    @Autowired
     @Qualifier("identityManager")
     private IdentityService identityService;
 
@@ -110,9 +91,11 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
     @Qualifier("groupProvision")
     private ObjectProvisionService provisionService;
 
-    @Autowired
-    @Qualifier("groupDozerConverter")
-    private GroupDozerConverter groupDozerConverter;
+	@Autowired
+	ReconciliationConfigService reconConfigService;
+
+    private static final int BATCH_STOPPING_STEP = 10;
+    private static final int CLEAR_SESSION_STEP = 20;
 
     @Override
     public ReconciliationResponse startReconciliation(ReconciliationConfig config, IdmAuditLog idmAuditLog) throws IOException, ScriptEngineException {
@@ -122,22 +105,18 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
         Resource res = resourceDataService.getResource(config.getResourceId(), null);
 
         ManagedSysDto mSys = managedSysService.getManagedSysByResource(res.getId());
-        String managedSysId = (mSys != null) ? mSys.getId() : null;
+		if (mSys == null) {
+			log.error("Requested managed sys does not exist");
+			return new ReconciliationResponse(ResponseStatus.FAILURE);
+		}
+
         // have resource
         idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION,
                 "Reconciliation for target system: " + mSys.getName() + " is started..." + new Date());
 
-        log.debug("ManagedSysId = " + managedSysId);
+        log.debug("ManagedSysId = " + mSys.getId());
         log.debug("Getting identities for managedSys");
 
-        if (mSys != null && mSys.getPswd() != null) {
-            try {
-                final byte[] bytes = keyManagementService.getSystemUserKey(KeyName.password.name());
-                mSys.setDecryptPassword(cryptor.decrypt(bytes, mSys.getPswd()));
-            } catch (Exception e) {
-                log.error("Can't decrypt", e);
-            }
-        }
         // have situations
         Map<String, ReconciliationSituation> situations = new HashMap<String, ReconciliationSituation>();
         for (ReconciliationSituation situation : config.getSituationSet()) {
@@ -150,8 +129,7 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
         List<AttributeMap> attrMap = managedSysService.getResourceAttributeMaps(res.getId());
 
         // initialization match parameters of connector
-        ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(managedSysId,
-                "GROUP");
+        ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(mSys.getId(), "GROUP");
         // execute all Reconciliation Commands need to be check
         if (matchObjAry.length == 0) {
             log.error("No match object found for this managed sys");
@@ -174,37 +152,29 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
             searchBean = new GroupSearchBean();
         }
 
-// checking for STOP status
-        ReconciliationConfigEntity configEntity = reconConfigDao.get(config.getReconConfigId());
-        reconConfigDao.refresh(configEntity);
-        if (configEntity.getExecStatus() == ReconExecStatusOptions.STOPPING) {
-            configEntity.setExecStatus(ReconExecStatusOptions.STOPPED);
-            idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "Reconciliation was manually stopped at "
-                    + new Date());
-            return new ReconciliationResponse(ResponseStatus.SUCCESS);
-        }
+		// checking for STOP status
+		if (processReconciliationStop(config.getReconConfigId(), idmAuditLog)) {
+			return new ReconciliationResponse(ResponseStatus.SUCCESS);
+		}
 
         // First get All Groups by search bean from IDM for processing
         List<String> processedGroupIds = new ArrayList<String>();
 
         if (searchBean != null) {
-            List<GroupEntity> idmGroups = groupManager.findBeans(searchBean, null, 0, Integer.MAX_VALUE);
+            List<Group> idmGroups = groupDataWebService.findBeans(searchBean, null, 0, Integer.MAX_VALUE);
             idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "Starting processing '" + idmGroups.size()
                     + "' users from Repository to " + mSys.getName());
             int counter = 0;
-            for (GroupEntity group : idmGroups) {
+            for (Group group : idmGroups) {
                 counter++;
+                if (counter % CLEAR_SESSION_STEP == 0) {
+                    reconConfigService.clearSession();
+                }
                 // checking for STOPING status for every 10 users
-                if (counter == 10) {
-                    configEntity = reconConfigDao.get(config.getReconConfigId());
-                    reconConfigDao.refresh(configEntity);
-                    if (configEntity.getExecStatus() == ReconExecStatusOptions.STOPPING) {
-                        configEntity.setExecStatus(ReconExecStatusOptions.STOPPED);
-                        idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION,
-                                "Reconciliation was manually stopped at " + new Date());
-                        return new ReconciliationResponse(ResponseStatus.SUCCESS);
-                    }
-                    counter = 0;
+                if (counter % BATCH_STOPPING_STEP == 0) {
+					if (processReconciliationStop(config.getReconConfigId(), idmAuditLog)) {
+						return new ReconciliationResponse(ResponseStatus.SUCCESS);
+					}
                 }
 
                 processedGroupIds.add(group.getId());
@@ -214,8 +184,7 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
                 idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "starting reconciliation for group: "
                         + group.getName());
 
-                reconciliationIDMGroupToTargetSys(attrMap, groupDozerConverter.convertToDTO(group, true), mSys, situations,
-                        idmAuditLog);
+                reconciliationIDMGroupToTargetSys(attrMap, group, mSys, situations, idmAuditLog);
 
                 idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "finished reconciliation for group: "
                         + group.getName());
@@ -232,25 +201,21 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
         idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION,
                 "Starting processing from target system: " + mSys.getName() + " to Repository");
 
-        // checking for STOPPING status
-        configEntity = reconConfigDao.get(config.getReconConfigId());
-        reconConfigDao.refresh(configEntity);
-        if (configEntity.getExecStatus() == ReconExecStatusOptions.STOPPING) {
-            configEntity.setExecStatus(ReconExecStatusOptions.STOPPED);
-            idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "Reconciliation was manually stopped at "
-                    + new Date());
-            return new ReconciliationResponse(ResponseStatus.SUCCESS);
-        }
+		if (processReconciliationStop(config.getReconConfigId(), idmAuditLog)) {
+			return new ReconciliationResponse(ResponseStatus.SUCCESS);
+		}
 
-        processingTargetToIDM(config, managedSysId, mSys, situations, connector, keyField, baseDnField,
+        processingTargetToIDM(config, mSys, situations, connector, keyField, baseDnField,
                 processedGroupIds, idmAuditLog);
 
 
         idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION,
                 "Reconciliation from target system: " + mSys.getName() + " to Repository is complete.");
 
-        configEntity.setLastExecTime(new Date());
-        configEntity.setExecStatus(ReconExecStatusOptions.FINISHED);
+		ReconciliationConfig reconConfig = reconConfigService.getConfigById(config.getReconConfigId());
+		reconConfig.setLastExecTime(new Date());
+		reconConfig.setExecStatus(ReconExecStatusOptions.FINISHED);
+		reconConfigService.updateConfig(reconConfig);
 
         idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION,
                 "Reconciliation for target system: " + mSys.getName() + " is complete.");
@@ -259,7 +224,7 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
     }
 
 
-    private ReconciliationResponse processingTargetToIDM(ReconciliationConfig config, String managedSysId,
+    private ReconciliationResponse processingTargetToIDM(ReconciliationConfig config,
                                                          ManagedSysDto mSys,
                                                          Map<String, ReconciliationSituation> situations,
                                                          ProvisionConnectorDto connector,
@@ -290,14 +255,14 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
             return new ReconciliationResponse(ResponseStatus.FAILURE);
         }
         log.debug("processingTargetToIDM: mSys=" + mSys);
-        SearchRequest searchRequest = new SearchRequest();
+        SearchRequest<ExtensibleGroup> searchRequest = new SearchRequest<>();
         String requestId = "R" + UUIDGen.getUUID();
         searchRequest.setRequestID(requestId);
         searchRequest.setBaseDN(baseDnField);
         searchRequest.setScriptHandler(mSys.getSearchHandler());
         searchRequest.setSearchValue(keyField);
         searchRequest.setSearchQuery(searchQuery);
-        searchRequest.setTargetID(managedSysId);
+        searchRequest.setTargetID(mSys.getId());
         searchRequest.setHostUrl(mSys.getHostUrl());
         searchRequest.setHostPort((mSys.getPort() != null) ? mSys.getPort().toString() : null);
         searchRequest.setHostLoginId(mSys.getUserId());
@@ -316,20 +281,17 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
                 int counter = 0;
                 for (ObjectValue groupValue : groupsFromRemoteSys) {
                     counter++;
+                    if (counter % CLEAR_SESSION_STEP == 0) {
+                        reconConfigService.clearSession();
+                    }
                     // AUDITLOG start processing user Y from target systems to
                     // IDM
 
                     // checking for STOPPING status every 10 users
-                    if (counter == 10) {
-                        ReconciliationConfigEntity configEntity = reconConfigDao.findById(config.getReconConfigId());
-                        reconConfigDao.refresh(configEntity);
-                        if (configEntity.getExecStatus() == ReconExecStatusOptions.STOPPING) {
-                            configEntity.setExecStatus(ReconExecStatusOptions.STOPPED);
-                            idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION,
-                                    "Reconciliation was manually stopped at " + new Date());
-                            return new ReconciliationResponse(ResponseStatus.SUCCESS);
-                        }
-                        counter = 0;
+                    if (counter % BATCH_STOPPING_STEP == 0) {
+						if (processReconciliationStop(config.getReconConfigId(), idmAuditLog)) {
+							return new ReconciliationResponse(ResponseStatus.SUCCESS);
+						}
                     }
 
                     List<ExtensibleAttribute> extensibleAttributes = groupValue.getAttributeList() != null ? groupValue
@@ -360,10 +322,11 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
                                                       final Map<String, ReconciliationSituation> situations,
                                                       IdmAuditLog idmAuditLog) throws IOException {
 
-        IdentityDto primaryIdentity = identityService.getIdentity(group.getId(), "0");
+        IdentityDto primaryIdentity = identityService.getIdentity(group.getId(),
+				BaseReconciliationCommand.OPENIAM_MANAGED_SYS_ID);
         IdentityDto identitySys = identityService.getIdentity(group.getId(), mSys.getId());
 
-        log.debug("1 Reconciliation for group " + group);
+        log.debug("Reconciliation for group: " + group);
 
         List<ExtensibleAttribute> requestedExtensibleAttributes = new ArrayList<ExtensibleAttribute>();
 
@@ -483,7 +446,7 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
                     // processed
                     return targetGroupPrincipal;
                 }
-                Group gr = groupManager.getGroupDTO(grp.getId());
+                Group gr = groupDataWebService.getGroup(grp.getId(), null);
 
                 IdentityDto identityDto = identityService.getIdentity(gr.getId(), mSys.getId());
                 if (identityDto == null) {
@@ -532,4 +495,16 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
         }
         return targetGroupPrincipal;
     }
+
+	private boolean processReconciliationStop(String reconConfigId, IdmAuditLog idmAuditLog) {
+		ReconExecStatusOptions status = reconConfigService.getExecStatus(reconConfigId);
+		if (status == ReconExecStatusOptions.STOPPING || status == ReconExecStatusOptions.STOPPED) {
+			reconConfigService.updateExecStatus(reconConfigId, ReconExecStatusOptions.STOPPED);
+			idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION,
+					"Reconciliation was manually stopped at " + new Date());
+			return true;
+		}
+		final boolean isRunning = (status == ReconExecStatusOptions.STARTED);
+		return !isRunning;
+	}
 }
