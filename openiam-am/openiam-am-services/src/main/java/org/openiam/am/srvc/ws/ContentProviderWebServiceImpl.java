@@ -29,6 +29,7 @@ import org.openiam.exception.EsbErrorToken;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -76,6 +77,9 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
     
     @Autowired
     private AuthLevelAttributeDozerConverter authLevelAttributeDozerConverter;
+    
+    @Value("${org.openiam.uri.pattern.meta.type.form.post.pattern.rule.id}")
+    private String formPostURIPatternRule;
 
 	@Override
     @Transactional(readOnly = true)
@@ -542,6 +546,13 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
             			throw new  BasicDataServiceException(ResponseCode.URI_PATTERN_META_TYPE_NOT_SET);
             		}
             		
+            		if(StringUtils.equals(meta.getMetaType().getId(), formPostURIPatternRule)) {
+            			if(StringUtils.isEmpty(meta.getContentType())) {
+            				response.addFieldMapping("metaName", meta.getName());
+                			throw new  BasicDataServiceException(ResponseCode.PATTERN_META_CONTENT_TYPE_MISSING);
+            			}
+            		}
+            		
             		if(CollectionUtils.isNotEmpty(meta.getMetaValueSet())) {
             			for(final URIPatternMetaValue value : meta.getMetaValueSet()) {
             				if (StringUtils.isBlank(value.getName())) {
@@ -603,6 +614,14 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
             					response.addFieldMapping("metaName", meta.getName());
             					throw new BasicDataServiceException(ResponseCode.URI_PATTERN_PARAMTER_META_TYPE_REQUIRED);
             				}
+            				
+            				if(StringUtils.equals(meta.getMetaType().getId(), formPostURIPatternRule)) {
+                    			if(StringUtils.isEmpty(meta.getContentType())) {
+                    				response.addFieldMapping("method", method.getMethod().toString());
+                    				response.addFieldMapping("metaName", meta.getName());
+                        			throw new  BasicDataServiceException(ResponseCode.PATTERN_METHOD_META_CONTENT_TYPE_MISSING);
+                    			}
+                    		}
             				
             				if(CollectionUtils.isNotEmpty(meta.getMetaValueSet())) {
                     			for(final URIPatternMethodMetaValue value : meta.getMetaValueSet()) {
