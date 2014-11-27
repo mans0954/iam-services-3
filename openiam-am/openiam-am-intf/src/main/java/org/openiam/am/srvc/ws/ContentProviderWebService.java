@@ -74,31 +74,10 @@ public interface ContentProviderWebService {
      * @return
      */
     @WebMethod
-    public Integer getNumOfContentProviders(@WebParam(name = "searchBean", targetNamespace = "") ContentProviderSearchBean searchBean);
+    public int getNumOfContentProviders(@WebParam(name = "searchBean", targetNamespace = "") ContentProviderSearchBean searchBean);
 
     @WebMethod
     public Response deleteContentProvider(@WebParam(name = "providerId", targetNamespace = "") String providerId);
-
-    /**
-     * Returns the list for given provider Id
-     * @param providerId
-     * @param from
-     * @param size
-     * @return
-     */
-    @WebMethod
-    public List<ContentProviderServer> getServersForProvider(@WebParam(name = "providerId", targetNamespace = "") String providerId,
-                                                             @WebParam(name = "from", targetNamespace = "") Integer from,
-                                                             @WebParam(name = "size", targetNamespace = "") Integer size);
-    @WebMethod
-    public Integer getNumOfServersForProvider(@WebParam(name = "providerId", targetNamespace = "") String providerId);
-
-    @WebMethod
-    public Response saveProviderServer(@WebParam(name = "contentProviderServer", targetNamespace = "") ContentProviderServer contentProviderServer);
-
-    @WebMethod
-    public Response deleteProviderServer(@WebParam(name = "contentProviderServerId", targetNamespace = "") String contentProviderServerId);
-
 
     @WebMethod
     @Deprecated
@@ -114,7 +93,7 @@ public interface ContentProviderWebService {
                                             @WebParam(name = "from", targetNamespace = "") Integer from,
                                             @WebParam(name = "size", targetNamespace = "") Integer size);
     @WebMethod
-    public Integer getNumOfUriPatterns(@WebParam(name = "searchBean", targetNamespace = "") URIPatternSearchBean searchBean);
+    public int getNumOfUriPatterns(@WebParam(name = "searchBean", targetNamespace = "") URIPatternSearchBean searchBean);
 
     @WebMethod
     public URIPattern getURIPattern(@WebParam(name = "patternId", targetNamespace = "") String patternId);

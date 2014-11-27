@@ -29,6 +29,7 @@ import org.openiam.exception.EsbErrorToken;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -76,6 +77,9 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
     
     @Autowired
     private AuthLevelAttributeDozerConverter authLevelAttributeDozerConverter;
+    
+    @Value("${org.openiam.uri.pattern.meta.type.form.post.pattern.rule.id}")
+    private String formPostURIPatternRule;
 
 	@Override
     @Transactional(readOnly = true)
@@ -228,7 +232,7 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
     }
 
     @Override
-    public Integer getNumOfContentProviders(ContentProviderSearchBean searchBean) {
+    public int getNumOfContentProviders(ContentProviderSearchBean searchBean) {
         return contentProviderService.getNumOfContentProviders(contentProviderSearchBeanConverter.convert(searchBean));
     }
 
@@ -245,6 +249,17 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
             if (provider.getDomainPattern()==null || StringUtils.isBlank(provider.getDomainPattern())) {
                 throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_DOMAIN_PATERN_NOT_SET);
             }
+            
+            if(CollectionUtils.isEmpty(provider.getServerSet())) {
+            	throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_SERVER_REQUIRED);
+            }
+            
+            for(final ContentProviderServer server : provider.getServerSet()) {
+            	if(StringUtils.isEmpty(server.getServerURL())) {
+            		throw new  BasicDataServiceException(ResponseCode.SERVER_URL_NOT_SET);
+            	}
+            }
+            
             /*
             if(StringUtils.isBlank(provider.getManagedSysId())) {
             	throw new  BasicDataServiceException(ResponseCode.MANAGED_SYSTEM_NOT_SET);
@@ -337,88 +352,6 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
     }
 
     @Override
-    public List<ContentProviderServer> getServersForProvider(String providerId, Integer from, Integer size) {
-        final ContentProviderServerEntity example = new ContentProviderServerEntity();
-        final ContentProviderEntity provider = new ContentProviderEntity();
-        provider.setId(providerId);
-        example.setContentProvider(provider);
-        
-        final List<ContentProviderServerEntity> entities = contentProviderService.getProviderServers(example, from, size);
-        final List<ContentProviderServer> servers = contentProviderServerDoserConverter.convertToDTOList(entities, false);
-        //log.info(String.format("Content Provider Server Entities: %s, servers: %s", entities, servers));
-        return servers;
-    }
-
-    @Override
-    public Integer getNumOfServersForProvider(String providerId) {
-        ContentProviderServerEntity example = new ContentProviderServerEntity();
-        ContentProviderEntity provider = new ContentProviderEntity();
-        provider.setId(providerId);
-        example.setContentProvider(provider);
-
-        return contentProviderService.getNumOfProviderServers(example);
-    }
-
-    @Override
-    public Response saveProviderServer(final ContentProviderServer contentProviderServer) {
-    	log.info(String.format("Incoming server: %s", contentProviderServer));
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        try {
-            if (contentProviderServer == null)
-                throw new  BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-            if (StringUtils.isBlank(contentProviderServer.getServerURL()))
-                throw new  BasicDataServiceException(ResponseCode.SERVER_URL_NOT_SET);
-            if (StringUtils.isBlank(contentProviderServer.getContentProviderId()))
-                throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_NOT_SET);
-
-            final ContentProviderServerEntity example = new ContentProviderServerEntity();
-            final ContentProviderEntity provider = new ContentProviderEntity();
-            provider.setId(contentProviderServer.getContentProviderId());
-            example.setContentProvider(provider);
-            example.setServerURL(contentProviderServer.getServerURL());
-
-            final Integer count = contentProviderService.getNumOfProviderServers(example);
-            if(count>0){
-                throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_SERVER_EXISTS);
-            }
-            final ContentProviderServerEntity entity = contentProviderServerDoserConverter.convertToEntity(contentProviderServer, false);
-            contentProviderService.saveProviderServer(entity);
-            //log.info(String.format("Finalized Server: %s", entity));
-            response.setResponseValue(entity.getId());
-        } catch(BasicDataServiceException e) {
-            log.error(e.getMessage(), e);
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorCode(e.getCode());
-        } catch(Throwable e) {
-            log.error(e.getMessage(), e);
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorText(e.getMessage());
-        }
-        return response;
-    }
-
-    @Override
-    public Response deleteProviderServer(String contentProviderServerId) {
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        try {
-            if (StringUtils.isBlank(contentProviderServerId))
-                throw new  BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-
-            contentProviderService.deleteProviderServer(contentProviderServerId);
-
-        } catch(BasicDataServiceException e) {
-            log.error(e.getMessage(), e);
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorCode(e.getCode());
-        } catch(Throwable e) {
-            log.error(e.getMessage(), e);
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorText(e.getMessage());
-        }
-        return response;
-    }
-
-    @Override
     @Deprecated
     @Transactional(readOnly = true)
     public List<URIPattern> getUriPatternsForProvider(String providerId, Integer from, Integer size) {
@@ -451,7 +384,7 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
     }
 
     @Override
-    public Integer getNumOfUriPatterns(URIPatternSearchBean searchBean) {
+    public int getNumOfUriPatterns(URIPatternSearchBean searchBean) {
         return contentProviderService.getNumOfUriPatterns(uriPatternSearchBeanConverter.convert(searchBean));
     }
 
@@ -542,6 +475,13 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
             			throw new  BasicDataServiceException(ResponseCode.URI_PATTERN_META_TYPE_NOT_SET);
             		}
             		
+            		if(StringUtils.equals(meta.getMetaType().getId(), formPostURIPatternRule)) {
+            			if(StringUtils.isEmpty(meta.getContentType())) {
+            				response.addFieldMapping("metaName", meta.getName());
+                			throw new  BasicDataServiceException(ResponseCode.PATTERN_META_CONTENT_TYPE_MISSING);
+            			}
+            		}
+            		
             		if(CollectionUtils.isNotEmpty(meta.getMetaValueSet())) {
             			for(final URIPatternMetaValue value : meta.getMetaValueSet()) {
             				if (StringUtils.isBlank(value.getName())) {
@@ -603,6 +543,14 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
             					response.addFieldMapping("metaName", meta.getName());
             					throw new BasicDataServiceException(ResponseCode.URI_PATTERN_PARAMTER_META_TYPE_REQUIRED);
             				}
+            				
+            				if(StringUtils.equals(meta.getMetaType().getId(), formPostURIPatternRule)) {
+                    			if(StringUtils.isEmpty(meta.getContentType())) {
+                    				response.addFieldMapping("method", method.getMethod().toString());
+                    				response.addFieldMapping("metaName", meta.getName());
+                        			throw new  BasicDataServiceException(ResponseCode.PATTERN_METHOD_META_CONTENT_TYPE_MISSING);
+                    			}
+                    		}
             				
             				if(CollectionUtils.isNotEmpty(meta.getMetaValueSet())) {
                     			for(final URIPatternMethodMetaValue value : meta.getMetaValueSet()) {

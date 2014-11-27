@@ -72,8 +72,7 @@ public class ContentProviderEntity extends AbstractKeyNameEntity {
     @JoinColumn(name="RESOURCE_ID", referencedColumnName = "RESOURCE_ID", insertable = true, updatable = false, nullable=false)
 	private ResourceEntity resource;
 	
-	@OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "contentProvider")
-	//@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+	@OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "contentProvider", fetch = FetchType.LAZY)
 	private Set<ContentProviderServerEntity> serverSet;
 	
 	@OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "contentProvider")
@@ -82,7 +81,6 @@ public class ContentProviderEntity extends AbstractKeyNameEntity {
 	
 	@OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "contentProvider", fetch = FetchType.LAZY)
 	@OrderBy("order ASC")
-	//@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	private Set<AuthLevelGroupingContentProviderXrefEntity> groupingXrefs;
 	
 	public boolean getIsPublic() {
@@ -261,6 +259,16 @@ public class ContentProviderEntity extends AbstractKeyNameEntity {
 		} else if (!uiTheme.equals(other.uiTheme))
 			return false;
 		return true;
+	}
+
+	@Override
+	public String toString() {
+		return "ContentProviderEntity [isPublic=" + isPublic
+				+ ", showOnApplicationPage=" + showOnApplicationPage
+				+ ", domainPattern=" + domainPattern + ", isSSL=" + isSSL
+				+ ", uiTheme=" + uiTheme + ", authProvider=" + authProvider
+				+ ", resource=" + resource + ", name=" + name + ", id=" + id
+				+ "]";
 	}
 
 	
