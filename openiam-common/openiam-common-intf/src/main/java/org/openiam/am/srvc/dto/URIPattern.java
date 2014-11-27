@@ -43,7 +43,8 @@ import java.util.Set;
         "params",
         "substitutions",
         "redirectTo",
-        "errorMappings"
+        "errorMappings",
+        "redirectToGroovyScript"
 })
 @DozerDTOCorrespondence(URIPatternEntity.class)
 public class URIPattern extends KeyDTO {
@@ -66,6 +67,7 @@ public class URIPattern extends KeyDTO {
 	private Set<URIPatternSubstitution> substitutions;
 	private String redirectTo;
 	private Set<URIPatternErrorMapping> errorMappings;
+	private String redirectToGroovyScript;
 	
 	/*
 	 * federation variables.  Internal use only
@@ -221,6 +223,13 @@ public class URIPattern extends KeyDTO {
 	public void setErrorMappings(Set<URIPatternErrorMapping> errorMappings) {
 		this.errorMappings = errorMappings;
 	}
+	
+	public String getRedirectToGroovyScript() {
+		return redirectToGroovyScript;
+	}
+	public void setRedirectToGroovyScript(String redirectToGroovyScript) {
+		this.redirectToGroovyScript = redirectToGroovyScript;
+	}
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -238,6 +247,8 @@ public class URIPattern extends KeyDTO {
 		result = prime * result
 				+ ((resourceId == null) ? 0 : resourceId.hashCode());
 		result = prime * result + ((themeId == null) ? 0 : themeId.hashCode());
+		result = prime * result
+				+ ((redirectToGroovyScript == null) ? 0 : redirectToGroovyScript.hashCode());
 		return result;
 	}
 	@Override
@@ -280,6 +291,12 @@ public class URIPattern extends KeyDTO {
 			if (other.themeId != null)
 				return false;
 		} else if (!themeId.equals(other.themeId))
+			return false;
+		
+		if (redirectToGroovyScript == null) {
+			if (other.redirectToGroovyScript != null)
+				return false;
+		} else if (!redirectToGroovyScript.equals(other.redirectToGroovyScript))
 			return false;
 		return true;
 	}

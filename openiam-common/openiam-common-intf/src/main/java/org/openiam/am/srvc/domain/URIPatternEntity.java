@@ -97,6 +97,9 @@ public class URIPatternEntity extends KeyEntity {
     @Column(name="REDIRECT_TO", length=400)
     private String redirectTo;
     
+    @Column(name="REDIRECT_TO_GROOVY_SCRIPT", length=400)
+    private String redirectToGroovyScript;
+    
 	public Set<URIPatternParameterEntity> getParams() {
 		return params;
 	}
@@ -289,6 +292,13 @@ public class URIPatternEntity extends KeyEntity {
 	public void setErrorMappings(Set<URIPatternErrorMappingEntity> errorMappings) {
 		this.errorMappings = errorMappings;
 	}
+	
+	public String getRedirectToGroovyScript() {
+		return redirectToGroovyScript;
+	}
+	public void setRedirectToGroovyScript(String redirectToGroovyScript) {
+		this.redirectToGroovyScript = redirectToGroovyScript;
+	}
 
 	@Override
 	public int hashCode() {
@@ -305,6 +315,9 @@ public class URIPatternEntity extends KeyEntity {
 		result = prime * result + ((uiTheme == null) ? 0 : uiTheme.hashCode());
 		result = prime * result
 				+ ((redirectTo == null) ? 0 : redirectTo.hashCode());
+		
+		result = prime * result
+				+ ((redirectToGroovyScript == null) ? 0 : redirectToGroovyScript.hashCode());
 		return result;
 	}
 
@@ -348,6 +361,12 @@ public class URIPatternEntity extends KeyEntity {
 			if (other.redirectTo != null)
 				return false;
 		} else if (!redirectTo.equals(other.redirectTo))
+			return false;
+		
+		if (redirectToGroovyScript == null) {
+			if (other.redirectToGroovyScript != null)
+				return false;
+		} else if (!redirectToGroovyScript.equals(other.redirectToGroovyScript))
 			return false;
 		return true;
 	}

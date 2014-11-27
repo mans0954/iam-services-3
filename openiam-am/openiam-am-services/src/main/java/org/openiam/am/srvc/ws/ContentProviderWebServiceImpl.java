@@ -13,6 +13,7 @@ import org.openiam.am.srvc.domain.URIPatternEntity;
 import org.openiam.am.srvc.domain.URIPatternMetaEntity;
 import org.openiam.am.srvc.dozer.converter.*;
 import org.openiam.am.srvc.dto.*;
+import org.openiam.am.srvc.groovy.AbstractRedirectURLGroovyProcessor;
 import org.openiam.am.srvc.searchbeans.ContentProviderSearchBean;
 import org.openiam.am.srvc.searchbeans.URIPatternSearchBean;
 import org.openiam.am.srvc.searchbeans.converter.ContentProviderSearchBeanConverter;
@@ -28,7 +29,9 @@ import org.openiam.exception.BasicDataServiceException;
 import org.openiam.exception.EsbErrorToken;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
+import org.openiam.script.ScriptIntegration;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -80,6 +83,10 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
     
     @Value("${org.openiam.uri.pattern.meta.type.form.post.pattern.rule.id}")
     private String formPostURIPatternRule;
+    
+    @Autowired
+    @Qualifier("configurableGroovyScriptEngine")
+    private ScriptIntegration scriptRunner;
 
 	@Override
     @Transactional(readOnly = true)
@@ -585,6 +592,24 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
             if(StringUtils.isNotBlank(pattern.getRedirectTo())) {
             	if(!isValidRedirectURL(pattern.getRedirectTo())) {
             		throw new BasicDataServiceException(ResponseCode.INVALID_PATTERN_REDIRECT_URL);
+            	}
+            	pattern.setRedirectToGroovyScript(null);
+            } else if(StringUtils.isNotBlank(pattern.getRedirectToGroovyScript())) {
+            	final String script  = pattern.getRedirectToGroovyScript();
+            	boolean validScript = false;
+            	if(scriptRunner.scriptExists(script)) {
+            		try {
+            			if((scriptRunner.instantiateClass(null, script) instanceof AbstractRedirectURLGroovyProcessor)) {
+            				validScript = true;
+            			}
+            		} catch(Throwable e) {
+            			log.warn(String.format("Can't instaniate script %s", script), e);
+            		}
+            	}
+            	
+            	if(!validScript) {
+            		response.addFieldMapping("className", AbstractRedirectURLGroovyProcessor.class.getCanonicalName());
+            		throw new BasicDataServiceException(ResponseCode.INVALID_ERROR_REDIRECT_URL_GROOVY_SCRIPT);
             	}
             }
 
