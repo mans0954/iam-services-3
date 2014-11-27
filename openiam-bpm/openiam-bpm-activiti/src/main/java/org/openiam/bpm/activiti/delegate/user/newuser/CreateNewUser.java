@@ -45,8 +45,11 @@ public class CreateNewUser extends AbstractEntitlementsDelegate {
 	public void execute(DelegateExecution execution) throws Exception {
 		final NewUserProfileRequestModel request = getObjectVariable(execution, ActivitiConstants.REQUEST, NewUserProfileRequestModel.class);
 		final IdmAuditLog idmAuditLog = createNewAuditLog(execution);
-        LoginResponse loginResponse = loginService.getPrimaryIdentity(getRequestorId(execution));
-        idmAuditLog.setRequestorPrincipal(loginResponse.getPrincipal().getLogin());
+        String requesterId = getRequestorId(execution);
+        if(StringUtils.isNotBlank(requesterId)) {
+            LoginResponse loginResponse = loginService.getPrimaryIdentity(requesterId);
+            idmAuditLog.setRequestorPrincipal(loginResponse.getPrincipal().getLogin());
+        }
         idmAuditLog.setAction(AuditAction.CREATE_USER.value());
         idmAuditLog.addAttributeAsJson(AuditAttributeName.PROFILE, request, customJacksonMapper);
 		try {
