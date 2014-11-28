@@ -40,6 +40,12 @@ public class ContentProviderEntity extends AbstractKeyNameEntity {
 	@Column(name = "DOMAIN_PATTERN", length = 100, nullable = false)
 	private String domainPattern;
 	
+	@Column(name = "AUTH_COOKIE_NAME", length = 100, nullable = false)
+	private String authCookieName;
+	
+	@Column(name = "AUTH_COOKIE_DOMAIN", length = 100, nullable = false)
+	private String authCookieDomain;
+	
 	@Column(name = "IS_SSL", nullable = true)
 	@Type(type = "yes_no")
 	private Boolean isSSL;
@@ -194,6 +200,22 @@ public class ContentProviderEntity extends AbstractKeyNameEntity {
 	public void setAuthProvider(AuthProviderEntity authProvider) {
 		this.authProvider = authProvider;
 	}
+	
+	public String getAuthCookieName() {
+		return authCookieName;
+	}
+
+	public void setAuthCookieName(String authCookieName) {
+		this.authCookieName = authCookieName;
+	}
+
+	public String getAuthCookieDomain() {
+		return authCookieDomain;
+	}
+
+	public void setAuthCookieDomain(String authCookieDomain) {
+		this.authCookieDomain = authCookieDomain;
+	}
 
 	@Override
 	public int hashCode() {
@@ -210,6 +232,8 @@ public class ContentProviderEntity extends AbstractKeyNameEntity {
 				+ ((resource == null) ? 0 : resource.hashCode());
 		result = prime * result + (showOnApplicationPage ? 1231 : 1237);
 		result = prime * result + ((uiTheme == null) ? 0 : uiTheme.hashCode());
+		result = prime * result + ((authCookieName == null) ? 0 : authCookieName.hashCode());
+		result = prime * result + ((authCookieDomain == null) ? 0 : authCookieDomain.hashCode());
 		return result;
 	}
 
@@ -257,6 +281,17 @@ public class ContentProviderEntity extends AbstractKeyNameEntity {
 			if (other.uiTheme != null)
 				return false;
 		} else if (!uiTheme.equals(other.uiTheme))
+			return false;
+		
+		if (authCookieName == null) {
+			if (other.authCookieName != null)
+				return false;
+		} else if (!authCookieName.equals(other.authCookieName))
+			return false;
+		if (authCookieDomain == null) {
+			if (other.authCookieDomain != null)
+				return false;
+		} else if (!authCookieDomain.equals(other.authCookieDomain))
 			return false;
 		return true;
 	}

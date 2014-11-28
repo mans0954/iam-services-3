@@ -11,6 +11,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -36,7 +37,9 @@ import java.util.concurrent.atomic.AtomicInteger;
         "themeId",
         "groupingXrefs",
         "showOnApplicationPage",
-        "authProviderId"
+        "authProviderId",
+        "authCookieName",
+        "authCookieDomain"
 })
 @DozerDTOCorrespondence(ContentProviderEntity.class)
 public class ContentProvider extends KeyNameDTO {
@@ -56,6 +59,8 @@ public class ContentProvider extends KeyNameDTO {
 	private boolean showOnApplicationPage = true;
 	private Set<AuthLevelGroupingContentProviderXref> groupingXrefs;
 	private String authProviderId;
+	private String authCookieName;
+	private String authCookieDomain;
 	
 	/*
 	 * federation variables.  Internal use only
@@ -202,6 +207,23 @@ public class ContentProvider extends KeyNameDTO {
 	public void setManagedSysName(String managedSysName) {
 		this.managedSysName = managedSysName;
 	}
+	
+	public String getAuthCookieName() {
+		return authCookieName;
+	}
+
+	public void setAuthCookieName(String authCookieName) {
+		this.authCookieName = authCookieName;
+	}
+
+	public String getAuthCookieDomain() {
+		return authCookieDomain;
+	}
+
+	public void setAuthCookieDomain(String authCookieDomain) {
+		this.authCookieDomain = authCookieDomain;
+	}
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -225,6 +247,8 @@ public class ContentProvider extends KeyNameDTO {
 		result = prime * result + (showOnApplicationPage ? 1231 : 1237);
 		result = prime * result + ((themeId == null) ? 0 : themeId.hashCode());
 		result = prime * result + ((url == null) ? 0 : url.hashCode());
+		result = prime * result + ((authCookieName == null) ? 0 : authCookieName.hashCode());
+		result = prime * result + ((authCookieDomain == null) ? 0 : authCookieDomain.hashCode());
 		return result;
 	}
 	@Override
@@ -289,6 +313,16 @@ public class ContentProvider extends KeyNameDTO {
 			if (other.url != null)
 				return false;
 		} else if (!url.equals(other.url))
+			return false;
+		if (authCookieName == null) {
+			if (other.authCookieName != null)
+				return false;
+		} else if (!authCookieName.equals(other.authCookieName))
+			return false;
+		if (authCookieDomain == null) {
+			if (other.authCookieDomain != null)
+				return false;
+		} else if (!authCookieDomain.equals(other.authCookieDomain))
 			return false;
 		return true;
 	}

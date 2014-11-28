@@ -267,18 +267,17 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
             	}
             }
             
-            /*
-            if(StringUtils.isBlank(provider.getManagedSysId())) {
-            	throw new  BasicDataServiceException(ResponseCode.MANAGED_SYSTEM_NOT_SET);
+            if(StringUtils.isBlank(provider.getAuthCookieDomain())) {
+            	throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_COOKIE_DOMAIN_REQUIRED);
             }
-            */
+            
+            if(StringUtils.isBlank(provider.getAuthCookieName())) {
+            	throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_COOKIE_NAME_REQUIRED);
+            }
             
             if(CollectionUtils.isEmpty(provider.getGroupingXrefs())) {
             	throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_AUTH_LEVEL_NOT_SET);
             }
-
-//            UNIQUE KEY `UNIQUE_CP_NAME` (`CONTENT_PROVIDER_NAME`),
-//            UNIQUE KEY `UNIQUE_CP_PATTERN` (`DOMAIN_PATTERN`,`IS_SSL`,`CONTEXT_PATH`),
 
             final ContentProviderSearchBean searchBean = new ContentProviderSearchBean();
             searchBean.setProviderName(provider.getName());
@@ -310,6 +309,18 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
                             }
                         }
                     }
+                }
+            }
+            
+            String domainPattern = provider.getDomainPattern();
+            if(domainPattern != null) {
+            	/* ignore port */
+            	if(domainPattern.indexOf(":") > -1) {
+            		domainPattern = domainPattern.substring(0, domainPattern.indexOf(":"));
+            	}
+            	
+            	if(!domainPattern.endsWith(provider.getAuthCookieDomain())) {
+                	throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_COOKIE_DOMAIN_NOT_SUBSTR_OF_DOMAIN_PATTERN);
                 }
             }
             
