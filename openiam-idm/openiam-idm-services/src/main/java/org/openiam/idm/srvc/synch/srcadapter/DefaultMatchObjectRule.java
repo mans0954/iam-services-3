@@ -6,6 +6,7 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.MatchType;
 import org.openiam.base.ws.SearchParam;
 import org.openiam.dozer.converter.GroupDozerConverter;
@@ -33,6 +34,9 @@ import org.springframework.stereotype.Component;
 @Component("defaultMatchRule")
 public class DefaultMatchObjectRule implements MatchObjectRule {
     private static final Log log = LogFactory.getLog(DefaultMatchObjectRule.class);
+
+    @Autowired
+    protected SysConfiguration sysConfiguration;
 
     @Autowired
     private UserDataWebService userDataWebService;
@@ -74,6 +78,13 @@ public class DefaultMatchObjectRule implements MatchObjectRule {
 			//search.setUserId(matchAttrValue);
 
         } else if (matchAttrName.equalsIgnoreCase("PRINCIPAL")) {
+            LoginSearchBean lsb = new LoginSearchBean();
+            lsb.setLoginMatchToken(new SearchParam(matchAttrValue, MatchType.EXACT));
+            lsb.setManagedSysId(sysConfiguration.getDefaultManagedSysId());
+            searchBean.setPrincipal(lsb);
+            //search.setPrincipal(matchAttrValue);
+
+        } else if (matchAttrName.equalsIgnoreCase("MANAGED_SYS_PRINCIPAL")) {
             LoginSearchBean lsb = new LoginSearchBean();
             lsb.setLoginMatchToken(new SearchParam(matchAttrValue, MatchType.EXACT));
             lsb.setManagedSysId(matchConfig.getManagedSysId());
