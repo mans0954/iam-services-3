@@ -694,7 +694,8 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
 									}
 								}
 							}
-							saveURIPattern(pattern);
+							//saveURIPattern(pattern);
+							uriPatternDao.update(pattern);
 						}
 					}
 					patternsNotToAdd.add(pattern.getPattern());
