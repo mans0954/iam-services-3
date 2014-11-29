@@ -65,8 +65,8 @@ public interface ContentProviderWebService {
      */
     @WebMethod
     public List<ContentProvider> findBeans(@WebParam(name = "searchBean", targetNamespace = "") ContentProviderSearchBean searchBean,
-                                           @WebParam(name = "from", targetNamespace = "") Integer from,
-                                           @WebParam(name = "size", targetNamespace = "") Integer size);
+                                           @WebParam(name = "from", targetNamespace = "") int from,
+                                           @WebParam(name = "size", targetNamespace = "") int size);
 
     /**
      * Returns number of ContentProviders objects which are suitable for passed search criteria

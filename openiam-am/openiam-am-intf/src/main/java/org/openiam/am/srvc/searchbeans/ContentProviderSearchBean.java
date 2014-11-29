@@ -1,6 +1,7 @@
 package org.openiam.am.srvc.searchbeans;
 
 import org.openiam.am.srvc.dto.ContentProvider;
+import org.openiam.idm.searchbeans.AbstractKeyNameSearchBean;
 import org.openiam.idm.searchbeans.AbstractSearchBean;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -9,27 +10,15 @@ import javax.xml.bind.annotation.XmlType;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ContentProviderSearchBean", propOrder = {
-        "providerName",
         "domainPattern",
         "authProviderId",
-        //"managedSysId",
         "isSSL"
 })
-public class ContentProviderSearchBean extends AbstractSearchBean<ContentProvider, String> {
-    private String providerName;
-
+public class ContentProviderSearchBean extends AbstractKeyNameSearchBean<ContentProvider, String> {
     private String domainPattern;
     private String authProviderId;
     private Boolean isSSL;
     //private String managedSysId;
-
-    public String getProviderName() {
-        return providerName;
-    }
-
-    public void setProviderName(String providerName) {
-        this.providerName = providerName;
-    }
 
     public String getDomainPattern() {
         return domainPattern;
@@ -57,14 +46,52 @@ public class ContentProviderSearchBean extends AbstractSearchBean<ContentProvide
         isSSL = SSL;
     }
 
-    /*
-	public String getManagedSysId() {
-		return managedSysId;
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result
+				+ ((authProviderId == null) ? 0 : authProviderId.hashCode());
+		result = prime * result
+				+ ((domainPattern == null) ? 0 : domainPattern.hashCode());
+		result = prime * result + ((isSSL == null) ? 0 : isSSL.hashCode());
+		return result;
 	}
 
-	public void setManagedSysId(String managedSysId) {
-		this.managedSysId = managedSysId;
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ContentProviderSearchBean other = (ContentProviderSearchBean) obj;
+		if (authProviderId == null) {
+			if (other.authProviderId != null)
+				return false;
+		} else if (!authProviderId.equals(other.authProviderId))
+			return false;
+		if (domainPattern == null) {
+			if (other.domainPattern != null)
+				return false;
+		} else if (!domainPattern.equals(other.domainPattern))
+			return false;
+		if (isSSL == null) {
+			if (other.isSSL != null)
+				return false;
+		} else if (!isSSL.equals(other.isSSL))
+			return false;
+		return true;
 	}
-    */
+
+	@Override
+	public String toString() {
+		return "ContentProviderSearchBean [domainPattern=" + domainPattern
+				+ ", authProviderId=" + authProviderId + ", isSSL=" + isSSL
+				+ "]";
+	}
+
+	
     
 }

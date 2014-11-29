@@ -32,7 +32,7 @@ public interface ContentProviderService {
 
     int getNumOfContentProviders(ContentProviderEntity example);
 
-    List<ContentProviderEntity> findBeans(ContentProviderEntity example, Integer from, Integer size);
+    List<ContentProviderEntity> findBeans(ContentProviderEntity example, int from, int size);
 
     void saveContentProvider(ContentProviderEntity providerEntity);
 

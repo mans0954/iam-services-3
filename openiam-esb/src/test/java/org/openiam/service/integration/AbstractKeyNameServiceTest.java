@@ -30,7 +30,7 @@ public abstract class AbstractKeyNameServiceTest<T extends KeyNameDTO, S extends
 		
 		/* find */
 		final S searchBean = newSearchBean();
-		searchBean.setDeepCopy(false);
+		searchBean.setDeepCopy(useDeepCopyOnFindBeans());
     	searchBean.setName(instance.getName());
     	
     	/* confirm save on both nodes */

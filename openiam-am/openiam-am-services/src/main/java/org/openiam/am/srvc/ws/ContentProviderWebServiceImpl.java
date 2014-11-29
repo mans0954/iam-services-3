@@ -232,9 +232,8 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
     @Override
     @Transactional(readOnly = true)
     // TODO This method works slow in     convertToDTOList
-    public List<ContentProvider> findBeans(ContentProviderSearchBean searchBean,Integer from, Integer size) {
-        List<ContentProviderEntity> result = contentProviderService.findBeans(contentProviderSearchBeanConverter.convert(searchBean), from, size);
-
+    public List<ContentProvider> findBeans(ContentProviderSearchBean searchBean, int from, int size) {
+        final List<ContentProviderEntity> result = contentProviderService.findBeans(contentProviderSearchBeanConverter.convert(searchBean), from, size);
         return contentProviderDozerConverter.convertToDTOList(result, searchBean.isDeepCopy());
     }
 
@@ -250,7 +249,7 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
             if (provider == null) {
                 throw new  BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }
-            if (provider.getName()==null || StringUtils.isBlank(provider.getName())) {
+            if (StringUtils.isBlank(provider.getName())) {
                 throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_NAME_NOT_SET);
             }
             if (provider.getDomainPattern()==null || StringUtils.isBlank(provider.getDomainPattern())) {
@@ -280,9 +279,9 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
             }
 
             final ContentProviderSearchBean searchBean = new ContentProviderSearchBean();
-            searchBean.setProviderName(provider.getName());
+            searchBean.setName(provider.getName());
             searchBean.setDeepCopy(false);
-            final List<ContentProvider> cpEntityWithNameList = findBeans(searchBean, new Integer(0), Integer.MAX_VALUE);
+            final List<ContentProvider> cpEntityWithNameList = findBeans(searchBean, 0, Integer.MAX_VALUE);
             if(CollectionUtils.isNotEmpty(cpEntityWithNameList)) {
             	if(StringUtils.isBlank(provider.getId())) {
             		throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_WITH_NAME_EXISTS);

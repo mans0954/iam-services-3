@@ -5,6 +5,7 @@ import java.util.List;
 import org.apache.commons.collections.CollectionUtils;
 import org.openiam.base.KeyDTO;
 import org.openiam.base.ws.Response;
+import org.openiam.base.ws.ResponseCode;
 import org.openiam.idm.searchbeans.AbstractSearchBean;
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -46,6 +47,12 @@ public abstract class AbstractKeyServiceTest<T extends KeyDTO, S extends Abstrac
     	}
 	}
 	
+	protected void assertResponseCode(final Response response, final ResponseCode responseCode) {
+		Assert.assertNotNull(responseCode);
+		Assert.assertNotNull(response);
+		Assert.assertEquals(response.getErrorCode(), responseCode, String.format("Expteded '%s'.  Got Response: '%s'", responseCode, response));
+	}
+	
 	protected Response deleteAndAssert(final T instance) {
 		Response response = delete(instance);
 		Assert.assertTrue(response.isSuccess(), String.format("Could not delete element '%s' with ID '%s.  Response: %s", instance, instance.getId(), response));
@@ -60,12 +67,16 @@ public abstract class AbstractKeyServiceTest<T extends KeyDTO, S extends Abstrac
 		
 		/* find */
 		final S searchBean = newSearchBean();
-		searchBean.setDeepCopy(false);
+		searchBean.setDeepCopy(useDeepCopyOnFindBeans());
 		searchBean.setKey(instance.getId());
     	
     	/* confirm save on both nodes */
     	instance = assertClusteredSave(searchBean);
     	return new ClusterKey<T, S>(instance, searchBean);
+	}
+	
+	protected boolean useDeepCopyOnFindBeans() {
+		return false;
 	}
 	
 	protected class ClusterKey<T, S> {
