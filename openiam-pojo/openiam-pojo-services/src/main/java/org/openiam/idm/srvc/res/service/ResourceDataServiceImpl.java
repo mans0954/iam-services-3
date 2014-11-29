@@ -6,6 +6,7 @@ import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -93,6 +94,24 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
             log.error("Exception", e);
         }
         return resource;
+    }
+
+    @Override
+    @LocalizedServiceGet
+    @Transactional(readOnly=true)
+    public List<Resource> getResourcesByIds(final List<String> resourceIds, final Language language) {
+        List<Resource> resourceList = null;
+        try {
+            if (CollectionUtils.isNotEmpty(resourceIds)) {
+                final List<ResourceEntity> entityList = resourceService.findResourcesByIds(resourceIds);
+                if (CollectionUtils.isNotEmpty(entityList)) {
+                    resourceList = resourceConverter.convertToDTOList(entityList, true);
+                }
+            }
+        } catch (Throwable e) {
+            log.error("Exception", e);
+        }
+        return resourceList;
     }
 
     @WebMethod

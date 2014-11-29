@@ -8,6 +8,7 @@ import org.openiam.dozer.converter.IdentityDozerConverter;
 import org.openiam.idm.searchbeans.IdentitySearchBean;
 import org.openiam.idm.srvc.auth.domain.IdentityEntity;
 import org.openiam.idm.srvc.auth.dto.IdentityDto;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,7 +27,13 @@ public class IdentityServiceImpl implements IdentityService {
     @Override
     @Transactional
     public String save(IdentityDto identityDto) {
-        IdentityEntity identityEntity = identityDozerConverter.convertToEntity(identityDto, true);
+        IdentityEntity identityEntity;
+        if (StringUtils.isBlank(identityDto.getId())) {
+            identityEntity = identityDozerConverter.convertToEntity(identityDto, true);
+        } else {
+            identityEntity = identityDAO.findById(identityDto.getId());
+            BeanUtils.copyProperties(identityDto, identityEntity);
+        }
         identityDAO.save(identityEntity);
         return identityEntity.getId();
     }

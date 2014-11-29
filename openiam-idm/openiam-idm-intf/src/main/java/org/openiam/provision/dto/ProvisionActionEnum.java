@@ -27,16 +27,20 @@ public enum ProvisionActionEnum {
     @XmlEnumValue("SET_PASSWORD")
     SET_PASSWORD("SET_PASSWORD"),
     @XmlEnumValue("RESET_PASSWORD")
-    RESET_PASSWORD("RESET_PASSWORD");
+    RESET_PASSWORD("RESET_PASSWORD"),
+    @XmlEnumValue("RESYNC_PASSWORD")
+    RESYNC_PASSWORD("RESYNC_PASSWORD");
 
     private String value;
 
     ProvisionActionEnum(String val) {
         value = val;
     }
+
     public String getValue() {
         return value;
     }
+
     public void setValue(String val) {
         value = val;
     }

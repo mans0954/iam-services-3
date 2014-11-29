@@ -62,7 +62,6 @@ import org.openiam.util.MuleContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -115,8 +114,6 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
 	private UserDataWebService userDataWebService;
 	@Autowired
 	ReconciliationConfigService reconConfigService;
-    @Autowired
-    ApplicationContext context;
 
     private static final int BATCH_STOPPING_STEP = 10;
     private static final int CLEAR_SESSION_STEP = 20;

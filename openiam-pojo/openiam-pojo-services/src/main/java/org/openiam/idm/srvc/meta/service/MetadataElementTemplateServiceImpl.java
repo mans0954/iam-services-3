@@ -197,7 +197,9 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 								xref.setTemplate(entity);
 								xref.setField(uiFieldDAO.findById(fieldId));
 								//xref.setLanguageMap(null);
-								//uiFieldXrefDAO.save(xref);
+								if (xref.getId() == null) {
+                                    uiFieldXrefDAO.save(xref);
+                                }
 								fieldXrefs.add(xref);
 							//}
 						}
