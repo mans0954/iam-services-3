@@ -27,7 +27,9 @@ import org.openiam.idm.srvc.mngsys.domain.ManagedSysRuleEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
 import org.openiam.idm.srvc.mngsys.domain.ReconciliationResourceAttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysSearchBean;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
+import org.openiam.idm.srvc.mngsys.searchbeans.converter.ManagedSystemSearchBeanConverter;
 import org.openiam.idm.srvc.policy.service.PolicyDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
@@ -45,7 +47,8 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
 
     @Autowired
     private ManagedSysDAO managedSysDAO;
-
+    @Autowired
+    private ManagedSystemSearchBeanConverter managedSystemSearchBeanConverter;
     @Autowired
     protected AttributeMapDAO attributeMapDAO;
     @Autowired
@@ -94,9 +97,12 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ManagedSysEntity> getManagedSystemsByExample(
-            ManagedSysEntity example, Integer from, Integer size) {
-        return managedSysDAO.getByExample(example, from, size);
+    public List<ManagedSysDto> getManagedSystemsByExample(
+            ManagedSysSearchBean searchBean, Integer from, Integer size) {
+        final ManagedSysEntity managedSysEntity = managedSystemSearchBeanConverter.convert(searchBean);
+        List<ManagedSysEntity> sysEntities =  managedSysDAO.getByExample(managedSysEntity, from, size);
+        List<ManagedSysDto> managedSysDtos = managedSysDozerConverter.convertToDTOList(sysEntities, false);
+        return managedSysDtos;
     }
 
     @Override

@@ -5,13 +5,14 @@ import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.AttributeMapSearchBean;
 import org.openiam.idm.srvc.mngsys.domain.*;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysSearchBean;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 
 import java.util.List;
 
 public interface ManagedSystemService {
 
-    List<ManagedSysEntity> getManagedSystemsByExample(ManagedSysEntity example,
+    List<ManagedSysDto> getManagedSystemsByExample(ManagedSysSearchBean example,
                                                       Integer from, Integer size);
 
     Integer getManagedSystemsCountByExample(ManagedSysEntity example);
