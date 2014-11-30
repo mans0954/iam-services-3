@@ -33,52 +33,52 @@ public class ContentProviderServiceTest extends AbstractKeyNameServiceTest<Conte
 	@Test
 	public void testErrorCodes() {
 		
-		ContentProvider cp = newInstance();
+		ContentProvider cp = createBean();
 		cp.setName(null);
 		Response response = save(cp);
 		assertResponseCode(response, ResponseCode.CONTENT_PROVIDER_NAME_NOT_SET);
 		
-		cp = newInstance();
+		cp = createBean();
 		cp.setDomainPattern(null);
 		response = save(cp);
 		assertResponseCode(response, ResponseCode.CONTENT_PROVIDER_DOMAIN_PATERN_NOT_SET);
 		
-		cp = newInstance();
+		cp = createBean();
 		cp.setServerSet(null);
 		response = save(cp);
 		assertResponseCode(response, ResponseCode.CONTENT_PROVIDER_SERVER_REQUIRED);
 		
-		cp = newInstance();
+		cp = createBean();
 		cp.getServerSet().iterator().next().setServerURL(null);
 		response = save(cp);
 		assertResponseCode(response, ResponseCode.SERVER_URL_NOT_SET);
 		
-		cp = newInstance();
+		cp = createBean();
 		cp.setAuthCookieDomain(null);
 		response = save(cp);
 		assertResponseCode(response, ResponseCode.CONTENT_PROVIDER_COOKIE_DOMAIN_REQUIRED);
 		
-		cp = newInstance();
+		cp = createBean();
 		cp.setAuthCookieName(null);
 		response = save(cp);
 		assertResponseCode(response, ResponseCode.CONTENT_PROVIDER_COOKIE_NAME_REQUIRED);
 		
-		cp = newInstance();
+		cp = createBean();
 		cp.setGroupingXrefs(null);
 		response = save(cp);
 		assertResponseCode(response, ResponseCode.CONTENT_PROVIDER_AUTH_LEVEL_NOT_SET);
 		
-		cp = newInstance();
+		cp = createBean();
 		cp.setDomainPattern(getRandomName());
 		response = save(cp);
 		assertResponseCode(response, ResponseCode.CONTENT_PROVIDER_COOKIE_DOMAIN_NOT_SUBSTR_OF_DOMAIN_PATTERN);
 		
-		cp = newInstance();
+		cp = createBean();
 		cp.setAuthProviderId(null);
 		response = save(cp);
 		assertResponseCode(response, ResponseCode.AUTH_PROVIDER_NOT_SET);
 		
-		cp = newInstance();
+		cp = createBean();
 		cp.setAuthProviderId(getRandomName());
 		response = save(cp);
 		assertResponseCode(response, ResponseCode.AUTH_PROVIDER_NOT_SET);
