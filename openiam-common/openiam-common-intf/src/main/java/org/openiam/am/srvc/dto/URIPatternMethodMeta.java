@@ -65,7 +65,7 @@ public class URIPatternMethodMeta extends AbstractMeta {
 	@Override
 	public String toString() {
 		return "URIPatternMethodMeta [patternMethod=" + patternMethod
-				+ ", metaType=" + metaType + ", name=" + name + ", id=" + id
+				+ ", metaType=" + metaType + ", name=" + this.getName() + ", id=" + id
 				+ ", objectState=" + objectState + ", requestorSessionID="
 				+ requestorSessionID + ", requestorUserId=" + requestorUserId
 				+ ", requestorLogin=" + requestorLogin + ", requestClientIP="

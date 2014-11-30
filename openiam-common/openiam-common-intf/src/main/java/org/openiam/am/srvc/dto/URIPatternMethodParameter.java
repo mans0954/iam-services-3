@@ -57,7 +57,7 @@ public class URIPatternMethodParameter extends AbstractParameter {
 	public String toString() {
 		return "URIPatternMethodParameter [patternMethodId=" + patternMethodId
 				+ ", values=" + values
-				+ ", name=" + name + ", id=" + id + ", objectState="
+				+ ", name=" + this.getName() + ", id=" + id + ", objectState="
 				+ objectState + ", requestorSessionID=" + requestorSessionID
 				+ ", requestorUserId=" + requestorUserId + ", requestorLogin="
 				+ requestorLogin + ", requestClientIP=" + requestClientIP + "]";

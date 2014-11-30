@@ -130,7 +130,7 @@ public abstract class AbstractPatternMetaValue extends KeyNameDTO {
 				+ groovyScript + ", propagateThroughProxy="
 				+ propagateThroughProxy + ", emptyValue=" + emptyValue
 				+ ", propagateOnError=" + propagateOnError + ", fetchedValue="
-				+ fetchedValue + ", name=" + name + ", id=" + id
+				+ fetchedValue + ", name=" + this.getName() + ", id=" + id
 				+ ", objectState=" + objectState + ", requestorSessionID="
 				+ requestorSessionID + ", requestorUserId=" + requestorUserId
 				+ ", requestorLogin=" + requestorLogin + ", requestClientIP="

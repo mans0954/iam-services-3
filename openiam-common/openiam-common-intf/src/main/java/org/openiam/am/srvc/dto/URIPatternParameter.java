@@ -53,7 +53,7 @@ public class URIPatternParameter extends AbstractParameter {
 	@Override
 	public String toString() {
 		return "URIPatternParameter [patternId=" + patternId + 
-				", values=" + values + ", name=" + name + ", id="
+				", values=" + values + ", name=" + this.getName() + ", id="
 				+ id + ", objectState=" + objectState + ", requestorSessionID="
 				+ requestorSessionID + ", requestorUserId=" + requestorUserId
 				+ ", requestorLogin=" + requestorLogin + ", requestClientIP="

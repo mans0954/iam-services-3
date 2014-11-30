@@ -397,7 +397,7 @@ public class Organization extends AdminResourceDTO implements Serializable, Comp
         if (createdBy != null ? !createdBy.equals(that.createdBy) : that.createdBy != null) return false;
         if (domainName != null ? !domainName.equals(that.domainName) : that.domainName != null) return false;
         if (id != null ? !id.equals(that.id) : that.id != null) return false;
-        if (name != null ? !name.equals(that.name) : that.name != null) return false;
+        if (this.getName() != null ? !this.getName().equals(that.getName()) : that.getName() != null) return false;
         if (selectable != that.selectable) return false;
 
         return true;
@@ -410,7 +410,7 @@ public class Organization extends AdminResourceDTO implements Serializable, Comp
         result = 31 * result + (createdBy != null ? createdBy.hashCode() : 0);
         result = 31 * result + (domainName != null ? domainName.hashCode() : 0);
         result = 31 * result + (createDate != null ? createDate.hashCode() : 0);
-        result = 31 * result + (name != null ? name.hashCode() : 0);
+        result = 31 * result + (this.getName() != null ? this.getName().hashCode() : 0);
         result = 31 * result + (selectable ? 1 : 0);
         return result;
     }
