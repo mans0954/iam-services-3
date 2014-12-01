@@ -62,6 +62,8 @@
 	<test name="content.provider">
 		<classes>
 			<class name="org.openiam.service.integration.contentprovider.UIThemeServiceTest" />
+			<class name="org.openiam.service.integration.contentprovider.ContentProviderServiceTest" />
+			<class name="org.openiam.service.integration.contentprovider.URIPatternServiceTest" />
 		</classes>
 	</test>
 	

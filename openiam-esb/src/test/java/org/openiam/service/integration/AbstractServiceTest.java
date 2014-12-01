@@ -1,8 +1,10 @@
 package org.openiam.service.integration;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang.RandomStringUtils;
 import org.junit.runner.RunWith;
@@ -41,6 +43,15 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 	@Autowired
 	@Qualifier("authorizationManagerServiceClient")
 	protected AuthorizationManagerWebService authorizationManagerServiceClient;
+	
+	protected interface CollectionOperation<T, S> {
+		public Set<S> get(T t);
+		public void set(T t, Set<S> set);
+	}
+	
+	protected interface EntityGenerator<T> {
+		public T generate();
+	}
 	
 	protected User createUser() {
 		User user = new User();

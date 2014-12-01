@@ -220,7 +220,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
     }
 
     @Override
-    public List<URIPatternEntity> getUriPatternsList(URIPatternEntity example, Integer from, Integer size) {
+    public List<URIPatternEntity> getUriPatternsList(URIPatternEntity example, int from, int size) {
         return uriPatternDao.getByExample(example, from, size);
     }
 

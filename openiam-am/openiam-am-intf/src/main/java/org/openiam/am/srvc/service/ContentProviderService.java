@@ -40,7 +40,7 @@ public interface ContentProviderService {
 
     int getNumOfUriPatterns(URIPatternEntity example);
 
-    List<URIPatternEntity> getUriPatternsList(URIPatternEntity example, Integer from, Integer size);
+    List<URIPatternEntity> getUriPatternsList(URIPatternEntity example, int from, int size);
 
     URIPatternEntity getURIPattern(String patternId);
 

@@ -90,8 +90,8 @@ public interface ContentProviderWebService {
     public  Integer getNumOfUriPatternsForProvider(@WebParam(name = "providerId", targetNamespace = "") String providerId);
     @WebMethod
     public List<URIPattern> findUriPatterns(@WebParam(name = "searchBean", targetNamespace = "") URIPatternSearchBean searchBean,
-                                            @WebParam(name = "from", targetNamespace = "") Integer from,
-                                            @WebParam(name = "size", targetNamespace = "") Integer size);
+                                            @WebParam(name = "from", targetNamespace = "") int from,
+                                            @WebParam(name = "size", targetNamespace = "") int size);
     @WebMethod
     public int getNumOfUriPatterns(@WebParam(name = "searchBean", targetNamespace = "") URIPatternSearchBean searchBean);
 

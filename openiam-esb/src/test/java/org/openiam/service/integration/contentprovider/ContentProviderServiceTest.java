@@ -1,8 +1,10 @@
 package org.openiam.service.integration.contentprovider;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.IntStream;
 
 import org.hibernate.sql.Insert;
 import org.openiam.am.srvc.dto.AuthLevelGrouping;
@@ -18,17 +20,10 @@ import org.openiam.base.ws.ResponseCode;
 import org.openiam.service.integration.AbstractKeyNameServiceTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.testng.Assert;
 import org.testng.annotations.Test;
 
-public class ContentProviderServiceTest extends AbstractKeyNameServiceTest<ContentProvider, ContentProviderSearchBean> {
-	
-	@Autowired
-	@Qualifier("contentProviderServiceClient")
-	private ContentProviderWebService contentProviderServiceClient;
-	
-	@Autowired
-	@Qualifier("authProviderServiceClient")
-	private AuthProviderWebService authProviderServiceClient;
+public class ContentProviderServiceTest extends AbstractContentProviderServiceTest<ContentProvider, ContentProviderSearchBean> {
 	
 	@Test
 	public void testErrorCodes() {
@@ -83,34 +78,103 @@ public class ContentProviderServiceTest extends AbstractKeyNameServiceTest<Conte
 		response = save(cp);
 		assertResponseCode(response, ResponseCode.AUTH_PROVIDER_NOT_SET);
 	}
+	
+	private void addServers(final int howMany, final Set<ContentProviderServer> serverSet) {
+		IntStream.range(0, howMany).forEach( (int nbr) -> {
+			final ContentProviderServer server = new ContentProviderServer();
+			server.setServerURL(getRandomName());
+			serverSet.add(server);
+		});
+	}
+	
+	private ContentProvider assertContentProviderServer(final ContentProvider cp, int size) {
+		final Response response = saveAndAssert(cp);
+		final ContentProvider serviceObject = get((String)response.getResponseValue());
+		Assert.assertNotNull(serviceObject);
+		Assert.assertNotNull(serviceObject.getServerSet());
+		Assert.assertTrue(serviceObject.getServerSet().size() == size);
+		return serviceObject;
+	}
+	
+	private ContentProvider assertGroupings(final ContentProvider cp, int size) {
+		final Response response = saveAndAssert(cp);
+		final ContentProvider serviceObject = get((String)response.getResponseValue());
+		Assert.assertNotNull(serviceObject);
+		Assert.assertNotNull(serviceObject.getGroupingXrefs());
+		Assert.assertTrue(serviceObject.getGroupingXrefs().size() == size);
+		return serviceObject;
+	}
+	
+	@Test
+	public void testGroupings() {
+		ContentProvider cp = null;
+		try {
+			cp = createBean();
+			cp = assertGroupings(cp, cp.getGroupingXrefs().size());
+			final Iterator<AuthLevelGroupingContentProviderXref> it1 = cp.getGroupingXrefs().iterator();
+			IntStream.range(0, 1).forEach( i -> {
+				it1.next();
+				it1.remove();
+			});
+			cp = assertGroupings(cp, cp.getGroupingXrefs().size());
+		} finally {
+			if(cp != null && cp.getId() != null) {
+				delete(cp);
+			}
+		}
+	}
+	
+	@Test
+	public void testServers() {
+		ContentProvider cp = null;
+		try {
+			cp = createBean();
+			cp.setServerSet(null);
+			Set<ContentProviderServer> serverSet = new HashSet<ContentProviderServer>();
+			
+			/* add 4 */
+			addServers(4, serverSet);
+			cp.setServerSet(serverSet);
+			cp = assertContentProviderServer(cp, serverSet.size());
+			serverSet = cp.getServerSet();
+			
+			/* delete all but 1 */
+			final Iterator<ContentProviderServer> it1 = serverSet.iterator();
+			IntStream.range(0, 2).forEach( i -> {
+				it1.next();
+				it1.remove();
+			});
+			cp = assertContentProviderServer(cp, serverSet.size());
+			serverSet = cp.getServerSet();
+			
+			/* add 2 */
+			addServers(2, serverSet);
+			cp = assertContentProviderServer(cp, serverSet.size());
+			serverSet = cp.getServerSet();
+			
+			/* add 2 more */
+			addServers(2, serverSet);
+			cp = assertContentProviderServer(cp, serverSet.size());
+			serverSet = cp.getServerSet();
+			
+			/* remove 2, and add 3 more */
+			final Iterator<ContentProviderServer> it2 = serverSet.iterator();
+			IntStream.range(0, 2).forEach( (int nbr) -> {
+				it2.next();
+				it2.remove();
+			});
+			addServers(3, serverSet);
+			cp = assertContentProviderServer(cp, serverSet.size());
+		} finally {
+			if(cp != null && cp.getId() != null) {
+				delete(cp);
+			}
+		}
+	}
 		
 	@Override
 	protected ContentProvider newInstance() {
-		final ContentProvider cp = new ContentProvider();
-		cp.setAuthCookieName(getRandomName());
-		cp.setDomainPattern(getRandomName());
-		cp.setAuthCookieDomain(cp.getDomainPattern());
-		cp.setUrl(getRandomName());
-		cp.setAuthProviderId(authProviderServiceClient.findAuthProviderBeans(null, 0, 1).get(0).getId());
-		
-		final ContentProviderServer server = new ContentProviderServer();
-		server.setServerURL(getRandomName());
-		final Set<ContentProviderServer> serverSet = new HashSet<ContentProviderServer>();
-		serverSet.add(server);
-		cp.setServerSet(serverSet);
-		
-		final Set<AuthLevelGroupingContentProviderXref> groupingXrefs = new HashSet<AuthLevelGroupingContentProviderXref>();
-		for(final AuthLevelGrouping grouping : contentProviderServiceClient.getAuthLevelGroupingList()) {
-		//contentProviderServiceClient.getAuthLevelGroupingList().forEach((final AuthLevelGrouping grouping) -> {
-			final AuthLevelGroupingContentProviderXref xref = new AuthLevelGroupingContentProviderXref();
-			final AuthLevelGroupingContentProviderXrefId id = new AuthLevelGroupingContentProviderXrefId();
-			id.setGroupingId(grouping.getId());
-			xref.setId(id);
-			groupingXrefs.add(xref);
-		//});
-		}
-		cp.setGroupingXrefs(groupingXrefs);
-		return cp;
+		return super.createContentProvider();
 	}
 	
 	@Override

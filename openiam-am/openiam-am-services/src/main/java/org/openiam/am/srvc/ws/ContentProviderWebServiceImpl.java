@@ -395,7 +395,7 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
 
     @Override
     @Transactional(readOnly = true)
-    public List<URIPattern> findUriPatterns(URIPatternSearchBean searchBean, Integer from, Integer size) {
+    public List<URIPattern> findUriPatterns(URIPatternSearchBean searchBean, int from, int size) {
         final List<URIPatternEntity> entityList = contentProviderService.getUriPatternsList(uriPatternSearchBeanConverter.convert(searchBean), from, size);
         return uriPatternDozerConverter.convertToDTOList(entityList, (searchBean != null) ? searchBean.isDeepCopy() : false);
     }
@@ -462,6 +462,10 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
             
             if(CollectionUtils.isNotEmpty(pattern.getSubstitutions())) {
             	for(final URIPatternSubstitution substitution : pattern.getSubstitutions()) {
+            		if(substitution.getOrder() == null) {
+            			throw new BasicDataServiceException(ResponseCode.ORDER_REQUIRED);
+            		}
+            		
             		if(StringUtils.isBlank(substitution.getQuery())) {
             			throw new BasicDataServiceException(ResponseCode.URI_PATTTERN_SUBSTITUTION_QUERY_REQUIRED);
             		}
