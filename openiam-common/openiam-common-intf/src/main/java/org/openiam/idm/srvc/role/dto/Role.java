@@ -278,7 +278,7 @@ public class Role extends AdminResourceDTO implements Comparable<Role> {
         if (createDate != null ? !createDate.equals(role.createDate) : role.createDate != null) return false;
         if (description != null ? !description.equals(role.description) : role.description != null) return false;
         if (id != null ? !id.equals(role.id) : role.id != null) return false;
-        if (name != null ? !name.equals(role.name) : role.name != null) return false;
+        if (this.getName() != null ? !this.getName().equals(role.getName()) : role.getName() != null) return false;
         if (selected != null ? !selected.equals(role.selected) : role.selected != null) return false;
         if (status != null ? !status.equals(role.status) : role.status != null) return false;
         if (managedSysId != null ? !managedSysId.equals(role.managedSysId) : role.managedSysId != null) return false;
@@ -291,7 +291,7 @@ public class Role extends AdminResourceDTO implements Comparable<Role> {
         int result = createDate != null ? createDate.hashCode() : 0;
         result = 31 * result + (description != null ? description.hashCode() : 0);
         result = 31 * result + (id != null ? id.hashCode() : 0);
-        result = 31 * result + (name != null ? name.hashCode() : 0);
+        result = 31 * result + (this.getName() != null ? this.getName().hashCode() : 0);
         result = 31 * result + (status != null ? status.hashCode() : 0);
         result = 31 * result + (selected != null ? selected.hashCode() : 0);
         result = 31 * result + (managedSysId != null ? managedSysId.hashCode() : 0);

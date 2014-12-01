@@ -69,7 +69,7 @@ public class URIPatternMeta extends AbstractMeta {
 	public String toString() {
 		return "URIPatternMeta [patternId=" + patternId
 				+ ", metaValueSet=" + metaValueSet + ", metaType=" + metaType
-				+ ", name=" + name + ", id=" + id + ", objectState="
+				+ ", name=" + this.getName() + ", id=" + id + ", objectState="
 				+ objectState + ", requestorSessionID=" + requestorSessionID
 				+ ", requestorUserId=" + requestorUserId + ", requestorLogin="
 				+ requestorLogin + ", requestClientIP=" + requestClientIP + "]";

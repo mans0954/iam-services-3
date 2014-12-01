@@ -32,7 +32,7 @@ public class GroupAttribute extends AbstractAttributeDTO {
 
 
     public GroupAttribute(String name, String value) {
-        this.name = name;
+        setName(name);
         this.value = value;
         this.id = null;
     }
@@ -86,7 +86,7 @@ public class GroupAttribute extends AbstractAttributeDTO {
 				* result
 				+ ((metadataId == null) ? 0 : metadataId
 						.hashCode());
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result + ((this.getName() == null) ? 0 : this.getName().hashCode());
 		result = prime * result + ((value == null) ? 0 : value.hashCode());
         result = prime * result + ((isMultivalued == null) ? 0 : isMultivalued.hashCode());
 
@@ -117,10 +117,10 @@ public class GroupAttribute extends AbstractAttributeDTO {
 				return false;
 		} else if (!metadataId.equals(other.metadataId))
 			return false;
-		if (name == null) {
-			if (other.name != null)
+		if (this.getName() == null) {
+			if (other.getName() != null)
 				return false;
-		} else if (!name.equals(other.name))
+		} else if (!this.getName().equals(other.getName()))
 			return false;
 		if (value == null) {
 			if (other.value != null)
@@ -142,7 +142,7 @@ public class GroupAttribute extends AbstractAttributeDTO {
 	public String toString() {
 		return String
 				.format("GroupAttribute [id=%s, name=%s, value=%s, metadataElementId=%s, groupId=%s]",
-						id, name, value, metadataId, groupId);
+						id, this.getName(), value, metadataId, groupId);
 	}
 
 

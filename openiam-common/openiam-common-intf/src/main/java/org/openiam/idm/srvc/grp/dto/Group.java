@@ -253,7 +253,7 @@ public class Group extends AdminResourceDTO implements Serializable {
 		result = prime * result
 				+ ((description == null) ? 0 : description.hashCode());
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result + ((this.getName() == null) ? 0 : this.getName().hashCode());
 		result = prime * result
 				+ ((lastUpdate == null) ? 0 : lastUpdate.hashCode());
 		result = prime * result
@@ -299,10 +299,10 @@ public class Group extends AdminResourceDTO implements Serializable {
 				return false;
 		} else if (!id.equals(other.id))
 			return false;
-		if (name == null) {
-			if (other.name != null)
+		if (this.getName() == null) {
+			if (other.getName() != null)
 				return false;
-		} else if (!name.equals(other.name))
+		} else if (!this.getName().equals(other.getName()))
 			return false;
 		if (lastUpdate == null) {
 			if (other.lastUpdate != null)
@@ -344,7 +344,7 @@ public class Group extends AdminResourceDTO implements Serializable {
 		return String
 				.format("Group [operation=%s, managedSysId=%s, managedSysName=%s, id=%s, name=%s, createDate=%s, createdBy=%s, description=%s, status=%s, lastUpdate=%s, lastUpdatedBy=%s]",
 						operation, managedSysId, managedSysName, id,
-						name, createDate, createdBy, description, status,
+                        this.getName(), createDate, createdBy, description, status,
 						lastUpdate, lastUpdatedBy);
 	}
 

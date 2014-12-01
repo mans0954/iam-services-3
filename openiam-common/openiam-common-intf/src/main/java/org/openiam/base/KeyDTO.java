@@ -12,7 +12,10 @@ import javax.xml.bind.annotation.XmlType;
 })
 public abstract class KeyDTO extends BaseObject implements Serializable, BaseIdentity {
 
-	protected String id;
+
+    private static final long serialVersionUID = 8295948542132480841L;
+
+    protected String id;
 
 	public String getId() {
 		return id;

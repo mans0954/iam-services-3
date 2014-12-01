@@ -70,7 +70,7 @@ public class URIPatternMethodMetaValue extends AbstractPatternMetaValue {
 	@Override
 	public String toString() {
 		return "URIPatternMetaValue [metaEntityId=" + metaEntityId + ", name="
-				+ name + ", id=" + id + ", objectState=" + objectState
+				+ this.getName() + ", id=" + id + ", objectState=" + objectState
 				+ ", requestorSessionID=" + requestorSessionID
 				+ ", requestorUserId=" + requestorUserId + ", requestorLogin="
 				+ requestorLogin + ", requestClientIP=" + requestClientIP + "]";

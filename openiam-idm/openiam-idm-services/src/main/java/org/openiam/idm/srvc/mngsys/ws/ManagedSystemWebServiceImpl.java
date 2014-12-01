@@ -162,14 +162,12 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<ManagedSysDto> getManagedSystems(
             @WebParam(name = "searchBean", targetNamespace = "") ManagedSysSearchBean searchBean,
             @WebParam(name = "size", targetNamespace = "") Integer size,
             @WebParam(name = "from", targetNamespace = "") Integer from) {
-        final ManagedSysEntity managedSysEntity = managedSystemSearchBeanConverter.convert(searchBean);
-        final List<ManagedSysEntity> sysEntities = managedSystemService.getManagedSystemsByExample(managedSysEntity, from, size);
-        return managedSysDozerConverter.convertToDTOList(sysEntities, false);
+        final List<ManagedSysDto> managedSysDtos = managedSystemService.getManagedSystemsByExample(searchBean, from, size);
+        return managedSysDtos;
     }
 
     @Override

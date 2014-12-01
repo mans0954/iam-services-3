@@ -48,7 +48,7 @@ public abstract class AbstractParameter extends KeyNameDTO {
 	@Override
 	public String toString() {
 		return "AbstractParameter [values="
-				+ values + ", name=" + name + ", id=" + id + "]";
+				+ values + ", name=" + this.getName() + ", id=" + id + "]";
 	}
 	
 	

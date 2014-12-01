@@ -47,7 +47,7 @@ public class UserAttribute extends AbstractAttributeDTO {
     }
 
     public UserAttribute(String name, String value) {
-        this.name = name;
+        this.setName(name);
         this.value = value;
         this.id = null;
     }
@@ -57,14 +57,14 @@ public class UserAttribute extends AbstractAttributeDTO {
         this.id = id;
         this.userId = userId;
         this.metadataId = metadataId;
-        this.name = name;
+        this.setName(name);
         this.value = value;
     }
 
 
     public void updateUserAttribute(UserAttribute attr) {
         this.metadataId = attr.getMetadataId();
-        this.name = attr.getName();
+        this.setName(attr.getName());
         this.value = attr.getValue();
     }
 

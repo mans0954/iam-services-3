@@ -39,6 +39,8 @@ import java.util.Date;
 @DozerDTOCorrespondence(PhoneEntity.class)
 public class Phone extends KeyNameDTO {
 
+
+    private static final long serialVersionUID = 1866386537821973071L;
     // Fields
 	private AttributeOperationEnum operation = AttributeOperationEnum.NO_CHANGE;
     private boolean isActive = true;
@@ -176,15 +178,6 @@ public class Phone extends KeyNameDTO {
 
     public void setIsActive(boolean isActive) {
         this.isActive = isActive;
-    }
-
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     /*

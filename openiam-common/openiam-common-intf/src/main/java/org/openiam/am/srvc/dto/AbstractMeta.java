@@ -68,7 +68,7 @@ public abstract class AbstractMeta extends KeyNameDTO {
 	@Override
 	public String toString() {
 		return "AbstractMeta [contentType=" + contentType + ", metaType="
-				+ metaType + ", name=" + name + ", id=" + id + ", objectState="
+				+ metaType + ", name=" + this.getName() + ", id=" + id + ", objectState="
 				+ objectState + ", requestorSessionID=" + requestorSessionID
 				+ ", requestorUserId=" + requestorUserId + ", requestorLogin="
 				+ requestorLogin + ", requestClientIP=" + requestClientIP + "]";

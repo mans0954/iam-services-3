@@ -4,23 +4,19 @@ package org.openiam.idm.srvc.mngsys.dto;
 
 import org.apache.commons.lang.StringUtils;
 import org.openiam.am.srvc.constants.SearchScopeType;
+import org.openiam.base.BaseObject;
+import org.openiam.base.KeyDTO;
 import org.openiam.base.KeyNameDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
-import org.openiam.idm.srvc.mngsys.domain.ManagedSysRuleEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.role.dto.Role;
 
-import javax.persistence.CascadeType;
-import javax.persistence.FetchType;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToMany;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlSchemaType;
-import javax.xml.bind.annotation.XmlType;
 
+import javax.xml.bind.annotation.*;
+
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -40,14 +36,16 @@ import java.util.Set;
         "mngSysObjectMatchs", "driverUrl", "connectionString", "addHandler", "modifyHandler", "deleteHandler",
         "passwordHandler", "suspendHandler", "resumeHandler", "searchHandler", "lookupHandler",
         "testConnectionHandler", "reconcileResourceHandler", "attributeNamesHandler", "handler5", "rules", "groups",
-        "roles" })
+        "roles"})
+@XmlSeeAlso({KeyDTO.class, KeyNameDTO.class, BaseObject.class})
 @DozerDTOCorrespondence(ManagedSysEntity.class)
-public class ManagedSysDto extends KeyNameDTO {
+public class ManagedSysDto extends KeyNameDTO implements Serializable{
 
+    private static final long serialVersionUID = -8185819810416465422L;
     /**
 	 * 
 	 */
-    private static final long serialVersionUID = -648884785253890053L;
+
     private String description;
     private String status;
     private String connectorId;

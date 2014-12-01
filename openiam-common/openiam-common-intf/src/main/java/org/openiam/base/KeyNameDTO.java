@@ -3,28 +3,32 @@ package org.openiam.base;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+import java.io.Serializable;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "KeyNameDTO", propOrder = {
-	"name"
+	"name_"
 })
-public abstract class KeyNameDTO extends KeyDTO {
+public abstract class KeyNameDTO extends KeyDTO implements Serializable {
 
-	protected String name;
+
+    private static final long serialVersionUID = -3458341104954863644L;
+
+    protected String name_;
 
 	public String getName() {
-		return name;
+		return name_;
 	}
 
 	public void setName(String name) {
-		this.name = name;
+		this.name_ = name;
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result + ((this.getName() == null) ? 0 : this.getName().hashCode());
 		return result;
 	}
 
@@ -37,17 +41,17 @@ public abstract class KeyNameDTO extends KeyDTO {
 		if (getClass() != obj.getClass())
 			return false;
 		KeyNameDTO other = (KeyNameDTO) obj;
-		if (name == null) {
-			if (other.name != null)
+		if (this.getName() == null) {
+			if (other.getName() != null)
 				return false;
-		} else if (!name.equals(other.name))
+		} else if (!this.getName().equals(other.getName()))
 			return false;
 		return true;
 	}
 
 	@Override
 	public String toString() {
-		return String.format("KeyNameDTO [name=%s, id=%s]", name, id);
+		return String.format("KeyNameDTO [name=%s, id=%s]", this.getName(), id);
 	}
 	
 	
