@@ -187,19 +187,21 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService, Appli
             		provider.setSupportsSMSOTP(false);
             	}
             	
-            	if(StringUtils.isBlank(provider.getSmsOTPGroovyScript())) {
-            		throw new BasicDataServiceException(ResponseCode.SMS_OTP_GROOVY_SCRIPT_REQUIRED);
-            	} else {
-            		if(!scriptRunner.scriptExists(provider.getSmsOTPGroovyScript())) {
-                		throw new BasicDataServiceException(ResponseCode.FILE_DOES_NOT_EXIST);
-                	}
-            		
-            		final Object groovyObj = scriptRunner.instantiateClass(null, provider.getSmsOTPGroovyScript());
-            		if(!(groovyObj instanceof AbstractSMSOTPModule)) {
-                		final EsbErrorToken errorToken = new EsbErrorToken();
-                		errorToken.setClassName(AbstractSMSOTPModule.class.getCanonicalName());
-                		throw new BasicDataServiceException(ResponseCode.GROOVY_CLASS_MUST_EXTEND_SMS_OTP_MODULE, errorToken);
-                	}
+            	if(provider.isSupportsSMSOTP()) {
+	            	if(StringUtils.isBlank(provider.getSmsOTPGroovyScript())) {
+	            		throw new BasicDataServiceException(ResponseCode.SMS_OTP_GROOVY_SCRIPT_REQUIRED);
+	            	} else {
+	            		if(!scriptRunner.scriptExists(provider.getSmsOTPGroovyScript())) {
+	                		throw new BasicDataServiceException(ResponseCode.FILE_DOES_NOT_EXIST);
+	                	}
+	            		
+	            		final Object groovyObj = scriptRunner.instantiateClass(null, provider.getSmsOTPGroovyScript());
+	            		if(!(groovyObj instanceof AbstractSMSOTPModule)) {
+	                		final EsbErrorToken errorToken = new EsbErrorToken();
+	                		errorToken.setClassName(AbstractSMSOTPModule.class.getCanonicalName());
+	                		throw new BasicDataServiceException(ResponseCode.GROOVY_CLASS_MUST_EXTEND_SMS_OTP_MODULE, errorToken);
+	                	}
+	            	}
             	}
             }
             

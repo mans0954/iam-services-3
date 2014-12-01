@@ -24,6 +24,7 @@ import org.openiam.am.srvc.ws.AuthProviderWebService;
 import org.openiam.am.srvc.ws.AuthResourceAttributeWebService;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
+import org.openiam.idm.srvc.policy.service.PolicyDataService;
 import org.openiam.service.integration.AbstractKeyNameServiceTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -42,6 +43,10 @@ public class AuthProviderServiceTest extends AbstractKeyNameServiceTest<AuthProv
 	@Autowired
 	@Qualifier("managedSysServiceClient")
 	private ManagedSystemWebService managedSysServiceClient;
+	
+    @Autowired
+    @Qualifier("policyServiceClient")
+    private PolicyDataService policyServiceClient;
 	
 	private Map<String, AuthResourceAttributeMap> getNewResourceAttributeMap(final AuthProvider provider) {
 		final Map<String, AuthResourceAttributeMap> resourceAttributeMap = new HashMap<>();
@@ -160,6 +165,7 @@ public class AuthProviderServiceTest extends AbstractKeyNameServiceTest<AuthProv
 	@Override
 	protected AuthProvider newInstance() {
 		final AuthProvider provider = new AuthProvider();
+		provider.setPolicyId(policyServiceClient.findBeans(null, 0, Integer.MAX_VALUE).get(0).getId());
 		provider.setManagedSysId(sysConfiguration.getDefaultManagedSysId());
 		provider.setPrivateKey(new byte[] {'a', 'b', 'c', 'd'});
 		provider.setPublicKey(new byte[] {'e', 'f', 'g', 'h'});
