@@ -81,7 +81,7 @@ public class IdentityServiceImpl implements IdentityService {
     @Override
     @Transactional
     public void updateIdentity(IdentityDto identityDto) {
-        identityDAO.update(identityDozerConverter.convertToEntity(identityDto,true));
+        identityDAO.merge(identityDozerConverter.convertToEntity(identityDto,true));
     }
 
     @Override

@@ -48,7 +48,7 @@ import java.util.*;
         "parentAuditLogId",
         "identityList",
         "notProvisioninResourcesIds",
-        "updateMembers"
+        "updateManagedSystemMembers"
 })
 public class ProvisionGroup extends org.openiam.idm.srvc.grp.dto.Group {
 	private static final long serialVersionUID = -33009889049229700L;
@@ -58,8 +58,8 @@ public class ProvisionGroup extends org.openiam.idm.srvc.grp.dto.Group {
     private boolean skipPreprocessor = false;
     private boolean skipPostProcessor = false;
 
-    // flags to update users being the group members
-    private boolean updateMembers = false;
+    // IDs of Managed systems whose users being the group members need to be provisioned
+    private Set<String> updateManagedSystemMembers = new HashSet<>();
 
     private String sessionId;
 
@@ -164,12 +164,12 @@ public class ProvisionGroup extends org.openiam.idm.srvc.grp.dto.Group {
         this.skipPostProcessor = skipPostProcessor;
     }
 
-    public boolean isUpdateMembers() {
-        return updateMembers;
+    public Set<String> getUpdateManagedSystemMembers() {
+        return updateManagedSystemMembers;
     }
 
-    public void setUpdateMembers(boolean updateMembers) {
-        this.updateMembers = updateMembers;
+    public void setUpdateManagedSystemMembers(Set<String> updateManagedSystemMembers) {
+        this.updateManagedSystemMembers = updateManagedSystemMembers;
     }
 
     public String getSessionId() {
