@@ -16,10 +16,11 @@
  */
 
 /**
- * 
+ *
  */
 package org.openiam.idm.srvc.auth.spi;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.exception.AuthenticationException;
@@ -31,9 +32,13 @@ import org.openiam.idm.srvc.auth.dto.Subject;
 import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
 import org.openiam.idm.srvc.auth.sso.SSOTokenFactory;
 import org.openiam.idm.srvc.auth.sso.SSOTokenModule;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
+import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -53,8 +58,8 @@ import java.util.*;
 
 /**
  * DefaultLoginModule provides basic password based authentication using the OpenIAM repository.
- * @author suneet
  *
+ * @author suneet
  */
 @Scope("prototype")
 @Component("activeDirectoryLoginModule")
@@ -63,24 +68,25 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
     private static final Log log = LogFactory
             .getLog(ActiveDirectoryLoginModule.class);
 
-    @Value("${login.ad.host}")
+
+    @Autowired
+    private ManagedSysDAO managedSysDAO;
+
+
     private String host;
-    
-    @Value("${login.ad.basedn}")
+
     private String baseDn;
-    
-    @Value("${login.ad.username}")
+
     private String adminUserName;
-    
-    @Value("${login.ad.password}")
+
     private String adminPassword;
-    
-    @Value("${login.ad.protocol}")
+
+    private String managedSysId;
     private String protocol;
 
-    @Value("${KEYSTORE}")
-    static String keystore;
     LdapContext ctxLdap = null;
+    @Value("${org.openiam.idm.system.user.id}")
+    protected String systemUserId;
 
     public ActiveDirectoryLoginModule() {
     }
@@ -105,14 +111,45 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
      * org.openiam.idm.srvc.auth.spi.LoginModule#login(org.openiam.idm.srvc.
      * auth.context.AuthenticationContext)
      */
+
+    public void init(ManagedSysEntity mse) throws Exception {
+        log.debug("AuthRepository Properties from Managed System in init = " + mse);
+        host = mse.getHostUrl();
+        managedSysId = mse.getId();
+        adminUserName = mse.getUserId();
+        adminPassword = this.decryptPassword(systemUserId, mse.getPswd());
+        protocol = mse.getCommProtocol();
+        Set<ManagedSystemObjectMatchEntity> managedSystemObjectMatchEntities = mse.getMngSysObjectMatchs();
+        if (CollectionUtils.isNotEmpty(managedSystemObjectMatchEntities)) {
+            for (ManagedSystemObjectMatchEntity objectMatchEntity : managedSystemObjectMatchEntities) {
+                if ("USER".equals(objectMatchEntity.getObjectType())) {
+                    baseDn = objectMatchEntity.getBaseDn();
+                    break;
+                }
+            }
+        }
+
+    }
+
+
     @Override
     public Subject login(AuthenticationContext authContext) throws Exception {
 
-        String clientIP = authContext.getClientIP();
-        String nodeIP = authContext.getNodeIP();
-
         Subject sub = new Subject();
 
+        Policy authPolicy = policyDataService.getPolicy(authPolicyId);
+        PolicyAttribute policyAttribute = authPolicy
+                .getAttribute("MANAGED_SYS_ID");
+        if (policyAttribute == null) {
+            throw new AuthenticationException(
+                    AuthenticationConstants.RESULT_INVALID_CONFIGURATION);
+        }
+        ManagedSysEntity mse = managedSysDAO.findById(policyAttribute.getValue1());
+        if (mse == null)
+            throw new AuthenticationException(
+                    AuthenticationConstants.RESULT_INVALID_CONFIGURATION);
+
+        this.init(mse);
         log.debug("login() in ActiveDirectoryLoginModule called");
 
         // current date
@@ -136,7 +173,7 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
             }
             if (!user.getStatus().equals(UserStatusEnum.ACTIVE)
                     && !user.getStatus().equals(
-                            UserStatusEnum.PENDING_INITIAL_LOGIN)) {
+                    UserStatusEnum.PENDING_INITIAL_LOGIN)) {
                 // invalid status
 //                log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
 //                        "INVALID_USER_STATUS", domainId, null, principal, null,
@@ -197,6 +234,15 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
         tokenParam.put("TOKEN_LIFE", tokenLife);
         tokenParam.put("TOKEN_ISSUER", tokenIssuer);
         tokenParam.put("PRINCIPAL", principal);
+        lg = loginManager.getLoginByManagedSys(distinguishedName, managedSysId);
+
+        if (lg == null) {
+            throw new AuthenticationException(
+                    AuthenticationConstants.RESULT_INVALID_LOGIN);
+        }
+
+        user = this.userManager.getUser(lg.getUserId());
+
 
         // update the login and user records to show this authentication
         lg.setLastAuthAttempt(new Date(System.currentTimeMillis()));
@@ -209,7 +255,7 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
         // check the user status
         if (user.getStatus() != null) {
             if (user.getStatus().equals(UserStatusEnum.PENDING_INITIAL_LOGIN) ||
-            // after the start date
+                    // after the start date
                     user.getStatus().equals(UserStatusEnum.PENDING_START_DATE)) {
 
                 user.setStatus(UserStatusEnum.ACTIVE);
@@ -262,8 +308,8 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
         SearchControls searchCtls = new SearchControls();
 
         // Specify the attributes to returned
-        String returnedAtts[] = { "distinguishedName", "sAMAccountName", "cn",
-                "sn" };
+        String returnedAtts[] = {"distinguishedName", "sAMAccountName", "cn",
+                "sn"};
         searchCtls.setReturningAttributes(returnedAtts);
 
         // Specify the search scope
@@ -310,6 +356,7 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
      * If the password has expired, but its before the grace period then its a good login
      * If the password has expired and after the grace period, then its an exception.
      * You should also set the days to expiration
+     *
      * @param lg
      * @return
      */
@@ -369,6 +416,10 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
 
         SSOTokenModule tkModule = SSOTokenFactory
                 .createModule((String) tokenParam.get("TOKEN_TYPE"));
+        tkModule.setCryptor(cryptor);
+        tkModule.setKeyManagementService(keyManagementService);
+        tkModule.setTokenLife(Integer.parseInt((String) tokenParam
+                .get("TOKEN_LIFE")));
         return tkModule.createToken(tokenParam);
     }
 

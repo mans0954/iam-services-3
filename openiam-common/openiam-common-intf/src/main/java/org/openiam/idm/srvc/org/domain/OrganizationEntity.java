@@ -58,11 +58,11 @@ public class OrganizationEntity extends AbstractMetdataTypeEntity {
     @Column(name="CREATE_DATE", length=19)
     private Date createDate;
 
-    @Column(name="CREATED_BY", length=20)
+    @Column(name="CREATED_BY", length=32)
     private String createdBy;
 
-    @Column(name="DESCRIPTION", length=100)
-    @Size(max = 100, message = "organization.description.too.long")
+    @Column(name="DESCRIPTION", length=512)
+    @Size(max = 512, message = "organization.description.too.long")
     private String description;
 
     @Column(name="DOMAIN_NAME", length=250)
@@ -75,8 +75,8 @@ public class OrganizationEntity extends AbstractMetdataTypeEntity {
     @Column(name="LST_UPDATE", length=19)
     private Date lstUpdate;
 
-    @Column(name="LST_UPDATED_BY", length=20)
-    private String lstUpdatedBy;
+    @Column(name="LST_UPDATED_BY", length=32)
+        private String lstUpdatedBy;
 
     @Column(name="COMPANY_NAME", length=200)
     @Size(max = 200, message = "organization.name.too.long")

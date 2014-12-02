@@ -43,45 +43,48 @@ import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.Date;
 
 /**
  * @author suneet
- *
  */
 public abstract class AbstractLoginModule implements LoginModule {
 
-	@Autowired
+    @Autowired
     @Qualifier("defaultSSOToken")
     protected SSOTokenModule defaultToken;
-    
+
     @Autowired
     protected LoginDataService loginManager;
-    
+
     @Autowired
     protected UserDataService userManager;
-    
+
     @Autowired
     @Qualifier("cryptor")
     protected Cryptor cryptor;
-    
+
     @Autowired
     protected ResourceDataService resourceService;
-    
+
     @Autowired
     protected PasswordService passwordManager;
-    
+
     @Autowired
     protected PolicyDataService policyDataService;
 
     @Autowired
     protected SysConfiguration sysConfiguration;
-    
+
     protected UserEntity user;
     protected LoginEntity lg;
     protected String authPolicyId;
-    
+
+    @Value("${KEYSTORE}")
+    protected String keystore;
+
     @Autowired
     protected KeyManagementService keyManagementService;
     private static final Log log = LogFactory.getLog(AbstractLoginModule.class);
@@ -101,6 +104,7 @@ public abstract class AbstractLoginModule implements LoginModule {
 
     /**
      * Checks to see if the current date is after the start date for the user.
+     *
      * @param user
      * @param curDate
      * @return
@@ -124,7 +128,7 @@ public abstract class AbstractLoginModule implements LoginModule {
         if (user.getSecondaryStatus() != null) {
             if (user.getSecondaryStatus().equals(UserStatusEnum.LOCKED)
                     || user.getSecondaryStatus().equals(
-                            UserStatusEnum.LOCKED_ADMIN)) {
+                    UserStatusEnum.LOCKED_ADMIN)) {
                 log.debug("User is locked. throw exception.");
                 throw new AuthenticationException(
                         AuthenticationConstants.RESULT_LOGIN_LOCKED);
@@ -136,24 +140,25 @@ public abstract class AbstractLoginModule implements LoginModule {
         }
 
     }
+
     public void setResultCode(LoginEntity lg, Subject sub, Date curDate, Policy pwdPolicy) throws AuthenticationException {
         if (lg.getFirstTimeLogin() == 1) {
             sub.setResultCode(AuthenticationConstants.RESULT_SUCCESS_FIRST_TIME);
         } else if (lg.getPwdExp() != null) {
             if ((curDate.after(lg.getPwdExp()) && curDate.before(lg.getGracePeriod()))) {
                 // check for password expiration, but successful login
-            	sub.setResultCode(AuthenticationConstants.RESULT_SUCCESS_PASSWORD_EXP);
-            	//throw new AuthenticationException(AuthenticationConstants.RESULT_SUCCESS_PASSWORD_EXP);
+                sub.setResultCode(AuthenticationConstants.RESULT_SUCCESS_PASSWORD_EXP);
+                //throw new AuthenticationException(AuthenticationConstants.RESULT_SUCCESS_PASSWORD_EXP);
             }
         } else {
-            if(pwdPolicy!=null){
+            if (pwdPolicy != null) {
                 Integer pwdExp = 0;
-                try{
+                try {
                     pwdExp = Integer.parseInt(pwdPolicy.getAttribute("PWD_EXPIRATION").getValue1());
-                } catch (Exception ex){
+                } catch (Exception ex) {
                     log.warn("Cannot read value of PWD_EXPIRATION attribute. User 0 as default");
                 }
-                if(pwdExp>0){
+                if (pwdExp > 0) {
                     throw new AuthenticationException(AuthenticationConstants.RESULT_PASSWORD_EXPIRED);
                 }
             }
@@ -163,7 +168,7 @@ public abstract class AbstractLoginModule implements LoginModule {
     }
 
     public Integer setDaysToPassworExpiration(LoginEntity lg, Date curDate, Subject sub, Policy pwdPolicy) {
-        if(pwdPolicy!=null && StringUtils.isBlank(pwdPolicy.getAttribute("PWD_EXPIRATION").getValue1())){
+        if (pwdPolicy != null && StringUtils.isBlank(pwdPolicy.getAttribute("PWD_EXPIRATION").getValue1())) {
             return null;
         }
         if (lg.getPwdExp() == null) {
@@ -188,6 +193,7 @@ public abstract class AbstractLoginModule implements LoginModule {
 
     /**
      * Logs a message into the audit log.
+     *
      * @param objectTypeId
      * @param actionId
      * @param actionStatus
@@ -198,9 +204,9 @@ public abstract class AbstractLoginModule implements LoginModule {
      * @param clientId
      */
     public void log(String objectTypeId, String actionId, String actionStatus,
-            String reason, String userId, String principal,
-            String linkedLogId, String clientId, String clientIP, String nodeIP) {
-    	/*
+                    String reason, String userId, String principal,
+                    String linkedLogId, String clientId, String clientIP, String nodeIP) {
+        /*
         IdmAuditLog log = new IdmAuditLog(objectTypeId, actionId, actionStatus,
                 reason,  userId, principal, linkedLogId, clientId);
 
