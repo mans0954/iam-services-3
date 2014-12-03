@@ -45,8 +45,8 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
     @Size(max = 255, message = "resource.name.too.long")
     private String name;
 
-    @Column(name = "DESCRIPTION", length = 100)
-    @Size(max = 100, message = "resource.description.too.long")
+    @Column(name = "DESCRIPTION", length = 512)
+    @Size(max = 512, message = "resource.description.too.long")
     private String description;
 
     @Column(name = "DISPLAY_ORDER")

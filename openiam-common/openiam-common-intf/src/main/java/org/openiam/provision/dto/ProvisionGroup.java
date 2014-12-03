@@ -22,14 +22,12 @@
 package org.openiam.provision.dto;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.openiam.base.AttributeOperationEnum;
+import org.openiam.idm.srvc.auth.dto.IdentityDto;
 import org.openiam.idm.srvc.grp.dto.Group;
-import org.openiam.idm.srvc.grp.dto.GroupAttribute;
 import org.openiam.idm.srvc.res.dto.Resource;
-import org.openiam.idm.srvc.role.dto.Role;
-import org.openiam.idm.srvc.role.dto.RoleSetAdapter;
 
 import javax.xml.bind.annotation.*;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.util.*;
 
 /**
@@ -43,7 +41,10 @@ import java.util.*;
         "srcSystemId",
         "skipPreprocessor",
         "skipPostProcessor",
-        "parentAuditLogId"
+        "parentAuditLogId",
+        "identityList",
+        "notProvisioninResourcesIds",
+        "updateManagedSystemMembers"
 })
 public class ProvisionGroup extends org.openiam.idm.srvc.grp.dto.Group {
 	private static final long serialVersionUID = -33009889049229700L;
@@ -53,13 +54,17 @@ public class ProvisionGroup extends org.openiam.idm.srvc.grp.dto.Group {
     private boolean skipPreprocessor = false;
     private boolean skipPostProcessor = false;
 
+    // IDs of Managed systems whose users being the group members need to be provisioned
+    private Set<String> updateManagedSystemMembers = new HashSet<>();
+
     private String sessionId;
 
     private String requestId;
 	/* ID of the system where this request came from */
     private String srcSystemId;
 
-    @XmlTransient
+    protected List<IdentityDto> identityList = new LinkedList<IdentityDto>();
+
     protected Set<String> notProvisioninResourcesIds = new HashSet<String>();
 
     //AuditLogEntity ID of parent AuditLog
@@ -155,6 +160,14 @@ public class ProvisionGroup extends org.openiam.idm.srvc.grp.dto.Group {
         this.skipPostProcessor = skipPostProcessor;
     }
 
+    public Set<String> getUpdateManagedSystemMembers() {
+        return updateManagedSystemMembers;
+    }
+
+    public void setUpdateManagedSystemMembers(Set<String> updateManagedSystemMembers) {
+        this.updateManagedSystemMembers = updateManagedSystemMembers;
+    }
+
     public String getSessionId() {
         return sessionId;
     }
@@ -191,5 +204,34 @@ public class ProvisionGroup extends org.openiam.idm.srvc.grp.dto.Group {
         if (notProvisioninResourceId != null) {
             notProvisioninResourcesIds.add(notProvisioninResourceId);
         }
+    }
+
+    public List<IdentityDto> getIdentityList() {
+        return identityList;
+    }
+
+    public void addIdentity(IdentityDto identity) {
+        if(identity != null) {
+            if(this.identityList == null) {
+                this.identityList = new LinkedList<>();
+            }
+            identity.setOperation(AttributeOperationEnum.ADD);
+            this.identityList.add(identity);
+        }
+    }
+
+    public void setIdentityList(List<IdentityDto> identityList) {
+        this.identityList = identityList;
+    }
+
+    public Resource findResource(String resourceId) {
+        if (resources != null) {
+            for(Resource res : resources) {
+                if (res.getId() != null && res.getId().equals(resourceId)) {
+                    return res;
+                }
+            }
+        }
+        return null;
     }
 }

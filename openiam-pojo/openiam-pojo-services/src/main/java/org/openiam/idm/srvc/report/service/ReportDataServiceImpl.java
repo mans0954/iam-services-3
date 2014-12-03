@@ -1,9 +1,8 @@
 package org.openiam.idm.srvc.report.service;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -25,6 +24,7 @@ import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.res.service.ResourceService;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.script.ScriptIntegration;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,10 +37,10 @@ import org.springframework.transaction.annotation.Transactional;
  * @author vitaly.yakunin
  */
 @Service
-public class ReportDataServiceImpl implements ReportDataService {
+public class ReportDataServiceImpl implements ReportDataService, InitializingBean {
 
-	private static final Log log = LogFactory
-			.getLog(ReportDataServiceImpl.class);
+	private static final Log log = LogFactory.getLog(ReportDataServiceImpl.class);
+
 	@Autowired
 	private ReportInfoDao reportDao;
 	@Autowired
@@ -79,6 +79,14 @@ public class ReportDataServiceImpl implements ReportDataService {
 	protected ScriptIntegration scriptRunner;
 	@Value("${org.openiam.upload.root}")
 	private String uploadRoot;
+
+	@Value("${org.openiam.date.format}")
+	private String dateFormatProp;
+	@Value("${org.openiam.date.time.format}")
+	private String dateTimeFormatProp;
+
+	private static Map<String, Object> bindingMap = new HashMap<>(1);
+
 	@Override
 	@Transactional(readOnly = true)
 	public ReportDataDto getReportData(final ReportQueryDto reportQuery) throws ClassNotFoundException, ScriptEngineException, IOException {
@@ -86,7 +94,8 @@ public class ReportDataServiceImpl implements ReportDataService {
 		if (reportInfo == null) {
 			throw new IllegalArgumentException("Invalid parameter list: report with name=" + reportQuery.getReportName() + " was not found in Database");
 		}
-		ReportDataSetBuilder dataSourceBuilder = (ReportDataSetBuilder) scriptRunner.instantiateClass(Collections.EMPTY_MAP, uploadRoot+"/report/", reportInfo.getReportDataSource());
+		ReportDataSetBuilder dataSourceBuilder = (ReportDataSetBuilder) scriptRunner.instantiateClass(bindingMap,
+				uploadRoot+"/report/", reportInfo.getReportDataSource());
 		return dataSourceBuilder.getReportData(reportQuery);
 	}
 
@@ -367,5 +376,15 @@ public class ReportDataServiceImpl implements ReportDataService {
 	private boolean hasAccess(final String resourceId, final String userId) {
 		ResourceEntity res = resourceService.findResourceById(resourceId);
 		return /*res.getIsPublic() || */authManager.isEntitled(userId, resourceId);
+	}
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		bindingMap.put("dateFormat", new SimpleDateFormat(
+				StringUtils.isNotBlank(dateFormatProp) ? dateFormatProp : "MM/dd/yyyy")
+		);
+		bindingMap.put("dateTimeFormat", new SimpleDateFormat(
+				StringUtils.isNotBlank(dateTimeFormatProp) ? dateTimeFormatProp : "MM/dd/yyyy HH:mm:ss")
+		);
 	}
 }

@@ -37,7 +37,7 @@ public class DeleteIdmExcludeTargetGroupCommand extends BaseReconciliationGroupC
 			pGroup.setSrcSystemId(mSysID);
 			executeScript(config.getScript(), attributes, pGroup);
 
-			IdentityDto identityDto = identityService.getIdentity(group.getId(),mSysID);
+			IdentityDto identityDto = identityService.getIdentityByManagedSys(group.getId(), mSysID);
 			identityService.deleteIdentity(identityDto.getId());
 
 			Response response = groupDataWebService.deleteGroup(group.getId(), DEFAULT_REQUESTER_ID);
