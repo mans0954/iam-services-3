@@ -2,7 +2,6 @@ package org.openiam.provision.service;
 
 
 import groovy.lang.MissingPropertyException;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -35,7 +34,6 @@ import org.openiam.idm.srvc.auth.login.IdentityService;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.grp.dto.Group;
-import org.openiam.idm.srvc.grp.dto.GroupAttribute;
 import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
@@ -49,7 +47,6 @@ import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
-import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
@@ -174,7 +171,6 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
     @Override
     public Response modifyIdentity(IdentityDto identity) {
         Response response = new Response(ResponseStatus.FAILURE);
-        identity.setOperation(AttributeOperationEnum.REPLACE);
         final IdentityDto identityDto = identity;
         try {
 
@@ -207,7 +203,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
             response = transactionTemplate.execute(new TransactionCallback<Response>() {
                 @Override
                 public Response doInTransaction(TransactionStatus status) {
-                    return addModifyGroup(group, isAdd);
+                    return provisionGroup(group, isAdd);
                 }
             });
 
@@ -219,7 +215,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
         return response;
     }
 
-    private Response addModifyGroup(final ProvisionGroup pGroup, final boolean isAdd) {
+    private Response provisionGroup(final ProvisionGroup pGroup, final boolean isAdd) {
         // bind the objects to the scripting engine
         Map<String, Object> bindingMap = new HashMap<>();
         bindingMap.put("sysId", sysConfiguration.getDefaultManagedSysId());
@@ -235,19 +231,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
             return response;
         }
 
-        Group group = !isAdd ? groupDataWebService.getGroup(pGroup.getId(), null) : new Group();
-
-        updateGroup(group, pGroup);
-        updateResources(group, pGroup);
-        updateRoles(group, pGroup);
-        updateChildParentGroups(group, pGroup);
-        updateAttributes(group, pGroup);
-        // TODO refactor groupDataWebService or use groupDao instead of it
-        groupDataWebService.saveGroup(group, null);
-
-        //updateIdentities(group, pGroup);
-
-        Set<Resource> resources = group.getResources();
+        Set<Resource> resources = pGroup.getResources();
         if (resources != null) {
             for(Resource res : resources) {
                 if (pGroup.getNotProvisioninResourcesIds().contains(res.getId())) {
@@ -267,8 +251,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
                         continue;
                     }
                     IdentityDto groupTargetIdentity = identityService.getIdentityByManagedSys(pGroup.getId(), managedSysId);
-                    if (res.getOperation() == AttributeOperationEnum.ADD
-                            && groupTargetIdentity.getStatus() == LoginStatusEnum.INACTIVE) {
+                    if (res.getOperation() == AttributeOperationEnum.ADD && groupTargetIdentity.getStatus() == LoginStatusEnum.INACTIVE) {
                         groupTargetIdentity.setStatus(LoginStatusEnum.ACTIVE);
                     }
                     Response provIdentityResponse = provisioningIdentity(groupTargetIdentity, pGroup, managedSys, isAdd);
@@ -473,126 +456,6 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
         }
 
         return response;
-    }
-
-    private void updateGroup(Group group, ProvisionGroup pGroup) {
-        group.setName(pGroup.getName());
-        group.setCompanyId(pGroup.getCompanyId());
-        group.setManagedSysId(pGroup.getManagedSysId());
-        group.setDescription(pGroup.getDescription());
-        group.setStatus(pGroup.getStatus());
-        group.setAdminResourceId(pGroup.getAdminResourceId());
-    }
-
-    private void updateAttributes(Group group, ProvisionGroup pGroup) {
-        Set<GroupAttribute> attributeSet = group.getAttributes();
-        final Set<GroupAttribute> pAttributes = pGroup.getAttributes();
-        if (CollectionUtils.isNotEmpty(pAttributes)) {
-            for (GroupAttribute attribute : pAttributes) {
-                switch (attribute.getOperation()) {
-                    case ADD:
-                        attributeSet.add(attribute);
-                        break;
-                    case DELETE:
-                        attributeSet.remove(attribute);
-                        break;
-                    case REPLACE:
-                        GroupAttribute origAttribute = null;
-                        for (GroupAttribute attr : attributeSet) {
-                            if (attr.getId().equals(attribute.getId()) || attr.getName().equals(attribute.getName())) {
-                                origAttribute = attr;
-                                break;
-                            }
-                        }
-                        if (origAttribute != null) {
-                            attribute.setId(origAttribute.getId());
-                            attributeSet.remove(origAttribute);
-                        }
-                        attributeSet.add(attribute);
-                        break;
-                }
-            }
-        }
-    }
-
-    private void updateResources(Group group, ProvisionGroup pGroup) {
-        final Set<Resource> pResources = pGroup.getResources();
-        if (CollectionUtils.isNotEmpty(pResources)) {
-            for (final Resource resource : pResources) {
-                switch (resource.getOperation()) {
-                    case ADD:
-                        group.addResource(resource);
-                        break;
-                    case DELETE:
-                        Set<Resource> resourceSet = group.getResources();
-                        if (CollectionUtils.isNotEmpty(resourceSet)) {
-                            resourceSet.remove(resource);
-                        }
-                        break;
-                    case REPLACE:
-                        throw new UnsupportedOperationException("Operation 'REPLACE' is not supported for resources");
-                }
-            }
-        }
-    }
-
-    private void updateRoles(Group group, ProvisionGroup pGroup) {
-        Set<Role> roleSet = group.getRoles();
-        final Set<Role> pRoles = pGroup.getRoles();
-        if (CollectionUtils.isNotEmpty(pRoles)) {
-            for (final Role role : pRoles) {
-                switch (role.getOperation()) {
-                    case ADD:
-                        roleSet.add(role);
-                        break;
-                    case DELETE:
-                        roleSet.remove(role);
-                        break;
-                    case REPLACE:
-                        throw new UnsupportedOperationException("Operation 'REPLACE' is not supported for roles");
-                }
-            }
-        }
-    }
-
-    private void updateChildParentGroups(Group group, ProvisionGroup pGroup) {
-        final Set<Group> pChildGroups = pGroup.getChildGroups();
-        if (CollectionUtils.isNotEmpty(pChildGroups)) {
-            for (final Group childGroup : pChildGroups) {
-                switch (childGroup.getOperation()) {
-                    case ADD:
-                        group.addChildGroup(childGroup);
-                        break;
-                    case DELETE:
-                        Set<Group> childGroups = group.getChildGroups();
-                        if (CollectionUtils.isNotEmpty(childGroups)) {
-                            childGroups.remove(childGroup);
-                        }
-                        break;
-                    case REPLACE:
-                        throw new UnsupportedOperationException("Operation 'REPLACE' is not supported for groups");
-                }
-            }
-        }
-
-        final Set<Group> pParentGroups = pGroup.getParentGroups();
-        if (CollectionUtils.isNotEmpty(pParentGroups)) {
-            for (final Group parentGroup : pParentGroups) {
-                switch (parentGroup.getOperation()) {
-                    case ADD:
-                        group.addParentGroup(parentGroup);
-                        break;
-                    case DELETE:
-                        Set<Group> parentGroups = group.getParentGroups();
-                        if (CollectionUtils.isNotEmpty(parentGroups)) {
-                            parentGroups.remove(parentGroup);
-                        }
-                        break;
-                    case REPLACE:
-                        throw new UnsupportedOperationException("Operation 'REPLACE' is not supported for groups");
-                }
-            }
-        }
     }
 
     private boolean isMemberAvailableInResource(final UserEntity member, final String resourceId) {
@@ -1011,11 +874,6 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
         if (callPreProcessor("DELETE", pGroup, bindingMap) != ProvisioningConstants.SUCCESS) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(ResponseCode.FAIL_PREPROCESSOR);
-            return response;
-        }
-
-        if (status != UserStatusEnum.REMOVE && UserStatusEnum.DELETED.getValue().equalsIgnoreCase(pGroup.getStatus())) {
-            log.debug("Group is already deleted. Nothing more to do.");
             return response;
         }
 

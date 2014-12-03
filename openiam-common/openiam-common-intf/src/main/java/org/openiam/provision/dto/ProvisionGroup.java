@@ -25,13 +25,9 @@ import org.apache.commons.collections.CollectionUtils;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.idm.srvc.auth.dto.IdentityDto;
 import org.openiam.idm.srvc.grp.dto.Group;
-import org.openiam.idm.srvc.grp.dto.GroupAttribute;
 import org.openiam.idm.srvc.res.dto.Resource;
-import org.openiam.idm.srvc.role.dto.Role;
-import org.openiam.idm.srvc.role.dto.RoleSetAdapter;
 
 import javax.xml.bind.annotation.*;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.util.*;
 
 /**
@@ -228,4 +224,14 @@ public class ProvisionGroup extends org.openiam.idm.srvc.grp.dto.Group {
         this.identityList = identityList;
     }
 
+    public Resource findResource(String resourceId) {
+        if (resources != null) {
+            for(Resource res : resources) {
+                if (res.getId() != null && res.getId().equals(resourceId)) {
+                    return res;
+                }
+            }
+        }
+        return null;
+    }
 }
