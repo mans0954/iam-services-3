@@ -53,7 +53,7 @@ public abstract class AbstractGoogleAppsCommand<Request extends RequestType, Res
 
 	protected void runGamCommands(String operation, Resource res, GenericEntry e) {
 
-		String gamLocation = "/data/openiam/conf/gam/";
+		String gamLocation = System.getProperty("confpath", "data/openiam").concat("/conf/gam/");
 		if (res.getResourceProperty("GAM_LOCATION") != null) {
 			gamLocation = res.getResourceProperty("GAM_LOCATION").getValue();
 		} else {
