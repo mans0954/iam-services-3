@@ -251,7 +251,8 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
                         continue;
                     }
                     IdentityDto groupTargetIdentity = identityService.getIdentityByManagedSys(pGroup.getId(), managedSysId);
-                    if (res.getOperation() == AttributeOperationEnum.ADD && groupTargetIdentity.getStatus() == LoginStatusEnum.INACTIVE) {
+                    if (groupTargetIdentity != null && res.getOperation() == AttributeOperationEnum.ADD
+                            && groupTargetIdentity.getStatus() == LoginStatusEnum.INACTIVE) {
                         groupTargetIdentity.setStatus(LoginStatusEnum.ACTIVE);
                     }
                     Response provIdentityResponse = provisioningIdentity(groupTargetIdentity, pGroup, managedSys, isAdd);
