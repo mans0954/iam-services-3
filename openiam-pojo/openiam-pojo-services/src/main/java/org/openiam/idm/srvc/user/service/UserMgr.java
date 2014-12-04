@@ -531,7 +531,7 @@ public class UserMgr implements UserDataService {
         }
         List<String> idList = null;
         if(isSearchByPrimaryAttributes(searchBean)) {
-            idList = userSearchDAO.findIds(0, MAX_USER_SEARCH_RESULTS, null, searchBean);
+            idList = userSearchDAO.findIds(0, Integer.MAX_VALUE, null, searchBean);
         }
 
         if (idList!=null) {
@@ -539,20 +539,19 @@ public class UserMgr implements UserDataService {
         }
 
         if (CollectionUtils.isNotEmpty(searchBean.getAttributeList())) {
-            nonEmptyListOfLists.add(userDao.getUserIdsForAttributes(searchBean.getAttributeList(), 0,
-                                                            MAX_USER_SEARCH_RESULTS));
+            nonEmptyListOfLists.add(userDao.getUserIdsForAttributes(searchBean.getAttributeList(), -1, -1));
         }
 
         if (CollectionUtils.isNotEmpty(searchBean.getRoleIdSet())) {
-            nonEmptyListOfLists.add(userDao.getUserIdsForRoles(searchBean.getRoleIdSet(), 0, MAX_USER_SEARCH_RESULTS));
+            nonEmptyListOfLists.add(userDao.getUserIdsForRoles(searchBean.getRoleIdSet(), -1, -1));
         }
 
         if (CollectionUtils.isNotEmpty(searchBean.getOrganizationIdSet())) {
-            nonEmptyListOfLists.add(userDao.getUserIdsForOrganizations(searchBean.getOrganizationIdSet(), 0, MAX_USER_SEARCH_RESULTS));
+            nonEmptyListOfLists.add(userDao.getUserIdsForOrganizations(searchBean.getOrganizationIdSet(), -1, -1));
         }
 
         if (CollectionUtils.isNotEmpty(searchBean.getGroupIdSet())) {
-            nonEmptyListOfLists.add(userDao.getUserIdsForGroups(searchBean.getGroupIdSet(), 0, MAX_USER_SEARCH_RESULTS));
+            nonEmptyListOfLists.add(userDao.getUserIdsForGroups(searchBean.getGroupIdSet(), -1, -1));
         }
 
         if (CollectionUtils.isNotEmpty(searchBean.getResourceIdSet())) {
@@ -571,20 +570,20 @@ public class UserMgr implements UserDataService {
         }
 
         if (searchBean.getPrincipal() != null) {
-            nonEmptyListOfLists.add(loginSearchDAO.findUserIds(0, MAX_USER_SEARCH_RESULTS, searchBean.getPrincipal()));
+            nonEmptyListOfLists.add(loginSearchDAO.findUserIds(0, Integer.MAX_VALUE, searchBean.getPrincipal()));
         }
 
         if (searchBean.getEmailAddressMatchToken() != null && searchBean.getEmailAddressMatchToken().isValid()) {
             final EmailSearchBean emailSearchBean = new EmailSearchBean();
             emailSearchBean.setEmailMatchToken(searchBean.getEmailAddressMatchToken());
-            nonEmptyListOfLists.add(emailSearchDAO.findUserIds(0, MAX_USER_SEARCH_RESULTS, emailSearchBean));
+            nonEmptyListOfLists.add(emailSearchDAO.findUserIds(0, Integer.MAX_VALUE, emailSearchBean));
         }
 
         if (StringUtils.isNotBlank(searchBean.getPhoneAreaCd()) || StringUtils.isNotBlank(searchBean.getPhoneNbr())) {
             final PhoneSearchBean phoneSearchBean = new PhoneSearchBean();
             phoneSearchBean.setPhoneAreaCd(StringUtils.trimToNull(searchBean.getPhoneAreaCd()));
             phoneSearchBean.setPhoneNbr(StringUtils.trimToNull(searchBean.getPhoneNbr()));
-            nonEmptyListOfLists.add(phoneSearchDAO.findUserIds(0, MAX_USER_SEARCH_RESULTS, phoneSearchBean));
+            nonEmptyListOfLists.add(phoneSearchDAO.findUserIds(0, Integer.MAX_VALUE, phoneSearchBean));
         }
 
         // remove null or empty lists
@@ -618,15 +617,10 @@ public class UserMgr implements UserDataService {
 	            	resultSet.addAll(nextSubList);
 	            }
         	}
-        	
-        	for(final String result : resultSet) {
-        		if(finalizedIdList == null) {
-        			finalizedIdList = new LinkedList<>();
-        		}
-        		if(finalizedIdList.size() < MAX_USER_SEARCH_RESULTS) {
-        			finalizedIdList.add(result);
-        		}
-        	}
+            if(finalizedIdList == null) {
+                finalizedIdList = new LinkedList<>();
+            }
+            finalizedIdList.addAll(resultSet);
         }
 
         return (finalizedIdList != null) ? finalizedIdList : Collections.EMPTY_LIST;
