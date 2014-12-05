@@ -51,7 +51,7 @@ public class AddUserGoogleCommand extends
 			// Run Gam commands
 			this.runGamCommands("ADD", configuration.getResource(), e);
 			// String isProfileShared = "shared";
-			// String gamLocation = "/data/openiam/conf/gam/";
+			// String gamLocation = System.getProperty("confpath", "data/openiam").concat("/conf/gam/");
 			// if (res != null) {
 			// ResourceProp resprop = configuration.getResource()
 			// .getResourceProperty("IS_PROFILE_SHARED");
