@@ -16,7 +16,7 @@ import javax.persistence.*;
 import java.util.Date;
 
 @Entity
-@Table(name="IDENTITY")
+@Table(name="\"IDENTITY\"")
 @Cacheable
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(IdentityDto.class)
@@ -31,7 +31,7 @@ public class IdentityEntity implements java.io.Serializable  {
     private String id;
 
     @Field(name = "identity", index = Index.TOKENIZED, store = Store.YES)
-    @Column(name="IDENTITY",length=320)
+    @Column(name="\"IDENTITY\"",length=320)
     private String identity;
 
     @Field(name = "managedSysId", index = Index.UN_TOKENIZED, store = Store.YES)
