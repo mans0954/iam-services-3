@@ -4,7 +4,7 @@
 
         <groupId>org.openiam</groupId>
         <artifactId>iam-services</artifactId>
-        <version>3.3.0</version>
+        <version>4.0.0</version>
 
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -12,15 +12,15 @@
     <artifactId>openiam-esb-ear</artifactId>
     <name>openiam-esb-ear</name>
     <packaging>ear</packaging>
-    <version>3.3.0</version>
+    <version>4.0.0</version>
     <description>OpenIAM ESB Module</description>
 
 	<properties>
     	<skipTests>true</skipTests>
-        <openiam.esb.version>3.3.0</openiam.esb.version>
-        <hibernate.version>3.6.6.Final</hibernate.version>
-        <hibernatesearch.version>3.4.0.Final</hibernatesearch.version>
-        <hibernate.entity.manager.version>3.6.7.Final</hibernate.entity.manager.version>
+        <openiam.esb.version>4.0.0</openiam.esb.version>
+        <hibernate.version>4.3.5.Final</hibernate.version>
+        <!--<hibernatesearch.version>3.4.0.Final</hibernatesearch.version>-->
+        <!--<hibernate.entity.manager.version>3.6.7.Final</hibernate.entity.manager.version>-->
   	</properties>
 
     <build>
@@ -40,11 +40,11 @@
                             <artifactId>openiam-esb</artifactId>
                             <contextRoot>/openiam-esb</contextRoot>
                         </webModule>
-                        <webModule>
-                            <groupId>org.openiam</groupId>
-                            <artifactId>openiam-subscription</artifactId>
-                            <contextRoot>/openiam-subscription</contextRoot>
-                        </webModule>
+                        <!--<webModule>-->
+                            <!--<groupId>org.openiam</groupId>-->
+                            <!--<artifactId>openiam-subscription</artifactId>-->
+                            <!--<contextRoot>/openiam-subscription</contextRoot>-->
+                        <!--</webModule>-->
 
                        </modules>
                 </configuration>
@@ -70,12 +70,12 @@
             <version>${openiam.esb.version}</version>
             <type>war</type>
         </dependency>
-        <dependency>
-            <groupId>org.openiam</groupId>
-            <artifactId>openiam-subscription</artifactId>
-            <version>${openiam.esb.version}</version>
-            <type>war</type>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>org.openiam</groupId>-->
+            <!--<artifactId>openiam-subscription</artifactId>-->
+            <!--<version>${openiam.esb.version}</version>-->
+            <!--<type>war</type>-->
+        <!--</dependency>-->
 
 
 

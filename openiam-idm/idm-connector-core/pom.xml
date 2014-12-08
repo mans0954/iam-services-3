@@ -4,14 +4,14 @@
 	<parent>
 		<artifactId>idm-core</artifactId>
 		<groupId>org.openiam</groupId>
-		<version>3.3.0</version>
+		<version>4.0.0</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.openiam</groupId>
 	<artifactId>idm-connector-core</artifactId>
 	<packaging>jar</packaging>
 	<name>idm-connector-core</name>
-	<version>3.3.0</version>
+	<version>4.0.0</version>
 	<description>OpenIAM Core connectors and connector infrastructure</description>
 	<ciManagement>
 		<system>idm</system>
