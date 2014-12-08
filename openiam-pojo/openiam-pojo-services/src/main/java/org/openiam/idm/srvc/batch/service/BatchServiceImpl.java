@@ -120,27 +120,14 @@ public class BatchServiceImpl implements BatchService, ApplicationContextAware {
 	}
 
 	@Override
-	@Transactional(readOnly=true)
 	public void run(String id, boolean synchronous) {
     	final Runnable runnable = getRunnable(id);
     	if(runnable != null) {
 	        if(synchronous) {
 	        	runnable.run();
 	        } else {
-	        	final TransactionTemplate transactionTemplate = new TransactionTemplate(platformTransactionManager);
-	            transactionTemplate.setPropagationBehavior(TransactionTemplate.PROPAGATION_REQUIRED);
-	            transactionTemplate.execute(new TransactionCallback<Void>() {
-	
-					@Override
-					public Void doInTransaction(TransactionStatus status) {
-						runnable.run();
-						return null;
-					}
-	            	
-				});
+				new Thread(runnable).start();
 	        }
     	}
 	}
-
-
 }

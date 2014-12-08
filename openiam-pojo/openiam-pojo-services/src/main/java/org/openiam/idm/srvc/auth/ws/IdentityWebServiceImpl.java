@@ -1,13 +1,12 @@
 package org.openiam.idm.srvc.auth.ws;
 
+import org.openiam.base.ws.Response;
 import org.openiam.idm.srvc.auth.dto.IdentityDto;
 import org.openiam.idm.srvc.auth.login.IdentityService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
-import javax.jws.WebParam;
 import javax.jws.WebService;
 import java.util.List;
 
@@ -24,27 +23,38 @@ public class IdentityWebServiceImpl implements IdentityWebService {
     private IdentityService identityService;
 
     @Override
-    public String save(@WebParam(name = "identity", targetNamespace = "") IdentityDto identityDto) {
+    public String save(IdentityDto identityDto) {
         return identityService.save(identityDto);
     }
 
     @Override
-    public IdentityDto getIdentity(@WebParam(name = "referredId", targetNamespace = "") String referredId, @WebParam(name = "managedSysId", targetNamespace = "") String managedSysId) {
-        return identityService.getIdentity(referredId, managedSysId);
+    public IdentityDto getIdentity(String identityId) {
+        return identityService.getIdentity(identityId);
     }
 
     @Override
-    public List<IdentityDto> getIdentities(@WebParam(name = "referredId", targetNamespace = "") String referredId) {
+    public IdentityDto getIdentityByManagedSys(String referredId, String managedSysId) {
+        return identityService.getIdentityByManagedSys(referredId, managedSysId);
+    }
+
+    @Override
+    public List<IdentityDto> getIdentities(String referredId) {
         return identityService.getIdentities(referredId);
     }
 
     @Override
-    public void deleteIdentity(@WebParam(name = "identityId", targetNamespace = "") String identityId) {
+    public void deleteIdentity(String identityId) {
         identityService.deleteIdentity(identityId);
     }
 
     @Override
-    public void updateIdentity(@WebParam(name = "identity", targetNamespace = "") IdentityDto identityDto) {
+    public void updateIdentity(IdentityDto identityDto) {
         identityService.updateIdentity(identityDto);
     }
+
+    @Override
+    public Response isValidIdentity(IdentityDto identityDto) {
+        return identityService.isValidIdentity(identityDto);
+    }
+
 }

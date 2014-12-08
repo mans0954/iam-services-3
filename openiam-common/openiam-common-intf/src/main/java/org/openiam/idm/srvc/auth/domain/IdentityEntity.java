@@ -5,16 +5,18 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.search.annotations.*;
 import org.openiam.core.dao.lucene.LuceneId;
+import org.openiam.core.dao.lucene.LuceneLastUpdate;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.auth.dto.IdentityDto;
 import org.openiam.idm.srvc.auth.dto.IdentityTypeEnum;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
+import org.openiam.idm.srvc.auth.dto.ProvLoginStatusEnum;
 
 import javax.persistence.*;
 import java.util.Date;
 
 @Entity
-@Table(name="IDENTITY")
+@Table(name="\"IDENTITY\"")
 @Cacheable
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(IdentityDto.class)
@@ -29,7 +31,7 @@ public class IdentityEntity implements java.io.Serializable  {
     private String id;
 
     @Field(name = "identity", index = Index.TOKENIZED, store = Store.YES)
-    @Column(name="IDENTITY",length=320)
+    @Column(name="\"IDENTITY\"",length=320)
     private String identity;
 
     @Field(name = "managedSysId", index = Index.UN_TOKENIZED, store = Store.YES)
@@ -54,6 +56,14 @@ public class IdentityEntity implements java.io.Serializable  {
     @Enumerated(EnumType.STRING)
     @Column(name="IDENTITY_TYPE", length=20)
     private IdentityTypeEnum type;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name="PROV_STATUS",length = 20)
+    private ProvLoginStatusEnum provStatus;
+
+    @Column(name = "LAST_UPDATE", length = 19)
+    @LuceneLastUpdate
+    private Date lastUpdate;
 
     public IdentityEntity() {
     }
@@ -126,7 +136,24 @@ public class IdentityEntity implements java.io.Serializable  {
         this.type = type;
     }
 
-    @Override
+	public ProvLoginStatusEnum getProvStatus() {
+		return provStatus;
+	}
+
+	public void setProvStatus(ProvLoginStatusEnum provStatus) {
+		this.provStatus = provStatus;
+	}
+
+	public Date getLastUpdate() {
+		return lastUpdate;
+	}
+
+	public void setLastUpdate(Date lastUpdate) {
+		this.lastUpdate = lastUpdate;
+	}
+
+
+	@Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -137,8 +164,12 @@ public class IdentityEntity implements java.io.Serializable  {
         if (managedSysId != null ? !managedSysId.equals(that.managedSysId) : that.managedSysId != null) return false;
         if (referredObjectId != null ? !referredObjectId.equals(that.referredObjectId) : that.referredObjectId != null)
             return false;
-        if (type != that.type) return false;
-
+        if (type != null ? !type.equals(that.type) : that.type != null) return false;
+        if (createDate != null ? !createDate.equals(that.createDate) : that.createDate != null) return false;
+        if (createdBy != null ? !createdBy.equals(that.createdBy) : that.createdBy != null) return false;
+        if (status != null ? !status.equals(that.status) : that.status != null) return false;
+        if (provStatus != null ? !provStatus.equals(that.provStatus) : that.provStatus != null) return false;
+        if (lastUpdate != null ? !lastUpdate.equals(that.lastUpdate) : that.lastUpdate != null) return false;
         return true;
     }
 
@@ -148,6 +179,11 @@ public class IdentityEntity implements java.io.Serializable  {
         result = 31 * result + (managedSysId != null ? managedSysId.hashCode() : 0);
         result = 31 * result + (referredObjectId != null ? referredObjectId.hashCode() : 0);
         result = 31 * result + (type != null ? type.hashCode() : 0);
+        result = 31 * result + (createDate != null ? createDate.hashCode() : 0);
+        result = 31 * result + (createdBy != null ? createdBy.hashCode() : 0);
+        result = 31 * result + (status != null ? status.hashCode() : 0);
+        result = 31 * result + (provStatus != null ? provStatus.hashCode() : 0);
+        result = 31 * result + (lastUpdate != null ? lastUpdate.hashCode() : 0);
         return result;
     }
 }

@@ -322,9 +322,9 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
                                                       final Map<String, ReconciliationSituation> situations,
                                                       IdmAuditLog idmAuditLog) throws IOException {
 
-        IdentityDto primaryIdentity = identityService.getIdentity(group.getId(),
-				BaseReconciliationCommand.OPENIAM_MANAGED_SYS_ID);
-        IdentityDto identitySys = identityService.getIdentity(group.getId(), mSys.getId());
+        IdentityDto primaryIdentity = identityService.getIdentityByManagedSys(group.getId(),
+                BaseReconciliationCommand.OPENIAM_MANAGED_SYS_ID);
+        IdentityDto identitySys = identityService.getIdentityByManagedSys(group.getId(), mSys.getId());
 
         log.debug("Reconciliation for group: " + group);
 
@@ -448,7 +448,7 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
                 }
                 Group gr = groupDataWebService.getGroup(grp.getId(), null);
 
-                IdentityDto identityDto = identityService.getIdentity(gr.getId(), mSys.getId());
+                IdentityDto identityDto = identityService.getIdentityByManagedSys(gr.getId(), mSys.getId());
                 if (identityDto == null) {
                     return targetGroupPrincipal;
                 }

@@ -226,8 +226,8 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
                 /* Few basic checks must be met before calling the login module. */
                 /* Simplifies the login module */
                 if (StringUtils.isBlank(principal)) {
-	            	/*
-	                log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
+                    /*
+                    log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
 	                        "INVALID LOGIN", secDomainId, null, principal, null,
 	                        null, clientIP, nodeIP);
 					*/
@@ -447,9 +447,12 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
         String attrValue = getPolicyAttribute(plcy.getPolicyAttributes(), "FAILED_AUTH_COUNT");
         String tokenLife = getPolicyAttribute(plcy.getPolicyAttributes(), "TOKEN_LIFE");
         String tokenIssuer = getPolicyAttribute(plcy.getPolicyAttributes(), "TOKEN_ISSUER");
-
+        String managedSySId = getPolicyAttribute(plcy.getPolicyAttributes(), "MANAGED_SYS_ID");
+        if (StringUtils.isBlank(managedSySId)){
+            managedSySId = sysConfiguration.getDefaultManagedSysId();
+        }
         // get the userId of this token
-        LoginEntity lg = loginManager.getLoginByManagedSys(principal, sysConfiguration.getDefaultManagedSysId());
+        LoginEntity lg = loginManager.getLoginByManagedSys(principal, managedSySId);
 
         if (lg == null) {
             resp.setStatus(ResponseStatus.FAILURE);
