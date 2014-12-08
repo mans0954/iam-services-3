@@ -48,7 +48,7 @@ import org.apache.commons.logging.LogFactory;
  */
 
 public class RejectWordsRule extends AbstractPasswordRule {
-    private final static String excludedWordsPath = System.getProperty("confpath", "data/openiam").concat("/conf/iamscripts/prov-helper/excludedWords.txt");
+    private final static String excludedWordsPath = System.getProperty("confpath", "/data/openiam").concat("/conf/iamscripts/prov-helper/excludedWords.txt");
     private static final Log log = LogFactory.getLog(RejectWordsRule.class);
 
     @Override
