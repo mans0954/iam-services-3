@@ -11,25 +11,28 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "URIPatternRuleValue", propOrder = {
 	"key",
 	"value",
-	"propagate"
+	"propagate",
+	"fetchedValue"
 })
 public class URIPatternRuleValue implements Serializable {
 
 	private String key;
 	private String value;
 	private boolean propagate = true;
+	private boolean fetchedValue;
 	
 	@XmlTransient
 	private boolean propagateOnError = true;
 	
 	private URIPatternRuleValue() {}
 	
-	public URIPatternRuleValue(final String key, final String value, final boolean propagate, final boolean propagateOnError) {
+	public URIPatternRuleValue(final String key, final String value, final boolean propagate, final boolean propagateOnError, final boolean fetchedValue) {
 		this();
 		this.key = key;
 		this.value = value;
 		this.propagate = propagate;
 		this.propagateOnError = propagateOnError;
+		this.fetchedValue = fetchedValue;
 	}
 
 	public String getKey() {
@@ -48,10 +51,15 @@ public class URIPatternRuleValue implements Serializable {
 		return propagateOnError;
 	}
 
+	public boolean isFetchedValue() {
+		return fetchedValue;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
+		result = prime * result + (fetchedValue ? 1231 : 1237);
 		result = prime * result + ((key == null) ? 0 : key.hashCode());
 		result = prime * result + (propagate ? 1231 : 1237);
 		result = prime * result + (propagateOnError ? 1231 : 1237);
@@ -68,6 +76,8 @@ public class URIPatternRuleValue implements Serializable {
 		if (getClass() != obj.getClass())
 			return false;
 		URIPatternRuleValue other = (URIPatternRuleValue) obj;
+		if (fetchedValue != other.fetchedValue)
+			return false;
 		if (key == null) {
 			if (other.key != null)
 				return false;
@@ -88,8 +98,8 @@ public class URIPatternRuleValue implements Serializable {
 	@Override
 	public String toString() {
 		return "URIPatternRuleValue [key=" + key + ", value=" + value
-				+ ", propagate=" + propagate + ", propagateOnError="
-				+ propagateOnError + "]";
+				+ ", propagate=" + propagate + ", fetchedValue=" + fetchedValue
+				+ ", propagateOnError=" + propagateOnError + "]";
 	}
 
 	

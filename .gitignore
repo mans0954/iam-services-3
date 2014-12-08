@@ -9,3 +9,4 @@ target
 .classpath
 .DS_Store
 */test-output/*
+/test-output/

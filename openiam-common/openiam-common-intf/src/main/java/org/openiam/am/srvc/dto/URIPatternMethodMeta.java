@@ -1,5 +1,6 @@
 package org.openiam.am.srvc.dto;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -15,10 +16,20 @@ import org.openiam.dozer.DozerDTOCorrespondence;
         "metaValueSet"
 })
 @DozerDTOCorrespondence(URIPatternMethodMetaEntity.class)
-public class URIPatternMethodMeta extends AbstractMeta {
+public class URIPatternMethodMeta extends AbstractMeta<URIPatternMethodMetaValue> {
 
 	private Set<URIPatternMethodMetaValue> metaValueSet;
 	private URIPatternMethod patternMethod;
+	
+	@Override
+	public void addMetaValue(AbstractPatternMetaValue value) {
+		if(value != null) {
+			if(this.metaValueSet == null) {
+				this.metaValueSet = new HashSet<URIPatternMethodMetaValue>();
+			}
+			this.metaValueSet.add((URIPatternMethodMetaValue)value);
+		}
+	}
 	
 	public Set<URIPatternMethodMetaValue> getMetaValueSet() {
 		return metaValueSet;

@@ -19,8 +19,8 @@ public interface URIFederationWebService {
 	 * @return a URIFederationResponse Object.  The proxy should be able to understand the format.
 	 */
 	public URIFederationResponse federateProxyURI(@WebParam(name = "userId", targetNamespace = "") final String userId, 
-												  @WebParam(name = "authLevel", targetNamespace = "") final int authLevel, 
-												  @WebParam(name = "proxyURI", targetNamespace = "") final String proxyURI);
+												  @WebParam(name = "proxyURI", targetNamespace = "") final String proxyURI,
+												  @WebParam(name = "method", targetNamespace = "") final String method);
 	
 	/**
 	 * Method called by Reverse Proxy via SOAP Request
@@ -31,7 +31,14 @@ public interface URIFederationWebService {
 	 * @return a Response that contains the SSOToken
 	 */
 	public SSOLoginResponse getCookieFromProxyURIAndPrincipal(@WebParam(name = "proxyURI", targetNamespace = "") final String proxyURI,
-								 					  @WebParam(name = "principal", targetNamespace = "") final String principal);
+								 					  		  @WebParam(name = "principal", targetNamespace = "") final String principal,
+								 					  		  @WebParam(name = "method", targetNamespace = "") final String method);
 	
-	public URIFederationResponse getMetadata(final String proxyURI);
+	public URIFederationResponse getMetadata(@WebParam(name = "proxyURI", targetNamespace = "") final String proxyURI,
+											 @WebParam(name = "method", targetNamespace = "") final String method);
+	
+	/**
+	 * Refreshes the internal cache.  Should NOT be called externally.  Used for Unit testing purposes only
+	 */
+	public void sweep();
 }

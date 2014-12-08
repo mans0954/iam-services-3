@@ -9,6 +9,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Set;
 
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -17,7 +18,7 @@ import java.util.Set;
         "metaValueSet"
 })
 @DozerDTOCorrespondence(URIPatternMetaEntity.class)
-public class URIPatternMeta extends AbstractMeta {
+public class URIPatternMeta extends AbstractMeta<URIPatternMetaValue> {
 
 	private String patternId;
 	private Set<URIPatternMetaValue> metaValueSet;
@@ -34,6 +35,17 @@ public class URIPatternMeta extends AbstractMeta {
 	public void setMetaValueSet(Set<URIPatternMetaValue> metaValueSet) {
 		this.metaValueSet = metaValueSet;
 	}
+	
+	@Override
+	public void addMetaValue(AbstractPatternMetaValue value) {
+		if(value != null) {
+			if(this.metaValueSet == null) {
+				this.metaValueSet = new HashSet<URIPatternMetaValue>();
+			}
+			this.metaValueSet.add((URIPatternMetaValue)value);
+		}
+	}
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -74,6 +86,7 @@ public class URIPatternMeta extends AbstractMeta {
 				+ ", requestorUserId=" + requestorUserId + ", requestorLogin="
 				+ requestorLogin + ", requestClientIP=" + requestClientIP + "]";
 	}
+
 	
 	
 }

@@ -1,37 +1,36 @@
-package org.openiam.am.srvc.dto;
+package org.openiam.am.srvc.uriauth.dto;
+
+import java.io.Serializable;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
-import org.openiam.am.srvc.domain.URIPatternSubstitutionEntity;
-import org.openiam.base.KeyDTO;
-import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.base.ws.Response;
 
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "URIPatternSubstitution", propOrder = {
-	"patternId",
+@XmlType(name = "URISubstitutionToken", propOrder = {
 	"query",
 	"replaceWith",
 	"exactMatch",
-	"fastSearch",
-	"order"
+	"fastSearch"
 })
-@DozerDTOCorrespondence(URIPatternSubstitutionEntity.class)
-public class URIPatternSubstitution extends KeyDTO {
+public class URISubstitutionToken implements Serializable {
 
-	private String patternId;
 	private String query;
 	private String replaceWith;
 	private boolean exactMatch;
 	private boolean fastSearch;
-	private Integer order;
-	public String getPatternId() {
-		return patternId;
+	
+	private URISubstitutionToken() {}
+	
+	public URISubstitutionToken(final String query, final String replaceWith, final boolean exactMatch, final boolean fastSearch) {
+		this.query = query;
+		this.replaceWith = replaceWith;
+		this.exactMatch = exactMatch;
+		this.fastSearch = fastSearch;
 	}
-	public void setPatternId(String patternId) {
-		this.patternId = patternId;
-	}
+	
 	public String getQuery() {
 		return query;
 	}
@@ -43,14 +42,6 @@ public class URIPatternSubstitution extends KeyDTO {
 	}
 	public void setReplaceWith(String replaceWith) {
 		this.replaceWith = replaceWith;
-	}
-	
-	public Integer getOrder() {
-		return order;
-	}
-
-	public void setOrder(Integer order) {
-		this.order = order;
 	}
 	public boolean isExactMatch() {
 		return exactMatch;
@@ -67,12 +58,9 @@ public class URIPatternSubstitution extends KeyDTO {
 	@Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = super.hashCode();
+		int result = 1;
 		result = prime * result + (exactMatch ? 1231 : 1237);
 		result = prime * result + (fastSearch ? 1231 : 1237);
-		result = prime * result + ((order == null) ? 0 : order.hashCode());
-		result = prime * result
-				+ ((patternId == null) ? 0 : patternId.hashCode());
 		result = prime * result + ((query == null) ? 0 : query.hashCode());
 		result = prime * result
 				+ ((replaceWith == null) ? 0 : replaceWith.hashCode());
@@ -82,24 +70,14 @@ public class URIPatternSubstitution extends KeyDTO {
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (!super.equals(obj))
+		if (obj == null)
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		URIPatternSubstitution other = (URIPatternSubstitution) obj;
+		URISubstitutionToken other = (URISubstitutionToken) obj;
 		if (exactMatch != other.exactMatch)
 			return false;
 		if (fastSearch != other.fastSearch)
-			return false;
-		if (order == null) {
-			if (other.order != null)
-				return false;
-		} else if (!order.equals(other.order))
-			return false;
-		if (patternId == null) {
-			if (other.patternId != null)
-				return false;
-		} else if (!patternId.equals(other.patternId))
 			return false;
 		if (query == null) {
 			if (other.query != null)
@@ -115,13 +93,9 @@ public class URIPatternSubstitution extends KeyDTO {
 	}
 	@Override
 	public String toString() {
-		return "URIPatternSubstitution [patternId=" + patternId + ", query="
-				+ query + ", replaceWith=" + replaceWith + ", exactMatch="
-				+ exactMatch + ", fastSearch=" + fastSearch + ", order="
-				+ order + ", id=" + id + ", objectState=" + objectState
-				+ ", requestorSessionID=" + requestorSessionID
-				+ ", requestorUserId=" + requestorUserId + ", requestorLogin="
-				+ requestorLogin + ", requestClientIP=" + requestClientIP + "]";
+		return "URISubstitutionToken [query=" + query + ", replaceWith="
+				+ replaceWith + ", exactMatch=" + exactMatch + ", fastSearch="
+				+ fastSearch + "]";
 	}
 	
 	

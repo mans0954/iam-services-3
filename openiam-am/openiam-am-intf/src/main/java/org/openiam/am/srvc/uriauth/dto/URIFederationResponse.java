@@ -11,6 +11,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;
 
+import org.openiam.am.srvc.dto.ContentProvider;
 import org.openiam.am.srvc.dto.ContentProviderServer;
 import org.openiam.am.srvc.dto.RoundRobinServer;
 import org.openiam.base.ws.Response;
@@ -28,7 +29,13 @@ import org.openiam.base.ws.ResponseStatus;
 	"authLevelTokenList",
 	"server",
 	"patternId",
-	"cpId"
+	"cpId",
+	"authCookieName",
+	"authCookieDomain",
+	"methodId",
+	"redirectTo",
+	"substitutionList",
+	"errorMappingList"
 })
 public class URIFederationResponse extends Response {
 
@@ -37,11 +44,19 @@ public class URIFederationResponse extends Response {
 	 */
 	private static final long serialVersionUID = 1L;
 	
+	private List<URIPatternErrorMappingToken> errorMappingList;
+	private List<URISubstitutionToken> substitutionList;
 	private List<URIAuthLevelToken> authLevelTokenList;
 	private List<URIPatternRuleToken> ruleTokenList;
 	private RoundRobinServer server;
 	private String patternId;
 	private String cpId;
+	private String authCookieName;
+	private String authCookieDomain;
+	private String methodId;
+	private String redirectTo;
+	
+	public URIFederationResponse() {}
 	
 	public ResponseStatus getStatus() {
 		return status;
@@ -51,6 +66,32 @@ public class URIFederationResponse extends Response {
 		this.status = status;
 	}
 	
+	public List<URIPatternErrorMappingToken> getErrorMappingList() {
+		return errorMappingList;
+	}
+	
+	public void addErrorMapping(final int code, final String redirectURL) {
+		if(redirectURL != null) {
+			if(this.errorMappingList == null) {
+				this.errorMappingList = new LinkedList<URIPatternErrorMappingToken>();
+			}
+			this.errorMappingList.add(new URIPatternErrorMappingToken(code, redirectURL));
+		}
+	}
+
+	public List<URISubstitutionToken> getSubstitutionList() {
+		return substitutionList;
+	}
+	
+	public void addSubstitution(final URISubstitutionToken token) {
+		if(token != null) {
+			if(this.substitutionList == null) {
+				this.substitutionList = new LinkedList<URISubstitutionToken>();
+			}
+			this.substitutionList.add(token);
+		}
+	}
+
 	public void addRuleToken(final URIPatternRuleToken token) {
 		if(token != null) {
 			if(ruleTokenList == null) {
@@ -105,12 +146,43 @@ public class URIFederationResponse extends Response {
 		this.cpId = cpId;
 	}
 
+	public String getAuthCookieName() {
+		return authCookieName;
+	}
+
+	public void setAuthCookieName(String authCookieName) {
+		this.authCookieName = authCookieName;
+	}
+
+	public String getAuthCookieDomain() {
+		return authCookieDomain;
+	}
+
+	public void setAuthCookieDomain(String authCookieDomain) {
+		this.authCookieDomain = authCookieDomain;
+	}
+
+	public String getMethodId() {
+		return methodId;
+	}
+
+	public void setMethodId(String methodId) {
+		this.methodId = methodId;
+	}
+	
+	public String getRedirectTo() {
+		return redirectTo;
+	}
+
+	public void setRedirectTo(String redirectTo) {
+		this.redirectTo = redirectTo;
+	}
+
 	@Override
 	public String toString() {
 		return String
-				.format("URIFederationResponse [ruleTokenList=%s, server=%s, status=%s, errorCode=%s, errorText=%s, responseValue=%s]",
-						ruleTokenList, server, status,
-						errorCode, errorText, responseValue);
+				.format("URIFederationResponse [ruleTokenList=%s, server=%s, status=%s, errorCode=%s, errorText=%s, responseValue=%s, redirectTo=%s]",
+						ruleTokenList, server, status, errorCode, errorText, responseValue, redirectTo);
 	}
 
 	

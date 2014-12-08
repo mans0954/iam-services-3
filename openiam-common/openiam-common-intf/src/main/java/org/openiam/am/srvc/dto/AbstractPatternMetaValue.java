@@ -1,9 +1,12 @@
 package org.openiam.am.srvc.dto;
 
+import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
+import org.openiam.am.srvc.groovy.URIFederationGroovyProcessor;
 import org.openiam.base.KeyNameDTO;
 
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -25,6 +28,17 @@ public abstract class AbstractPatternMetaValue extends KeyNameDTO {
 	protected boolean emptyValue = false;
 	protected boolean propagateOnError = true;
 	protected String fetchedValue;
+	
+	/* internal use only!  Is compiled at spring refresh time 
+	 * to avoid run-time groovy class initialization.  
+	 * It is a WeakReference to prevent accidental
+	 * memory leaks of PermGen space.  The refresh thread, however,
+	 * should clear this reference
+	 */
+	@Transient
+	@XmlTransient
+	private URIFederationGroovyProcessor groovyProcessor;
+	
 	public String getStaticValue() {
 		return staticValue;
 	}
@@ -68,6 +82,14 @@ public abstract class AbstractPatternMetaValue extends KeyNameDTO {
 	public void setFetchedValue(String fetchedValue) {
 		this.fetchedValue = fetchedValue;
 	}
+	
+	public URIFederationGroovyProcessor getGroovyProcessor() {
+		return this.groovyProcessor;
+	}
+	public void setGroovyProcessor(final  URIFederationGroovyProcessor groovyProcessor) {
+		this.groovyProcessor = groovyProcessor;
+	}
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;

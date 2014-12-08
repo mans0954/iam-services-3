@@ -23,16 +23,6 @@ import java.lang.ref.WeakReference;
 public class URIPatternMetaValue extends AbstractPatternMetaValue {
 	private String metaEntityId;
 	
-	/* internal use only!  Is compiled at spring refresh time 
-	 * to avoid run-time groovy class initialization.  
-	 * It is a WeakReference to prevent accidental
-	 * memory leaks of PermGen space.  The refresh thread, however,
-	 * should clear this reference
-	 */
-	@Transient
-	@XmlTransient
-	private URIFederationGroovyProcessor groovyProcessor;
-	
 	
 	public String getMetaEntityId() {
 		return metaEntityId;
@@ -41,12 +31,6 @@ public class URIPatternMetaValue extends AbstractPatternMetaValue {
 		this.metaEntityId = metaEntityId;
 	}
     
-	public URIFederationGroovyProcessor getGroovyProcessor() {
-		return this.groovyProcessor;
-	}
-	public void setGroovyProcessor(final  URIFederationGroovyProcessor groovyProcessor) {
-		this.groovyProcessor = groovyProcessor;
-	}
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -73,9 +57,8 @@ public class URIPatternMetaValue extends AbstractPatternMetaValue {
 	}
 	@Override
 	public String toString() {
-		return "URIPatternMetaValue [metaEntityId=" + metaEntityId
-				+ ", groovyProcessor=" + groovyProcessor + ", staticValue="
-				+ staticValue + ", amAttribute=" + amAttribute
+		return "URIPatternMetaValue [metaEntityId=" + metaEntityId +
+				", staticValue=" + staticValue + ", amAttribute=" + amAttribute
 				+ ", groovyScript=" + groovyScript + ", propagateThroughProxy="
 				+ propagateThroughProxy + ", emptyValue=" + emptyValue
 				+ ", propagateOnError=" + propagateOnError + ", name=" + this.getName()

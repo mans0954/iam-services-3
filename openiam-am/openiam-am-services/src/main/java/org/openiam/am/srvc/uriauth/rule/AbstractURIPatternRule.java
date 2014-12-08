@@ -6,10 +6,13 @@ import java.util.Set;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.am.srvc.domain.AuthProviderEntity;
+import org.openiam.am.srvc.dto.AbstractMeta;
+import org.openiam.am.srvc.dto.AbstractPatternMetaValue;
 import org.openiam.am.srvc.dto.ContentProvider;
 import org.openiam.am.srvc.dto.URIPattern;
 import org.openiam.am.srvc.dto.URIPatternMetaType;
 import org.openiam.am.srvc.dto.URIPatternMetaValue;
+import org.openiam.am.srvc.dto.URIPatternMethod;
 import org.openiam.am.srvc.groovy.URIFederationGroovyProcessor;
 import org.openiam.am.srvc.service.AuthAttributeProcessor;
 import org.openiam.am.srvc.service.AuthProviderService;
@@ -31,15 +34,17 @@ public abstract class AbstractURIPatternRule implements URIPatternRule {
 	public URIPatternRuleToken process(final String userId, 
 									   final URI uri,
 									   final URIPatternMetaType metaType, 
-									   final Set<URIPatternMetaValue> valueSet,
+									   final Set<AbstractPatternMetaValue> valueSet,
 									   final URIPattern pattern,
-									   final ContentProvider contentProvider) throws Exception {
-		final URIPatternRuleToken token = new URIPatternRuleToken(metaType);
+									   final URIPatternMethod method,
+									   final ContentProvider contentProvider,
+									   final AbstractMeta meta) throws Exception {
+		final URIPatternRuleToken token = new URIPatternRuleToken(metaType, meta);
 		if(CollectionUtils.isNotEmpty(valueSet)) {
-			for(final URIPatternMetaValue metaValue : valueSet) {
+			for(final AbstractPatternMetaValue metaValue : valueSet) {
 				final String key = StringUtils.trimToNull(metaValue.getName());
 				if(metaValue.isEmptyValue()) {
-					token.addValue(key, null, metaValue.isPropagateThroughProxy(), metaValue.isPropagateOnError());
+					token.addValue(key, null, metaValue.isPropagateThroughProxy(), metaValue.isPropagateOnError(), false);
 				} else {
                     String value = null;
                     final URIFederationGroovyProcessor groovyProcessor = metaValue.getGroovyProcessor();
@@ -57,14 +62,18 @@ public abstract class AbstractURIPatternRule implements URIPatternRule {
                             value = authAttributeProcessor.process(metaValue.getAmAttribute().getReflectionKey(), userId, managedSystem.getId());
                         }
                     }
+                    
+                    if(value == null) {
+                    	value = metaValue.getFetchedValue();
+                    }
 
                     if(value != null) {
-                        token.addValue(key, value, metaValue.isPropagateThroughProxy(), metaValue.isPropagateOnError());
+                        token.addValue(key, value, metaValue.isPropagateThroughProxy(), metaValue.isPropagateOnError(), metaValue.getFetchedValue() != null);
                     }
 				}
 			}
 		}
-		postProcess(userId, uri, metaType, valueSet, token, pattern, contentProvider);
+		postProcess(userId, uri, metaType, valueSet, token, pattern, method, contentProvider);
 		return token;
 	}
 
@@ -72,9 +81,10 @@ public abstract class AbstractURIPatternRule implements URIPatternRule {
 	protected void postProcess(final String userId, 
 							   final URI uri, 
 							   final URIPatternMetaType metaType, 
-							   final Set<URIPatternMetaValue> valueSet,
+							   final Set<AbstractPatternMetaValue> valueSet,
 							   final URIPatternRuleToken token,
 							   final URIPattern pattern,
+							   final URIPatternMethod method,
 							   final ContentProvider contentProvider) {
 		
 	}

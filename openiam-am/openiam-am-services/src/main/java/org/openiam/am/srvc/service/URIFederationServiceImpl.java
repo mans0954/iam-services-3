@@ -2,7 +2,9 @@ package org.openiam.am.srvc.service;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -15,6 +17,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.StopWatch;
 import org.apache.log4j.Logger;
+import org.apache.lucene.queries.function.valuesource.MultiFunction.Values;
 import org.openiam.am.srvc.dao.AuthLevelGroupingDao;
 import org.openiam.am.srvc.dao.ContentProviderDao;
 import org.openiam.am.srvc.domain.AuthLevelEntity;
@@ -28,6 +31,9 @@ import org.openiam.am.srvc.dozer.converter.ContentProviderDozerConverter;
 import org.openiam.am.srvc.dozer.converter.URIPatternDozerConverter;
 import org.openiam.am.srvc.dozer.converter.URIPatternMetaDozerConverter;
 import org.openiam.am.srvc.dozer.converter.URIPatternMetaValueDozerConverter;
+import org.openiam.am.srvc.dto.AbstractMeta;
+import org.openiam.am.srvc.dto.AbstractParameter;
+import org.openiam.am.srvc.dto.AbstractPatternMetaValue;
 import org.openiam.am.srvc.dto.AuthLevel;
 import org.openiam.am.srvc.dto.AuthLevelAttribute;
 import org.openiam.am.srvc.dto.AuthLevelGrouping;
@@ -35,20 +41,32 @@ import org.openiam.am.srvc.dto.AuthLevelGroupingContentProviderXref;
 import org.openiam.am.srvc.dto.AuthLevelGroupingURIPatternXref;
 import org.openiam.am.srvc.dto.ContentProvider;
 import org.openiam.am.srvc.dto.URIPattern;
+import org.openiam.am.srvc.dto.URIPatternErrorMapping;
 import org.openiam.am.srvc.dto.URIPatternMeta;
 import org.openiam.am.srvc.dto.URIPatternMetaType;
 import org.openiam.am.srvc.dto.URIPatternMetaValue;
+import org.openiam.am.srvc.dto.URIPatternMethod;
+import org.openiam.am.srvc.dto.URIPatternMethodMeta;
+import org.openiam.am.srvc.dto.URIPatternMethodMetaValue;
+import org.openiam.am.srvc.dto.URIPatternMethodParameter;
+import org.openiam.am.srvc.dto.URIPatternParameter;
+import org.openiam.am.srvc.dto.URIPatternSubstitution;
+import org.openiam.am.srvc.groovy.AbstractRedirectURLGroovyProcessor;
 import org.openiam.am.srvc.groovy.URIFederationGroovyProcessor;
+import org.openiam.am.srvc.model.URIPatternSearchResult;
 import org.openiam.am.srvc.uriauth.dto.URIAuthLevelAttribute;
 import org.openiam.am.srvc.uriauth.dto.URIAuthLevelToken;
 import org.openiam.am.srvc.uriauth.dto.URIFederationResponse;
 import org.openiam.am.srvc.uriauth.dto.URIPatternRuleToken;
 import org.openiam.am.srvc.uriauth.dto.URIPatternRuleValue;
+import org.openiam.am.srvc.uriauth.dto.URISubstitutionToken;
 import org.openiam.am.srvc.uriauth.model.ContentProviderNode;
 import org.openiam.am.srvc.uriauth.model.ContentProviderTree;
 import org.openiam.am.srvc.uriauth.rule.URIPatternRule;
 import org.openiam.authmanager.common.model.AuthorizationResource;
 import org.openiam.authmanager.service.AuthorizationManagerService;
+import org.openiam.base.Tuple;
+import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.exception.BasicDataServiceException;
@@ -65,6 +83,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.http.HttpMethod;
 import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
@@ -132,6 +151,59 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 		});
 	}
 	
+	public <T extends AbstractPatternMetaValue> boolean setPatternMeta(final URIPattern pattern, final AbstractMeta<T> meta) {
+		final URIPatternMetaType type = meta.getMetaType();
+		boolean success = false;
+		
+		if(type != null && StringUtils.isNotBlank(type.getSpringBeanName())) {
+			final String springBeanName = type.getSpringBeanName();
+			try {
+				final URIPatternRule rule = ctx.getBean(springBeanName, URIPatternRule.class);
+				LOG.info(String.format("Spring Bean %s will be used for URI Pattern %s", springBeanName, pattern));
+		
+				/* convert values */
+				if(CollectionUtils.isNotEmpty(meta.getMetaValueSet())) {
+					final Map<String, AbstractPatternMetaValue> valueMap = new LinkedHashMap<String, AbstractPatternMetaValue>();
+					for(final AbstractPatternMetaValue value : meta.getMetaValueSet()) {
+						if(StringUtils.isNotBlank(value.getGroovyScript())) {
+							try {
+								final URIFederationGroovyProcessor processor = (URIFederationGroovyProcessor)scriptRunner.instantiateClass(null, value.getGroovyScript());
+								if(processor != null) {
+									value.setGroovyProcessor(processor);
+								}
+							} catch(Throwable e) {
+								LOG.warn(String.format("Can't define groovy script for rule %s.  This groovy script wont' be used", value.getName()), e);
+							}
+						}
+						valueMap.put(value.getId(), value);
+					}
+					valueMap.forEach((a, b) -> {
+						meta.addMetaValue(b);
+					});
+				}
+				success = true;
+			} catch(NoSuchBeanDefinitionException e) {
+				LOG.warn(String.format("Spring Bean '%s' on URI Pattern %s will not be used", springBeanName, pattern), e);
+			} catch(BeanNotOfRequiredTypeException e) {
+				LOG.warn(String.format("Spring Bean '%s' on URI Pattern %s will not be used", springBeanName, pattern), e);
+			}
+		}
+		return success;
+	}
+	
+	private void normalize(final AbstractParameter param) {
+		if(param.getName() != null) {
+			param.setName(param.getName().trim().toLowerCase());
+		}
+		if(param.getValues() != null) {
+			final List<String> values = new LinkedList<String>();
+			param.getValues().forEach(value -> { 
+				values.add(value.trim().toLowerCase());
+			});
+			Collections.sort(values);
+		}
+	}
+	
 	/*
 	 * Caches DTO Objects, so that we're not tied to the Hibernate Session
 	 */
@@ -152,63 +224,66 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 						if(CollectionUtils.isNotEmpty(cpEntity.getGroupingXrefs())) {
 							/* convert the content provider to a DTO */
 							final ContentProvider cp = cpDozerConverter.convertToDTO(cpEntity, true);
-							if(CollectionUtils.isNotEmpty(cpEntity.getPatternSet())) {
+							if(CollectionUtils.isNotEmpty(cp.getPatternSet())) {
 								
 								/* process the URI patterns, but converting any subcollections to DTOs manually, since our Dozer converter will only go 2 levels deep */
 								final Map<String, URIPattern> uriPatternMap = new LinkedHashMap<String, URIPattern>();
-								for(final URIPatternEntity uriEntity : cpEntity.getPatternSet()) {
-									
-									/* convert pattern */
-									final URIPattern pattern = patternDozerConverter.convertToDTO(uriEntity, true);
+								for(final URIPattern pattern : cp.getPatternSet()) {
+								
 									uriPatternMap.put(pattern.getId(), pattern);
 									if(CollectionUtils.isNotEmpty(pattern.getMetaEntitySet())) {
 										
 										/* convert meta */
 										final Map<String, URIPatternMeta> metaMap = new LinkedHashMap<String, URIPatternMeta>();
-										for(final URIPatternMetaEntity metaEntity : uriEntity.getMetaEntitySet()) {
-											final URIPatternMeta meta = patternMetaDozerConverter.convertToDTO(metaEntity, true);
-											
-											/* check that the spring bean exists */
-											final URIPatternMetaType type = meta.getMetaType();
-											if(type != null && StringUtils.isNotBlank(type.getSpringBeanName())) {
-												final String springBeanName = type.getSpringBeanName();
-												try {
-													final URIPatternRule rule = ctx.getBean(springBeanName, URIPatternRule.class);
-													LOG.info(String.format("Spring Bean %s will be used for URI Pattern %s", springBeanName, pattern));
-													metaMap.put(meta.getId(), meta);
-											
-													/* convert values */
-													if(CollectionUtils.isNotEmpty(metaEntity.getMetaValueSet())) {
-														final Map<String, URIPatternMetaValue> valueMap = new LinkedHashMap<String, URIPatternMetaValue>();
-														for(final URIPatternMetaValueEntity valueEntity : metaEntity.getMetaValueSet()) {
-															final URIPatternMetaValue value = patternValueDozerConverter.convertToDTO(valueEntity, true);
-															if(StringUtils.isNotBlank(value.getGroovyScript())) {
-																try {
-																	final URIFederationGroovyProcessor processor = (URIFederationGroovyProcessor)scriptRunner.instantiateClass(null, value.getGroovyScript());
-																	if(processor != null) {
-																		value.setGroovyProcessor(processor);
-																	}
-																} catch(Throwable e) {
-																	LOG.warn(String.format("Can't define groovy script for rule %s.  This groovy script wont' be used", value.getName()), e);
-																}
-															}
-															valueMap.put(value.getId(), value);
-														}
-														meta.setMetaValueSet(new LinkedHashSet<URIPatternMetaValue>(valueMap.values()));
-													}
-												} catch(NoSuchBeanDefinitionException e) {
-													LOG.warn(String.format("Spring Bean '%s' on URI Pattern %s will not be used", springBeanName, pattern), e);
-												} catch(BeanNotOfRequiredTypeException e) {
-													LOG.warn(String.format("Spring Bean '%s' on URI Pattern %s will not be used", springBeanName, pattern), e);
-												}
+										for(final URIPatternMeta meta : pattern.getMetaEntitySet()) {
+											if(setPatternMeta(pattern, meta)) {
+												metaMap.put(meta.getId(), meta);
 											}
 										}
 										
 										pattern.setMetaEntitySet(new LinkedHashSet<URIPatternMeta>(metaMap.values()));
 									}
+									
+									if(CollectionUtils.isNotEmpty(pattern.getMethods())) {
+										for(final URIPatternMethod method : pattern.getMethods()) {
+											if(CollectionUtils.isNotEmpty(method.getMetaEntitySet())) {
+												final Map<String, URIPatternMethodMeta> metaMap = new LinkedHashMap<String, URIPatternMethodMeta>();
+												for(final URIPatternMethodMeta meta : method.getMetaEntitySet()) {
+													if(setPatternMeta(pattern, meta)) {
+														metaMap.put(meta.getId(), meta);
+													}
+												}
+												method.setMetaEntitySet(new LinkedHashSet<URIPatternMethodMeta>(metaMap.values()));
+											}
+											
+											if(CollectionUtils.isNotEmpty(method.getParams())) {
+												for(final URIPatternMethodParameter param : method.getParams()) {
+													normalize(param);
+												}
+											}
+										}
+									}
+									
+									if(StringUtils.isNotBlank(pattern.getRedirectToGroovyScript())) {
+										try {
+											final AbstractRedirectURLGroovyProcessor processor = (AbstractRedirectURLGroovyProcessor)scriptRunner.instantiateClass(null, pattern.getRedirectToGroovyScript());
+											pattern.setRedirectProcessor(processor);
+										} catch(Throwable e) {
+											pattern.setRedirectProcessor(null);
+											pattern.setRedirectToGroovyScript(null);
+										}
+									}
+									
+									if(CollectionUtils.isNotEmpty(pattern.getParams())) {
+										for(final URIPatternParameter param : pattern.getParams()) {
+											normalize(param);
+										}
+									}
+									pattern.initTreeSet();
 								}
-								cp.setPatternSet(new LinkedHashSet<URIPattern>(uriPatternMap.values()));
+								cp.setPatternSet(new LinkedHashSet<URIPattern>(uriPatternMap.values()));									
 							}
+							
 							tempTree.addContentProvider(cp);
 						} else {
 							LOG.error(String.format("Content Provider %s will not be used - there are no Auth Level Grouping xrefs", cpEntity.getName()));
@@ -246,15 +321,9 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 		
 		return cacheContents.toString();
 	}
-	
-	@ManagedOperation(description="Test Federation agains parameters")
-	public String federateProxyURIJMX(final String userId, final int authLevel, final String proxyURI) {
-		return federateProxyURI(userId, authLevel, proxyURI).toString();
-	}
-	
 
 	@Override
-	public AuthenticationRequest createAuthenticationRequest(final String principal, final String proxyURI) throws BasicDataServiceException {
+	public AuthenticationRequest createAuthenticationRequest(final String principal, final String proxyURI, final HttpMethod method) throws BasicDataServiceException {
 		try {
 			final URI uri = new URI(proxyURI);
 			final ContentProviderNode cpNode = contentProviderTree.find(uri);
@@ -278,10 +347,15 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 			final AuthenticationRequest request = new AuthenticationRequest();
 			request.setPrincipal(primaryLogin.getLogin());
 			
-			final URIPattern uriPattern = cpNode.getURIPattern(uri);
+			final URIPatternSearchResult patternNode = cpNode.getURIPattern(uri, method);
+			final URIPattern uriPattern = patternNode.getPattern();
+			final URIPatternMethod uriMethod = patternNode.getMethod();
 			
 			if(uriPattern != null) {
 				request.setPatternId(uriPattern.getId());
+			}
+			if(uriMethod != null) {
+				request.setMethodId(uriMethod.getId());
 			}
 			
 			final String password = loginDS.decryptPassword(primaryLogin.getUserId(), primaryLogin.getPassword());
@@ -296,7 +370,7 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 	}
 	
 	@Override
-	public URIFederationResponse getMetadata(String proxyURI) {
+	public URIFederationResponse getMetadata(final String proxyURI, final HttpMethod method) {
 		final URIFederationResponse response = new URIFederationResponse();
 		final StopWatch sw = new StopWatch();
 		sw.start();
@@ -304,6 +378,7 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 		final List<AuthLevelGrouping> groupingList = new LinkedList<AuthLevelGrouping>();
 		ContentProvider cp = null;
 		URIPattern uriPattern = null;
+		URIPatternMethod uriMethod = null;
 		try {
 			final URI uri = new URI(proxyURI);
 			final ContentProviderNode cpNode = contentProviderTree.find(uri);
@@ -311,7 +386,9 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 				throw new BasicDataServiceException(ResponseCode.URI_FEDERATION_CONTENT_PROVIDER_NOT_FOUND);
 			}
 			cp = cpNode.getContentProvider();
-			uriPattern = cpNode.getURIPattern(uri);
+			final URIPatternSearchResult patternNode = cpNode.getURIPattern(uri, method);
+			uriPattern = patternNode.getPattern();
+			uriMethod = patternNode.getMethod();
 			
 			if(uriPattern != null && CollectionUtils.isNotEmpty(uriPattern.getGroupingXrefs())) {
 				for(final AuthLevelGroupingURIPatternXref xref : uriPattern.getOrderedGroupingXrefs()) {
@@ -349,10 +426,18 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 		} finally {
 			if(uriPattern != null) {
 				response.setPatternId(uriPattern.getId());
+				response.setServer(uriPattern.getNextServer());
 			}
 			if(cp != null) {
+				response.setAuthCookieDomain(cp.getAuthCookieDomain());
+				response.setAuthCookieName(cp.getAuthCookieName());
 				response.setCpId(cp.getId());
-				response.setServer(cp.getNextServer());
+				if(response.getServer() == null) {
+					response.setServer(cp.getNextServer());
+				}
+			}
+			if(uriMethod != null) {
+				response.setMethodId(uriMethod.getId());
 			}
 			if(CollectionUtils.isNotEmpty(groupingList)) {
 				for(final AuthLevelGrouping grouping : groupingList) {
@@ -382,15 +467,56 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 		}
 		return response;
 	}
+	
+	private <T extends AbstractPatternMetaValue> void processMeta(final URIFederationResponse response,
+																  final String userId, 
+																  final URI uri, 
+																  final URIPattern pattern,
+																  final URIPatternMethod method,
+																  final ContentProvider cp, 
+																  final AbstractMeta<T> meta) throws BasicDataServiceException {
+		final URIPatternMetaType type = meta.getMetaType();
+		if(type != null) {
+			final String springBeanName = type.getSpringBeanName();
+			URIPatternRuleToken ruleToken = null;
+			try {
+				final URIPatternRule rule = ctx.getBean(springBeanName, URIPatternRule.class);
+				if(rule != null) {
+					final Set<T> valueSet = meta.getMetaValueSet();
+					final Set<AbstractPatternMetaValue> abstractValueSet = new HashSet<AbstractPatternMetaValue>();
+					if(valueSet != null) {
+						abstractValueSet.addAll(valueSet);
+					}
+					ruleToken = rule.process(userId, uri, type, abstractValueSet, pattern, method, cp, meta);
+					response.addRuleToken(ruleToken);
+				}
+			} catch(Throwable e) {
+				if(ruleToken != null) {
+					if(CollectionUtils.isNotEmpty(ruleToken.getValueList())) {
+						for(final Iterator<URIPatternRuleValue> it = ruleToken.getValueList().iterator(); it.hasNext();) {
+							final URIPatternRuleValue rule = it.next();
+							if(!rule.isPropagateOnError()) {
+								LOG.warn(String.format("Rule %s will not propagate to the proxy due to an error", rule));
+								it.remove();
+							}
+						}
+					}
+				}
+				LOG.error("Error processing rule", e);
+				throw new BasicDataServiceException(ResponseCode.URI_PATTERN_RULE_PROCESS_ERROR, e);
+			}
+		}
+	}
 
 	@Override
-	public URIFederationResponse federateProxyURI(final String userId, final int authLevel, final String proxyURI) {
+	public URIFederationResponse federateProxyURI(final String userId, final String proxyURI, final HttpMethod method) {
 		final URIFederationResponse response = new URIFederationResponse();
 		final StopWatch sw = new StopWatch();
 		sw.start();
 		
 		ContentProvider cp = null;
 		URIPattern uriPattern = null;
+		URIPatternMethod uriMethod = null;
 		final List<AuthLevelGrouping> groupingList = new LinkedList<AuthLevelGrouping>();
 		try {
 			final URI uri = new URI(proxyURI);
@@ -403,50 +529,46 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 				throw new BasicDataServiceException(ResponseCode.URI_FEDERATION_NOT_ENTITLED_TO_CONTENT_PROVIDER);
 			}
 			
-			final URIPattern tempPattern = cpNode.getURIPattern(uri);
+			final URIPatternSearchResult patternNode = cpNode.getURIPattern(uri, method);
+			uriPattern = patternNode.getPattern();
+			uriMethod = patternNode.getMethod();
 			
 			/* means that no matching pattern has been found for this URI (i.e. none configured) - check against the CP */
-			if(tempPattern != null) {
+			if(uriPattern != null) {
 				
 				/* check entitlements and auth level on patterns */
-				if(!tempPattern.getIsPublic() && !isEntitled(userId, tempPattern.getResourceId())) {
-					throw new BasicDataServiceException(ResponseCode.URI_FEDERATION_NOT_ENTITLED_TO_PATTERN, tempPattern.getPattern());
+				if(!uriPattern.getIsPublic() && !isEntitled(userId, uriPattern.getResourceId())) {
+					throw new BasicDataServiceException(ResponseCode.URI_FEDERATION_NOT_ENTITLED_TO_PATTERN, uriPattern.getPattern());
 				}
-				//TODO:  set auth levels here
+				
+				if(uriMethod != null) {
+					if(!isEntitled(userId, uriMethod.getResourceId())) {
+						throw new BasicDataServiceException(ResponseCode.URI_FEDERATION_NOT_ENTITLED_TO_METHOD, uriMethod.getId());
+					}
+				}
+				
+				if(StringUtils.isNotBlank(uriPattern.getRedirectTo())) {
+					response.setRedirectTo(uriPattern.getRedirectTo());
+				} else if(uriPattern.getRedirectProcessor() != null) {
+					response.setRedirectTo(uriPattern.getRedirectProcessor().getRedirectURL(userId, cp, uriPattern, uriMethod));
+				}
 			
-				/* do rule processes */
-				if(CollectionUtils.isNotEmpty(tempPattern.getMetaEntitySet())) {
-					for(final URIPatternMeta meta : tempPattern.getMetaEntitySet()) {
-						final URIPatternMetaType type = meta.getMetaType();
-						if(type != null) {
-							final String springBeanName = type.getSpringBeanName();
-							URIPatternRuleToken ruleToken = null;
-							try {
-								final URIPatternRule rule = ctx.getBean(springBeanName, URIPatternRule.class);
-								if(rule != null) {
-									final Set<URIPatternMetaValue> valueSet = meta.getMetaValueSet();
-									ruleToken = rule.process(userId, uri, type, valueSet, tempPattern, cp);
-									response.addRuleToken(ruleToken);
-								}
-							} catch(Throwable e) {
-								if(ruleToken != null) {
-									if(CollectionUtils.isNotEmpty(ruleToken.getValueList())) {
-										for(final Iterator<URIPatternRuleValue> it = ruleToken.getValueList().iterator(); it.hasNext();) {
-											final URIPatternRuleValue rule = it.next();
-											if(!rule.isPropagateOnError()) {
-												LOG.warn(String.format("Rule %s will not propagate to the proxy due to an error", rule));
-												it.remove();
-											}
-										}
-									}
-								}
-								LOG.error("Error processing rule", e);
-								throw new BasicDataServiceException(ResponseCode.URI_PATTERN_RULE_PROCESS_ERROR, e);
-							}
+				/* do rule processes */				
+				if(uriMethod != null) {
+					if(CollectionUtils.isNotEmpty(uriMethod.getMetaEntitySet())) {
+						for(final URIPatternMethodMeta meta : uriMethod.getMetaEntitySet()) {
+							processMeta(response, userId, uri, uriPattern, uriMethod, cp, meta);
 						}
 					}
-					uriPattern = tempPattern;
+				} else {
+					if(CollectionUtils.isNotEmpty(uriPattern.getMetaEntitySet())) {
+						for(final URIPatternMeta meta : uriPattern.getMetaEntitySet()) {
+							processMeta(response, userId, uri, uriPattern, uriMethod, cp, meta);
+						}
+					}
 				}
+			} else if(patternNode.isUriPatternFound()) {
+				throw new BasicDataServiceException(ResponseCode.URI_FEDERATION_PATTERN_NOT_FOUND);
 			}
 			
 			if(uriPattern != null && CollectionUtils.isNotEmpty(uriPattern.getGroupingXrefs())) {
@@ -484,6 +606,12 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 				throw new BasicDataServiceException(ResponseCode.UNAUTHORIZED);
 			}
 			
+			if(CollectionUtils.isNotEmpty(uriPattern.getSubstititonOrderedSet())) {
+				for(final URIPatternSubstitution substition : uriPattern.getSubstititonOrderedSet()) {
+					response.addSubstitution(new URISubstitutionToken(substition.getQuery(), substition.getReplaceWith(), substition.isExactMatch(), substition.isFastSearch()));
+				}
+			}
+			
 			response.setStatus(ResponseStatus.SUCCESS);
 		} catch(BasicDataServiceException e) {
 			response.setErrorCode(e.getCode());
@@ -502,14 +630,25 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 			if(uriPattern != null) {
 				response.setPatternId(uriPattern.getId());
 				response.setServer(uriPattern.getNextServer());
+				
+				if(CollectionUtils.isNotEmpty(uriPattern.getErrorMappings())) {
+					for(final URIPatternErrorMapping mapping : uriPattern.getErrorMappings()) {
+						response.addErrorMapping(mapping.getErrorCode(), mapping.getRedirectURL());
+					}
+				}
 			}
 			if(cp != null) {
 				response.setCpId(cp.getId());
+				response.setAuthCookieDomain(cp.getAuthCookieDomain());
+				response.setAuthCookieName(cp.getAuthCookieName());
 				
 				/* fallback, in case URI Pattern not defined */
 				if(response.getServer() == null) {
 					response.setServer(cp.getNextServer());
 				}
+			}
+			if(uriMethod != null) {
+				response.setMethodId(uriMethod.getId());
 			}
 			if(CollectionUtils.isNotEmpty(groupingList)) {
 				for(final AuthLevelGrouping grouping : groupingList) {

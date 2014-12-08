@@ -3,10 +3,13 @@ package org.openiam.am.srvc.uriauth.rule;
 import java.net.URI;
 import java.util.Set;
 
+import org.openiam.am.srvc.dto.AbstractMeta;
+import org.openiam.am.srvc.dto.AbstractPatternMetaValue;
 import org.openiam.am.srvc.dto.ContentProvider;
 import org.openiam.am.srvc.dto.URIPattern;
 import org.openiam.am.srvc.dto.URIPatternMetaType;
 import org.openiam.am.srvc.dto.URIPatternMetaValue;
+import org.openiam.am.srvc.dto.URIPatternMethod;
 import org.openiam.am.srvc.uriauth.dto.URIPatternRuleToken;
 
 /**
@@ -19,7 +22,9 @@ public interface URIPatternRule {
 	public URIPatternRuleToken process(final String userId, 
 									   final URI uri, 
 									   final URIPatternMetaType metaType, 
-									   final Set<URIPatternMetaValue> valueSet,
+									   final Set<AbstractPatternMetaValue> valueSet,
 									   final URIPattern pattern,
-									   final ContentProvider contentProvider) throws Exception;
+									   final URIPatternMethod method,
+									   final ContentProvider contentProvider,
+									   final AbstractMeta meta) throws Exception;
 }

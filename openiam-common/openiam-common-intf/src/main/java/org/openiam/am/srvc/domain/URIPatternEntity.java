@@ -31,7 +31,7 @@ import java.util.Set;
 @AttributeOverrides({
 	@AttributeOverride(name = "id", column = @Column(name = "URI_PATTERN_ID"))
 })
-public class URIPatternEntity extends KeyEntity {
+public class URIPatternEntity extends AbstractMatchModeEntity {
 
 	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name="CONTENT_PROVIDER_ID", referencedColumnName = "CONTENT_PROVIDER_ID")

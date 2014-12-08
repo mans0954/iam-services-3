@@ -15,6 +15,7 @@ import javax.xml.bind.annotation.XmlType;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -102,6 +103,15 @@ public class ContentProvider extends KeyNameDTO {
 
     public void setResourceName(String resourceName) {
         this.resourceName = resourceName;
+    }
+    
+    public void addURIPattern(final URIPattern pattern) {
+    	if(pattern != null) {
+    		if(this.patternSet == null) {
+    			this.patternSet = new HashSet<URIPattern>();
+    		}
+    		this.patternSet.add(pattern);
+    	}
     }
 
     public Set<URIPattern> getPatternSet() {

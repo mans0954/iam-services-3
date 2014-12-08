@@ -29,7 +29,7 @@ import org.springframework.http.HttpMethod;
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(URIPatternMethod.class)
 @AttributeOverride(name = "id", column = @Column(name = "URI_PATTERN_URI_METHOD_ID"))
-public class URIPatternMethodEntity extends KeyEntity {
+public class URIPatternMethodEntity extends AbstractMatchModeEntity {
 
 	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name="URI_PATTERN_ID", referencedColumnName = "URI_PATTERN_ID", insertable=true, updatable=false, nullable=false)

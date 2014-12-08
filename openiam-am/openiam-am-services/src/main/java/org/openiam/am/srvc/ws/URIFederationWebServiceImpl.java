@@ -1,7 +1,12 @@
 package org.openiam.am.srvc.ws;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.annotation.PostConstruct;
 import javax.jws.WebService;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.openiam.am.srvc.service.URIFederationService;
 import org.openiam.am.srvc.uriauth.dto.SSOLoginResponse;
@@ -15,9 +20,11 @@ import org.openiam.idm.srvc.auth.dto.SSOToken;
 import org.openiam.idm.srvc.auth.dto.Subject;
 import org.openiam.idm.srvc.auth.service.AuthenticationService;
 import org.openiam.idm.srvc.auth.ws.AuthenticationResponse;
+import org.openiam.thread.Sweepable;
 import org.openiam.util.SpringContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
@@ -34,18 +41,30 @@ public class URIFederationWebServiceImpl implements URIFederationWebService {
 	
 	@Autowired
 	private AuthenticationService authenticationService;
+	
+	private Map<String, HttpMethod> httpMethodMap = new HashMap<String, HttpMethod>();
+	
+	@PostConstruct
+	public void init() {
+		for(final HttpMethod method : HttpMethod.values()) {
+			httpMethodMap.put(method.name().toLowerCase(), method);
+		}
+	}
 
+	private HttpMethod getMethod(final String method) {
+		return StringUtils.isNotBlank(method) ? httpMethodMap.get(method.toLowerCase()) : null;
+	}
 
     @Override
-	public URIFederationResponse federateProxyURI(final String userId, final int authLevel, final String proxyURI) {
-		return uriFederationService.federateProxyURI(userId, authLevel, proxyURI);
+	public URIFederationResponse federateProxyURI(final String userId, final String proxyURI, final String method) {
+		return uriFederationService.federateProxyURI(userId, proxyURI, getMethod(method));
 	}
 
 	@Override
-	public SSOLoginResponse getCookieFromProxyURIAndPrincipal(final String proxyURI, final String principal) {
+	public SSOLoginResponse getCookieFromProxyURIAndPrincipal(final String proxyURI, final String principal, final String method) {
 		final SSOLoginResponse wsResponse = new SSOLoginResponse(ResponseStatus.SUCCESS);
 		try {
-			final AuthenticationRequest loginRequest = uriFederationService.createAuthenticationRequest(principal, proxyURI);
+			final AuthenticationRequest loginRequest = uriFederationService.createAuthenticationRequest(principal, proxyURI, getMethod(method));
 			loginRequest.setLanguageId("1"); //set default
 			final AuthenticationResponse loginResponse = authenticationService.login(loginRequest);
 			if(ResponseStatus.SUCCESS.equals(loginResponse.getStatus())) {
@@ -79,8 +98,12 @@ public class URIFederationWebServiceImpl implements URIFederationWebService {
 	}
 
 	@Override
-	public URIFederationResponse getMetadata(String proxyURI) {
-		return uriFederationService.getMetadata(proxyURI);
+	public URIFederationResponse getMetadata(String proxyURI, final String method) {
+		return uriFederationService.getMetadata(proxyURI, getMethod(method));
     }
 
+	@Override
+	public void sweep() {
+		((Sweepable)uriFederationService).sweep();
+	}
 }

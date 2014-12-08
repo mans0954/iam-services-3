@@ -15,7 +15,8 @@ import javax.xml.bind.annotation.XmlType;
         "nodeIP",
         "requestSource",
         "languageId",
-        "patternId"
+        "patternId",
+        "methodId"
 })
 public class AuthenticationRequest {
 	private String languageId;
@@ -25,6 +26,7 @@ public class AuthenticationRequest {
     private String nodeIP;
     private String requestSource; // where did this request come from
     private String patternId;
+    private String methodId;
 
     public AuthenticationRequest() {
     }
@@ -83,6 +85,14 @@ public class AuthenticationRequest {
 
 	public void setPatternId(String patternId) {
 		this.patternId = patternId;
+	}
+
+	public String getMethodId() {
+		return methodId;
+	}
+
+	public void setMethodId(String methodId) {
+		this.methodId = methodId;
 	}
 
 	

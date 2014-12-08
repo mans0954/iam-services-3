@@ -2,6 +2,7 @@ package org.openiam.am.srvc.groovy;
 
 import java.net.URI;
 
+import org.openiam.am.srvc.dto.AbstractPatternMetaValue;
 import org.openiam.am.srvc.dto.ContentProvider;
 import org.openiam.am.srvc.dto.URIPattern;
 import org.openiam.am.srvc.dto.URIPatternMetaValue;
@@ -23,6 +24,6 @@ public abstract class URIFederationGroovyProcessor {
 	public abstract String getValue(final String userId, 
 									final ContentProvider contentProvider, 
 									final URIPattern pattern, 
-									final URIPatternMetaValue metaValue,
+									final AbstractPatternMetaValue metaValue,
 									final URI uri);
 }

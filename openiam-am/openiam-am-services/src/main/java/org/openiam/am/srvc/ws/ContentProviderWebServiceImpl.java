@@ -39,7 +39,13 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.jws.WebParam;
 import javax.jws.WebService;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 @Service("contentProviderWS")
 @WebService(endpointInterface = "org.openiam.am.srvc.ws.ContentProviderWebService",
@@ -87,7 +93,7 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
     @Autowired
     @Qualifier("configurableGroovyScriptEngine")
     private ScriptIntegration scriptRunner;
-
+    
 	@Override
     @Transactional(readOnly = true)
 	public AuthLevelAttribute getAuthLevelAttribute(String id) {
@@ -442,6 +448,20 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
             		}
             	}
             }
+            
+            if(pattern.getMatchMode() == null) {
+    			throw new BasicDataServiceException(ResponseCode.PATTERN_MATCH_MODE_REQUIRED);
+    		}
+            
+            if(PatternMatchMode.ANY_PARAMS.equals(pattern.getMatchMode()) || 
+               PatternMatchMode.NO_PARAMS.equals(pattern.getMatchMode()) ||
+               PatternMatchMode.IGNORE.equals(pattern.getMatchMode())) {
+            	pattern.setParams(null);
+    		} else {
+    			if(CollectionUtils.isEmpty(pattern.getParams())) {
+    				throw new BasicDataServiceException(ResponseCode.PATTERN_PARAMS_REQUIRED);
+    			}
+    		}
 
             // validate pattern
             try{
@@ -538,7 +558,24 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
             }
             
             if(CollectionUtils.isNotEmpty(pattern.getMethods())) {
+            	final Set<String> methodSet = new HashSet<String>();
             	for(final URIPatternMethod method : pattern.getMethods()) {
+            		if(method.getMatchMode() == null) {
+            			response.addFieldMapping("method", method.getMethod().toString());
+            			throw new BasicDataServiceException(ResponseCode.METHOD_MATCH_MODE_REQUIRED);
+            		}
+            		
+            		if(PatternMatchMode.ANY_PARAMS.equals(method.getMatchMode()) || 
+            		   PatternMatchMode.NO_PARAMS.equals(method.getMatchMode()) || 
+            		   PatternMatchMode.IGNORE.equals(method.getMatchMode())) {
+            			method.setParams(null);
+            		} else {
+            			if(CollectionUtils.isEmpty(method.getParams())) {
+            				response.addFieldMapping("method", method.getMethod().toString());
+            				throw new BasicDataServiceException(ResponseCode.METHOD_PARAMS_REQUIRED);
+            			}
+            		}
+            		
             		if(method.getMethod() == null) {
             			throw new BasicDataServiceException(ResponseCode.URI_PATTERN_METHOD_REQUIRED);
             		}
@@ -600,6 +637,12 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
                     		}
             			}
             		}
+            		
+            		if(methodSet.contains(getKey(method))) {
+            			response.addFieldMapping("method", method.getMethod().toString());
+            			throw new BasicDataServiceException(ResponseCode.METHOD_WITH_PARAMS_ALREADY_DEFINED);
+            		}
+            		methodSet.add(getKey(method));
             	}
             }
             
@@ -642,6 +685,26 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
             response.setErrorText(e.getMessage());
         }
         return response;
+    }
+    
+    private String getKey(final URIPatternMethod key) {
+    	final StringBuilder sb = new StringBuilder(key.getMethod().toString()).append("-").append(key.getMatchMode().toString());
+    	if(CollectionUtils.isNotEmpty(key.getParams())) {
+    		key.getParams().forEach(param -> {
+    			sb.append("-").append(param.getName().toLowerCase());
+    			if(CollectionUtils.isNotEmpty(param.getValues())) {
+    				final List<String> values = new ArrayList<String>();
+    				param.getValues().forEach(val -> {
+    					if(val != null) {
+    						values.add(val.toLowerCase().trim());
+    					}
+    				});
+    				Collections.sort(values);
+    				sb.append("-").append(values);
+    			}
+    		});
+    	}
+    	return sb.toString();
     }
 
     @Override

@@ -47,12 +47,6 @@ public abstract class AbstractKeyServiceTest<T extends KeyDTO, S extends Abstrac
     	}
 	}
 	
-	protected void assertResponseCode(final Response response, final ResponseCode responseCode) {
-		Assert.assertNotNull(responseCode);
-		Assert.assertNotNull(response);
-		Assert.assertEquals(response.getErrorCode(), responseCode, String.format("Expteded '%s'.  Got Response: '%s'", responseCode, response));
-	}
-	
 	protected Response deleteAndAssert(final T instance) {
 		Response response = delete(instance);
 		Assert.assertTrue(response.isSuccess(), String.format("Could not delete element '%s' with ID '%s.  Response: %s", instance, instance.getId(), response));

@@ -2,16 +2,21 @@ package org.openiam.am.srvc.dto;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.openiam.am.srvc.comparator.AuthLevelGroupingXrefComparator;
+import org.openiam.am.srvc.comparator.URIPatternMethodComparator;
+import org.openiam.am.srvc.comparator.URIPatternSubstitutionComparator;
 import org.openiam.am.srvc.domain.AuthLevelGroupingURIPatternXrefEntity;
 import org.openiam.am.srvc.domain.URIPatternEntity;
 import org.openiam.am.srvc.domain.URIPatternErrorMappingEntity;
 import org.openiam.am.srvc.domain.URIPatternMethodEntity;
 import org.openiam.am.srvc.domain.URIPatternParameterEntity;
 import org.openiam.am.srvc.domain.URIPatternSubstitutionEntity;
+import org.openiam.am.srvc.groovy.AbstractRedirectURLGroovyProcessor;
 import org.openiam.base.KeyDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.meta.dto.MetadataElementPageTemplate;
+import org.springframework.http.HttpMethod;
 
+import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlTransient;
@@ -20,9 +25,13 @@ import javax.xml.bind.annotation.XmlType;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "URIPattern", propOrder = {
@@ -47,7 +56,7 @@ import java.util.Set;
         "redirectToGroovyScript"
 })
 @DozerDTOCorrespondence(URIPatternEntity.class)
-public class URIPattern extends KeyDTO {
+public class URIPattern extends AbstractMatchMode {
 
 	private String contentProviderId;
 	private String contentProviderName;
@@ -69,6 +78,18 @@ public class URIPattern extends KeyDTO {
 	private Set<URIPatternErrorMapping> errorMappings;
 	private String redirectToGroovyScript;
 	
+	@Transient
+	@XmlTransient
+	private AbstractRedirectURLGroovyProcessor redirectProcessor;
+	
+	@Transient
+	@XmlTransient
+	private Map<HttpMethod, TreeSet<URIPatternMethod>> methodMap;
+	
+	@Transient
+	@XmlTransient
+	private TreeSet<URIPatternSubstitution> substititonOrderedSet;
+	
 	/*
 	 * federation variables.  Internal use only
 	 */
@@ -77,6 +98,58 @@ public class URIPattern extends KeyDTO {
 	
 	@XmlTransient
 	private List<RoundRobinServer> serverList;
+	
+	public void initTreeSet() {
+		if(this.methods != null && !this.methods.isEmpty()) {
+			if(this.methodMap == null) {
+				this.methodMap = new HashMap<HttpMethod, TreeSet<URIPatternMethod>>();
+			}
+			for(final URIPatternMethod method : this.methods) {
+				if(method.getMethod() != null) {
+					if(!this.methodMap.containsKey(method.getMethod())) {
+						this.methodMap.put(method.getMethod(), new TreeSet<URIPatternMethod>(new URIPatternMethodComparator()));
+					}
+					this.methodMap.get(method.getMethod()).add(method);
+				}
+			}
+		}
+		
+		if(this.substitutions != null && !this.substitutions.isEmpty()) {
+			if(this.substititonOrderedSet == null) {
+				this.substititonOrderedSet = new TreeSet<URIPatternSubstitution>(new URIPatternSubstitutionComparator());
+			}
+			this.substititonOrderedSet.addAll(substitutions);
+		}
+	}
+	
+	public TreeSet<URIPatternMethod> getMethodTreeSet(final HttpMethod method) {
+		return (methodMap != null) ? methodMap.get(method) : null;
+	}
+	
+	
+	
+	/*
+	public boolean isMethodDefined(final HttpMethod method) {
+		return (methodMap != null) ? (methodMap.containsKey(method) && !methodMap.get(method).isEmpty()) : false;
+	}
+	*/
+	
+	public TreeSet<URIPatternSubstitution> getSubstititonOrderedSet() {
+		return substititonOrderedSet;
+	}
+
+	public boolean isMethodsDefined() {
+		return (methodMap != null) ? !methodMap.isEmpty() : false;
+	}
+	
+	public void addParam(final URIPatternParameter param) {
+		if(param != null) {
+			if(this.params == null) {
+				this.params = new HashSet<URIPatternParameter>();
+			}
+			this.params.add(param);
+		}
+	}
 	
 	public Set<URIPatternParameter> getParams() {
 		return params;
@@ -89,6 +162,14 @@ public class URIPattern extends KeyDTO {
 	}
 	public void setMethods(Set<URIPatternMethod> methods) {
 		this.methods = methods;
+	}
+	public void addMethod(final URIPatternMethod method) {
+		if(method != null) {
+			if(this.methods == null) {
+				this.methods = new HashSet<URIPatternMethod>();
+			}
+			this.methods.add(method);
+		}
 	}
 	public String getContentProviderId() {
 		return contentProviderId;
@@ -230,6 +311,14 @@ public class URIPattern extends KeyDTO {
 	public void setRedirectToGroovyScript(String redirectToGroovyScript) {
 		this.redirectToGroovyScript = redirectToGroovyScript;
 	}
+	
+	public AbstractRedirectURLGroovyProcessor getRedirectProcessor() {
+		return redirectProcessor;
+	}
+	public void setRedirectProcessor(
+			AbstractRedirectURLGroovyProcessor redirectProcessor) {
+		this.redirectProcessor = redirectProcessor;
+	}
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -244,11 +333,13 @@ public class URIPattern extends KeyDTO {
 		result = prime * result + ((pattern == null) ? 0 : pattern.hashCode());
 		result = prime * result
 				+ ((redirectTo == null) ? 0 : redirectTo.hashCode());
+		result = prime
+				* result
+				+ ((redirectToGroovyScript == null) ? 0
+						: redirectToGroovyScript.hashCode());
 		result = prime * result
 				+ ((resourceId == null) ? 0 : resourceId.hashCode());
 		result = prime * result + ((themeId == null) ? 0 : themeId.hashCode());
-		result = prime * result
-				+ ((redirectToGroovyScript == null) ? 0 : redirectToGroovyScript.hashCode());
 		return result;
 	}
 	@Override
@@ -282,6 +373,11 @@ public class URIPattern extends KeyDTO {
 				return false;
 		} else if (!redirectTo.equals(other.redirectTo))
 			return false;
+		if (redirectToGroovyScript == null) {
+			if (other.redirectToGroovyScript != null)
+				return false;
+		} else if (!redirectToGroovyScript.equals(other.redirectToGroovyScript))
+			return false;
 		if (resourceId == null) {
 			if (other.resourceId != null)
 				return false;
@@ -292,29 +388,17 @@ public class URIPattern extends KeyDTO {
 				return false;
 		} else if (!themeId.equals(other.themeId))
 			return false;
-		
-		if (redirectToGroovyScript == null) {
-			if (other.redirectToGroovyScript != null)
-				return false;
-		} else if (!redirectToGroovyScript.equals(other.redirectToGroovyScript))
-			return false;
 		return true;
 	}
 	@Override
 	public String toString() {
 		return "URIPattern [contentProviderId=" + contentProviderId
-				+ ", contentProviderName=" + contentProviderName + ", pattern="
-				+ pattern + ", isPublic=" + isPublic + ", resourceId="
-				+ resourceId + ", resourceName=" + resourceName
-				+ ", metaEntitySet=" + metaEntitySet + ", pageTemplates="
-				+ pageTemplates + ", themeId=" + themeId + ", groupingXrefs="
-				+ groupingXrefs + ", resourceCoorelatedName="
-				+ resourceCoorelatedName + ", servers=" + servers
-				+ ", authProviderId=" + authProviderId + ", methods=" + methods
-				+ ", params=" + params + ", substitutions=" + substitutions
-				+ ", redirectTo=" + redirectTo + ", serverIdx=" + serverIdx
-				+ ", serverList=" + serverList + ", id=" + id
-				+ ", objectState=" + objectState + ", requestorSessionID="
+				+ ", pattern=" + pattern + ", isPublic=" + isPublic
+				+ ", resourceId=" + resourceId + ", themeId=" + themeId
+				+ ", authProviderId=" + authProviderId + ", redirectTo="
+				+ redirectTo + ", redirectToGroovyScript="
+				+ redirectToGroovyScript + ", matchMode=" + matchMode + ", id="
+				+ id + ", objectState=" + objectState + ", requestorSessionID="
 				+ requestorSessionID + ", requestorUserId=" + requestorUserId
 				+ ", requestorLogin=" + requestorLogin + ", requestClientIP="
 				+ requestClientIP + "]";

@@ -17,6 +17,7 @@ import org.openiam.am.srvc.dto.AuthLevelGroupingURIPatternXref;
 import org.openiam.am.srvc.dto.AuthLevelGroupingURIPatternXrefId;
 import org.openiam.am.srvc.dto.ContentProvider;
 import org.openiam.am.srvc.dto.ContentProviderServer;
+import org.openiam.am.srvc.dto.PatternMatchMode;
 import org.openiam.am.srvc.dto.URIPattern;
 import org.openiam.am.srvc.dto.URIPatternErrorMapping;
 import org.openiam.am.srvc.dto.URIPatternMeta;
@@ -167,6 +168,7 @@ public class URIPatternServiceTest extends AbstractContentProviderServiceTest<UR
 			public URIPatternMethod generate() {
 				final URIPatternMethod generated = new URIPatternMethod();
 				generated.setMethod(HttpMethod.values()[idx++ % HttpMethod.values().length]);
+				generated.setMatchMode(PatternMatchMode.SPECIFIC_PARAMS);
 				
 				final Set<URIPatternMethodParameter> parameters = new HashSet<URIPatternMethodParameter>();
 				for(int i = 0; i < 10; i++) {
@@ -263,10 +265,56 @@ public class URIPatternServiceTest extends AbstractContentProviderServiceTest<UR
 	}
 	
 	@Test
+	public void testDuplicateMethods() {
+		final URIPattern pattern = createBean();
+		final String paramName = getRandomName();
+		
+		final URIPatternMethod method1 = new URIPatternMethod();
+		method1.setMatchMode(PatternMatchMode.SPECIFIC_PARAMS);
+		method1.setMethod(HttpMethod.GET);
+		final Set<URIPatternMethodParameter> params1 = new HashSet<URIPatternMethodParameter>();
+		final URIPatternMethodParameter param1 = new URIPatternMethodParameter();
+		param1.setName(paramName);
+		final List<String> value1 = new LinkedList<String>();
+		param1.setValues(value1);
+		params1.add(param1);
+		method1.setId(getRandomName());
+		
+		final URIPatternMethod method2 = new URIPatternMethod();
+		method2.setMatchMode(PatternMatchMode.SPECIFIC_PARAMS);
+		method2.setMethod(HttpMethod.GET);
+		final Set<URIPatternMethodParameter> params2 = new HashSet<URIPatternMethodParameter>();	
+		final URIPatternMethodParameter param2 = new URIPatternMethodParameter();
+		param2.setName(paramName);
+		final List<String> value2 = new LinkedList<String>();
+		param2.setValues(value2);
+		params2.add(param2);
+		method2.setId(getRandomName());
+		
+		method1.setParams(params1);
+		method2.setParams(params2);
+		
+		value1.add("a");
+		value2.add("a");
+		
+		value1.add("b");
+		value2.add("B");
+		
+		final Set<URIPatternMethod> methods = new HashSet<URIPatternMethod>();
+		pattern.setMethods(methods);
+		methods.add(method1);
+		methods.add(method2);
+		
+		Response response = save(pattern);
+		assertResponseCode(response, ResponseCode.METHOD_WITH_PARAMS_ALREADY_DEFINED);
+	}
+	
+	@Test
 	public void testParams() {
 		URIPattern pattern = createBean();
 		pattern.setErrorMappings(null);
 		final Set<URIPatternParameter> targetSet = new HashSet<URIPatternParameter>();
+		pattern.setMatchMode(PatternMatchMode.SPECIFIC_PARAMS);
 		
 		final CollectionOperation<URIPattern, URIPatternParameter> operation = new CollectionOperation<URIPattern, URIPatternParameter>() {
 			@Override
@@ -487,6 +535,17 @@ public class URIPatternServiceTest extends AbstractContentProviderServiceTest<UR
 		response = save(pattern);
 		assertResponseCode(response, ResponseCode.SERVER_URL_NOT_SET);
 		
+		pattern.setMatchMode(null);
+		response = save(pattern);
+		assertResponseCode(response, ResponseCode.PATTERN_MATCH_MODE_REQUIRED);
+		
+		pattern.setMatchMode(PatternMatchMode.SPECIFIC_PARAMS);
+		pattern.setParams(null);
+		response = save(pattern);
+		assertResponseCode(response, ResponseCode.PATTERN_PARAMS_REQUIRED);
+		
+		/* param error codes */
+		pattern.setMatchMode(PatternMatchMode.SPECIFIC_PARAMS);
 		server.setServerURL(getRandomName());
 		final URIPatternParameter param = new URIPatternParameter();
 		final Set<URIPatternParameter> params = new HashSet<URIPatternParameter>();
@@ -494,6 +553,31 @@ public class URIPatternServiceTest extends AbstractContentProviderServiceTest<UR
 		pattern.setParams(params);
 		response = save(pattern);
 		assertResponseCode(response, ResponseCode.PATTERN_URI_PARAM_NAME_REQUIRED);
+		
+		param.setName(getRandomName());
+		
+		final URIPatternMethod method = new URIPatternMethod();
+		method.setMatchMode(null);
+		method.setMethod(HttpMethod.GET);
+		final Set<URIPatternMethod> methods = new HashSet<URIPatternMethod>();
+		methods.add(method);
+		pattern.setMethods(methods);
+		response = save(pattern);
+		assertResponseCode(response, ResponseCode.METHOD_MATCH_MODE_REQUIRED);
+		
+		method.setMatchMode(PatternMatchMode.SPECIFIC_PARAMS);
+		response = save(pattern);
+		assertResponseCode(response, ResponseCode.METHOD_PARAMS_REQUIRED);
+		
+		final URIPatternMethodParameter methodParam = new URIPatternMethodParameter();
+		final Set<URIPatternMethodParameter> methodParams = new HashSet<URIPatternMethodParameter>();
+		methodParams.add(methodParam);
+		method.setParams(methodParams);
+		response = save(pattern);
+		assertResponseCode(response, ResponseCode.URI_PATTERN_PARAMETER_NAME_REQUIRED);
+		
+		methodParam.setName(getRandomName());
+		saveAndAssert(pattern);
 	}
 
 	@Override
@@ -501,6 +585,7 @@ public class URIPatternServiceTest extends AbstractContentProviderServiceTest<UR
 		final URIPattern pattern = new URIPattern();
 		pattern.setContentProviderId(cp.getId());
 		pattern.setPattern(getRandomName());
+		pattern.setMatchMode(PatternMatchMode.ANY_PARAMS);
 		return pattern;
 	}
 

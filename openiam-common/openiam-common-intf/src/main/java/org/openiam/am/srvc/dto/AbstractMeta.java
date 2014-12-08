@@ -1,5 +1,8 @@
 package org.openiam.am.srvc.dto;
 
+import java.util.Collection;
+import java.util.Set;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
@@ -11,10 +14,14 @@ import org.openiam.base.KeyNameDTO;
         "metaType",
         "contentType"
 })
-public abstract class AbstractMeta extends KeyNameDTO {
+public abstract class AbstractMeta<T extends AbstractPatternMetaValue> extends KeyNameDTO {
 
 	protected String contentType;
 	protected URIPatternMetaType metaType;
+	
+	public abstract Set<T> getMetaValueSet();
+	public abstract void addMetaValue(final AbstractPatternMetaValue value);
+	
 
 	public URIPatternMetaType getMetaType() {
 		return metaType;

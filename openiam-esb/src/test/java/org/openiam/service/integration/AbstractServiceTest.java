@@ -2,14 +2,24 @@ package org.openiam.service.integration;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.RandomStringUtils;
 import org.junit.runner.RunWith;
+import org.openiam.am.srvc.dto.AuthLevelGrouping;
+import org.openiam.am.srvc.dto.AuthLevelGroupingContentProviderXref;
+import org.openiam.am.srvc.dto.AuthLevelGroupingContentProviderXrefId;
+import org.openiam.am.srvc.dto.ContentProvider;
+import org.openiam.am.srvc.dto.ContentProviderServer;
+import org.openiam.am.srvc.ws.AuthProviderWebService;
+import org.openiam.am.srvc.ws.ContentProviderWebService;
 import org.openiam.authmanager.service.AuthorizationManagerWebService;
 import org.openiam.base.SysConfiguration;
+import org.openiam.base.ws.Response;
+import org.openiam.base.ws.ResponseCode;
 import org.openiam.idm.searchbeans.LanguageSearchBean;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.lang.dto.LanguageMapping;
@@ -39,6 +49,13 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 	@Autowired
 	protected SysConfiguration sysConfiguration;
 	
+	@Autowired
+	@Qualifier("authProviderServiceClient")
+	protected AuthProviderWebService authProviderServiceClient;
+	
+	@Autowired
+	@Qualifier("contentProviderServiceClient")
+	protected ContentProviderWebService contentProviderServiceClient;
 
 	@Autowired
 	@Qualifier("authorizationManagerServiceClient")
@@ -49,8 +66,43 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 		public void set(T t, Set<S> set);
 	}
 	
+	protected ContentProvider createContentProvider() {
+		final ContentProvider cp = new ContentProvider();
+		cp.setName(getRandomName());
+		cp.setAuthCookieName(getRandomName());
+		cp.setDomainPattern(getRandomName());
+		cp.setAuthCookieDomain(cp.getDomainPattern());
+		cp.setUrl(getRandomName());
+		cp.setAuthProviderId(authProviderServiceClient.findAuthProviderBeans(null, 0, 1).get(0).getId());
+		
+		final ContentProviderServer server = new ContentProviderServer();
+		server.setServerURL(getRandomName());
+		final Set<ContentProviderServer> serverSet = new HashSet<ContentProviderServer>();
+		serverSet.add(server);
+		cp.setServerSet(serverSet);
+		
+		final Set<AuthLevelGroupingContentProviderXref> groupingXrefs = new HashSet<AuthLevelGroupingContentProviderXref>();
+		//for(final AuthLevelGrouping grouping : contentProviderServiceClient.getAuthLevelGroupingList()) {
+		contentProviderServiceClient.getAuthLevelGroupingList().forEach((final AuthLevelGrouping grouping) -> {
+			final AuthLevelGroupingContentProviderXref xref = new AuthLevelGroupingContentProviderXref();
+			final AuthLevelGroupingContentProviderXrefId id = new AuthLevelGroupingContentProviderXrefId();
+			id.setGroupingId(grouping.getId());
+			xref.setId(id);
+			groupingXrefs.add(xref);
+		});
+		//}
+		cp.setGroupingXrefs(groupingXrefs);
+		return cp;
+	}
+	
 	protected interface EntityGenerator<T> {
 		public T generate();
+	}
+	
+	protected void assertResponseCode(final Response response, final ResponseCode responseCode) {
+		Assert.assertNotNull(responseCode);
+		Assert.assertNotNull(response);
+		Assert.assertEquals(response.getErrorCode(), responseCode, String.format("Expteded '%s'.  Got Response: '%s'", responseCode, response));
 	}
 	
 	protected User createUser() {

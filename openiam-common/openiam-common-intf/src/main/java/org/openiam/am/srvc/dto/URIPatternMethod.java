@@ -1,9 +1,12 @@
 package org.openiam.am.srvc.dto;
 
+import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
 import org.openiam.am.srvc.domain.URIPatternMethodEntity;
@@ -22,7 +25,7 @@ import org.springframework.http.HttpMethod;
 	"resourceCoorelatedName"
 })
 @DozerDTOCorrespondence(URIPatternMethodEntity.class)
-public class URIPatternMethod extends KeyDTO {
+public class URIPatternMethod extends AbstractMatchMode {
 
 	private String patternId;
 	private HttpMethod method;
@@ -31,6 +34,26 @@ public class URIPatternMethod extends KeyDTO {
 	private String resourceId;
 	private String resourceCoorelatedName;
 	
+	/**
+	 * This value is set to 'true' by URIPatternMethodComparator
+	 * If 'true', then there exists another method for the parent URI
+	 * pattern where the <b>method</b> and <b>matchMode</b> are equal,
+	 * AND the number of <b>params</b> (and the # of values) is equal.
+	 * However, the actual values are NOT equal.  Therefore, a 'lookahead' is
+	 * required in order to determine the best match.
+	 * The TreeSet in the parent URIPattern should have these types of URIPatternMethods
+	 * in-order, sequentially.
+	 */
+	@Transient
+	@XmlTransient
+	private boolean hasSimiliarMethodInParentURI;
+	
+	public boolean isHasSimiliarMethodInParentURI() {
+		return hasSimiliarMethodInParentURI;
+	}
+	public void setHasSimiliarMethodInParentURI(boolean hasSimiliarMethodInParentURI) {
+		this.hasSimiliarMethodInParentURI = hasSimiliarMethodInParentURI;
+	}
 	public Set<URIPatternMethodMeta> getMetaEntitySet() {
 		return metaEntitySet;
 	}
@@ -42,6 +65,14 @@ public class URIPatternMethod extends KeyDTO {
 	}
 	public void setParams(Set<URIPatternMethodParameter> parameters) {
 		this.params = parameters;
+	}
+	public void addParam(final URIPatternMethodParameter param) {
+		if(param != null) {
+			if(this.params == null) {
+				this.params = new HashSet<URIPatternMethodParameter>();
+			}
+			this.params.add(param);
+		}
 	}
 	public String getPatternId() {
 		return patternId;
@@ -67,6 +98,11 @@ public class URIPatternMethod extends KeyDTO {
 	}
 	public void setResourceCoorelatedName(String resourceCoorelatedName) {
 		this.resourceCoorelatedName = resourceCoorelatedName;
+	}
+	@Override
+	public String toString() {
+		return "URIPatternMethod [patternId=" + patternId + ", method="
+				+ method + ", resourceId=" + resourceId + "]";
 	}
 	@Override
 	public int hashCode() {
@@ -102,13 +138,6 @@ public class URIPatternMethod extends KeyDTO {
 			return false;
 		return true;
 	}
-	@Override
-	public String toString() {
-		return "URIPatternMethod [patternId=" + patternId + ", method="
-				+ method + ", resourceId=" + resourceId
-				+ ", resourceCoorelatedName=" + resourceCoorelatedName + "]";
-	}
-	
 	
 	
 }
