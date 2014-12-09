@@ -490,10 +490,12 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
             			throw new BasicDataServiceException(ResponseCode.URI_PATTTERN_SUBSTITUTION_QUERY_REQUIRED);
             		}
             		
+            		/*
             		if(StringUtils.isBlank(substitution.getReplaceWith())) {
         				response.addFieldMapping("query", substitution.getQuery());
             			throw new BasicDataServiceException(ResponseCode.URI_PATTTERN_SUBSTITUTION_REPLACE_WITH_REQUIRED);
             		}
+            		*/
             	}
             }
             
