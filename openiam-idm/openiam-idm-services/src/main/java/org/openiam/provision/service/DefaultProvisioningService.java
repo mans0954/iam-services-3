@@ -2114,19 +2114,19 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 }
             }
 
-            for (LoginEntity l : principalList) {
+            for (LoginEntity targetLoginEntity : principalList) {
                 // if managedsysId is equal to the source or the openiam default
                 // ID, then only update the database
                 // otherwise do a sync
-                if (l.getManagedSysId().equalsIgnoreCase(passwordSync.getManagedSystemId())
-                        || l.getManagedSysId().equalsIgnoreCase(sysConfiguration.getDefaultManagedSysId())) {
+                if (targetLoginEntity.getManagedSysId().equalsIgnoreCase(passwordSync.getManagedSystemId())
+                        || targetLoginEntity.getManagedSysId().equalsIgnoreCase(sysConfiguration.getDefaultManagedSysId())) {
 
-                    log.debug("Updating password for " + l.getLogin());
+                    log.debug("Updating password for " + targetLoginEntity.getLogin());
 
-                    auditLog.setManagedSysId(l.getManagedSysId());
-                    auditLog.addAttribute(AuditAttributeName.DESCRIPTION, "Updating password for " + l.getLogin());
+                    auditLog.setManagedSysId(targetLoginEntity.getManagedSysId());
+                    auditLog.addAttribute(AuditAttributeName.DESCRIPTION, "Updating password for " + targetLoginEntity.getLogin());
 
-                    boolean retval = loginManager.setPassword(l.getLogin(), l.getManagedSysId(), encPassword,
+                    boolean retval = loginManager.setPassword(targetLoginEntity.getLogin(), targetLoginEntity.getManagedSysId(), encPassword,
                             passwordSync.isPreventChangeCountIncrement());
                     if (retval) {
                         auditLog.succeed();
@@ -2149,10 +2149,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     }
                 } else {
 
-                    log.debug("Synchronizing password from: " + l);
+                    log.debug("Synchronizing password from: " + targetLoginEntity);
 
                     // determine if you should sync the password or not
-                    String managedSysId = l.getManagedSysId();
+                    String managedSysId = targetLoginEntity.getManagedSysId();
                     final ManagedSysEntity mSys = managedSystemService.getManagedSysById(managedSysId);
                     final ResourceEntity res = resourceService.findResourceById(mSys.getResourceId());
 
@@ -2163,7 +2163,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         log.debug("Sync allowed for sys=" + managedSysId);
 
                         // update the password in openiam
-                        loginManager.setPassword(l.getLogin(), l.getManagedSysId(), encPassword,
+                        loginManager.setPassword(targetLoginEntity.getLogin(), targetLoginEntity.getManagedSysId(), encPassword,
                                 passwordSync.isPreventChangeCountIncrement());
 
                         // update the target system
@@ -2179,15 +2179,14 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                             matchObj = matcheList.get(0);
                         }
 
-                        // exclude the system where this event occured.
-                        Login loginDTO = loginDozerConverter.convertToDTO(login, false);
+                        Login loginDTO = loginDozerConverter.convertToDTO(targetLoginEntity, false);
                         ResponseType resp = resetPassword(requestId, loginDTO,
                                 passwordSync.getPassword(), managedSysDozerConverter.convertToDTO(mSys, false),
                                 objectMatchDozerConverter.convertToDTO(matchObj, false),
                                 buildMngSysAttributes(loginDTO, "SYNC_PASSWORD"));
                         if (resp.getStatus() == StatusCodeType.SUCCESS) {
                             auditLog.succeed();
-                            auditLog.setAuditDescription("Set password for resource: " + res.getName() + " for user: " + l.getLogin());
+                            auditLog.setAuditDescription("Set password for resource: " + res.getName() + " for user: " + targetLoginEntity.getLogin());
 
                             response.setStatus(ResponseStatus.SUCCESS);
                         } else {
@@ -2200,7 +2199,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
                             auditLog.fail();
                             auditLog.setFailureReason(String.format("Set password for resource %s user %s failed: %s",
-                                    mSys.getName(), l.getLogin(), reason));
+                                    mSys.getName(), targetLoginEntity.getLogin(), reason));
 
                             response.setErrorText(resp.getErrorMsgAsStr());
                             response.setStatus(ResponseStatus.FAILURE);
