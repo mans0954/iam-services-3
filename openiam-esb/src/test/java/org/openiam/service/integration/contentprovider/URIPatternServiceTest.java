@@ -524,10 +524,10 @@ public class URIPatternServiceTest extends AbstractContentProviderServiceTest<UR
 		assertResponseCode(response, ResponseCode.URI_PATTTERN_SUBSTITUTION_QUERY_REQUIRED);
 		
 		substitution.setQuery(getRandomName());
-		response = save(pattern);
-		assertResponseCode(response, ResponseCode.URI_PATTTERN_SUBSTITUTION_REPLACE_WITH_REQUIRED);
+		//response = save(pattern);
+		//assertResponseCode(response, ResponseCode.URI_PATTTERN_SUBSTITUTION_REPLACE_WITH_REQUIRED);
 		
-		substitution.setReplaceWith(getRandomName());
+		//substitution.setReplaceWith(getRandomName());
 		final URIPatternServer server = new URIPatternServer();
 		final Set<URIPatternServer> servers = new HashSet<URIPatternServer>();
 		servers.add(server);
