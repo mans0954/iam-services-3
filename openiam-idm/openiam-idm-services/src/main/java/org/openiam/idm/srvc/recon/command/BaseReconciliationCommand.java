@@ -45,7 +45,19 @@ public abstract class BaseReconciliationCommand {
 					value.append(ba.getValue());
 				}
 				line.put(attr.getName(), value.toString());
-			}
+			} else if (attr.getValueList() != null && attr.getValueList().size() > 0) {
+                StringBuilder value = new StringBuilder();
+                boolean isFirst = true;
+                for (String val : attr.getValueList()) {
+                    if (!isFirst) {
+                        value.append(MULTIPLE_VALUES_DELIMITER);
+                    } else {
+                        isFirst = false;
+                    }
+                    value.append(val);
+                }
+                line.put(attr.getName(), value.toString());
+            }
 		}
 		return line;
     }
