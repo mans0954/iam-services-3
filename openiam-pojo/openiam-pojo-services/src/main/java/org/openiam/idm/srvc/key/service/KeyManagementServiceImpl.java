@@ -233,7 +233,8 @@ public class KeyManagementServiceImpl implements KeyManagementService {
             for (String userId : userSecurityMap.keySet()) {
                 // decrypt user data
                 if (!"0001".equals(userId)) {
-                    decryptSecurityDataForUser(jksManager.decodeKey(oldSecretKey), userSecurityMap.get(userId));
+                    decryptOldData(jksManager.decodeKey(oldSecretKey), userSecurityMap.get(userId));
+                  //  decryptSecurityDataForUser(jksManager.decodeKey(oldSecretKey), userSecurityMap.get(userId));
                 }
                 // reencrypt user data
                 encryptUserData(masterKey, userSecurityMap.get(userId), newUserKeyList);
@@ -243,6 +244,10 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         // replace user key for given user
         userKeyDao.deleteAll();
         addUserKeys(newUserKeyList);
+    }
+
+    private void decryptOldData(byte[] key, UserSecurityWrapper userSecurityWrapper) throws Exception {
+        decryptUserPasswords(key, userSecurityWrapper);
     }
 
     @Override
