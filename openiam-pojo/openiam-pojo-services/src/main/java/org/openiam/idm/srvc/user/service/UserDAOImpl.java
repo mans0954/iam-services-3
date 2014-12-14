@@ -690,7 +690,8 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
     public List<UserEntity> getByEmail(String email){
         if (email != null) {
             final Criteria criteria = getCriteria();
-            criteria.createAlias("emailAddresses", "em").add(Restrictions.eq("em.emailAddress", email));
+            criteria.createAlias("emailAddresses", "em").add(Restrictions.eq("em.emailAddress", email))
+            		.add(Restrictions.ne("status", UserStatusEnum.DELETED));
             return criteria.list();
         } else
             return null;
