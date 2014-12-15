@@ -489,7 +489,7 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
         List<ExtensibleAttribute> requestedExtensibleAttributes = new ArrayList<ExtensibleAttribute>();
 
         for (AttributeMap ame : attrMap) {
-            if ("USER".equalsIgnoreCase(ame.getMapForObjectType()) && "ACTIVE".equalsIgnoreCase(ame.getStatus())) {
+            if (PolicyMapObjectTypeOptions.USER.name().equalsIgnoreCase(ame.getMapForObjectType()) && "ACTIVE".equalsIgnoreCase(ame.getStatus())) {
                 requestedExtensibleAttributes.add(new ExtensibleAttribute(ame.getAttributeName(), null));
             }
         }
