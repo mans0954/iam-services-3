@@ -44,7 +44,7 @@ public class AddressDAOImpl extends BaseDaoImpl<AddressEntity, String> implement
 
             if (address.getType() != null) {
                 if (StringUtils.isNotBlank(address.getType().getId())) {
-                    criteria.add(Restrictions.eq("metadataType.id", address.getType().getId()));
+                    criteria.add(Restrictions.eq("type.id", address.getType().getId()));
                 }
             }
         }
@@ -60,7 +60,7 @@ public class AddressDAOImpl extends BaseDaoImpl<AddressEntity, String> implement
 
 	@Override
 	protected String getPKfieldName() {
-		return "addressId";
+		return "id";
 	}
 	
 }

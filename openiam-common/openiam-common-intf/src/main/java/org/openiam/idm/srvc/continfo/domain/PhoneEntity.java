@@ -3,6 +3,7 @@ package org.openiam.idm.srvc.continfo.domain;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Type;
+import org.openiam.base.domain.AbstractMetdataTypeEntity;
 import org.openiam.base.domain.KeyEntity;
 import org.openiam.core.dao.lucene.LuceneLastUpdate;
 import org.openiam.dozer.DozerDTOCorrespondence;
@@ -22,6 +23,7 @@ import org.openiam.idm.srvc.user.domain.UserEntity;
 import javax.persistence.*;
 import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlTransient;
+
 import java.util.Date;
 
 @Entity
@@ -32,7 +34,7 @@ import java.util.Date;
 @ElasticsearchIndex(indexName = ESIndexName.USERS)
 @ElasticsearchMapping(typeName = ESIndexType.PHONE/*, parent = ESIndexType.USER*/)
 @AttributeOverride(name = "id", column = @Column(name = "PHONE_ID"))
-public class PhoneEntity extends KeyEntity {
+public class PhoneEntity extends AbstractMetdataTypeEntity {
    
     @Column(name="ACTIVE")
     @Type(type = "yes_no")
@@ -102,10 +104,6 @@ public class PhoneEntity extends KeyEntity {
     @Column(name="CREATE_DATE",length=19)
     @Temporal(TemporalType.TIMESTAMP)
     protected Date createDate;
-
-    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
-    @JoinColumn(name = "TYPE_ID", insertable=true, updatable=true)
-    private MetadataTypeEntity metadataType;
 
     public PhoneEntity() {
     }
@@ -208,14 +206,6 @@ public class PhoneEntity extends KeyEntity {
 		this.createDate = createDate;
 	}
 
-    public MetadataTypeEntity getMetadataType() {
-        return metadataType;
-    }
-
-    public void setMetadataType(MetadataTypeEntity metadataType) {
-        this.metadataType = metadataType;
-    }
-
     /*
 	public boolean isValidated() {
 		return validated;
@@ -241,8 +231,6 @@ public class PhoneEntity extends KeyEntity {
 		result = prime * result + (isDefault ? 1231 : 1237);
 		result = prime * result
 				+ ((lastUpdate == null) ? 0 : lastUpdate.hashCode());
-		result = prime * result
-				+ ((metadataType == null) ? 0 : metadataType.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result + ((parent == null) ? 0 : parent.hashCode());
 		result = prime * result
@@ -295,11 +283,6 @@ public class PhoneEntity extends KeyEntity {
 				return false;
 		} else if (!lastUpdate.equals(other.lastUpdate))
 			return false;
-		if (metadataType == null) {
-			if (other.metadataType != null)
-				return false;
-		} else if (!metadataType.equals(other.metadataType))
-			return false;
 		if (name == null) {
 			if (other.name != null)
 				return false;
@@ -330,8 +313,7 @@ public class PhoneEntity extends KeyEntity {
 				+ ", isDefault=" + isDefault + ", parent=" + parent
 				+ ", phoneExt=" + phoneExt + ", phoneNbr=" + phoneNbr
 				+ ", name=" + name + ", lastUpdate=" + lastUpdate
-				+ ", createDate=" + createDate + ", metadataType="
-				+ metadataType + "]";
+				+ ", createDate=" + createDate + "]";
 	}
 
 	

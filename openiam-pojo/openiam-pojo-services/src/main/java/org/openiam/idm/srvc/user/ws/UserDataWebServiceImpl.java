@@ -192,12 +192,12 @@ public class UserDataWebServiceImpl implements UserDataWebService {
             if (val == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }
-            if (StringUtils.isBlank(val.getMetadataTypeId())) {
+            if (StringUtils.isBlank(val.getMdTypeId())) {
                 throw new BasicDataServiceException(ResponseCode.EMAIL_ADDRESS_TYPE_REQUIRED);
             }
             EmailSearchBean searchBean = new EmailSearchBean();
             searchBean.setParentId(val.getParentId());
-            searchBean.setMetadataTypeId(val.getMetadataTypeId());
+            searchBean.setMetadataTypeId(val.getMdTypeId());
             List<EmailAddressEntity> entityList = userManager.getEmailAddressList(searchBean, Integer.MAX_VALUE, 0);
             if (CollectionUtils.isNotEmpty(entityList))
                 throw new BasicDataServiceException(ResponseCode.EMAIL_ADDRESS_TYPE_DUPLICATED);
@@ -240,13 +240,13 @@ public class UserDataWebServiceImpl implements UserDataWebService {
             if (val == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }
-            if (StringUtils.isBlank(val.getMetadataTypeId())) {
+            if (StringUtils.isBlank(val.getMdTypeId())) {
                 throw new BasicDataServiceException(ResponseCode.PHONE_TYPE_REQUIRED);
             }
 
             PhoneSearchBean searchBean = new PhoneSearchBean();
             searchBean.setParentId(val.getParentId());
-            searchBean.setMetadataTypeId(val.getMetadataTypeId());
+            searchBean.setMetadataTypeId(val.getMdTypeId());
             // searchBean.setParentType(ContactConstants.PARENT_TYPE_USER);
             List<PhoneEntity> entityList = userManager.getPhoneList(searchBean, Integer.MAX_VALUE, 0);
             if (CollectionUtils.isNotEmpty(entityList) && !entityList.get(0).getId().equals(val.getId()))
@@ -275,12 +275,12 @@ public class UserDataWebServiceImpl implements UserDataWebService {
             if (val == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }
-            if (StringUtils.isBlank(val.getMetadataTypeId())) {
+            if (StringUtils.isBlank(val.getMdTypeId())) {
                 throw new BasicDataServiceException(ResponseCode.PHONE_TYPE_REQUIRED);
             }
             PhoneSearchBean searchBean = new PhoneSearchBean();
             searchBean.setParentId(val.getParentId());
-            searchBean.setMetadataTypeId(val.getMetadataTypeId());
+            searchBean.setMetadataTypeId(val.getMdTypeId());
             List<PhoneEntity> entityList = userManager.getPhoneList(searchBean, Integer.MAX_VALUE, 0);
             if (CollectionUtils.isNotEmpty(entityList))
                 throw new BasicDataServiceException(ResponseCode.PHONE_TYPE_DUPLICATED);
@@ -806,13 +806,13 @@ public class UserDataWebServiceImpl implements UserDataWebService {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }
 
-            if (StringUtils.isBlank(val.getMetadataTypeId())) {
+            if (StringUtils.isBlank(val.getMdTypeId())) {
                 throw new BasicDataServiceException(ResponseCode.EMAIL_ADDRESS_TYPE_REQUIRED);
             }
 
             EmailSearchBean searchBean = new EmailSearchBean();
             searchBean.setParentId(val.getParentId());
-            searchBean.setMetadataTypeId(val.getMetadataTypeId());
+            searchBean.setMetadataTypeId(val.getMdTypeId());
             // searchBean.setParentType(ContactConstants.PARENT_TYPE_USER);
             List<EmailAddressEntity> entityList = userManager.getEmailAddressList(searchBean, Integer.MAX_VALUE, 0);
             if (CollectionUtils.isNotEmpty(entityList) && !entityList.get(0).getId().equals(val.getId()))

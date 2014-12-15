@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.continfo.dto;
 
+import org.openiam.base.AbstractMetadataTypeDTO;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.KeyDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
@@ -9,6 +10,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
+
 import java.util.Date;
 
 /**
@@ -22,15 +24,12 @@ import java.util.Date;
         "emailAddress",
         "isDefault",
         "parentId",
-        "name",
         "operation",
         "lastUpdate",
-        "createDate",
-        "metadataTypeId",
-        "typeDescription"
+        "createDate"
 })
 @DozerDTOCorrespondence(EmailAddressEntity.class)
-public class EmailAddress extends KeyDTO {
+public class EmailAddress extends AbstractMetadataTypeDTO {
 
     // Fields
 	private AttributeOperationEnum operation = AttributeOperationEnum.NO_CHANGE;
@@ -43,17 +42,12 @@ public class EmailAddress extends KeyDTO {
 
     private boolean isDefault = false;
 
-    private String name;
-
     private String parentId;
     
     private Date lastUpdate;
     
     @XmlSchemaType(name = "dateTime")
     private Date createDate;
-
-    private String metadataTypeId;
-    private String typeDescription;
 
     // Constructors
 
@@ -86,8 +80,8 @@ public class EmailAddress extends KeyDTO {
         this.emailAddress = emailAdr.getEmailAddress();
         this.isActive = emailAdr.getIsActive();
         this.isDefault = emailAdr.getIsDefault();
-        this.name = emailAdr.getName();
-        this.metadataTypeId=emailAdr.getMetadataTypeId();
+        this.setName(emailAdr.getName());
+        this.setMdTypeId(emailAdr.getMdTypeId());;
     }
 
     public String getParentId() {
@@ -133,14 +127,6 @@ public class EmailAddress extends KeyDTO {
         this.isActive = isActive;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public AttributeOperationEnum getOperation() {
         return operation;
     }
@@ -169,23 +155,6 @@ public class EmailAddress extends KeyDTO {
         this.createDate = createDate;
     }
 
-
-    public String getMetadataTypeId() {
-        return metadataTypeId;
-    }
-
-    public void setMetadataTypeId(String metadataTypeId) {
-        this.metadataTypeId = metadataTypeId;
-    }
-
-    public String getTypeDescription() {
-        return typeDescription;
-    }
-
-    public void setTypeDescription(String typeDescription) {
-        this.typeDescription = typeDescription;
-    }
-
     @Override
 	public int hashCode() {
 		final int prime = 31;
@@ -200,13 +169,10 @@ public class EmailAddress extends KeyDTO {
 		result = prime * result + (isDefault ? 1231 : 1237);
 		result = prime * result
 				+ ((lastUpdate == null) ? 0 : lastUpdate.hashCode());
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result
 				+ ((operation == null) ? 0 : operation.hashCode());
 		result = prime * result
 				+ ((parentId == null) ? 0 : parentId.hashCode());
-        result = prime * result
-                + ((metadataTypeId == null) ? 0 : metadataTypeId.hashCode());
 		return result;
 	}
 
@@ -245,11 +211,6 @@ public class EmailAddress extends KeyDTO {
 				return false;
 		} else if (!lastUpdate.equals(other.lastUpdate))
 			return false;
-		if (name == null) {
-			if (other.name != null)
-				return false;
-		} else if (!name.equals(other.name))
-			return false;
 		if (operation != other.operation)
 			return false;
 		if (parentId == null) {
@@ -257,12 +218,6 @@ public class EmailAddress extends KeyDTO {
 				return false;
 		} else if (!parentId.equals(other.parentId))
 			return false;
-
-        if (metadataTypeId == null) {
-            if (other.metadataTypeId != null)
-                return false;
-        } else if (!metadataTypeId.equals(other.metadataTypeId))
-            return false;
 		return true;
 	}
 
@@ -274,12 +229,9 @@ public class EmailAddress extends KeyDTO {
                ", description='" + description + '\'' +
                ", emailAddress='" + emailAddress + '\'' +
                ", isDefault=" + isDefault +
-               ", name='" + name + '\'' +
                ", parentId='" + parentId + '\'' +
                ", lastUpdate=" + lastUpdate +
                ", createDate=" + createDate +
-               ", metadataTypeId='" + metadataTypeId + '\'' +
-               ", typeDescription='" + typeDescription + '\'' +
                ", " + super.toString()+"}";
     }
 }

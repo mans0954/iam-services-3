@@ -9,6 +9,8 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
+
+import java.io.Serializable;
 import java.util.Date;
 
 // Generated Jun 12, 2007 10:46:13 PM by Hibernate Tools 3.2.0.beta8
@@ -43,7 +45,7 @@ import java.util.Date;
         "lastUpdate"
 })
 @DozerDTOCorrespondence(AddressEntity.class)
-public class Address extends AbstractMetadataTypeDTO implements java.io.Serializable {
+public class Address extends AbstractMetadataTypeDTO {
 
 
     protected AttributeOperationEnum operation = AttributeOperationEnum.NO_CHANGE;

@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.continfo.dto;
 
+import org.openiam.base.AbstractMetadataTypeDTO;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.KeyDTO;
 import org.openiam.base.KeyNameDTO;
@@ -10,6 +11,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
+
 import java.util.Date;
 
 // Generated Jun 12, 2007 10:46:13 PM by Hibernate Tools 3.2.0.beta8
@@ -31,13 +33,10 @@ import java.util.Date;
         "phoneNbr",
         "operation",
         "lastUpdate",
-        "createDate",
-        "metadataTypeId",
-        "typeDescription"/*,
-        "validated"*/
+        "createDate"
 })
 @DozerDTOCorrespondence(PhoneEntity.class)
-public class Phone extends KeyNameDTO {
+public class Phone extends AbstractMetadataTypeDTO {
 
 
     private static final long serialVersionUID = 1866386537821973071L;
@@ -57,9 +56,6 @@ public class Phone extends KeyNameDTO {
     
     @XmlSchemaType(name = "dateTime")
     private Date createDate;
-    private String metadataTypeId;
-    private String typeDescription;
-    //private boolean validated;
 
     /**
      * default constructor
@@ -76,9 +72,7 @@ public class Phone extends KeyNameDTO {
         this.setName(ph.getName());
         this.phoneExt = ph.getPhoneExt();
         this.phoneNbr = ph.getPhoneNbr();
-        //this.phoneType = ph.getPhoneType();
-        this.metadataTypeId=ph.getMetadataTypeId();
-        //this.validated = ph.isValidated();
+        this.setMdTypeId(ph.getMdTypeId());
     }
 
     public String getAreaCd() {
@@ -217,32 +211,6 @@ public class Phone extends KeyNameDTO {
         this.createDate = createDate;
     }
 
-    public String getMetadataTypeId() {
-        return metadataTypeId;
-    }
-
-    public void setMetadataTypeId(String metadataTypeId) {
-        this.metadataTypeId = metadataTypeId;
-    }
-
-    public String getTypeDescription() {
-        return typeDescription;
-    }
-
-    public void setTypeDescription(String typeDescription) {
-        this.typeDescription = typeDescription;
-    }
-    
-    /*
-    public boolean isValidated() {
-		return validated;
-	}
-
-	public void setValidated(boolean validated) {
-		this.validated = validated;
-	}
-	*/
-
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -260,8 +228,6 @@ public class Phone extends KeyNameDTO {
 		result = prime * result
 				+ ((lastUpdate == null) ? 0 : lastUpdate.hashCode());
 		result = prime * result
-				+ ((metadataTypeId == null) ? 0 : metadataTypeId.hashCode());
-		result = prime * result
 				+ ((operation == null) ? 0 : operation.hashCode());
 		result = prime * result
 				+ ((parentId == null) ? 0 : parentId.hashCode());
@@ -271,8 +237,6 @@ public class Phone extends KeyNameDTO {
 				+ ((phoneExt == null) ? 0 : phoneExt.hashCode());
 		result = prime * result
 				+ ((phoneNbr == null) ? 0 : phoneNbr.hashCode());
-		result = prime * result
-				+ ((typeDescription == null) ? 0 : typeDescription.hashCode());
 		return result;
 	}
 
@@ -318,11 +282,6 @@ public class Phone extends KeyNameDTO {
 				return false;
 		} else if (!lastUpdate.equals(other.lastUpdate))
 			return false;
-		if (metadataTypeId == null) {
-			if (other.metadataTypeId != null)
-				return false;
-		} else if (!metadataTypeId.equals(other.metadataTypeId))
-			return false;
 		if (operation != other.operation)
 			return false;
 		if (parentId == null) {
@@ -345,11 +304,6 @@ public class Phone extends KeyNameDTO {
 				return false;
 		} else if (!phoneNbr.equals(other.phoneNbr))
 			return false;
-		if (typeDescription == null) {
-			if (other.typeDescription != null)
-				return false;
-		} else if (!typeDescription.equals(other.typeDescription))
-			return false;
 		return true;
 	}
 
@@ -360,9 +314,7 @@ public class Phone extends KeyNameDTO {
 				+ ", description=" + description + ", isDefault=" + isDefault
 				+ ", parentType=" + parentType + ", phoneExt=" + phoneExt
 				+ ", phoneNbr=" + phoneNbr + ", parentId=" + parentId
-				+ ", lastUpdate=" + lastUpdate + ", createDate=" + createDate
-				+ ", metadataTypeId=" + metadataTypeId + ", typeDescription="
-				+ typeDescription + "]";
+				+ ", lastUpdate=" + lastUpdate + ", createDate=" + createDate + "]";
 	}
     
     

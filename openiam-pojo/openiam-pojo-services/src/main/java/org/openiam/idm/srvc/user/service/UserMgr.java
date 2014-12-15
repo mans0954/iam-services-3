@@ -1060,8 +1060,8 @@ public class UserMgr implements UserDataService {
 
         final PhoneEntity entity = phoneDao.findById(val.getId());
         final UserEntity parent = userDao.findById(val.getParent().getId());
-        final MetadataTypeEntity metadataType = (val.getMetadataType() != null && StringUtils.isNotBlank(val.getMetadataType().getId())) ? metadataTypeDAO
-                        .findById(val.getMetadataType().getId()) : null;
+        final MetadataTypeEntity metadataType = (val.getType() != null && StringUtils.isNotBlank(val.getType().getId())) ? metadataTypeDAO
+                        .findById(val.getType().getId()) : null;
 
         if (entity != null && metadataType != null) {
             entity.setAreaCd(val.getAreaCd());
@@ -1070,7 +1070,7 @@ public class UserMgr implements UserDataService {
             entity.setParent(parent);
             entity.setPhoneExt(val.getPhoneExt());
             entity.setPhoneNbr(val.getPhoneNbr());
-            entity.setMetadataType(metadataType);
+            entity.setType(metadataType);
             //entity.setValidated(val.isValidated());
 
             if (entity.getIsDefault() != val.getIsDefault()) {
@@ -1089,7 +1089,7 @@ public class UserMgr implements UserDataService {
         if (val.getParent() == null)
             throw new NullPointerException("parentId for the phone is not defined.");
 
-        if (val.getMetadataType() == null || StringUtils.isBlank(val.getMetadataType().getId())) {
+        if (val.getType() == null || StringUtils.isBlank(val.getType().getId())) {
             throw new NullPointerException("MetadataType for the phone is not defined.");
         }
 
@@ -1100,14 +1100,14 @@ public class UserMgr implements UserDataService {
         if (CollectionUtils.isNotEmpty(entityList)) {
             for (PhoneEntity ph : entityList) {
                 if ((ph.getId() != null && !ph.getId().equals(val.getId()))
-                    && ph.getMetadataType().getId().equals(val.getMetadataType().getId())) {
+                    && ph.getType().getId().equals(val.getType().getId())) {
                     throw new NullPointerException("Phone with provided type exists");
                 }
             }
         }
 
-        MetadataTypeEntity type = metadataTypeDAO.findById(val.getMetadataType().getId());
-        val.setMetadataType(type);
+        MetadataTypeEntity type = metadataTypeDAO.findById(val.getType().getId());
+        val.setType(type);
 
         UserEntity parent = userDao.findById(val.getParent().getId());
         val.setParent(parent);
@@ -1124,13 +1124,13 @@ public class UserMgr implements UserDataService {
             return;
         HashSet<String> types = new HashSet<String>();
         for (PhoneEntity phone : phoneSet) {
-            if (phone.getMetadataType() == null || StringUtils.isBlank(phone.getMetadataType().getId())) {
+            if (phone.getType() == null || StringUtils.isBlank(phone.getType().getId())) {
                 throw new NullPointerException("MetadataType for the phone is not defined.");
             }
-            if (types.contains(phone.getMetadataType().getId()))
+            if (types.contains(phone.getType().getId()))
                 throw new NullPointerException("Duplicate MetadataType for the phone");
             else
-                types.add(phone.getMetadataType().getId());
+                types.add(phone.getType().getId());
         }
 
         Iterator<PhoneEntity> it = phoneSet.iterator();
@@ -1220,7 +1220,7 @@ public class UserMgr implements UserDataService {
         if (val.getParent() == null)
             throw new NullPointerException("parentId for the address is not defined.");
 
-        if (val.getMetadataType() == null || StringUtils.isBlank(val.getMetadataType().getId())) {
+        if (val.getType() == null || StringUtils.isBlank(val.getType().getId())) {
             throw new NullPointerException("MetadataType for the email address is not defined.");
         }
 
@@ -1231,13 +1231,13 @@ public class UserMgr implements UserDataService {
         if (CollectionUtils.isNotEmpty(entityList))
             for (EmailAddressEntity ea : entityList) {
                 if ((ea.getId() != null && !ea.getId().equals(val.getId()))
-                    && ea.getMetadataType().getId().equals(val.getMetadataType().getId())) {
+                    && ea.getType().getId().equals(val.getType().getId())) {
                     throw new NullPointerException("Email Address with provided type exists");
                 }
             }
 
-        MetadataTypeEntity type = metadataTypeDAO.findById(val.getMetadataType().getId());
-        val.setMetadataType(type);
+        MetadataTypeEntity type = metadataTypeDAO.findById(val.getType().getId());
+        val.setType(type);
 
         UserEntity userEntity = userDao.findById(val.getParent().getId());
         val.setParent(userEntity);
@@ -1255,13 +1255,13 @@ public class UserMgr implements UserDataService {
 
         HashSet<String> types = new HashSet<String>();
         for (EmailAddressEntity email : adrSet) {
-            if (email.getMetadataType() == null || StringUtils.isBlank(email.getMetadataType().getId())) {
+            if (email.getType() == null || StringUtils.isBlank(email.getType().getId())) {
                 throw new NullPointerException("MetadataType for the email is not defined.");
             }
-            if (types.contains(email.getMetadataType().getId()))
+            if (types.contains(email.getType().getId()))
                 throw new NullPointerException("Duplicate MetadataType for the email");
             else
-                types.add(email.getMetadataType().getId());
+                types.add(email.getType().getId());
         }
 
         Iterator<EmailAddressEntity> it = adrSet.iterator();
@@ -1283,8 +1283,8 @@ public class UserMgr implements UserDataService {
 
         EmailAddressEntity entity = emailAddressDao.findById(val.getId());
         UserEntity parent = userDao.findById(val.getParent().getId());
-        final MetadataTypeEntity metadataType = (val.getMetadataType() != null && StringUtils.isNotBlank(val.getMetadataType().getId())) ? metadataTypeDAO
-                        .findById(val.getMetadataType().getId()) : null;
+        final MetadataTypeEntity metadataType = (val.getType() != null && StringUtils.isNotBlank(val.getType().getId())) ? metadataTypeDAO
+                        .findById(val.getType().getId()) : null;
 
         if (entity != null && metadataType != null) {
             entity.setEmailAddress(val.getEmailAddress());
@@ -1292,7 +1292,7 @@ public class UserMgr implements UserDataService {
             entity.setDescription(val.getDescription());
             entity.setParent(parent);
             entity.setIsActive(val.getIsActive());
-            entity.setMetadataType(metadataType);
+            entity.setType(metadataType);
 
             if (entity.getIsDefault() != val.getIsDefault()) {
                 updateDefaultFlagForEmail(entity, val.getIsDefault(), parent);

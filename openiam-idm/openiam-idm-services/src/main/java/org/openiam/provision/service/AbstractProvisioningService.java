@@ -642,8 +642,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                 } else if (e.getOperation().equals(AttributeOperationEnum.ADD)) {
                     EmailAddressEntity entity = emailAddressDozerConverter.convertToEntity(e, false);
                     entity.setParent(userEntity);
-                    if (org.apache.commons.lang.StringUtils.isBlank(e.getMetadataTypeId())) {
-                        entity.setMetadataType(null);
+                    if (org.apache.commons.lang.StringUtils.isBlank(e.getMdTypeId())) {
+                        entity.setType(null);
                     }
                     userEntity.getEmailAddresses().add(entity);
                     // Audit Log
@@ -665,8 +665,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                                 userMgr.evict(en);
                                 EmailAddressEntity entity = emailAddressDozerConverter.convertToEntity(e, false);
                                 entity.setParent(userEntity);
-                                if (org.apache.commons.lang.StringUtils.isBlank(e.getMetadataTypeId())) {
-                                    entity.setMetadataType(null);
+                                if (org.apache.commons.lang.StringUtils.isBlank(e.getMdTypeId())) {
+                                    entity.setType(null);
                                 }
                                 userEntity.getEmailAddresses().add(entity);
                                 // Audit Log
@@ -716,8 +716,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                 } else if (e.getOperation().equals(AttributeOperationEnum.ADD)) {
                     PhoneEntity entity = phoneDozerConverter.convertToEntity(e, false);
                     entity.setParent(userEntity);
-                    if (org.apache.commons.lang.StringUtils.isBlank(e.getMetadataTypeId())) {
-                        entity.setMetadataType(null);
+                    if (org.apache.commons.lang.StringUtils.isBlank(e.getMdTypeId())) {
+                        entity.setType(null);
                     }
                     userEntity.getPhones().add(entity);
                     // Audit log
@@ -745,8 +745,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                                 userMgr.evict(en);
                                 PhoneEntity entity = phoneDozerConverter.convertToEntity(e, false);
                                 entity.setParent(userEntity);
-                                if (org.apache.commons.lang.StringUtils.isBlank(e.getMetadataTypeId())) {
-                                    entity.setMetadataType(null);
+                                if (org.apache.commons.lang.StringUtils.isBlank(e.getMdTypeId())) {
+                                    entity.setType(null);
                                 }
                                 userEntity.getPhones().add(entity);
                                 break;
