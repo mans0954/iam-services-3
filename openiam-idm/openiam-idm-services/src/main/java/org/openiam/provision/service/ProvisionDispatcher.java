@@ -707,7 +707,7 @@ public class ProvisionDispatcher implements Sweepable {
                 String objectType = attr.getMapForObjectType();
                 if (objectType != null) {
 
-                    if (objectType.equalsIgnoreCase(PolicyMapObjectTypeOptions.USER.name()) || objectType.equalsIgnoreCase(PolicyMapObjectTypeOptions.PASSWORD.name())) {
+                    if (objectType.equalsIgnoreCase(PolicyMapObjectTypeOptions.USER.name())) {
                         Object output = "";
                         try {
                             output = ProvisionServiceUtil.getOutputFromAttrMap(attr, bindingMap, scriptRunner);
