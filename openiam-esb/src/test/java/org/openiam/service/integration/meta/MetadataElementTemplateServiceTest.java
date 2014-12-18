@@ -112,12 +112,12 @@ public class MetadataElementTemplateServiceTest extends AbstractKeyNameServiceTe
 			Thread.sleep(2000L);
 			test = get((String)wsResponse.getResponseValue());
 			
-			addURIPatterns(test, 0, 3);
+			//addURIPatterns(test, 0, 3);
 			addUIFields(test, 0, 3);
 			addMetadataElements(test, 0, 3);
 			test = assertFullClusteredSave(test);
 			
-			addURIPatterns(test, 3, 3);
+			//addURIPatterns(test, 3, 3);
 			addUIFields(test, 3, 3);
 			addMetadataElements(test, 3, 3);
 			test = assertFullClusteredSave(test);
@@ -125,20 +125,20 @@ public class MetadataElementTemplateServiceTest extends AbstractKeyNameServiceTe
 			/* remove 2 */
 			test = assertFullClusteredSave(test);
 			
-			test.setUriPatterns(null);
+			//test.setUriPatterns(null);
 			test.setFieldXrefs(null);
 			test.setMetadataElements(null);
-			addURIPatterns(test, 6, 3);
+			//addURIPatterns(test, 6, 3);
 			addUIFields(test, 6, 3);
 			addMetadataElements(test, 6, 3);
 			test = assertFullClusteredSave(test);
 						
-			addURIPatterns(test, 0, 3);
-			addUIFields(test, 0, 3);
-			addMetadataElements(test, 0, 3);
-			test = assertFullClusteredSave(test);
+			//addURIPatterns(test, 0, 3);
+			//addUIFields(test, 0, 3);
+			//addMetadataElements(test, 0, 3);
+			//test = assertFullClusteredSave(test);
 			
-			test.setUriPatterns(null);
+			//test.setUriPatterns(null);
 			test.setFieldXrefs(null);
 			test.setMetadataElements(null);
 			test = assertFullClusteredSave(test);
