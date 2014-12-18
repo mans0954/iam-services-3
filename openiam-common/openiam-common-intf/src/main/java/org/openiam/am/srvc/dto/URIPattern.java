@@ -53,7 +53,10 @@ import java.util.TreeSet;
         "substitutions",
         "redirectTo",
         "errorMappings",
-        "redirectToGroovyScript"
+        "redirectToGroovyScript",
+        "showOnApplicationPage",
+        "url",
+        "applicationName"
 })
 @DozerDTOCorrespondence(URIPatternEntity.class)
 public class URIPattern extends AbstractMatchMode {
@@ -77,6 +80,9 @@ public class URIPattern extends AbstractMatchMode {
 	private String redirectTo;
 	private Set<URIPatternErrorMapping> errorMappings;
 	private String redirectToGroovyScript;
+	private boolean showOnApplicationPage;
+	private String url;
+	private String applicationName;
 	
 	@Transient
 	@XmlTransient
@@ -319,6 +325,30 @@ public class URIPattern extends AbstractMatchMode {
 			AbstractRedirectURLGroovyProcessor redirectProcessor) {
 		this.redirectProcessor = redirectProcessor;
 	}
+	
+	public boolean isShowOnApplicationPage() {
+		return showOnApplicationPage;
+	}
+	public void setShowOnApplicationPage(boolean showOnApplicationPage) {
+		this.showOnApplicationPage = showOnApplicationPage;
+	}
+
+	public String getUrl() {
+		return url;
+	}
+
+	public void setUrl(String url) {
+		this.url = url;
+	}
+
+	public String getApplicationName() {
+		return applicationName;
+	}
+
+	public void setApplicationName(String applicationName) {
+		this.applicationName = applicationName;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -330,6 +360,7 @@ public class URIPattern extends AbstractMatchMode {
 				+ ((contentProviderId == null) ? 0 : contentProviderId
 						.hashCode());
 		result = prime * result + (isPublic ? 1231 : 1237);
+		result = prime * result + (showOnApplicationPage ? 1231 : 1237);
 		result = prime * result + ((pattern == null) ? 0 : pattern.hashCode());
 		result = prime * result
 				+ ((redirectTo == null) ? 0 : redirectTo.hashCode());
@@ -340,6 +371,8 @@ public class URIPattern extends AbstractMatchMode {
 		result = prime * result
 				+ ((resourceId == null) ? 0 : resourceId.hashCode());
 		result = prime * result + ((themeId == null) ? 0 : themeId.hashCode());
+		result = prime * result
+				+ ((applicationName == null) ? 0 : applicationName.hashCode());
 		return result;
 	}
 	@Override
@@ -387,6 +420,16 @@ public class URIPattern extends AbstractMatchMode {
 			if (other.themeId != null)
 				return false;
 		} else if (!themeId.equals(other.themeId))
+			return false;
+		
+		if(showOnApplicationPage != other.showOnApplicationPage) {
+			return false;
+		}
+		
+		if (applicationName == null) {
+			if (other.applicationName != null)
+				return false;
+		} else if (!applicationName.equals(other.applicationName))
 			return false;
 		return true;
 	}

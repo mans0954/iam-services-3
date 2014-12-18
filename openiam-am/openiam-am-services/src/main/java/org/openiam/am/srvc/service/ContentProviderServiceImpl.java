@@ -9,6 +9,7 @@ import org.openiam.am.srvc.domain.*;
 import org.openiam.am.srvc.domain.pk.AuthLevelGroupingContentProviderXrefIdEntity;
 import org.openiam.am.srvc.domain.pk.AuthLevelGroupingURIPatternXrefIdEntity;
 import org.openiam.am.srvc.model.URIPatternJSONWrapper;
+import org.openiam.am.srvc.searchbeans.URIPatternSearchBean;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
@@ -215,13 +216,13 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
     }
 
     @Override
-    public int getNumOfUriPatterns(URIPatternEntity example) {
-        return uriPatternDao.count(example);
+    public int getNumOfUriPatterns(URIPatternSearchBean searchBean) {
+        return uriPatternDao.count(searchBean);
     }
 
     @Override
-    public List<URIPatternEntity> getUriPatternsList(URIPatternEntity example, int from, int size) {
-        return uriPatternDao.getByExample(example, from, size);
+    public List<URIPatternEntity> getUriPatternsList(URIPatternSearchBean searchBean, int from, int size) {
+        return uriPatternDao.getByExample(searchBean, from, size);
     }
 
     @Override
@@ -275,6 +276,8 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
         final ContentProviderEntity contentProvider = contentProviderDao.findById(pattern.getContentProvider().getId());
         pattern.setContentProvider(contentProvider);
         pattern.setUiTheme(theme);
+        
+        final String applicationURL = (pattern.getResource() != null) ? pattern.getResource().getURL() : null;
         
 		final ResourceTypeEntity patternMethodResourceType = resourceTypeDAO.findById(patternMethodResourceTypeId);
         if(patternMethodResourceType==null){
@@ -380,6 +383,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
             final ResourceEntity resource = new ResourceEntity();
             resource.setName(System.currentTimeMillis() + "_" + pattern.getPattern());
             resource.setResourceType(resourceType);
+            resource.setURL(applicationURL);
             resource.setId(null);
             resource.setIsPublic(false);
             resource.setCoorelatedName(String.format("%s - %s", contentProvider.getName(), pattern.getPattern()));
@@ -406,6 +410,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
         	if(dbEntity != null) {
         		pattern.setResource(dbEntity.getResource());
         		if(pattern.getResource() != null) {
+        			pattern.getResource().setURL(applicationURL);
         			pattern.getResource().setCoorelatedName(String.format("%s - %s", pattern.getContentProvider().getName(), pattern.getPattern()));
         		}
         		if(CollectionUtils.isEmpty(pattern.getGroupingXrefs())) {

@@ -8,18 +8,39 @@ import org.hibernate.Query;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.am.srvc.domain.URIPatternEntity;
+import org.openiam.am.srvc.searchbeans.URIPatternSearchBean;
+import org.openiam.am.srvc.searchbeans.converter.URIPatternSearchBeanConverter;
 import org.openiam.core.dao.BaseDaoImpl;
+import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 public class URIPatternDaoImpl extends BaseDaoImpl<URIPatternEntity, String> implements URIPatternDao {
+	
+    @Autowired
+    private URIPatternSearchBeanConverter uriPatternSearchBeanConverter;
 
 	@Override
 	protected String getPKfieldName() {
 		return "id";
 	}
+	
+	@Override
+    protected Criteria getExampleCriteria(final SearchBean searchBean) {
+		Criteria criteria = this.getCriteria();
+		if(searchBean != null && searchBean instanceof URIPatternSearchBean) {
+			final URIPatternSearchBean sb = (URIPatternSearchBean)searchBean;
+			criteria = getExampleCriteria(uriPatternSearchBeanConverter.convert(sb));
+			if(sb.getShowOnApplicationPage() != null) {
+            	criteria.add(Restrictions.eq("showOnApplicationPage", sb.getShowOnApplicationPage()));
+            }
+		}
+		return criteria;
+	}
+	
     @Override
     protected Criteria getExampleCriteria(final URIPatternEntity entity) {
         final Criteria criteria = getCriteria();

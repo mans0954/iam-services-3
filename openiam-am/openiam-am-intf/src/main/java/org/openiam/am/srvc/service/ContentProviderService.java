@@ -2,6 +2,7 @@ package org.openiam.am.srvc.service;
 
 import org.openiam.am.srvc.domain.*;
 import org.openiam.am.srvc.dto.AuthLevelGrouping;
+import org.openiam.am.srvc.searchbeans.URIPatternSearchBean;
 import org.openiam.exception.BasicDataServiceException;
 
 import java.util.List;
@@ -38,9 +39,9 @@ public interface ContentProviderService {
 
     void deleteContentProvider(String providerId);
 
-    int getNumOfUriPatterns(URIPatternEntity example);
+    int getNumOfUriPatterns(URIPatternSearchBean searchBean);
 
-    List<URIPatternEntity> getUriPatternsList(URIPatternEntity example, int from, int size);
+    List<URIPatternEntity> getUriPatternsList(URIPatternSearchBean searchBean, int from, int size);
 
     URIPatternEntity getURIPattern(String patternId);
 

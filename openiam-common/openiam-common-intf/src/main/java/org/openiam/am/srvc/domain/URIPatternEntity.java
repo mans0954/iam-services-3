@@ -47,6 +47,13 @@ public class URIPatternEntity extends AbstractMatchModeEntity {
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "UI_THEME_ID", referencedColumnName = "UI_THEME_ID", insertable = true, updatable = true, nullable=true)
     private UIThemeEntity uiTheme;
+    
+	@Column(name = "SHOW_ON_APP_PAGE", nullable = false)
+	@Type(type = "yes_no")
+	private boolean showOnApplicationPage;
+	
+	@Column(name="APPLICATION_NAME", length=100)
+	private String applicationName;
 
 	/*
     @Column(name = "RESOURCE_ID", length = 32, nullable = false)
@@ -299,6 +306,21 @@ public class URIPatternEntity extends AbstractMatchModeEntity {
 	public void setRedirectToGroovyScript(String redirectToGroovyScript) {
 		this.redirectToGroovyScript = redirectToGroovyScript;
 	}
+	
+	public boolean isShowOnApplicationPage() {
+		return showOnApplicationPage;
+	}
+	public void setShowOnApplicationPage(boolean showOnApplicationPage) {
+		this.showOnApplicationPage = showOnApplicationPage;
+	}
+	
+	public String getApplicationName() {
+		return applicationName;
+	}
+
+	public void setApplicationName(String applicationName) {
+		this.applicationName = applicationName;
+	}
 
 	@Override
 	public int hashCode() {
@@ -309,6 +331,7 @@ public class URIPatternEntity extends AbstractMatchModeEntity {
 		result = prime * result
 				+ ((contentProvider == null) ? 0 : contentProvider.hashCode());
 		result = prime * result + (isPublic ? 1231 : 1237);
+		result = prime * result + (showOnApplicationPage ? 1231 : 1237);
 		result = prime * result + ((pattern == null) ? 0 : pattern.hashCode());
 		result = prime * result
 				+ ((resource == null) ? 0 : resource.hashCode());
@@ -318,6 +341,9 @@ public class URIPatternEntity extends AbstractMatchModeEntity {
 		
 		result = prime * result
 				+ ((redirectToGroovyScript == null) ? 0 : redirectToGroovyScript.hashCode());
+		
+		result = prime * result
+				+ ((applicationName == null) ? 0 : applicationName.hashCode());
 		return result;
 	}
 
@@ -342,6 +368,9 @@ public class URIPatternEntity extends AbstractMatchModeEntity {
 			return false;
 		if (isPublic != other.isPublic)
 			return false;
+		if(showOnApplicationPage != other.showOnApplicationPage) {
+			return false;
+		}
 		if (pattern == null) {
 			if (other.pattern != null)
 				return false;
@@ -367,6 +396,12 @@ public class URIPatternEntity extends AbstractMatchModeEntity {
 			if (other.redirectToGroovyScript != null)
 				return false;
 		} else if (!redirectToGroovyScript.equals(other.redirectToGroovyScript))
+			return false;
+		
+		if (applicationName == null) {
+			if (other.applicationName != null)
+				return false;
+		} else if (!applicationName.equals(other.applicationName))
 			return false;
 		return true;
 	}

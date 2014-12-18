@@ -11,12 +11,14 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "URIPatternSearchBean", propOrder = {
         "pattern",
         "contentProviderId",
-        "authProviderId"
+        "authProviderId",
+        "showOnApplicationPage"
 })
 public class URIPatternSearchBean extends AbstractSearchBean<URIPattern, String> {
     private String pattern;
     private String contentProviderId;
     private String authProviderId;
+    private Boolean showOnApplicationPage;
 
     public String getPattern() {
         return pattern;
@@ -40,6 +42,14 @@ public class URIPatternSearchBean extends AbstractSearchBean<URIPattern, String>
 
 	public void setAuthProviderId(String authProviderId) {
 		this.authProviderId = authProviderId;
+	}
+
+	public Boolean getShowOnApplicationPage() {
+		return showOnApplicationPage;
+	}
+
+	public void setShowOnApplicationPage(Boolean showOnApplicationPage) {
+		this.showOnApplicationPage = showOnApplicationPage;
 	}
     
     

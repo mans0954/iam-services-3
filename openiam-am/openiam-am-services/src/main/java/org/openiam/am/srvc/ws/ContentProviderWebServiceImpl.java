@@ -59,8 +59,6 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
     private ContentProviderDozerConverter contentProviderDozerConverter;
     @Autowired
     private ContentProviderSearchBeanConverter contentProviderSearchBeanConverter;
-    @Autowired
-    private URIPatternSearchBeanConverter uriPatternSearchBeanConverter;
 
     @Autowired
     private AuthLevelDozerConverter authLevelDozerConverter;
@@ -378,12 +376,10 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
     @Deprecated
     @Transactional(readOnly = true)
     public List<URIPattern> getUriPatternsForProvider(String providerId, Integer from, Integer size) {
-        URIPatternEntity example = new URIPatternEntity();
-        ContentProviderEntity provider = new ContentProviderEntity();
-        provider.setId(providerId);
-        example.setContentProvider(provider);
-
-        final List<URIPatternEntity> entityList = contentProviderService.getUriPatternsList(example, from, size);
+    	final URIPatternSearchBean sb = new URIPatternSearchBean();
+    	sb.setContentProviderId(providerId);
+        
+        final List<URIPatternEntity> entityList = contentProviderService.getUriPatternsList(sb, from, size);
         final List<URIPattern> dtoList = uriPatternDozerConverter.convertToDTOList(entityList, true);
         return dtoList;
     }
@@ -391,24 +387,22 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
     @Override
     @Deprecated
     public Integer getNumOfUriPatternsForProvider(String providerId) {
-        URIPatternEntity example = new URIPatternEntity();
-        ContentProviderEntity provider = new ContentProviderEntity();
-        provider.setId(providerId);
-        example.setContentProvider(provider);
+    	final URIPatternSearchBean sb = new URIPatternSearchBean();
+    	sb.setContentProviderId(providerId);
 
-        return contentProviderService.getNumOfUriPatterns(example);
+        return contentProviderService.getNumOfUriPatterns(sb);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<URIPattern> findUriPatterns(URIPatternSearchBean searchBean, int from, int size) {
-        final List<URIPatternEntity> entityList = contentProviderService.getUriPatternsList(uriPatternSearchBeanConverter.convert(searchBean), from, size);
+        final List<URIPatternEntity> entityList = contentProviderService.getUriPatternsList(searchBean, from, size);
         return uriPatternDozerConverter.convertToDTOList(entityList, (searchBean != null) ? searchBean.isDeepCopy() : false);
     }
 
     @Override
     public int getNumOfUriPatterns(URIPatternSearchBean searchBean) {
-        return contentProviderService.getNumOfUriPatterns(uriPatternSearchBeanConverter.convert(searchBean));
+        return contentProviderService.getNumOfUriPatterns(searchBean);
     }
 
     @Override
@@ -462,6 +456,19 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
     				throw new BasicDataServiceException(ResponseCode.PATTERN_PARAMS_REQUIRED);
     			}
     		}
+            
+            if(pattern.isShowOnApplicationPage()) {
+            	if(StringUtils.isBlank(pattern.getUrl())) {
+            		throw new BasicDataServiceException(ResponseCode.APPLICATION_URL_REQUIRED);
+            	}
+            	
+            	if(StringUtils.isBlank(pattern.getApplicationName())) {
+            		throw new BasicDataServiceException(ResponseCode.APPLICATION_NAME_REQUIRED);
+            	}
+            } else {
+            	pattern.setUrl(null);
+            	pattern.setApplicationName(null);
+            }
 
             // validate pattern
             try{

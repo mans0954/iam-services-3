@@ -793,6 +793,10 @@
 			<a>errorMappings</a>
 			<b>errorMappings</b>
 		</field-exclude>
+		<field>
+			<a>resource.url</a>
+			<b>url</b>
+		</field>
 	</mapping>
 	<mapping>
 		<class-a>org.openiam.idm.srvc.recon.domain.ReconciliationConfigEntity

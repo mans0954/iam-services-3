@@ -526,7 +526,8 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
     }
 
     private void updateAuthState(Subject sub) {
-
+    	log.info(String.format("Subject=%s", sub));
+    	log.info(String.format("Subject.ssoToken=%s", sub.getSsoToken()));
     	final AuthStateEntity state = new AuthStateEntity(null, new BigDecimal(1), 
     									sub.getSsoToken().getExpirationTime().getTime(), 
     									sub.getSsoToken().getToken(), sub.getUserId(), 
