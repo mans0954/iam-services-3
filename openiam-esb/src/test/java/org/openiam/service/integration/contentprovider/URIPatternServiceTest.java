@@ -365,11 +365,13 @@ public class URIPatternServiceTest extends AbstractContentProviderServiceTest<UR
 		};
 		
 		final EntityGenerator<URIPatternSubstitution> generator = new EntityGenerator<URIPatternSubstitution>() {
-
+			
+			private int order = 0;
+			
 			@Override
 			public URIPatternSubstitution generate() {
 				final URIPatternSubstitution generated = new URIPatternSubstitution();
-				generated.setOrder(RandomUtils.nextInt(100));
+				generated.setOrder(order++);
 				generated.setReplaceWith(getRandomName());
 				generated.setQuery(getRandomName());
 				return generated;

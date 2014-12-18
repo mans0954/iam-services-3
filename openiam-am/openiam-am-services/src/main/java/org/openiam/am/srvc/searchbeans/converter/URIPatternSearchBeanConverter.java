@@ -29,7 +29,9 @@ public class URIPatternSearchBeanConverter implements
 	        	authProvider.setId(searchBean.getAuthProviderId());
 	        	entity.setAuthProvider(authProvider);
 	        }
-	        entity.setShowOnApplicationPage(searchBean.getShowOnApplicationPage());
+	        if(searchBean.getShowOnApplicationPage() != null) {
+	        	entity.setShowOnApplicationPage(searchBean.getShowOnApplicationPage().booleanValue());
+	        }
         }
         return entity;
     }
