@@ -14,10 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 public class MetadataElementTest extends AbstractKeyNameServiceTest<MetadataElement, MetadataElementSearchBean> {
-
-	@Autowired
-	@Qualifier("metadataServiceClient")
-	private MetadataWebService metadataServiceClient;
 	
 	@Override
 	protected MetadataElement newInstance() {

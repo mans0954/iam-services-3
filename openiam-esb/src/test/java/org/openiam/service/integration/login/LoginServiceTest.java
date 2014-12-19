@@ -27,7 +27,7 @@ public class LoginServiceTest extends AbstractKeyServiceTest<Login, LoginSearchB
 	
 	@AfterClass
 	public void _destroy() {
-		userServiceClient.deleteUser(user.getId());
+		userServiceClient.removeUser(user.getId());
 	}
 
 	@Autowired

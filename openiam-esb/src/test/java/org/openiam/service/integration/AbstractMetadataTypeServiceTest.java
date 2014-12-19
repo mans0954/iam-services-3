@@ -24,10 +24,6 @@ import org.testng.annotations.Test;
 
 public abstract class AbstractMetadataTypeServiceTest<T extends AbstractMetadataTypeDTO, S extends AbstractKeyNameSearchBean<T, String>> extends AbstractKeyNameServiceTest<T, S> {
 
-	@Autowired
-    @Qualifier("metadataServiceClient")
-    protected MetadataWebService metadataServiceClient;
-	
 	@BeforeClass
     protected void setUp() throws Exception {
        

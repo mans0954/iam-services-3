@@ -13,10 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 public class MetadataTypeTest extends AbstractKeyNameServiceTest<MetadataType, MetadataTypeSearchBean> {
-	
-	@Autowired
-	@Qualifier("metadataServiceClient")
-	private MetadataWebService metadataServiceClient;
 
 	@Override
 	protected MetadataType newInstance() {

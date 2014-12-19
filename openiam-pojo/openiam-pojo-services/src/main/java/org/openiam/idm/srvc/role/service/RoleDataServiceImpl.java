@@ -86,12 +86,14 @@ public class RoleDataServiceImpl implements RoleDataService {
 
 	private static final Log log = LogFactory.getLog(RoleDataServiceImpl.class);
 
+	@Deprecated
     @Override
+    @Transactional(readOnly = true)
     public RoleEntity getRole(String roleId){
         return  getRole(roleId, null);
     }
     
-    
+	@Deprecated
 	@Override
     @Transactional(readOnly = true)
 	public RoleEntity getRole(String roleId, final String requesterId) {
@@ -562,6 +564,7 @@ public class RoleDataServiceImpl implements RoleDataService {
 		return roleDao.getNumOfRolesForUser(userId, getDelegationFilter(requesterId));
 	}
 
+	@Deprecated
 	@Override
     @Transactional(readOnly = true)
 	public RoleEntity getRoleByName(String roleName, final String requesterId) {
@@ -623,6 +626,7 @@ public class RoleDataServiceImpl implements RoleDataService {
 	}
 	
 	@Override
+	@Transactional(readOnly = true)
 	public Role getRoleDTO(String id) {
 		return roleDozerConverter.convertToDTO(roleDao.findById(id), true);
 	}

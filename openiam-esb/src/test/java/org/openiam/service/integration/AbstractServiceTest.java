@@ -21,9 +21,13 @@ import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.idm.searchbeans.LanguageSearchBean;
+import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.lang.dto.LanguageMapping;
 import org.openiam.idm.srvc.lang.service.LanguageWebService;
+import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
+import org.openiam.idm.srvc.meta.dto.MetadataType;
+import org.openiam.idm.srvc.meta.ws.MetadataWebService;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.ws.UserDataWebService;
 import org.openiam.idm.srvc.user.ws.UserResponse;
@@ -54,6 +58,10 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 	protected AuthProviderWebService authProviderServiceClient;
 	
 	@Autowired
+    @Qualifier("metadataServiceClient")
+    protected MetadataWebService metadataServiceClient;
+	
+	@Autowired
 	@Qualifier("contentProviderServiceClient")
 	protected ContentProviderWebService contentProviderServiceClient;
 
@@ -65,6 +73,14 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 		public Set<S> get(T t);
 		public void set(T t, Set<S> set);
 	}
+	
+	protected List<MetadataType> getMetadataTypesByGrouping(final MetadataTypeGrouping grouping) {
+    	final MetadataTypeSearchBean searchBean = new MetadataTypeSearchBean();
+    	searchBean.setGrouping(grouping);
+    	searchBean.setActive(true);
+        final List<MetadataType> types = metadataServiceClient.findTypeBeans(searchBean, 0, Integer.MAX_VALUE, getDefaultLanguage());
+        return types;
+    }
 	
 	protected ContentProvider createContentProvider() {
 		final ContentProvider cp = new ContentProvider();
@@ -138,8 +154,12 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 		return languageServiceClient.findBeans(null, 0, Integer.MAX_VALUE, null);
 	}
 	
+	protected String getRandomName(final int count) {
+		return RandomStringUtils.randomAlphanumeric(count);
+	}
+	
 	protected String getRandomName() {
-		return RandomStringUtils.randomAlphanumeric(5);
+		return getRandomName(5);
 	}
 	
 	protected void refreshAuthorizationManager() {

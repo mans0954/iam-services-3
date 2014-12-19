@@ -38,10 +38,6 @@ public class MetadataElementTemplateServiceTest extends AbstractKeyNameServiceTe
 	@Autowired
 	@Qualifier("metadataTemplateServiceClient")
 	private MetadataElementTemplateWebService metadataTemplateServiceClient;
-	
-	@Autowired
-	@Qualifier("metadataServiceClient")
-	private MetadataWebService metadataServiceClient;
 
 	private MetadataTemplateType getFirstType() {
 		return metadataTemplateServiceClient.findTemplateTypes(null, 0, 1).get(0);

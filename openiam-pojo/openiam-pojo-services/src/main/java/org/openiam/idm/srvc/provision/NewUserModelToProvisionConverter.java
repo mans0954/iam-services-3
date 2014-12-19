@@ -111,7 +111,7 @@ public class NewUserModelToProvisionConverter {
 			if(CollectionUtils.isNotEmpty(request.getRoleIds())) {
                 final Set<Role> userRoles = new HashSet<Role>();
 				for(final String roleId : request.getRoleIds()) {
-					final RoleEntity entity = roleDataService.getRole(roleId);
+					final RoleEntity entity = roleDataService.getRoleLocalized(roleId, null, null);
 					if(entity != null) {
 						final Role role = roleDozerConverter.convertToDTO(entity, false);
                         role.setOperation(AttributeOperationEnum.ADD);
@@ -128,7 +128,7 @@ public class NewUserModelToProvisionConverter {
 			if(CollectionUtils.isNotEmpty(request.getGroupIds())) {
                 final Set<Group> userGroups = new HashSet<Group>();
 				for(final String groupId : request.getGroupIds()) {
-					final GroupEntity entity = groupDataService.getGroup(groupId);
+					final GroupEntity entity = groupDataService.getGroupLocalize(groupId, null);
 					if(entity != null) {
 						final Group group = groupDozerConverter.convertToDTO(entity, false);
                         group.setOperation(AttributeOperationEnum.ADD);
@@ -141,7 +141,7 @@ public class NewUserModelToProvisionConverter {
 			if(CollectionUtils.isNotEmpty(request.getOrganizationIds())) {
                 final Set<Organization> userOrganizations = new HashSet<Organization>();
 				for(final String organizationId : request.getOrganizationIds()) {
-					final OrganizationEntity entity = organizationDataService.getOrganization(organizationId, null);
+					final OrganizationEntity entity = organizationDataService.getOrganizationLocalized(organizationId, null, null);
 					if(entity != null) {
 						final Organization organization = organizationDozerConverter.convertToDTO(entity, false);
                         organization.setOperation(AttributeOperationEnum.ADD);

@@ -316,4 +316,12 @@
 	<jaxws:client id="uriFederationServiceClient"
                   serviceClass="org.openiam.am.srvc.ws.URIFederationWebService"
                   address="${openiam.service_host}${openiam.idm.ws.path}URIFederationWebService" />
+                  
+	<jaxws:client id="activitiClient"
+                  serviceClass="org.openiam.bpm.activiti.ActivitiService"
+                  address="${openiam.service_host}${openiam.idm.ws.path}ActivitiService" />
+                  
+	<jaxws:client id="provisionServiceClient"
+                  serviceClass="org.openiam.provision.service.ProvisionService"
+                  address="${openiam.service_host}${openiam.connector.ws.path}ProvisioningService" />
 </beans>

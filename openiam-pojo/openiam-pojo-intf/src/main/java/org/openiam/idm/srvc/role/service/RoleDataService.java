@@ -18,8 +18,13 @@ import java.util.List;
  */
 public interface RoleDataService {
 
+	@Deprecated
     public RoleEntity getRole(String roleId);
+	
+	@Deprecated
     public RoleEntity getRole(String roleId, String requesterId);
+	
+	@Deprecated
     public RoleEntity getRoleByName(final String roleName, String requesterId);
     
     public RoleEntity getRoleLocalized(final String roleId, final String requestorId, final LanguageEntity language);

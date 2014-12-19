@@ -41,7 +41,7 @@ public class Resource2UserEntitlementsTest extends AbstractEntitlementsTest<Reso
 
 	@Override
 	protected Response deleteChild(User child) {
-		return userServiceClient.deleteUser(child.getId());
+		return userServiceClient.removeUser(child.getId());
 	}
 
 	@Override

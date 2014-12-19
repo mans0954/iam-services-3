@@ -40,7 +40,7 @@ public class Role2UserEntitlementsTest extends AbstractEntitlementsTest<Role, Us
 
 	@Override
 	protected Response deleteChild(User child) {
-		return userServiceClient.deleteUser(child.getId());
+		return userServiceClient.removeUser(child.getId());
 	}
 
 	@Override

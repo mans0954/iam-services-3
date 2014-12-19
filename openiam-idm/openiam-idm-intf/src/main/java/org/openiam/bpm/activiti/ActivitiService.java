@@ -72,4 +72,7 @@ public interface ActivitiService {
 	
 	@WebMethod
 	public Response deleteTaskForUser(final String taskId, final String userId);
+	
+	@WebMethod
+	public Response deleteTasksForUser(final String userId);
 }

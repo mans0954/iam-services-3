@@ -41,7 +41,7 @@ public class Group2UserEntitlementsTest extends AbstractEntitlementsTest<Group, 
 
 	@Override
 	protected Response deleteChild(User child) {
-		return userServiceClient.deleteUser(child.getId());
+		return userServiceClient.removeUser(child.getId());
 	}
 
 	@Override

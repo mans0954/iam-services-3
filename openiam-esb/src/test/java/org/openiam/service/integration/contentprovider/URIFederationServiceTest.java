@@ -145,7 +145,7 @@ public class URIFederationServiceTest extends AbstractServiceTest {
     		Assert.assertTrue(response.isSuccess());
     	}
     	if(user != null) {
-    		userServiceClient.deleteUser(user.getId());
+    		userServiceClient.removeUser(user.getId());
     	}
     }
 	

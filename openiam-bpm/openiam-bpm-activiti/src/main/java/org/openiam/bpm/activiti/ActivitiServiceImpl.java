@@ -929,6 +929,58 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 
 		return response;
 	}
+	
+	@Override
+	@Transactional
+	public Response deleteTasksForUser(final String userId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+        final IdmAuditLog idmAuditLog = new IdmAuditLog();
+        idmAuditLog.setRequestorUserId(userId);
+        idmAuditLog.setAction(AuditAction.DELETE_ALL_USER_TASKS.value());
+        idmAuditLog.setSource(AuditSource.WORKFLOW.value());
+        String parentAuditLogId = null;
+		try {
+			
+			final List<Task> assignedTasks = taskService.createTaskQuery().taskAssignee(userId).list();
+			if(CollectionUtils.isNotEmpty(assignedTasks)) {
+				for(final Task task : assignedTasks) {
+					taskService.deleteTask(task.getId());
+				}
+			}
+			final List<Task> candidateTasks = taskService.createTaskQuery().taskCandidateUser(userId).list();
+			if(CollectionUtils.isNotEmpty(candidateTasks)) {
+				for(final Task task : candidateTasks) {
+					taskService.deleteTask(task.getId());
+				}
+			}
+			
+            idmAuditLog.succeed();
+		} catch(ActivitiException e) {
+			log.info("Activiti Exception", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(ResponseCode.USER_STATUS);
+			response.setErrorText(e.getMessage());
+            idmAuditLog.setFailureReason(e.getMessage());
+            idmAuditLog.setException(e);
+            idmAuditLog.fail();
+		} catch(Throwable e) {
+			log.error("Error while deleting tasks for user", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(ResponseCode.USER_STATUS);
+			response.setErrorText(e.getMessage());
+            idmAuditLog.setFailureReason(e.getMessage());
+            idmAuditLog.setException(e);
+            idmAuditLog.fail();
+		} finally {
+			if(parentAuditLogId != null) {
+				IdmAuditLog parent = auditLogService.findById(parentAuditLogId);
+				parent.addChild(idmAuditLog);
+				idmAuditLog.addParent(parent);
+                parent = auditLogService.save(parent);
+			}
+        }
+		return response;
+	}
 
 	@Override
 	@Transactional

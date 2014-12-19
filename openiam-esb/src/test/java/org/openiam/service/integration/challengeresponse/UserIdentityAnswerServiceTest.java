@@ -26,7 +26,7 @@ public class UserIdentityAnswerServiceTest extends AbstractChallengeResponseServ
 	
 	@AfterClass
 	public void _destroy() {
-		userServiceClient.deleteUser(user.getId());
+		userServiceClient.removeUser(user.getId());
 	}
 	
 	@Override
