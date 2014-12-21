@@ -324,4 +324,8 @@
 	<jaxws:client id="provisionServiceClient"
                   serviceClass="org.openiam.provision.service.ProvisionService"
                   address="${openiam.service_host}${openiam.connector.ws.path}ProvisioningService" />
+                  
+	<jaxws:client id="propertyValuerServiceClient"
+                  serviceClass="org.openiam.idm.srvc.property.ws.PropertyValueWebService"
+                  address="${openiam.service_host}${openiam.connector.ws.path}PropertyValueWebService" />
 </beans>
