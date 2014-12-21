@@ -275,7 +275,8 @@
                                                org.openiam.idm.srvc.report.domain*,
                                                org.openiam.idm.srvc.prov*,
                                                org.openiam.idm.srvc.batch.domain*,
-                                               org.openiam.idm.srvc.ui*" />
+                                               org.openiam.idm.srvc.ui*,
+                                               org.openiam.property.domain*" />
 	</bean>
 	<util:properties id="hibernateProperties"
 		location="classpath:openiam.hibernate.properties">

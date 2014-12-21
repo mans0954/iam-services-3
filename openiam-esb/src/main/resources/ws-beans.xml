@@ -91,5 +91,7 @@
     <jaxws:endpoint id="uiThemeWebServiceEndpoint" implementor="#uiThemeWS" address="/UIThemeWebService"/>
 
     <jaxws:endpoint id="activitiServiceEndpoint" implementor="#activitiBPMService" address="/ActivitiService"/>
+    
+    <jaxws:endpoint id="propertyValueServiceEndpoint" implementor="#propertyValueWS" address="/PropertyValueWebService"/>
 
 </beans>

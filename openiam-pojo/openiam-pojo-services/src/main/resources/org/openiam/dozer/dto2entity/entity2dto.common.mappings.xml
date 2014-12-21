@@ -13,6 +13,17 @@
 			<b>displayNameMap</b>
 		</field>
 	</mapping>
+	
+	<mapping>
+		<class-a>org.openiam.property.domain.PropertyValueEntity</class-a>
+		<class-b>org.openiam.property.dto.PropertyValue</class-b>
+		<field
+			custom-converter="org.openiam.dozer.crossentity.CrossEntityMapConverterWithKeyString"
+			custom-converter-param="dto2entityShallowDozerMapper">
+			<a>internationalizedValues</a>
+			<b>internationalizedValues</b>
+		</field>
+	</mapping>
 
 	<mapping>
 		<class-a>org.openiam.idm.srvc.res.domain.ResourcePropEntity</class-a>
