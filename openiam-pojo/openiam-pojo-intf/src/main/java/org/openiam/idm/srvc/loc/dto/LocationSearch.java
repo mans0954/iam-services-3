@@ -34,12 +34,12 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "locationSearch", propOrder = {
         "name",
         "address1",
-        "organization_id"
+        "organizationId"
 })
 public class LocationSearch {
     String address1;
     String name;
-    String organization_id;
+    String organizationId;
 
     public String getAddress1() {
         return address1;
@@ -57,11 +57,11 @@ public class LocationSearch {
         this.name = name;
     }
 
-    public String getCompanyId() {
-        return organization_id;
+    public String getOrganizationId() {
+        return organizationId;
     }
 
-    public void setCompanyId(String organization_id) {
-        this.organization_id = organization_id;
+    public void setOrganizationId(String organizationId) {
+        this.organizationId = organizationId;
     }
 }

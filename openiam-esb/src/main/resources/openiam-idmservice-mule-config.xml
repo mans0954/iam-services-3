@@ -125,8 +125,22 @@
 		</service>
 	</model>
 
+    <model name="locationWebServiceModel">
+        <service name="locationWebService">
+            <inbound>
+                <inbound-endpoint address="${webservice.path}LocationDataWebService"
+                                  exchange-pattern="request-response">
+                    <cxf:jaxws-service />
+                </inbound-endpoint>
+            </inbound>
+            <component>
+                <spring-object bean="locationWS" />
+            </component>
+        </service>
+    </model>
 
-	<model name="fileServiceModel">
+
+    <model name="fileServiceModel">
 		<service name="fileService">
 			<inbound>
 				<inbound-endpoint address="${webservice.path}FileWebService"

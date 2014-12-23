@@ -320,7 +320,7 @@
 					<spring-object bean="orgManager" />
 				</component>
 			</service>
-		</model>		
+		</model>
 
 		<model name="metaServiceModel">
 			<service name="metaService">

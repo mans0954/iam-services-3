@@ -28,6 +28,7 @@ import org.openiam.base.ws.ResponseStatus;
 import org.openiam.idm.srvc.loc.dto.Location;
 import org.openiam.idm.srvc.loc.dto.LocationSearch;
 import org.openiam.idm.srvc.loc.service.LocationDataService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -39,8 +40,8 @@ import org.springframework.stereotype.Service;
 		targetNamespace = "urn:idm.openiam.org/srvc/loc/service", 
 		serviceName = "LocationDataWebService")
 public class LocationDataWebServiceImpl implements LocationDataWebService {
-
-	protected LocationDataService locationDS;
+    @Autowired
+    protected LocationDataService locationDS;
 
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.loc.ws.LocationDataWebService#addLocation(org.openiam.idm.srvc.loc.dto.Location)

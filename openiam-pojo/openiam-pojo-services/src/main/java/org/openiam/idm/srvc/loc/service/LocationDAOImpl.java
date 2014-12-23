@@ -144,9 +144,9 @@ public class LocationDAOImpl implements LocationDAO {
 			log.info("search: name=" + search.getName() );
 			crit.add(Restrictions.eq("name",search.getName()));
 		}
-        if (search.getCompanyId() != null  ) {
-            log.info("search: companyId=" + search.getCompanyId());
-            crit.add(Restrictions.eq("organization_id",search.getCompanyId()));
+        if (search.getOrganizationId() != null  ) {
+            log.info("search: organizationId=" + search.getOrganizationId());
+            crit.add(Restrictions.eq("organizationId",search.getOrganizationId()));
         }
 		
 		crit.addOrder(Order.asc("address1"));
