@@ -52,7 +52,7 @@ public interface LocationDataService {
     public Location getLocation(String LocationCd);
 
 
-    Location[] searchLocation(LocationSearch search);
+    public Location[] searchLocation(LocationSearch search);
 
 
 }

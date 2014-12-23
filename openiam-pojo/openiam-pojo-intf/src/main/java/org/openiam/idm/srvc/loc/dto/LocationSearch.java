@@ -33,11 +33,13 @@ import javax.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "locationSearch", propOrder = {
         "name",
-        "address1"
+        "address1",
+        "organization_id"
 })
 public class LocationSearch {
     String address1;
     String name;
+    String organization_id;
 
     public String getAddress1() {
         return address1;
@@ -53,5 +55,13 @@ public class LocationSearch {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getCompanyId() {
+        return organization_id;
+    }
+
+    public void setCompanyId(String organization_id) {
+        this.organization_id = organization_id;
     }
 }
