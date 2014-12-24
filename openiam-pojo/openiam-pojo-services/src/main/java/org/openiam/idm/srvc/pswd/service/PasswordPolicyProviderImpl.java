@@ -1,13 +1,18 @@
 package org.openiam.idm.srvc.pswd.service;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.service.OrganizationDAO;
 import org.openiam.idm.srvc.policy.domain.PolicyObjectAssocEntity;
+import org.openiam.idm.srvc.policy.dto.PasswordPolicyAssocSearchBean;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.service.PolicyDataService;
 import org.openiam.idm.srvc.policy.service.PolicyObjectAssocDAO;
+import org.openiam.idm.srvc.role.domain.RoleEntity;
+import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,65 +38,82 @@ public class PasswordPolicyProviderImpl implements PasswordPolicyProvider {
     @Autowired
     protected OrganizationDAO organizationDAO;
     @Autowired
+    protected org.openiam.idm.srvc.role.service.RoleDAO roleDAO;
+    @Autowired
     protected UserDataService userManager;
 
 
     @Override
-    public Policy getPasswordPolicyByUser(String userId){
-        return getPasswordPolicyByUser(userManager.getUser(userId));
+    public Policy getPasswordPolicyByUser(PasswordPolicyAssocSearchBean searchBean) {
+        return getPasswordPolicyByUser(userManager.getUser(searchBean.getUserId()), searchBean.getManagedSystemId());
     }
+
     @Override
-    public Policy getPasswordPolicyByUser(UserEntity user){
+    public Policy getPasswordPolicyByUser(UserEntity user, String managedSystemId) {
         // Find a password policy for this user
         // order of search, type, classification, domain, global
 
         PolicyObjectAssocEntity policyAssocEntity = null;
 
-        log.info(String.format("User type and classifcation=%s %s", user.getId(), user.getUserTypeInd()));
-
-        if (user.getClassification() != null) {
-            log.info("Looking for associate by classification.");
+        log.info("Looking for associate by managedSystemId.");
+        if (StringUtils.isNotBlank(managedSystemId)) {
             policyAssocEntity = policyObjectAssocDao.findAssociationByLevel(
-                    "CLASSIFICATION", user.getClassification());
+                    "MANAGED_SYSTEM", managedSystemId);
             log.info(String.format("Association found: %s", policyAssocEntity));
             if (policyAssocEntity != null) {
                 return getPolicy(policyAssocEntity);
             }
         }
 
-        // look to see if a policy exists for the type of user
-        if (user.getUserTypeInd() != null) {
-            log.info("Looking for associate by type.");
+        log.info("Looking for associate by metadata type.");
+        log.info(String.format("User type =%s", user.getId()));
+        if (user.getType() != null) {
             policyAssocEntity = policyObjectAssocDao.findAssociationByLevel(
-                    "TYPE", user.getUserTypeInd());
+                    "USER_TYPE", user.getType().getId());
             log.info(String.format("Association found: %s", policyAssocEntity));
             if (policyAssocEntity != null) {
                 return getPolicy(policyAssocEntity);
             }
         }
 
-        //  set by ORGANIZATION
 
         if (user.getId() != null) {
-
+            //  set by ORGANIZATION
             List<OrganizationEntity> orgEntity = organizationDAO
-                    .getOrganizationsForUser(user.getId(), null, 0, 10);
-
-            for (OrganizationEntity organization : orgEntity) {
-
-                log.info("Looking for associate by organization.");
-                policyAssocEntity = policyObjectAssocDao
-                        .findAssociationByLevel("ORGANIZATION",
-                                organization.getId());
-                log.info(String.format("Association found: %s", policyAssocEntity));
+                    .getOrganizationsForUser(user.getId(), null, -1, -1);
+            if (CollectionUtils.isNotEmpty(orgEntity)) {
+                for (OrganizationEntity organization : orgEntity) {
+                    log.info("Looking for associate by organization.");
+                    policyAssocEntity = policyObjectAssocDao
+                            .findAssociationByLevel("ORGANIZATION",
+                                    organization.getId());
+                    log.info(String.format("Association found: %s", policyAssocEntity));
+                    if (policyAssocEntity != null) {
+                        log.info("PolicyAssoc found=" + policyAssocEntity);
+                        break;
+                    }
+                }
                 if (policyAssocEntity != null) {
-                    log.info("PolicyAssoc found=" + policyAssocEntity);
-                    break;
+                    return getPolicy(policyAssocEntity);
                 }
             }
-
-            if (policyAssocEntity != null) {
-                return getPolicy(policyAssocEntity);
+            //  set by ROLES
+            List<RoleEntity> roles = roleDAO.getRolesForUser(user.getId(), null, -1, -1);
+            if (CollectionUtils.isNotEmpty(roles)) {
+                for (RoleEntity role : roles) {
+                    log.info("Looking for associate by roles.");
+                    policyAssocEntity = policyObjectAssocDao
+                            .findAssociationByLevel("ROLE",
+                                    role.getId());
+                    log.info(String.format("Association found: %s", policyAssocEntity));
+                    if (policyAssocEntity != null) {
+                        log.info("PolicyAssoc found=" + policyAssocEntity);
+                        break;
+                    }
+                }
+                if (policyAssocEntity != null) {
+                    return getPolicy(policyAssocEntity);
+                }
             }
         }
 

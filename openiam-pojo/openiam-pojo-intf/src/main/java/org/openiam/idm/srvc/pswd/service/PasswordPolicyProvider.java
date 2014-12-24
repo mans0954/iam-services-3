@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.pswd.service;
 
+import org.openiam.idm.srvc.policy.dto.PasswordPolicyAssocSearchBean;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 
@@ -12,8 +13,9 @@ import org.openiam.idm.srvc.user.domain.UserEntity;
  */
 public interface PasswordPolicyProvider {
 
-    public Policy getPasswordPolicyByUser(String userId);
-    public Policy getPasswordPolicyByUser(UserEntity user);
+    public Policy getPasswordPolicyByUser(PasswordPolicyAssocSearchBean searchBean);
+
+    public Policy getPasswordPolicyByUser(UserEntity user, String managedSystemId);
 
     public Policy getGlobalPasswordPolicy();
 }
