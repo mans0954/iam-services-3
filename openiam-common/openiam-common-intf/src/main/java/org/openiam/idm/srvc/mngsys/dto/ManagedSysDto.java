@@ -32,19 +32,19 @@ import java.util.Set;
  * can also be forms
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "ManagedSysDto", propOrder = { "id", "name", "description", "status", "connectorId", "hostUrl", "port",
+@XmlType(name = "ManagedSysDto", propOrder = {"id", "name", "description", "status", "connectorId", "hostUrl", "port",
         "commProtocol", "userId", "pswd", "decryptPassword", "endDate", "startDate", "attributeNamesLookup",
         "searchScope", "resourceId", "primaryRepository", "secondaryRepositoryId", "updateSecondary",
         "mngSysObjectMatchs", "driverUrl", "connectionString", "addHandler", "modifyHandler", "deleteHandler",
         "passwordHandler", "suspendHandler", "resumeHandler", "searchHandler", "lookupHandler",
         "testConnectionHandler", "reconcileResourceHandler", "attributeNamesHandler", "handler5", "skipGroupProvision",
-        "rules", "groups", "roles" })
+        "rules", "groups", "roles", "changedByEndUser"})
 @DozerDTOCorrespondence(ManagedSysEntity.class)
 public class ManagedSysDto implements java.io.Serializable {
 
     /**
-	 * 
-	 */
+     *
+     */
     private static final long serialVersionUID = -648884785253890053L;
     private String id;
     private String name;
@@ -81,6 +81,7 @@ public class ManagedSysDto implements java.io.Serializable {
     private String attributeNamesHandler;
     private String handler5;
     private Boolean skipGroupProvision;
+    private boolean changedByEndUser = true;
 
     private List<ManagedSysRuleDto> rules = new ArrayList<ManagedSysRuleDto>(0);
 
@@ -105,7 +106,7 @@ public class ManagedSysDto implements java.io.Serializable {
     }
 
     public ManagedSysDto(String id, String name, String description, String status, String connectorId, String hostUrl,
-            Integer port, String commProtocol, String userId, String pswd, Date startDate, Date endDate) {
+                         Integer port, String commProtocol, String userId, String pswd, Date startDate, Date endDate) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -217,10 +218,18 @@ public class ManagedSysDto implements java.io.Serializable {
         this.endDate = endDate;
     }
 
+    public boolean getChangedByEndUser() {
+        return changedByEndUser;
+    }
+
+    public void setChangedByEndUser(boolean changedByEndUser) {
+        this.changedByEndUser = changedByEndUser;
+    }
+
     /**
      * Return a ManagedSystemObjectMatch for an object type. Return null is an
      * object for the specified objectType is not found.
-     * 
+     *
      * @param objectType
      * @return
      */
@@ -240,7 +249,7 @@ public class ManagedSysDto implements java.io.Serializable {
 
     public void removeManagedSysObjectMatch(final ManagedSystemObjectMatch match) {
         if (match != null && this.mngSysObjectMatchs != null) {
-            for (final Iterator<ManagedSystemObjectMatch> it = this.mngSysObjectMatchs.iterator(); it.hasNext();) {
+            for (final Iterator<ManagedSystemObjectMatch> it = this.mngSysObjectMatchs.iterator(); it.hasNext(); ) {
                 final ManagedSystemObjectMatch next = it.next();
                 if (StringUtils.equals(next.getObjectSearchId(), match.getObjectSearchId())) {
                     it.remove();

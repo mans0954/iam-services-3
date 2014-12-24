@@ -17,7 +17,7 @@
  */
 
 /**
- * 
+ *
  */
 package org.openiam.idm.srvc.pswd.service;
 
@@ -36,6 +36,7 @@ import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
+import org.openiam.idm.srvc.policy.dto.PasswordPolicyAssocSearchBean;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.pswd.domain.IdentityQuestionEntity;
@@ -53,32 +54,32 @@ import java.util.List;
 
 /**
  * Default implementation of the challenge response validator. This implementation uses the information stored in the OpenIAM repository
- * @author suneet
  *
+ * @author suneet
  */
 @Service("challengeResponseValidator")
 public class DefaultChallengeResponseValidator implements ChallengeResponseValidator {
-	
-	private static Logger LOG = Logger.getLogger(DefaultChallengeResponseValidator.class);
-	
-	@Autowired
-	private LoginDataService loginManager;
-	
-	@Autowired
+
+    private static Logger LOG = Logger.getLogger(DefaultChallengeResponseValidator.class);
+
+    @Autowired
+    private LoginDataService loginManager;
+
+    @Autowired
     private IdentityQuestionDAO questionDAO;
-    
+
     @Autowired
     private UserIdentityAnswerDAO answerDAO;
-    
+
     @Autowired
     private IdentityQuestGroupDAO questionGroupDAO;
-    
+
     @Autowired
     private IdentityAnswerSearchBeanConverter answerSearchBeanConverter;
-    
+
     @Autowired
     private IdentityQuestionSearchBeanConverter questionSearchBeanConverter;
-    
+
     @Autowired
     private UserDAO userDAO;
 
@@ -86,248 +87,250 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
     private PasswordService passwordService;
     @Autowired
     private KeyManagementService keyManagementService;
-    
-	private static final Log log = LogFactory.getLog(DefaultChallengeResponseValidator.class);
-	
-	@Override
-	public boolean isResponseValid(String userId, List<UserIdentityAnswerEntity> newAnswerList, int requiredCorrectAns)
-            throws Exception {
-		final int correctAns = getNumOfCorrectAnswers(userId, newAnswerList);
-		if (correctAns >= requiredCorrectAns && requiredCorrectAns > 0) {
-			return true;
-		}
-		return false;
-	}
-	
-	@Override
-	public Integer getNumOfRequiredQuestions(final String userId) {
-		Policy passwordPolicy = null;
-		if(StringUtils.isNotBlank(userId)) {
-			final UserEntity user = userDAO.findById(userId);
-			passwordPolicy = passwordService.getPasswordPolicyForUser(user);
-		}
-		if(passwordPolicy == null) {
-            passwordPolicy = passwordService.getGlobalPasswordPolicy();
-		}
-		
-		Integer count = null;
-		if(passwordPolicy != null) {
-			PolicyAttribute countAttr = passwordPolicy.getAttribute("QUEST_COUNT");
-			try {
-				count = Integer.valueOf(countAttr.getValue1());
-			} catch(Throwable e) {
-				log.warn("Cannot parse policy attribute value");
-			}
-		}
-		return count;
-	}
+
+    private static final Log log = LogFactory.getLog(DefaultChallengeResponseValidator.class);
 
     @Override
-    public Integer getNumOfCorrectAnswers(final String userId) {
-        Policy passwordPolicy = null;
-        if(StringUtils.isNotBlank(userId)) {
-            final UserEntity user = userDAO.findById(userId);
-            passwordPolicy = passwordService.getPasswordPolicyForUser(user);
+    public boolean isResponseValid(String userId, List<UserIdentityAnswerEntity> newAnswerList, int requiredCorrectAns)
+            throws Exception {
+        final int correctAns = getNumOfCorrectAnswers(userId, newAnswerList);
+        if (correctAns >= requiredCorrectAns && requiredCorrectAns > 0) {
+            return true;
         }
-        if(passwordPolicy == null) {
+        return false;
+    }
+
+    @Override
+    public Integer getNumOfRequiredQuestions(final String userId) {
+        Policy passwordPolicy = null;
+        if (StringUtils.isNotBlank(userId)) {
+            PasswordPolicyAssocSearchBean searchBean = new PasswordPolicyAssocSearchBean();
+            searchBean.setUserId(userId);
+            passwordPolicy = passwordService.getPasswordPolicyForUser(searchBean);
+        }
+        if (passwordPolicy == null) {
             passwordPolicy = passwordService.getGlobalPasswordPolicy();
         }
 
         Integer count = null;
-        if(passwordPolicy != null) {
-            PolicyAttribute countAttr = passwordPolicy.getAttribute("QUEST_ANSWER_CORRECT");
+        if (passwordPolicy != null) {
+            PolicyAttribute countAttr = passwordPolicy.getAttribute("QUEST_COUNT");
             try {
                 count = Integer.valueOf(countAttr.getValue1());
-            } catch(Throwable e) {
+            } catch (Throwable e) {
                 log.warn("Cannot parse policy attribute value");
             }
         }
         return count;
     }
-	
-	@Override
-	public boolean isUserAnsweredSecurityQuestions(final String userId) throws Exception {
-		final Integer numOfRequiredQuestions = getNumOfRequiredQuestions(userId);
-		final List<UserIdentityAnswerEntity> answerList = answersByUser(userId);
-		
-		
-		boolean retVal = false;
-		if(numOfRequiredQuestions == null) {
-			retVal = true;
-		} else if(CollectionUtils.isNotEmpty(answerList)) {
-			if(answerList.size() >= numOfRequiredQuestions.intValue()) {
-				retVal = true;
-			}
-		}
-		
-		return retVal;
-	}
 
-	private int getNumOfCorrectAnswers(final String userId, final List<UserIdentityAnswerEntity> newAnswerList)
+    @Override
+    public Integer getNumOfCorrectAnswers(final String userId) {
+        Policy passwordPolicy = null;
+        if (StringUtils.isNotBlank(userId)) {
+            PasswordPolicyAssocSearchBean searchBean = new PasswordPolicyAssocSearchBean();
+            searchBean.setUserId(userId);
+            passwordPolicy = passwordService.getPasswordPolicyForUser(searchBean);
+        }
+        if (passwordPolicy == null) {
+            passwordPolicy = passwordService.getGlobalPasswordPolicy();
+        }
+
+        Integer count = null;
+        if (passwordPolicy != null) {
+            PolicyAttribute countAttr = passwordPolicy.getAttribute("QUEST_ANSWER_CORRECT");
+            try {
+                count = Integer.valueOf(countAttr.getValue1());
+            } catch (Throwable e) {
+                log.warn("Cannot parse policy attribute value");
+            }
+        }
+        return count;
+    }
+
+    @Override
+    public boolean isUserAnsweredSecurityQuestions(final String userId) throws Exception {
+        final Integer numOfRequiredQuestions = getNumOfRequiredQuestions(userId);
+        final List<UserIdentityAnswerEntity> answerList = answersByUser(userId);
+
+
+        boolean retVal = false;
+        if (numOfRequiredQuestions == null) {
+            retVal = true;
+        } else if (CollectionUtils.isNotEmpty(answerList)) {
+            if (answerList.size() >= numOfRequiredQuestions.intValue()) {
+                retVal = true;
+            }
+        }
+
+        return retVal;
+    }
+
+    private int getNumOfCorrectAnswers(final String userId, final List<UserIdentityAnswerEntity> newAnswerList)
             throws Exception {
-		int correctAns = 0;
-		
-		LoginEntity lg = loginManager.getPrimaryIdentity(userId);
-		
-		if (lg == null) {
-			throw new PrincipalNotFoundException(String.format("Login object not found for userId=%s", userId));
-		}
-		// get the answers in the system to validate the response.
-		final List<UserIdentityAnswerEntity> savedAnsList = answersByUser(lg.getUserId());
-		if (CollectionUtils.isEmpty(savedAnsList)) {
-			throw new IdentityAnswerNotFoundException();
-		}
+        int correctAns = 0;
 
-		for (UserIdentityAnswerEntity savedAns : savedAnsList) {
-			for (UserIdentityAnswerEntity newAns : newAnswerList) {
-				if(StringUtils.equalsIgnoreCase(newAns.getId(), savedAns.getId())) {
+        LoginEntity lg = loginManager.getPrimaryIdentity(userId);
+
+        if (lg == null) {
+            throw new PrincipalNotFoundException(String.format("Login object not found for userId=%s", userId));
+        }
+        // get the answers in the system to validate the response.
+        final List<UserIdentityAnswerEntity> savedAnsList = answersByUser(lg.getUserId());
+        if (CollectionUtils.isEmpty(savedAnsList)) {
+            throw new IdentityAnswerNotFoundException();
+        }
+
+        for (UserIdentityAnswerEntity savedAns : savedAnsList) {
+            for (UserIdentityAnswerEntity newAns : newAnswerList) {
+                if (StringUtils.equalsIgnoreCase(newAns.getId(), savedAns.getId())) {
                     String savedAnswer = (savedAns.getIsEncrypted()) ? keyManagementService.decrypt(lg.getUserId(), KeyName.challengeResponse, savedAns.getQuestionAnswer())
-                                                                     : savedAns.getQuestionAnswer();
+                            : savedAns.getQuestionAnswer();
 
-					if(StringUtils.equalsIgnoreCase(newAns.getQuestionAnswer(),savedAnswer)) {
-						correctAns++;
-					}
-				}
-			}
-		}
-		return correctAns;
-	}
+                    if (StringUtils.equalsIgnoreCase(newAns.getQuestionAnswer(), savedAnswer)) {
+                        correctAns++;
+                    }
+                }
+            }
+        }
+        return correctAns;
+    }
 
-	private List<UserIdentityAnswerEntity> answersByUser(String userId) throws Exception {
-		if (userId == null) {
-			throw new NullPointerException("UserId is null");
-		}
-		
-		final UserIdentityAnswerEntity example = new UserIdentityAnswerEntity();
-		example.setUserId(userId);
-		return answerDAO.getByExample(example);
-	}
+    private List<UserIdentityAnswerEntity> answersByUser(String userId) throws Exception {
+        if (userId == null) {
+            throw new NullPointerException("UserId is null");
+        }
 
-	@Override
-	public List<IdentityQuestionEntity> findQuestionBeans(final IdentityQuestionSearchBean searchBean, final int from, final int size) {
-		List<IdentityQuestionEntity> resultList = null;
-		if(searchBean.getKey() != null) {
-			final IdentityQuestionEntity entity = questionDAO.findById(searchBean.getKey());
-			if(entity != null) {
-				resultList = new LinkedList<IdentityQuestionEntity>();
-				resultList.add(entity);
-			}
-		} else {
-			resultList = questionDAO.getByExample(questionSearchBeanConverter.convert(searchBean), from, size);
-		}
-		return resultList;
-	}
+        final UserIdentityAnswerEntity example = new UserIdentityAnswerEntity();
+        example.setUserId(userId);
+        return answerDAO.getByExample(example);
+    }
 
-	@Override
-	public Integer count(final IdentityQuestionSearchBean searchBean) {
-		final IdentityQuestionEntity entity = questionSearchBeanConverter.convert(searchBean);
-		return questionDAO.count(entity);
-	}
+    @Override
+    public List<IdentityQuestionEntity> findQuestionBeans(final IdentityQuestionSearchBean searchBean, final int from, final int size) {
+        List<IdentityQuestionEntity> resultList = null;
+        if (searchBean.getKey() != null) {
+            final IdentityQuestionEntity entity = questionDAO.findById(searchBean.getKey());
+            if (entity != null) {
+                resultList = new LinkedList<IdentityQuestionEntity>();
+                resultList.add(entity);
+            }
+        } else {
+            resultList = questionDAO.getByExample(questionSearchBeanConverter.convert(searchBean), from, size);
+        }
+        return resultList;
+    }
 
-	@Override
-	public List<UserIdentityAnswerEntity> findAnswerBeans(final IdentityAnswerSearchBean searchBean, String requesterId, final int from, final int size)
+    @Override
+    public Integer count(final IdentityQuestionSearchBean searchBean) {
+        final IdentityQuestionEntity entity = questionSearchBeanConverter.convert(searchBean);
+        return questionDAO.count(entity);
+    }
+
+    @Override
+    public List<UserIdentityAnswerEntity> findAnswerBeans(final IdentityAnswerSearchBean searchBean, String requesterId, final int from, final int size)
             throws Exception {
-		List<UserIdentityAnswerEntity> resultList = null;
-		if(searchBean.getKey() != null) {
-			final UserIdentityAnswerEntity entity = answerDAO.findById(searchBean.getKey());
-			if(entity != null) {
-				resultList = new LinkedList<UserIdentityAnswerEntity>();
-				resultList.add(entity);
-			}
-		} else {
-			resultList = answerDAO.getByExample(answerSearchBeanConverter.convert(searchBean), from, size);
-		}
-		return decryptAnswers(resultList, requesterId);
-	}
+        List<UserIdentityAnswerEntity> resultList = null;
+        if (searchBean.getKey() != null) {
+            final UserIdentityAnswerEntity entity = answerDAO.findById(searchBean.getKey());
+            if (entity != null) {
+                resultList = new LinkedList<UserIdentityAnswerEntity>();
+                resultList.add(entity);
+            }
+        } else {
+            resultList = answerDAO.getByExample(answerSearchBeanConverter.convert(searchBean), from, size);
+        }
+        return decryptAnswers(resultList, requesterId);
+    }
 
-	@Override
-	@Transactional
-	public void saveQuestion(final IdentityQuestionEntity entity) throws Exception {
-		if(entity.getIdentityQuestGrp() != null && StringUtils.isNotBlank(entity.getIdentityQuestGrp().getId())) {
-			entity.setIdentityQuestGrp(questionGroupDAO.findById(entity.getIdentityQuestGrp().getId()));
-		}
-		if(entity.getId() == null) {
-			questionDAO.save(entity);
-		} else {
-			questionDAO.merge(entity);
-		}
-	}
+    @Override
+    @Transactional
+    public void saveQuestion(final IdentityQuestionEntity entity) throws Exception {
+        if (entity.getIdentityQuestGrp() != null && StringUtils.isNotBlank(entity.getIdentityQuestGrp().getId())) {
+            entity.setIdentityQuestGrp(questionGroupDAO.findById(entity.getIdentityQuestGrp().getId()));
+        }
+        if (entity.getId() == null) {
+            questionDAO.save(entity);
+        } else {
+            questionDAO.merge(entity);
+        }
+    }
 
-	@Override
-	@Transactional
-	public void deleteQuestion(final String questionId) throws Exception {
-		final IdentityQuestionEntity entity = questionDAO.findById(questionId);
-		if(entity != null) {
-			answerDAO.deleteAnswersByQuestionId(entity.getId());
-			questionDAO.delete(entity);
-		}
-	}
+    @Override
+    @Transactional
+    public void deleteQuestion(final String questionId) throws Exception {
+        final IdentityQuestionEntity entity = questionDAO.findById(questionId);
+        if (entity != null) {
+            answerDAO.deleteAnswersByQuestionId(entity.getId());
+            questionDAO.delete(entity);
+        }
+    }
 
-	@Override
-	@Transactional
-	public IdentityQuestionEntity getQuestion(final String questionId) {
-		final IdentityQuestionEntity entity = questionDAO.findById(questionId);
-		return entity;
-	}
+    @Override
+    @Transactional
+    public IdentityQuestionEntity getQuestion(final String questionId) {
+        final IdentityQuestionEntity entity = questionDAO.findById(questionId);
+        return entity;
+    }
 
-	@Override
-	@Transactional
-	public void saveAnswer(final UserIdentityAnswerEntity entity) throws Exception {
-		if(entity.getIdentityQuestion() != null && StringUtils.isNotBlank(entity.getIdentityQuestion().getId())) {
-			entity.setIdentityQuestion(questionDAO.findById(entity.getIdentityQuestion().getId()));
-		}
-		
-		if(StringUtils.isBlank(entity.getQuestionAnswer())) {
-			throw new BasicDataServiceException(ResponseCode.NO_ANSWER_TO_QUESTION);
-		}
+    @Override
+    @Transactional
+    public void saveAnswer(final UserIdentityAnswerEntity entity) throws Exception {
+        if (entity.getIdentityQuestion() != null && StringUtils.isNotBlank(entity.getIdentityQuestion().getId())) {
+            entity.setIdentityQuestion(questionDAO.findById(entity.getIdentityQuestion().getId()));
+        }
+
+        if (StringUtils.isBlank(entity.getQuestionAnswer())) {
+            throw new BasicDataServiceException(ResponseCode.NO_ANSWER_TO_QUESTION);
+        }
 
         entity.setQuestionAnswer(keyManagementService.encrypt(entity.getUserId(), KeyName.challengeResponse, entity.getQuestionAnswer()));
         entity.setIsEncrypted(true);
 
-		answerDAO.merge(entity);
-	}
+        answerDAO.merge(entity);
+    }
 
-	@Override
-	@Transactional
-	public void deleteAnswer(final String answerId) throws Exception {
-		final UserIdentityAnswerEntity entity = answerDAO.findById(answerId);
-		if(entity != null) {
-			answerDAO.delete(entity);
-		}
-	}
+    @Override
+    @Transactional
+    public void deleteAnswer(final String answerId) throws Exception {
+        final UserIdentityAnswerEntity entity = answerDAO.findById(answerId);
+        if (entity != null) {
+            answerDAO.delete(entity);
+        }
+    }
 
-	@Override
-	@Transactional
-	public void saveAnswers(final List<UserIdentityAnswerEntity> answerList) throws Exception {
-		if(answerList != null) {
-			for(final UserIdentityAnswerEntity entity : answerList) {
-				if(entity.getIdentityQuestion() != null && StringUtils.isNotBlank(entity.getIdentityQuestion().getId())) {
-					entity.setIdentityQuestion(questionDAO.findById(entity.getIdentityQuestion().getId()));
-				}
+    @Override
+    @Transactional
+    public void saveAnswers(final List<UserIdentityAnswerEntity> answerList) throws Exception {
+        if (answerList != null) {
+            for (final UserIdentityAnswerEntity entity : answerList) {
+                if (entity.getIdentityQuestion() != null && StringUtils.isNotBlank(entity.getIdentityQuestion().getId())) {
+                    entity.setIdentityQuestion(questionDAO.findById(entity.getIdentityQuestion().getId()));
+                }
                 entity.setQuestionAnswer(keyManagementService.encrypt(entity.getUserId(), KeyName.challengeResponse, entity.getQuestionAnswer()));
                 entity.setIsEncrypted(true);
-			}
-			answerDAO.save(answerList);
-		}
-	}
+            }
+            answerDAO.save(answerList);
+        }
+    }
 
-	@Override
-	@Transactional
-	public void resetQuestionsForUser(String userId) {
-		answerDAO.deleteByUser(userId);
-	}
+    @Override
+    @Transactional
+    public void resetQuestionsForUser(String userId) {
+        answerDAO.deleteByUser(userId);
+    }
 
 
     private List<UserIdentityAnswerEntity> decryptAnswers(List<UserIdentityAnswerEntity> answerList, String requesterId)
             throws Exception {
-        if(CollectionUtils.isNotEmpty(answerList)){
-            for(UserIdentityAnswerEntity entity: answerList){
-                if(StringUtils.isNotBlank(requesterId)
-                   && requesterId.equals(entity.getUserId())
-                   && entity.getIsEncrypted()){
+        if (CollectionUtils.isNotEmpty(answerList)) {
+            for (UserIdentityAnswerEntity entity : answerList) {
+                if (StringUtils.isNotBlank(requesterId)
+                        && requesterId.equals(entity.getUserId())
+                        && entity.getIsEncrypted()) {
 
                     entity.setQuestionAnswer(keyManagementService.decrypt(entity.getUserId(), KeyName.challengeResponse,
-                                                                          entity.getQuestionAnswer()));
+                            entity.getQuestionAnswer()));
                 }
             }
         }
