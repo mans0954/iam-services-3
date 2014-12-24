@@ -95,6 +95,10 @@ public class ManagedSysEntity implements Serializable {
     @Type(type = "yes_no")
     private boolean skipGroupProvision = true;
 
+    @Column(name = "CHANGE_END_USER", nullable = false)
+    @Type(type = "yes_no")
+    private boolean changedByEndUser = true;
+    ;
     @OneToMany(mappedBy = "managedSys")
     private Set<ManagedSystemObjectMatchEntity> mngSysObjectMatchs = new HashSet<ManagedSystemObjectMatchEntity>();
 
@@ -102,10 +106,10 @@ public class ManagedSysEntity implements Serializable {
     @JoinColumn(name = "MANAGED_SYS_ID", referencedColumnName = "MANAGED_SYS_ID")
     private List<ManagedSysRuleEntity> rules = new ArrayList<ManagedSysRuleEntity>(0);
 
-    @OneToMany(orphanRemoval = false, cascade = { CascadeType.DETACH, CascadeType.REFRESH }, mappedBy = "managedSystem", fetch = FetchType.LAZY)
+    @OneToMany(orphanRemoval = false, cascade = {CascadeType.DETACH, CascadeType.REFRESH}, mappedBy = "managedSystem", fetch = FetchType.LAZY)
     private Set<GroupEntity> groups;
 
-    @OneToMany(orphanRemoval = false, cascade = { CascadeType.DETACH, CascadeType.REFRESH }, mappedBy = "managedSystem", fetch = FetchType.LAZY)
+    @OneToMany(orphanRemoval = false, cascade = {CascadeType.DETACH, CascadeType.REFRESH}, mappedBy = "managedSystem", fetch = FetchType.LAZY)
     private Set<RoleEntity> roles;
 
     public List<ManagedSysRuleEntity> getRules() {
@@ -404,6 +408,14 @@ public class ManagedSysEntity implements Serializable {
         this.skipGroupProvision = skipGroupProvision;
     }
 
+    public boolean getChangedByEndUser() {
+        return changedByEndUser;
+    }
+
+    public void setChangedByEndUser(boolean changedByEndUser) {
+        this.changedByEndUser = changedByEndUser;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o)
@@ -523,4 +535,6 @@ public class ManagedSysEntity implements Serializable {
         result = 31 * result + (skipGroupProvision ? 1231 : 1237);
         return result;
     }
+
+
 }
