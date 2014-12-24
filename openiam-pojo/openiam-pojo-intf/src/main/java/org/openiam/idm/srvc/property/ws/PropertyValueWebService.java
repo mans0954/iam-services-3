@@ -28,4 +28,7 @@ public interface PropertyValueWebService {
     @WebMethod
     public List<PropertyValue> getAll();
     
+    @WebMethod
+    public String getCachedValue(final String key, final Language language);
+    
 }

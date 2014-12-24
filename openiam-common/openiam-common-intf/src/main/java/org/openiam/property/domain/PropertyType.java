@@ -1,9 +1,11 @@
 package org.openiam.property.domain;
 
 public enum PropertyType {
-	STRING,
-	BOOLEAN,
-	INTEGER,
-	LONG,
-	DOUBLE;
+	String,
+	Boolean,
+	Integer,
+	Long,
+	Double,
+	OrganizationType
+	;
 }

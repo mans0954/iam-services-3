@@ -4,6 +4,7 @@ package org.openiam.service.integration.property;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.idm.searchbeans.LoginSearchBean;
@@ -29,6 +30,11 @@ public class PropertyValueServiceTest extends AbstractServiceTest {
 	@Test
 	public void testGetAll() {
 		Assert.assertTrue(CollectionUtils.isNotEmpty(propertyValuerServiceClient.getAll()));
+		propertyValuerServiceClient.getAll().forEach(dto -> {
+			if(dto.isMultilangual()) {
+				Assert.assertTrue(MapUtils.isNotEmpty(dto.getInternationalizedValues()));
+			}
+		});
 	}
 	
 	@Test
@@ -54,7 +60,7 @@ public class PropertyValueServiceTest extends AbstractServiceTest {
 		for(final PropertyValue dto : dtoList) {
 			if(dto.isMultilangual() && !dto.isEmptyValueAllowed()) {
 				doCheck = true;
-				dto.getInternationalizedValues().get("0").setValue(null);
+				dto.getInternationalizedValues().get("1").setValue(null);
 			}
 		}
 		
@@ -62,7 +68,7 @@ public class PropertyValueServiceTest extends AbstractServiceTest {
 			Response response = propertyValuerServiceClient.save(dtoList, null);
 			Assert.assertNotNull(response);
 			Assert.assertTrue(response.isFailure());
-			Assert.assertEquals(response.getErrorCode(), ResponseCode.PROPERTY_I18_VALUE_MISSING);
+			Assert.assertEquals(response.getErrorCode(), ResponseCode.PROPERTY_VALUE_REQUIRED);
 		}
 		
 		doCheck = false;
@@ -83,7 +89,7 @@ public class PropertyValueServiceTest extends AbstractServiceTest {
 		doCheck = false;
 		for(final PropertyValue dto : dtoList) {
 			if(!dto.isMultilangual()) {
-				if(dto.getType().equals(PropertyType.BOOLEAN)) {
+				if(dto.getType().equals(PropertyType.Boolean)) {
 					doCheck = true;
 					dto.setValue(getRandomName());
 				}

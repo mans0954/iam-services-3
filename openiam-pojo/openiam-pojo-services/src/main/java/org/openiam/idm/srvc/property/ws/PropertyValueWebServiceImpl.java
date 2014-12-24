@@ -3,6 +3,7 @@ package org.openiam.idm.srvc.property.ws;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.jws.WebParam;
 import javax.jws.WebService;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -23,6 +24,7 @@ import org.openiam.idm.srvc.lang.dto.LanguageMapping;
 import org.openiam.idm.srvc.lang.service.LanguageDAO;
 import org.openiam.idm.srvc.property.converter.PropertyValueConverter;
 import org.openiam.idm.srvc.property.service.PropertyValueService;
+import org.openiam.idm.srvc.property.service.PropertyValueSweeper;
 import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 import org.openiam.internationalization.LocalizedServiceGet;
 import org.openiam.property.domain.PropertyType;
@@ -43,6 +45,9 @@ public class PropertyValueWebServiceImpl extends AbstractBaseService implements 
 	 private static final Log log = LogFactory.getLog(PropertyValueWebServiceImpl.class);
 	 
 	 @Autowired
+	 private PropertyValueService propertyValueService;
+	 
+	 @Autowired
 	 private PropertyValueConverter converter;
 	 
 	 @Autowired
@@ -56,33 +61,33 @@ public class PropertyValueWebServiceImpl extends AbstractBaseService implements 
 			 }
 		 } else {
 			 switch (dto.getType()) {
-			  	case BOOLEAN:
+			  	case Boolean:
 			  		if(!StringUtils.equalsIgnoreCase(value, "true") && !StringUtils.equalsIgnoreCase(value, "false")) {
 			  			e =  new BasicDataServiceException(ResponseCode.PROPERTY_TYPE_INVALID);
 			  		}
 			  		break;
-			  	case DOUBLE:
+			  	case Double:
 			  		try {
 			  			Double.parseDouble(value);
 			  		} catch(NumberFormatException ex) {
 			  			e =  new BasicDataServiceException(ResponseCode.PROPERTY_TYPE_INVALID);
 			  		}
 			  		break;
-			  	case INTEGER:
+			  	case Integer:
 			  		try {
 			  			Integer.parseInt(value);
 			  		} catch(NumberFormatException ex) {
 			  			e =  new BasicDataServiceException(ResponseCode.PROPERTY_TYPE_INVALID);
 			  		}
 			  		break;
-			  	case LONG:
+			  	case Long:
 			  		try {
 			  			Long.parseLong(value);
 			  		} catch(NumberFormatException ex) {
 			  			e =  new BasicDataServiceException(ResponseCode.PROPERTY_TYPE_INVALID);
 			  		}
 			  		break;
-			  	case STRING:
+			  	case String:
 			  		break;
 			  	default:
 			  		break;
@@ -109,6 +114,8 @@ public class PropertyValueWebServiceImpl extends AbstractBaseService implements 
         		if(StringUtils.isBlank(dto.getId())) {
         			it.remove();
         		} else {
+        			response.addFieldMapping("dto", dto.getId());
+        			
         			final PropertyValueEntity entity = propertyValueService.get(dto.getId());
         			dto.setEmptyValueAllowed(entity.isEmptyValueAllowed());
         			dto.setMultilangual(entity.isMultilangual());
@@ -151,13 +158,14 @@ public class PropertyValueWebServiceImpl extends AbstractBaseService implements 
         	propertyValueService.save(entityList);
         	idmAuditLog.succeed();
         } catch (BasicDataServiceException e) {
+        	log.warn("Can't save property value", e);
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
             idmAuditLog.fail();
             idmAuditLog.setFailureReason(e.getCode());
             idmAuditLog.setException(e);
         } catch (Throwable e) {
-            log.error("Can't save or update resource property", e);
+            log.error("Can't save property value", e);
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorText(e.getMessage());
             idmAuditLog.fail();
@@ -173,6 +181,11 @@ public class PropertyValueWebServiceImpl extends AbstractBaseService implements 
 		final List<PropertyValueEntity> entityList = propertyValueService.getAll();
 		final List<PropertyValue> dtoList = converter.convertToDTOList(entityList, true);
 		return dtoList;
+	}
+
+	@Override
+	public String getCachedValue(final String key, final Language language) {
+		return propertyValueSweeper.getValue(key, language);
 	}
 
 }
