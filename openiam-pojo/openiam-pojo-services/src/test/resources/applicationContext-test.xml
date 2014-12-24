@@ -238,12 +238,6 @@
 		<property name="sessionFactory" ref="sessionFactory"></property>		
 	</bean>		
 	<!-- Location Beans -->
-	<bean id="locationDataService" class="org.openiam.idm.srvc.loc.service.LocationDataServiceImpl" >
-		<property name="locationDao" ref="locationDAO" />
-	</bean>
-	<bean id="locationWS" class="org.openiam.idm.srvc.loc.ws.LocationDataWebServiceImpl" >
-		<property name="locationDS" ref="locationDataService" />
-	</bean>
 	
 	<bean id="locationDAO" class="org.openiam.idm.srvc.loc.service.LocationDAOImpl" >
 		<property name="sessionFactory" ref="sessionFactory"></property>		

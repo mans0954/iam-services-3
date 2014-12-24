@@ -387,19 +387,6 @@
 			</service>
 		</model>
 
-		<model name="locationServiceModel">
-			<service name="locationService">
-				<inbound>
-						<inbound-endpoint address="${webservice.path}LocationDataWebService" 		exchange-pattern="request-response">
-						<cxf:jaxws-service />
-					</inbound-endpoint>
-				</inbound>
-				<component>
-					<spring-object bean="locationWS" />
-				</component>
-			</service>
-		</model>
-
 
     <model name="heartBeatServiceModel">
         <service name="heartBeatService">

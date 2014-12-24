@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.org.service;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -7,13 +8,20 @@ import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.dozer.converter.LanguageDozerConverter;
+import org.openiam.dozer.converter.LocationDozerConverter;
 import org.openiam.dozer.converter.OrganizationDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
+import org.openiam.idm.searchbeans.AddressSearchBean;
+import org.openiam.idm.searchbeans.LocationSearchBean;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.srvc.base.AbstractBaseService;
+import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.lang.dto.Language;
+import org.openiam.idm.srvc.loc.domain.LocationEntity;
+import org.openiam.idm.srvc.loc.dto.Location;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.internationalization.LocalizedServiceGet;
 import org.openiam.provision.dto.ProvisionGroup;
@@ -51,6 +59,9 @@ import java.util.Map;
 public class OrganizationDataServiceImpl implements OrganizationDataService {
 
     private static final Log log = LogFactory.getLog(OrganizationDataServiceImpl.class);
+
+    @Autowired
+    private LocationDozerConverter locationDozerConverter;
 
     @Autowired
     private OrganizationService organizationService;
@@ -427,5 +438,96 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
 		}
 		return response;
 	}
+
+
+    @Override
+    public Response addLocation(Location val) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            if (val == null) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+            }
+
+
+            final LocationEntity entity = locationDozerConverter.convertToEntity(val, true);
+
+            organizationService.addLocation(entity);
+        } catch (BasicDataServiceException e) {
+            response.setErrorCode(e.getCode());
+            response.setStatus(ResponseStatus.FAILURE);
+        } catch (Throwable e) {
+            log.error("Can't perform operation", e);
+            response.setErrorText(e.getMessage());
+            response.setStatus(ResponseStatus.FAILURE);
+        }
+        return response;
+    }
+
+    @Override
+    public Response updateLocation(Location location) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            if (location == null) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+            }
+
+            final LocationEntity entity = locationDozerConverter.convertToEntity(location, false);
+            OrganizationEntity org = new OrganizationEntity();
+            org.setId(location.getOrganizationId());
+            entity.setOrganization(org);
+            organizationService.updateLocation(entity);
+        } catch (BasicDataServiceException e) {
+            response.setErrorCode(e.getCode());
+            response.setStatus(ResponseStatus.FAILURE);
+        } catch (Throwable e) {
+            log.error("Can't perform operation", e);
+            response.setErrorText(e.getMessage());
+            response.setStatus(ResponseStatus.FAILURE);
+        }
+        return response;
+    }
+
+    @Override
+    public Response removeLocation(String locationId) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            if (locationId == null) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+            }
+
+            organizationService.removeLocation(locationId);
+        } catch (BasicDataServiceException e) {
+            response.setErrorCode(e.getCode());
+            response.setStatus(ResponseStatus.FAILURE);
+        } catch (Throwable e) {
+            log.error("Can't perform operation", e);
+            response.setErrorText(e.getMessage());
+            response.setStatus(ResponseStatus.FAILURE);
+        }
+        return response;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Location getLocationById(String locationId) {
+
+        final LocationEntity loc = organizationService.getLocationById(locationId);
+        return locationDozerConverter.convertToDTO(loc, false);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Location> getLocationList(String organizationId) {
+
+        return this.getLocationListByPage(organizationId, Integer.MAX_VALUE, 0);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Location> getLocationListByPage(String organizationId, Integer size, Integer from) {
+
+        final List<LocationEntity> adrList = organizationService.getLocationList(organizationId, size, from);
+        return locationDozerConverter.convertToDTOList(adrList, false);
+    }
 
 }

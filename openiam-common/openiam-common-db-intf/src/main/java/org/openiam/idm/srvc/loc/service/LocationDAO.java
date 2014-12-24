@@ -21,26 +21,18 @@
  */
 package org.openiam.idm.srvc.loc.service;
 
+
+import org.openiam.core.dao.BaseDao;
+import org.openiam.idm.srvc.loc.domain.LocationEntity;
 import org.openiam.idm.srvc.loc.dto.Location;
-import org.openiam.idm.srvc.loc.dto.LocationSearch;
 
 import java.util.List;
 
 /**
  * @author suneet
  */
-public interface LocationDAO {
+public interface LocationDAO extends BaseDao<LocationEntity, String> {
 
-    public abstract void add(Location transientInstance);
-
-    public abstract void remove(Location persistentInstance);
-
-    public abstract Location update(Location detachedInstance);
-
-    public abstract Location findById(java.lang.String id);
-
-    public abstract List<Location> findAllLocations();
-
-    public abstract List<Location> searchLocations(LocationSearch search);
+    public void removeByOrganizationId(final String organizationId);
 
 }
