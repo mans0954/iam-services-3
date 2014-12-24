@@ -280,8 +280,7 @@ public class PolicyDataServiceImpl implements PolicyDataService {
 
             PolicyObjectAssocEntity poaEntity = policyAssocObjectDozerConverter
                     .convertToEntity(poa, true);
-            if (poaEntity == null || poaEntity.getPolicyObjectId() == null
-                    && poaEntity.getObjectId() == null) {
+            if (poaEntity == null || poaEntity.getPolicyObjectId() == null) {
                 poaEntity.setObjectId(null);
                 poaEntity = policyObjectAssocDAO.add(poaEntity);
                 response.setResponseValue(poaEntity.getPolicyObjectId());

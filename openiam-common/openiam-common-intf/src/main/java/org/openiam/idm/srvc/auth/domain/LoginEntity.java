@@ -43,10 +43,10 @@ public class LoginEntity implements java.io.Serializable {
         @Field(name = "login", index = Index.TOKENIZED, store = Store.YES),
         @Field(name = "loginUntokenized", index = Index.UN_TOKENIZED, store = Store.YES)
     })
-    @Column(name="LOGIN",length=320)
+    @Column(name="LOGIN",length=220)
     private String login;
     
-    @Column(name="LOWERCASE_LOGIN",length=320)
+    @Column(name="LOWERCASE_LOGIN",length=220)
     private String lowerCaseLogin;
     
     @Field(name = "managedSysId", index = Index.UN_TOKENIZED, store = Store.YES)
