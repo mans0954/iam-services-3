@@ -181,11 +181,15 @@ public class Location implements Serializable {
         this.organizationId = organizationId;
     }
 
-    public boolean getIsActive() {
+    public Boolean isActive() {
         return active;
     }
 
-    public void setIsActive(boolean active) {
+    public Boolean getActive() {
+        return active;
+    }
+
+    public void setActive(Boolean active) {
         this.active = active;
     }
 

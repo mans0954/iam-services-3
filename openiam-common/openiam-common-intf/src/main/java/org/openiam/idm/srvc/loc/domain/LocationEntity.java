@@ -43,7 +43,7 @@ public class LocationEntity {
 
     @Column(name = "BLDG_NUM", length = 100)
     @Size(max = 100, message = "validator.location.building.number.toolong")
-    private String bldgNumber;
+    private String bldgNum;
 
     @Column(name = "STREET_DIRECTION", length = 20)
     @Size(max = 20, message = "validator.location.street.direction.toolong")
@@ -81,7 +81,7 @@ public class LocationEntity {
 
     @Column(name = "ACTIVE")
     @Type(type = "yes_no")
-    private boolean isActive = true;
+    private boolean active = true;
 
     @Column(name = "SENSITIVE_LOCATION")
     private Integer sensitiveLocation;
@@ -127,12 +127,12 @@ public class LocationEntity {
         this.country = country;
     }
 
-    public String getBldgNumber() {
-        return bldgNumber;
+    public String getBldgNum() {
+        return bldgNum;
     }
 
-    public void setBldgNumber(String bldgNumber) {
-        this.bldgNumber = bldgNumber;
+    public void setBldgNum(String bldgNum) {
+        this.bldgNum = bldgNum;
     }
 
     public String getStreetDirection() {
@@ -207,12 +207,16 @@ public class LocationEntity {
         this.internalLocationId = internalLocationId;
     }
 
-    public boolean isActive() {
-        return isActive;
+    public boolean getActive() {
+        return active;
     }
 
-    public void setActive(boolean isActive) {
-        this.isActive = isActive;
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        active = active;
     }
 
     public Integer getSensitiveLocation() {
@@ -238,7 +242,7 @@ public class LocationEntity {
         sb.append(", name='").append(name).append('\'');
         sb.append(", description='").append(description).append('\'');
         sb.append(", country='").append(country).append('\'');
-        sb.append(", bldgNumber='").append(bldgNumber).append('\'');
+        sb.append(", bldgNum='").append(bldgNum).append('\'');
         sb.append(", streetDirection='").append(streetDirection).append('\'');
         sb.append(", address1='").append(address1).append('\'');
         sb.append(", address2='").append(address2).append('\'');
@@ -248,7 +252,7 @@ public class LocationEntity {
         sb.append(", postalCd='").append(postalCd).append('\'');
         sb.append(", organizationId='").append(organizationId).append('\'');
         sb.append(", internalLocationId='").append(internalLocationId).append('\'');
-        sb.append(", isActive=").append(isActive);
+        sb.append(", active=").append(active);
         sb.append(", sensitiveLocation=").append(sensitiveLocation);
         sb.append(", organization=").append(organization);
         sb.append('}');
@@ -262,11 +266,11 @@ public class LocationEntity {
 
         LocationEntity that = (LocationEntity) o;
 
-        if (isActive != that.isActive) return false;
+        if (active != that.active) return false;
         if (address1 != null ? !address1.equals(that.address1) : that.address1 != null) return false;
         if (address2 != null ? !address2.equals(that.address2) : that.address2 != null) return false;
         if (address3 != null ? !address3.equals(that.address3) : that.address3 != null) return false;
-        if (bldgNumber != null ? !bldgNumber.equals(that.bldgNumber) : that.bldgNumber != null) return false;
+        if (bldgNum != null ? !bldgNum.equals(that.bldgNum) : that.bldgNum != null) return false;
         if (city != null ? !city.equals(that.city) : that.city != null) return false;
         if (country != null ? !country.equals(that.country) : that.country != null) return false;
         if (description != null ? !description.equals(that.description) : that.description != null) return false;
@@ -293,7 +297,7 @@ public class LocationEntity {
         result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (description != null ? description.hashCode() : 0);
         result = 31 * result + (country != null ? country.hashCode() : 0);
-        result = 31 * result + (bldgNumber != null ? bldgNumber.hashCode() : 0);
+        result = 31 * result + (bldgNum != null ? bldgNum.hashCode() : 0);
         result = 31 * result + (streetDirection != null ? streetDirection.hashCode() : 0);
         result = 31 * result + (address1 != null ? address1.hashCode() : 0);
         result = 31 * result + (address2 != null ? address2.hashCode() : 0);
@@ -303,7 +307,7 @@ public class LocationEntity {
         result = 31 * result + (postalCd != null ? postalCd.hashCode() : 0);
         result = 31 * result + (organizationId != null ? organizationId.hashCode() : 0);
         result = 31 * result + (internalLocationId != null ? internalLocationId.hashCode() : 0);
-        result = 31 * result + (isActive ? 1 : 0);
+        result = 31 * result + (active ? 1 : 0);
         result = 31 * result + (sensitiveLocation != null ? sensitiveLocation.hashCode() : 0);
         result = 31 * result + (organization != null ? organization.hashCode() : 0);
         return result;

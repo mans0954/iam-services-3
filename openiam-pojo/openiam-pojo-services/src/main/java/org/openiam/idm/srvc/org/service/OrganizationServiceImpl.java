@@ -1019,7 +1019,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
             entity.setName(val.getName());
             entity.setDescription(val.getDescription());
             entity.setCountry(val.getCountry());
-            entity.setBldgNumber(val.getBldgNumber());
+            entity.setBldgNum(val.getBldgNum());
             entity.setStreetDirection(val.getStreetDirection());
             entity.setAddress1(val.getAddress1());
             entity.setAddress2(val.getAddress2());

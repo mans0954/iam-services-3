@@ -2,15 +2,12 @@ package org.openiam.idm.srvc.loc.service;
 
 // Generated May 9, 2009 1:42:34 PM by Hibernate Tools 3.2.2.GA
 
-import java.util.List;
 import javax.annotation.PostConstruct;
-import javax.naming.InitialContext;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
-import org.hibernate.HibernateException;
 
 import org.hibernate.Query;
 import org.hibernate.criterion.Restrictions;
@@ -20,7 +17,7 @@ import org.openiam.idm.srvc.loc.domain.LocationEntity;
 import org.springframework.stereotype.Repository;
 
 
-import static org.hibernate.criterion.Example.create;
+
 
 /**
  * DAO to manage the list of Locations
