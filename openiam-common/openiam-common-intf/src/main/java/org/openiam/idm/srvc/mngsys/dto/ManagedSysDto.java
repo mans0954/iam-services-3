@@ -7,13 +7,8 @@ import org.openiam.am.srvc.constants.SearchScopeType;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
-import org.openiam.idm.srvc.mngsys.domain.ManagedSysRuleEntity;
 import org.openiam.idm.srvc.role.dto.Role;
 
-import javax.persistence.CascadeType;
-import javax.persistence.FetchType;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToMany;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlSchemaType;
@@ -33,7 +28,7 @@ import java.util.Set;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ManagedSysDto", propOrder = {"id", "name", "description", "status", "connectorId", "hostUrl", "port",
-        "commProtocol", "userId", "pswd", "decryptPassword", "endDate", "startDate", "attributeNamesLookup",
+        "commProtocol", "userId", "pswd", "decryptPassword", "endDate", "startDate",
         "searchScope", "resourceId", "primaryRepository", "secondaryRepositoryId", "updateSecondary",
         "mngSysObjectMatchs", "driverUrl", "connectionString", "addHandler", "modifyHandler", "deleteHandler",
         "passwordHandler", "suspendHandler", "resumeHandler", "searchHandler", "lookupHandler",
@@ -60,7 +55,6 @@ public class ManagedSysDto implements java.io.Serializable {
     private Date startDate;
     @XmlSchemaType(name = "dateTime")
     private Date endDate;
-    private String attributeNamesLookup;
     private SearchScopeType searchScope = SearchScopeType.SUBTREE_SCOPE;
     private String resourceId;
     private Integer primaryRepository;
@@ -283,14 +277,6 @@ public class ManagedSysDto implements java.io.Serializable {
         this.decryptPassword = decryptPassword;
     }
 
-    public String getAttributeNamesLookup() {
-        return attributeNamesLookup;
-    }
-
-    public void setAttributeNamesLookup(String attributeNamesLookup) {
-        this.attributeNamesLookup = attributeNamesLookup;
-    }
-
     public SearchScopeType getSearchScope() {
         return searchScope;
     }
@@ -457,8 +443,7 @@ public class ManagedSysDto implements java.io.Serializable {
                 + description + '\'' + ", status='" + status + '\'' + ", connectorId='" + connectorId + '\''
                 + ", hostUrl='" + hostUrl + '\'' + ", port=" + port + ", commProtocol='" + commProtocol + '\''
                 + ", userId='" + userId + '\'' + ", pswd='" + pswd + '\'' + ", decryptPassword='" + decryptPassword
-                + '\'' + ", startDate=" + startDate + ", endDate=" + endDate + ", attributeNamesLookup='"
-                + attributeNamesLookup + '\'' + ", searchScope='" + searchScope + '\'' + ", resourceId='" + resourceId
+                + '\'' + ", startDate=" + startDate + ", endDate=" + endDate + '\'' + ", searchScope='" + searchScope + '\'' + ", resourceId='" + resourceId
                 + '\'' + ", primaryRepository=" + primaryRepository + ", secondaryRepositoryId='"
                 + secondaryRepositoryId + '\'' + ", updateSecondary=" + updateSecondary + ", driverUrl='" + driverUrl
                 + '\'' + ", connectionString='" + connectionString + '\'' + ", addHandler='" + addHandler + '\''
