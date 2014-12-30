@@ -81,7 +81,7 @@ public class SynchConfigEntity implements Serializable {
     private String srcHost;
     @Column(name="DRIVER",length=50)
     private String driver;
-    @Column(name="CONNECTION_URL",length=100)
+    @Column(name="CONNECTION_URL",length=400)
     private String connectionUrl;
     @Column(name="QUERY",length=100)
     private String query;
