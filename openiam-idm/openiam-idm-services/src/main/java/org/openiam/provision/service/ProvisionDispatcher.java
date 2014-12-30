@@ -184,6 +184,7 @@ public class ProvisionDispatcher implements Sweepable {
         idmAuditLog.setAction(AuditAction.PROVISIONING_DISPATCHER.value());
         idmAuditLog.setTargetUser(identity.getUserId(), identity.getLogin());
         idmAuditLog.setManagedSysId(identity.getManagedSysId());
+
         idmAuditLog.succeed();
 
 		try {
@@ -194,7 +195,7 @@ public class ProvisionDispatcher implements Sweepable {
                 try {
                     // update target sys identity
                     // do de-provisioning
-                    ObjectResponse response = deprovision(data);
+                    ObjectResponse response = deprovision(data, idmAuditLog);
                     StatusCodeType statusCodeType = response.getStatus();
                     if (statusCodeType == StatusCodeType.FAILURE
                             && ErrorCode.NO_SUCH_IDENTIFIER.equals(response.getError())) {
@@ -446,13 +447,15 @@ public class ProvisionDispatcher implements Sweepable {
 
 	}
 
-    private ObjectResponse deprovision(ProvisionDataContainer data) {
+    private ObjectResponse deprovision(ProvisionDataContainer data, IdmAuditLog idmAuditLog) {
 
         String requestId = data.getRequestId();
         Login targetSysLogin = data.getIdentity();
         ResourceEntity resEntity = resourceService.findResourceById(data.getResourceId());
         Resource res = resourceDozerConverter.convertToDTO(resEntity, true);
         ManagedSysDto mSys = managedSystemWebService.getManagedSysByResource(res.getId());
+        idmAuditLog.setTargetManagedSys(mSys.getId(), mSys.getName());
+
         ProvisionConnectorEntity connectorEntity = connectorService.getProvisionConnectorsById(mSys.getConnectorId());
         if (connectorEntity == null) {
             return null;
@@ -489,7 +492,7 @@ public class ProvisionDispatcher implements Sweepable {
         ManagedSysDto mSys = managedSystemWebService.getManagedSysByResource(res.getId());
         String managedSysId = (mSys != null) ? mSys.getId() : null;
         ProvisionUser targetSysProvUser = data.getProvUser();
-
+        idmAuditLog.setTargetManagedSys(mSys.getId(), mSys.getName());
         try {
             Login targetSysLogin = data.getIdentity();
             Map<String, Object> bindingMap = data.getBindingMap();
