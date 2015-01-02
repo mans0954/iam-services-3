@@ -202,4 +202,14 @@ public interface OrganizationDataService {
                                               @WebParam(name = "size", targetNamespace = "") Integer size,
                                               @WebParam(name = "from", targetNamespace = "") Integer from);
 
+    @WebMethod
+    public int getNumOfLocationsForOrganization(@WebParam(name = "organizationId", targetNamespace = "") String organizationId);
+
+    @WebMethod
+    public int getNumOfLocationsForUser(@WebParam(name = "userId", targetNamespace = "") String organizationId);
+
+    @WebMethod
+    public List<Location> getLocationListByPageForUser(@WebParam(name = "userId", targetNamespace = "") String organizationId,
+                                                @WebParam(name = "size", targetNamespace = "") Integer size,
+                                                @WebParam(name = "from", targetNamespace = "") Integer from);
 }

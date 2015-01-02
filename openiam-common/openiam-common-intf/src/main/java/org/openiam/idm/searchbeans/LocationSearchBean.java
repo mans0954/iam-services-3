@@ -12,12 +12,14 @@ import java.io.Serializable;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "LocationSearchBean", propOrder = {
         "organizationId",
-        "country"
+        "country",
+        "userId"
 })
 public class LocationSearchBean extends AbstractSearchBean<Location, String> implements SearchBean<Location, String>,
         Serializable {
     private String organizationId;
     private String country;
+    private String userId;
 
 
     public String getCountry() {
@@ -37,4 +39,11 @@ public class LocationSearchBean extends AbstractSearchBean<Location, String> imp
     }
 
 
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
 }

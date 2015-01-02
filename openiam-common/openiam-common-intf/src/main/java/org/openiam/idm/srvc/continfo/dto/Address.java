@@ -43,7 +43,8 @@ import javax.xml.bind.annotation.XmlType;
         "createDate",
         "lastUpdate",
         "metadataTypeId",
-        "typeDescription"
+        "typeDescription",
+        "locationId"
 })
 @DozerDTOCorrespondence(AddressEntity.class)
 public class Address implements java.io.Serializable {
@@ -101,6 +102,8 @@ public class Address implements java.io.Serializable {
     private String metadataTypeId;
     private String typeDescription;
 
+    private String locationId;
+
 
     /**
      * default constructor
@@ -136,6 +139,7 @@ public class Address implements java.io.Serializable {
         this.streetDirection = adr.getStreetDirection();
         this.suite = adr.getSuite();
         this.metadataTypeId = adr.getMetadataTypeId();
+        this.locationId = adr.getLocationId();
     }
 
     // Property accessors
@@ -403,6 +407,7 @@ public class Address implements java.io.Serializable {
 		result = prime * result + ((suite == null) ? 0 : suite.hashCode());
 
         result = prime * result + ((metadataTypeId == null) ? 0 : metadataTypeId.hashCode());
+        result = prime * result + ((locationId == null) ? 0 : locationId.hashCode());
 		return result;
 	}
 
@@ -526,6 +531,11 @@ public class Address implements java.io.Serializable {
                 return false;
         } else if (!metadataTypeId.equals(other.metadataTypeId))
             return false;
+        if (locationId == null) {
+            if (other.locationId != null)
+                return false;
+        } else if (!locationId.equals(other.locationId))
+            return false;
 		return true;
 	}
 
@@ -551,7 +561,16 @@ public class Address implements java.io.Serializable {
         sb.append(", state='").append(state).append('\'');
         sb.append(", name='").append(name).append('\'');
         sb.append(", typeDescription='").append(typeDescription).append('\'');
+        sb.append(", locationId='").append(locationId).append('\'');
         sb.append('}');
         return sb.toString();
+    }
+
+    public String getLocationId() {
+        return locationId;
+    }
+
+    public void setLocationId(String locationId) {
+        this.locationId = locationId;
     }
 }

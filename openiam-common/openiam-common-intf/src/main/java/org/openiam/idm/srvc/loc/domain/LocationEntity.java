@@ -81,7 +81,7 @@ public class LocationEntity {
 
     @Column(name = "ACTIVE")
     @Type(type = "yes_no")
-    private boolean active = true;
+    private boolean isActive = true;
 
     @Column(name = "SENSITIVE_LOCATION")
     private Integer sensitiveLocation;
@@ -207,16 +207,12 @@ public class LocationEntity {
         this.internalLocationId = internalLocationId;
     }
 
-    public boolean getActive() {
-        return active;
+    public boolean getIsActive() {
+        return isActive;
     }
 
-    public boolean isActive() {
-        return active;
-    }
-
-    public void setActive(boolean active) {
-        active = active;
+    public void setIsActive(boolean active) {
+        isActive = active;
     }
 
     public Integer getSensitiveLocation() {
@@ -252,7 +248,7 @@ public class LocationEntity {
         sb.append(", postalCd='").append(postalCd).append('\'');
         sb.append(", organizationId='").append(organizationId).append('\'');
         sb.append(", internalLocationId='").append(internalLocationId).append('\'');
-        sb.append(", active=").append(active);
+        sb.append(", isActive=").append(isActive);
         sb.append(", sensitiveLocation=").append(sensitiveLocation);
         sb.append(", organization=").append(organization);
         sb.append('}');
@@ -266,7 +262,7 @@ public class LocationEntity {
 
         LocationEntity that = (LocationEntity) o;
 
-        if (active != that.active) return false;
+        if (isActive != that.isActive) return false;
         if (address1 != null ? !address1.equals(that.address1) : that.address1 != null) return false;
         if (address2 != null ? !address2.equals(that.address2) : that.address2 != null) return false;
         if (address3 != null ? !address3.equals(that.address3) : that.address3 != null) return false;
@@ -307,7 +303,7 @@ public class LocationEntity {
         result = 31 * result + (postalCd != null ? postalCd.hashCode() : 0);
         result = 31 * result + (organizationId != null ? organizationId.hashCode() : 0);
         result = 31 * result + (internalLocationId != null ? internalLocationId.hashCode() : 0);
-        result = 31 * result + (active ? 1 : 0);
+        result = 31 * result + (isActive ? 1 : 0);
         result = 31 * result + (sensitiveLocation != null ? sensitiveLocation.hashCode() : 0);
         result = 31 * result + (organization != null ? organization.hashCode() : 0);
         return result;

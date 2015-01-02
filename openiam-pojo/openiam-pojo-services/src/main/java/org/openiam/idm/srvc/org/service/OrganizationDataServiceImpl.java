@@ -33,10 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.jws.WebParam;
 import javax.jws.WebService;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 //import diamelle.common.continfo.*;
 //import diamelle.base.prop.*;
@@ -530,4 +527,41 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
         return locationDozerConverter.convertToDTOList(adrList, false);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public int getNumOfLocationsForOrganization(String organizationId) {
+        return organizationService.getNumOfLocationsForOrganization(organizationId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public int getNumOfLocationsForUser(String userId) {
+            return organizationService.getNumOfLocationsForUser(userId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Location> getLocationListByPageForUser(String userId, Integer size, Integer from) {
+
+        Set<String> orgsId = new HashSet<String>();
+        List<OrganizationEntity> orgList = organizationService.getOrganizationsForUser(userId, null, from, size, languageConverter.convertToEntity(getDefaultLanguage(), false));
+        for (OrganizationEntity org : orgList) {
+            orgsId.add(org.getId());
+        }
+
+        if (orgsId == null) {
+            return null;
+        }
+        List<LocationEntity> listOrgEntity = organizationService.getLocationListByOrganizationId(orgsId, size, from);
+        if (listOrgEntity == null) {
+            return null;
+        }
+
+        List<Location> result = new ArrayList<Location>();
+        for (LocationEntity org : listOrgEntity) {
+            result.add(locationDozerConverter.convertToDTO(org, false));
+        }
+
+        return result;
+    }
 }

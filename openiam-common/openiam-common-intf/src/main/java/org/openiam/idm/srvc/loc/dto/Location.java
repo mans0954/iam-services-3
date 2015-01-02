@@ -51,7 +51,7 @@ import java.io.Serializable;
         "postalCd",
         "organizationId",
         "internalLocationId",
-        "active"
+        "isActive"
 })
 @DozerDTOCorrespondence(LocationEntity.class)
 public class Location implements Serializable {
@@ -73,7 +73,7 @@ public class Location implements Serializable {
     protected String state;
     protected String postalCd;
     protected String organizationId;
-    protected boolean active;
+    protected boolean isActive;
     protected String internalLocationId;
 
 
@@ -181,16 +181,12 @@ public class Location implements Serializable {
         this.organizationId = organizationId;
     }
 
-    public Boolean isActive() {
-        return active;
+    public Boolean getIsActive() {
+        return isActive;
     }
 
-    public Boolean getActive() {
-        return active;
-    }
-
-    public void setActive(Boolean active) {
-        this.active = active;
+    public void setIsActive(Boolean isActive) {
+        this.isActive = isActive;
     }
 
     public String getDescription() {

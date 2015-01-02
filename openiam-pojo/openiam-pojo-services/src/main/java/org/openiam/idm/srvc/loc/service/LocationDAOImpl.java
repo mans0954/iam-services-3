@@ -14,9 +14,12 @@ import org.hibernate.criterion.Restrictions;
 
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.srvc.loc.domain.LocationEntity;
+import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.springframework.stereotype.Repository;
 
-
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -70,6 +73,29 @@ public class LocationDAOImpl extends BaseDaoImpl<LocationEntity, String> impleme
         final Query qry = getSession().createQuery(DELETE_BY_ORGANIZATION_ID);
         qry.setString("locationId", userId);
         qry.executeUpdate();
+    }
+
+    public List<LocationEntity> findByOrganizationList(Set<String> orgsId) {
+        return findByOrganizationList(orgsId, Integer.MAX_VALUE, 0);
+    }
+
+    public List<LocationEntity> findByOrganizationList(Set<String> orgsId, Integer size, Integer from) {
+        Criteria criteria = getCriteria();
+
+        if (from > -1) {
+            criteria.setFirstResult(from);
+        }
+
+        if (size > -1) {
+            criteria.setMaxResults(size);
+        }
+
+        if (orgsId.size() > 0) {
+            criteria.add(Restrictions.in("organization.id", orgsId));
+            return criteria.list();
+        }
+
+        return null;
     }
 
     @Override

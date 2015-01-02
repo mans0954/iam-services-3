@@ -1030,7 +1030,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
             entity.setOrganization(val.getOrganization());
             entity.setOrganizationId(val.getOrganizationId());
             entity.setInternalLocationId(val.getInternalLocationId());
-            entity.setActive(val.isActive());
+            entity.setIsActive(val.getIsActive());
             entity.setSensitiveLocation(val.getSensitiveLocation());
 
             locationDao.update(entity);
@@ -1097,4 +1097,30 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
 
         return locationDao.getByExample(locationSearchBeanConverter.convert(searchBean), from, size);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public int getNumOfLocationsForOrganization(String organizationId) {
+        return orgDao.findById(organizationId).getLocations().size();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public int getNumOfLocationsForUser(String userId) {
+        List<OrganizationEntity> orgList = orgDao.getOrganizationsForUser(userId, null, 0, Integer.MAX_VALUE);
+        int count = 0;
+        for (OrganizationEntity org : orgList) {
+            count = count + org.getLocations().size();
+        }
+        return count;
+    }
+
+    public List<LocationEntity> getLocationListByOrganizationId(Set<String> orgsId, Integer size, Integer from) {
+        return locationDao.findByOrganizationList(orgsId, size, from);
+    }
+
+    public List<LocationEntity> getLocationListByOrganizationId(Set<String> orgsId) {
+        return locationDao.findByOrganizationList(orgsId);
+    }
+
 }

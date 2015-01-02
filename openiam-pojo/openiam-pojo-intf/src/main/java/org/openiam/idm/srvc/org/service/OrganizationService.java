@@ -85,4 +85,9 @@ public interface OrganizationService {
     public List<LocationEntity> getLocationList(String organizationId, Integer size, Integer from);
 
     public List<LocationEntity> getLocationList(LocationSearchBean searchBean, Integer size, Integer from);
+    public int getNumOfLocationsForUser(String userId);
+    public int getNumOfLocationsForOrganization(String organizationId);
+
+    public List<LocationEntity> getLocationListByOrganizationId(Set<String> orgsId, Integer size, Integer from);
+    public List<LocationEntity> getLocationListByOrganizationId(Set<String> orgsId);
 }

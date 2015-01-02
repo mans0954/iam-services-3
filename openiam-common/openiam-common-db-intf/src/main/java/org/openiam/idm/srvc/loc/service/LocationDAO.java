@@ -27,12 +27,15 @@ import org.openiam.idm.srvc.loc.domain.LocationEntity;
 import org.openiam.idm.srvc.loc.dto.Location;
 
 import java.util.List;
+import java.util.Set;
 
-/**
- * @author suneet
- */
+
 public interface LocationDAO extends BaseDao<LocationEntity, String> {
 
     public void removeByOrganizationId(final String organizationId);
+
+    public List<LocationEntity> findByOrganizationList(Set<String> orgsId, Integer size, Integer from);
+
+    public List<LocationEntity> findByOrganizationList(Set<String> orgsId);
 
 }
