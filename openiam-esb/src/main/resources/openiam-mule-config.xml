@@ -320,7 +320,7 @@
 					<spring-object bean="orgManager" />
 				</component>
 			</service>
-		</model>		
+		</model>
 
 		<model name="metaServiceModel">
 			<service name="metaService">
@@ -383,19 +383,6 @@
 				</inbound>
 				<component>
 					<spring-object bean="orgPolicyWS" />
-				</component>
-			</service>
-		</model>
-
-		<model name="locationServiceModel">
-			<service name="locationService">
-				<inbound>
-						<inbound-endpoint address="${webservice.path}LocationDataWebService" 		exchange-pattern="request-response">
-						<cxf:jaxws-service />
-					</inbound-endpoint>
-				</inbound>
-				<component>
-					<spring-object bean="locationWS" />
 				</component>
 			</service>
 		</model>

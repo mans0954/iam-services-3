@@ -1,13 +1,18 @@
 package org.openiam.idm.srvc.org.service;
 
 import org.openiam.exception.BasicDataServiceException;
+import org.openiam.idm.searchbeans.LocationSearchBean;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
+import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
+import org.openiam.idm.srvc.loc.domain.LocationEntity;
+import org.openiam.idm.srvc.loc.dto.Location;
 import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -67,4 +72,22 @@ public interface OrganizationService {
 
     public Set<String> getDelegationFilter(String requesterId, String organizationTypeId);
     public Set<String> getDelegationFilter(Map<String, UserAttribute> attrMap, String organizationTypeId);
+
+    public void addLocation(LocationEntity val);
+    public void updateLocation(LocationEntity val);
+    public void removeLocation(String locationId);
+    public void removeAllLocations(String organizationId);
+    public LocationEntity getLocationById(String locationId);
+    public List<LocationEntity> getLocationList(String organizationId);
+
+    public List<Location> getLocationDtoList(String organizationId, boolean isDeep);
+
+    public List<LocationEntity> getLocationList(String organizationId, Integer size, Integer from);
+
+    public List<LocationEntity> getLocationList(LocationSearchBean searchBean, Integer size, Integer from);
+    public int getNumOfLocationsForUser(String userId);
+    public int getNumOfLocationsForOrganization(String organizationId);
+
+    public List<LocationEntity> getLocationListByOrganizationId(Set<String> orgsId, Integer size, Integer from);
+    public List<LocationEntity> getLocationListByOrganizationId(Set<String> orgsId);
 }

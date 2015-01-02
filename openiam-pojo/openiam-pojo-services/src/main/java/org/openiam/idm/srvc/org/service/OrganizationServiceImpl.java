@@ -6,18 +6,26 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.ResponseCode;
+import org.openiam.dozer.converter.LocationDozerConverter;
 import org.openiam.dozer.converter.OrganizationAttributeDozerConverter;
 import org.openiam.dozer.converter.OrganizationDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
+import org.openiam.idm.searchbeans.AddressSearchBean;
+import org.openiam.idm.searchbeans.LocationSearchBean;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.base.AbstractBaseService;
+import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
+import org.openiam.idm.srvc.loc.domain.LocationEntity;
+import org.openiam.idm.srvc.loc.dto.Location;
+import org.openiam.idm.srvc.loc.service.LocationDAO;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
+import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
 import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
@@ -29,6 +37,7 @@ import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
+import org.openiam.idm.srvc.searchbean.converter.LocationSearchBeanConverter;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.user.service.UserDAO;
@@ -53,7 +62,15 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     private static final Log log = LogFactory.getLog(OrganizationServiceImpl.class);
 	@Autowired
 	private OrganizationTypeDAO orgTypeDAO;
-	
+
+    @Autowired
+    private LocationDozerConverter locationDozerConverter;
+    @Autowired
+    private LocationDAO locationDao;
+
+    @Autowired
+    private LocationSearchBeanConverter locationSearchBeanConverter;
+
 	@Autowired
 	private MetadataElementDAO metadataDAO;
 
@@ -964,4 +981,146 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
             return null;
         }
     }
+
+    /// LOCATIONS
+
+    @Override
+    @Transactional
+    public void addLocation(LocationEntity val) {
+        if (val == null)
+            throw new NullPointerException("val is null");
+
+        if (val.getOrganizationId() == null)
+            throw new NullPointerException("organizationId for the location is not defined.");
+
+
+        OrganizationEntity org = orgDao.findById(val.getOrganizationId());
+        val.setOrganization(org);
+
+
+        locationDao.save(val);
+    }
+
+
+    @Override
+    @Transactional
+    public void updateLocation(LocationEntity val) {
+        if (val == null)
+            throw new NullPointerException("val is null");
+        if (val.getLocationId() == null)
+            throw new NullPointerException("LocationId is null");
+        if (val.getOrganizationId() == null)
+            throw new NullPointerException("organizationId for the location is not defined.");
+
+        final LocationEntity entity = locationDao.findById(val.getLocationId());
+        OrganizationEntity org = orgDao.findById(val.getOrganizationId());
+
+        if (entity != null && org != null) {
+            entity.setName(val.getName());
+            entity.setDescription(val.getDescription());
+            entity.setCountry(val.getCountry());
+            entity.setBldgNum(val.getBldgNum());
+            entity.setStreetDirection(val.getStreetDirection());
+            entity.setAddress1(val.getAddress1());
+            entity.setAddress2(val.getAddress2());
+            entity.setAddress3(val.getAddress3());
+            entity.setCity(val.getCity());
+            entity.setState(val.getState());
+            entity.setPostalCd(val.getPostalCd());
+            entity.setOrganization(val.getOrganization());
+            entity.setOrganizationId(val.getOrganizationId());
+            entity.setInternalLocationId(val.getInternalLocationId());
+            entity.setIsActive(val.getIsActive());
+            entity.setSensitiveLocation(val.getSensitiveLocation());
+
+            locationDao.update(entity);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void removeLocation(final String locationId) {
+        final LocationEntity entity = locationDao.findById(locationId);
+
+        if(entity != null) {
+            locationDao.delete(entity);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void removeAllLocations(String organizationId) {
+        if (organizationId == null)
+            throw new NullPointerException("organizationId is null");
+
+        locationDao.removeByOrganizationId(organizationId);
+
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public LocationEntity getLocationById(String locationId) {
+        if (locationId == null)
+            throw new NullPointerException("locationId is null");
+        return locationDao.findById(locationId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<LocationEntity> getLocationList(String organizationId) {
+        return this.getLocationList(organizationId, Integer.MAX_VALUE, 0);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Location> getLocationDtoList(String organizationId, boolean isDeep) {
+        return locationDozerConverter.convertToDTOList(getLocationList(organizationId), isDeep);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<LocationEntity> getLocationList(String organizationId, Integer size, Integer from) {
+        if (organizationId == null)
+            throw new NullPointerException("organizationId is null");
+
+        LocationSearchBean searchBean = new LocationSearchBean();
+        searchBean.setOrganizationId(organizationId);
+        /* searchBean.setParentType(ContactConstants.PARENT_TYPE_USER); */
+        return getLocationList(searchBean, size, from);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<LocationEntity> getLocationList(LocationSearchBean searchBean, Integer size, Integer from) {
+        if (searchBean == null)
+            throw new NullPointerException("searchBean is null");
+
+        return locationDao.getByExample(locationSearchBeanConverter.convert(searchBean), from, size);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public int getNumOfLocationsForOrganization(String organizationId) {
+        return orgDao.findById(organizationId).getLocations().size();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public int getNumOfLocationsForUser(String userId) {
+        List<OrganizationEntity> orgList = orgDao.getOrganizationsForUser(userId, null, 0, Integer.MAX_VALUE);
+        int count = 0;
+        for (OrganizationEntity org : orgList) {
+            count = count + org.getLocations().size();
+        }
+        return count;
+    }
+
+    public List<LocationEntity> getLocationListByOrganizationId(Set<String> orgsId, Integer size, Integer from) {
+        return locationDao.findByOrganizationList(orgsId, size, from);
+    }
+
+    public List<LocationEntity> getLocationListByOrganizationId(Set<String> orgsId) {
+        return locationDao.findByOrganizationList(orgsId);
+    }
+
 }

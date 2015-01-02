@@ -23,6 +23,11 @@
 		<class-b>org.openiam.idm.srvc.continfo.dto.Address</class-b>
 	</mapping>
 
+    <mapping>
+        <class-a>org.openiam.idm.srvc.loc.dto.Location</class-a>
+        <class-b>org.openiam.idm.srvc.loc.dto.Location</class-b>
+    </mapping>
+
 	<mapping>
 		<class-a>org.openiam.idm.srvc.continfo.dto.Phone</class-a>
 		<class-b>org.openiam.idm.srvc.continfo.dto.Phone</class-b>
@@ -106,6 +111,10 @@
 		<class-a>org.openiam.idm.srvc.continfo.domain.AddressEntity</class-a>
 		<class-b>org.openiam.idm.srvc.continfo.domain.AddressEntity</class-b>
 	</mapping>
+    <mapping>
+        <class-a>org.openiam.idm.srvc.loc.domain.LocationEntity</class-a>
+        <class-b>org.openiam.idm.srvc.loc.domain.LocationEntity</class-b>
+    </mapping>
 	<mapping>
 		<class-a>org.openiam.idm.srvc.continfo.domain.PhoneEntity</class-a>
 		<class-b>org.openiam.idm.srvc.continfo.domain.PhoneEntity</class-b>

@@ -2,7 +2,9 @@ package org.openiam.idm.srvc.org.service;
 
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
+import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.lang.dto.Language;
+import org.openiam.idm.srvc.loc.dto.Location;
 import org.openiam.idm.srvc.org.dto.Organization;
 
 import javax.jws.WebMethod;
@@ -173,4 +175,41 @@ public interface OrganizationDataService {
     public List<Organization> findOrganizationsByAttributeValueLocalized(final @WebParam(name = "attrName", targetNamespace = "") String attrName,
                                                                 final @WebParam(name = "attrValue", targetNamespace = "") String attrValue,
                                                                 final @WebParam(name = "language", targetNamespace = "") Language language);
+
+
+    @WebMethod
+    public Response addLocation(@WebParam(name = "location", targetNamespace = "") Location location);
+
+
+    @WebMethod
+    public Response updateLocation(@WebParam(name = "location", targetNamespace = "") Location location);
+
+
+    @WebMethod
+    public Response removeLocation(@WebParam(name = "location", targetNamespace = "") String locationId);
+
+
+    @WebMethod
+    public Location getLocationById(@WebParam(name = "locationId", targetNamespace = "") String locationId);
+
+
+    @WebMethod
+    public List<Location> getLocationList(@WebParam(name = "organizationId", targetNamespace = "") String organizationId);
+
+
+    @WebMethod
+    public List<Location> getLocationListByPage(@WebParam(name = "organizationId", targetNamespace = "") String organizationId,
+                                              @WebParam(name = "size", targetNamespace = "") Integer size,
+                                              @WebParam(name = "from", targetNamespace = "") Integer from);
+
+    @WebMethod
+    public int getNumOfLocationsForOrganization(@WebParam(name = "organizationId", targetNamespace = "") String organizationId);
+
+    @WebMethod
+    public int getNumOfLocationsForUser(@WebParam(name = "userId", targetNamespace = "") String organizationId);
+
+    @WebMethod
+    public List<Location> getLocationListByPageForUser(@WebParam(name = "userId", targetNamespace = "") String organizationId,
+                                                @WebParam(name = "size", targetNamespace = "") Integer size,
+                                                @WebParam(name = "from", targetNamespace = "") Integer from);
 }

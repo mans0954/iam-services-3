@@ -24,6 +24,7 @@ import javax.validation.constraints.Size;
 import org.openiam.base.domain.AbstractMetdataTypeEntity;
 import org.openiam.base.domain.KeyEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.loc.domain.LocationEntity;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.hibernate.annotations.Cache;
@@ -130,6 +131,12 @@ public class OrganizationEntity extends AbstractMetdataTypeEntity {
 	@Column(name = "IS_SELECTABLE")
     @Type(type = "yes_no")
 	private boolean selectable = true;
+
+    @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "organization", fetch = FetchType.LAZY)
+    @OrderBy("name asc")
+    @Fetch(FetchMode.SUBSELECT)
+    @Internationalized
+    private Set<LocationEntity> locations;
 
     public OrganizationEntity() {
     }
@@ -350,7 +357,17 @@ public class OrganizationEntity extends AbstractMetdataTypeEntity {
 		}
 	}
 
-	@Override
+
+    public Set<LocationEntity> getLocations() {
+        return locations;
+    }
+
+    public void setLocations(Set<LocationEntity> locations) {
+        this.locations = locations;
+    }
+
+
+    @Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();

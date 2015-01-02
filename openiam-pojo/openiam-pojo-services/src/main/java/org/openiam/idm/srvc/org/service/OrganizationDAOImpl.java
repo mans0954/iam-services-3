@@ -74,6 +74,20 @@ public class OrganizationDAOImpl extends
 		}
 		return criteria;
 	}
+
+    private Criteria getLocationsForOrganizationsCriteria(final String userId,
+                                                     final Set<String> filter) {
+        final Criteria criteria = getCriteria();
+        if (StringUtils.isNotBlank(userId)) {
+            criteria.createAlias("users", "u").add(
+                    Restrictions.eq("u.id", userId));
+        }
+
+        if (filter != null && !filter.isEmpty()) {
+            criteria.add(Restrictions.in(getPKfieldName(), filter));
+        }
+        return criteria;
+    }
    
 	@Override
 	protected Criteria getExampleCriteria(final SearchBean searchBean) {
