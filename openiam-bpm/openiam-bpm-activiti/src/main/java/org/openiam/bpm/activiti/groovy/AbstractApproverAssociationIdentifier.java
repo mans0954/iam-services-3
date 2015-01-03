@@ -13,6 +13,7 @@ import org.openiam.bpm.util.ActivitiRequestType;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
+import org.openiam.idm.srvc.property.service.PropertyValueSweeper;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.util.CustomJacksonMapper;
 import org.openiam.util.SpringContextProvider;
@@ -40,6 +41,9 @@ public abstract class AbstractApproverAssociationIdentifier {
 	
 	protected final List<String> approverAssociationIds = new LinkedList<String>();
 	protected final List<String> approverUserIds = new LinkedList<String>();
+	
+	@Autowired
+	protected PropertyValueSweeper propertyValueSweeper;
 	
 	protected void init(final Map<String, Object> bindingMap) {
 		

@@ -6,6 +6,8 @@ public enum PropertyType {
 	Integer,
 	Long,
 	Double,
-	OrganizationType
+	OrganizationType,
+	OrderableValue,
+	MultiSelect
 	;
 }

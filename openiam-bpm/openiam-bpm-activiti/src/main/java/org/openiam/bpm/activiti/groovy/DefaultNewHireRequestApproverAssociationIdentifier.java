@@ -17,16 +17,20 @@ public class DefaultNewHireRequestApproverAssociationIdentifier extends Abstract
 	protected NewUserProfileRequestModel request;
 	protected IdmAuditLog idmAuditLog;
 	
-	@Value("${org.openiam.idm.activiti.new.user.approver.association.order}")
-	private String newUserApproverAssociationOrder;
+	//@Value("${org.openiam.idm.activiti.new.user.approver.association.order}")
+	//private String newUserApproverAssociationOrder;
 	
 	private List<AssociationType> newUserAssociationTypes = new LinkedList<AssociationType>();
 	
 	public DefaultNewHireRequestApproverAssociationIdentifier() {
 		super();
-		
-		final String[] newUserApproverTypes = StringUtils.split(newUserApproverAssociationOrder, ",");
-		if(newUserApproverTypes != null) {
+	}
+	
+	public final void init(final Map<String, Object> bindingMap) {
+		request = (NewUserProfileRequestModel)bindingMap.get("REQUEST");
+        idmAuditLog = (IdmAuditLog)bindingMap.get("BUILDER");
+        final String[] newUserApproverTypes = StringUtils.split(propertyValueSweeper.getString("org.openiam.idm.activiti.new.user.approver.association.order"), ",");
+        if(newUserApproverTypes != null) {
 			for(final String s : newUserApproverTypes) {
 				final AssociationType type = AssociationType.getByValue(StringUtils.trimToNull(s));
 				if(type != null) {
@@ -34,11 +38,7 @@ public class DefaultNewHireRequestApproverAssociationIdentifier extends Abstract
 				}
 			}
 		}
-	}
-	
-	public final void init(final Map<String, Object> bindingMap) {
-		request = (NewUserProfileRequestModel)bindingMap.get("REQUEST");
-        idmAuditLog = (IdmAuditLog)bindingMap.get("BUILDER");
+        
 		super.init(bindingMap);
 		calculateApprovers();
 	}
