@@ -6,6 +6,7 @@ import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.base.SysConfiguration;
 import org.openiam.connector.common.data.ConnectorConfiguration;
 import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.connector.type.constant.ErrorCode;
@@ -54,11 +55,9 @@ public abstract class AbstractCommand<Request extends RequestType, Response exte
     protected KeyManagementService keyManagementService;
 
     protected ApplicationContext applicationContext;
-
-    @Value("${openiam.default_managed_sys}")
-    protected String defaultManagedSysId;
-    @Value("${org.openiam.idm.system.user.id}")
-    protected String systemUserId;
+    
+    @Autowired
+    protected SysConfiguration sysConfiguration;
 
     public void setApplicationContext(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
@@ -111,7 +110,7 @@ public abstract class AbstractCommand<Request extends RequestType, Response exte
         if (encPwd != null) {
             try {
                 result = cryptor
-                        .decrypt(keyManagementService.getUserKey(systemUserId, KeyName.password.name()), encPwd);
+                        .decrypt(keyManagementService.getUserKey(sysConfiguration.getSystemUserId(), KeyName.password.name()), encPwd);
             } catch (Exception e) {
                 log.error(e);
                 throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, e.getMessage());

@@ -30,7 +30,10 @@ public class DefaultEditUserApproverAssociationIdentifier extends AbstractApprov
 		}
 		if(CollectionUtils.isEmpty(approverUserIds)) {
 			LOG.warn("Could not found any approvers - using default user");
-			approverUserIds.add(defaultApproverUserId);
+			final String defaultApproverUserId = propertyValueSweeper.getString("org.openiam.idm.activiti.default.approver.user");
+			if(defaultApproverUserId != null) {
+				approverUserIds.add(defaultApproverUserId);
+			}
 		}
 	}
 }

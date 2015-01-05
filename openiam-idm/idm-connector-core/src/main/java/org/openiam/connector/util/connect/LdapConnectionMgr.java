@@ -2,6 +2,7 @@ package org.openiam.connector.util.connect;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.base.SysConfiguration;
 import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.connector.type.constant.ErrorCode;
 import org.openiam.connector.util.ConnectionMgr;
@@ -45,18 +46,16 @@ public class LdapConnectionMgr implements ConnectionMgr {
     @Value("${KEYSTORE_PSWD}")
     private String keystorePasswd;
 
-    @Value("${openiam.default_managed_sys}")
-    protected String defaultManagedSysId;
-    @Value("${org.openiam.idm.system.user.id}")
-    private String systemUserId;
-
+    @Autowired
+    private SysConfiguration sysConfiguration;
+    
     public LdapConnectionMgr() {}
 
     protected String getDecryptedPassword(ManagedSysEntity managedSys) throws ConnectorDataException {
         String result = null;
         if( managedSys.getPswd()!=null){
             try {
-                result = cryptor.decrypt(keyManagementService.getUserKey(systemUserId, KeyName.password.name()), managedSys.getPswd());
+                result = cryptor.decrypt(keyManagementService.getUserKey(sysConfiguration.getSystemUserId(), KeyName.password.name()), managedSys.getPswd());
             } catch (Exception e) {
                 log.error(e);
                 throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, e.getMessage());

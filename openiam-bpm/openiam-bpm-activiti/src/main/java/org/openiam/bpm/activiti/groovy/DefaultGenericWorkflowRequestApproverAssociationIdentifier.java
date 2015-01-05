@@ -86,7 +86,10 @@ public class DefaultGenericWorkflowRequestApproverAssociationIdentifier extends 
 			final String message = "Could not found any approvers - using default user";
             idmAuditLog.addWarning(message);
 			LOG.warn(message);
-        	approverUserIds.add(defaultApproverUserId);
+			final String defaultApproverUserId = propertyValueSweeper.getString("org.openiam.idm.activiti.default.approver.user");
+			if(defaultApproverUserId != null) {
+				approverUserIds.add(defaultApproverUserId);
+			}
 		}
 	}
 }

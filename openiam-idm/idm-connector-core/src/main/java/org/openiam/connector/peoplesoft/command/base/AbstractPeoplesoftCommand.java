@@ -640,7 +640,7 @@ public abstract class AbstractPeoplesoftCommand<Request extends RequestType, Res
 
     public String encryptPassword(String password) throws EncryptionException {
         if (password != null) {
-            return cryptor.encrypt(keyManagementService.getUserKey(systemUserId, KeyName.password.name()), password);
+            return cryptor.encrypt(keyManagementService.getUserKey(sysConfiguration.getSystemUserId(), KeyName.password.name()), password);
         }
         return null;
     }

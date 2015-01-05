@@ -20,7 +20,7 @@ public class IdentityQuestionServiceTest extends AbstractChallengeResponseServic
 		final IdentityQuestion question = new IdentityQuestion();
 		question.setActive(false);
 		question.setDisplayNameMap(generateRandomLanguageMapping());
-		question.setIdentityQuestGrpId(challengeResponseGroup);
+		question.setIdentityQuestGrpId(getString("org.openiam.selfservice.challenge.response.group"));
 		return question;
 	}
 

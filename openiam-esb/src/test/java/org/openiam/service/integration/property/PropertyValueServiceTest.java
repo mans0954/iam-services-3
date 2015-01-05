@@ -22,10 +22,6 @@ import org.testng.annotations.Test;
 
 
 public class PropertyValueServiceTest extends AbstractServiceTest {
-
-	@Autowired
-	@Qualifier("propertyValuerServiceClient")
-	private PropertyValueWebService propertyValuerServiceClient;
 	
 	@Test
 	public void testGetAll() {

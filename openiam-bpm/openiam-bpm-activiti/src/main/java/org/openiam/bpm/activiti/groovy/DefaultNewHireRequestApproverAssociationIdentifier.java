@@ -119,7 +119,10 @@ public class DefaultNewHireRequestApproverAssociationIdentifier extends Abstract
 			
 			/* if no default approvers, just use sysadmin */
 			if(CollectionUtils.isEmpty(approverAssociationIds)) {
-				approverUserIds.add(defaultApproverUserId);
+				final String defaultApproverUserId = propertyValueSweeper.getString("org.openiam.idm.activiti.default.approver.user");
+				if(defaultApproverUserId != null) {
+					approverUserIds.add(defaultApproverUserId);
+				}
 			}
 		}
 	}

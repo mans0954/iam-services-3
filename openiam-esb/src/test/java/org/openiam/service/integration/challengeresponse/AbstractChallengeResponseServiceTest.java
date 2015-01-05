@@ -13,9 +13,6 @@ import org.springframework.beans.factory.annotation.Value;
 
 public abstract class AbstractChallengeResponseServiceTest<T extends KeyDTO, S extends AbstractSearchBean<T, String>> extends AbstractKeyServiceTest<T, S> {
 
-	@Value("${org.openiam.selfservice.challenge.response.group}")
-	protected String challengeResponseGroup;
-	
 	@Autowired
 	@Qualifier("challengeResponseServiceClient")
 	protected ChallengeResponseWebService challengeResponseServiceClient;

@@ -166,7 +166,7 @@ public class AuthProviderServiceTest extends AbstractKeyNameServiceTest<AuthProv
 	protected AuthProvider newInstance() {
 		final AuthProvider provider = new AuthProvider();
 		provider.setPolicyId(policyServiceClient.findBeans(null, 0, Integer.MAX_VALUE).get(0).getId());
-		provider.setManagedSysId(sysConfiguration.getDefaultManagedSysId());
+		provider.setManagedSysId(getDefaultManagedSystemId());
 		provider.setPrivateKey(new byte[] {'a', 'b', 'c', 'd'});
 		provider.setPublicKey(new byte[] {'e', 'f', 'g', 'h'});
 		provider.setProviderType(authProviderServiceClient.getAuthProviderTypeList().get(0).getId());

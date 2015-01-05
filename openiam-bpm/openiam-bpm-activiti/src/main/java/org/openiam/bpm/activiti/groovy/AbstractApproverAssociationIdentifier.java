@@ -31,12 +31,6 @@ public abstract class AbstractApproverAssociationIdentifier {
 	@Autowired
 	protected CustomJacksonMapper jacksonMapper;
 	
-	@Value("${org.openiam.idm.activiti.default.approver.association.resource.name}")
-	protected String defaultApproverAssociationResourceId;
-	
-	@Value("${org.openiam.idm.activiti.default.approver.user}")
-	protected String defaultApproverUserId;
-	
 	protected static Logger LOG = Logger.getLogger(AbstractApproverAssociationIdentifier.class);
 	
 	protected final List<String> approverAssociationIds = new LinkedList<String>();
@@ -44,6 +38,10 @@ public abstract class AbstractApproverAssociationIdentifier {
 	
 	@Autowired
 	protected PropertyValueSweeper propertyValueSweeper;
+	
+	protected String getDefaultApproverAssociationResourceId() {
+		return propertyValueSweeper.getString("org.openiam.idm.activiti.default.approver.association.resource.id");
+	}
 	
 	protected void init(final Map<String, Object> bindingMap) {
 		
@@ -59,7 +57,7 @@ public abstract class AbstractApproverAssociationIdentifier {
 	}
 	
 	protected List<ApproverAssociationEntity> getDefaultApproverAssociations() {
-		return approverAssociationDAO.getByAssociation(defaultApproverAssociationResourceId, AssociationType.RESOURCE);
+		return approverAssociationDAO.getByAssociation(getDefaultApproverAssociationResourceId(), AssociationType.RESOURCE);
 	}
 	
 
@@ -96,7 +94,10 @@ public abstract class AbstractApproverAssociationIdentifier {
 	
 	protected Set<String> getApproversForEntityCreation(final GenericWorkflowRequest request) {
 		final Set<String> approvers = new HashSet<String>();
-		approvers.add(defaultApproverUserId);
+		final String defaultApproverUserId = propertyValueSweeper.getString("org.openiam.idm.activiti.default.approver.user");
+		if(defaultApproverUserId != null) {
+			approvers.add(defaultApproverUserId);
+		}
 		return approvers;
 	}
 	

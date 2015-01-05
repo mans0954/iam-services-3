@@ -28,6 +28,7 @@ import org.openiam.idm.srvc.lang.service.LanguageWebService;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.meta.ws.MetadataWebService;
+import org.openiam.idm.srvc.property.ws.PropertyValueWebService;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.ws.UserDataWebService;
 import org.openiam.idm.srvc.user.ws.UserResponse;
@@ -49,9 +50,6 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 	@Autowired
 	@Qualifier("userServiceClient")
 	protected UserDataWebService userServiceClient;
-
-	@Autowired
-	protected SysConfiguration sysConfiguration;
 	
 	@Autowired
 	@Qualifier("authProviderServiceClient")
@@ -68,6 +66,18 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 	@Autowired
 	@Qualifier("authorizationManagerServiceClient")
 	protected AuthorizationManagerWebService authorizationManagerServiceClient;
+	
+	@Autowired
+	@Qualifier("propertyValuerServiceClient")
+	protected PropertyValueWebService propertyValuerServiceClient;
+	
+	protected String getString(final String key) {
+		return propertyValuerServiceClient.getCachedValue(key, getDefaultLanguage());
+	}
+	
+	protected String getDefaultManagedSystemId() {
+		return getString("openiam.default_managed_sys");
+	}
 	
 	protected interface CollectionOperation<T, S> {
 		public Set<S> get(T t);

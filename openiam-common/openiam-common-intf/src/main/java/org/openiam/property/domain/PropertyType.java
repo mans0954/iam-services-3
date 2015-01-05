@@ -8,6 +8,9 @@ public enum PropertyType {
 	Double,
 	OrganizationType,
 	OrderableValue,
-	MultiSelect
+	MultiSelect,
+	User,
+	Resource,
+	ManagedSystem
 	;
 }

@@ -37,7 +37,7 @@ public class LoginServiceTest extends AbstractKeyServiceTest<Login, LoginSearchB
 	@Override
 	protected Login newInstance() {
 		final Login login = new Login();
-		login.setManagedSysId(sysConfiguration.getDefaultManagedSysId());
+		login.setManagedSysId(getDefaultManagedSystemId());
 		login.setUserId(user.getId());
 		login.setLogin(getRandomName());
 		return login;

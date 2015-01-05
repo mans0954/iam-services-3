@@ -1,5 +1,7 @@
 package org.openiam.base;
 
+import org.openiam.idm.srvc.property.service.PropertyValueSweeper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -13,9 +15,8 @@ import org.springframework.stereotype.Component;
 @Component("sysConfiguration")
 public class SysConfiguration {
 	
-	
-	@Value("${openiam.default_managed_sys}")
-    protected String defaultManagedSysId;
+	@Autowired
+	private PropertyValueSweeper propertyValueSweeper;
 	
 	@Value("${org.openiam.default.auth.provider.id}")
 	private String defaultAuthProviderId;
@@ -28,13 +29,16 @@ public class SysConfiguration {
 	
 	@Value("${org.openiam.provision.service.flag}")
     protected boolean provisionServiceFlag = true;
-
-    public String getDefaultManagedSysId() {
-        return defaultManagedSysId;
+	
+    @Value("${org.openiam.idm.system.user.id}")
+    private String systemUserId;
+    
+    public String getSystemUserId() {
+    	return systemUserId;
     }
 
-    public void setDefaultManagedSysId(String defaultManagedSysId) {
-        this.defaultManagedSysId = defaultManagedSysId;
+    public String getDefaultManagedSysId() {
+    	return propertyValueSweeper.getString("openiam.default_managed_sys");
     }
 
     public Boolean isDevelopmentMode() {
