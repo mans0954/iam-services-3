@@ -3,6 +3,7 @@ package org.openiam.idm.srvc.msg.service;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -22,6 +23,7 @@ import twitter4j.*;
 import twitter4j.conf.ConfigurationBuilder;
 
 import javax.jws.WebService;
+
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -31,7 +33,7 @@ import java.util.regex.Pattern;
 
 @Service("mailService")
 @WebService(endpointInterface = "org.openiam.idm.srvc.msg.service.MailService", targetNamespace = "urn:idm.openiam.org/srvc/msg", portName = "EmailWebServicePort", serviceName = "EmailWebService")
-public class MailServiceImpl implements MailService, ApplicationContextAware {
+public class MailServiceImpl extends AbstractBaseService implements MailService, ApplicationContextAware {
 
     @Autowired
     private MailSender mailSender;
@@ -44,9 +46,6 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 
     @Value("${mail.optionalBccAddress}")
     private String optionalBccAddress;
-
-    @Value("${org.openiam.email.validation.regexp}")
-    private String MAIL_REGEXP;
 
     @Autowired
     protected UserDataService userManager;
@@ -188,7 +187,7 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
      * @return
      */
     private boolean isEmailValid(String email) {
-        Pattern pattern = Pattern.compile(MAIL_REGEXP, Pattern.CASE_INSENSITIVE);
+        Pattern pattern = Pattern.compile(propertyValueSweeper.getString("org.openiam.email.validation.regexp"), Pattern.CASE_INSENSITIVE);
         Matcher matcher = pattern.matcher(email);
         return matcher.matches();
     }

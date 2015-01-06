@@ -11,6 +11,7 @@ public enum PropertyType {
 	MultiSelect,
 	User,
 	Resource,
-	ManagedSystem
+	ManagedSystem,
+	RegularExpression
 	;
 }

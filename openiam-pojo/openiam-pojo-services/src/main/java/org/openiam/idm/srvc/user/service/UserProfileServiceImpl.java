@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.user.service;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.dozer.converter.*;
@@ -64,12 +65,8 @@ public class UserProfileServiceImpl implements UserProfileService {
     @Qualifier("entityValidator")
     private EntityValidator entityValidator;
 	
-    // @Autowired
-    // @Qualifier("sysConfiguration")
-    // protected SysConfiguration sysConfiguration;
-
-    @Value("${org.openiam.provision.service.flag}")
-    protected boolean provisionServiceFlag = true;
+    @Autowired
+    private SysConfiguration sysConfiguration;
 
 	@Override
 	public void saveUserProfile(UserProfileRequestModel request) throws Exception {
@@ -198,19 +195,19 @@ public class UserProfileServiceImpl implements UserProfileService {
 			throw new BasicDataServiceException(ResponseCode.EMAIL_REQUIRED);
 		}
 		*/
-        if (!provisionServiceFlag) {
-		if(CollectionUtils.isEmpty(request.getLoginList())) {
-			throw new BasicDataServiceException(ResponseCode.LOGIN_REQUIRED);
-		} 
-		
-		final List<LoginEntity> principalList = loginDozerConverter.convertToEntityList(request.getLoginList(), true);
-		for(final LoginEntity loginEntity : principalList) {
-			if(StringUtils.isBlank(loginEntity.getLogin())) {
+        if (!sysConfiguration.isProvisionServiceFlag()) {
+			if(CollectionUtils.isEmpty(request.getLoginList())) {
 				throw new BasicDataServiceException(ResponseCode.LOGIN_REQUIRED);
-			} else if(loginDataService.getLoginByManagedSys(loginEntity.getLogin(), loginEntity.getManagedSysId()) != null) {
-				throw new BasicDataServiceException(ResponseCode.LOGIN_EXISTS);
+			} 
+			
+			final List<LoginEntity> principalList = loginDozerConverter.convertToEntityList(request.getLoginList(), true);
+			for(final LoginEntity loginEntity : principalList) {
+				if(StringUtils.isBlank(loginEntity.getLogin())) {
+					throw new BasicDataServiceException(ResponseCode.LOGIN_REQUIRED);
+				} else if(loginDataService.getLoginByManagedSys(loginEntity.getLogin(), loginEntity.getManagedSysId()) != null) {
+					throw new BasicDataServiceException(ResponseCode.LOGIN_EXISTS);
+				}
 			}
-		}
         }
 		pageTemplateService.validate(request);
 	}

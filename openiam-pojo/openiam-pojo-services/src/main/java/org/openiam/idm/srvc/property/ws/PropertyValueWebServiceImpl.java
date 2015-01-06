@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.property.ws;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import javax.jws.WebParam;
 import javax.jws.WebService;
@@ -61,6 +62,13 @@ public class PropertyValueWebServiceImpl extends AbstractBaseService implements 
 			 }
 		 } else {
 			 switch (dto.getType()) {
+			 	case RegularExpression:
+			 		try {
+			 			Pattern.compile(value);
+			 		} catch(Throwable ex) {
+			 			e =  new BasicDataServiceException(ResponseCode.PROPERTY_TYPE_INVALID);
+			 		}
+			 		break;
 			  	case Boolean:
 			  		if(!StringUtils.equalsIgnoreCase(value, "true") && !StringUtils.equalsIgnoreCase(value, "false")) {
 			  			e =  new BasicDataServiceException(ResponseCode.PROPERTY_TYPE_INVALID);

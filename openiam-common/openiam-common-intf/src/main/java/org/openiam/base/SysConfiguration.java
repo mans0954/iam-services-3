@@ -27,9 +27,6 @@ public class SysConfiguration {
 	@Value("${openiam.development_mode}")
     protected Boolean developmentMode;
 	
-	@Value("${org.openiam.provision.service.flag}")
-    protected boolean provisionServiceFlag = true;
-	
     @Value("${org.openiam.idm.system.user.id}")
     private String systemUserId;
     
@@ -50,11 +47,7 @@ public class SysConfiguration {
     }
 
     public Boolean isProvisionServiceFlag() {
-        return provisionServiceFlag;
-    }
-
-    public void setProvisionServiceFlag(boolean provisionServiceFlag) {
-        this.provisionServiceFlag = provisionServiceFlag;
+        return propertyValueSweeper.getBoolean("org.openiam.provision.service.flag");
     }
 
 	public String getDefaultAuthProviderId() {
