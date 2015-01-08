@@ -8,6 +8,7 @@ import org.openiam.am.srvc.dao.*;
 import org.openiam.am.srvc.domain.*;
 import org.openiam.am.srvc.domain.pk.AuthLevelGroupingContentProviderXrefIdEntity;
 import org.openiam.am.srvc.domain.pk.AuthLevelGroupingURIPatternXrefIdEntity;
+import org.openiam.am.srvc.dto.PatternMatchMode;
 import org.openiam.am.srvc.model.URIPatternJSONWrapper;
 import org.openiam.am.srvc.searchbeans.URIPatternSearchBean;
 import org.openiam.base.ws.ResponseCode;
@@ -713,6 +714,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
 						pattern.setContentProvider(contentProvider);
 						pattern.setIsPublic(defaultPattern.getIsPublic());
 						pattern.setPattern(defaultPattern.getPattern());
+						pattern.setMatchMode(PatternMatchMode.IGNORE);
 						if(CollectionUtils.isNotEmpty(defaultPattern.getGroupingXrefs())) {
 							final Set<AuthLevelGroupingURIPatternXrefEntity> groupingXrefs = new HashSet<>();
 							for(final AuthLevelGroupingURIPatternXrefEntity defaultGrouping : defaultPattern.getGroupingXrefs()) {

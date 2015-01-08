@@ -171,6 +171,25 @@ public class ContentProviderServiceTest extends AbstractContentProviderServiceTe
 			}
 		}
 	}
+	
+	@Test
+	public void testCreateDefautPatterns() {
+		ContentProvider cp = null;
+		try {
+			cp = super.createContentProvider();
+			Response response = saveAndAssert(cp);
+			cp = get((String)response.getResponseValue());
+			Assert.assertNotNull(cp);
+			
+			response = contentProviderServiceClient.createDefaultURIPatterns(cp.getId());
+			Assert.assertNotNull(response);
+			Assert.assertTrue(response.isSuccess());
+		} finally {
+			if(cp != null && cp.getId() != null) {
+				delete(cp);
+			}
+		}
+	}
 		
 	@Override
 	protected ContentProvider newInstance() {
