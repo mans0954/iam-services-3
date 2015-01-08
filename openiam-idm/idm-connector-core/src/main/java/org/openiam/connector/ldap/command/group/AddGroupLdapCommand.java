@@ -74,7 +74,7 @@ public class AddGroupLdapCommand extends AbstractCrudLdapCommand<ExtensibleGroup
 
             //Important!!! For add new record in LDAP we must to create identity in DN format
             String identityDN = matchObj.getKeyField() + "=" + identity + "," + objectBaseDN;
-            log.debug("Creating users in ldap.." + identityDN);
+            log.debug("Creating groups in ldap.." + identityDN);
             ldapctx.createSubcontext(identityDN, basicAttr);
 
             if (groupMembershipEnabled) {
