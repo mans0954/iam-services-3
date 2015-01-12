@@ -62,23 +62,23 @@ public class AddressEntity {
     private String address2;
 
     @Column(name = "ADDRESS3", length = 400)
-    @Size(max = 45, message = "validator.address.address3.toolong")
+    @Size(max = 400, message = "validator.address.address3.toolong")
     private String address3;
 
     @Column(name = "ADDRESS4", length = 400)
-    @Size(max = 45, message = "validator.address.address4.toolong")
+    @Size(max = 400, message = "validator.address.address4.toolong")
     private String address4;
 
     @Column(name = "ADDRESS5", length = 400)
-    @Size(max = 45, message = "validator.address.address5.toolong")
+    @Size(max = 400, message = "validator.address.address5.toolong")
     private String address5;
 
     @Column(name = "ADDRESS6", length = 400)
-    @Size(max = 45, message = "validator.address.address6.toolong")
+    @Size(max = 400, message = "validator.address.address6.toolong")
     private String address6;
 
     @Column(name = "ADDRESS7", length = 400)
-    @Size(max = 45, message = "validator.address.address7.toolong")
+    @Size(max = 400, message = "validator.address.address7.toolong")
     private String address7;
 
     @Column(name = "CITY", length = 100)

@@ -50,15 +50,15 @@ public class LocationEntity {
     private String streetDirection;
 
     @Column(name = "ADDRESS1", length = 400)
-    @Size(max = 45, message = "validator.location.address1.toolong")
+    @Size(max = 400, message = "validator.location.address1.toolong")
     private String address1;
 
     @Column(name = "ADDRESS2", length = 400)
-    @Size(max = 45, message = "validator.location.address2.toolong")
+    @Size(max = 400, message = "validator.location.address2.toolong")
     private String address2;
 
     @Column(name = "ADDRESS3", length = 400)
-    @Size(max = 45, message = "validator.location.address3.toolong")
+    @Size(max = 400, message = "validator.location.address3.toolong")
     private String address3;
 
     @Column(name = "CITY", length = 100)
