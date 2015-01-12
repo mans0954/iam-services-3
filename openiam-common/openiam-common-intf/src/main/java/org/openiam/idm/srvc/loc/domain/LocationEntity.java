@@ -49,15 +49,15 @@ public class LocationEntity {
     @Size(max = 20, message = "validator.location.street.direction.toolong")
     private String streetDirection;
 
-    @Column(name = "ADDRESS1", length = 45)
+    @Column(name = "ADDRESS1", length = 400)
     @Size(max = 45, message = "validator.location.address1.toolong")
     private String address1;
 
-    @Column(name = "ADDRESS2", length = 45)
+    @Column(name = "ADDRESS2", length = 400)
     @Size(max = 45, message = "validator.location.address2.toolong")
     private String address2;
 
-    @Column(name = "ADDRESS3", length = 45)
+    @Column(name = "ADDRESS3", length = 400)
     @Size(max = 45, message = "validator.location.address3.toolong")
     private String address3;
 

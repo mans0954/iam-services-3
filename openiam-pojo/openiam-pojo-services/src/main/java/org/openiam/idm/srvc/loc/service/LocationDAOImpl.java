@@ -53,6 +53,12 @@ public class LocationDAOImpl extends BaseDaoImpl<LocationEntity, String> impleme
                 }
             }
 
+            if (location.getName() != null) {
+                if (StringUtils.isNotBlank(location.getName())) {
+                    criteria.add(Restrictions.eq("name", location.getName()));
+                }
+            }
+
             if (location.getCountry() != null) {
                 if (StringUtils.isNotBlank(location.getCountry())) {
                     criteria.add(Restrictions.eq("country", location.getCountry()));
