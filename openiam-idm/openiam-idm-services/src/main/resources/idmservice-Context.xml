@@ -112,25 +112,10 @@
 		</property>
 
 	</bean>
-
-    <task:scheduler id="batchTaskInternalScheduler" pool-size="${org.openiam.batch.task.schedule.thread.size}" />
-
-    <bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
-        <property name="triggers">
-            <list>
-                <bean class="org.springframework.scheduling.quartz.SimpleTriggerFactoryBean">
-                    <property name="startDelay" value="${org.openiam.batch.task.sweep.time}" />
-                    <property name="repeatInterval" value="${org.openiam.batch.task.sweep.time}" />
-                    <property name="jobDetail">
-                        <bean class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
-                            <property name="targetObject" ref="batchTaskScheduler" />
-                            <property name="targetMethod" value="sweep" />
-                            <property name="concurrent" value="false" />
-                        </bean>
-                    </property>
-                </bean>
-            </list>
-        </property>
-    </bean>
-
+	
+	<bean id="batchTaskThreadExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+	    <property name="corePoolSize" value="${org.openiam.batch.task.executor.size}" />
+	    <property name="maxPoolSize" value="${org.openiam.batch.task.executor.size}" />
+	    <property name="queueCapacity" value="${org.openiam.batch.task.executor.queue.capacity}" />
+	</bean>
 </beans>

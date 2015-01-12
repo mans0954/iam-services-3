@@ -35,9 +35,13 @@ import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.dozer.converter.BatchTaskDozerConverter;
+import org.openiam.dozer.converter.BatchTaskScheduleDozerConverter;
+import org.openiam.idm.searchbeans.BatchTaskScheduleSearchBean;
 import org.openiam.idm.searchbeans.BatchTaskSearchBean;
 import org.openiam.idm.srvc.batch.domain.BatchTaskEntity;
+import org.openiam.idm.srvc.batch.domain.BatchTaskScheduleEntity;
 import org.openiam.idm.srvc.batch.dto.BatchTask;
+import org.openiam.idm.srvc.batch.dto.BatchTaskSchedule;
 import org.openiam.idm.srvc.searchbean.converter.BatchTaskSearchBeanConverter;
 import org.openiam.script.ScriptIntegration;
 import org.springframework.beans.BeansException;
@@ -72,6 +76,9 @@ public class BatchDataServiceImpl implements BatchDataService, ApplicationContex
 	
 	@Autowired
 	private BatchTaskDozerConverter converter;
+	
+	@Autowired
+	private BatchTaskScheduleDozerConverter taskDozerConverter;
 	
 	@Autowired
 	private BatchService batchService;
@@ -143,7 +150,7 @@ public class BatchDataServiceImpl implements BatchDataService, ApplicationContex
 			}
 			
 			final BatchTaskEntity entity = converter.convertToEntity(task, true);
-			batchService.save(entity);
+			batchService.save(entity, true);
 			response.setResponseValue(entity.getId());
 		} catch (BasicDataServiceException e) {
 			response.setErrorCode(e.getCode());
@@ -209,6 +216,43 @@ public class BatchDataServiceImpl implements BatchDataService, ApplicationContex
         	batchService.run(id, synchronous);
         } catch (Throwable e) {
         	LOG.error("Can't validate resource", e);
+            response.setErrorText(e.getMessage());
+            response.setStatus(ResponseStatus.FAILURE);
+        }
+        return response;
+	}
+
+	@Override
+	public Response schedule(String id, Date when) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+        	batchService.schedule(id, when);
+        } catch (Throwable e) {
+        	LOG.error("Can't schedule task", e);
+            response.setErrorText(e.getMessage());
+            response.setStatus(ResponseStatus.FAILURE);
+        }
+        return response;
+	}
+
+	@Override
+	public List<BatchTaskSchedule> getSchedulesForTask(final BatchTaskScheduleSearchBean searchBean, final int from, final int size) {
+		final List<BatchTaskScheduleEntity> entityList = batchService.getSchedulesForTask(searchBean, from, size);
+		return taskDozerConverter.convertToDTOList(entityList, true);
+	}
+	
+	@Override
+	public int getNumOfSchedulesForTask(BatchTaskScheduleSearchBean searchBean) {
+		return batchService.count(searchBean);
+	}
+
+	@Override
+	public Response deleteScheduledTask(String id) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+        	batchService.deleteScheduledTask(id);
+        } catch (Throwable e) {
+        	LOG.error("Can't schedule task", e);
             response.setErrorText(e.getMessage());
             response.setStatus(ResponseStatus.FAILURE);
         }

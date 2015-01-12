@@ -3,6 +3,7 @@ package org.openiam.idm.srvc.batch;
 import java.net.ConnectException;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -12,9 +13,16 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.StopWatch;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.exception.LockObtainException;
+import org.openiam.exception.UnlockException;
+import org.openiam.idm.searchbeans.BatchTaskSearchBean;
+import org.openiam.idm.srvc.batch.dao.BatchConfigDAO;
+import org.openiam.idm.srvc.batch.dao.LockTableDAO;
 import org.openiam.idm.srvc.batch.domain.BatchTaskEntity;
+import org.openiam.idm.srvc.batch.domain.BatchTaskScheduleEntity;
 import org.openiam.idm.srvc.batch.service.BatchService;
 import org.openiam.idm.srvc.batch.thread.BatchTaskGroovyThread;
 import org.openiam.idm.srvc.batch.thread.BatchTaskSpringThread;
@@ -29,178 +37,217 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.Trigger;
+import org.springframework.scheduling.TriggerContext;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import org.springframework.scheduling.support.CronSequenceGenerator;
 import org.springframework.scheduling.support.CronTrigger;
+import org.springframework.scheduling.support.SimpleTriggerContext;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @Component("batchTaskScheduler")
-public class BatchTaskScheduler implements InitializingBean, Sweepable {
-	
-	private Map<String, ScheduledFuture<?>> synchronizedBatchScheduleMap = new ConcurrentHashMap<String, ScheduledFuture<?>>();
+public class BatchTaskScheduler implements InitializingBean {
 	
 	private static final Log log = LogFactory.getLog(BatchTaskScheduler.class);
 	
 	@Autowired
 	private BatchService batchService;
+	
+    @Autowired
+    private BatchConfigDAO batchDao;
     
     @Autowired
-    @Qualifier("batchTaskInternalScheduler")
-    private ThreadPoolTaskScheduler taskScheduler;
-
-    @Value("${IS_PRIMARY}")
-    private boolean isPrimary;
+    @Qualifier("batchTaskThreadExecutor")
+    private ThreadPoolTaskExecutor batchTaskThreadExecutor;
     
-    private Date lastRun = null;
+    @Autowired
+    @Qualifier("transactionManager")
+    private PlatformTransactionManager platformTransactionManager;
+    
+    @Autowired
+    private LockTableDAO lockDAO;
+    
+    private void lock(final String id) throws LockObtainException {
+    	final TransactionTemplate transactionTemplate = new TransactionTemplate(platformTransactionManager);
+        transactionTemplate.setPropagationBehavior(TransactionTemplate.PROPAGATION_REQUIRED);
+        final LockObtainException exception = transactionTemplate.execute(new TransactionCallback<LockObtainException>() {
+    		@Override
+    		public LockObtainException doInTransaction(TransactionStatus status) {
+    			try {
+					lockDAO.lock(id);
+					return null;
+				} catch (LockObtainException e) {
+					return e;
+				}
+    		}
+        });
+        if(exception != null) {
+        	throw exception;
+        }
+    }
+    
+    private void unlock(final String id) throws UnlockException {
+    	final TransactionTemplate transactionTemplate = new TransactionTemplate(platformTransactionManager);
+        transactionTemplate.setPropagationBehavior(TransactionTemplate.PROPAGATION_REQUIRED);
+        final UnlockException exception = transactionTemplate.execute(new TransactionCallback<UnlockException>() {
+    		@Override
+    		public UnlockException doInTransaction(TransactionStatus status) {
+    			try {
+					lockDAO.unlock(id);
+					return null;
+				} catch (UnlockException e) {
+					return e;
+				}
+    		}
+        });
+        if(exception != null) {
+        	throw exception;
+        }
+    }
+    
+    @Scheduled(fixedRateString="${org.openiam.batch.task.execute.time}")
+    public void executeTasks() throws LockObtainException, UnlockException {
+    	final StopWatch sw = new StopWatch();
+    	sw.start();
+    	lock("BATCH_TASK_RUNNER");
+    	log.info("Starting batch executeTasks() operation");
+    	try {
+    		final Date now = new Date();
+    		
+    		//execute tasks that are before now, but haven't yet been run
+    		final List<BatchTaskScheduleEntity> scheduledTaskList = batchService.getIncompleteSchduledTasksBefore(now);
+    		final Map<String, List<BatchTaskScheduleEntity>> scheduledTaskMap = new HashMap<String, List<BatchTaskScheduleEntity>>();
+    		if(scheduledTaskList != null) {
+    			scheduledTaskList.forEach(scheduledTask -> {
+    				final String taskId = scheduledTask.getTask().getId();
+    				if(!scheduledTaskMap.containsKey(taskId)) {
+    					scheduledTaskMap.put(taskId, new LinkedList<BatchTaskScheduleEntity>());
+    				}
+    				scheduledTaskMap.get(taskId).add(scheduledTask);
+    			});
+    		}
+    		scheduledTaskMap.forEach((taskId, scheduledTasks) -> {
+    			/*
+    			final TransactionTemplate transactionTemplate = new TransactionTemplate(platformTransactionManager);
+    	        transactionTemplate.setPropagationBehavior(TransactionTemplate.PROPAGATION_REQUIRED);
+    	        transactionTemplate.execute(new TransactionCallback<Boolean>() {
 
-	@Transactional
-	public void sweep() {
-		if(shouldRun()) {
-			final List<BatchTaskEntity> batchList = batchService.findBeans(new BatchTaskEntity(), 0, Integer.MAX_VALUE);
-			final Map<String, BatchTaskEntity> batchMap = new HashMap<String, BatchTaskEntity>();
-			if(CollectionUtils.isNotEmpty(batchList)) {
-				for(final BatchTaskEntity entity : batchList) {
-					batchMap.put(entity.getId(), entity);
-				}
-				
-				//first, remove what's been deleted, or has been inactivated
-				final Set<String> currentScheduledTasks = synchronizedBatchScheduleMap.keySet();
-				if(CollectionUtils.isNotEmpty(currentScheduledTasks)) {
-					for(final String id : currentScheduledTasks) {
-						final BatchTaskEntity entity = batchMap.get(id);
-						if(entity == null || !entity.isEnabled()) {
-							unSchedule(id, true);
-						}
+					@Override
+					public Boolean doInTransaction(TransactionStatus status) {
+						scheduledTasks.forEach(scheduledTask -> {
+							batchService.markTaskAsRunning(scheduledTask.getId());
+		    			});
+						return null;
 					}
-				}
-				
-				//TODO: run the tasks that are overdue
-				
-				
-				//handle new and existing tasks
-				for(final BatchTaskEntity entity : batchList) {
-					if(entity.isEnabled()) {
-						if(!currentScheduledTasks.contains(entity.getId())) {
-							
-							//schedule new tasks
-							schedule(entity);
-						} else {
-							//for existing tasks:
-							// a) if the BatchTask was modified since the last run, cancel the current task, and schedule a new one
-							boolean modified = lastRun != null && entity.getLastModifiedDate() != null && entity.getLastModifiedDate().after(lastRun);
-							
-							if(modified) {
-								unSchedule(entity, false);
-								schedule(entity);
-							} else {
-								//if the Task is not a cron job, remove if it's done running
-								if(entity.getCronExpression() == null && isDone(entity)) {
-									unSchedule(entity, true);
-								}
-								
-								//now, it's a cron job that hasn't been modified.  Just let it run
-							}
-						}
-					}
-				}
-			} else {
-				unscheduleAll(false);
-			}
-		} else  {
-			unscheduleAll(false);
+    	        	
+    	        });
+    	        */
+    			execute(taskId, scheduledTasks);
+    		});
+    		
+    	} finally {
+    		sw.stop();
+    		log.info(String.format("Finished batch executeTasks() operation. Took:  %s ms", sw.getTime()));
+        	unlock("BATCH_TASK_RUNNER");
+        }
+    }
+    
+    public void execute(final String id, final List<BatchTaskScheduleEntity> scheduledTaskList) {
+		final Runnable task = batchService.getRunnable(id, scheduledTaskList);
+		if(task != null) {
+			batchTaskThreadExecutor.execute(task);
 		}
+    }
+    
+	@Scheduled(fixedRateString="${org.openiam.batch.task.sweep.time}")
+	public void sweep() throws LockObtainException, UnlockException {
+		final StopWatch sw = new StopWatch();
+    	sw.start();
+    	log.info("Starting batch sweep() operation");
+		final TransactionTemplate transactionTemplate = new TransactionTemplate(platformTransactionManager);
+        transactionTemplate.setPropagationBehavior(TransactionTemplate.PROPAGATION_REQUIRED);
 		
-		lastRun = new Date();
-	}
-	
-	public boolean isDone(final BatchTaskEntity entity) {
-		final ScheduledFuture<?> future = synchronizedBatchScheduleMap.get(entity.getId());
-		return (future != null) ? future.isDone() : false;
-	}
-	
-	public boolean unSchedule(final BatchTaskEntity entity, boolean forceInterrupt) {
-		boolean success = true;
-		final ScheduledFuture<?> future = synchronizedBatchScheduleMap.remove(entity.getId());
-		if(future != null) {
-			try {
-				future.cancel(forceInterrupt);
-			} catch(Throwable e) {
-				success = false;
-				final String message = String.format("Can't cancel task with ID: %s", entity.getId());
-				log.error(message, e);
-			}
-		}
-		return success;
-	}
-	
-	public boolean unSchedule(final String id, boolean forceInterrupt) {
-		boolean success = true;
-		final ScheduledFuture<?> future = synchronizedBatchScheduleMap.remove(id);
-		if(future != null) {
-			try {
-				future.cancel(forceInterrupt);
-			} catch(Throwable e) {
-				success = false;
-				log.error(String.format("Can't cancel task with ID: %s", id), e);
-			}
-		}
-		return success;
-	}
-	
-	public boolean isScheduled(final BatchTaskEntity entity) {
-		return (entity != null) ? synchronizedBatchScheduleMap.containsKey(entity) : false;
+        lock("BATCH_SCHEDULER");
+        try {
+        	transactionTemplate.execute(new TransactionCallback<Boolean>() {
+        		@Override
+        		public Boolean doInTransaction(TransactionStatus status) {
+        			final BatchTaskSearchBean searchBean = new BatchTaskSearchBean();
+        			searchBean.setEnabled(true);
+        			final List<BatchTaskEntity> batchList = batchService.findBeans(searchBean, 0, Integer.MAX_VALUE);
+        			//final Map<String, BatchTaskEntity> batchMap = new HashMap<String, BatchTaskEntity>();
+        			if(CollectionUtils.isNotEmpty(batchList)) {
+        				for(final BatchTaskEntity entity : batchList) {
+        					schedule(entity);
+        					
+        					batchDao.save(entity);
+        				}
+        			}
+        			return null;
+        		}
+        	});
+        } finally {
+        	sw.stop();
+        	log.info(String.format("Finished batch sweep() operation. Took: %s ms", sw.getTime()));
+        	unlock("BATCH_SCHEDULER");
+        }
 	}
 	
 	public void schedule(final BatchTaskEntity entity) {
-		if(entity != null) {
-			boolean unScheduled = true;
-			if(isScheduled(entity)) {
-				unScheduled = unSchedule(entity, false);
-			}
-			if(unScheduled) {
-				try {
-					final Runnable runnable = batchService.getRunnable(entity.getId());
-					if(runnable != null) {
-						if(entity.getCronExpression() == null && entity.getRunOn() != null) {
-							if(entity.getRunOn().after(new Date())) {
-								final ScheduledFuture<?> future = taskScheduler.schedule(runnable, entity.getRunOn());
-								synchronizedBatchScheduleMap.put(entity.getId(), future);
-							}
-						} else {
-							final Trigger trigger = batchService.getCronTrigger(entity.getId());
-							if(trigger != null) {
-								final ScheduledFuture<?> future = taskScheduler.schedule(runnable, trigger);
-								synchronizedBatchScheduleMap.put(entity.getId(), future);
-							}
-						}
+		final Date now = new Date();
+		try {
+			if(entity.getRunOn() != null) {
+				if(entity.getRunOn().after(now)) {
+					if(!batchService.isScheduledNear(entity.getId(), entity.getRunOn(), 30000)) {
+						final BatchTaskScheduleEntity schedule = new BatchTaskScheduleEntity();
+						schedule.setCompleted(false);
+						schedule.setNextScheduledRun(entity.getRunOn());
+						schedule.setTask(entity);
+						entity.addScheduledTask(schedule);
 					}
-				} catch(Throwable e) {
-					log.error(String.format("Can't schedule task: %s", entity), e);
 				}
-			} else {
-				log.warn(String.format("Could not unschedule previous task - not scheduling %s", entity));
+			} else if(entity.getCronExpression() != null) {
+				final Trigger trigger = batchService.getCronTrigger(entity.getId());
+				if(trigger != null) {
+					Date lastExecutionTime = entity.getLastExecTime();
+					
+					/* schedule next 10 */
+					Date date = getNextExecutionTimeAfterNow(now, lastExecutionTime, trigger);
+					for(int i = 0; i < 10; i++) {
+						if(!batchService.isScheduledNear(entity.getId(), date, 30000)) {
+							final BatchTaskScheduleEntity schedule = new BatchTaskScheduleEntity();
+							schedule.setCompleted(false);
+							schedule.setNextScheduledRun(date);
+							schedule.setTask(entity);
+							entity.addScheduledTask(schedule);
+						}
+						date = getNextExecutionTimeAfterNow(now, date, trigger);
+					}
+				}
 			}
+		} catch(Throwable e) {
+			log.error(String.format("Can't schedule task: %s", entity), e);
 		}
 	}
 	
-	public void schedule(final String id) {
-		schedule(batchService.findById(id));
-	}
-	
-	private void unscheduleAll(final boolean forceInterrupt) {
-		final Set<String> currentTasks = synchronizedBatchScheduleMap.keySet();
-		for(final String id : currentTasks) {
-			unSchedule(id, forceInterrupt);
+	private Date getNextExecutionTimeAfterNow(final Date now, final Date lastExecutionTime, final Trigger trigger) {
+		final TriggerContext triggerContext = new SimpleTriggerContext(lastExecutionTime, lastExecutionTime, lastExecutionTime); 
+		final Date nextExecutionTime = trigger.nextExecutionTime(triggerContext);
+		if(!nextExecutionTime.after(now)) {
+			return getNextExecutionTimeAfterNow(now, nextExecutionTime, trigger);
+		} else { /* is after */
+			return nextExecutionTime;
 		}
-	}
-	
-	private boolean shouldRun() {
-		return isPrimary;
 	}
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		log.info(taskScheduler);
 		sweep();
 	}
 	

@@ -8,7 +8,9 @@
        xmlns:context="http://www.springframework.org/schema/context"
        xmlns:aop="http://www.springframework.org/schema/aop"
        xmlns:jaxws="http://cxf.apache.org/jaxws"
+       xmlns:task="http://www.springframework.org/schema/task"
        xsi:schemaLocation="http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+       http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-3.0.xsd
        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
        http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee.xsd
@@ -142,6 +144,10 @@
 			</list>
 		</property>
 	</bean>
+	
+	<task:annotation-driven executor="myExecutor" scheduler="myScheduler"/>
+	<task:executor id="myExecutor" pool-size="${org.openiam.spring.taskscheduler.executor.size}"/>
+	<task:scheduler id="myScheduler" pool-size="${org.openiam.spring.taskscheduler.scheduler.size}"/>
 
 	<!-- Thread Scheduling - not using annotations since the interval must be 
 		configurable -->
@@ -249,14 +255,6 @@
 		</property>
 	</bean>
 
-
-
-	<!-- Batch related beans -->
-	<!--
-	<bean id="batchConfigDAO" class="org.openiam.idm.srvc.batch.service.BatchConfigDAOImpl">
-		<property name="sessionFactory" ref="sessionFactory"></property>
-	</bean>
-	-->
 
 	<!-- Hibernate SessionFactory -->
 	<bean id="sessionFactory"

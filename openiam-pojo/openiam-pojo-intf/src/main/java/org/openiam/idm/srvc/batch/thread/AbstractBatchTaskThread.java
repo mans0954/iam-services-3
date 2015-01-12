@@ -1,10 +1,13 @@
 package org.openiam.idm.srvc.batch.thread;
 
+import java.util.List;
+
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.batch.domain.BatchTaskEntity;
+import org.openiam.idm.srvc.batch.domain.BatchTaskScheduleEntity;
 import org.openiam.idm.srvc.batch.service.BatchService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,6 +17,7 @@ public abstract class AbstractBatchTaskThread implements Runnable {
 
     protected ApplicationContext ctx;
     protected BatchTaskEntity entity;
+    protected List<BatchTaskScheduleEntity> scheduledTasks;
     @Value("${org.openiam.idm.system.user.id}")
     protected String systemUserId;
     @Autowired
@@ -21,10 +25,10 @@ public abstract class AbstractBatchTaskThread implements Runnable {
     @Autowired
     protected BatchService batchService;
 
-    public AbstractBatchTaskThread(final BatchTaskEntity entity,
-            final ApplicationContext ctx) {
+    public AbstractBatchTaskThread(final BatchTaskEntity entity, final ApplicationContext ctx, final List<BatchTaskScheduleEntity> scheduledTasks) {
         this.entity = entity;
         this.ctx = ctx;
+        this.scheduledTasks = scheduledTasks;
         ctx.getAutowireCapableBeanFactory().autowireBean(this);
     }
 
@@ -52,9 +56,14 @@ public abstract class AbstractBatchTaskThread implements Runnable {
 
     @Override
     public void run() {
-        onStart();
-        doRun();
-        onDone();
+    	try {
+    		markAsRunning();
+    		onStart();
+    		doRun();
+    		onDone();
+    	} finally {
+    		setBatchScheduledTasksToCompleted();
+    	}
     }
 
     protected void onStart() {
@@ -63,6 +72,23 @@ public abstract class AbstractBatchTaskThread implements Runnable {
 
     protected void onDone() {
 
+    }
+    
+    private void markAsRunning() {
+    	if(scheduledTasks != null) {
+    		scheduledTasks.forEach(schedule -> {
+    			//batchService.markTaskAsCompleted(schedule.getId());
+    			batchService.markTaskAsRunning(schedule.getId());
+    		});
+    	}
+    }
+    
+    private void setBatchScheduledTasksToCompleted() {
+    	if(scheduledTasks != null) {
+    		scheduledTasks.forEach(schedule -> {
+    			batchService.markTaskAsCompleted(schedule.getId());
+    		});
+    	}
     }
 
     protected abstract void doRun();

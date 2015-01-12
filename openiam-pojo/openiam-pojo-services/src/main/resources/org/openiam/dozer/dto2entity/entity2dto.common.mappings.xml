@@ -311,6 +311,19 @@
 	<mapping>
 		<class-a>org.openiam.idm.srvc.batch.domain.BatchTaskEntity</class-a>
 		<class-b>org.openiam.idm.srvc.batch.dto.BatchTask</class-b>
+		<field-exclude>
+			<a>scheduledTasks</a>
+			<b>scheduledTasks</b>
+		</field-exclude>
+	</mapping>
+	
+	<mapping>
+		<class-a>org.openiam.idm.srvc.batch.domain.BatchTaskScheduleEntity</class-a>
+		<class-b>org.openiam.idm.srvc.batch.dto.BatchTaskSchedule</class-b>
+		<field>
+			<a>task.id</a>
+			<b>taskId</b>
+		</field>
 	</mapping>
 	
 	<mapping>

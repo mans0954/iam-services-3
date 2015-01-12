@@ -8,7 +8,7 @@ import org.openiam.idm.srvc.batch.dto.BatchTask;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "BatchTaskSearchBean", propOrder = {
-
+	"enabled"
 })
 public class BatchTaskSearchBean extends AbstractKeyNameSearchBean<BatchTask, String> {
     /**
@@ -16,4 +16,40 @@ public class BatchTaskSearchBean extends AbstractKeyNameSearchBean<BatchTask, St
      */
     private static final long serialVersionUID = 1L;
    
+    private Boolean enabled;
+
+	public Boolean getEnabled() {
+		return enabled;
+	}
+
+	public void setEnabled(Boolean enabled) {
+		this.enabled = enabled;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + ((enabled == null) ? 0 : enabled.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		BatchTaskSearchBean other = (BatchTaskSearchBean) obj;
+		if (enabled == null) {
+			if (other.enabled != null)
+				return false;
+		} else if (!enabled.equals(other.enabled))
+			return false;
+		return true;
+	}
+    
+    
 }

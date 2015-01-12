@@ -1,12 +1,16 @@
 package org.openiam.idm.srvc.batch.service;
 
 import org.openiam.base.ws.Response;
+import org.openiam.idm.searchbeans.BatchTaskScheduleSearchBean;
 import org.openiam.idm.searchbeans.BatchTaskSearchBean;
 import org.openiam.idm.srvc.batch.dto.BatchTask;
+import org.openiam.idm.srvc.batch.dto.BatchTaskSchedule;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
+
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -22,6 +26,13 @@ public interface BatchDataService {
 									 @WebParam(name = "from", targetNamespace = "") int from,
 									 @WebParam(name = "size", targetNamespace = "") int size);
 	
+	@WebMethod
+	public int getNumOfSchedulesForTask(@WebParam(name = "searchBean", targetNamespace = "") BatchTaskScheduleSearchBean searchBean);
+	
+	@WebMethod
+	public List<BatchTaskSchedule> getSchedulesForTask(@WebParam(name = "searchBean", targetNamespace = "") BatchTaskScheduleSearchBean searchBean,
+			 										   @WebParam(name = "from", targetNamespace = "") int from,
+			 										   @WebParam(name = "size", targetNamespace = "") int size);
 	
 
 	@WebMethod
@@ -43,4 +54,8 @@ public interface BatchDataService {
             String taskId);
     
     public Response run(@WebParam(name = "taskId", targetNamespace = "") String id, @WebParam(name = "synchronous", targetNamespace = "") boolean synchronous);
+    
+    public Response schedule(@WebParam(name = "taskId", targetNamespace = "") String id, @WebParam(name = "date", targetNamespace = "") Date when);
+    
+    public Response deleteScheduledTask(@WebParam(name = "taskId", targetNamespace = "") String id);
 }

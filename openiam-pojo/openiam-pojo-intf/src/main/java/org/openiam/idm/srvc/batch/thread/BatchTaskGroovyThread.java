@@ -2,11 +2,13 @@ package org.openiam.idm.srvc.batch.thread;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.openiam.base.id.UUIDGen;
 import org.openiam.idm.srvc.batch.domain.BatchTaskEntity;
+import org.openiam.idm.srvc.batch.domain.BatchTaskScheduleEntity;
 import org.openiam.script.ScriptIntegration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -20,9 +22,8 @@ public class BatchTaskGroovyThread extends AbstractBatchTaskThread {
     @Qualifier("configurableGroovyScriptEngine")
     private ScriptIntegration scriptRunner;
 
-    public BatchTaskGroovyThread(final BatchTaskEntity entity,
-            final ApplicationContext ctx) {
-        super(entity, ctx);
+    public BatchTaskGroovyThread(final BatchTaskEntity entity, final ApplicationContext ctx, final List<BatchTaskScheduleEntity> scheduledTasks) {
+        super(entity, ctx, scheduledTasks);
     }
 
     @Override
@@ -53,7 +54,7 @@ public class BatchTaskGroovyThread extends AbstractBatchTaskThread {
             BatchTaskEntity batchTaskEntity = batchService.findById(entity.getId());
             if (batchTaskEntity != null) {
                 batchTaskEntity.setLastExecTime(startDate);
-                batchService.save(batchTaskEntity);
+                batchService.save(batchTaskEntity, false);
                 entity = batchTaskEntity;
             }
 
