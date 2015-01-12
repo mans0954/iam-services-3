@@ -85,7 +85,7 @@ public class LocationDAOImpl extends BaseDaoImpl<LocationEntity, String> impleme
         return findByOrganizationList(orgsId, Integer.MAX_VALUE, 0);
     }
 
-    public List<LocationEntity> findByOrganizationList(Set<String> orgsId, Integer size, Integer from) {
+    public List<LocationEntity> findByOrganizationList(Set<String> orgsId, Integer from, Integer size) {
         Criteria criteria = getCriteria();
 
         if (from > -1) {

@@ -1068,7 +1068,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     @Override
     @Transactional(readOnly = true)
     public List<LocationEntity> getLocationList(String organizationId) {
-        return this.getLocationList(organizationId, Integer.MAX_VALUE, 0);
+        return this.getLocationList(organizationId, 0, Integer.MAX_VALUE);
     }
 
     @Override
@@ -1079,19 +1079,19 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
 
     @Override
     @Transactional(readOnly = true)
-    public List<LocationEntity> getLocationList(String organizationId, Integer size, Integer from) {
+    public List<LocationEntity> getLocationList(String organizationId, Integer from, Integer size ) {
         if (organizationId == null)
             throw new NullPointerException("organizationId is null");
 
         LocationSearchBean searchBean = new LocationSearchBean();
         searchBean.setOrganizationId(organizationId);
         /* searchBean.setParentType(ContactConstants.PARENT_TYPE_USER); */
-        return getLocationList(searchBean, size, from);
+        return getLocationList(searchBean, from, size);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<LocationEntity> getLocationList(LocationSearchBean searchBean, Integer size, Integer from) {
+    public List<LocationEntity> getLocationList(LocationSearchBean searchBean, Integer from, Integer size) {
         if (searchBean == null)
             throw new NullPointerException("searchBean is null");
 
@@ -1115,8 +1115,8 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
         return count;
     }
 
-    public List<LocationEntity> getLocationListByOrganizationId(Set<String> orgsId, Integer size, Integer from) {
-        return locationDao.findByOrganizationList(orgsId, size, from);
+    public List<LocationEntity> getLocationListByOrganizationId(Set<String> orgsId, Integer from, Integer size) {
+        return locationDao.findByOrganizationList(orgsId, from, size);
     }
 
     public List<LocationEntity> getLocationListByOrganizationId(Set<String> orgsId) {
