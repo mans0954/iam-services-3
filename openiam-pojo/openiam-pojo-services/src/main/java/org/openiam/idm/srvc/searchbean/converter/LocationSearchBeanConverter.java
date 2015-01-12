@@ -25,6 +25,11 @@ public class LocationSearchBeanConverter implements SearchBeanConverter<Location
         if(StringUtils.isNotBlank(searchBean.getCountry())) {
             location.setCountry(searchBean.getCountry());
         }
+
+        if(StringUtils.isNotBlank(searchBean.getName())) {
+            location.setName(searchBean.getName());
+        }
+
         return location;
     }
 }

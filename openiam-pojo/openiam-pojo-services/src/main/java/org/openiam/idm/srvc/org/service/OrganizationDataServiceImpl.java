@@ -516,14 +516,14 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     @Transactional(readOnly = true)
     public List<Location> getLocationList(String organizationId) {
 
-        return this.getLocationListByPage(organizationId, Integer.MAX_VALUE, 0);
+        return this.getLocationListByPage(organizationId, 0, Integer.MAX_VALUE);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<Location> getLocationListByPage(String organizationId, Integer size, Integer from) {
+    public List<Location> getLocationListByPage(String organizationId, Integer from, Integer size) {
 
-        final List<LocationEntity> adrList = organizationService.getLocationList(organizationId, size, from);
+        final List<LocationEntity> adrList = organizationService.getLocationList(organizationId, from, size);
         return locationDozerConverter.convertToDTOList(adrList, false);
     }
 
@@ -541,7 +541,7 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Location> getLocationListByPageForUser(String userId, Integer size, Integer from) {
+    public List<Location> getLocationListByPageForUser(String userId, Integer from, Integer size) {
 
         Set<String> orgsId = new HashSet<String>();
         List<OrganizationEntity> orgList = organizationService.getOrganizationsForUser(userId, null, from, size, languageConverter.convertToEntity(getDefaultLanguage(), false));
@@ -552,7 +552,7 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
         if (orgsId == null) {
             return null;
         }
-        List<LocationEntity> listOrgEntity = organizationService.getLocationListByOrganizationId(orgsId, size, from);
+        List<LocationEntity> listOrgEntity = organizationService.getLocationListByOrganizationId(orgsId, from, size);
         if (listOrgEntity == null) {
             return null;
         }

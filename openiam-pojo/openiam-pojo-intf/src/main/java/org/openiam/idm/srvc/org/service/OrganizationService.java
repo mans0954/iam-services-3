@@ -82,12 +82,12 @@ public interface OrganizationService {
 
     public List<Location> getLocationDtoList(String organizationId, boolean isDeep);
 
-    public List<LocationEntity> getLocationList(String organizationId, Integer size, Integer from);
+    public List<LocationEntity> getLocationList(String organizationId, Integer from, Integer size);
 
-    public List<LocationEntity> getLocationList(LocationSearchBean searchBean, Integer size, Integer from);
+    public List<LocationEntity> getLocationList(LocationSearchBean searchBean, Integer from, Integer size);
     public int getNumOfLocationsForUser(String userId);
     public int getNumOfLocationsForOrganization(String organizationId);
 
-    public List<LocationEntity> getLocationListByOrganizationId(Set<String> orgsId, Integer size, Integer from);
+    public List<LocationEntity> getLocationListByOrganizationId(Set<String> orgsId, Integer from, Integer size);
     public List<LocationEntity> getLocationListByOrganizationId(Set<String> orgsId);
 }
