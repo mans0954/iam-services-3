@@ -244,6 +244,16 @@ public class MetadataTypeEntity extends KeyEntity {
         sb.append(", sensitive=").append(sensitive);
         sb.append(", displayName='").append(displayName).append('\'');
         sb.append('}');
+		sb.append("displayNameMap { ");
+		if (displayNameMap != null) {
+			for (String key : displayNameMap.keySet()) {
+				LanguageMappingEntity lm = displayNameMap.get(key);
+				if (lm != null) {
+					sb.append(lm.toString());
+				}
+			}
+		}
+		sb.append(" }");
         return sb.toString();
     }
 }
