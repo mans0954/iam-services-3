@@ -486,6 +486,18 @@
                 <artifactId>sqljdbc4</artifactId>
                 <version>4.0</version>
             </dependency>
+			<!-- oracle dependencies -->
+			<dependency>
+				<groupId>com.oracle</groupId>
+				<artifactId>ojdbc6</artifactId>
+				<version>11.2.0.1.0</version>
+			</dependency>
+			<!-- postgress dependencies -->
+			<dependency>
+				<groupId>org.postgresql</groupId>
+				<artifactId>postgresql</artifactId>
+				<version>9.3-1102-jdbc41</version>
+			</dependency>
             <!-- jdbs driver for mssql with windows authentication dependencies -->
             <dependency>
                 <groupId>net.sourceforge.jtds</groupId>

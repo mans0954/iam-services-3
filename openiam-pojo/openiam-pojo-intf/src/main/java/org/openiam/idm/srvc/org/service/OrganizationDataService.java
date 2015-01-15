@@ -1,6 +1,7 @@
 package org.openiam.idm.srvc.org.service;
 
 import org.openiam.base.ws.Response;
+import org.openiam.idm.searchbeans.LocationSearchBean;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.lang.dto.Language;
@@ -199,8 +200,12 @@ public interface OrganizationDataService {
 
     @WebMethod
     public List<Location> getLocationListByPage(@WebParam(name = "organizationId", targetNamespace = "") String organizationId,
-                                              @WebParam(name = "size", targetNamespace = "") Integer size,
-                                              @WebParam(name = "from", targetNamespace = "") Integer from);
+                                                @WebParam(name = "from", targetNamespace = "") Integer from,
+                                                @WebParam(name = "size", targetNamespace = "") Integer size);
+    @WebMethod
+    public List<Location> findLocationBeans(@WebParam(name = "searchBean", targetNamespace = "") LocationSearchBean searchBean,
+                                            @WebParam(name = "from", targetNamespace = "")  int from,
+                                            @WebParam(name = "size", targetNamespace = "")  int size);
 
     @WebMethod
     public int getNumOfLocationsForOrganization(@WebParam(name = "organizationId", targetNamespace = "") String organizationId);
@@ -210,6 +215,6 @@ public interface OrganizationDataService {
 
     @WebMethod
     public List<Location> getLocationListByPageForUser(@WebParam(name = "userId", targetNamespace = "") String organizationId,
-                                                @WebParam(name = "size", targetNamespace = "") Integer size,
-                                                @WebParam(name = "from", targetNamespace = "") Integer from);
+                                                       @WebParam(name = "from", targetNamespace = "") Integer from,
+                                                       @WebParam(name = "size", targetNamespace = "") Integer size);
 }
