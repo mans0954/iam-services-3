@@ -110,7 +110,7 @@
 			"groupingXrefs" : [
 				{
 					"id" : {
-						"groupingId" : "NONE"
+						"groupingId" : "PASSWORD_AUTH"
 					}
 				}
 			]
