@@ -529,6 +529,13 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<Location> findLocationBeans(final LocationSearchBean searchBean, final int from, final int size) {
+        final List<LocationEntity> locList = organizationService.getLocationList(searchBean, from, size);
+        return locationDozerConverter.convertToDTOList(locList, false);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public int getNumOfLocationsForOrganization(String organizationId) {
         return organizationService.getNumOfLocationsForOrganization(organizationId);
     }
