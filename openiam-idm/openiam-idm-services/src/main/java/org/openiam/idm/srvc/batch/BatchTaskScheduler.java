@@ -19,11 +19,14 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.exception.LockObtainException;
 import org.openiam.exception.UnlockException;
 import org.openiam.idm.searchbeans.BatchTaskSearchBean;
+import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.batch.dao.BatchConfigDAO;
 import org.openiam.idm.srvc.batch.dao.LockTableDAO;
 import org.openiam.idm.srvc.batch.domain.BatchTaskEntity;
 import org.openiam.idm.srvc.batch.domain.BatchTaskScheduleEntity;
 import org.openiam.idm.srvc.batch.service.BatchService;
+import org.openiam.idm.srvc.batch.service.LockService;
 import org.openiam.idm.srvc.batch.thread.BatchTaskGroovyThread;
 import org.openiam.idm.srvc.batch.thread.BatchTaskSpringThread;
 import org.openiam.script.ScriptIntegration;
@@ -52,7 +55,7 @@ import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
 @Component("batchTaskScheduler")
-public class BatchTaskScheduler implements InitializingBean {
+public class BatchTaskScheduler extends AbstractBaseService implements InitializingBean {
 	
 	private static final Log log = LogFactory.getLog(BatchTaskScheduler.class);
 	
@@ -71,51 +74,13 @@ public class BatchTaskScheduler implements InitializingBean {
     private PlatformTransactionManager platformTransactionManager;
     
     @Autowired
-    private LockTableDAO lockDAO;
-    
-    private void lock(final String id) throws LockObtainException {
-    	final TransactionTemplate transactionTemplate = new TransactionTemplate(platformTransactionManager);
-        transactionTemplate.setPropagationBehavior(TransactionTemplate.PROPAGATION_REQUIRED);
-        final LockObtainException exception = transactionTemplate.execute(new TransactionCallback<LockObtainException>() {
-    		@Override
-    		public LockObtainException doInTransaction(TransactionStatus status) {
-    			try {
-					lockDAO.lock(id);
-					return null;
-				} catch (LockObtainException e) {
-					return e;
-				}
-    		}
-        });
-        if(exception != null) {
-        	throw exception;
-        }
-    }
-    
-    private void unlock(final String id) throws UnlockException {
-    	final TransactionTemplate transactionTemplate = new TransactionTemplate(platformTransactionManager);
-        transactionTemplate.setPropagationBehavior(TransactionTemplate.PROPAGATION_REQUIRED);
-        final UnlockException exception = transactionTemplate.execute(new TransactionCallback<UnlockException>() {
-    		@Override
-    		public UnlockException doInTransaction(TransactionStatus status) {
-    			try {
-					lockDAO.unlock(id);
-					return null;
-				} catch (UnlockException e) {
-					return e;
-				}
-    		}
-        });
-        if(exception != null) {
-        	throw exception;
-        }
-    }
+    private LockService lockService;
     
     @Scheduled(fixedRateString="${org.openiam.batch.task.execute.time}")
     public void executeTasks() throws LockObtainException, UnlockException {
     	final StopWatch sw = new StopWatch();
     	sw.start();
-    	lock("BATCH_TASK_RUNNER");
+    	lockService.lock("BATCH_TASK_RUNNER");
     	log.info("Starting batch executeTasks() operation");
     	try {
     		final Date now = new Date();
@@ -154,7 +119,7 @@ public class BatchTaskScheduler implements InitializingBean {
     	} finally {
     		sw.stop();
     		log.info(String.format("Finished batch executeTasks() operation. Took:  %s ms", sw.getTime()));
-        	unlock("BATCH_TASK_RUNNER");
+    		lockService.unlock("BATCH_TASK_RUNNER");
         }
     }
     
@@ -173,7 +138,7 @@ public class BatchTaskScheduler implements InitializingBean {
 		final TransactionTemplate transactionTemplate = new TransactionTemplate(platformTransactionManager);
         transactionTemplate.setPropagationBehavior(TransactionTemplate.PROPAGATION_REQUIRED);
 		
-        lock("BATCH_SCHEDULER");
+        lockService.lock("BATCH_SCHEDULER");
         try {
         	transactionTemplate.execute(new TransactionCallback<Boolean>() {
         		@Override
@@ -185,7 +150,8 @@ public class BatchTaskScheduler implements InitializingBean {
         			if(CollectionUtils.isNotEmpty(batchList)) {
         				for(final BatchTaskEntity entity : batchList) {
         					schedule(entity);
-        					
+        					final IdmAuditLog idmAuditLog = new IdmAuditLog();
+        					auditLogService.enqueue(idmAuditLog);
         					batchDao.save(entity);
         				}
         			}
@@ -195,7 +161,7 @@ public class BatchTaskScheduler implements InitializingBean {
         } finally {
         	sw.stop();
         	log.info(String.format("Finished batch sweep() operation. Took: %s ms", sw.getTime()));
-        	unlock("BATCH_SCHEDULER");
+        	lockService.unlock("BATCH_SCHEDULER");
         }
 	}
 	
