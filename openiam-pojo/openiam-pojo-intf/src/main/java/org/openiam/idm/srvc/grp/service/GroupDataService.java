@@ -5,6 +5,7 @@ import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
+import org.openiam.idm.srvc.grp.dto.GroupOwner;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
@@ -60,6 +61,7 @@ public interface GroupDataService {
 
 
 	public void saveGroup(final GroupEntity group, final String requestorId) throws BasicDataServiceException;
+    public void saveGroup(final GroupEntity group, final GroupOwner groupOwner, final String requestorId) throws BasicDataServiceException;
     public void addRequiredAttributes(GroupEntity group);
 	public void deleteGroup(final String groupId);
 

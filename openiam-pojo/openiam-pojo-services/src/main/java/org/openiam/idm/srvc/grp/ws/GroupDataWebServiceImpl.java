@@ -154,7 +154,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
         try {
             validate(group);
             final GroupEntity entity = groupDozerConverter.convertToEntity(group, true);
-            groupManager.saveGroup(entity, requesterId);
+            groupManager.saveGroup(entity, group.getOwner(), requesterId);
             response.setResponseValue(entity.getId());
         } catch (BasicDataServiceException e) {
             log.error("Error save", e);

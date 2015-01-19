@@ -12,6 +12,7 @@ import org.openiam.idm.srvc.grp.dto.GroupAttribute;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
+import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.service.OrganizationService;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,10 +41,18 @@ public class GroupDisplayMapper extends AbstractActivitiJob {
 			metadataMap.put("Description", group.getDescription());
 		}
 		
-		if(StringUtils.isNotBlank(group.getCompanyId())) {
-			final OrganizationEntity entity = organizationService.getOrganization(group.getCompanyId(), null);
-			if(entity != null) {
-				metadataMap.put("Organization", entity.getName());
+		if(CollectionUtils.isNotEmpty(group.getOrganizations())) {
+			StringBuilder nameBuilder = new StringBuilder();
+			for(Organization org : group.getOrganizations()){
+				final OrganizationEntity entity = organizationService.getOrganization(org.getId(), null);
+				if(entity != null) {
+					if(nameBuilder.length()>0)
+						nameBuilder.append(", ");
+					nameBuilder.append(entity.getName());
+				}
+			}
+			if(nameBuilder.length()>0) {
+				metadataMap.put("Organization", nameBuilder.toString());
 			}
 		}
 		

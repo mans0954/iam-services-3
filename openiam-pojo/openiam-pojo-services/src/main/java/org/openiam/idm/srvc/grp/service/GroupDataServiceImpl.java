@@ -21,6 +21,7 @@ import org.openiam.idm.srvc.auth.login.IdentityDAO;
 import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
+import org.openiam.idm.srvc.grp.dto.GroupOwner;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 import org.openiam.idm.srvc.lang.service.LanguageDAO;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
@@ -29,6 +30,8 @@ import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
+import org.openiam.idm.srvc.org.domain.OrganizationEntity;
+import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.service.OrganizationDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
@@ -317,19 +320,30 @@ public class GroupDataServiceImpl implements GroupDataService {
 
 	@Override
 	public void saveGroup(final GroupEntity group, final String requestorId) throws BasicDataServiceException {
-		if(group != null && entityValidator.isValid(group)) {
-			
-			if(group.getManagedSystem() != null && group.getManagedSystem().getId() != null) {
-				group.setManagedSystem(managedSysDAO.findById(group.getManagedSystem().getId()));
-			} else {
-				group.setManagedSystem(null);
-			}
-			
-			if(group.getCompany() != null && StringUtils.isNotBlank(group.getCompany().getId())) {
-				group.setCompany(organizationDAO.findById(group.getCompany().getId()));
-			} else {
-				group.setCompany(null);
-			}
+        saveGroup(group, null, requestorId);
+	}
+    @Override
+    public void saveGroup(final GroupEntity group, final GroupOwner groupOwner, final String requestorId) throws BasicDataServiceException{
+        if(group != null && entityValidator.isValid(group)) {
+
+            if(group.getManagedSystem() != null && group.getManagedSystem().getId() != null) {
+                group.setManagedSystem(managedSysDAO.findById(group.getManagedSystem().getId()));
+            } else {
+                group.setManagedSystem(null);
+            }
+
+            if(CollectionUtils.isNotEmpty(group.getOrganizationSet())) {
+                Set<String> ids = new HashSet<>();
+                for(OrganizationEntity org: group.getOrganizationSet()){
+                    if(StringUtils.isNotBlank(org.getId()))
+                        ids.add(org.getId());
+                }
+                if(CollectionUtils.isNotEmpty(ids)){
+                    group.setOrganizationSet(new HashSet<>(organizationDAO.findByIds(ids)));
+                }
+            } else {
+                group.setOrganizationSet(null);
+            }
 
             if(group.getType() != null && StringUtils.isNotBlank(group.getType().getId())) {
                 group.setType(typeDAO.findById(group.getType().getId()));
@@ -337,32 +351,53 @@ public class GroupDataServiceImpl implements GroupDataService {
                 group.setType(null);
             }
 
-			if(StringUtils.isNotBlank(group.getId())) {
-				final GroupEntity dbGroup = groupDao.findById(group.getId());
-				if(dbGroup != null) {
-					group.setApproverAssociations(dbGroup.getApproverAssociations());
-					
-					mergeAttribute(group, dbGroup, requestorId);
-					group.setChildGroups(dbGroup.getChildGroups());
-					group.setParentGroups(dbGroup.getParentGroups());
-					group.setResources(dbGroup.getResources());
-					group.setRoles(dbGroup.getRoles());
-					group.setUsers(dbGroup.getUsers());
-					group.setAdminResource(dbGroup.getAdminResource());
+            if(group.getClassification() != null && StringUtils.isNotBlank(group.getClassification().getId())) {
+                group.setClassification(typeDAO.findById(group.getClassification().getId()));
+            } else {
+                group.setClassification(null);
+            }
+            if(group.getAdGroupType() != null && StringUtils.isNotBlank(group.getAdGroupType().getId())) {
+                group.setAdGroupType(typeDAO.findById(group.getAdGroupType().getId()));
+            } else {
+                group.setAdGroupType(null);
+            }
+            if(group.getAdGroupScope() != null && StringUtils.isNotBlank(group.getAdGroupScope().getId())) {
+                group.setAdGroupScope(typeDAO.findById(group.getAdGroupScope().getId()));
+            } else {
+                group.setAdGroupScope(null);
+            }
+            if(group.getRisk() != null && StringUtils.isNotBlank(group.getRisk().getId())) {
+                group.setRisk(typeDAO.findById(group.getRisk().getId()));
+            } else {
+                group.setRisk(null);
+            }
+
+            if(StringUtils.isNotBlank(group.getId())) {
+                final GroupEntity dbGroup = groupDao.findById(group.getId());
+                if(dbGroup != null) {
+                    group.setApproverAssociations(dbGroup.getApproverAssociations());
+
+                    mergeAttribute(group, dbGroup, requestorId);
+                    group.setChildGroups(dbGroup.getChildGroups());
+                    group.setParentGroups(dbGroup.getParentGroups());
+                    group.setResources(dbGroup.getResources());
+                    group.setRoles(dbGroup.getRoles());
+                    group.setUsers(dbGroup.getUsers());
+                    group.setAdminResource(dbGroup.getAdminResource());
                     group.setLastUpdatedBy(requestorId);
                     group.setLastUpdate(Calendar.getInstance().getTime());
-					if(group.getAdminResource() == null) {
-						group.setAdminResource(getNewAdminResource(group, requestorId));
-					}
-					group.getAdminResource().setCoorelatedName(group.getName());
-				} else {
-					return;
-				}
-			} else {
-				group.setAdminResource(getNewAdminResource(group, requestorId));
+                    if(group.getAdminResource() == null) {
+                        group.setAdminResource(getNewAdminResource(group, groupOwner, requestorId));
+                    }
+                    group.getAdminResource().setCoorelatedName(group.getName());
+                } else {
+                    return;
+                }
+            } else {
+                group.setAdminResource(getNewAdminResource(group, groupOwner, requestorId));
                 group.setCreatedBy(requestorId);
                 group.setCreateDate(Calendar.getInstance().getTime());
-				groupDao.save(group);
+                groupDao.save(group);
 
                 IdentityEntity groupDefaultEntity = new IdentityEntity(IdentityTypeEnum.GROUP);
                 groupDefaultEntity.setCreateDate(new Date());
@@ -372,13 +407,13 @@ public class GroupDataServiceImpl implements GroupDataService {
                 groupDefaultEntity.setStatus(LoginStatusEnum.ACTIVE);
                 groupDefaultEntity.setIdentity(group.getName());
                 identityDAO.save(groupDefaultEntity);
-				group.addApproverAssociation(createDefaultApproverAssociations(group, requestorId));
+                group.addApproverAssociation(createDefaultApproverAssociations(group, requestorId));
 
                 addRequiredAttributes(group);
-			}
-			groupDao.merge(group);
-		}
-	}
+            }
+            groupDao.merge(group);
+        }
+    }
     @Override
     public void addRequiredAttributes(GroupEntity group) {
         if(group!=null && group.getType()!=null && StringUtils.isNotBlank(group.getType().getId())){
@@ -405,12 +440,26 @@ public class GroupDataServiceImpl implements GroupDataService {
 		return association;
 	}
 	
-	private ResourceEntity getNewAdminResource(final GroupEntity entity, final String requestorId) {
+	private ResourceEntity getNewAdminResource(final GroupEntity entity, final GroupOwner groupOwner, final String requestorId) {
 		final ResourceEntity adminResource = new ResourceEntity();
 		adminResource.setName(String.format("GRP_ADMIN_%s_%s", entity.getName(), RandomStringUtils.randomAlphanumeric(2)));
 		adminResource.setResourceType(resourceTypeDAO.findById(adminResourceTypeId));
-		adminResource.addUser(userDAO.findById(requestorId));
+
 		adminResource.setCoorelatedName(entity.getName());
+
+        if(groupOwner!=null && StringUtils.isNotBlank(groupOwner.getId())){
+            if("user".equals(groupOwner.getType())){
+                adminResource.addUser(userDAO.findById(groupOwner.getId()));
+            } else if("group".equals(groupOwner.getType())){
+                adminResource.addGroup(groupDao.findById(groupOwner.getId()));
+            } else {
+                adminResource.addUser(userDAO.findById(requestorId));
+            }
+        } else {
+            adminResource.addUser(userDAO.findById(requestorId));
+        }
+
+
 		return adminResource;
 	}
 	
