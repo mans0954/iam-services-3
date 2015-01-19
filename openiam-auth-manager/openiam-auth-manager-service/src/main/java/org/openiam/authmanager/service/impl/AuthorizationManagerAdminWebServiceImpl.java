@@ -36,7 +36,7 @@ public class AuthorizationManagerAdminWebServiceImpl implements AuthorizationMan
     @Override
     @WebMethod
     public HashMap<String, SetStringResponse> getOwnerIdsForResourceSet(@WebParam(name = "resourceIdSet", targetNamespace = "") Set<String> resourceIdSet){
-        return new HashMap<String, SetStringResponse>();//authManagerAdminService.getOwnerIdsForResourceSet(resourceIdSet);
+        return authManagerAdminService.getOwnerIdsForResourceSet(resourceIdSet);
     }
 
 }
