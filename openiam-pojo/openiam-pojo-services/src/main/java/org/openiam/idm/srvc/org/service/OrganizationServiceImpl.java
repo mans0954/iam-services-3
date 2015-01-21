@@ -10,14 +10,12 @@ import org.openiam.dozer.converter.LocationDozerConverter;
 import org.openiam.dozer.converter.OrganizationAttributeDozerConverter;
 import org.openiam.dozer.converter.OrganizationDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
-import org.openiam.idm.searchbeans.AddressSearchBean;
 import org.openiam.idm.searchbeans.LocationSearchBean;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.base.AbstractBaseService;
-import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
@@ -25,7 +23,6 @@ import org.openiam.idm.srvc.loc.domain.LocationEntity;
 import org.openiam.idm.srvc.loc.dto.Location;
 import org.openiam.idm.srvc.loc.service.LocationDAO;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
-import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
 import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
@@ -298,6 +295,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
                 mergeParents(curEntity, newEntity);
                 mergeChildren(curEntity, newEntity);
                 mergeUsers(curEntity, newEntity);
+                mergeLocations(curEntity, newEntity);
                 mergeApproverAssociations(curEntity, newEntity);
 
                 if(curEntity.getAdminResource() == null) {
@@ -312,13 +310,13 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
 
             if (newEntity.getOrganizationType() == null) {
                 curEntity.setOrganizationType(null);
-            } else if (curEntity.getOrganizationType() == null || StringUtils.equals(curEntity.getOrganizationType().getId(), newEntity.getOrganizationType().getId())) {
+            } else if (curEntity.getOrganizationType() == null || !StringUtils.equals(curEntity.getOrganizationType().getId(), newEntity.getOrganizationType().getId())) {
                 curEntity.setOrganizationType(orgTypeDAO.findById(newEntity.getOrganizationType().getId()));
             }
 
             if (newEntity.getType() == null) {
                 curEntity.setType(null);
-            } else if (curEntity.getType() == null || StringUtils.equals(curEntity.getType().getId(), newEntity.getType().getId())) {
+            } else if (curEntity.getType() == null || !StringUtils.equals(curEntity.getType().getId(), newEntity.getType().getId())) {
                 curEntity.setType(typeDAO.findById(newEntity.getType().getId()));
             }
 
@@ -461,6 +459,45 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
         }
     }
 
+    private void mergeLocations(final OrganizationEntity curEntity, final OrganizationEntity newEntity) {
+        if (curEntity.getLocations() == null) {
+            curEntity.setLocations(new HashSet<LocationEntity>());
+        }
+        if (newEntity != null && newEntity.getLocations() != null) {
+            List<String> currIds = new ArrayList<String>();
+            for (LocationEntity loc : curEntity.getLocations()) {
+                currIds.add(loc.getLocationId());
+            }
+            final Set<LocationEntity> toAdd = new HashSet<LocationEntity>();
+            final Set<LocationEntity> toRemove = new HashSet<LocationEntity>();
+            if (CollectionUtils.isNotEmpty(newEntity.getLocations())) {
+                Iterator<LocationEntity> iterator = newEntity.getLocations().iterator();
+                while (iterator.hasNext()) {
+                    LocationEntity nloc = iterator.next();
+                    if (currIds.contains(nloc.getLocationId())) {
+                        currIds.remove(nloc.getLocationId());
+                        // location exists
+                    } else {
+                        // add
+                        toAdd.add(locationDao.findById(nloc.getLocationId()));
+                    }
+                    //remove
+                    for (LocationEntity cloc : curEntity.getLocations()) {
+                        if (currIds.contains(cloc.getLocationId())) {
+                            toRemove.add(cloc);
+                            break;
+                        }
+                    }
+                    curEntity.getLocations().removeAll(toRemove);
+                    curEntity.getLocations().addAll(toAdd);
+                }
+
+            } else {
+                curEntity.getLocations().clear();
+            }
+        }
+    }
+
     private void mergeUsers(final OrganizationEntity curEntity, final OrganizationEntity newEntity) {
         if (curEntity.getUsers() == null) {
             curEntity.setUsers(new HashSet<UserEntity>());
@@ -542,7 +579,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     private void mergeOrgProperties(final OrganizationEntity curEntity, final OrganizationEntity newEntity) {
         BeanUtils.copyProperties(newEntity, curEntity,
                 new String[] {"attributes", "parentOrganizations", "childOrganizations", "users", "approverAssociations",
-                "adminResource", "organizationType", "type", "lstUpdate", "lstUpdatedBy", "createDate", "createdBy"});
+                "adminResource", "locations", "organizationType", "type", "lstUpdate", "lstUpdatedBy", "createDate", "createdBy"});
     }
 
     private void mergeAttributes(final OrganizationEntity curEntity, final OrganizationEntity newEntity) {
