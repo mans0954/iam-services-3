@@ -2,7 +2,11 @@ package org.openiam.core.dao;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
-import org.hibernate.*;
+import org.hibernate.Criteria;
+import org.hibernate.FetchMode;
+import org.hibernate.LockOptions;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Example;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Projections;
@@ -27,15 +31,8 @@ import java.util.List;
 import static org.hibernate.criterion.Projections.rowCount;
 import static org.hibernate.criterion.Restrictions.eq;
 
-//import org.openiam.base.OrderConstants;
-//import org.openiam.base.ws.SortParam;
-//import org.openiam.idm.searchbeans.AbstractSearchBean;
-//import org.openiam.idm.searchbeans.SearchBean;
-//import org.openiam.internationalization.LocalizedDatabaseGet;
-//import org.openiam.internationalization.LocalizedDatabaseOperation;
-
 public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable>
-        implements BaseDao<T, PrimaryKey> {
+implements BaseDao<T, PrimaryKey> {
     protected final Logger log = Logger.getLogger(this.getClass());
     protected final Class<T> domainClass;
     private SessionFactory sessionFactory;
@@ -105,6 +102,11 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable>
     
     public void flush() {
     	getSession().flush();
+    }
+    
+    @Override
+    public void clear() {
+        getSession().clear();
     }
     
     protected Session getSession() {

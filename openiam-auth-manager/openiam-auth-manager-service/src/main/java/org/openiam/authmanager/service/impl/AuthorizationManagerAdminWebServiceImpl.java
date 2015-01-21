@@ -1,15 +1,16 @@
 package org.openiam.authmanager.service.impl;
 
+import org.openiam.authmanager.common.SetStringResponse;
 import org.openiam.authmanager.model.UserEntitlementsMatrix;
 import org.openiam.authmanager.service.AuthorizationManagerAdminService;
 import org.openiam.authmanager.service.AuthorizationManagerAdminWebService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.jws.WebMethod;
+import javax.jws.WebParam;
 import javax.jws.WebService;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 @Service("authorizationManagerAdminWebService")
@@ -23,16 +24,19 @@ public class AuthorizationManagerAdminWebServiceImpl implements AuthorizationMan
 	private AuthorizationManagerAdminService authManagerAdminService;
 	
 	@Override
-	public UserEntitlementsMatrix getUserEntitlementsMatrix(final String entityId) {
+    @WebMethod
+	public UserEntitlementsMatrix getUserEntitlementsMatrix(@WebParam(name = "entityId", targetNamespace = "") final String entityId) {
 		return authManagerAdminService.getUserEntitlementsMatrix(entityId);
 	}
     @Override
-    public HashSet<String> getOwnerIdsForResource(String resourceId){
-        return (HashSet)authManagerAdminService.getOwnerIdsForResource(resourceId);
+    @WebMethod
+    public Set<String> getOwnerIdsForResource(@WebParam(name = "resourceId", targetNamespace = "") String resourceId){
+        return authManagerAdminService.getOwnerIdsForResource(resourceId);
     }
     @Override
-    public HashMap<String, HashSet<String>> getOwnerIdsForResourceSet(HashSet<String> resourceIdSet){
-        return authManagerAdminService.getOwnerIdsForResourceSet(resourceIdSet);
+    @WebMethod
+    public HashMap<String, SetStringResponse> getOwnerIdsForResourceSet(@WebParam(name = "resourceIdSet", targetNamespace = "") Set<String> resourceIdSet){
+        return new HashMap<String, SetStringResponse>();//authManagerAdminService.getOwnerIdsForResourceSet(resourceIdSet);
     }
 
 }

@@ -49,4 +49,8 @@ public class ActiveDirectoryAdapter extends GenericLdapAdapter {
         return new String[] {"*", "modifyTimeStamp", "createTimeStamp"};
     }
 
+    @Override
+    protected String getNullDate() {
+        return "19700101000000.0Z"; //Jan, 1, 1970
+    }
 }

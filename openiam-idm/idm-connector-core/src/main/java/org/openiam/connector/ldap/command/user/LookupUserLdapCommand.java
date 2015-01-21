@@ -13,7 +13,7 @@ import org.openiam.connector.type.response.SearchResponse;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
-import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.connector.ldap.command.base.AbstractLookupLdapCommand;
@@ -30,6 +30,7 @@ import javax.naming.ldap.LdapContext;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -39,7 +40,7 @@ public class LookupUserLdapCommand extends AbstractLookupLdapCommand<ExtensibleU
     protected boolean lookup(ManagedSysEntity managedSys, LookupRequest<ExtensibleUser> lookupRequest, SearchResponse respType, LdapContext ldapctx) throws ConnectorDataException {
         boolean found=false;
         ManagedSystemObjectMatch matchObj = getMatchObject(lookupRequest.getTargetID(), ManagedSystemObjectMatch.USER);
-        ResourceEntity resource = managedSys.getResource();
+        String resourceId = managedSys.getResource().getId();
 
         String identity = lookupRequest.getSearchValue();
         try {
@@ -53,13 +54,16 @@ public class LookupUserLdapCommand extends AbstractLookupLdapCommand<ExtensibleU
                 String CN = matchObj.getKeyField()+"="+identity;
                 objectBaseDN =  lookupRequest.getSearchValue().substring(CN.length()+1);
             } else {
-                // if identity is not in DN format try to find OU info in attributes
-                String OU = getOU(lookupRequest.getExtensibleObject());
-                if(StringUtils.isNotEmpty(OU)) {
-                   objectBaseDN = OU+","+matchObj.getBaseDn();
-                } else {
-                    objectBaseDN = matchObj.getBaseDn();
-                }
+				objectBaseDN = matchObj.getBaseDn();
+				Set<ResourceProp> rpSet = getResourceAttributes(managedSys.getResource().getId());
+				boolean isLookupUserInOu = getResourceBoolean(rpSet, "LOOKUP_USER_IN_OU", true);
+				if (isLookupUserInOu) {
+					// if identity is not in DN format try to find OU info in attributes
+					String OU = getAttrValue(lookupRequest.getExtensibleObject(), OU_ATTRIBUTE);
+					if(StringUtils.isNotEmpty(OU)) {
+						objectBaseDN = OU+","+matchObj.getBaseDn();
+					}
+				}
             }
 
             log.debug("looking up identity: " + identity);
@@ -72,7 +76,8 @@ public class LookupUserLdapCommand extends AbstractLookupLdapCommand<ExtensibleU
                     attrList.add(ea.getName());
                 }
             } else {
-                List<AttributeMapEntity> attrMap = (resource != null) ? managedSysService.getResourceAttributeMaps(resource.getId()) : null;
+                log.debug("Resource id = " + resourceId);
+                List<AttributeMapEntity> attrMap = managedSysService.getResourceAttributeMaps(resourceId);
                 if (attrMap != null) {
                     attrList = getAttributeNameList(attrMap);
                 }

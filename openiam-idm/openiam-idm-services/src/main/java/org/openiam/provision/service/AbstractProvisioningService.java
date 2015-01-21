@@ -1,6 +1,5 @@
 package org.openiam.provision.service;
 
-import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -80,6 +79,7 @@ import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.PasswordSync;
 import org.openiam.provision.dto.ProvisionActionEvent;
+import org.openiam.provision.dto.ProvisionActionTypeEnum;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.provision.type.ExtensibleAttribute;
@@ -93,8 +93,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.concurrent.Executors;
 
@@ -136,8 +134,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     private KeyManagementService keyManagementService;
     @Autowired
     protected ManagedSystemObjectMatchDozerConverter objectMatchDozerConverter;
-    @Autowired
-    protected ProvisionConnectorService connectorService;
+	@Autowired
+	protected ProvisionConnectorService connectorService;
     @Autowired
     protected ResourceService resourceService;
     @Autowired
@@ -231,25 +229,25 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     private ManagedSystemObjectMatchDozerConverter managedSystemObjectMatchDozerConverter;
 
     protected void checkAuditingAttributes(ProvisionUser pUser) {
-        if (pUser.getRequestClientIP() == null || pUser.getRequestClientIP().isEmpty()) {
+        if ( pUser.getRequestClientIP() == null || pUser.getRequestClientIP().isEmpty() ) {
             pUser.setRequestClientIP("NA");
         }
-        if (pUser.getRequestorLogin() == null || pUser.getRequestorLogin().isEmpty()) {
+        if ( pUser.getRequestorLogin() == null || pUser.getRequestorLogin().isEmpty() ) {
             pUser.setRequestorLogin("NA");
         }
         //if ( pUser.getRequestorDomain() == null || pUser.getRequestorDomain().isEmpty() ) {
         //    pUser.setRequestorDomain("NA");
         //}
-        if (pUser.getCreatedBy() == null || pUser.getCreatedBy().isEmpty()) {
+        if ( pUser.getCreatedBy() == null || pUser.getCreatedBy().isEmpty() ) {
             pUser.setCreatedBy("NA");
         }
     }
 
     protected String getDecryptedPassword(ManagedSysDto managedSys) throws ConnectorDataException {
         String result = null;
-        if (managedSys.getPswd() != null) {
+        if( managedSys.getPswd()!=null){
             try {
-                result = cryptor.decrypt(keyManagementService.getUserKey(systemUserId, KeyName.password.name()), managedSys.getPswd());
+                result = cryptor.decrypt(keyManagementService.getUserKey(systemUserId, KeyName.password.name()),managedSys.getPswd());
             } catch (Exception e) {
                 log.error(e);
                 throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, e.getMessage());
@@ -257,12 +255,11 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         }
         return result;
     }
-
     protected String getDecryptedPassword(final String userId, final String encodedPassword) {
         String result = null;
-        if (StringUtils.isNotEmpty(encodedPassword)) {
+        if(StringUtils.isNotEmpty(encodedPassword)) {
             try {
-                result = cryptor.decrypt(keyManagementService.getUserKey(userId, KeyName.password.name()), encodedPassword);
+                result = cryptor.decrypt(keyManagementService.getUserKey(userId, KeyName.password.name()),encodedPassword);
             } catch (Exception e) {
                 log.error(e);
                 e.printStackTrace();
@@ -331,7 +328,6 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         msgParams.add(new NotificationParam(MailTemplateParameters.FIRST_NAME.value(), user.getFirstName()));
         msgParams.add(new NotificationParam(MailTemplateParameters.LAST_NAME.value(), user.getLastName()));
 
-
         final NotificationRequest notificationRequest = new NotificationRequest();
         notificationRequest.setUserId(user.getId());
         notificationRequest.setNotificationType(NEW_USER_EMAIL_SUPERVISOR_NOTIFICATION);
@@ -362,10 +358,10 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
             primaryIdentity.setProvStatus(ProvLoginStatusEnum.CREATED);
             try {
                 for (AttributeMap attr : policyAttrMap) {
-                    if ("INACTIVE".equalsIgnoreCase(attr.getStatus())) {
-                        continue;
+                    if("INACTIVE".equalsIgnoreCase(attr.getStatus())) {
+                       continue;
                     }
-                    String output = (String) ProvisionServiceUtil.getOutputFromAttrMap(
+                    String output = (String)ProvisionServiceUtil.getOutputFromAttrMap(
                             attr, bindingMap, se);
                     String objectType = attr.getMapForObjectType();
                     if (objectType != null) {
@@ -382,8 +378,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                         }
                     }
                 }
-            } catch (Exception e) {
-                log.error(e);
+            } catch(Exception e) {
+                log.error(e.getMessage(), e);
             }
 
             return primaryIdentity;
@@ -441,22 +437,23 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     }
                 }
             } catch (Exception e) {
-                log.error(e);
+                log.error(e.getMessage(), e);
             }
         } else {
             log.debug("- policyAttrMap IS null");
         }
     }
 
-    protected List<Resource> orderResources(String operation, ProvisionUser pUser, Set<Resource> resources, Map<String, Object> bindingMap) {
+    protected List<Resource> orderResources(String operation, ProvisionUser pUser, Set<Resource> resources, Map<String, Object> tmpMap) {
+        Map<String, Object> bindingMap = new HashMap<String, Object>();
         try {
             ProvisionServiceResourceOrderProcessor script =
                     (ProvisionServiceResourceOrderProcessor) scriptRunner.instantiateClass(bindingMap, resourceOrderProcessor);
             if ("ADD".equalsIgnoreCase(operation)) {
-                return script.orderProvisionResources(pUser, resources, bindingMap);
+                return script.orderProvisionResources (pUser, resources, bindingMap);
 
             } else if ("DELETE".equalsIgnoreCase(operation)) {
-                return script.orderDeprovisionResources(pUser, resources, bindingMap);
+                return script.orderDeprovisionResources (pUser, resources, bindingMap);
 
             }
         } catch (Exception ce) {
@@ -466,29 +463,29 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         return Collections.EMPTY_LIST;
     }
 
-    protected int callPreProcessor(String operation, ProvisionUser pUser, Map<String, Object> bindingMap) {
+    protected int callPreProcessor(String operation, ProvisionUser pUser, Map<String, Object> bindingMap ) {
 
         ProvisionServicePreProcessor<ProvisionUser> addPreProcessScript = null;
-        if (pUser != null) {
-            log.info("======= callPreProcessor: isSkipPreprocessor=" + pUser.isSkipPreprocessor() + ", ");
+        if ( pUser != null) {
+            log.info("======= callPreProcessor: isSkipPreprocessor="+pUser.isSkipPreprocessor()+", ");
             if (!pUser.isSkipPreprocessor() &&
                     (addPreProcessScript = createProvPreProcessScript(preProcessor, bindingMap)) != null) {
                 addPreProcessScript.setApplicationContext(SpringContextProvider.getApplicationContext());
                 return executeProvisionPreProcess(addPreProcessScript, bindingMap, pUser, null, operation);
 
             }
-            log.info("======= callPreProcessor: addPreProcessScript=" + addPreProcessScript + ", ");
+            log.info("======= callPreProcessor: addPreProcessScript="+addPreProcessScript+", ");
         }
         // pre-processor was skipped
         return ProvisioningConstants.SUCCESS;
     }
 
 
-    protected int callPostProcessor(String operation, ProvisionUser pUser, Map<String, Object> bindingMap) {
+    protected int callPostProcessor(String operation, ProvisionUser pUser, Map<String, Object> bindingMap ) {
 
         ProvisionServicePostProcessor<ProvisionUser> addPostProcessScript;
 
-        if (pUser != null) {
+        if ( pUser != null) {
             if (!pUser.isSkipPostProcessor() &&
                     (addPostProcessScript = createProvPostProcessScript(postProcessor, bindingMap)) != null) {
                 //        //TODO IMPLEMENT
@@ -501,7 +498,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         return ProvisioningConstants.SUCCESS;
     }
 
-    protected PreProcessor<ProvisionUser> createPreProcessScript(String scriptName, Map<String, Object> bindingMap) {
+    protected PreProcessor<ProvisionUser> createPreProcessScript(String scriptName, Map<String, Object> tmpMap) {
+        Map<String, Object> bindingMap = new HashMap<String, Object>();
         try {
             return (PreProcessor<ProvisionUser>) scriptRunner.instantiateClass(bindingMap, scriptName);
         } catch (Exception ce) {
@@ -510,7 +508,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         }
     }
 
-    protected PostProcessor<ProvisionUser> createPostProcessScript(String scriptName, Map<String, Object> bindingMap) {
+    protected PostProcessor<ProvisionUser> createPostProcessScript(String scriptName, Map<String, Object> tmpMap) {
+        Map<String, Object> bindingMap = new HashMap<String, Object>();
         try {
             return (PostProcessor<ProvisionUser>) scriptRunner.instantiateClass(bindingMap, scriptName);
         } catch (Exception ce) {
@@ -519,7 +518,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         }
     }
 
-    protected ProvisionServicePreProcessor<ProvisionUser> createProvPreProcessScript(String scriptName, Map<String, Object> bindingMap) {
+    protected ProvisionServicePreProcessor<ProvisionUser> createProvPreProcessScript(String scriptName, Map<String, Object> tmpMap) {
+        Map<String, Object> bindingMap = new HashMap<String, Object>();
         try {
             return (ProvisionServicePreProcessor<ProvisionUser>) scriptRunner.instantiateClass(bindingMap, scriptName);
         } catch (Exception ce) {
@@ -528,7 +528,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         }
     }
 
-    protected ProvisionServicePostProcessor<ProvisionUser> createProvPostProcessScript(String scriptName, Map<String, Object> bindingMap) {
+    protected ProvisionServicePostProcessor<ProvisionUser> createProvPostProcessScript(String scriptName, Map<String, Object> tmpMap) {
+        Map<String, Object> bindingMap = new HashMap<String, Object>();
         try {
             return (ProvisionServicePostProcessor<ProvisionUser>) scriptRunner.instantiateClass(bindingMap, scriptName);
         } catch (Exception ce) {
@@ -538,7 +539,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     }
 
     protected int executeProvisionPreProcess(ProvisionServicePreProcessor<ProvisionUser> ppScript,
-                                             Map<String, Object> bindingMap, ProvisionUser user, PasswordSync passwordSync, String operation) {
+            Map<String, Object> bindingMap, ProvisionUser user, PasswordSync passwordSync, String operation) {
         if ("ADD".equalsIgnoreCase(operation)) {
             return ppScript.add(user, bindingMap);
         }
@@ -556,7 +557,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     }
 
     protected int executeProvisionPostProcess(ProvisionServicePostProcessor<ProvisionUser> ppScript,
-                                              Map<String, Object> bindingMap, ProvisionUser user, PasswordSync passwordSync, String operation) {
+                Map<String, Object> bindingMap, ProvisionUser user, PasswordSync passwordSync, String operation) {
         if ("ADD".equalsIgnoreCase(operation)) {
             return ppScript.add(user, bindingMap);
         }
@@ -574,7 +575,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     }
 
     protected int executePreProcess(PreProcessor<ProvisionUser> ppScript,
-                                    Map<String, Object> bindingMap, ProvisionUser user, String operation) {
+                Map<String, Object> bindingMap, ProvisionUser user, String operation) {
         if ("ADD".equalsIgnoreCase(operation)) {
             return ppScript.add(user, bindingMap);
         }
@@ -592,7 +593,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     }
 
     protected int executePostProcess(PostProcessor<ProvisionUser> ppScript,
-                                     Map<String, Object> bindingMap, ProvisionUser user, String operation, boolean success) {
+                Map<String, Object> bindingMap, ProvisionUser user, String operation, boolean success) {
         if ("ADD".equalsIgnoreCase(operation)) {
             return ppScript.add(user, bindingMap, success);
         }
@@ -1323,16 +1324,24 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     }
 
     public void updateResources(final UserEntity userEntity, final ProvisionUser pUser, final Set<Resource> resourceSet, final Set<Resource> deleteResourceSet, final IdmAuditLog parentLog) {
+
+        Set<Resource> ar = resourceDozerConverter.convertToDTOSet(userEntity.getResources(), false);
+        resourceSet.addAll(ar);
+
         if (CollectionUtils.isNotEmpty(pUser.getResources())) {
+            Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
             for (Resource r : pUser.getResources()) {
                 AttributeOperationEnum operation = r.getOperation();
-                if (operation == AttributeOperationEnum.ADD) {
+                if (operation == null) {
+                    continue;
+                } else if (operation == AttributeOperationEnum.ADD) {
                     ResourceEntity resEntity = resourceService.findResourceById(r.getId());
                     userEntity.getResources().add(resEntity);
+                    resourceSet.add(r);
                     // Audit Log ---------------------------------------------------
                     IdmAuditLog auditLog = new IdmAuditLog();
                     auditLog.setAction(AuditAction.ADD_USER_TO_RESOURCE.value());
-                    Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
+
                     String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
                     auditLog.setTargetUser(pUser.getId(), loginStr);
                     auditLog.setTargetResource(resEntity.getId(), resEntity.getName());
@@ -1342,13 +1351,11 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                 } else if (operation == AttributeOperationEnum.DELETE) {
                     ResourceEntity re = resourceService.findResourceById(r.getId());
                     userEntity.getResources().remove(re);
-                    Resource dr = resourceDozerConverter.convertToDTO(re, true);
-                    dr.setOperation(operation);
-                    deleteResourceSet.add(dr);
+                    resourceSet.remove(r);
+                    deleteResourceSet.add(r);
                     // Audit Log ---------------------------------------------------
                     IdmAuditLog auditLog = new IdmAuditLog();
                     auditLog.setAction(AuditAction.REMOVE_USER_FROM_RESOURCE.value());
-                    Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
                     String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
                     auditLog.setTargetUser(pUser.getId(), loginStr);
                     auditLog.setTargetResource(re.getId(), re.getName());
@@ -1359,17 +1366,6 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     throw new UnsupportedOperationException("Operation 'REPLACE' is not supported for resources");
                 }
             }
-        }
-        for (ResourceEntity rue : userEntity.getResources()) {
-            ResourceEntity e = resourceService.findResourceById(rue.getId());
-            Resource ar = resourceDozerConverter.convertToDTO(e, false);
-            for (Resource r : pUser.getResources()) {
-                if (r.getId().equals(ar.getId())) {
-                    ar.setOperation(r.getOperation());  // get operation value from pUser
-                    break;
-                }
-            }
-            resourceSet.add(ar);
         }
     }
 
@@ -1734,13 +1730,13 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     }
 
     @Override
-    public Response add(ProvisionActionEvent event) {
+    public Response addEvent(ProvisionActionEvent event, ProvisionActionTypeEnum type) {
         Map<String, Object> bindingMap = new HashMap<String, Object>();
         Response response = new Response(ResponseStatus.SUCCESS);
         response.setResponseValue(ProvisionServiceEventProcessor.CONTINUE);
         ProvisionServiceEventProcessor eventProcessorScript = getEventProcessor(bindingMap, eventProcessor);
         if (eventProcessorScript != null) {
-            response = eventProcessorScript.process(event);
+            response = eventProcessorScript.process(event, type);
         }
         return response;
     }

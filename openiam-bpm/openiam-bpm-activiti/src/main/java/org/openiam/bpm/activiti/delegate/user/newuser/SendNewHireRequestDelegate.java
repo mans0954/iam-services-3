@@ -24,7 +24,6 @@ import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
-import org.openiam.idm.srvc.msg.service.MailService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.DelegationFilterSearch;
 import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;

@@ -50,6 +50,13 @@
         <constructor-arg value="${org.openiam.idm.postProcessorGroup.groovy.script}"/>
     </bean>
 
+    <bean id="preProcessorOrganization" class="java.lang.String">
+        <constructor-arg value="${org.openiam.idm.preProcessorOrganization.groovy.script}"/>
+    </bean>
+    <bean id="postProcessorOrganization" class="java.lang.String">
+        <constructor-arg value="${org.openiam.idm.postProcessorOrganization.groovy.script}"/>
+    </bean>
+
 	<bean id="provisionDeepDozerMapper" class="org.dozer.DozerBeanMapper">
 		<property name="mappingFiles">
 			<list>

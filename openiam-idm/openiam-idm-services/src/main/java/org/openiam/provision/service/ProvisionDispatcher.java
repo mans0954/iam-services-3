@@ -1,6 +1,5 @@
 package org.openiam.provision.service;
 
-import com.fasterxml.jackson.core.JsonGenerationException;
 import groovy.lang.MissingPropertyException;
 
 import java.text.SimpleDateFormat;
@@ -16,6 +15,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.jackson.JsonGenerationException;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseAttributeContainer;
 import org.openiam.base.ws.ResponseCode;
@@ -29,10 +29,7 @@ import org.openiam.connector.type.request.SuspendResumeRequest;
 import org.openiam.connector.type.response.ObjectResponse;
 import org.openiam.connector.type.response.ResponseType;
 import org.openiam.connector.type.response.SearchResponse;
-import org.openiam.dozer.converter.AttributeMapDozerConverter;
 import org.openiam.dozer.converter.LoginDozerConverter;
-import org.openiam.dozer.converter.ManagedSysDozerConverter;
-import org.openiam.dozer.converter.ManagedSystemObjectMatchDozerConverter;
 import org.openiam.dozer.converter.ResourceDozerConverter;
 import org.openiam.exception.EncryptionException;
 import org.openiam.exception.ScriptEngineException;
@@ -42,20 +39,17 @@ import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
-import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.auth.dto.ProvLoginStatusEnum;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
-import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
-import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
 import org.openiam.idm.srvc.mngsys.domain.ProvisionConnectorEntity;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.mngsys.dto.PolicyMapObjectTypeOptions;
-import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
 import org.openiam.idm.srvc.mngsys.service.ProvisionConnectorService;
+import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.pswd.service.PasswordGenerator;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
@@ -68,13 +62,13 @@ import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.thread.Sweepable;
-import org.openiam.util.StringUtil;
 import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jms.core.BrowserCallback;
 import org.springframework.jms.core.JmsTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
@@ -96,16 +90,12 @@ public class ProvisionDispatcher implements Sweepable {
     private String systemUserId;
     @Autowired
     private KeyManagementService keyManagementService;
-    @Autowired
-    private AttributeMapDozerConverter attributeMapDozerConverter;
+
     @Autowired
     private ConnectorAdapter connectorAdapter;
     @Autowired
-    private ManagedSystemService managedSystemService;
-    @Autowired
-    private ManagedSysDozerConverter managedSysDozerConverter;
-    @Autowired
-    private ManagedSystemObjectMatchDozerConverter managedSystemObjectMatchDozerConverter;
+    private ManagedSystemWebService managedSystemWebService;
+
     @Autowired
     private ResourceService resourceService;
     @Autowired
@@ -139,31 +129,23 @@ public class ProvisionDispatcher implements Sweepable {
 
     private final Object mutext = new Object();
 
+    @Override
+    //TODO change when Spring 3.2.2 @Scheduled(fixedDelayString = "${org.openiam.prov.threadsweep}")
+    @Scheduled(fixedDelay=3000)
     public void sweep() {
 
         jmsTemplate.browse(queue, new BrowserCallback<Object>() {
             @Override
             public Object doInJms(Session session, QueueBrowser browser) throws JMSException {
                 synchronized (mutext) {
-                    final List<List<ProvisionDataContainer>> batchList = new LinkedList<List<ProvisionDataContainer>>();
-                    List<ProvisionDataContainer> list = new ArrayList<ProvisionDataContainer>();
+                    final List<ProvisionDataContainer> list = new ArrayList<ProvisionDataContainer>();
                     Enumeration e = browser.getEnumeration();
-                    int count = 0;
                     while (e.hasMoreElements()) {
                         list.add((ProvisionDataContainer) ((ObjectMessage) jmsTemplate.receive(queue)).getObject());
-                        if (count++ >= 100) {
-                            batchList.add(list);
-                            list = new ArrayList<ProvisionDataContainer>();
-                        }
                         e.nextElement();
                     }
-                    batchList.add(list);
 
-                    if (batchList.size() > 0 && batchList.get(0) != null && batchList.get(0).size() > 0) {
-                        for (final List<ProvisionDataContainer> entityList : batchList) {
-                            process(entityList);
-                        }
-                    }
+                    process(list);
 
                     return Boolean.TRUE;
                 }
@@ -182,6 +164,12 @@ public class ProvisionDispatcher implements Sweepable {
                     process(data);
                 }
             });
+            try {
+                //chance to other threads to be executed
+                Thread.sleep(200);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -233,7 +221,13 @@ public class ProvisionDispatcher implements Sweepable {
                         }
 
                     } else {
-                        idmAuditLog.setFailureReason(ProvLoginStatusEnum.FAIL_DELETE.getValue());
+						idmAuditLog.fail();
+						idmAuditLog.setFailureReason(ProvLoginStatusEnum.FAIL_DELETE.getValue());
+						if (CollectionUtils.isNotEmpty(response.getErrorMessage())) {
+							for(final String error : response.getErrorMessage()) {
+								idmAuditLog.setFailureReason(error);
+							}
+						}
 						loginChanges.setProvStatus(ProvLoginStatusEnum.FAIL_DELETE);
                     }
                 } catch (Throwable th) {
@@ -302,8 +296,7 @@ public class ProvisionDispatcher implements Sweepable {
                 String requestId = data.getRequestId();
                 ResourceEntity resEntity = resourceService.findResourceById(data.getResourceId());
                 Resource res = resourceDozerConverter.convertToDTO(resEntity, true);
-                ManagedSysDto mSys = managedSysDozerConverter.convertToDTO(
-                        managedSystemService.getManagedSysByResource(res.getId(), "ACTIVE"), true);
+                ManagedSysDto mSys = managedSystemWebService.getManagedSysByResource(res.getId());
                 String managedSysId = (mSys != null) ? mSys.getId() : null;
 
                 Login targetSysLogin = data.getIdentity();
@@ -350,8 +343,7 @@ public class ProvisionDispatcher implements Sweepable {
                 String requestId = data.getRequestId();
                 ResourceEntity resEntity = resourceService.findResourceById(data.getResourceId());
                 Resource res = resourceDozerConverter.convertToDTO(resEntity, true);
-                ManagedSysDto mSys = managedSysDozerConverter.convertToDTO(
-                        managedSystemService.getManagedSysByResource(res.getId(), "ACTIVE"), true);
+                ManagedSysDto mSys = managedSystemWebService.getManagedSysByResource(res.getId());
                 String managedSysId = (mSys != null) ? mSys.getId() : null;
 
                 Login targetSysLogin = data.getIdentity();
@@ -456,8 +448,7 @@ public class ProvisionDispatcher implements Sweepable {
         Login targetSysLogin = data.getIdentity();
         ResourceEntity resEntity = resourceService.findResourceById(data.getResourceId());
         Resource res = resourceDozerConverter.convertToDTO(resEntity, true);
-        ManagedSysDto mSys = managedSysDozerConverter.convertToDTO(
-                managedSystemService.getManagedSysByResource(res.getId(), "ACTIVE"), true);
+        ManagedSysDto mSys = managedSystemWebService.getManagedSysByResource(res.getId());
         ProvisionConnectorEntity connectorEntity = connectorService.getProvisionConnectorsById(mSys.getConnectorId());
         if (connectorEntity == null) {
             return null;
@@ -491,8 +482,7 @@ public class ProvisionDispatcher implements Sweepable {
 
         ResourceEntity resEntity = resourceService.findResourceById(data.getResourceId());
         Resource res = resourceDozerConverter.convertToDTO(resEntity, true);
-        ManagedSysDto mSys = managedSysDozerConverter.convertToDTO(
-                managedSystemService.getManagedSysByResource(res.getId(), "ACTIVE"), true);
+        ManagedSysDto mSys = managedSystemWebService.getManagedSysByResource(res.getId());
         String managedSysId = (mSys != null) ? mSys.getId() : null;
         ProvisionUser targetSysProvUser = data.getProvUser();
 
@@ -500,10 +490,10 @@ public class ProvisionDispatcher implements Sweepable {
             Login targetSysLogin = data.getIdentity();
             Map<String, Object> bindingMap = data.getBindingMap();
             ManagedSystemObjectMatch matchObj = null;
-            List<ManagedSystemObjectMatchEntity> objList = managedSystemService.managedSysObjectParam(managedSysId,
-                    ManagedSystemObjectMatch.USER);
-            if (CollectionUtils.isNotEmpty(objList)) {
-                matchObj = managedSystemObjectMatchDozerConverter.convertToDTO(objList.get(0), false);
+            ManagedSystemObjectMatch[] objArr = managedSystemWebService.managedSysObjectParam(managedSysId, ManagedSystemObjectMatch.USER);
+
+            if (objArr != null && objArr.length > 0) {
+                matchObj = objArr[0];
             }
 
             ExtensibleUser extUser = buildFromRules(managedSysId, bindingMap);
@@ -646,7 +636,6 @@ public class ProvisionDispatcher implements Sweepable {
             ManagedSysDto mSys, ManagedSystemObjectMatch matchObj, Map<String, ExtensibleAttribute> curValueMap) {
 
         String identity = mLg.getLogin();
-
         log.debug("Getting the current attributes in the target system for =" + identity);
 
         log.debug("- IsRename: " + mLg.getOrigPrincipalName());
@@ -696,10 +685,7 @@ public class ProvisionDispatcher implements Sweepable {
 
     private ExtensibleUser buildFromRules(String managedSysId, Map<String, Object> bindingMap) {
 
-        List<AttributeMapEntity> attrMapEntities = managedSystemService
-                .getAttributeMapsByManagedSysId(managedSysId);
-        List<AttributeMap> attrMap = attributeMapDozerConverter.convertToDTOList(attrMapEntities, true);
-
+        List<AttributeMap> attrMap = managedSystemWebService.getAttributeMapsByManagedSysId(managedSysId);
 
         ExtensibleUser extUser = new ExtensibleUser();
 

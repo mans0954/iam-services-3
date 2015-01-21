@@ -40,7 +40,12 @@ import org.springframework.validation.beanvalidation.CustomValidatorBean;
 	"requestMetadataMap",
 	"customObjectURI",
 	"employeeId",
-	"deletable"
+	"deletable",
+    "workflowName",
+    "associationType",
+    "associationId",
+    "memberAssociationId",
+    "memberAssociationType"
 })
 public class TaskWrapper implements Serializable {
 	
@@ -71,7 +76,13 @@ public class TaskWrapper implements Serializable {
 	private Date endDate;
 	
 	private LinkedHashMap<String, String> requestMetadataMap;
-	
+
+    private String workflowName;
+    private String associationType;
+    private String associationId;
+    private String memberAssociationType;
+    private String memberAssociationId;
+
 	public TaskWrapper() {
 		
 	}
@@ -136,6 +147,26 @@ public class TaskWrapper implements Serializable {
 					if(customVariables.containsKey(ActivitiConstants.DELETABLE.getName())) {
 						deletable = ((Boolean)customVariables.get(ActivitiConstants.DELETABLE.getName())).booleanValue();
 					}
+
+                    if(customVariables.containsKey(ActivitiConstants.WORKFLOW_NAME.getName())) {
+                        workflowName = (String)customVariables.get(ActivitiConstants.WORKFLOW_NAME.getName());
+                    }
+
+                    if(customVariables.containsKey(ActivitiConstants.ASSOCIATION_TYPE.getName())) {
+                        associationType = (String)customVariables.get(ActivitiConstants.ASSOCIATION_TYPE.getName());
+                    }
+
+                    if(customVariables.containsKey(ActivitiConstants.ASSOCIATION_ID.getName())) {
+                        associationId = (String)customVariables.get(ActivitiConstants.ASSOCIATION_ID.getName());
+                    }
+
+                    if(customVariables.containsKey(ActivitiConstants.MEMBER_ASSOCIATION_TYPE.getName())) {
+                        memberAssociationType = (String)customVariables.get(ActivitiConstants.MEMBER_ASSOCIATION_TYPE.getName());
+                    }
+
+                    if(customVariables.containsKey(ActivitiConstants.MEMBER_ASSOCIATION_ID.getName())) {
+                        memberAssociationId = (String)customVariables.get(ActivitiConstants.MEMBER_ASSOCIATION_ID.getName());
+                    }
 				}
 			} catch(ActivitiException e) {
 				LOG.warn(String.format("Could not fetch variables for Execution ID: %s.  Changes are that the task is completed.", executionId));
@@ -317,7 +348,27 @@ public class TaskWrapper implements Serializable {
 		return true;
 	}
 
-	@Override
+    public String getWorkflowName() {
+        return workflowName;
+    }
+
+    public String getAssociationType() {
+        return associationType;
+    }
+
+    public String getAssociationId() {
+        return associationId;
+    }
+
+    public String getMemberAssociationType() {
+        return memberAssociationType;
+    }
+
+    public String getMemberAssociationId() {
+        return memberAssociationId;
+    }
+
+    @Override
 	public String toString() {
 		return String
 				.format("TaskWrapper [id=%s, name=%s, owner=%s, priority=%s, processDefinitionId=%s, processInstanceId=%s, taskDefinitionKey=%s, parentTaskId=%s, assignee=%s, createdTime=%s, description=%s, dueDate=%s, executionId=%s]",

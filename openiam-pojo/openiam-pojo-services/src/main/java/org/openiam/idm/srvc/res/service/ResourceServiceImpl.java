@@ -99,6 +99,12 @@ public class ResourceServiceImpl implements ResourceService {
     private String adminResourceTypeId;
 
     @Override
+    @Transactional(readOnly = true)
+    public String getResourcePropValueByName(final String resourceId, final String propName) {
+        return resourcePropDao.findValueByName(resourceId, propName);
+    }
+
+    @Override
     @Transactional
     public void deleteResource(String resourceId) {
         if (StringUtils.isNotBlank(resourceId)) {

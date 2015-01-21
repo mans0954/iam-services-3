@@ -17,182 +17,190 @@ import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "GenericWorkflowRequest", propOrder = {
-    "name",
-	"activitiRequestType",
-    "associationId",
-    "associationType",
-    "memberAssociationId",
-    "memberAssociationType",
-    "description",
-    "parameters",
-    "customApproverAssociationIds",
-    "customApproverIds",
-    "userCentricUserId",
-    "jsonSerializedParams",
-    "additionalApproverIds",
-    "deletable"
+        "name",
+        "activitiRequestType",
+        "associationId",
+        "associationType",
+        "memberAssociationId",
+        "memberAssociationType",
+        "description",
+        "parameters",
+        "customApproverAssociationIds",
+        "customApproverIds",
+        "isCustomApproversSequential",
+        "userCentricUserId",
+        "jsonSerializedParams",
+        "additionalApproverIds",
+        "deletable"
 })
 public class GenericWorkflowRequest extends BaseObject {
 
-	private String associationId;
-	private AssociationType associationType;
-	
-	private String memberAssociationId;
-	private AssociationType memberAssociationType;
-	
-	private String name;
-	private String description;
-	private String activitiRequestType;
-	private Map<String, String> jsonSerializedParams;
-	private Map<String, Object> parameters;
-	private List<String> customApproverAssociationIds;
-	private Set<String> customApproverIds;
-	private String userCentricUserId;
-	private boolean deletable = true;
-	
-	private Set<String> additionalApproverIds;
+    private String associationId;
+    private AssociationType associationType;
 
-	public String getActivitiRequestType() {
-		return activitiRequestType;
-	}
+    private String memberAssociationId;
+    private AssociationType memberAssociationType;
 
-	public void setActivitiRequestType(String activitiRequestType) {
-		this.activitiRequestType = activitiRequestType;
-	}
+    private String name;
+    private String description;
+    private String activitiRequestType;
+    private Map<String, String> jsonSerializedParams;
+    private Map<String, Object> parameters;
+    private List<String> customApproverAssociationIds;
+    private Set<String> customApproverIds;
+    private String userCentricUserId;
+    private boolean deletable = true;
+    private boolean isCustomApproversSequential;
+    private Set<String> additionalApproverIds;
 
-	public String getDescription() {
-		return description;
-	}
+    public String getActivitiRequestType() {
+        return activitiRequestType;
+    }
 
-	public void setDescription(String description) {
-		this.description = description;
-	}
+    public void setActivitiRequestType(String activitiRequestType) {
+        this.activitiRequestType = activitiRequestType;
+    }
 
-	public String getName() {
-		return name;
-	}
+    public String getDescription() {
+        return description;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
-	public AssociationType getAssociationType() {
-		return associationType;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public void setAssociationType(AssociationType associationType) {
-		this.associationType = associationType;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	public String getAssociationId() {
-		return associationId;
-	}
+    public AssociationType getAssociationType() {
+        return associationType;
+    }
 
-	public void setAssociationId(String associationId) {
-		this.associationId = associationId;
-	}
+    public void setAssociationType(AssociationType associationType) {
+        this.associationType = associationType;
+    }
 
-	public Map<String, Object> getParameters() {
-		return parameters;
-	}
+    public String getAssociationId() {
+        return associationId;
+    }
 
-	public void setParameters(Map<String, Object> parameters) {
-		this.parameters = parameters;
-	}	
-	
-	public void addParameter(final String key, final Object value) {
-		if(this.parameters == null) {
-			this.parameters = new HashMap<String, Object>();
-		}
-		this.parameters.put(key, value);
-	}
-	
-	public boolean isEmpty() {
-		return StringUtils.isBlank(activitiRequestType) || StringUtils.isBlank(requestorUserId);
-	}
+    public void setAssociationId(String associationId) {
+        this.associationId = associationId;
+    }
 
-	public List<String> getCustomApproverAssociationIds() {
-		return customApproverAssociationIds;
-	}
+    public Map<String, Object> getParameters() {
+        return parameters;
+    }
 
-	public void setCustomApproverAssociationIds(
-			List<String> customApproverAssociationIds) {
-		this.customApproverAssociationIds = customApproverAssociationIds;
-	}
+    public void setParameters(Map<String, Object> parameters) {
+        this.parameters = parameters;
+    }
 
-	public Set<String> getCustomApproverIds() {
-		return customApproverIds;
-	}
+    public void addParameter(final String key, final Object value) {
+        if (this.parameters == null) {
+            this.parameters = new HashMap<String, Object>();
+        }
+        this.parameters.put(key, value);
+    }
 
-	public void setCustomApproverIds(Set<String> customApproverIds) {
-		this.customApproverIds = customApproverIds;
-	}
+    public boolean isEmpty() {
+        return StringUtils.isBlank(activitiRequestType) || StringUtils.isBlank(requestorUserId);
+    }
 
-	public String getUserCentricUserId() {
-		return userCentricUserId;
-	}
+    public List<String> getCustomApproverAssociationIds() {
+        return customApproverAssociationIds;
+    }
 
-	public void setUserCentricUserId(String userCentricUserId) {
-		this.userCentricUserId = userCentricUserId;
-	}
+    public void setCustomApproverAssociationIds(
+            List<String> customApproverAssociationIds) {
+        this.customApproverAssociationIds = customApproverAssociationIds;
+    }
 
-	public void addCustomApproverId(final String customApproverId) {
-		if(customApproverId != null) {
-			if(this.customApproverIds == null) {
-				this.customApproverIds = new HashSet<String>();
-			}
-			this.customApproverIds.add(customApproverId);
-		}
-	}
-	
-	public Map<String, String> getJsonSerializedParams() {
-		return jsonSerializedParams;
-	}
+    public Set<String> getCustomApproverIds() {
+        return customApproverIds;
+    }
 
-	public void setJsonSerializedParams(Map<String, String> jsonSerializedParams) {
-		this.jsonSerializedParams = jsonSerializedParams;
-	}
+    public void setCustomApproverIds(Set<String> customApproverIds) {
+        this.customApproverIds = customApproverIds;
+    }
 
-	public void addJSONParameter(final String key, final Object value, final ObjectMapper mapper) throws Exception {
-		if(key != null && value != null && mapper != null) {
-			if(jsonSerializedParams == null) {
-				jsonSerializedParams = new HashMap<String, String>();
-			}
-			jsonSerializedParams.put(key, mapper.writeValueAsString(value));
-		}
-	}
+    public String getUserCentricUserId() {
+        return userCentricUserId;
+    }
 
-	public String getMemberAssociationId() {
-		return memberAssociationId;
-	}
+    public void setUserCentricUserId(String userCentricUserId) {
+        this.userCentricUserId = userCentricUserId;
+    }
 
-	public void setMemberAssociationId(String memberAssociationId) {
-		this.memberAssociationId = memberAssociationId;
-	}
+    public void addCustomApproverId(final String customApproverId) {
+        if (customApproverId != null) {
+            if (this.customApproverIds == null) {
+                this.customApproverIds = new HashSet<String>();
+            }
+            this.customApproverIds.add(customApproverId);
+        }
+    }
 
-	public AssociationType getMemberAssociationType() {
-		return memberAssociationType;
-	}
+    public Map<String, String> getJsonSerializedParams() {
+        return jsonSerializedParams;
+    }
 
-	public void setMemberAssociationType(AssociationType memberAssociationType) {
-		this.memberAssociationType = memberAssociationType;
-	}
+    public void setJsonSerializedParams(Map<String, String> jsonSerializedParams) {
+        this.jsonSerializedParams = jsonSerializedParams;
+    }
 
-	public Set<String> getAdditionalApproverIds() {
-		return additionalApproverIds;
-	}
+    public void addJSONParameter(final String key, final Object value, final ObjectMapper mapper) throws Exception {
+        if (key != null && value != null && mapper != null) {
+            if (jsonSerializedParams == null) {
+                jsonSerializedParams = new HashMap<String, String>();
+            }
+            jsonSerializedParams.put(key, mapper.writeValueAsString(value));
+        }
+    }
 
-	public void setAdditionalApproverIds(Set<String> additionalApproverIds) {
-		this.additionalApproverIds = additionalApproverIds;
-	}
+    public String getMemberAssociationId() {
+        return memberAssociationId;
+    }
 
-	public boolean isDeletable() {
-		return deletable;
-	}
+    public void setMemberAssociationId(String memberAssociationId) {
+        this.memberAssociationId = memberAssociationId;
+    }
 
-	public void setDeletable(boolean deletable) {
-		this.deletable = deletable;
-	}
-	
-	
+    public AssociationType getMemberAssociationType() {
+        return memberAssociationType;
+    }
+
+    public void setMemberAssociationType(AssociationType memberAssociationType) {
+        this.memberAssociationType = memberAssociationType;
+    }
+
+    public Set<String> getAdditionalApproverIds() {
+        return additionalApproverIds;
+    }
+
+    public void setAdditionalApproverIds(Set<String> additionalApproverIds) {
+        this.additionalApproverIds = additionalApproverIds;
+    }
+
+    public boolean isDeletable() {
+        return deletable;
+    }
+
+    public void setDeletable(boolean deletable) {
+        this.deletable = deletable;
+    }
+
+
+    public boolean isCustomApproversSequential() {
+        return isCustomApproversSequential;
+    }
+
+    public void setCustomApproversSequential(boolean isCustomApproversSequential) {
+        this.isCustomApproversSequential = isCustomApproversSequential;
+    }
 }

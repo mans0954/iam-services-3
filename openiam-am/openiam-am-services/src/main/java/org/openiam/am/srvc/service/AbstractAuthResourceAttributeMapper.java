@@ -1,6 +1,5 @@
 package org.openiam.am.srvc.service;
 
-import org.apache.cxf.service.model.BindingMessageInfo;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.springframework.context.ApplicationContext;

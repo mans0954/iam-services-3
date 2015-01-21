@@ -28,8 +28,8 @@ import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDataService;
+import org.openiam.idm.srvc.user.ws.UserDataWebService;
 import org.openiam.provision.dto.ProvisionUser;
-import org.openiam.provision.service.AsynchUserProvisionService;
 import org.openiam.provision.service.ProvisionService;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.util.SpringContextProvider;
@@ -55,7 +55,7 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
     @Autowired
     protected String systemAccount;
     @Autowired
-    protected UserDataService userManager;
+    protected UserDataWebService userDataWebService;
     @Autowired
     protected LoginDataService loginManager;
     @Autowired
@@ -77,9 +77,6 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
     @Qualifier("configurableGroovyScriptEngine")
     protected ScriptIntegration scriptRunner;
 
-    @Autowired
-    @Qualifier("asynchProvisonWS")
-    private AsynchUserProvisionService asyncProvisionService;
     @Value("${org.openiam.idm.system.user.id}")
     protected String systemUserId;
 
@@ -101,7 +98,10 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
     protected SyncResponse startSynchReview(
             SynchConfig config,
             SynchReviewEntity sourceReview,
-            SynchReviewEntity resultReview) {
+            SynchReviewEntity resultReview,
+            ValidationScript validationScript,
+            List<TransformScript> transformScripts,
+            MatchObjectRule matchRule) {
 
         log.debug("SynchReview startSynch CALLED.^^^^^^^^");
         final SynchReviewService synchReviewService = (SynchReviewService)SpringContextProvider.getBean("synchReviewService");
@@ -110,7 +110,7 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
             for (SynchReviewRecordEntity record : sourceReview.getReviewRecords()) {
                 if (!record.isHeader()) {
                     final LineObject rowObj = genLineObjectFromRecord(record, rowHeader);
-                    processLineObject(rowObj, config, resultReview);
+                    processLineObject(rowObj, config, resultReview, validationScript, transformScripts, matchRule);
                 }
             }
 
@@ -130,11 +130,9 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
     public void addUser(ProvisionUser pUser) {
         long startTime = System.currentTimeMillis();
 
-        try {
-            asyncProvisionService.addUser(pUser);
-        } catch (Exception me) {
-            log.error(me.getMessage());
-        }
+        Map<String, String> msgPropMap = new HashMap<String, String>();
+        msgPropMap.put("SERVICE_HOST", serviceHost);
+        msgPropMap.put("SERVICE_CONTEXT", serviceContext);
         long endTime = System.currentTimeMillis();
         log.debug("--AddUser:SynchAdapter execution time="
                 + (endTime - startTime));
@@ -144,14 +142,9 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
 
         long startTime = System.currentTimeMillis();
 
-        try {
-
-          asyncProvisionService.modifyUser(pUser);
-
-        } catch (Exception me) {
-
-            log.error(me.getMessage());
-        }
+        Map<String, String> msgPropMap = new HashMap<String, String>();
+        msgPropMap.put("SERVICE_HOST", serviceHost);
+        msgPropMap.put("SERVICE_CONTEXT", serviceContext);
         long endTime = System.currentTimeMillis();
         log.debug("--ModifyUser:SynchAdapter execution time="
                 + (endTime - startTime));
@@ -179,51 +172,20 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
 
     protected void setCurrentSuperiors(ProvisionUser pUser) {
         if (StringUtils.isNotEmpty(pUser.getId())) {
-            List<UserEntity> entities = userManager.getSuperiors(pUser.getId(), -1, -1);
-            List<User> superiors = userDozerConverter.convertToDTOList(entities, true);
+            List<User> superiors = userDataWebService.getSuperiors(pUser.getId(), -1, -1);
             if (CollectionUtils.isNotEmpty(superiors)) {
                 pUser.setSuperiors(new HashSet<User>(superiors));
             }
         }
     }
 
-    protected SyncResponse initializeScripts(
-            SynchConfig config,
-            SynchReviewEntity sourceReview) {
-        SyncResponse resp = new SyncResponse(ResponseStatus.SUCCESS);
-
-        SynchReview review = null;
-        if (sourceReview != null) {
-            review = synchReviewDozerConverter.convertToDTO(sourceReview, false);
-        }
-
-        try {
-            validationScript = StringUtils.isNotEmpty(config.getValidationRule()) ? SynchScriptFactory.createValidationScript(config, review) : null;
-            transformScripts = SynchScriptFactory.createTransformationScript(config, review);
-            matchRule = matchRuleFactory.create(config.getCustomMatchRule()); // check if matchRule exists
-
-        } catch (FileNotFoundException fe) {
-            log.error(fe);
-            resp = new SyncResponse(ResponseStatus.FAILURE);
-            resp.setErrorCode(ResponseCode.FILE_EXCEPTION);
-
-        } catch (ClassNotFoundException cnfe) {
-            log.error(cnfe);
-            resp = new SyncResponse(ResponseStatus.FAILURE);
-            resp.setErrorCode(ResponseCode.CLASS_NOT_FOUND);
-
-        } catch (IOException io) {
-            log.error(io);
-            resp = new SyncResponse(ResponseStatus.FAILURE);
-            resp.setErrorCode(ResponseCode.IO_EXCEPTION);
-        }
-        return resp;
-    }
-
-    protected void processLineObject(
+     protected void processLineObject(
             LineObject rowObj,
             SynchConfig config,
-            SynchReviewEntity resultReview) {
+            SynchReviewEntity resultReview,
+            ValidationScript validationScript,
+            List<TransformScript> transformScripts,
+            MatchObjectRule matchRule) {
 
         if (validationScript != null) {
             synchronized (mutex) {
@@ -327,7 +289,7 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
             }
         }
         try {
-            Thread.sleep(50);
+            Thread.sleep(100);
         } catch (InterruptedException e) {
             log.error("The thread was interrupted when sleep paused after row [" + rowObj + "] execution.", e);
         }

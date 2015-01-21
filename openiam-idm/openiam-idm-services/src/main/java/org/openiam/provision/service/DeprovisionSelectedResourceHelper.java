@@ -150,7 +150,7 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
         }
         bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_IDENTITY_STATUS, AbstractProvisioningService.IDENTITY_EXIST);
 
-        String onDeleteProp = findResourcePropertyByName(res.getId(), "ON_DELETE");
+        String onDeleteProp = resourceDataService.getResourcePropValueByName(res.getId(), "ON_DELETE");
         if(StringUtils.isEmpty(onDeleteProp)) {
             onDeleteProp = "DELETE";
         }

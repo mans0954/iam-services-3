@@ -284,7 +284,7 @@ public class LoginDataServiceImpl implements LoginDataService {
         Policy plcy = passwordPolicyProvider.getPasswordPolicyByUser(user, null);
 
         String pswdExpValue = getPolicyAttribute(plcy.getPolicyAttributes(),
-                "NUM_DAYS_FORGOT_PASSWORD_TOKEN_VALID");
+                "NUM_DAYS_FORGET_PWD_TOKEN_VALID");
         // String changePswdOnReset = getPolicyAttribute(
         // plcy.getPolicyAttributes(), "CHNG_PSWD_ON_RESET");
         String gracePeriod = getPolicyAttribute(plcy.getPolicyAttributes(),
@@ -340,6 +340,7 @@ public class LoginDataServiceImpl implements LoginDataService {
     }
 
     @Override
+	@Transactional(readOnly = true)
     public String decryptPassword(String userId, String password)
             throws Exception {
         if (password != null) {

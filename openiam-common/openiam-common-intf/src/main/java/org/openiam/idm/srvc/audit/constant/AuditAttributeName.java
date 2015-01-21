@@ -43,6 +43,7 @@ public enum AuditAttributeName {
     EVENT_NAME,
     GROOVY_SCRIPT,
     PROFILE,
+	EMAIL,
     CONTENT_PROVIDER_ID,
     URI_PATTERN_ID,
     PHONE,

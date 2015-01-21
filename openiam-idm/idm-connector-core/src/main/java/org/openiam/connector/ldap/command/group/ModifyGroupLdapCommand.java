@@ -43,32 +43,32 @@ public class ModifyGroupLdapCommand extends AbstractCrudLdapCommand<ExtensibleGr
 
             ExtensibleAttribute origIdentity = isRename(crudRequest.getExtensibleObject());
 
-            String identity = (origIdentity != null) ? origIdentity.getValue() : crudRequest.getObjectIdentity();
+            String identity = (origIdentity != null)? origIdentity.getValue() : crudRequest.getObjectIdentity();
             //Check identity on CN format or not
-            String identityPatternStr = MessageFormat.format(DN_IDENTITY_MATCH_REGEXP, matchObj.getKeyField());
+            String identityPatternStr =  MessageFormat.format(DN_IDENTITY_MATCH_REGEXP, matchObj.getKeyField());
             Pattern pattern = Pattern.compile(identityPatternStr);
             Matcher matcher = pattern.matcher(identity);
             String objectBaseDN;
 
-            if (matcher.matches()) {
+            if(matcher.matches()) {
                 String tmp = identity;
                 identity = matcher.group(1);
                 String CN = matchObj.getKeyField() + "=" + identity;
-                objectBaseDN = tmp.substring(CN.length() + 1);
+                objectBaseDN =  tmp.substring(CN.length()+1);
 
             } else {
                 // if identity is not in DN format try to find OU info in attributes
-                String OU = getOU(crudRequest.getExtensibleObject());
-                if (StringUtils.isNotEmpty(OU)) {
-                    objectBaseDN = OU + "," + matchObj.getBaseDn();
+                String OU = getAttrValue(crudRequest.getExtensibleObject(), OU_ATTRIBUTE);
+                if(StringUtils.isNotEmpty(OU)) {
+                    objectBaseDN = OU+","+matchObj.getBaseDn();
                 } else {
                     objectBaseDN = matchObj.getBaseDn();
                 }
             }
 
             Set<ResourceProp> rpSet = getResourceAttributes(managedSys.getResource().getId());
-            boolean groupMembershipEnabled = isMembershipEnabled(rpSet, "GROUP_MEMBERSHIP_ENABLED");
-            boolean supervisorMembershipEnabled = isMembershipEnabled(rpSet, "SUPERVISOR_MEMBERSHIP_ENABLED");
+            boolean groupMembershipEnabled = getResourceBoolean(rpSet, "GROUP_MEMBERSHIP_ENABLED", true);
+            boolean supervisorMembershipEnabled = getResourceBoolean(rpSet, "SUPERVISOR_MEMBERSHIP_ENABLED", true);
 
             Directory dirSpecificImp = DirectorySpecificImplFactory.create(managedSys.getHandler5());
 
@@ -106,15 +106,15 @@ public class ModifyGroupLdapCommand extends AbstractCrudLdapCommand<ExtensibleGr
                     if ((att.getValue() == null || att.getValue().equals("null")) &&
                             (att.getValueList() == null || att.getValueList().size() == 0)) {
 
-                        if (att.getOperation() != 1) {
-                            // remove attribute
-                            modItemList.add(new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute(att.getName(), null)));
-                        }
+						if (att.getOperation() != 1) {
+							// remove attribute
+							modItemList.add(new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute(att.getName(), null)));
+						}
 
                     } else {
                         // valid value
 
-                        if ("ou".equalsIgnoreCase(att.getName())) {
+                        if (OU_ATTRIBUTE.equalsIgnoreCase(att.getName())) {
                             //skip ou for group
                         } else if ("unicodePwd".equalsIgnoreCase(att.getName())) {
                             Attribute a = generateActiveDirectoryPassword(att.getValue());
@@ -156,7 +156,7 @@ public class ModifyGroupLdapCommand extends AbstractCrudLdapCommand<ExtensibleGr
 
             NamingEnumeration results = null;
             try {
-                log.debug("Looking for user with identity=" + identity + " in " + objectBaseDN);
+                log.debug("Looking for user with identity=" +  identity + " in " +  objectBaseDN);
                 results = lookupSearch(managedSys, matchObj, ldapctx, identity, null, objectBaseDN);
 
             } catch (NameNotFoundException nnfe) {
@@ -212,7 +212,7 @@ public class ModifyGroupLdapCommand extends AbstractCrudLdapCommand<ExtensibleGr
             }
 
         } catch (NamingException ne) {
-            log.error(ne.getMessage(), ne);
+            log.error(ne.getMessage(),ne);
             throw new ConnectorDataException(ErrorCode.DIRECTORY_ERROR, ne.getMessage());
         }
 

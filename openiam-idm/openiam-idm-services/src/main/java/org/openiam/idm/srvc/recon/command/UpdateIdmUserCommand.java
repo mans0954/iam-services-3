@@ -4,109 +4,66 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.base.BaseAttribute;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.dozer.converter.UserDozerConverter;
-import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;
-import org.openiam.idm.srvc.recon.service.PopulationScript;
-import org.openiam.idm.srvc.recon.service.ReconciliationObjectCommand;
-import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
-import org.openiam.idm.srvc.user.service.UserDataService;
+import org.openiam.idm.srvc.user.ws.UserDataWebService;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.resp.LookupUserResponse;
 import org.openiam.provision.resp.ProvisionUserResponse;
-import org.openiam.provision.service.AbstractProvisioningService;
 import org.openiam.provision.service.ProvisionService;
 import org.openiam.provision.type.ExtensibleAttribute;
-import org.openiam.script.ScriptIntegration;
-import org.openiam.util.SpringContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 
 @Component("updateIdmUserCommand")
-public class UpdateIdmUserCommand implements ReconciliationObjectCommand<User> {
+public class UpdateIdmUserCommand extends BaseReconciliationUserCommand {
     private static final Log log = LogFactory.getLog(UpdateIdmUserCommand.class);
 
     @Autowired
     @Qualifier("defaultProvision")
     private ProvisionService provisionService;
 
-    @Autowired
-    @Qualifier("configurableGroovyScriptEngine")
-    private ScriptIntegration scriptRunner;
+	@Autowired
+	@Qualifier("userWS")
+	UserDataWebService userWS;
 
-    public UpdateIdmUserCommand(){
+	public UpdateIdmUserCommand(){
     }
 
-    public boolean execute(ReconciliationSituation config, String principal, String msysId, User user, List<ExtensibleAttribute> attributes) {
-        log.debug("Entering UpdateIdmUserCommand");
-        LookupUserResponse lookupResp =  provisionService.getTargetSystemUser(principal, msysId, attributes);
+	@Override
+	public boolean execute(ReconciliationSituation config, String principal, String mSysID, User user, List<ExtensibleAttribute> attributes) {
+		log.debug("Entering UpdateIdmUserCommand");
+		log.debug("Update user: " + user.getId());
+        LookupUserResponse lookupResp =  provisionService.getTargetSystemUser(principal, mSysID, attributes);
         if(lookupResp.getStatus() == ResponseStatus.FAILURE){
             log.debug("Can't update IDM user from non-existent resource...");
         } else {
-            ProvisionUser pUser = new ProvisionUser(user);
-            setCurrentSuperiors(pUser);
-            pUser.setSrcSystemId(msysId);
-            if(StringUtils.isNotEmpty(config.getScript())){
-                try {
-                    Map<String, String> line = new HashMap<String, String>();
-                    for (ExtensibleAttribute attr : attributes) {
-                        if (attr.getValue() != null) {
-                            line.put(attr.getName(), attr.getValue());
-                        } else if (attr.getAttributeContainer() != null &&
-                                CollectionUtils.isNotEmpty(attr.getAttributeContainer().getAttributeList()) &&
-                                line.get(attr.getName()) == null) {
-                            StringBuilder value = new StringBuilder();
-                            boolean isFirst = true;
-                            for (BaseAttribute ba : attr.getAttributeContainer().getAttributeList()) {
-                                if (!isFirst) {
-                                    value.append('^');
-                                } else {
-                                    isFirst = false;
-                                }
-                                value.append(ba.getValue());
-                            }
-                            line.put(attr.getName(), value.toString());
-                        }
-                    }
-                    Map<String, Object> bindingMap = new HashMap<String, Object>();
-                    bindingMap.put(AbstractProvisioningService.TARGET_SYS_MANAGED_SYS_ID, msysId);
-                    PopulationScript script = (PopulationScript) scriptRunner.instantiateClass(bindingMap, config.getScript());
-                    int retval = script.execute(line, pUser);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-            ProvisionUserResponse response = provisionService.modifyUser(pUser);
-            return response.isSuccess();
+			try {
+				ProvisionUser pUser = new ProvisionUser(user);
+				setCurrentSuperiors(pUser);
+				pUser.setSrcSystemId(mSysID);
+				executeScript(config.getScript(), attributes, pUser);
+				ProvisionUserResponse response = provisionService.modifyUser(pUser);
+				return response.isSuccess();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
         }
         return false;
     }
 
-    protected void setCurrentSuperiors(ProvisionUser pUser) {
-        if (StringUtils.isNotEmpty(pUser.getId())) {
+	private void setCurrentSuperiors(ProvisionUser pUser) {
+		if (StringUtils.isNotEmpty(pUser.getId())) {
+			List<User> superiors = userWS.getSuperiors(pUser.getId(), -1, -1);
+			if (CollectionUtils.isNotEmpty(superiors)) {
+				pUser.setSuperiors(new HashSet<>(superiors));
+			}
+		}
+	}
 
-            ApplicationContext appContext = SpringContextProvider.getApplicationContext();
-            UserDataService userMgr = (UserDataService)appContext.getBean("userManager");
-            UserDozerConverter userDozerConverter = (UserDozerConverter)appContext.getBean("userDozerConverter");
-
-            List<UserEntity> entities = userMgr.getSuperiors(pUser.getId(), -1, -1);
-            List<User> superiors = userDozerConverter.convertToDTOList(entities, true);
-            if (CollectionUtils.isNotEmpty(superiors)) {
-                pUser.setSuperiors(new HashSet<User>(superiors));
-            }
-        }
-    }
 }

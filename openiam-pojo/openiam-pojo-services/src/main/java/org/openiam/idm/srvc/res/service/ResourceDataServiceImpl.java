@@ -3,8 +3,10 @@ package org.openiam.idm.srvc.res.service;
 import java.util.*;
 
 import javax.jws.WebMethod;
+import javax.jws.WebParam;
 import javax.jws.WebService;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -70,6 +72,12 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 
     private static final Log log = LogFactory.getLog(ResourceDataServiceImpl.class);
 
+
+    @Override
+    public String getResourcePropValueByName(@WebParam(name = "resourceId", targetNamespace = "") String resourceId, @WebParam(name = "propName", targetNamespace = "") String propName) {
+        return resourceService.getResourcePropValueByName(resourceId, propName);
+    }
+
     @Override
     @LocalizedServiceGet
     @Transactional(readOnly=true)
@@ -86,6 +94,24 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
             log.error("Exception", e);
         }
         return resource;
+    }
+
+    @Override
+    @LocalizedServiceGet
+    @Transactional(readOnly=true)
+    public List<Resource> getResourcesByIds(final List<String> resourceIds, final Language language) {
+        List<Resource> resourceList = null;
+        try {
+            if (CollectionUtils.isNotEmpty(resourceIds)) {
+                final List<ResourceEntity> entityList = resourceService.findResourcesByIds(resourceIds);
+                if (CollectionUtils.isNotEmpty(entityList)) {
+                    resourceList = resourceConverter.convertToDTOList(entityList, true);
+                }
+            }
+        } catch (Throwable e) {
+            log.error("Exception", e);
+        }
+        return resourceList;
     }
 
     @WebMethod

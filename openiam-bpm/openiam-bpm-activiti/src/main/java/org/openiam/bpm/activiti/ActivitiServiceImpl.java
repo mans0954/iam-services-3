@@ -344,18 +344,20 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
             idmAuditLog.fail();
             idmAuditLog.setFailureReason(e.getMessage());
             idmAuditLog.setException(e);
-			log.error("Error while creating newhire request", e);
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorCode(ResponseCode.USER_STATUS);
-			response.setErrorText(e.getMessage());
-		} finally {
-			if(parentAuditLogId != null) {
-				IdmAuditLog parent = auditLogService.findById(parentAuditLogId);
-				parent.addChild(idmAuditLog);
-				idmAuditLog.addParent(parent);
-                parent = auditLogService.save(parent);
-			}
-		}
+            log.error("Error while creating newhire request", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(ResponseCode.USER_STATUS);
+            response.setErrorText(e.getMessage());
+        } finally {
+            if (parentAuditLogId != null) {
+                IdmAuditLog parent = auditLogService.findById(parentAuditLogId);
+                if (parent != null) {
+                    parent.addChild(idmAuditLog);
+                    idmAuditLog.addParent(parent);
+                    parent = auditLogService.save(parent);
+                }
+            }
+        }
 
 		return response;
 	}
@@ -513,39 +515,46 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 		final Response response = new Response();
 		try {
             idmAuditLog.addAttributeAsJson(AuditAttributeName.REQUEST, request, jacksonMapper);
-			
-			if(request == null || request.isEmpty()) {
-				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
-			}
-			
-			final Map<String, Object> bindingMap = new HashMap<String, Object>();
-			bindingMap.put("REQUEST", request);
-			bindingMap.put("BUILDER", idmAuditLog);
-			
-			DefaultGenericWorkflowRequestApproverAssociationIdentifier identifier = null;
-			try {
-				identifier = (DefaultGenericWorkflowRequestApproverAssociationIdentifier)
-						scriptRunner.instantiateClass(bindingMap, membershipApproverAssociationGroovyScript);
-				
-				if(identifier == null) {
-					throw new Exception("Did not instantiate script - was null");
-				}
-			} catch(Throwable e) {
-				log.error(String.format("Can't instantiate '%s' - using default", membershipApproverAssociationGroovyScript), e);
-				identifier = new DefaultGenericWorkflowRequestApproverAssociationIdentifier();
-			}
-		
-			identifier.init(bindingMap);
-			
-			final List<String> approverAssociationIds = identifier.getApproverAssociationIds();
-			final List<String> approverUserIds = identifier.getApproverIds();
-			
-			final List<Object> approverCardinatlity = new LinkedList<Object>();
-			if(CollectionUtils.isNotEmpty(approverAssociationIds)) {
-				approverCardinatlity.addAll(approverAssociationIds);
-			} else {
-				approverCardinatlity.add(approverUserIds);
-			}
+
+            if (request == null || request.isEmpty()) {
+                throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+            }
+
+            final Map<String, Object> bindingMap = new HashMap<String, Object>();
+            bindingMap.put("REQUEST", request);
+            bindingMap.put("BUILDER", idmAuditLog);
+
+            DefaultGenericWorkflowRequestApproverAssociationIdentifier identifier = null;
+            try {
+                identifier = (DefaultGenericWorkflowRequestApproverAssociationIdentifier)
+                        scriptRunner.instantiateClass(bindingMap, membershipApproverAssociationGroovyScript);
+
+                if (identifier == null) {
+                    throw new Exception("Did not instantiate script - was null");
+                }
+            } catch (Throwable e) {
+                log.error(String.format("Can't instantiate '%s' - using default", membershipApproverAssociationGroovyScript), e);
+                identifier = new DefaultGenericWorkflowRequestApproverAssociationIdentifier();
+            }
+
+            identifier.init(bindingMap);
+
+            final List<String> approverAssociationIds = identifier.getApproverAssociationIds();
+            final List<String> approverUserIds = identifier.getApproverIds();
+
+            final List<Object> approverCardinatlity = new LinkedList<Object>();
+            if (CollectionUtils.isNotEmpty(approverAssociationIds)) {
+                approverCardinatlity.addAll(approverAssociationIds);
+            } else {
+                //TODO fix here AM flag
+                if (request.isCustomApproversSequential()) {
+                    for (final String id : approverUserIds) {
+                        approverCardinatlity.add(id);
+                    }
+                } else {
+                    approverCardinatlity.add(approverUserIds);
+                }
+            }
 
             idmAuditLog.addAttributeAsJson(AuditAttributeName.REQUEST_APPROVER_IDS, approverUserIds, jacksonMapper);
 			final Map<String, Object> variables = new HashMap<String, Object>();
@@ -683,17 +692,19 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
             idmAuditLog.setFailureReason(e.getMessage());
             idmAuditLog.setException(e);
             idmAuditLog.fail();
-			log.error("Error while creating newhire request", e);
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorCode(ResponseCode.INTERNAL_ERROR);
-			response.setErrorText(e.getMessage());
-		} finally {
-			if(parentAuditLogId != null) {
-				IdmAuditLog parent = auditLogService.findById(parentAuditLogId);
-				parent.addChild(idmAuditLog);
-				idmAuditLog.addParent(parent);
-                parent = auditLogService.save(parent);
-			}
+            log.error("Error while creating newhire request", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(ResponseCode.INTERNAL_ERROR);
+            response.setErrorText(e.getMessage());
+        } finally {
+            if (parentAuditLogId != null) {
+                IdmAuditLog parent = auditLogService.findById(parentAuditLogId);
+                if (parent != null) {
+                    parent.addChild(idmAuditLog);
+                    idmAuditLog.addParent(parent);
+                    parent = auditLogService.save(parent);
+                }
+            }
         }
 		return response;
 	}
@@ -724,20 +735,6 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 	@Transactional
 	public int getNumOfCandidateTasks(String userId) {
 		return (int)taskService.createTaskQuery().taskCandidateUser(userId).count();
-	}
-
-	@Override
-	@WebMethod
-	@Transactional
-	public TaskListWrapper getTasksForUser(String userId) {
-		final TaskListWrapper taskListWrapper = new TaskListWrapper();
-		final List<Task> assignedTasks = taskService.createTaskQuery().taskAssignee(userId).list();
-		final List<Task> candidateTasks = taskService.createTaskQuery().taskCandidateUser(userId).list();
-		Collections.sort(assignedTasks, taskCreatedTimeComparator);
-		Collections.sort(candidateTasks, taskCreatedTimeComparator);
-		taskListWrapper.addAssignedTasks(assignedTasks, runtimeService);
-		taskListWrapper.addCandidateTasks(candidateTasks, runtimeService);
-		return taskListWrapper;
 	}
 
 	@Override
@@ -828,91 +825,91 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 						}
 					}
 					*/
-				}
-			}
-		}
-		return retVal;
-	}
+                }
+            }
+        }
+        return retVal;
+    }
 
-	@Override
-	@Transactional
-	public List<TaskWrapper> getHistory(final HistorySearchBean searchBean, final int from, final int size) {
-		final HistoricTaskInstanceQuery query = getHistoryQuery(searchBean);
-		
-		final List<HistoricTaskInstance> historicTaskInstances = query.listPage(from, size);
-		final List<TaskWrapper> retVal = new LinkedList<TaskWrapper>();
-		if(CollectionUtils.isNotEmpty(historicTaskInstances)) {
-			for(final HistoricTaskInstance historyInstance : historicTaskInstances) {
-				retVal.add(new TaskWrapper(historyInstance));
-			}
-		}
-		return retVal;
-	}
-	
-	@Override
-	@Transactional
-	public int count(final HistorySearchBean searchBean) {
-		final HistoricTaskInstanceQuery query = getHistoryQuery(searchBean);
-		return Long.valueOf(query.count()).intValue();
-	}
-	
-	private HistoricTaskInstanceQuery getHistoryQuery(final HistorySearchBean searchBean) {
-		final HistoricTaskInstanceQuery query = historyService.createHistoricTaskInstanceQuery();
-		if(StringUtils.isNotBlank(searchBean.getAssigneeId())) {
-			query.taskAssignee(searchBean.getAssigneeId());
-		}
-		if(searchBean.isCompleted() != null) {
-			if(Boolean.TRUE.equals(searchBean.isCompleted())) {
-				query.finished();
-			} else {
-				query.unfinished();
-			}
-		}
-		
-		if(StringUtils.isNotBlank(searchBean.getProcessInstanceId())) {
-			query.processInstanceId(searchBean.getProcessInstanceId());
-		}
-		
-		if(StringUtils.isNotBlank(searchBean.getExecutionId())) {
-			query.executionId(searchBean.getExecutionId());
-		}
-		
-		if(StringUtils.isNotBlank(searchBean.getParentTaskId())) {
-			query.taskParentTaskId(searchBean.getParentTaskId());
-		}
-		
-		if(StringUtils.isNotBlank(searchBean.getProcessDefinitionId())) {
-			query.processDefinitionId(searchBean.getProcessDefinitionId());
-		}
-		
-		if(searchBean.getDueAfter() != null) {
-			query.taskDueAfter(searchBean.getDueAfter());
-		}
-		
-		if(searchBean.getDueBefore() != null) {
-			query.taskDueBefore(searchBean.getDueBefore());
-		}
-		
-		if(StringUtils.isNotBlank(searchBean.getTaskName())) {
-			query.taskNameLike(searchBean.getTaskName());
-		}
-		
-		if(StringUtils.isNotBlank(searchBean.getTaskDescription())) {
-			query.taskOwner(searchBean.getTaskDescription());
-		}
-		
-		if(StringUtils.isNotBlank(searchBean.getTaskOwnerId())) {
-			query.taskOwner(searchBean.getTaskOwnerId());
-		}
-		query.orderByHistoricTaskInstanceEndTime();
-		query.desc();
-		return query;
-	}
+    @Override
+    @Transactional
+    public List<TaskWrapper> getHistory(final HistorySearchBean searchBean, final int from, final int size) {
+        final HistoricTaskInstanceQuery query = getHistoryQuery(searchBean);
 
-	@Override
-	@Transactional
-	public Response deleteTask(String taskId) {
-		final Response response = new Response(ResponseStatus.SUCCESS);
+        final List<HistoricTaskInstance> historicTaskInstances = query.listPage(from, size);
+        final List<TaskWrapper> retVal = new LinkedList<TaskWrapper>();
+        if (CollectionUtils.isNotEmpty(historicTaskInstances)) {
+            for (final HistoricTaskInstance historyInstance : historicTaskInstances) {
+                retVal.add(new TaskWrapper(historyInstance));
+            }
+        }
+        return retVal;
+    }
+
+    @Override
+    @Transactional
+    public int count(final HistorySearchBean searchBean) {
+        final HistoricTaskInstanceQuery query = getHistoryQuery(searchBean);
+        return Long.valueOf(query.count()).intValue();
+    }
+
+    private HistoricTaskInstanceQuery getHistoryQuery(final HistorySearchBean searchBean) {
+        final HistoricTaskInstanceQuery query = historyService.createHistoricTaskInstanceQuery();
+        if (StringUtils.isNotBlank(searchBean.getAssigneeId())) {
+            query.taskAssignee(searchBean.getAssigneeId());
+        }
+        if (searchBean.isCompleted() != null) {
+            if (Boolean.TRUE.equals(searchBean.isCompleted())) {
+                query.finished();
+            } else {
+                query.unfinished();
+            }
+        }
+
+        if (StringUtils.isNotBlank(searchBean.getProcessInstanceId())) {
+            query.processInstanceId(searchBean.getProcessInstanceId());
+        }
+
+        if (StringUtils.isNotBlank(searchBean.getExecutionId())) {
+            query.executionId(searchBean.getExecutionId());
+        }
+
+        if (StringUtils.isNotBlank(searchBean.getParentTaskId())) {
+            query.taskParentTaskId(searchBean.getParentTaskId());
+        }
+
+        if (StringUtils.isNotBlank(searchBean.getProcessDefinitionId())) {
+            query.processDefinitionId(searchBean.getProcessDefinitionId());
+        }
+
+        if (searchBean.getDueAfter() != null) {
+            query.taskDueAfter(searchBean.getDueAfter());
+        }
+
+        if (searchBean.getDueBefore() != null) {
+            query.taskDueBefore(searchBean.getDueBefore());
+        }
+
+        if (StringUtils.isNotBlank(searchBean.getTaskName())) {
+            query.taskNameLike(searchBean.getTaskName());
+        }
+
+        if (StringUtils.isNotBlank(searchBean.getTaskDescription())) {
+            query.taskOwner(searchBean.getTaskDescription());
+        }
+
+        if (StringUtils.isNotBlank(searchBean.getTaskOwnerId())) {
+            query.taskOwner(searchBean.getTaskOwnerId());
+        }
+        query.orderByHistoricTaskInstanceEndTime();
+        query.desc();
+        return query;
+    }
+
+    @Override
+    @Transactional
+    public Response deleteTask(String taskId) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
         try {
 			taskService.deleteTask(taskId, true);
 		} catch(ActivitiException e) {
@@ -927,9 +924,71 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			response.setErrorText(e.getMessage());
 		}
 
+        return response;
+    }
+
+	@Override
+	@Transactional
+	public Response deleteTaskForUser(String taskId, String userId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+        final IdmAuditLog idmAuditLog = new IdmAuditLog();
+        idmAuditLog.setRequestorUserId(userId);
+        idmAuditLog.setAction(AuditAction.TERMINATED_WORKFLOW.value());
+        idmAuditLog.setSource(AuditSource.WORKFLOW.value());
+        String parentAuditLogId = null;
+		try {
+			final Task task = getTaskAssignee(taskId, userId);
+            idmAuditLog.setTargetTask(task.getId(), task.getName());
+            final Object auditLogId = taskService.getVariable(task.getId(), ActivitiConstants.AUDIT_LOG_ID.getName());
+			if(auditLogId != null && auditLogId instanceof String) {
+				parentAuditLogId = (String)auditLogId;
+			}
+            
+			taskService.deleteTask(task.getId(), true);
+            idmAuditLog.succeed();
+		} catch(ActivitiException e) {
+			log.info("Activiti Exception", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(ResponseCode.USER_STATUS);
+			response.setErrorText(e.getMessage());
+            idmAuditLog.setFailureReason(e.getMessage());
+            idmAuditLog.setException(e);
+            idmAuditLog.fail();
+		} catch(Throwable e) {
+			log.error("Error while creating newhire request", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(ResponseCode.USER_STATUS);
+			response.setErrorText(e.getMessage());
+            idmAuditLog.setFailureReason(e.getMessage());
+            idmAuditLog.setException(e);
+            idmAuditLog.fail();
+        } finally {
+            if (parentAuditLogId != null) {
+                IdmAuditLog parent = auditLogService.findById(parentAuditLogId);
+                if (parent != null) {
+                    parent.addChild(idmAuditLog);
+                    idmAuditLog.addParent(parent);
+                    parent = auditLogService.save(parent);
+                }
+            }
+        }
 		return response;
 	}
 	
+	@Override
+	@WebMethod
+	@Transactional
+	public TaskListWrapper getTasksForUser(String userId) {
+		final TaskListWrapper taskListWrapper = new TaskListWrapper();
+		final List<Task> assignedTasks = taskService.createTaskQuery().taskAssignee(userId).list();
+		final List<Task> candidateTasks = taskService.createTaskQuery().taskCandidateUser(userId).list();
+		Collections.sort(assignedTasks, taskCreatedTimeComparator);
+		Collections.sort(candidateTasks, taskCreatedTimeComparator);
+		taskListWrapper.addAssignedTasks(assignedTasks, runtimeService);
+		taskListWrapper.addCandidateTasks(candidateTasks, runtimeService);
+		return taskListWrapper;
+	}
+
 	@Override
 	@Transactional
 	public Response deleteTasksForUser(final String userId) {
@@ -981,51 +1040,18 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
         }
 		return response;
 	}
-
-	@Override
-	@Transactional
-	public Response deleteTaskForUser(String taskId, String userId) {
-		final Response response = new Response(ResponseStatus.SUCCESS);
-        final IdmAuditLog idmAuditLog = new IdmAuditLog();
-        idmAuditLog.setRequestorUserId(userId);
-        idmAuditLog.setAction(AuditAction.TERMINATED_WORKFLOW.value());
-        idmAuditLog.setSource(AuditSource.WORKFLOW.value());
-        String parentAuditLogId = null;
-		try {
-			final Task task = getTaskAssignee(taskId, userId);
-            idmAuditLog.setTargetTask(task.getId(), task.getName());
-            final Object auditLogId = taskService.getVariable(task.getId(), ActivitiConstants.AUDIT_LOG_ID.getName());
-			if(auditLogId != null && auditLogId instanceof String) {
-				parentAuditLogId = (String)auditLogId;
-			}
-            
-			taskService.deleteTask(task.getId(), true);
-            idmAuditLog.succeed();
-		} catch(ActivitiException e) {
-			log.info("Activiti Exception", e);
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorCode(ResponseCode.USER_STATUS);
-			response.setErrorText(e.getMessage());
-            idmAuditLog.setFailureReason(e.getMessage());
-            idmAuditLog.setException(e);
-            idmAuditLog.fail();
-		} catch(Throwable e) {
-			log.error("Error while creating newhire request", e);
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorCode(ResponseCode.USER_STATUS);
-			response.setErrorText(e.getMessage());
-            idmAuditLog.setFailureReason(e.getMessage());
-            idmAuditLog.setException(e);
-            idmAuditLog.fail();
-		} finally {
-			if(parentAuditLogId != null) {
-				IdmAuditLog parent = auditLogService.findById(parentAuditLogId);
-				parent.addChild(idmAuditLog);
-				idmAuditLog.addParent(parent);
-                parent = auditLogService.save(parent);
-			}
-        }
-		return response;
-	}
 	
+    @Override
+    @WebMethod
+    @Transactional
+    public List<TaskWrapper> getTasksForMemberAssociation(String memberAssociationId) {
+        List<TaskWrapper> memberAssociationTaskList = new LinkedList<TaskWrapper>();
+        final List<Task> taskList = taskService.createTaskQuery().processVariableValueEquals(ActivitiConstants.MEMBER_ASSOCIATION_ID.getName(), memberAssociationId).list();
+        if(CollectionUtils.isNotEmpty(taskList)) {
+            for(final Task task : taskList) {
+                memberAssociationTaskList.add(new TaskWrapper(task, runtimeService));
+            }
+        }
+        return memberAssociationTaskList;
+    }
 }

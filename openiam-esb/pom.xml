@@ -19,6 +19,10 @@
 
     <dependencies>
         <!-- OpenIAM Dependencies -->
+         <dependency>
+            <groupId>org.openiam</groupId>
+            <artifactId>openiam-pojo-intf</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.openiam</groupId>
             <artifactId>openiam-pojo-services</artifactId>
@@ -36,6 +40,10 @@
                      <artifactId>log4j-over-slf4j</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.openiam</groupId>
+            <artifactId>openiam-idm-intf</artifactId>
         </dependency>
         <dependency>
             <groupId>org.openiam</groupId>
@@ -66,6 +74,10 @@
             </exclusions>
         </dependency>
 
+		<dependency>
+            <groupId>org.openiam</groupId>
+            <artifactId>openiam-am-intf</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.openiam</groupId>
             <artifactId>openiam-am-services</artifactId>

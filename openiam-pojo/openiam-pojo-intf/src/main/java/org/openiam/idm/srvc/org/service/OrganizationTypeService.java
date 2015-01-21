@@ -39,4 +39,6 @@ public interface OrganizationTypeService {
     public Set<String> findAllowedChildrenByDelegationFilter(Map<String, UserAttribute> userAttributeMap);
 	
 	public void validateOrgType2OrgTypeAddition(String parentId, String memberId) throws BasicDataServiceException;
+
+    public void fireUpdateOrgTypeMap();
 }

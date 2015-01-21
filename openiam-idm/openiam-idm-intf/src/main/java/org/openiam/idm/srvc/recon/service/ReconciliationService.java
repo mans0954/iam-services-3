@@ -13,22 +13,6 @@ import java.util.List;
  */
 public interface ReconciliationService {
 
-    public ReconciliationConfig addConfig(ReconciliationConfig config);
-
-    public void updateConfig(ReconciliationConfig config);
-
-    public void removeConfig(String configId);
-
-    public ReconciliationConfig getConfigByResourceByType(final String resourceId, final String type);
-
-    public ReconciliationConfig getConfigById(String configId);
-
-    public List<ReconciliationConfig> getConfigsByResource(String resourceId);
-
-    List<ReconciliationConfig> findReconConfig(ReconConfigSearchBean searchBean, int from, int size);
-
-    int countReconConfig(final ReconConfigSearchBean searchBean);
-
     String getReconciliationReport(ReconciliationConfig config, String reportType);
 
     ReconciliationResultBean getReconciliationResult(ReconciliationConfig config,

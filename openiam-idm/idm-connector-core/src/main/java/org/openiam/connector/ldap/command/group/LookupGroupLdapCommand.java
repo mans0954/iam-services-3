@@ -33,29 +33,29 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Service("lookupGroupLdapCommand")
-public class LookupGroupLdapCommand extends AbstractLookupLdapCommand<ExtensibleGroup> {
+public class LookupGroupLdapCommand extends AbstractLookupLdapCommand<ExtensibleGroup>  {
     @Override
     protected boolean lookup(ManagedSysEntity managedSys, LookupRequest<ExtensibleGroup> lookupRequest, SearchResponse respType, LdapContext ldapctx) throws ConnectorDataException {
-        boolean found = false;
+        boolean found=false;
         ManagedSystemObjectMatch matchObj = getMatchObject(lookupRequest.getTargetID(), ManagedSystemObjectMatch.GROUP);
-        String resourceId = managedSys.getResource() == null ? null : managedSys.getResource().getId();
+        String resourceId = managedSys.getResource().getId();
 
         String identity = lookupRequest.getSearchValue();
         try {
             //Check identity on DN format or not
-            String identityPatternStr = MessageFormat.format(DN_IDENTITY_MATCH_REGEXP, matchObj.getKeyField());
+            String identityPatternStr =  MessageFormat.format(DN_IDENTITY_MATCH_REGEXP, matchObj.getKeyField());
             Pattern pattern = Pattern.compile(identityPatternStr);
             Matcher matcher = pattern.matcher(identity);
             String objectBaseDN;
-            if (matcher.matches()) {
+            if(matcher.matches()) {
                 identity = matcher.group(1);
-                String CN = matchObj.getKeyField() + "=" + identity;
-                objectBaseDN = lookupRequest.getSearchValue().substring(CN.length() + 1);
+                String CN = matchObj.getKeyField()+"="+identity;
+                objectBaseDN =  lookupRequest.getSearchValue().substring(CN.length()+1);
             } else {
                 // if identity is not in DN format try to find OU info in attributes
-                String OU = getOU(lookupRequest.getExtensibleObject());
-                if (StringUtils.isNotEmpty(OU)) {
-                    objectBaseDN = OU + "," + matchObj.getBaseDn();
+                String OU = getAttrValue(lookupRequest.getExtensibleObject(), OU_ATTRIBUTE);
+                if(StringUtils.isNotEmpty(OU)) {
+                   objectBaseDN = OU+","+matchObj.getBaseDn();
                 } else {
                     objectBaseDN = matchObj.getBaseDn();
                 }
@@ -67,7 +67,7 @@ public class LookupGroupLdapCommand extends AbstractLookupLdapCommand<Extensible
             ExtensibleObject object = lookupRequest.getExtensibleObject();
             List<ExtensibleAttribute> listAttrs = (object != null) ? object.getAttributes() : new ArrayList<ExtensibleAttribute>();
             if (CollectionUtils.isNotEmpty(listAttrs)) {
-                for (ExtensibleAttribute ea : listAttrs) {
+                for (ExtensibleAttribute ea: listAttrs) {
                     attrList.add(ea.getName());
                 }
             } else {
@@ -116,7 +116,7 @@ public class LookupGroupLdapCommand extends AbstractLookupLdapCommand<Extensible
                             log.error(e.getMessage(), e);
                         }
 
-                        for (NamingEnumeration ae = attrs.getAll(); ae.hasMore(); ) {
+                        for (NamingEnumeration ae = attrs.getAll(); ae.hasMore();) {
                             ExtensibleAttribute extAttr = new ExtensibleAttribute();
                             Attribute attr = (Attribute) ae.next();
 
@@ -152,7 +152,7 @@ public class LookupGroupLdapCommand extends AbstractLookupLdapCommand<Extensible
                 }
             }
         } catch (NamingException e) {
-            log.error(e.getMessage(), e);
+            log.error(e.getMessage(),e);
             throw new ConnectorDataException(ErrorCode.DIRECTORY_ERROR, e.getMessage());
         }
         return found;

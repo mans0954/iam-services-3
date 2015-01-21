@@ -109,29 +109,12 @@ public class BaseProvisioningHelper {
 
     public void setCurrentSuperiors(ProvisionUser pUser) {
         if (StringUtils.isNotEmpty(pUser.getId())) {
-            List<UserEntity> entities = userMgr.getSuperiors(pUser.getId(), -1, -1);
-            List<User> superiors = userDozerConverter.convertToDTOList(entities, false);
-            if (CollectionUtils.isNotEmpty(superiors)) {
+            List<UserEntity> entities = userMgr.getSuperiors(pUser.getId(), 0, Integer.MAX_VALUE);
+            if (CollectionUtils.isNotEmpty(entities)) {
+                List<User> superiors = userDozerConverter.convertToDTOList(entities, false);
                 pUser.setSuperiors(new HashSet<User>(superiors));
             }
         }
-    }
-
-
-    protected String findResourcePropertyByName(final String resId, final String name) {
-        // TODO This method shouldn't use Internationalization Aspect
-        Resource r = resourceDataService.getResource(resId, null);
-        if (r != null) {
-            Set<ResourceProp> rpSet = r.getResourceProps();
-            if (CollectionUtils.isNotEmpty(rpSet)) {
-                for (ResourceProp rp : rpSet) {
-                    if (StringUtils.equalsIgnoreCase(rp.getName(), name))  {
-                        return rp.getValue();
-                    }
-                }
-            }
-        }
-        return null;
     }
 
     protected String getResProperty(Set<ResourceProp> resPropSet,
@@ -237,6 +220,8 @@ public class BaseProvisioningHelper {
         ObjectResponse resp = connectorAdapter.deleteRequest(mSys, request);
 
         return resp;
+
+
     }
 
 

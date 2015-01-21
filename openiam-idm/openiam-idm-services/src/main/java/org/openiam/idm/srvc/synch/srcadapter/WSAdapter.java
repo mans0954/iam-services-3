@@ -17,51 +17,47 @@
  */
 
 /**
- * 
+ *
  */
 package org.openiam.idm.srvc.synch.srcadapter;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.idm.srvc.synch.domain.SynchReviewEntity;
 import org.openiam.idm.srvc.synch.dto.*;
 import org.openiam.idm.srvc.synch.service.*;
-import org.openiam.idm.srvc.user.dto.User;
-import org.openiam.idm.srvc.user.dto.UserStatusEnum;
-import org.openiam.provision.dto.ProvisionUser;
-import org.openiam.provision.resp.ProvisionUserResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.openiam.script.ScriptIntegration;
 import org.springframework.stereotype.Component;
 
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.List;
-
 import java.io.IOException;
 import java.sql.*;
 import java.util.Date;
-import java.util.Map;
 
 /**
  * Gets data from a Webservice to use for synchronization
- * @author suneet
  *
+ * @author suneet
  */
 @Component
 public class WSAdapter extends AbstractSrcAdapter { // implements SourceAdapter
 
-	@Autowired
+    @Autowired
     @Qualifier("configurableGroovyScriptEngine")
     private ScriptIntegration scriptRunner;
 
-	private static final Log log = LogFactory.getLog(WSAdapter.class);
+    private static final Log log = LogFactory.getLog(WSAdapter.class);
 
-	private Connection con = null;
+    private Connection con = null;
 
     @Override
     public SyncResponse startSynch(final SynchConfig config) {
@@ -72,75 +68,115 @@ public class WSAdapter extends AbstractSrcAdapter { // implements SourceAdapter
     public SyncResponse startSynch(SynchConfig config, SynchReviewEntity sourceReview, SynchReviewEntity resultReview) {
 
         LineObject lineHeader = null;
-		Date mostRecentRecord = null;
+        Date mostRecentRecord = null;
 
-		log.debug("WS SYNCH STARTED ^^^^^^^^");
+        log.debug("WS SYNCH STARTED ^^^^^^^^");
 
-        SyncResponse res = initializeScripts(config, sourceReview);
-        if (ResponseStatus.FAILURE.equals(res.getStatus())) {
-            return res;
+        SyncResponse res = new SyncResponse(ResponseStatus.SUCCESS);
+        SynchReview review = null;
+        if (sourceReview != null) {
+            review = synchReviewDozerConverter.convertToDTO(sourceReview, false);
         }
+        LineObject rowHeaderForReport = null;
+        InputStream input = null;
 
-        if (sourceReview != null && !sourceReview.isSourceRejected()) {
-            return startSynchReview(config, sourceReview, resultReview);
-        }
+        try {
+            final ValidationScript validationScript = StringUtils.isNotEmpty(config.getValidationRule()) ? SynchScriptFactory.createValidationScript(config, review) : null;
+            final List<TransformScript> transformScripts = SynchScriptFactory.createTransformationScript(config, review);
+            final MatchObjectRule matchRule = matchRuleFactory.create(config.getCustomMatchRule()); // check if matchRule exists
 
-		try {
-            WSOperationCommand serviceCmd = getServiceCommand(  config.getWsScript() );
+            if (validationScript == null || transformScripts == null || matchRule == null) {
+                res = new SyncResponse(ResponseStatus.FAILURE);
+                res.setErrorText("The problem in initialization of RDBMSAdapter, please check validationScript= " + validationScript + ", transformScripts=" + transformScripts + ", matchRule=" + matchRule + " all must be set!");
+                res.setErrorCode(ResponseCode.INVALID_ARGUMENTS);
+                return res;
+            }
+
+
+            if (sourceReview != null && !sourceReview.isSourceRejected()) {
+                return startSynchReview(config, sourceReview, resultReview, validationScript, transformScripts, matchRule);
+            }
+
+            WSOperationCommand serviceCmd = getServiceCommand(config.getWsScript());
             if (serviceCmd == null) {
                 SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
                 resp.setErrorCode(ResponseCode.CLASS_NOT_FOUND);
                 return resp;
             }
-            List<LineObject> lineObjectList =  serviceCmd.execute(config);
+            List<LineObject> lineObjectList = serviceCmd.execute(config);
 
             if (CollectionUtils.isNotEmpty(lineObjectList)) {
                 lineHeader = lineObjectList.get(0);
             }
 
-            for (LineObject rowObj :  lineObjectList) {
-                log.debug("-SYNCHRONIZING NEW RECORD ---" );
-				if (mostRecentRecord == null) {
-					mostRecentRecord = rowObj.getLastUpdate();
+            for (LineObject rowObj : lineObjectList) {
+                log.debug("-SYNCHRONIZING NEW RECORD ---");
+                if (mostRecentRecord == null) {
+                    mostRecentRecord = rowObj.getLastUpdate();
 
-				} else {
-					// if current record is newer than what we saved, then update the most recent record value
-					if (mostRecentRecord.before(rowObj.getLastUpdate())) {
-						log.debug("- MostRecentRecord value updated to=" + rowObj.getLastUpdate());
-						mostRecentRecord.setTime(rowObj.getLastUpdate().getTime());
-					}
-				}
+                } else {
+                    // if current record is newer than what we saved, then update the most recent record value
+                    if (mostRecentRecord.before(rowObj.getLastUpdate())) {
+                        log.debug("- MostRecentRecord value updated to=" + rowObj.getLastUpdate());
+                        mostRecentRecord.setTime(rowObj.getLastUpdate().getTime());
+                    }
+                }
 
-                processLineObject(rowObj, config, resultReview);
+                processLineObject(rowObj, config, resultReview, validationScript, transformScripts, matchRule);
 
-			}
-						
-		} catch(Exception se) {
+            }
 
-			log.error(se);
-			SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
-			resp.setErrorCode(ResponseCode.SQL_EXCEPTION);
-			resp.setErrorText(se.toString());
-			return resp;
+        } catch (ClassNotFoundException cnfe) {
+            log.error(cnfe);
+            res = new SyncResponse(ResponseStatus.FAILURE);
+            res.setErrorCode(ResponseCode.CLASS_NOT_FOUND);
+            return res;
+        } catch (FileNotFoundException fe) {
+            fe.printStackTrace();
+            log.error(fe);
+//            auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "FileNotFoundException: "+fe.getMessage());
+//            auditLogProvider.persist(auditBuilder);
+            SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
+            resp.setErrorCode(ResponseCode.FILE_EXCEPTION);
+            log.debug("WS SYNCHRONIZATION COMPLETE WITH ERRORS ^^^^^^^^");
+            return resp;
+        } catch (IOException io) {
+            io.printStackTrace();
+            /*
+            synchStartLog.updateSynchAttributes("FAIL", ResponseCode.IO_EXCEPTION.toString(), io.toString());
+            auditHelper.logEvent(synchStartLog);
+			*/
+            SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
+            resp.setErrorCode(ResponseCode.IO_EXCEPTION);
+            log.debug("WS SYNCHRONIZATION COMPLETE WITH ERRORS ^^^^^^^^");
+            return resp;
 
-		} finally {
+        } catch (Exception se) {
+
+            log.error(se);
+            SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
+            resp.setErrorCode(ResponseCode.SQL_EXCEPTION);
+            resp.setErrorText(se.toString());
+            return resp;
+
+        } finally {
             if (resultReview != null) {
                 if (CollectionUtils.isNotEmpty(resultReview.getReviewRecords())) { // add header row
                     resultReview.addRecord(generateSynchReviewRecord(lineHeader, true));
                 }
             }
-		}
-		
-		log.debug("WS SYNCH COMPLETE.^^^^^^^^");
+        }
 
-		SyncResponse resp = new SyncResponse(ResponseStatus.SUCCESS);
-		resp.setLastRecordTime(mostRecentRecord);
-		return resp;
-		
-	}
+        log.debug("WS SYNCH COMPLETE.^^^^^^^^");
+
+        SyncResponse resp = new SyncResponse(ResponseStatus.SUCCESS);
+        resp.setLastRecordTime(mostRecentRecord);
+        return resp;
+
+    }
 
     public Response testConnection(SynchConfig config) {
-        WSOperationCommand serviceCmd = getServiceCommand(  config.getWsScript() );
+        WSOperationCommand serviceCmd = getServiceCommand(config.getWsScript());
         if (serviceCmd == null) {
             Response resp = new Response(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.CLASS_NOT_FOUND);
@@ -156,9 +192,9 @@ public class WSAdapter extends AbstractSrcAdapter { // implements SourceAdapter
             return null;
         }
         try {
-            return (WSOperationCommand)scriptRunner.instantiateClass(null, scriptName);
+            return (WSOperationCommand) scriptRunner.instantiateClass(null, scriptName);
 
-        } catch(Exception e) {
+        } catch (Exception e) {
             log.error(e);
             e.printStackTrace();
             return null;

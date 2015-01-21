@@ -39,6 +39,7 @@ public abstract class AbstractLdapCommand<Request extends RequestType, Response 
     private ResourceDataService resourceDataService;
 
     public static final String DN_IDENTITY_MATCH_REGEXP = "{0}=(.*?)(?:,.*)*$";
+	public static final String OU_ATTRIBUTE = "ou";
 
     public LdapContext connect(ManagedSysEntity managedSys) throws ConnectorDataException {
         ConnectionMgr conMgr = ConnectionFactory.create(ConnectionManagerConstant.LDAP_CONNECTION);
@@ -79,22 +80,32 @@ public abstract class AbstractLdapCommand<Request extends RequestType, Response 
         return null;
     }
 
-    public boolean isMembershipEnabled(Set<ResourceProp> rpSet, String property) {
-        ResourceProp rpSupervisorMembership = getResourceAttr(rpSet, property);
-        // BY DEFAULT - we want to enable membership
-        if (rpSupervisorMembership == null || rpSupervisorMembership.getValue() == null
-                || "Y".equalsIgnoreCase(rpSupervisorMembership.getValue())) {
-            return true;
+    public boolean getResourceBoolean(Set<ResourceProp> rpSet, String property, boolean defaultValue) {
+        ResourceProp prop = getResourceAttr(rpSet, property);
+		if (prop == null || prop.getValue() == null) {
+			return defaultValue;
+		} else {
+			return "Y".equalsIgnoreCase(prop.getValue());
+		}
+	}
 
-        } else if (rpSupervisorMembership.getValue() != null) {
-            if ("N".equalsIgnoreCase(rpSupervisorMembership.getValue())) {
-                return false;
-            }
-        }
-        return false;
-    }
+	public String getResourceString(Set<ResourceProp> rpSet, String property, String defaultValue) {
+		ResourceProp prop = getResourceAttr(rpSet, property);
+		return (prop == null || prop.getValue() == null) ? defaultValue : prop.getValue();
+	}
 
-    protected boolean identityExists(String ldapName, LdapContext ctx) {
+	protected String buildIdentityDn(String keyFieldValue, String ou, ManagedSystemObjectMatch matchObj) {
+		StringBuilder builderIdentityDn = new StringBuilder();
+		builderIdentityDn.append(matchObj.getKeyField());
+		builderIdentityDn.append('=').append(keyFieldValue).append(',');
+		if(StringUtils.isNotBlank(ou)) {
+			builderIdentityDn.append(ou).append(',');
+		}
+		builderIdentityDn.append(matchObj.getBaseDn());
+		return builderIdentityDn.toString();
+	}
+
+	protected boolean identityExists(String ldapName, LdapContext ctx) {
 
         try {
             LdapContext lCtx = (LdapContext) ctx.lookup(ldapName);
@@ -105,11 +116,11 @@ public abstract class AbstractLdapCommand<Request extends RequestType, Response 
 
     }
 
-    protected String getOU(ExtensibleObject obj) {
+    protected String getAttrValue(ExtensibleObject obj, String attrName) {
         if (obj != null) {
             List<ExtensibleAttribute> attrList = obj.getAttributes();
             for (ExtensibleAttribute att : attrList) {
-                if (att.getName().equalsIgnoreCase("ou")) {
+                if (att.getName().equalsIgnoreCase(attrName)) {
                     return att.getValue();
                 }
             }
@@ -173,16 +184,10 @@ public abstract class AbstractLdapCommand<Request extends RequestType, Response 
 
         BasicAttributes attrs = new BasicAttributes();
 
-        // add the ou for this record
-        if (obj.getExtensibleObjectType() == ExtensibleObjectType.USER) {
-            Attribute ouSet = new BasicAttribute("ou");
-            String ou = getOU(obj);
-            log.debug("GetAttributes() - ou=" + ou);
-            if (ou != null && ou.length() > 0) {
-                ouSet.add(ou);
-                attrs.put(ouSet);
-            }
-        }
+        // add the object class
+        Attribute oc = new BasicAttribute("objectClass");
+        oc.add("top");
+        attrs.put(oc);
 
         // add the attributes
         List<ExtensibleAttribute> attrList = obj.getAttributes();
@@ -222,8 +227,8 @@ public abstract class AbstractLdapCommand<Request extends RequestType, Response 
                 } else {
                     // valid value
 
-                    if ("ou".equalsIgnoreCase(att.getName()) && obj.getExtensibleObjectType() != ExtensibleObjectType.USER) {
-                        // skip ou for non user objects
+                    if (OU_ATTRIBUTE.equalsIgnoreCase(att.getName())) {
+                        // skip ou
                     } else if ("unicodePwd".equalsIgnoreCase(att.getName())) {
                         Attribute a = generateActiveDirectoryPassword(att.getValue());
                         attrs.put(a);

@@ -173,8 +173,8 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
                 bindingMap.put(AbstractProvisioningService.MATCH_PARAM, matchObj);
             }
 
-            String onDeleteProp = findResourcePropertyByName(res.getId(), "ON_DELETE");
-            if (StringUtils.isEmpty(onDeleteProp)) {
+            String onDeleteProp = resourceDataService.getResourcePropValueByName(res.getId(), "ON_DELETE");
+            if(StringUtils.isEmpty(onDeleteProp)) {
                 onDeleteProp = "DELETE";
             }
             ProvLoginStatusEnum provLoginStatus;

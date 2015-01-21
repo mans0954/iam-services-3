@@ -36,8 +36,8 @@ public class AddGroupLdapCommand extends AbstractCrudLdapCommand<ExtensibleGroup
             List<BaseAttribute> supervisorMembershipList = new ArrayList<BaseAttribute>();
 
             Set<ResourceProp> rpSet = getResourceAttributes(managedSys.getResource().getId());
-            boolean groupMembershipEnabled = isMembershipEnabled(rpSet, "GROUP_MEMBERSHIP_ENABLED");
-            boolean supervisorMembershipEnabled = isMembershipEnabled(rpSet, "SUPERVISOR_MEMBERSHIP_ENABLED");
+            boolean groupMembershipEnabled = getResourceBoolean(rpSet, "GROUP_MEMBERSHIP_ENABLED", true);
+            boolean supervisorMembershipEnabled = getResourceBoolean(rpSet, "SUPERVISOR_MEMBERSHIP_ENABLED", true);
 
             Directory dirSpecificImp  = DirectorySpecificImplFactory.create(managedSys.getHandler5());
 
@@ -56,7 +56,7 @@ public class AddGroupLdapCommand extends AbstractCrudLdapCommand<ExtensibleGroup
                 objectBaseDN =  addRequestType.getObjectIdentity().substring(CN.length()+1);
             } else {
                 // if identity is not in DN format try to find OU info in attributes
-                String OU = getOU(addRequestType.getExtensibleObject());
+                String OU = getAttrValue(addRequestType.getExtensibleObject(), OU_ATTRIBUTE);
                 if(StringUtils.isNotEmpty(OU)) {
                     objectBaseDN = OU+","+matchObj.getBaseDn();
                 } else {

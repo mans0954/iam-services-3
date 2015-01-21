@@ -23,18 +23,22 @@ package org.openiam.idm.srvc.synch.srcadapter;
 
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.SftpException;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.csv.CSVStrategy;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-
 import org.openiam.idm.parser.csv.CSVHelper;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.synch.domain.SynchReviewEntity;
 import org.openiam.idm.srvc.synch.dto.*;
+import org.openiam.idm.srvc.synch.service.MatchObjectRule;
+import org.openiam.idm.srvc.synch.service.TransformScript;
+import org.openiam.idm.srvc.synch.service.ValidationScript;
 import org.openiam.idm.util.RemoteFileStorageManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -44,6 +48,8 @@ import java.io.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Reads a CSV file for use during the synchronization process
@@ -58,10 +64,10 @@ public class CSVAdapter extends AbstractSrcAdapter {
 
     @Value("${org.openiam.upload.root}")
     private String uploadRoot;
-    
+
     @Value("${csvadapter.thread.count}")
     private int THREAD_COUNT;
-    
+
     @Value("${csvadapter.thread.delay.beforestart}")
     private int THREAD_DELAY_BEFORE_START;
 
@@ -79,26 +85,41 @@ public class CSVAdapter extends AbstractSrcAdapter {
     }
 
     @Override
-    public SyncResponse startSynch(final SynchConfig config, SynchReviewEntity sourceReview, SynchReviewEntity resultReview) {
+    public SyncResponse startSynch(final SynchConfig config, SynchReviewEntity sourceReview, final SynchReviewEntity resultReview) {
 
         log.debug("CSV startSynch CALLED.^^^^^^^^");
         System.out.println("CSV startSynch CALLED.^^^^^^^^");
 
-        SyncResponse res = initializeScripts(config, sourceReview);
-        if (ResponseStatus.FAILURE.equals(res.getStatus())) {
-            return res;
-        }
+        SyncResponse res = new SyncResponse(ResponseStatus.SUCCESS);
 
-        if (sourceReview != null && !sourceReview.isSourceRejected()) {
-            return startSynchReview(config, sourceReview, resultReview);
+        SynchReview review = null;
+        if (sourceReview != null) {
+            review = synchReviewDozerConverter.convertToDTO(sourceReview, false);
         }
-
-        LineObject rowHeader = null;
+        LineObject rowHeaderForReport = null;
         InputStream input = null;
+
         try {
+            final ValidationScript validationScript = StringUtils.isNotEmpty(config.getValidationRule()) ? SynchScriptFactory.createValidationScript(config, review) : null;
+            final List<TransformScript> transformScripts = SynchScriptFactory.createTransformationScript(config, review);
+            final MatchObjectRule matchRule = matchRuleFactory.create(config.getCustomMatchRule()); // check if matchRule exists
+
+            if (validationScript == null || transformScripts == null || matchRule == null) {
+                res = new SyncResponse(ResponseStatus.FAILURE);
+                res.setErrorText("The problem in initialization of CSVAdapter, please check validationScript= " + validationScript + ", transformScripts=" + transformScripts + ", matchRule=" + matchRule + " all must be set!");
+                res.setErrorCode(ResponseCode.INVALID_ARGUMENTS);
+                return res;
+            }
+
+
+            if (sourceReview != null && !sourceReview.isSourceRejected()) {
+                return startSynchReview(config, sourceReview, resultReview, validationScript, transformScripts, matchRule);
+            }
+
+
             CSVHelper parser;
             String csvFileName = config.getFileName();
-            if(useRemoteFilestorage) {
+            if (useRemoteFilestorage) {
                 input = remoteFileStorageManager.downloadFile(SYNC_DIR, csvFileName);
                 parser = new CSVHelper(input, "UTF-8");
             } else {
@@ -107,23 +128,80 @@ public class CSVAdapter extends AbstractSrcAdapter {
                 parser = new CSVHelper(input, "UTF-8", CSVStrategy.EXCEL_STRATEGY);
             }
 
-            String[][] rows = parser.getAllValues();
+            final String[][] rows = parser.getAllValues();
 
             //Get Header
-            rowHeader = populateTemplate(rows[0]);
-
+            final LineObject rowHeader = populateTemplate(rows[0]);
+            rowHeaderForReport = rowHeader;
             if (rows.length > 1) {
-                rows = Arrays.copyOfRange(rows, 1, rows.length);
-                for (String[] row : rows) {
-                    LineObject rowObj = rowHeader.copy();
-                    populateRowObject(rowObj, row);
-                    processLineObject(rowObj, config, resultReview);
+
+
+                int part = rows.length / THREAD_COUNT;
+                int remains = rows.length - part * THREAD_COUNT;
+
+                List<Part> partsList = new ArrayList<Part>();
+                for (int i = 0; i < THREAD_COUNT; i++) {
+                    if (i != THREAD_COUNT - 1) {
+                        partsList.add(new Part(i * part, (i + 1) * part));
+                    } else {
+                        partsList.add(new Part(i * part, (i + 1) * part + remains));
+                    }
                 }
+
+                final Counter counter = new Counter();
+                ExecutorService executor = Executors.newFixedThreadPool(THREAD_COUNT);
+                List<Future<Integer>> list = new ArrayList<Future<Integer>>();
+
+                final String[][] rowsWithoutHeader = Arrays.copyOfRange(rows, 1, rows.length);
+                for (final Part p : partsList) {
+                    Callable<Integer> worker = new Callable<Integer>() {
+                        @Override
+                        public Integer call() throws Exception {
+                            System.out.println("======= CSV Adapter Part [" + p.getStartIndx() + "; " + p.getEndIndx() + "] started.");
+
+                            int number = 0;
+                            String[][] rowsForProcessing = Arrays.copyOfRange(rowsWithoutHeader, p.getStartIndx(), p.getEndIndx());
+                            for (String[] row : rowsForProcessing) {
+                                LineObject rowObj = rowHeader.copy();
+                                populateRowObject(rowObj, row);
+                                processLineObject(rowObj, config, resultReview, validationScript, transformScripts, matchRule);
+                                number = counter.increment();
+                                System.out.println("======= CSV Adapter Part [" + p.getStartIndx() + "; " + p.getEndIndx() + "]  counter.increment = " + number);
+                            }
+                            System.out.println("======= CSV Adapter Part [" + p.getStartIndx() + "; " + p.getEndIndx() + "] finished.");
+                            return number;
+                        }
+                    };
+                    Future<Integer> submit = executor.submit(worker);
+                    list.add(submit);
+                }
+
+                // This will make the executor accept no new threads
+                // and finish all existing threads in the queue
+                executor.shutdown();
+                // Wait until all threads are finish
+                while (!executor.isTerminated()) {
+                }
+                Integer set = 0;
+                for (Future<Integer> future : list) {
+                    try {
+                        set += future.get();
+                    } catch (InterruptedException e) {
+                        log.warn(e.getMessage());
+                    } catch (ExecutionException e) {
+                        log.warn("CSVAdapter: future.get() throw problem message");
+                    }
+                }
+                System.out.println("CSV ================= All Processed records = " + set);
             }
 
+        } catch (ClassNotFoundException cnfe) {
+            log.error(cnfe);
+            res = new SyncResponse(ResponseStatus.FAILURE);
+            res.setErrorCode(ResponseCode.CLASS_NOT_FOUND);
+            return res;
         } catch (FileNotFoundException fe) {
             fe.printStackTrace();
-
             log.error(fe);
 //            auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "FileNotFoundException: "+fe.getMessage());
 //            auditLogProvider.persist(auditBuilder);
@@ -165,7 +243,7 @@ public class CSVAdapter extends AbstractSrcAdapter {
         } finally {
             if (resultReview != null) {
                 if (CollectionUtils.isNotEmpty(resultReview.getReviewRecords())) { // add header row
-                    resultReview.addRecord(generateSynchReviewRecord(rowHeader, true));
+                    resultReview.addRecord(generateSynchReviewRecord(rowHeaderForReport, true));
                 }
             }
             if (input != null) {
@@ -255,4 +333,56 @@ public class CSVAdapter extends AbstractSrcAdapter {
             attr.setValue(colValue);
         }
     }
+
+
+    class Part {
+        int startIndx = -1;
+        int endIndx = -1;
+
+        Part(int startIndx, int endIndx) {
+            this.startIndx = startIndx;
+            this.endIndx = endIndx;
+        }
+
+        public int getStartIndx() {
+            return startIndx;
+        }
+
+        public void setStartIndx(int startIndx) {
+            this.startIndx = startIndx;
+        }
+
+        public int getEndIndx() {
+            return endIndx;
+        }
+
+        public void setEndIndx(int endIndx) {
+            this.endIndx = endIndx;
+        }
+    }
+
+
+    public class Counter {
+        private AtomicInteger value = new AtomicInteger();
+
+        public int getValue() {
+            return value.get();
+        }
+
+        public int increment() {
+            return value.incrementAndGet();
+        }
+
+        // Alternative implementation as increment but just make the
+        // implementation explicit
+        public int incrementLongVersion() {
+            int oldValue = value.get();
+            while (!value.compareAndSet(oldValue, oldValue + 1)) {
+                oldValue = value.get();
+            }
+            return oldValue + 1;
+        }
+
+    }
+
 }

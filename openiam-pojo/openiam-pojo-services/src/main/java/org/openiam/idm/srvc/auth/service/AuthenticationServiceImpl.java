@@ -375,6 +375,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
             }
 		*/
     	} catch (BasicDataServiceException e) {
+    		log.warn("Can't log in", e);
     		authResp.fail();
     		authResp.setErrorCode(e.getCode());
     		authResp.setErrorTokenList(e.getErrorTokenList());

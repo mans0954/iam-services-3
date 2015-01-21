@@ -1,8 +1,8 @@
 package org.openiam.idm.srvc.mngsys.ws;
 
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 import javax.jws.WebParam;
 import javax.jws.WebService;
@@ -48,8 +48,6 @@ import org.openiam.idm.srvc.mngsys.searchbeans.converter.ApproverAssocationSearc
 import org.openiam.idm.srvc.mngsys.searchbeans.converter.ManagedSystemSearchBeanConverter;
 import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
-import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
-import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.util.SSLCert;
 import org.openiam.util.encrypt.Cryptor;
@@ -162,6 +160,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ManagedSysDto> getManagedSystems(
             @WebParam(name = "searchBean", targetNamespace = "") ManagedSysSearchBean searchBean,
             @WebParam(name = "size", targetNamespace = "") Integer size,
@@ -191,6 +190,8 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     		}
 
     		final ManagedSysEntity entity = managedSysDozerConverter.convertToEntity(sys, true);
+			/*
+			Commented out by Lev Bornovalov when merging RELEASE-3.2.5 into devlopment (4.0)
     		if(sys.getResource() != null) {
     			if(CollectionUtils.isNotEmpty(sys.getResource().getResourceProps())) {
     				final Set<ResourcePropEntity> resourcePropSet = new HashSet<>();
@@ -200,13 +201,13 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     				entity.getResource().setResourceProps(resourcePropSet);
     			}
     		}
-    		managedSystemService.save(entity);
-    		response.setResponseValue(entity.getId());
+			*/
+    		response.setResponseValue(sys.getId());
     	} catch (BasicDataServiceException e) {
 			response.setErrorCode(e.getCode());
 			response.setStatus(ResponseStatus.FAILURE);
 		} catch (Throwable e) {
-			log.error("Can't save managed system", e);
+			log.error("Can't remove managed system", e);
 			response.setErrorText(e.getMessage());
 			response.setStatus(ResponseStatus.FAILURE);
 		}
@@ -249,6 +250,10 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     		if(StringUtils.isBlank(sysId)) {
     			throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
     		}
+            List<AuthProviderEntity> authProviderEntities = managedSystemService.findAuthProvidersByManagedSysId(sysId);
+            if (CollectionUtils.isNotEmpty(authProviderEntities)) {
+                throw new BasicDataServiceException(ResponseCode.LINKED_TO_AUTHENTICATION_PROVIDER, authProviderEntities.get(0).getName());
+            }
     		managedSystemService.removeManagedSysById(sysId);
     	} catch (BasicDataServiceException e) {
             response.setResponseValue(e.getResponseValue());
@@ -575,14 +580,21 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     }
 
     @Override
-    public List<AttributeMap> getResourceAttributeMaps(String resourceId) {
+	@Transactional(readOnly = true)
+    public List<AttributeMap> getResourceAttributeMaps(final String resourceId) {
         if (resourceId == null) {
             throw new IllegalArgumentException("resourceId is null");
         }
         List<AttributeMapEntity> amEList = managedSystemService
                 .getResourceAttributeMaps(resourceId);
-        return amEList == null ? null : attributeMapDozerConverter
-                .convertToDTOList(amEList, true);
+        List<AttributeMap> mapList = new LinkedList<AttributeMap>();
+        if(amEList != null) {
+            for(AttributeMapEntity ame : amEList) {
+                AttributeMap am = attributeMapDozerConverter.convertToDTO(ame, true);
+                mapList.add(am);
+            }
+        }
+        return mapList;
     }
 
     @Override

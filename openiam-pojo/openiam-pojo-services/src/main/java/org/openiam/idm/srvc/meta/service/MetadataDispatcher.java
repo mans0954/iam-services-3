@@ -33,6 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jms.core.BrowserCallback;
 import org.springframework.jms.core.JmsTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
@@ -85,7 +86,10 @@ public class MetadataDispatcher implements Sweepable {
     @Qualifier("transactionManager")
     private PlatformTransactionManager platformTransactionManager;
     private final Object mutex = new Object();
+
     @Override
+    //TODO change when Spring 3.2.2 @Scheduled(fixedDelayString = "${org.openiam.metadata.threadsweep}")
+    @Scheduled(fixedDelay=10000)
     public void sweep() {
         jmsTemplate.browse(queue, new BrowserCallback<Object>() {
             @Override

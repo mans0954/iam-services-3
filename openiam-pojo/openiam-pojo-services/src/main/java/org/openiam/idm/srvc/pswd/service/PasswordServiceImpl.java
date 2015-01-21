@@ -87,13 +87,7 @@ public class PasswordServiceImpl implements PasswordService {
     protected PasswordPolicyProvider passwordPolicyProvider;
     private static final Log log = LogFactory.getLog(PasswordServiceImpl.class);
     private static final long DAY_AS_MILLIS = 86400000l;
-    /*
-    * (non-Javadoc)
-    *
-    * @see
-    * org.openiam.idm.srvc.policy.pswd.PasswordService#isPasswordValid(org.
-    * openiam.idm.srvc.policy.dto.Password)
-    */
+
     @Override
     public PasswordValidationResponse isPasswordValid(Password pswd)
             throws ObjectNotFoundException {
@@ -185,25 +179,17 @@ public class PasswordServiceImpl implements PasswordService {
         }
         return retVal;
     }
-    /*
-    * (non-Javadoc)
-    *
-    * @see
-    * org.openiam.idm.srvc.pswd.service.PasswordService#daysToPasswordExpiration
-    * (java.lang.String, java.lang.String, java.lang.String)
-    */
+
     @Override
     public int daysToPasswordExpiration(String principal,
                                         String managedSysId) {
         long DAY = 86400000L;
         long curTime = System.currentTimeMillis();
-// Date curDate = new Date(System.currentTimeMillis());
         LoginEntity lg = loginManager.getLoginByManagedSys(principal, managedSysId);
         if (lg == null) {
             return -1;
         }
         if (lg.getPwdExp() == null) {
-// no expiration date
             return 9999;
         }
         long endTime = lg.getPwdExp().getTime();
@@ -214,17 +200,10 @@ public class PasswordServiceImpl implements PasswordService {
         }
         return (int) diffInDays;
     }
-    /*
-    * (non-Javadoc)
-    *
-    * @see
-    * org.openiam.idm.srvc.pswd.service.PasswordService#isPasswordChangeAllowed
-    * (java.lang.String, java.lang.String, java.lang.String)
-    */
+
     @Override
     public boolean isPasswordChangeAllowed(String principal, String managedSysId) {
         boolean enabled = false;
-// get the policy
         Policy policy = getPasswordPolicyUsingContentProvider(principal, managedSysId, null);
         log.info("Password policy=" + policy);
         PolicyAttribute changeAttr = policy
@@ -249,13 +228,7 @@ public class PasswordServiceImpl implements PasswordService {
         }
         return true;
     }
-    /*
-    * (non-Javadoc)
-    *
-    * @see
-    * org.openiam.idm.srvc.pswd.service.PasswordService#passwordChangeCountByDate
-    * (java.lang.String, java.lang.String, java.lang.String)
-    */
+
     @Override
     public int passwordChangeCount(String principal, String managedSysId) {
         LoginEntity lg = loginManager.getLoginByManagedSys(principal, managedSysId);
@@ -264,13 +237,7 @@ public class PasswordServiceImpl implements PasswordService {
         }
         return lg.getPasswordChangeCount();
     }
-    /*
-    * (non-Javadoc)
-    *
-    * @see
-    * org.openiam.idm.srvc.pswd.service.PasswordService#getPasswordPolicy(org
-    * .openiam.idm.srvc.user.dto.User)
-    */
+
     @Override
     @Deprecated
     public Policy getPasswordPolicy(String principal, String managedSysId) {
@@ -289,50 +256,12 @@ public class PasswordServiceImpl implements PasswordService {
     public Policy getGlobalPasswordPolicy() {
         return passwordPolicyProvider.getGlobalPasswordPolicy();
     }
-    /*
-    * (non-Javadoc)
-    *
-    * @see
-    * org.openiam.idm.srvc.pswd.service.PasswordService#passwordInHistory(org
-    * .openiam.idm.srvc.pswd.dto.Password,
-    * org.openiam.idm.srvc.policy.dto.Policy) 1 - In History, 0 - Not in
-    * history, -1 No policy defined
-    */
-/*
-* public int passwordInHistory(Password pswd, Policy policy) { // get the
-* list of passwords for this user. String decrypt = null;
-*
-* PolicyAttribute attr = policy.getAttribute("PWD_HIST_VER"); if (attr ==
-* null || attr.getValue1() == null) { // no policy defined return -1; } int
-* version = Integer.parseInt(attr.getValue1());
-*
-* final LoginEntity loginEntity =
-* loginManager.getLoginByManagedSys(pswd.getDomainId(),
-* pswd.getPrincipal(), pswd.getManagedSysId());
-*
-* int retVal = 0; if(loginEntity != null) { final
-* List<PasswordHistoryEntity> historyList =
-* passwordHistoryDao.getPasswordHistoryByLoginId(loginEntity.getLoginId(),
-* 0, version); if (CollectionUtils.isEmpty(historyList)) { // no history
-* retVal = 0; } else { log.info("Found " + historyList.size() +
-* " passwords in the history"); for (PasswordHistoryEntity hist :
-* historyList) { String pwd = hist.getPassword(); try { LoginEntity login =
-* loginManager.getLoginDetails(hist.getLogin()); decrypt =
-* cryptor.decrypt(keyManagementService.getUserKey( login.getUserId(),
-* KeyName.password.name()), pwd); } catch (Exception e) {
-* log.error("Unable to decrypt password in history: " + pwd); throw new
-* IllegalArgumentException(
-* "Unable to decrypt password in password history list"); } if
-* (pswd.getPassword().equals(decrypt)) {
-* log.info("matching password found."); retVal = 1; } } } } else { retVal =
-* 0; } return retVal; }
-*/
+
     @Override
     public PasswordResetTokenResponse generatePasswordResetToken(
             PasswordResetTokenRequest request) {
         PasswordResetTokenResponse resp = new PasswordResetTokenResponse(
                 ResponseStatus.SUCCESS);
-// number of days in which the password token will expire
         int expirationDays = 0;
         if (request == null || request.getPrincipal() == null
                 || request.getManagedSysId() == null) {
@@ -360,7 +289,6 @@ public class PasswordServiceImpl implements PasswordService {
         String str = request.getPrincipal() + "*" + expireDate;
         String token = DigestUtils.sha256Hex(str);
         resp.setPasswordResetToken(token);
-// update our database
         l.setPswdResetToken(token);
         l.setPswdResetTokenExp(tokenExpDate);
         loginManager.updateLogin(l);
@@ -371,18 +299,16 @@ public class PasswordServiceImpl implements PasswordService {
             String token) {
         ValidatePasswordResetTokenResponse resp = new ValidatePasswordResetTokenResponse(
                 ResponseStatus.SUCCESS);
-// look up the token
+
         LoginEntity l = loginManager.getPasswordResetToken(token);
         if (l == null) {
             resp.setStatus(ResponseStatus.FAILURE);
             return resp;
         }
-// check if the token is still valid
         Date expToken = l.getPswdResetTokenExp();
         long expTokenMillis = expToken.getTime();
         long curTime = System.currentTimeMillis();
         if (curTime > expTokenMillis) {
-// token is old - fails validation
             resp.setStatus(ResponseStatus.FAILURE);
             return resp;
         }

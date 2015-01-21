@@ -1,8 +1,8 @@
 package org.openiam.connector.util.connect;
 
+import com.sun.jndi.ldap.LdapCtxFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.base.SysConfiguration;
 import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.connector.type.constant.ErrorCode;
 import org.openiam.connector.util.ConnectionMgr;
@@ -46,16 +46,21 @@ public class LdapConnectionMgr implements ConnectionMgr {
     @Value("${KEYSTORE_PSWD}")
     private String keystorePasswd;
 
-    @Autowired
-    private SysConfiguration sysConfiguration;
-    
-    public LdapConnectionMgr() {}
+    @Value("${org.openiam.idm.system.user.id}")
+    private String systemUserId;
+
+    private LdapCtxFactory ldapCtxFactory;
+
+    public LdapConnectionMgr() {
+        ldapCtxFactory = new LdapCtxFactory();
+
+    }
 
     protected String getDecryptedPassword(ManagedSysEntity managedSys) throws ConnectorDataException {
         String result = null;
         if( managedSys.getPswd()!=null){
             try {
-                result = cryptor.decrypt(keyManagementService.getUserKey(sysConfiguration.getSystemUserId(), KeyName.password.name()), managedSys.getPswd());
+                result = cryptor.decrypt(keyManagementService.getUserKey(systemUserId, KeyName.password.name()), managedSys.getPswd());
             } catch (Exception e) {
                 log.error(e);
                 throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, e.getMessage());
@@ -66,7 +71,7 @@ public class LdapConnectionMgr implements ConnectionMgr {
 
 	public LdapContext connect(ManagedSysEntity managedSys) throws NamingException {
 
-		LdapContext ldapContext = null;
+        LdapContext ldapContext = null;
 		Hashtable<String, String> envDC = new Hashtable();
 	
         if (keystore != null && !keystore.isEmpty())  {
@@ -104,6 +109,12 @@ public class LdapConnectionMgr implements ConnectionMgr {
 		envDC.put(Context.SECURITY_PRINCIPAL,managedSys.getUserId() != null ? managedSys.getUserId() : "");  //"administrator@diamelle.local"
 		envDC.put(Context.SECURITY_CREDENTIALS,decryptedPassword);
 
+        //Connections Pool configuration
+        envDC.put("com.sun.jndi.ldap.connect.pool", "true");
+        // Here is an example of a command line that sets the maximum pool size to 20, the preferred pool size to 10, and the idle timeout to 5 minutes for pooled connections.
+        envDC.put("com.sun.jndi.ldap.connect.pool.prefsize", "10");
+        envDC.put("com.sun.jndi.ldap.connect.pool.maxsize", "20");
+        envDC.put("com.sun.jndi.ldap.connect.pool.timeout", "300000");
         /*
         Protocol is defined in the url - ldaps vs ldap
         This is not necessary
@@ -116,7 +127,7 @@ public class LdapConnectionMgr implements ConnectionMgr {
         //}
 
         try {
-            ldapContext = new InitialLdapContext(envDC, null);
+            ldapContext = (LdapContext) ldapCtxFactory.getInitialContext((Hashtable) envDC);
 
         } catch (CommunicationException ce) {
             // check if there is a secondary connection linked to this

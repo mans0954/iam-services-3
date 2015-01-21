@@ -15,6 +15,7 @@ import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.connector.ldap.dirtype.Directory;
 import org.openiam.connector.ldap.dirtype.DirectorySpecificImplFactory;
 import org.openiam.provision.type.ExtensibleUser;
+import org.openiam.util.StringUtil;
 import org.springframework.stereotype.Service;
 
 import javax.naming.NameNotFoundException;
@@ -24,7 +25,6 @@ import javax.naming.directory.*;
 import javax.naming.ldap.LdapContext;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -50,26 +50,24 @@ public class ModifyUserLdapCommand extends AbstractCrudLdapCommand<ExtensibleUse
             Pattern pattern = Pattern.compile(identityPatternStr);
             Matcher matcher = pattern.matcher(identity);
             String objectBaseDN;
+			String OU = null;
+			String keyFieldValue = null;
 
-            if(matcher.matches()) {
+			final boolean isIdentityInDnFormat = matcher.matches();
+            if(isIdentityInDnFormat) {
                 String tmp = identity;
                 identity = matcher.group(1);
                 String CN = matchObj.getKeyField() + "=" + identity;
                 objectBaseDN =  tmp.substring(CN.length()+1);
 
             } else {
-                // if identity is not in DN format try to find OU info in attributes
-                String OU = getOU(crudRequest.getExtensibleObject());
-                if(StringUtils.isNotEmpty(OU)) {
-                    objectBaseDN = OU+","+matchObj.getBaseDn();
-                } else {
-                    objectBaseDN = matchObj.getBaseDn();
-                }
+				objectBaseDN = matchObj.getBaseDn();
             }
 
-            Set<ResourceProp> rpSet = (managedSys.getResource() != null) ? getResourceAttributes(managedSys.getResource().getId()) : Collections.EMPTY_SET;
-            boolean groupMembershipEnabled = isMembershipEnabled(rpSet, "GROUP_MEMBERSHIP_ENABLED");
-            boolean supervisorMembershipEnabled = isMembershipEnabled(rpSet, "SUPERVISOR_MEMBERSHIP_ENABLED");
+            Set<ResourceProp> rpSet = getResourceAttributes(managedSys.getResource().getId());
+            boolean groupMembershipEnabled = getResourceBoolean(rpSet, "GROUP_MEMBERSHIP_ENABLED", true);
+            boolean supervisorMembershipEnabled = getResourceBoolean(rpSet, "SUPERVISOR_MEMBERSHIP_ENABLED", true);
+			boolean isLookupUserInOu = getResourceBoolean(rpSet, "LOOKUP_USER_IN_OU", true);
 
             Directory dirSpecificImp = DirectorySpecificImplFactory.create(managedSys.getHandler5());
 
@@ -87,8 +85,14 @@ public class ModifyUserLdapCommand extends AbstractCrudLdapCommand<ExtensibleUse
 
                 if (att.getName().equalsIgnoreCase(matchObj.getKeyField())) {
                     log.debug("Attr Name=" + att.getName() + " Value=" + att.getValue() + " ignored");
+					keyFieldValue = att.getValue();
                     continue;
                 }
+
+				if (OU_ATTRIBUTE.equalsIgnoreCase(att.getName())) {
+					OU = att.getValue();
+					continue; // we don't have to save OU attribute directly, it goes from user's DN
+				}
 
                 if (att.getDataType().equalsIgnoreCase("manager")) {
                     if (supervisorMembershipEnabled) {
@@ -150,6 +154,10 @@ public class ModifyUserLdapCommand extends AbstractCrudLdapCommand<ExtensibleUse
 
             log.debug("ModifyAttribute array=" + mods);
 
+			if (!isIdentityInDnFormat && StringUtils.isNotBlank(OU) && isLookupUserInOu) {
+				objectBaseDN = OU + "," + objectBaseDN;
+			}
+
             //Important!!! For save and modify we need to create DN format
 //            String identityDN = matchObj.getKeyField() + "=" + identity + "," + objectBaseDN;
 
@@ -197,12 +205,15 @@ public class ModifyUserLdapCommand extends AbstractCrudLdapCommand<ExtensibleUse
                 }
             }
 
-            if (origIdentity != null) {
+			final String newIdentityDN = isIdentityInDnFormat ? crudRequest.getObjectIdentity()
+					: buildIdentityDn(keyFieldValue, OU, matchObj);
+
+			if (origIdentity != null || !identityDN.equalsIgnoreCase(newIdentityDN)) {
                 log.debug("Renaming identity: " + identityDN);
 
                 try {
-                    ldapctx.rename(identityDN, crudRequest.getObjectIdentity());
-                    log.debug("Renaming : " + identityDN);
+                    ldapctx.rename(identityDN, newIdentityDN);
+                    log.debug("Renamed identity: " + newIdentityDN);
 
                 } catch (NamingException ne) {
                     log.error(ne.getMessage(), ne);
@@ -217,7 +228,7 @@ public class ModifyUserLdapCommand extends AbstractCrudLdapCommand<ExtensibleUse
 
     }
 
-    private ExtensibleAttribute isRename(ExtensibleObject obj) {
+	private ExtensibleAttribute isRename(ExtensibleObject obj) {
 
         log.debug("ReName Object:" + obj.getName() + " - operation=" + obj.getOperation());
 
