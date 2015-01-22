@@ -22,16 +22,17 @@ import java.util.Set;
 @XmlType(name = "OrganizationSearchBean", propOrder = {
         "keySet",
         "name",
-		"organizationTypeIdSet",
+        "organizationTypeIdSet",
 //		"userId",
 //		"parentId",
 //		"childId",
-		"validParentTypeId",
+        "validParentTypeId",
         "internalOrgId",
         "attributes",
         "metadataType",
         "isSelectable",
-		"adminResourceId"
+        "adminResourceId",
+        "abbreviation"
 })
 public class OrganizationSearchBean extends EntitlementsSearchBean<Organization, String> implements SearchBean<Organization, String>,
         Serializable {
@@ -42,29 +43,30 @@ public class OrganizationSearchBean extends EntitlementsSearchBean<Organization,
     private String validParentTypeId;
     private String internalOrgId;
     private String metadataType;
-    private List<Tuple<String,String>> attributes;
+    private List<Tuple<String, String>> attributes;
     private Boolean isSelectable = null;
-	private String adminResourceId;
+    private String adminResourceId;
+    private String abbreviation;
 
 
-	public String getName() {
-		return name;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	public String getOrganizationTypeId() {
+    public String getOrganizationTypeId() {
         return (CollectionUtils.isNotEmpty(organizationTypeIdSet)) ? organizationTypeIdSet.iterator().next() : null;
-	}
+    }
 
-	public void setOrganizationTypeId(String organizationTypeId) {
+    public void setOrganizationTypeId(String organizationTypeId) {
         this.addOrganizationTypeId(organizationTypeId);
-	}
+    }
 
     public void addOrganizationTypeId(final String organizationTypeId) {
-        if(organizationTypeIdSet == null) {
+        if (organizationTypeIdSet == null) {
             organizationTypeIdSet = new HashSet<String>();
         }
         organizationTypeIdSet.add(organizationTypeId);
@@ -75,7 +77,7 @@ public class OrganizationSearchBean extends EntitlementsSearchBean<Organization,
     }
 
     public void setOrganizationTypeIdSet(final List<String> organizationTypeIdSet) {
-        if(organizationTypeIdSet != null) {
+        if (organizationTypeIdSet != null) {
             setKeys(new HashSet<String>(organizationTypeIdSet));
         }
     }
@@ -84,7 +86,7 @@ public class OrganizationSearchBean extends EntitlementsSearchBean<Organization,
         this.organizationTypeIdSet = organizationTypeIdSet;
     }
 
-	@Override
+    @Override
     public String getKey() {
         return (CollectionUtils.isNotEmpty(keySet)) ? keySet.iterator().next() : null;
     }
@@ -107,7 +109,7 @@ public class OrganizationSearchBean extends EntitlementsSearchBean<Organization,
     }
 
     public void addKey(final String key) {
-        if(this.keySet == null) {
+        if (this.keySet == null) {
             this.keySet = new HashSet<String>();
         }
         this.keySet.add(key);
@@ -116,11 +118,11 @@ public class OrganizationSearchBean extends EntitlementsSearchBean<Organization,
     public boolean hasMultipleKeys() {
         return (keySet != null && keySet.size() > 1);
     }
-    
+
     public void setKeys(final List<String> keySet) {
-    	if(keySet != null) {
-    		setKeys(new HashSet<String>(keySet));
-    	}
+        if (keySet != null) {
+            setKeys(new HashSet<String>(keySet));
+        }
     }
 
     public void setKeys(final Set<String> keySet) {
@@ -136,12 +138,12 @@ public class OrganizationSearchBean extends EntitlementsSearchBean<Organization,
     }
 
     public String getValidParentTypeId() {
-		return validParentTypeId;
-	}
+        return validParentTypeId;
+    }
 
-	public void setValidParentTypeId(String validParentTypeId) {
-		this.validParentTypeId = validParentTypeId;
-	}
+    public void setValidParentTypeId(String validParentTypeId) {
+        this.validParentTypeId = validParentTypeId;
+    }
 
     public String getInternalOrgId() {
         return internalOrgId;
@@ -152,9 +154,9 @@ public class OrganizationSearchBean extends EntitlementsSearchBean<Organization,
     }
 
     public void addAttribute(final String key, final String value) {
-        if(StringUtils.isNotBlank(key) || StringUtils.isNotBlank(value)) {
-            if(this.attributes == null) {
-                this.attributes = new LinkedList<Tuple<String,String>>();
+        if (StringUtils.isNotBlank(key) || StringUtils.isNotBlank(value)) {
+            if (this.attributes == null) {
+                this.attributes = new LinkedList<Tuple<String, String>>();
             }
             final Tuple<String, String> tuple = new Tuple<String, String>(key, value);
             this.attributes.add(tuple);
@@ -169,15 +171,15 @@ public class OrganizationSearchBean extends EntitlementsSearchBean<Organization,
         this.attributes = attributes;
     }
 
-	public String getAdminResourceId() {
-		return adminResourceId;
-	}
+    public String getAdminResourceId() {
+        return adminResourceId;
+    }
 
-	public void setAdminResourceId(String adminResourceId) {
-		this.adminResourceId = adminResourceId;
-	}
+    public void setAdminResourceId(String adminResourceId) {
+        this.adminResourceId = adminResourceId;
+    }
 
-	@Override
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -192,6 +194,14 @@ public class OrganizationSearchBean extends EntitlementsSearchBean<Organization,
             return false;
 
         return true;
+    }
+
+    public String getAbbreviation() {
+        return abbreviation;
+    }
+
+    public void setAbbreviation(String abbreviation) {
+        this.abbreviation = abbreviation;
     }
 
     @Override
