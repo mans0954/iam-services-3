@@ -91,7 +91,7 @@ public class ProvisionGroup extends org.openiam.idm.srvc.grp.dto.Group {
         this.createDate = group.getCreateDate();
         this.createdBy = group.getCreatedBy();
 
-        this.companyId = group.getCompanyId();
+        this.organizations = group.getOrganizations();
 
         this.description = group.getDescription();
 
@@ -106,7 +106,6 @@ public class ProvisionGroup extends org.openiam.idm.srvc.grp.dto.Group {
         this.managedSysName = group.getManagedSysName();
         this.createDate = group.getCreateDate();
         this.createdBy = group.getCreatedBy();
-        this.companyId = group.getCompanyId();
         this.description = group.getDescription();
 
         this.status = group.getStatus();

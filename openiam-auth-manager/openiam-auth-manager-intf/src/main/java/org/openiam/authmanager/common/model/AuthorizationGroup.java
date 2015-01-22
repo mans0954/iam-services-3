@@ -14,6 +14,8 @@ import java.util.Set;
 public class AuthorizationGroup extends AbstractAuthorizationEntity implements Serializable  {
 
 	private static final long serialVersionUID = 1L;
+
+	private String adminResourceId;
 	
 	@XmlTransient
 	private Set<AuthorizationGroup> parentGroups = null;
@@ -34,7 +36,15 @@ public class AuthorizationGroup extends AbstractAuthorizationEntity implements S
 	public AuthorizationGroup() {
 		
 	}
-	
+
+	public String getAdminResourceId() {
+		return adminResourceId;
+	}
+
+	public void setAdminResourceId(String adminResourceId) {
+		this.adminResourceId = adminResourceId;
+	}
+
 	public void addParentGroup(final AuthorizationGroup group) {
 		if(parentGroups == null) {
 			parentGroups = new HashSet<AuthorizationGroup>();
