@@ -29,6 +29,7 @@ import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
 import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
@@ -41,6 +42,7 @@ import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
 import org.openiam.internationalization.LocalizedServiceGet;
 import org.openiam.util.AttributeUtil;
+import org.openiam.util.ws.collection.StringUtil;
 import org.openiam.validator.EntityValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -327,7 +329,12 @@ public class GroupDataServiceImpl implements GroupDataService {
         if(group != null && entityValidator.isValid(group)) {
 
             if(group.getManagedSystem() != null && group.getManagedSystem().getId() != null) {
+                ManagedSysEntity mngSys = managedSysDAO.findById(group.getManagedSystem().getId());
                 group.setManagedSystem(managedSysDAO.findById(group.getManagedSystem().getId()));
+                if(StringUtils.isNotBlank(mngSys.getResourceId())){
+                    group.addResource(resourceDao.findById(mngSys.getResourceId()));
+                }
+
             } else {
                 group.setManagedSystem(null);
             }
@@ -394,6 +401,18 @@ public class GroupDataServiceImpl implements GroupDataService {
                     return;
                 }
             } else {
+                if(CollectionUtils.isNotEmpty(group.getParentGroups())) {
+                    Set<String> ids = new HashSet<>();
+                    for(GroupEntity grp: group.getParentGroups()){
+                        if(StringUtils.isNotBlank(grp.getId()))
+                            ids.add(grp.getId());
+                    }
+                    if(CollectionUtils.isNotEmpty(ids)){
+                        group.setParentGroups(new HashSet<>(groupDao.findByIds(ids)));
+                    }
+                } else {
+                    group.setParentGroups(null);
+                }
                 group.setAdminResource(getNewAdminResource(group, groupOwner, requestorId));
                 group.setCreatedBy(requestorId);
                 group.setCreateDate(Calendar.getInstance().getTime());
