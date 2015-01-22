@@ -2104,7 +2104,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         || l.getManagedSysId().equalsIgnoreCase(sysConfiguration.getDefaultManagedSysId())) {
                     try {
                         String oldPassword = loginManager.getPassword(l.getLogin(), l.getManagedSysId());
-                        if (StringUtils.equals(encPassword, oldPassword)) { // Do not reset password if it's equal to existing one
+                        if (StringUtils.equals(oldPassword, passwordSync.getPassword())) { // Do not reset password if it's equal to existing one
                             saveAuditLog = false;
                             return response;
                         }
