@@ -44,6 +44,7 @@ import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.dto.ApproverAssociation;
 import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
 import org.openiam.idm.srvc.org.service.OrganizationService;
+import org.openiam.idm.srvc.pswd.domain.PasswordHistoryEntity;
 import org.openiam.idm.srvc.pswd.service.PasswordHistoryDAO;
 import org.openiam.idm.srvc.pswd.service.UserIdentityAnswerDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
@@ -215,9 +216,21 @@ public class UserMgr implements UserDataService {
         }
 
         validateEmailAddress(user, user.getEmailAddresses());
+        
+        final List<LoginEntity> principalList = user.getPrincipalList();
+        if (principalList != null && !principalList.isEmpty()) {
+            for (final LoginEntity lg : principalList) {
+                if(StringUtils.equalsIgnoreCase(sysConfiguration.getDefaultManagedSysId(), lg.getManagedSysId())) {
+                	if(StringUtils.isNotBlank(lg.getPassword())) {
+                		createInitialPasswordHistoryRecord(lg);
+                	}
+                }
+            }
+        }
+        
         userDao.save(user);
         keyManagementService.generateUserKeys(user);
-
+        
         addRequiredAttributes(user);
     }
 
@@ -263,6 +276,19 @@ public class UserMgr implements UserDataService {
             throw new NullPointerException("user id is null");
 
         user.setLastUpdate(new Date(System.currentTimeMillis()));
+        
+        final List<LoginEntity> principalList = user.getPrincipalList();
+        if (principalList != null && !principalList.isEmpty()) {
+            for (final LoginEntity lg : principalList) {
+                if(StringUtils.equalsIgnoreCase(sysConfiguration.getDefaultManagedSysId(), lg.getManagedSysId())) {
+                	if(StringUtils.isNotBlank(lg.getPassword())) {
+                		if(CollectionUtils.isEmpty(lg.getPasswordHistory())) {
+                			createInitialPasswordHistoryRecord(lg);
+                		}
+                	}
+                }
+            }
+        }
 
         userDao.update(user);
 
@@ -1633,6 +1659,15 @@ public class UserMgr implements UserDataService {
             this.addSuperior(supervisorId, newUserEntity.getId());
         }
         return userId;
+    }
+    
+    //AM-414
+    /* need to set up an initial record for password history */
+    private void createInitialPasswordHistoryRecord(final LoginEntity login) {
+    	final PasswordHistoryEntity history = new PasswordHistoryEntity();
+    	history.setLogin(login);
+    	history.setPassword(login.getPassword());
+    	login.addHistoryRecord(history);
     }
 
     @Transactional

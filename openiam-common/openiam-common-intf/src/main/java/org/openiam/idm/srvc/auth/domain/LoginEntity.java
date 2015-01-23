@@ -18,6 +18,7 @@ import javax.persistence.*;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.Table;
+
 import java.util.*;
 
 @Entity
@@ -422,6 +423,15 @@ public class LoginEntity implements java.io.Serializable {
 
     public Set<PasswordHistoryEntity> getPasswordHistory() {
         return passwordHistory;
+    }
+    
+    public void addHistoryRecord(final PasswordHistoryEntity history) {
+    	if(history != null) {
+    		if(this.passwordHistory == null) {
+    			this.passwordHistory = new HashSet<>();
+    		}
+    		this.passwordHistory.add(history);
+    	}
     }
 
     public void setPasswordHistory(Set<PasswordHistoryEntity> passwordHistory) {
