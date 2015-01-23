@@ -648,7 +648,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     Set<EmailAddressEntity> entities = userEntity.getEmailAddresses();
                     if (CollectionUtils.isNotEmpty(entities)) {
                         for (EmailAddressEntity en : entities) {
-                            if (en.getEmailId().equals(e.getEmailId())) {
+                            if (StringUtils.equals(en.getEmailId(), e.getEmailId())) {
                                 userEntity.getEmailAddresses().remove(en);
                                 // Audit Log
                                 //--------------------------------------------------
@@ -723,7 +723,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     Set<PhoneEntity> entities = userEntity.getPhones();
                     if (CollectionUtils.isNotEmpty(entities)) {
                         for (PhoneEntity en : entities) {
-                            if (en.getPhoneId().equals(e.getPhoneId())) {
+                            if (StringUtils.equals(en.getPhoneId(), e.getPhoneId())) {
                                 userEntity.getPhones().remove(en);
                                 //Audit log
                                 IdmAuditLog auditLog = new IdmAuditLog();
@@ -756,7 +756,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     Set<PhoneEntity> entities = userEntity.getPhones();
                     if (CollectionUtils.isNotEmpty(entities)) {
                         for (PhoneEntity en : entities) {
-                            if (en.getPhoneId().equals(e.getPhoneId())) {
+                            if (StringUtils.equals(en.getPhoneId(), e.getPhoneId())) {
                                 // Audit Log
                                 IdmAuditLog auditLog = new IdmAuditLog();
                                 Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
@@ -794,7 +794,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     Set<AddressEntity> entities = userEntity.getAddresses();
                     if (CollectionUtils.isNotEmpty(entities)) {
                         for (AddressEntity en : entities) {
-                            if (en.getAddressId().equals(e.getAddressId())) {
+                            if (StringUtils.equals(en.getAddressId(), e.getAddressId())) {
                                 userEntity.getAddresses().remove(en);
                                 IdmAuditLog auditLog = new IdmAuditLog();
                                 Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
@@ -824,7 +824,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     Set<AddressEntity> entities = userEntity.getAddresses();
                     if (CollectionUtils.isNotEmpty(entities)) {
                         for (AddressEntity en : entities) {
-                            if (en.getAddressId().equals(e.getAddressId())) {
+                            if (StringUtils.equals(en.getAddressId(), e.getAddressId())) {
                                 // Audit Log -----------------------------------------------------------------------------------
                                 IdmAuditLog auditLog = new IdmAuditLog();
                                 Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
@@ -1144,7 +1144,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     List<UserEntity> supervisorList = userMgr.getSuperiors(userId, 0, Integer.MAX_VALUE);
                     if (CollectionUtils.isNotEmpty(supervisorList)) {
                         for (UserEntity se : supervisorList) {
-                            if (se.getId().equals(e.getId())) {
+                            if (StringUtils.equals(se.getId(), e.getId())) {
                                 userMgr.removeSupervisor(se.getId(), userId);
                                 log.info(String.format("Removed a supervisor user %s from user %s",
                                         e.getId(), userId));
@@ -1235,7 +1235,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
             for (GroupEntity gre : userEntity.getGroups()) {
                 Group gr = groupDozerConverter.convertToDTO(gre, false);
                 for (Group g : pUser.getGroups()) {
-                    if (g.getId().equals(gr.getId())) {
+                    if (StringUtils.equals(g.getId(), gr.getId())) {
                         gr.setOperation(g.getOperation()); // get operation value from pUser
                         break;
                     }
@@ -1291,7 +1291,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
             for (RoleEntity ure : userEntity.getRoles()) {
                 Role ar = roleDozerConverter.convertToDTO(ure, false);
                 for (Role r : pUser.getRoles()) {
-                    if (r.getId().equals(ar.getId())) {
+                    if (StringUtils.equals(r.getId(),ar.getId())) {
                         ar.setOperation(r.getOperation()); // get operation value from pUser
                         break;
                     }
@@ -1323,7 +1323,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                 } else if (operation == AttributeOperationEnum.DELETE) {
                     Set<OrganizationEntity> affiliations = userEntity.getAffiliations();
                     for (OrganizationEntity a : affiliations) {
-                        if (o.getId().equals(a.getId())) {
+                        if (StringUtils.equals(o.getId(),a.getId())) {
                             userEntity.getAffiliations().remove(a);
                             // Audit Log ---------------------------------------------------
                             IdmAuditLog auditLog = new IdmAuditLog();
@@ -1415,7 +1415,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     if (CollectionUtils.isNotEmpty(entities)) {
                         for (final Iterator<LoginEntity> it = entities.iterator(); it.hasNext(); ) {
                             final LoginEntity en = it.next();
-                            if (en.getLoginId().equals(e.getLoginId())) {
+                            if (StringUtils.equals(en.getLoginId(),e.getLoginId())) {
                                 it.remove();
                                 // Audit Log ---------------------------------------------------
                                 IdmAuditLog auditLog = new IdmAuditLog();
@@ -1453,7 +1453,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
 
                     if (CollectionUtils.isNotEmpty(userEntity.getPrincipalList())) {
                         for (final LoginEntity en : userEntity.getPrincipalList()) {
-                            if (en.getLoginId().equals(e.getLoginId())) {
+                            if (StringUtils.equals(en.getLoginId(),e.getLoginId())) {
 
                                 if (!en.getLogin().equals(e.getLogin())) {
                                     e.setOrigPrincipalName(en.getLogin());
