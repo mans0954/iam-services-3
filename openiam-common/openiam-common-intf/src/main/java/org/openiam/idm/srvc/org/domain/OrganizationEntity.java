@@ -142,7 +142,7 @@ public class OrganizationEntity extends AbstractMetdataTypeEntity {
 	@ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
 	@JoinTable(name = "GROUP_ORGANIZATION", joinColumns = { @JoinColumn(name = "COMPANY_ID") }, inverseJoinColumns = { @JoinColumn(name = "GRP_ID") })
 	@Fetch(FetchMode.SUBSELECT)
-	private Set<GroupEntity> groups = new HashSet<GroupEntity>(0);
+	private Set<GroupEntity> groups;
 
 
     public OrganizationEntity() {
