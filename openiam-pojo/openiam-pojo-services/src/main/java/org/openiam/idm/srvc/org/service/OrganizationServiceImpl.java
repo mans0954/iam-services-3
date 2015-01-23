@@ -721,11 +721,11 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
 
             if (entity != null) {
                 final GroupEntity example = new GroupEntity();
-                example.setCompany(entity);
+                example.addOrganization(entity);
                 final List<GroupEntity> groups = groupDAO.getByExample(example);
                 if(groups != null) {
                     for(final GroupEntity group : groups) {
-                        group.setCompany(null);
+                        group.removeOrganization(entity.getId());
                         groupDAO.update(group);
                     }
                 }

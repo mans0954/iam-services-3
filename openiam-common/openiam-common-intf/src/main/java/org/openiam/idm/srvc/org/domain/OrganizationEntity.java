@@ -24,6 +24,7 @@ import javax.validation.constraints.Size;
 import org.openiam.base.domain.AbstractMetdataTypeEntity;
 import org.openiam.base.domain.KeyEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.loc.domain.LocationEntity;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
@@ -137,6 +138,12 @@ public class OrganizationEntity extends AbstractMetdataTypeEntity {
     @Fetch(FetchMode.SUBSELECT)
     @Internationalized
     private Set<LocationEntity> locations;
+
+	@ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
+	@JoinTable(name = "GROUP_ORGANIZATION", joinColumns = { @JoinColumn(name = "COMPANY_ID") }, inverseJoinColumns = { @JoinColumn(name = "GRP_ID") })
+	@Fetch(FetchMode.SUBSELECT)
+	private Set<GroupEntity> groups = new HashSet<GroupEntity>(0);
+
 
     public OrganizationEntity() {
     }
@@ -366,8 +373,15 @@ public class OrganizationEntity extends AbstractMetdataTypeEntity {
         this.locations = locations;
     }
 
+	public Set<GroupEntity> getGroups() {
+		return groups;
+	}
 
-    @Override
+	public void setGroups(Set<GroupEntity> groups) {
+		this.groups = groups;
+	}
+
+	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
