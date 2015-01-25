@@ -48,6 +48,7 @@ import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 import javax.naming.ldap.InitialLdapContext;
 import javax.naming.ldap.LdapContext;
+
 import java.util.*;
 
 // import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
@@ -124,6 +125,19 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
 
         Subject sub = new Subject();
 
+        Policy authPolicy = policyDataService.getPolicy(authPolicyId);
+        PolicyAttribute policyAttribute = authPolicy
+                .getAttribute("MANAGED_SYS_ID");
+        if (policyAttribute == null) {
+            throw new AuthenticationException(
+                    AuthenticationConstants.RESULT_INVALID_CONFIGURATION);
+        }
+        ManagedSysEntity mse = managedSysDAO.findById(policyAttribute.getValue1());
+        if (mse == null)
+            throw new AuthenticationException(
+                    AuthenticationConstants.RESULT_INVALID_CONFIGURATION);
+
+        this.init(mse);
         log.debug("login() in ActiveDirectoryLoginModule called");
 
         // current date
@@ -147,7 +161,7 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
             }
             if (!user.getStatus().equals(UserStatusEnum.ACTIVE)
                     && !user.getStatus().equals(
-                            UserStatusEnum.PENDING_INITIAL_LOGIN)) {
+                    UserStatusEnum.PENDING_INITIAL_LOGIN)) {
                 // invalid status
 //                log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
 //                        "INVALID_USER_STATUS", domainId, null, principal, null,
@@ -208,6 +222,15 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
         tokenParam.put("TOKEN_LIFE", tokenLife);
         tokenParam.put("TOKEN_ISSUER", tokenIssuer);
         tokenParam.put("PRINCIPAL", principal);
+        lg = loginManager.getLoginByManagedSys(distinguishedName, managedSysId);
+
+        if (lg == null) {
+            throw new AuthenticationException(
+                    AuthenticationConstants.RESULT_INVALID_LOGIN);
+        }
+
+        user = this.userManager.getUser(lg.getUserId());
+
 
         // update the login and user records to show this authentication
         lg.setLastAuthAttempt(new Date(System.currentTimeMillis()));
@@ -220,7 +243,7 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
         // check the user status
         if (user.getStatus() != null) {
             if (user.getStatus().equals(UserStatusEnum.PENDING_INITIAL_LOGIN) ||
-            // after the start date
+                    // after the start date
                     user.getStatus().equals(UserStatusEnum.PENDING_START_DATE)) {
 
                 user.setStatus(UserStatusEnum.ACTIVE);
@@ -273,8 +296,8 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
         SearchControls searchCtls = new SearchControls();
 
         // Specify the attributes to returned
-        String returnedAtts[] = { "distinguishedName", "sAMAccountName", "cn",
-                "sn" };
+        String returnedAtts[] = {"distinguishedName", "sAMAccountName", "cn",
+                "sn"};
         searchCtls.setReturningAttributes(returnedAtts);
 
         // Specify the search scope
@@ -317,6 +340,15 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
         return null;
     }
 
+    /**
+     * If the password has expired, but its before the grace period then its a good login
+     * If the password has expired and after the grace period, then its an exception.
+     * You should also set the days to expiration
+     *
+     * @param lg
+     * @return
+     */
+	/*
     private int passwordExpired(Login lg, Date curDate) {
         if (lg.getGracePeriod() == null) {
             // set an early date
@@ -355,6 +387,10 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
 
         SSOTokenModule tkModule = SSOTokenFactory
                 .createModule((String) tokenParam.get("TOKEN_TYPE"));
+        tkModule.setCryptor(cryptor);
+        tkModule.setKeyManagementService(keyManagementService);
+        tkModule.setTokenLife(Integer.parseInt((String) tokenParam
+                .get("TOKEN_LIFE")));
         return tkModule.createToken(tokenParam);
     }
 	*/

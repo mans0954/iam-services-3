@@ -11,9 +11,7 @@ import org.activiti.engine.ActivitiException;
 import org.activiti.engine.delegate.DelegateExecution;
 import org.activiti.engine.delegate.JavaDelegate;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import org.openiam.base.ws.ResponseStatus;
+import org.openiam.bpm.activiti.delegate.entitlements.AcceptEntitlementsNotifierDelegate;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.bpm.activiti.delegate.core.AbstractNotificationDelegate;
 import org.openiam.bpm.activiti.delegate.core.ActivitiHelper;
@@ -47,101 +45,102 @@ import org.openiam.util.SpringContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-import com.thoughtworks.xstream.XStream;
+import java.util.HashSet;
+import java.util.Set;
 
 public class AcceptProfileProvisionDelegate extends AcceptEntitlementsNotifierDelegate {
 
     @Autowired
     private LoginDataService loginDS;
-	
-	public AcceptProfileProvisionDelegate() {
-		super();
-	}
-	
-	@Override
+
+    public AcceptProfileProvisionDelegate() {
+        super();
+    }
+
+    @Override
     public void execute(final DelegateExecution execution) throws Exception {
-		final IdmAuditLog idmAuditLog = createNewAuditLog(execution);
+        final IdmAuditLog idmAuditLog = createNewAuditLog(execution);
         idmAuditLog.setAction(AuditAction.NOTIFICATION.value());
-		try {
-			final NewUserProfileRequestModel request = getObjectVariable(execution, ActivitiConstants.REQUEST, NewUserProfileRequestModel.class); 
-			final String reqeustorId = getRequestorId(execution);
-			final String newUserId = getStringVariable(execution, ActivitiConstants.NEW_USER_ID);
-	            
-			final UserEntity newUser = getUserEntity(newUserId);
-			final UserEntity requestor = getUserEntity(reqeustorId);    
-			
+        try {
+            final NewUserProfileRequestModel request = getObjectVariable(execution, ActivitiConstants.REQUEST, NewUserProfileRequestModel.class);
+            final String reqeustorId = getExecutorId(execution);
+            final String newUserId = getStringVariable(execution, ActivitiConstants.NEW_USER_ID);
+
+            final UserEntity newUser = getUserEntity(newUserId);
+            final UserEntity requestor = getUserEntity(reqeustorId);
+
 			/* notify the approvers */
-			final Set<String> userIds = new HashSet<String>();
-			final Set<String> emails = new HashSet<String>();
-	        
-			userIds.addAll(activitiHelper.getOnAcceptUserIds(execution, newUserId, getSupervisorsForUser(newUser)));
-			userIds.remove(newUserId); /* don't send to target user just quite yet */
-			
-			sendEmails(execution, requestor, newUser, userIds, emails, null, null, request);
-			
-			String identity = null;
-			String password = null;
-	
-			final LoginEntity login = loginDS.getPrimaryIdentity(newUserId);
-			if (login != null) {
-	            identity = login.getLogin();
-	            password = loginDS.decryptPassword(login.getUserId(),login.getPassword());
-			}
-			sendEmail(execution, requestor, newUser, newUser.getId(), null, identity, password, request);
-			idmAuditLog.succeed();
-		} catch(Throwable e) {
-			idmAuditLog.setException(e);
-			idmAuditLog.fail();
-			throw new RuntimeException(e);
-		} finally {
-			addAuditLogChild(execution, idmAuditLog);
-		}
+            final Set<String> userIds = new HashSet<String>();
+            final Set<String> emails = new HashSet<String>();
+
+            userIds.addAll(activitiHelper.getOnAcceptUserIds(execution, newUserId, getSupervisorsForUser(newUser)));
+            userIds.remove(newUserId); /* don't send to target user just quite yet */
+
+            sendEmails(execution, requestor, newUser, userIds, emails, null, null, request);
+
+            String identity = null;
+            String password = null;
+
+            final LoginEntity login = loginDS.getPrimaryIdentity(newUserId);
+            if (login != null) {
+                identity = login.getLogin();
+                password = loginDS.decryptPassword(login.getUserId(), login.getPassword());
+            }
+            sendEmail(execution, requestor, newUser, newUser.getId(), null, identity, password, request);
+            idmAuditLog.succeed();
+        } catch (Throwable e) {
+            idmAuditLog.setException(e);
+            idmAuditLog.fail();
+            throw new RuntimeException(e);
+        } finally {
+            addAuditLogChild(execution, idmAuditLog);
+        }
     }
-    
+
     private void sendEmails(final DelegateExecution execution,
-    						final UserEntity requestor, 
-    						final UserEntity newUser, 
-    						final Set<String> userIds, 
-    						final Set<String> emailAddresses, 
-    						final String identity, 
-    						final String password,
-    						final NewUserProfileRequestModel request) {
-            if(CollectionUtils.isNotEmpty(userIds)) {
-                    for(final String userId : userIds) {
-                            sendEmail(execution, requestor, newUser, userId, null, identity, password, request);
-                    }
+                            final UserEntity requestor,
+                            final UserEntity newUser,
+                            final Set<String> userIds,
+                            final Set<String> emailAddresses,
+                            final String identity,
+                            final String password,
+                            final NewUserProfileRequestModel request) {
+        if (CollectionUtils.isNotEmpty(userIds)) {
+            for (final String userId : userIds) {
+                sendEmail(execution, requestor, newUser, userId, null, identity, password, request);
             }
-            
-            if(CollectionUtils.isNotEmpty(emailAddresses)) {
-                    for(final String email : emailAddresses) {
-                            sendEmail(execution, requestor, newUser, null, email, identity, password, request);
-                    }
+        }
+
+        if (CollectionUtils.isNotEmpty(emailAddresses)) {
+            for (final String email : emailAddresses) {
+                sendEmail(execution, requestor, newUser, null, email, identity, password, request);
             }
+        }
     }
-    
+
     private void sendEmail(final DelegateExecution execution,
-    					   final UserEntity requestor, 
-    					   final UserEntity newUser, 
-    					   final String userId, 
-    					   final String email, 
-    					   final String identity, 
-    					   final String password,
-    					   final NewUserProfileRequestModel profileRequestModel) {
-    	final NotificationRequest request = new NotificationRequest();
-	    request.setUserId(userId);
-	    request.setNotificationType(getNotificationType(execution));
-	    request.setTo(email);
-	    request.getParamList().add(new NotificationParam("TARGET_REQUEST", profileRequestModel));
-	    request.getParamList().add(new NotificationParam("COMMENT", getComment(execution)));
-	    request.getParamList().add(new NotificationParam("REQUEST_REASON", getTaskDescription(execution)));
-	    request.getParamList().add(new NotificationParam("TARGET_USER", newUser.getDisplayName()));
-	    request.getParamList().add(new NotificationParam("IDENTITY", identity));
-	    request.getParamList().add(new NotificationParam("PSWD", password));
-	    if(requestor != null) {
-	    	request.getParamList().add(new NotificationParam("REQUESTOR", requestor.getDisplayName()));
-	     }
+                           final UserEntity requestor,
+                           final UserEntity newUser,
+                           final String userId,
+                           final String email,
+                           final String identity,
+                           final String password,
+                           final NewUserProfileRequestModel profileRequestModel) {
+        final NotificationRequest request = new NotificationRequest();
+        request.setUserId(userId);
+        request.setNotificationType(getNotificationType(execution));
+        request.setTo(email);
+        request.getParamList().add(new NotificationParam("TARGET_REQUEST", profileRequestModel));
+        request.getParamList().add(new NotificationParam("COMMENT", getComment(execution)));
+        request.getParamList().add(new NotificationParam("REQUEST_REASON", getTaskDescription(execution)));
+        request.getParamList().add(new NotificationParam("TARGET_USER", newUser.getDisplayName()));
+        request.getParamList().add(new NotificationParam("IDENTITY", identity));
+        request.getParamList().add(new NotificationParam("PSWD", password));
+        if (requestor != null) {
+            request.getParamList().add(new NotificationParam("REQUESTOR", requestor.getDisplayName()));
+        }
 
 
-	    mailService.sendNotification(request);
+        mailService.sendNotification(request);
     }
 }

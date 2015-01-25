@@ -415,7 +415,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
             }
         }
     }
-    
+
     private void mergeChildren(final OrganizationEntity curEntity, final OrganizationEntity newEntity) {
         if (curEntity.getChildOrganizations() == null) {
             curEntity.setChildOrganizations(new HashSet<OrganizationEntity>());

@@ -190,19 +190,8 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     		}
 
     		final ManagedSysEntity entity = managedSysDozerConverter.convertToEntity(sys, true);
-			/*
-			Commented out by Lev Bornovalov when merging RELEASE-3.2.5 into devlopment (4.0)
-    		if(sys.getResource() != null) {
-    			if(CollectionUtils.isNotEmpty(sys.getResource().getResourceProps())) {
-    				final Set<ResourcePropEntity> resourcePropSet = new HashSet<>();
-    				for(final ResourceProp prop : sys.getResource().getResourceProps()) {
-    					resourcePropSet.add(resourcePropConverter.convertToEntity(prop, true));
-    				}
-    				entity.getResource().setResourceProps(resourcePropSet);
-    			}
-    		}
-			*/
-    		response.setResponseValue(sys.getId());
+    		managedSystemService.save(entity);
+    		response.setResponseValue(entity.getId());
     	} catch (BasicDataServiceException e) {
 			response.setErrorCode(e.getCode());
 			response.setStatus(ResponseStatus.FAILURE);

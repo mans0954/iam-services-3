@@ -13,6 +13,14 @@ import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.role.dto.Role;
 
+import javax.persistence.CascadeType;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlSchemaType;
+import javax.xml.bind.annotation.XmlType;
 
 import javax.xml.bind.annotation.*;
 
@@ -36,15 +44,11 @@ import java.util.Set;
         "mngSysObjectMatchs", "driverUrl", "connectionString", "addHandler", "modifyHandler", "deleteHandler",
         "passwordHandler", "suspendHandler", "resumeHandler", "searchHandler", "lookupHandler",
         "testConnectionHandler", "reconcileResourceHandler", "attributeNamesHandler", "handler5", "rules", "groups",
-        "roles"})
+        "roles", "skipGroupProvision"})
 @XmlSeeAlso({KeyDTO.class, KeyNameDTO.class, BaseObject.class})
 @DozerDTOCorrespondence(ManagedSysEntity.class)
 public class ManagedSysDto extends KeyNameDTO implements Serializable{
 
-    private static final long serialVersionUID = -8185819810416465422L;
-    /**
-	 * 
-	 */
 
     private String description;
     private String status;
@@ -78,6 +82,7 @@ public class ManagedSysDto extends KeyNameDTO implements Serializable{
     private String reconcileResourceHandler;
     private String attributeNamesHandler;
     private String handler5;
+    private Boolean skipGroupProvision;
 
     private List<ManagedSysRuleDto> rules = new ArrayList<ManagedSysRuleDto>(0);
 
@@ -102,7 +107,6 @@ public class ManagedSysDto extends KeyNameDTO implements Serializable{
         this.connectorId = connectorId;
     }
 
-    @Deprecated
     public ManagedSysDto(String id, String name, String description, String status, String connectorId, String hostUrl,
             Integer port, String commProtocol, String userId, String pswd, Date startDate, Date endDate) {
         setId(id);
@@ -453,6 +457,14 @@ public class ManagedSysDto extends KeyNameDTO implements Serializable{
 
 	public void setResource(Resource resource) {
 		this.resource = resource;
+	}
+
+	public Boolean getSkipGroupProvision() {
+		return skipGroupProvision;
+	}
+
+	public void setSkipGroupProvision(Boolean skipGroupProvision) {
+		this.skipGroupProvision = skipGroupProvision;
 	}
 
 	@Override

@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.auth.login;
 
+import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.searchbeans.IdentitySearchBean;
 import org.openiam.idm.srvc.auth.dto.IdentityDto;
@@ -11,7 +12,9 @@ public interface IdentityService {
 
     String save(IdentityDto identityDto);
 
-    IdentityDto getIdentity(String referredId, String managedSysId);
+    IdentityDto getIdentity(String identityId);
+
+    IdentityDto getIdentityByManagedSys(String referredId, String managedSysId);
 
     List<IdentityDto> getIdentities(String referredId);
 
@@ -22,4 +25,6 @@ public interface IdentityService {
     List<IdentityDto> findByExample(IdentitySearchBean searchBean, String requesterId, int from, int size);
 
     int countBeans(final IdentitySearchBean searchBean, final String requesterId);
+
+    Response isValidIdentity(final IdentityDto identityDto);
 }

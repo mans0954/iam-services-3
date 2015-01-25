@@ -697,10 +697,10 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
             return null;
     }
 
-    public  List<UserEntity> findByIds(Collection<String> idCollection, UserSearchBean searchBean){
+    public  List<UserEntity> findByIds(List<String> idCollection, UserSearchBean searchBean){
         if(CollectionUtils.isNotEmpty(idCollection)){
             final Criteria criteria = super.getCriteria();
-            criteria.add(Restrictions.in(getPKfieldName(), idCollection));
+            criteria.add(createInClauseForList(idCollection));
 
             if(CollectionUtils.isNotEmpty(searchBean.getSortBy())){
 

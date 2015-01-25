@@ -19,7 +19,6 @@ import javax.naming.NamingException;
 import javax.naming.directory.SearchResult;
 import javax.naming.ldap.LdapContext;
 import java.text.MessageFormat;
-import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

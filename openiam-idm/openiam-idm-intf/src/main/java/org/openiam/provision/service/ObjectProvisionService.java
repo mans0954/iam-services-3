@@ -1,6 +1,7 @@
 package org.openiam.provision.service;
 
 import org.openiam.base.ws.Response;
+import org.openiam.idm.srvc.auth.dto.IdentityDto;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.ProvisionGroup;
 import org.openiam.provision.resp.LookupObjectResponse;
@@ -89,6 +90,18 @@ public interface ObjectProvisionService<T> {
             @WebParam(name = "objectId", targetNamespace = "") String objectId,
             @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
             @WebParam(name = "resourceList", targetNamespace = "") List<String> resourceList);
+
+    /**
+     * The modifyIdentity operation modifies an existing identity
+     * in appropriate target systems
+     *
+     * @param identity - identity object for modify
+     * @return Response
+     */
+    @WebMethod
+    public Response modifyIdentity (
+            @WebParam(name = "identity", targetNamespace = "") IdentityDto identity);
+
 
     @WebMethod
     LookupObjectResponse getTargetSystemObject(

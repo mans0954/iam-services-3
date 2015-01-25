@@ -61,20 +61,10 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
     private static final Log log = LogFactory.getLog(ReconciliationGroupProcessor.class);
 
     @Autowired
-    private AuditLogService auditLogService;
-
-    @Autowired
     private ResourceDataService resourceDataService;
 
     @Autowired
     private ManagedSystemWebService managedSysService;
-
-    @Autowired
-    private KeyManagementService keyManagementService;
-
-    @Autowired
-    @Qualifier("cryptor")
-    private Cryptor cryptor;
 
     @Autowired
     private ProvisionConnectorWebService connectorService;
@@ -97,9 +87,6 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
     @Autowired
     @Qualifier("reconciliationFactory")
     private ReconciliationCommandFactory commandFactory;
-
-    @Autowired
-    private ReconciliationConfigDAO reconConfigDao;
 
     @Autowired
     @Qualifier("identityManager")
@@ -134,7 +121,7 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
 
         log.debug("ManagedSysId = " + mSys.getId());
         log.debug("Getting identities for managedSys");
-        
+
         // have situations
         Map<String, ReconciliationSituation> situations = new HashMap<String, ReconciliationSituation>();
         for (ReconciliationSituation situation : config.getSituationSet()) {
@@ -340,9 +327,9 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
                                                       final Map<String, ReconciliationSituation> situations,
                                                       IdmAuditLog idmAuditLog) throws IOException {
 
-        IdentityDto primaryIdentity = identityService.getIdentity(group.getId(),
-				BaseReconciliationCommand.OPENIAM_MANAGED_SYS_ID);
-        IdentityDto identitySys = identityService.getIdentity(group.getId(), mSys.getId());
+        IdentityDto primaryIdentity = identityService.getIdentityByManagedSys(group.getId(),
+                BaseReconciliationCommand.OPENIAM_MANAGED_SYS_ID);
+        IdentityDto identitySys = identityService.getIdentityByManagedSys(group.getId(), mSys.getId());
 
         log.debug("Reconciliation for group: " + group);
 
@@ -466,7 +453,7 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
                 }
                 Group gr = groupDataWebService.getGroup(grp.getId(), null);
 
-                IdentityDto identityDto = identityService.getIdentity(gr.getId(), mSys.getId());
+                IdentityDto identityDto = identityService.getIdentityByManagedSys(gr.getId(), mSys.getId());
                 if (identityDto == null) {
                     return targetGroupPrincipal;
                 }

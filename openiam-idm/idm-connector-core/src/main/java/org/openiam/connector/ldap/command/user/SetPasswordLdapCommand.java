@@ -7,12 +7,14 @@ import org.openiam.connector.type.constant.ErrorCode;
 import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.request.PasswordRequest;
 import org.openiam.connector.type.response.ResponseType;
+import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
+import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.connector.ldap.command.base.AbstractLdapCommand;
 import org.openiam.connector.ldap.dirtype.Directory;
 import org.openiam.connector.ldap.dirtype.DirectorySpecificImplFactory;
-import org.openiam.idm.srvc.res.dto.ResourceProp;
+import org.openiam.provision.type.ExtensibleAttribute;
 import org.springframework.stereotype.Service;
 
 import javax.naming.NameNotFoundException;
@@ -21,6 +23,7 @@ import javax.naming.NamingException;
 import javax.naming.OperationNotSupportedException;
 import javax.naming.directory.*;
 import javax.naming.ldap.LdapContext;
+
 import java.text.MessageFormat;
 import java.util.Set;
 import java.util.regex.Matcher;

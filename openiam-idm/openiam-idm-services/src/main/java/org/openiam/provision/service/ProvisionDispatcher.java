@@ -68,7 +68,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jms.core.BrowserCallback;
 import org.springframework.jms.core.JmsTemplate;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
@@ -129,24 +128,31 @@ public class ProvisionDispatcher implements Sweepable {
 
     private final Object mutext = new Object();
 
-    @Override
-    //TODO change when Spring 3.2.2 @Scheduled(fixedDelayString = "${org.openiam.prov.threadsweep}")
-    @Scheduled(fixedDelay=3000)
     public void sweep() {
 
         jmsTemplate.browse(queue, new BrowserCallback<Object>() {
             @Override
             public Object doInJms(Session session, QueueBrowser browser) throws JMSException {
                 synchronized (mutext) {
-                    final List<ProvisionDataContainer> list = new ArrayList<ProvisionDataContainer>();
+                    final List<List<ProvisionDataContainer>> batchList = new LinkedList<List<ProvisionDataContainer>>();
+                    List<ProvisionDataContainer> list = new ArrayList<ProvisionDataContainer>();
                     Enumeration e = browser.getEnumeration();
+                    int count = 0;
                     while (e.hasMoreElements()) {
                         list.add((ProvisionDataContainer) ((ObjectMessage) jmsTemplate.receive(queue)).getObject());
+                        if (count++ >= 100) {
+                            batchList.add(list);
+                            list = new ArrayList<ProvisionDataContainer>();
+                        }
                         e.nextElement();
                     }
+                    batchList.add(list);
 
-                    process(list);
-
+                    if (batchList.size() > 0 && batchList.get(0) != null && batchList.get(0).size() > 0) {
+                        for (final List<ProvisionDataContainer> entityList : batchList) {
+                            process(entityList);
+                        }
+                    }
                     return Boolean.TRUE;
                 }
             }
@@ -164,12 +170,6 @@ public class ProvisionDispatcher implements Sweepable {
                     process(data);
                 }
             });
-            try {
-                //chance to other threads to be executed
-                Thread.sleep(200);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
         }
     }
 

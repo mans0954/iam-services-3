@@ -22,9 +22,9 @@
                 <value>classpath:datasource.properties</value>
                 <value>classpath:securityconf.properties</value>
                 <value>classpath:openiam.esb.properties</value>
-                <value>file:/data/openiam/conf/datasource.properties</value>
-                <value>file:/data/openiam/conf/securityconf.properties</value>
-                <value>file:/data/openiam/conf/openiam.esb.properties</value>
+                <value>file:${confpath}/conf/datasource.properties</value>
+                <value>file:${confpath}/conf/securityconf.properties</value>
+                <value>file:${confpath}/conf/openiam.esb.properties</value>
             </list>
         </property>
         <property name="ignoreResourceNotFound" value="true" />

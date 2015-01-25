@@ -121,14 +121,7 @@ public class PasswordValidatorImpl implements PasswordValidator {
     private List<AbstractPasswordRule> getRules(Policy pswdPolicy, Password password, UserEntity user, LoginEntity login)
             throws ObjectNotFoundException, IOException {
         final List<AbstractPasswordRule> rules = new LinkedList<>();
-// get the password policy for this domain
-// SecurityDomain securityDomain = secDomainService.getSecurityDomain(
-// password.getDomainId() );
-// Policy pswdPolicy = policyDataService.getPolicy(
-// securityDomain.getPasswordPolicyId() ) ;
-// get the list of rules for password validation
         final List<PolicyDefParamEntity> defParam = policyDefParamDao.findPolicyDefParamByGroup(pswdPolicy.getPolicyDefId(), "PSWD_COMPOSITION");
-// get the user object for the principal if they are null
         LoginEntity lg = login;
         if (lg == null) {
             lg = loginDao.getRecord(password.getPrincipal(), password.getManagedSysId());
@@ -137,16 +130,12 @@ public class PasswordValidatorImpl implements PasswordValidator {
         if (usr == null) {
             usr = userDao.findById(lg.getUserId());
         }
-// for each rule
         if (defParam != null) {
             for (PolicyDefParamEntity param : defParam) {
-// check if this is parameter that is the policy that we need to
-// check
                 if (policyToCheck(param.getId(), pswdPolicy)) {
                     AbstractPasswordRule rule = null;
                     String strRule = param.getPolicyParamHandler();
                     if (strRule != null && strRule.length() > 0) {
-// -- instantiate the rule class
                         log.info("StrRule:" + strRule);
                         if (param.getHandlerLanguage() == null || param.getHandlerLanguage().equalsIgnoreCase("java")) {
                             try {
@@ -160,8 +149,6 @@ public class PasswordValidatorImpl implements PasswordValidator {
                             rule = (AbstractPasswordRule) scriptRunner.instantiateClass(
                                     null, strRule);
                         }
-
-// -- set the parameters
                         rule.setSkipPasswordFrequencyCheck(password.isSkipPasswordFrequencyCheck());
                         rule.setPassword(password.getPassword());
                         rule.setPrincipal(password.getPrincipal());

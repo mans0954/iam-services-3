@@ -66,7 +66,7 @@ public class ResourceServiceImpl implements ResourceService {
     private ResourcePropDAO resourcePropDao;
 
     @Autowired
-    private ResourceDozerConverter dozerConverter;
+    private ResourceDozerConverter resourceConverter;
 
     @Autowired
     private AuthProviderDao authProviderDAO;
@@ -126,7 +126,6 @@ public class ResourceServiceImpl implements ResourceService {
         }
     }
 
-
     @Override
     @Transactional
     public void save(ResourceEntity entity, final String requestorId) {
@@ -164,7 +163,7 @@ public class ResourceServiceImpl implements ResourceService {
             entity.setRoles(dbObject.getRoles());
 
             //elementDAO.flush();
-            mergeAttributes(entity, dbObject);
+            mergeAttribute(entity, dbObject);
 
         } else {
             boolean addApproverAssociation = false;
@@ -224,7 +223,7 @@ public class ResourceServiceImpl implements ResourceService {
         return adminResource;
     }
 
-    public void mergeAttributes(final ResourceEntity bean, final ResourceEntity dbObject) {
+    private void mergeAttribute(final ResourceEntity bean, final ResourceEntity dbObject) {
     	
     	/* 
     	 * if the incoming bean is from the database, there is no reason to do any merging 
@@ -658,7 +657,7 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     public Resource getResourceDTO(String resourceId) {
-        return dozerConverter.convertToDTO(resourceDao.findById(resourceId), true);
+        return resourceConverter.convertToDTO(resourceDao.findById(resourceId), true);
     }
 
     @Override
