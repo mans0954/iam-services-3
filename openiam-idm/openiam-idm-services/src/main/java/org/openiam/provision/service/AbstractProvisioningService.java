@@ -485,7 +485,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         return Collections.EMPTY_LIST;
     }
 
-    protected int callPreProcessor(String operation, ProvisionUser pUser, Map<String, Object> bindingMap) {
+    protected int callPreProcessor(String operation, ProvisionUser pUser, Map<String, Object> bindingMap, PasswordSync passwordSync) {
 
         ProvisionServicePreProcessor<ProvisionUser> addPreProcessScript = null;
         if (pUser != null) {
@@ -494,7 +494,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     (addPreProcessScript = createProvPreProcessScript(preProcessor, bindingMap)) != null) {
                 addPreProcessScript.setMuleContext(MuleContextProvider.getCtx());
                 addPreProcessScript.setApplicationContext(SpringContextProvider.getApplicationContext());
-                return executeProvisionPreProcess(addPreProcessScript, bindingMap, pUser, null, operation);
+                return executeProvisionPreProcess(addPreProcessScript, bindingMap, pUser, passwordSync, operation);
 
             }
             log.info("======= callPreProcessor: addPreProcessScript=" + addPreProcessScript + ", ");
@@ -504,7 +504,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     }
 
 
-    protected int callPostProcessor(String operation, ProvisionUser pUser, Map<String, Object> bindingMap) {
+    protected int callPostProcessor(String operation, ProvisionUser pUser, Map<String, Object> bindingMap, PasswordSync passwordSync) {
 
         ProvisionServicePostProcessor<ProvisionUser> addPostProcessScript;
 
@@ -513,7 +513,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     (addPostProcessScript = createProvPostProcessScript(postProcessor, bindingMap)) != null) {
                 addPostProcessScript.setMuleContext(MuleContextProvider.getCtx());
                 addPostProcessScript.setApplicationContext(SpringContextProvider.getApplicationContext());
-                return executeProvisionPostProcess(addPostProcessScript, bindingMap, pUser, null, operation);
+                return executeProvisionPostProcess(addPostProcessScript, bindingMap, pUser, passwordSync, operation);
 
             }
         }
@@ -521,7 +521,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         return ProvisioningConstants.SUCCESS;
     }
 
-    protected PreProcessor<ProvisionUser> createPreProcessScript(String scriptName, Map<String, Object> tmpMap) {
+    protected PreProcessor<ProvisionUser> createPreProcessScript(String scriptName) {
         Map<String, Object> bindingMap = new HashMap<String, Object>();
         try {
             return (PreProcessor<ProvisionUser>) scriptRunner.instantiateClass(bindingMap, scriptName);
@@ -531,7 +531,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         }
     }
 
-    protected PostProcessor<ProvisionUser> createPostProcessScript(String scriptName, Map<String, Object> tmpMap) {
+    protected PostProcessor<ProvisionUser> createPostProcessScript(String scriptName) {
         Map<String, Object> bindingMap = new HashMap<String, Object>();
         try {
             return (PostProcessor<ProvisionUser>) scriptRunner.instantiateClass(bindingMap, scriptName);
@@ -565,15 +565,21 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                                              Map<String, Object> bindingMap, ProvisionUser user, PasswordSync passwordSync, String operation) {
         if ("ADD".equalsIgnoreCase(operation)) {
             return ppScript.add(user, bindingMap);
-        }
+        } else
         if ("MODIFY".equalsIgnoreCase(operation)) {
             return ppScript.modify(user, bindingMap);
-        }
+        } else
         if ("DELETE".equalsIgnoreCase(operation)) {
             return ppScript.delete(user, bindingMap);
-        }
+        } else
         if ("SET_PASSWORD".equalsIgnoreCase(operation)) {
             return ppScript.setPassword(passwordSync, bindingMap);
+        } else
+        if ("RESET_PASSWORD".equalsIgnoreCase(operation)) {
+            return ppScript.resetPassword(passwordSync, bindingMap);
+        } else
+        if ("DISABLE".equalsIgnoreCase(operation)) {
+            return ppScript.disable(user, bindingMap);
         }
 
         return 0;
@@ -583,56 +589,68 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                                               Map<String, Object> bindingMap, ProvisionUser user, PasswordSync passwordSync, String operation) {
         if ("ADD".equalsIgnoreCase(operation)) {
             return ppScript.add(user, bindingMap);
-        }
+        } else
         if ("MODIFY".equalsIgnoreCase(operation)) {
             return ppScript.modify(user, bindingMap);
-        }
+        } else
         if ("DELETE".equalsIgnoreCase(operation)) {
             return ppScript.delete(user, bindingMap);
-        }
+        } else
         if ("SET_PASSWORD".equalsIgnoreCase(operation)) {
             return ppScript.setPassword(passwordSync, bindingMap);
+        } else
+        if ("RESET_PASSWORD".equalsIgnoreCase(operation)) {
+            return ppScript.resetPassword(passwordSync, bindingMap);
+        } else
+        if ("DISABLE".equalsIgnoreCase(operation)) {
+            return ppScript.disable(user, bindingMap);
         }
-
         return 0;
     }
 
     protected int executePreProcess(PreProcessor<ProvisionUser> ppScript,
-                                    Map<String, Object> bindingMap, ProvisionUser user, String operation) {
+                                    Map<String, Object> bindingMap, ProvisionUser user, PasswordSync passwordSync, String operation) {
         if ("ADD".equalsIgnoreCase(operation)) {
             return ppScript.add(user, bindingMap);
-        }
+        } else
         if ("MODIFY".equalsIgnoreCase(operation)) {
             return ppScript.modify(user, bindingMap);
-        }
+        } else
         if ("DELETE".equalsIgnoreCase(operation)) {
             return ppScript.delete(user, bindingMap);
-        }
+        } else
         if ("SET_PASSWORD".equalsIgnoreCase(operation)) {
-            return ppScript.setPassword(bindingMap);
+            return ppScript.setPassword(passwordSync, bindingMap);
+        } else
+        if ("RESET_PASSWORD".equalsIgnoreCase(operation)) {
+            return ppScript.resetPassword(passwordSync, bindingMap);
+        } else
+        if ("DISABLE".equalsIgnoreCase(operation)) {
+            return ppScript.disable(user, bindingMap);
         }
-
         return 0;
     }
 
     protected int executePostProcess(PostProcessor<ProvisionUser> ppScript,
-                                     Map<String, Object> bindingMap, ProvisionUser user, String operation, boolean success) {
+                                     Map<String, Object> bindingMap, ProvisionUser user, PasswordSync passwordSync, String operation, boolean success) {
         if ("ADD".equalsIgnoreCase(operation)) {
             return ppScript.add(user, bindingMap, success);
-        }
+        } else
         if ("MODIFY".equalsIgnoreCase(operation)) {
             return ppScript.modify(user, bindingMap, success);
-
-        }
+        } else
         if ("DELETE".equalsIgnoreCase(operation)) {
             return ppScript.delete(user, bindingMap, success);
-
-        }
-
+        } else
         if ("SET_PASSWORD".equalsIgnoreCase(operation)) {
-            return ppScript.setPassword(bindingMap, success);
+            return ppScript.setPassword(passwordSync, bindingMap, success);
+        } else
+        if ("RESET_PASSWORD".equalsIgnoreCase(operation)) {
+            return ppScript.resetPassword(passwordSync, bindingMap, success);
+        } else
+        if ("DISABLE".equalsIgnoreCase(operation)) {
+            return ppScript.disable(user, bindingMap, success);
         }
-
         return 0;
     }
 

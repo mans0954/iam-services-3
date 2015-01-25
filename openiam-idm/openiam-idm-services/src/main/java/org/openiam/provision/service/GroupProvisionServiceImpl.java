@@ -395,7 +395,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
 
             PreProcessor<ProvisionGroup> ppScript = createPreProcessScript(preProcessScript, bindingMap);
             if (ppScript != null) {
-                int executePreProcessResult = executePreProcess(ppScript, bindingMap, pGroup,
+                int executePreProcessResult = executePreProcess(ppScript, bindingMap, pGroup, null,
                         isDelete ? "DELETE" : isExistedInTargetSystem ? "MODIFY" : "ADD");
                 if (executePreProcessResult == ProvisioningConstants.FAIL) {
                     response.setStatus(ResponseStatus.FAILURE);
@@ -445,7 +445,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
         if (StringUtils.isNotBlank(postProcessScript)) {
             PostProcessor ppScript = createPostProcessScript(postProcessScript, bindingMap);
             if (ppScript != null) {
-                int executePostProcessResult = executePostProcess(ppScript, bindingMap, pGroup,
+                int executePostProcessResult = executePostProcess(ppScript, bindingMap, pGroup, null,
                         isExistedInTargetSystem ? "MODIFY" : "ADD", connectorSuccess);
 
                 if (executePostProcessResult == ProvisioningConstants.FAIL) {
@@ -566,7 +566,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
     }
 
     protected int executePreProcess(PreProcessor<ProvisionGroup> ppScript,
-                                    Map<String, Object> bindingMap, ProvisionGroup group, String operation) {
+                                    Map<String, Object> bindingMap, ProvisionGroup group, PasswordSync passwordSync, String operation) {
         if ("ADD".equalsIgnoreCase(operation)) {
             return ppScript.add(group, bindingMap);
         }
@@ -577,14 +577,14 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
             return ppScript.delete(group, bindingMap);
         }
         if ("SET_PASSWORD".equalsIgnoreCase(operation)) {
-            return ppScript.setPassword(bindingMap);
+            return ppScript.setPassword(passwordSync, bindingMap);
         }
 
         return 0;
     }
 
     protected int executePostProcess(PostProcessor<ProvisionGroup> ppScript,
-                                     Map<String, Object> bindingMap, ProvisionGroup group, String operation, boolean success) {
+                                     Map<String, Object> bindingMap, ProvisionGroup group, PasswordSync passwordSync, String operation, boolean success) {
         if ("ADD".equalsIgnoreCase(operation)) {
             return ppScript.add(group, bindingMap, success);
         }
@@ -598,7 +598,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
         }
 
         if ("SET_PASSWORD".equalsIgnoreCase(operation)) {
-            return ppScript.setPassword(bindingMap, success);
+            return ppScript.setPassword(passwordSync, bindingMap, success);
         }
 
         return 0;
@@ -981,7 +981,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
 
             PreProcessor<ProvisionGroup> ppScript = createPreProcessScript(preProcessScript, bindingMap);
             if (ppScript != null) {
-                executePreProcess(ppScript, bindingMap, pGroup, "DELETE");
+                executePreProcess(ppScript, bindingMap, pGroup, null, "DELETE");
             }
 
         }
@@ -1012,7 +1012,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
         if (postProcessScriptVal != null && !postProcessScriptVal.isEmpty()) {
             PostProcessor<ProvisionGroup> ppScript = createPostProcessScript(postProcessScriptVal, bindingMap);
             if (ppScript != null) {
-                executePostProcess(ppScript, bindingMap, pGroup, "DELETE", connectorSuccess);
+                executePostProcess(ppScript, bindingMap, pGroup, null, "DELETE", connectorSuccess);
             }
         }
     }
