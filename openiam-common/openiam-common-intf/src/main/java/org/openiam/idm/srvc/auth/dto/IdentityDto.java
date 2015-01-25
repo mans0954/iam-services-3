@@ -20,11 +20,14 @@ import java.util.Date;
         "createDate",
         "createdBy",
         "type",
+        "provStatus",
+        "lastUpdate",
         "operation",
         "origPrincipalName"
 })
 @DozerDTOCorrespondence(IdentityEntity.class)
 public class IdentityDto implements java.io.Serializable {
+
     protected AttributeOperationEnum operation = AttributeOperationEnum.NO_CHANGE;
     protected String id;
     protected String identity;
@@ -35,6 +38,9 @@ public class IdentityDto implements java.io.Serializable {
     protected String createdBy;
     protected LoginStatusEnum status;
     protected IdentityTypeEnum type;
+    protected ProvLoginStatusEnum provStatus;
+    @XmlSchemaType(name = "dateTime")
+    protected Date lastUpdate;
 
     protected String origPrincipalName;
 
@@ -132,6 +138,23 @@ public class IdentityDto implements java.io.Serializable {
         this.origPrincipalName = origPrincipalName;
     }
 
+    public Date getLastUpdate() {
+        return lastUpdate;
+    }
+
+    public void setLastUpdate(Date lastUpdate) {
+        this.lastUpdate = lastUpdate;
+    }
+
+    public ProvLoginStatusEnum getProvStatus() {
+        return provStatus;
+    }
+
+    public void setProvStatus(ProvLoginStatusEnum provStatus) {
+        this.provStatus = provStatus;
+    }
+
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder();
@@ -142,6 +165,7 @@ public class IdentityDto implements java.io.Serializable {
         sb.append(", type=").append(type);
         sb.append(", origPrincipalName='").append(origPrincipalName).append('\'');
         sb.append(", status=").append(status);
+        sb.append(", provStatus=").append(provStatus);
         sb.append('}');
         return sb.toString();
     }
@@ -157,8 +181,12 @@ public class IdentityDto implements java.io.Serializable {
         if (managedSysId != null ? !managedSysId.equals(that.managedSysId) : that.managedSysId != null) return false;
         if (referredObjectId != null ? !referredObjectId.equals(that.referredObjectId) : that.referredObjectId != null)
             return false;
-        if (type != that.type) return false;
-
+        if (type != null ? !type.equals(that.type) : that.type != null) return false;
+        if (createDate != null ? !createDate.equals(that.createDate) : that.createDate != null) return false;
+        if (createdBy != null ? !createdBy.equals(that.createdBy) : that.createdBy != null) return false;
+        if (status != null ? !status.equals(that.status) : that.status != null) return false;
+        if (provStatus != null ? !provStatus.equals(that.provStatus) : that.provStatus != null) return false;
+        if (lastUpdate != null ? !lastUpdate.equals(that.lastUpdate) : that.lastUpdate != null) return false;
         return true;
     }
 
@@ -168,6 +196,11 @@ public class IdentityDto implements java.io.Serializable {
         result = 31 * result + (managedSysId != null ? managedSysId.hashCode() : 0);
         result = 31 * result + (referredObjectId != null ? referredObjectId.hashCode() : 0);
         result = 31 * result + (type != null ? type.hashCode() : 0);
+        result = 31 * result + (createDate != null ? createDate.hashCode() : 0);
+        result = 31 * result + (createdBy != null ? createdBy.hashCode() : 0);
+        result = 31 * result + (status != null ? status.hashCode() : 0);
+        result = 31 * result + (provStatus != null ? provStatus.hashCode() : 0);
+        result = 31 * result + (lastUpdate != null ? lastUpdate.hashCode() : 0);
         return result;
     }
 }

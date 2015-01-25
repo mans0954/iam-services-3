@@ -44,7 +44,7 @@ public interface ActivitiService {
 	public Response makeDecision(final ActivitiRequestDecision newHireRequest);
 	
 	@WebMethod
-	public TaskListWrapper getTasksForUser(final String userId);
+	public TaskListWrapper getTasksForUser(final String userId, final int from, final int size);
     @WebMethod
     public List<TaskWrapper> getTasksForMemberAssociation(String memberAssociationId);
 	

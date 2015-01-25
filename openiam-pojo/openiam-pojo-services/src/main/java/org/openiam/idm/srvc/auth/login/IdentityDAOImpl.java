@@ -61,4 +61,11 @@ public class IdentityDAOImpl extends BaseDaoImpl<IdentityEntity, String> impleme
 
         return criteria;
     }
+
+    @Override
+    public IdentityEntity getByIdentityManagedSys(String principal, String managedSysId) {
+        return (IdentityEntity) getCriteria()
+                .add(Restrictions.eq("identity", principal))
+                .add(Restrictions.eq("managedSysId", managedSysId)).uniqueResult();
+    }
 }

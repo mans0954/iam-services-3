@@ -39,15 +39,15 @@ import java.util.Set;
 
 /**
  * ProvisionUser is the user object used by the provisioning service.
- * 
+ *
  * @author suneet
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "ProvisionUser", propOrder = { "requestId", "sessionId",
-                                              "superiors", "srcSystemId", "provisionModel", "notifyTargetSystems",
-                                              "emailCredentialsToNewUsers", "emailCredentialsToSupervisor", "provisionOnStartDate",
-                                              "addInitialPasswordToHistory", "passwordPolicy", "skipPreprocessor",
-                                              "skipPostProcessor","parentAuditLogId","notProvisioninResourcesIds"})
+@XmlType(name = "ProvisionUser", propOrder = {"requestId", "sessionId",
+        "superiors", "srcSystemId", "provisionModel", "notifyTargetSystems",
+        "emailCredentialsToNewUsers", "emailCredentialsToSupervisor", "provisionOnStartDate",
+        "addInitialPasswordToHistory", "passwordPolicy", "skipPreprocessor",
+        "skipPostProcessor", "parentAuditLogId", "notProvisioninResourcesIds"})
 public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
     /**
      *
@@ -94,7 +94,8 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
 
     protected Policy passwordPolicy = null;
 
-    public ProvisionUser() {}
+    public ProvisionUser() {
+    }
 
     public ProvisionUser(User user) {
         birthdate = user.getBirthdate();
@@ -149,9 +150,10 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         resources = user.getResources();
         setPassword(user.getPassword());
         setLogin(user.getLogin());
-        if(user instanceof ProvisionUser) {
-          this.parentAuditLogId = ((ProvisionUser)user).getParentAuditLogId();
+        if (user instanceof ProvisionUser) {
+            this.parentAuditLogId = ((ProvisionUser) user).getParentAuditLogId();
         }
+        this.setIsFromActivitiCreation(user.getIsFromActivitiCreation());
     }
 
     public User getUser() {
@@ -206,7 +208,7 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         user.setDateChallengeRespChanged(dateChallengeRespChanged);
         user.setDatePasswordChanged(datePasswordChanged);
         user.setDateITPolicyApproved(dateITPolicyApproved);
-
+        user.setIsFromActivitiCreation(this.getIsFromActivitiCreation());
         return user;
     }
 
@@ -299,11 +301,11 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
     @Override
     public String toString() {
         return "ProvisionUser{ superiors=" + superiors + ", provisionModel=" + provisionModel
-               + ", emailCredentialsToNewUsers=" + emailCredentialsToNewUsers + ", emailCredentialsToSupervisor="
-               + emailCredentialsToSupervisor + ", addInitialPasswordToHistory=" + addInitialPasswordToHistory + ", provisionOnStartDate="
-               + provisionOnStartDate + ", requestId='" + requestId + '\'' + ", sessionId='" + sessionId + '\'' + ", skipPreprocessor="
-               + skipPreprocessor + ", skipPostProcessor=" + skipPostProcessor + ", srcSystemId='" + srcSystemId + '\'' + ", notifyTargetSystems="
-               + notifyTargetSystems + ", passwordPolicy=" + passwordPolicy + '}';
+                + ", emailCredentialsToNewUsers=" + emailCredentialsToNewUsers + ", emailCredentialsToSupervisor="
+                + emailCredentialsToSupervisor + ", addInitialPasswordToHistory=" + addInitialPasswordToHistory + ", provisionOnStartDate="
+                + provisionOnStartDate + ", requestId='" + requestId + '\'' + ", sessionId='" + sessionId + '\'' + ", skipPreprocessor="
+                + skipPreprocessor + ", skipPostProcessor=" + skipPostProcessor + ", srcSystemId='" + srcSystemId + '\'' + ", notifyTargetSystems="
+                + notifyTargetSystems + ", passwordPolicy=" + passwordPolicy + '}';
     }
 
     public boolean isEmailCredentialsToNewUsers() {

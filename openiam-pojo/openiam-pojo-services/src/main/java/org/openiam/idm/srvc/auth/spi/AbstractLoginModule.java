@@ -82,6 +82,7 @@ import javax.resource.spi.IllegalStateException;
 
 /**
  * @author suneet
+ *
  */
 public abstract class AbstractLoginModule implements AuthenticationModule {
 

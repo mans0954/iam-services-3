@@ -978,10 +978,10 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 	@Override
 	@WebMethod
 	@Transactional
-	public TaskListWrapper getTasksForUser(String userId) {
+	public TaskListWrapper getTasksForUser(final String userId, final int from, final int size) {
 		final TaskListWrapper taskListWrapper = new TaskListWrapper();
-		final List<Task> assignedTasks = taskService.createTaskQuery().taskAssignee(userId).list();
-		final List<Task> candidateTasks = taskService.createTaskQuery().taskCandidateUser(userId).list();
+		final List<Task> assignedTasks = taskService.createTaskQuery().taskAssignee(userId).listPage(from, size);
+		final List<Task> candidateTasks = taskService.createTaskQuery().taskCandidateUser(userId).listPage(from, size);
 		Collections.sort(assignedTasks, taskCreatedTimeComparator);
 		Collections.sort(candidateTasks, taskCreatedTimeComparator);
 		taskListWrapper.addAssignedTasks(assignedTasks, runtimeService);

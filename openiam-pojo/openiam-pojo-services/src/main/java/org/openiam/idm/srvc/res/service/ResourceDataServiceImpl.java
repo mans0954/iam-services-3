@@ -482,21 +482,18 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 
     @Override
     @LocalizedServiceGet
-    @Deprecated
     public List<Resource> getChildResources(final String resourceId, Boolean deepFlag, final int from, final int size, final Language language) {
         final List<ResourceEntity> resultList = resourceService.getChildResources(resourceId, from, size);
         return resourceConverter.convertToDTOList(resultList, false);
     }
 
     @Override
-    @Deprecated
     public int getNumOfChildResources(final String resourceId) {
         return resourceService.getNumOfChildResources(resourceId);
     }
 
     @Override
     @LocalizedServiceGet
-    @Deprecated
     public List<Resource> getParentResources(final String resourceId, final int from, final int size, final Language language) {
         final List<ResourceEntity> resultList = resourceService.getParentResources(resourceId, from, size);
         return resourceConverter.convertToDTOList(resultList, false);

@@ -16,13 +16,15 @@
  */
 
 /**
- * 
+ *
  */
 package org.openiam.idm.srvc.auth.spi;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.exception.AuthenticationException;
+import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.srvc.auth.context.AuthenticationContext;
 import org.openiam.idm.srvc.auth.context.PasswordCredential;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
@@ -31,12 +33,17 @@ import org.openiam.idm.srvc.auth.dto.Subject;
 import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
 import org.openiam.idm.srvc.auth.sso.SSOTokenFactory;
 import org.openiam.idm.srvc.auth.sso.SSOTokenModule;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
+import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -96,78 +103,74 @@ public class LDAPLoginModule extends AbstractLoginModule {
     String adminUserName = null;
     String adminPassword = null;
     String protocol = null;
-    String objectclass = null;
+    String searchFilter = null;
     String pkAttribute = null;
     String managedSysId = null;
     String dn = null;
 
-    @Value("${KEYSTORE}")
-    private String keystore;
     LdapContext ctxLdap = null;
 
     public LDAPLoginModule() {
     }
 
-    public void init(Set<ResourceProp> propSet) {
+    public void init(ManagedSysEntity mse) throws Exception {
 
-        log.debug("AuthRepository Properties in init = " + propSet);
+        log.debug("AuthRepository Properties from Managed System in init = " + mse);
 
-        Iterator<ResourceProp> propIt = propSet.iterator();
-        while (propIt.hasNext()) {
-            ResourceProp p = propIt.next();
-            if (p.getName().equalsIgnoreCase("HOST_URL")) {
-                host = p.getValue();
-            }
-            if (p.getName().equalsIgnoreCase("BASE_DN")) {
-                baseDn = p.getValue();
-            }
-            if (p.getName().equalsIgnoreCase("HOST_LOGIN ID")) {
-                adminUserName = p.getValue();
-            }
-            if (p.getName().equalsIgnoreCase("PASSWORD")) {
-                adminPassword = p.getValue();
-            }
-            if (p.getName().equalsIgnoreCase("COMMUNICATION_PROTOCOL")) {
-                protocol = p.getValue();
-            }
-            if (p.getName().equalsIgnoreCase("OBJECT_CLASS")) {
-                objectclass = p.getValue();
-            }
-            if (p.getName().equalsIgnoreCase("SEARCH_ATTRIBUTE")) {
-                pkAttribute = p.getValue();
-            }
-            if (p.getName().equalsIgnoreCase("MANAGED_SYS_ID")) {
-                managedSysId = p.getValue();
-            }
-            if (p.getName().equalsIgnoreCase("DN_ATTRIBUTE")) {
-                dn = p.getValue();
+        host = mse.getHostUrl();
+        adminUserName = mse.getUserId();
+        adminPassword = this.decryptPassword(systemUserId, mse.getPswd());
+        protocol = mse.getCommProtocol();
+        managedSysId = mse.getId();
+        Set<ManagedSystemObjectMatchEntity> managedSystemObjectMatchEntities = mse.getMngSysObjectMatchs();
+        if (CollectionUtils.isNotEmpty(managedSystemObjectMatchEntities)) {
+            for (ManagedSystemObjectMatchEntity objectMatchEntity : managedSystemObjectMatchEntities) {
+                if ("USER".equals(objectMatchEntity.getObjectType())) {
+                    baseDn = objectMatchEntity.getBaseDn();
+                    searchFilter = objectMatchEntity.getSearchFilter();
+                    pkAttribute = objectMatchEntity.getKeyField();
+                    dn = objectMatchEntity.getKeyField();
+                    break;
+                }
             }
         }
 
     }
 
+    /*
+    public void globalLogout(String securityDomain, String principal) {
+        // TODO Auto-generated method stub
 
+    }
+    */
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.openiam.idm.srvc.auth.spi.LoginModule#login(org.openiam.idm.srvc.
+     * auth.context.AuthenticationContext)
+     */
+	/*
     @Override
     public Subject login(AuthenticationContext authContext) throws Exception {
-
         Subject sub = new Subject();
-
         log.debug("login() in LDAPLoginModule called");
-
         String clientIP = authContext.getClientIP();
         String nodeIP = authContext.getNodeIP();
 
         Policy authPolicy = policyDataService.getPolicy(authPolicyId);
         PolicyAttribute policyAttribute = authPolicy
-                .getAttribute("AUTH_REPOSITORY");
+                .getAttribute("MANAGED_SYS_ID");
         if (policyAttribute == null) {
             throw new AuthenticationException(
                     AuthenticationConstants.RESULT_INVALID_CONFIGURATION);
         }
-
-        Resource res = resourceService.getResource(policyAttribute.getValue1(), null);
-        Set<ResourceProp> propSet = res.getResourceProps();
-        init(propSet);
+        ManagedSysEntity mse = managedSysDAO.findById(policyAttribute.getValue1());
+        if (mse == null)
+            throw new AuthenticationException(
+                    AuthenticationConstants.RESULT_INVALID_CONFIGURATION);
+        init(mse);
 
         // current date
         Date curDate = new Date(System.currentTimeMillis());
@@ -309,7 +312,7 @@ public class LDAPLoginModule extends AbstractLoginModule {
             }
             if (!user.getStatus().equals(UserStatusEnum.ACTIVE)
                     && !user.getStatus().equals(
-                            UserStatusEnum.PENDING_INITIAL_LOGIN)) {
+                    UserStatusEnum.PENDING_INITIAL_LOGIN)) {
                 // invalid status
 //                log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
 //                        "INVALID USER STATUS", domainId, null, principal, null,
@@ -328,9 +331,9 @@ public class LDAPLoginModule extends AbstractLoginModule {
                     AuthenticationConstants.RESULT_PASSWORD_EXPIRED);
         }
         Integer daysToExp = setDaysToPassworExpiration(lg, curDate, sub, null);
-        if (daysToExp!=null) {
+        if (daysToExp != null) {
             sub.setDaysToPwdExp(0);
-            if(daysToExp > -1)
+            if (daysToExp > -1)
                 sub.setDaysToPwdExp(daysToExp);
         }
 
@@ -359,7 +362,7 @@ public class LDAPLoginModule extends AbstractLoginModule {
         if (user.getStatus() != null) {
 
             if (user.getStatus().equals(UserStatusEnum.PENDING_INITIAL_LOGIN) ||
-            // after the start date
+                    // after the start date
                     user.getStatus().equals(UserStatusEnum.PENDING_START_DATE)) {
 
                 user.setStatus(UserStatusEnum.ACTIVE);
@@ -414,15 +417,15 @@ public class LDAPLoginModule extends AbstractLoginModule {
         SearchControls searchCtls = new SearchControls();
 
         // Specify the attributes to returned
-        String returnedAtts[] = { dn };
+        String returnedAtts[] = {dn};
         searchCtls.setReturningAttributes(returnedAtts);
 
         // Specify the search scope
         try {
             searchCtls.setSearchScope(SearchControls.SUBTREE_SCOPE);
 
-            String searchFilter = "(&(objectClass=" + objectclass + ")("
-                    + pkAttribute + "=" + searchValue + "))";
+            String searchFilter = this.searchFilter.replace("?", searchValue);
+
 
             log.debug("Search Filter=" + searchFilter);
             log.debug("BaseDN=" + this.baseDn);

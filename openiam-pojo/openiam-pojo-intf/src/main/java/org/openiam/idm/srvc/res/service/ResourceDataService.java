@@ -388,6 +388,7 @@ public interface ResourceDataService {
     		final@WebParam(name = "searchBean", targetNamespace = "") ResourceSearchBean searchBean,
     		final @WebParam(name = "language", targetNamespace = "") Language language);
 
+
     /**
      * Gets the number of Resources that a User is Entitled to
      * 

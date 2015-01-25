@@ -1,0 +1,1240 @@
+package org.openiam.bpm.activiti;
+
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
+import javax.jws.WebMethod;
+import javax.jws.WebService;
+
+import org.activiti.engine.ActivitiException;
+import org.activiti.engine.HistoryService;
+import org.activiti.engine.ManagementService;
+import org.activiti.engine.RepositoryService;
+import org.activiti.engine.RuntimeService;
+import org.activiti.engine.TaskService;
+import org.activiti.engine.history.HistoricActivityInstance;
+import org.activiti.engine.history.HistoricActivityInstanceQuery;
+import org.activiti.engine.history.HistoricTaskInstance;
+import org.activiti.engine.history.HistoricTaskInstanceQuery;
+import org.activiti.engine.runtime.ProcessInstance;
+import org.activiti.engine.task.Task;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.openiam.base.ws.Response;
+import org.openiam.base.ws.ResponseCode;
+import org.openiam.base.ws.ResponseStatus;
+import org.openiam.dozer.converter.AddressDozerConverter;
+import org.openiam.dozer.converter.EmailAddressDozerConverter;
+import org.openiam.dozer.converter.PhoneDozerConverter;
+import org.openiam.dozer.converter.UserDozerConverter;
+import org.openiam.exception.BasicDataServiceException;
+import org.openiam.exception.CustomActivitiException;
+import org.openiam.bpm.activiti.groovy.DefaultEditUserApproverAssociationIdentifier;
+import org.openiam.bpm.activiti.groovy.DefaultGenericWorkflowRequestApproverAssociationIdentifier;
+import org.openiam.bpm.activiti.groovy.DefaultNewHireRequestApproverAssociationIdentifier;
+import org.openiam.bpm.activiti.model.ActivitiJSONStringWrapper;
+import org.openiam.bpm.request.ActivitiClaimRequest;
+import org.openiam.bpm.request.ActivitiRequestDecision;
+import org.openiam.bpm.request.GenericWorkflowRequest;
+import org.openiam.bpm.request.HistorySearchBean;
+import org.openiam.bpm.response.TaskHistoryWrapper;
+import org.openiam.bpm.response.TaskListWrapper;
+import org.openiam.bpm.response.TaskWrapper;
+import org.openiam.bpm.util.ActivitiConstants;
+import org.openiam.bpm.util.ActivitiRequestType;
+import org.openiam.idm.srvc.audit.constant.AuditAction;
+import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
+import org.openiam.idm.srvc.audit.constant.AuditSource;
+import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.base.AbstractBaseService;
+import org.openiam.idm.srvc.continfo.domain.AddressEntity;
+import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
+import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
+import org.openiam.idm.srvc.continfo.dto.Address;
+import org.openiam.idm.srvc.continfo.dto.EmailAddress;
+import org.openiam.idm.srvc.continfo.dto.Phone;
+import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
+import org.openiam.idm.srvc.meta.exception.PageTemplateException;
+import org.openiam.idm.srvc.meta.service.MetadataElementTemplateService;
+import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;
+import org.openiam.idm.srvc.user.dto.UserProfileRequestModel;
+import org.openiam.idm.srvc.user.service.UserDataService;
+import org.openiam.idm.srvc.user.service.UserProfileService;
+import org.openiam.idm.util.CustomJacksonMapper;
+import org.openiam.script.ScriptIntegration;
+import org.openiam.validator.EntityValidator;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+<<<<<<< HEAD
+@Component("activitiBPMService")
+@WebService(endpointInterface = "org.openiam.bpm.activiti.ActivitiService", 
+            targetNamespace = "urn:idm.openiam.org/bpm/request/service",
+            serviceName = "ActivitiService")
+=======
+@WebService(endpointInterface = "org.openiam.bpm.activiti.ActivitiService",
+        targetNamespace = "urn:idm.openiam.org/bpm/request/service",
+        serviceName = "ActivitiService")
+>>>>>>> RELEASE-3.2.6
+public class ActivitiServiceImpl extends AbstractBaseService implements ActivitiService {
+
+    private static final Log log = LogFactory.getLog(ActivitiServiceImpl.class);
+
+    @Autowired
+    @Qualifier("activitiRuntimeService")
+    private RuntimeService runtimeService;
+
+    @Autowired
+    @Qualifier("activitiTaskService")
+    private TaskService taskService;
+
+    @Autowired
+    @Qualifier("activitiRepositoryService")
+    private RepositoryService repositoryService;
+
+    @Autowired
+    @Qualifier("activitiManagementService")
+    private ManagementService managementService;
+
+    @Autowired
+    @Qualifier("activitiHistoryService")
+    private HistoryService historyService;
+
+    @Autowired
+    private CustomJacksonMapper jacksonMapper;
+
+    @Autowired
+    private UserProfileService userProfileService;
+    @Autowired
+    private UserDataService userDataService;
+
+    @Value("${org.openiam.activiti.membership.approver.association.groovy.script}")
+    private String membershipApproverAssociationGroovyScript;
+
+    @Value("${org.openiam.activiti.edit.user.approver.association.groovy.script}")
+    private String editUserApproverAssociationGroovyScript;
+
+    @Value("${org.openiam.activiti.new.user.approver.association.groovy.script}")
+    private String newUserApproverAssociationGroovyScript;
+
+    @Autowired
+    @Qualifier("configurableGroovyScriptEngine")
+    protected ScriptIntegration scriptRunner;
+
+    @Autowired
+    private MetadataElementTemplateService pageTemplateService;
+
+    private static final Comparator<Task> taskCreatedTimeComparator = new TaskCreateDateSorter();
+
+    @Autowired
+    @Qualifier("entityValidator")
+    private EntityValidator entityValidator;
+
+    @Autowired
+    private UserDozerConverter userDozerConverter;
+
+    @Autowired
+    private EmailAddressDozerConverter emailDozerConverter;
+
+    @Autowired
+    private AddressDozerConverter addressDozerConverter;
+
+    @Autowired
+    private PhoneDozerConverter phoneDozerConverter;
+
+    @Override
+    @WebMethod
+    public String sayHello() {
+        return "Hello";
+    }
+
+    @Override
+    @WebMethod
+    @Transactional
+    public SaveTemplateProfileResponse initiateNewHireRequest(final NewUserProfileRequestModel request) {
+        log.info("Initializing workflow");
+        final SaveTemplateProfileResponse response = new SaveTemplateProfileResponse();
+        IdmAuditLog idmAuditLog = new IdmAuditLog();
+        idmAuditLog.setAction(AuditAction.NEW_USER_WORKFLOW.value());
+        idmAuditLog.setBaseObject(request);
+        idmAuditLog.setRequestorUserId(request.getRequestorUserId());
+        idmAuditLog.setSource(AuditSource.WORKFLOW.value());
+        try {
+            idmAuditLog.addAttributeAsJson(AuditAttributeName.REQUEST, request, jacksonMapper);
+
+            if (request == null || request.getActivitiRequestType() == null) {
+                throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+            }
+
+			/* throws exception if invalid - caught in try/catch */
+            userProfileService.validate(request);
+
+            validateUserRequest(request);
+
+            final Map<String, Object> bindingMap = new HashMap<String, Object>();
+            bindingMap.put("REQUEST", request);
+            bindingMap.put("BUILDER", idmAuditLog);
+
+            DefaultNewHireRequestApproverAssociationIdentifier identifier = null;
+            try {
+                identifier = (DefaultNewHireRequestApproverAssociationIdentifier)
+                        scriptRunner.instantiateClass(bindingMap, newUserApproverAssociationGroovyScript);
+                if (identifier == null) {
+                    throw new Exception("Did not instantiate script - was null");
+                }
+            } catch (Throwable e) {
+                log.error(String.format("Can't instantiate '%s' - using default", newUserApproverAssociationGroovyScript), e);
+                identifier = new DefaultNewHireRequestApproverAssociationIdentifier();
+            }
+
+            identifier.init(bindingMap);
+
+            final List<String> approverAssociationIds = identifier.getApproverAssociationIds();
+            final List<String> approverUserIds = identifier.getApproverIds();
+
+            idmAuditLog.addAttributeAsJson(AuditAttributeName.APPROVER_ASSOCIATIONS, approverAssociationIds, jacksonMapper);
+            idmAuditLog.addAttributeAsJson(AuditAttributeName.REQUEST_APPROVER_IDS, approverUserIds, jacksonMapper);
+
+            //if(CollectionUtils.isEmpty(approverAssociationIds) && CollectionUtils.isEmpty(approverUserIds)) {
+            //	throw new BasicDataServiceException(ResponseCode.NO_REQUEST_APPROVERS);
+            //}
+	        
+			/* populate the provision request with required values */
+
+            final ActivitiRequestType requestType = request.getActivitiRequestType();
+            final String taskName = String.format("%s Request for %s", requestType.getDescription(), request.getUser().getDisplayName());
+            final String taskDescription = taskName;
+			
+			/* pass required variables to Activiti, and start the process */
+            final List<Object> approverCardinatlity = new LinkedList<Object>();
+            if (CollectionUtils.isNotEmpty(approverAssociationIds)) {
+                approverCardinatlity.addAll(approverAssociationIds);
+            } else {
+                approverCardinatlity.add(approverUserIds);
+            }
+
+            final Map<String, Object> variables = new HashMap<String, Object>();
+            variables.put(ActivitiConstants.APPROVER_CARDINALTITY.getName(), approverCardinatlity);
+            variables.put(ActivitiConstants.APPROVER_ASSOCIATION_IDS.getName(), approverAssociationIds);
+            variables.put(ActivitiConstants.REQUEST.getName(), new ActivitiJSONStringWrapper(jacksonMapper.writeValueAsString(request)));
+            variables.put(ActivitiConstants.TASK_NAME.getName(), taskName);
+            variables.put(ActivitiConstants.TASK_DESCRIPTION.getName(), taskDescription);
+            variables.put(ActivitiConstants.REQUESTOR.getName(), request.getRequestorUserId());
+            variables.put(ActivitiConstants.WORKFLOW_NAME.getName(), requestType.getKey());
+            if (identifier.getCustomActivitiAttributes() != null) {
+                variables.putAll(identifier.getCustomActivitiAttributes());
+            }
+
+            for (Map.Entry<String, Object> varEntry : variables.entrySet()) {
+                idmAuditLog.addCustomRecord(varEntry.getKey(), (varEntry.getValue() != null) ? varEntry.getValue().toString() : null);
+            }
+
+            idmAuditLog = auditLogService.save(idmAuditLog);
+            variables.put(ActivitiConstants.AUDIT_LOG_ID.getName(), idmAuditLog.getId());
+
+            final ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(requestType.getKey(), variables);
+            idmAuditLog = auditLogService.findById(idmAuditLog.getId());
+            idmAuditLog.setTargetTask(processInstance.getId(), taskName);
+            response.succeed();
+            idmAuditLog.succeed();
+        } catch (PageTemplateException e) {
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(e.getCode());
+            idmAuditLog.setException(e);
+            response.setCurrentValue(e.getCurrentValue());
+            response.setElementName(e.getElementName());
+            response.setErrorCode(e.getCode());
+            response.setStatus(ResponseStatus.FAILURE);
+        } catch (BasicDataServiceException e) {
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(e.getCode());
+            idmAuditLog.setException(e);
+            response.setErrorTokenList(e.getErrorTokenList());
+            response.setErrorCode(e.getCode());
+            response.setStatus(ResponseStatus.FAILURE);
+        } catch (ActivitiException e) {
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(e.getMessage());
+            idmAuditLog.setException(e);
+            log.info("Activiti Exception", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(ResponseCode.USER_STATUS);
+            response.setErrorText(e.getMessage());
+        } catch (Throwable e) {
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(e.getMessage());
+            idmAuditLog.setException(e);
+            log.error("Error while creating newhire request", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(ResponseCode.USER_STATUS);
+            response.setErrorText(e.getMessage());
+        } finally {
+            log.info("Persisting activiti log..");
+            idmAuditLog = auditLogService.save(idmAuditLog);
+        }
+        return response;
+    }
+
+    @Override
+    @WebMethod
+    @Transactional
+    public Response claimRequest(final ActivitiClaimRequest request) {
+        final IdmAuditLog idmAuditLog = new IdmAuditLog();
+        idmAuditLog.setAction(AuditAction.CLAIM_REQUEST.value());
+        idmAuditLog.setBaseObject(request);
+        idmAuditLog.setRequestorUserId(request.getRequestorUserId());
+        idmAuditLog.setSource(AuditSource.WORKFLOW.value());
+
+        final Response response = new Response();
+        String parentAuditLogId = null;
+        try {
+            idmAuditLog.addAttributeAsJson(AuditAttributeName.REQUEST, request, jacksonMapper);
+
+            final List<Task> taskList = taskService.createTaskQuery().taskCandidateUser(request.getRequestorUserId()).list();
+            if (CollectionUtils.isEmpty(taskList)) {
+                throw new ActivitiException("No Candidate Task available");
+            }
+
+            if (StringUtils.isBlank(request.getTaskId())) {
+                throw new ActivitiException("No Task specified");
+            }
+
+            Task potentialTaskToClaim = null;
+            for (final Task task : taskList) {
+                if (task.getId().equals(request.getTaskId())) {
+                    potentialTaskToClaim = task;
+                    break;
+                }
+            }
+
+            if (potentialTaskToClaim == null) {
+                throw new ActivitiException(String.format("Task with ID: '%s' not assigned to user", request.getTaskId()));
+            }
+
+            idmAuditLog.setTargetTask(potentialTaskToClaim.getId(), potentialTaskToClaim.getName());
+			/* claim the process, and set the assignee */
+            taskService.claim(potentialTaskToClaim.getId(), request.getRequestorUserId());
+            taskService.setAssignee(potentialTaskToClaim.getId(), request.getRequestorUserId());
+
+            final Object auditLogId = taskService.getVariable(potentialTaskToClaim.getId(), ActivitiConstants.AUDIT_LOG_ID.getName());
+            if (auditLogId != null && auditLogId instanceof String) {
+                parentAuditLogId = (String) auditLogId;
+            }
+
+            response.succeed();
+            idmAuditLog.succeed();
+        } catch (ActivitiException e) {
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(e.getMessage());
+            idmAuditLog.setException(e);
+            log.info("Activiti Exception", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(ResponseCode.USER_STATUS);
+            response.setErrorText(e.getMessage());
+        } catch (Throwable e) {
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(e.getMessage());
+            idmAuditLog.setException(e);
+            log.error("Error while creating newhire request", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(ResponseCode.USER_STATUS);
+            response.setErrorText(e.getMessage());
+        } finally {
+            if (parentAuditLogId != null) {
+                IdmAuditLog parent = auditLogService.findById(parentAuditLogId);
+                if (parent != null) {
+                    parent.addChild(idmAuditLog);
+                    idmAuditLog.addParent(parent);
+                    parent = auditLogService.save(parent);
+                }
+            }
+        }
+
+<<<<<<< HEAD
+		return response;
+	}
+	
+	@Override
+	@Transactional
+	public SaveTemplateProfileResponse initiateEditUserWorkflow(final UserProfileRequestModel request) {
+		final SaveTemplateProfileResponse response = new SaveTemplateProfileResponse();
+		
+		IdmAuditLog idmAuditLog = new IdmAuditLog();
+=======
+        return response;
+    }
+
+    @Override
+    @Transactional
+    public SaveTemplateProfileResponse initiateEditUserWorkflow(final UserProfileRequestModel request) {
+        final SaveTemplateProfileResponse response = new SaveTemplateProfileResponse();
+
+        IdmAuditLog idmAuditLog = new IdmAuditLog();
+>>>>>>> RELEASE-3.2.6
+        idmAuditLog.setAction(AuditAction.EDIT_USER_WORKFLOW.value());
+        idmAuditLog.setBaseObject(request);
+        idmAuditLog.setRequestorUserId(request.getRequestorUserId());
+        idmAuditLog.setSource(AuditSource.WORKFLOW.value());
+        try {
+            idmAuditLog.addAttributeAsJson(AuditAttributeName.REQUEST, request, jacksonMapper);
+
+            pageTemplateService.validate(request);
+            validateUserRequest(request);
+
+            final String description = String.format("Edit User %s", request.getUser().getDisplayName());
+
+            final Map<String, Object> bindingMap = new HashMap<String, Object>();
+            bindingMap.put("REQUEST", request);
+            bindingMap.put("BUILDER", idmAuditLog);
+
+            DefaultEditUserApproverAssociationIdentifier identifier = null;
+            try {
+                identifier = (DefaultEditUserApproverAssociationIdentifier)
+                        scriptRunner.instantiateClass(bindingMap, editUserApproverAssociationGroovyScript);
+                if (identifier == null) {
+                    throw new Exception("Did not instantiate script - was null");
+                }
+            } catch (Throwable e) {
+                log.error(String.format("Can't instantiate '%s' - using default", editUserApproverAssociationGroovyScript), e);
+                identifier = new DefaultEditUserApproverAssociationIdentifier();
+            }
+
+            identifier.init(bindingMap);
+
+            final List<String> approverAssociationIds = identifier.getApproverAssociationIds();
+            final List<String> approverUserIds = identifier.getApproverIds();
+
+            idmAuditLog.addAttributeAsJson(AuditAttributeName.REQUEST_APPROVER_IDS, approverUserIds, jacksonMapper);
+
+            final List<Object> approverCardinatlity = new LinkedList<Object>();
+            if (CollectionUtils.isNotEmpty(approverAssociationIds)) {
+                approverCardinatlity.addAll(approverAssociationIds);
+            } else {
+                approverCardinatlity.add(approverUserIds);
+            }
+
+            final Map<String, Object> variables = new HashMap<String, Object>();
+            variables.put(ActivitiConstants.APPROVER_CARDINALTITY.getName(), approverCardinatlity);
+            variables.put(ActivitiConstants.APPROVER_ASSOCIATION_IDS.getName(), approverAssociationIds);
+            variables.put(ActivitiConstants.REQUEST.getName(), new ActivitiJSONStringWrapper(jacksonMapper.writeValueAsString(request)));
+            variables.put(ActivitiConstants.TASK_NAME.getName(), description);
+            variables.put(ActivitiConstants.TASK_DESCRIPTION.getName(), description);
+            variables.put(ActivitiConstants.REQUESTOR.getName(), request.getRequestorUserId());
+            variables.put(ActivitiConstants.ASSOCIATION_ID.getName(), request.getUser().getId());
+            variables.put(ActivitiConstants.WORKFLOW_NAME.getName(), ActivitiRequestType.EDIT_USER.getKey());
+            if (identifier.getCustomActivitiAttributes() != null) {
+                variables.putAll(identifier.getCustomActivitiAttributes());
+            }
+
+            idmAuditLog = auditLogService.save(idmAuditLog);
+            variables.put(ActivitiConstants.AUDIT_LOG_ID.getName(), idmAuditLog.getId());
+
+            ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(ActivitiRequestType.EDIT_USER.getKey(), variables);
+            idmAuditLog = auditLogService.findById(idmAuditLog.getId());
+            for (Map.Entry<String, Object> varEntry : variables.entrySet()) {
+                idmAuditLog.addCustomRecord(varEntry.getKey(), (varEntry.getValue() != null) ? varEntry.getValue().toString() : null);
+            }
+
+            idmAuditLog.setTargetTask(processInstance.getId(), description);
+			/* throws exception if invalid - caught in try/catch */
+            //userProfileService.validate(request);
+
+            response.succeed();
+            idmAuditLog.succeed();
+        } catch (CustomActivitiException e) {
+            log.warn("Can't perform task", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+            response.setErrorText(e.getMessage());
+        } catch (PageTemplateException e) {
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(e.getCode());
+            idmAuditLog.setException(e);
+            response.setCurrentValue(e.getCurrentValue());
+            response.setElementName(e.getElementName());
+            response.setErrorCode(e.getCode());
+            response.setStatus(ResponseStatus.FAILURE);
+        } catch (BasicDataServiceException e) {
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(e.getCode());
+            idmAuditLog.setException(e);
+            response.setErrorCode(e.getCode());
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorTokenList(e.getErrorTokenList());
+        } catch (ActivitiException e) {
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(e.getMessage());
+            idmAuditLog.setException(e);
+            log.info("Activiti Exception", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(ResponseCode.USER_STATUS);
+            response.setErrorText(e.getMessage());
+        } catch (Throwable e) {
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(e.getMessage());
+            idmAuditLog.setException(e);
+            log.error("Error while creating newhire request", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(ResponseCode.USER_STATUS);
+            response.setErrorText(e.getMessage());
+        } finally {
+            idmAuditLog = auditLogService.save(idmAuditLog);
+        }
+        return response;
+    }
+
+    private void validateUserRequest(final UserProfileRequestModel request) throws BasicDataServiceException {
+        final UserEntity provisionUserValidationObject = userDozerConverter.convertToEntity(request.getUser(), true);
+        entityValidator.isValid(provisionUserValidationObject);
+        if (CollectionUtils.isNotEmpty(request.getEmails())) {
+            for (final EmailAddress bean : request.getEmails()) {
+                final EmailAddressEntity entity = emailDozerConverter.convertToEntity(bean, true);
+                entityValidator.isValid(entity);
+            }
+        }
+        if (CollectionUtils.isNotEmpty(request.getPhones())) {
+            for (final Phone bean : request.getPhones()) {
+                final PhoneEntity entity = phoneDozerConverter.convertToEntity(bean, true);
+                entityValidator.isValid(entity);
+            }
+        }
+        if (CollectionUtils.isNotEmpty(request.getAddresses())) {
+            for (final Address bean : request.getAddresses()) {
+                final AddressEntity entity = addressDozerConverter.convertToEntity(bean, true);
+                entityValidator.isValid(entity);
+            }
+        }
+    }
+
+    @Override
+    @Transactional
+    public Response initiateWorkflow(final GenericWorkflowRequest request) {
+        IdmAuditLog idmAuditLog = new IdmAuditLog();
+        idmAuditLog.setRequestorUserId(request.getRequestorUserId());
+        //idmAuditLog.setAction(AuditAction.INITIATE_WORKFLOW.value());
+        idmAuditLog.setAction(request.getActivitiRequestType());
+        idmAuditLog.setBaseObject(request);
+        idmAuditLog.setSource(AuditSource.WORKFLOW.value());
+        final Response response = new Response();
+        try {
+            idmAuditLog.addAttributeAsJson(AuditAttributeName.REQUEST, request, jacksonMapper);
+
+            if (request == null || request.isEmpty()) {
+                throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+            }
+
+            final Map<String, Object> bindingMap = new HashMap<String, Object>();
+            bindingMap.put("REQUEST", request);
+            bindingMap.put("BUILDER", idmAuditLog);
+
+            DefaultGenericWorkflowRequestApproverAssociationIdentifier identifier = null;
+            try {
+                identifier = (DefaultGenericWorkflowRequestApproverAssociationIdentifier)
+                        scriptRunner.instantiateClass(bindingMap, membershipApproverAssociationGroovyScript);
+
+                if (identifier == null) {
+                    throw new Exception("Did not instantiate script - was null");
+                }
+            } catch (Throwable e) {
+                log.error(String.format("Can't instantiate '%s' - using default", membershipApproverAssociationGroovyScript), e);
+                identifier = new DefaultGenericWorkflowRequestApproverAssociationIdentifier();
+            }
+
+            identifier.init(bindingMap);
+
+            final List<String> approverAssociationIds = identifier.getApproverAssociationIds();
+            final List<String> approverUserIds = identifier.getApproverIds();
+
+            final List<Object> approverCardinatlity = new LinkedList<Object>();
+            if (CollectionUtils.isNotEmpty(approverAssociationIds)) {
+                approverCardinatlity.addAll(approverAssociationIds);
+            } else {
+                //TODO fix here AM flag
+                if (request.isCustomApproversSequential()) {
+                    for (final String id : approverUserIds) {
+                        approverCardinatlity.add(id);
+                    }
+                } else {
+                    approverCardinatlity.add(approverUserIds);
+                }
+            }
+
+            idmAuditLog.addAttributeAsJson(AuditAttributeName.REQUEST_APPROVER_IDS, approverUserIds, jacksonMapper);
+            final Map<String, Object> variables = new HashMap<String, Object>();
+            variables.put(ActivitiConstants.WORKFLOW_NAME.getName(), request.getActivitiRequestType());
+            variables.put(ActivitiConstants.APPROVER_CARDINALTITY.getName(), approverCardinatlity);
+            variables.put(ActivitiConstants.APPROVER_ASSOCIATION_IDS.getName(), approverAssociationIds);
+            variables.put(ActivitiConstants.TASK_NAME.getName(), request.getName());
+            variables.put(ActivitiConstants.TASK_DESCRIPTION.getName(), request.getDescription());
+            variables.put(ActivitiConstants.REQUESTOR.getName(), request.getRequestorUserId());
+            variables.put(ActivitiConstants.DELETABLE.getName(), Boolean.valueOf(request.isDeletable()));
+            if (request.getAssociationId() != null) {
+                variables.put(ActivitiConstants.ASSOCIATION_ID.getName(), request.getAssociationId());
+            }
+            if (request.getAssociationType() != null) {
+                variables.put(ActivitiConstants.ASSOCIATION_TYPE.getName(), request.getAssociationType().getValue());
+            }
+            if (request.getMemberAssociationId() != null) {
+                variables.put(ActivitiConstants.MEMBER_ASSOCIATION_ID.getName(), request.getMemberAssociationId());
+            }
+            if (request.getMemberAssociationType() != null) {
+                variables.put(ActivitiConstants.MEMBER_ASSOCIATION_TYPE.getName(), request.getMemberAssociationType().getValue());
+            }
+            if (request.getParameters() != null) {
+                variables.putAll(request.getParameters());
+            }
+            if (request.getJsonSerializedParams() != null) {
+                for (final String key : request.getJsonSerializedParams().keySet()) {
+                    final String value = request.getJsonSerializedParams().get(key);
+                    variables.put(key, new ActivitiJSONStringWrapper(value));
+                }
+            }
+
+            if (identifier.getCustomActivitiAttributes() != null) {
+                variables.putAll(identifier.getCustomActivitiAttributes());
+            }
+
+            idmAuditLog = auditLogService.save(idmAuditLog);
+            variables.put(ActivitiConstants.AUDIT_LOG_ID.getName(), idmAuditLog.getId());
+
+            final ProcessInstance instance = runtimeService.startProcessInstanceByKey(request.getActivitiRequestType(), variables);
+            idmAuditLog = auditLogService.findById(idmAuditLog.getId());
+            idmAuditLog.setTargetTask(instance.getId(), request.getName());
+            for (Map.Entry<String, Object> varEntry : variables.entrySet()) {
+                idmAuditLog.addCustomRecord(varEntry.getKey(), (varEntry.getValue() != null) ? varEntry.getValue().toString() : null);
+            }
+
+            response.succeed();
+            idmAuditLog.succeed();
+        } catch (CustomActivitiException e) {
+            log.warn("Can't perform task", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+            response.setErrorText(e.getMessage());
+        } catch (BasicDataServiceException e) {
+            idmAuditLog.setFailureReason(e.getCode());
+            idmAuditLog.setException(e);
+            log.info("Could not initialize task", e);
+            response.setErrorCode(e.getCode());
+            response.setStatus(ResponseStatus.FAILURE);
+        } catch (ActivitiException e) {
+            idmAuditLog.setFailureReason(e.getMessage());
+            idmAuditLog.setException(e);
+            log.info("Activiti Exception", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(ResponseCode.USER_STATUS);
+            response.setErrorText(e.getMessage());
+        } catch (Throwable e) {
+            idmAuditLog.setFailureReason(e.getMessage());
+            idmAuditLog.setException(e);
+            log.error("Error while creating newhire request", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(ResponseCode.USER_STATUS);
+            response.setErrorText(e.getMessage());
+        } finally {
+            idmAuditLog = auditLogService.save(idmAuditLog);
+        }
+        return response;
+    }
+
+    @Override
+    @WebMethod
+    public Response makeDecision(final ActivitiRequestDecision request) {
+        final Response response = new Response();
+        final IdmAuditLog idmAuditLog = new IdmAuditLog();
+        idmAuditLog.setRequestorUserId(request.getRequestorUserId());
+        idmAuditLog.setAction(AuditAction.COMPLETE_WORKFLOW.value());
+        idmAuditLog.setBaseObject(request);
+        idmAuditLog.setSource(AuditSource.WORKFLOW.value());
+        String parentAuditLogId = null;
+        try {
+            idmAuditLog.addAttributeAsJson(AuditAttributeName.REQUEST, request, jacksonMapper);
+            final Task assignedTask = getTaskAssignee(request);
+		
+        	/* complete the Task in Activiti, passing required parameters */
+            final Map<String, Object> variables = new HashMap<String, Object>();
+            variables.put(ActivitiConstants.COMMENT.getName(), request.getComment());
+            variables.put(ActivitiConstants.IS_TASK_APPROVED.getName(), request.isAccepted());
+            variables.put(ActivitiConstants.EXECUTOR_ID.getName(), request.getRequestorUserId());
+            if (request.getCustomVariables() != null) {
+                variables.putAll(request.getCustomVariables());
+            }
+
+            idmAuditLog.setTargetTask(assignedTask.getId(), assignedTask.getName());
+            for (Map.Entry<String, Object> varEntry : variables.entrySet()) {
+                idmAuditLog.addCustomRecord(varEntry.getKey(), (varEntry.getValue() != null) ? varEntry.getValue().toString() : null);
+            }
+
+
+            final Object auditLogId = taskService.getVariable(assignedTask.getId(), ActivitiConstants.AUDIT_LOG_ID.getName());
+            if (auditLogId != null && auditLogId instanceof String) {
+                parentAuditLogId = (String) auditLogId;
+            }
+
+            taskService.complete(assignedTask.getId(), variables);
+            response.succeed();
+            idmAuditLog.succeed();
+
+        } catch (CustomActivitiException e) {
+            idmAuditLog.setFailureReason(e.getCode());
+            idmAuditLog.setException(e);
+            idmAuditLog.fail();
+            log.warn("Can't perform task", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+            response.setErrorText(e.getMessage());
+        } catch (ActivitiException e) {
+            idmAuditLog.setFailureReason(e.getMessage());
+            idmAuditLog.setException(e);
+            idmAuditLog.fail();
+            log.info("Activiti Exception", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(ResponseCode.INTERNAL_ERROR);
+            response.setErrorText(e.getMessage());
+        } catch (Throwable e) {
+            idmAuditLog.setFailureReason(e.getMessage());
+            idmAuditLog.setException(e);
+            idmAuditLog.fail();
+            log.error("Error while creating newhire request", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(ResponseCode.INTERNAL_ERROR);
+            response.setErrorText(e.getMessage());
+        } finally {
+            if (parentAuditLogId != null) {
+                IdmAuditLog parent = auditLogService.findById(parentAuditLogId);
+                if (parent != null) {
+                    parent.addChild(idmAuditLog);
+                    idmAuditLog.addParent(parent);
+                    parent = auditLogService.save(parent);
+                }
+            }
+        }
+<<<<<<< HEAD
+		return response;
+	}
+	
+	private Task getTaskAssignee(final String taskId, final String userId) {
+		final List<Task> taskList = taskService.createTaskQuery().taskId(taskId).taskAssignee(userId).list();
+		if(CollectionUtils.isEmpty(taskList)) {
+			throw  new ActivitiException("No tasks for user..");
+		}
+		
+		return taskList.get(0);
+	}
+	
+	private Task getTaskAssignee(final ActivitiRequestDecision newHireRequest) throws ActivitiException {
+		return getTaskAssignee(newHireRequest.getTaskId(), newHireRequest.getRequestorUserId());
+	}
+	
+
+	@Override
+	@WebMethod
+	@Transactional
+	public int getNumOfAssignedTasks(String userId) {
+		return (int)taskService.createTaskQuery().taskAssignee(userId).count();
+	}
+
+	@Override
+	@WebMethod
+	@Transactional
+	public int getNumOfCandidateTasks(String userId) {
+		return (int)taskService.createTaskQuery().taskCandidateUser(userId).count();
+	}
+
+	@Override
+	@WebMethod
+	@Transactional
+	public TaskWrapper getTask(String taskId) {
+		TaskWrapper retVal = null;
+		final List<Task> taskList = taskService.createTaskQuery().taskId(taskId).list();
+		if(CollectionUtils.isNotEmpty(taskList)) {
+			retVal = new TaskWrapper(taskList.get(0), runtimeService);
+		}
+		return retVal;
+	}
+	
+	private static final class TaskCreateDateSorter implements Comparator<Task> {
+
+		@Override
+		public int compare(Task o1, Task o2) {
+			try {
+				return o2.getCreateTime().compareTo(o1.getCreateTime());
+			} catch(Throwable e) { /* can't happen, but... */
+				log.warn("Sorting problem", e);
+				return 0;
+			}
+		}
+		
+	}
+	
+	@Override
+	public TaskWrapper getTaskFromHistory(final String executionId, final String taskId) {
+		TaskWrapper retVal = null;
+		final HistoricTaskInstanceQuery query = historyService.createHistoricTaskInstanceQuery(); 
+		if(StringUtils.isNotBlank(executionId)) {
+			query.executionId(executionId);
+		} else if(StringUtils.isNotBlank(taskId)) {
+			query.taskId(taskId);
+		} else {
+			throw new IllegalArgumentException("Execution ID and Task ID are null");
+		}
+		final List<HistoricTaskInstance> instances = query.list();
+		if(CollectionUtils.isNotEmpty(instances)) {
+			retVal = new TaskWrapper(instances.get(0));
+		}
+		return retVal;
+	}
+	
+	@Override
+	@Transactional
+	public List<TaskHistoryWrapper> getHistoryForInstance(final String executionId) {
+		final List<TaskHistoryWrapper> retVal = new LinkedList<TaskHistoryWrapper>();
+		if(StringUtils.isNotBlank(executionId)) {
+			final List<HistoricTaskInstance> instances = historyService.createHistoricTaskInstanceQuery().executionId(executionId).list();
+			final Map<String, HistoricTaskInstance> taskDefinitionMap = new HashMap<String, HistoricTaskInstance>();
+			if(CollectionUtils.isNotEmpty(instances)) {
+				for(HistoricTaskInstance instance : instances) {
+					taskDefinitionMap.put(instance.getTaskDefinitionKey(), instance);
+				}
+			}
+			
+			final HistoricActivityInstanceQuery query = historyService.createHistoricActivityInstanceQuery().executionId(executionId);
+			final List<HistoricActivityInstance> activityList = query.list();
+			if(CollectionUtils.isNotEmpty(activityList)) {
+				for(int i = 0; i < activityList.size(); i++) {
+					final HistoricActivityInstance instance = activityList.get(i);
+					final TaskHistoryWrapper wrapper = new TaskHistoryWrapper(instance);
+					if(taskDefinitionMap.containsKey(wrapper.getActivityId())) {
+						wrapper.setTask(new TaskWrapper(taskDefinitionMap.get(wrapper.getActivityId())));
+					}
+					if(StringUtils.isNotBlank(wrapper.getAssigneeId())) {
+						final UserEntity user =  userDataService.getUser(wrapper.getAssigneeId());
+						wrapper.setUserInfo(user);
+					}
+					retVal.add(wrapper);
+					
+					if(i < activityList.size() - 1) {
+						wrapper.addNextTask(activityList.get(i + 1).getId());
+					}
+=======
+        return response;
+    }
+
+    private Task getTaskAssignee(final String taskId, final String userId) {
+        final List<Task> taskList = taskService.createTaskQuery().taskId(taskId).taskAssignee(userId).list();
+        if (CollectionUtils.isEmpty(taskList)) {
+            throw new ActivitiException("No tasks for user..");
+        }
+
+        return taskList.get(0);
+    }
+
+    private Task getTaskAssignee(final ActivitiRequestDecision newHireRequest) throws ActivitiException {
+        return getTaskAssignee(newHireRequest.getTaskId(), newHireRequest.getRequestorUserId());
+    }
+
+
+    @Override
+    @WebMethod
+    @Transactional
+    public int getNumOfAssignedTasks(String userId) {
+        return (int) taskService.createTaskQuery().taskAssignee(userId).count();
+    }
+
+    @Override
+    @WebMethod
+    @Transactional
+    public int getNumOfCandidateTasks(String userId) {
+        return (int) taskService.createTaskQuery().taskCandidateUser(userId).count();
+    }
+
+    @Override
+    @WebMethod
+    @Transactional
+    public TaskListWrapper getTasksForUser(final String userId, final int from, final int size) {
+        final TaskListWrapper taskListWrapper = new TaskListWrapper();
+        final List<Task> assignedTasks = taskService.createTaskQuery().taskAssignee(userId).listPage(from, size);
+        final List<Task> candidateTasks = taskService.createTaskQuery().taskCandidateUser(userId).listPage(from, size);
+        Collections.sort(assignedTasks, taskCreatedTimeComparator);
+        Collections.sort(candidateTasks, taskCreatedTimeComparator);
+        taskListWrapper.addAssignedTasks(assignedTasks, runtimeService);
+        taskListWrapper.addCandidateTasks(candidateTasks, runtimeService);
+        return taskListWrapper;
+    }
+    @Override
+    @WebMethod
+    @Transactional
+    public List<TaskWrapper> getTasksForMemberAssociation(String memberAssociationId) {
+        List<TaskWrapper> memberAssociationTaskList = new LinkedList<TaskWrapper>();
+        final List<Task> taskList = taskService.createTaskQuery().processVariableValueEquals(ActivitiConstants.MEMBER_ASSOCIATION_ID.getName(), memberAssociationId).list();
+        if(CollectionUtils.isNotEmpty(taskList)) {
+            for(final Task task : taskList) {
+                memberAssociationTaskList.add(new TaskWrapper(task, runtimeService));
+            }
+        }
+        return memberAssociationTaskList;
+    }
+
+    @Override
+    @WebMethod
+    @Transactional
+    public TaskWrapper getTask(String taskId) {
+        TaskWrapper retVal = null;
+        final List<Task> taskList = taskService.createTaskQuery().taskId(taskId).list();
+        if (CollectionUtils.isNotEmpty(taskList)) {
+            retVal = new TaskWrapper(taskList.get(0), runtimeService);
+        }
+        return retVal;
+    }
+
+    private static final class TaskCreateDateSorter implements Comparator<Task> {
+
+        @Override
+        public int compare(Task o1, Task o2) {
+            try {
+                return o2.getCreateTime().compareTo(o1.getCreateTime());
+            } catch (Throwable e) { /* can't happen, but... */
+                log.warn("Sorting problem", e);
+                return 0;
+            }
+        }
+
+    }
+
+    @Override
+    public TaskWrapper getTaskFromHistory(final String executionId, final String taskId) {
+        TaskWrapper retVal = null;
+        final HistoricTaskInstanceQuery query = historyService.createHistoricTaskInstanceQuery();
+        if (StringUtils.isNotBlank(executionId)) {
+            query.executionId(executionId);
+        } else if (StringUtils.isNotBlank(taskId)) {
+            query.taskId(taskId);
+        } else {
+            throw new IllegalArgumentException("Execution ID and Task ID are null");
+        }
+        final List<HistoricTaskInstance> instances = query.list();
+        if (CollectionUtils.isNotEmpty(instances)) {
+            retVal = new TaskWrapper(instances.get(0));
+        }
+        return retVal;
+    }
+
+    @Override
+    @Transactional
+    public List<TaskHistoryWrapper> getHistoryForInstance(final String executionId) {
+        final List<TaskHistoryWrapper> retVal = new LinkedList<TaskHistoryWrapper>();
+        if (StringUtils.isNotBlank(executionId)) {
+            final List<HistoricTaskInstance> instances = historyService.createHistoricTaskInstanceQuery().executionId(executionId).list();
+            final Map<String, HistoricTaskInstance> taskDefinitionMap = new HashMap<String, HistoricTaskInstance>();
+            if (CollectionUtils.isNotEmpty(instances)) {
+                for (HistoricTaskInstance instance : instances) {
+                    taskDefinitionMap.put(instance.getTaskDefinitionKey(), instance);
+                }
+            }
+
+            final HistoricActivityInstanceQuery query = historyService.createHistoricActivityInstanceQuery().executionId(executionId);
+            final List<HistoricActivityInstance> activityList = query.list();
+            if (CollectionUtils.isNotEmpty(activityList)) {
+                for (int i = 0; i < activityList.size(); i++) {
+                    final HistoricActivityInstance instance = activityList.get(i);
+                    final TaskHistoryWrapper wrapper = new TaskHistoryWrapper(instance);
+                    if (taskDefinitionMap.containsKey(wrapper.getActivityId())) {
+                        wrapper.setTask(new TaskWrapper(taskDefinitionMap.get(wrapper.getActivityId())));
+                    }
+                    if (StringUtils.isNotBlank(wrapper.getAssigneeId())) {
+                        final UserEntity user = userDataService.getUser(wrapper.getAssigneeId());
+                        wrapper.setUserInfo(user);
+                    }
+                    retVal.add(wrapper);
+
+                    if (i < activityList.size() - 1) {
+                        wrapper.addNextTask(activityList.get(i + 1).getId());
+                    }
+>>>>>>> RELEASE-3.2.6
+					
+					/*
+					final HistoricDetailQuery detailQuery = historyService.createHistoricDetailQuery()
+																		  .activityInstanceId(instance.getId())
+																		  .variableUpdates();
+					final List<HistoricDetail> details = detailQuery.list();
+					if(CollectionUtils.isNotEmpty(details)) {
+						for(final HistoricDetail detail : details) {
+							final HistoricVariableUpdate variableUpdate = (HistoricVariableUpdate)detail;
+							log.info(String.format("Variable update: %s", variableUpdate));
+						}
+					}
+					*/
+                }
+            }
+        }
+        return retVal;
+    }
+
+    @Override
+    @Transactional
+    public List<TaskWrapper> getHistory(final HistorySearchBean searchBean, final int from, final int size) {
+        final HistoricTaskInstanceQuery query = getHistoryQuery(searchBean);
+
+        final List<HistoricTaskInstance> historicTaskInstances = query.listPage(from, size);
+        final List<TaskWrapper> retVal = new LinkedList<TaskWrapper>();
+        if (CollectionUtils.isNotEmpty(historicTaskInstances)) {
+            for (final HistoricTaskInstance historyInstance : historicTaskInstances) {
+                retVal.add(new TaskWrapper(historyInstance));
+            }
+        }
+        return retVal;
+    }
+
+    @Override
+    @Transactional
+    public int count(final HistorySearchBean searchBean) {
+        final HistoricTaskInstanceQuery query = getHistoryQuery(searchBean);
+        return Long.valueOf(query.count()).intValue();
+    }
+
+    private HistoricTaskInstanceQuery getHistoryQuery(final HistorySearchBean searchBean) {
+        final HistoricTaskInstanceQuery query = historyService.createHistoricTaskInstanceQuery();
+        if (StringUtils.isNotBlank(searchBean.getAssigneeId())) {
+            query.taskAssignee(searchBean.getAssigneeId());
+        }
+        if (searchBean.isCompleted() != null) {
+            if (Boolean.TRUE.equals(searchBean.isCompleted())) {
+                query.finished();
+            } else {
+                query.unfinished();
+            }
+        }
+
+        if (StringUtils.isNotBlank(searchBean.getProcessInstanceId())) {
+            query.processInstanceId(searchBean.getProcessInstanceId());
+        }
+
+        if (StringUtils.isNotBlank(searchBean.getExecutionId())) {
+            query.executionId(searchBean.getExecutionId());
+        }
+
+        if (StringUtils.isNotBlank(searchBean.getParentTaskId())) {
+            query.taskParentTaskId(searchBean.getParentTaskId());
+        }
+
+        if (StringUtils.isNotBlank(searchBean.getProcessDefinitionId())) {
+            query.processDefinitionId(searchBean.getProcessDefinitionId());
+        }
+
+        if (searchBean.getDueAfter() != null) {
+            query.taskDueAfter(searchBean.getDueAfter());
+        }
+
+        if (searchBean.getDueBefore() != null) {
+            query.taskDueBefore(searchBean.getDueBefore());
+        }
+
+        if (StringUtils.isNotBlank(searchBean.getTaskName())) {
+            query.taskNameLike(searchBean.getTaskName());
+        }
+
+        if (StringUtils.isNotBlank(searchBean.getTaskDescription())) {
+            query.taskOwner(searchBean.getTaskDescription());
+        }
+
+        if (StringUtils.isNotBlank(searchBean.getTaskOwnerId())) {
+            query.taskOwner(searchBean.getTaskOwnerId());
+        }
+        query.orderByHistoricTaskInstanceEndTime();
+        query.desc();
+        return query;
+    }
+
+    @Override
+    @Transactional
+    public Response deleteTask(String taskId) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+<<<<<<< HEAD
+			taskService.deleteTask(taskId, true);
+		} catch(ActivitiException e) {
+			log.info("Activiti Exception", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(ResponseCode.USER_STATUS);
+			response.setErrorText(e.getMessage());
+		} catch(Throwable e) {
+			log.error("Error while deleting task", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(ResponseCode.USER_STATUS);
+			response.setErrorText(e.getMessage());
+		}
+=======
+            taskService.deleteTask(taskId, true);
+        } catch (ActivitiException e) {
+            log.info("Activiti Exception", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(ResponseCode.USER_STATUS);
+            response.setErrorText(e.getMessage());
+        } catch (Throwable e) {
+            log.error("Error while deleting task", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(ResponseCode.USER_STATUS);
+            response.setErrorText(e.getMessage());
+        }
+>>>>>>> RELEASE-3.2.6
+
+        return response;
+    }
+
+<<<<<<< HEAD
+	@Override
+	@Transactional
+	public Response deleteTaskForUser(String taskId, String userId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+=======
+    @Override
+    @Transactional
+    public Response deleteTaskForUser(String taskId, String userId) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+>>>>>>> RELEASE-3.2.6
+        final IdmAuditLog idmAuditLog = new IdmAuditLog();
+        idmAuditLog.setRequestorUserId(userId);
+        idmAuditLog.setAction(AuditAction.TERMINATED_WORKFLOW.value());
+        idmAuditLog.setSource(AuditSource.WORKFLOW.value());
+        String parentAuditLogId = null;
+        try {
+            final Task task = getTaskAssignee(taskId, userId);
+            idmAuditLog.setTargetTask(task.getId(), task.getName());
+            final Object auditLogId = taskService.getVariable(task.getId(), ActivitiConstants.AUDIT_LOG_ID.getName());
+            if (auditLogId != null && auditLogId instanceof String) {
+                parentAuditLogId = (String) auditLogId;
+            }
+
+            taskService.deleteTask(task.getId(), true);
+            idmAuditLog.succeed();
+        } catch (ActivitiException e) {
+            log.info("Activiti Exception", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(ResponseCode.USER_STATUS);
+            response.setErrorText(e.getMessage());
+            idmAuditLog.setFailureReason(e.getMessage());
+            idmAuditLog.setException(e);
+            idmAuditLog.fail();
+        } catch (Throwable e) {
+            log.error("Error while creating newhire request", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(ResponseCode.USER_STATUS);
+            response.setErrorText(e.getMessage());
+            idmAuditLog.setFailureReason(e.getMessage());
+            idmAuditLog.setException(e);
+            idmAuditLog.fail();
+        } finally {
+            if (parentAuditLogId != null) {
+                IdmAuditLog parent = auditLogService.findById(parentAuditLogId);
+                if (parent != null) {
+                    parent.addChild(idmAuditLog);
+                    idmAuditLog.addParent(parent);
+                    parent = auditLogService.save(parent);
+                }
+            }
+<<<<<<< HEAD
+        }
+		return response;
+	}
+	
+	@Override
+	@WebMethod
+	@Transactional
+	public TaskListWrapper getTasksForUser(String userId) {
+		final TaskListWrapper taskListWrapper = new TaskListWrapper();
+		final List<Task> assignedTasks = taskService.createTaskQuery().taskAssignee(userId).list();
+		final List<Task> candidateTasks = taskService.createTaskQuery().taskCandidateUser(userId).list();
+		Collections.sort(assignedTasks, taskCreatedTimeComparator);
+		Collections.sort(candidateTasks, taskCreatedTimeComparator);
+		taskListWrapper.addAssignedTasks(assignedTasks, runtimeService);
+		taskListWrapper.addCandidateTasks(candidateTasks, runtimeService);
+		return taskListWrapper;
+	}
+
+	@Override
+	@Transactional
+	public Response deleteTasksForUser(final String userId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+        final IdmAuditLog idmAuditLog = new IdmAuditLog();
+        idmAuditLog.setRequestorUserId(userId);
+        idmAuditLog.setAction(AuditAction.DELETE_ALL_USER_TASKS.value());
+        idmAuditLog.setSource(AuditSource.WORKFLOW.value());
+        String parentAuditLogId = null;
+		try {
+			
+			final List<Task> assignedTasks = taskService.createTaskQuery().taskAssignee(userId).list();
+			if(CollectionUtils.isNotEmpty(assignedTasks)) {
+				for(final Task task : assignedTasks) {
+					taskService.deleteTask(task.getId());
+				}
+			}
+			final List<Task> candidateTasks = taskService.createTaskQuery().taskCandidateUser(userId).list();
+			if(CollectionUtils.isNotEmpty(candidateTasks)) {
+				for(final Task task : candidateTasks) {
+					taskService.deleteTask(task.getId());
+				}
+			}
+			
+            idmAuditLog.succeed();
+		} catch(ActivitiException e) {
+			log.info("Activiti Exception", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(ResponseCode.USER_STATUS);
+			response.setErrorText(e.getMessage());
+            idmAuditLog.setFailureReason(e.getMessage());
+            idmAuditLog.setException(e);
+            idmAuditLog.fail();
+		} catch(Throwable e) {
+			log.error("Error while deleting tasks for user", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(ResponseCode.USER_STATUS);
+			response.setErrorText(e.getMessage());
+            idmAuditLog.setFailureReason(e.getMessage());
+            idmAuditLog.setException(e);
+            idmAuditLog.fail();
+		} finally {
+			if(parentAuditLogId != null) {
+				IdmAuditLog parent = auditLogService.findById(parentAuditLogId);
+				parent.addChild(idmAuditLog);
+				idmAuditLog.addParent(parent);
+                parent = auditLogService.save(parent);
+			}
+        }
+		return response;
+	}
+	
+    @Override
+    @WebMethod
+    @Transactional
+    public List<TaskWrapper> getTasksForMemberAssociation(String memberAssociationId) {
+        List<TaskWrapper> memberAssociationTaskList = new LinkedList<TaskWrapper>();
+        final List<Task> taskList = taskService.createTaskQuery().processVariableValueEquals(ActivitiConstants.MEMBER_ASSOCIATION_ID.getName(), memberAssociationId).list();
+        if(CollectionUtils.isNotEmpty(taskList)) {
+            for(final Task task : taskList) {
+                memberAssociationTaskList.add(new TaskWrapper(task, runtimeService));
+            }
+        }
+        return memberAssociationTaskList;
+    }
+=======
+        }
+        return response;
+    }
+
+>>>>>>> RELEASE-3.2.6
+}

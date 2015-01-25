@@ -7,10 +7,7 @@ import org.hibernate.FetchMode;
 import org.hibernate.LockOptions;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.criterion.Example;
-import org.hibernate.criterion.Order;
-import org.hibernate.criterion.Projections;
-import org.hibernate.criterion.Restrictions;
+import org.hibernate.criterion.*;
 import org.openiam.base.OrderConstants;
 import org.openiam.base.ws.SortParam;
 import org.openiam.idm.searchbeans.AbstractSearchBean;
@@ -24,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -36,6 +34,8 @@ implements BaseDao<T, PrimaryKey> {
     protected final Logger log = Logger.getLogger(this.getClass());
     protected final Class<T> domainClass;
     private SessionFactory sessionFactory;
+    
+    protected static final int MAX_IN_CLAUSE = 1000;
     
     /* 
      * by default we set isCachable to false to prevent problems with invalidation of results. 
@@ -99,7 +99,8 @@ implements BaseDao<T, PrimaryKey> {
     	 return ((Number) getExampleCriteria(searchBean).setProjection(rowCount())
                  .uniqueResult()).intValue();
     }
-    
+
+    @Override
     public void flush() {
     	getSession().flush();
     }
@@ -213,8 +214,7 @@ implements BaseDao<T, PrimaryKey> {
         if (CollectionUtils.isEmpty(idCollection)) {
             return (List<T>) Collections.EMPTY_LIST;
         }
-
-        final Criteria criteria = getCriteria().add( Restrictions.in(getPKfieldName(), idCollection)).setCacheable(true);
+        final Criteria criteria = getCriteria().add( createInClauseForList(new ArrayList<PrimaryKey>(idCollection)));
 
         if (from > -1) {
             criteria.setFirstResult(from);
@@ -371,5 +371,21 @@ implements BaseDao<T, PrimaryKey> {
             log.error("evict failed", re);
             throw re;
         }
+    }
+
+
+    protected Disjunction createInClauseForList(List<PrimaryKey> idCollection) {
+        Disjunction orClause = Restrictions.disjunction();
+        int start = 0;
+        int end = 0;
+        while (start < idCollection.size()) {
+            end = start + MAX_IN_CLAUSE;
+            if (end > idCollection.size()) {
+                end = idCollection.size();
+            }
+            orClause.add(Restrictions.in(getPKfieldName(), idCollection.subList(start, end)));
+            start = end;
+        }
+        return orClause;
     }
 }

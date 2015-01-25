@@ -1,6 +1,7 @@
 package org.openiam.idm.srvc.auth.ws;
 
 
+import org.openiam.base.ws.Response;
 import org.openiam.idm.srvc.auth.dto.IdentityDto;
 
 import javax.jws.WebMethod;
@@ -15,7 +16,13 @@ public interface IdentityWebService {
     String save(@WebParam(name = "identity", targetNamespace = "") IdentityDto identityDto);
 
     @WebMethod
-    IdentityDto getIdentity(@WebParam(name = "referredId", targetNamespace = "") String referredId, @WebParam(name = "managedSysId", targetNamespace = "") String managedSysId);
+    Response isValidIdentity(@WebParam(name = "identity", targetNamespace = "") IdentityDto identityDto);
+
+    @WebMethod
+    IdentityDto getIdentity(@WebParam(name = "identityId", targetNamespace = "") String identityId);
+
+    @WebMethod
+    IdentityDto getIdentityByManagedSys(@WebParam(name = "referredId", targetNamespace = "") String referredId, @WebParam(name = "managedSysId", targetNamespace = "") String managedSysId);
 
     @WebMethod
     List<IdentityDto> getIdentities(@WebParam(name = "referredId", targetNamespace = "") String referredId);

@@ -89,7 +89,8 @@ import java.util.*;
         "groups",
         "affiliations",
         "supervisors",
-        "subordinates"
+        "subordinates",
+        "isFromActivitiCreation"
 })
 @XmlSeeAlso({
         Login.class,
@@ -128,7 +129,7 @@ public class User extends AbstractMetadataTypeDTO {
 
     protected String firstName;
 
-//    @Internationalized
+    //    @Internationalized
     protected String jobCodeId;
 
     protected String lastName;
@@ -230,12 +231,13 @@ public class User extends AbstractMetadataTypeDTO {
     // these fields are used only when userWS is used directly without provision
     private String login;
     private String password;
-    private Boolean notifyUserViaEmail=true;
+    private Boolean notifyUserViaEmail = true;
 
     private Set<Supervisor> supervisors;
 
     private Set<Supervisor> subordinates;
 
+    private boolean isFromActivitiCreation = false;
     // Constructors
 
     /**
@@ -248,7 +250,7 @@ public class User extends AbstractMetadataTypeDTO {
      * minimal constructor
      */
     public User(String id) {
-    	setId(id);
+        setId(id);
     }
 
     public AttributeOperationEnum getOperation() {
@@ -260,15 +262,15 @@ public class User extends AbstractMetadataTypeDTO {
     }
 
     public String getDisplayName() {
-    	String displayName = null;
-    	if(StringUtils.isNotBlank(firstName) && StringUtils.isNotBlank(lastName)) {
-    		displayName = String.format("%s %s", firstName, lastName);
-    	} else if(StringUtils.isNotBlank(firstName)) {
-    		displayName = firstName;
-    	} else if(StringUtils.isNotBlank(lastName)) {
-    		displayName = lastName;
-    	}
-    	return displayName;
+        String displayName = null;
+        if (StringUtils.isNotBlank(firstName) && StringUtils.isNotBlank(lastName)) {
+            displayName = String.format("%s %s", firstName, lastName);
+        } else if (StringUtils.isNotBlank(firstName)) {
+            displayName = firstName;
+        } else if (StringUtils.isNotBlank(lastName)) {
+            displayName = lastName;
+        }
+        return displayName;
     }
 
     public String getFirstName() {
@@ -298,28 +300,28 @@ public class User extends AbstractMetadataTypeDTO {
     public Set<Organization> getAffiliations() {
         return affiliations;
     }
-    
+
     public void addAffiliation(final Organization org) {
-    	if(org != null) {
-    		if(affiliations == null) {
-    			affiliations = new HashSet<Organization>();
-    		}
-    		org.setOperation(AttributeOperationEnum.ADD);
-    		affiliations.add(org);
-    	}
+        if (org != null) {
+            if (affiliations == null) {
+                affiliations = new HashSet<Organization>();
+            }
+            org.setOperation(AttributeOperationEnum.ADD);
+            affiliations.add(org);
+        }
     }
-    
+
     public void markAffiliateAsDeleted(final String id) {
-    	if(id != null) {
-    		if(affiliations != null) {
-    			for(final Organization organization : affiliations) {
-    				if(StringUtils.equals(organization.getId(), id)) {
-    					organization.setOperation(AttributeOperationEnum.DELETE);
-    					break;
-    				}
-    			}
-    		}
-    	}
+        if (id != null) {
+            if (affiliations != null) {
+                for (final Organization organization : affiliations) {
+                    if (StringUtils.equals(organization.getId(), id)) {
+                        organization.setOperation(AttributeOperationEnum.DELETE);
+                        break;
+                    }
+                }
+            }
+        }
     }
 
     public void setAffiliations(Set<Organization> affiliations) {
@@ -610,15 +612,15 @@ public class User extends AbstractMetadataTypeDTO {
     public void setEmailAddresses(Set<EmailAddress> emailAddresses) {
         this.emailAddresses = emailAddresses;
     }
-    
+
     public EmailAddress getPrimaryEmailAddress() {
-    	EmailAddress defaultEmail = null;
+        EmailAddress defaultEmail = null;
         if (CollectionUtils.isNotEmpty(emailAddresses)) {
-            for (EmailAddress email: emailAddresses){
-                   if(email.getIsDefault()){
-                       defaultEmail = email;
-                       break;
-                   }
+            for (EmailAddress email : emailAddresses) {
+                if (email.getIsDefault()) {
+                    defaultEmail = email;
+                    break;
+                }
             }
             if (defaultEmail == null) {
                 defaultEmail = emailAddresses.iterator().next();
@@ -701,28 +703,28 @@ public class User extends AbstractMetadataTypeDTO {
     public Set<Role> getRoles() {
         return roles;
     }
-    
+
     public void markRoleAsDeleted(final String id) {
-    	if(id != null) {
-    		if(roles != null) {
-    			for(final Role role : roles) {
-    				if(StringUtils.equals(role.getId(), id)) {
-    					role.setOperation(AttributeOperationEnum.DELETE);
-    					break;
-    				}
-    			}
-    		}
-    	}
+        if (id != null) {
+            if (roles != null) {
+                for (final Role role : roles) {
+                    if (StringUtils.equals(role.getId(), id)) {
+                        role.setOperation(AttributeOperationEnum.DELETE);
+                        break;
+                    }
+                }
+            }
+        }
     }
-    
+
     public void addRole(final Role role) {
-    	if(role != null) {
-    		if(roles == null) {
-    			roles = new HashSet<Role>();
-    		}
-    		role.setOperation(AttributeOperationEnum.ADD);
-    		roles.add(role);
-    	}
+        if (role != null) {
+            if (roles == null) {
+                roles = new HashSet<Role>();
+            }
+            role.setOperation(AttributeOperationEnum.ADD);
+            roles.add(role);
+        }
     }
 
     public void setRoles(Set<Role> roles) {
@@ -732,28 +734,28 @@ public class User extends AbstractMetadataTypeDTO {
     public Set<Group> getGroups() {
         return groups;
     }
-    
+
     public void addGroup(final Group group) {
-    	if(group != null) {
-    		if(groups == null) {
-    			groups = new HashSet<Group>();
-    		}
-    		group.setOperation(AttributeOperationEnum.ADD);
-    		groups.add(group);
-    	}
+        if (group != null) {
+            if (groups == null) {
+                groups = new HashSet<Group>();
+            }
+            group.setOperation(AttributeOperationEnum.ADD);
+            groups.add(group);
+        }
     }
-    
+
     public void markGroupAsDeleted(final String groupId) {
-    	if(groupId != null) {
-    		if(groups != null) {
-    			for(final Group group : groups) {
-    				if(StringUtils.equals(group.getId(), groupId)) {
-    					group.setOperation(AttributeOperationEnum.DELETE);
-    					break;
-    				}
-    			}
-    		}
-    	}
+        if (groupId != null) {
+            if (groups != null) {
+                for (final Group group : groups) {
+                    if (StringUtils.equals(group.getId(), groupId)) {
+                        group.setOperation(AttributeOperationEnum.DELETE);
+                        break;
+                    }
+                }
+            }
+        }
     }
 
     public void setGroups(Set<Group> groups) {
@@ -763,35 +765,35 @@ public class User extends AbstractMetadataTypeDTO {
     public Set<Resource> getResources() {
         return resources;
     }
-    
+
     public void markResourceAsDeleted(final String resourceId) {
-    	if(resourceId != null) {
-    		if(resources != null) {
-    			for(final Resource resource : resources) {
-    				if(StringUtils.equals(resource.getId(), resourceId)) {
-    					resource.setOperation(AttributeOperationEnum.DELETE);
-    					break;
-    				}
-    			}
-    		}
-    	}
+        if (resourceId != null) {
+            if (resources != null) {
+                for (final Resource resource : resources) {
+                    if (StringUtils.equals(resource.getId(), resourceId)) {
+                        resource.setOperation(AttributeOperationEnum.DELETE);
+                        break;
+                    }
+                }
+            }
+        }
     }
-    
+
     public void addResource(final Resource resource) {
-    	if(resource != null) {
-    		if(resources == null) {
-    			resources = new HashSet<Resource>();
-    		}
-    		resource.setOperation(AttributeOperationEnum.ADD);
-    		resources.add(resource);
-    	}
+        if (resource != null) {
+            if (resources == null) {
+                resources = new HashSet<Resource>();
+            }
+            resource.setOperation(AttributeOperationEnum.ADD);
+            resources.add(resource);
+        }
     }
 
     public void setResources(Set<Resource> resources) {
         this.resources = resources;
     }
 
-    
+
     //this field is mapped from Dozer 
     public String getEmail() {
         return email;
@@ -800,6 +802,7 @@ public class User extends AbstractMetadataTypeDTO {
     public void setEmail(String email) {
         this.email = email;
     }
+
     public Phone getDefaultPhone() {
         return defaultPhone;
     }
@@ -807,6 +810,7 @@ public class User extends AbstractMetadataTypeDTO {
     public void setDefaultPhone(Phone defaultPhone) {
         this.defaultPhone = defaultPhone;
     }
+
     public Address getDefaultAddress() {
         return defaultAddress;
     }
@@ -895,7 +899,15 @@ public class User extends AbstractMetadataTypeDTO {
     public List<Login> getPrincipalList() {
         return principalList;
     }
-    
+
+    public boolean getIsFromActivitiCreation() {
+        return isFromActivitiCreation;
+    }
+
+    public void setIsFromActivitiCreation(boolean isFromActivitiCreation) {
+        this.isFromActivitiCreation = isFromActivitiCreation;
+    }
+
     public boolean containsLogin(final String loginId) {
     	boolean retVal = false;
         if(principalList != null) {
@@ -905,17 +917,17 @@ public class User extends AbstractMetadataTypeDTO {
                 }
             }
         }
-    	return retVal;
+        return retVal;
     }
-    
+
     public void addPrincipal(final Login login) {
-    	if(login != null) {
-    		if(this.principalList == null) {
-    			this.principalList = new LinkedList<Login>();
-    		}
-    		login.setOperation(AttributeOperationEnum.ADD);
-    		this.principalList.add(login);
-    	}
+        if (login != null) {
+            if (this.principalList == null) {
+                this.principalList = new LinkedList<Login>();
+            }
+            login.setOperation(AttributeOperationEnum.ADD);
+            this.principalList.add(login);
+        }
     }
 
     public void setPrincipalList(List<Login> principalList) {
@@ -930,7 +942,7 @@ public class User extends AbstractMetadataTypeDTO {
         this.alternateContactId = alternateContactId;
     }
 
-	public void updateUser(User newUser) {
+    public void updateUser(User newUser) {
         if (newUser.getBirthdate() != null) {
             if (newUser.getBirthdate().equals(BaseConstants.NULL_DATE)) {
                 this.birthdate = null;
@@ -968,7 +980,7 @@ public class User extends AbstractMetadataTypeDTO {
             }
         }
         if (newUser.getEmployeeTypeId() != null) {
-                this.employeeTypeId = newUser.getEmployeeTypeId();
+            this.employeeTypeId = newUser.getEmployeeTypeId();
         }
         if (newUser.getFirstName() != null) {
             if (newUser.getFirstName().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
@@ -1297,7 +1309,8 @@ public class User extends AbstractMetadataTypeDTO {
         if (createdBy != null ? !createdBy.equals(user.createdBy) : user.createdBy != null) return false;
         if (email != null ? !email.equals(user.email) : user.email != null) return false;
         if (employeeId != null ? !employeeId.equals(user.employeeId) : user.employeeId != null) return false;
-        if (employeeTypeId != null ? !employeeTypeId.equals(user.employeeTypeId) : user.employeeTypeId != null) return false;
+        if (employeeTypeId != null ? !employeeTypeId.equals(user.employeeTypeId) : user.employeeTypeId != null)
+            return false;
         if (lastDate != null ? !lastDate.equals(user.lastDate) : user.lastDate != null) return false;
         if (claimDate != null ? !claimDate.equals(user.claimDate) : user.claimDate != null) return false;
         if (login != null ? !login.equals(user.login) : user.login != null) return false;

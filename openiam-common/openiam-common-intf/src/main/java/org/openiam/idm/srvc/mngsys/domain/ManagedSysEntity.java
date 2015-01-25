@@ -3,6 +3,7 @@ package org.openiam.idm.srvc.mngsys.domain;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Type;
 import org.openiam.am.srvc.constants.SearchScopeType;
 import org.openiam.am.srvc.domain.AuthProviderEntity;
 import org.openiam.am.srvc.domain.ContentProviderEntity;
@@ -25,6 +26,7 @@ import java.util.Set;
 
 @Entity
 @Table(name = "MANAGED_SYS")
+@Cacheable
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(ManagedSysDto.class)
 @AttributeOverrides({
@@ -99,6 +101,9 @@ public class ManagedSysEntity extends AbstractKeyNameEntity {
     private String attributeNamesHandler;
     @Column(name = "HNDLR_5", length = 100)
     private String handler5;
+    @Column(name = "SKIP_GROUP_PROV", nullable = false)
+    @Type(type = "yes_no")
+    private boolean skipGroupProvision = true;
 
     @OneToMany(mappedBy = "managedSys")
     private Set<ManagedSystemObjectMatchEntity> mngSysObjectMatchs = new HashSet<ManagedSystemObjectMatchEntity>();
@@ -116,10 +121,6 @@ public class ManagedSysEntity extends AbstractKeyNameEntity {
     @OneToMany(orphanRemoval = false, cascade = { CascadeType.DETACH, CascadeType.REFRESH }, mappedBy = "managedSystem", fetch = FetchType.LAZY)
     private Set<AuthProviderEntity> authProviders;
 
-    /*
-    @OneToMany(orphanRemoval = false, cascade = { CascadeType.DETACH, CascadeType.REFRESH }, mappedBy = "managedSystem", fetch = FetchType.LAZY)
-    private Set<ContentProviderEntity> contentProviders;
-    */
     
     public List<ManagedSysRuleEntity> getRules() {
         return rules;
@@ -393,6 +394,14 @@ public class ManagedSysEntity extends AbstractKeyNameEntity {
         this.roles = roles;
     }
 
+    public Boolean getSkipGroupProvision() {
+        return skipGroupProvision;
+    }
+
+    public void setSkipGroupProvision(Boolean skipGroupProvision) {
+        this.skipGroupProvision = skipGroupProvision;
+    }
+
 	public Set<AuthProviderEntity> getAuthProviders() {
 		return authProviders;
 	}
@@ -401,15 +410,6 @@ public class ManagedSysEntity extends AbstractKeyNameEntity {
 		this.authProviders = authProviders;
 	}
 
-	/*
-	public Set<ContentProviderEntity> getContentProviders() {
-		return contentProviders;
-	}
-
-	public void setContentProviders(Set<ContentProviderEntity> contentProviders) {
-		this.contentProviders = contentProviders;
-	}
-	*/
 
 	@Override
 	public int hashCode() {

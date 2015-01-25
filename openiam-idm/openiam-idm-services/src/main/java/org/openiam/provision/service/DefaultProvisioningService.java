@@ -123,9 +123,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     private String hiddenAttributes;
 
     private static final Log log = LogFactory.getLog(DefaultProvisioningService.class);
-	private String errorDescription;
+    private String errorDescription;
 
-	public Response testConnectionConfig(String managedSysId, String requesterId) {
+    public Response testConnectionConfig(String managedSysId, String requesterId) {
         IdmAuditLog idmAuditLog = new IdmAuditLog();
         idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.PROVISIONING_TEST.value());
@@ -1129,7 +1129,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         resourceSet.addAll(getResourcesForRoles(roleSet));
         resourceSet.addAll(getResourcesForGroups(groupSet));
 
-        List<Organization> orgs = orgManager.getOrganizationsForUserLocalized(pUser.getId(), null, 0, 100, null);
+        List<Organization> orgs = orgManager.getOrganizationsForUser(pUser.getId(), null, 0, 100);
         for (Organization org : orgs) {
             Resource res = resourceDataService.getResource(org.getAdminResourceId(), null);
             if (res != null) {
@@ -1253,6 +1253,11 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 }
             }
 
+        }
+
+        if (CollectionUtils.isNotEmpty(deleteResourceSet) && CollectionUtils.isNotEmpty(resourceSet)) {
+            // Exclude delete/add of the same resource
+            deleteResourceSet.removeAll(resourceSet);
         }
 
         log.debug("Resources to be added ->> " + resourceSet);
@@ -2326,14 +2331,14 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                             String text = null;
                                             if (ob.getProperties().containsKey("subject")) {
                                                 try {
-                                                    subject = scriptRunner.evaluate(bindingMap, (String)ob.getProperties().get("subject"));
+                                                    subject = scriptRunner.evaluate(bindingMap, (String) ob.getProperties().get("subject"));
                                                 } catch (IOException ioe) {
                                                     log.error("Error in subject string = '", ioe);
                                                 }
                                             }
                                             if (ob.getProperties().containsKey("text")) {
                                                 try {
-                                                    text = scriptRunner.evaluate(bindingMap, (String)ob.getProperties().get("text"));
+                                                    text = scriptRunner.evaluate(bindingMap, (String) ob.getProperties().get("text"));
                                                 } catch (IOException ioe) {
                                                     log.error("Error in text string = '", ioe);
                                                 }

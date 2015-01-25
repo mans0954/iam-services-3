@@ -241,6 +241,11 @@ public abstract class AbstractActivitiJob implements JavaDelegate, TaskListener 
 	public String getRequestorId(final DelegateExecution execution) {
 		return getStringVariable(execution, ActivitiConstants.REQUESTOR);
 	}
+
+
+	public String getExecutorId(final DelegateExecution execution) {
+		return getStringVariable(execution, ActivitiConstants.EXECUTOR_ID);
+	}
 	
 	public String getTaskDescription(final DelegateExecution execution) {
 		return getStringVariable(execution, ActivitiConstants.TASK_DESCRIPTION);

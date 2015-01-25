@@ -46,10 +46,6 @@ public class DeleteResourceAccountUserCommand extends BaseReconciliationUserComm
     @Qualifier("defaultProvision")
     private ProvisionService provisionService;
 
-    @Autowired
-    @Qualifier("configurableGroovyScriptEngine")
-    private ScriptIntegration scriptRunner;
-
     public DeleteResourceAccountUserCommand(){
     }
 
@@ -61,7 +57,6 @@ public class DeleteResourceAccountUserCommand extends BaseReconciliationUserComm
 		if(user == null) {
             ManagedSysDto mSys = managedSysService.getManagedSys(mSysID);
 
-            log.debug("Calling delete with Remote connector");
             CrudRequest<ExtensibleUser> request = new CrudRequest<ExtensibleUser>();
             request.setObjectIdentity(principal);
             request.setTargetID(mSysID);

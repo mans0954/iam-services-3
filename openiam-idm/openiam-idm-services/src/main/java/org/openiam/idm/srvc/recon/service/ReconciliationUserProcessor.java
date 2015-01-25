@@ -12,7 +12,6 @@ import org.openiam.connector.type.ObjectValue;
 import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.request.SearchRequest;
 import org.openiam.connector.type.response.SearchResponse;
-import org.openiam.dozer.converter.*;
 import org.openiam.exception.ScriptEngineException;
 import org.openiam.idm.parser.csv.UserCSVParser;
 import org.openiam.idm.parser.csv.UserSearchBeanCSVParser;
@@ -76,11 +75,6 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
 
     private static final Log log = LogFactory.getLog(ReconciliationUserProcessor.class);
 
-    @Autowired
-    @Qualifier("cryptor")
-    private Cryptor cryptor;
-    @Autowired
-    private KeyManagementService keyManagementService;
     @Value("${org.openiam.idm.system.user.id}")
     private String systemUserId;
 
@@ -88,8 +82,6 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
     private ReconciliationCommandFactory commandFactory;
     @Autowired
     protected ResourceDataService resourceDataService;
-    @Autowired
-    private MailService mailService;
     @Value("${iam.files.location}")
     private String absolutePath;
     @Autowired
@@ -109,8 +101,6 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
     protected UserCSVParser userCSVParser;
     @Autowired
     public UserSearchBeanCSVParser userSearchCSVParser;
-    @Autowired
-    private ReconciliationConfigDAO reconConfigDao;
     @Autowired
     @Qualifier("defaultProvision")
     private ProvisionService provisionService;

@@ -86,10 +86,6 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
     @Value("${openiam.idm.ws.path}")
     private String serviceContext;
 
-    protected ValidationScript validationScript;
-    protected List<TransformScript> transformScripts;
-    protected MatchObjectRule matchRule;
-
     public abstract SyncResponse startSynch(SynchConfig config);
 
     /**
