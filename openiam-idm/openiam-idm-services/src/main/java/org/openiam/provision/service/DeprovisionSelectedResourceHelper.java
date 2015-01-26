@@ -276,7 +276,7 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
                 if (preProcessScript != null && !preProcessScript.isEmpty()) {
                     PreProcessor ppScript = createPreProcessScript(preProcessScript);
                     if (ppScript != null) {
-                        if (executePreProcess(ppScript, bindingMap, pUser, "DELETE") == ProvisioningConstants.FAIL) {
+                        if (executePreProcess(ppScript, bindingMap, pUser, null,  "DELETE") == ProvisioningConstants.FAIL) {
                             continue;
                         }
                     }
@@ -326,7 +326,7 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
                         if (postProcessScript != null && !postProcessScript.isEmpty()) {
                             PostProcessor ppScript = createPostProcessScript(postProcessScript);
                             if (ppScript != null) {
-                                executePostProcess(ppScript, bindingMap, pUser, "DELETE", connectorSuccess);
+                                executePostProcess(ppScript, bindingMap, pUser, null, "DELETE", connectorSuccess);
                             }
                         }
 

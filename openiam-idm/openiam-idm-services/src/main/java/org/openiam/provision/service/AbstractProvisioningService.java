@@ -485,7 +485,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         return Collections.EMPTY_LIST;
     }
 
-    protected int callPreProcessor(String operation, ProvisionUser pUser, Map<String, Object> bindingMap) {
+    protected int callPreProcessor(String operation, ProvisionUser pUser, Map<String, Object> bindingMap, PasswordSync passwordSync) {
 
         ProvisionServicePreProcessor<ProvisionUser> addPreProcessScript = null;
         if (pUser != null) {
@@ -494,7 +494,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     (addPreProcessScript = createProvPreProcessScript(preProcessor, bindingMap)) != null) {
                 addPreProcessScript.setMuleContext(MuleContextProvider.getCtx());
                 addPreProcessScript.setApplicationContext(SpringContextProvider.getApplicationContext());
-                return executeProvisionPreProcess(addPreProcessScript, bindingMap, pUser, null, operation);
+                return executeProvisionPreProcess(addPreProcessScript, bindingMap, pUser, passwordSync, operation);
 
             }
             log.info("======= callPreProcessor: addPreProcessScript=" + addPreProcessScript + ", ");
@@ -504,7 +504,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     }
 
 
-    protected int callPostProcessor(String operation, ProvisionUser pUser, Map<String, Object> bindingMap) {
+    protected int callPostProcessor(String operation, ProvisionUser pUser, Map<String, Object> bindingMap, PasswordSync passwordSync) {
 
         ProvisionServicePostProcessor<ProvisionUser> addPostProcessScript;
 
@@ -513,7 +513,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     (addPostProcessScript = createProvPostProcessScript(postProcessor, bindingMap)) != null) {
                 addPostProcessScript.setMuleContext(MuleContextProvider.getCtx());
                 addPostProcessScript.setApplicationContext(SpringContextProvider.getApplicationContext());
-                return executeProvisionPostProcess(addPostProcessScript, bindingMap, pUser, null, operation);
+                return executeProvisionPostProcess(addPostProcessScript, bindingMap, pUser, passwordSync, operation);
 
             }
         }
@@ -521,7 +521,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         return ProvisioningConstants.SUCCESS;
     }
 
-    protected PreProcessor<ProvisionUser> createPreProcessScript(String scriptName, Map<String, Object> tmpMap) {
+    protected PreProcessor<ProvisionUser> createPreProcessScript(String scriptName) {
         Map<String, Object> bindingMap = new HashMap<String, Object>();
         try {
             return (PreProcessor<ProvisionUser>) scriptRunner.instantiateClass(bindingMap, scriptName);
@@ -531,7 +531,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         }
     }
 
-    protected PostProcessor<ProvisionUser> createPostProcessScript(String scriptName, Map<String, Object> tmpMap) {
+    protected PostProcessor<ProvisionUser> createPostProcessScript(String scriptName) {
         Map<String, Object> bindingMap = new HashMap<String, Object>();
         try {
             return (PostProcessor<ProvisionUser>) scriptRunner.instantiateClass(bindingMap, scriptName);
@@ -565,15 +565,21 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                                              Map<String, Object> bindingMap, ProvisionUser user, PasswordSync passwordSync, String operation) {
         if ("ADD".equalsIgnoreCase(operation)) {
             return ppScript.add(user, bindingMap);
-        }
+        } else
         if ("MODIFY".equalsIgnoreCase(operation)) {
             return ppScript.modify(user, bindingMap);
-        }
+        } else
         if ("DELETE".equalsIgnoreCase(operation)) {
             return ppScript.delete(user, bindingMap);
-        }
+        } else
         if ("SET_PASSWORD".equalsIgnoreCase(operation)) {
             return ppScript.setPassword(passwordSync, bindingMap);
+        } else
+        if ("RESET_PASSWORD".equalsIgnoreCase(operation)) {
+            return ppScript.resetPassword(passwordSync, bindingMap);
+        } else
+        if ("DISABLE".equalsIgnoreCase(operation)) {
+            return ppScript.disable(user, bindingMap);
         }
 
         return 0;
@@ -583,56 +589,68 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                                               Map<String, Object> bindingMap, ProvisionUser user, PasswordSync passwordSync, String operation) {
         if ("ADD".equalsIgnoreCase(operation)) {
             return ppScript.add(user, bindingMap);
-        }
+        } else
         if ("MODIFY".equalsIgnoreCase(operation)) {
             return ppScript.modify(user, bindingMap);
-        }
+        } else
         if ("DELETE".equalsIgnoreCase(operation)) {
             return ppScript.delete(user, bindingMap);
-        }
+        } else
         if ("SET_PASSWORD".equalsIgnoreCase(operation)) {
             return ppScript.setPassword(passwordSync, bindingMap);
+        } else
+        if ("RESET_PASSWORD".equalsIgnoreCase(operation)) {
+            return ppScript.resetPassword(passwordSync, bindingMap);
+        } else
+        if ("DISABLE".equalsIgnoreCase(operation)) {
+            return ppScript.disable(user, bindingMap);
         }
-
         return 0;
     }
 
     protected int executePreProcess(PreProcessor<ProvisionUser> ppScript,
-                                    Map<String, Object> bindingMap, ProvisionUser user, String operation) {
+                                    Map<String, Object> bindingMap, ProvisionUser user, PasswordSync passwordSync, String operation) {
         if ("ADD".equalsIgnoreCase(operation)) {
             return ppScript.add(user, bindingMap);
-        }
+        } else
         if ("MODIFY".equalsIgnoreCase(operation)) {
             return ppScript.modify(user, bindingMap);
-        }
+        } else
         if ("DELETE".equalsIgnoreCase(operation)) {
             return ppScript.delete(user, bindingMap);
-        }
+        } else
         if ("SET_PASSWORD".equalsIgnoreCase(operation)) {
-            return ppScript.setPassword(bindingMap);
+            return ppScript.setPassword(passwordSync, bindingMap);
+        } else
+        if ("RESET_PASSWORD".equalsIgnoreCase(operation)) {
+            return ppScript.resetPassword(passwordSync, bindingMap);
+        } else
+        if ("DISABLE".equalsIgnoreCase(operation)) {
+            return ppScript.disable(user, bindingMap);
         }
-
         return 0;
     }
 
     protected int executePostProcess(PostProcessor<ProvisionUser> ppScript,
-                                     Map<String, Object> bindingMap, ProvisionUser user, String operation, boolean success) {
+                                     Map<String, Object> bindingMap, ProvisionUser user, PasswordSync passwordSync, String operation, boolean success) {
         if ("ADD".equalsIgnoreCase(operation)) {
             return ppScript.add(user, bindingMap, success);
-        }
+        } else
         if ("MODIFY".equalsIgnoreCase(operation)) {
             return ppScript.modify(user, bindingMap, success);
-
-        }
+        } else
         if ("DELETE".equalsIgnoreCase(operation)) {
             return ppScript.delete(user, bindingMap, success);
-
-        }
-
+        } else
         if ("SET_PASSWORD".equalsIgnoreCase(operation)) {
-            return ppScript.setPassword(bindingMap, success);
+            return ppScript.setPassword(passwordSync, bindingMap, success);
+        } else
+        if ("RESET_PASSWORD".equalsIgnoreCase(operation)) {
+            return ppScript.resetPassword(passwordSync, bindingMap, success);
+        } else
+        if ("DISABLE".equalsIgnoreCase(operation)) {
+            return ppScript.disable(user, bindingMap, success);
         }
-
         return 0;
     }
 
@@ -648,7 +666,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     Set<EmailAddressEntity> entities = userEntity.getEmailAddresses();
                     if (CollectionUtils.isNotEmpty(entities)) {
                         for (EmailAddressEntity en : entities) {
-                            if (en.getEmailId().equals(e.getEmailId())) {
+                            if (StringUtils.equals(en.getEmailId(), e.getEmailId())) {
                                 userEntity.getEmailAddresses().remove(en);
                                 // Audit Log
                                 //--------------------------------------------------
@@ -723,7 +741,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     Set<PhoneEntity> entities = userEntity.getPhones();
                     if (CollectionUtils.isNotEmpty(entities)) {
                         for (PhoneEntity en : entities) {
-                            if (en.getPhoneId().equals(e.getPhoneId())) {
+                            if (StringUtils.equals(en.getPhoneId(), e.getPhoneId())) {
                                 userEntity.getPhones().remove(en);
                                 //Audit log
                                 IdmAuditLog auditLog = new IdmAuditLog();
@@ -756,7 +774,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     Set<PhoneEntity> entities = userEntity.getPhones();
                     if (CollectionUtils.isNotEmpty(entities)) {
                         for (PhoneEntity en : entities) {
-                            if (en.getPhoneId().equals(e.getPhoneId())) {
+                            if (StringUtils.equals(en.getPhoneId(), e.getPhoneId())) {
                                 // Audit Log
                                 IdmAuditLog auditLog = new IdmAuditLog();
                                 Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
@@ -794,7 +812,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     Set<AddressEntity> entities = userEntity.getAddresses();
                     if (CollectionUtils.isNotEmpty(entities)) {
                         for (AddressEntity en : entities) {
-                            if (en.getAddressId().equals(e.getAddressId())) {
+                            if (StringUtils.equals(en.getAddressId(), e.getAddressId())) {
                                 userEntity.getAddresses().remove(en);
                                 IdmAuditLog auditLog = new IdmAuditLog();
                                 Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
@@ -824,7 +842,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     Set<AddressEntity> entities = userEntity.getAddresses();
                     if (CollectionUtils.isNotEmpty(entities)) {
                         for (AddressEntity en : entities) {
-                            if (en.getAddressId().equals(e.getAddressId())) {
+                            if (StringUtils.equals(en.getAddressId(), e.getAddressId())) {
                                 // Audit Log -----------------------------------------------------------------------------------
                                 IdmAuditLog auditLog = new IdmAuditLog();
                                 Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
@@ -1144,7 +1162,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     List<UserEntity> supervisorList = userMgr.getSuperiors(userId, 0, Integer.MAX_VALUE);
                     if (CollectionUtils.isNotEmpty(supervisorList)) {
                         for (UserEntity se : supervisorList) {
-                            if (se.getId().equals(e.getId())) {
+                            if (StringUtils.equals(se.getId(), e.getId())) {
                                 userMgr.removeSupervisor(se.getId(), userId);
                                 log.info(String.format("Removed a supervisor user %s from user %s",
                                         e.getId(), userId));
@@ -1235,7 +1253,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
             for (GroupEntity gre : userEntity.getGroups()) {
                 Group gr = groupDozerConverter.convertToDTO(gre, false);
                 for (Group g : pUser.getGroups()) {
-                    if (g.getId().equals(gr.getId())) {
+                    if (StringUtils.equals(g.getId(), gr.getId())) {
                         gr.setOperation(g.getOperation()); // get operation value from pUser
                         break;
                     }
@@ -1291,7 +1309,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
             for (RoleEntity ure : userEntity.getRoles()) {
                 Role ar = roleDozerConverter.convertToDTO(ure, false);
                 for (Role r : pUser.getRoles()) {
-                    if (r.getId().equals(ar.getId())) {
+                    if (StringUtils.equals(r.getId(),ar.getId())) {
                         ar.setOperation(r.getOperation()); // get operation value from pUser
                         break;
                     }
@@ -1323,7 +1341,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                 } else if (operation == AttributeOperationEnum.DELETE) {
                     Set<OrganizationEntity> affiliations = userEntity.getAffiliations();
                     for (OrganizationEntity a : affiliations) {
-                        if (o.getId().equals(a.getId())) {
+                        if (StringUtils.equals(o.getId(),a.getId())) {
                             userEntity.getAffiliations().remove(a);
                             // Audit Log ---------------------------------------------------
                             IdmAuditLog auditLog = new IdmAuditLog();
@@ -1415,7 +1433,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     if (CollectionUtils.isNotEmpty(entities)) {
                         for (final Iterator<LoginEntity> it = entities.iterator(); it.hasNext(); ) {
                             final LoginEntity en = it.next();
-                            if (en.getLoginId().equals(e.getLoginId())) {
+                            if (StringUtils.equals(en.getLoginId(),e.getLoginId())) {
                                 it.remove();
                                 // Audit Log ---------------------------------------------------
                                 IdmAuditLog auditLog = new IdmAuditLog();
@@ -1453,7 +1471,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
 
                     if (CollectionUtils.isNotEmpty(userEntity.getPrincipalList())) {
                         for (final LoginEntity en : userEntity.getPrincipalList()) {
-                            if (en.getLoginId().equals(e.getLoginId())) {
+                            if (StringUtils.equals(en.getLoginId(),e.getLoginId())) {
 
                                 if (!en.getLogin().equals(e.getLogin())) {
                                     e.setOrigPrincipalName(en.getLogin());

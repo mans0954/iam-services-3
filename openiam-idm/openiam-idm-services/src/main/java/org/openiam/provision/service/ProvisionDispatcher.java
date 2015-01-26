@@ -56,6 +56,7 @@ import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.idm.srvc.res.service.ResourceService;
+import org.openiam.provision.dto.PasswordSync;
 import org.openiam.provision.dto.ProvOperationEnum;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.resp.ProvisionUserResponse;
@@ -525,7 +526,7 @@ public class ProvisionDispatcher implements Sweepable {
             if (StringUtils.isNotBlank(preProcessScript)) {
                 PreProcessor ppScript = createPreProcessScript(preProcessScript, bindingMap);
                 if (ppScript != null) {
-                    int executePreProcessResult = executePreProcess(ppScript, bindingMap, targetSysProvUser,
+                    int executePreProcessResult = executePreProcess(ppScript, bindingMap, targetSysProvUser, null,
                             isExistedInTargetSystem ? "MODIFY" : "ADD");
                     idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "executePreProcessResult: "
                             + (isExistedInTargetSystem ? "[MODIFY]" : "[ADD] = ") + executePreProcessResult);
@@ -564,7 +565,7 @@ public class ProvisionDispatcher implements Sweepable {
             if (StringUtils.isNotBlank(postProcessScript)) {
                 PostProcessor ppScript = createPostProcessScript(postProcessScript, bindingMap);
                 if (ppScript != null) {
-                    int executePostProcessResult = executePostProcess(ppScript, bindingMap, targetSysProvUser,
+                    int executePostProcessResult = executePostProcess(ppScript, bindingMap, targetSysProvUser, null,
                             isExistedInTargetSystem ? "MODIFY" : "ADD", connectorSuccess);
                     idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "executePostProcessResult "
                             + (isExistedInTargetSystem ? "[MODIFY]" : "[ADD] =") + executePostProcessResult);
@@ -833,36 +834,48 @@ public class ProvisionDispatcher implements Sweepable {
         }
     }
 
-    private int executePreProcess(PreProcessor ppScript, Map<String, Object> bindingMap, ProvisionUser user,
+    private int executePreProcess(PreProcessor ppScript, Map<String, Object> bindingMap, ProvisionUser user, PasswordSync passwordSync,
             String operation) {
         if ("ADD".equalsIgnoreCase(operation)) {
             return ppScript.add(user, bindingMap);
-        }
+        } else
         if ("MODIFY".equalsIgnoreCase(operation)) {
             return ppScript.modify(user, bindingMap);
-        }
+        } else
         if ("DELETE".equalsIgnoreCase(operation)) {
             return ppScript.delete(user, bindingMap);
-        }
+        } else
         if ("SET_PASSWORD".equalsIgnoreCase(operation)) {
-            return ppScript.setPassword(bindingMap);
+            return ppScript.setPassword(passwordSync, bindingMap);
+        } else
+        if ("RESET_PASSWORD".equalsIgnoreCase(operation)) {
+            return ppScript.resetPassword(passwordSync, bindingMap);
+        } else
+        if ("DISABLE".equalsIgnoreCase(operation)) {
+            return ppScript.disable(user, bindingMap);
         }
         return 0;
     }
 
-    private static int executePostProcess(PostProcessor ppScript, Map<String, Object> bindingMap, ProvisionUser user,
+    private static int executePostProcess(PostProcessor ppScript, Map<String, Object> bindingMap, ProvisionUser user, PasswordSync passwordSync,
             String operation, boolean success) {
         if ("ADD".equalsIgnoreCase(operation)) {
             return ppScript.add(user, bindingMap, success);
-        }
+        } else
         if ("MODIFY".equalsIgnoreCase(operation)) {
             return ppScript.modify(user, bindingMap, success);
-        }
+        } else
         if ("DELETE".equalsIgnoreCase(operation)) {
             return ppScript.delete(user, bindingMap, success);
-        }
+        } else
         if ("SET_PASSWORD".equalsIgnoreCase(operation)) {
-            return ppScript.setPassword(bindingMap, success);
+            return ppScript.setPassword(passwordSync, bindingMap, success);
+        } else
+        if ("RESET_PASSWORD".equalsIgnoreCase(operation)) {
+            return ppScript.resetPassword(passwordSync, bindingMap, success);
+        } else
+        if ("DISABLE".equalsIgnoreCase(operation)) {
+            return ppScript.disable(user, bindingMap, success);
         }
         return 0;
     }

@@ -295,6 +295,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
                 mergeParents(curEntity, newEntity);
                 mergeChildren(curEntity, newEntity);
                 mergeUsers(curEntity, newEntity);
+                mergeGroups(curEntity, newEntity);
                 mergeLocations(curEntity, newEntity);
                 mergeApproverAssociations(curEntity, newEntity);
 
@@ -498,6 +499,45 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
         }
     }
 
+    private void mergeGroups(final OrganizationEntity curEntity, final OrganizationEntity newEntity) {
+        if (curEntity.getGroups() == null) {
+            curEntity.setGroups(new HashSet<GroupEntity>());
+        }
+        if (newEntity != null && newEntity.getGroups() != null) {
+            List<String> currIds = new ArrayList<String>();
+            for (GroupEntity group : curEntity.getGroups()) {
+                currIds.add(group.getId());
+            }
+            final Set<GroupEntity> toAdd = new HashSet<GroupEntity>();
+            final Set<GroupEntity> toRemove = new HashSet<GroupEntity>();
+            if (CollectionUtils.isNotEmpty(newEntity.getGroups())) {
+                Iterator<GroupEntity> iterator = newEntity.getGroups().iterator();
+                while (iterator.hasNext()) {
+                    GroupEntity ngroup = iterator.next();
+                    if (currIds.contains(ngroup.getId())) {
+                        currIds.remove(ngroup.getId());
+                        // group exists
+                    } else {
+                        // add
+                        toAdd.add(groupDAO.findById(ngroup.getId()));
+                    }
+                    //remove
+                    for (GroupEntity cgroup : curEntity.getGroups()) {
+                        if (currIds.contains(cgroup.getId())) {
+                            toRemove.add(cgroup);
+                            break;
+                        }
+                    }
+                    curEntity.getGroups().removeAll(toRemove);
+                    curEntity.getGroups().addAll(toAdd);
+                }
+
+            } else {
+                curEntity.getGroups().clear();
+            }
+        }
+    }
+
     private void mergeUsers(final OrganizationEntity curEntity, final OrganizationEntity newEntity) {
         if (curEntity.getUsers() == null) {
             curEntity.setUsers(new HashSet<UserEntity>());
@@ -579,7 +619,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     private void mergeOrgProperties(final OrganizationEntity curEntity, final OrganizationEntity newEntity) {
         BeanUtils.copyProperties(newEntity, curEntity,
                 new String[] {"attributes", "parentOrganizations", "childOrganizations", "users", "approverAssociations",
-                "adminResource", "locations", "organizationType", "type", "lstUpdate", "lstUpdatedBy", "createDate", "createdBy"});
+                "adminResource", "groups", "locations", "organizationType", "type", "lstUpdate", "lstUpdatedBy", "createDate", "createdBy"});
     }
 
     private void mergeAttributes(final OrganizationEntity curEntity, final OrganizationEntity newEntity) {

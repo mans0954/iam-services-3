@@ -455,7 +455,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, IDENTITY_EXIST);
             bindingMap.put(TARGET_SYS_RES_ID, null);
 
-            if (callPreProcessor("DELETE", pUser, bindingMap) != ProvisioningConstants.SUCCESS) {
+            if (callPreProcessor("DELETE", pUser, bindingMap, null) != ProvisioningConstants.SUCCESS) {
                 response.setStatus(ResponseStatus.FAILURE);
                 response.setErrorCode(ResponseCode.FAIL_PREPROCESSOR);
                 return response;
@@ -506,9 +506,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     if (res != null) {
                         String preProcessScript = getResProperty(res.getResourceProps(), "PRE_PROCESS");
                         if (preProcessScript != null && !preProcessScript.isEmpty()) {
-                            PreProcessor<ProvisionUser> ppScript = createPreProcessScript(preProcessScript, bindingMap);
+                            PreProcessor<ProvisionUser> ppScript = createPreProcessScript(preProcessScript);
                             if (ppScript != null) {
-                                executePreProcess(ppScript, bindingMap, pUser, "DELETE");
+                                executePreProcess(ppScript, bindingMap, pUser, null, "DELETE");
                             }
                         }
                     }
@@ -551,9 +551,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, null);
                 String postProcessScript = getResProperty(res.getResourceProps(), "POST_PROCESS");
                 if (postProcessScript != null && !postProcessScript.isEmpty()) {
-                    PostProcessor<ProvisionUser> ppScript = createPostProcessScript(postProcessScript, bindingMap);
+                    PostProcessor<ProvisionUser> ppScript = createPostProcessScript(postProcessScript);
                     if (ppScript != null) {
-                        executePostProcess(ppScript, bindingMap, pUser, "DELETE", connectorSuccess);
+                        executePostProcess(ppScript, bindingMap, pUser, null, "DELETE", connectorSuccess);
                     }
                 }
                 idmAuditLog.addChild(idmAuditLogChild);
@@ -624,9 +624,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                         String preProcessScript = getResProperty(resource.getResourceProps(),
                                                 "PRE_PROCESS");
                                         if (preProcessScript != null && !preProcessScript.isEmpty()) {
-                                            PreProcessor ppScript = createPreProcessScript(preProcessScript, bindingMap);
+                                            PreProcessor ppScript = createPreProcessScript(preProcessScript);
                                             if (ppScript != null) {
-                                                if (executePreProcess(ppScript, bindingMap, pUser, "DELETE") == ProvisioningConstants.FAIL) {
+                                                if (executePreProcess(ppScript, bindingMap, pUser, null, "DELETE") == ProvisioningConstants.FAIL) {
                                                     continue;
                                                 }
                                             }
@@ -663,9 +663,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                     String postProcessScript = getResProperty(resource.getResourceProps(),
                                             "POST_PROCESS");
                                     if (postProcessScript != null && !postProcessScript.isEmpty()) {
-                                        PostProcessor ppScript = createPostProcessScript(postProcessScript, bindingMap);
+                                        PostProcessor ppScript = createPostProcessScript(postProcessScript);
                                         if (ppScript != null) {
-                                            executePostProcess(ppScript, bindingMap, pUser, "DELETE", connectorSuccess);
+                                            executePostProcess(ppScript, bindingMap, pUser, null, "DELETE", connectorSuccess);
                                         }
                                     }
                                 }
@@ -687,7 +687,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, null);
             bindingMap.put(TARGET_SYS_RES_ID, null);
 
-            if (callPostProcessor("DELETE", pUser, bindingMap) != ProvisioningConstants.SUCCESS) {
+            if (callPostProcessor("DELETE", pUser, bindingMap, null) != ProvisioningConstants.SUCCESS) {
                 response.setStatus(ResponseStatus.FAILURE);
                 response.setErrorCode(ResponseCode.FAIL_POSTPROCESSOR);
                 idmAuditLog.fail();
@@ -945,7 +945,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             provisionSelectedResourceHelper.setCurrentSuperiors(u);
             bindingMap.put("userBeforeModify", u);
         }
-        int callPreProcessor = callPreProcessor(isAdd ? "ADD" : "MODIFY", pUser, bindingMap);
+        int callPreProcessor = callPreProcessor(isAdd ? "ADD" : "MODIFY", pUser, bindingMap, null);
         auditLog.addAttribute(AuditAttributeName.DESCRIPTION, "callPreProcessor result="
                 + (callPreProcessor == 1 ? "SUCCESS" : "FAIL"));
         if (callPreProcessor != ProvisioningConstants.SUCCESS) {
@@ -1368,7 +1368,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 }
             }
         }
-        int callPostProcessorResult = callPostProcessor(isAdd ? "ADD" : "MODIFY", finalProvUser, bindingMap);
+        int callPostProcessorResult = callPostProcessor(isAdd ? "ADD" : "MODIFY", finalProvUser, bindingMap,null);
         auditLog.addAttribute(AuditAttributeName.DESCRIPTION, "callPostProcessor result="
                 + (callPostProcessorResult == 1 ? "SUCCESS" : "FAIL"));
         if (callPostProcessorResult != ProvisioningConstants.SUCCESS) {
@@ -1419,9 +1419,16 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         if (auditLog != null) {
             auditLog.addChild(idmAuditLog);
         }
-
+        Map<String, Object> bindingMap = new HashMap<String, Object>();
         final PasswordResponse response = new PasswordResponse(ResponseStatus.SUCCESS);
         try {
+            if (callPreProcessor("RESET_PASSWORD", null, bindingMap, passwordSync) != ProvisioningConstants.SUCCESS) {
+                response.fail();
+                response.setErrorCode(ResponseCode.FAIL_PREPROCESSOR);
+                auditLog.fail();
+                auditLog.setFailureReason(ResponseCode.FAIL_PREPROCESSOR);
+                return response;
+            }
             final String requestId = "R" + UUIDGen.getUUID();
 
             // get the user object associated with this principal
@@ -1503,6 +1510,21 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         if (syncAllowed(res)) { // check the sync flag
                             log.debug("Sync allowed for managed sys = " + managedSysId);
 
+                            bindingMap.put(TARGET_SYSTEM_IDENTITY, lg);
+                            bindingMap.put(TARGET_SYS_MANAGED_SYS_ID, managedSysId);
+                            bindingMap.put(TARGET_SYS_RES, res);
+                            bindingMap.put("PASSWORD_SYNC", passwordSync);
+
+                            // Pre processor script
+                            final String preProcessScript = getResourceProperty(res, "PRE_PROCESS");
+                            if (preProcessScript != null && !preProcessScript.isEmpty()) {
+                                final PreProcessor ppScript = createPreProcessScript(preProcessScript);
+                                if (ppScript != null) {
+                                    if (executePreProcess(ppScript, bindingMap, null, passwordSync, "RESET_PASSWORD") == ProvisioningConstants.FAIL) {
+                                        continue;
+                                    }
+                                }
+                            }
                             ManagedSystemObjectMatchEntity matchObj = null;
                             final List<ManagedSystemObjectMatchEntity> matchList = managedSystemService
                                     .managedSysObjectParam(managedSysId, "USER");
@@ -1538,6 +1560,14 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                         mSys.getName(), lg.getLogin(), reason));
 
                             }
+                            // Post processor script
+                            final String postProcessScript = getResourceProperty(res, "POST_PROCESS");
+                            if (postProcessScript != null && !postProcessScript.isEmpty()) {
+                                final PostProcessor ppScript = createPostProcessScript(postProcessScript);
+                                if (ppScript != null) {
+                                    executePostProcess(ppScript, bindingMap, null, passwordSync, "RESET_PASSWORD",resp.getStatus() == StatusCodeType.SUCCESS);
+                                }
+                            }
                         }
                     }
                 }
@@ -1552,6 +1582,14 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 sendResetPasswordToUser(identity, password);
             }
 
+            // Provision post processor script
+            if (callPostProcessor("RESET_PASSWORD", null, bindingMap, passwordSync) != ProvisioningConstants.SUCCESS) {
+                response.fail();
+                response.setErrorCode(ResponseCode.FAIL_POSTPROCESSOR);
+                auditLog.fail();
+                auditLog.setFailureReason(ResponseCode.FAIL_POSTPROCESSOR);
+                return response;
+            }
         } finally {
             if (auditLog == null) {
                 auditLogService.enqueue(idmAuditLog);
@@ -1677,7 +1715,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         final Map<String, Object> bindingMap = new HashMap<String, Object>();
 
         try {
-            if (callPreProcessor("SET_PASSWORD", null, bindingMap) != ProvisioningConstants.SUCCESS) {
+            if (callPreProcessor("SET_PASSWORD", null, bindingMap, passwordSync) != ProvisioningConstants.SUCCESS) {
                 response.fail();
                 response.setErrorCode(ResponseCode.FAIL_PREPROCESSOR);
                 auditLog.fail();
@@ -1795,15 +1833,13 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                             bindingMap.put("RESOURCE", res);
                             bindingMap.put("PASSWORD_SYNC", passwordSync);
 
-                            if (res != null) {
-                                final String preProcessScript = getResourceProperty(res, "PRE_PROCESS");
-                                if (preProcessScript != null && !preProcessScript.isEmpty()) {
-                                    final PreProcessor ppScript = createPreProcessScript(preProcessScript,
-                                            bindingMap);
-                                    if (ppScript != null) {
-                                        if (executePreProcess(ppScript, bindingMap, null, "SET_PASSWORD") == ProvisioningConstants.FAIL) {
-                                            continue;
-                                        }
+
+                            final String preProcessScript = getResourceProperty(res, "PRE_PROCESS");
+                            if (preProcessScript != null && !preProcessScript.isEmpty()) {
+                                final PreProcessor ppScript = createPreProcessScript(preProcessScript);
+                                if (ppScript != null) {
+                                    if (executePreProcess(ppScript, bindingMap, null, passwordSync, "SET_PASSWORD") == ProvisioningConstants.FAIL) {
+                                        continue;
                                     }
                                 }
                             }
@@ -1856,10 +1892,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                             if (res != null) {
                                 final String postProcessScript = getResourceProperty(res, "POST_PROCESS");
                                 if (postProcessScript != null && !postProcessScript.isEmpty()) {
-                                    final PostProcessor ppScript = createPostProcessScript(postProcessScript,
-                                            bindingMap);
+                                    final PostProcessor ppScript = createPostProcessScript(postProcessScript);
                                     if (ppScript != null) {
-                                        executePostProcess(ppScript, bindingMap, null, "SET_PASSWORD",
+                                        executePostProcess(ppScript, bindingMap, null, passwordSync, "SET_PASSWORD",
                                                 connectorSuccess);
                                     }
                                 }
@@ -1869,6 +1904,13 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         }
                     }
                 }
+            }
+            if (callPostProcessor("SET_PASSWORD", null, bindingMap, passwordSync) != ProvisioningConstants.SUCCESS) {
+                response.fail();
+                response.setErrorCode(ResponseCode.FAIL_POSTPROCESSOR);
+                auditLog.fail();
+                auditLog.setFailureReason(ResponseCode.FAIL_POSTPROCESSOR);
+                return response;
             }
             response.setStatus(ResponseStatus.SUCCESS);
             return response;
@@ -2909,6 +2951,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             return response;
         }
         UserEntity usr = this.userMgr.getUser(userId);
+        ProvisionUser user = new ProvisionUser(userDozerConverter.convertToDTO(usr, true));
 
         final IdmAuditLog idmAuditLog = new IdmAuditLog();
         LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), usr.getPrincipalList());
@@ -2918,6 +2961,24 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         LoginEntity requestorIdentity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), loginEntityList);
         idmAuditLog.setRequestorPrincipal(requestorIdentity.getLogin());
 
+        Map<String, Object> bindingMap = new HashMap<String, Object>();
+        bindingMap.put("sysId", sysConfiguration.getDefaultManagedSysId());
+        bindingMap.put("org", user.getPrimaryOrganization());
+        bindingMap.put("operation", "DISABLE");
+        bindingMap.put(USER, user);
+        bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, null);
+        bindingMap.put(TARGET_SYSTEM_IDENTITY, null);
+        int callPreProcessor = callPreProcessor("DISABLE", user, bindingMap, null);
+
+        idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "callPreProcessor result="
+                + (callPreProcessor == 1 ? "SUCCESS" : "FAIL"));
+        if (callPreProcessor != ProvisioningConstants.SUCCESS) {
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason("PreProcessor error.");
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(ResponseCode.FAIL_PREPROCESSOR);
+            return response;
+        }
         if (auditLog != null) {
             auditLog.addChild(idmAuditLog);
         }
@@ -2995,9 +3056,32 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         ManagedSysDto mSys = managedSysService
                                 .getManagedSys(managedSysId);
 
+
+                        bindingMap.put(TARGET_SYSTEM_IDENTITY, lg);
+                        bindingMap.put("sysId", managedSysId);
+                        bindingMap.put("operation", operation);
+                        bindingMap.put(USER, user);
+                        bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, null);
+
+                        final ResourceEntity res = resourceService.findResourceById(mSys.getResourceId());
+                        log.debug(" - Managed System Id = " + managedSysId);
+                        log.debug(" - Resource Id = " + res.getId());
+//Pre-processor script
+                        final String preProcessScript = getResourceProperty(res, "PRE_PROCESS");
+                        if (preProcessScript != null && !preProcessScript.isEmpty()) {
+                            final PreProcessor ppScript = createPreProcessScript(preProcessScript);
+                            if (ppScript != null) {
+                                if (executePreProcess(ppScript, bindingMap, user, null, "DISABLE") == ProvisioningConstants.FAIL) {
+                                    continue;
+                                }
+                            }
+                        }
+
+
                         idmAuditLogChild.setTargetManagedSys(mSys.getId(), mSys.getName());
 
                         final Login login = loginDozerConverter.convertToDTO(lg, false);
+                        ResponseType resp;
                         if (operation) {
                             // suspend
                             log.debug("preparing suspendRequest object");
@@ -3022,7 +3106,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                             suspendReq.setExtensibleObject(buildMngSysAttributes(login, "SUSPEND"));
 
 
-                            ResponseType resp = connectorAdapter.suspendRequest(mSys, suspendReq,
+                            resp = connectorAdapter.suspendRequest(mSys, suspendReq,
                                     MuleContextProvider.getCtx());
 
                             if (StatusCodeType.SUCCESS.equals(resp.getStatus())) {
@@ -3066,7 +3150,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                             resumeReq.setHostLoginPassword(passwordDecoded);
                             resumeReq.setHostUrl(mSys.getHostUrl());
 
-                            ResponseType resp = connectorAdapter.resumeRequest(mSys,
+                            resp = connectorAdapter.resumeRequest(mSys,
                                     resumeReq, MuleContextProvider.getCtx());
 
                             if (StatusCodeType.SUCCESS.equals(resp.getStatus())) {
@@ -3081,19 +3165,32 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                             }
                             loginManager.updateLogin(lg);
                         }
-
+                        final String postProcessScript = getResourceProperty(res, "POST_PROCESS");
+                        if (postProcessScript != null && !postProcessScript.isEmpty()) {
+                            final PostProcessor ppScript = createPostProcessScript(postProcessScript);
+                            if (ppScript != null) {
+                                executePostProcess(ppScript, bindingMap, user, null, "DISABLE",StatusCodeType.SUCCESS.equals(resp.getStatus()));
+                            }
+                        }
                     } else {
                         lg.setAuthFailCount(0);
                         lg.setIsLocked(0);
                         lg.setPasswordChangeCount(0);
                         loginManager.updateLogin(lg);
                     }
+
                 }
             }
         } finally {
-            if (auditLog == null) {
-                auditLogService.enqueue(idmAuditLog);
-            }
+            auditLogService.enqueue(idmAuditLog);
+        }
+
+        if (callPostProcessor("DISABLE", user, bindingMap, null) != ProvisioningConstants.SUCCESS) {
+            response.fail();
+            response.setErrorCode(ResponseCode.FAIL_POSTPROCESSOR);
+            auditLog.fail();
+            auditLog.setFailureReason(ResponseCode.FAIL_POSTPROCESSOR);
+            return response;
         }
         response.setStatus(ResponseStatus.SUCCESS);
         return response;
