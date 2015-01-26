@@ -12,7 +12,7 @@ import java.util.Map;
 public abstract class AbstractPostProcessor<T> implements PostProcessor<T> {
     protected ApplicationContext context;
     protected MuleContext muleContext;
-    private static final Log log = LogFactory.getLog(AbstractPostProcessor.class);
+    protected static final Log log = LogFactory.getLog(AbstractPostProcessor.class);
 
     @Value("${openiam.service_base}")
     private String serviceHost;

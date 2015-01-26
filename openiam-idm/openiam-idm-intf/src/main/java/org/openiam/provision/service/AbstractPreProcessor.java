@@ -13,7 +13,7 @@ public abstract class AbstractPreProcessor<T> implements PreProcessor<T> {
     protected ApplicationContext context;
     protected MuleContext muleContext;
 
-    private static final Log log = LogFactory.getLog(AbstractPreProcessor.class);
+    protected static final Log log = LogFactory.getLog(AbstractPreProcessor.class);
 
     @Value("${openiam.service_base}")
     private String serviceHost;

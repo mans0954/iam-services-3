@@ -28,7 +28,7 @@ public abstract class AbstractProvisionPostProcessor<T> implements ProvisionServ
     protected MuleContext muleContext;
     protected ApplicationContext context;
 
-    private static final Log log = LogFactory.getLog(AbstractProvisionPostProcessor.class);
+    protected static final Log log = LogFactory.getLog(AbstractProvisionPostProcessor.class);
 
     @Value("${openiam.service_base}")
     private String serviceHost;

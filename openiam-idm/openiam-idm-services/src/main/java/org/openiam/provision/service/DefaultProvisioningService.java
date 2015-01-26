@@ -2970,11 +2970,11 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         bindingMap.put(TARGET_SYSTEM_IDENTITY, null);
         int callPreProcessor = callPreProcessor("DISABLE", user, bindingMap, null);
 
-        auditLog.addAttribute(AuditAttributeName.DESCRIPTION, "callPreProcessor result="
+        idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "callPreProcessor result="
                 + (callPreProcessor == 1 ? "SUCCESS" : "FAIL"));
         if (callPreProcessor != ProvisioningConstants.SUCCESS) {
-            auditLog.fail();
-            auditLog.setFailureReason("PreProcessor error.");
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason("PreProcessor error.");
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(ResponseCode.FAIL_PREPROCESSOR);
             return response;
