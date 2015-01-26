@@ -2964,7 +2964,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         Map<String, Object> bindingMap = new HashMap<String, Object>();
         bindingMap.put("sysId", sysConfiguration.getDefaultManagedSysId());
         bindingMap.put("org", user.getPrimaryOrganization());
-        bindingMap.put("operation", "DISABLE");
+        bindingMap.put("operation", operation);
         bindingMap.put(USER, user);
         bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, null);
         bindingMap.put(TARGET_SYSTEM_IDENTITY, null);
