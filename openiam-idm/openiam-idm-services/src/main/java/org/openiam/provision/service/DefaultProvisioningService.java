@@ -137,7 +137,11 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 idmAuditLog.setAuditDescription("Managed system ID: " + managedSysId);
             } else {
                 idmAuditLog.fail();
-                idmAuditLog.setFailureReason("Managed system ID: " + managedSysId);
+                if (response != null && StringUtils.isNotBlank(response.getErrorText())) {
+                    idmAuditLog.setFailureReason(response.getErrorText());
+                } else {
+                    idmAuditLog.setFailureReason("Managed system ID: " + managedSysId);
+                }
             }
             return response;
         } finally {
