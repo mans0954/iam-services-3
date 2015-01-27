@@ -137,7 +137,11 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 idmAuditLog.setAuditDescription("Managed system ID: " + managedSysId);
             } else {
                 idmAuditLog.fail();
-                idmAuditLog.setFailureReason("Managed system ID: " + managedSysId);
+                if (response != null && StringUtils.isNotBlank(response.getErrorText())) {
+                    idmAuditLog.setFailureReason(response.getErrorText());
+                } else {
+                    idmAuditLog.setFailureReason("Managed system ID: " + managedSysId);
+                }
             }
             return response;
         } finally {
@@ -2964,7 +2968,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         Map<String, Object> bindingMap = new HashMap<String, Object>();
         bindingMap.put("sysId", sysConfiguration.getDefaultManagedSysId());
         bindingMap.put("org", user.getPrimaryOrganization());
-        bindingMap.put("operation", "DISABLE");
+        bindingMap.put("operation", operation);
         bindingMap.put(USER, user);
         bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, null);
         bindingMap.put(TARGET_SYSTEM_IDENTITY, null);

@@ -504,23 +504,24 @@ public class ProvisionDispatcher implements Sweepable {
                 matchObj = objArr[0];
             }
 
+            // get the attributes at the target system
+            // this lookup only for getting attributes from the
+            // system
+            Map<String, ExtensibleAttribute> currentValueMap = new HashMap<>();
+            boolean isExistedInTargetSystem = getCurrentObjectAtTargetSystem(requestId, targetSysLogin, buildExtensibleUser(managedSysId), mSys,
+                    matchObj, currentValueMap);
+
+            bindingMap.put("targetSystemAttributes", currentValueMap);
             ExtensibleUser extUser = buildFromRules(managedSysId, bindingMap);
             try {
                 idmAuditLog.addCustomRecord("ATTRIBUTES", extUser.getAttributesAsJSON());
             } catch (JsonGenerationException jge) {
                 log.error(jge);
             }
-            // get the attributes at the target system
-            // this lookup only for getting attributes from the
-            // system
-            Map<String, ExtensibleAttribute> currentValueMap = new HashMap<>();
-            boolean isExistedInTargetSystem = getCurrentObjectAtTargetSystem(requestId, targetSysLogin, extUser, mSys,
-                    matchObj, currentValueMap);
+
             boolean connectorSuccess = false;
 
             // pre-processing
-            bindingMap.put("targetSystemAttributes", currentValueMap);
-
             ResourceProp preProcessProp = res.getResourceProperty("PRE_PROCESS");
             String preProcessScript = preProcessProp != null ? preProcessProp.getValue() : null;
             if (StringUtils.isNotBlank(preProcessScript)) {
@@ -794,6 +795,39 @@ public class ProvisionDispatcher implements Sweepable {
                         extUser.setPrincipalFieldName(attr.getAttributeName());
                         extUser.setPrincipalFieldDataType(attr.getDataType().getValue());
 
+                    }
+                }
+            }
+        }
+
+        return extUser;
+    }
+
+    private ExtensibleUser buildExtensibleUser(String managedSysId) {
+
+        List<AttributeMap> attrMap = managedSystemWebService.getAttributeMapsByManagedSysId(managedSysId);
+
+        ExtensibleUser extUser = new ExtensibleUser();
+
+        if (attrMap != null) {
+
+            for (AttributeMap attr : attrMap) {
+
+                if ("INACTIVE".equalsIgnoreCase(attr.getStatus())) {
+                    continue;
+                }
+
+                String objectType = attr.getMapForObjectType();
+                if (objectType != null) {
+
+                    if (PolicyMapObjectTypeOptions.USER.name().equalsIgnoreCase(objectType)) {
+                        ExtensibleAttribute newAttr = new ExtensibleAttribute(attr.getAttributeName(), null);
+                        newAttr.setObjectType(objectType);
+                        extUser.getAttributes().add(newAttr);
+
+                    } else if (PolicyMapObjectTypeOptions.PRINCIPAL.name().equalsIgnoreCase(objectType)) {
+                        extUser.setPrincipalFieldName(attr.getAttributeName());
+                        extUser.setPrincipalFieldDataType(attr.getDataType().getValue());
                     }
                 }
             }
