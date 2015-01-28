@@ -508,10 +508,10 @@ public class ProvisionDispatcher implements Sweepable {
             // this lookup only for getting attributes from the
             // system
             Map<String, ExtensibleAttribute> currentValueMap = new HashMap<>();
-            boolean isExistedInTargetSystem = getCurrentObjectAtTargetSystem(requestId, targetSysLogin, buildExtensibleUser(managedSysId), mSys,
+            boolean isExistedInTargetSystem = getCurrentObjectAtTargetSystem(requestId, targetSysLogin, provisionService.buildExtensibleUser(managedSysId), mSys,
                     matchObj, currentValueMap);
 
-            bindingMap.put("targetSystemAttributes", currentValueMap);
+            bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_ATTRIBUTES, currentValueMap);
             ExtensibleUser extUser = buildFromRules(managedSysId, bindingMap);
             try {
                 idmAuditLog.addCustomRecord("ATTRIBUTES", extUser.getAttributesAsJSON());
@@ -795,39 +795,6 @@ public class ProvisionDispatcher implements Sweepable {
                         extUser.setPrincipalFieldName(attr.getAttributeName());
                         extUser.setPrincipalFieldDataType(attr.getDataType().getValue());
 
-                    }
-                }
-            }
-        }
-
-        return extUser;
-    }
-
-    private ExtensibleUser buildExtensibleUser(String managedSysId) {
-
-        List<AttributeMap> attrMap = managedSystemWebService.getAttributeMapsByManagedSysId(managedSysId);
-
-        ExtensibleUser extUser = new ExtensibleUser();
-
-        if (attrMap != null) {
-
-            for (AttributeMap attr : attrMap) {
-
-                if ("INACTIVE".equalsIgnoreCase(attr.getStatus())) {
-                    continue;
-                }
-
-                String objectType = attr.getMapForObjectType();
-                if (objectType != null) {
-
-                    if (PolicyMapObjectTypeOptions.USER.name().equalsIgnoreCase(objectType)) {
-                        ExtensibleAttribute newAttr = new ExtensibleAttribute(attr.getAttributeName(), null);
-                        newAttr.setObjectType(objectType);
-                        extUser.getAttributes().add(newAttr);
-
-                    } else if (PolicyMapObjectTypeOptions.PRINCIPAL.name().equalsIgnoreCase(objectType)) {
-                        extUser.setPrincipalFieldName(attr.getAttributeName());
-                        extUser.setPrincipalFieldDataType(attr.getDataType().getValue());
                     }
                 }
             }

@@ -381,6 +381,9 @@ public interface ProvisionService {
             @WebParam(name = "idmAuditLog", targetNamespace = "") final IdmAuditLog idmAuditLog);
 
     @WebMethod
+    public ExtensibleUser buildExtensibleUser(@WebParam(name = "managedSysId", targetNamespace = "") String managedSysId);
+
+    @WebMethod
     Response addEvent(@WebParam(name = "event", targetNamespace = "") ProvisionActionEvent event,
                       @WebParam(name = "type", targetNamespace = "") ProvisionActionTypeEnum type);
 

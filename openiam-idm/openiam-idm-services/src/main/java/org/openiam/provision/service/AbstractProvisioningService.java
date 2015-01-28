@@ -148,8 +148,6 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     @Autowired
     protected LoginDataService loginManager;
     @Autowired
-    protected ManagedSystemService managedSysDaoService;
-    @Autowired
     protected ManagedSystemWebService managedSysService;
     @Autowired
     protected RoleDataService roleDataService;
@@ -1783,6 +1781,33 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
             response = eventProcessorScript.process(event, type);
         }
         return response;
+    }
+
+    @Override
+    public ExtensibleUser buildExtensibleUser(String managedSysId) {
+        List<AttributeMap> attrMap = managedSysService.getAttributeMapsByManagedSysId(managedSysId);
+        ExtensibleUser extUser = new ExtensibleUser();
+        if (attrMap != null) {
+            for (AttributeMap attr : attrMap) {
+                if ("INACTIVE".equalsIgnoreCase(attr.getStatus())) {
+                    continue;
+                }
+                String objectType = attr.getMapForObjectType();
+                if (objectType != null) {
+                    if (PolicyMapObjectTypeOptions.USER.name().equalsIgnoreCase(objectType)) {
+                        ExtensibleAttribute newAttr = new ExtensibleAttribute(attr.getAttributeName(), null);
+                        newAttr.setObjectType(objectType);
+                        extUser.getAttributes().add(newAttr);
+
+                    } else if (PolicyMapObjectTypeOptions.PRINCIPAL.name().equalsIgnoreCase(objectType)) {
+                        extUser.setPrincipalFieldName(attr.getAttributeName());
+                        extUser.setPrincipalFieldDataType(attr.getDataType().getValue());
+                    }
+                }
+            }
+        }
+
+        return extUser;
     }
 
     private ProvisionServiceEventProcessor getEventProcessor(Map<String, Object> bindingMap, String scriptName) {
