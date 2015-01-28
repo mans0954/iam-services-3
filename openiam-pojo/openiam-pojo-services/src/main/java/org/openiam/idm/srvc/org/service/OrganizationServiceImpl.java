@@ -315,7 +315,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
                 curEntity.setOrganizationType(orgTypeDAO.findById(newEntity.getOrganizationType().getId()));
             }
 
-            if (newEntity.getType() == null) {
+            if (newEntity.getType() == null || newEntity.getType().getId() == null) {
                 curEntity.setType(null);
             } else if (curEntity.getType() == null || !StringUtils.equals(curEntity.getType().getId(), newEntity.getType().getId())) {
                 curEntity.setType(typeDAO.findById(newEntity.getType().getId()));
