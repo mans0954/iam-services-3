@@ -1793,6 +1793,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             }
 
             for (final LoginEntity lg : principalList) {
+                String prevDecodedPassword = getDecryptedPassword(lg.getUserId(), lg.getPassword());
 
                 final String managedSysId = lg.getManagedSysId();
                 final ManagedSysEntity mSys = managedSystemService.getManagedSysById(managedSysId);
@@ -1848,8 +1849,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 }
                             }
 
-                            String prevDecodedPassword = getDecryptedPassword(lg.getUserId(), lg.getPassword());
-                            // update the password in openiam
+                                   // update the password in openiam
                             loginManager.setPassword(lg.getLogin(), lg.getManagedSysId(), encPassword,
                                     passwordSync.isPreventChangeCountIncrement());
 
@@ -1862,8 +1862,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                             }
 
                             Login login = loginDozerConverter.convertToDTO(lg, false);
-                            ResponseType resp = setPassword(requestId,
-                                    login, prevDecodedPassword,
+                            ResponseType resp = resetPassword(requestId,
+                                    login,
                                     passwordSync.getPassword(),
                                     managedSysDozerConverter.convertToDTO(mSys, false),
                                     objectMatchDozerConverter.convertToDTO(matchObj, false),
