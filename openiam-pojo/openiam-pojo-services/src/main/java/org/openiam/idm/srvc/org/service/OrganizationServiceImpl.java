@@ -287,6 +287,12 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
                 curEntity.setCreatedBy(requestorId);
                 curEntity.addApproverAssociation(createDefaultApproverAssociations(curEntity, requestorId));
                 addRequiredAttributes(curEntity);
+                if (StringUtils.isNotBlank(newEntity.getOrganizationType().getId())) {
+                    curEntity.setOrganizationType(orgTypeDAO.findById(newEntity.getOrganizationType().getId()));
+                }
+                if (StringUtils.isNotBlank(newEntity.getType().getId())) {
+                    curEntity.setType(typeDAO.findById(newEntity.getType().getId()));
+                }
 
             } else {
                 curEntity = orgDao.findById(organization.getId());
@@ -309,13 +315,13 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
 
             }
 
-            if (newEntity.getOrganizationType() == null) {
+            if (newEntity.getOrganizationType() == null || StringUtils.isBlank(newEntity.getOrganizationType().getId())) {
                 curEntity.setOrganizationType(null);
             } else if (curEntity.getOrganizationType() == null || !StringUtils.equals(curEntity.getOrganizationType().getId(), newEntity.getOrganizationType().getId())) {
                 curEntity.setOrganizationType(orgTypeDAO.findById(newEntity.getOrganizationType().getId()));
             }
 
-            if (newEntity.getType() == null || newEntity.getType().getId() == null) {
+            if (newEntity.getType() == null || StringUtils.isBlank(newEntity.getType().getId())) {
                 curEntity.setType(null);
             } else if (curEntity.getType() == null || !StringUtils.equals(curEntity.getType().getId(), newEntity.getType().getId())) {
                 curEntity.setType(typeDAO.findById(newEntity.getType().getId()));
@@ -1034,7 +1040,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
             }
         }
 
-        if(organization.getOrganizationType() == null) {
+        if(organization.getOrganizationType() == null || StringUtils.isBlank(organization.getOrganizationType().getId())) {
             throw new BasicDataServiceException(ResponseCode.ORGANIZATION_TYPE_NOT_SET);
         }
 
