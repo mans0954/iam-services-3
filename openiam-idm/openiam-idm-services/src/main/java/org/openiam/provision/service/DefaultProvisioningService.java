@@ -1862,8 +1862,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                             }
 
                             Login login = loginDozerConverter.convertToDTO(lg, false);
-                            ResponseType resp = setPassword(requestId,
-                                    login, prevDecodedPassword,
+                            ResponseType resp = resetPassword(requestId,
+                                    login,
                                     passwordSync.getPassword(),
                                     managedSysDozerConverter.convertToDTO(mSys, false),
                                     objectMatchDozerConverter.convertToDTO(matchObj, false),

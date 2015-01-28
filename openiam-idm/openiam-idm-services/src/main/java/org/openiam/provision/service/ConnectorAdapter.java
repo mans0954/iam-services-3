@@ -375,7 +375,10 @@ public class ConnectorAdapter {
         }
 
     }
-
+@Deprecated
+/**
+ * Please use ResetPassword instead
+ */
     public ResponseType setPasswordRequest(ManagedSysDto managedSys,
                                            PasswordRequest request,
                                            MuleContext muleContext) {
