@@ -2697,9 +2697,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             }
         }
 
-        Map<String, ExtensibleAttribute> curValueMap = null;
+        Map<String, ExtensibleAttribute> curValueMap = new HashMap<>();
         if (CollectionUtils.isNotEmpty(mngSysAttrs)) {
-            curValueMap = new HashMap<String, ExtensibleAttribute>();
             for (ExtensibleAttribute attr : mngSysAttrs) {
                 curValueMap.put(attr.getName(), attr);
             }
