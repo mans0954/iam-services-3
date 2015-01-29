@@ -36,8 +36,6 @@ public class LdapConnectionMgr implements ConnectionMgr {
     @Autowired
     private KeyManagementService keyManagementService;
 
-	LdapContext ctxLdap = null;
-	
     private static final Log log = LogFactory.getLog(LdapConnectionMgr.class);
     public static ApplicationContext ac;
 
@@ -165,12 +163,7 @@ public class LdapConnectionMgr implements ConnectionMgr {
 
 
     public void close() throws NamingException {
-
-		if (this.ctxLdap != null) { 
-    		ctxLdap.close();
-		}
-		ctxLdap = null;
-		
+       //Not implemented yet
 	}
 
     public void setApplicationContext(ApplicationContext applicationContext){
