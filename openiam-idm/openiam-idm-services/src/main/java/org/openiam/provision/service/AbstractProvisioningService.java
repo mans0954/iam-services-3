@@ -377,26 +377,37 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
             primaryIdentity.setManagedSysId(sysConfiguration.getDefaultManagedSysId());
             primaryIdentity.setProvStatus(ProvLoginStatusEnum.CREATED);
             try {
+                AttributeMap primaryIdentityRule = null;
+                AttributeMap primaryPasswordRule = null;
+
                 for (AttributeMap attr : policyAttrMap) {
                     if ("INACTIVE".equalsIgnoreCase(attr.getStatus())) {
                         continue;
                     }
-                    String output = (String) ProvisionServiceUtil.getOutputFromAttrMap(
-                            attr, bindingMap, se);
                     String objectType = attr.getMapForObjectType();
                     if (objectType != null) {
                         if (PolicyMapObjectTypeOptions.PRINCIPAL.name().equalsIgnoreCase(objectType)) {
                             if (attr.getAttributeName().equalsIgnoreCase("PRINCIPAL")) {
-                                primaryIdentity.setLogin(output);
+                                primaryIdentityRule = attr;
+                            } else if (attr.getAttributeName().equalsIgnoreCase("PASSWORD")) {
+                                primaryPasswordRule = attr;
                             }
-                            if (attr.getAttributeName().equalsIgnoreCase("PASSWORD")) {
-                                primaryIdentity.setPassword(output);
-                            }
-//                            if (attr.getAttributeName().equalsIgnoreCase("DOMAIN")) {
-//                                primaryIdentity.setDomainId(output);
-//                            }
                         }
                     }
+                }
+                // We must be sure that Identity exists in BindingMap before
+                // all other scripts like as Password will be processed.
+                // Primary identity must be generated first and must be put into BindingMap first.
+                if(primaryIdentityRule != null && primaryPasswordRule != null) {
+                    String identityOutput = (String) ProvisionServiceUtil.getOutputFromAttrMap(
+                            primaryIdentityRule, bindingMap, se);
+                    primaryIdentity.setLogin(identityOutput);
+                    bindingMap.put(TARGET_SYSTEM_IDENTITY,identityOutput);
+
+                    String passwordOutput = (String) ProvisionServiceUtil.getOutputFromAttrMap(
+                            primaryPasswordRule, bindingMap, se);
+                    primaryIdentity.setPassword(passwordOutput);
+
                 }
             } catch (Exception e) {
                 log.error(e);
