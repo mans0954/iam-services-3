@@ -508,9 +508,9 @@ public class ProvisionDispatcher implements Sweepable {
             // this lookup only for getting attributes from the
             // system
             Map<String, ExtensibleAttribute> currentValueMap = new HashMap<>();
-            boolean isExistedInTargetSystem = getCurrentObjectAtTargetSystem(requestId, targetSysLogin, provisionService.buildExtensibleUser(managedSysId), mSys,
+            boolean targetSystemUserExists = getCurrentObjectAtTargetSystem(requestId, targetSysLogin, provisionService.buildExtensibleUser(managedSysId), mSys,
                     matchObj, currentValueMap);
-
+            bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_USER_EXISTS, targetSystemUserExists);
             bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_ATTRIBUTES, currentValueMap);
             ExtensibleUser extUser = buildFromRules(managedSysId, bindingMap);
             try {
@@ -528,9 +528,9 @@ public class ProvisionDispatcher implements Sweepable {
                 PreProcessor ppScript = createPreProcessScript(preProcessScript, bindingMap);
                 if (ppScript != null) {
                     int executePreProcessResult = executePreProcess(ppScript, bindingMap, targetSysProvUser, null,
-                            isExistedInTargetSystem ? "MODIFY" : "ADD");
+                            targetSystemUserExists ? "MODIFY" : "ADD");
                     idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "executePreProcessResult: "
-                            + (isExistedInTargetSystem ? "[MODIFY]" : "[ADD] = ") + executePreProcessResult);
+                            + (targetSystemUserExists ? "[MODIFY]" : "[ADD] = ") + executePreProcessResult);
                     if (executePreProcessResult == ProvisioningConstants.FAIL) {
                         response.setStatus(ResponseStatus.FAILURE);
                         response.setErrorCode(ResponseCode.FAIL_PREPROCESSOR);
@@ -539,7 +539,7 @@ public class ProvisionDispatcher implements Sweepable {
                 }
             }
 
-            if (!isExistedInTargetSystem) {
+            if (!targetSystemUserExists) {
                 ObjectResponse resp = provisionService.requestAddModify(extUser, targetSysLogin, true, requestId,
                         idmAuditLog);
                 connectorSuccess = resp.getStatus() != StatusCodeType.FAILURE;
@@ -567,9 +567,9 @@ public class ProvisionDispatcher implements Sweepable {
                 PostProcessor ppScript = createPostProcessScript(postProcessScript, bindingMap);
                 if (ppScript != null) {
                     int executePostProcessResult = executePostProcess(ppScript, bindingMap, targetSysProvUser, null,
-                            isExistedInTargetSystem ? "MODIFY" : "ADD", connectorSuccess);
+                            targetSystemUserExists ? "MODIFY" : "ADD", connectorSuccess);
                     idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "executePostProcessResult "
-                            + (isExistedInTargetSystem ? "[MODIFY]" : "[ADD] =") + executePostProcessResult);
+                            + (targetSystemUserExists ? "[MODIFY]" : "[ADD] =") + executePostProcessResult);
                     if (executePostProcessResult == ProvisioningConstants.FAIL) {
                         response.setStatus(ResponseStatus.FAILURE);
                         response.setErrorCode(ResponseCode.FAIL_POSTPROCESSOR);

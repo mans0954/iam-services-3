@@ -114,6 +114,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     public static final String MATCH_PARAM = "matchParam";
     public static final String TARGET_SYSTEM_IDENTITY_STATUS = "targetSystemIdentityStatus";
     public static final String TARGET_SYSTEM_IDENTITY = "targetSystemIdentity";
+    public static final String TARGET_SYSTEM_USER_EXISTS = "targetSystemUserExists";
     public static final String TARGET_SYSTEM_ATTRIBUTES = "targetSystemAttributes";
 
     public static final String TARGET_SYS_RES_ID = "resourceId";

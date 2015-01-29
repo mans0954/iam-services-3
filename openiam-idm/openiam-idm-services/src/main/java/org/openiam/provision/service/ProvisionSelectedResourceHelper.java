@@ -240,9 +240,7 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
                 }
             }
 
-            bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_ATTRIBUTES, null);
             bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_IDENTITY, mLg != null ? mLg.getLogin() : null);
-
             if (mLg != null) {
                 bindingMap.put("lg", mLg);
                 String decPassword = "";

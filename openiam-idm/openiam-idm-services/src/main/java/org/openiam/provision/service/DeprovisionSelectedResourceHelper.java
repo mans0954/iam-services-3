@@ -186,7 +186,6 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
                 }
             }
 
-            bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_ATTRIBUTES, null);
             bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_IDENTITY, mLg.getLogin());
             bindingMap.put("lg", mLg);
             String decPassword = "";
