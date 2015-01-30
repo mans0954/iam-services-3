@@ -213,6 +213,7 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
             if (!isMngSysIdentityExistsInOpeniam) {
                 try {
                     log.debug(" - Building principal Name for: " + managedSysId);
+                    bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_ATTRIBUTES, new HashMap<>());
                     String newPrincipalName = ProvisionServiceUtil
                             .buildUserPrincipalName(attrMap, scriptRunner, bindingMap);
                     if (StringUtils.isBlank(newPrincipalName)) {
@@ -347,7 +348,7 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
                                 // the connectors can detect a delete if an
                                 // attribute is not in the list
 
-                                newAttr = new ExtensibleAttribute(attr.getAttributeName(), (String) output, 1, attr
+                                newAttr = new ExtensibleAttribute(attr.getAttributeName(), (String) output, attr
                                         .getDataType().getValue());
                                 newAttr.setObjectType(objectType);
                                 extUser.getAttributes().add(newAttr);
@@ -360,7 +361,7 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
                                 // attribute is not in the list
 
                                 newAttr = new ExtensibleAttribute(attr.getAttributeName(),
-                                        ((Integer) output).toString(), 1, attr.getDataType().getValue());
+                                        ((Integer) output).toString(), attr.getDataType().getValue());
                                 newAttr.setObjectType(objectType);
                                 extUser.getAttributes().add(newAttr);
 
@@ -370,21 +371,21 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
                                 String DATE_FORMAT = "MM/dd/yyyy";
                                 SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT);
 
-                                newAttr = new ExtensibleAttribute(attr.getAttributeName(), sdf.format(d), 1, attr
+                                newAttr = new ExtensibleAttribute(attr.getAttributeName(), sdf.format(d), attr
                                         .getDataType().getValue());
                                 newAttr.setObjectType(objectType);
 
                                 extUser.getAttributes().add(newAttr);
                             } else if (output instanceof byte[]) {
                                 extUser.getAttributes().add(
-                                        new ExtensibleAttribute(attr.getAttributeName(), (byte[]) output, 1, attr
+                                        new ExtensibleAttribute(attr.getAttributeName(), (byte[]) output, attr
                                                 .getDataType().getValue()));
 
                             } else if (output instanceof BaseAttributeContainer) {
                                 // process a complex object which can be passed
                                 // to the connector
                                 newAttr = new ExtensibleAttribute(attr.getAttributeName(),
-                                        (BaseAttributeContainer) output, 1, attr.getDataType().getValue());
+                                        (BaseAttributeContainer) output, attr.getDataType().getValue());
                                 newAttr.setObjectType(objectType);
                                 extUser.getAttributes().add(newAttr);
 
@@ -395,7 +396,7 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
                             } else if (output instanceof List) {
                                 // process a list - multi-valued object
                                 if (CollectionUtils.isNotEmpty((List)output)) {
-                                    newAttr = new ExtensibleAttribute(attr.getAttributeName(), (List) output, 1, attr
+                                    newAttr = new ExtensibleAttribute(attr.getAttributeName(), (List) output, attr
                                             .getDataType().getValue());
                                     newAttr.setObjectType(objectType);
                                     extUser.getAttributes().add(newAttr);

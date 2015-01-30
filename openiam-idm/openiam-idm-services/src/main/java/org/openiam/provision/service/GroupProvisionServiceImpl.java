@@ -379,7 +379,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
         // this lookup only for getting attributes from the
         // system
         String requestId = "R" + UUIDGen.getUUID();
-        Map<String, String> currentValueMap = new HashMap<>();
+        Map<String, ExtensibleAttribute> currentValueMap = new HashMap<>();
 
         boolean isExistedInTargetSystem = getCurrentObjectAtTargetSystem(requestId, groupTargetIdentity, extObj, managedSys,
                 matchObj, currentValueMap);
@@ -423,7 +423,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
         } else { // if group exists in target system
 
             // updates the attributes with the correct operation codes
-            extObj = DefaultProvisioningService.updateAttributeList(extObj, currentValueMap);
+            extObj = ProvisionDispatcher.updateAttributeList(extObj, currentValueMap);
 
             if (groupTargetIdentity.getOrigPrincipalName() != null) {
                 extObj.getAttributes().add(
@@ -666,7 +666,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
     }
 
     private boolean getCurrentObjectAtTargetSystem(String requestId, IdentityDto identityDto, ExtensibleObject extensibleObject,
-                                                   ManagedSysDto mSys, ManagedSystemObjectMatch matchObj, Map<String, String> curValueMap) {
+                                                   ManagedSysDto mSys, ManagedSystemObjectMatch matchObj, Map<String, ExtensibleAttribute> curValueMap) {
 
         String identity = identityDto.getIdentity();
         MuleContext muleContext = MuleContextProvider.getCtx();
@@ -706,9 +706,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
 
             if (extAttrList != null) {
                 for (ExtensibleAttribute obj : extAttrList) {
-                    String name = obj.getName();
-                    String value = obj.getValue();
-                    curValueMap.put(name, value);
+                    curValueMap.put(obj.getName(), obj);
                 }
             } else {
                 log.debug(" - NO attributes found in target system lookup ");
@@ -1165,4 +1163,5 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
     public Response deprovisionSelectedResources(String groupId, String requesterId, List<String> resourceList) {
         throw new UnsupportedOperationException("Not implemented yet");
     }
+
 }

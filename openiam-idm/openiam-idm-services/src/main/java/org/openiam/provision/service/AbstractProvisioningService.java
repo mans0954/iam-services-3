@@ -1507,65 +1507,6 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         }
     }
 
-    /**
-     * Update the list of attributes with the correct operation values so that they can be
-     * passed to the connector
-     */
-    public static ExtensibleObject updateAttributeList(ExtensibleObject extUser,
-                                                       Map<String, String> currentValueMap) {
-        if (extUser == null) {
-            return null;
-        }
-        log.debug("updateAttributeList: Updating operations on attributes being passed to connectors");
-
-
-        List<ExtensibleAttribute> extAttrList = extUser.getAttributes();
-        if (extAttrList == null) {
-
-            log.debug("Extended user attributes is null");
-
-            return null;
-        }
-
-        if (extAttrList != null && currentValueMap == null) {
-            for (ExtensibleAttribute attr : extAttrList) {
-                attr.setOperation(1);
-            }
-        } else {
-
-            for (ExtensibleAttribute attr : extAttrList) {
-                String nm = attr.getName();
-                if (currentValueMap == null) {
-                    attr.setOperation(1);
-                } else {
-                    String curVal = currentValueMap.get(nm);
-                    if (curVal == null) {
-                        // temp hack
-                        if (nm.equalsIgnoreCase("objectclass")) {
-                            attr.setOperation(2);
-                        } else {
-                            log.debug("- Op = 1 - AttrName = " + nm);
-
-                            attr.setOperation(1);
-                        }
-                    } else {
-                        if (curVal.equalsIgnoreCase(attr.getValue())) {
-                            log.debug("- Op = 0 - AttrName = " + nm);
-
-                            attr.setOperation(0);
-                        } else {
-
-                            log.debug("- Op = 2 - AttrName = " + nm);
-
-                            attr.setOperation(2);
-                        }
-                    }
-                }
-            }
-        }
-        return extUser;
-    }
-
     public ObjectResponse requestAddModify(ExtensibleUser extUser, Login mLg, boolean isAdd,
                                            String requestId, final IdmAuditLog idmAuditLog) {
 

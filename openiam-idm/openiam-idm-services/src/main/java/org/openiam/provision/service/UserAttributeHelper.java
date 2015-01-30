@@ -293,7 +293,7 @@ public class UserAttributeHelper {
                         extAttr.setOperation(AttributeOperationEnum.REPLACE
                                 .getValue());
                     } else {
-                        extAttr.setOperation(0);
+                        extAttr.setOperation(AttributeOperationEnum.NO_CHANGE.getValue());
                     }
                 } else {
                     // not found
@@ -314,7 +314,7 @@ public class UserAttributeHelper {
                 ExtensibleAttribute extAttr = new ExtensibleAttribute(
                         "USER_ATTRIBUTE." + attr.getName(), attr.getValue(),
                         attr.getMetadataId());
-                extAttr.setOperation(0);
+                extAttr.setOperation(AttributeOperationEnum.NO_CHANGE.getValue());
                 extUser.getAttributes().add(extAttr);
 
             }

@@ -53,7 +53,7 @@ public class PeoplesoftModifyCommand extends AbstractPeoplesoftCommand<CrudReque
             con = this.getConnection(managedSys);
             final List<ExtensibleAttribute> attrList = reqType.getExtensibleObject().getAttributes();
             for (ExtensibleAttribute att : attrList) {
-                if (att.getOperation() != 0 && att.getName() != null) {
+                if (att.getOperation() > 0 && att.getName() != null) {
                     if (att.getObjectType().equalsIgnoreCase("USER")) {
 
                         System.out.println("Attribute: " + att.getName() + " -> " + att.getValue());

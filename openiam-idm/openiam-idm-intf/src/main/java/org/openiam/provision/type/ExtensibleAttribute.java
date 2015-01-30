@@ -60,7 +60,7 @@ public class ExtensibleAttribute extends Attribute implements Serializable {
     protected String value;
     protected byte[] valueAsByteArray;
     protected String metadataElementId;
-    protected int operation;
+    protected int operation = -1;
     protected boolean multivalued = false;
     protected List<String> valueList;
     protected BaseAttributeContainer attributeContainer;
@@ -76,13 +76,12 @@ public class ExtensibleAttribute extends Attribute implements Serializable {
     public ExtensibleAttribute(String name, String value) {
         this.name = name;
         setValue(value);
-        operation = ModificationAttribute.add;
     }
+
     public ExtensibleAttribute(String name, String value, String metadataElementId) {
         this.name = name;
         setValue(value);
         this.metadataElementId = metadataElementId;
-        operation = ModificationAttribute.add;
     }
 
     public String getMetadataElementId() {
@@ -101,10 +100,26 @@ public class ExtensibleAttribute extends Attribute implements Serializable {
         this.dataType = dataType;
     }
 
+    public ExtensibleAttribute(String name, byte[] value, String dataType) {
+        super();
+        this.name = name;
+        setValueAsByteArray(value);
+        this.dataType = dataType;
+    }
+
      public ExtensibleAttribute(String name, List<String> val, int operation, String dataType) {
         super();
         this.name = name;
         this.operation = operation;
+        setValueList(val);
+        multivalued = true;
+        this.dataType = dataType;
+
+    }
+
+    public ExtensibleAttribute(String name, List<String> val, String dataType) {
+        super();
+        this.name = name;
         setValueList(val);
         multivalued = true;
         this.dataType = dataType;
@@ -122,6 +137,18 @@ public class ExtensibleAttribute extends Attribute implements Serializable {
         log.debug("Extensible attribute created: multivalue");
 
     }
+
+    public ExtensibleAttribute(String name, BaseAttributeContainer val, String dataType) {
+        super();
+        this.name = name;
+
+        this.attributeContainer = val;
+        this.dataType = dataType;
+
+        log.debug("Extensible attribute created: multivalue");
+
+    }
+
     public ExtensibleAttribute(String name, byte[] val, int operation, String dataType) {
         super();
         this.name = name;

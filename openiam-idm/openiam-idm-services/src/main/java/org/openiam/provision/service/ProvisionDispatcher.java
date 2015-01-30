@@ -54,6 +54,7 @@ import org.openiam.provision.dto.ProvOperationEnum;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.provision.type.ExtensibleAttribute;
+import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.thread.Sweepable;
@@ -509,7 +510,7 @@ public class ProvisionDispatcher implements Sweepable {
                     matchObj, currentValueMap);
             bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_USER_EXISTS, targetSystemUserExists);
             bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_ATTRIBUTES, currentValueMap);
-            ExtensibleUser extUser = provisionSelectedResourceHelper.buildFromRules(managedSysId, bindingMap);
+            ExtensibleObject extUser = provisionSelectedResourceHelper.buildFromRules(managedSysId, bindingMap);
             try {
                 idmAuditLog.addCustomRecord("ATTRIBUTES", extUser.getAttributesAsJSON());
             } catch (JsonGenerationException jge) {
@@ -537,7 +538,7 @@ public class ProvisionDispatcher implements Sweepable {
             }
 
             if (!targetSystemUserExists) {
-                ObjectResponse resp = provisionService.requestAddModify(extUser, targetSysLogin, true, requestId,
+                ObjectResponse resp = provisionService.requestAddModify((ExtensibleUser)extUser, targetSysLogin, true, requestId,
                         idmAuditLog);
                 connectorSuccess = resp.getStatus() != StatusCodeType.FAILURE;
 
@@ -552,7 +553,7 @@ public class ProvisionDispatcher implements Sweepable {
                             new ExtensibleAttribute("ORIG_IDENTITY", targetSysLogin.getOrigPrincipalName(),
                                     AttributeOperationEnum.REPLACE.getValue(), "String"));
                 }
-                ObjectResponse resp = provisionService.requestAddModify(extUser, targetSysLogin, false, requestId,
+                ObjectResponse resp = provisionService.requestAddModify((ExtensibleUser)extUser, targetSysLogin, false, requestId,
                         idmAuditLog);
                 connectorSuccess = resp.getStatus() != StatusCodeType.FAILURE;
             }
@@ -593,18 +594,18 @@ public class ProvisionDispatcher implements Sweepable {
      * Update the list of attributes with the correct operation values so that
      * they can be passed to the connector
      */
-    private ExtensibleUser updateAttributeList(org.openiam.provision.type.ExtensibleUser extUser,
+    static ExtensibleObject updateAttributeList(org.openiam.provision.type.ExtensibleObject extObject,
             Map<String, ExtensibleAttribute> currentValueMap) {
-        if (extUser == null) {
+        if (extObject == null) {
             return null;
         }
         log.debug("updateAttributeList: Updating operations on attributes being passed to connectors");
         // log.debug("updateAttributeList: Current attributeMap = " +
         // currentValueMap);
 
-        List<ExtensibleAttribute> extAttrList = extUser.getAttributes();
+        List<ExtensibleAttribute> extAttrList = extObject.getAttributes();
         if (extAttrList == null) {
-            log.debug("Extended user attributes is null");
+            log.debug("Extended object attributes is null");
             return null;
         }
 
@@ -612,30 +613,37 @@ public class ProvisionDispatcher implements Sweepable {
         // extAttrList);
         if (extAttrList != null && currentValueMap == null) {
             for (ExtensibleAttribute attr : extAttrList) {
-                attr.setOperation(1);
+                if(attr.getOperation() == -1) {
+                    attr.setOperation(AttributeOperationEnum.ADD.getValue());
+                }
             }
         } else {
-
             for (ExtensibleAttribute attr : extAttrList) {
-                String nm = attr.getName();
-                if (currentValueMap == null) {
-                    attr.setOperation(1);
-                } else {
-                    ExtensibleAttribute curAttr = currentValueMap.get(nm);
-                    if (attr.valuesAreEqual(curAttr)) {
-                        log.debug("- Op = 0 - AttrName = " + nm);
-                        attr.setOperation(0);
-                    } else if (curAttr == null || !curAttr.containsAnyValue()) {
-                        log.debug("- Op = 1 - AttrName = " + nm);
-                        attr.setOperation(1);
+                if(attr.getOperation() == -1) {
+                    String nm = attr.getName();
+                    if (currentValueMap == null) {
+                        attr.setOperation(AttributeOperationEnum.ADD.getValue());
                     } else {
-                        log.debug("- Op = 2 - AttrName = " + nm);
-                        attr.setOperation(2);
+                        ExtensibleAttribute curAttr = currentValueMap.get(nm);
+                        attr.setOperation(AttributeOperationEnum.NO_CHANGE.getValue());
+                        if (attr.valuesAreEqual(curAttr)) {
+                            log.debug("- Op = 0 - AttrName = " + nm);
+                            attr.setOperation(AttributeOperationEnum.NO_CHANGE.getValue());
+                        } else if (curAttr == null || !curAttr.containsAnyValue()) {
+                            log.debug("- Op = 1 - AttrName = " + nm);
+                            attr.setOperation(AttributeOperationEnum.ADD.getValue());
+                        } else if (attr.containsAnyValue() && (curAttr != null && curAttr.containsAnyValue())) {
+                            log.debug("- Op = 3 - AttrName = " + nm);
+                            attr.setOperation(AttributeOperationEnum.DELETE.getValue());
+                        } else if(attr.containsAnyValue() && (curAttr != null && curAttr.containsAnyValue())) {
+                            log.debug("- Op = 2 - AttrName = " + nm);
+                            attr.setOperation(AttributeOperationEnum.REPLACE.getValue());
+                        }
                     }
                 }
             }
         }
-        return extUser;
+        return extObject;
     }
 
     private boolean getCurrentObjectAtTargetSystem(String requestId, Login mLg, ExtensibleUser extUser,
