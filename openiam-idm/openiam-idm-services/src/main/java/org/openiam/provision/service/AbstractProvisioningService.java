@@ -1588,6 +1588,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
             if (PolicyMapObjectTypeOptions.PRINCIPAL.name().equalsIgnoreCase(attr.getMapForObjectType())) {
                 extUser.setPrincipalFieldName(attr.getAttributeName());
                 extUser.setPrincipalFieldDataType(attr.getDataType().getValue());
+                break;
             }
         }
 
@@ -1785,7 +1786,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
 
     @Override
     public Response addEvent(ProvisionActionEvent event, ProvisionActionTypeEnum type) {
-        Map<String, Object> bindingMap = new HashMap<String, Object>();
+        Map<String, Object> bindingMap = new HashMap<>();
         Response response = new Response(ResponseStatus.SUCCESS);
         response.setResponseValue(ProvisionServiceEventProcessor.CONTINUE);
         ProvisionServiceEventProcessor eventProcessorScript = getEventProcessor(bindingMap, eventProcessor);
@@ -1793,33 +1794,6 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
             response = eventProcessorScript.process(event, type);
         }
         return response;
-    }
-
-    @Override
-    public ExtensibleUser buildExtensibleUser(String managedSysId) {
-        List<AttributeMap> attrMap = managedSysService.getAttributeMapsByManagedSysId(managedSysId);
-        ExtensibleUser extUser = new ExtensibleUser();
-        if (attrMap != null) {
-            for (AttributeMap attr : attrMap) {
-                if ("INACTIVE".equalsIgnoreCase(attr.getStatus())) {
-                    continue;
-                }
-                String objectType = attr.getMapForObjectType();
-                if (objectType != null) {
-                    if (PolicyMapObjectTypeOptions.USER.name().equalsIgnoreCase(objectType)) {
-                        ExtensibleAttribute newAttr = new ExtensibleAttribute(attr.getAttributeName(), null);
-                        newAttr.setObjectType(objectType);
-                        extUser.getAttributes().add(newAttr);
-
-                    } else if (PolicyMapObjectTypeOptions.PRINCIPAL.name().equalsIgnoreCase(objectType)) {
-                        extUser.setPrincipalFieldName(attr.getAttributeName());
-                        extUser.setPrincipalFieldDataType(attr.getDataType().getValue());
-                    }
-                }
-            }
-        }
-
-        return extUser;
     }
 
     private ProvisionServiceEventProcessor getEventProcessor(Map<String, Object> bindingMap, String scriptName) {

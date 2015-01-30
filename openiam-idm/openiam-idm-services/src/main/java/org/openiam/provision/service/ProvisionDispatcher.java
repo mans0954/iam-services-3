@@ -1,8 +1,5 @@
 package org.openiam.provision.service;
 
-import groovy.lang.MissingPropertyException;
-
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 import javax.jms.JMSException;
@@ -18,7 +15,6 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.jackson.JsonGenerationException;
 import org.mule.api.MuleContext;
 import org.openiam.base.AttributeOperationEnum;
-import org.openiam.base.BaseAttributeContainer;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.connector.type.ConnectorDataException;
@@ -33,7 +29,6 @@ import org.openiam.connector.type.response.SearchResponse;
 import org.openiam.dozer.converter.LoginDozerConverter;
 import org.openiam.dozer.converter.ResourceDozerConverter;
 import org.openiam.exception.EncryptionException;
-import org.openiam.exception.ScriptEngineException;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
@@ -45,10 +40,8 @@ import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.mngsys.domain.ProvisionConnectorEntity;
-import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
-import org.openiam.idm.srvc.mngsys.dto.PolicyMapObjectTypeOptions;
 import org.openiam.idm.srvc.mngsys.service.ProvisionConnectorService;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.pswd.service.PasswordGenerator;
@@ -103,17 +96,21 @@ public class ProvisionDispatcher implements Sweepable {
     private ResourceService resourceService;
     @Autowired
     private ProvisionService provisionService;
+
     @Autowired
     private ResourceDozerConverter resourceDozerConverter;
+
     @Autowired
     private LoginDozerConverter loginDozerConverter;
+
     @Autowired
     protected LoginDataService loginManager;
+
     @Autowired
     protected ProvisionConnectorService connectorService;
 
-    @Value(",${org.openiam.debug.hidden.attributes},")
-    private String hiddenAttributes;
+    @Autowired
+    private ProvisionSelectedResourceHelper provisionSelectedResourceHelper;
 
     @Autowired
     protected AuditLogService auditLogService;
@@ -312,7 +309,7 @@ public class ProvisionDispatcher implements Sweepable {
                 suspendReq.setScriptHandler(mSys.getSuspendHandler());
                 suspendReq.setHostLoginId(mSys.getUserId());
 
-                ExtensibleUser extUser = buildFromRules(managedSysId, data.getBindingMap());
+                ExtensibleUser extUser = provisionSelectedResourceHelper.buildFromRules(managedSysId, data.getBindingMap());
                 suspendReq.setExtensibleObject(extUser);
 
                 String passwordDecoded = mSys.getPswd();
@@ -360,7 +357,7 @@ public class ProvisionDispatcher implements Sweepable {
                 suspendReq.setScriptHandler(mSys.getSuspendHandler());
                 suspendReq.setHostLoginId(mSys.getUserId());
 
-                ExtensibleUser extUser = buildFromRules(managedSysId, data.getBindingMap());
+                ExtensibleUser extUser = provisionSelectedResourceHelper.buildFromRules(managedSysId, data.getBindingMap());
                 suspendReq.setExtensibleObject(extUser);
 
                 String passwordDecoded = mSys.getPswd();
@@ -508,11 +505,11 @@ public class ProvisionDispatcher implements Sweepable {
             // this lookup only for getting attributes from the
             // system
             Map<String, ExtensibleAttribute> currentValueMap = new HashMap<>();
-            boolean targetSystemUserExists = getCurrentObjectAtTargetSystem(requestId, targetSysLogin, provisionService.buildExtensibleUser(managedSysId), mSys,
+            boolean targetSystemUserExists = getCurrentObjectAtTargetSystem(requestId, targetSysLogin, provisionSelectedResourceHelper.buildEmptyAttributesExtensibleUser(managedSysId), mSys,
                     matchObj, currentValueMap);
             bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_USER_EXISTS, targetSystemUserExists);
             bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_ATTRIBUTES, currentValueMap);
-            ExtensibleUser extUser = buildFromRules(managedSysId, bindingMap);
+            ExtensibleUser extUser = provisionSelectedResourceHelper.buildFromRules(managedSysId, bindingMap);
             try {
                 idmAuditLog.addCustomRecord("ATTRIBUTES", extUser.getAttributesAsJSON());
             } catch (JsonGenerationException jge) {
@@ -691,116 +688,6 @@ public class ProvisionDispatcher implements Sweepable {
         }
 
         return false;
-    }
-
-    private ExtensibleUser buildFromRules(String managedSysId, Map<String, Object> bindingMap) {
-
-        List<AttributeMap> attrMap = managedSystemWebService.getAttributeMapsByManagedSysId(managedSysId);
-
-        ExtensibleUser extUser = new ExtensibleUser();
-
-        if (attrMap != null) {
-
-            log.debug("buildFromRules: attrMap IS NOT null");
-
-            for (AttributeMap attr : attrMap) {
-
-                if ("INACTIVE".equalsIgnoreCase(attr.getStatus())) {
-                    continue;
-                }
-
-                String objectType = attr.getMapForObjectType();
-                if (objectType != null) {
-
-                    if (objectType.equalsIgnoreCase(PolicyMapObjectTypeOptions.USER.name())) {
-                        Object output = "";
-                        try {
-                            output = ProvisionServiceUtil.getOutputFromAttrMap(attr, bindingMap, scriptRunner);
-                        } catch (ScriptEngineException see) {
-                            log.error("Error in script = '", see);
-                            continue;
-                        } catch (MissingPropertyException mpe) {
-                            log.error("Error in script = '", mpe);
-                            continue;
-                        }
-
-                        log.debug("buildFromRules: OBJECTTYPE="+objectType+", ATTRIBUTE=" + attr.getAttributeName() +
-                                ", SCRIPT OUTPUT=" +
-                                (hiddenAttributes.toLowerCase().contains(","+attr.getAttributeName().toLowerCase()+",")
-                                        ? "******" : output));
-
-                        if (output != null) {
-                            ExtensibleAttribute newAttr;
-                            if (output instanceof String) {
-
-                                // if its memberOf object than dont add it to
-                                // the list
-                                // the connectors can detect a delete if an
-                                // attribute is not in the list
-
-                                newAttr = new ExtensibleAttribute(attr.getAttributeName(), (String) output, 1, attr
-                                        .getDataType().getValue());
-                                newAttr.setObjectType(objectType);
-                                extUser.getAttributes().add(newAttr);
-
-                            } else if (output instanceof Integer) {
-
-                                // if its memberOf object than dont add it to
-                                // the list
-                                // the connectors can detect a delete if an
-                                // attribute is not in the list
-
-                                newAttr = new ExtensibleAttribute(attr.getAttributeName(),
-                                        ((Integer) output).toString(), 1, attr.getDataType().getValue());
-                                newAttr.setObjectType(objectType);
-                                extUser.getAttributes().add(newAttr);
-
-                            } else if (output instanceof Date) {
-                                // date
-                                Date d = (Date) output;
-                                String DATE_FORMAT = "MM/dd/yyyy";
-                                SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT);
-
-                                newAttr = new ExtensibleAttribute(attr.getAttributeName(), sdf.format(d), 1, attr
-                                        .getDataType().getValue());
-                                newAttr.setObjectType(objectType);
-
-                                extUser.getAttributes().add(newAttr);
-                            } else if (output instanceof byte[]) {
-                                extUser.getAttributes().add(
-                                        new ExtensibleAttribute(attr.getAttributeName(), (byte[]) output, 1, attr
-                                                .getDataType().getValue()));
-
-                            } else if (output instanceof BaseAttributeContainer) {
-                                // process a complex object which can be passed
-                                // to the connector
-                                newAttr = new ExtensibleAttribute(attr.getAttributeName(),
-                                        (BaseAttributeContainer) output, 1, attr.getDataType().getValue());
-                                newAttr.setObjectType(objectType);
-                                extUser.getAttributes().add(newAttr);
-
-                            } else if (output instanceof List) {
-                                // process a list - multi-valued object
-                                if (CollectionUtils.isNotEmpty((List)output)) {
-                                    newAttr = new ExtensibleAttribute(attr.getAttributeName(), (List) output, 1, attr
-                                            .getDataType().getValue());
-                                    newAttr.setObjectType(objectType);
-                                    extUser.getAttributes().add(newAttr);
-                                    log.debug("buildFromRules: added attribute to extUser:" + attr.getAttributeName());
-                                }
-                            }
-                        }
-                    } else if (PolicyMapObjectTypeOptions.PRINCIPAL.name().equalsIgnoreCase(objectType)) {
-
-                        extUser.setPrincipalFieldName(attr.getAttributeName());
-                        extUser.setPrincipalFieldDataType(attr.getDataType().getValue());
-
-                    }
-                }
-            }
-        }
-
-        return extUser;
     }
 
     private String getDecryptedPassword(ManagedSysDto managedSys) throws ConnectorDataException {

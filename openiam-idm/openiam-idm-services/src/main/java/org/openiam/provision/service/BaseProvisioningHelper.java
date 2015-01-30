@@ -106,6 +106,9 @@ public class BaseProvisioningHelper {
     @Value("${openiam.idm.ws.path}")
     private String serviceContext;
 
+    @Value("${org.openiam.debug.hidden.attributes}")
+    protected String hiddenAttributes;
+
     protected static final Log log = LogFactory
             .getLog(BaseProvisioningHelper.class);
 

@@ -21,13 +21,11 @@
  */
 package org.openiam.provision.service;
 
-import groovy.lang.MissingPropertyException;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.AttributeOperationEnum;
-import org.openiam.base.BaseAttributeContainer;
 import org.openiam.base.BaseObject;
 import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.Response;
@@ -39,7 +37,6 @@ import org.openiam.connector.type.request.LookupRequest;
 import org.openiam.connector.type.request.SuspendResumeRequest;
 import org.openiam.connector.type.response.*;
 import org.openiam.exception.ObjectNotFoundException;
-import org.openiam.exception.ScriptEngineException;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
@@ -97,7 +94,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 import javax.jws.WebParam;
 import javax.jws.WebService;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -120,7 +116,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     @Qualifier("transactionManager")
     private PlatformTransactionManager platformTransactionManager;
 
-    @Value(",${org.openiam.debug.hidden.attributes},")
+    @Value("${org.openiam.debug.hidden.attributes}")
     private String hiddenAttributes;
 
     private static final Log log = LogFactory.getLog(DefaultProvisioningService.class);
@@ -2644,7 +2640,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     private List<ExtensibleAttribute> buildMngSysAttributesForIDMUser(ProvisionUser pUser, boolean targetSystemUserExists, List<ExtensibleAttribute> mngSysAttrs, String managedSysId,
                                                                       String operation) {
 
-        Map bindingMap = new HashMap<String, Object>();
+        Map<String, Object> bindingMap = new HashMap<>();
         bindingMap.put("sysId", sysConfiguration.getDefaultManagedSysId());
         bindingMap.put("org", pUser.getPrimaryOrganization());
         bindingMap.put("operation", operation);
@@ -2711,99 +2707,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, IDENTITY_EXIST);
         bindingMap.put(TARGET_SYSTEM_IDENTITY, mLg != null ? mLg.getLogin() : null);
 
-        List<AttributeMapEntity> attrMapEntities = managedSystemService.getAttributeMapsByManagedSysId(managedSysId);
-        List<ExtensibleAttribute> idmExtensibleAttributes = new ArrayList<ExtensibleAttribute>();
+        List<ExtensibleAttribute> idmExtensibleAttributes = provisionSelectedResourceHelper.buildFromRules(managedSysId, bindingMap).getAttributes();
 
-        for (AttributeMapEntity attr : attrMapEntities) {
-
-            if ("INACTIVE".equalsIgnoreCase(attr.getStatus())) {
-                continue;
-            }
-
-            String objectType = attr.getMapForObjectType();
-            if (objectType != null) {
-
-                if (objectType.equalsIgnoreCase("USER")
-                        || objectType.equalsIgnoreCase("PASSWORD")) {
-                    Object output = "";
-                    try {
-                        output = ProvisionServiceUtil.getOutputFromAttrMap(attr, bindingMap, scriptRunner);
-                    } catch (ScriptEngineException see) {
-                        log.error("Error in script = '", see);
-                        continue;
-                    } catch (MissingPropertyException mpe) {
-                        log.error("Error in script = '", mpe);
-                        continue;
-                    }
-
-                    log.debug("buildFromRules: OBJECTTYPE=" + objectType + ", ATTRIBUTE=" + attr.getAttributeName() +
-                            ", SCRIPT OUTPUT=" +
-                            (hiddenAttributes.toLowerCase().contains("," + attr.getAttributeName().toLowerCase() + ",")
-                                    ? "******" : output));
-
-                    if (output != null) {
-                        ExtensibleAttribute newAttr;
-                        if (output instanceof String) {
-
-                            // if its memberOf object than dont add it to
-                            // the list
-                            // the connectors can detect a delete if an
-                            // attribute is not in the list
-
-                            newAttr = new ExtensibleAttribute(attr.getAttributeName(), (String) output, 1, attr
-                                    .getDataType().getValue());
-                            newAttr.setObjectType(objectType);
-                            idmExtensibleAttributes.add(newAttr);
-
-                        } else if (output instanceof Integer) {
-
-                            // if its memberOf object than dont add it to
-                            // the list
-                            // the connectors can detect a delete if an
-                            // attribute is not in the list
-
-                            newAttr = new ExtensibleAttribute(attr.getAttributeName(),
-                                    ((Integer) output).toString(), 1, attr.getDataType().getValue());
-                            newAttr.setObjectType(objectType);
-                            idmExtensibleAttributes.add(newAttr);
-
-                        } else if (output instanceof Date) {
-                            // date
-                            Date d = (Date) output;
-                            String DATE_FORMAT = "MM/dd/yyyy";
-                            SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT);
-
-                            newAttr = new ExtensibleAttribute(attr.getAttributeName(), sdf.format(d), 1, attr
-                                    .getDataType().getValue());
-                            newAttr.setObjectType(objectType);
-                            idmExtensibleAttributes.add(newAttr);
-
-                        } else if (output instanceof byte[]) {
-                            idmExtensibleAttributes.add(
-                                    new ExtensibleAttribute(attr.getAttributeName(), (byte[]) output, 1, attr
-                                            .getDataType().getValue()));
-
-                        } else if (output instanceof BaseAttributeContainer) {
-                            // process a complex object which can be passed
-                            // to the connector
-                            newAttr = new ExtensibleAttribute(attr.getAttributeName(),
-                                    (BaseAttributeContainer) output, 1, attr.getDataType().getValue());
-                            newAttr.setObjectType(objectType);
-                            idmExtensibleAttributes.add(newAttr);
-
-                        } else {
-                            // process a list - multi-valued object
-
-                            newAttr = new ExtensibleAttribute(attr.getAttributeName(), (List) output, 1, attr
-                                    .getDataType().getValue());
-                            newAttr.setObjectType(objectType);
-                            idmExtensibleAttributes.add(newAttr);
-
-                        }
-                    }
-                }
-            }
-        }
         return idmExtensibleAttributes;
     }
 
