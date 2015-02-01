@@ -1021,6 +1021,10 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
             ManagedSysDto mSys,
             ManagedSystemObjectMatch matchObj) {
 
+        if (mSys.getSkipGroupProvision()) {
+            log.debug("Deleting group skipped: SkipGroupProvision flag TRUE");
+            return null;
+        }
         CrudRequest<ExtensibleGroup> request = new CrudRequest<>();
         request.setExtensibleObject(new ExtensibleGroup());
         final String identity = StringUtils.isNotEmpty(identityDto.getOrigPrincipalName())

@@ -51,7 +51,7 @@ import java.util.UUID;
 /**
  * Wraps around the connector interface and manages the calls to the varous
  * operations for the connectors for provisioning.
- * 
+ *
  * @author suneet
  */
 @Component
@@ -63,11 +63,15 @@ public class ConnectorAdapter {
     private ProvisionConnectorWebService connectorService;
 
     public ObjectResponse addRequest(ManagedSysDto managedSys,
-                                      CrudRequest addReqType,
-                                      MuleContext muleContext) {
+                                     CrudRequest addReqType,
+                                     MuleContext muleContext) {
         ObjectResponse resp = new ObjectResponse();
         resp.setStatus(StatusCodeType.FAILURE);
-
+        if (managedSys.getSkipGroupProvision()) {
+            resp.setError(ErrorCode.SKIP_PROVISIONING);
+            log.debug("ConnectorAdapter:addRequest skipped: SkipGroupProvision flag TRUE");
+            return resp;
+        }
         try {
             if (managedSys == null) {
                 resp.setStatus(StatusCodeType.FAILURE);
@@ -82,11 +86,11 @@ public class ConnectorAdapter {
             log.info("Connector found for " + connector.getConnectorId());
             if (connector != null
                     && (connector.getServiceUrl() != null && connector
-                            .getServiceUrl().length() > 0)) {
+                    .getServiceUrl().length() > 0)) {
 
                 MuleMessage msg = getService(connector, addReqType,
                         connector.getServiceUrl(), "add", muleContext);
-                log.debug("***ADD Payload=" +msg);
+                log.debug("***ADD Payload=" + msg);
                 if (msg.getPayload() != null
                         && msg.getPayload() instanceof ObjectResponse) {
                     return (ObjectResponse) msg.getPayload();
@@ -105,11 +109,15 @@ public class ConnectorAdapter {
     }
 
     public ObjectResponse modifyRequest(ManagedSysDto managedSys,
-                                      CrudRequest modReqType,
-                                      MuleContext muleContext) {
+                                        CrudRequest modReqType,
+                                        MuleContext muleContext) {
         ObjectResponse resp = new ObjectResponse();
         resp.setStatus(StatusCodeType.FAILURE);
-
+        if (managedSys.getSkipGroupProvision()) {
+            resp.setError(ErrorCode.SKIP_PROVISIONING);
+            log.debug("ConnectorAdapter:modifyRequest skipped: SkipGroupProvision flag TRUE");
+            return resp;
+        }
         try {
             if (managedSys == null) {
                 resp.setStatus(StatusCodeType.FAILURE);
@@ -124,7 +132,7 @@ public class ConnectorAdapter {
             log.info("Connector found for " + connector.getConnectorId());
             if (connector != null
                     && (connector.getServiceUrl() != null && connector
-                            .getServiceUrl().length() > 0)) {
+                    .getServiceUrl().length() > 0)) {
 
                 // ConnectorService port = getService(connector);
                 // port.modify(modReqType);
@@ -151,7 +159,7 @@ public class ConnectorAdapter {
     }
 
     public SearchResponse lookupRequest(ManagedSysDto managedSys,
-            LookupRequest req,
+                                        LookupRequest req,
                                         MuleContext muleContext) {
         SearchResponse resp = new SearchResponse();
         resp.setStatus(StatusCodeType.FAILURE);
@@ -170,7 +178,7 @@ public class ConnectorAdapter {
             log.info("Connector found for " + connector.getConnectorId());
             if (connector != null
                     && (connector.getServiceUrl() != null && connector
-                            .getServiceUrl().length() > 0)) {
+                    .getServiceUrl().length() > 0)) {
 
                 MuleMessage msg = getService(connector, req,
                         connector.getServiceUrl(), "lookup", muleContext);
@@ -241,13 +249,18 @@ public class ConnectorAdapter {
         }
         resp.setStatus(StatusCodeType.FAILURE);
         return resp;
-	}
+    }
 
     public ResponseType reconcileResource(ManagedSysDto managedSys,
-            ReconciliationConfig config, MuleContext muleContext) {
+                                          ReconciliationConfig config, MuleContext muleContext) {
         ResponseType type = new ResponseType();
         type.setStatus(StatusCodeType.FAILURE);
 
+        if (managedSys.getSkipGroupProvision()) {
+            type.setError(ErrorCode.SKIP_PROVISIONING);
+            log.debug("ConnectorAdapter:reconcileRequest skipped: SkipGroupProvision flag TRUE");
+            return type;
+        }
         if (config == null) {
             return type;
         }
@@ -263,7 +276,7 @@ public class ConnectorAdapter {
 
             if (connector != null
                     && (connector.getServiceUrl() != null && connector
-                            .getServiceUrl().length() > 0)) {
+                    .getServiceUrl().length() > 0)) {
 
                 MuleMessage msg = getService(connector, config,
                         connector.getServiceUrl(), "reconcile", muleContext);
@@ -307,7 +320,7 @@ public class ConnectorAdapter {
 
             if (connector != null
                     && (connector.getServiceUrl() != null && connector
-                            .getServiceUrl().length() > 0)) {
+                    .getServiceUrl().length() > 0)) {
 
                 MuleMessage msg = getService(connector, config,
                         connector.getServiceUrl(), "lookupAttributes",
@@ -332,10 +345,16 @@ public class ConnectorAdapter {
     }
 
     public ObjectResponse deleteRequest(ManagedSysDto managedSys,
-                                      CrudRequest delReqType,
-                                      MuleContext muleContext) {
+                                        CrudRequest delReqType,
+                                        MuleContext muleContext) {
         ObjectResponse resp = new ObjectResponse();
         resp.setStatus(StatusCodeType.FAILURE);
+
+        if (managedSys.getSkipGroupProvision()) {
+            resp.setError(ErrorCode.SKIP_PROVISIONING);
+            log.debug("ConnectorAdapter:deleteRequest skipped: SkipGroupProvision flag TRUE");
+            return resp;
+        }
 
         if (managedSys == null) {
             resp.setStatus(StatusCodeType.FAILURE);
@@ -352,7 +371,7 @@ public class ConnectorAdapter {
             log.info("Connector found for " + connector.getConnectorId());
             if (connector != null
                     && (connector.getServiceUrl() != null && connector
-                            .getServiceUrl().length() > 0)) {
+                    .getServiceUrl().length() > 0)) {
 
                 MuleMessage msg = getService(connector, delReqType,
                         connector.getServiceUrl(), "delete", muleContext);
@@ -375,7 +394,8 @@ public class ConnectorAdapter {
         }
 
     }
-@Deprecated
+
+    @Deprecated
 /**
  * Please use ResetPassword instead
  */
@@ -384,7 +404,11 @@ public class ConnectorAdapter {
                                            MuleContext muleContext) {
         ResponseType resp = new ResponseType();
         resp.setStatus(StatusCodeType.FAILURE);
-
+        if (managedSys.getSkipGroupProvision()) {
+            resp.setError(ErrorCode.SKIP_PROVISIONING);
+            log.debug("ConnectorAdapter:setPasswordRequest skipped: SkipGroupProvision flag TRUE");
+            return resp;
+        }
         if (managedSys == null) {
             resp.setStatus(StatusCodeType.FAILURE);
             resp.setError(ErrorCode.INVALID_MANAGED_SYS_ID);
@@ -399,7 +423,7 @@ public class ConnectorAdapter {
             log.info("Connector found for " + connector.getConnectorId());
             if (connector != null
                     && (connector.getServiceUrl() != null && connector
-                            .getServiceUrl().length() > 0)) {
+                    .getServiceUrl().length() > 0)) {
 
                 MuleMessage msg = getService(connector, request,
                         connector.getServiceUrl(), "setPassword", muleContext);
@@ -430,7 +454,11 @@ public class ConnectorAdapter {
 
         ResponseType resp = new ResponseType();
         resp.setStatus(StatusCodeType.FAILURE);
-
+        if (managedSys.getSkipGroupProvision()) {
+            resp.setError(ErrorCode.SKIP_PROVISIONING);
+            log.debug("ConnectorAdapter:resetPasswordRequest skipped: SkipGroupProvision flag TRUE");
+            return resp;
+        }
         if (managedSys == null) {
             resp.setStatus(StatusCodeType.FAILURE);
             resp.setError(ErrorCode.INVALID_MANAGED_SYS_ID);
@@ -445,7 +473,7 @@ public class ConnectorAdapter {
             log.debug("Connector found for " + connector.getConnectorId());
             if (connector != null
                     && (connector.getServiceUrl() != null && connector
-                            .getServiceUrl().length() > 0)) {
+                    .getServiceUrl().length() > 0)) {
 
                 MuleMessage msg = getService(connector, request,
                         connector.getServiceUrl(), "resetPassword", muleContext);
@@ -477,7 +505,11 @@ public class ConnectorAdapter {
 
         ResponseType resp = new ResponseType();
         resp.setStatus(StatusCodeType.FAILURE);
-
+        if (managedSys.getSkipGroupProvision()) {
+            resp.setError(ErrorCode.SKIP_PROVISIONING);
+            log.debug("ConnectorAdapter:suspendRequest skipped: SkipGroupProvision flag TRUE");
+            return resp;
+        }
         if (managedSys == null) {
             resp.setStatus(StatusCodeType.FAILURE);
             resp.setError(ErrorCode.INVALID_MANAGED_SYS_ID);
@@ -493,7 +525,7 @@ public class ConnectorAdapter {
 
             if (connector != null
                     && (connector.getServiceUrl() != null && connector
-                            .getServiceUrl().length() > 0)) {
+                    .getServiceUrl().length() > 0)) {
 
                 MuleMessage msg = getService(connector, request,
                         connector.getServiceUrl(), "suspend", muleContext);
@@ -524,7 +556,11 @@ public class ConnectorAdapter {
 
         ResponseType type = new ResponseType();
         type.setStatus(StatusCodeType.FAILURE);
-
+        if (managedSys.getSkipGroupProvision()) {
+            type.setError(ErrorCode.SKIP_PROVISIONING);
+            log.debug("ConnectorAdapter:resumeRequest skipped: SkipGroupProvision flag TRUE");
+            return type;
+        }
         if (managedSys == null) {
             return type;
         }
@@ -537,7 +573,7 @@ public class ConnectorAdapter {
 
             if (connector != null
                     && (connector.getServiceUrl() != null && connector
-                            .getServiceUrl().length() > 0)) {
+                    .getServiceUrl().length() > 0)) {
 
                 MuleMessage msg = getService(connector, request,
                         connector.getServiceUrl(), "resume", muleContext);
@@ -616,8 +652,8 @@ public class ConnectorAdapter {
     }
 
     private MuleMessage getService(ProvisionConnectorDto connector,
-            Object reqType, String url, String operation,
-            MuleContext muleContext) throws MuleException {
+                                   Object reqType, String url, String operation,
+                                   MuleContext muleContext) throws MuleException {
 
         log.debug("getService: calling DynamicEndpoint...");
         // Create a MuleContextFactory
