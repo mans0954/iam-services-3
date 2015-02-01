@@ -67,11 +67,7 @@ public class ConnectorAdapter {
                                      MuleContext muleContext) {
         ObjectResponse resp = new ObjectResponse();
         resp.setStatus(StatusCodeType.FAILURE);
-        if (managedSys.getSkipGroupProvision()) {
-            resp.setError(ErrorCode.SKIP_PROVISIONING);
-            log.debug("ConnectorAdapter:addRequest skipped: SkipGroupProvision flag TRUE");
-            return resp;
-        }
+
         try {
             if (managedSys == null) {
                 resp.setStatus(StatusCodeType.FAILURE);
@@ -90,7 +86,7 @@ public class ConnectorAdapter {
 
                 MuleMessage msg = getService(connector, addReqType,
                         connector.getServiceUrl(), "add", muleContext);
-                log.debug("***ADD Payload=" + msg);
+                log.debug("***ADD Payload=" +msg);
                 if (msg.getPayload() != null
                         && msg.getPayload() instanceof ObjectResponse) {
                     return (ObjectResponse) msg.getPayload();
@@ -113,11 +109,7 @@ public class ConnectorAdapter {
                                         MuleContext muleContext) {
         ObjectResponse resp = new ObjectResponse();
         resp.setStatus(StatusCodeType.FAILURE);
-        if (managedSys.getSkipGroupProvision()) {
-            resp.setError(ErrorCode.SKIP_PROVISIONING);
-            log.debug("ConnectorAdapter:modifyRequest skipped: SkipGroupProvision flag TRUE");
-            return resp;
-        }
+
         try {
             if (managedSys == null) {
                 resp.setStatus(StatusCodeType.FAILURE);
@@ -256,11 +248,6 @@ public class ConnectorAdapter {
         ResponseType type = new ResponseType();
         type.setStatus(StatusCodeType.FAILURE);
 
-        if (managedSys.getSkipGroupProvision()) {
-            type.setError(ErrorCode.SKIP_PROVISIONING);
-            log.debug("ConnectorAdapter:reconcileRequest skipped: SkipGroupProvision flag TRUE");
-            return type;
-        }
         if (config == null) {
             return type;
         }
@@ -350,12 +337,6 @@ public class ConnectorAdapter {
         ObjectResponse resp = new ObjectResponse();
         resp.setStatus(StatusCodeType.FAILURE);
 
-        if (managedSys.getSkipGroupProvision()) {
-            resp.setError(ErrorCode.SKIP_PROVISIONING);
-            log.debug("ConnectorAdapter:deleteRequest skipped: SkipGroupProvision flag TRUE");
-            return resp;
-        }
-
         if (managedSys == null) {
             resp.setStatus(StatusCodeType.FAILURE);
             resp.setError(ErrorCode.INVALID_MANAGED_SYS_ID);
@@ -394,7 +375,6 @@ public class ConnectorAdapter {
         }
 
     }
-
     @Deprecated
 /**
  * Please use ResetPassword instead
@@ -404,11 +384,7 @@ public class ConnectorAdapter {
                                            MuleContext muleContext) {
         ResponseType resp = new ResponseType();
         resp.setStatus(StatusCodeType.FAILURE);
-        if (managedSys.getSkipGroupProvision()) {
-            resp.setError(ErrorCode.SKIP_PROVISIONING);
-            log.debug("ConnectorAdapter:setPasswordRequest skipped: SkipGroupProvision flag TRUE");
-            return resp;
-        }
+
         if (managedSys == null) {
             resp.setStatus(StatusCodeType.FAILURE);
             resp.setError(ErrorCode.INVALID_MANAGED_SYS_ID);
@@ -454,11 +430,7 @@ public class ConnectorAdapter {
 
         ResponseType resp = new ResponseType();
         resp.setStatus(StatusCodeType.FAILURE);
-        if (managedSys.getSkipGroupProvision()) {
-            resp.setError(ErrorCode.SKIP_PROVISIONING);
-            log.debug("ConnectorAdapter:resetPasswordRequest skipped: SkipGroupProvision flag TRUE");
-            return resp;
-        }
+
         if (managedSys == null) {
             resp.setStatus(StatusCodeType.FAILURE);
             resp.setError(ErrorCode.INVALID_MANAGED_SYS_ID);
@@ -505,11 +477,7 @@ public class ConnectorAdapter {
 
         ResponseType resp = new ResponseType();
         resp.setStatus(StatusCodeType.FAILURE);
-        if (managedSys.getSkipGroupProvision()) {
-            resp.setError(ErrorCode.SKIP_PROVISIONING);
-            log.debug("ConnectorAdapter:suspendRequest skipped: SkipGroupProvision flag TRUE");
-            return resp;
-        }
+
         if (managedSys == null) {
             resp.setStatus(StatusCodeType.FAILURE);
             resp.setError(ErrorCode.INVALID_MANAGED_SYS_ID);
@@ -556,11 +524,7 @@ public class ConnectorAdapter {
 
         ResponseType type = new ResponseType();
         type.setStatus(StatusCodeType.FAILURE);
-        if (managedSys.getSkipGroupProvision()) {
-            type.setError(ErrorCode.SKIP_PROVISIONING);
-            log.debug("ConnectorAdapter:resumeRequest skipped: SkipGroupProvision flag TRUE");
-            return type;
-        }
+
         if (managedSys == null) {
             return type;
         }

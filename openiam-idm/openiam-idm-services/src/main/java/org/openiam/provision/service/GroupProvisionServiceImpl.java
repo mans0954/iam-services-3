@@ -625,6 +625,14 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
     private ObjectResponse requestAddModify(IdentityDto identityDto, String requestId, ManagedSysDto mSys,
                                      ManagedSystemObjectMatch matchObj, ExtensibleObject extensibleObject, boolean isAdd) {
 
+        ObjectResponse resp = new ObjectResponse();
+
+        if (mSys.getSkipGroupProvision()) {
+            resp.setStatus(StatusCodeType.FAILURE);
+            resp.setError(ErrorCode.SKIP_PROVISIONING);
+            log.debug("GroupProvision:requestAddModify skipped: SkipGroupProvision flag TRUE");
+            return resp;
+        }
         CrudRequest<ExtensibleObject> userReq = new CrudRequest<>();
         userReq.setObjectIdentity(identityDto.getIdentity());
         userReq.setRequestID(requestId);
@@ -645,7 +653,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
         userReq.setExtensibleObject(extensibleObject);
         userReq.setScriptHandler(mSys.getAddHandler());
 
-        ObjectResponse resp = isAdd ? connectorAdapter.addRequest(mSys, userReq, MuleContextProvider.getCtx())
+        resp = isAdd ? connectorAdapter.addRequest(mSys, userReq, MuleContextProvider.getCtx())
                 : connectorAdapter.modifyRequest(mSys, userReq, MuleContextProvider.getCtx());
         /*auditBuilderDispatcherChild.addAttribute(AuditAttributeName.DESCRIPTION, (isAdd ? "ADD IDENTITY = "
                 : "MODIFY IDENTITY = ") + resp.getStatus() + " details:" + resp.getErrorMsgAsStr());*/
@@ -1020,10 +1028,13 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
             String requestId,
             ManagedSysDto mSys,
             ManagedSystemObjectMatch matchObj) {
+        ObjectResponse resp = new ObjectResponse();
 
         if (mSys.getSkipGroupProvision()) {
-            log.debug("Deleting group skipped: SkipGroupProvision flag TRUE");
-            return null;
+            resp.setStatus(StatusCodeType.FAILURE);
+            resp.setError(ErrorCode.SKIP_PROVISIONING);
+            log.debug("GroupProvision:requestDelete skipped: SkipGroupProvision flag TRUE");
+            return resp;
         }
         CrudRequest<ExtensibleGroup> request = new CrudRequest<>();
         request.setExtensibleObject(new ExtensibleGroup());
@@ -1050,7 +1061,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
 
         request.setScriptHandler(mSys.getDeleteHandler());
 
-        ObjectResponse resp = connectorAdapter.deleteRequest(mSys, request, MuleContextProvider.getCtx());
+        resp = connectorAdapter.deleteRequest(mSys, request, MuleContextProvider.getCtx());
 
         return resp;
     }

@@ -2585,7 +2585,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         if (StatusCodeType.SUCCESS.equals(response.getStatus())) {
             for (ExtensibleAttribute attr : response.getAttributes()) {
                 if ("READ_ONLY".equals(attr.getMetadataElementId())) { //Adding readOnly attributes
-                    requestedExtensibleAttributes.add(new ExtensibleAttribute(attr.getName(), null, attr.getMetadataElementId()));
+                    requestedExtensibleAttributes.add(new ExtensibleAttribute(attr.getName(), (String)null, attr.getMetadataElementId()));
 
                 } else if ("HIDDEN".equals(attr.getMetadataElementId())) { //Removing hidden attributes
                     for (ExtensibleAttribute a : requestedExtensibleAttributes) {
