@@ -33,7 +33,7 @@ public abstract class AbstractSearchLdapCommand<ExtObject extends ExtensibleObje
 
     @Override
     public SearchResponse execute(SearchRequest<ExtObject> searchRequest) throws ConnectorDataException {
-        String patternForCTRLCHAR = "[\\x00-\\x09\\x11\\x12\\x14-\\x1F\\x7F]";
+        String patternForCTRLCHAR = "[\u0000-\u001F]";
 
         SearchResponse searchResponse = new SearchResponse();
         searchResponse.setStatus(StatusCodeType.SUCCESS);
