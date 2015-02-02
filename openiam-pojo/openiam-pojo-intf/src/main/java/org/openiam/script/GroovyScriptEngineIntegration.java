@@ -119,10 +119,11 @@ public class GroovyScriptEngineIntegration implements ScriptIntegration, Applica
 
     @Override
     public Object instantiateClass(Map<String, Object> bindingMap, String storageDirectory, String scriptName) throws IOException {
-        log.info("instantiateClass called.");
 
         try {
             String fullPath = storageDirectory + scriptName;
+            log.info("instantiateClass called: "+fullPath+".");
+
             Class cl = gse.loadScriptByName(fullPath);
             Object instance = cl.newInstance();
 
