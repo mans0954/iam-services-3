@@ -979,6 +979,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             // check that a primary identity exists some where
             LoginEntity curPrimaryIdentity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(),
                     curPrincipalList);
+            bindingMap.put(TARGET_SYSTEM_IDENTITY, curPrimaryIdentity);
             if (curPrimaryIdentity == null && pUser.getPrincipalList() == null) {
                 log.debug("Primary identity not found...");
                 auditLog.addAttribute(AuditAttributeName.DESCRIPTION, "Primary identity not found...");
@@ -1004,6 +1005,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
             } else {
                 primaryLogin = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
+                bindingMap.put(TARGET_SYSTEM_IDENTITY,primaryLogin);
                 if (primaryLogin != null) {
                     // Check if a custom password is set
                     if (StringUtils.isNotBlank(primaryLogin.getPassword())) {
