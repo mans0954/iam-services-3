@@ -182,7 +182,8 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
                     Group group = groupDataWebService.getGroup(identityDto.getReferredObjectId(), systemUserId);
                     ProvisionGroup pGroup = new ProvisionGroup(group);
                     ManagedSysDto managedSys = managedSysService.getManagedSys(identityDto.getManagedSysId());
-                    return provisioningIdentity(identityDto, pGroup, managedSys, false);
+                    Resource res = resourceDataService.getResource(managedSys.getResourceId(), null);
+                    return provisioningIdentity(identityDto, pGroup, managedSys, res, false);
                 }
             });
 
@@ -255,7 +256,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
                             && groupTargetIdentity.getStatus() == LoginStatusEnum.INACTIVE) {
                         groupTargetIdentity.setStatus(LoginStatusEnum.ACTIVE);
                     }
-                    Response provIdentityResponse = provisioningIdentity(groupTargetIdentity, pGroup, managedSys, isAdd);
+                    Response provIdentityResponse = provisioningIdentity(groupTargetIdentity, pGroup, managedSys, res, isAdd);
                     if (!provIdentityResponse.isSuccess()) {
                         return provIdentityResponse;
                     }
@@ -292,7 +293,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
     }
 
     protected Response provisioningIdentity(IdentityDto groupTargetIdentity, ProvisionGroup pGroup,
-                                           ManagedSysDto managedSys, boolean isAdd) {
+                                           ManagedSysDto managedSys, Resource res, boolean isAdd) {
 
         Map<String, Object> bindingMap = new HashMap<>();
         Response response = new Response(ResponseStatus.SUCCESS);
@@ -382,12 +383,10 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
         Map<String, ExtensibleAttribute> currentValueMap = new HashMap<>();
 
         boolean isExistedInTargetSystem = getCurrentObjectAtTargetSystem(requestId, groupTargetIdentity, extObj, managedSys,
-                matchObj, currentValueMap);
+                matchObj, currentValueMap, res);
 
         boolean connectorSuccess = false;
-
-        Resource res = resourceDataService.getResource(managedSys.getResourceId(), null);
-        // pre-processing
+       // pre-processing
         bindingMap.put("targetSystemAttributes", currentValueMap);
         ResourceProp preProcessProp = res.getResourceProperty("GROUP_PRE_PROCESS");
         String preProcessScript = preProcessProp != null ? preProcessProp.getValue() : null;
@@ -674,7 +673,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
     }
 
     private boolean getCurrentObjectAtTargetSystem(String requestId, IdentityDto identityDto, ExtensibleObject extensibleObject,
-                                                   ManagedSysDto mSys, ManagedSystemObjectMatch matchObj, Map<String, ExtensibleAttribute> curValueMap) {
+                                                   ManagedSysDto mSys, ManagedSystemObjectMatch matchObj, Map<String, ExtensibleAttribute> curValueMap, Resource res) {
 
         String identity = identityDto.getIdentity();
         MuleContext muleContext = MuleContextProvider.getCtx();
@@ -706,7 +705,32 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
         reqType.setExtensibleObject(extensibleObject);
         reqType.setScriptHandler(mSys.getLookupHandler());
 
+//PRE processor
+        Map<String, Object> bindingMap = new HashMap<>();
+        ResourceProp preProcessProp = res.getResourceProperty("GROUP_PRE_PROCESS");
+        String preProcessScript = preProcessProp != null ? preProcessProp.getValue() : null;
+        if (StringUtils.isNotBlank(preProcessScript)) {
+            PreProcessor ppScript = createPreProcessScript(preProcessScript, bindingMap);
+            if (ppScript != null) {
+                int executePreProcessResult = AbstractProvisioningService.executePreProcess(ppScript, bindingMap, null, null, reqType,
+                        "LOOKUP");
+                if (executePreProcessResult == ProvisioningConstants.FAIL) {
+                    return false;
+                }
+            }
+        }
         SearchResponse lookupSearchResponse = connectorAdapter.lookupRequest(mSys, reqType, muleContext);
+//POST processor
+        ResourceProp postProcessProp = res.getResourceProperty("GROUP_POST_PROCESS");
+        String postProcessScript = postProcessProp != null ? postProcessProp.getValue() : null;
+        if (StringUtils.isNotBlank(postProcessScript)) {
+            PostProcessor ppScript = createPostProcessScript(postProcessScript, bindingMap);
+            if (ppScript != null) {
+                AbstractProvisioningService.executePostProcess(ppScript, bindingMap, null, null, lookupSearchResponse,
+                        "LOOKUP", lookupSearchResponse.getStatus() == StatusCodeType.SUCCESS);
+            }
+        }
+
         if (lookupSearchResponse.getStatus() == StatusCodeType.SUCCESS) {
             List<ExtensibleAttribute> extAttrList = lookupSearchResponse.getObjectList().size() > 0 ? lookupSearchResponse
                     .getObjectList().get(0).getAttributeList()

@@ -1,8 +1,8 @@
 package org.openiam.provision.service;
 
 import org.mule.api.MuleContext;
+import org.openiam.connector.type.request.LookupRequest;
 import org.openiam.provision.dto.PasswordSync;
-import org.openiam.provision.dto.ProvisionUser;
 import org.springframework.context.ApplicationContext;
 
 import java.util.Map;
@@ -49,6 +49,8 @@ public interface PreProcessor <T> {
 
     int setPassword(PasswordSync passwordSync,Map<String, Object> bindingMap);
     int resetPassword(PasswordSync passwordSync,Map<String, Object> bindingMap);
+
+    int lookupRequest(LookupRequest request);
 
     void setMuleContext(MuleContext ctx);
     void setApplicationContext(ApplicationContext ctx);

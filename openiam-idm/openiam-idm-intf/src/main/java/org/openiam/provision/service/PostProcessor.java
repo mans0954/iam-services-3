@@ -1,6 +1,7 @@
 package org.openiam.provision.service;
 
 import org.mule.api.MuleContext;
+import org.openiam.connector.type.response.SearchResponse;
 import org.openiam.provision.dto.PasswordSync;
 import org.springframework.context.ApplicationContext;
 
@@ -18,6 +19,8 @@ public interface PostProcessor <T> {
 
     int setPassword(PasswordSync passwordSync, Map<String, Object> bindingMap,boolean success);
     int resetPassword(PasswordSync passwordSync, Map<String, Object> bindingMap,boolean success);
+
+    int lookupRequest(SearchResponse request);
 
     void setMuleContext(MuleContext ctx);
     void setApplicationContext(ApplicationContext ctx);

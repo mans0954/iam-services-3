@@ -507,7 +507,7 @@ public class ProvisionDispatcher implements Sweepable {
             // system
             Map<String, ExtensibleAttribute> currentValueMap = new HashMap<>();
             boolean targetSystemUserExists = getCurrentObjectAtTargetSystem(requestId, targetSysLogin, provisionSelectedResourceHelper.buildEmptyAttributesExtensibleUser(managedSysId), mSys,
-                    matchObj, currentValueMap);
+                    matchObj, currentValueMap, res);
             bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_USER_EXISTS, targetSystemUserExists);
             bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_ATTRIBUTES, currentValueMap);
             ExtensibleObject extUser = provisionSelectedResourceHelper.buildFromRules(managedSysId, bindingMap);
@@ -525,7 +525,7 @@ public class ProvisionDispatcher implements Sweepable {
             if (StringUtils.isNotBlank(preProcessScript)) {
                 PreProcessor ppScript = createPreProcessScript(preProcessScript, bindingMap);
                 if (ppScript != null) {
-                    int executePreProcessResult = executePreProcess(ppScript, bindingMap, targetSysProvUser, null,
+                    int executePreProcessResult = AbstractProvisioningService.executePreProcess(ppScript, bindingMap, targetSysProvUser, null, null,
                             targetSystemUserExists ? "MODIFY" : "ADD");
                     idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "executePreProcessResult: "
                             + (targetSystemUserExists ? "[MODIFY]" : "[ADD] = ") + executePreProcessResult);
@@ -564,7 +564,7 @@ public class ProvisionDispatcher implements Sweepable {
             if (StringUtils.isNotBlank(postProcessScript)) {
                 PostProcessor ppScript = createPostProcessScript(postProcessScript, bindingMap);
                 if (ppScript != null) {
-                    int executePostProcessResult = executePostProcess(ppScript, bindingMap, targetSysProvUser, null,
+                    int executePostProcessResult = AbstractProvisioningService.executePostProcess(ppScript, bindingMap, targetSysProvUser, null, null,
                             targetSystemUserExists ? "MODIFY" : "ADD", connectorSuccess);
                     idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "executePostProcessResult "
                             + (targetSystemUserExists ? "[MODIFY]" : "[ADD] =") + executePostProcessResult);
@@ -647,7 +647,7 @@ public class ProvisionDispatcher implements Sweepable {
     }
 
     private boolean getCurrentObjectAtTargetSystem(String requestId, Login mLg, ExtensibleUser extUser,
-            ManagedSysDto mSys, ManagedSystemObjectMatch matchObj, Map<String, ExtensibleAttribute> curValueMap) {
+            ManagedSysDto mSys, ManagedSystemObjectMatch matchObj, Map<String, ExtensibleAttribute> curValueMap, Resource res) {
 
         String identity = mLg.getLogin();
         MuleContext muleContext = MuleContextProvider.getCtx();
@@ -678,8 +678,33 @@ public class ProvisionDispatcher implements Sweepable {
         }
         reqType.setExtensibleObject(extUser);
         reqType.setScriptHandler(mSys.getLookupHandler());
+//PRE processor
+        Map<String, Object> bindingMap = new HashMap<>();
+        ResourceProp preProcessProp = res.getResourceProperty("PRE_PROCESS");
+        String preProcessScript = preProcessProp != null ? preProcessProp.getValue() : null;
+        if (StringUtils.isNotBlank(preProcessScript)) {
+            PreProcessor ppScript = createPreProcessScript(preProcessScript, bindingMap);
+            if (ppScript != null) {
+                int executePreProcessResult = AbstractProvisioningService.executePreProcess(ppScript, bindingMap, null, null, reqType,
+                        "LOOKUP");
+                if (executePreProcessResult == ProvisioningConstants.FAIL) {
+                    return false;
+                }
+            }
+        }
 
         SearchResponse lookupSearchResponse = connectorAdapter.lookupRequest(mSys, reqType, muleContext);
+//POST processor
+        ResourceProp postProcessProp = res.getResourceProperty("POST_PROCESS");
+        String postProcessScript = postProcessProp != null ? postProcessProp.getValue() : null;
+        if (StringUtils.isNotBlank(postProcessScript)) {
+            PostProcessor ppScript = createPostProcessScript(postProcessScript, bindingMap);
+            if (ppScript != null) {
+                AbstractProvisioningService.executePostProcess(ppScript, bindingMap, null, null, lookupSearchResponse,
+                        "LOOKUP", lookupSearchResponse.getStatus() == StatusCodeType.SUCCESS);
+            }
+        }
+
         if (lookupSearchResponse.getStatus() == StatusCodeType.SUCCESS) {
             List<ExtensibleAttribute> extAttrList = lookupSearchResponse.getObjectList().size() > 0 ? lookupSearchResponse
                     .getObjectList().get(0).getAttributeList()
@@ -728,52 +753,6 @@ public class ProvisionDispatcher implements Sweepable {
             log.error(ce);
             return null;
         }
-    }
-
-    private int executePreProcess(PreProcessor ppScript, Map<String, Object> bindingMap, ProvisionUser user, PasswordSync passwordSync,
-            String operation) {
-        if ("ADD".equalsIgnoreCase(operation)) {
-            return ppScript.add(user, bindingMap);
-        } else
-        if ("MODIFY".equalsIgnoreCase(operation)) {
-            return ppScript.modify(user, bindingMap);
-        } else
-        if ("DELETE".equalsIgnoreCase(operation)) {
-            return ppScript.delete(user, bindingMap);
-        } else
-        if ("SET_PASSWORD".equalsIgnoreCase(operation)) {
-            return ppScript.setPassword(passwordSync, bindingMap);
-        } else
-        if ("RESET_PASSWORD".equalsIgnoreCase(operation)) {
-            return ppScript.resetPassword(passwordSync, bindingMap);
-        } else
-        if ("DISABLE".equalsIgnoreCase(operation)) {
-            return ppScript.disable(user, bindingMap);
-        }
-        return 0;
-    }
-
-    private static int executePostProcess(PostProcessor ppScript, Map<String, Object> bindingMap, ProvisionUser user, PasswordSync passwordSync,
-            String operation, boolean success) {
-        if ("ADD".equalsIgnoreCase(operation)) {
-            return ppScript.add(user, bindingMap, success);
-        } else
-        if ("MODIFY".equalsIgnoreCase(operation)) {
-            return ppScript.modify(user, bindingMap, success);
-        } else
-        if ("DELETE".equalsIgnoreCase(operation)) {
-            return ppScript.delete(user, bindingMap, success);
-        } else
-        if ("SET_PASSWORD".equalsIgnoreCase(operation)) {
-            return ppScript.setPassword(passwordSync, bindingMap, success);
-        } else
-        if ("RESET_PASSWORD".equalsIgnoreCase(operation)) {
-            return ppScript.resetPassword(passwordSync, bindingMap, success);
-        } else
-        if ("DISABLE".equalsIgnoreCase(operation)) {
-            return ppScript.disable(user, bindingMap, success);
-        }
-        return 0;
     }
 
 	private static class LoginChanges extends Login {

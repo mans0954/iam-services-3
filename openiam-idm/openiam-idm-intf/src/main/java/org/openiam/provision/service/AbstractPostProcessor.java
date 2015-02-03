@@ -3,6 +3,7 @@ package org.openiam.provision.service;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mule.api.MuleContext;
+import org.openiam.connector.type.response.SearchResponse;
 import org.openiam.provision.dto.PasswordSync;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
@@ -54,6 +55,11 @@ public abstract class AbstractPostProcessor<T> implements PostProcessor<T> {
 
     @Override
     public int resetPassword(PasswordSync passwordSync, Map<String, Object> bindingMap, boolean success) {
+        return ProvisioningConstants.SUCCESS;
+    }
+
+    @Override
+    public int lookupRequest(SearchResponse request) {
         return ProvisioningConstants.SUCCESS;
     }
 }

@@ -508,7 +508,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         if (preProcessScript != null && !preProcessScript.isEmpty()) {
                             PreProcessor<ProvisionUser> ppScript = createPreProcessScript(preProcessScript);
                             if (ppScript != null) {
-                                executePreProcess(ppScript, bindingMap, pUser, null, "DELETE");
+                                executePreProcess(ppScript, bindingMap, pUser, null, null, "DELETE");
                             }
                         }
                     }
@@ -553,7 +553,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 if (postProcessScript != null && !postProcessScript.isEmpty()) {
                     PostProcessor<ProvisionUser> ppScript = createPostProcessScript(postProcessScript);
                     if (ppScript != null) {
-                        executePostProcess(ppScript, bindingMap, pUser, null, "DELETE", connectorSuccess);
+                        executePostProcess(ppScript, bindingMap, pUser, null, null, "DELETE", connectorSuccess);
                     }
                 }
                 idmAuditLog.addChild(idmAuditLogChild);
@@ -626,7 +626,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                         if (preProcessScript != null && !preProcessScript.isEmpty()) {
                                             PreProcessor ppScript = createPreProcessScript(preProcessScript);
                                             if (ppScript != null) {
-                                                if (executePreProcess(ppScript, bindingMap, pUser, null, "DELETE") == ProvisioningConstants.FAIL) {
+                                                if (executePreProcess(ppScript, bindingMap, pUser, null, null, "DELETE") == ProvisioningConstants.FAIL) {
                                                     continue;
                                                 }
                                             }
@@ -665,7 +665,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                     if (postProcessScript != null && !postProcessScript.isEmpty()) {
                                         PostProcessor ppScript = createPostProcessScript(postProcessScript);
                                         if (ppScript != null) {
-                                            executePostProcess(ppScript, bindingMap, pUser, null, "DELETE", connectorSuccess);
+                                            executePostProcess(ppScript, bindingMap, pUser, null, null, "DELETE", connectorSuccess);
                                         }
                                     }
                                 }
@@ -1522,7 +1522,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                             if (preProcessScript != null && !preProcessScript.isEmpty()) {
                                 final PreProcessor ppScript = createPreProcessScript(preProcessScript);
                                 if (ppScript != null) {
-                                    if (executePreProcess(ppScript, bindingMap, null, passwordSync, "RESET_PASSWORD") == ProvisioningConstants.FAIL) {
+                                    if (executePreProcess(ppScript, bindingMap, null, passwordSync, null, "RESET_PASSWORD") == ProvisioningConstants.FAIL) {
                                         continue;
                                     }
                                 }
@@ -1567,7 +1567,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                             if (postProcessScript != null && !postProcessScript.isEmpty()) {
                                 final PostProcessor ppScript = createPostProcessScript(postProcessScript);
                                 if (ppScript != null) {
-                                    executePostProcess(ppScript, bindingMap, null, passwordSync, "RESET_PASSWORD",resp.getStatus() == StatusCodeType.SUCCESS);
+                                    executePostProcess(ppScript, bindingMap, null, passwordSync, null, "RESET_PASSWORD",resp.getStatus() == StatusCodeType.SUCCESS);
                                 }
                             }
                         }
@@ -1652,11 +1652,12 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             // get the connector for the managedSystem
 
             ManagedSysDto mSys = managedSysService.getManagedSys(managedSysId);
-            ManagedSystemObjectMatchEntity matchObj = null;
-            List<ManagedSystemObjectMatchEntity> objList = managedSystemService.managedSysObjectParam(managedSysId,
+            ResourceEntity res = resourceService.findResourceById(mSys.getResourceId());
+            ManagedSystemObjectMatch matchObj = null;
+            ManagedSystemObjectMatch[] objList = managedSysService.managedSysObjectParam(managedSysId,
                     ManagedSystemObjectMatch.USER);
-            if (CollectionUtils.isNotEmpty(objList)) {
-                matchObj = objList.get(0);
+            if (objList != null && objList.length > 0) {
+                matchObj = objList[0];
             }
 
             // do the lookup
@@ -1694,12 +1695,31 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             reqType.setHostUrl(mSys.getHostUrl());
             reqType.setScriptHandler(mSys.getLookupHandler());
 
+            final String preProcessScript = getResourceProperty(res, "PRE_PROCESS");
+            if (preProcessScript != null && !preProcessScript.isEmpty()) {
+                final PreProcessor ppScript = createPreProcessScript(preProcessScript);
+                if (ppScript != null) {
+                    if (executePreProcess(ppScript, null, null, null, reqType, "LOOKUP") == ProvisioningConstants.FAIL) {
+                        response.setStatus(ResponseStatus.FAILURE);
+                        response.setErrorCode(ResponseCode.FAIL_PREPROCESSOR);
+                        return response;
+                    }
+                }
+            }
+
             SearchResponse responseType = connectorAdapter.lookupRequest(mSys, reqType, MuleContextProvider.getCtx());
+
+            final String postProcessScript = getResourceProperty(res, "POST_PROCESS");
+            if (postProcessScript != null && !postProcessScript.isEmpty()) {
+                final PostProcessor ppScript = createPostProcessScript(postProcessScript);
+                if (ppScript != null) {
+                    executePostProcess(ppScript, null, null, null, responseType, "LOOKUP", responseType.getStatus() == StatusCodeType.SUCCESS);
+                }
+            }
             if (responseType.getStatus() == StatusCodeType.FAILURE || responseType.getObjectList().size() == 0) {
                 response.setStatus(ResponseStatus.FAILURE);
                 return response;
             }
-
             String targetPrincipalName = responseType.getObjectList().get(0).getObjectIdentity() != null
                     ? responseType.getObjectList().get(0).getObjectIdentity()
                     : parseUserPrincipal(responseType.getObjectList().get(0).getAttributeList());
@@ -1858,7 +1878,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                             if (preProcessScript != null && !preProcessScript.isEmpty()) {
                                 final PreProcessor ppScript = createPreProcessScript(preProcessScript);
                                 if (ppScript != null) {
-                                    if (executePreProcess(ppScript, bindingMap, null, passwordSync, "SET_PASSWORD") == ProvisioningConstants.FAIL) {
+                                    if (executePreProcess(ppScript, bindingMap, null, passwordSync, null, "SET_PASSWORD") == ProvisioningConstants.FAIL) {
                                         continue;
                                     }
                                 }
@@ -1913,7 +1933,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 if (postProcessScript != null && !postProcessScript.isEmpty()) {
                                     final PostProcessor ppScript = createPostProcessScript(postProcessScript);
                                     if (ppScript != null) {
-                                        executePostProcess(ppScript, bindingMap, null, passwordSync, "SET_PASSWORD",
+                                        executePostProcess(ppScript, bindingMap, null, passwordSync, null, "SET_PASSWORD",
                                                 connectorSuccess);
                                     }
                                 }
@@ -3007,7 +3027,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         if (preProcessScript != null && !preProcessScript.isEmpty()) {
                             final PreProcessor ppScript = createPreProcessScript(preProcessScript);
                             if (ppScript != null) {
-                                if (executePreProcess(ppScript, bindingMap, user, null, "DISABLE") == ProvisioningConstants.FAIL) {
+                                if (executePreProcess(ppScript, bindingMap, user, null, null, "DISABLE") == ProvisioningConstants.FAIL) {
                                     continue;
                                 }
                             }
@@ -3105,7 +3125,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         if (postProcessScript != null && !postProcessScript.isEmpty()) {
                             final PostProcessor ppScript = createPostProcessScript(postProcessScript);
                             if (ppScript != null) {
-                                executePostProcess(ppScript, bindingMap, user, null, "DISABLE",StatusCodeType.SUCCESS.equals(resp.getStatus()));
+                                executePostProcess(ppScript, bindingMap, user, null, null, "DISABLE",StatusCodeType.SUCCESS.equals(resp.getStatus()));
                             }
                         }
                     } else {

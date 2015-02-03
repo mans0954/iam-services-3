@@ -15,9 +15,11 @@ import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.connector.type.constant.ErrorCode;
 import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.request.CrudRequest;
+import org.openiam.connector.type.request.LookupRequest;
 import org.openiam.connector.type.request.PasswordRequest;
 import org.openiam.connector.type.response.ObjectResponse;
 import org.openiam.connector.type.response.ResponseType;
+import org.openiam.connector.type.response.SearchResponse;
 import org.openiam.dozer.converter.*;
 import org.openiam.exception.ObjectNotFoundException;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
@@ -499,15 +501,18 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
 
         ProvisionServicePreProcessor<ProvisionUser> addPreProcessScript = null;
         if (pUser != null) {
-            log.info("======= callPreProcessor: isSkipPreprocessor=" + pUser.isSkipPreprocessor() + ", ");
-            if (!pUser.isSkipPreprocessor() &&
-                    (addPreProcessScript = createProvPreProcessScript(preProcessor, bindingMap)) != null) {
-                addPreProcessScript.setMuleContext(MuleContextProvider.getCtx());
-                addPreProcessScript.setApplicationContext(SpringContextProvider.getApplicationContext());
-                return executeProvisionPreProcess(addPreProcessScript, bindingMap, pUser, passwordSync, operation);
+            log.info("======= call ProvisionServicePreProcessor: isSkipPreprocessor=" + pUser.isSkipPreprocessor() + ", ");
+            try {
+                if (!pUser.isSkipPreprocessor() &&
+                        (addPreProcessScript = createProvPreProcessScript(preProcessor, bindingMap)) != null) {
+                    addPreProcessScript.setMuleContext(MuleContextProvider.getCtx());
+                    addPreProcessScript.setApplicationContext(SpringContextProvider.getApplicationContext());
+                    return executeProvisionPreProcess(addPreProcessScript, bindingMap, pUser, passwordSync, operation);
 
+                }
+            } finally {
+                log.info("======= call ProvisionServicePreProcessor: addPreProcessScript=" + addPreProcessScript + ", ");
             }
-            log.info("======= callPreProcessor: addPreProcessScript=" + addPreProcessScript + ", ");
         }
         // pre-processor was skipped
         return ProvisioningConstants.SUCCESS;
@@ -516,15 +521,19 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
 
     protected int callPostProcessor(String operation, ProvisionUser pUser, Map<String, Object> bindingMap, PasswordSync passwordSync) {
 
-        ProvisionServicePostProcessor<ProvisionUser> addPostProcessScript;
+        ProvisionServicePostProcessor<ProvisionUser> addPostProcessScript = null;
 
         if (pUser != null) {
-            if (!pUser.isSkipPostProcessor() &&
-                    (addPostProcessScript = createProvPostProcessScript(postProcessor, bindingMap)) != null) {
-                addPostProcessScript.setMuleContext(MuleContextProvider.getCtx());
-                addPostProcessScript.setApplicationContext(SpringContextProvider.getApplicationContext());
-                return executeProvisionPostProcess(addPostProcessScript, bindingMap, pUser, passwordSync, operation);
-
+            log.info("======= call ProvisionServicePostProcessor: isSkipPostprocessor=" + pUser.isSkipPostProcessor() + ", ");
+            try {
+                if (!pUser.isSkipPostProcessor() &&
+                        (addPostProcessScript = createProvPostProcessScript(postProcessor, bindingMap)) != null) {
+                    addPostProcessScript.setMuleContext(MuleContextProvider.getCtx());
+                    addPostProcessScript.setApplicationContext(SpringContextProvider.getApplicationContext());
+                    return executeProvisionPostProcess(addPostProcessScript, bindingMap, pUser, passwordSync, operation);
+                }
+            } finally {
+                log.info("======= call ProvisionServicePostProcessor: addPostProcessScript=" + addPostProcessScript + ", ");
             }
         }
         // pre-processor was skipped
@@ -618,8 +627,9 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         return 0;
     }
 
-    protected int executePreProcess(PreProcessor<ProvisionUser> ppScript,
-                                    Map<String, Object> bindingMap, ProvisionUser user, PasswordSync passwordSync, String operation) {
+    static int executePreProcess(PreProcessor<ProvisionUser> ppScript,
+                                    Map<String, Object> bindingMap, ProvisionUser user, PasswordSync passwordSync, LookupRequest lookupRequest,  String operation) {
+        log.info("======= call PreProcessor: ppScript=" + ppScript + ", operation="+operation);
         if ("ADD".equalsIgnoreCase(operation)) {
             return ppScript.add(user, bindingMap);
         } else
@@ -637,12 +647,16 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         } else
         if ("DISABLE".equalsIgnoreCase(operation)) {
             return ppScript.disable(user, bindingMap);
+        } else
+        if ("LOOKUP".equalsIgnoreCase(operation)) {
+            return ppScript.lookupRequest(lookupRequest);
         }
         return 0;
     }
 
-    protected int executePostProcess(PostProcessor<ProvisionUser> ppScript,
-                                     Map<String, Object> bindingMap, ProvisionUser user, PasswordSync passwordSync, String operation, boolean success) {
+    static int executePostProcess(PostProcessor<ProvisionUser> ppScript,
+                                     Map<String, Object> bindingMap, ProvisionUser user, PasswordSync passwordSync, SearchResponse searchResponse, String operation,  boolean success) {
+        log.info("======= call PostProcessor: ppScript=" + ppScript + ", operation="+operation);
         if ("ADD".equalsIgnoreCase(operation)) {
             return ppScript.add(user, bindingMap, success);
         } else
@@ -660,6 +674,9 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         } else
         if ("DISABLE".equalsIgnoreCase(operation)) {
             return ppScript.disable(user, bindingMap, success);
+        } else
+        if ("LOOKUP".equalsIgnoreCase(operation)) {
+            return ppScript.lookupRequest(searchResponse);
         }
         return 0;
     }
