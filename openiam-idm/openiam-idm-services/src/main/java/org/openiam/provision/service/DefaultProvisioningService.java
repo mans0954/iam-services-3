@@ -446,6 +446,11 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 return response;
             }
 
+            // INITIALIZATION DE-PROVISION
+            List<String> resourceList = new ArrayList<String>();
+            List<String> userIds = new ArrayList<String>();
+            userIds.add(userId);
+
             idmAuditLog.setTargetUser(usr.getId(), principal);
 
             ProvisionUser pUser = new ProvisionUser(usr);
@@ -489,74 +494,82 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     matchObj = matchObjAry[0];
                     bindingMap.put(MATCH_PARAM, matchObj);
                 }
-                // pre-processing
 
-                Resource res = null;
-                String resourceId = mSys.getResourceId();
-
-                bindingMap.put("IDENTITY", login);
-                bindingMap.put("RESOURCE", res);
-                bindingMap.put(TARGET_SYSTEM_IDENTITY, login.getLogin());
-                bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, IDENTITY_EXIST);
-                bindingMap.put(TARGET_SYS_RES_ID, resourceId);
-
-                if (resourceId != null) {
-                    processedResources.add(resourceId);
-                    res = resourceDataService.getResource(resourceId, null);
-                    if (res != null) {
-                        String preProcessScript = getResProperty(res.getResourceProps(), "PRE_PROCESS");
-                        if (preProcessScript != null && !preProcessScript.isEmpty()) {
-                            PreProcessor<ProvisionUser> ppScript = createPreProcessScript(preProcessScript);
-                            if (ppScript != null) {
-                                executePreProcess(ppScript, bindingMap, pUser, null, null, "DELETE");
-                            }
-                        }
-                    }
-                }
 
                 ResponseType resp = new ResponseType();
                 resp.setStatus(StatusCodeType.SUCCESS);
-                if (CollectionUtils.isEmpty(skipManagedSysList) || !skipManagedSysList.contains(managedSystemId)) {
-                    resp = delete(loginDozerConverter.convertToDTO(login, true), requestId, mSys, matchObj);
-                }
 
-                boolean connectorSuccess = false;
-                if (resp.getStatus() == StatusCodeType.SUCCESS) {
-                    connectorSuccess = true;
-                    // if REMOVE status: we do physically delete identity for
-                    // selected managed system after successful provisioning
-                    // if DELETE status: we don't delete identity from database only
-                    // set status to INACTIVE
-                    if (status == UserStatusEnum.REMOVE) {
-                        loginManager.deleteLogin(login.getLoginId());
+                String resourceId = mSys.getResourceId();
+                try {
+                    if (CollectionUtils.isEmpty(skipManagedSysList) || !skipManagedSysList.contains(managedSystemId)) {
+
+                        if (status == UserStatusEnum.REMOVE) {
+                            // pre-processing
+                            processedResources.add(resourceId);
+                            Resource res = resourceDataService.getResource(resourceId, null);
+
+                            bindingMap.put("IDENTITY", login);
+                            bindingMap.put("RESOURCE", res);
+                            bindingMap.put(TARGET_SYSTEM_IDENTITY, login.getLogin());
+                            bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, IDENTITY_EXIST);
+                            bindingMap.put(TARGET_SYS_RES_ID, resourceId);
+
+                            String preProcessScript = getResProperty(res.getResourceProps(), "PRE_PROCESS");
+                            if (preProcessScript != null && !preProcessScript.isEmpty()) {
+                                PreProcessor<ProvisionUser> ppScript = createPreProcessScript(preProcessScript);
+                                if (ppScript != null) {
+                                    if (executePreProcess(ppScript, bindingMap, pUser, null, null, "DELETE") == ProvisioningConstants.FAIL) {
+                                        response.setStatus(ResponseStatus.FAILURE);
+                                        response.setErrorCode(ResponseCode.FAIL_PREPROCESSOR);
+                                        return response;
+                                    }
+                                }
+                            }
+                            // direct delete from target system
+                            resp = delete(loginDozerConverter.convertToDTO(login, true), requestId, mSys, matchObj);
+                            boolean connectorSuccess = resp.getStatus() == StatusCodeType.SUCCESS;
+                            // post-processor
+                            bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, null);
+
+                            String postProcessScript = getResProperty(res.getResourceProps(), "POST_PROCESS");
+                            if (postProcessScript != null && !postProcessScript.isEmpty()) {
+                                PostProcessor<ProvisionUser> ppScript = createPostProcessScript(postProcessScript);
+                                if (ppScript != null) {
+                                    executePostProcess(ppScript, bindingMap, pUser, null, null, "DELETE", connectorSuccess);
+                                }
+                            }
+
+                            if (connectorSuccess) {
+                                // if REMOVE status: we do physically delete identity for
+                                // selected managed system after successful provisioning
+                                // if DELETE status: we don't delete identity from database only
+                                // set status to INACTIVE
+                                if (status == UserStatusEnum.REMOVE) {
+                                    loginManager.deleteLogin(login.getLoginId());
+                                } else {
+                                    login.setStatus(LoginStatusEnum.INACTIVE);
+                                    login.setProvStatus(ProvLoginStatusEnum.DELETED);
+                                    login.setAuthFailCount(0);
+                                    login.setPasswordChangeCount(0);
+                                    login.setIsLocked(1);
+                                    loginManager.updateLogin(login);
+                                }
+
+                            }
+                        } else {
+                            resourceList.add(resourceId);
+                        }
+
                     } else {
                         login.setStatus(LoginStatusEnum.INACTIVE);
-                        login.setProvStatus(ProvLoginStatusEnum.DELETED);
-                        login.setAuthFailCount(0);
-                        login.setPasswordChangeCount(0);
-                        login.setIsLocked(1);
+                        login.setProvStatus(ProvLoginStatusEnum.FAIL_DELETE);
                         loginManager.updateLogin(login);
+                        idmAuditLogChild.fail();
+                        idmAuditLogChild.setFailureReason(resp.getErrorMsgAsStr());
                     }
-
-                    idmAuditLogChild.succeed();
-                } else {
-                    login.setStatus(LoginStatusEnum.INACTIVE);
-                    login.setProvStatus(ProvLoginStatusEnum.FAIL_DELETE);
-                    loginManager.updateLogin(login);
-
-                    idmAuditLogChild.fail();
-                    idmAuditLogChild.setFailureReason(resp.getErrorMsgAsStr());
+                } finally {
+                    idmAuditLog.addChild(idmAuditLogChild);
                 }
-
-                bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, null);
-                String postProcessScript = getResProperty(res.getResourceProps(), "POST_PROCESS");
-                if (postProcessScript != null && !postProcessScript.isEmpty()) {
-                    PostProcessor<ProvisionUser> ppScript = createPostProcessScript(postProcessScript);
-                    if (ppScript != null) {
-                        executePostProcess(ppScript, bindingMap, pUser, null, null, "DELETE", connectorSuccess);
-                    }
-                }
-                idmAuditLog.addChild(idmAuditLogChild);
 
             } else {
                 // delete user and all its identities.
@@ -609,69 +622,73 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 Resource resource = null;
                                 String resourceId = mSys.getResourceId();
 
-                                // SET PRE ATTRIBUTES FOR TARGET SYS SCRIPT
-                                bindingMap.put(TARGET_SYSTEM_IDENTITY, l.getLogin());
-                                bindingMap.put(TARGET_SYS_MANAGED_SYS_ID, mSys.getId());
-                                bindingMap.put(TARGET_SYS_RES_ID, resourceId);
-                                bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, IDENTITY_EXIST);
+                                ResponseType resp = new ResponseType();
+                                resp.setStatus(StatusCodeType.SUCCESS);
 
-                                if (resourceId != null) {
-                                    processedResources.add(resourceId);
-                                    resource = resourceDataService.getResource(resourceId, null);
-                                    if (resource != null) {
-                                        bindingMap.put(TARGET_SYS_RES, resource);
+                                if (CollectionUtils.isEmpty(skipManagedSysList) || !skipManagedSysList.contains(l.getManagedSysId())) {
+                                    if (status == UserStatusEnum.REMOVE) {
+                                        // SET PRE ATTRIBUTES FOR TARGET SYS SCRIPT
+                                        bindingMap.put(TARGET_SYSTEM_IDENTITY, l.getLogin());
+                                        bindingMap.put(TARGET_SYS_MANAGED_SYS_ID, mSys.getId());
+                                        bindingMap.put(TARGET_SYS_RES_ID, resourceId);
+                                        bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, IDENTITY_EXIST);
 
-                                        String preProcessScript = getResProperty(resource.getResourceProps(),
-                                                "PRE_PROCESS");
-                                        if (preProcessScript != null && !preProcessScript.isEmpty()) {
-                                            PreProcessor ppScript = createPreProcessScript(preProcessScript);
-                                            if (ppScript != null) {
-                                                if (executePreProcess(ppScript, bindingMap, pUser, null, null, "DELETE") == ProvisioningConstants.FAIL) {
-                                                    continue;
+                                        if (resourceId != null) {
+                                            processedResources.add(resourceId);
+                                            resource = resourceDataService.getResource(resourceId, null);
+                                            if (resource != null) {
+                                                bindingMap.put(TARGET_SYS_RES, resource);
+
+                                                String preProcessScript = getResProperty(resource.getResourceProps(),
+                                                        "PRE_PROCESS");
+                                                if (preProcessScript != null && !preProcessScript.isEmpty()) {
+                                                    PreProcessor ppScript = createPreProcessScript(preProcessScript);
+                                                    if (ppScript != null) {
+                                                        if (executePreProcess(ppScript, bindingMap, pUser, null, null, "DELETE") == ProvisioningConstants.FAIL) {
+                                                            continue;
+                                                        }
+                                                    }
                                                 }
                                             }
                                         }
-                                    }
-                                }
+                                        // DIRECT DELETE
+                                        resp = delete(loginDozerConverter.convertToDTO(l, true), requestId, mSys, matchObj);
 
-                                ResponseType resp = new ResponseType();
-                                resp.setStatus(StatusCodeType.SUCCESS);
-                                if (CollectionUtils.isEmpty(skipManagedSysList) || !skipManagedSysList.contains(l.getManagedSysId())) {
-                                    resp = delete(loginDozerConverter.convertToDTO(l, true), requestId, mSys, matchObj);
-                                }
-
-                                boolean connectorSuccess = false;
-                                if (resp.getStatus() == StatusCodeType.SUCCESS) {
-                                    connectorSuccess = true;
-                                    l.setStatus(LoginStatusEnum.INACTIVE);
-                                    l.setProvStatus(ProvLoginStatusEnum.DELETED);
-                                    l.setAuthFailCount(0);
-                                    l.setPasswordChangeCount(0);
-                                    l.setIsLocked(1);
-
-                                    idmAuditLogChild.succeed();
-                                } else {
-                                    l.setStatus(LoginStatusEnum.INACTIVE);
-                                    l.setProvStatus(ProvLoginStatusEnum.FAIL_DELETE);
-
-                                    idmAuditLogChild.fail();
-                                    idmAuditLogChild.setFailureReason(resp.getErrorMsgAsStr());
-                                }
-                                // SET POST ATTRIBUTES FOR TARGET SYS SCRIPT
-                                bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, null);
-                                if (resource != null) {
-                                    String postProcessScript = getResProperty(resource.getResourceProps(),
-                                            "POST_PROCESS");
-                                    if (postProcessScript != null && !postProcessScript.isEmpty()) {
-                                        PostProcessor ppScript = createPostProcessScript(postProcessScript);
-                                        if (ppScript != null) {
-                                            executePostProcess(ppScript, bindingMap, pUser, null, null, "DELETE", connectorSuccess);
+                                        boolean connectorSuccess = resp.getStatus() == StatusCodeType.SUCCESS;
+                                        // SET POST ATTRIBUTES FOR TARGET SYS SCRIPT
+                                        bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, null);
+                                        if (resource != null) {
+                                            String postProcessScript = getResProperty(resource.getResourceProps(),
+                                                    "POST_PROCESS");
+                                            if (postProcessScript != null && !postProcessScript.isEmpty()) {
+                                                PostProcessor ppScript = createPostProcessScript(postProcessScript);
+                                                if (ppScript != null) {
+                                                    executePostProcess(ppScript, bindingMap, pUser, null, null, "DELETE", connectorSuccess);
+                                                }
+                                            }
                                         }
+
+                                        if (connectorSuccess) {
+                                            l.setStatus(LoginStatusEnum.INACTIVE);
+                                            l.setProvStatus(ProvLoginStatusEnum.DELETED);
+                                            l.setAuthFailCount(0);
+                                            l.setPasswordChangeCount(0);
+                                            l.setIsLocked(1);
+
+                                            idmAuditLogChild.succeed();
+                                        } else {
+                                            l.setStatus(LoginStatusEnum.INACTIVE);
+                                            l.setProvStatus(ProvLoginStatusEnum.FAIL_DELETE);
+
+                                            idmAuditLogChild.fail();
+                                            idmAuditLogChild.setFailureReason(resp.getErrorMsgAsStr());
+                                        }
+                                        loginManager.deleteLogin(login.getLogin());
+                                    } else {
+                                        resourceList.add(resourceId);
                                     }
                                 }
-                                if (status == UserStatusEnum.REMOVE) {
-                                    loginManager.deleteLogin(login.getLogin());
-                                }
+
                             }
 
                         } catch (Throwable tw) {
@@ -713,6 +730,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 pUser.setLastUpdate(new Date());
                 pUser.setNotProvisioninResourcesIds(processedResources);
                 modifyUser(pUser);
+
+                return deprovisionSelectedResource.deprovisionSelectedResourcesAsync(userIds, requestorId, resourceList);
             }
 
         } finally {
@@ -979,7 +998,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             // check that a primary identity exists some where
             LoginEntity curPrimaryIdentity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(),
                     curPrincipalList);
-            bindingMap.put(TARGET_SYSTEM_IDENTITY, curPrimaryIdentity);
+            bindingMap.put(TARGET_SYSTEM_IDENTITY, curPrimaryIdentity.getLogin());
             if (curPrimaryIdentity == null && pUser.getPrincipalList() == null) {
                 log.debug("Primary identity not found...");
                 auditLog.addAttribute(AuditAttributeName.DESCRIPTION, "Primary identity not found...");
@@ -1005,7 +1024,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
             } else {
                 primaryLogin = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
-                bindingMap.put(TARGET_SYSTEM_IDENTITY,primaryLogin);
+                bindingMap.put(TARGET_SYSTEM_IDENTITY, primaryLogin.getLogin());
                 if (primaryLogin != null) {
                     // Check if a custom password is set
                     if (StringUtils.isNotBlank(primaryLogin.getPassword())) {
@@ -1370,7 +1389,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 }
             }
         }
-        int callPostProcessorResult = callPostProcessor(isAdd ? "ADD" : "MODIFY", finalProvUser, bindingMap,null);
+        int callPostProcessorResult = callPostProcessor(isAdd ? "ADD" : "MODIFY", finalProvUser, bindingMap, null);
         auditLog.addAttribute(AuditAttributeName.DESCRIPTION, "callPostProcessor result="
                 + (callPostProcessorResult == 1 ? "SUCCESS" : "FAIL"));
         if (callPostProcessorResult != ProvisioningConstants.SUCCESS) {
@@ -1512,7 +1531,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         if (syncAllowed(res)) { // check the sync flag
                             log.debug("Sync allowed for managed sys = " + managedSysId);
 
-                            bindingMap.put(TARGET_SYSTEM_IDENTITY, lg);
+                            bindingMap.put(TARGET_SYSTEM_IDENTITY, lg.getLogin());
                             bindingMap.put(TARGET_SYS_MANAGED_SYS_ID, managedSysId);
                             bindingMap.put(TARGET_SYS_RES, res);
                             bindingMap.put("PASSWORD_SYNC", passwordSync);
@@ -1567,7 +1586,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                             if (postProcessScript != null && !postProcessScript.isEmpty()) {
                                 final PostProcessor ppScript = createPostProcessScript(postProcessScript);
                                 if (ppScript != null) {
-                                    executePostProcess(ppScript, bindingMap, null, passwordSync, null, "RESET_PASSWORD",resp.getStatus() == StatusCodeType.SUCCESS);
+                                    executePostProcess(ppScript, bindingMap, null, passwordSync, null, "RESET_PASSWORD", resp.getStatus() == StatusCodeType.SUCCESS);
                                 }
                             }
                         }
@@ -1884,7 +1903,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 }
                             }
 
-                                   // update the password in openiam
+                            // update the password in openiam
                             loginManager.setPassword(lg.getLogin(), lg.getManagedSysId(), encPassword,
                                     passwordSync.isPreventChangeCountIncrement());
 
@@ -2607,7 +2626,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         if (StatusCodeType.SUCCESS.equals(response.getStatus())) {
             for (ExtensibleAttribute attr : response.getAttributes()) {
                 if ("READ_ONLY".equals(attr.getMetadataElementId())) { //Adding readOnly attributes
-                    requestedExtensibleAttributes.add(new ExtensibleAttribute(attr.getName(), (String)null, attr.getMetadataElementId()));
+                    requestedExtensibleAttributes.add(new ExtensibleAttribute(attr.getName(), (String) null, attr.getMetadataElementId()));
 
                 } else if ("HIDDEN".equals(attr.getMetadataElementId())) { //Removing hidden attributes
                     for (ExtensibleAttribute a : requestedExtensibleAttributes) {
@@ -3013,7 +3032,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 .getManagedSys(managedSysId);
 
 
-                        bindingMap.put(TARGET_SYSTEM_IDENTITY, lg);
+                        bindingMap.put(TARGET_SYSTEM_IDENTITY, lg.getLogin());
                         bindingMap.put("sysId", managedSysId);
                         bindingMap.put("operation", operation);
                         bindingMap.put(USER, user);
@@ -3125,7 +3144,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         if (postProcessScript != null && !postProcessScript.isEmpty()) {
                             final PostProcessor ppScript = createPostProcessScript(postProcessScript);
                             if (ppScript != null) {
-                                executePostProcess(ppScript, bindingMap, user, null, null, "DISABLE",StatusCodeType.SUCCESS.equals(resp.getStatus()));
+                                executePostProcess(ppScript, bindingMap, user, null, null, "DISABLE", StatusCodeType.SUCCESS.equals(resp.getStatus()));
                             }
                         }
                     } else {
