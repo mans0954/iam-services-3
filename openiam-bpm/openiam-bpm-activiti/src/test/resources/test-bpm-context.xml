@@ -21,10 +21,8 @@
         <property name="locations">
             <list>
                 <value>classpath:test.activiti.bpm.properties</value>
-				<value>classpath:datasource.properties</value>
-				<value>classpath:iam-plugin.properties</value>
 				<value>file:${confpath}/conf/datasource.properties</value>
-		        <value>file:${confpath}/conf/iam-plugin.properties</value>
+				<value>file:${confpath}/conf/service-urls.properties</value>
             </list>
         </property>
         <property name="ignoreResourceNotFound" value="true"/>

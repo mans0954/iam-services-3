@@ -19,10 +19,10 @@
     <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
         <property name="locations">
             <list>
-                <value>classpath:datasource.properties</value>
                 <value>classpath:securityconf.properties</value>
                 <value>classpath:openiam.esb.properties</value>
                 <value>file:${confpath}/conf/datasource.properties</value>
+                <value>file:${confpath}/conf/service-urls.properties</value>
                 <value>file:${confpath}/conf/securityconf.properties</value>
                 <value>file:${confpath}/conf/openiam.esb.properties</value>
             </list>
