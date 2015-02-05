@@ -338,9 +338,9 @@ public class ExtensibleAttribute extends Attribute implements Serializable {
     public Set<String> getStringValues() {
         Set<String> values = new HashSet<>();
         if (value != null) {
-            values.add(value);
+            values.add(getValue());
         } else if (valueList != null) {
-            values.addAll(valueList);
+            values.addAll(getValueList());
         } else if (attributeContainer != null) {
             for(BaseAttribute baseAttr : attributeContainer.getAttributeList()) {
                 values.add(baseAttr.getValue());

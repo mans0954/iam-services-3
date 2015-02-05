@@ -632,10 +632,10 @@ public class ProvisionDispatcher implements Sweepable {
                         } else if (curAttr == null || !curAttr.containsAnyValue()) {
                             log.debug("- Op = 1 - AttrName = " + nm);
                             attr.setOperation(AttributeOperationEnum.ADD.getValue());
-                        } else if (attr.containsAnyValue() && (curAttr != null && curAttr.containsAnyValue())) {
+                        } else if (!attr.containsAnyValue() && curAttr.containsAnyValue()) {
                             log.debug("- Op = 3 - AttrName = " + nm);
                             attr.setOperation(AttributeOperationEnum.DELETE.getValue());
-                        } else if(attr.containsAnyValue() && (curAttr != null && curAttr.containsAnyValue())) {
+                        } else if(attr.containsAnyValue() && curAttr.containsAnyValue()) {
                             log.debug("- Op = 2 - AttrName = " + nm);
                             attr.setOperation(AttributeOperationEnum.REPLACE.getValue());
                         }
