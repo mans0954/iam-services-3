@@ -98,9 +98,6 @@ public class LookupUserLdapCommand extends AbstractLookupLdapCommand<ExtensibleU
                     return false;
                 }
 
-                log.debug("results=" + results);
-                log.debug(" results has more elements=" + results.hasMoreElements());
-
                 while (results != null && results.hasMoreElements()) {
                     SearchResult sr = (SearchResult) results.next();
                     Attributes attrs = sr.getAttributes();
