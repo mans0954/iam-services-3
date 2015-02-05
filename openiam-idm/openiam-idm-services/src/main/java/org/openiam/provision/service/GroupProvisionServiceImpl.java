@@ -416,6 +416,9 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
 
         } else if (!isExistedInTargetSystem) { // if group doesn't exist in target system
 
+            // updates the attributes with the correct operation codes
+            extObj = ProvisionDispatcher.updateAttributeList(extObj, null);
+
             connectorSuccess = requestAddModify(groupTargetIdentity, requestId, managedSys, matchObj, extObj, true)
                     .getStatus() != StatusCodeType.FAILURE;
 
@@ -796,7 +799,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
                                 // the connectors can detect a delete if an
                                 // attribute is not in the list
 
-                                newAttr = new ExtensibleAttribute(attr.getAttributeName(), (String) output, 1, attr
+                                newAttr = new ExtensibleAttribute(attr.getAttributeName(), (String) output, -1, attr
                                         .getDataType().getValue());
                                 newAttr.setObjectType(objectType);
                                 extensibleObject.getAttributes().add(newAttr);
@@ -809,7 +812,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
                                 // attribute is not in the list
 
                                 newAttr = new ExtensibleAttribute(attr.getAttributeName(),
-                                        ((Integer) output).toString(), 1, attr.getDataType().getValue());
+                                        ((Integer) output).toString(), -1, attr.getDataType().getValue());
                                 newAttr.setObjectType(objectType);
                                 extensibleObject.getAttributes().add(newAttr);
 
@@ -819,28 +822,28 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
                                 String DATE_FORMAT = "MM/dd/yyyy";
                                 SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT);
 
-                                newAttr = new ExtensibleAttribute(attr.getAttributeName(), sdf.format(d), 1, attr
+                                newAttr = new ExtensibleAttribute(attr.getAttributeName(), sdf.format(d), -1, attr
                                         .getDataType().getValue());
                                 newAttr.setObjectType(objectType);
 
                                 extensibleObject.getAttributes().add(newAttr);
                             } else if (output instanceof byte[]) {
                                 extensibleObject.getAttributes().add(
-                                        new ExtensibleAttribute(attr.getAttributeName(), (byte[]) output, 1, attr
+                                        new ExtensibleAttribute(attr.getAttributeName(), (byte[]) output, -1, attr
                                                 .getDataType().getValue()));
 
                             } else if (output instanceof BaseAttributeContainer) {
                                 // process a complex object which can be passed
                                 // to the connector
                                 newAttr = new ExtensibleAttribute(attr.getAttributeName(),
-                                        (BaseAttributeContainer) output, 1, attr.getDataType().getValue());
+                                        (BaseAttributeContainer) output, -1, attr.getDataType().getValue());
                                 newAttr.setObjectType(objectType);
                                 extensibleObject.getAttributes().add(newAttr);
 
                             } else {
                                 // process a list - multi-valued object
 
-                                newAttr = new ExtensibleAttribute(attr.getAttributeName(), (List) output, 1, attr
+                                newAttr = new ExtensibleAttribute(attr.getAttributeName(), (List) output, -1, attr
                                         .getDataType().getValue());
                                 newAttr.setObjectType(objectType);
 

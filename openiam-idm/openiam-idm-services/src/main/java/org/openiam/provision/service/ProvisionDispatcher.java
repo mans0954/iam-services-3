@@ -538,6 +538,10 @@ public class ProvisionDispatcher implements Sweepable {
             }
 
             if (!targetSystemUserExists) {
+
+                // updates the attributes with the correct operation codes
+                extUser = updateAttributeList(extUser, null);
+
                 ObjectResponse resp = provisionService.requestAddModify((ExtensibleUser)extUser, targetSysLogin, true, requestId,
                         idmAuditLog);
                 connectorSuccess = resp.getStatus() != StatusCodeType.FAILURE;
@@ -600,8 +604,6 @@ public class ProvisionDispatcher implements Sweepable {
             return null;
         }
         log.debug("updateAttributeList: Updating operations on attributes being passed to connectors");
-        // log.debug("updateAttributeList: Current attributeMap = " +
-        // currentValueMap);
 
         List<ExtensibleAttribute> extAttrList = extObject.getAttributes();
         if (extAttrList == null) {
@@ -609,9 +611,7 @@ public class ProvisionDispatcher implements Sweepable {
             return null;
         }
 
-        // log.debug("updateAttributeList: New Attribute List = " +
-        // extAttrList);
-        if (extAttrList != null && currentValueMap == null) {
+        if (currentValueMap == null) {
             for (ExtensibleAttribute attr : extAttrList) {
                 if(attr.getOperation() == -1) {
                     attr.setOperation(AttributeOperationEnum.ADD.getValue());
@@ -621,24 +621,20 @@ public class ProvisionDispatcher implements Sweepable {
             for (ExtensibleAttribute attr : extAttrList) {
                 if(attr.getOperation() == -1) {
                     String nm = attr.getName();
-                    if (currentValueMap == null) {
-                        attr.setOperation(AttributeOperationEnum.ADD.getValue());
-                    } else {
-                        ExtensibleAttribute curAttr = currentValueMap.get(nm);
+                    ExtensibleAttribute curAttr = currentValueMap.get(nm);
+                    attr.setOperation(AttributeOperationEnum.NO_CHANGE.getValue());
+                    if (attr.valuesAreEqual(curAttr)) {
+                        log.debug("- Op = 0 - AttrName = " + nm);
                         attr.setOperation(AttributeOperationEnum.NO_CHANGE.getValue());
-                        if (attr.valuesAreEqual(curAttr)) {
-                            log.debug("- Op = 0 - AttrName = " + nm);
-                            attr.setOperation(AttributeOperationEnum.NO_CHANGE.getValue());
-                        } else if (curAttr == null || !curAttr.containsAnyValue()) {
-                            log.debug("- Op = 1 - AttrName = " + nm);
-                            attr.setOperation(AttributeOperationEnum.ADD.getValue());
-                        } else if (!attr.containsAnyValue() && curAttr.containsAnyValue()) {
-                            log.debug("- Op = 3 - AttrName = " + nm);
-                            attr.setOperation(AttributeOperationEnum.DELETE.getValue());
-                        } else if(attr.containsAnyValue() && curAttr.containsAnyValue()) {
-                            log.debug("- Op = 2 - AttrName = " + nm);
-                            attr.setOperation(AttributeOperationEnum.REPLACE.getValue());
-                        }
+                    } else if (curAttr == null || !curAttr.containsAnyValue()) {
+                        log.debug("- Op = 1 - AttrName = " + nm);
+                        attr.setOperation(AttributeOperationEnum.ADD.getValue());
+                    } else if (!attr.containsAnyValue() && curAttr.containsAnyValue()) {
+                        log.debug("- Op = 3 - AttrName = " + nm);
+                        attr.setOperation(AttributeOperationEnum.DELETE.getValue());
+                    } else if(attr.containsAnyValue() && curAttr.containsAnyValue()) {
+                        log.debug("- Op = 2 - AttrName = " + nm);
+                        attr.setOperation(AttributeOperationEnum.REPLACE.getValue());
                     }
                 }
             }
