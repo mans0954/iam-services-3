@@ -21,6 +21,7 @@
 package org.openiam.idm.srvc.auth.spi;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.ResponseStatus;
@@ -31,8 +32,11 @@ import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.Subject;
 import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
 import org.openiam.idm.srvc.auth.ws.LoginResponse;
+import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
+import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
+import org.openiam.idm.srvc.mngsys.service.AttributeMapDAO;
 import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
@@ -67,9 +71,13 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
     private static final Log log = LogFactory
             .getLog(ActiveDirectoryLoginModule.class);
 
-
+    PolicyAttribute baseDNAttribute = null;
     @Autowired
     private ManagedSysDAO managedSysDAO;
+
+    @Autowired
+    private AttributeMapDAO attributeMapDAO;
+
 
     public ActiveDirectoryLoginModule() {
     }
@@ -96,6 +104,10 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
         Policy authPolicy = policyDataService.getPolicy(authPolicyId);
         PolicyAttribute policyAttribute = authPolicy
                 .getAttribute("MANAGED_SYS_ID");
+
+        baseDNAttribute = authPolicy
+                .getAttribute("BASEDN");
+
         if (policyAttribute == null) {
             throw new AuthenticationException(
                     AuthenticationConstants.RESULT_INVALID_CONFIGURATION);
@@ -132,6 +144,10 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
 
         LoginResponse lgResp = loginManager.getLoginByManagedSys(principal, sysConfiguration.getDefaultManagedSysId());
         Login lg = lgResp.getPrincipal();
+        if (lgResp.getStatus().equals(ResponseStatus.FAILURE) || lg == null)
+            throw new AuthenticationException(
+                    AuthenticationConstants.RESULT_INVALID_LOGIN);
+
         UserEntity user = userManager.getUser(lg.getUserId());
 
         if (user != null && user.getStatus() != null) {
@@ -165,9 +181,15 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
         // connect to ad with the admin account
         LdapContext ldapCtx = connect(adminUserName, adminPassword, host, protocol);
         log.info("Connection as admin to ad = " + ldapCtx);
-
         // search for the identity in the base dn
-        NamingEnumeration nameEnum = search(ldapCtx, principal, baseDn);
+        List<AttributeMapEntity> attributeMapEntities = attributeMapDAO.findByManagedSysId(managedSysId);
+        String[] returnArgs = new String[attributeMapEntities.size() + 1];
+        int iter = 0;
+        for (AttributeMapEntity attributeMapEntity : attributeMapEntities) {
+            returnArgs[iter++] = attributeMapEntity.getAttributeName();
+        }
+        returnArgs[iter] = "distinguishedName";
+        NamingEnumeration nameEnum = search(ldapCtx, principal, baseDn, returnArgs);
 
         // if found that get the full name, add the password and try to
         // authenticate.
@@ -197,7 +219,7 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
         // get the authentication lock out policy
         Policy plcy = policyDataService.getPolicy(sysConfiguration
                 .getDefaultAuthPolicyId());
-        String attrValue = getPolicyAttribute(plcy.getPolicyAttributes(), "FAILED_AUTH_COUNT");
+//        String attrValue = getPolicyAttribute(plcy.getPolicyAttributes(), "FAILED_AUTH_COUNT");
 
         String tokenType = getPolicyAttribute(plcy.getPolicyAttributes(), "TOKEN_TYPE");
         String tokenLife = getPolicyAttribute(plcy.getPolicyAttributes(), "TOKEN_LIFE");
@@ -278,12 +300,12 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
         return null;
     }
 
-    private NamingEnumeration search(LdapContext ctx, String searchValue, String baseDn) {
+    private NamingEnumeration search(LdapContext ctx, String searchValue, String baseDn, String returnedAtts[]) {
         SearchControls searchCtls = new SearchControls();
 
         // Specify the attributes to returned
-        String returnedAtts[] = {"distinguishedName", "sAMAccountName", "cn",
-                "sn"};
+//        String returnedAtts[] = {"distinguishedName", "sAMAccountName", "cn",
+//                "sn", "userPrincipalName"};
         searchCtls.setReturningAttributes(returnedAtts);
 
         // Specify the search scope
@@ -292,6 +314,9 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
 
             String searchFilter = "(&(objectClass=person)(sAMAccountName="
                     + searchValue + "))";
+            if (baseDNAttribute != null && StringUtils.isNotBlank(baseDNAttribute.getValue1())) {
+                searchFilter = baseDNAttribute.getValue1().replace("?", searchValue);
+            }
 
             System.out.println("Search Filter=" + searchFilter);
             System.out.println("BaseDN=" + baseDn);
