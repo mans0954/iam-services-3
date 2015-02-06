@@ -21,6 +21,7 @@
 package org.openiam.idm.srvc.auth.spi;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.exception.AuthenticationException;
@@ -83,6 +84,7 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
 
     private String managedSysId;
     private String protocol;
+    PolicyAttribute baseDNAttribute;
 
     LdapContext ctxLdap = null;
     @Value("${org.openiam.idm.system.user.id}")
@@ -140,6 +142,10 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
         Policy authPolicy = policyDataService.getPolicy(authPolicyId);
         PolicyAttribute policyAttribute = authPolicy
                 .getAttribute("MANAGED_SYS_ID");
+
+        baseDNAttribute = authPolicy
+                .getAttribute("BASEDN");
+
         if (policyAttribute == null) {
             throw new AuthenticationException(
                     AuthenticationConstants.RESULT_INVALID_CONFIGURATION);
@@ -309,7 +315,7 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
 
         // Specify the attributes to returned
         String returnedAtts[] = {"distinguishedName", "sAMAccountName", "cn",
-                "sn"};
+                "sn", "userPrincipalName"};
         searchCtls.setReturningAttributes(returnedAtts);
 
         // Specify the search scope
@@ -318,6 +324,9 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
 
             String searchFilter = "(&(objectClass=person)(sAMAccountName="
                     + searchValue + "))";
+            if (baseDNAttribute != null && StringUtils.isNotBlank(baseDNAttribute.getValue1())) {
+                searchFilter = baseDNAttribute.getValue1().replace("?", searchValue);
+            }
 
             System.out.println("Search Filter=" + searchFilter);
             System.out.println("BaseDN=" + this.baseDn);
