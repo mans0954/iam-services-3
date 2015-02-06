@@ -447,7 +447,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             }
 
             // INITIALIZATION DE-PROVISION
-            List<String> resourceList = new ArrayList<String>();
             List<String> userIds = new ArrayList<String>();
             userIds.add(userId);
 
@@ -505,7 +504,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
                         if (status == UserStatusEnum.REMOVE) {
                             // pre-processing
-                            processedResources.add(resourceId);
                             Resource res = resourceDataService.getResource(resourceId, null);
 
                             bindingMap.put("IDENTITY", login);
@@ -557,7 +555,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
                             }
                         } else {
-                            resourceList.add(resourceId);
+                            processedResources.add(resourceId);
                         }
 
                     } else {
@@ -685,7 +683,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                         }
                                         loginManager.deleteLogin(login.getLogin());
                                     } else {
-                                        resourceList.add(resourceId);
+                                        processedResources.add(resourceId);
                                     }
                                 }
 
@@ -731,7 +729,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 pUser.setNotProvisioninResourcesIds(processedResources);
                 modifyUser(pUser);
 
-                return deprovisionSelectedResource.deprovisionSelectedResourcesAsync(userIds, requestorId, resourceList);
+                return deprovisionSelectedResource.deprovisionSelectedResourcesAsync(userIds, requestorId, processedResources);
             }
 
         } finally {
