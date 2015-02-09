@@ -476,7 +476,7 @@ public class Group extends AdminResourceDTO implements Serializable {
 		if (adGroupScopeId == null) {
 			if (other.adGroupScopeId != null)
 				return false;
-		} else if (!adGroupScopeId.equals(other.status))
+		} else if (!adGroupScopeId.equals(other.adGroupScopeId))
 			return false;
 		if (riskId == null) {
 			if (other.riskId != null)

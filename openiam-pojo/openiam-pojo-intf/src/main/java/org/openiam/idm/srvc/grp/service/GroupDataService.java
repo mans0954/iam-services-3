@@ -102,4 +102,6 @@ public interface GroupDataService {
     public Group getGroupDTOLocalize(final String groupId, LanguageEntity language);
     public List<GroupEntity> findGroupsByAttributeValueLocalize(String attrName, String attrValue, LanguageEntity language);
 
+    public int countGroupsForOwner(GroupSearchBean searchBean, String requesterId, String ownerId);
+    public List<GroupEntity> findGroupsForOwner(GroupSearchBean searchBean, String requesterId, String ownerId, int from, int size, LanguageEntity languageEntity);
 }

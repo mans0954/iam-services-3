@@ -5,6 +5,9 @@ import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.authmanager.common.SetStringResponse;
+import org.openiam.authmanager.service.AuthorizationManagerAdminService;
+import org.openiam.authmanager.service.AuthorizationManagerService;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.dozer.converter.GroupDozerConverter;
@@ -37,6 +40,7 @@ import org.openiam.idm.srvc.org.service.OrganizationDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
@@ -116,6 +120,10 @@ public class GroupDataServiceImpl implements GroupDataService {
 
     @Autowired
     protected AuditLogService auditLogService;
+
+    @Autowired
+    @Qualifier("authorizationManagerAdminService")
+    private AuthorizationManagerAdminService authorizationManagerAdminService;
 
 	private static final Log log = LogFactory.getLog(GroupDataServiceImpl.class);
 
@@ -214,6 +222,24 @@ public class GroupDataServiceImpl implements GroupDataService {
     }
 
     @Override
+    public List<GroupEntity> findGroupsForOwner(GroupSearchBean searchBean, String requesterId, String ownerId,
+                                                int from, int size, LanguageEntity languageEntity){
+        List<GroupEntity> finalizedGroups = getGroupListForOwner(searchBean, requesterId, ownerId, getDefaultLanguage());
+
+        if (from > -1 && size > -1) {
+            if (finalizedGroups != null && finalizedGroups.size() >= from) {
+                int to = from + size;
+                if (to > finalizedGroups.size()) {
+                    to = finalizedGroups.size();
+                }
+                finalizedGroups = new ArrayList<GroupEntity>(finalizedGroups.subList(from, to));
+            }
+        }
+        return finalizedGroups;
+    }
+
+
+    @Override
     @Deprecated
     public List<GroupEntity> getGroupsForUser(final String userId, final String requesterId, int from, int size) {
         return getGroupsForUserLocalize(userId, requesterId, from, size, getDefaultLanguage());
@@ -273,6 +299,32 @@ public class GroupDataServiceImpl implements GroupDataService {
             return 0;
         }
         return groupDao.count(searchBean);
+    }
+
+    @Override
+    public int countGroupsForOwner(GroupSearchBean searchBean, String requesterId, String ownerId){
+        List<GroupEntity> finalizedGroups = getGroupListForOwner(searchBean, requesterId, ownerId, getDefaultLanguage());
+        return finalizedGroups.size();
+    }
+
+    private List<GroupEntity> getGroupListForOwner(GroupSearchBean searchBean, String requesterId, String ownerId, LanguageEntity languageEntity){
+        List<GroupEntity> foundGroups = findBeansLocalize(searchBean, requesterId, -1, -1, languageEntity);
+        List<GroupEntity> finalizedGroups = new ArrayList<>();
+
+        Set<String> foundGroupsId = new HashSet<>();
+        if(CollectionUtils.isNotEmpty(foundGroups)){
+            for (GroupEntity grp: foundGroups){
+                foundGroupsId.add(grp.getId());
+            }
+        }
+        HashMap<String, SetStringResponse> ownersMap = authorizationManagerAdminService.getOwnerIdsForGroupSet(foundGroupsId);
+        for (GroupEntity grp: foundGroups){
+            SetStringResponse idsResp = ownersMap.get(grp.getId());
+            if(idsResp!=null && CollectionUtils.isNotEmpty(idsResp.getSetString()) && idsResp.getSetString().contains(ownerId)){
+                finalizedGroups.add(grp);
+            }
+        }
+        return finalizedGroups;
     }
 
     @Override

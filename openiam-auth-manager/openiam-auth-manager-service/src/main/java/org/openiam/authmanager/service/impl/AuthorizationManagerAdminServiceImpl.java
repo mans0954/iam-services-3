@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 
-@Service
+@Service("authorizationManagerAdminService")
 public class AuthorizationManagerAdminServiceImpl implements AuthorizationManagerAdminService {
 
 	@Autowired
@@ -681,6 +681,35 @@ public class AuthorizationManagerAdminServiceImpl implements AuthorizationManage
 		return getOwnerIdsForGroup(groupMap.get(groupId), resourceMap, resource2RoleMap, resource2GroupMap,
 				group2GroupMap, role2RoleMap, group2RoleMap);
 	}
+
+    public HashMap<String,SetStringResponse> getOwnerIdsForGroupSet(Set<String> groupIdSet){
+        HashMap<String, SetStringResponse> ownerIdsMap = new HashMap<String, SetStringResponse>();
+        if(CollectionUtils.isEmpty(groupIdSet)){
+            return ownerIdsMap;
+        }
+
+        final Map<String, AuthorizationResource> resourceMap = getResourceMap();
+        final Map<String, AuthorizationGroup> groupMap = getGroupMap();
+        final Map<String, AuthorizationRole> roleMap = getRoleMap();
+        final Map<String, Set<AuthorizationRole>> resource2RoleMap = getResource2RoleMap(roleMap);
+        final Map<String, Set<AuthorizationGroup>> resource2GroupMap = getResource2GroupMap(groupMap);
+        final Map<String, Set<AuthorizationGroup>> group2GroupMap = getGroup2GroupMap(groupMap, true);
+        final Map<String, Set<AuthorizationRole>> role2RoleMap = getRole2RoleMap(roleMap, true);
+        final Map<String, Set<AuthorizationRole>> group2RoleMap = getGroup2RoleMap(roleMap);
+
+        SetStringResponse setString;
+
+        if(CollectionUtils.isNotEmpty(groupIdSet)) {
+            for (String groupId : groupIdSet) {
+                setString = new SetStringResponse();
+                setString.setSetString(getOwnerIdsForGroup(groupMap.get(groupId), resourceMap,
+                        resource2RoleMap, resource2GroupMap,
+                        group2GroupMap, role2RoleMap, group2RoleMap));
+                ownerIdsMap.put(groupId, setString);
+            }
+        }
+        return ownerIdsMap;
+    }
 
 	private Set<String> getOwnerIdsForGroup(AuthorizationGroup group,
 											   Map<String, AuthorizationResource> resourceMap,

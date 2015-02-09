@@ -25,4 +25,7 @@ public interface AuthorizationManagerAdminWebService {
     @WebMethod
     public Set<String> getOwnerIdsForGroup(@WebParam(name = "groupId", targetNamespace = "") String groupId);
 
+    @WebMethod
+    public HashMap<String, SetStringResponse> getOwnerIdsForGroupSet(@WebParam(name = "groupIdSet", targetNamespace = "") Set<String> groupIdSet);
+
 }
