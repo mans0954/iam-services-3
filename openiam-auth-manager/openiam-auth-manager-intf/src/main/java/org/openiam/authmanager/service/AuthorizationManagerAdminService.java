@@ -18,4 +18,6 @@ public interface AuthorizationManagerAdminService {
     public HashMap<String, SetStringResponse> getOwnerIdsForResourceSet(Set<String> resourceIdSet);
 
 	public Set<String> getOwnerIdsForGroup(String groupId);
+
+    public HashMap<String,SetStringResponse> getOwnerIdsForGroupSet(Set<String> groupIdSet);
 }

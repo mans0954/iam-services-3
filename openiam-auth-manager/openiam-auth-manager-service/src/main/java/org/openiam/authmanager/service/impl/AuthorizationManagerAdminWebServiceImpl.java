@@ -43,4 +43,9 @@ public class AuthorizationManagerAdminWebServiceImpl implements AuthorizationMan
     public Set<String> getOwnerIdsForGroup(String groupId){
         return authManagerAdminService.getOwnerIdsForGroup(groupId);
     }
+    @Override
+    @WebMethod
+    public HashMap<String, SetStringResponse> getOwnerIdsForGroupSet(@WebParam(name = "groupIdSet", targetNamespace = "") Set<String> groupIdSet){
+        return authManagerAdminService.getOwnerIdsForGroupSet(groupIdSet);
+    }
 }

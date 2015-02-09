@@ -435,6 +435,20 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     }
 
     @Override
+    @LocalizedServiceGet
+    public List<Group> findGroupsForOwner(final GroupSearchBean searchBean, final String requesterId, String ownerId, final int from, final int size,
+                                         final Language language) {
+        final List<GroupEntity> groupEntityList = groupManager.findGroupsForOwner(searchBean, requesterId, ownerId, from, size, languageConverter.convertToEntity(language, false));
+        List<Group> groupList = groupDozerConverter.convertToDTOList(groupEntityList, false);
+        return groupList;
+    }
+    @Override
+    public int countGroupsForOwner(final GroupSearchBean searchBean, final String requesterId, String ownerId) {
+        return groupManager.countGroupsForOwner(searchBean, requesterId, ownerId);
+    }
+
+
+    @Override
     @Deprecated
     @Transactional(readOnly=true)
     public List<Group> getGroupsForUser(final String userId, final String requesterId, Boolean deepFlag,
