@@ -26,14 +26,12 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.exception.AuthenticationException;
 import org.openiam.idm.srvc.auth.context.AuthenticationContext;
 import org.openiam.idm.srvc.auth.context.PasswordCredential;
-import org.openiam.idm.srvc.auth.domain.LoginEntity;
-import org.openiam.idm.srvc.auth.dto.SSOToken;
+import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.Subject;
 import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
-import org.openiam.idm.srvc.auth.sso.SSOTokenFactory;
-import org.openiam.idm.srvc.auth.sso.SSOTokenModule;
+import org.openiam.idm.srvc.auth.ws.LoginResponse;
 import org.openiam.idm.srvc.policy.dto.Policy;
-import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -45,7 +43,7 @@ import java.util.*;
  * @author suneet
  *
  */
-@Scope("prototype")
+
 @Component("defaultLoginModule")
 public class DefaultLoginModule extends AbstractLoginModule {
 
@@ -92,6 +90,9 @@ public class DefaultLoginModule extends AbstractLoginModule {
 
         String principal = cred.getPrincipal();
         String password = cred.getPassword();
+        LoginResponse lgResp = loginManager.getLoginByManagedSys(principal, sysConfiguration.getDefaultManagedSysId());
+        Login lg = lgResp.getPrincipal();
+        UserEntity user = userManager.getUser(lg.getUserId());
 
         if (user != null && user.getStatus() != null) {
             log.debug("-User Status=" + user.getStatus());
@@ -157,7 +158,7 @@ public class DefaultLoginModule extends AbstractLoginModule {
                 if (failCount >= authFailCount) {
                     // lock the record and save the record.
                     lg.setIsLocked(1);
-                    loginManager.updateLogin(lg);
+                    loginManager.saveLogin(lg);
 
                     // set the flag on the primary user record
                     user.setSecondaryStatus(UserStatusEnum.LOCKED);
@@ -170,7 +171,7 @@ public class DefaultLoginModule extends AbstractLoginModule {
                             AuthenticationConstants.RESULT_LOGIN_LOCKED);
                 } else {
                     // update the counter save the record
-                    loginManager.updateLogin(lg);
+                    loginManager.saveLogin(lg);
 //                    log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
 //                            "INVALID_PASSWORD", domainId, null, principal,
 //                            null, null, clientIP, nodeIP);
@@ -232,7 +233,7 @@ public class DefaultLoginModule extends AbstractLoginModule {
             lg.setAuthFailCount(0);
             lg.setFirstTimeLogin(0);
             log.debug("-Good Authn: Login object updated.");
-            loginManager.updateLogin(lg);
+            loginManager.saveLogin(lg);
 
             // check the user status
             if (UserStatusEnum.PENDING_INITIAL_LOGIN.equals(user.getStatus()) ||
@@ -261,95 +262,6 @@ public class DefaultLoginModule extends AbstractLoginModule {
         return sub;
     }
 
-    /**
-     * If the password has expired, but its before the grace period then its a good login
-     * If the password has expired and after the grace period, then its an exception.
-     * You should also set the days to expiration
-     * @param lg
-     * @return
-     */
-    private int passwordExpired(LoginEntity lg, Date curDate) {
-        log.debug("passwordExpired Called.");
-        log.debug("- Password Exp =" + lg.getPwdExp());
-        log.debug("- Password Grace Period =" + lg.getGracePeriod());
-
-        if (lg.getGracePeriod() == null) {
-            // set an early date
-            Date gracePeriodDate = getGracePeriodDate(lg, curDate);
-            log.debug("Calculated the gracePeriod Date to be: "
-                    + gracePeriodDate);
-
-            if (gracePeriodDate == null) {
-                lg.setGracePeriod(new Date(0));
-            } else {
-                lg.setGracePeriod(gracePeriodDate);
-            }
-        }
-        if (lg.getPwdExp() != null) {
-            if (curDate.after(lg.getPwdExp())
-                    && curDate.after(lg.getGracePeriod())) {
-                // check for password expiration, but successful login
-                return AuthenticationConstants.RESULT_PASSWORD_EXPIRED;
-            }
-            if ((curDate.after(lg.getPwdExp()) && curDate.before(lg
-                    .getGracePeriod()))) {
-                // check for password expiration, but successful login
-                return AuthenticationConstants.RESULT_SUCCESS_PASSWORD_EXP;
-            }
-        }
-        return AuthenticationConstants.RESULT_SUCCESS_PASSWORD_EXP;
-    }
-
-    private Date getGracePeriodDate(LoginEntity lg, Date curDate) {
-
-        Date pwdExpDate = lg.getPwdExp();
-
-        if (pwdExpDate == null) {
-            return null;
-        }
-
-        Policy plcy = passwordManager.getPasswordPolicy(lg.getLogin(), lg.getManagedSysId());
-        if (plcy == null) {
-            return null;
-        }
-
-        /*
-        String pswdExpValue = getPolicyAttribute(plcy.getPolicyAttributes(),
-                "PWD_EXPIRATION");
-        String changePswdOnReset = getPolicyAttribute(
-                plcy.getPolicyAttributes(), "CHNG_PSWD_ON_RESET");
-		*/
-        String gracePeriod = getPolicyAttribute(plcy.getPolicyAttributes(),
-                "PWD_EXP_GRACE");
-
-        log.debug("Grace period policy value= " + gracePeriod);
-
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(pwdExpDate);
-
-        log.debug("Password Expiration date =" + pwdExpDate);
-
-        if (gracePeriod != null && !gracePeriod.isEmpty()) {
-            cal.add(Calendar.DATE, Integer.parseInt(gracePeriod));
-            log.debug("Calculated grace period date=" + cal.getTime());
-            return cal.getTime();
-        }
-        return null;
-
-    }
-
-    private String getPolicyAttribute(Set<PolicyAttribute> attr, String name) {
-        assert name != null : "Name parameter is null";
-
-        for (PolicyAttribute policyAtr : attr) {
-            if (policyAtr.getName().equalsIgnoreCase(name)) {
-                return policyAtr.getValue1();
-            }
-        }
-        return null;
-
-    }
-
     /*
      * (non-Javadoc)
      * 
@@ -366,22 +278,5 @@ public class DefaultLoginModule extends AbstractLoginModule {
     }
     */
 
-    /* supporting methods */
-
-    private SSOToken token(String userId, Map tokenParam) throws Exception {
-
-        log.debug("Generating Security Token");
-
-        tokenParam.put("USER_ID", userId);
-
-        SSOTokenModule tkModule = SSOTokenFactory
-                .createModule((String) tokenParam.get("TOKEN_TYPE"));
-        tkModule.setCryptor(cryptor);
-        tkModule.setKeyManagementService(keyManagementService);
-        tkModule.setTokenLife(Integer.parseInt((String) tokenParam
-                .get("TOKEN_LIFE")));
-
-        return tkModule.createToken(tokenParam);
-    }
 
 }

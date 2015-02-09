@@ -1,104 +1,74 @@
-/*
- * Copyright 2009, OpenIAM LLC This file is part of the OpenIAM Identity and
- * Access Management Suite
- * 
- * OpenIAM Identity and Access Management Suite is free software: you can
- * redistribute it and/or modify it under the terms of the Lesser GNU General
- * Public License version 3 as published by the Free Software Foundation.
- * 
- * OpenIAM is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- * A PARTICULAR PURPOSE. See the Lesser GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * OpenIAM. If not, see <http://www.gnu.org/licenses/>. *
- */
-
-/**
- *
- */
 package org.openiam.idm.srvc.auth.spi;
 
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.mule.api.MuleContext;
+import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.connector.type.ConnectorDataException;
+import org.openiam.connector.type.constant.StatusCodeType;
+import org.openiam.connector.type.request.LookupRequest;
+import org.openiam.connector.type.request.PasswordRequest;
+import org.openiam.connector.type.response.ResponseType;
+import org.openiam.connector.type.response.SearchResponse;
 import org.openiam.exception.AuthenticationException;
-import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.srvc.auth.context.AuthenticationContext;
 import org.openiam.idm.srvc.auth.context.PasswordCredential;
-import org.openiam.idm.srvc.auth.domain.LoginEntity;
+import org.openiam.idm.srvc.auth.dto.AuthenticationRequest;
 import org.openiam.idm.srvc.auth.dto.Login;
-import org.openiam.idm.srvc.auth.dto.SSOToken;
 import org.openiam.idm.srvc.auth.dto.Subject;
 import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
-import org.openiam.idm.srvc.auth.sso.SSOTokenFactory;
-import org.openiam.idm.srvc.auth.sso.SSOTokenModule;
 import org.openiam.idm.srvc.auth.ws.LoginResponse;
-import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
-import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
-import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
+import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
-import org.openiam.idm.srvc.res.dto.Resource;
-import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
+import org.openiam.provision.service.ConnectorAdapter;
+import org.openiam.provision.service.ProvisionSelectedResourceHelper;
+import org.openiam.provision.type.ExtensibleUser;
+import org.openiam.util.MuleContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import javax.naming.Context;
-import javax.naming.NamingEnumeration;
-import javax.naming.NamingException;
-import javax.naming.directory.Attributes;
-import javax.naming.directory.SearchControls;
-import javax.naming.directory.SearchResult;
-import javax.naming.ldap.InitialLdapContext;
-import javax.naming.ldap.LdapContext;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * LDAPLoginModule provides basic password based authentication using an LDAP directory.
- *
- * @author suneet
+ * Created by Vitaly on 2/9/2015.
  */
-@Component("ldapLoginModule")
-public class LDAPLoginModule extends AbstractLoginModule {
+@Component("mngSysLoginModule")
+public class MngSysLoginModule extends AbstractLoginModule {
 
     @Autowired
-    private ManagedSysDAO managedSysDAO;
+    private ProvisionSelectedResourceHelper provisionSelectedResourceHelper;
 
-    private static final Log log = LogFactory.getLog(LDAPLoginModule.class);
+    @Autowired
+    protected ConnectorAdapter connectorAdapter;
 
-    public LDAPLoginModule() {
-    }
+    @Autowired
+    @Qualifier("managedSysService")
+    protected ManagedSystemWebService managedSystemWebService;
 
-    /*
-    public void globalLogout(String securityDomain, String principal) {
-        // TODO Auto-generated method stub
+    private static final Log log = LogFactory.getLog(MngSysLoginModule.class);
 
-    }
-    */
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.auth.spi.LoginModule#login(org.openiam.idm.srvc.
-     * auth.context.AuthenticationContext)
-     */
     @Override
     public Subject login(AuthenticationContext authContext) throws Exception {
         Subject sub = new Subject();
-        log.debug("login() in LDAPLoginModule called");
+        log.debug("login() in MngSysLoginModule called");
         String clientIP = authContext.getClientIP();
         String nodeIP = authContext.getNodeIP();
 
-        String authPolicyId = sysConfiguration.getDefaultAuthPolicyId();
+        String authPolicyId = (String)authContext.getAuthParam().get(AuthenticationRequest.AUTH_POLICY_ID);
+        if(StringUtils.isEmpty(authPolicyId)) {
+            authPolicyId = sysConfiguration.getDefaultAuthPolicyId();
+        }
         Policy authPolicy = policyDataService.getPolicy(authPolicyId);
         PolicyAttribute policyAttribute = authPolicy
                 .getAttribute("MANAGED_SYS_ID");
@@ -106,33 +76,12 @@ public class LDAPLoginModule extends AbstractLoginModule {
             throw new AuthenticationException(
                     AuthenticationConstants.RESULT_INVALID_CONFIGURATION);
         }
-        ManagedSysEntity mse = managedSysDAO.findById(policyAttribute.getValue1());
-        if (mse == null)
+        ManagedSysDto mSys = managedSystemWebService.getManagedSys(policyAttribute.getValue1());
+        if (mSys == null) {
             throw new AuthenticationException(
                     AuthenticationConstants.RESULT_INVALID_CONFIGURATION);
-
-        String host = mse.getHostUrl();
-        String adminUserName = mse.getUserId();
-        String adminPassword = this.decryptPassword(systemUserId, mse.getPswd());
-        String protocol = mse.getCommProtocol();
-        String managedSysId = mse.getId();
-        String baseDn = null;
-        String searchFilter = null;
-        String pkAttribute = null;
-        String dn = null;
-        Set<ManagedSystemObjectMatchEntity> managedSystemObjectMatchEntities = mse.getMngSysObjectMatchs();
-        if (CollectionUtils.isNotEmpty(managedSystemObjectMatchEntities)) {
-            for (ManagedSystemObjectMatchEntity objectMatchEntity : managedSystemObjectMatchEntities) {
-                if ("USER".equals(objectMatchEntity.getObjectType())) {
-                    baseDn = objectMatchEntity.getBaseDn();
-                    searchFilter = objectMatchEntity.getSearchFilter();
-                    pkAttribute = objectMatchEntity.getKeyField();
-                    dn = objectMatchEntity.getKeyField();
-                    break;
-                }
-            }
         }
-
+        String managedSysId = mSys.getId();
         // current date
         Date curDate = new Date(System.currentTimeMillis());
         PasswordCredential cred = (PasswordCredential) authContext
@@ -140,42 +89,35 @@ public class LDAPLoginModule extends AbstractLoginModule {
 
         String principal = cred.getPrincipal();
         String password = cred.getPassword();
-        String distinguishedName = null;
 
-        // search for the login value passed in
-        // if found - get the dn
-        // authenticate with the dn
-        // if ok - then success
-        // // get the user status in idm and check that
+        //lookup by "adminPassword"
+        MuleContext muleContext = MuleContextProvider.getCtx();
+        LookupRequest<ExtensibleUser> reqType = new LookupRequest<ExtensibleUser>();
+        final String requestId = "R" + UUIDGen.getUUID();
+        reqType.setRequestID(requestId);
+        reqType.setSearchValue(principal);
+        reqType.setTargetID(managedSysId);
+        reqType.setHostLoginId(mSys.getUserId());
+        reqType.setHostLoginPassword(mSys.getDecryptPassword());
+        reqType.setHostUrl(mSys.getHostUrl());
 
-        LdapContext ldapCtx = connect(adminUserName, adminPassword, host, protocol);
-        NamingEnumeration ne = search(ldapCtx, principal,dn,searchFilter,baseDn);
-        if (ne == null) {
-//            log("AUTHENTICATION", "AUTHENTICATION", "FAIL", "INVALID LOGIN",
-//                    domainId, null, principal, null, null, clientIP, nodeIP);
-            throw new AuthenticationException(
-                    AuthenticationConstants.RESULT_INVALID_LOGIN);
+        ManagedSystemObjectMatch matchObj = null;
+        ManagedSystemObjectMatch[] objArr = managedSystemWebService.managedSysObjectParam(managedSysId, ManagedSystemObjectMatch.USER);
+
+        if (objArr != null && objArr.length > 0) {
+            matchObj = objArr[0];
         }
-        try {
-            while (ne.hasMore()) {
-                SearchResult sr = (SearchResult) ne.next();
-
-                distinguishedName = sr.getNameInNamespace();
-
-            }
-
-        } catch (NamingException e) {
-            log.error(e);
-//            log("AUTHENTICATION", "AUTHENTICATION", "FAIL", "INVALID LOGIN",
-//                    domainId, null, principal, null, null, clientIP, nodeIP);
-            throw new AuthenticationException(
-                    AuthenticationConstants.RESULT_INVALID_LOGIN);
-
+        if (matchObj != null && StringUtils.isNotEmpty(matchObj.getSearchBaseDn())) {
+            reqType.setBaseDN(matchObj.getSearchBaseDn());
         }
+        ExtensibleUser extUser = provisionSelectedResourceHelper.buildEmptyAttributesExtensibleUser(managedSysId);
+        reqType.setExtensibleObject(extUser);
+        reqType.setScriptHandler(mSys.getLookupHandler());
+        SearchResponse lookupSearchResponse = connectorAdapter.lookupRequest(mSys, reqType, muleContext);
 
-        log.debug("Distinguished name=" + distinguishedName);
+       log.debug("Lookup for user identity =" + principal + " in target system = " +mSys.getName() + ". Result = "+lookupSearchResponse.getStatus()+", "+lookupSearchResponse.getErrorMsgAsStr());
 
-        if (distinguishedName == null || distinguishedName.length() == 0) {
+        if (lookupSearchResponse.getStatus() == StatusCodeType.FAILURE) {
 //            log("AUTHENTICATION", "AUTHENTICATION", "FAIL", "INVALID LOGIN",
 //                    domainId, null, principal, null, null, clientIP, nodeIP);
             throw new AuthenticationException(
@@ -183,9 +125,9 @@ public class LDAPLoginModule extends AbstractLoginModule {
         }
 
         log.debug("Authentication policyid="
-                + sysConfiguration.getDefaultAuthPolicyId());
+                + authPolicyId);
         // get the authentication lock out policy
-        Policy plcy = policyDataService.getPolicy(sysConfiguration.getDefaultAuthPolicyId());
+        Policy plcy = policyDataService.getPolicy(authPolicyId);
         String attrValue = getPolicyAttribute(plcy.getPolicyAttributes(), "FAILED_AUTH_COUNT");
 
         String tokenType = getPolicyAttribute(plcy.getPolicyAttributes(), "TOKEN_TYPE");
@@ -198,24 +140,39 @@ public class LDAPLoginModule extends AbstractLoginModule {
         tokenParam.put("TOKEN_ISSUER", tokenIssuer);
         tokenParam.put("PRINCIPAL", principal);
 
-       LoginResponse loginResponce = loginManager.getLoginByManagedSys(distinguishedName, managedSysId);
+        LoginResponse lgResp = loginManager.getLoginByManagedSys(principal, managedSysId);
 
-        if (loginResponce.getStatus() == ResponseStatus.FAILURE) {
+        if (lgResp.getStatus() == ResponseStatus.FAILURE) {
 //            log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
 //                    "MATCHING IDENTITY NOT FOUND", domainId, null, principal,
 //                    null, null, clientIP, nodeIP);
             throw new AuthenticationException(
                     AuthenticationConstants.RESULT_INVALID_LOGIN);
         }
-        Login lg = loginResponce.getPrincipal();
+
+        Login lg = lgResp.getPrincipal();
         UserEntity user = this.userManager.getUser(lg.getUserId());
 
-        // try to login to AD with this user
-        LdapContext tempCtx = connect(distinguishedName, password, host, protocol);
-        if (tempCtx == null) {
+        // try to login to ManagedSystem with this user
+
+        PasswordRequest passwRequest = new PasswordRequest(password, null, principal);
+        passwRequest.setRequestID(requestId);
+        passwRequest.setTargetID(managedSysId);
+        passwRequest.setHostLoginId(mSys.getUserId());
+        passwRequest.setHostLoginPassword(mSys.getDecryptPassword());
+        passwRequest.setHostUrl(mSys.getHostUrl());
+        passwRequest.setBaseDN((matchObj != null) ? matchObj.getBaseDn() : null);
+        passwRequest.setOperation("TEST_PASSWORD");
+        passwRequest.setScriptHandler(mSys.getPasswordHandler());
+        passwRequest.setExtensibleObject(new ExtensibleUser());
+        ResponseType responseType = connectorAdapter.validatePassword(mSys, passwRequest, muleContext);
+
+        if (responseType.getStatus() == StatusCodeType.FAILURE) {
 //            log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
 //                    "RESULT_INVALID_PASSWORD", domainId, null, principal, null,
 //                    null, clientIP, nodeIP);
+            log.warn("Authentication failed for "
+                    + mSys.getName() + " code= " + AuthenticationConstants.RESULT_INVALID_PASSWORD);
             // update the auth fail count
             if (attrValue != null && attrValue.length() > 0) {
 
@@ -260,6 +217,7 @@ public class LDAPLoginModule extends AbstractLoginModule {
             }
 
         }
+
 
         if (user.getStatus() != null) {
             if (user.getStatus().equals(UserStatusEnum.PENDING_START_DATE)) {
@@ -333,7 +291,7 @@ public class LDAPLoginModule extends AbstractLoginModule {
 
         // Successful login
         sub.setUserId(lg.getUserId());
-        sub.setPrincipal(distinguishedName);
+        sub.setPrincipal(principal);
         sub.setSsoToken(token(lg.getUserId(), tokenParam));
         setResultCode(lg, sub, curDate, null);
 
@@ -345,98 +303,4 @@ public class LDAPLoginModule extends AbstractLoginModule {
 
         return sub;
     }
-
-    public LdapContext connect(String userName, String password, String host, String protocol) {
-
-        // LdapContext ctxLdap = null;
-        Hashtable<String, String> envDC = new Hashtable();
-
-        System.setProperty("javax.net.ssl.trustStore", keystore);
-
-        log.info("Connecting to ldap using principal=" + userName);
-
-        envDC.put(Context.PROVIDER_URL, host);
-        envDC.put(Context.INITIAL_CONTEXT_FACTORY,
-                "com.sun.jndi.ldap.LdapCtxFactory");
-        envDC.put(Context.SECURITY_AUTHENTICATION, "simple"); // simple
-        envDC.put(Context.SECURITY_PRINCIPAL, userName); // "administrator@diamelle.local"
-        envDC.put(Context.SECURITY_CREDENTIALS, password);
-        if (protocol != null && protocol.equalsIgnoreCase("SSL")) {
-            envDC.put(Context.SECURITY_PROTOCOL, protocol);
-        }
-
-        try {
-            return (new InitialLdapContext(envDC, null));
-        } catch (NamingException ne) {
-            log.info(ne.getMessage());
-            return null;
-
-        }
-    }
-
-    private NamingEnumeration search(LdapContext ctx, String searchValue, String dn, String searchFilter, String baseDn) {
-        SearchControls searchCtls = new SearchControls();
-
-        // Specify the attributes to returned
-        String returnedAtts[] = {dn};
-        searchCtls.setReturningAttributes(returnedAtts);
-
-        // Specify the search scope
-        try {
-            searchCtls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-
-            String searchFilter_ = searchFilter.replace("?", searchValue);
-
-
-            log.debug("Search Filter=" + searchFilter);
-            log.debug("BaseDN=" + baseDn);
-
-            return ctx.search(baseDn, searchFilter_, searchCtls);
-        } catch (NamingException ne) {
-            ne.printStackTrace();
-        }
-        return null;
-
-    }
-
-    private String getDN(NamingEnumeration nameEnum) {
-        String uid = null;
-
-        try {
-            while (nameEnum.hasMoreElements()) {
-                SearchResult sr = (SearchResult) nameEnum.next();
-                Attributes attrs = sr.getAttributes();
-                if (attrs != null) {
-                    uid = (String) attrs.get("uid").get();
-                    log.info("getDN: uid=" + uid);
-                    if (uid != null) {
-                        return uid;
-                    }
-                }
-            }
-        } catch (NamingException ne) {
-            ne.printStackTrace();
-        }
-        return null;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.openiam.idm.srvc.auth.spi.LoginModule#logout(java.lang.String,
-     * java.lang.String, java.lang.String)
-     */
-    /*
-    public void logout(String securityDomain, String principal,
-            String managedSysId) {
-
-        log("AUTHENTICATION", "LOGOUT", "SUCCESS", null, securityDomain, null,
-                principal, null, null, null, null);
-
-    }
-    */
-
-    /* supporting methods */
-
-
 }

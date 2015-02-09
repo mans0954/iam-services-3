@@ -564,6 +564,60 @@ public class ConnectorAdapter {
     public ResponseType testConnection(ManagedSysDto managedSys,
                                        MuleContext muleContext) {
 
+        return testConnection(managedSys.getUserId(), managedSys.getDecryptPassword(), managedSys, muleContext);
+    }
+
+    public ResponseType validatePassword(
+            ManagedSysDto managedSys,
+            PasswordRequest request,
+            MuleContext muleContext) {
+        ResponseType resp = new ResponseType();
+        resp.setStatus(StatusCodeType.FAILURE);
+
+        if (managedSys == null) {
+            resp.setStatus(StatusCodeType.FAILURE);
+            resp.setError(ErrorCode.INVALID_MANAGED_SYS_ID);
+            return resp;
+        }
+        log.debug("ConnectorAdapter:testCredentials called. Managed sys ="
+                + managedSys.getId());
+
+        try {
+            ProvisionConnectorDto connector = connectorService
+                    .getProvisionConnector(managedSys.getConnectorId());
+            log.debug("Connector found for " + connector.getConnectorId());
+            if (connector != null
+                    && (connector.getServiceUrl() != null && connector
+                    .getServiceUrl().length() > 0)) {
+
+                MuleMessage msg = getService(connector, request,
+                        connector.getServiceUrl(), "validatePassword", muleContext);
+
+                if (msg != null) {
+                    log.debug("***Test Credentials Payload=" + msg.getPayload());
+                    if (msg.getPayload() != null
+                            && msg.getPayload() instanceof ResponseType) {
+                        return (ResponseType) msg.getPayload();
+                    }
+                }
+
+            }
+            return resp;
+        } catch (Exception e) {
+            log.error(e);
+
+            resp.setError(ErrorCode.OTHER_ERROR);
+            resp.addErrorMessage(e.toString());
+            return resp;
+
+        }
+    }
+
+    public ResponseType testConnection(String login,
+                                       String simplePassword,
+                                       ManagedSysDto managedSys,
+                                       MuleContext muleContext) {
+
         ResponseType type = new ResponseType();
         type.setStatus(StatusCodeType.FAILURE);
 
@@ -588,8 +642,9 @@ public class ConnectorAdapter {
                 rt.setScriptHandler(managedSys.getTestConnectionHandler());
                 rt.setHostPort((managedSys.getPort() != null) ? managedSys.getPort().toString() : null);
                 rt.setHostUrl(managedSys.getHostUrl());
-                rt.setHostLoginId(managedSys.getUserId());
-                rt.setHostLoginPassword(managedSys.getDecryptPassword());
+                rt.setHostLoginId(login);
+                rt.setHostLoginPassword(simplePassword);
+
                 MuleMessage msg = getService(connector, rt,
                         connector.getServiceUrl(), "testConnection",
                         muleContext);
@@ -669,6 +724,12 @@ public class ConnectorAdapter {
         if (operation.equalsIgnoreCase("resetPassword")) {
 
             msg = client.send("vm://dispatchConnectorMessageResetPassword",
+                    (PasswordRequest) reqType, msgPropMap);
+
+        }
+        if (operation.equalsIgnoreCase("validatePassword")) {
+
+            msg = client.send("vm://dispatchConnectorMessageValidatePassword",
                     (PasswordRequest) reqType, msgPropMap);
 
         }
