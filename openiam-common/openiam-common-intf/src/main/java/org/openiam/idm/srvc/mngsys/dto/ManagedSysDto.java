@@ -442,7 +442,7 @@ public class ManagedSysDto implements java.io.Serializable {
         return "ManagedSysDto{" + "managedSysId='" + id + '\'' + ", name='" + name + '\'' + ", description='"
                 + description + '\'' + ", status='" + status + '\'' + ", connectorId='" + connectorId + '\''
                 + ", hostUrl='" + hostUrl + '\'' + ", port=" + port + ", commProtocol='" + commProtocol + '\''
-                + ", userId='" + userId + '\'' + ", pswd='" + pswd + '\'' + ", decryptPassword='" + decryptPassword
+                + ", userId='" + userId + '\'' + ", pswd='" + "******" + '\'' + ", decryptPassword='" + "******"
                 + '\'' + ", startDate=" + startDate + ", endDate=" + endDate + '\'' + ", searchScope='" + searchScope + '\'' + ", resourceId='" + resourceId
                 + '\'' + ", primaryRepository=" + primaryRepository + ", secondaryRepositoryId='"
                 + secondaryRepositoryId + '\'' + ", updateSecondary=" + updateSecondary + ", driverUrl='" + driverUrl
