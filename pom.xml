@@ -1034,6 +1034,12 @@
 				<enabled>false</enabled>
 			</releases>
 		</repository>
+		<!-- To get what's in iam-services/lib -->
+		<repository>
+	        <id>openiam</id>
+	        <name>openiam-releases</name>
+	        <url>http://openiam.artifactoryonline.com/openiam/ext-releases-local</url>
+	    </repository>
 		<repository>
 			<id>jboss</id>
 			<name>JBoss Repository</name>
