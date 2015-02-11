@@ -1,9 +1,8 @@
 machine:
 	java:
-    	version: oraclejdk8
-
+	version: oraclejdk8
 dependencies:
 	override:
-    	- mvn install
-    post:
-    	- mvn deploy
+	- mvn install
+	post:
+	- mvn deploy
