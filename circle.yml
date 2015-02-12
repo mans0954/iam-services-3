@@ -4,6 +4,6 @@ machine:
    
 dependencies:
   override:
-    - mvn install
+    - mvn install -s conf/settings.xml
   post:
-    - mvn deploy
+    - mvn deploy -s conf/settings.xml
