@@ -884,7 +884,7 @@
                             <publisher>
                                 <contextUrl>{{ARTIFACTORY_CONTEXT_URL|"https://openiam.artifactoryonline.com/openiam"}}</contextUrl>
                                 <username>sysadmin</username>
-                                <password>AP3iX29QzTmLErjmL5Y48je5riU</password>
+                                <password>${env.ARTIFACTORY_PASSWORD}</password>
                                 <!-- <excludePatterns>*-tests.jar</excludePatterns> -->
                                 <repoKey>libs-releases-local</repoKey>
                                 <snapshotRepoKey>libs-snapshot-local</snapshotRepoKey>
