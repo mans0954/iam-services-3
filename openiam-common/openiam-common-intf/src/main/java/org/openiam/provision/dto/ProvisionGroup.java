@@ -92,6 +92,7 @@ public class ProvisionGroup extends org.openiam.idm.srvc.grp.dto.Group {
         this.createdBy = group.getCreatedBy();
 
         this.organizations = group.getOrganizations();
+        this.owner = group.getOwner();
 
         this.description = group.getDescription();
 
@@ -118,6 +119,7 @@ public class ProvisionGroup extends org.openiam.idm.srvc.grp.dto.Group {
         this.riskName = group.getRiskName();
         this.maxUserNumber = group.getMaxUserNumber();
         this.membershipDuration = group.getMembershipDuration();
+
 
         this.status = group.getStatus();
         this.lastUpdate = group.getLastUpdate();
