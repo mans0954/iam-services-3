@@ -289,6 +289,9 @@ public class InternationalizationProvider {
 			Collection<LanguageMappingEntity> toSave = new LinkedList<>();
 			//final Object fieldObject = ReflectionUtils.getField(field, object);
 			final Object fieldObject = getMethodCallResult(field, object);
+			if(fieldObject == null) {
+				return;
+			}
 			final Map<String, LanguageMappingEntity> transientMap = (Map<String, LanguageMappingEntity>)fieldObject;
 			StringBuilder sb = new StringBuilder();
 			sb.append("ThreadId=").append(Thread.currentThread().getId());
