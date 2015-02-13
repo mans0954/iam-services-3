@@ -86,20 +86,20 @@ public class Group extends AdminResourceDTO implements Serializable {
     //@XmlJavaTypeAdapter(GroupAttributeMapAdapter.class)
     protected Set<GroupAttribute> attributes = new HashSet<GroupAttribute>();
 
-	private String classificationId;
-	private String classificationName;
+    protected String classificationId;
+    protected String classificationName;
 
-	private String adGroupTypeId;
-	private String adGroupTypeName;
+    protected String adGroupTypeId;
+    protected String adGroupTypeName;
 
-	private String adGroupScopeId;
-	private String adGroupScopeName;
+    protected String adGroupScopeId;
+    protected String adGroupScopeName;
 
-	private String riskId;
-	private String riskName;
+    protected String riskId;
+    protected String riskName;
 
-	private Integer maxUserNumber;
-	private Long membershipDuration;
+    protected Integer maxUserNumber;
+    protected Long membershipDuration;
 
 	protected Set<Organization> organizations = new HashSet<Organization>(0);
 

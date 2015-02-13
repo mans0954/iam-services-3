@@ -108,6 +108,17 @@ public class ProvisionGroup extends org.openiam.idm.srvc.grp.dto.Group {
         this.createdBy = group.getCreatedBy();
         this.description = group.getDescription();
 
+        this.classificationId = group.getClassificationId();
+        this.classificationName = group.getClassificationName();
+        this.adGroupTypeId = group.getAdGroupTypeId();
+        this.adGroupTypeName = group.getAdGroupTypeName();
+        this.adGroupScopeId = group.getAdGroupScopeId();
+        this.adGroupScopeName = group.getAdGroupScopeName();
+        this.riskId = group.getRiskId();
+        this.riskName = group.getRiskName();
+        this.maxUserNumber = group.getMaxUserNumber();
+        this.membershipDuration = group.getMembershipDuration();
+
         this.status = group.getStatus();
         this.lastUpdate = group.getLastUpdate();
         this.lastUpdatedBy = group.getLastUpdatedBy();
