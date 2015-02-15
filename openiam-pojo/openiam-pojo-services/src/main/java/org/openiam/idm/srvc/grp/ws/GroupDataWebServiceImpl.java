@@ -408,10 +408,15 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     }
 
     @Override
-    @Deprecated
+    /**
+     * Without @Localization for internal use only
+     */
+    @Transactional
     public List<Group> findBeans(final GroupSearchBean searchBean, final String requesterId, final int from,
             final int size) {
-        return findBeansLocalize(searchBean, requesterId, from, size, getDefaultLanguage());
+        final List<GroupEntity> groupEntityList = groupManager.findBeans(searchBean, requesterId, from, size);
+        List<Group> groupList = groupDozerConverter.convertToDTOList(groupEntityList, false);
+        return groupList;
     }
 
     @Override

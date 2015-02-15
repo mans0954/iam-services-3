@@ -204,14 +204,14 @@ public class GroupDataServiceImpl implements GroupDataService {
 
 
     @Override
-    @Deprecated
+    /**
+     * Without @localization for internal use only
+     */
     public List<GroupEntity> findBeans(final GroupSearchBean searchBean, final  String requesterId, int from, int size) {
-        return findBeansLocalize(searchBean, requesterId,  from,  size,  getDefaultLanguage());
+        return getGroupEntities(searchBean, requesterId, from, size);
     }
 
-    @Override
-    @LocalizedServiceGet
-    public List<GroupEntity> findBeansLocalize(final GroupSearchBean searchBean, final  String requesterId, int from, int size, final LanguageEntity language) {
+    private List<GroupEntity> getGroupEntities(GroupSearchBean searchBean, String requesterId, int from, int size) {
         Set<String> filter = getDelegationFilter(requesterId);
         if(StringUtils.isBlank(searchBean.getKey()))
             searchBean.setKeys(filter);
@@ -219,6 +219,12 @@ public class GroupDataServiceImpl implements GroupDataService {
             return new ArrayList<GroupEntity>(0);
         }
         return groupDao.getByExample(searchBean, from, size);
+    }
+
+    @Override
+    @LocalizedServiceGet
+    public List<GroupEntity> findBeansLocalize(final GroupSearchBean searchBean, final  String requesterId, int from, int size, final LanguageEntity language) {
+        return getGroupEntities(searchBean, requesterId, from, size);
     }
 
     @Override
