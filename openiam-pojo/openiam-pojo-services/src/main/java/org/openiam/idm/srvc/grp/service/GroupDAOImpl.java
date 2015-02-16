@@ -169,6 +169,33 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
 		return criteria;
 	}
 
+
+    @Override
+    public List<GroupEntity> getByExample(final SearchBean searchBean, int from, int size) {
+        final Criteria criteria = getExampleCriteria(searchBean);
+        if (from > -1) {
+            criteria.setFirstResult(from);
+        }
+
+        if (size > -1) {
+            criteria.setMaxResults(size);
+        }
+
+        if (searchBean instanceof AbstractSearchBean) {
+            AbstractSearchBean sb = (AbstractSearchBean)searchBean;
+//            if (StringUtils.isNotBlank(sb.getSortBy())) {
+//                criteria.addOrder(sb.getOrderBy().equals(OrderConstants.DESC) ?
+//                        Order.desc(sb.getSortBy()) :
+//                        Order.asc(sb.getSortBy()));
+//            }
+
+            if(CollectionUtils.isNotEmpty(sb.getSortBy())){
+                this.setOderByCriteria(criteria, sb);
+            }
+        }
+        return (List<GroupEntity>) criteria.list();
+    }
+
     protected void setOderByCriteria(Criteria criteria, AbstractSearchBean sb) {
         List<SortParam> sortParamList = sb.getSortBy();
         for (SortParam sort: sortParamList){

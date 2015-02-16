@@ -138,6 +138,7 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
     }
 
     @Override
+    @LocalizedDatabaseGet
     public List<T> getByExample(final SearchBean searchBean, int from, int size) {
     	 final Criteria criteria = getExampleCriteria(searchBean);
          if (from > -1) {
