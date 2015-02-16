@@ -14,6 +14,7 @@ import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
+import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.searchbean.converter.GroupSearchBeanConverter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,6 +63,10 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
             if(CollectionUtils.isNotEmpty(groupSearchBean.getRoleIdSet())){
                 criteria.createAlias("roles", "r");
                 criteria.add(Restrictions.in("r.id", groupSearchBean.getRoleIdSet()));
+            }
+            if(CollectionUtils.isNotEmpty(groupSearchBean.getOrganizationIdSet())){
+                criteria.createAlias("organizationSet", "org");
+                criteria.add(Restrictions.in("org.id", groupSearchBean.getOrganizationIdSet()));
             }
             if(CollectionUtils.isNotEmpty(groupSearchBean.getResourceIdSet())){
                 criteria.createAlias("resources", "res");
@@ -133,10 +138,21 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
 				criteria.add(Restrictions.eq("managedSystem.id", group.getManagedSystem().getId()));
 			}
 			
-			if(group.getCompany() != null && StringUtils.isNotBlank(group.getCompany().getId())) {
-				criteria.add(Restrictions.eq("company.id", group.getCompany().getId()));
-			}
-            
+//			if(group.getCompany() != null && StringUtils.isNotBlank(group.getCompany().getId())) {
+//				criteria.add(Restrictions.eq("company.id", group.getCompany().getId()));
+//			}
+
+            if(CollectionUtils.isNotEmpty(group.getOrganizationSet())) {
+                final Set<String> orgIds = new HashSet<String>();
+                for(final OrganizationEntity org : group.getOrganizationSet()) {
+                    if(org != null && StringUtils.isNotBlank(org.getId())) {
+                        orgIds.add(org.getId());
+                    }
+                }
+                criteria.createAlias("organizationSet", "orgs");
+                criteria.add(Restrictions.in("orgs.id", orgIds));
+            }
+
             if(CollectionUtils.isNotEmpty(group.getResources())) {
             	final Set<String> resourceIds = new HashSet<String>();
             	for(final ResourceEntity resourceEntity : group.getResources()) {

@@ -126,7 +126,7 @@
 	</model>
 
 
-	<model name="fileServiceModel">
+    <model name="fileServiceModel">
 		<service name="fileService">
 			<inbound>
 				<inbound-endpoint address="${webservice.path}FileWebService"

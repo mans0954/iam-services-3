@@ -6,13 +6,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
 import org.hibernate.Query;
-import org.hibernate.Session;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.springframework.stereotype.Repository;
 
-import java.util.*;
 
 import javax.annotation.PostConstruct;
 

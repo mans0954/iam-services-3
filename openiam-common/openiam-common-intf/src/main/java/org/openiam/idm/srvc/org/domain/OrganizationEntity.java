@@ -24,6 +24,8 @@ import javax.validation.constraints.Size;
 import org.openiam.base.domain.AbstractMetdataTypeEntity;
 import org.openiam.base.domain.KeyEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.grp.domain.GroupEntity;
+import org.openiam.idm.srvc.loc.domain.LocationEntity;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.hibernate.annotations.Cache;
@@ -130,6 +132,18 @@ public class OrganizationEntity extends AbstractMetdataTypeEntity {
 	@Column(name = "IS_SELECTABLE")
     @Type(type = "yes_no")
 	private boolean selectable = true;
+
+    @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "organization", fetch = FetchType.LAZY)
+    @OrderBy("name asc")
+    @Fetch(FetchMode.SUBSELECT)
+    @Internationalized
+    private Set<LocationEntity> locations;
+
+	@ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
+	@JoinTable(name = "GROUP_ORGANIZATION", joinColumns = { @JoinColumn(name = "COMPANY_ID") }, inverseJoinColumns = { @JoinColumn(name = "GRP_ID") })
+	@Fetch(FetchMode.SUBSELECT)
+	private Set<GroupEntity> groups;
+
 
     public OrganizationEntity() {
     }
@@ -348,6 +362,23 @@ public class OrganizationEntity extends AbstractMetdataTypeEntity {
 			}
 			this.approverAssociations.add(entity);
 		}
+	}
+
+
+    public Set<LocationEntity> getLocations() {
+        return locations;
+    }
+
+    public void setLocations(Set<LocationEntity> locations) {
+        this.locations = locations;
+    }
+
+	public Set<GroupEntity> getGroups() {
+		return groups;
+	}
+
+	public void setGroups(Set<GroupEntity> groups) {
+		this.groups = groups;
 	}
 
 	@Override

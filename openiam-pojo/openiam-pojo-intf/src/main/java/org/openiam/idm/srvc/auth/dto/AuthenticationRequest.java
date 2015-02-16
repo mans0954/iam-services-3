@@ -13,7 +13,8 @@ import javax.xml.bind.annotation.XmlType;
         "password",
         "clientIP",
         "nodeIP",
-        "requestSource"
+        "requestSource",
+        "authPolicyId"
 })
 public class AuthenticationRequest {
     String principal;
@@ -21,7 +22,9 @@ public class AuthenticationRequest {
     String clientIP;
     String nodeIP;
     String requestSource; // where did this request come from
-
+    String authPolicyId; // auth policy for connection
+    public final static String AUTH_POLICY_ID = "AUTH_POLICY_ID";
+    public final static String MANAGED_SYS_ID = "MANAGED_SYS_ID";
     public AuthenticationRequest() {
     }
 
@@ -71,5 +74,13 @@ public class AuthenticationRequest {
 
     public void setRequestSource(String requestSource) {
         this.requestSource = requestSource;
+    }
+
+    public String getAuthPolicyId() {
+        return authPolicyId;
+    }
+
+    public void setAuthPolicyId(String authPolicyId) {
+        this.authPolicyId = authPolicyId;
     }
 }

@@ -23,16 +23,19 @@ package org.openiam.idm.srvc.auth.spi;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.base.ws.ResponseStatus;
 import org.openiam.exception.AuthenticationException;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.srvc.auth.context.AuthenticationContext;
 import org.openiam.idm.srvc.auth.context.PasswordCredential;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
+import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.SSOToken;
 import org.openiam.idm.srvc.auth.dto.Subject;
 import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
 import org.openiam.idm.srvc.auth.sso.SSOTokenFactory;
 import org.openiam.idm.srvc.auth.sso.SSOTokenModule;
+import org.openiam.idm.srvc.auth.ws.LoginResponse;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
@@ -41,6 +44,7 @@ import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -62,55 +66,15 @@ import java.util.*;
  *
  * @author suneet
  */
-@Scope("prototype")
 @Component("ldapLoginModule")
 public class LDAPLoginModule extends AbstractLoginModule {
 
     @Autowired
     private ManagedSysDAO managedSysDAO;
 
-    @Value("${org.openiam.idm.system.user.id}")
-    protected String systemUserId;
-
     private static final Log log = LogFactory.getLog(LDAPLoginModule.class);
 
-    String host = null;
-    String baseDn = null;
-    String adminUserName = null;
-    String adminPassword = null;
-    String protocol = null;
-    String searchFilter = null;
-    String pkAttribute = null;
-    String managedSysId = null;
-    String dn = null;
-
-    LdapContext ctxLdap = null;
-
     public LDAPLoginModule() {
-    }
-
-    public void init(ManagedSysEntity mse) throws Exception {
-
-        log.debug("AuthRepository Properties from Managed System in init = " + mse);
-
-        host = mse.getHostUrl();
-        adminUserName = mse.getUserId();
-        adminPassword = this.decryptPassword(systemUserId, mse.getPswd());
-        protocol = mse.getCommProtocol();
-        managedSysId = mse.getId();
-        Set<ManagedSystemObjectMatchEntity> managedSystemObjectMatchEntities = mse.getMngSysObjectMatchs();
-        if (CollectionUtils.isNotEmpty(managedSystemObjectMatchEntities)) {
-            for (ManagedSystemObjectMatchEntity objectMatchEntity : managedSystemObjectMatchEntities) {
-                if ("USER".equals(objectMatchEntity.getObjectType())) {
-                    baseDn = objectMatchEntity.getBaseDn();
-                    searchFilter = objectMatchEntity.getSearchFilter();
-                    pkAttribute = objectMatchEntity.getKeyField();
-                    dn = objectMatchEntity.getKeyField();
-                    break;
-                }
-            }
-        }
-
     }
 
     /*
@@ -134,6 +98,7 @@ public class LDAPLoginModule extends AbstractLoginModule {
         String clientIP = authContext.getClientIP();
         String nodeIP = authContext.getNodeIP();
 
+        String authPolicyId = sysConfiguration.getDefaultAuthPolicyId();
         Policy authPolicy = policyDataService.getPolicy(authPolicyId);
         PolicyAttribute policyAttribute = authPolicy
                 .getAttribute("MANAGED_SYS_ID");
@@ -145,7 +110,28 @@ public class LDAPLoginModule extends AbstractLoginModule {
         if (mse == null)
             throw new AuthenticationException(
                     AuthenticationConstants.RESULT_INVALID_CONFIGURATION);
-        init(mse);
+
+        String host = mse.getHostUrl();
+        String adminUserName = mse.getUserId();
+        String adminPassword = this.decryptPassword(systemUserId, mse.getPswd());
+        String protocol = mse.getCommProtocol();
+        String managedSysId = mse.getId();
+        String baseDn = null;
+        String searchFilter = null;
+        String pkAttribute = null;
+        String dn = null;
+        Set<ManagedSystemObjectMatchEntity> managedSystemObjectMatchEntities = mse.getMngSysObjectMatchs();
+        if (CollectionUtils.isNotEmpty(managedSystemObjectMatchEntities)) {
+            for (ManagedSystemObjectMatchEntity objectMatchEntity : managedSystemObjectMatchEntities) {
+                if ("USER".equals(objectMatchEntity.getObjectType())) {
+                    baseDn = objectMatchEntity.getBaseDn();
+                    searchFilter = objectMatchEntity.getSearchFilter();
+                    pkAttribute = objectMatchEntity.getKeyField();
+                    dn = objectMatchEntity.getKeyField();
+                    break;
+                }
+            }
+        }
 
         // current date
         Date curDate = new Date(System.currentTimeMillis());
@@ -162,8 +148,8 @@ public class LDAPLoginModule extends AbstractLoginModule {
         // if ok - then success
         // // get the user status in idm and check that
 
-        LdapContext ldapCtx = connect(adminUserName, adminPassword);
-        NamingEnumeration ne = search(ldapCtx, principal);
+        LdapContext ldapCtx = connect(adminUserName, adminPassword, host, protocol);
+        NamingEnumeration ne = search(ldapCtx, principal,dn,searchFilter,baseDn);
         if (ne == null) {
 //            log("AUTHENTICATION", "AUTHENTICATION", "FAIL", "INVALID LOGIN",
 //                    domainId, null, principal, null, null, clientIP, nodeIP);
@@ -212,20 +198,20 @@ public class LDAPLoginModule extends AbstractLoginModule {
         tokenParam.put("TOKEN_ISSUER", tokenIssuer);
         tokenParam.put("PRINCIPAL", principal);
 
-        lg = loginManager.getLoginByManagedSys(distinguishedName, managedSysId);
+       LoginResponse loginResponce = loginManager.getLoginByManagedSys(distinguishedName, managedSysId);
 
-        if (lg == null) {
+        if (loginResponce.getStatus() == ResponseStatus.FAILURE) {
 //            log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
 //                    "MATCHING IDENTITY NOT FOUND", domainId, null, principal,
 //                    null, null, clientIP, nodeIP);
             throw new AuthenticationException(
                     AuthenticationConstants.RESULT_INVALID_LOGIN);
         }
-
-        user = this.userManager.getUser(lg.getUserId());
+        Login lg = loginResponce.getPrincipal();
+        UserEntity user = this.userManager.getUser(lg.getUserId());
 
         // try to login to AD with this user
-        LdapContext tempCtx = connect(distinguishedName, password);
+        LdapContext tempCtx = connect(distinguishedName, password, host, protocol);
         if (tempCtx == null) {
 //            log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
 //                    "RESULT_INVALID_PASSWORD", domainId, null, principal, null,
@@ -245,7 +231,7 @@ public class LDAPLoginModule extends AbstractLoginModule {
                 if (failCount >= authFailCount) {
                     // lock the record and save the record.
                     lg.setIsLocked(1);
-                    loginManager.updateLogin(lg);
+                    loginManager.saveLogin(lg);
 
                     // set the flag on the primary user record
                     user.setSecondaryStatus(UserStatusEnum.LOCKED);
@@ -258,7 +244,7 @@ public class LDAPLoginModule extends AbstractLoginModule {
                             AuthenticationConstants.RESULT_LOGIN_LOCKED);
                 } else {
                     // update the counter save the record
-                    loginManager.updateLogin(lg);
+                    loginManager.saveLogin(lg);
 //                    log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
 //                            "INVALID_PASSWORD", domainId, null, principal,
 //                            null, null, clientIP, nodeIP);
@@ -274,47 +260,6 @@ public class LDAPLoginModule extends AbstractLoginModule {
             }
 
         }
-
-        /*
-         * if (user != null && user.getStatus() != null ) {
-         * log.debug("User Status=" + user.getStatus()); if
-         * (user.getStatus().equals(UserStatusEnum.PENDING_START_DATE)) { if
-         * (!pendingInitialStartDateCheck(user, curDate)) {
-         * log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
-         * "INVALID USER STATUS", domainId, null, principal, null, null); throw
-         * new AuthenticationException(AuthenticationConstants.
-         * RESULT_INVALID_USER_STATUS); } } if
-         * (!user.getStatus().equals(UserStatusEnum.ACTIVE) &&
-         * !user.getStatus().equals(UserStatusEnum.PENDING_INITIAL_LOGIN)) { //
-         * invalid status log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
-         * "INVALID USER STATUS", domainId, null, principal, null, null); throw
-         * new AuthenticationException(AuthenticationConstants.
-         * RESULT_INVALID_USER_STATUS); } // check the secondary status
-         * log.debug("Secondary status=" + user.getSecondaryStatus());
-         * checkSecondaryStatus(user);
-         * 
-         * } // get the id of the user from the openiam repository List<Login>
-         * principalList = loginManager.getLoginByUser(user.getUserId()); if
-         * (principalList == null) { log("AUTHENTICATION", "AUTHENTICATION",
-         * "FAIL", "INVALID LOGIN", domainId, null, principal, null, null);
-         * throw new
-         * AuthenticationException(AuthenticationConstants.RESULT_INVALID_LOGIN
-         * ); } Login ldapLogin = null; for ( Login l : principalList) { if
-         * (l.getId().getManagedSysId().equalsIgnoreCase(managedSysId)) {
-         * ldapLogin = l; } } if (ldapLogin == null) { log("AUTHENTICATION",
-         * "AUTHENTICATION", "FAIL", "INVALID LOGIN", domainId, null, principal,
-         * null, null); throw new
-         * AuthenticationException(AuthenticationConstants
-         * .RESULT_INVALID_LOGIN);
-         * 
-         * } if (!ldapLogin.getId().getLogin().contains(principal)) {
-         * log("AUTHENTICATION", "AUTHENTICATION", "FAIL", "INVALID LOGIN",
-         * domainId, null, principal, null, null); throw new
-         * AuthenticationException
-         * (AuthenticationConstants.RESULT_INVALID_LOGIN);
-         * 
-         * }
-         */
 
         if (user.getStatus() != null) {
             if (user.getStatus().equals(UserStatusEnum.PENDING_START_DATE)) {
@@ -372,7 +317,7 @@ public class LDAPLoginModule extends AbstractLoginModule {
 
         log.info("Good Authn: Login object updated.");
 
-        loginManager.updateLogin(lg);
+        loginManager.saveLogin(lg);
 
         // check the user status
         if (user.getStatus() != null) {
@@ -401,7 +346,7 @@ public class LDAPLoginModule extends AbstractLoginModule {
         return sub;
     }
 
-    public LdapContext connect(String userName, String password) {
+    public LdapContext connect(String userName, String password, String host, String protocol) {
 
         // LdapContext ctxLdap = null;
         Hashtable<String, String> envDC = new Hashtable();
@@ -429,7 +374,7 @@ public class LDAPLoginModule extends AbstractLoginModule {
         }
     }
 
-    private NamingEnumeration search(LdapContext ctx, String searchValue) {
+    private NamingEnumeration search(LdapContext ctx, String searchValue, String dn, String searchFilter, String baseDn) {
         SearchControls searchCtls = new SearchControls();
 
         // Specify the attributes to returned
@@ -440,13 +385,13 @@ public class LDAPLoginModule extends AbstractLoginModule {
         try {
             searchCtls.setSearchScope(SearchControls.SUBTREE_SCOPE);
 
-            String searchFilter = this.searchFilter.replace("?", searchValue);
+            String searchFilter_ = searchFilter.replace("?", searchValue);
 
 
             log.debug("Search Filter=" + searchFilter);
-            log.debug("BaseDN=" + this.baseDn);
+            log.debug("BaseDN=" + baseDn);
 
-            return ctx.search(baseDn, searchFilter, searchCtls);
+            return ctx.search(baseDn, searchFilter_, searchCtls);
         } catch (NamingException ne) {
             ne.printStackTrace();
         }
@@ -475,46 +420,6 @@ public class LDAPLoginModule extends AbstractLoginModule {
         return null;
     }
 
-    /**
-     * If the password has expired, but its before the grace period then its a good login
-     * If the password has expired and after the grace period, then its an exception.
-     * You should also set the days to expiration
-     *
-     * @param lg
-     * @return
-     */
-    private int passwordExpired(LoginEntity lg, Date curDate) {
-        if (lg.getGracePeriod() == null) {
-            // set an early date
-            lg.setGracePeriod(new Date(0));
-        }
-        if (lg.getPwdExp() != null) {
-            if (curDate.after(lg.getPwdExp())
-                    && curDate.after(lg.getGracePeriod())) {
-                // check for password expiration, but successful login
-                return AuthenticationConstants.RESULT_PASSWORD_EXPIRED;
-            }
-            if ((curDate.after(lg.getPwdExp()) && curDate.before(lg
-                    .getGracePeriod()))) {
-                // check for password expiration, but successful login
-                return AuthenticationConstants.RESULT_SUCCESS_PASSWORD_EXP;
-            }
-        }
-        return AuthenticationConstants.RESULT_SUCCESS_PASSWORD_EXP;
-    }
-
-    private String getPolicyAttribute(Set<PolicyAttribute> attr, String name) {
-        assert name != null : "Name parameter is null";
-
-        for (PolicyAttribute policyAtr : attr) {
-            if (policyAtr.getName().equalsIgnoreCase(name)) {
-                return policyAtr.getValue1();
-            }
-        }
-        return null;
-
-    }
-
     /*
      * (non-Javadoc)
      * 
@@ -533,20 +438,5 @@ public class LDAPLoginModule extends AbstractLoginModule {
 
     /* supporting methods */
 
-    private SSOToken token(String userId, Map tokenParam) throws Exception {
-
-        log.debug("Generating Security Token");
-
-        tokenParam.put("USER_ID", userId);
-
-        SSOTokenModule tkModule = SSOTokenFactory
-                .createModule((String) tokenParam.get("TOKEN_TYPE"));
-        tkModule.setCryptor(cryptor);
-        tkModule.setKeyManagementService(keyManagementService);
-        tkModule.setTokenLife(Integer.parseInt((String) tokenParam
-                .get("TOKEN_LIFE")));
-
-        return tkModule.createToken(tokenParam);
-    }
 
 }

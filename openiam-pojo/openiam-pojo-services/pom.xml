@@ -3,13 +3,13 @@
     <parent>
         <groupId>org.openiam</groupId>
         <artifactId>openiam-pojo</artifactId>
-        <version>3.2.7.RELEASE</version>
+        <version>3.3.RELEASE</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.openiam</groupId>
     <artifactId>openiam-pojo-services</artifactId>
     <name>openiam-pojo-services</name>
-    <version>3.2.7.RELEASE</version>
+    <version>3.3.RELEASE</version>
     <description>OPENIAM IDM Services</description>
 
     <build>
@@ -306,6 +306,21 @@
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <scope>provided</scope>
+        </dependency>
+        <!-- mssql dependencies -->
+        <dependency>
+            <groupId>com.microsoft.sqlserver</groupId>
+            <artifactId>sqljdbc4</artifactId>
+        </dependency>
+        <!-- oracle dependencies -->
+        <dependency>
+            <groupId>com.oracle</groupId>
+            <artifactId>ojdbc6</artifactId>
+        </dependency>
+        <!-- postgress dependencies -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
         </dependency>
         <dependency>
 		    <groupId>org.testng</groupId>

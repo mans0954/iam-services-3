@@ -147,9 +147,29 @@ public class ActivitiHelper {
         final List<String> candidateUsersIds = new ArrayList<String>();
         final ApproverAssociationEntity entity = getApproverAssociation(execution);
         if (entity != null) {
-            if (entity.getApproverEntityType() != null && StringUtils.isNotBlank(entity.getApproverEntityId())) {
-                final String approverId = entity.getApproverEntityId();
-                switch (entity.getApproverEntityType()) {
+            candidateUsersIds.addAll(getCandidateUserIds(entity, targetUserId, supervisorIds));
+        } else {
+            candidateUsersIds.addAll(getCandidateUserIds(execution));
+        }
+        return candidateUsersIds;
+    }
+    @Transactional
+    public List<String> getCandidateUserIds(List<String> associationIds, final String targetUserId, final List<String> supervisorIds) {
+        final List<String> candidateUsersIds = new ArrayList<String>();
+        if(CollectionUtils.isNotEmpty(associationIds)){
+            for(String id: associationIds){
+                    candidateUsersIds.addAll(getCandidateUserIds(getApproverAssociation(id), targetUserId, supervisorIds));
+            }
+        }
+        return candidateUsersIds;
+    }
+    @Transactional
+    public List<String> getCandidateUserIds(ApproverAssociationEntity associationEntity, final String targetUserId, final List<String> supervisorIds){
+        final List<String> candidateUsersIds = new ArrayList<String>();
+        if (associationEntity != null) {
+            if (associationEntity.getApproverEntityType() != null && StringUtils.isNotBlank(associationEntity.getApproverEntityId())) {
+                final String approverId = associationEntity.getApproverEntityId();
+                switch (associationEntity.getApproverEntityType()) {
                     case GROUP:
                         final List<String> groupUsers = userManager.getUserIdsInGroup(approverId, null);
                         if (CollectionUtils.isNotEmpty(groupUsers)) {
@@ -183,8 +203,6 @@ public class ActivitiHelper {
                         break;
                 }
             }
-        } else {
-            candidateUsersIds.addAll(getCandidateUserIds(execution));
         }
         return candidateUsersIds;
     }
@@ -216,9 +234,13 @@ public class ActivitiHelper {
             cardinalityObject = execution.getVariable(ActivitiConstants.CARDINALITY_OBJECT.getName());
             if (cardinalityObject instanceof String) {
                 final String id = (String) cardinalityObject;
-                association = approverAssociationDao.findById(id);
+                association = getApproverAssociation(id);
             }
         }
         return association;
+    }
+
+    private ApproverAssociationEntity getApproverAssociation(final String associationId) {
+        return approverAssociationDao.findById(associationId);
     }
 }

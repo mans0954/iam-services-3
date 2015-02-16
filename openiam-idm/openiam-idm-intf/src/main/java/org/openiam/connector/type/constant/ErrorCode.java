@@ -147,7 +147,10 @@ public enum ErrorCode {
     SCRIPT_NAME_NOT_DEFINED("script name not defined"),
 
     @XmlEnumValue("command type not defined")
-    COMMAND_TYPE_NOT_DEFINED("command type not defined");
+    COMMAND_TYPE_NOT_DEFINED("command type not defined"),
+
+    @XmlEnumValue("skip provisioning true")
+    SKIP_PROVISIONING("skip provisioning true");
 
     private final String value;
 

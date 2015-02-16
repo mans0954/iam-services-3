@@ -207,7 +207,6 @@
 			<list>
 				<!-- Util Maps -->
 				<value>org/openiam/base/id/SequenceGen.hbm.xml</value>
-				<value>org/openiam/idm/srvc/loc/service/Location.hbm.xml</value>
 
 				<value>org/openiam/idm/srvc/msg/service/NotificationConfig.hbm.xml
 				</value>
@@ -220,6 +219,7 @@
 		<property name="hibernateProperties" ref="hibernateProperties" />
 		<property name="packagesToScan"
 			value="org.openiam.core.domain*,
+											   org.openiam.idm.srvc.loc.domain*,
 											   org.openiam.idm.srvc.grp.domain*,
 											   org.openiam.idm.srvc.role.domain*,
                                                org.openiam.idm.srvc.user.domain*,

@@ -35,6 +35,9 @@ public abstract class AbstractApproverAssociationIdentifier {
 	
 	@Value("${org.openiam.idm.activiti.default.approver.user}")
 	protected String defaultApproverUserId;
+
+	@Value("${org.openiam.idm.activiti.merge.custom.approver.with.approver.associations}")
+	protected Boolean mergeCustomApproverIdsWithApproverAssociations;
 	
 	protected static Logger LOG = Logger.getLogger(AbstractApproverAssociationIdentifier.class);
 	

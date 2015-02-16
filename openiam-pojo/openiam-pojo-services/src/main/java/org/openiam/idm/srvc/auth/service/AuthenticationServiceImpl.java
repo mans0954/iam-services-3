@@ -34,7 +34,6 @@ import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.exception.AuthenticationException;
-import org.openiam.exception.BasicDataServiceException;
 import org.openiam.exception.LogoutException;
 import org.openiam.exception.ScriptEngineException;
 import org.openiam.idm.searchbeans.AuthStateSearchBean;
@@ -75,8 +74,6 @@ import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.stereotype.Component;
@@ -94,7 +91,7 @@ import org.springframework.util.CollectionUtils;
 @WebService(endpointInterface = "org.openiam.idm.srvc.auth.service.AuthenticationService", targetNamespace = "urn:idm.openiam.org/srvc/auth/service", portName = "AuthenticationServicePort", serviceName = "AuthenticationService")
 @ManagedResource(objectName = "openiam:name=authenticationService", description = "Authentication Service")
 @Transactional
-public class AuthenticationServiceImpl extends AbstractBaseService implements AuthenticationService, ApplicationContextAware, BeanFactoryAware {
+public class AuthenticationServiceImpl extends AbstractBaseService implements AuthenticationService, BeanFactoryAware {
 
     @Autowired
     private AuthStateDAO authStateDao;
@@ -128,7 +125,6 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
     @Qualifier("configurableGroovyScriptEngine")
     private ScriptIntegration scriptRunner;
 
-    private ApplicationContext ctx;
     private BeanFactory beanFactory;
 
     private static final Log log = LogFactory.getLog(AuthenticationServiceImpl.class);
@@ -197,20 +193,17 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
             newLoginEvent.setClientIP(clientIP);
             newLoginEvent.setRequestorPrincipal(principal);
 
-            AuthenticationContext ctx = null;
             AbstractLoginModule loginModule = null;
             String loginModName = null;
             LoginModuleSelector modSel = new LoginModuleSelector();
 
             LoginEntity lg = null;
-            String userId = null;
-            UserEntity user = null;
 
             newLoginEvent.setManagedSysId(sysConfiguration.getDefaultManagedSysId());
 
             // Determine which login module to use
             // - get the Authentication policy for the domain
-            String authPolicyId = sysConfiguration.getDefaultAuthPolicyId();
+            String authPolicyId = StringUtils.isNotEmpty(request.getAuthPolicyId()) ? request.getAuthPolicyId() : sysConfiguration.getDefaultAuthPolicyId();
             final PolicyEntity authPolicy = policyDao.findById(authPolicyId);
             PolicyAttributeEntity modType = authPolicy.getAttribute("LOGIN_MOD_TYPE");
             PolicyAttributeEntity defaultModule = authPolicy.getAttribute("DEFAULT_LOGIN_MOD");
@@ -280,14 +273,12 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
                 }
 
                 // check the user status - move to the abstract class for reuse
-                userId = lg.getUserId();
+                String userId = lg.getUserId();
                 newLoginEvent.setRequestorUserId(userId);
-
                 newLoginEvent.setTargetUser(userId, lg.getLogin());
-
-                user = userManager.getUser(userId);
             }
 
+            AuthenticationContext ctx = null;
             try {
 
                 log.debug("Creating authentication context");
@@ -306,7 +297,6 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
                     // also bind the user and login objects to avoid
                     // re-initialization of spring the scripting engine
                     bindingMap.put("login", lg);
-                    bindingMap.put("user", user);
 
                     try {
                         loginModName = (String) scriptRunner.execute(bindingMap,
@@ -324,15 +314,11 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
                     try {
                         loginModName = Class.forName(loginModName).getAnnotation(Component.class).value();
                     } catch (Throwable e) {
-
+                        log.error(e.getMessage());
                     }
 
                     loginModule = beanFactory.getBean(loginModName, AbstractLoginModule.class);
                     //loginModule = (AbstractLoginModule) LoginModuleFactory.createModule(loginModName);
-                    loginModule.setUser(user);
-                    loginModule.setLg(lg);
-                    loginModule.setSysConfiguration(sysConfiguration);
-                    loginModule.setAuthPolicyId(authPolicyId);
                 }
 
             } catch (Throwable ie) {
@@ -352,7 +338,9 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 
             Map<String, Object> authParamMap = new HashMap<String, Object>();
             authParamMap.put("AUTH_SYS_ID", sysConfiguration.getDefaultManagedSysId());
+            authParamMap.put(AuthenticationRequest.AUTH_POLICY_ID,authPolicyId);
             ctx.setAuthParam(authParamMap);
+            ctx.setLoginModule(loginModName);
 
             ctx.setNodeIP(nodeIP);
             ctx.setClientIP(clientIP);
@@ -564,12 +552,6 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
                 "OPENIAM");
 
         authStateDao.saveAuthState(state);
-    }
-
-    @Override
-    public void setApplicationContext(ApplicationContext ctx)
-            throws BeansException {
-        this.ctx = ctx;
     }
 
     @Override

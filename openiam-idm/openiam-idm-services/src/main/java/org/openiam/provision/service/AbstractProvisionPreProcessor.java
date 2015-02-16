@@ -5,10 +5,8 @@ import org.apache.commons.logging.LogFactory;
 import org.mule.api.MuleContext;
 import org.mule.api.MuleException;
 import org.mule.module.client.MuleClient;
-import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.provision.dto.PasswordSync;
-import org.openiam.provision.dto.ProvisionUser;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 
@@ -26,11 +24,12 @@ import java.util.Map;
  * Time: 10:00 PM
  * @version 2.2
  */
-public abstract class AbstractPostProcessor<T> implements ProvisionServicePostProcessor<T> {
+public abstract class AbstractProvisionPreProcessor<T> implements ProvisionServicePreProcessor <T> {
+
     protected MuleContext muleContext;
     protected ApplicationContext context;
 
-    private static final Log log = LogFactory.getLog(AbstractPostProcessor.class);
+    protected static final Log log = LogFactory.getLog(AbstractProvisionPreProcessor.class);
 
     @Value("${openiam.service_base}")
     private String serviceHost;
@@ -38,12 +37,12 @@ public abstract class AbstractPostProcessor<T> implements ProvisionServicePostPr
     @Value("${openiam.idm.ws.path}")
     private String serviceContext;
 
-    public void setApplicationContext(ApplicationContext context) {
-        this.context = context;
-    }
-
     public void setMuleContext(MuleContext ctx) {
         muleContext = ctx;
+    }
+
+    public void setApplicationContext(ApplicationContext context) {
+        this.context = context;
     }
 
     public void sendEmailNotification( NotificationRequest request) {
@@ -63,4 +62,33 @@ public abstract class AbstractPostProcessor<T> implements ProvisionServicePostPr
         }
     }
 
+    @Override
+    public int add(T object, Map<String, Object> bindingMap) {
+        return ProvisioningConstants.SUCCESS;
+    }
+
+    @Override
+    public int modify(T object, Map<String, Object> bindingMap) {
+        return ProvisioningConstants.SUCCESS;
+    }
+
+    @Override
+    public int delete(T object, Map<String, Object> bindingMap) {
+        return ProvisioningConstants.SUCCESS;
+    }
+
+    @Override
+    public int setPassword(PasswordSync passwordSync, Map<String, Object> bindingMap) {
+        return ProvisioningConstants.SUCCESS;
+    }
+
+    @Override
+    public int resetPassword(PasswordSync passwordSync, Map<String, Object> bindingMap) {
+        return ProvisioningConstants.SUCCESS;
+    }
+
+    @Override
+    public int disable(T object, Map<String, Object> bindingMap) {
+        return ProvisioningConstants.SUCCESS;
+    }
 }

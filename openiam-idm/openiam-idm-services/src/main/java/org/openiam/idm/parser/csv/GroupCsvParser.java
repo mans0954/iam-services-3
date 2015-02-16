@@ -1,11 +1,14 @@
 package org.openiam.idm.parser.csv;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.openiam.am.srvc.constants.CSVSource;
 import org.openiam.am.srvc.constants.GroupFields;
 import org.openiam.am.srvc.constants.UserFields;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
+import org.openiam.idm.srvc.org.domain.OrganizationEntity;
+import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.recon.dto.ReconciliationObject;
 import org.openiam.idm.srvc.recon.result.dto.ReconciliationResultField;
 import org.openiam.idm.srvc.user.dto.User;
@@ -37,7 +40,9 @@ public class GroupCsvParser extends AbstractCSVParser<Group, GroupFields> implem
                 group.setCreatedBy(objValue);
                 break;
             case companyId:
-                group.setCompanyId(objValue);
+                Organization org = new Organization();
+                org.setId(objValue);
+                group.addOrganization(org);
                 break;
             /*
             case ownerId:
@@ -98,7 +103,10 @@ public class GroupCsvParser extends AbstractCSVParser<Group, GroupFields> implem
                 objValue = group.getCreatedBy();
                 break;
             case companyId:
-                objValue = group.getCompanyId();
+                objValue = null;
+                if(CollectionUtils.isNotEmpty(group.getOrganizations())){
+                    objValue =((Organization)group.getOrganizations().iterator().next()).getId();
+                }
                 break;
             /*
             case ownerId:
