@@ -3,9 +3,17 @@ package org.openiam.idm.srvc.auth.domain;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
+import org.openiam.base.domain.KeyEntity;
 import org.openiam.core.dao.lucene.LuceneId;
 import org.openiam.core.dao.lucene.LuceneLastUpdate;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.elasticsearch.annotation.ElasticsearchField;
+import org.openiam.elasticsearch.annotation.ElasticsearchIndex;
+import org.openiam.elasticsearch.annotation.ElasticsearchMapping;
+import org.openiam.elasticsearch.constants.ESIndexName;
+import org.openiam.elasticsearch.constants.ESIndexType;
+import org.openiam.elasticsearch.constants.ElasticsearchStore;
+import org.openiam.elasticsearch.constants.Index;
 import org.openiam.idm.srvc.auth.dto.IdentityDto;
 import org.openiam.idm.srvc.auth.dto.IdentityTypeEnum;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
@@ -16,29 +24,27 @@ import javax.persistence.*;
 import java.util.Date;
 
 @Entity
-@Table(name="\"IDENTITY\"")
+@Table(name="IDENTIFICATION")
 @Cacheable
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(IdentityDto.class)
-//@Indexed
-public class IdentityEntity implements java.io.Serializable  {
-    @Id
-    @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name = "system-uuid", strategy = "uuid")
-    @Column(name = "IDENTITY_ID", length = 32, nullable = false)
-    @LuceneId
-//    @DocumentId
-    private String id;
+@ElasticsearchIndex(indexName = ESIndexName.IDENTITY)
+@ElasticsearchMapping(typeName = ESIndexType.IDENTITY)
+@AttributeOverride(name = "id", column = @Column(name = "IDENTITY_ID"))
+public class IdentityEntity extends KeyEntity  {
 
 //    @Field(name = "identity", analyze = Analyze.YES, store = Store.YES)
-    @Column(name="\"IDENTITY\"",length=320)
+	@ElasticsearchField(name = "identity", store = ElasticsearchStore.Yes, index = Index.Analyzed)
+    @Column(name="IDENTIFICATION",length=320)
     private String identity;
 
 //    @Field(name = "managedSysId", analyze = Analyze.NO, store = Store.YES)
+	@ElasticsearchField(name = "managedSysId", store = ElasticsearchStore.Yes, index = Index.Not_Analyzed)
     @Column(name="MANAGED_SYS_ID",length=50)
     private String managedSysId;
 
 //    @Field(name = "referredObjectId", analyze = Analyze.NO, store = Store.YES)
+	@ElasticsearchField(name = "referredObjectId", store = ElasticsearchStore.Yes, index = Index.Not_Analyzed)
     @Column(name="REFERRED_OBJECT_ID",length=32)
     private String referredObjectId;
 
@@ -70,14 +76,6 @@ public class IdentityEntity implements java.io.Serializable  {
 
     public IdentityEntity(IdentityTypeEnum type) {
         this.type = type;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
     }
 
     public String getIdentity() {

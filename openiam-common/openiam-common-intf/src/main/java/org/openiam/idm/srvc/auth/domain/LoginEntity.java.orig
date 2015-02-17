@@ -25,11 +25,11 @@ import java.util.*;
 
 @Entity
 @Table(name="LOGIN")
-@Cacheable
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(Login.class)
 //@Indexed
 @Embeddable
+<<<<<<< HEAD
 @ElasticsearchIndex(indexName = ESIndexName.USERS)
 @ElasticsearchMapping(typeName = ESIndexType.LOGIN/*, parent = ESIndexType.USER*/)
 @AttributeOverride(name = "id", column = @Column(name = "LOGIN_ID"))
@@ -38,9 +38,28 @@ public class LoginEntity extends KeyEntity {
     //@Field(name = "login", analyze = Analyze.YES, store = Store.YES)
     @ElasticsearchField(name = "login", store = ElasticsearchStore.Yes, index = Index.Analyzed)
     @Column(name="LOGIN",length=320)
+=======
+public class LoginEntity implements java.io.Serializable {
+    private static final long serialVersionUID = -1972779170001619759L;
+    
+    @Id
+    @GeneratedValue(generator = "system-uuid")
+    @GenericGenerator(name = "system-uuid", strategy = "uuid")
+	@Column(name = "LOGIN_ID", length = 32, nullable = false)
+    @LuceneId
+    @DocumentId
+    private String loginId;
+
+    @Fields ({
+        @Field(index = Index.TOKENIZED),
+        @Field(name = "login", index = Index.TOKENIZED, store = Store.YES),
+        @Field(name = "loginUntokenized", index = Index.UN_TOKENIZED, store = Store.YES)
+    })
+    @Column(name="LOGIN",length=220)
+>>>>>>> RELEASE-3.2.7
     private String login;
     
-    @Column(name="LOWERCASE_LOGIN",length=320)
+    @Column(name="LOWERCASE_LOGIN",length=220)
     private String lowerCaseLogin;
     
 //    @Field(name = "managedSysId", analyze = Analyze.NO, store = Store.YES)

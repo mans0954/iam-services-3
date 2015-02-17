@@ -1,5 +1,5 @@
 package org.openiam.idm.srvc.mngsys.dto;
 
 public enum PolicyMapObjectTypeOptions {
-    EMAIL, GROUP, PASSWORD, PRINCIPAL, GROUP_PRINCIPAL, USER, ROLE
+    USER, PRINCIPAL, GROUP, GROUP_PRINCIPAL, ROLE, ROLE_PRINCIPAL
 }

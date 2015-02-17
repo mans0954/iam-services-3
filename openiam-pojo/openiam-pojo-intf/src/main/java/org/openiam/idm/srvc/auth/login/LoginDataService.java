@@ -158,6 +158,13 @@ public interface LoginDataService {
      * @return
      */
     public List<LoginEntity> getUsersNearPswdExpiration();
+    
+    /**
+     * List of users whose passworss are expiring today
+     *
+     * @return
+     */
+    public List<LoginEntity> usersWithPasswordExpYesterday();
 
     /**
      * Changes the identity of a user

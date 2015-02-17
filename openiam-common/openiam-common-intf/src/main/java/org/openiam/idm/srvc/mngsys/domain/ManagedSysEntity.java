@@ -18,11 +18,7 @@ import org.openiam.idm.srvc.role.domain.RoleEntity;
 import javax.persistence.*;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Entity
 @Table(name = "MANAGED_SYS")
@@ -105,6 +101,10 @@ public class ManagedSysEntity extends AbstractKeyNameEntity {
     @Type(type = "yes_no")
     private boolean skipGroupProvision = true;
 
+    @Column(name = "CHANGE_END_USER", nullable = false)
+    @Type(type = "yes_no")
+    private boolean changedByEndUser = true;
+    ;
     @OneToMany(mappedBy = "managedSys")
     private Set<ManagedSystemObjectMatchEntity> mngSysObjectMatchs = new HashSet<ManagedSystemObjectMatchEntity>();
 
@@ -410,6 +410,13 @@ public class ManagedSysEntity extends AbstractKeyNameEntity {
 		this.authProviders = authProviders;
 	}
 
+    public boolean getChangedByEndUser() {
+        return changedByEndUser;
+    }
+
+    public void setChangedByEndUser(boolean changedByEndUser) {
+        this.changedByEndUser = changedByEndUser;
+    }
 
 	@Override
 	public int hashCode() {

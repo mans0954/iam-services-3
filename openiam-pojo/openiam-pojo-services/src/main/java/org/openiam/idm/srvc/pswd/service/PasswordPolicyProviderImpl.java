@@ -12,6 +12,7 @@ import org.openiam.dozer.converter.PolicyDozerConverter;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.service.OrganizationDAO;
 import org.openiam.idm.srvc.policy.domain.PolicyEntity;
+import org.openiam.idm.srvc.policy.dto.PasswordPolicyAssocSearchBean;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.service.PolicyDataService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -63,16 +64,13 @@ public class PasswordPolicyProviderImpl implements PasswordPolicyProvider {
     	return retVal;
     }
     
-	@Override
-	@Transactional
-	public Policy getPasswordPolicyByUser(String userId,
-			String contentProviderId) {
-		return getPasswordPolicyByUser(userManager.getUser(userId), contentProviderId);
-	}
-	
-	@Override
-	@Transactional
-	public Policy getPasswordPolicyByUser(final UserEntity user, final String contentProviderId) {
+    @Override
+    @Transactional
+    public Policy getPasswordPolicyByUser(final PasswordPolicyAssocSearchBean searchBean) {
+    	return getPasswordPolicyByUser(userManager.getUser(searchBean.getUserId()), searchBean.getContentProviderId());
+    }
+    
+	private Policy getPasswordPolicyByUser(final UserEntity user, final String contentProviderId) {
 		Policy retVal = null;
 		if(StringUtils.isNotBlank(contentProviderId)) {
 			final ContentProviderEntity contentProvider = contentProviderDAO.findById(contentProviderId);

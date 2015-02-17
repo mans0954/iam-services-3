@@ -38,18 +38,36 @@ import java.util.Set;
  * can also be forms
  */
 @XmlAccessorType(XmlAccessType.FIELD)
+<<<<<<< HEAD
 @XmlType(name = "ManagedSysDto", propOrder = {"description", "status", "connectorId", "hostUrl", "port",
+=======
+@XmlType(name = "ManagedSysDto", propOrder = {"id", "name", "description", "status", "connectorId", "hostUrl", "port",
+>>>>>>> RELEASE-3.2.7
         "commProtocol", "userId", "pswd", "decryptPassword", "endDate", "startDate", "attributeNamesLookup",
         "searchScope", "resource", "primaryRepository", "secondaryRepositoryId", "updateSecondary",
         "mngSysObjectMatchs", "driverUrl", "connectionString", "addHandler", "modifyHandler", "deleteHandler",
         "passwordHandler", "suspendHandler", "resumeHandler", "searchHandler", "lookupHandler",
+<<<<<<< HEAD
         "testConnectionHandler", "reconcileResourceHandler", "attributeNamesHandler", "handler5", "rules", "groups",
-        "roles", "skipGroupProvision", "changedByEndUser"})
+        "roles", "skipGroupProvision"})
 @XmlSeeAlso({KeyDTO.class, KeyNameDTO.class, BaseObject.class})
+=======
+        "testConnectionHandler", "reconcileResourceHandler", "attributeNamesHandler", "handler5", "skipGroupProvision",
+        "rules", "groups", "roles", "changedByEndUser"})
+>>>>>>> RELEASE-3.2.7
 @DozerDTOCorrespondence(ManagedSysEntity.class)
 public class ManagedSysDto extends KeyNameDTO implements Serializable{
 
 
+<<<<<<< HEAD
+=======
+    /**
+     *
+     */
+    private static final long serialVersionUID = -648884785253890053L;
+    private String id;
+    private String name;
+>>>>>>> RELEASE-3.2.7
     private String description;
     private String status;
     private String connectorId;
@@ -109,9 +127,15 @@ public class ManagedSysDto extends KeyNameDTO implements Serializable{
     }
 
     public ManagedSysDto(String id, String name, String description, String status, String connectorId, String hostUrl,
+<<<<<<< HEAD
             Integer port, String commProtocol, String userId, String pswd, Date startDate, Date endDate) {
         setId(id);
         setName(name);
+=======
+                         Integer port, String commProtocol, String userId, String pswd, Date startDate, Date endDate) {
+        this.id = id;
+        this.name = name;
+>>>>>>> RELEASE-3.2.7
         this.description = description;
         this.status = status;
         this.connectorId = connectorId;
@@ -216,7 +240,7 @@ public class ManagedSysDto extends KeyNameDTO implements Serializable{
     /**
      * Return a ManagedSystemObjectMatch for an object type. Return null is an
      * object for the specified objectType is not found.
-     * 
+     *
      * @param objectType
      * @return
      */
@@ -236,7 +260,7 @@ public class ManagedSysDto extends KeyNameDTO implements Serializable{
 
     public void removeManagedSysObjectMatch(final ManagedSystemObjectMatch match) {
         if (match != null && this.mngSysObjectMatchs != null) {
-            for (final Iterator<ManagedSystemObjectMatch> it = this.mngSysObjectMatchs.iterator(); it.hasNext();) {
+            for (final Iterator<ManagedSystemObjectMatch> it = this.mngSysObjectMatchs.iterator(); it.hasNext(); ) {
                 final ManagedSystemObjectMatch next = it.next();
                 if (StringUtils.equals(next.getObjectSearchId(), match.getObjectSearchId())) {
                     it.remove();
@@ -435,7 +459,7 @@ public class ManagedSysDto extends KeyNameDTO implements Serializable{
     public void setHandler5(String handler5) {
         this.handler5 = handler5;
     }
-    
+
     public List<ManagedSysRuleDto> getRules() {
         return rules;
     }
@@ -475,26 +499,6 @@ public class ManagedSysDto extends KeyNameDTO implements Serializable{
 	public void setSkipGroupProvision(Boolean skipGroupProvision) {
 		this.skipGroupProvision = skipGroupProvision;
 	}
-
-    @Override
-    public String toString() {
-        return "ManagedSysDto{" + "managedSysId='" + id + '\'' + ", name='" + getName() + '\'' + ", description='"
-                + description + '\'' + ", status='" + status + '\'' + ", connectorId='" + connectorId + '\''
-                + ", hostUrl='" + hostUrl + '\'' + ", port=" + port + ", commProtocol='" + commProtocol + '\''
-                + ", userId='" + userId + '\'' + ", pswd='" + pswd + '\'' + ", decryptPassword='" + decryptPassword
-                + '\'' + ", startDate=" + startDate + ", endDate=" + endDate + ", attributeNamesLookup='"
-                + attributeNamesLookup + '\'' + ", searchScope='" + searchScope + '\'' + ", resource='" + getResource()
-                + '\'' + ", primaryRepository=" + primaryRepository + ", secondaryRepositoryId='"
-                + secondaryRepositoryId + '\'' + ", updateSecondary=" + updateSecondary + ", driverUrl='" + driverUrl
-                + '\'' + ", connectionString='" + connectionString + '\'' + ", addHandler='" + addHandler + '\''
-                + ", modifyHandler='" + modifyHandler + '\'' + ", deleteHandler='" + deleteHandler + '\''
-                + ", passwordHandler='" + passwordHandler + '\'' + ", suspendHandler='" + suspendHandler + '\''
-                + ", searchHandler='" + searchHandler + '\'' + ", lookupHandler='" + lookupHandler + '\''
-                + ", testConnectionHandler='" + testConnectionHandler + '\'' + ", reconcileResourceHandler='"
-                + reconcileResourceHandler + ", attributeNamesHandler='" + attributeNamesHandler + '\''
-                + ", handler5='" + handler5 + '\'' + ", skipGroupProvision='" + skipGroupProvision + '\''
-                + ", mngSysObjectMatchs=" + mngSysObjectMatchs + '}';
-    }
 
 	@Override
 	public int hashCode() {

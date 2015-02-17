@@ -16,7 +16,7 @@
  */
 
 /**
- * 
+ *
  */
 package org.openiam.idm.srvc.policy.service;
 
@@ -24,7 +24,9 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import javax.jws.WebService;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.base.ws.Response;
@@ -34,18 +36,24 @@ import org.openiam.exception.BasicDataServiceException;
 import org.openiam.dozer.converter.ITPolicyDozerConverter;
 import org.openiam.dozer.converter.PolicyDefParamDozerConverter;
 import org.openiam.dozer.converter.PolicyDozerConverter;
+import org.openiam.exception.EsbErrorToken;
 import org.openiam.idm.searchbeans.PolicySearchBean;
+import org.openiam.idm.srvc.batch.domain.BatchTaskEntity;
+import org.openiam.idm.srvc.batch.service.BatchService;
 import org.openiam.idm.srvc.policy.domain.*;
 import org.openiam.idm.srvc.policy.dto.ITPolicy;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.policy.dto.PolicyDefParam;
 
+import org.openiam.util.ws.collection.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 // TODO: Auto-generated Javadoc
+
 /**
  * PolicyDataService is used create and manage policies. Enforcement of these
  * policies is handled through policy specific services and policy enforcement
@@ -57,6 +65,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @WebService(endpointInterface = "org.openiam.idm.srvc.policy.service.PolicyDataService", targetNamespace = "urn:idm.openiam.org/srvc/policy/service", portName = "PolicyWebServicePort", serviceName = "PolicyWebService")
 @Service("policyDataService")
+@Transactional
 public class PolicyDataServiceImpl implements PolicyDataService {
 
 	private static final Log log = LogFactory.getLog(PolicyDataServiceImpl.class);

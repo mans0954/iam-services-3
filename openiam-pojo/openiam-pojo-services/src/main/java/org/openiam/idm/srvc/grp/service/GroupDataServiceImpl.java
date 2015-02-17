@@ -512,9 +512,9 @@ public class GroupDataServiceImpl implements GroupDataService {
 		final GroupEntity entity = groupDao.findById(groupId);
 		if(entity != null) {
 			groupDao.delete(entity);
-            IdentityEntity systemGroupIdentity = identityDAO.findByManagedSysId(groupId, sysConfiguration.getDefaultManagedSysId());
-            if(systemGroupIdentity != null) {
-                identityDAO.delete(systemGroupIdentity);
+            List<IdentityEntity> systemGroupIdentityList = identityDAO.findByReferredId(groupId);
+            for(IdentityEntity identityEntity : systemGroupIdentityList) {
+                identityDAO.delete(identityEntity);
             }
 		}
 	}

@@ -22,7 +22,7 @@
                 <value>file:/data/openiam/conf/securityconf.properties</value>
                 <value>file:/data/openiam/conf/openiam.esb.properties</value>
                 <value>classpath:test.integration.properties</value>
-                <value>file:${confpath}/conf/service-urls.properties</value>
+                <value>file:/data/openiam/conf/service-urls.properties</value>
 			</list>
 		</property>
 		<property name="ignoreResourceNotFound" value="true" />

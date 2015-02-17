@@ -23,8 +23,11 @@ import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.idm.srvc.msg.service.MailService;
 import org.openiam.idm.srvc.msg.service.MailTemplateParameters;
-import org.openiam.idm.srvc.policy.dto.PasswordPolicyAssocSearchBean;
+<<<<<<< HEAD
 import org.openiam.idm.srvc.policy.domain.PolicyEntity;
+=======
+import org.openiam.idm.srvc.policy.dto.PasswordPolicyAssocSearchBean;
+>>>>>>> RELEASE-3.2.7
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.policy.service.PolicyDataService;
@@ -76,9 +79,6 @@ public class LoginDataServiceImpl implements LoginDataService {
 
     @Autowired
     protected LoginDozerConverter loginDozerConverter;
-
-    @Autowired
-    private EmailAddressDAO emailAddressDao;
 
     @Autowired
     private MailService mailService;
@@ -216,20 +216,21 @@ public class LoginDataServiceImpl implements LoginDataService {
         Calendar cal = Calendar.getInstance();
         Calendar expCal = Calendar.getInstance();
         LoginEntity lg = getLoginByManagedSys(login, sysId);
-        
-        final PasswordPolicyAssocSearchBean searchBean = new PasswordPolicyAssocSearchBean();
-    	searchBean.setUserId(lg.getUserId());
-    	searchBean.setContentProviderId(contentProviderId);
+<<<<<<< HEAD
+        Policy plcy = passwordPolicyProvider.getPasswordPolicyByUser(lg.getUserId(), contentProviderId);
+=======
+        PasswordPolicyAssocSearchBean searchBean = new PasswordPolicyAssocSearchBean();
+        searchBean.setUserId(lg.getUserId());
+        searchBean.setManagedSystemId(sysId);
         Policy plcy = passwordPolicyProvider.getPasswordPolicyByUser(searchBean);
+
+>>>>>>> RELEASE-3.2.7
         String pswdExpValue = getPolicyAttribute(plcy.getPolicyAttributes(), "PWD_EXPIRATION");
-        //String changePswdOnReset = getPolicyAttribute( plcy.getPolicyAttributes(), "CHNG_PSWD_ON_RESET");
+        String changePswdOnReset = getPolicyAttribute(plcy.getPolicyAttributes(), "CHNG_PSWD_ON_RESET");
         String gracePeriod = getPolicyAttribute(plcy.getPolicyAttributes(), "PWD_EXP_GRACE");
-
-
         lg.setPassword(password);
         lg.setPwdChanged(cal.getTime());
-
-        // increment the change password count
+// increment the change password count
         if (!preventChangeCountIncrement) {
             if (lg.getPasswordChangeCount() == null) {
                 lg.setPasswordChangeCount(new Integer(1));
@@ -237,31 +238,26 @@ public class LoginDataServiceImpl implements LoginDataService {
                 lg.setPasswordChangeCount(lg.getPasswordChangeCount() + 1);
             }
         }
-        // password has been changed - we dont need to force a change password
-        // on the next sourceLogin
+// password has been changed - we dont need to force a change password
+// on the next sourceLogin
         lg.setResetPassword(0);
         lg.setAuthFailCount(0);
         lg.setIsLocked(0);
-
-        // password has been changed the token is no longer valid
+// password has been changed the token is no longer valid
         lg.setPswdResetToken(null);
         lg.setPswdResetTokenExp(null);
-
-        // calculate when the password will expire
+// calculate when the password will expire
         if (pswdExpValue != null && !pswdExpValue.isEmpty() && !"0".equals(pswdExpValue)) {
             cal.add(Calendar.DATE, Integer.parseInt(pswdExpValue));
             expCal.add(Calendar.DATE, Integer.parseInt(pswdExpValue));
             lg.setPwdExp(expCal.getTime());
-
-            // calc the grace period if there is a policy for it
+// calc the grace period if there is a policy for it
             if (gracePeriod != null && !gracePeriod.isEmpty()) {
                 cal.add(Calendar.DATE, Integer.parseInt(gracePeriod));
                 lg.setGracePeriod(cal.getTime());
             }
         }
-
         loginDao.update(lg);
-
         if (lg != null) {
             final PasswordHistoryEntity hist = new PasswordHistoryEntity();
             hist.setPassword(password);
@@ -296,9 +292,15 @@ public class LoginDataServiceImpl implements LoginDataService {
         LoginEntity lg = getLoginByManagedSys(login, sysId);
         UserEntity user = userDao.findById(lg.getUserId());
 
-        final PasswordPolicyAssocSearchBean searchBean = new PasswordPolicyAssocSearchBean();
-    	searchBean.setUserId(user.getId());
+<<<<<<< HEAD
+
+        Policy plcy = passwordPolicyProvider.getPasswordPolicyByUser(user, null);
+=======
+        PasswordPolicyAssocSearchBean searchBean = new PasswordPolicyAssocSearchBean();
+        searchBean.setUserId(lg.getUserId());
+        searchBean.setManagedSystemId(sysId);
         Policy plcy = passwordPolicyProvider.getPasswordPolicyByUser(searchBean);
+>>>>>>> RELEASE-3.2.7
 
         String pswdExpValue = getPolicyAttribute(plcy.getPolicyAttributes(),
                 "NUM_DAYS_FORGET_PWD_TOKEN_VALID");
@@ -357,7 +359,7 @@ public class LoginDataServiceImpl implements LoginDataService {
     }
 
     @Override
-	@Transactional(readOnly = true)
+    @Transactional(readOnly = true)
     public String decryptPassword(String userId, String password)
             throws Exception {
         if (password != null) {
@@ -579,13 +581,6 @@ public class LoginDataServiceImpl implements LoginDataService {
             log.warn("Can't get Logins with val2=" + val2);
         }
 
-        return loginList;
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<LoginEntity> usersWithPasswordExpYesterday() {
-        List<LoginEntity> loginList = loginDao.findUserPswdExpYesterday();
         return loginList;
     }
 

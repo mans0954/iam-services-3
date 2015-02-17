@@ -1,26 +1,30 @@
 /*
-* Copyright 2009, OpenIAM LLC This file is part of the OpenIAM Identity and
-* Access Management Suite
-*
-* OpenIAM Identity and Access Management Suite is free software: you can
-* redistribute it and/or modify it under the terms of the GNU General Public
-* License version 3 as published by the Free Software Foundation.
-*
-* OpenIAM is distributed in the hope that it will be useful, but WITHOUT ANY
-* WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-* A PARTICULAR PURPOSE. See the Lesser GNU General Public License for more
-* details.
-*
-* You should have received a copy of the GNU General Public License along with
-* OpenIAM. If not, see <http://www.gnu.org/licenses/>. *
-*/
+ * Copyright 2009, OpenIAM LLC This file is part of the OpenIAM Identity and
+ * Access Management Suite
+ * 
+ * OpenIAM Identity and Access Management Suite is free software: you can
+ * redistribute it and/or modify it under the terms of the GNU General Public
+ * License version 3 as published by the Free Software Foundation.
+ * 
+ * OpenIAM is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the Lesser GNU General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU General Public License along with
+ * OpenIAM. If not, see <http://www.gnu.org/licenses/>. *
+ */
+
 /**
- *
+ * 
  */
 package org.openiam.idm.srvc.pswd.service;
+
 import java.util.Date;
 import java.util.List;
+
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.ResponseCode;
@@ -34,6 +38,7 @@ import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.service.OrganizationDAO;
 import org.openiam.idm.srvc.policy.domain.PolicyEntity;
+import org.openiam.idm.srvc.policy.dto.PasswordPolicyAssocSearchBean;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.policy.service.PolicyDAO;
@@ -45,6 +50,7 @@ import org.openiam.idm.srvc.pswd.dto.PasswordRule;
 import org.openiam.idm.srvc.pswd.dto.PasswordValidationResponse;
 import org.openiam.idm.srvc.pswd.dto.ValidatePasswordResetTokenResponse;
 import org.openiam.idm.srvc.pswd.rule.PasswordRuleException;
+import org.openiam.idm.srvc.pswd.rule.PasswordRuleViolation;
 import org.openiam.idm.srvc.pswd.rule.PasswordValidator;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDataService;
@@ -53,10 +59,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 /**
  * @author suneet
  *
  */
+
 @Service("passwordManager")
 @Transactional
 public class PasswordServiceImpl implements PasswordService {
@@ -122,7 +130,10 @@ public class PasswordServiceImpl implements PasswordService {
     public PasswordValidationResponse isPasswordValidForUser(Password pswd,
                                                              UserEntity user, LoginEntity lg) throws ObjectNotFoundException {
         PasswordValidationResponse retVal = new PasswordValidationResponse(ResponseStatus.SUCCESS);
-        Policy pswdPolicy = passwordPolicyProvider.getPasswordPolicyByUser(user, null);
+        
+        final PasswordPolicyAssocSearchBean searchBean = new PasswordPolicyAssocSearchBean();
+    	searchBean.setUserId(user.getId());
+        Policy pswdPolicy = passwordPolicyProvider.getPasswordPolicyByUser(searchBean);
         if (pswdPolicy == null) {
             retVal.setErrorCode(ResponseCode.PASSWORD_POLICY_NOT_FOUND);
             retVal.fail();
@@ -154,7 +165,9 @@ public class PasswordServiceImpl implements PasswordService {
         final PasswordValidationResponse retVal = new PasswordValidationResponse(ResponseStatus.SUCCESS);
         Policy pswdPolicy = policy;
         if (pswdPolicy == null) {
-            pswdPolicy = passwordPolicyProvider.getPasswordPolicyByUser(user, null);
+            final PasswordPolicyAssocSearchBean searchBean = new PasswordPolicyAssocSearchBean();
+        	searchBean.setUserId(user.getId());
+            pswdPolicy = passwordPolicyProvider.getPasswordPolicyByUser(searchBean);
         }
         if (pswdPolicy == null) {
             retVal.setErrorCode(ResponseCode.PASSWORD_POLICY_NOT_FOUND);
@@ -245,7 +258,9 @@ public class PasswordServiceImpl implements PasswordService {
     }
     @Override
     public Policy getPasswordPolicyForUser(final UserEntity user) {
-        return passwordPolicyProvider.getPasswordPolicyByUser(user, null);
+    	final PasswordPolicyAssocSearchBean searchBean = new PasswordPolicyAssocSearchBean();
+    	searchBean.setUserId(user.getId());
+        return passwordPolicyProvider.getPasswordPolicyByUser(searchBean);
     }
     /**
      * Returns the global password policy
@@ -323,6 +338,9 @@ public class PasswordServiceImpl implements PasswordService {
     @Override
     public Policy getPasswordPolicyUsingContentProvider(String principal, String managedSysId, String contentProviderId) {
         final LoginEntity lg = loginManager.getLoginByManagedSys(principal, managedSysId);
-        return passwordPolicyProvider.getPasswordPolicyByUser(lg.getUserId(), contentProviderId);
+        final PasswordPolicyAssocSearchBean searchBean = new PasswordPolicyAssocSearchBean();
+    	searchBean.setUserId(lg.getUserId());
+    	searchBean.setContentProviderId(contentProviderId);
+        return passwordPolicyProvider.getPasswordPolicyByUser(searchBean);
     }
 }

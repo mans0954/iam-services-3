@@ -22,6 +22,7 @@
 package org.openiam.provision.service;
 
 import groovy.lang.MissingPropertyException;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -41,6 +42,7 @@ import org.openiam.connector.type.response.*;
 import org.openiam.exception.ObjectNotFoundException;
 import org.openiam.exception.ScriptEngineException;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
+import org.openiam.idm.searchbeans.RoleSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
@@ -95,6 +97,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.jws.WebParam;
 import javax.jws.WebService;
+
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -853,10 +856,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         final Login primLogin = loginDozerConverter.convertToDTO(lg, false);
         if (CollectionUtils.isNotEmpty(roleList)) {
             for (final RoleEntity role : roleList) {
-                // TODO This method shouldn't use Internationalization Aspect
-				// Lev Bornovalov - internationalization is OK, since objects are cached in 4.0+ in 2nd level cache
-                final List<Resource> resourceList = resourceDataService.getResourcesForRole(role.getId(), 0,
-                        Integer.MAX_VALUE, null, null);
+                final List<Resource> resourceList = resourceDataService.getResourcesForRole(role.getId(), 0, Integer.MAX_VALUE, new ResourceSearchBean(), null);
                 if (CollectionUtils.isNotEmpty(resourceList)) {
                     for (final Resource resource : resourceList) {
                         ManagedSysDto managedSys = managedSysService.getManagedSysByResource(resource.getId());
@@ -1220,8 +1220,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     continue;
                 }
 
-                final ManagedSysEntity msys = managedSysDaoService.getManagedSysByResource(res.getId(), "ACTIVE");
-                final String managedSysId = (msys != null) ? msys.getId() : null;
+                String managedSysId = managedSysDaoService.getManagedSysByResource(res.getId(), "ACTIVE").getId();
 
                 if (AttributeOperationEnum.NO_CHANGE.equals(res.getOperation())) { // if not adding resource
                     for (LoginEntity l : userEntity.getPrincipalList()) {
@@ -1241,7 +1240,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
             for (LoginEntity l : userEntity.getPrincipalList()) {
                 boolean resFound = false;
-                String resId = managedSysDaoService.getManagedSysById(l.getManagedSysId()).getResource().getId();
+                String resId = managedSysDaoService.getManagedSysById(l.getManagedSysId()).getId();
                 for (Resource r : resourceSet) {
                     if (r.getId().equals(resId)) {
                         resFound = true;
@@ -1930,7 +1929,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     ResourceSearchBean resourceSearchBean = new ResourceSearchBean();
                     resourceSearchBean.setDeepCopy(false);
                     resourceSearchBean.setResourceTypeId(ResourceSearchBean.TYPE_MANAGED_SYS);
-                    // TODO This method shouldn't use Internationalization Aspect
                     List<Resource> resources = resourceDataService.getResourcesForRole(rl.getId(), 0, Integer.MAX_VALUE, resourceSearchBean, null);
                     if (CollectionUtils.isNotEmpty(resources)) {
                         for (Resource r : resources) {
@@ -1953,11 +1951,18 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     ResourceSearchBean resourceSearchBean = new ResourceSearchBean();
                     resourceSearchBean.setDeepCopy(false);
                     resourceSearchBean.setResourceTypeId(ResourceSearchBean.TYPE_MANAGED_SYS);
-                    List<Resource> resources = resourceDataService.getResourcesForRole(gr.getId(), 0, Integer.MAX_VALUE, resourceSearchBean, null);
+                    
+                    ResourceSearchBean searchBean = new ResourceSearchBean();
+                    searchBean.addGroupId(gr.getId());
+                    
+                    List<Resource> resources = resourceDataService.findBeans(searchBean, 0, Integer.MAX_VALUE, null);
                     if (CollectionUtils.isNotEmpty(resources)) {
                         resourceSet.addAll(resources);
                     }
-                    List<RoleEntity> roleEntities = roleDataService.getRolesInGroup(gr.getId(), null, 0, Integer.MAX_VALUE);
+                    
+                    RoleSearchBean roleSearchBean = new RoleSearchBean();
+                    searchBean.addGroupId(gr.getId());
+                    List<RoleEntity> roleEntities = roleDataService.findBeans(roleSearchBean, null, 0, Integer.MAX_VALUE);
                     if (CollectionUtils.isNotEmpty(roleEntities)) {
                         List<Role> roles = roleDozerConverter.convertToDTOList(roleEntities, false);
                         Set<Resource> roleResources = getResourcesForRoles(new HashSet<Role>(roles));
@@ -2119,19 +2124,19 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 }
             }
 
-            for (LoginEntity l : principalList) {
+            for (LoginEntity targetLoginEntity : principalList) {
                 // if managedsysId is equal to the source or the openiam default
                 // ID, then only update the database
                 // otherwise do a sync
-                if (l.getManagedSysId().equalsIgnoreCase(passwordSync.getManagedSystemId())
-                        || l.getManagedSysId().equalsIgnoreCase(sysConfiguration.getDefaultManagedSysId())) {
+                if (targetLoginEntity.getManagedSysId().equalsIgnoreCase(passwordSync.getManagedSystemId())
+                        || targetLoginEntity.getManagedSysId().equalsIgnoreCase(sysConfiguration.getDefaultManagedSysId())) {
 
-                    log.debug("Updating password for " + l.getLogin());
+                    log.debug("Updating password for " + targetLoginEntity.getLogin());
 
-                    auditLog.setManagedSysId(l.getManagedSysId());
-                    auditLog.addAttribute(AuditAttributeName.DESCRIPTION, "Updating password for " + l.getLogin());
+                    auditLog.setManagedSysId(targetLoginEntity.getManagedSysId());
+                    auditLog.addAttribute(AuditAttributeName.DESCRIPTION, "Updating password for " + targetLoginEntity.getLogin());
 
-                    boolean retval = loginManager.setPassword(l.getLogin(), l.getManagedSysId(), encPassword,
+                    boolean retval = loginManager.setPassword(targetLoginEntity.getLogin(), targetLoginEntity.getManagedSysId(), encPassword,
                             passwordSync.isPreventChangeCountIncrement());
                     if (retval) {
                         auditLog.succeed();
@@ -2154,10 +2159,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     }
                 } else {
 
-                    log.debug("Synchronizing password from: " + l);
+                    log.debug("Synchronizing password from: " + targetLoginEntity);
 
                     // determine if you should sync the password or not
-                    String managedSysId = l.getManagedSysId();
+                    String managedSysId = targetLoginEntity.getManagedSysId();
                     final ManagedSysEntity mSys = managedSystemService.getManagedSysById(managedSysId);
                     final ResourceEntity res = mSys.getResource();
 
@@ -2168,7 +2173,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         log.debug("Sync allowed for sys=" + managedSysId);
 
                         // update the password in openiam
-                        loginManager.setPassword(l.getLogin(), l.getManagedSysId(), encPassword,
+                        loginManager.setPassword(targetLoginEntity.getLogin(), targetLoginEntity.getManagedSysId(), encPassword,
                                 passwordSync.isPreventChangeCountIncrement());
 
                         // update the target system
@@ -2184,15 +2189,14 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                             matchObj = matcheList.get(0);
                         }
 
-                        // exclude the system where this event occured.
-                        Login loginDTO = loginDozerConverter.convertToDTO(login, false);
+                        Login loginDTO = loginDozerConverter.convertToDTO(targetLoginEntity, false);
                         ResponseType resp = resetPassword(requestId, loginDTO,
                                 passwordSync.getPassword(), managedSysDozerConverter.convertToDTO(mSys, false),
                                 objectMatchDozerConverter.convertToDTO(matchObj, false),
                                 buildMngSysAttributes(loginDTO, "SYNC_PASSWORD"));
                         if (resp.getStatus() == StatusCodeType.SUCCESS) {
                             auditLog.succeed();
-                            auditLog.setAuditDescription("Set password for resource: " + res.getName() + " for user: " + l.getLogin());
+                            auditLog.setAuditDescription("Set password for resource: " + res.getName() + " for user: " + targetLoginEntity.getLogin());
 
                             response.setStatus(ResponseStatus.SUCCESS);
                         } else {
@@ -2205,7 +2209,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
                             auditLog.fail();
                             auditLog.setFailureReason(String.format("Set password for resource %s user %s failed: %s",
-                                    mSys.getName(), l.getLogin(), reason));
+                                    mSys.getName(), targetLoginEntity.getLogin(), reason));
 
                             response.setErrorText(resp.getErrorMsgAsStr());
                             response.setStatus(ResponseStatus.FAILURE);

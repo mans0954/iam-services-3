@@ -46,12 +46,12 @@ public class AddressEntity extends AbstractMetdataTypeEntity {
     @Size(max = 20, message = "validator.address.suite.toolong")
     private String suite;
 
-    @Column(name = "ADDRESS1", length = 45)
-    @Size(max = 45, message = "validator.address.address1.toolong")
+    @Column(name = "ADDRESS1", length = 400)
+    @Size(max = 400, message = "validator.address.address1.toolong")
     private String address1;
 
-    @Column(name = "ADDRESS2", length = 45)
-    @Size(max = 45, message = "validator.address.address2.toolong")
+    @Column(name = "ADDRESS2", length = 400)
+    @Size(max = 400, message = "validator.address.address2.toolong")
     private String address2;
 
     @Column(name = "ADDRESS3", length = 45)
