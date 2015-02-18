@@ -36,7 +36,7 @@ public abstract class AbstractSearchLdapCommand<ExtObject extends ExtensibleObje
         SearchResponse searchResponse = new SearchResponse();
         searchResponse.setStatus(StatusCodeType.SUCCESS);
 
-        ConnectorConfiguration config =  getConfiguration(searchRequest.getTargetID(), ConnectorConfiguration.class);
+        ConnectorConfiguration config = getConfiguration(searchRequest.getTargetID(), ConnectorConfiguration.class);
         ManagedSysEntity managedSys = config.getManagedSys();
         LdapContext ldapContext = this.connect(managedSys);
 
@@ -47,7 +47,7 @@ public abstract class AbstractSearchLdapCommand<ExtObject extends ExtensibleObje
             log.debug("Searching BaseDN=" + searchRequest.getBaseDN());
 
             SearchControls searchControls = new SearchControls();
-            ldapContext.setRequestControls(new Control[] { new PagedResultsControl(PAGE_SIZE, Control.NONCRITICAL) });
+            ldapContext.setRequestControls(new Control[]{new PagedResultsControl(PAGE_SIZE, Control.NONCRITICAL)});
             searchControls.setSearchScope(managedSys.getSearchScope().getValue());
             String identityAttrName = matchObj != null ? matchObj.getKeyField() : "cn";
 
@@ -59,7 +59,8 @@ public abstract class AbstractSearchLdapCommand<ExtObject extends ExtensibleObje
             boolean found = false;
             do {
                 NamingEnumeration results = ldapContext.search(searchRequest.getBaseDN(), searchRequest.getSearchQuery(), searchControls);
-
+                log.debug("Succesfully get from AD!");
+                log.debug("mapping data");
                 while (results != null && results.hasMoreElements()) {
                     SearchResult sr = (SearchResult) results.next();
                     Attributes attrs = sr.getAttributes();
@@ -72,14 +73,14 @@ public abstract class AbstractSearchLdapCommand<ExtObject extends ExtensibleObje
                             String dnValue = sr.getNameInNamespace();
                             extAttr.setValue(dnValue);
                             objectValue.getAttributeList().add(extAttr);
-                            if(identityAttrName.equalsIgnoreCase(extAttr.getName())) {
+                            if (identityAttrName.equalsIgnoreCase(extAttr.getName())) {
                                 objectValue.setObjectIdentity(extAttr.getValue());
                             }
                         } catch (UnsupportedOperationException e) {
                             log.error(e.getMessage(), e);
                         }
 
-                        for (NamingEnumeration ae = attrs.getAll(); ae.hasMore();) {
+                        for (NamingEnumeration ae = attrs.getAll(); ae.hasMore(); ) {
                             ExtensibleAttribute extAttr = new ExtensibleAttribute();
                             Attribute attr = (Attribute) ae.next();
 
@@ -99,17 +100,19 @@ public abstract class AbstractSearchLdapCommand<ExtObject extends ExtensibleObje
                                             extAttr.setAttributeContainer(container);
                                         }
                                         container.getAttributeList().add(
-                                                new BaseAttribute(attr.getID(), o.toString(), AttributeOperationEnum.NO_CHANGE));
+                                                new BaseAttribute(attr.getID(), o.toString().replaceAll(patternForCTRLCHAR, ""), AttributeOperationEnum.NO_CHANGE));
                                     } else {
-                                        extAttr.setValue(o.toString());
+                                        extAttr.setValue(o.toString().replaceAll(patternForCTRLCHAR, ""));
                                     }
                                     addToList = true;
                                 }
                             }
-                            if(identityAttrName.equalsIgnoreCase(extAttr.getName())) {
-                                objectValue.setObjectIdentity(extAttr.getValue());
+                            if (identityAttrName.equalsIgnoreCase(extAttr.getName().replaceAll(patternForCTRLCHAR, ""))) {
+                                objectValue.setObjectIdentity(extAttr.getValue().replaceAll(patternForCTRLCHAR, ""));
                             }
                             if (addToList) {
+                                log.debug("Add attribute to object value!!");
+                                log.debug("Attribute=" + extAttr.getName() + " Value=" + extAttr.getValue());
                                 objectValue.getAttributeList().add(extAttr);
                             }
                         }
@@ -123,28 +126,29 @@ public abstract class AbstractSearchLdapCommand<ExtObject extends ExtensibleObje
                 if (controls != null) {
                     for (Control c : controls) {
                         if (c instanceof PagedResultsResponseControl) {
-                            PagedResultsResponseControl prrc = (PagedResultsResponseControl)c;
+                            PagedResultsResponseControl prrc = (PagedResultsResponseControl) c;
                             cookie = prrc.getCookie();
                             break;
                         }
                     }
                 }
-                ldapContext.setRequestControls(new Control[]{ new PagedResultsControl(PAGE_SIZE, cookie, Control.CRITICAL) });
+                ldapContext.setRequestControls(new Control[]{new PagedResultsControl(PAGE_SIZE, cookie, Control.CRITICAL)});
             } while (cookie != null);
-
+            log.debug("put object list to response");
             searchResponse.setObjectList(objectValueList);
 
             if (!found) {
-                throw  new ConnectorDataException(ErrorCode.NO_RESULTS_RETURNED);
+                throw new ConnectorDataException(ErrorCode.NO_RESULTS_RETURNED);
             }
+            log.debug("Send with Mule!");
             return searchResponse;
 
         } catch (NamingException e) {
             log.error(e.getMessage(), e);
-            throw new  ConnectorDataException(ErrorCode.DIRECTORY_ERROR, e.getMessage());
+            throw new ConnectorDataException(ErrorCode.DIRECTORY_ERROR, e.getMessage());
         } catch (IOException e) {
             log.error(e.getMessage(), e);
-            throw new  ConnectorDataException(ErrorCode.DIRECTORY_ERROR, e.getMessage());
+            throw new ConnectorDataException(ErrorCode.DIRECTORY_ERROR, e.getMessage());
         } finally {
             /* close the connection to the directory */
             this.closeContext(ldapContext);

@@ -58,7 +58,6 @@ import org.openiam.provision.resp.LookupObjectResponse;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleGroup;
 import org.openiam.provision.type.ExtensibleObject;
-import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.util.MuleContextProvider;
 import org.openiam.util.SpringContextProvider;
@@ -1120,16 +1119,18 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
 
             log.debug("Calling lookupRequest ");
 
-            LookupRequest<ExtensibleUser> reqType = new LookupRequest<>();
+            LookupRequest<ExtensibleGroup> reqType = new LookupRequest<>();
             String requestId = "R" + UUIDGen.getUUID();
             reqType.setRequestID(requestId);
             reqType.setSearchValue(principalName);
 
-            ExtensibleUser extensibleUser = new ExtensibleUser();
-            extensibleUser.setPrincipalFieldName(matchObj.getKeyField());
-            extensibleUser.setPrincipalFieldDataType("string");
-            extensibleUser.setAttributes(extensibleAttributes);
-            reqType.setExtensibleObject(extensibleUser);
+            ExtensibleGroup extensibleGroup = new ExtensibleGroup();
+            if (matchObj != null && StringUtils.isNotEmpty(matchObj.getKeyField())) {
+                extensibleGroup.setPrincipalFieldName(matchObj.getKeyField());
+            }
+            extensibleGroup.setPrincipalFieldDataType("string");
+            extensibleGroup.setAttributes(extensibleAttributes);
+            reqType.setExtensibleObject(extensibleGroup);
             reqType.setTargetID(managedSysId);
             reqType.setHostLoginId(mSys.getUserId());
             if (matchObj != null && StringUtils.isNotEmpty(matchObj.getSearchBaseDn())) {
