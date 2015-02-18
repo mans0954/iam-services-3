@@ -460,7 +460,14 @@ public class RoleDataServiceImpl implements RoleDataService {
 		return roleDao.getRolesForUser(userId, getDelegationFilter(requesterId), from, size);
 	}
 
-	@Override
+    @Override
+    @Transactional(readOnly = true)
+    public List<Role> getRolesDtoForUser(String userId, String requesterId, int from, int size) {
+        final List<RoleEntity> entityList = getRolesForUser(userId, requesterId, from, size);
+        return roleDozerConverter.convertToDTOList(entityList, false);
+    }
+
+    @Override
     @Transactional(readOnly = true)
 	public List<Role> getUserRolesAsFlatList(String userId) {
 		UserEntity userEntity = userDAO.findById(userId);

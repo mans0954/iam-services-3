@@ -103,6 +103,9 @@ public interface RoleDataService {
 
 
     public List<RoleEntity> getRolesForUser(final String userId, String requesterId, final int from, final int size);
+
+    public List<Role> getRolesDtoForUser(final String userId, String requesterId, final int from, final int size);
+
     public int getNumOfRolesForUser(final String userId, String requesterId);
 
     /**
