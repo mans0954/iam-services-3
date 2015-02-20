@@ -5,6 +5,8 @@ import org.apache.commons.collections.ListUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.Criteria;
+import org.hibernate.criterion.Restrictions;
 import org.openiam.authmanager.service.AuthorizationManagerService;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseConstants;
@@ -43,6 +45,7 @@ import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.dto.ApproverAssociation;
 import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
+import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.service.OrganizationService;
 import org.openiam.idm.srvc.pswd.domain.PasswordHistoryEntity;
 import org.openiam.idm.srvc.pswd.service.PasswordHistoryDAO;
@@ -166,6 +169,11 @@ public class UserMgr implements UserDataService {
 
     @Value("${org.openiam.user.search.max.results}")
     private int MAX_USER_SEARCH_RESULTS;
+
+    @Value("${org.openiam.organization.type.id}")
+    private String organizationTypeId;
+    @Value("${org.openiam.department.type.id}")
+    private String departmentTypeId;
 
     @Autowired
     @Qualifier("authorizationManagerService")
@@ -688,6 +696,7 @@ public class UserMgr implements UserDataService {
             }
         } else {
             List<UserEntity> finalizedIdList = userDao.findByIds(getUserIds(searchBean), searchBean);
+            sortUsersByOrg(finalizedIdList, searchBean.getSortBy());
             if (from > -1 && size > -1) {
                 if (finalizedIdList != null && finalizedIdList.size() >= from) {
                     int to = from + size;
@@ -707,6 +716,62 @@ public class UserMgr implements UserDataService {
         }
 
         return entityList;
+    }
+
+    private void sortUsersByOrg(List<UserEntity> userList, List<SortParam> sortParamList) {
+        if(CollectionUtils.isNotEmpty(userList)) {
+            for (SortParam sort : sortParamList) {
+                final OrderConstants orderDir = (sort.getOrderBy() == null) ? OrderConstants.ASC : sort.getOrderBy();
+
+                if ("organization".equals(sort.getSortBy())
+                        || "department".equals(sort.getSortBy())) {
+
+                    final String typeId = ("organization".equals(sort.getSortBy()))?organizationTypeId: departmentTypeId;
+                    Collections.sort(userList, new Comparator<UserEntity>() {
+                        @Override
+                        public int compare(UserEntity u1, UserEntity u2) {
+                            int result = 0;
+                            OrganizationEntity org1 = this.getUserOrg(u1, typeId);
+                            OrganizationEntity org2 = this.getUserOrg(u2, typeId);
+                            if(org1==null && org2!=null)
+                                result = -1;
+                            else if(org1!=null && org2==null)
+                                result = 1;
+                            else if(org1==null && org2==null)
+                                result = 0;
+                            else
+                                result = org1.getName().compareTo(org2.getName());
+
+                            return orderDir == OrderConstants.ASC ? result: result*(-1);
+                        }
+
+                        private OrganizationEntity getUserOrg(UserEntity u, String orgTypeId){
+                            OrganizationEntity org = null;
+                            if(CollectionUtils.isNotEmpty(u.getAffiliations())){
+                                List<OrganizationEntity>  userOrgs = new ArrayList<OrganizationEntity>();
+                                for(OrganizationEntity o: u.getAffiliations()){
+                                    if(o.getOrganizationType().getId().equals(orgTypeId)){
+                                        userOrgs.add(o);
+                                    }
+                                }
+                                if(CollectionUtils.isNotEmpty(userOrgs)) {
+                                    Collections.sort(userOrgs, new Comparator<OrganizationEntity>() {
+                                        @Override
+                                        public int compare(OrganizationEntity o1, OrganizationEntity o2) {
+                                            return o1.getName().compareTo(o2.getName());
+                                        }
+                                    });
+                                    org = userOrgs.get(0);
+                                }
+                            }
+                            return org;
+                        }
+                    });
+
+                    break;
+                }
+            }
+        }
     }
 
     @Override
