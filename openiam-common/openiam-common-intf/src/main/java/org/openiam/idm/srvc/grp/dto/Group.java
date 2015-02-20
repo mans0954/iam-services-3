@@ -374,130 +374,34 @@ public class Group extends AdminResourceDTO implements Serializable {
 		this.owner = owner;
 	}
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result
-				+ ((createDate == null) ? 0 : createDate.hashCode());
-		result = prime * result
-				+ ((createdBy == null) ? 0 : createdBy.hashCode());
-		result = prime * result
-				+ ((description == null) ? 0 : description.hashCode());
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
-		result = prime * result
-				+ ((lastUpdate == null) ? 0 : lastUpdate.hashCode());
-		result = prime * result
-				+ ((lastUpdatedBy == null) ? 0 : lastUpdatedBy.hashCode());
-		result = prime * result
-				+ ((managedSysId == null) ? 0 : managedSysId.hashCode());
-		result = prime * result
-				+ ((managedSysName == null) ? 0 : managedSysName.hashCode());
-		result = prime * result
-				+ ((operation == null) ? 0 : operation.hashCode());
-		result = prime * result + ((status == null) ? 0 : status.hashCode());
-		return result;
-	}
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
 
+        Group group = (Group) o;
+        if (name != null ? !name.equals(group.name) : group.name != null) return false;
+        if (id != null ? !id.equals(group.id) : group.id != null) return false;
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Group other = (Group) obj;
-		if (createDate == null) {
-			if (other.createDate != null)
-				return false;
-		} else if (!createDate.equals(other.createDate))
-			return false;
-		if (createdBy == null) {
-			if (other.createdBy != null)
-				return false;
-		} else if (!createdBy.equals(other.createdBy))
-			return false;
-		if (description == null) {
-			if (other.description != null)
-				return false;
-		} else if (!description.equals(other.description))
-			return false;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
-			return false;
-		if (name == null) {
-			if (other.name != null)
-				return false;
-		} else if (!name.equals(other.name))
-			return false;
-		if (lastUpdate == null) {
-			if (other.lastUpdate != null)
-				return false;
-		} else if (!lastUpdate.equals(other.lastUpdate))
-			return false;
-		if (lastUpdatedBy == null) {
-			if (other.lastUpdatedBy != null)
-				return false;
-		} else if (!lastUpdatedBy.equals(other.lastUpdatedBy))
-			return false;
-		if (managedSysId == null) {
-			if (other.managedSysId != null)
-				return false;
-		} else if (!managedSysId.equals(other.managedSysId))
-			return false;
-		if (managedSysName == null) {
-			if (other.managedSysName != null)
-				return false;
-		} else if (!managedSysName.equals(other.managedSysName))
-			return false;
-		if (operation != other.operation)
-			return false;
-		if (status == null) {
-			if (other.status != null)
-				return false;
-		} else if (!status.equals(other.status))
-			return false;
+        if (createDate != null ? !createDate.equals(group.createDate) : group.createDate != null) return false;
+        if (createdBy != null ? !createdBy.equals(group.createdBy) : group.createdBy != null) return false;
+        if (managedSysId != null ? !managedSysId.equals(group.managedSysId) : group.managedSysId != null) return false;
+        return true;
+    }
 
-		if (classificationId == null) {
-			if (other.classificationId != null)
-				return false;
-		} else if (!classificationId.equals(other.classificationId))
-			return false;
-		if (adGroupTypeId == null) {
-			if (other.adGroupTypeId != null)
-				return false;
-		} else if (!adGroupTypeId.equals(other.adGroupTypeId))
-			return false;
-		if (adGroupScopeId == null) {
-			if (other.adGroupScopeId != null)
-				return false;
-		} else if (!adGroupScopeId.equals(other.adGroupScopeId))
-			return false;
-		if (riskId == null) {
-			if (other.riskId != null)
-				return false;
-		} else if (!riskId.equals(other.riskId))
-			return false;
-		if (maxUserNumber == null) {
-			if (other.maxUserNumber != null)
-				return false;
-		} else if (!maxUserNumber.equals(other.maxUserNumber))
-			return false;
-		if (membershipDuration == null) {
-			if (other.membershipDuration != null)
-				return false;
-		} else if (!membershipDuration.equals(other.membershipDuration))
-			return false;
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + (id != null ? id.hashCode() : 0);
+        result = 31 * result + (name != null ? name.hashCode() : 0);
+        result = 31 * result + (managedSysId != null ? managedSysId.hashCode() : 0);
+        result = 31 * result + (createDate != null ? createDate.hashCode() : 0);
+        result = 31 * result + (createdBy != null ? createdBy.hashCode() : 0);
+        return result;
+    }
 
-		return true;
-	}
-
-	@Override
+    @Override
 	public String toString() {
 		return String
 				.format("Group [operation=%s, managedSysId=%s, managedSysName=%s, id=%s, name=%s, createDate=%s, createdBy=%s, description=%s, status=%s, lastUpdate=%s, lastUpdatedBy=%s" +
