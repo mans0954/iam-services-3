@@ -719,7 +719,7 @@ public class UserMgr implements UserDataService {
     }
 
     private void sortUsersByOrg(List<UserEntity> userList, List<SortParam> sortParamList) {
-        if(CollectionUtils.isNotEmpty(userList)) {
+        if(CollectionUtils.isNotEmpty(userList) && CollectionUtils.isNotEmpty(sortParamList)) {
             for (SortParam sort : sortParamList) {
                 final OrderConstants orderDir = (sort.getOrderBy() == null) ? OrderConstants.ASC : sort.getOrderBy();
 
