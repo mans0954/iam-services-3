@@ -34,7 +34,6 @@ import org.openiam.base.ws.ResponseStatus;
 import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.request.LookupRequest;
-import org.openiam.connector.type.request.SuspendResumeRequest;
 import org.openiam.connector.type.response.*;
 import org.openiam.exception.ObjectNotFoundException;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
@@ -813,8 +812,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         loginManager.updateLogin(lg);
         userMgr.updateUserWithDependent(user, false);
 
-        LoginEntity lRequestor = loginManager.getPrimaryIdentity(requestorId);
-
         /*
          * auditHelper.addLog(auditReason, logDomainId, logLoginId,
          * "IDM SERVICE", requestorId, "USER", "USER", logUserId, null,
@@ -825,26 +822,11 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         for (final LoginEntity userLogin : loginList) {
             if (userLogin != null) {
                 if (userLogin.getManagedSysId() != null && !userLogin.getManagedSysId().equals("0")) {
-                    ResponseType responsetype = null;
                     final String managedSysId = userLogin.getManagedSysId();
                     final ManagedSysDto managedSys = managedSysService.getManagedSys(managedSysId);
                     final Login login = loginDozerConverter.convertToDTO(userLogin, false);
-                    if (AccountLockEnum.LOCKED.equals(operation) || AccountLockEnum.LOCKED_ADMIN.equals(operation)) {
-                        final SuspendResumeRequest suspendCommand = new SuspendResumeRequest();
-                        suspendCommand.setObjectIdentity(userLogin.getLogin());
-                        suspendCommand.setTargetID(managedSysId);
-                        suspendCommand.setRequestID("R" + System.currentTimeMillis());
-                        suspendCommand.setExtensibleObject(buildMngSysAttributes(login, "SUSPEND"));
-                        connectorAdapter.suspendRequest(managedSys, suspendCommand, MuleContextProvider.getCtx());
-                    } else {
-                        final SuspendResumeRequest resumeRequest = new SuspendResumeRequest();
-                        resumeRequest.setObjectIdentity(userLogin.getLogin());
-                        resumeRequest.setTargetID(managedSysId);
-                        resumeRequest.setRequestID("R" + System.currentTimeMillis());
-                        resumeRequest.setExtensibleObject(buildMngSysAttributes(login, "RESUME"));
-                        connectorAdapter.resumeRequest(managedSys, resumeRequest, MuleContextProvider.getCtx());
-                    }
-
+                    boolean isSuspend = AccountLockEnum.LOCKED.equals(operation) || AccountLockEnum.LOCKED_ADMIN.equals(operation);
+                    ResponseType responsetype = suspend(requestorId, login, managedSys, buildMngSysAttributes(login, isSuspend?"SUSPEND":"RESUME"), isSuspend);
                     if (responsetype == null) {
                         log.info("Response object from set password is null");
                         response.setStatus(ResponseStatus.FAILURE);
@@ -859,7 +841,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     log.info(String.format("Response status=%s", response.getStatus()));
 
                     // TODO: process the result of the WS call to resume/suspend
-                    // of teh connector
+                    // of the connector
                 }
             }
         }
@@ -873,25 +855,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     for (final Resource resource : resourceList) {
                         ManagedSysDto managedSys = managedSysService.getManagedSysByResource(resource.getId());
                         if (managedSys != null) {
-                            ResponseType responsetype = null;
-                            if (AccountLockEnum.LOCKED.equals(operation)
-                                    || AccountLockEnum.LOCKED_ADMIN.equals(operation)) {
-                                final SuspendResumeRequest suspendCommand = new SuspendResumeRequest();
-                                suspendCommand.setObjectIdentity(lg.getLogin());
-                                suspendCommand.setTargetID(managedSys.getId());
-                                suspendCommand.setRequestID("R" + System.currentTimeMillis());
-                                suspendCommand.setExtensibleObject(buildMngSysAttributes(primLogin, "SUSPEND"));
-                                connectorAdapter.suspendRequest(managedSys, suspendCommand,
-                                        MuleContextProvider.getCtx());
-                            } else {
-                                final SuspendResumeRequest resumeRequest = new SuspendResumeRequest();
-                                resumeRequest.setObjectIdentity(lg.getLogin());
-                                resumeRequest.setTargetID(managedSys.getId());
-                                resumeRequest.setRequestID("R" + System.currentTimeMillis());
-                                resumeRequest.setExtensibleObject(buildMngSysAttributes(primLogin, "RESUME"));
-                                connectorAdapter.resumeRequest(managedSys, resumeRequest, MuleContextProvider.getCtx());
-                            }
-
+                            boolean isSuspend = AccountLockEnum.LOCKED.equals(operation) || AccountLockEnum.LOCKED_ADMIN.equals(operation);
+                            ResponseType responsetype = suspend(requestorId, primLogin, managedSys,
+                                            buildMngSysAttributes(primLogin, isSuspend?"SUSPEND":"RESUME"), isSuspend);
                             if (responsetype.getStatus() == null) {
                                 log.info("Response status is null");
                                 response.setStatus(ResponseStatus.FAILURE);
@@ -1554,9 +1520,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
                             log.info("============== Connector Reset Password call: " + new Date());
                             Login login = loginDozerConverter.convertToDTO(lg, false);
+                            ManagedSysDto managedSysDto = managedSysDozerConverter.convertToDTO(mSys, false);
                             ResponseType resp = resetPassword(requestId,
-                                    login, password,
-                                    managedSysDozerConverter.convertToDTO(mSys, false),
+                                    login, password, managedSysDto,
                                     objectMatchDozerConverter.convertToDTO(matchObj, false),
                                     buildMngSysAttributes(login, "RESET_PASSWORD"));
                             log.info("============== Connector Reset Password get : " + new Date());
@@ -3039,7 +3005,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         final ResourceEntity res = resourceService.findResourceById(mSys.getResourceId());
                         log.debug(" - Managed System Id = " + managedSysId);
                         log.debug(" - Resource Id = " + res.getId());
-//Pre-processor script
+                        //Pre-processor script
                         final String preProcessScript = getResourceProperty(res, "PRE_PROCESS");
                         if (preProcessScript != null && !preProcessScript.isEmpty()) {
                             final PreProcessor ppScript = createPreProcessScript(preProcessScript);
@@ -3060,27 +3026,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                             log.debug("preparing suspendRequest object");
                             lg.setStatus(LoginStatusEnum.INACTIVE);
 
-                            SuspendResumeRequest suspendReq = new SuspendResumeRequest();
-                            suspendReq.setObjectIdentity(lg.getLogin());
-                            suspendReq.setTargetID(managedSysId);
-                            suspendReq.setRequestID(requestId);
-                            suspendReq.setScriptHandler(mSys
-                                    .getSuspendHandler());
-
-                            suspendReq.setHostLoginId(mSys.getUserId());
-                            String passwordDecoded = mSys.getPswd();
-                            try {
-                                passwordDecoded = getDecryptedPassword(mSys);
-                            } catch (ConnectorDataException e) {
-                                e.printStackTrace();
-                            }
-                            suspendReq.setHostLoginPassword(passwordDecoded);
-                            suspendReq.setHostUrl(mSys.getHostUrl());
-                            suspendReq.setExtensibleObject(buildMngSysAttributes(login, "SUSPEND"));
-
-
-                            resp = connectorAdapter.suspendRequest(mSys, suspendReq,
-                                    MuleContextProvider.getCtx());
+                            resp = suspend(requestId, login, mSys, buildMngSysAttributes(login, "SUSPEND"), operation);
 
                             if (StatusCodeType.SUCCESS.equals(resp.getStatus())) {
                                 lg.setProvStatus(ProvLoginStatusEnum.DISABLED);
@@ -3105,26 +3051,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                             lg.setPasswordChangeCount(0);
                             lg.setStatus(LoginStatusEnum.ACTIVE);
 
-                            SuspendResumeRequest resumeReq = new SuspendResumeRequest();
-                            resumeReq.setObjectIdentity(lg.getLogin());
-                            resumeReq.setTargetID(managedSysId);
-                            resumeReq.setRequestID(requestId);
-                            resumeReq.setScriptHandler(mSys
-                                    .getSuspendHandler());
-                            resumeReq.setHostLoginId(mSys.getUserId());
-                            resumeReq.setExtensibleObject(buildMngSysAttributes(login, "RESUME"));
-
-                            String passwordDecoded = mSys.getPswd();
-                            try {
-                                passwordDecoded = getDecryptedPassword(mSys);
-                            } catch (ConnectorDataException e) {
-                                e.printStackTrace();
-                            }
-                            resumeReq.setHostLoginPassword(passwordDecoded);
-                            resumeReq.setHostUrl(mSys.getHostUrl());
-
-                            resp = connectorAdapter.resumeRequest(mSys,
-                                    resumeReq, MuleContextProvider.getCtx());
+                            resp = suspend(requestId, login, mSys, buildMngSysAttributes(login, "RESUME"), operation);
 
                             if (StatusCodeType.SUCCESS.equals(resp.getStatus())) {
                                 lg.setProvStatus(ProvLoginStatusEnum.ENABLED);
