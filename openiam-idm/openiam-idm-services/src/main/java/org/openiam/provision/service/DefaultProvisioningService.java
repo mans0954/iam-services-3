@@ -1399,14 +1399,15 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(this.sysConfiguration.getDefaultManagedSysId(), loginEntityList);
         idmAuditLog.setRequestorPrincipal(primaryIdentity.getLogin());
         idmAuditLog.setRequestorUserId(passwordSync.getRequestorId());
-        idmAuditLog.setAction(AuditAction.PROVISIONING_RESETPASSWORD.value());
+        idmAuditLog.setAction(AuditAction.USER_RESETPASSWORD.value());
 
         if (auditLog != null) {
             auditLog.addChild(idmAuditLog);
         }
-        Map<String, Object> bindingMap = new HashMap<String, Object>();
+        boolean allResetOK = true;
         final PasswordResponse response = new PasswordResponse(ResponseStatus.SUCCESS);
         try {
+            Map<String, Object> bindingMap = new HashMap<String, Object>();
             if (callPreProcessor("RESET_PASSWORD", null, bindingMap, passwordSync) != ProvisioningConstants.SUCCESS) {
                 response.fail();
                 response.setErrorCode(ResponseCode.FAIL_PREPROCESSOR);
@@ -1466,7 +1467,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 principalList.addAll(identities);
             }
 
-
             // reset passwords for all identities with the same password
             for (final LoginEntity lg : principalList) {
                 final String managedSysId = lg.getManagedSysId();
@@ -1492,6 +1492,12 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     }
 
                     if (!lg.getManagedSysId().equals(sysConfiguration.getDefaultManagedSysId())) {
+                        final IdmAuditLog childAuditLog = new IdmAuditLog();
+                        childAuditLog.setRequestorPrincipal(primaryIdentity.getLogin());
+                        childAuditLog.setRequestorUserId(passwordSync.getRequestorId());
+                        childAuditLog.setAction(AuditAction.PROVISIONING_RESETPASSWORD.value());
+                        childAuditLog.setTargetManagedSys(mSys.getId(), mSys.getName());
+
                         if (syncAllowed(res)) { // check the sync flag
                             log.debug("Sync allowed for managed sys = " + managedSysId);
 
@@ -1527,23 +1533,24 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                     buildMngSysAttributes(login, "RESET_PASSWORD"));
                             log.info("============== Connector Reset Password get : " + new Date());
                             if (resp != null && resp.getStatus() == StatusCodeType.SUCCESS) {
-                                idmAuditLog.succeed();
-                                idmAuditLog.setAuditDescription(
-                                        "Reset password for resource: " + res.getName() + " for user: "
-                                                + lg.getLogin());
+                                childAuditLog.succeed();
+                                childAuditLog.setAuditDescription("Reset password for resource: " + res.getName() + " for user: " + lg.getLogin());
+                                idmAuditLog.addChild(childAuditLog);
+
                             } else {
-                                idmAuditLog.fail();
+                                allResetOK = false;
                                 String reason = "";
-                                if (resp != null) {
-                                    if (resp.getError() != null) {
-                                        reason = resp.getError().value();
-                                    } else if (StringUtils.isNotBlank(resp.getErrorMsgAsStr())) {
+                                if(resp != null) {
+                                    if (StringUtils.isNotBlank(resp.getErrorMsgAsStr())) {
                                         reason = resp.getErrorMsgAsStr();
+                                    } else if (resp.getError() != null) {
+                                        reason = resp.getError().value();
                                     }
                                 }
-                                idmAuditLog.setFailureReason(String.format("Reset password for resource %s user %s failed: %s",
-                                        mSys.getName(), lg.getLogin(), reason));
 
+                                childAuditLog.fail();
+                                childAuditLog.setFailureReason(String.format("Reset password for resource %s user %s failed: %s", mSys.getName(), lg.getLogin(), reason));
+                                idmAuditLog.addChild(childAuditLog);
                             }
                             // Post processor script
                             final String postProcessScript = getResourceProperty(res, "POST_PROCESS");
@@ -1558,11 +1565,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 }
             }
 
-               /*
-                         * came with merge from v2.3 //check if password should be sent
-                         * to the user. if (passwordSync.isSendPasswordToUser()) { //
-                         * sendPasswordToUser(usr, password); }
-                         */
             if (passwordSync.getSendPasswordToUser()) {
                 sendResetPasswordToUser(identity, password);
             }
@@ -1577,10 +1579,15 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             }
         } finally {
             if (auditLog == null) {
-                auditLogService.enqueue(idmAuditLog);
+                if (!allResetOK) {
+                    idmAuditLog.fail();
+                }
+                auditLogService.save(idmAuditLog);
             }
         }
-
+        if (!allResetOK) {
+            response.setStatus(ResponseStatus.FAILURE);
+        }
         return response;
 
     }
