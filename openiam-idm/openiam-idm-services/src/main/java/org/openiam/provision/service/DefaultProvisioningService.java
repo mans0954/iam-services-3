@@ -1737,9 +1737,19 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     @Transactional
     public PasswordValidationResponse setPassword(PasswordSync passwordSync) {
         log.debug("----setPassword called.------");
-        final IdmAuditLog auditLog = new IdmAuditLog();
-        auditLog.setBaseObject(passwordSync);
-        auditLog.setAction(AuditAction.CHANGE_PASSWORD.value());
+        final IdmAuditLog idmAuditLog = new IdmAuditLog();
+        List<LoginEntity> loginEntityList = loginManager.getLoginByUser(passwordSync.getRequestorId());
+        LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(this.sysConfiguration.getDefaultManagedSysId(), loginEntityList);
+        idmAuditLog.setRequestorPrincipal(primaryIdentity.getLogin());
+        idmAuditLog.setRequestorUserId(passwordSync.getRequestorId());
+        idmAuditLog.setAction(AuditAction.CHANGE_PASSWORD.value());
+        idmAuditLog.setBaseObject(passwordSync);
+        idmAuditLog.setUserId(passwordSync.getUserId());
+//        final IdmAuditLog auditLog = new IdmAuditLog();
+//        auditLog.setBaseObject(passwordSync);
+//        auditLog.setAction(AuditAction.CHANGE_PASSWORD.value());
+
+        boolean allSetOK = true;
         PasswordValidationResponse response = new PasswordValidationResponse(ResponseStatus.SUCCESS);
         final Map<String, Object> bindingMap = new HashMap<String, Object>();
 
@@ -1747,8 +1757,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             if (callPreProcessor("SET_PASSWORD", null, bindingMap, passwordSync) != ProvisioningConstants.SUCCESS) {
                 response.fail();
                 response.setErrorCode(ResponseCode.FAIL_PREPROCESSOR);
-                auditLog.fail();
-                auditLog.setFailureReason(ResponseCode.FAIL_PREPROCESSOR);
+                idmAuditLog.fail();
+                idmAuditLog.setFailureReason(ResponseCode.FAIL_PREPROCESSOR);
                 return response;
             }
 
@@ -1757,7 +1767,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             // get the user identities
             List<LoginEntity> identities = loginManager.getLoginByUser(passwordSync.getUserId());
 
-            auditLog.setUserId(passwordSync.getUserId());
             LoginEntity identity = null;
             if (StringUtils.isNotBlank(passwordSync.getManagedSystemId())) {
                 for (LoginEntity le : identities) {
@@ -1771,11 +1780,11 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             }
 
             if (identity != null) {
-                auditLog.setTargetUser(identity.getUserId(), identity.getLogin());
+                idmAuditLog.setTargetUser(identity.getUserId(), identity.getLogin());
 
             } else {
-                auditLog.fail();
-                auditLog.setFailureReason(ResponseCode.PRINCIPAL_NOT_FOUND);
+                idmAuditLog.fail();
+                idmAuditLog.setFailureReason(ResponseCode.PRINCIPAL_NOT_FOUND);
                 response.setStatus(ResponseStatus.FAILURE);
                 response.setErrorCode(ResponseCode.PRINCIPAL_NOT_FOUND);
                 return response;
@@ -1790,12 +1799,12 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             try {
                 response = passwordManager.isPasswordValid(pswd);
                 if (response.isFailure()) {
-                    auditLog.fail();
-                    auditLog.setFailureReason("Invalid Password");
+                    idmAuditLog.fail();
+                    idmAuditLog.setFailureReason("Invalid Password");
                     return response;
                 }
             } catch (ObjectNotFoundException oe) {
-                auditLog.setException(oe);
+                idmAuditLog.setException(oe);
                 log.error("Object not found", oe);
             }
 
@@ -1803,8 +1812,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             try {
                 encPassword = loginManager.encryptPassword(identity.getUserId(), passwordSync.getPassword());
             } catch (Exception e) {
-                auditLog.fail();
-                auditLog.setFailureReason(ResponseCode.FAIL_ENCRYPTION);
+                idmAuditLog.fail();
+                idmAuditLog.setFailureReason(ResponseCode.FAIL_ENCRYPTION);
                 response.setStatus(ResponseStatus.FAILURE);
                 response.setErrorCode(ResponseCode.FAIL_ENCRYPTION);
                 return response;
@@ -1818,7 +1827,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             }
 
             for (final LoginEntity lg : principalList) {
-                String prevDecodedPassword = getDecryptedPassword(lg.getUserId(), lg.getPassword());
 
                 final String managedSysId = lg.getManagedSysId();
                 final ManagedSysEntity mSys = managedSystemService.getManagedSysById(managedSysId);
@@ -1834,7 +1842,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     if (retval) {
                         log.debug(String.format("- Password changed for principal: %s, user: %s, managed sys: %s -",
                                 identity.getLogin(), identity.getUserId(), identity.getManagedSysId()));
-                        auditLog.succeed();
+                        idmAuditLog.succeed();
 
                         /*
                          * came with merge from v2.3 //check if password should be sent
@@ -1846,8 +1854,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         }
 
                     } else {
-                        auditLog.fail();
-                        auditLog.setFailureReason(ResponseCode.PRINCIPAL_NOT_FOUND);
+                        idmAuditLog.fail();
+                        idmAuditLog.setFailureReason(ResponseCode.PRINCIPAL_NOT_FOUND);
                         response.setStatus(ResponseStatus.FAILURE);
                         response.setErrorCode(ResponseCode.PRINCIPAL_NOT_FOUND);
                         return response;
@@ -1855,6 +1863,14 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
                     if (!managedSysId.equals(sysConfiguration.getDefaultManagedSysId())) {
                         if (syncAllowed(res)) { // check the sync flag
+
+                            final IdmAuditLog childAuditLog = new IdmAuditLog();
+                            childAuditLog.setRequestorPrincipal(primaryIdentity.getLogin());
+                            childAuditLog.setRequestorUserId(passwordSync.getRequestorId());
+                            childAuditLog.setAction(AuditAction.PROVISIONING_SETPASSWORD.value());
+                            childAuditLog.setTargetManagedSys(mSys.getId(), mSys.getName());
+                            idmAuditLog.addChild(childAuditLog);
+
                             log.debug("Sync allowed for managed sys = " + managedSysId);
 
                             // pre-process
@@ -1898,12 +1914,13 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                             log.info("============== Connector Set Password get : " + new Date());
                             if (resp != null && resp.getStatus() == StatusCodeType.SUCCESS) {
                                 connectorSuccess = true;
-                                auditLog.succeed();
-                                auditLog.setAuditDescription(
+                                childAuditLog.succeed();
+                                childAuditLog.setAuditDescription(
                                         "Set password for resource: " + res.getName() + " for user: "
                                                 + lg.getLogin());
                             } else {
-                                auditLog.fail();
+                                allSetOK = false;
+                                childAuditLog.fail();
                                 String reason = "";
                                 if (resp != null) {
                                     if (resp.getError() != null) {
@@ -1912,7 +1929,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                         reason = resp.getErrorMsgAsStr();
                                     }
                                 }
-                                auditLog.setFailureReason(String.format("Set password for resource %s user %s failed: %s",
+                                childAuditLog.setFailureReason(String.format("Set password for resource %s user %s failed: %s",
                                         mSys.getName(), lg.getLogin(), reason));
 
                             }
@@ -1937,15 +1954,18 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             if (callPostProcessor("SET_PASSWORD", null, bindingMap, passwordSync) != ProvisioningConstants.SUCCESS) {
                 response.fail();
                 response.setErrorCode(ResponseCode.FAIL_POSTPROCESSOR);
-                auditLog.fail();
-                auditLog.setFailureReason(ResponseCode.FAIL_POSTPROCESSOR);
+                idmAuditLog.fail();
+                idmAuditLog.setFailureReason(ResponseCode.FAIL_POSTPROCESSOR);
                 return response;
             }
             response.setStatus(ResponseStatus.SUCCESS);
             return response;
 
         } finally {
-            auditLogService.enqueue(auditLog);
+            if (!allSetOK) {
+                idmAuditLog.fail();
+            }
+            auditLogService.enqueue(idmAuditLog);
         }
     }
 
