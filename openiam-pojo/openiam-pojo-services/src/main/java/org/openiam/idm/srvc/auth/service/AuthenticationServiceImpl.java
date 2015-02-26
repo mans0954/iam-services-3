@@ -207,6 +207,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
             final PolicyEntity authPolicy = policyDao.findById(authPolicyId);
             PolicyAttributeEntity modType = authPolicy.getAttribute("LOGIN_MOD_TYPE");
             PolicyAttributeEntity defaultModule = authPolicy.getAttribute("DEFAULT_LOGIN_MOD");
+            String managedSySId = getPolicyAttribute(authPolicy.getPolicyAttributes(), "MANAGED_SYS_ID");
             loginModName = defaultModule.getValue1();
             if (modType != null) {
                 // modSel.setModuleType( Integer.parseInt(modType.getValue1()));
@@ -237,7 +238,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
                 if (StringUtils.isBlank(password)) {
 
                     log.debug("Invalid password");
-	                /*
+                    /*
 	                log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
 	                        "INVALID PASSWORD", secDomainId, null, principal, null,
 	                        null, clientIP, nodeIP);
@@ -251,31 +252,30 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
                     return authResp;
 
                 }
-
-                lg = loginManager.getLoginByManagedSys(principal, sysConfiguration.getDefaultManagedSysId());
-
-                if (lg == null) {
-                    newLoginEvent.fail();
-                    newLoginEvent.setFailureReason(
-                            String.format("Cannot find login for principal '%s' and managedSystem '%s'",
-                                    principal, sysConfiguration.getDefaultManagedSysId()));
-	            	/*
-	                log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
-	                        "INVALID LOGIN", secDomainId, null, principal, null,
-	                        null, clientIP, nodeIP);
-					*/
-                    // throw new
-                    // AuthenticationException(AuthenticationConstants.RESULT_INVALID_LOGIN);
-
-                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_LOGIN);
-                    return authResp;
-
-                }
-
-                // check the user status - move to the abstract class for reuse
-                String userId = lg.getUserId();
-                newLoginEvent.setRequestorUserId(userId);
-                newLoginEvent.setTargetUser(userId, lg.getLogin());
+//                //try to find login in OIAM for managed system
+//                lg = loginManager.getLoginByManagedSys(principal, managedSySId);
+//
+//                if (lg == null) {
+//                    newLoginEvent.fail();
+//                    newLoginEvent.setFailureReason(
+//                            String.format("Cannot find login for principal '%s' and managedSystem '%s'",
+//                                    principal, sysConfiguration.getDefaultManagedSysId()));
+//	            	/*
+//	                log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
+//	                        "INVALID LOGIN", secDomainId, null, principal, null,
+//	                        null, clientIP, nodeIP);
+//					*/
+//                    // throw new
+//                    // AuthenticationException(AuthenticationConstants.RESULT_INVALID_LOGIN);
+//
+//                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_LOGIN);
+//                    return authResp;
+//                }
+//
+//                // check the user status - move to the abstract class for reuse
+//                String userId = lg.getUserId();
+//                newLoginEvent.setRequestorUserId(userId);
+//                newLoginEvent.setTargetUser(userId, lg.getLogin());
             }
 
             AuthenticationContext ctx = null;
@@ -338,7 +338,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 
             Map<String, Object> authParamMap = new HashMap<String, Object>();
             authParamMap.put("AUTH_SYS_ID", sysConfiguration.getDefaultManagedSysId());
-            authParamMap.put(AuthenticationRequest.AUTH_POLICY_ID,authPolicyId);
+            authParamMap.put(AuthenticationRequest.AUTH_POLICY_ID, authPolicyId);
             ctx.setAuthParam(authParamMap);
             ctx.setLoginModule(loginModName);
 
@@ -349,7 +349,6 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
             if (modSel.getModuleType() == LoginModuleSelector.MODULE_TYPE_LOGIN_MODULE) {
                 try {
                     sub = loginModule.login(ctx);
-
                 } catch (AuthenticationException ae) {
                     final String erroCodeAsString = Integer.valueOf(ae.getErrorCode()).toString();
                     newLoginEvent.fail();
@@ -436,7 +435,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
         String tokenLife = getPolicyAttribute(plcy.getPolicyAttributes(), "TOKEN_LIFE");
         String tokenIssuer = getPolicyAttribute(plcy.getPolicyAttributes(), "TOKEN_ISSUER");
         String managedSySId = getPolicyAttribute(plcy.getPolicyAttributes(), "MANAGED_SYS_ID");
-        if (StringUtils.isBlank(managedSySId)){
+        if (StringUtils.isBlank(managedSySId)) {
             managedSySId = sysConfiguration.getDefaultManagedSysId();
         }
         // get the userId of this token

@@ -41,6 +41,7 @@ import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -142,40 +143,7 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
         String principal = cred.getPrincipal();
         String password = cred.getPassword();
 
-        LoginResponse lgResp = loginManager.getLoginByManagedSys(principal, sysConfiguration.getDefaultManagedSysId());
-        Login lg = lgResp.getPrincipal();
-        if (lgResp.getStatus().equals(ResponseStatus.FAILURE) || lg == null)
-            throw new AuthenticationException(
-                    AuthenticationConstants.RESULT_INVALID_LOGIN);
 
-        UserEntity user = userManager.getUser(lg.getUserId());
-
-        if (user != null && user.getStatus() != null) {
-            log.debug("User Status=" + user.getStatus());
-            if (user.getStatus().equals(UserStatusEnum.PENDING_START_DATE)) {
-                if (!pendingInitialStartDateCheck(user, curDate)) {
-//                    log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
-//                            "INVALID_USER_STATUS", domainId, null, principal,
-//                            null, null, clientIP, nodeIP);
-                    throw new AuthenticationException(
-                            AuthenticationConstants.RESULT_INVALID_USER_STATUS);
-                }
-            }
-            if (!user.getStatus().equals(UserStatusEnum.ACTIVE)
-                    && !user.getStatus().equals(
-                    UserStatusEnum.PENDING_INITIAL_LOGIN)) {
-                // invalid status
-//                log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
-//                        "INVALID_USER_STATUS", domainId, null, principal, null,
-//                        null, clientIP, nodeIP);
-                throw new AuthenticationException(
-                        AuthenticationConstants.RESULT_INVALID_USER_STATUS);
-            }
-            // check the secondary status
-            log.debug("Secondary status=" + user.getSecondaryStatus());
-            checkSecondaryStatus(user);
-
-        }
         // check the user against AD
 
         // connect to ad with the admin account
@@ -196,7 +164,10 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
         String distinguishedName = getDN(nameEnum);
 
         log.info("Distinguished name=" + distinguishedName);
-
+        //maybe reset password and distinguishedName is entered
+        if (distinguishedName == null) {
+            distinguishedName = principal;
+        }
         if (distinguishedName == null) {
 //            log("AUTHENTICATION", "AUTHENTICATION", "FAIL", "INVALID_LOGIN",
 //                    domainId, null, principal, null, null, clientIP, nodeIP);
@@ -229,15 +200,15 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
         tokenParam.put("TOKEN_TYPE", tokenType);
         tokenParam.put("TOKEN_LIFE", tokenLife);
         tokenParam.put("TOKEN_ISSUER", tokenIssuer);
-        tokenParam.put("PRINCIPAL", principal);
+        tokenParam.put("PRINCIPAL", distinguishedName);
         LoginResponse lg2Resp = loginManager.getLoginByManagedSys(distinguishedName, managedSysId);
 
         if (lg2Resp.getStatus() == ResponseStatus.FAILURE) {
             throw new AuthenticationException(
                     AuthenticationConstants.RESULT_INVALID_LOGIN);
         }
-        lg = lg2Resp.getPrincipal();
-        user = this.userManager.getUser(lg.getUserId());
+        Login lg = lg2Resp.getPrincipal();
+        UserEntity user = this.userManager.getUser(lg.getUserId());
 
 
         // update the login and user records to show this authentication
@@ -261,7 +232,7 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
 
         // Successful login
         sub.setUserId(lg.getUserId());
-        sub.setPrincipal(principal);
+        sub.setPrincipal(distinguishedName);
         sub.setSsoToken(token(lg.getUserId(), tokenParam));
         setResultCode(lg, sub, curDate, null);
 
@@ -320,8 +291,8 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
 
             System.out.println("Search Filter=" + searchFilter);
             System.out.println("BaseDN=" + baseDn);
-
-            return ctx.search(baseDn, searchFilter, searchCtls);
+            NamingEnumeration result = ctx.search(baseDn, searchFilter, searchCtls);
+            return result;
         } catch (NamingException ne) {
             ne.printStackTrace();
         }

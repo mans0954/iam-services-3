@@ -826,7 +826,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     final ManagedSysDto managedSys = managedSysService.getManagedSys(managedSysId);
                     final Login login = loginDozerConverter.convertToDTO(userLogin, false);
                     boolean isSuspend = AccountLockEnum.LOCKED.equals(operation) || AccountLockEnum.LOCKED_ADMIN.equals(operation);
-                    ResponseType responsetype = suspend(requestorId, login, managedSys, buildMngSysAttributes(login, isSuspend?"SUSPEND":"RESUME"), isSuspend);
+                    ResponseType responsetype = suspend(requestorId, login, managedSys, buildMngSysAttributes(login, isSuspend ? "SUSPEND" : "RESUME"), isSuspend);
                     if (responsetype == null) {
                         log.info("Response object from set password is null");
                         response.setStatus(ResponseStatus.FAILURE);
@@ -857,7 +857,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         if (managedSys != null) {
                             boolean isSuspend = AccountLockEnum.LOCKED.equals(operation) || AccountLockEnum.LOCKED_ADMIN.equals(operation);
                             ResponseType responsetype = suspend(requestorId, primLogin, managedSys,
-                                            buildMngSysAttributes(primLogin, isSuspend?"SUSPEND":"RESUME"), isSuspend);
+                                    buildMngSysAttributes(primLogin, isSuspend ? "SUSPEND" : "RESUME"), isSuspend);
                             if (responsetype.getStatus() == null) {
                                 log.info("Response status is null");
                                 response.setStatus(ResponseStatus.FAILURE);
@@ -1540,7 +1540,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                             } else {
                                 allResetOK = false;
                                 String reason = "";
-                                if(resp != null) {
+                                if (resp != null) {
                                     if (StringUtils.isNotBlank(resp.getErrorMsgAsStr())) {
                                         reason = resp.getErrorMsgAsStr();
                                     } else if (resp.getError() != null) {
@@ -1738,9 +1738,14 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     public PasswordValidationResponse setPassword(PasswordSync passwordSync) {
         log.debug("----setPassword called.------");
         final IdmAuditLog idmAuditLog = new IdmAuditLog();
-        List<LoginEntity> loginEntityList = loginManager.getLoginByUser(passwordSync.getRequestorId());
-        LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(this.sysConfiguration.getDefaultManagedSysId(), loginEntityList);
-        idmAuditLog.setRequestorPrincipal(primaryIdentity.getLogin());
+        LoginEntity primaryIdentity = null;
+        if (passwordSync.getRequestorId() != null) {
+            List<LoginEntity> loginEntityList = loginManager.getLoginByUser(passwordSync.getRequestorId());
+            primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(this.sysConfiguration.getDefaultManagedSysId(), loginEntityList);
+
+        }
+        if (primaryIdentity != null)
+            idmAuditLog.setRequestorPrincipal(primaryIdentity.getLogin());
         idmAuditLog.setRequestorUserId(passwordSync.getRequestorId());
         idmAuditLog.setAction(AuditAction.CHANGE_PASSWORD.value());
         idmAuditLog.setBaseObject(passwordSync);
@@ -1865,7 +1870,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         if (syncAllowed(res)) { // check the sync flag
 
                             final IdmAuditLog childAuditLog = new IdmAuditLog();
-                            childAuditLog.setRequestorPrincipal(primaryIdentity.getLogin());
+                            if (primaryIdentity != null)
+                                childAuditLog.setRequestorPrincipal(primaryIdentity.getLogin());
                             childAuditLog.setRequestorUserId(passwordSync.getRequestorId());
                             childAuditLog.setAction(AuditAction.PROVISIONING_SETPASSWORD.value());
                             childAuditLog.setTargetManagedSys(mSys.getId(), mSys.getName());
