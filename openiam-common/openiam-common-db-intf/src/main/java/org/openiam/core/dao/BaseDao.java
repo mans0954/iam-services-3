@@ -22,6 +22,8 @@ public interface BaseDao<T, PrimaryKey extends Serializable> {
 
   List<T> findAll();
 
+  List<PrimaryKey> getAllIds();
+
   Long countAll();
   
   void update(T t);

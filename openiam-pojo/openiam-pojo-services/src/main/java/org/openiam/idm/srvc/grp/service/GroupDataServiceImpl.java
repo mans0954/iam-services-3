@@ -303,6 +303,14 @@ public class GroupDataServiceImpl implements GroupDataService {
     }
 
     @Override
+    public Set<String> getGroupIdList(){
+        List<String> groupIds = groupDao.getAllIds();
+        if(CollectionUtils.isNotEmpty(groupIds))
+            return new HashSet<String>(groupIds);
+        return Collections.EMPTY_SET;
+    }
+
+    @Override
     public int countBeans(final GroupSearchBean searchBean, final String requesterId) {
         Set<String> filter = getDelegationFilter(requesterId);
         if(StringUtils.isBlank(searchBean.getKey()))

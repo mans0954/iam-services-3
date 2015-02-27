@@ -62,6 +62,7 @@ public abstract class AbstractEntitlementsDelegate extends AbstractNotificationD
 		NOTIFICATION_MAP.put(ActivitiRequestType.NEW_HIRE_WITH_APPROVAL, "NEW_PENDING_REQUEST");
 
 		NOTIFICATION_MAP.put(ActivitiRequestType.ATTESTATION, "ATTESTATION_REQUEST");
+        NOTIFICATION_MAP.put(ActivitiRequestType.GROUP_ATTESTATION, "GROUP_ATTESTATION_REQUEST");
 
 		NOTIFICATION_MAP.put(ActivitiRequestType.ADD_GROUP_TO_GROUP, "ADD_GROUP_TO_GROUP_NOTIFY");
 		NOTIFICATION_MAP.put(ActivitiRequestType.ADD_ROLE_TO_GROUP, "ADD_ROLE_TO_GROUP_NOTIFY");
