@@ -110,14 +110,14 @@ public class SetPasswordLdapCommand extends AbstractLdapCommand<PasswordRequest,
             log.debug("Returning response object from set password with Status of Failure...");
             ConnectorDataException ex =null;
             if (ne instanceof OperationNotSupportedException) {
-                ex = new ConnectorDataException(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION);
+                ex = new ConnectorDataException(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION, ne.getMessage());
             } else {
-                ex = new ConnectorDataException(ErrorCode.DIRECTORY_ERROR);
+                ex = new ConnectorDataException(ErrorCode.DIRECTORY_ERROR, ne.getMessage());
             }
             throw  ex;
         } catch (Exception ne) {
             log.error(ne.getMessage(), ne);
-            throw  new ConnectorDataException(ErrorCode.OTHER_ERROR);
+            throw  new ConnectorDataException(ErrorCode.OTHER_ERROR, ne.getMessage());
         } finally {
             /* close the connection to the directory */
             this.closeContext(ldapctx);

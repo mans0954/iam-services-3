@@ -17,6 +17,7 @@ import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.request.CrudRequest;
 import org.openiam.connector.type.request.LookupRequest;
 import org.openiam.connector.type.request.PasswordRequest;
+import org.openiam.connector.type.request.SuspendResumeRequest;
 import org.openiam.connector.type.response.ObjectResponse;
 import org.openiam.connector.type.response.ResponseType;
 import org.openiam.connector.type.response.SearchResponse;
@@ -1740,6 +1741,29 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
 
         resp.setStatus(ResponseStatus.SUCCESS);
         return resp;
+    }
+
+    protected ResponseType suspend(String requestId, Login login, ManagedSysDto mSys, ExtensibleUser extensibleUser, boolean operation) {
+        SuspendResumeRequest resumeReq = new SuspendResumeRequest();
+        resumeReq.setObjectIdentity(login.getLogin());
+        resumeReq.setTargetID(login.getManagedSysId());
+        resumeReq.setRequestID(requestId);
+        resumeReq.setScriptHandler(mSys.getSuspendHandler());
+        resumeReq.setHostLoginId(mSys.getUserId());
+        resumeReq.setExtensibleObject(extensibleUser);
+
+        String passwordDecoded = mSys.getPswd();
+        try {
+            passwordDecoded = getDecryptedPassword(mSys);
+        } catch (ConnectorDataException e) {
+            e.printStackTrace();
+        }
+        resumeReq.setHostLoginPassword(passwordDecoded);
+        resumeReq.setHostUrl(mSys.getHostUrl());
+
+        log.debug("Resume request will be sent for user login " + login.getLogin());
+        return operation ? connectorAdapter.suspendRequest(mSys, resumeReq, MuleContextProvider.getCtx()) :
+                connectorAdapter.resumeRequest(mSys, resumeReq, MuleContextProvider.getCtx());
     }
 
     @Override
