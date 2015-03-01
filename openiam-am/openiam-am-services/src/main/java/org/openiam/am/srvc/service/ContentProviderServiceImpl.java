@@ -130,6 +130,14 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
         
         final String cpURL = provider.getResource().getURL();
         
+        if(StringUtils.isBlank(provider.getLoginURL())) {
+        	provider.setLoginURL("/idp/login.html");
+        }
+        
+        if(StringUtils.isBlank(provider.getPostbackURLParamName())) {
+        	provider.setPostbackURLParamName("postbackURL");
+        }
+        
         if(StringUtils.isBlank(provider.getId())) {
             final ResourceTypeEntity resourceType = resourceTypeDAO.findById(resourceTypeId);
             if(resourceType==null){
@@ -176,6 +184,8 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
         		dbEntity.setManagedSystem(managedSys);
         		dbEntity.setUiTheme(theme);
         		dbEntity.setShowOnApplicationPage(provider.isShowOnApplicationPage());
+        		dbEntity.setLoginURL(provider.getLoginURL());
+        		dbEntity.setPostbackURLParamName(provider.getPostbackURLParamName());
         		if(dbEntity.getGroupingXrefs() == null) {
         			dbEntity.setGroupingXrefs(new HashSet<AuthLevelGroupingContentProviderXrefEntity>());
         		}
