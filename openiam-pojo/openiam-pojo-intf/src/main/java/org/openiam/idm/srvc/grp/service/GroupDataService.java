@@ -11,6 +11,7 @@ import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * <code>GroupDataService</code> provides a service to manage groups as well
@@ -51,6 +52,8 @@ public interface GroupDataService {
     public List<GroupEntity> getGroupsForResourceLocalize(final String resourceId, final String requesterId, final int from, final int size, final LanguageEntity language);
     public List<GroupEntity> getGroupsForUserLocalize(final String userId, String requesterId, final int from, final int size, final LanguageEntity language);
     public List<GroupEntity> getGroupsForRoleLocalize(final String roleId, String requesterId, final int from, final int size, final LanguageEntity language);
+
+    public Set<String> getGroupIdList();
 
     public int getNumOfGroupsForRole(final String roleId, final String requesterId);
     public int getNumOfGroupsForUser(final String userId, final String requesterId);
