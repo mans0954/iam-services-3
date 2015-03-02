@@ -341,6 +341,8 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 			if(cp != null) {
 				response.setCpId(cp.getId());
 				response.setServer(cp.getNextServer());
+				response.setPostbackURLParamName(cp.getPostbackURLParamName());
+				response.setLoginURL(cp.getLoginURL());
 			}
 			if(CollectionUtils.isNotEmpty(groupingList)) {
 				for(final AuthLevelGrouping grouping : groupingList) {
@@ -485,6 +487,8 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 			if(cp != null) {
 				response.setCpId(cp.getId());
 				response.setServer(cp.getNextServer());
+				response.setPostbackURLParamName(cp.getPostbackURLParamName());
+				response.setLoginURL(cp.getLoginURL());
 			}
 			if(CollectionUtils.isNotEmpty(groupingList)) {
 				for(final AuthLevelGrouping grouping : groupingList) {

@@ -21,6 +21,7 @@ public enum ActivitiConstants {
 	REQUEST_METADATA_MAP("RequestMetadataMap"),
 	CUSTOM_APPROVER_IDS("CustomApproverIds"),
 	EMPLOYEE_ID("EmployeeId"),
+    GROUP_ID("GroupId"),
 	ATTESTATION_URL("ATTESTATION_URL"),
 	WORKFLOW_NAME("WorkflowName"),
 	DELETABLE("Deletable"),
