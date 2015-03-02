@@ -35,6 +35,7 @@ import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.request.LookupRequest;
 import org.openiam.connector.type.response.*;
+import org.openiam.exception.EsbErrorToken;
 import org.openiam.exception.ObjectNotFoundException;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
@@ -1545,6 +1546,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                         reason = resp.getErrorMsgAsStr();
                                     } else if (resp.getError() != null) {
                                         reason = resp.getError().value();
+                                    }
+                                    if (StringUtils.isNotBlank(passwordSync.getManagedSystemId())) {
+                                        // if single target system - let's return error reason
+                                        response.setErrorText(reason);
                                     }
                                 }
 
