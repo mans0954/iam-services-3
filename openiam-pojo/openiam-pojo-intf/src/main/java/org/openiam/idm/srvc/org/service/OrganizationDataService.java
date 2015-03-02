@@ -63,7 +63,10 @@ public interface OrganizationDataService {
                                                       		final @WebParam(name = "language", targetNamespace = "") Language language);
 
     @WebMethod
-    @Deprecated
+    /**
+     * Without localization for internal se only
+     * Performance optimized method
+     */
     public List<Organization> findBeans(final @WebParam(name = "searchBean", targetNamespace = "") OrganizationSearchBean searchBean,
                                                  final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
                                                  final @WebParam(name = "from", targetNamespace = "") int from,
