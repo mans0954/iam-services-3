@@ -100,7 +100,13 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 		return retVal;
 	}
 
-	@Override
+    @Override
+    @Transactional(readOnly=true)
+    public MetadataTypeEntity findById(String id) {
+        return metadataTypeDao.findById(id);
+    }
+
+    @Override
 	@Transactional
 	public void save(MetadataElementEntity entity) {
 		if(entity != null) {
