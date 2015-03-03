@@ -209,6 +209,8 @@ public interface OrganizationDataService {
     public List<Location> findLocationBeans(@WebParam(name = "searchBean", targetNamespace = "") LocationSearchBean searchBean,
                                             @WebParam(name = "from", targetNamespace = "")  int from,
                                             @WebParam(name = "size", targetNamespace = "")  int size);
+    @WebMethod
+    public int getNumOfLocations(@WebParam(name = "searchBean", targetNamespace = "") LocationSearchBean searchBean);
 
     @WebMethod
     public int getNumOfLocationsForOrganization(@WebParam(name = "organizationId", targetNamespace = "") String organizationId);

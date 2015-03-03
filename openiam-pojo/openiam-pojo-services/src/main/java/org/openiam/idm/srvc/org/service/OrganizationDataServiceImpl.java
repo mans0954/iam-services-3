@@ -535,6 +535,11 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     }
 
     @Override
+    public int getNumOfLocations(LocationSearchBean searchBean) {
+        return organizationService.getNumOfLocations(searchBean);
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public int getNumOfLocationsForOrganization(String organizationId) {
         return organizationService.getNumOfLocationsForOrganization(organizationId);

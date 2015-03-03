@@ -1156,6 +1156,15 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
 
     @Override
     @Transactional(readOnly = true)
+    public int getNumOfLocations(LocationSearchBean searchBean) {
+        if (searchBean == null)
+            throw new NullPointerException("searchBean is null");
+
+        return locationDao.count(locationSearchBeanConverter.convert(searchBean));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<Location> getLocationDtoList(String organizationId, boolean isDeep) {
         return locationDozerConverter.convertToDTOList(getLocationList(organizationId), isDeep);
     }
