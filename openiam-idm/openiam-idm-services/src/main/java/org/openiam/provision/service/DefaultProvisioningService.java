@@ -1623,11 +1623,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         }
 
         ProvisionUser pUser = new ProvisionUser(usr);
-        List<ExtensibleAttribute> idmAttrs = buildMngSysAttributesForIDMUser(pUser, targetSystemUserExists, mngSysAttrs, managedSysId, operation);
 
-        ExtensibleUser extUser = new ExtensibleUser();
-        extUser.setAttributes(idmAttrs);
-        return extUser;
+        return buildMngSysAttributesForIDMUser(pUser, targetSystemUserExists, mngSysAttrs, managedSysId, operation);
     }
 
     @Override
@@ -2653,7 +2650,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             targetSysUserExists = true;
         }
         ProvisionUser pUser = new ProvisionUser(usr);
-        List<ExtensibleAttribute> idmAttrs = buildMngSysAttributesForIDMUser(pUser, targetSysUserExists, mngSysAttrs, managedSysId, "VIEW");
+        ExtensibleUser extensibleUser = buildMngSysAttributesForIDMUser(pUser, targetSysUserExists, mngSysAttrs, managedSysId, "VIEW");
+        List<ExtensibleAttribute> idmAttrs = extensibleUser.getAttributes();
 
         List<ManagedSystemViewerBean> viewerList = new ArrayList<ManagedSystemViewerBean>();
         if (CollectionUtils.isNotEmpty(requestedExtensibleAttributes)) {
@@ -2674,7 +2672,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         return res;
     }
 
-    private List<ExtensibleAttribute> buildMngSysAttributesForIDMUser(ProvisionUser pUser, boolean targetSystemUserExists, List<ExtensibleAttribute> mngSysAttrs, String managedSysId,
+    private ExtensibleUser buildMngSysAttributesForIDMUser(ProvisionUser pUser, boolean targetSystemUserExists, List<ExtensibleAttribute> mngSysAttrs, String managedSysId,
                                                                       String operation) {
 
         Map<String, Object> bindingMap = new HashMap<>();
@@ -2744,9 +2742,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, IDENTITY_EXIST);
         bindingMap.put(TARGET_SYSTEM_IDENTITY, mLg != null ? mLg.getLogin() : null);
 
-        List<ExtensibleAttribute> idmExtensibleAttributes = provisionSelectedResourceHelper.buildFromRules(managedSysId, bindingMap).getAttributes();
-
-        return idmExtensibleAttributes;
+        return provisionSelectedResourceHelper.buildFromRules(managedSysId, bindingMap);
     }
 
     private ExtensibleAttribute findExtAttrByName(String name, List<ExtensibleAttribute> attrs) {
@@ -2865,8 +2861,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         }
 
         ProvisionUser pUser = new ProvisionUser(usr);
-        List<ExtensibleAttribute> idmAttrs = buildMngSysAttributesForIDMUser(pUser, targetSysUserExists, mngSysAttrs, managedSysId, "VIEW");
+        ExtensibleUser extensibleUser =  buildMngSysAttributesForIDMUser(pUser, targetSysUserExists, mngSysAttrs, managedSysId, "VIEW");
 
+        List<ExtensibleAttribute> idmAttrs = extensibleUser.getAttributes();
         List<ExtensibleAttribute> idmAttrsToDelete = new ArrayList<ExtensibleAttribute>();
         for (ExtensibleAttribute idma : idmAttrs) {
             idma.setOperation(AttributeOperationEnum.NO_CHANGE.getValue());
