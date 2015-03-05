@@ -827,7 +827,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     final ManagedSysDto managedSys = managedSysService.getManagedSys(managedSysId);
                     final Login login = loginDozerConverter.convertToDTO(userLogin, false);
                     boolean isSuspend = AccountLockEnum.LOCKED.equals(operation) || AccountLockEnum.LOCKED_ADMIN.equals(operation);
-                    ResponseType responsetype = suspend(requestorId, login, managedSys, buildMngSysAttributes(login, isSuspend?"SUSPEND":"RESUME"), isSuspend);
+                    ResponseType responsetype = suspend(requestorId, login, managedSys, buildMngSysAttributes(login, isSuspend ? "SUSPEND" : "RESUME"), isSuspend);
                     if (responsetype == null) {
                         log.info("Response object from set password is null");
                         response.setStatus(ResponseStatus.FAILURE);
@@ -858,7 +858,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         if (managedSys != null) {
                             boolean isSuspend = AccountLockEnum.LOCKED.equals(operation) || AccountLockEnum.LOCKED_ADMIN.equals(operation);
                             ResponseType responsetype = suspend(requestorId, primLogin, managedSys,
-                                            buildMngSysAttributes(primLogin, isSuspend?"SUSPEND":"RESUME"), isSuspend);
+                                    buildMngSysAttributes(primLogin, isSuspend ? "SUSPEND" : "RESUME"), isSuspend);
                             if (responsetype.getStatus() == null) {
                                 log.info("Response status is null");
                                 response.setStatus(ResponseStatus.FAILURE);
@@ -1477,7 +1477,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     log.debug(" - Managed System Id = " + managedSysId);
                     log.debug(" - Resource Id = " + res.getId());
 
-                    final boolean retval = loginManager.resetPassword(lg.getLogin(), lg.getManagedSysId(), encPassword);
+                    final boolean retval = loginManager.resetPassword(lg.getLogin(), lg.getManagedSysId(), encPassword, passwordSync.getUserActivateFlag());
 
                     if (retval) {
                         log.debug(String.format("- Password changed for principal: %s, user: %s, managed sys: %s -",
@@ -1541,7 +1541,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                             } else {
                                 allResetOK = false;
                                 String reason = "";
-                                if(resp != null) {
+                                if (resp != null) {
                                     if (StringUtils.isNotBlank(resp.getErrorMsgAsStr())) {
                                         reason = resp.getErrorMsgAsStr();
                                     } else if (resp.getError() != null) {
@@ -1905,6 +1905,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                             }
 
                             Login login = loginDozerConverter.convertToDTO(lg, false);
+                            //TODO Add change status if needed.
                             ResponseType resp = resetPassword(requestId,
                                     login,
                                     passwordSync.getPassword(),
@@ -2067,11 +2068,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         LookupAttributeResponse response = lookupAttributes(mSysId, "POLICY_MAP");
         if (StatusCodeType.SUCCESS.equals(response.getStatus())) {
             List<String> attributeNames = new LinkedList<String>();
-            for (ExtensibleAttribute attr : response.getAttributes()) {
+            for (ExtensibleAttribute attr : response.getAttributes())
                 if (!"READ_ONLY".equals(attr.getMetadataElementId())) {
                     attributeNames.add(attr.getName());
                 }
-            }
             return attributeNames;
         } else {
             return null;

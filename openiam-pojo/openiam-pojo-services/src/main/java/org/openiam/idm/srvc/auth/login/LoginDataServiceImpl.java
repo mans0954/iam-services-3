@@ -283,9 +283,16 @@ public class LoginDataServiceImpl implements LoginDataService {
     @Override
     @Transactional
     public boolean resetPassword(String login, String sysId, String password) {
+        return this.resetPassword(login, sysId, password, true);
+    }
+
+
+    @Override
+    @Transactional
+    public boolean resetPassword(String login, String sysId, String password, boolean isActivate) {
 
         LoginEntity lg = getLoginByManagedSys(login, sysId);
-        UserEntity user = userDao.findById(lg.getUserId());
+
 
         PasswordPolicyAssocSearchBean searchBean = new PasswordPolicyAssocSearchBean();
         searchBean.setUserId(lg.getUserId());
@@ -299,8 +306,11 @@ public class LoginDataServiceImpl implements LoginDataService {
         String gracePeriod = getPolicyAttribute(plcy.getPolicyAttributes(),
                 "PWD_EXP_GRACE");
 
-        user.setSecondaryStatus(null);
-        userDao.update(user);
+        if (isActivate) {
+            UserEntity user = userDao.findById(lg.getUserId());
+            user.setSecondaryStatus(null);
+            userDao.update(user);
+        }
 
         lg.setPassword(password);
         // set the other properties of a password based on policy
