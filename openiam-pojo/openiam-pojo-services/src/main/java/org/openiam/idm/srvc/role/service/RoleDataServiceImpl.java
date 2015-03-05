@@ -105,8 +105,15 @@ public class RoleDataServiceImpl implements RoleDataService {
         }
         return null;
 	}
-	
-	@Override
+
+    @Override
+    @Transactional(readOnly = true)
+    public Role getRoleDtoByName(String roleName, String requesterId) {
+        RoleEntity roleEntity = getRoleByName(roleName,requesterId);
+        return roleDozerConverter.convertToDTO(roleEntity, true);
+    }
+
+    @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
 	public RoleEntity getRoleLocalized(final String roleId, final String requesterId, final LanguageEntity language) {
