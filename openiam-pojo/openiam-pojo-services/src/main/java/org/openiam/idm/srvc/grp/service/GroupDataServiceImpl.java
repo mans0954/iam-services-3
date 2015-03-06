@@ -14,6 +14,7 @@ import org.openiam.dozer.converter.GroupDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
+import org.openiam.idm.searchbeans.RoleSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
@@ -40,7 +41,9 @@ import org.openiam.idm.srvc.org.service.OrganizationDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
+import org.openiam.idm.srvc.role.service.RoleDAO;
 import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
@@ -74,6 +77,9 @@ public class GroupDataServiceImpl implements GroupDataService {
 
 	@Autowired
 	private GroupDAO groupDao;
+
+    @Autowired
+    private RoleDAO roleDao;
 
     @Autowired
     private ResourceDAO resourceDao;
@@ -294,6 +300,14 @@ public class GroupDataServiceImpl implements GroupDataService {
     @Override
     public int getNumOfGroupsForUser(final String userId, final String requesterId) {
         return groupDao.getNumOfGroupsForUser(userId, getDelegationFilter(requesterId));
+    }
+
+    @Override
+    public Set<String> getGroupIdList(){
+        List<String> groupIds = groupDao.getAllIds();
+        if(CollectionUtils.isNotEmpty(groupIds))
+            return new HashSet<String>(groupIds);
+        return Collections.EMPTY_SET;
     }
 
     @Override
@@ -693,7 +707,23 @@ public class GroupDataServiceImpl implements GroupDataService {
     private Set<String> getDelegationFilter(String requesterId){
         Set<String> filterData = null;
         if(StringUtils.isNotBlank(requesterId)){
-            filterData = new HashSet<String>(DelegationFilterHelper.getGroupFilterFromString( userDataService.getUserAttributesDto(requesterId)));
+            Map<String, UserAttribute> attrbutes =  userDataService.getUserAttributesDto(requesterId);
+            filterData = new HashSet<String>(DelegationFilterHelper.getGroupFilterFromString(attrbutes));
+            List<String> rolesFromDelegation = DelegationFilterHelper.getRoleFilterFromString(attrbutes);
+            System.out.println("================================== GroupDataService.getDelegationFilter==== rolesFromDelegation= "+rolesFromDelegation+", requesterId="+requesterId);
+            if(rolesFromDelegation != null && rolesFromDelegation.size() > 0){
+                GroupSearchBean groupSearchBean = new GroupSearchBean();
+                groupSearchBean.setRoleIdSet(new HashSet<String>(rolesFromDelegation));
+                List<String> groupIds = groupDao.getIDsByExample(groupSearchBean, 0, Integer.MAX_VALUE);
+                System.out.println("================================== GroupDataService.getDelegationFilter==== groupIds= "+groupIds+", requesterId="+requesterId);
+                // TODO check: CONJUNCTION
+                // IF we can't find any groups by Role Delegation filter we add default skip ID to remove all others groups
+                if(groupIds == null || groupIds.size() == 0) {
+                    filterData.add("NOTEXIST");
+                } else {
+                    filterData.addAll(groupIds);
+                }
+            }
         }
         return filterData;
     }

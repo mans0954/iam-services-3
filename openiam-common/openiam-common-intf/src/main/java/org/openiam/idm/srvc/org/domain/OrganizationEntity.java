@@ -89,7 +89,7 @@ public class OrganizationEntity extends AbstractMetdataTypeEntity {
 
     @Column(name="STATUS", length=20)
     private String status;
-    
+
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "ORG_TYPE_ID", referencedColumnName = "ORG_TYPE_ID", insertable = true, updatable = true)
     @Internationalized
@@ -381,7 +381,7 @@ public class OrganizationEntity extends AbstractMetdataTypeEntity {
 		this.groups = groups;
 	}
 
-	@Override
+    @Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();

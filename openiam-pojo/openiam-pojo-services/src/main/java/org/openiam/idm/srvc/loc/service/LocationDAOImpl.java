@@ -10,6 +10,7 @@ import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
 
 import org.hibernate.Query;
+import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Restrictions;
 
 import org.openiam.core.dao.BaseDaoImpl;
@@ -52,10 +53,24 @@ public class LocationDAOImpl extends BaseDaoImpl<LocationEntity, String> impleme
                     criteria.add(Restrictions.eq("organizationId", location.getOrganizationId()));
                 }
             }
+            if (StringUtils.isNotEmpty(location.getName())) {
+                String name = location.getName();
+                MatchMode matchMode = null;
+                if (StringUtils.indexOf(name, "*") == 0) {
+                    matchMode = MatchMode.START;
+                    name = name.substring(1);
+                }
+                if (StringUtils.isNotEmpty(name) && StringUtils.indexOf(name, "*") == name.length() - 1) {
+                    name = name.substring(0, name.length() - 1);
+                    matchMode = (matchMode == MatchMode.START) ? MatchMode.ANYWHERE : MatchMode.END;
+                }
 
-            if (location.getName() != null) {
-                if (StringUtils.isNotBlank(location.getName())) {
-                    criteria.add(Restrictions.eq("name", location.getName()));
+                if (StringUtils.isNotEmpty(name)) {
+                    if (matchMode != null) {
+                        criteria.add(Restrictions.ilike("name", name, matchMode));
+                    } else {
+                        criteria.add(Restrictions.eq("name", name));
+                    }
                 }
             }
 

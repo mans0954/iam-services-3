@@ -10,6 +10,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,7 +35,9 @@ import java.util.concurrent.atomic.AtomicInteger;
         "url",
         "themeId",
         "groupingXrefs",
-        "showOnApplicationPage"
+        "showOnApplicationPage",
+        "loginURL",
+        "postbackURLParamName"
 })
 @DozerDTOCorrespondence(ContentProviderEntity.class)
 public class ContentProvider implements Serializable {
@@ -55,6 +58,8 @@ public class ContentProvider implements Serializable {
 	private String themeId;
 	private boolean showOnApplicationPage = true;
 	private Set<AuthLevelGroupingContentProviderXref> groupingXrefs;
+	private String loginURL;
+	private String postbackURLParamName;
 	
 	/*
 	 * federation variables.  Internal use only
@@ -197,6 +202,20 @@ public class ContentProvider implements Serializable {
 	public void setResourceCoorelatedName(String resourceCoorelatedName) {
 		this.resourceCoorelatedName = resourceCoorelatedName;
 	}
+	
+	public String getLoginURL() {
+		return loginURL;
+	}
+	public void setLoginURL(String loginURL) {
+		this.loginURL = loginURL;
+	}
+	
+	public String getPostbackURLParamName() {
+		return postbackURLParamName;
+	}
+	public void setPostbackURLParamName(String postbackURLParamName) {
+		this.postbackURLParamName = postbackURLParamName;
+	}
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -214,6 +233,8 @@ public class ContentProvider implements Serializable {
 		result = prime * result + (showOnApplicationPage ? 1231 : 1237);
 		result = prime * result + ((themeId == null) ? 0 : themeId.hashCode());
 		result = prime * result + ((url == null) ? 0 : url.hashCode());
+		result = prime * result + ((loginURL == null) ? 0 : loginURL.hashCode());
+		result = prime * result + ((postbackURLParamName == null) ? 0 : postbackURLParamName.hashCode());
 		return result;
 	}
 	@Override
@@ -269,6 +290,19 @@ public class ContentProvider implements Serializable {
 				return false;
 		} else if (!url.equals(other.url))
 			return false;
+		
+		if (loginURL == null) {
+			if (other.loginURL != null)
+				return false;
+		} else if (!loginURL.equals(other.loginURL))
+			return false;
+		
+		if (postbackURLParamName == null) {
+			if (other.postbackURLParamName != null)
+				return false;
+		} else if (!postbackURLParamName.equals(other.postbackURLParamName))
+			return false;
+		
 		return true;
 	}
 

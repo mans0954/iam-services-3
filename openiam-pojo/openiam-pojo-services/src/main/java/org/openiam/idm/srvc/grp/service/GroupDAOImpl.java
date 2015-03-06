@@ -103,6 +103,14 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
         return criteria;
     }
 
+    @Override
+    /**
+     * Without Localization
+     */
+    public List<GroupEntity> getByExample(final SearchBean searchBean, int from, int size) {
+        return super.getByExample(searchBean, from, size);
+     }
+
 	@Override
 	protected Criteria getExampleCriteria(GroupEntity group) {
 		final Criteria criteria = getCriteria();

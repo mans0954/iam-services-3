@@ -52,13 +52,13 @@
         />
 
     <cache name="org.openiam.idm.srvc.org.dto.Organization"
-        maxElementsInMemory="1000"
+        maxElementsInMemory="10000"
         eternal="false"
         overflowToDisk="false" 
      />
      
 	<cache name="query.organization.findAllOrganization"
-	    maxElementsInMemory="1000"
+	    maxElementsInMemory="10000"
 	    eternal="false"
 	    timeToLiveSeconds="28880"
 	    overflowToDisk="true"
@@ -118,23 +118,23 @@
         overflowToDisk="false" 
      />
     <cache name="org.openiam.idm.srvc.grp.dto.Group"
-        maxElementsInMemory="2000"
+        maxElementsInMemory="10000"
         eternal="false"
         overflowToDisk="false" 
      />
     <cache name="org.openiam.idm.srvc.grp.dto.Group.attributes"
-        maxElementsInMemory="4000"
+        maxElementsInMemory="10000"
         eternal="false"
         overflowToDisk="false" 
      />
           
     <cache name="org.openiam.idm.srvc.role.dto.Role"
-        maxElementsInMemory="200"
+        maxElementsInMemory="10000"
         eternal="false"
         overflowToDisk="false" 
      />
     <cache name="org.openiam.idm.srvc.role.dto.Role.roleAttributes"
-        maxElementsInMemory="2000"
+        maxElementsInMemory="10000"
         eternal="false"
         overflowToDisk="false" 
      />              
@@ -144,20 +144,20 @@
         overflowToDisk="false" 
      />  
 	<cache name="query.role.findUsersInRole"
-    maxElementsInMemory="1000"
+    maxElementsInMemory="10000"
     eternal="false"
     timeToLiveSeconds="28880"
     overflowToDisk="true"
     />
 
 	<cache name="query.role.findUsersRole"
-    maxElementsInMemory="1000"
+    maxElementsInMemory="10000"
     eternal="false"
     timeToLiveSeconds="28880"
     overflowToDisk="true"
     />
 	<cache name="query.role.findIndirectUsersRole"
-    maxElementsInMemory="1000"
+    maxElementsInMemory="10000"
     eternal="false"
     timeToLiveSeconds="28880"
     overflowToDisk="true"
@@ -166,26 +166,26 @@
 
 
 	<cache name="query.role.findAllRoles"
-    maxElementsInMemory="1000"
+    maxElementsInMemory="10000"
     eternal="false"
     timeToLiveSeconds="28880"
     overflowToDisk="true"
     />
 
     <cache name="org.openiam.idm.srvc.res.dto.Resource"
-        maxElementsInMemory="2000"
+        maxElementsInMemory="10000"
         eternal="false"
         overflowToDisk="false" 
      />
     <cache name="query.resource.findResourceForRole"
-        maxElementsInMemory="1000"
+        maxElementsInMemory="10000"
         eternal="false"
         overflowToDisk="false" 
      />
           
 
     <cache name="org.openiam.idm.srvc.policy.dto.Policy"
-        maxElementsInMemory="500"
+        maxElementsInMemory="1000"
         eternal="false"
         overflowToDisk="false" 
      />

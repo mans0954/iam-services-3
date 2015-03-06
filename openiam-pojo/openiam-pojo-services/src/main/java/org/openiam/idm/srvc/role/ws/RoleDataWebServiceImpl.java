@@ -253,8 +253,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 
 	@Override
 	public List<Role> getRolesForUser(final String userId, final String requesterId, Boolean deepFlag, final int from, final int size) {
-        final List<RoleEntity> entityList = roleDataService.getRolesForUser(userId, requesterId, from, size);
-        return roleDozerConverter.convertToDTOList(entityList, false);
+        return roleDataService.getRolesDtoForUser(userId, requesterId, from, size);
 	}
 
 	@Override
