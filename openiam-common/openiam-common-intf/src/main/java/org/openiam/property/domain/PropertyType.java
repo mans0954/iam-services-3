@@ -7,6 +7,7 @@ public enum PropertyType {
 	Long,
 	Double,
 	OrganizationType,
+	OrganizationTypeHierarchy,
 	OrderableValue,
 	MultiSelect,
 	User,
