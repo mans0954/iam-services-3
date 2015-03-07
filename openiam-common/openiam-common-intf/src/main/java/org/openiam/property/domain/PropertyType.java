@@ -12,6 +12,7 @@ public enum PropertyType {
 	User,
 	Resource,
 	ManagedSystem,
-	RegularExpression
+	RegularExpression,
+	Organization
 	;
 }

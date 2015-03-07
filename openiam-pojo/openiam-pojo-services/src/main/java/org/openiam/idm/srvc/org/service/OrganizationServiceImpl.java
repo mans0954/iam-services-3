@@ -108,14 +108,6 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     @Qualifier("transactionTemplate")
     private TransactionTemplate transactionTemplate;
 
-
-    @Value("${org.openiam.organization.type.id}")
-    private String organizationTypeId;
-    @Value("${org.openiam.division.type.id}")
-    private String divisionTypeId;
-    @Value("${org.openiam.department.type.id}")
-    private String departmentTypeId;
-
     @Autowired
     @Qualifier("configurableGroovyScriptEngine")
     private ScriptIntegration scriptRunner;
@@ -744,7 +736,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
         Map<String, UserAttribute> requesterAttributes = null;
         if (StringUtils.isNotBlank(requesterId)) {
             requesterAttributes = userDataService.getUserAttributesDto(requesterId);
-            filterData = getDelegationFilter(requesterAttributes, organizationTypeId);
+            filterData = getDelegationFilter(requesterAttributes, propertyValueSweeper.getString("org.openiam.organization.type.id"));
         }
         allowedOrgTypes = organizationTypeService.getAllowedParentsIds(orgTypeId, requesterAttributes);
 //        allowedOrgTypes.retainAll(allowedParentTypesIds);

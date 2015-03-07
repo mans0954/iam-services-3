@@ -8,6 +8,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.OrganizationTypeSearchBean;
+import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.org.domain.OrgType2OrgTypeXrefEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationTypeEntity;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
@@ -29,21 +30,14 @@ import java.util.*;
 
 @Service
 @Transactional
-public class OrganizationTypeServiceImpl implements OrganizationTypeService, InitializingBean, Sweepable {
+public class OrganizationTypeServiceImpl extends AbstractBaseService implements OrganizationTypeService, InitializingBean, Sweepable {
     private static final Log log = LogFactory.getLog(OrganizationTypeServiceImpl.class);
 	@Autowired
 	private OrganizationTypeDAO organizationTypeDAO;
 
     @Autowired
     private UserDataService userDataService;
-
-    @Value("${org.openiam.organization.type.id}")
-    private String organizationTypeId;
-    @Value("${org.openiam.division.type.id}")
-    private String divisionTypeId;
-    @Value("${org.openiam.department.type.id}")
-    private String departmentTypeId;
-
+    
     private Map<String, Set<String>> parent2childOrgTypeCached;
     private Map<String, Set<String>> child2parentOrgTypeCached;
     
@@ -214,12 +208,12 @@ public class OrganizationTypeServiceImpl implements OrganizationTypeService, Ini
             }
             if(isDivFilterSet
                || (isOrgFilterSet && isUseOrgInhFilterSet)){
-                result.add(divisionTypeId);
+                result.add(propertyValueSweeper.getString("org.openiam.division.type.id"));
             }
             if(isDepFilterSet
                || (isDivFilterSet && isUseOrgInhFilterSet)
                || (isOrgFilterSet && isUseOrgInhFilterSet)){
-                result.add(departmentTypeId);
+                result.add(propertyValueSweeper.getString("org.openiam.department.type.id"));
             }
         } else {
             result = new HashSet<>(organizationTypeDAO.findAllIds());
@@ -255,13 +249,13 @@ public class OrganizationTypeServiceImpl implements OrganizationTypeService, Ini
         Set<String> allowedTypeIds = new HashSet<String>();
         if(userAttributeMap!=null && !userAttributeMap.isEmpty()){
             if(DelegationFilterHelper.isOrgFilterSet(userAttributeMap)){
-                allowedTypeIds.addAll(getChildOrgTypeTreeAsFlatList(organizationTypeId, DelegationFilterHelper.isUseOrgInhFilterSet(userAttributeMap)));
+                allowedTypeIds.addAll(getChildOrgTypeTreeAsFlatList(propertyValueSweeper.getString("org.openiam.organization.type.id"), DelegationFilterHelper.isUseOrgInhFilterSet(userAttributeMap)));
             }
             if(DelegationFilterHelper.isDivisionFilterSet(userAttributeMap)){
-                allowedTypeIds.addAll(getChildOrgTypeTreeAsFlatList(divisionTypeId, DelegationFilterHelper.isUseOrgInhFilterSet(userAttributeMap)));
+                allowedTypeIds.addAll(getChildOrgTypeTreeAsFlatList(propertyValueSweeper.getString("org.openiam.division.type.id"), DelegationFilterHelper.isUseOrgInhFilterSet(userAttributeMap)));
             }
             if(DelegationFilterHelper.isDeptFilterSet(userAttributeMap)){
-                allowedTypeIds.addAll(getChildOrgTypeTreeAsFlatList(departmentTypeId, DelegationFilterHelper.isUseOrgInhFilterSet(userAttributeMap)));
+                allowedTypeIds.addAll(getChildOrgTypeTreeAsFlatList(propertyValueSweeper.getString("org.openiam.department.type.id"), DelegationFilterHelper.isUseOrgInhFilterSet(userAttributeMap)));
             }
         }
 
