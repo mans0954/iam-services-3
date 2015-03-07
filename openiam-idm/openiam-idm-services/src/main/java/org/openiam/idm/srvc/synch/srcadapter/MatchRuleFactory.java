@@ -21,7 +21,7 @@ public class MatchRuleFactory {
 
 	private static final Log log = LogFactory.getLog(MatchRuleFactory.class);
 	
-	@Autowired
+    @Autowired
     @Qualifier("configurableGroovyScriptEngine")
     private ScriptIntegration scriptRunner;
 
