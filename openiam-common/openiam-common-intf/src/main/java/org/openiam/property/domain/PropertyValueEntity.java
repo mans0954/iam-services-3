@@ -47,6 +47,10 @@ public class PropertyValueEntity extends KeyEntity {
     @Type(type = "yes_no")
     private boolean readOnly;
     
+    @Column(name = "CATEGORY", length=100)
+	@Enumerated(EnumType.STRING)
+    private PropertyCategory category;
+    
     @Transient
     @InternationalizedCollection
     private Map<String, LanguageMappingEntity> internationalizedValues;
@@ -99,6 +103,14 @@ public class PropertyValueEntity extends KeyEntity {
 	public void setReadOnly(boolean readOnly) {
 		this.readOnly = readOnly;
 	}
+	
+	public PropertyCategory getCategory() {
+		return category;
+	}
+
+	public void setCategory(PropertyCategory category) {
+		this.category = category;
+	}
 
 	@Override
 	public int hashCode() {
@@ -110,6 +122,7 @@ public class PropertyValueEntity extends KeyEntity {
 				+ ((value == null) ? 0 : value.hashCode());
 		result = prime * result + (readOnly ? 1231 : 1237);
 		result = prime * result + ((type == null) ? 0 : type.hashCode());
+		result = prime * result + ((category == null) ? 0 : category.hashCode());
 		return result;
 	}
 
@@ -134,6 +147,8 @@ public class PropertyValueEntity extends KeyEntity {
 		if (readOnly != other.readOnly)
 			return false;
 		if (type != other.type)
+			return false;
+		if (category != other.category)
 			return false;
 		return true;
 	}

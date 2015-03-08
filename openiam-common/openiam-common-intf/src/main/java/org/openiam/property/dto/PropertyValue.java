@@ -11,6 +11,7 @@ import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.lang.dto.LanguageMapping;
 import org.openiam.internationalization.Internationalized;
 import org.openiam.internationalization.InternationalizedCollection;
+import org.openiam.property.domain.PropertyCategory;
 import org.openiam.property.domain.PropertyType;
 import org.openiam.property.domain.PropertyValueEntity;
 
@@ -21,7 +22,8 @@ import org.openiam.property.domain.PropertyValueEntity;
 	"emptyValueAllowed",
 	"multilangual",
 	"readOnly",
-	"internationalizedValues"
+	"internationalizedValues",
+	"category"
 })
 @Internationalized
 @DozerDTOCorrespondence(PropertyValueEntity.class)
@@ -32,6 +34,7 @@ public class PropertyValue extends KeyDTO {
 	private boolean emptyValueAllowed;
 	private boolean multilangual;
 	private boolean readOnly;
+	private PropertyCategory category;
 	
     @InternationalizedCollection
     private Map<String, LanguageMapping> internationalizedValues;
@@ -76,6 +79,15 @@ public class PropertyValue extends KeyDTO {
 	public void setReadOnly(boolean readOnly) {
 		this.readOnly = readOnly;
 	}
+	
+	public PropertyCategory getCategory() {
+		return category;
+	}
+
+	public void setCategory(PropertyCategory category) {
+		this.category = category;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -86,6 +98,7 @@ public class PropertyValue extends KeyDTO {
 				+ ((value == null) ? 0 : value.hashCode());
 		result = prime * result + (readOnly ? 1231 : 1237);
 		result = prime * result + ((type == null) ? 0 : type.hashCode());
+		result = prime * result + ((category == null) ? 0 : category.hashCode());
 		return result;
 	}
 	@Override
@@ -109,6 +122,8 @@ public class PropertyValue extends KeyDTO {
 		if (readOnly != other.readOnly)
 			return false;
 		if (type != other.type)
+			return false;
+		if (category != other.category)
 			return false;
 		return true;
 	}
