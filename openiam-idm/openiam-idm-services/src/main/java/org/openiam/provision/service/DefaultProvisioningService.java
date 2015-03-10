@@ -2416,6 +2416,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
                                             String subject = null;
                                             String text = null;
+                                            boolean format = false;
                                             if (ob.getProperties().containsKey("subject")) {
                                                 try {
                                                     subject = scriptRunner.evaluate(bindingMap, (String) ob.getProperties().get("subject"));
@@ -2430,6 +2431,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                                     log.error("Error in text string = '", ioe);
                                                 }
                                             }
+                                            if (ob.getProperties().containsKey("format")) {
+                                                format = (Boolean) ob.getProperties().get("format");
+                                            }
 
                                             final IdmAuditLog childAuditLog = new IdmAuditLog();
                                             childAuditLog.setRequestorUserId(requestorId);
@@ -2439,7 +2443,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
                                             EmailAddress emailAddress = pUser.getPrimaryEmailAddress();
                                             if (emailAddress != null && StringUtils.isNotBlank(emailAddress.getEmailAddress())) {
-                                                mailService.sendEmail(null, emailAddress.getEmailAddress(), null, subject, text, null, false);
+                                                mailService.sendEmail(null, emailAddress.getEmailAddress(), null, subject, text, null, format);
                                                 res = new Response(ResponseStatus.SUCCESS);
                                                 childAuditLog.setAuditDescription("Notification sent to " + emailAddress.getEmailAddress());
                                                 childAuditLog.succeed();
