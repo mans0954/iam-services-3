@@ -252,7 +252,9 @@ public class GroupDataServiceImpl implements GroupDataService {
 
 
     @Override
-    @Deprecated
+    /**
+     * without localization, for internal use only
+     */
     public List<GroupEntity> getGroupsForUser(final String userId, final String requesterId, int from, int size) {
         return getGroupsForUserLocalize(userId, requesterId, from, size, getDefaultLanguage());
     }

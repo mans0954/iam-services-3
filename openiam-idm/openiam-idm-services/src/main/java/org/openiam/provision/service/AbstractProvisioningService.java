@@ -130,6 +130,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     public static final String IDENTITY_NEW = "NEW";
     public static final String IDENTITY_EXIST = "EXIST";
     public static final String USER = "user";
+    public static final String USER_ATTRIBUTES = "userAttributes";
     public static final String GROUP = "group";
 
     @Value("${org.openiam.idm.system.user.id}")

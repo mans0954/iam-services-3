@@ -146,11 +146,6 @@
    			<scope>provided</scope>
 		</dependency>
 
-        <!--<dependency>-->
-            <!--<groupId>org.hibernate</groupId>-->
-            <!--<artifactId>hibernate-ehcache</artifactId>-->
-        <!--</dependency>-->
-
         <dependency>
             <groupId>net.sf.ehcache</groupId>
             <artifactId>ehcache-core</artifactId>
@@ -228,10 +223,6 @@
             <version>${spring.version}</version>
         </dependency>
 
-        <dependency>
-            <groupId>net.sf.ehcache</groupId>
-            <artifactId>ehcache-core</artifactId>
-        </dependency>
 		<dependency>
 			<groupId>net.sf.dozer</groupId>
 			<artifactId>dozer</artifactId>
@@ -368,6 +359,7 @@
             <groupId>org.openiam</groupId>
             <artifactId>openiam-auth-manager-intf</artifactId>
         </dependency>
+
     </dependencies>
 
 </project>

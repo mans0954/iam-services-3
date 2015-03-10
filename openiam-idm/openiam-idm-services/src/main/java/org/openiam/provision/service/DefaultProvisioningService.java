@@ -2679,10 +2679,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         bindingMap.put("sysId", sysConfiguration.getDefaultManagedSysId());
         bindingMap.put("org", pUser.getPrimaryOrganization());
         bindingMap.put("operation", operation);
-        bindingMap.put("user", pUser);
+        bindingMap.put(AbstractProvisioningService.USER, pUser);
+        bindingMap.put(AbstractProvisioningService.USER_ATTRIBUTES, userMgr.getUserAttributesDto(pUser.getId()));
 
-        UserEntity userEntity = null;
-        userEntity = userMgr.getUser(pUser.getId());
+        UserEntity userEntity = userMgr.getUser(pUser.getId());
 
         LoginEntity identityEntity = UserUtils.getUserManagedSysIdentityEntity(managedSysId,
                 userEntity.getPrincipalList());

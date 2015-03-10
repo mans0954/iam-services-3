@@ -33,7 +33,22 @@ public interface MetadataWebService {
     									   final @WebParam(name = "from", targetNamespace = "") int from,
     									   final @WebParam(name = "size", targetNamespace = "") int size,
     									   final @WebParam(name = "language", targetNamespace = "") Language language);
-    
+    @WebMethod
+    public MetadataElement getMetadataElementById(final @WebParam(name = "id", targetNamespace = "") String id);
+
+    @WebMethod
+    public List<MetadataElement> findElementBeansNoLocalize(final @WebParam(name = "searchBean", targetNamespace = "") MetadataElementSearchBean searchBean,
+                                                  final @WebParam(name = "from", targetNamespace = "") int from,
+                                                  final @WebParam(name = "size", targetNamespace = "") int size);
+
+    @WebMethod
+    public MetadataType getMetadataTypeById(final @WebParam(name = "id", targetNamespace = "") String id);
+
+    @WebMethod
+    public List<MetadataType> findTypeBeansNoLocalize(final @WebParam(name = "searchBean", targetNamespace = "") MetadataTypeSearchBean searchBean,
+                                                      final @WebParam(name = "from", targetNamespace = "") int from,
+                                                      final @WebParam(name = "size", targetNamespace = "") int size);
+
     @WebMethod
     public List<MetadataType> findTypeBeans(final @WebParam(name = "searchBean", targetNamespace = "") MetadataTypeSearchBean searchBean,
     									    final @WebParam(name = "from", targetNamespace = "") int from,

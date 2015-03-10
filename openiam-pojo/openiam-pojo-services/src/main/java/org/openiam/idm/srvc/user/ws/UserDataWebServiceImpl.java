@@ -1090,7 +1090,6 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 
     @Override
     @Transactional(readOnly = true)
-    @Deprecated
     public List<UserAttribute> getUserAttributes(final String userId) {
         return getUserAttributesInternationalized(userId, null);
     }
