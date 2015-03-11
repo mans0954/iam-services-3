@@ -19,35 +19,37 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 import java.io.Serializable;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * DTO object that is used log and retrieve audit information
  * Refactoring 6.12.2012
- * @author zaporozhec 
+ *
+ * @author zaporozhec
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "IdmAuditLog", propOrder = {
-	"id",
-	"principal",
-	"managedSysId",
-	"userId",
-	"timestamp",
-	"source",
-	"clientIP",
-	"nodeIP",
-	"action",
-	"result",
-	"hash",
-	"sessionID",
-	"customRecords",
-	"childLogs",
-	"correlationId",
-	"targets",
-	"parentLogs"
+        "id",
+        "principal",
+        "managedSysId",
+        "userId",
+        "timestamp",
+        "source",
+        "clientIP",
+        "nodeIP",
+        "action",
+        "result",
+        "hash",
+        "sessionID",
+        "customRecords",
+        "childLogs",
+        "correlationId",
+        "targets",
+        "parentLogs"
 })
 @DozerDTOCorrespondence(IdmAuditLogEntity.class)
 public class IdmAuditLog implements Serializable {
-	
+
     private String id;
     private String userId;
     private String principal;
@@ -65,6 +67,7 @@ public class IdmAuditLog implements Serializable {
     private Set<AuditLogTarget> targets;
     private Set<IdmAuditLog> childLogs;
     private Set<IdmAuditLog> parentLogs;
+    private static AtomicLong additionalField = new AtomicLong(0L);
 
     public IdmAuditLog() {
         setTimestamp(new Date());
@@ -72,185 +75,188 @@ public class IdmAuditLog implements Serializable {
     }
 
     public String getId() {
-		return id;
-	}
+        return id;
+    }
 
-	public void setId(String id) {
-		this.id = id;
-	}
+    public void setId(String id) {
+        this.id = id;
+    }
 
-	public String getUserId() {
-		return userId;
-	}
+    public String getUserId() {
+        return userId;
+    }
 
-	public void setUserId(String userId) {
-		this.userId = userId;
-	}
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
 
-	public Date getTimestamp() {
-		return timestamp;
-	}
+    public Date getTimestamp() {
+        return timestamp;
+    }
 
-	public void setTimestamp(Date timestamp) {
-		this.timestamp = timestamp;
-	}
+    public void setTimestamp(Date timestamp) {
+        this.timestamp = timestamp;
+    }
 
-	public String getSource() {
-		return source;
-	}
+    public String getSource() {
+        return source;
+    }
 
-	public void setSource(String source) {
-		this.source = source;
-	}
+    public void setSource(String source) {
+        this.source = source;
+    }
 
-	public String getClientIP() {
-		return clientIP;
-	}
+    public String getClientIP() {
+        return clientIP;
+    }
 
-	public void setClientIP(String clientIP) {
-		this.clientIP = clientIP;
-	}
+    public void setClientIP(String clientIP) {
+        this.clientIP = clientIP;
+    }
 
-	public String getNodeIP() {
-		return nodeIP;
-	}
+    public String getNodeIP() {
+        return nodeIP;
+    }
 
-	public void setNodeIP(String nodeIP) {
-		this.nodeIP = nodeIP;
-	}
+    public void setNodeIP(String nodeIP) {
+        this.nodeIP = nodeIP;
+    }
 
-	public String getAction() {
-		return action;
-	}
+    public String getAction() {
+        return action;
+    }
 
-	public void setAction(String action) {
-		this.action = action;
-	}
+    public void setAction(String action) {
+        this.action = action;
+    }
 
-	public String getResult() {
-		return result;
-	}
+    public String getResult() {
+        return result;
+    }
 
-	public void setResult(String result) {
-		this.result = result;
-	}
+    public void setResult(String result) {
+        this.result = result;
+    }
 
-	public String getHash() {
-		return hash;
-	}
+    public String getHash() {
+        return hash;
+    }
 
-	public void setHash(String hash) {
-		this.hash = hash;
-	}
+    public void setHash(String hash) {
+        this.hash = hash;
+    }
 
-	public String getPrincipal() {
-		return principal;
-	}
+    public String getPrincipal() {
+        return principal;
+    }
 
-	public void setPrincipal(String principal) {
-		this.principal = principal;
-	}
+    public void setPrincipal(String principal) {
+        this.principal = principal;
+    }
 
-	public String getManagedSysId() {
-		return managedSysId;
-	}
+    public String getManagedSysId() {
+        return managedSysId;
+    }
 
-	public void setManagedSysId(String managedSysId) {
-		this.managedSysId = managedSysId;
-	}
-	
-	public String getSessionID() {
-		return sessionID;
-	}
+    public void setManagedSysId(String managedSysId) {
+        this.managedSysId = managedSysId;
+    }
 
-	public void setSessionID(String sessionID) {
-		this.sessionID = sessionID;
-	}
-	
-	public String getCorrelationId() {
-		return correlationId;
-	}
+    public String getSessionID() {
+        return sessionID;
+    }
 
-	public void setCorrelationId(String correlationId) {
-		this.correlationId = correlationId;
-	}
-	
-	public String concat() {
-		return String.format("%s-%s-%s-%s-%s-%s-%s-%s-%s-%s-%s", action, clientIP, principal, nodeIP, result, source, timestamp, userId, sessionID, managedSysId, correlationId);
-	}
-	
-	public Set<IdmAuditLogCustom> getCustomRecords() {
-		return customRecords;
-	}
+    public void setSessionID(String sessionID) {
+        this.sessionID = sessionID;
+    }
 
-	public void setCustomRecords(Set<IdmAuditLogCustom> customRecords) {
-		this.customRecords = customRecords;
-	}
+    public String getCorrelationId() {
+        return correlationId;
+    }
 
-	public Set<IdmAuditLog> getChildLogs() {
-		return childLogs;
-	}
+    public void setCorrelationId(String correlationId) {
+        this.correlationId = correlationId;
+    }
+
+    public String concat() {
+        return String.format("%s-%s-%s-%s-%s-%s-%s-%s-%s-%s-%s-%s", action, clientIP, principal, nodeIP, result, source, timestamp, userId, sessionID, managedSysId, correlationId, additionalField.incrementAndGet());
+    }
+
+    public Set<IdmAuditLogCustom> getCustomRecords() {
+        return customRecords;
+    }
+
+    public void setCustomRecords(Set<IdmAuditLogCustom> customRecords) {
+        this.customRecords = customRecords;
+    }
+
+    public Set<IdmAuditLog> getChildLogs() {
+        return childLogs;
+    }
 
     /**
      * Sorting by timestamp - DESC
+     *
      * @return
      */
     public Collection<IdmAuditLog> getChildLogsSorted() {
-        if(childLogs != null) {
+        if (childLogs != null) {
             List<IdmAuditLog> sortedItems = new ArrayList<IdmAuditLog>(childLogs);
-            Collections.sort(sortedItems, new Comparator<IdmAuditLog>(){
+            Collections.sort(sortedItems, new Comparator<IdmAuditLog>() {
                 @Override
                 public int compare(IdmAuditLog o1, IdmAuditLog o2) {
                     return o2.getTimestamp().compareTo(o1.getTimestamp());
                 }
-            } );
+            });
             return sortedItems;
         }
         return childLogs;
     }
-	public void setChildLogs(Set<IdmAuditLog> childLogs) {
-		this.childLogs = childLogs;
-	}
-	
-    public Set<AuditLogTarget> getTargets() {
-		return targets;
-	}
 
-	public void setTargets(Set<AuditLogTarget> targets) {
-		this.targets = targets;
-	}
-	
-	public Set<IdmAuditLog> getParentLogs() {
-		return parentLogs;
-	}
+    public void setChildLogs(Set<IdmAuditLog> childLogs) {
+        this.childLogs = childLogs;
+    }
+
+    public Set<AuditLogTarget> getTargets() {
+        return targets;
+    }
+
+    public void setTargets(Set<AuditLogTarget> targets) {
+        this.targets = targets;
+    }
+
+    public Set<IdmAuditLog> getParentLogs() {
+        return parentLogs;
+    }
 
     /**
      * Sorting by timestamp - DESC
+     *
      * @return
      */
     public Collection<IdmAuditLog> getParentLogsSorted() {
-        if(parentLogs != null) {
+        if (parentLogs != null) {
             List<IdmAuditLog> sortedItems = new ArrayList<IdmAuditLog>(parentLogs);
-            Collections.sort(sortedItems, new Comparator<IdmAuditLog>(){
+            Collections.sort(sortedItems, new Comparator<IdmAuditLog>() {
                 @Override
                 public int compare(IdmAuditLog o1, IdmAuditLog o2) {
                     return o2.getTimestamp().compareTo(o1.getTimestamp());
                 }
-            } );
+            });
             return sortedItems;
         }
         return parentLogs;
     }
 
-	public void setParentLogs(Set<IdmAuditLog> parentLogs) {
-		this.parentLogs = parentLogs;
-	}
+    public void setParentLogs(Set<IdmAuditLog> parentLogs) {
+        this.parentLogs = parentLogs;
+    }
 
-	public void addTarget(final String targetId, final String targetType, final String principal) {
-		if(targetId != null && targetType != null) {
-			if(this.targets == null) {
-				this.targets = new HashSet<>();
-			}
+    public void addTarget(final String targetId, final String targetType, final String principal) {
+        if (targetId != null && targetType != null) {
+            if (this.targets == null) {
+                this.targets = new HashSet<>();
+            }
             final AuditLogTarget target = new AuditLogTarget();
             target.setTargetId(targetId);
             target.setTargetType(targetType);
@@ -260,21 +266,21 @@ public class IdmAuditLog implements Serializable {
         }
     }
 
-	public void addChild(final IdmAuditLog entity) {
-    	if(entity != null) {
-    		if(this.childLogs == null) {
-    			this.childLogs = new HashSet<IdmAuditLog>();
-    		}
-            if(entity.getResult() == null) {
+    public void addChild(final IdmAuditLog entity) {
+        if (entity != null) {
+            if (this.childLogs == null) {
+                this.childLogs = new HashSet<IdmAuditLog>();
+            }
+            if (entity.getResult() == null) {
                 entity.setResult(this.getResult());
             }
-    		this.childLogs.add(entity);
-    	}
+            this.childLogs.add(entity);
+        }
     }
 
     public void addParent(final IdmAuditLog event) {
-        if(event != null) {
-            if(this.parentLogs == null) {
+        if (event != null) {
+            if (this.parentLogs == null) {
                 this.parentLogs = new HashSet<>();
             }
             this.parentLogs.add(event);
@@ -282,27 +288,28 @@ public class IdmAuditLog implements Serializable {
     }
 
     public void addCustomRecord(final String key, final String value) {
-    	if(key != null && value != null) {
-    		if(customRecords == null) {
-    			customRecords = new HashSet<>();
-    		}
-    		final IdmAuditLogCustom logAttr = new IdmAuditLogCustom();
+        if (key != null && value != null) {
+            if (customRecords == null) {
+                customRecords = new HashSet<>();
+            }
+            final IdmAuditLogCustom logAttr = new IdmAuditLogCustom();
             logAttr.setKey(key);
             logAttr.setValue(value);
             logAttr.setTimestamp(new Date().getTime());
-    		customRecords.add(logAttr);
-    	}
+            customRecords.add(logAttr);
+        }
     }
 
     public void addAttributeAsJson(final AuditAttributeName key, final Object o, final CustomJacksonMapper mapper) {
-        if(mapper != null) {
+        if (mapper != null) {
             addCustomRecord(key.name(), mapper.mapToStringQuietly(o));
         }
     }
 
     /**
      * Adds an attribute
-     * @param key - the key
+     *
+     * @param key   - the key
      * @param value - the value
      * @return this
      */
@@ -311,36 +318,37 @@ public class IdmAuditLog implements Serializable {
     }
 
     public void setTaskOwner(final String value) {
-    	addAttribute(AuditAttributeName.TASK_OWNER, value);
+        addAttribute(AuditAttributeName.TASK_OWNER, value);
     }
-    
+
     public void setTaskClass(final Class<?> clazz) {
-    	addAttribute(AuditAttributeName.TASK_CLASS, clazz.getCanonicalName());
+        addAttribute(AuditAttributeName.TASK_CLASS, clazz.getCanonicalName());
     }
-    
+
     public void setTaskDescription(final String value) {
-    	addAttribute(AuditAttributeName.TASK_DESCSRIPTION, value);
+        addAttribute(AuditAttributeName.TASK_DESCSRIPTION, value);
     }
-    
+
     public void setTaskName(final String value) {
-    	addAttribute(AuditAttributeName.TASK_NAME, value);
+        addAttribute(AuditAttributeName.TASK_NAME, value);
     }
 
     /**
      * Sets the description of this event
+     *
      * @param value
      * @return this
      */
     public void setAuditDescription(final String value) {
         addAttribute(AuditAttributeName.DESCRIPTION, value);
     }
-    
+
     public void setActivitiTaskName(final String value) {
-    	addAttribute(AuditAttributeName.ACTIVITI_TASK_NAME, value);
+        addAttribute(AuditAttributeName.ACTIVITI_TASK_NAME, value);
     }
-    
+
     public void setEventName(final String value) {
-    	addAttribute(AuditAttributeName.EVENT_NAME, value);
+        addAttribute(AuditAttributeName.EVENT_NAME, value);
     }
 
     public void addWarning(final String warning) {
@@ -348,13 +356,14 @@ public class IdmAuditLog implements Serializable {
     }
 
     public void setFailureReason(final ResponseCode code) {
-        if(code != null) {
+        if (code != null) {
             setFailureReason(code.name());
         }
     }
 
     /**
      * Sets an Exception for this event
+     *
      * @param e
      * @return this
      */
@@ -364,6 +373,7 @@ public class IdmAuditLog implements Serializable {
 
     /**
      * Sets the reason for success
+     *
      * @param reason
      * @return
      */
@@ -374,13 +384,14 @@ public class IdmAuditLog implements Serializable {
     public void setURL(final String url) {
         addAttribute(AuditAttributeName.URL, url);
     }
-    
+
     public void setGroovyScript(final String value) {
-    	addAttribute(AuditAttributeName.GROOVY_SCRIPT, value);
+        addAttribute(AuditAttributeName.GROOVY_SCRIPT, value);
     }
 
     /**
      * Sets the user id of who triggered this event
+     *
      * @param userId - the caller
      * @return this
      */
@@ -394,6 +405,7 @@ public class IdmAuditLog implements Serializable {
 
     /**
      * Signals that this event failed
+     *
      * @return this
      */
     public void fail() {
@@ -402,6 +414,7 @@ public class IdmAuditLog implements Serializable {
 
     /**
      * Signals that this event succeeded
+     *
      * @return this
      */
     public void succeed() {
@@ -410,6 +423,7 @@ public class IdmAuditLog implements Serializable {
 
     /**
      * Sets a 'target' user - against which this operations is being performed
+     *
      * @param userId
      * @return this
      */
@@ -419,22 +433,27 @@ public class IdmAuditLog implements Serializable {
 
     /**
      * Sets a 'target' role - against which this operations is being performed
+     *
      * @param roleId
      * @return this
      */
-    public void setTargetRole(final String roleId,final String rolePrincipal) {
-        addTarget(roleId, AuditTarget.ROLE.value(),  rolePrincipal);
+    public void setTargetRole(final String roleId, final String rolePrincipal) {
+        addTarget(roleId, AuditTarget.ROLE.value(), rolePrincipal);
     }
+
     /**
      * Sets a 'target' policy - against which this operations is being performed
+     *
      * @param policyId
      * @return this
      */
-    public void setTargetPolicy(final String policyId,final String policyPrincipal) {
-        addTarget(policyId, AuditTarget.POLICY.value(),  policyPrincipal);
+    public void setTargetPolicy(final String policyId, final String policyPrincipal) {
+        addTarget(policyId, AuditTarget.POLICY.value(), policyPrincipal);
     }
+
     /**
      * Sets a 'target' group - against which this operations is being performed
+     *
      * @param groupId
      * @return this
      */
@@ -444,6 +463,7 @@ public class IdmAuditLog implements Serializable {
 
     /**
      * Sets a 'target' role attribute - against which this operations is being performed
+     *
      * @param attrId
      * @param attrName
      * @return this
@@ -454,6 +474,7 @@ public class IdmAuditLog implements Serializable {
 
     /**
      * Sets a 'target' group attribute - against which this operations is being performed
+     *
      * @param attrId
      * @param attrName
      * @return this
@@ -461,8 +482,10 @@ public class IdmAuditLog implements Serializable {
     public void setTargetGroupAttribute(final String attrId, final String attrName) {
         addTarget(attrId, AuditTarget.GROUP_ATTRIBUTE.value(), attrName);
     }
+
     /**
      * Sets a 'target' resource - against which this operations is being performed
+     *
      * @param resourceId
      * @return this
      */
@@ -472,38 +495,47 @@ public class IdmAuditLog implements Serializable {
 
     /**
      * Sets a 'target' managed system - against which this operations is being performed
+     *
      * @param managedSysId
      * @return this
      */
     public void setTargetManagedSys(final String managedSysId, final String managedSysPrincipal) {
         addTarget(managedSysId, AuditTarget.MANAGED_SYS.value(), managedSysPrincipal);
     }
+
     /**
      * Sets a 'target' org - against which this operations is being performed
+     *
      * @param orgId
      * @return this
      */
-    public void setTargetOrg(final String orgId,final String orgPrincipal) {
-        addTarget(orgId, AuditTarget.ORG.value(),  orgPrincipal);
+    public void setTargetOrg(final String orgId, final String orgPrincipal) {
+        addTarget(orgId, AuditTarget.ORG.value(), orgPrincipal);
     }
+
     /**
      * Sets a 'target' task - against which this operations is being performed
+     *
      * @param taskId
      * @return this
      */
     public void setTargetTask(final String taskId, final String taskPrincipal) {
-        addTarget(taskId, AuditTarget.TASK.value(),  taskPrincipal);
+        addTarget(taskId, AuditTarget.TASK.value(), taskPrincipal);
     }
+
     /**
      * Sets the principal of who triggered this event
+     *
      * @param principal - the caller
      * @return this
      */
     public void setRequestorPrincipal(String principal) {
         setPrincipal(principal);
     }
+
     /**
      * Convenience method for Web Service calls to set caller information
+     *
      * @param baseObject
      * @return this
      */
@@ -518,117 +550,117 @@ public class IdmAuditLog implements Serializable {
         addAttribute(AuditAttributeName.FAILURE_REASON, value);
     }
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
         result = prime * result + ((id == null) ? 0 : id.hashCode());
-		result = prime * result + ((action == null) ? 0 : action.hashCode());
-		result = prime * result
-				+ ((clientIP == null) ? 0 : clientIP.hashCode());
-		result = prime * result + ((hash == null) ? 0 : hash.hashCode());
-		result = prime * result + ((nodeIP == null) ? 0 : nodeIP.hashCode());
-		result = prime * result
-				+ ((this.result == null) ? 0 : this.result.hashCode());
-		result = prime * result + ((source == null) ? 0 : source.hashCode());
-		result = prime * result
-				+ ((timestamp == null) ? 0 : timestamp.hashCode());
-		result = prime * result + ((userId == null) ? 0 : userId.hashCode());
-		result = prime * result + ((principal == null) ? 0 : principal.hashCode());
-		result = prime * result + ((managedSysId == null) ? 0 : managedSysId.hashCode());
-		result = prime * result + ((sessionID == null) ? 0 : sessionID.hashCode());
-		result = prime * result + ((correlationId == null) ? 0 : correlationId.hashCode());
+        result = prime * result + ((action == null) ? 0 : action.hashCode());
+        result = prime * result
+                + ((clientIP == null) ? 0 : clientIP.hashCode());
+        result = prime * result + ((hash == null) ? 0 : hash.hashCode());
+        result = prime * result + ((nodeIP == null) ? 0 : nodeIP.hashCode());
+        result = prime * result
+                + ((this.result == null) ? 0 : this.result.hashCode());
+        result = prime * result + ((source == null) ? 0 : source.hashCode());
+        result = prime * result
+                + ((timestamp == null) ? 0 : timestamp.hashCode());
+        result = prime * result + ((userId == null) ? 0 : userId.hashCode());
+        result = prime * result + ((principal == null) ? 0 : principal.hashCode());
+        result = prime * result + ((managedSysId == null) ? 0 : managedSysId.hashCode());
+        result = prime * result + ((sessionID == null) ? 0 : sessionID.hashCode());
+        result = prime * result + ((correlationId == null) ? 0 : correlationId.hashCode());
 
         return result;
-	}
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		IdmAuditLog other = (IdmAuditLog) obj;
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        IdmAuditLog other = (IdmAuditLog) obj;
         if (id == null) {
             if (other.id != null)
                 return false;
         } else if (!id.equals(other.id))
             return false;
         if (action == null) {
-			if (other.action != null)
-				return false;
-		} else if (!action.equals(other.action))
-			return false;
-		if (clientIP == null) {
-			if (other.clientIP != null)
-				return false;
-		} else if (!clientIP.equals(other.clientIP))
-			return false;
-		if (hash == null) {
-			if (other.hash != null)
-				return false;
-		} else if (!hash.equals(other.hash))
-			return false;
-		if (nodeIP == null) {
-			if (other.nodeIP != null)
-				return false;
-		} else if (!nodeIP.equals(other.nodeIP))
-			return false;
-		if (result == null) {
-			if (other.result != null)
-				return false;
-		} else if (!result.equals(other.result))
-			return false;
-		if (source == null) {
-			if (other.source != null)
-				return false;
-		} else if (!source.equals(other.source))
-			return false;
-		if (timestamp == null) {
-			if (other.timestamp != null)
-				return false;
-		} else if (!timestamp.equals(other.timestamp))
-			return false;
-		if (userId == null) {
-			if (other.userId != null)
-				return false;
-		} else if (!userId.equals(other.userId))
-			return false;
-		if (principal == null) {
-			if (other.principal != null)
-				return false;
-		} else if (!principal.equals(other.principal))
-			return false;
-		
-		if (sessionID == null) {
-			if (other.sessionID != null)
-				return false;
-		} else if (!sessionID.equals(other.sessionID))
-			return false;
-		
-		if (managedSysId == null) {
-			if (other.managedSysId != null)
-				return false;
-		} else if (!managedSysId.equals(other.managedSysId))
-			return false;
-		
-		if (correlationId == null) {
-			if (other.correlationId != null)
-				return false;
-		} else if (!correlationId.equals(other.correlationId))
-			return false;
-		return true;
-	}
+            if (other.action != null)
+                return false;
+        } else if (!action.equals(other.action))
+            return false;
+        if (clientIP == null) {
+            if (other.clientIP != null)
+                return false;
+        } else if (!clientIP.equals(other.clientIP))
+            return false;
+        if (hash == null) {
+            if (other.hash != null)
+                return false;
+        } else if (!hash.equals(other.hash))
+            return false;
+        if (nodeIP == null) {
+            if (other.nodeIP != null)
+                return false;
+        } else if (!nodeIP.equals(other.nodeIP))
+            return false;
+        if (result == null) {
+            if (other.result != null)
+                return false;
+        } else if (!result.equals(other.result))
+            return false;
+        if (source == null) {
+            if (other.source != null)
+                return false;
+        } else if (!source.equals(other.source))
+            return false;
+        if (timestamp == null) {
+            if (other.timestamp != null)
+                return false;
+        } else if (!timestamp.equals(other.timestamp))
+            return false;
+        if (userId == null) {
+            if (other.userId != null)
+                return false;
+        } else if (!userId.equals(other.userId))
+            return false;
+        if (principal == null) {
+            if (other.principal != null)
+                return false;
+        } else if (!principal.equals(other.principal))
+            return false;
 
-	@Override
-	public String toString() {
-		return String
-				.format("IdmAuditLog [id=%s, userId=%s, principal=%s, timestamp=%s, source=%s, clientIP=%s, nodeIP=%s, action=%s, result=%s, hash=%s]",
-						id, userId, principal, timestamp, source, clientIP,
-						nodeIP, action, result, hash);
-	}
+        if (sessionID == null) {
+            if (other.sessionID != null)
+                return false;
+        } else if (!sessionID.equals(other.sessionID))
+            return false;
 
-	
+        if (managedSysId == null) {
+            if (other.managedSysId != null)
+                return false;
+        } else if (!managedSysId.equals(other.managedSysId))
+            return false;
+
+        if (correlationId == null) {
+            if (other.correlationId != null)
+                return false;
+        } else if (!correlationId.equals(other.correlationId))
+            return false;
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return String
+                .format("IdmAuditLog [id=%s, userId=%s, principal=%s, timestamp=%s, source=%s, clientIP=%s, nodeIP=%s, action=%s, result=%s, hash=%s, additionalField=%s]",
+                        id, userId, principal, timestamp, source, clientIP,
+                        nodeIP, action, result, hash, additionalField);
+    }
+
+
 }

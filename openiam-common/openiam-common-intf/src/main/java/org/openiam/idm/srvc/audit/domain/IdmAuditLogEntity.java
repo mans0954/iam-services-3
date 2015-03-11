@@ -15,252 +15,256 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 
 @Entity
 @Table(name = "OPENIAM_LOG")
 @DozerDTOCorrespondence(IdmAuditLog.class)
-@Cache(usage=CacheConcurrencyStrategy.NONE)
+@Cache(usage = CacheConcurrencyStrategy.NONE)
 public class IdmAuditLogEntity implements Serializable {
     @Id
     @GeneratedValue(generator = "system-uuid")
     @GenericGenerator(name = "system-uuid", strategy = "uuid")
     @Column(name = "OPENIAM_LOG_ID", length = 32)
     private String id;
-    
-    @Column(name="USER_ID", length=32)
+
+    @Column(name = "USER_ID", length = 32)
     private String userId;
-    
-    @Column(name="PRINCIPAL", length=320)
+
+    @Column(name = "PRINCIPAL", length = 320)
     private String principal;
-    
-    @Column(name="MANAGED_SYS_ID", length=32)
+
+    @Column(name = "MANAGED_SYS_ID", length = 32)
     private String managedSysId;
-    
-    @Column(name="CREATED_DATETIME")
+
+    @Column(name = "CREATED_DATETIME")
     private Date timestamp;
 
-    @Column(name="SOURCE", length=50)
+    @Column(name = "SOURCE", length = 50)
     private String source;
-    
-    @Column(name="CLIENT_IP", length=50)
+
+    @Column(name = "CLIENT_IP", length = 50)
     private String clientIP;
-    
-    @Column(name="NODE_ID", length=50)
+
+    @Column(name = "NODE_ID", length = 50)
     private String nodeIP;
-    
-    @Column(name="LOG_ACTION", length=50)
+
+    @Column(name = "LOG_ACTION", length = 50)
     private String action;
-    
-    @Column(name="RESULT", length=50)
+
+    @Column(name = "RESULT", length = 50)
     private String result;
-    
-    @Column(name="HASH", length=100)
+
+    @Column(name = "HASH", length = 100)
     private String hash;
-    
-    @Column(name="SESSION_ID", length=100)
+
+    @Column(name = "SESSION_ID", length = 100)
     private String sessionID;
-    
-    @Column(name="CORRELATION_ID", length=32)
+
+    @Column(name = "CORRELATION_ID", length = 32)
     private String correlationId;
-    
-    @OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "log")
+
+    private static AtomicLong additionalField = new AtomicLong(0L);
+
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "log")
     private Set<IdmAuditLogCustomEntity> customRecords = new LinkedHashSet<IdmAuditLogCustomEntity>();
-    
-    @OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "log")
+
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "log")
     private Set<AuditLogTargetEntity> targets = new LinkedHashSet<AuditLogTargetEntity>();
-    
-    @ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
+
+    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
     @JoinTable(name = "OPENIAM_LOG_LOG_MEMBERSHIP",
             joinColumns = {@JoinColumn(name = "OPENIAM_MEMBER_LOG_ID")},
             inverseJoinColumns = {@JoinColumn(name = "OPENIAM_LOG_ID")})
     @Fetch(FetchMode.SUBSELECT)
     private Set<IdmAuditLogEntity> parentLogs = new HashSet<IdmAuditLogEntity>();
 
-    @ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
+    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
     @JoinTable(name = "OPENIAM_LOG_LOG_MEMBERSHIP",
             joinColumns = {@JoinColumn(name = "OPENIAM_LOG_ID")},
             inverseJoinColumns = {@JoinColumn(name = "OPENIAM_MEMBER_LOG_ID")})
     @Fetch(FetchMode.SUBSELECT)
     private Set<IdmAuditLogEntity> childLogs = new HashSet<IdmAuditLogEntity>();
-    
+
     public void addChild(final IdmAuditLogEntity entity) {
-    	if(entity != null) {
-            if(entity.getResult() == null) {
+        if (entity != null) {
+            if (entity.getResult() == null) {
                 entity.setResult(this.getResult());
             }
-    		this.childLogs.add(entity);
-    	}
+            this.childLogs.add(entity);
+        }
     }
 
     public void addParent(final IdmAuditLogEntity entity) {
-        if(entity != null) {
+        if (entity != null) {
             this.parentLogs.add(entity);
         }
     }
+
     public void addCustomRecord(IdmAuditLogCustomEntity logCustomEntity) {
-    	if(logCustomEntity != null) {
-    		if(customRecords == null) {
-    			customRecords = new LinkedHashSet<>();
-    		}
+        if (logCustomEntity != null) {
+            if (customRecords == null) {
+                customRecords = new LinkedHashSet<>();
+            }
             logCustomEntity.setLog(this);
-  		    customRecords.add(logCustomEntity);
-    	}
+            customRecords.add(logCustomEntity);
+        }
     }
 
-	public String getId() {
-		return id;
-	}
+    public String getId() {
+        return id;
+    }
 
-	public void setId(String id) {
-		this.id = id;
-	}
+    public void setId(String id) {
+        this.id = id;
+    }
 
-	public String getUserId() {
-		return userId;
-	}
+    public String getUserId() {
+        return userId;
+    }
 
-	public void setUserId(String userId) {
-		this.userId = userId;
-	}
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
 
-	public Date getTimestamp() {
-		return timestamp;
-	}
+    public Date getTimestamp() {
+        return timestamp;
+    }
 
-	public void setTimestamp(Date timestamp) {
-		this.timestamp = timestamp;
-	}
+    public void setTimestamp(Date timestamp) {
+        this.timestamp = timestamp;
+    }
 
-	public String getSource() {
-		return source;
-	}
+    public String getSource() {
+        return source;
+    }
 
-	public void setSource(String source) {
-		this.source = source;
-	}
+    public void setSource(String source) {
+        this.source = source;
+    }
 
-	public String getClientIP() {
-		return clientIP;
-	}
+    public String getClientIP() {
+        return clientIP;
+    }
 
-	public void setClientIP(String clientIP) {
-		this.clientIP = clientIP;
-	}
+    public void setClientIP(String clientIP) {
+        this.clientIP = clientIP;
+    }
 
-	public String getNodeIP() {
-		return nodeIP;
-	}
+    public String getNodeIP() {
+        return nodeIP;
+    }
 
-	public void setNodeIP(String nodeIP) {
-		this.nodeIP = nodeIP;
-	}
+    public void setNodeIP(String nodeIP) {
+        this.nodeIP = nodeIP;
+    }
 
-	public String getAction() {
-		return action;
-	}
+    public String getAction() {
+        return action;
+    }
 
-	public void setAction(String action) {
-		this.action = action;
-	}
+    public void setAction(String action) {
+        this.action = action;
+    }
 
-	public String getResult() {
-		return result;
-	}
+    public String getResult() {
+        return result;
+    }
 
-	public void setResult(String result) {
-		this.result = result;
-	}
+    public void setResult(String result) {
+        this.result = result;
+    }
 
-	public String getHash() {
-		return hash;
-	}
+    public String getHash() {
+        return hash;
+    }
 
-	public void setHash(String hash) {
-		this.hash = hash;
-	}
+    public void setHash(String hash) {
+        this.hash = hash;
+    }
 
-	public String getPrincipal() {
-		return principal;
-	}
+    public String getPrincipal() {
+        return principal;
+    }
 
-	public void setPrincipal(String principal) {
-		this.principal = principal;
-	}
+    public void setPrincipal(String principal) {
+        this.principal = principal;
+    }
 
-	public String getManagedSysId() {
-		return managedSysId;
-	}
+    public String getManagedSysId() {
+        return managedSysId;
+    }
 
-	public void setManagedSysId(String managedSysId) {
-		this.managedSysId = managedSysId;
-	}
-	
-	public String getSessionID() {
-		return sessionID;
-	}
+    public void setManagedSysId(String managedSysId) {
+        this.managedSysId = managedSysId;
+    }
 
-	public void setSessionID(String sessionID) {
-		this.sessionID = sessionID;
-	}
+    public String getSessionID() {
+        return sessionID;
+    }
 
-	public Set<IdmAuditLogCustomEntity> getCustomRecords() {
-		return customRecords;
-	}
+    public void setSessionID(String sessionID) {
+        this.sessionID = sessionID;
+    }
 
-	public void setCustomRecords(Set<IdmAuditLogCustomEntity> customRecords) {
-		this.customRecords = customRecords;
-	}
-	
-	public Set<IdmAuditLogEntity> getChildLogs() {
-		return childLogs;
-	}
+    public Set<IdmAuditLogCustomEntity> getCustomRecords() {
+        return customRecords;
+    }
 
-	public void setChildLogs(Set<IdmAuditLogEntity> childLogs) {
-		this.childLogs = childLogs;
-	}
+    public void setCustomRecords(Set<IdmAuditLogCustomEntity> customRecords) {
+        this.customRecords = customRecords;
+    }
 
-	public String getCorrelationId() {
-		return correlationId;
-	}
+    public Set<IdmAuditLogEntity> getChildLogs() {
+        return childLogs;
+    }
 
-	public void setCorrelationId(String correlationId) {
-		this.correlationId = correlationId;
-	}
+    public void setChildLogs(Set<IdmAuditLogEntity> childLogs) {
+        this.childLogs = childLogs;
+    }
 
-	public Set<AuditLogTargetEntity> getTargets() {
-		return targets;
-	}
+    public String getCorrelationId() {
+        return correlationId;
+    }
 
-	public void setTargets(Set<AuditLogTargetEntity> targets) {
-		this.targets = targets;
-	}
-	
-	public Set<IdmAuditLogEntity> getParentLogs() {
-		return parentLogs;
-	}
+    public void setCorrelationId(String correlationId) {
+        this.correlationId = correlationId;
+    }
 
-	public void setParentLogs(Set<IdmAuditLogEntity> parentLogs) {
-		this.parentLogs = parentLogs;
-	}
+    public Set<AuditLogTargetEntity> getTargets() {
+        return targets;
+    }
 
-	public void addTarget(final String targetId, final String targetType, final String principal) {
-		if(targetId != null && targetType != null) {
-			if(this.targets == null) {
-				this.targets = new HashSet<>();
-			}
-			final AuditLogTargetEntity target = new AuditLogTargetEntity();
-			target.setTargetId(targetId);
-			target.setTargetType(targetType);
+    public void setTargets(Set<AuditLogTargetEntity> targets) {
+        this.targets = targets;
+    }
+
+    public Set<IdmAuditLogEntity> getParentLogs() {
+        return parentLogs;
+    }
+
+    public void setParentLogs(Set<IdmAuditLogEntity> parentLogs) {
+        this.parentLogs = parentLogs;
+    }
+
+    public void addTarget(final String targetId, final String targetType, final String principal) {
+        if (targetId != null && targetType != null) {
+            if (this.targets == null) {
+                this.targets = new HashSet<>();
+            }
+            final AuditLogTargetEntity target = new AuditLogTargetEntity();
+            target.setTargetId(targetId);
+            target.setTargetType(targetType);
             target.setObjectPrincipal(principal);
-			target.setLog(this);
-			this.targets.add(target);
-		}
-	}
+            target.setLog(this);
+            this.targets.add(target);
+        }
+    }
 
 
-	public String concat() {
-		return String.format("%s-%s-%s-%s-%s-%s-%s-%s-%s-%s-%s", action, clientIP, principal, nodeIP, result, source, timestamp, userId, sessionID, managedSysId, correlationId);
-	}
+    public String concat() {
+        return String.format("%s-%s-%s-%s-%s-%s-%s-%s-%s-%s-%s-%s", action, clientIP, principal, nodeIP, result, source, timestamp, userId, sessionID, managedSysId, correlationId, additionalField.incrementAndGet());
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -308,13 +312,12 @@ public class IdmAuditLogEntity implements Serializable {
     }
 
     @Override
-	public String toString() {
-		return String
-				.format("IdmAuditLogEntity [id=%s, userId=%s, principal=%s, timestamp=%s, source=%s, clientIP=%s, nodeIP=%s, action=%s, result=%s, hash=%s]",
-						id, userId, principal, timestamp, source, clientIP,
-						nodeIP, action, result, hash);
-	}
+    public String toString() {
+        return String
+                .format("IdmAuditLogEntity [id=%s, userId=%s, principal=%s, timestamp=%s, source=%s, clientIP=%s, nodeIP=%s, action=%s, result=%s, hash=%s, additionalField=%s]",
+                        id, userId, principal, timestamp, source, clientIP,
+                        nodeIP, action, result, hash, additionalField);
+    }
 
 
-    
 }
