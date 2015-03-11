@@ -10,6 +10,7 @@ import org.openiam.dozer.converter.IdmAuditLogCustomDozerConverter;
 import org.openiam.dozer.converter.IdmAuditLogDozerConverter;
 import org.openiam.idm.searchbeans.AuditLogSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditTarget;
+import org.openiam.idm.srvc.audit.domain.AuditLogTargetEntity;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogCustomEntity;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.audit.dto.AuditLogTarget;
@@ -97,6 +98,7 @@ public class AuditLogServiceImpl implements AuditLogService {
     private IdmAuditLogEntity prepare(final IdmAuditLog log) {
 //        IdmAuditLogEntity auditLogEntity = log.getId() == null ? auditLogDozerConverter.convertToEntity(log, false) : logDAO.findById(log.getId());
         IdmAuditLogEntity auditLogEntity = auditLogDozerConverter.convertToEntity(log, false);// : logDAO.findById(log.getId());
+        auditLogEntity.setTimestamp(new Date(System.currentTimeMillis()));
         if(log != null) {
     		if(auditLogEntity.getId() == null || auditLogEntity.getHash() == null) {
                 auditLogEntity.setHash(DigestUtils.sha256Hex(log.concat()));
@@ -107,9 +109,13 @@ public class AuditLogServiceImpl implements AuditLogService {
     		if(CollectionUtils.isNotEmpty(log.getChildLogs())) {
     			for(final IdmAuditLog ch : log.getChildLogs()) {
                     IdmAuditLogEntity chEntity = prepare(ch);
-                    if(!auditLogEntity.getChildLogs().contains(chEntity)) {
+                    if(!logExists(auditLogEntity.getChildLogs(), chEntity)) {
+//                        System.out.println("ADDING LOG ");
+//                    if(!auditLogEntity.getChildLogs().contains(chEntity)) {
                         auditLogEntity.addChild(chEntity);
                         chEntity.addParent(auditLogEntity);
+                    } else {
+//                        System.out.println("SKIP LOG ");
                     }
     			}
     		}
@@ -157,6 +163,40 @@ public class AuditLogServiceImpl implements AuditLogService {
             return auditLogEntity;
         }
         return null;
+    }
+
+    private boolean logExists(Set<IdmAuditLogEntity> logEntitySet, IdmAuditLogEntity logEntity) {
+        if(CollectionUtils.isNotEmpty(logEntitySet)){
+
+            for(IdmAuditLogEntity log : logEntitySet){
+                System.out.print(log);
+                if(log!=null){
+//                    StringBuilder sb = new StringBuilder();
+//                    sb.append("====================================================\n");
+//                    sb.append(String.format("       LOG: %s\n", log));
+//                    sb.append(String.format("SOURCE LOG: %s\n", log));
+//
+//                    sb.append(String.format("LOG.equals(SOURCE LOG): %s\n", log.equals(logEntity)));
+//                    sb.append(String.format("logTargetsEquals(LOG, SOURCE LOG): %s\n", logTargetsEquals(log.getTargets(), logEntity.getTargets())));
+//
+//                    sb.append("====================================================\n");
+//
+//                    System.out.println(sb.toString());
+
+                    if(log.equals(logEntity)
+                        && logTargetsEquals(log.getTargets(), logEntity.getTargets())) {
+//                        System.out.println("LOG EXISTS");
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+    private boolean logTargetsEquals(Set<AuditLogTargetEntity> target, Set<AuditLogTargetEntity> source) {
+        if(CollectionUtils.isNotEmpty(target) ? !target.equals(source) : CollectionUtils.isNotEmpty(source))
+            return false;
+        return true;
     }
 
     @Override
