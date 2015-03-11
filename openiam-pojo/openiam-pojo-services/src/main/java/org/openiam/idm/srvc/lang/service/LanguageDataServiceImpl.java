@@ -152,7 +152,6 @@ public class LanguageDataServiceImpl implements LanguageDataService {
     }
 
     @Override
-    @LocalizedServiceGet
     @Transactional(readOnly = true)
     public Language getDefaultLanguage() {
         LanguageEntity languageEntity =  languageDao.getDefaultLanguage();
