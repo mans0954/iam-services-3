@@ -98,7 +98,7 @@ public class AuditLogServiceImpl implements AuditLogService {
     private IdmAuditLogEntity prepare(final IdmAuditLog log) {
 //        IdmAuditLogEntity auditLogEntity = log.getId() == null ? auditLogDozerConverter.convertToEntity(log, false) : logDAO.findById(log.getId());
         IdmAuditLogEntity auditLogEntity = auditLogDozerConverter.convertToEntity(log, false);// : logDAO.findById(log.getId());
-        auditLogEntity.setTimestamp(new Date(System.nanoTime()));
+        auditLogEntity.setTimestamp(new Date(System.currentTimeMillis()));
         if (log != null) {
             if (auditLogEntity.getId() == null || auditLogEntity.getHash() == null) {
                 auditLogEntity.setHash(DigestUtils.sha256Hex(log.concat()));
