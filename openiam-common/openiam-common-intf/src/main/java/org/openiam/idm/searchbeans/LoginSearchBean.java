@@ -1,5 +1,6 @@
 package org.openiam.idm.searchbeans;
 
+import org.apache.commons.lang.StringUtils;
 import org.openiam.base.ws.MatchType;
 import org.openiam.base.ws.SearchParam;
 import org.openiam.idm.srvc.auth.dto.Login;
@@ -74,5 +75,14 @@ public class LoginSearchBean extends AbstractSearchBean<Login, String> implement
 	public void setUserId(String userId) {
 		this.userId = userId;
 	}
-	
+
+    @Override
+    public String getCacheUniqueBeanKey() {
+        return new StringBuilder()
+                .append(login != null ? login : "")
+                .append(managedSysId != null ? managedSysId : "")
+                .append(userId != null ? userId : "")
+                .append(loginMatchToken != null ? loginMatchToken.hashCode() : "")
+                .toString();
+    }
 }

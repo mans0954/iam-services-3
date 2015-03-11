@@ -143,4 +143,12 @@ public class MetadataElementSearchBean extends AbstractSearchBean<MetadataElemen
 	public String getKey() {
 		return (CollectionUtils.isNotEmpty(keySet)) ? keySet.iterator().next() : null;
 	}
+
+    public String getCacheUniqueBeanKey() {
+        return new StringBuilder("")
+                .append(this.getKeys().toString().hashCode())
+                .append(this.getAttributeName())
+                .append(this.getKey())
+                .append(this.getTemplateId()).toString();
+    }
 }

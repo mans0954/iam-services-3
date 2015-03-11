@@ -39,6 +39,15 @@ public class MetadataTemplateTypeFieldSearchBean extends AbstractSearchBean<Meta
 	public void setTemplateTypeId(String templateTypeId) {
 		this.templateTypeId = templateTypeId;
 	}
-	
-	
+
+
+    @Override
+    public String getCacheUniqueBeanKey() {
+        return new StringBuilder()
+                .append(templateId != null ? templateId : "")
+                .append(templateTypeId != null ? templateTypeId : "")
+                .append(name != null ? name : "")
+                .append(getKey() != null ? getKey() : "")
+                .toString();
+    }
 }

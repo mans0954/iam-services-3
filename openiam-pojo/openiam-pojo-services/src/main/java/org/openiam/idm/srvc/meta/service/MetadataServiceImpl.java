@@ -97,7 +97,8 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
     @Override
 	@LocalizedServiceGet
 	@Transactional(readOnly=true)
-    @Cacheable(value="metadataElements")
+    @Cacheable(value="metadataElements", key="{ #searchBean.cacheUniqueBeanKey, #from, #size, #language}")
+   // @Cacheable(value="metadataElements")
 	public List<MetadataElement> findBeans(final MetadataElementSearchBean searchBean, final int from, final int size, final Language language) {
 		List<MetadataElementEntity> retVal = null;
 		if(searchBean.hasMultipleKeys()) {
@@ -114,7 +115,7 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
     /**
      * Without localization loop
      */
-    @Cacheable(value="metadataElements")
+    @Cacheable(value="metadataElements",  key="{ #searchBean.cacheUniqueBeanKey, #from, #size }")
     public List<MetadataElement> findBeans(MetadataElementSearchBean searchBean, int from, int size) {
        return this.findBeans(searchBean, from, size, null);
     }
@@ -122,7 +123,7 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
     @Override
     @LocalizedServiceGet
 	@Transactional(readOnly=true)
-    @Cacheable(value="metadataTypes")
+    @Cacheable(value="metadataTypes", key="{ #searchBean.cacheUniqueBeanKey, #from, #size,#language}")
 	public List<MetadataType> findBeans(final MetadataTypeSearchBean searchBean, final int from, final int size, final Language language) {
 		List<MetadataTypeEntity> retVal = null;
 		if(searchBean.hasMultipleKeys()) {
@@ -135,7 +136,7 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 	}
 
     @Override
-    @Cacheable(value="metadataTypes")
+    @Cacheable(value="metadataTypes", key="{ #searchBean.cacheUniqueBeanKey, #from, #size }")
     public List<MetadataType> findBeansNoLocalize(MetadataTypeSearchBean searchBean, int from, int size) {
         return this.findBeans(searchBean, from, size, null);
     }
@@ -289,6 +290,7 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 	
 	@Override
 	@Transactional
+    @CacheEvict(value = "metadataElements", allEntries=true)
 	public void deleteMetdataElement(String id) {
 		final MetadataElementEntity entity = metadataElementDao.findById(id);
 		if(entity != null) {
@@ -312,6 +314,7 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 
 	@Override
 	@Transactional
+    @CacheEvict(value = "metadataTypes", allEntries=true)
 	public void deleteMetdataType(String id) {
 		final MetadataTypeEntity entity = metadataTypeDao.findById(id);
 		if(entity != null) {

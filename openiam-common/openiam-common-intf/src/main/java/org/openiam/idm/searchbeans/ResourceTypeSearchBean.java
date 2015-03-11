@@ -52,4 +52,15 @@ public class ResourceTypeSearchBean extends AbstractSearchBean<ResourceType, Str
     public void setProcessName(String processName) {
         this.processName = processName;
     }
+
+    @Override
+    public String getCacheUniqueBeanKey() {
+        return new StringBuilder()
+                .append(provisionResource != null ? provisionResource : "")
+                .append(processName != null ? processName : "")
+                .append(searchable != null ? searchable.booleanValue() : "")
+                .append(description != null ? description.hashCode() : "")
+                .append(getKey() != null ? getKey() : "")
+                .toString();
+    }
 }

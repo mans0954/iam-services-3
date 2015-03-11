@@ -54,4 +54,14 @@ public class ContentProviderSearchBean extends AbstractSearchBean<ContentProvide
     public void setSSL(Boolean SSL) {
         isSSL = SSL;
     }
+
+    @Override
+    public String getCacheUniqueBeanKey() {
+        return new StringBuilder()
+                .append(providerName != null ? providerName : "")
+                .append(domainPattern != null ? domainPattern : "")
+                .append(isSSL != null ? isSSL : "")
+                .append(getKey() != null ? getKey() : "")
+                .toString();
+    }
 }

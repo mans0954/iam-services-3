@@ -41,4 +41,14 @@ public class AuthResourceAttributeMapSearchBean extends AbstractSearchBean<AuthR
     public void setAmAttributeId(String amAttributeId) {
         this.amAttributeId = amAttributeId;
     }
+
+    @Override
+    public String getCacheUniqueBeanKey() {
+        return new StringBuilder()
+                .append(providerId != null ? providerId : "")
+                .append(targetAttributeName != null ? targetAttributeName : "")
+                .append(amAttributeId != null ? amAttributeId : "")
+                .append(getKey() != null ? getKey() : "")
+                .toString();
+    }
 }
