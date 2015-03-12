@@ -154,6 +154,14 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
             this.parentAuditLogId = ((ProvisionUser) user).getParentAuditLogId();
         }
         this.setIsFromActivitiCreation(user.getIsFromActivitiCreation());
+        if (user instanceof ProvisionUser) {
+            this.setRequestId(((ProvisionUser) user).getRequestId());
+        }
+        this.setRequestorUserId(user.getRequestorUserId());
+        this.setRequestClientIP(user.getRequestClientIP());
+        this.setRequestorLogin(user.getRequestorLogin());
+        this.setRequestorSessionID(user.getRequestorSessionID());
+
     }
 
     public User getUser() {
