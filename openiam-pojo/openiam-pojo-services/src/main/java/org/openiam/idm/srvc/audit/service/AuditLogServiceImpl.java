@@ -169,7 +169,6 @@ public class AuditLogServiceImpl implements AuditLogService {
         if(CollectionUtils.isNotEmpty(logEntitySet)){
 
             for(IdmAuditLogEntity log : logEntitySet){
-                System.out.print(log);
                 if(log!=null){
 //                    StringBuilder sb = new StringBuilder();
 //                    sb.append("====================================================\n");
