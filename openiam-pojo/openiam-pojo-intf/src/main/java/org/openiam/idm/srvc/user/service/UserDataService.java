@@ -117,6 +117,8 @@ public interface UserDataService {
 
     public List<AddressEntity> getAddressList(AddressSearchBean searchBean, Integer size, Integer from);
 
+    public void addTOPTTokenToPhone(String phoneId, String secret);
+    
     public void addPhone(PhoneEntity val);
 
     public void addPhoneSet(Collection<PhoneEntity> phoneList);

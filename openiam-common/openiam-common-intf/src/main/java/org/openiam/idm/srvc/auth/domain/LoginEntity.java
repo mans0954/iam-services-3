@@ -145,6 +145,10 @@ public class LoginEntity extends KeyEntity {
     @Column(name = "SMS_ACTIVE")
     @Type(type = "yes_no")
     private boolean smsActive;
+    
+    @Column(name = "TOPT_ACTIVE")
+    @Type(type = "yes_no")
+    private boolean toptActive;
 
     @OneToMany(orphanRemoval = true, mappedBy = "login", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @Fetch(FetchMode.SUBSELECT)
@@ -426,6 +430,14 @@ public class LoginEntity extends KeyEntity {
 		this.smsActive = smsActive;
 	}
 
+	public boolean isToptActive() {
+		return toptActive;
+	}
+
+	public void setToptActive(boolean toptActive) {
+		this.toptActive = toptActive;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -490,6 +502,7 @@ public class LoginEntity extends KeyEntity {
 		result = prime * result + ((userId == null) ? 0 : userId.hashCode());
 		result = prime * result + ((smsCodeExpiration == null) ? 0 : smsCodeExpiration.hashCode());
 		result = prime * result + (smsActive ? 1231 : 1237);
+		result = prime * result + (toptActive ? 1231 : 1237);
 		return result;
 	}
 
@@ -623,6 +636,8 @@ public class LoginEntity extends KeyEntity {
 		if (status != other.status)
 			return false;
 		if (smsActive != other.smsActive)
+			return false;
+		if (toptActive != other.toptActive)
 			return false;
 		if (userId == null) {
 			if (other.userId != null)

@@ -61,6 +61,9 @@ public class PhoneEntity extends AbstractMetdataTypeEntity {
     @Type(type = "yes_no")
     private boolean isDefault = false;
     
+    @Column(name="TOPT_SECRET", length=100)
+    private String totpSecret;
+    
     /*
     @Column(name="VALIDATED")
     @Type(type = "yes_no")
@@ -206,15 +209,13 @@ public class PhoneEntity extends AbstractMetdataTypeEntity {
 		this.createDate = createDate;
 	}
 
-    /*
-	public boolean isValidated() {
-		return validated;
+	public String getTotpSecret() {
+		return totpSecret;
 	}
 
-	public void setValidated(boolean validated) {
-		this.validated = validated;
+	public void setTotpSecret(String totpSecret) {
+		this.totpSecret = totpSecret;
 	}
-	*/
 
 	@Override
 	public int hashCode() {
@@ -237,7 +238,8 @@ public class PhoneEntity extends AbstractMetdataTypeEntity {
 				+ ((phoneExt == null) ? 0 : phoneExt.hashCode());
 		result = prime * result
 				+ ((phoneNbr == null) ? 0 : phoneNbr.hashCode());
-		//result = prime * result + (validated ? 1231 : 1237);
+		result = prime * result
+				+ ((totpSecret == null) ? 0 : totpSecret.hashCode());
 		return result;
 	}
 
@@ -302,6 +304,12 @@ public class PhoneEntity extends AbstractMetdataTypeEntity {
 			if (other.phoneNbr != null)
 				return false;
 		} else if (!phoneNbr.equals(other.phoneNbr))
+			return false;
+		
+		if (totpSecret == null) {
+			if (other.totpSecret != null)
+				return false;
+		} else if (!totpSecret.equals(other.totpSecret))
 			return false;
 		return true;
 	}

@@ -347,6 +347,12 @@
             <groupId>org.elasticsearch</groupId>
             <artifactId>elasticsearch</artifactId>
         </dependency>
+        
+        <dependency>
+		  <groupId>com.warrenstrange</groupId>
+		  <artifactId>googleauth</artifactId>
+		  <version>${googleauth.version}</version>
+		</dependency>
     </dependencies>
 
 </project>

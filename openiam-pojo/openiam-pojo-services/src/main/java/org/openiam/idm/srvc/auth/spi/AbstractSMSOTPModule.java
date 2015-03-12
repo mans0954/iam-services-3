@@ -14,7 +14,7 @@ import org.openiam.util.encrypt.OneTimePasswordAlgorithm;
 
 public abstract class AbstractSMSOTPModule {
 	
-	 private static final Log log = LogFactory.getLog(AbstractSMSOTPModule.class);
+	protected static final Log log = LogFactory.getLog(AbstractSMSOTPModule.class);
 
 	public AbstractSMSOTPModule() {
 		SpringContextProvider.autowire(this);

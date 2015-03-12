@@ -1060,6 +1060,14 @@ public class UserMgr implements UserDataService {
             phoneDao.update(entity);
         }
     }
+    
+	@Override
+	@Transactional
+	public void addTOPTTokenToPhone(String phoneId, String secret) {
+		final PhoneEntity phone = phoneDao.findById(phoneId);
+		phone.setTotpSecret(secret);
+		phoneDao.update(phone);
+	}
 
     @Override
     @Transactional

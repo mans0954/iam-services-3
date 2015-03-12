@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import javax.jws.WebService;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -62,13 +63,16 @@ import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.AuthenticationRequest;
 import org.openiam.idm.srvc.auth.dto.LoginModuleSelector;
 import org.openiam.idm.srvc.auth.dto.LogoutRequest;
-import org.openiam.idm.srvc.auth.dto.SMSOTPRequest;
+import org.openiam.idm.srvc.auth.dto.OTPRequestType;
+import org.openiam.idm.srvc.auth.dto.OTPServiceRequest;
 import org.openiam.idm.srvc.auth.dto.SSOToken;
 import org.openiam.idm.srvc.auth.dto.Subject;
 import org.openiam.idm.srvc.auth.login.AuthStateDAO;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.auth.spi.AbstractSMSOTPModule;
 import org.openiam.idm.srvc.auth.spi.AbstractScriptableLoginModule;
+import org.openiam.idm.srvc.auth.spi.AbstractTOTPModule;
+import org.openiam.idm.srvc.auth.spi.GoogleAuthTOTPModule;
 import org.openiam.idm.srvc.auth.sso.SSOTokenFactory;
 import org.openiam.idm.srvc.auth.sso.SSOTokenModule;
 import org.openiam.idm.srvc.auth.ws.AuthenticationResponse;
@@ -581,10 +585,63 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
         }
         return login;
 	}
+	
+	
+	@Override
+	@Transactional
+	public Response getOTPSecretKey(OTPServiceRequest request) {
+		final IdmAuditLog event = new IdmAuditLog();
+		event.setUserId(null);
+		event.setAction(AuditAction.GET_QR_CODE.value());
+		event.addAttribute(AuditAttributeName.URI_PATTERN_ID, request.getPatternId());
+		event.addAttributeAsJson(AuditAttributeName.PHONE, request.getPhone(), jacksonMapper);
+		event.setUserId(request.getUserId());
+		
+		final String userId = request.getUserId();
+		final Phone phone = request.getPhone();
+		final Response response = new Response();
+		try {
+			final AuthProviderEntity authProvider = getAuthProvider(request.getPatternId(), event);
+            final ManagedSysEntity managedSystem = (authProvider != null) ? authProvider.getManagedSystem() : null;
+            if(authProvider == null) {
+            	throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_FOUND_FOR_CONTENT_PROVIDER);
+            }
+            final LoginEntity login = getLogin(userId, managedSystem.getId());
+            
+            if(login == null) {
+            	throw new BasicDataServiceException(ResponseCode.PRINCIPAL_NOT_FOUND);
+            }
+            
+            if(request.getRequestType() == null) {
+            	throw new BasicDataServiceException(ResponseCode.OTP_TYPE_MISSING);
+            }
+            
+            final AbstractTOTPModule module = new GoogleAuthTOTPModule();
+            final String secretKey = module.generateSecret(phone, login);
+            response.setResponseValue(secretKey);
+            response.succeed();
+		} catch(BasicDataServiceException e) {
+	        log.warn(e.getMessage(), e);
+	        event.fail();
+	        event.setFailureReason(e.getCode());
+	        event.setFailureReason(e.getMessage());
+	        response.fail();
+	        response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			 log.error(e.getMessage(), e);
+			 event.fail();
+			 event.setFailureReason(e.getMessage());
+			 response.fail();
+			 response.setErrorText(e.getMessage());
+		} finally {
+			auditLogService.enqueue(event);
+		}
+		return response;
+	}
 
 	@Override
 	@Transactional
-	public Response sendOTPSMSCode(final SMSOTPRequest request) {
+	public Response sendOTPToken(final OTPServiceRequest request) {
 		final IdmAuditLog event = new IdmAuditLog();
 		event.setUserId(null);
 		event.setAction(AuditAction.SEND_SMS_OTP_TOKEN.value());
@@ -601,6 +658,11 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
             if(authProvider == null) {
             	throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_FOUND_FOR_CONTENT_PROVIDER);
             }
+            
+            if(request.getRequestType() == null) {
+            	throw new BasicDataServiceException(ResponseCode.OTP_TYPE_MISSING);
+            }
+            
             final PolicyEntity policy = authProvider.getPolicy();
             final PolicyAttributeEntity attribute = policy.getAttribute("OTP_SMS_LIFETIME");
             int numOfMinutesOfSMSValidity = 30;
@@ -648,7 +710,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 	}
 
 	@Override
-	public Response confirmSMSOTPToken(final SMSOTPRequest request) {
+	public Response confirmOTPToken(final OTPServiceRequest request) {
 		final IdmAuditLog event = new IdmAuditLog();
 		event.setUserId(null);
 		event.setAction(AuditAction.CONFIRM_SMS_OTP_TOKEN.value());
@@ -664,26 +726,43 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
             if(authProvider == null) {
             	throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_FOUND_FOR_CONTENT_PROVIDER);
             }
-            final AbstractSMSOTPModule module = (AbstractSMSOTPModule)scriptRunner.instantiateClass(null, authProvider.getSmsOTPGroovyScript());
             final LoginEntity login = getLogin(userId, managedSystem.getId());
             
             if(login == null) {
             	throw new BasicDataServiceException(ResponseCode.PRINCIPAL_NOT_FOUND);
             }
             
-            final String smsCode = module.generateRFC4226Token(login);
-            
-            if(!StringUtils.equals(request.getSmsCode(), smsCode)) {
-            	throw new BasicDataServiceException(ResponseCode.SMS_CODES_NOT_EQUAL);
+            if(request.getRequestType() == null) {
+            	throw new BasicDataServiceException(ResponseCode.OTP_TYPE_MISSING);
             }
             
-            if(login.getSmsCodeExpiration() != null) {
-            	if(new Date().after(login.getSmsCodeExpiration())) {
-            		throw new BasicDataServiceException(ResponseCode.SMS_CODE_EXPIRED);
+            if(OTPRequestType.SMS.equals(request.getRequestType())) {
+            	final AbstractSMSOTPModule module = (AbstractSMSOTPModule)scriptRunner.instantiateClass(null, authProvider.getSmsOTPGroovyScript());
+	            final String smsCode = module.generateRFC4226Token(login);
+	            
+	            if(!StringUtils.equals(request.getOtpCode(), smsCode)) {
+	            	throw new BasicDataServiceException(ResponseCode.SMS_CODES_NOT_EQUAL);
+	            }
+	            
+	            if(login.getSmsCodeExpiration() != null) {
+	            	if(new Date().after(login.getSmsCodeExpiration())) {
+	            		throw new BasicDataServiceException(ResponseCode.SMS_CODE_EXPIRED);
+	            	}
+	            }
+	            
+	            login.setSmsActive(true);
+            } else {
+            	final AbstractTOTPModule module = new GoogleAuthTOTPModule();
+            	final String secret = (StringUtils.isNotBlank(request.getSecret())) ? request.getSecret() : request.getPhone().getTotpSecret();
+            	try {
+            		if(!module.validateToken(secret, Integer.valueOf(request.getOtpCode()).intValue())) {
+            			throw new BasicDataServiceException(ResponseCode.TOPT_CODE_INVALID);
+            		}
+            		login.setToptActive(true);
+            	} catch(NumberFormatException e) {
+            		throw new BasicDataServiceException(ResponseCode.TOPT_CODE_INVALID);
             	}
             }
-            
-            login.setSmsActive(true);
             login.setSmsCodeExpiration(null);
             loginManager.updateLogin(login);
 			response.succeed();
@@ -709,7 +788,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 
 	@Override
 	@Transactional
-	public Response clearSMSActiveStatus(final SMSOTPRequest request) {
+	public Response clearOTPActiveStatus(final OTPServiceRequest request) {
 		final IdmAuditLog event = new IdmAuditLog();
 		event.setUserId(null);
 		event.setAction(AuditAction.CLEAR_SMS_OTP_STATUS.value());
@@ -731,6 +810,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
             }
             
             login.setSmsActive(false);
+            login.setToptActive(false);
             loginManager.updateLogin(login);
             
             response.succeed();
@@ -755,7 +835,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 	}
 
 	@Override
-	public boolean isSMSOTPActive(SMSOTPRequest request) {
+	public boolean isOTPActive(final OTPServiceRequest request) {
 		final IdmAuditLog event = new IdmAuditLog();
 		event.setUserId(null);
 		event.setAction(AuditAction.GET_SMS_OTP_STATUS.value());
@@ -770,13 +850,25 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
             	throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_FOUND_FOR_CONTENT_PROVIDER);
             }
             
+            if(request.getRequestType() == null) {
+            	throw new BasicDataServiceException(ResponseCode.OTP_TYPE_MISSING);
+            }
+            
             final LoginEntity login = getLogin(request.getUserId(), managedSystem.getId());
             
             if(login == null) {
             	throw new BasicDataServiceException(ResponseCode.PRINCIPAL_NOT_FOUND);
             }
             
-            retVal = login.isSmsActive();
+            switch(request.getRequestType()) {
+             	case SMS:
+             		retVal = login.isSmsActive();
+             		break;
+             	case TOPT:
+             		retVal = login.isToptActive();
+             		break;
+            }
+            
             event.succeed();
 		} catch(BasicDataServiceException e) {
 	        log.warn(e.getMessage(), e);

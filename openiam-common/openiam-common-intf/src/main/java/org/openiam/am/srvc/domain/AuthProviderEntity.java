@@ -59,6 +59,10 @@ public class AuthProviderEntity extends AbstractKeyNameEntity {
     @Column(name="SMS_OTP_GROOVY_SCRIPT", length=150)
     private String smsOTPGroovyScript;
     
+    @Column(name="SUPPORTS_TOTP")
+    @Type(type = "yes_no")
+    private boolean supportsTOTP;
+    
     @Column(name = "PUBLIC_KEY", nullable = true)
     @Lob
     private byte[] publicKey=null;
@@ -243,6 +247,14 @@ public class AuthProviderEntity extends AbstractKeyNameEntity {
 	public void setUriPatterns(Set<URIPatternEntity> uriPatterns) {
 		this.uriPatterns = uriPatterns;
 	}
+	
+	public boolean isSupportsTOTP() {
+		return supportsTOTP;
+	}
+
+	public void setSupportsTOTP(boolean supportsTOTP) {
+		this.supportsTOTP = supportsTOTP;
+	}
 
 	@Override
 	public int hashCode() {
@@ -266,6 +278,7 @@ public class AuthProviderEntity extends AbstractKeyNameEntity {
 				+ ((springBeanName == null) ? 0 : springBeanName.hashCode());
 		result = prime * result + ((type == null) ? 0 : type.hashCode());
 		result = prime * result + (supportsSMSOTP ? 1231 : 1237);
+		result = prime * result + (supportsTOTP ? 1231 : 1237);
 		result = prime * result + ((smsOTPGroovyScript == null) ? 0 : smsOTPGroovyScript.hashCode());
 		return result;
 	}
@@ -325,6 +338,8 @@ public class AuthProviderEntity extends AbstractKeyNameEntity {
 		if (supportsJustInTimeAuthentication != other.supportsJustInTimeAuthentication)
 			return false;
 		if (supportsSMSOTP != other.supportsSMSOTP)
+			return false;
+		if (supportsTOTP != other.supportsTOTP)
 			return false;
 		if (smsOTPGroovyScript == null) {
 			if (other.smsOTPGroovyScript != null)

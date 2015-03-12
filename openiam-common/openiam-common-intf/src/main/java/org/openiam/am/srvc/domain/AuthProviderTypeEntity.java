@@ -61,6 +61,10 @@ public class AuthProviderTypeEntity extends AbstractKeyNameEntity {
     @Type(type = "yes_no")
     private boolean supportsSMSOTP;
     
+    @Column(name="SUPPORTS_TOTP")
+    @Type(type = "yes_no")
+    private boolean supportsTOTP;
+    
     @OneToMany(mappedBy = "type", cascade = CascadeType.ALL,fetch = FetchType.LAZY)
     private Set<AuthAttributeEntity> attributeSet;
     
@@ -156,6 +160,14 @@ public class AuthProviderTypeEntity extends AbstractKeyNameEntity {
 		this.supportsSMSOTP = supportsSMSOTP;
 	}
 
+	public boolean isSupportsTOTP() {
+		return supportsTOTP;
+	}
+
+	public void setSupportsTOTP(boolean supportsTOTP) {
+		this.supportsTOTP = supportsTOTP;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -169,6 +181,7 @@ public class AuthProviderTypeEntity extends AbstractKeyNameEntity {
 		result = prime * result + (usesSpringBean ? 1231 : 1237);
 		result = prime * result + (supportsJustInTimeAuthentication ? 1231 : 1237);
 		result = prime * result + (supportsSMSOTP ? 1231 : 1237);
+		result = prime * result + (supportsTOTP ? 1231 : 1237);
 		return result;
 	}
 
@@ -198,6 +211,8 @@ public class AuthProviderTypeEntity extends AbstractKeyNameEntity {
 		if (supportsJustInTimeAuthentication != other.supportsJustInTimeAuthentication)
 			return false;
 		if (supportsSMSOTP != other.supportsSMSOTP)
+			return false;
+		if (supportsTOTP != other.supportsTOTP)
 			return false;
 		return true;
 	}

@@ -33,7 +33,8 @@ import java.util.Date;
         "phoneNbr",
         "operation",
         "lastUpdate",
-        "createDate"
+        "createDate",
+        "totpSecret"
 })
 @DozerDTOCorrespondence(PhoneEntity.class)
 public class Phone extends AbstractMetadataTypeDTO {
@@ -56,6 +57,8 @@ public class Phone extends AbstractMetadataTypeDTO {
     
     @XmlSchemaType(name = "dateTime")
     private Date createDate;
+    
+    private String totpSecret;
 
     /**
      * default constructor
@@ -211,6 +214,14 @@ public class Phone extends AbstractMetadataTypeDTO {
         this.createDate = createDate;
     }
 
+	public String getTotpSecret() {
+		return totpSecret;
+	}
+
+	public void setTotpSecret(String totpSecret) {
+		this.totpSecret = totpSecret;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -237,6 +248,9 @@ public class Phone extends AbstractMetadataTypeDTO {
 				+ ((phoneExt == null) ? 0 : phoneExt.hashCode());
 		result = prime * result
 				+ ((phoneNbr == null) ? 0 : phoneNbr.hashCode());
+		
+		result = prime * result
+				+ ((totpSecret == null) ? 0 : totpSecret.hashCode());
 		return result;
 	}
 
@@ -303,6 +317,12 @@ public class Phone extends AbstractMetadataTypeDTO {
 			if (other.phoneNbr != null)
 				return false;
 		} else if (!phoneNbr.equals(other.phoneNbr))
+			return false;
+		
+		if (totpSecret == null) {
+			if (other.totpSecret != null)
+				return false;
+		} else if (!totpSecret.equals(other.totpSecret))
 			return false;
 		return true;
 	}

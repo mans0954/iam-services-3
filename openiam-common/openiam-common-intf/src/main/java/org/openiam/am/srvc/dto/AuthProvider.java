@@ -34,7 +34,8 @@ import java.util.Set;
         "groovyScriptURL",
         "supportsJustInTimeAuthentication",
         "supportsSMSOTP",
-        "smsOTPGroovyScript"
+        "smsOTPGroovyScript",
+        "supportsTOTP"
 })
 @DozerDTOCorrespondence(AuthProviderEntity.class)
 public class AuthProvider extends KeyNameDTO {
@@ -52,6 +53,7 @@ public class AuthProvider extends KeyNameDTO {
     private boolean supportsJustInTimeAuthentication;
     private boolean supportsSMSOTP;
     private String smsOTPGroovyScript;
+    private boolean supportsTOTP;
 
     private Set<AuthProviderAttribute> attributes;
     private Map<String, AuthResourceAttributeMap> resourceAttributeMap=new HashMap<String, AuthResourceAttributeMap>(0);
@@ -221,6 +223,14 @@ public class AuthProvider extends KeyNameDTO {
 		this.smsOTPGroovyScript = smsOTPGroovyScript;
 	}
 
+	public boolean isSupportsTOTP() {
+		return supportsTOTP;
+	}
+
+	public void setSupportsTOTP(boolean supportsTOTP) {
+		this.supportsTOTP = supportsTOTP;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -246,6 +256,7 @@ public class AuthProvider extends KeyNameDTO {
 				+ ((resourceId == null) ? 0 : resourceId.hashCode());
 		result = prime * result + ((springBeanName == null) ? 0 : springBeanName.hashCode());
 		result = prime * result + (supportsSMSOTP ? 1231 : 1237);
+		result = prime * result + (supportsTOTP ? 1231 : 1237);
 		result = prime * result + ((smsOTPGroovyScript == null) ? 0 : smsOTPGroovyScript.hashCode());
 		return result;
 	}
@@ -310,6 +321,8 @@ public class AuthProvider extends KeyNameDTO {
 		if (supportsJustInTimeAuthentication != other.supportsJustInTimeAuthentication)
 			return false;
 		if (supportsSMSOTP != other.supportsSMSOTP)
+			return false;
+		if (supportsTOTP != other.supportsTOTP)
 			return false;
 		if (smsOTPGroovyScript == null) {
 			if (other.smsOTPGroovyScript != null)

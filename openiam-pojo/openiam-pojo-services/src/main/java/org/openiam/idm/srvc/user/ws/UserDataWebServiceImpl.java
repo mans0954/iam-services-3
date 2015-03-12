@@ -267,6 +267,25 @@ public class UserDataWebServiceImpl implements UserDataWebService {
         }
         return response;
     }
+    
+	@Override
+	public Response addTOPTTokenToPhone(String phoneId, String secret) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            if (phoneId == null || secret == null) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+            }
+            userManager.addTOPTTokenToPhone(phoneId, secret);
+        } catch (BasicDataServiceException e) {
+            response.setErrorCode(e.getCode());
+            response.setStatus(ResponseStatus.FAILURE);
+        } catch (Throwable e) {
+            log.error("Can't perform operation", e);
+            response.setErrorText(e.getMessage());
+            response.setStatus(ResponseStatus.FAILURE);
+        }
+        return response;
+	}
 
     @Override
     public Response addPhone(Phone val) {
@@ -290,6 +309,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
             user.setId(val.getParentId());
             entity.setParent(user);
             userManager.addPhone(entity);
+            response.setResponseValue((String)entity.getId());
         } catch (BasicDataServiceException e) {
             response.setErrorCode(e.getCode());
             response.setStatus(ResponseStatus.FAILURE);

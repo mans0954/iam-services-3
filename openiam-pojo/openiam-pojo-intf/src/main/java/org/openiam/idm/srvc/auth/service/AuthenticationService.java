@@ -11,7 +11,7 @@ import org.openiam.idm.searchbeans.AuthStateSearchBean;
 import org.openiam.idm.srvc.auth.domain.AuthStateEntity;
 import org.openiam.idm.srvc.auth.dto.AuthenticationRequest;
 import org.openiam.idm.srvc.auth.dto.LogoutRequest;
-import org.openiam.idm.srvc.auth.dto.SMSOTPRequest;
+import org.openiam.idm.srvc.auth.dto.OTPServiceRequest;
 import org.openiam.idm.srvc.auth.dto.Subject;
 import org.openiam.idm.srvc.auth.ws.AuthenticationResponse;
 import org.openiam.idm.srvc.grp.dto.Group;
@@ -70,18 +70,21 @@ public interface AuthenticationService {
             AuthenticationRequest request);
     
     @WebMethod
-    public Response clearSMSActiveStatus(@WebParam(name = "request", targetNamespace = "") SMSOTPRequest request);
+    public Response clearOTPActiveStatus(@WebParam(name = "request", targetNamespace = "") OTPServiceRequest request);
     
     @WebMethod
-    public boolean isSMSOTPActive(@WebParam(name = "request", targetNamespace = "") SMSOTPRequest request);
+    public boolean isOTPActive(@WebParam(name = "request", targetNamespace = "") OTPServiceRequest request);
     
     @WebMethod
-    public Response sendOTPSMSCode(@WebParam(name = "request", targetNamespace = "") SMSOTPRequest request);
+    public Response sendOTPToken(@WebParam(name = "request", targetNamespace = "") OTPServiceRequest request);
     
     @WebMethod
-    public Response confirmSMSOTPToken(@WebParam(name = "request", targetNamespace = "") SMSOTPRequest request);
+    public Response confirmOTPToken(@WebParam(name = "request", targetNamespace = "") OTPServiceRequest request);
 
-  
+
+    @WebMethod
+    public Response getOTPSecretKey(@WebParam(name = "request", targetNamespace = "") OTPServiceRequest request);
+    
     /**
      * Attempts to renew the SSO Token for this user.   
      * @param principal - the user's login

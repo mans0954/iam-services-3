@@ -11,15 +11,21 @@ import org.openiam.idm.srvc.continfo.dto.Phone;
 		"userId",
         "phone",
         "patternId",
-        "smsCode"
+        "otpCode",
+        "requestType",
+        "secret"
 })
-public class SMSOTPRequest {
+public class OTPServiceRequest {
 	private String userId;
 	private Phone phone;
 	private String patternId;
-	private String smsCode;
+	private String otpCode;
+	private OTPRequestType requestType;
 	
-	public SMSOTPRequest() {}
+	/* if set, it should override secret in DB */
+	private String secret;
+	
+	public OTPServiceRequest() {}
 
 	public Phone getPhone() {
 		return phone;
@@ -37,12 +43,12 @@ public class SMSOTPRequest {
 		this.userId = userId;
 	}
 
-	public String getSmsCode() {
-		return smsCode;
+	public String getOtpCode() {
+		return otpCode;
 	}
 
-	public void setSmsCode(String smsCode) {
-		this.smsCode = smsCode;
+	public void setOtpCode(String otpCode) {
+		this.otpCode = otpCode;
 	}
 
 	public String getPatternId() {
@@ -53,6 +59,22 @@ public class SMSOTPRequest {
 		this.patternId = patternId;
 	}
 
+	public OTPRequestType getRequestType() {
+		return requestType;
+	}
+
+	public void setRequestType(OTPRequestType requestType) {
+		this.requestType = requestType;
+	}
+
+	public String getSecret() {
+		return secret;
+	}
+
+	public void setSecret(String secret) {
+		this.secret = secret;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -60,8 +82,11 @@ public class SMSOTPRequest {
 		result = prime * result
 				+ ((patternId == null) ? 0 : patternId.hashCode());
 		result = prime * result + ((phone == null) ? 0 : phone.hashCode());
-		result = prime * result + ((smsCode == null) ? 0 : smsCode.hashCode());
+		result = prime * result
+				+ ((requestType == null) ? 0 : requestType.hashCode());
+		result = prime * result + ((otpCode == null) ? 0 : otpCode.hashCode());
 		result = prime * result + ((userId == null) ? 0 : userId.hashCode());
+		result = prime * result + ((secret == null) ? 0 : secret.hashCode());
 		return result;
 	}
 
@@ -73,7 +98,7 @@ public class SMSOTPRequest {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		SMSOTPRequest other = (SMSOTPRequest) obj;
+		OTPServiceRequest other = (OTPServiceRequest) obj;
 		if (patternId == null) {
 			if (other.patternId != null)
 				return false;
@@ -84,23 +109,32 @@ public class SMSOTPRequest {
 				return false;
 		} else if (!phone.equals(other.phone))
 			return false;
-		if (smsCode == null) {
-			if (other.smsCode != null)
+		if (requestType != other.requestType)
+			return false;
+		if (otpCode == null) {
+			if (other.otpCode != null)
 				return false;
-		} else if (!smsCode.equals(other.smsCode))
+		} else if (!otpCode.equals(other.otpCode))
 			return false;
 		if (userId == null) {
 			if (other.userId != null)
 				return false;
 		} else if (!userId.equals(other.userId))
 			return false;
+		
+		if (secret == null) {
+			if (other.secret != null)
+				return false;
+		} else if (!secret.equals(other.secret))
+			return false;
 		return true;
 	}
 
 	@Override
 	public String toString() {
-		return "SMSOTPRequest [userId=" + userId + ", phone=" + phone
-				+ ", patternId=" + patternId + ", smsCode=" + smsCode + "]";
+		return "OTPServiceRequest [userId=" + userId + ", phone=" + phone
+				+ ", patternId=" + patternId + ", otpCode=" + otpCode
+				+ ", requestType=" + requestType + "]";
 	}
 
 	

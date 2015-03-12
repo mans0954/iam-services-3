@@ -248,6 +248,10 @@ public interface UserDataWebService {
      */
     @WebMethod
     public Response addPhone(@WebParam(name = "phone", targetNamespace = "") Phone phone);
+    
+    @WebMethod
+    public Response addTOPTTokenToPhone(@WebParam(name = "phoneId", targetNamespace = "") String phoneId,
+    									@WebParam(name = "secret", targetNamespace = "") String secret);
 
     /**
      * Updates the Phone record

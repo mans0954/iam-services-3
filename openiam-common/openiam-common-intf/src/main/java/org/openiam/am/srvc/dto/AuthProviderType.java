@@ -24,7 +24,8 @@ import java.util.Set;
         "usesGroovyScript",
         "passwordPolicyRequired",
         "supportsJustInTimeAuthentication",
-        "supportsSMSOTP"
+        "supportsSMSOTP",
+        "supportsTOTP"
 })
 @DozerDTOCorrespondence(AuthProviderTypeEntity.class)
 public class AuthProviderType extends KeyNameDTO {
@@ -37,6 +38,7 @@ public class AuthProviderType extends KeyNameDTO {
     private boolean passwordPolicyRequired;
     private boolean supportsJustInTimeAuthentication;
     private boolean supportsSMSOTP;
+    private boolean supportsTOTP;
     
     @XmlTransient
     private Set<AuthAttributeEntity> attributeSet;
@@ -132,6 +134,14 @@ public class AuthProviderType extends KeyNameDTO {
 		this.supportsSMSOTP = supportsSMSOTP;
 	}
 
+	public boolean isSupportsTOTP() {
+		return supportsTOTP;
+	}
+
+	public void setSupportsTOTP(boolean supportsTOTP) {
+		this.supportsTOTP = supportsTOTP;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -145,6 +155,7 @@ public class AuthProviderType extends KeyNameDTO {
 		result = prime * result + (usesSpringBean ? 1231 : 1237);
 		result = prime * result + (supportsJustInTimeAuthentication ? 1231 : 1237);
 		result = prime * result + (supportsSMSOTP ? 1231 : 1237);
+		result = prime * result + (supportsTOTP ? 1231 : 1237);
 		return result;
 	}
 
@@ -174,6 +185,8 @@ public class AuthProviderType extends KeyNameDTO {
 		if (supportsJustInTimeAuthentication != other.supportsJustInTimeAuthentication)
 			return false;
 		if (supportsSMSOTP != other.supportsSMSOTP)
+			return false;
+		if (supportsTOTP != other.supportsTOTP)
 			return false;
 		return true;
 	}
