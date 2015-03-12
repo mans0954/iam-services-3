@@ -178,6 +178,7 @@
 		<javaee.web.api.version>6.0</javaee.web.api.version>
 		<artifactory.version>2.2.1</artifactory.version>
 		<slf4j.simple.version>1.6.1</slf4j.simple.version>
+		<googleauth.version>0.4.3</googleauth.version>
 		<skipTests>true</skipTests>
 	</properties>
 

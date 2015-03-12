@@ -734,6 +734,12 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     if (CollectionUtils.isNotEmpty(entities))  {
                         for (PhoneEntity en : entities) {
                             if (en.getId().equals(e.getId())) {
+                            	/* 
+                                 * IDMAPPS-2700
+                        		 * TOPT_SECRET disappears from phone when updating from UI
+                                 */
+                            	e.setTotpSecret(en.getTotpSecret());
+                            	
                                 // Audit Log
                                 IdmAuditLog auditLog = new IdmAuditLog();
                                 Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());

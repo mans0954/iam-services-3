@@ -264,6 +264,18 @@ public class UserMgr implements UserDataService {
             throw new NullPointerException("user id is null");
 
         user.setLastUpdate(new Date(System.currentTimeMillis()));
+        
+        /* 
+         * IDMAPPS-2700
+		 * TOPT_SECRET disappears from phone when updating from UI
+         */
+        if(CollectionUtils.isNotEmpty(user.getPhones())) {
+        	user.getPhones().stream().filter(t -> t.getId() != null).forEach(phone -> {
+        		final PhoneEntity dbPhone = phoneDao.findById(phone.getId());
+        		phone.setTotpSecret(dbPhone.getTotpSecret());
+        	});
+        }
+        
         setMetadataTypes(user);
         userDao.update(user);
 
