@@ -41,4 +41,15 @@ public class AuthProviderSearchBean extends AbstractSearchBean<AuthProvider, Str
     public void setProviderType(String providerType) {
         this.providerType = providerType;
     }
+
+    @Override
+    public String getCacheUniqueBeanKey() {
+        return new StringBuilder()
+                .append(providerName != null ? providerName : "")
+                .append(managedSysId != null ? managedSysId : "")
+                .append(providerType != null ? providerType : "")
+                .append(getKey() != null ? getKey() : "")
+                .toString();
+    }
+
 }

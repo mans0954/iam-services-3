@@ -25,6 +25,14 @@ public class LanguageSearchBean extends AbstractSearchBean<Language, String> imp
 		this.code = code;
 	}
 
+    @Override
+    public String getCacheUniqueBeanKey() {
+        return new StringBuilder()
+                .append(code != null ? code : "")
+                .append(getKey() != null ? getKey() : "")
+                .toString();
+    }
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;

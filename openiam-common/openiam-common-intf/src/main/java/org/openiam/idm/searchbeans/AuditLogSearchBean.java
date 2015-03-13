@@ -139,4 +139,23 @@ public class AuditLogSearchBean extends AbstractSearchBean<IdmAuditLog, String> 
     public void setResult(String result) {
         this.result = result;
     }
+
+    @Override
+    public String getCacheUniqueBeanKey() {
+        return new StringBuilder()
+                .append(userId != null ? userId : "")
+                .append(from != null ? from.hashCode() : "")
+                .append(to != null ? to.hashCode() : "")
+                .append(action != null ? action : "")
+                .append(result != null ? result : "")
+                .append(managedSysId != null ? managedSysId : "")
+                .append(source != null ? source : "")
+                .append(targetId != null ? targetId : "")
+                .append(targetType != null ? targetType : "")
+                .append(parentId != null ? parentId : "")
+                .append(secondaryTargetId != null ? secondaryTargetId : "")
+                .append(secondaryTargetType != null ? secondaryTargetType : "")
+                .append(getKey() != null ? getKey() : "")
+                .toString();
+    }
 }

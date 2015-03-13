@@ -1534,9 +1534,51 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                     buildMngSysAttributes(login, "RESET_PASSWORD"));
                             log.info("============== Connector Reset Password get : " + new Date());
                             if (resp != null && resp.getStatus() == StatusCodeType.SUCCESS) {
-                                childAuditLog.succeed();
-                                childAuditLog.setAuditDescription("Reset password for resource: " + res.getName() + " for user: " + lg.getLogin());
-                                idmAuditLog.addChild(childAuditLog);
+                                if (enableOnPassReset(res)) {
+                                    // reset flags that go with this identity
+                                    lg.setAuthFailCount(0);
+                                    lg.setIsLocked(0);
+                                    lg.setPasswordChangeCount(0);
+                                    lg.setStatus(LoginStatusEnum.ACTIVE);
+
+                                    resp = suspend(requestId, login, managedSysDto, buildMngSysAttributes(login, "RESUME"), false);
+
+                                    if (StatusCodeType.SUCCESS.equals(resp.getStatus())) {
+                                        lg.setProvStatus(ProvLoginStatusEnum.ENABLED);
+
+                                        childAuditLog.succeed();
+                                        childAuditLog.setAuditDescription("Reset password for resource: " + res.getName() + " for user: " + lg.getLogin());
+                                        idmAuditLog.addChild(childAuditLog);
+
+                                    } else {
+                                        lg.setProvStatus(ProvLoginStatusEnum.FAIL_ENABLE);
+
+                                        allResetOK = false;
+                                        String reason = "";
+                                        if (resp != null) {
+                                            if (StringUtils.isNotBlank(resp.getErrorMsgAsStr())) {
+                                                reason = resp.getErrorMsgAsStr();
+                                            } else if (resp.getError() != null) {
+                                                reason = resp.getError().value();
+                                            }
+                                            if (StringUtils.isNotBlank(passwordSync.getManagedSystemId())) {
+                                                // if single target system - let's return error reason
+                                                response.setErrorText(reason);
+                                            }
+                                        }
+
+                                        childAuditLog.fail();
+                                        childAuditLog.setFailureReason(String.format("Enabling account after password reset for resource %s user %s failed: %s", mSys.getName(), lg.getLogin(), reason));
+                                        idmAuditLog.addChild(childAuditLog);
+
+                                    }
+                                    loginManager.updateLogin(lg);
+
+                                } else {
+                                    childAuditLog.succeed();
+                                    childAuditLog.setAuditDescription("Reset password for resource: " + res.getName() + " for user: " + lg.getLogin());
+                                    idmAuditLog.addChild(childAuditLog);
+                                }
 
                             } else {
                                 allResetOK = false;
@@ -1981,6 +2023,14 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         }
         return retVal;
     }
+    private boolean enableOnPassReset(final ResourceEntity resource) {
+        boolean retVal = true;
+        if (resource != null) {
+            retVal = !StringUtils.equalsIgnoreCase(getResourceProperty(resource, "ENABLE_ON_PASSWORD_RESET"), "N");
+        }
+        return retVal;
+    }
+
 
     private String getResourceProperty(final ResourceEntity resource, final String propertyName) {
         String retVal = null;
@@ -2416,6 +2466,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
                                             String subject = null;
                                             String text = null;
+                                            boolean format = false;
                                             if (ob.getProperties().containsKey("subject")) {
                                                 try {
                                                     subject = scriptRunner.evaluate(bindingMap, (String) ob.getProperties().get("subject"));
@@ -2430,6 +2481,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                                     log.error("Error in text string = '", ioe);
                                                 }
                                             }
+                                            if (ob.getProperties().containsKey("format")) {
+                                                format = (Boolean) ob.getProperties().get("format");
+                                            }
 
                                             final IdmAuditLog childAuditLog = new IdmAuditLog();
                                             childAuditLog.setRequestorUserId(requestorId);
@@ -2439,7 +2493,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
                                             EmailAddress emailAddress = pUser.getPrimaryEmailAddress();
                                             if (emailAddress != null && StringUtils.isNotBlank(emailAddress.getEmailAddress())) {
-                                                mailService.sendEmail(null, emailAddress.getEmailAddress(), null, subject, text, null, false);
+                                                mailService.sendEmail(null, emailAddress.getEmailAddress(), null, subject, text, null, format);
                                                 res = new Response(ResponseStatus.SUCCESS);
                                                 childAuditLog.setAuditDescription("Notification sent to " + emailAddress.getEmailAddress());
                                                 childAuditLog.succeed();
@@ -2679,10 +2733,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         bindingMap.put("sysId", sysConfiguration.getDefaultManagedSysId());
         bindingMap.put("org", pUser.getPrimaryOrganization());
         bindingMap.put("operation", operation);
-        bindingMap.put("user", pUser);
+        bindingMap.put(AbstractProvisioningService.USER, pUser);
+        bindingMap.put(AbstractProvisioningService.USER_ATTRIBUTES, userMgr.getUserAttributesDto(pUser.getId()));
 
-        UserEntity userEntity = null;
-        userEntity = userMgr.getUser(pUser.getId());
+        UserEntity userEntity = userMgr.getUser(pUser.getId());
 
         LoginEntity identityEntity = UserUtils.getUserManagedSysIdentityEntity(managedSysId,
                 userEntity.getPrincipalList());

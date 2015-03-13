@@ -110,4 +110,19 @@ public class IdentitySearchBean extends AbstractSearchBean<IdentityDto, String> 
     public void setType(IdentityTypeEnum type) {
         this.type = type;
     }
+
+    @Override
+    public String getCacheUniqueBeanKey() {
+        return new StringBuilder()
+                .append(identity != null ? identity : "")
+                .append(managedSysId != null ? managedSysId : "")
+                .append(referredObjectId != null ? referredObjectId : "")
+                .append(createFromDate != null ? createFromDate.hashCode() : "")
+                .append(createToDate != null ? createToDate.hashCode() : "")
+                .append(createdBy != null ? createdBy.hashCode() : "")
+                .append(status != null ? status.getValue().hashCode() : "")
+                .append(type != null ? type.getValue().hashCode() : "")
+                .append(getKey() != null ? getKey() : "")
+                .toString();
+    }
 }

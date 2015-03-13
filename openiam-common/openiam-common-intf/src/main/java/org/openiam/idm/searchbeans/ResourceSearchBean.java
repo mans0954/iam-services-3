@@ -142,4 +142,20 @@ public class ResourceSearchBean extends EntitlementsSearchBean<Resource, String>
 		this.adminResourceId = adminResourceId;
 	}
 
+    @Override
+    public String getCacheUniqueBeanKey() {
+        return new StringBuilder()
+                .append(name != null ? name : "")
+                .append(resourceTypeId != null ? resourceTypeId : "")
+                .append(rootsOnly)
+                .append(adminResourceId != null ? adminResourceId : "")
+                .append(risk != null ? risk.name() : "")
+                .append(metadataType != null ? metadataType : "")
+                .append(URL != null ? URL : "")
+                .append(coorelatedName != null ? coorelatedName : "")
+                .append(attributes != null ? attributes.toString().hashCode() : "")
+                .append(getKey() != null ? getKey() : "")
+                .append(excludeResourceTypes != null ? excludeResourceTypes.toString().hashCode() : "")
+                .toString();
+    }
 }

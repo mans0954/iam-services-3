@@ -25,4 +25,12 @@ public class BatchTaskSearchBean extends AbstractSearchBean<BatchTask, String>
     public void setName(String name) {
         this.name = name;
     }
+
+    @Override
+    public String getCacheUniqueBeanKey() {
+        return new StringBuilder()
+                .append(name != null ? name : "")
+                .append(getKey() != null ? getKey() : "")
+                .toString();
+    }
 }

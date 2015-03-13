@@ -51,4 +51,15 @@ public class ReconConfigSearchBean extends AbstractSearchBean<ReconciliationConf
     public void setManagedSysId(String managedSysId) {
         this.managedSysId = managedSysId;
     }
+
+    @Override
+    public String getCacheUniqueBeanKey() {
+        return new StringBuilder()
+                .append(name != null ? name : "")
+                .append(reconType != null ? reconType : "")
+                .append(resourceId != null ? resourceId : "")
+                .append(managedSysId != null ? managedSysId : "")
+                .append(getKey() != null ? getKey() : "")
+                .toString();
+    }
 }

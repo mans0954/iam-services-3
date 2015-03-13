@@ -141,6 +141,7 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
         bindingMap.put(AbstractProvisioningService.TARGET_SYS_RES_ID, res.getId());
         bindingMap.put(AbstractProvisioningService.TARGET_SYS_MANAGED_SYS_ID, managedSysId);
         bindingMap.put(AbstractProvisioningService.USER, targetSysProvUser);
+        bindingMap.put(AbstractProvisioningService.USER_ATTRIBUTES,userMgr.getUserAttributesDto(pUser.getId()));
 
         ManagedSystemObjectMatch matchObj = null;
         ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(managedSysId, ManagedSystemObjectMatch.USER);

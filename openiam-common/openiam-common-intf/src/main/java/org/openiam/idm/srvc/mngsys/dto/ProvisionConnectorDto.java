@@ -150,4 +150,46 @@ public class ProvisionConnectorDto implements java.io.Serializable {
 		this.connectorInterface = connectorInterface;
 	}
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        ProvisionConnectorDto that = (ProvisionConnectorDto) o;
+
+        if (className != null ? !className.equals(that.className) : that.className != null) return false;
+        if (clientCommProtocol != null ? !clientCommProtocol.equals(that.clientCommProtocol) : that.clientCommProtocol != null)
+            return false;
+        if (connectorId != null ? !connectorId.equals(that.connectorId) : that.connectorId != null) return false;
+        if (connectorInterface != null ? !connectorInterface.equals(that.connectorInterface) : that.connectorInterface != null)
+            return false;
+        if (metadataTypeId != null ? !metadataTypeId.equals(that.metadataTypeId) : that.metadataTypeId != null)
+            return false;
+        if (name != null ? !name.equals(that.name) : that.name != null) return false;
+        if (serviceNameSpace != null ? !serviceNameSpace.equals(that.serviceNameSpace) : that.serviceNameSpace != null)
+            return false;
+        if (servicePort != null ? !servicePort.equals(that.servicePort) : that.servicePort != null) return false;
+        if (serviceUrl != null ? !serviceUrl.equals(that.serviceUrl) : that.serviceUrl != null) return false;
+        if (stdComplianceLevel != null ? !stdComplianceLevel.equals(that.stdComplianceLevel) : that.stdComplianceLevel != null)
+            return false;
+        if (wsdlUrl != null ? !wsdlUrl.equals(that.wsdlUrl) : that.wsdlUrl != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = connectorId != null ? connectorId.hashCode() : 0;
+        result = 31 * result + (name != null ? name.hashCode() : 0);
+        result = 31 * result + (metadataTypeId != null ? metadataTypeId.hashCode() : 0);
+        result = 31 * result + (stdComplianceLevel != null ? stdComplianceLevel.hashCode() : 0);
+        result = 31 * result + (clientCommProtocol != null ? clientCommProtocol.hashCode() : 0);
+        result = 31 * result + (serviceUrl != null ? serviceUrl.hashCode() : 0);
+        result = 31 * result + (className != null ? className.hashCode() : 0);
+        result = 31 * result + (serviceNameSpace != null ? serviceNameSpace.hashCode() : 0);
+        result = 31 * result + (servicePort != null ? servicePort.hashCode() : 0);
+        result = 31 * result + (wsdlUrl != null ? wsdlUrl.hashCode() : 0);
+        result = 31 * result + (connectorInterface != null ? connectorInterface.hashCode() : 0);
+        return result;
+    }
 }

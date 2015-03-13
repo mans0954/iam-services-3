@@ -22,6 +22,12 @@ public class MetadataTemplateTypeSearchBean extends AbstractSearchBean<MetadataT
 	public void setName(String name) {
 		this.name = name;
 	}
-	
-	
+
+    @Override
+    public String getCacheUniqueBeanKey() {
+        return new StringBuilder()
+                .append(name != null ? name : "")
+                .append(getKey() != null ? getKey() : "")
+            .toString();
+    }
 }

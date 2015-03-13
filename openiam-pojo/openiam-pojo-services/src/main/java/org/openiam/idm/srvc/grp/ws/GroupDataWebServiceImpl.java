@@ -77,7 +77,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     }
 
     protected Language getDefaultLanguage() {
-        return languageConverter.convertToDTO(languageDataService.getDefaultLanguage(), false);
+        return languageDataService.getDefaultLanguage();
     }
 
     @Override

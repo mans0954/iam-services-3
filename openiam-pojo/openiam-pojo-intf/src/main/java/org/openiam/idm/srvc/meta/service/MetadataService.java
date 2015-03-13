@@ -5,6 +5,7 @@ import java.util.List;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
+import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataValidValueEntity;
@@ -22,23 +23,29 @@ import org.openiam.idm.srvc.meta.dto.MetadataType;
 
 public interface MetadataService {
 	
-	public List<MetadataElementEntity> findElementByName(final String name);
+	public List<MetadataElement> findElementByName(final String name);
 
-    public MetadataTypeEntity findById(final String id);
+    public MetadataElement findElementById(final String id);
 
-	public List<MetadataElementEntity> findBeans(final MetadataElementSearchBean searchBean, final int from, final int size, final LanguageEntity entity);
-	
-	public List<MetadataTypeEntity> findBeans(final MetadataTypeSearchBean searchBean, final int from, final int size);
-	
+    public MetadataType findById(final String id);
+
+	public List<MetadataElement> findBeans(final MetadataElementSearchBean searchBean, final int from, final int size, final Language language);
+
+    public List<MetadataElement> findBeans(final MetadataElementSearchBean searchBean, final int from, final int size);
+
+	public List<MetadataType> findBeans(final MetadataTypeSearchBean searchBean, final int from, final int size, final Language language);
+
+    public List<MetadataType> findBeansNoLocalize(final MetadataTypeSearchBean searchBean, final int from, final int size);
+
 	public int count(final MetadataElementSearchBean searchBean);
 	
 	public int count(final MetadataTypeSearchBean searchBean);
 	
-	public void save(final MetadataElementEntity entity);
+	public String save(final MetadataElement entity);
 
 	public void deleteMetdataElement(final String id);
 	
-	public void save(final MetadataTypeEntity entity);
+	public String save(final MetadataTypeEntity entity);
 	
 	public void deleteMetdataType(final String id);
 	
