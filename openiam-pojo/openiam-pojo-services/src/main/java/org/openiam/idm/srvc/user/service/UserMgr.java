@@ -2280,19 +2280,16 @@ public class UserMgr implements UserDataService {
         return userDao.getUsersForMSys(mSysId);
     }
 
+    @Transactional(readOnly = true)
     public Map<String, UserAttribute> getUserAttributesDto(String userId) {
-        Map<String, UserAttributeEntity> attributeEntityMap = this.getUserAttributes(userId);
-        if (attributeEntityMap != null && !attributeEntityMap.isEmpty()) {
-            Map<String, UserAttribute> attributeMap = new HashMap<String, UserAttribute>();
-            for (String key : attributeEntityMap.keySet()) {
-                UserAttributeEntity entity = attributeEntityMap.get(key);
-                if (entity != null) {
-                    attributeMap.put(key, userAttributeDozerConverter.convertToDTO(entity, false));
-                }
+        List<UserAttribute> userAttributes = getUserAttributesDtoList(userId);
+        Map<String, UserAttribute> attributeMap = new HashMap<String, UserAttribute>();
+        if(userAttributes != null) {
+            for(UserAttribute attr : userAttributes) {
+                attributeMap.put(attr.getName(), attr);
             }
-            return attributeMap;
         }
-        return null;
+        return attributeMap;
     }
 
     @Transactional(readOnly = true)

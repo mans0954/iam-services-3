@@ -2981,6 +2981,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         bindingMap.put("org", user.getPrimaryOrganization());
         bindingMap.put("operation", operation);
         bindingMap.put(USER, user);
+        bindingMap.put(USER_ATTRIBUTES, userMgr.getUserAttributesDto(user.getId()));
         bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, null);
         bindingMap.put(TARGET_SYSTEM_IDENTITY, null);
         int callPreProcessor = callPreProcessor("DISABLE", user, bindingMap, null);
