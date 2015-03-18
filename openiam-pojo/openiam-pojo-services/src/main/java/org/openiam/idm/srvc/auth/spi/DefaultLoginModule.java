@@ -188,8 +188,9 @@ public class DefaultLoginModule extends AbstractLoginModule {
                 login.setLastAuthAttempt(new Date(System.currentTimeMillis()));
                 if (failCount >= authFailCount) {
                     // lock the record and save the record.
-                    login.setIsLocked(1);
-                    loginManager.updateLogin(login);
+                	login.setIsLocked(1);
+                	loginManager.updateLogin(login);
+                    //loginManager.saveLogin(login);
 
                     // set the flag on the primary user record
                     user.setSecondaryStatus(UserStatusEnum.LOCKED);

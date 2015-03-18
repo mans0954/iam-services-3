@@ -63,6 +63,9 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
     @Autowired
     private MetadataValidValueDAO validValueDAO;
     
+    @Autowired
+    private LanguageMappingDAO languageMappingDAO;
+    
     @Value("${org.openiam.resource.type.ui.widget}")
     private String uiWidgetResourceType;
 
@@ -77,7 +80,7 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 
 	@Override
 	@LocalizedServiceGet
-	@Transactional
+	@Transactional(readOnly=true)
 	public List<MetadataElementEntity> findBeans(final MetadataElementSearchBean searchBean, final int from, final int size, final LanguageEntity language) {
 		List<MetadataElementEntity> retVal = null;
 		if(searchBean != null  && searchBean.hasMultipleKeys()) {
@@ -101,7 +104,13 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 		return retVal;
 	}
 
-	@Override
+    @Override
+    @Transactional(readOnly=true)
+    public MetadataTypeEntity findById(String id) {
+        return metadataTypeDao.findById(id);
+    }
+
+    @Override
 	@Transactional
 	public void save(MetadataElementEntity entity) {
 		if(entity != null) {
@@ -286,7 +295,8 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 			final List<MetadataTypeEntity> entityList = metadataTypeDao.findByIds(searchBean.getKeys());
 			retVal = (entityList != null) ? entityList.size() : 0;
 		} else {
-			retVal = metadataTypeDao.count(searchBean);
+			final MetadataTypeEntity entity = metadataTypeSearchBeanConverter.convert(searchBean);
+			retVal = metadataTypeDao.count(entity);
 		}
 		return retVal;
 	}
@@ -301,6 +311,7 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public List<MetadataElementEntity> findElementByName(String name) {
 		final MetadataElementSearchBean searchBean = new MetadataElementSearchBean();
 		searchBean.setAttributeName(name);

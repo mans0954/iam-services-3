@@ -409,6 +409,15 @@ public class LoginEntity extends KeyEntity {
     public Set<PasswordHistoryEntity> getPasswordHistory() {
         return passwordHistory;
     }
+    
+    public void addHistoryRecord(final PasswordHistoryEntity history) {
+    	if(history != null) {
+    		if(this.passwordHistory == null) {
+    			this.passwordHistory = new HashSet<>();
+    		}
+    		this.passwordHistory.add(history);
+    	}
+    }
 
     public void setPasswordHistory(Set<PasswordHistoryEntity> passwordHistory) {
         this.passwordHistory = passwordHistory;
@@ -468,8 +477,6 @@ public class LoginEntity extends KeyEntity {
 		result = prime * result
 				+ ((lastUpdate == null) ? 0 : lastUpdate.hashCode());
 		result = prime * result + ((login == null) ? 0 : login.hashCode());
-		result = prime * result
-				+ ((lowerCaseLogin == null) ? 0 : lowerCaseLogin.hashCode());
 		result = prime * result
 				+ ((managedSysId == null) ? 0 : managedSysId.hashCode());
 		result = prime * result
@@ -604,8 +611,6 @@ public class LoginEntity extends KeyEntity {
 				return false;
 		} else if (!prevLoginIP.equals(other.prevLoginIP))
 			return false;
-		if (provStatus != other.provStatus)
-			return false;
 		if (pswdResetToken == null) {
 			if (other.pswdResetToken != null)
 				return false;
@@ -633,12 +638,20 @@ public class LoginEntity extends KeyEntity {
 			return false;
 		if (resetPassword != other.resetPassword)
 			return false;
-		if (status != other.status)
+		if (status == null) {
+			if (other.status != null)
+				return false;
+		} else if (!status.equals(other.status))
 			return false;
 		if (smsActive != other.smsActive)
 			return false;
 		if (toptActive != other.toptActive)
 			return false;
+        if (provStatus == null) {
+            if (other.provStatus != null)
+                return false;
+        } else if (!provStatus.equals(other.provStatus))
+            return false;
 		if (userId == null) {
 			if (other.userId != null)
 				return false;

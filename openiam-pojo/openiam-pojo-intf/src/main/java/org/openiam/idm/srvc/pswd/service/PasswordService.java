@@ -137,10 +137,10 @@ public interface PasswordService {
     /**
      * This method exists to REPLACE <b>getPasswordPolicyByUser</b>.  The functionality is the same.
      *
-     * @param user
+     * @param passwordPolicyAssocSearchBean
      * @return
      */
-    Policy getPasswordPolicyForUser(final UserEntity user);
+    Policy getPasswordPolicyForUser(final PasswordPolicyAssocSearchBean passwordPolicyAssocSearchBean);
 
     /**
      * Checks to see if a password exists in the history log based on the policy

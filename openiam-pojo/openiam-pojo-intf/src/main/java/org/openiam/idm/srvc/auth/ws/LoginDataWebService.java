@@ -8,6 +8,7 @@ import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
+
 import java.util.Date;
 import java.util.List;
 
@@ -100,22 +101,41 @@ public interface LoginDataWebService {
      * @return
      */
     @WebMethod
+    @Deprecated
     public Response resetPassword(@WebParam(name = "principal", targetNamespace = "") String principal,
                                   @WebParam(name = "managedSysId", targetNamespace = "") String managedSysId,
                                   @WebParam(name = "password", targetNamespace = "") String password);
-
+    
+    
     /**
      * Sets a new password for the identity and updates the support attributes such as locked account flag.
      *
      * @param principal
      * @param managedSysId
      * @param password
+     * @param contentProviderId
+     * @return
+     */
+    public Response resetPasswordWithContentProvider(@WebParam(name = "principal", targetNamespace = "") String principal,
+            										 @WebParam(name = "managedSysId", targetNamespace = "") String managedSysId,
+            										 @WebParam(name = "password", targetNamespace = "") String password,
+            										 @WebParam(name="contentProviderId", targetNamespace="") String contentProviderId);
+    
+    /**
+     * Sets a new password for the identity and updates the support attributes such as locked account flag.
+     *
+     * @param principal
+     * @param managedSysId
+     * @param password
+     * @param contentProviderId
+     * @param notifyUserViaEmail
      * @return
      */
     @WebMethod
     public Response resetPasswordAndNotifyUser(@WebParam(name = "principal", targetNamespace = "") String principal,
                                                @WebParam(name = "managedSysId", targetNamespace = "") String managedSysId,
                                                @WebParam(name = "password", targetNamespace = "") String password,
+                                               @WebParam(name="contentProviderId", targetNamespace="") String contentProviderId,
                                                @WebParam(name = "notifyUserViaEmail", targetNamespace = "") boolean notifyUserViaEmail);
     /**
      * Encrypts the password string.

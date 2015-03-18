@@ -54,7 +54,7 @@ public class LanguageWebServiceImpl implements LanguageWebService {
     @LocalizedServiceGet
     @Transactional(readOnly = true)
     public List<Language> findBeans(final LanguageSearchBean searchBean, final int from, final int size,
-            final Language language) {
+                                    final Language language) {
         final List<LanguageEntity> entityList = languageService.findBeans(searchBean, from, size,
                 languageDozerConverter.convertToEntity(language, false));
         return languageDozerConverter.convertToDTOList(entityList, (searchBean != null) ? searchBean.isDeepCopy() : false);
@@ -67,6 +67,7 @@ public class LanguageWebServiceImpl implements LanguageWebService {
     }
 
     @Override
+    @Transactional
     public Response save(final Language language) {
         Response response = new Response();
         response.setStatus(ResponseStatus.SUCCESS);
@@ -184,16 +185,11 @@ public class LanguageWebServiceImpl implements LanguageWebService {
                     if (oldE != null) {
                         newE.setLanguageId(str);
                         newE.setReferenceId(entity.getId());
-                        newE.setReferenceType(LanguageEntity.class.getSimpleName());
+                        newE.setReferenceType("LanguageEntity.displayNameMap");
                         newE.setValue(oldE.getValue());
                         newE.setId(languageService.addLanguageMapping(newE).getId());
                     }
                 }
-                LanguageMappingEntity newE = new LanguageMappingEntity();
-                newE.setLanguageId(entity.getId());
-                newE.setReferenceId(entity.getId());
-                newE.setReferenceType(LanguageEntity.class.getSimpleName());
-                newE.setValue(language.getName());
             }
             response.setResponseValue(entity.getId());
         } catch (BasicDataServiceException e) {

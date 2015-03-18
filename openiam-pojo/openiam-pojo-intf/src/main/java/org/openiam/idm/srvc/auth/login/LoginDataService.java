@@ -21,17 +21,17 @@ import java.util.List;
 public interface LoginDataService {
 
     public void addLogin(LoginEntity principal);
-    
+
     public void updateLogin(LoginEntity principal);
 
     public void deleteLogin(final String loginId);
 
     public void activateDeactivateLogin(String loginId, LoginStatusEnum status);
-    
+
     public void removeLogin(String principal, String managedSysId);
-    
+
     public LoginEntity getLoginDetails(final String loginId);
-    
+
     public Login getLoginDTO(final String loginId);
 
     public LoginEntity getLoginByManagedSys(String principal, String sysId);
@@ -108,12 +108,15 @@ public interface LoginDataService {
     /**
      * Sets a new password for the identity and updates the support attributes such as locked account flag.
      *
-     * @param principal
-     * @param sysId
+     * @param login
+     * @param managedSysId
      * @param password
+     * @param contentProviderId
+     * @param isActivate
      * @return
      */
-    public boolean resetPassword(String principal, String sysId, String password);
+
+    public boolean resetPassword(final String login, final String managedSysId, final String contentProviderId, final String password, final boolean isActivate);
 
 
     /**
@@ -122,9 +125,9 @@ public interface LoginDataService {
      * @param password
      * @return
      */
-    public String encryptPassword(String userId, String password ) throws Exception;
+    public String encryptPassword(String userId, String password) throws Exception;
 
-    public String decryptPassword(String userId, String password ) throws Exception;
+    public String decryptPassword(String userId, String password) throws Exception;
 
     public List<LoginEntity> getLoginByUser(String userId);
 
@@ -151,14 +154,14 @@ public interface LoginDataService {
     public List<LoginEntity> getUserNearPswdExpiration(int expDays);
 
     /**
-     *Returns a list of Login objects which are nearing expiry depending on PWD_EXP_WARN password attribute
-     *If attribute unset, default is assumed to be 5. 
+     * Returns a list of Login objects which are nearing expiry depending on PWD_EXP_WARN password attribute
+     * If attribute unset, default is assumed to be 5.
      *
-     * @param 
+     * @param
      * @return
      */
     public List<LoginEntity> getUsersNearPswdExpiration();
-    
+
     /**
      * List of users whose passworss are expiring today
      *

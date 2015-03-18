@@ -23,8 +23,8 @@ import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.idm.srvc.msg.service.MailService;
 import org.openiam.idm.srvc.msg.service.MailTemplateParameters;
-import org.openiam.idm.srvc.policy.dto.PasswordPolicyAssocSearchBean;
 import org.openiam.idm.srvc.policy.domain.PolicyEntity;
+import org.openiam.idm.srvc.policy.dto.PasswordPolicyAssocSearchBean;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.policy.service.PolicyDataService;
@@ -205,25 +205,46 @@ public class LoginDataServiceImpl implements LoginDataService {
                 retVal.add(entity);
             }
         } else {
-            retVal = loginSearchDAO.find(from, size, null, searchBean);
+        	final List<String> ids = loginSearchDAO.findIds(from, size, null, searchBean);
+        	if(CollectionUtils.isNotEmpty(ids)) {
+        		retVal = loginDao.findByIds(ids);
+        	}
+            //retVal = loginSearchDAO.find(from, size, null, searchBean);
         }
         return retVal;
     }
 
+    /**
+     * Sets the password for a sourceLogin. The password needs to be encrypted externally. this allow for flexiblity in
+     * supporting alternate approaches to encryption.
+     *
+     * @param login
+     * @param sysId
+     * @param password
+     * @return
+     */
+    @Override
+    @Deprecated
+    @Transactional
+    public boolean setPassword(String login, String sysId,
+                               String password, boolean preventChangeCountIncrement) {
+        return setPasswordUsingContentProvider(login, sysId, password, preventChangeCountIncrement, null);
+    }
+    
 
     public boolean setPasswordUsingContentProvider(String login, String sysId,
                                                    String password, boolean preventChangeCountIncrement, final String contentProviderId) {
-        Calendar cal = Calendar.getInstance();
-        Calendar expCal = Calendar.getInstance();
-        LoginEntity lg = getLoginByManagedSys(login, sysId);
+    	final Calendar cal = Calendar.getInstance();
+    	final Calendar expCal = Calendar.getInstance();
+    	final LoginEntity lg = getLoginByManagedSys(login, sysId);
         
         final PasswordPolicyAssocSearchBean searchBean = new PasswordPolicyAssocSearchBean();
     	searchBean.setUserId(lg.getUserId());
     	searchBean.setContentProviderId(contentProviderId);
-        Policy plcy = passwordPolicyProvider.getPasswordPolicyByUser(searchBean);
-        String pswdExpValue = getPolicyAttribute(plcy.getPolicyAttributes(), "PWD_EXPIRATION");
+        final Policy plcy = passwordPolicyProvider.getPasswordPolicyByUser(searchBean);
+        final String pswdExpValue = getPolicyAttribute(plcy.getPolicyAttributes(), "PWD_EXPIRATION");
         //String changePswdOnReset = getPolicyAttribute( plcy.getPolicyAttributes(), "CHNG_PSWD_ON_RESET");
-        String gracePeriod = getPolicyAttribute(plcy.getPolicyAttributes(), "PWD_EXP_GRACE");
+        final String gracePeriod = getPolicyAttribute(plcy.getPolicyAttributes(), "PWD_EXP_GRACE");
 
 
         lg.setPassword(password);
@@ -270,35 +291,19 @@ public class LoginDataServiceImpl implements LoginDataService {
             return true;
         }
         return false;
-    }
-
-    /**
-     * Sets the password for a sourceLogin. The password needs to be encrypted externally. this allow for flexiblity in
-     * supporting alternate approaches to encryption.
-     *
-     * @param login
-     * @param sysId
-     * @param password
-     * @return
-     */
-    @Override
-    @Deprecated
-    @Transactional
-    public boolean setPassword(String login, String sysId,
-                               String password, boolean preventChangeCountIncrement) {
-        return setPasswordUsingContentProvider(login, sysId, password, preventChangeCountIncrement, null);
+        
     }
 
     @Override
     @Transactional
-    public boolean resetPassword(String login, String sysId, String password) {
+    public boolean resetPassword(final String login, final String managedSysId, final String contentProviderId, final String password, final boolean isActivate) {
 
-        LoginEntity lg = getLoginByManagedSys(login, sysId);
-        UserEntity user = userDao.findById(lg.getUserId());
+        LoginEntity lg = getLoginByManagedSys(login, managedSysId);
 
         final PasswordPolicyAssocSearchBean searchBean = new PasswordPolicyAssocSearchBean();
-    	searchBean.setUserId(user.getId());
-        Policy plcy = passwordPolicyProvider.getPasswordPolicyByUser(searchBean);
+        searchBean.setUserId(lg.getUserId());
+        searchBean.setContentProviderId(contentProviderId);
+        final Policy plcy = passwordPolicyProvider.getPasswordPolicyByUser(searchBean);
 
         String pswdExpValue = getPolicyAttribute(plcy.getPolicyAttributes(),
                 "NUM_DAYS_FORGET_PWD_TOKEN_VALID");
@@ -307,8 +312,11 @@ public class LoginDataServiceImpl implements LoginDataService {
         String gracePeriod = getPolicyAttribute(plcy.getPolicyAttributes(),
                 "PWD_EXP_GRACE");
 
-        user.setSecondaryStatus(null);
-        userDao.update(user);
+        if (isActivate) {
+            UserEntity user = userDao.findById(lg.getUserId());
+            user.setSecondaryStatus(null);
+            userDao.update(user);
+        }
 
         lg.setPassword(password);
         // set the other properties of a password based on policy
@@ -357,7 +365,7 @@ public class LoginDataServiceImpl implements LoginDataService {
     }
 
     @Override
-	@Transactional(readOnly = true)
+    @Transactional(readOnly = true)
     public String decryptPassword(String userId, String password)
             throws Exception {
         if (password != null) {

@@ -34,7 +34,7 @@ public class ModifyUserShellCommand extends AbstractCrudShellCommand<ExtensibleU
         List<ExtensibleAttribute> attrList = object.getAttributes();
         List<ModificationItem> modItemList = new ArrayList<ModificationItem>();
         for (ExtensibleAttribute att : attrList) {
-            if (att.getOperation() != 0 && att.getName() != null) {
+            if (att.getOperation() > 0 && att.getName() != null) {
                 if (att.getName().equalsIgnoreCase("firstName")) {
                     firstName = att.getValue();
                     change = true;

@@ -15,6 +15,15 @@
 	</mapping>
 	
 	<mapping>
+		<class-a>org.openiam.idm.srvc.loc.domain.LocationEntity</class-a>
+		<class-b>org.openiam.idm.srvc.loc.dto.Location</class-b>
+		<field>
+			<a>organization.id</a>
+			<b>organizationId</b>
+		</field>
+	</mapping>
+	
+	<mapping>
 		<class-a>org.openiam.property.domain.PropertyValueEntity</class-a>
 		<class-b>org.openiam.property.dto.PropertyValue</class-b>
 		<field

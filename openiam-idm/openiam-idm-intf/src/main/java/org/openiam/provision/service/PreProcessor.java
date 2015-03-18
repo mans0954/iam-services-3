@@ -1,7 +1,8 @@
 package org.openiam.provision.service;
 
+import org.openiam.connector.type.request.LookupRequest;
 import org.openiam.provision.dto.PasswordSync;
-import org.openiam.provision.dto.ProvisionUser;
+import org.springframework.context.ApplicationContext;
 
 import java.util.Map;
 
@@ -42,6 +43,13 @@ public interface PreProcessor <T> {
     int add(T object, Map<String, Object> bindingMap);
     int modify(T object, Map<String, Object> bindingMap);
     int delete(T object, Map<String, Object> bindingMap);
-    int setPassword( Map<String, Object> bindingMap);
 
+    int disable(T object,Map<String, Object> bindingMap);
+
+    int setPassword(PasswordSync passwordSync,Map<String, Object> bindingMap);
+    int resetPassword(PasswordSync passwordSync,Map<String, Object> bindingMap);
+
+    int lookupRequest(LookupRequest request);
+
+    void setApplicationContext(ApplicationContext ctx);
 }

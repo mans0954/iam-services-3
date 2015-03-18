@@ -53,8 +53,6 @@ public class ManagedSysEntity extends AbstractKeyNameEntity {
     @Column(name = "END_DATE", length = 10)
     @Temporal(TemporalType.DATE)
     private Date endDate;
-    @Column(name = "ATTRIBUTE_NAMES_LOOKUP", length = 120)
-    private String attributeNamesLookup;
     @Column(name = "SEARCH_SCOPE")
     @Enumerated(EnumType.ORDINAL)
     private SearchScopeType searchScope = SearchScopeType.SUBTREE_SCOPE;
@@ -112,10 +110,10 @@ public class ManagedSysEntity extends AbstractKeyNameEntity {
     @JoinColumn(name = "MANAGED_SYS_ID", referencedColumnName = "MANAGED_SYS_ID")
     private List<ManagedSysRuleEntity> rules = new ArrayList<ManagedSysRuleEntity>(0);
 
-    @OneToMany(orphanRemoval = false, cascade = { CascadeType.DETACH, CascadeType.REFRESH }, mappedBy = "managedSystem", fetch = FetchType.LAZY)
+    @OneToMany(orphanRemoval = false, cascade = {CascadeType.DETACH, CascadeType.REFRESH}, mappedBy = "managedSystem", fetch = FetchType.LAZY)
     private Set<GroupEntity> groups;
 
-    @OneToMany(orphanRemoval = false, cascade = { CascadeType.DETACH, CascadeType.REFRESH }, mappedBy = "managedSystem", fetch = FetchType.LAZY)
+    @OneToMany(orphanRemoval = false, cascade = {CascadeType.DETACH, CascadeType.REFRESH}, mappedBy = "managedSystem", fetch = FetchType.LAZY)
     private Set<RoleEntity> roles;
     
     @OneToMany(orphanRemoval = false, cascade = { CascadeType.DETACH, CascadeType.REFRESH }, mappedBy = "managedSystem", fetch = FetchType.LAZY)
@@ -208,14 +206,6 @@ public class ManagedSysEntity extends AbstractKeyNameEntity {
 
     public void setEndDate(Date endDate) {
         this.endDate = endDate;
-    }
-
-    public String getAttributeNamesLookup() {
-        return attributeNamesLookup;
-    }
-
-    public void setAttributeNamesLookup(String attributeNamesLookup) {
-        this.attributeNamesLookup = attributeNamesLookup;
     }
 
     public SearchScopeType getSearchScope() {
@@ -428,10 +418,6 @@ public class ManagedSysEntity extends AbstractKeyNameEntity {
 				* result
 				+ ((attributeNamesHandler == null) ? 0 : attributeNamesHandler
 						.hashCode());
-		result = prime
-				* result
-				+ ((attributeNamesLookup == null) ? 0 : attributeNamesLookup
-						.hashCode());
 		result = prime * result
 				+ ((commProtocol == null) ? 0 : commProtocol.hashCode());
 		result = prime
@@ -510,11 +496,6 @@ public class ManagedSysEntity extends AbstractKeyNameEntity {
 			if (other.attributeNamesHandler != null)
 				return false;
 		} else if (!attributeNamesHandler.equals(other.attributeNamesHandler))
-			return false;
-		if (attributeNamesLookup == null) {
-			if (other.attributeNamesLookup != null)
-				return false;
-		} else if (!attributeNamesLookup.equals(other.attributeNamesLookup))
 			return false;
 		if (commProtocol == null) {
 			if (other.commProtocol != null)

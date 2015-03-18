@@ -5,6 +5,8 @@ import org.apache.commons.collections.ListUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.Criteria;
+import org.hibernate.criterion.Restrictions;
 import org.openiam.authmanager.service.AuthorizationManagerService;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseConstants;
@@ -24,6 +26,7 @@ import org.openiam.idm.srvc.auth.login.AuthStateDAO;
 import org.openiam.idm.srvc.auth.login.LoginDAO;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.auth.login.lucene.LoginSearchDAO;
+import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
@@ -43,7 +46,9 @@ import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.dto.ApproverAssociation;
 import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
+import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.service.OrganizationService;
+import org.openiam.idm.srvc.pswd.domain.PasswordHistoryEntity;
 import org.openiam.idm.srvc.pswd.service.PasswordHistoryDAO;
 import org.openiam.idm.srvc.pswd.service.UserIdentityAnswerDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
@@ -80,7 +85,7 @@ import java.util.*;
  */
 
 @Service("userManager")
-public class UserMgr implements UserDataService {
+public class UserMgr extends AbstractBaseService implements UserDataService {
     @Autowired
     @Qualifier("userDAO")
     private UserDAO userDao;
@@ -216,9 +221,21 @@ public class UserMgr implements UserDataService {
 
         validateEmailAddress(user, user.getEmailAddresses());
         setMetadataTypes(user);
+        
+        final List<LoginEntity> principalList = user.getPrincipalList();
+        if (principalList != null && !principalList.isEmpty()) {
+            for (final LoginEntity lg : principalList) {
+                if(StringUtils.equalsIgnoreCase(sysConfiguration.getDefaultManagedSysId(), lg.getManagedSysId())) {
+                	if(StringUtils.isNotBlank(lg.getPassword())) {
+                		createInitialPasswordHistoryRecord(lg);
+                	}
+                }
+            }
+        }
+        
         userDao.save(user);
         keyManagementService.generateUserKeys(user);
-
+        
         addRequiredAttributes(user);
     }
 
@@ -258,11 +275,12 @@ public class UserMgr implements UserDataService {
     @Override
     @Transactional
     public void updateUser(UserEntity user) {
-        if (user == null)
+        if (user == null) {
             throw new NullPointerException("user object is null");
-        if (user.getId() == null)
+        }
+        if (user.getId() == null) {
             throw new NullPointerException("user id is null");
-
+        }
         user.setLastUpdate(new Date(System.currentTimeMillis()));
         
         /* 
@@ -274,6 +292,19 @@ public class UserMgr implements UserDataService {
         		final PhoneEntity dbPhone = phoneDao.findById(phone.getId());
         		phone.setTotpSecret(dbPhone.getTotpSecret());
         	});
+        }
+        
+        final List<LoginEntity> principalList = user.getPrincipalList();
+        if (principalList != null && !principalList.isEmpty()) {
+            for (final LoginEntity lg : principalList) {
+                if(StringUtils.equalsIgnoreCase(sysConfiguration.getDefaultManagedSysId(), lg.getManagedSysId())) {
+                	if(StringUtils.isNotBlank(lg.getPassword())) {
+                		if(CollectionUtils.isEmpty(lg.getPasswordHistory())) {
+                			createInitialPasswordHistoryRecord(lg);
+                		}
+                	}
+                }
+            }
         }
         
         setMetadataTypes(user);
@@ -676,6 +707,7 @@ public class UserMgr implements UserDataService {
             }
         } else {
             List<UserEntity> finalizedIdList = userDao.findByIds(getUserIds(searchBean), searchBean);
+            sortUsersByOrg(finalizedIdList, searchBean.getSortBy());
             if (from > -1 && size > -1) {
                 if (finalizedIdList != null && finalizedIdList.size() >= from) {
                     int to = from + size;
@@ -695,6 +727,64 @@ public class UserMgr implements UserDataService {
         }
 
         return entityList;
+    }
+
+    private void sortUsersByOrg(List<UserEntity> userList, List<SortParam> sortParamList) {
+        if(CollectionUtils.isNotEmpty(userList) && CollectionUtils.isNotEmpty(sortParamList)) {
+            for (SortParam sort : sortParamList) {
+                final OrderConstants orderDir = (sort.getOrderBy() == null) ? OrderConstants.ASC : sort.getOrderBy();
+
+                if ("organization".equals(sort.getSortBy())
+                        || "department".equals(sort.getSortBy())) {
+
+                    final String typeId = ("organization".equals(sort.getSortBy()))?
+                    		getString("org.openiam.organization.type.id")	: 
+                    		getString("org.openiam.department.type.id");
+                    Collections.sort(userList, new Comparator<UserEntity>() {
+                        @Override
+                        public int compare(UserEntity u1, UserEntity u2) {
+                            int result = 0;
+                            OrganizationEntity org1 = this.getUserOrg(u1, typeId);
+                            OrganizationEntity org2 = this.getUserOrg(u2, typeId);
+                            if(org1==null && org2!=null)
+                                result = -1;
+                            else if(org1!=null && org2==null)
+                                result = 1;
+                            else if(org1==null && org2==null)
+                                result = 0;
+                            else
+                                result = org1.getName().compareTo(org2.getName());
+
+                            return orderDir == OrderConstants.ASC ? result: result*(-1);
+                        }
+
+                        private OrganizationEntity getUserOrg(UserEntity u, String orgTypeId){
+                            OrganizationEntity org = null;
+                            if(CollectionUtils.isNotEmpty(u.getAffiliations())){
+                                List<OrganizationEntity>  userOrgs = new ArrayList<OrganizationEntity>();
+                                for(OrganizationEntity o: u.getAffiliations()){
+                                    if(o.getOrganizationType().getId().equals(orgTypeId)){
+                                        userOrgs.add(o);
+                                    }
+                                }
+                                if(CollectionUtils.isNotEmpty(userOrgs)) {
+                                    Collections.sort(userOrgs, new Comparator<OrganizationEntity>() {
+                                        @Override
+                                        public int compare(OrganizationEntity o1, OrganizationEntity o2) {
+                                            return o1.getName().compareTo(o2.getName());
+                                        }
+                                    });
+                                    org = userOrgs.get(0);
+                                }
+                            }
+                            return org;
+                        }
+                    });
+
+                    break;
+                }
+            }
+        }
     }
 
     @Override
@@ -1681,6 +1771,16 @@ public class UserMgr implements UserDataService {
         }
     }
     
+    //AM-414
+    /* need to set up an initial record for password history */
+    private void createInitialPasswordHistoryRecord(final LoginEntity login) {
+    	final PasswordHistoryEntity history = new PasswordHistoryEntity();
+    	history.setLogin(login);
+    	history.setPassword(login.getPassword());
+    	login.addHistoryRecord(history);
+    }
+
+    @Transactional
     private String createNewUser(UserEntity newUserEntity) throws Exception {
         List<LoginEntity> principalList = newUserEntity.getPrincipalList();
         Set<EmailAddressEntity> emailAddressList = newUserEntity.getEmailAddresses();
@@ -2219,6 +2319,11 @@ public class UserMgr implements UserDataService {
             }
         }
         return filter;
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserEntity> getUsersForMSys(String mSysId) {
+        return userDao.getUsersForMSys(mSysId);
     }
 
     public Map<String, UserAttribute> getUserAttributesDto(String userId) {

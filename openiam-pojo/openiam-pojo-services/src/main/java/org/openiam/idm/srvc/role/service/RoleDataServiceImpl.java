@@ -102,8 +102,15 @@ public class RoleDataServiceImpl implements RoleDataService {
         }
         return null;
 	}
-	
-	@Override
+
+    @Override
+    @Transactional(readOnly = true)
+    public Role getRoleDtoByName(String roleName, String requesterId) {
+        RoleEntity roleEntity = getRoleByName(roleName,requesterId);
+        return roleDozerConverter.convertToDTO(roleEntity, true);
+    }
+
+    @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
 	public RoleEntity getRoleLocalized(final String roleId, final String requesterId, final LanguageEntity language) {
@@ -427,7 +434,14 @@ public class RoleDataServiceImpl implements RoleDataService {
 		return roleDao.getRolesForUser(userId, getDelegationFilter(requesterId), from, size);
 	}
 
-	@Override
+    @Override
+    @Transactional(readOnly = true)
+    public List<Role> getRolesDtoForUser(String userId, String requesterId, int from, int size) {
+        final List<RoleEntity> entityList = getRolesForUser(userId, requesterId, from, size);
+        return roleDozerConverter.convertToDTOList(entityList, false);
+    }
+
+    @Override
     @Transactional(readOnly = true)
 	public List<Role> getUserRolesAsFlatList(String userId) {
 		UserEntity userEntity = userDAO.findById(userId);

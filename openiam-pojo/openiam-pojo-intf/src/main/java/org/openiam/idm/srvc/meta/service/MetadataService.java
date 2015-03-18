@@ -24,7 +24,9 @@ import org.openiam.idm.srvc.meta.dto.MetadataType;
 public interface MetadataService {
 	
 	public List<MetadataElementEntity> findElementByName(final String name);
-	
+
+    public MetadataTypeEntity findById(final String id);
+
 	public List<MetadataElementEntity> findBeans(final MetadataElementSearchBean searchBean, final int from, final int size, final LanguageEntity entity);
 	
 	public List<MetadataTypeEntity> findBeans(final MetadataTypeSearchBean searchBean, final int from, final int size, final LanguageEntity entity);

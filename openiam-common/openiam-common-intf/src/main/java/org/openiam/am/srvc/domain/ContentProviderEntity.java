@@ -43,6 +43,12 @@ public class ContentProviderEntity extends AbstractKeyNameEntity {
 	@Column(name = "AUTH_COOKIE_NAME", length = 100, nullable = false)
 	private String authCookieName;
 	
+	@Column(name = "LOGIN_URL", length = 300, nullable = false)
+	private String loginURL;
+	
+	@Column(name = "POSTBACK_URL_PARAM_NAME", length = 50, nullable = false)
+	private String postbackURLParamName;
+	
 	@Column(name = "AUTH_COOKIE_DOMAIN", length = 100, nullable = false)
 	private String authCookieDomain;
 	
@@ -186,27 +192,37 @@ public class ContentProviderEntity extends AbstractKeyNameEntity {
 		this.groupingXrefs = groupingXrefs;
 	}
 
+
 	public boolean isShowOnApplicationPage() {
 		return showOnApplicationPage;
 	}
+
 	public void setShowOnApplicationPage(boolean showOnApplicationPage) {
 		this.showOnApplicationPage = showOnApplicationPage;
 	}
 
-	public AuthProviderEntity getAuthProvider() {
-		return authProvider;
-	}
-
-	public void setAuthProvider(AuthProviderEntity authProvider) {
-		this.authProvider = authProvider;
-	}
-	
 	public String getAuthCookieName() {
 		return authCookieName;
 	}
 
 	public void setAuthCookieName(String authCookieName) {
 		this.authCookieName = authCookieName;
+	}
+
+	public String getLoginURL() {
+		return loginURL;
+	}
+
+	public void setLoginURL(String loginURL) {
+		this.loginURL = loginURL;
+	}
+
+	public String getPostbackURLParamName() {
+		return postbackURLParamName;
+	}
+
+	public void setPostbackURLParamName(String postbackURLParamName) {
+		this.postbackURLParamName = postbackURLParamName;
 	}
 
 	public String getAuthCookieDomain() {
@@ -217,23 +233,39 @@ public class ContentProviderEntity extends AbstractKeyNameEntity {
 		this.authCookieDomain = authCookieDomain;
 	}
 
+	public AuthProviderEntity getAuthProvider() {
+		return authProvider;
+	}
+
+	public void setAuthProvider(AuthProviderEntity authProvider) {
+		this.authProvider = authProvider;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
+		result = prime
+				* result
+				+ ((authCookieDomain == null) ? 0 : authCookieDomain.hashCode());
+		result = prime * result
+				+ ((authCookieName == null) ? 0 : authCookieName.hashCode());
 		result = prime * result
 				+ ((authProvider == null) ? 0 : authProvider.hashCode());
 		result = prime * result
 				+ ((domainPattern == null) ? 0 : domainPattern.hashCode());
 		result = prime * result + (isPublic ? 1231 : 1237);
 		result = prime * result + ((isSSL == null) ? 0 : isSSL.hashCode());
-		//result = prime * result + ((managedSystem == null) ? 0 : managedSystem.hashCode());
+		result = prime * result
+				+ ((loginURL == null) ? 0 : loginURL.hashCode());
+		result = prime
+				* result
+				+ ((postbackURLParamName == null) ? 0 : postbackURLParamName
+						.hashCode());
 		result = prime * result
 				+ ((resource == null) ? 0 : resource.hashCode());
 		result = prime * result + (showOnApplicationPage ? 1231 : 1237);
 		result = prime * result + ((uiTheme == null) ? 0 : uiTheme.hashCode());
-		result = prime * result + ((authCookieName == null) ? 0 : authCookieName.hashCode());
-		result = prime * result + ((authCookieDomain == null) ? 0 : authCookieDomain.hashCode());
 		return result;
 	}
 
@@ -246,6 +278,16 @@ public class ContentProviderEntity extends AbstractKeyNameEntity {
 		if (getClass() != obj.getClass())
 			return false;
 		ContentProviderEntity other = (ContentProviderEntity) obj;
+		if (authCookieDomain == null) {
+			if (other.authCookieDomain != null)
+				return false;
+		} else if (!authCookieDomain.equals(other.authCookieDomain))
+			return false;
+		if (authCookieName == null) {
+			if (other.authCookieName != null)
+				return false;
+		} else if (!authCookieName.equals(other.authCookieName))
+			return false;
 		if (authProvider == null) {
 			if (other.authProvider != null)
 				return false;
@@ -263,13 +305,16 @@ public class ContentProviderEntity extends AbstractKeyNameEntity {
 				return false;
 		} else if (!isSSL.equals(other.isSSL))
 			return false;
-		/*
-		if (managedSystem == null) {
-			if (other.managedSystem != null)
+		if (loginURL == null) {
+			if (other.loginURL != null)
 				return false;
-		} else if (!managedSystem.equals(other.managedSystem))
+		} else if (!loginURL.equals(other.loginURL))
 			return false;
-		*/
+		if (postbackURLParamName == null) {
+			if (other.postbackURLParamName != null)
+				return false;
+		} else if (!postbackURLParamName.equals(other.postbackURLParamName))
+			return false;
 		if (resource == null) {
 			if (other.resource != null)
 				return false;
@@ -282,28 +327,7 @@ public class ContentProviderEntity extends AbstractKeyNameEntity {
 				return false;
 		} else if (!uiTheme.equals(other.uiTheme))
 			return false;
-		
-		if (authCookieName == null) {
-			if (other.authCookieName != null)
-				return false;
-		} else if (!authCookieName.equals(other.authCookieName))
-			return false;
-		if (authCookieDomain == null) {
-			if (other.authCookieDomain != null)
-				return false;
-		} else if (!authCookieDomain.equals(other.authCookieDomain))
-			return false;
 		return true;
-	}
-
-	@Override
-	public String toString() {
-		return "ContentProviderEntity [isPublic=" + isPublic
-				+ ", showOnApplicationPage=" + showOnApplicationPage
-				+ ", domainPattern=" + domainPattern + ", isSSL=" + isSSL
-				+ ", uiTheme=" + uiTheme + ", authProvider=" + authProvider
-				+ ", resource=" + resource + ", name=" + name + ", id=" + id
-				+ "]";
 	}
 
 	

@@ -2,6 +2,7 @@ package org.openiam.authmanager.service.impl;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.openiam.authmanager.common.SetStringResponse;
 import org.openiam.authmanager.common.model.AuthorizationGroup;
 import org.openiam.authmanager.common.model.AuthorizationResource;
 import org.openiam.authmanager.common.model.AuthorizationRole;
@@ -17,7 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 
-@Service
+@Service("authorizationManagerAdminService")
 public class AuthorizationManagerAdminServiceImpl implements AuthorizationManagerAdminService {
 
 	@Autowired
@@ -605,6 +606,10 @@ public class AuthorizationManagerAdminServiceImpl implements AuthorizationManage
 
 
     public Set<String> getOwnerIdsForResource(String resourceId){
+		if(StringUtils.isBlank(resourceId)){
+			return Collections.EMPTY_SET;
+		}
+
         final Map<String, AuthorizationResource> resourceMap = getResourceMap();
         final Map<String, AuthorizationGroup> groupMap = getGroupMap();
         final Map<String, AuthorizationRole> roleMap = getRoleMap();
@@ -614,13 +619,15 @@ public class AuthorizationManagerAdminServiceImpl implements AuthorizationManage
         final Map<String, Set<AuthorizationRole>> role2RoleMap = getRole2RoleMap(roleMap, true);
         final Map<String, Set<AuthorizationRole>> group2RoleMap = getGroup2RoleMap(roleMap);
 
-        return getOwnerIdsForResource(resourceMap.get(resourceId), resourceMap, groupMap,
-                                      roleMap, resource2RoleMap, resource2GroupMap,
+        return getOwnerIdsForResource(resourceMap.get(resourceId), resourceMap,  resource2RoleMap, resource2GroupMap,
                                       group2GroupMap, role2RoleMap,group2RoleMap);
     }
 
-    public HashMap<String, HashSet<String>> getOwnerIdsForResourceSet(Set<String> resourceIdSet){
-        HashMap<String, HashSet<String>> ownerIdsMap = new HashMap<String, HashSet<String>>();
+    public HashMap<String, SetStringResponse> getOwnerIdsForResourceSet(Set<String> resourceIdSet){
+		HashMap<String, SetStringResponse> ownerIdsMap = new HashMap<String, SetStringResponse>();
+		if(CollectionUtils.isEmpty(resourceIdSet)){
+			return ownerIdsMap;
+		}
 
         final Map<String, AuthorizationResource> resourceMap = getResourceMap();
         final Map<String, AuthorizationGroup> groupMap = getGroupMap();
@@ -631,102 +638,173 @@ public class AuthorizationManagerAdminServiceImpl implements AuthorizationManage
         final Map<String, Set<AuthorizationRole>> role2RoleMap = getRole2RoleMap(roleMap, true);
         final Map<String, Set<AuthorizationRole>> group2RoleMap = getGroup2RoleMap(roleMap);
 
-        if(CollectionUtils.isNotEmpty(resourceIdSet)){
-            for(String resourceId: resourceIdSet ){
-                ownerIdsMap.put(resourceId, getOwnerIdsForResource(resourceMap.get(resourceId), resourceMap, groupMap,
-                                                                   roleMap, resource2RoleMap, resource2GroupMap,
-                                                                   group2GroupMap, role2RoleMap,group2RoleMap));
-            }
+        SetStringResponse setString;
+
+        if(CollectionUtils.isNotEmpty(resourceIdSet)) for (String resourceId : resourceIdSet) {
+            setString = new SetStringResponse();
+            setString.setSetString(getOwnerIdsForResource(resourceMap.get(resourceId), resourceMap,
+					resource2RoleMap, resource2GroupMap,
+                    group2GroupMap, role2RoleMap, group2RoleMap));
+            ownerIdsMap.put(resourceId, setString);
         }
         return ownerIdsMap;
     }
 
 
-    private HashSet<String> getOwnerIdsForResource(AuthorizationResource resource,
+    private Set<String> getOwnerIdsForResource(AuthorizationResource resource,
                                                Map<String, AuthorizationResource> resourceMap,
-                                               Map<String, AuthorizationGroup> groupMap,
-                                               Map<String, AuthorizationRole> roleMap,
                                                Map<String, Set<AuthorizationRole>> resource2RoleMap,
                                                Map<String, Set<AuthorizationGroup>> resource2GroupMap,
                                                Map<String, Set<AuthorizationGroup>> group2GroupMap,
                                                Map<String, Set<AuthorizationRole>> role2RoleMap,
                                                Map<String, Set<AuthorizationRole>> group2RoleMap){
+		if(resource==null){
+			return Collections.EMPTY_SET;
+		}
+		return getOwnerIds(resource.getAdminResourceId(), resourceMap, resource2RoleMap, resource2GroupMap,
+				group2GroupMap, role2RoleMap, group2RoleMap);
+    }
 
-        HashSet<String> ownerIds = new HashSet<>();
+	public Set<String> getOwnerIdsForGroup(String groupId){
+		if(StringUtils.isBlank(groupId)){
+			return Collections.EMPTY_SET;
+		}
+		final Map<String, AuthorizationResource> resourceMap = getResourceMap();
+		final Map<String, AuthorizationGroup> groupMap = getGroupMap();
+		final Map<String, AuthorizationRole> roleMap = getRoleMap();
+		final Map<String, Set<AuthorizationRole>> resource2RoleMap = getResource2RoleMap(roleMap);
+		final Map<String, Set<AuthorizationGroup>> resource2GroupMap = getResource2GroupMap(groupMap);
+		final Map<String, Set<AuthorizationGroup>> group2GroupMap = getGroup2GroupMap(groupMap, true);
+		final Map<String, Set<AuthorizationRole>> role2RoleMap = getRole2RoleMap(roleMap, true);
+		final Map<String, Set<AuthorizationRole>> group2RoleMap = getGroup2RoleMap(roleMap);
 
-        AuthorizationResource adminResource = null;
-        if(StringUtils.isNotBlank(resource.getAdminResourceId())){
-            adminResource = resourceMap.get(resource.getAdminResourceId());
+		return getOwnerIdsForGroup(groupMap.get(groupId), resourceMap, resource2RoleMap, resource2GroupMap,
+				group2GroupMap, role2RoleMap, group2RoleMap);
+	}
 
-            if(adminResource!=null){
-
-                Set<AuthorizationRole> roleSet = resource2RoleMap.get(adminResource.getId());
-                Set<AuthorizationGroup> groupSet = resource2GroupMap.get(adminResource.getId());
-
-                /* compile groups */
-                final Set<AuthorizationGroup> compiledGroups = new HashSet<AuthorizationGroup>();
-                if(CollectionUtils.isNotEmpty(groupSet)){
-                    final Set<AuthorizationGroup> visitedGroupSet = new HashSet<AuthorizationGroup>();
-                    for(final AuthorizationGroup group : groupSet) {
-                        final Set<AuthorizationGroup> tempCompiledGroups = compileGroups(group, group2GroupMap, visitedGroupSet);
-                        if(CollectionUtils.isNotEmpty(tempCompiledGroups)) {
-                            compiledGroups.addAll(tempCompiledGroups);
-                        }
-                    }
-                    compiledGroups.addAll(groupSet);
-                }
-
-                /* compile roles */
-                final Set<AuthorizationRole> compiledRoles = new HashSet<AuthorizationRole>();
-                if(CollectionUtils.isNotEmpty(roleSet)){
-                    final Set<AuthorizationRole> visitedRoleSet = new HashSet<AuthorizationRole>();
-                    for(final AuthorizationRole role : roleSet) {
-                        final Set<AuthorizationRole> tempCompiledRoles = compileRoles(role, role2RoleMap, visitedRoleSet);
-                        if(CollectionUtils.isNotEmpty(tempCompiledRoles)) {
-                            compiledRoles.addAll(tempCompiledRoles);
-                        }
-                    }
-                    compiledRoles.addAll(roleSet);
-                    final Set<AuthorizationRole> visitedSet = new HashSet<AuthorizationRole>();
-                    for(final AuthorizationGroup group : compiledGroups) {
-                        if(group2RoleMap.containsKey(group.getId())) {
-                            for(final AuthorizationRole role : group2RoleMap.get(group.getId())) {
-                                compiledRoles.add(role);
-                                compiledRoles.addAll(compileRoles(role, role2RoleMap, visitedSet));
-                            }
-                        }
-                    }
-                    /* compiles the roles for compiled groups */
-                    compiledRoles.addAll(getRolesForGroups(compiledGroups, group2RoleMap));
-                }
-
-                // get users for compiled groups
-                if(CollectionUtils.isNotEmpty(compiledGroups)) {
-                    final Set<String> compiledGroupIdSet = new HashSet<String>();
-                    for(final AuthorizationGroup group : compiledGroups) {
-                        compiledGroupIdSet.add(group.getId());
-                    }
-
-                    ownerIds.addAll(userDAO.getUserIdsForGroups(compiledGroupIdSet));
-                }
-
-                // get users for compiled roles
-                if(CollectionUtils.isNotEmpty(compiledRoles)) {
-                    final Set<String> compiledRoleIdSet = new HashSet<String>();
-                    for(final AuthorizationRole role : compiledRoles) {
-                        compiledRoleIdSet.add(role.getId());
-                    }
-
-                    ownerIds.addAll(userDAO.getUserIdsForRoles(compiledRoleIdSet));
-                }
-
-                // get users for admin resource
-                final Set<String> resourceIdSet = new HashSet<String>();
-                resourceIdSet.add(adminResource.getId());
-                ownerIds.addAll(userDAO.getUserIdsForResources(resourceIdSet));
-            }
+    public HashMap<String,SetStringResponse> getOwnerIdsForGroupSet(Set<String> groupIdSet){
+        HashMap<String, SetStringResponse> ownerIdsMap = new HashMap<String, SetStringResponse>();
+        if(CollectionUtils.isEmpty(groupIdSet)){
+            return ownerIdsMap;
         }
 
-        return ownerIds;
+        final Map<String, AuthorizationResource> resourceMap = getResourceMap();
+        final Map<String, AuthorizationGroup> groupMap = getGroupMap();
+        final Map<String, AuthorizationRole> roleMap = getRoleMap();
+        final Map<String, Set<AuthorizationRole>> resource2RoleMap = getResource2RoleMap(roleMap);
+        final Map<String, Set<AuthorizationGroup>> resource2GroupMap = getResource2GroupMap(groupMap);
+        final Map<String, Set<AuthorizationGroup>> group2GroupMap = getGroup2GroupMap(groupMap, true);
+        final Map<String, Set<AuthorizationRole>> role2RoleMap = getRole2RoleMap(roleMap, true);
+        final Map<String, Set<AuthorizationRole>> group2RoleMap = getGroup2RoleMap(roleMap);
+
+        SetStringResponse setString;
+
+        if(CollectionUtils.isNotEmpty(groupIdSet)) {
+            for (String groupId : groupIdSet) {
+                setString = new SetStringResponse();
+                setString.setSetString(getOwnerIdsForGroup(groupMap.get(groupId), resourceMap,
+                        resource2RoleMap, resource2GroupMap,
+                        group2GroupMap, role2RoleMap, group2RoleMap));
+                ownerIdsMap.put(groupId, setString);
+            }
+        }
+        return ownerIdsMap;
     }
+
+	private Set<String> getOwnerIdsForGroup(AuthorizationGroup group,
+											   Map<String, AuthorizationResource> resourceMap,
+											   Map<String, Set<AuthorizationRole>> resource2RoleMap,
+											   Map<String, Set<AuthorizationGroup>> resource2GroupMap,
+											   Map<String, Set<AuthorizationGroup>> group2GroupMap,
+											   Map<String, Set<AuthorizationRole>> role2RoleMap,
+											   Map<String, Set<AuthorizationRole>> group2RoleMap){
+		if(group==null){
+			return Collections.EMPTY_SET;
+		}
+		return getOwnerIds(group.getAdminResourceId(), resourceMap, resource2RoleMap, resource2GroupMap,
+							group2GroupMap, role2RoleMap, group2RoleMap);
+	}
+
+	private Set<String> getOwnerIds(String adminResourceId,
+									Map<String, AuthorizationResource> resourceMap,
+									Map<String, Set<AuthorizationRole>> resource2RoleMap,
+									Map<String, Set<AuthorizationGroup>> resource2GroupMap,
+									Map<String, Set<AuthorizationGroup>> group2GroupMap,
+									Map<String, Set<AuthorizationRole>> role2RoleMap,
+									Map<String, Set<AuthorizationRole>> group2RoleMap){
+		Set<String> ownerIds = new HashSet<>();
+
+		AuthorizationResource adminResource = null;
+		if(StringUtils.isNotBlank(adminResourceId)) {
+			adminResource = resourceMap.get(adminResourceId);
+			if (adminResource != null) {
+
+				Set<AuthorizationRole> roleSet = resource2RoleMap.get(adminResource.getId());
+				Set<AuthorizationGroup> groupSet = resource2GroupMap.get(adminResource.getId());
+
+                /* compile groups */
+				final Set<AuthorizationGroup> compiledGroups = new HashSet<AuthorizationGroup>();
+				if (CollectionUtils.isNotEmpty(groupSet)) {
+					final Set<AuthorizationGroup> visitedGroupSet = new HashSet<AuthorizationGroup>();
+					for (final AuthorizationGroup grp : groupSet) {
+						final Set<AuthorizationGroup> tempCompiledGroups = compileGroups(grp, group2GroupMap, visitedGroupSet);
+						if (CollectionUtils.isNotEmpty(tempCompiledGroups)) {
+							compiledGroups.addAll(tempCompiledGroups);
+						}
+					}
+					compiledGroups.addAll(groupSet);
+				}
+
+                /* compile roles */
+				final Set<AuthorizationRole> compiledRoles = new HashSet<AuthorizationRole>();
+				if (CollectionUtils.isNotEmpty(roleSet)) {
+					final Set<AuthorizationRole> visitedRoleSet = new HashSet<AuthorizationRole>();
+					for (final AuthorizationRole role : roleSet) {
+						final Set<AuthorizationRole> tempCompiledRoles = compileRoles(role, role2RoleMap, visitedRoleSet);
+						if (CollectionUtils.isNotEmpty(tempCompiledRoles)) {
+							compiledRoles.addAll(tempCompiledRoles);
+						}
+					}
+					compiledRoles.addAll(roleSet);
+					final Set<AuthorizationRole> visitedSet = new HashSet<AuthorizationRole>();
+					for (final AuthorizationGroup grp : compiledGroups) {
+						if (group2RoleMap.containsKey(grp.getId())) {
+							for (final AuthorizationRole role : group2RoleMap.get(grp.getId())) {
+								compiledRoles.add(role);
+								compiledRoles.addAll(compileRoles(role, role2RoleMap, visitedSet));
+							}
+						}
+					}
+                    /* compiles the roles for compiled groups */
+					compiledRoles.addAll(getRolesForGroups(compiledGroups, group2RoleMap));
+				}
+
+				// get users for compiled groups
+				if (CollectionUtils.isNotEmpty(compiledGroups)) {
+					final Set<String> compiledGroupIdSet = new HashSet<String>();
+					for (final AuthorizationGroup grp : compiledGroups) {
+						compiledGroupIdSet.add(grp.getId());
+					}
+
+					ownerIds.addAll(userDAO.getUserIdsForGroups(compiledGroupIdSet));
+				}
+
+				// get users for compiled roles
+				if (CollectionUtils.isNotEmpty(compiledRoles)) {
+					final Set<String> compiledRoleIdSet = new HashSet<String>();
+					for (final AuthorizationRole role : compiledRoles) {
+						compiledRoleIdSet.add(role.getId());
+					}
+
+					ownerIds.addAll(userDAO.getUserIdsForRoles(compiledRoleIdSet));
+				}
+
+				// get users for admin resource
+				final Set<String> resourceIdSet = new HashSet<String>();
+				resourceIdSet.add(adminResource.getId());
+				ownerIds.addAll(userDAO.getUserIdsForResources(resourceIdSet));
+			}
+		}
+		return ownerIds;
+	}
 }

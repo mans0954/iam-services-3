@@ -21,22 +21,21 @@
     <import resource="jmsContext.xml" />
     <context:annotation-config />
 	<context:component-scan
-		base-package="org.openiam.base, org.openiam.util,
-    								      org.openiam.core,
-    								      org.openiam.bpm.activiti,
-    								      org.openiam.idm,
-    								      org.openiam.connector,
-    								      org.openiam.idm.*,
-    								      org.openiam.provision.*,
-    								      org.openiam.dozer.converter,
-    								      org.openiam.validator,
-    								      org.openiam.internationalization,
-    								      org.openiam.access.review.*,
-    								      org.openiam.elasticsearch" />
+		base-package="org.openiam.base, 
+					  org.openiam.util,
+					  org.openiam.script,
+				      org.openiam.core,
+				      org.openiam.bpm.activiti,
+				      org.openiam.idm,
+				      org.openiam.connector,
+				      org.openiam.idm.*,
+				      org.openiam.provision.*,
+				      org.openiam.dozer.converter,
+				      org.openiam.validator,
+				      org.openiam.internationalization,
+				      org.openiam.access.review.*,
+				      org.openiam.elasticsearch" />
 
-	<!--
-	<bean id="springContextProvider" class="org.openiam.util.SpringContextProvider" />
-	-->
 
 	<bean id="httpClientHelper" class="org.openiam.http.client.OpenIAMHttpClient" />
 
@@ -117,8 +116,6 @@
 		<property name="properties" ref="pojoProperties" />
 	</bean>
 
-	<bean id="targetConfigurableGroovyScriptEngine" class="${org.openiam.groovy.script.engine}" />
-
     <bean id="baseTransactionProxy" class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean"
           abstract="true">
         <property name="transactionManager" ref="transactionManager"/>
@@ -129,9 +126,13 @@
         </property>
     </bean>
 
+	<!--
     <bean id="configurableGroovyScriptEngine" parent="baseTransactionProxy">
         <property name="target" ref="targetConfigurableGroovyScriptEngine"/>
     </bean>
+    
+    <bean id="targetConfigurableGroovyScriptEngine" class="${org.openiam.groovy.script.engine}" />
+	-->
 
 	<bean id="luceneReindexService" class="org.openiam.idm.srvc.lucene.LuceneReindexService">
 		<property name="hibernateSearchDAOs">
@@ -286,7 +287,8 @@
                                                org.openiam.idm.srvc.prov*,
                                                org.openiam.idm.srvc.batch.domain*,
                                                org.openiam.idm.srvc.ui*,
-                                               org.openiam.property.domain*" />
+                                               org.openiam.property.domain*,
+                                               org.openiam.idm.srvc.loc.domain*" />
 	</bean>
 	<util:properties id="hibernateProperties"
 		location="classpath:openiam.hibernate.properties">

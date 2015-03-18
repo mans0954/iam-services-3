@@ -91,4 +91,6 @@ public interface UserDAO extends BaseDao<UserEntity, String> {
     public List<UserEntity> getByEmail(String email);
 
     public  List<UserEntity> findByIds(List<String> idCollection, UserSearchBean searchBean);
+    
+    public List<UserEntity> getUsersForMSys(final String mSysId);
 }

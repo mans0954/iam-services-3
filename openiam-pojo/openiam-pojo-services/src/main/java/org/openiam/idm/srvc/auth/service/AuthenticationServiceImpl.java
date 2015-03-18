@@ -16,7 +16,7 @@
  */
 
 /**
- * 
+ *
  */
 package org.openiam.idm.srvc.auth.service;
 

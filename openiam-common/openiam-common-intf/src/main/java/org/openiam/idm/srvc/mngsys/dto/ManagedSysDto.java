@@ -39,7 +39,7 @@ import java.util.Set;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ManagedSysDto", propOrder = {"description", "status", "connectorId", "hostUrl", "port",
-        "commProtocol", "userId", "pswd", "decryptPassword", "endDate", "startDate", "attributeNamesLookup",
+        "commProtocol", "userId", "pswd", "decryptPassword", "endDate", "startDate", 
         "searchScope", "resource", "primaryRepository", "secondaryRepositoryId", "updateSecondary",
         "mngSysObjectMatchs", "driverUrl", "connectionString", "addHandler", "modifyHandler", "deleteHandler",
         "passwordHandler", "suspendHandler", "resumeHandler", "searchHandler", "lookupHandler",
@@ -47,7 +47,7 @@ import java.util.Set;
         "roles", "skipGroupProvision", "changedByEndUser"})
 @XmlSeeAlso({KeyDTO.class, KeyNameDTO.class, BaseObject.class})
 @DozerDTOCorrespondence(ManagedSysEntity.class)
-public class ManagedSysDto extends KeyNameDTO implements Serializable{
+public class ManagedSysDto extends KeyNameDTO {
 
 
     private String description;
@@ -62,7 +62,6 @@ public class ManagedSysDto extends KeyNameDTO implements Serializable{
     private Date startDate;
     @XmlSchemaType(name = "dateTime")
     private Date endDate;
-    private String attributeNamesLookup;
     private SearchScopeType searchScope = SearchScopeType.SUBTREE_SCOPE;
     private Resource resource;
     private Integer primaryRepository;
@@ -270,14 +269,6 @@ public class ManagedSysDto extends KeyNameDTO implements Serializable{
         this.decryptPassword = decryptPassword;
     }
 
-    public String getAttributeNamesLookup() {
-        return attributeNamesLookup;
-    }
-
-    public void setAttributeNamesLookup(String attributeNamesLookup) {
-        this.attributeNamesLookup = attributeNamesLookup;
-    }
-
     public SearchScopeType getSearchScope() {
         return searchScope;
     }
@@ -482,8 +473,8 @@ public class ManagedSysDto extends KeyNameDTO implements Serializable{
                 + description + '\'' + ", status='" + status + '\'' + ", connectorId='" + connectorId + '\''
                 + ", hostUrl='" + hostUrl + '\'' + ", port=" + port + ", commProtocol='" + commProtocol + '\''
                 + ", userId='" + userId + '\'' + ", pswd='" + pswd + '\'' + ", decryptPassword='" + decryptPassword
-                + '\'' + ", startDate=" + startDate + ", endDate=" + endDate + ", attributeNamesLookup='"
-                + attributeNamesLookup + '\'' + ", searchScope='" + searchScope + '\'' + ", resource='" + getResource()
+                + '\'' + ", startDate=" + startDate + ", endDate=" + endDate + + '\'' 
+                + ", searchScope='" + searchScope + '\'' + ", resource='" + getResource()
                 + '\'' + ", primaryRepository=" + primaryRepository + ", secondaryRepositoryId='"
                 + secondaryRepositoryId + '\'' + ", updateSecondary=" + updateSecondary + ", driverUrl='" + driverUrl
                 + '\'' + ", connectionString='" + connectionString + '\'' + ", addHandler='" + addHandler + '\''
@@ -505,10 +496,6 @@ public class ManagedSysDto extends KeyNameDTO implements Serializable{
 		result = prime
 				* result
 				+ ((attributeNamesHandler == null) ? 0 : attributeNamesHandler
-						.hashCode());
-		result = prime
-				* result
-				+ ((attributeNamesLookup == null) ? 0 : attributeNamesLookup
 						.hashCode());
 		result = prime * result
 				+ ((commProtocol == null) ? 0 : commProtocol.hashCode());
@@ -590,11 +577,6 @@ public class ManagedSysDto extends KeyNameDTO implements Serializable{
 			if (other.attributeNamesHandler != null)
 				return false;
 		} else if (!attributeNamesHandler.equals(other.attributeNamesHandler))
-			return false;
-		if (attributeNamesLookup == null) {
-			if (other.attributeNamesLookup != null)
-				return false;
-		} else if (!attributeNamesLookup.equals(other.attributeNamesLookup))
 			return false;
 		if (commProtocol == null) {
 			if (other.commProtocol != null)

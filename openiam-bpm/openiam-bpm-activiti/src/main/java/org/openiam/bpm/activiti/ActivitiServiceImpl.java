@@ -30,6 +30,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.bpm.activiti.delegate.core.ActivitiHelper;
 import org.openiam.dozer.converter.AddressDozerConverter;
 import org.openiam.dozer.converter.EmailAddressDozerConverter;
 import org.openiam.dozer.converter.PhoneDozerConverter;
@@ -63,6 +64,8 @@ import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
 import org.openiam.idm.srvc.meta.exception.PageTemplateException;
 import org.openiam.idm.srvc.meta.service.MetadataElementTemplateService;
+import org.openiam.idm.srvc.mngsys.domain.AssociationType;
+import org.openiam.idm.srvc.synch.service.generic.ObjectAdapterMap;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;
 import org.openiam.idm.srvc.user.dto.UserProfileRequestModel;
@@ -117,24 +120,30 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
     @Autowired
     private UserDataService userDataService;
 
-	@Value("${org.openiam.activiti.membership.approver.association.groovy.script}")
-	private String membershipApproverAssociationGroovyScript;
-	
-	@Value("${org.openiam.activiti.edit.user.approver.association.groovy.script}")
-	private String editUserApproverAssociationGroovyScript;
-	
-	@Value("${org.openiam.activiti.new.user.approver.association.groovy.script}")
-	private String newUserApproverAssociationGroovyScript;
-	
+    @Value("${org.openiam.activiti.membership.approver.association.groovy.script}")
+    private String membershipApproverAssociationGroovyScript;
+
+    @Value("${org.openiam.activiti.edit.user.approver.association.groovy.script}")
+    private String editUserApproverAssociationGroovyScript;
+
+    @Value("${org.openiam.activiti.new.user.approver.association.groovy.script}")
+    private String newUserApproverAssociationGroovyScript;
+
+    @Value("${org.openiam.idm.activiti.merge.custom.approver.with.approver.associations}")
+    protected Boolean mergeCustomApproverIdsWithApproverAssociations;
+
     @Autowired
     @Qualifier("configurableGroovyScriptEngine")
     protected ScriptIntegration scriptRunner;
 	
     @Autowired
     private MetadataElementTemplateService pageTemplateService;
-	
-	private static final Comparator<Task> taskCreatedTimeComparator = new TaskCreateDateSorter();
-    
+
+    @Autowired
+    private ActivitiHelper activitiHelper;
+
+    private static final Comparator<Task> taskCreatedTimeComparator = new TaskCreateDateSorter();
+
     @Autowired
     @Qualifier("entityValidator")
     private EntityValidator entityValidator;
@@ -542,19 +551,26 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
             final List<String> approverAssociationIds = identifier.getApproverAssociationIds();
             final List<String> approverUserIds = identifier.getApproverIds();
 
-            final List<Object> approverCardinatlity = new LinkedList<Object>();
-            if (CollectionUtils.isNotEmpty(approverAssociationIds)) {
-                approverCardinatlity.addAll(approverAssociationIds);
+            List<Object> approverCardinatlity = new LinkedList<Object>();
+            if(mergeCustomApproverIdsWithApproverAssociations){
+                final List<String> mergedIds = new LinkedList<String>();
+
+                if (CollectionUtils.isNotEmpty(approverUserIds)) {
+                    mergedIds.addAll(approverUserIds);
+                }
+                if (CollectionUtils.isNotEmpty(approverAssociationIds)) {
+                    mergedIds.addAll(getCandidateUserIdsFromApproverAssociations(request,approverAssociationIds));
+                }
+                approverCardinatlity = buildApproverCardinatlity(request, mergedIds);
             } else {
-                //TODO fix here AM flag
-                if (request.isCustomApproversSequential()) {
-                    for (final String id : approverUserIds) {
-                        approverCardinatlity.add(id);
-                    }
+                if (CollectionUtils.isNotEmpty(approverAssociationIds)) {
+                    approverCardinatlity.addAll(approverAssociationIds);
                 } else {
-                    approverCardinatlity.add(approverUserIds);
+                    approverCardinatlity = buildApproverCardinatlity(request, approverUserIds);
                 }
             }
+
+
 
             idmAuditLog.addAttributeAsJson(AuditAttributeName.REQUEST_APPROVER_IDS, approverUserIds, jacksonMapper);
 			final Map<String, Object> variables = new HashMap<String, Object>();
@@ -597,7 +613,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			final ProcessInstance instance = runtimeService.startProcessInstanceByKey(request.getActivitiRequestType(), variables);
 			idmAuditLog = auditLogService.findById(idmAuditLog.getId());
             idmAuditLog.setTargetTask(instance.getId(), request.getName());
-            for(Map.Entry<String,Object> varEntry : variables.entrySet()) {
+            for (Map.Entry<String, Object> varEntry : variables.entrySet()) {
                 idmAuditLog.addCustomRecord(varEntry.getKey(), (varEntry.getValue() != null) ? varEntry.getValue().toString() : null);
             }
 
@@ -630,14 +646,38 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			response.setErrorText(e.getMessage());
 		} finally {
             idmAuditLog = auditLogService.save(idmAuditLog);
-		}
-		return response;
-	}
+        }
+        return response;
+    }
 
-	@Override
-	@WebMethod
-	public Response makeDecision(final ActivitiRequestDecision request) {
-		final Response response = new Response();
+    private List<String> getCandidateUserIdsFromApproverAssociations(final GenericWorkflowRequest request, final List<String> approverAssociationIds){
+        List<String> candidateIds = new LinkedList<>();
+        String targetUserId = null;
+        if(request.getMemberAssociationType() != null && request.getMemberAssociationType() == AssociationType.USER
+                && request.getMemberAssociationId()!=null){
+            targetUserId = request.getMemberAssociationId();
+        }
+        candidateIds =  activitiHelper.getCandidateUserIds(approverAssociationIds,targetUserId, null);
+
+        return candidateIds;
+    }
+    private List<Object> buildApproverCardinatlity(final GenericWorkflowRequest request, List<String> sourceList){
+        final List<Object> approverCardinatlity = new LinkedList<Object>();
+        //TODO fix here AM flag
+        if (request.isCustomApproversSequential()) {
+            for (final String id : sourceList) {
+                approverCardinatlity.add(id);
+            }
+        } else {
+            approverCardinatlity.add(sourceList);
+        }
+        return approverCardinatlity;
+    }
+
+    @Override
+    @WebMethod
+    public Response makeDecision(final ActivitiRequestDecision request) {
+        final Response response = new Response();
         final IdmAuditLog idmAuditLog = new IdmAuditLog();
         idmAuditLog.setRequestorUserId(request.getRequestorUserId());
         idmAuditLog.setAction(AuditAction.COMPLETE_WORKFLOW.value());
@@ -1054,4 +1094,5 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
         }
         return memberAssociationTaskList;
     }
+
 }

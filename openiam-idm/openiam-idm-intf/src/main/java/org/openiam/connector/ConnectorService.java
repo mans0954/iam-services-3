@@ -60,12 +60,15 @@ public interface ConnectorService {
     SearchResponse search(@WebParam(name = "searchRequest", targetNamespace = "") SearchRequest<? extends ExtensibleObject> searchRequest);
 
     /**
+     * @deprecated  Please use "resetPassword" mthod instead
      * The setPassword operation enables a requestor to specify a new password for an object
      *
      * @param request
      * @return
      */
     @WebMethod(action = "http://www.openiam.org/service/connector/ConnectorService/setPassword")
+    @Deprecated
+
     ResponseType setPassword(@WebParam(name = "request", targetNamespace = "") PasswordRequest request);
 
     /**

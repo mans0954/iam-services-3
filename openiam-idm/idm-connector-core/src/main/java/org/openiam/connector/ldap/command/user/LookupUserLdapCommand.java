@@ -45,25 +45,27 @@ public class LookupUserLdapCommand extends AbstractLookupLdapCommand<ExtensibleU
         String identity = lookupRequest.getSearchValue();
         try {
             //Check identity on DN format or not
-            String identityPatternStr =  MessageFormat.format(DN_IDENTITY_MATCH_REGEXP, matchObj.getKeyField());
+            String identityPatternStr = MessageFormat.format(DN_IDENTITY_MATCH_REGEXP, matchObj.getKeyField());
             Pattern pattern = Pattern.compile(identityPatternStr);
             Matcher matcher = pattern.matcher(identity);
             String objectBaseDN;
-            if(matcher.matches()) {
+            if (matcher.matches()) {
                 identity = matcher.group(1);
-                String CN = matchObj.getKeyField()+"="+identity;
-                objectBaseDN =  lookupRequest.getSearchValue().substring(CN.length()+1);
+                String CN = matchObj.getKeyField() + "=" + identity;
+                objectBaseDN = lookupRequest.getSearchValue().substring(CN.length() + 1);
             } else {
-				objectBaseDN = matchObj.getBaseDn();
-				Set<ResourceProp> rpSet = getResourceAttributes(managedSys.getResource().getId());
-				boolean isLookupUserInOu = getResourceBoolean(rpSet, "LOOKUP_USER_IN_OU", true);
-				if (isLookupUserInOu) {
-					// if identity is not in DN format try to find OU info in attributes
-					String OU = getAttrValue(lookupRequest.getExtensibleObject(), OU_ATTRIBUTE);
-					if(StringUtils.isNotEmpty(OU)) {
-						objectBaseDN = OU+","+matchObj.getBaseDn();
-					}
-				}
+                objectBaseDN = matchObj.getBaseDn();
+                if(managedSys.getResource() != null) {
+                	Set<ResourceProp> rpSet = getResourceAttributes(managedSys.getResource().getId());
+                	boolean isLookupUserInOu = getResourceBoolean(rpSet, "LOOKUP_USER_IN_OU", true);
+                	if (isLookupUserInOu) {
+                		// if identity is not in DN format try to find OU info in attributes
+                		String OU = getAttrValue(lookupRequest.getExtensibleObject(), OU_ATTRIBUTE);
+                		if (StringUtils.isNotEmpty(OU)) {
+                			objectBaseDN = OU + "," + matchObj.getBaseDn();
+                		}
+                	}
+                }
             }
 
             log.debug("looking up identity: " + identity);
@@ -72,7 +74,7 @@ public class LookupUserLdapCommand extends AbstractLookupLdapCommand<ExtensibleU
             ExtensibleObject object = lookupRequest.getExtensibleObject();
             List<ExtensibleAttribute> listAttrs = (object != null) ? object.getAttributes() : new ArrayList<ExtensibleAttribute>();
             if (CollectionUtils.isNotEmpty(listAttrs)) {
-                for (ExtensibleAttribute ea: listAttrs) {
+                for (ExtensibleAttribute ea : listAttrs) {
                     attrList.add(ea.getName());
                 }
             } else {
@@ -98,9 +100,6 @@ public class LookupUserLdapCommand extends AbstractLookupLdapCommand<ExtensibleU
                     return false;
                 }
 
-                log.debug("results=" + results);
-                log.debug(" results has more elements=" + results.hasMoreElements());
-
                 while (results != null && results.hasMoreElements()) {
                     SearchResult sr = (SearchResult) results.next();
                     Attributes attrs = sr.getAttributes();
@@ -121,7 +120,7 @@ public class LookupUserLdapCommand extends AbstractLookupLdapCommand<ExtensibleU
                             log.error(e.getMessage(), e);
                         }
 
-                        for (NamingEnumeration ae = attrs.getAll(); ae.hasMore();) {
+                        for (NamingEnumeration ae = attrs.getAll(); ae.hasMore(); ) {
                             ExtensibleAttribute extAttr = new ExtensibleAttribute();
                             Attribute attr = (Attribute) ae.next();
 
@@ -142,17 +141,17 @@ public class LookupUserLdapCommand extends AbstractLookupLdapCommand<ExtensibleU
                                         }
                                         if (o instanceof String) {
                                             container.getAttributeList().add(
-                                                new BaseAttribute(attr.getID(), o.toString(), AttributeOperationEnum.NO_CHANGE));
+                                                    new BaseAttribute(attr.getID(), o.toString().replaceAll(patternForCTRLCHAR, ""), AttributeOperationEnum.NO_CHANGE));
                                         } else if (o instanceof byte[]) {
                                             //TODO: Add multivalued attribute support
-                                            extAttr.setValueAsByteArray((byte[])o);
+                                            extAttr.setValueAsByteArray((byte[]) o);
                                             extAttr.setMultivalued(false);
                                         }
                                     } else {
                                         if (o instanceof String) {
-                                            extAttr.setValue(o.toString());
+                                            extAttr.setValue(o.toString().replaceAll(patternForCTRLCHAR, ""));
                                         } else if (o instanceof byte[]) {
-                                            extAttr.setValueAsByteArray((byte[])o);
+                                            extAttr.setValueAsByteArray((byte[]) o);
                                         }
                                     }
                                     addToList = true;
@@ -167,7 +166,7 @@ public class LookupUserLdapCommand extends AbstractLookupLdapCommand<ExtensibleU
                 }
             }
         } catch (NamingException e) {
-            log.error(e.getMessage(),e);
+            log.error(e.getMessage(), e);
             throw new ConnectorDataException(ErrorCode.DIRECTORY_ERROR, e.getMessage());
         }
         return found;

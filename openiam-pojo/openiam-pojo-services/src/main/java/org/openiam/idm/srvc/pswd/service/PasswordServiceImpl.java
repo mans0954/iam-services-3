@@ -16,7 +16,7 @@
  */
 
 /**
- * 
+ *
  */
 package org.openiam.idm.srvc.pswd.service;
 
@@ -68,34 +68,57 @@ import org.springframework.transaction.annotation.Transactional;
 @Service("passwordManager")
 @Transactional
 public class PasswordServiceImpl implements PasswordService {
+
     @Autowired
     protected PasswordValidator passwordValidator;
+
     @Autowired
     protected LoginDataService loginManager;
+
     @Autowired
     protected UserDataService userManager;
+
     @Autowired
     private LoginDozerConverter loginDozerConverter;
-    @Autowired
-    private PolicyDataService policyDataService;
-    @Autowired
-    private PolicyDAO policyDAO;
+
+//    @Autowired
+//    private PolicyDataService policyDataService;
+//
+//    @Autowired
+//    private PolicyObjectAssocDAO policyObjectAssocDao;
+//
+//    @Autowired
+//    private PolicyDAO policyDAO;
+
     @Autowired
     @Qualifier("cryptor")
     protected Cryptor cryptor;
+
     @Autowired
     protected PasswordHistoryDAO passwordHistoryDao;
+
     @Autowired
     protected OrganizationDAO organizationDAO;
+
     @Autowired
     protected KeyManagementService keyManagementService;
+
     @Autowired
     protected UserDozerConverter userDozerConverter;
+
     @Autowired
     protected PasswordPolicyProvider passwordPolicyProvider;
+
     private static final Log log = LogFactory.getLog(PasswordServiceImpl.class);
     private static final long DAY_AS_MILLIS = 86400000l;
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see
+     * org.openiam.idm.srvc.policy.pswd.PasswordService#isPasswordValid(org.
+     * openiam.idm.srvc.policy.dto.Password)
+     */
     @Override
     public PasswordValidationResponse isPasswordValid(Password pswd)
             throws ObjectNotFoundException {
@@ -126,6 +149,7 @@ public class PasswordServiceImpl implements PasswordService {
         }
         return retVal;
     }
+
     @Override
     public PasswordValidationResponse isPasswordValidForUser(Password pswd,
                                                              UserEntity user, LoginEntity lg) throws ObjectNotFoundException {
@@ -158,6 +182,7 @@ public class PasswordServiceImpl implements PasswordService {
         }
         return retVal;
     }
+
     @Override
     public PasswordValidationResponse isPasswordValidForUserAndPolicy(
             Password pswd, UserEntity user, LoginEntity lg, Policy policy)
@@ -169,6 +194,7 @@ public class PasswordServiceImpl implements PasswordService {
         	searchBean.setUserId(user.getId());
             pswdPolicy = passwordPolicyProvider.getPasswordPolicyByUser(searchBean);
         }
+
         if (pswdPolicy == null) {
             retVal.setErrorCode(ResponseCode.PASSWORD_POLICY_NOT_FOUND);
             retVal.fail();
@@ -256,12 +282,12 @@ public class PasswordServiceImpl implements PasswordService {
     public Policy getPasswordPolicy(String principal, String managedSysId) {
         return getPasswordPolicyUsingContentProvider(principal, managedSysId, null);
     }
+
     @Override
-    public Policy getPasswordPolicyForUser(final UserEntity user) {
-    	final PasswordPolicyAssocSearchBean searchBean = new PasswordPolicyAssocSearchBean();
-    	searchBean.setUserId(user.getId());
-        return passwordPolicyProvider.getPasswordPolicyByUser(searchBean);
+    public Policy getPasswordPolicyForUser(final PasswordPolicyAssocSearchBean passwordPolicyAssocSearchBean) {
+        return passwordPolicyProvider.getPasswordPolicyByUser(passwordPolicyAssocSearchBean);
     }
+    
     /**
      * Returns the global password policy
      *

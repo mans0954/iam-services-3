@@ -432,6 +432,9 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 				response.setAuthCookieDomain(cp.getAuthCookieDomain());
 				response.setAuthCookieName(cp.getAuthCookieName());
 				response.setCpId(cp.getId());
+				response.setServer(cp.getNextServer());
+				response.setPostbackURLParamName(cp.getPostbackURLParamName());
+				response.setLoginURL(cp.getLoginURL());
 				if(response.getServer() == null) {
 					response.setServer(cp.getNextServer());
 				}
@@ -639,6 +642,9 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 			}
 			if(cp != null) {
 				response.setCpId(cp.getId());
+				response.setServer(cp.getNextServer());
+				response.setPostbackURLParamName(cp.getPostbackURLParamName());
+				response.setLoginURL(cp.getLoginURL());
 				response.setAuthCookieDomain(cp.getAuthCookieDomain());
 				response.setAuthCookieName(cp.getAuthCookieName());
 				

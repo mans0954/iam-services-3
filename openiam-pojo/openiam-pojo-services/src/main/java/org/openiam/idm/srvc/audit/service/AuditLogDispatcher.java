@@ -70,9 +70,25 @@ public class AuditLogDispatcher implements Sweepable {
 
                         Enumeration e = browser.getEnumeration();
 
+                        final List<IdmAuditLog> messageList = new LinkedList<>();
                         while (e.hasMoreElements()) {
-                            final IdmAuditLog message = (IdmAuditLog) ((ObjectMessage) jmsTemplate.receive(queue)).getObject();
+                            final IdmAuditLog messageObject = (IdmAuditLog) ((ObjectMessage) jmsTemplate.receive(queue)).getObject();
 
+                            messageList.add(messageObject);
+                            if(messageList.size() > 100) {
+                            	persist(messageList);
+                            	messageList.clear();
+                            }
+                            /*
+                             * comment by Lev Bornovalov
+                             * This code:
+                             * 1) Unnecessarily waits 500ms upon EACH iteration.  This will cause the JMS Queue to fill up to the maximum size upon very high load (due to the blocking of the 500 ms)
+                             * 2) Does an insert into the DB on EVERY SINGLE iteration.
+                             * 
+                             *  Solution:  let's insert 100 at a time in a single transaction.  If the app crashes during this transactio - no big deal - it's just audit info.
+                             * 
+                             */
+                            /*
                             TransactionTemplate transactionTemplate = new TransactionTemplate(platformTransactionManager);
                             transactionTemplate.setPropagationBehavior(TransactionTemplate.PROPAGATION_REQUIRED);
                             Boolean result = transactionTemplate.execute(new TransactionCallback<Boolean>() {
@@ -85,13 +101,16 @@ public class AuditLogDispatcher implements Sweepable {
                                         } catch (InterruptedException e1) {
                                             LOG.warn(e1.getMessage());
                                         }
-
                                     return true;
-                                }});
-
-                            e.nextElement();
+                                }
+                        	});
+        					*/
+                           e.nextElement();
                         }
-
+                        if(messageList.size() > 0) {
+                        	persist(messageList);
+                        	messageList.clear();
+                        }
                     } finally {
                         LOG.info(String.format("Done with audit logger sweeper thread.  Took %s ms", sw.getTime()));
                     }
@@ -99,35 +118,45 @@ public class AuditLogDispatcher implements Sweepable {
             }
         }
         });
-
+    }
+    
+    private void persist(final List<IdmAuditLog> messageList) {
+    	TransactionTemplate transactionTemplate = new TransactionTemplate(platformTransactionManager);
+        transactionTemplate.setPropagationBehavior(TransactionTemplate.PROPAGATION_REQUIRED);
+        Boolean result = transactionTemplate.execute(new TransactionCallback<Boolean>() {
+            @Override
+            public Boolean doInTransaction(TransactionStatus status) {
+            	for(final IdmAuditLog message : messageList) {
+                    process(message);
+           	 	}
+                return true;
+            }
+    	});
     }
 
     private void process(final IdmAuditLog event) {
-
-                if (StringUtils.isNotEmpty(event.getId())) {
-                    IdmAuditLog srcLog = auditLogService.findById(event.getId());
-                    if (srcLog != null) {
-                        for(IdmAuditLogCustom customLog : event.getCustomRecords()) {
-                            if(!srcLog.getCustomRecords().contains(customLog)){
-                                srcLog.addCustomRecord(customLog.getKey(),customLog.getValue());
-                            }
-                        }
-                        for(IdmAuditLog newChildren : event.getChildLogs()) {
-                           if(!srcLog.getChildLogs().contains(newChildren)) {
-                               srcLog.addChild(newChildren);
-                           }
-                        }
-                        for(AuditLogTarget newTarget : event.getTargets()) {
-                             if(!srcLog.getTargets().contains(newTarget)) {
-                                srcLog.addTarget(newTarget.getId(), newTarget.getTargetType(), newTarget.getObjectPrincipal());
-                            }
-                        }
-                        auditLogService.save(srcLog);
+        if (StringUtils.isNotEmpty(event.getId())) {
+            IdmAuditLog srcLog = auditLogService.findById(event.getId());
+            if (srcLog != null) {
+                for(IdmAuditLogCustom customLog : event.getCustomRecords()) {
+                    if(!srcLog.getCustomRecords().contains(customLog)){
+                        srcLog.addCustomRecord(customLog.getKey(),customLog.getValue());
                     }
-                } else {
-                    auditLogService.save(event);
                 }
-
-
+                for(IdmAuditLog newChildren : event.getChildLogs()) {
+                   if(!srcLog.getChildLogs().contains(newChildren)) {
+                       srcLog.addChild(newChildren);
+                   }
+                }
+                for(AuditLogTarget newTarget : event.getTargets()) {
+                     if(!srcLog.getTargets().contains(newTarget)) {
+                        srcLog.addTarget(newTarget.getId(), newTarget.getTargetType(), newTarget.getObjectPrincipal());
+                    }
+                }
+                auditLogService.save(srcLog);
+            }
+        } else {
+            auditLogService.save(event);
+        }
     }
 }
