@@ -220,9 +220,13 @@ public class LoginDataServiceImpl implements LoginDataService {
     @Transactional
     public boolean setPassword(String login, String sysId,
                                String password, boolean preventChangeCountIncrement) {
+        LoginEntity lg = getLoginByManagedSys(login, sysId);
+        if (lg == null) {
+            return false;
+        }
+
         Calendar cal = Calendar.getInstance();
         Calendar expCal = Calendar.getInstance();
-        LoginEntity lg = getLoginByManagedSys(login, sysId);
         PasswordPolicyAssocSearchBean searchBean = new PasswordPolicyAssocSearchBean();
         searchBean.setUserId(lg.getUserId());
         searchBean.setManagedSystemId(sysId);
@@ -269,15 +273,11 @@ public class LoginDataServiceImpl implements LoginDataService {
 
         loginDao.update(lg);
 
-        if (lg != null) {
-            final PasswordHistoryEntity hist = new PasswordHistoryEntity();
-            hist.setPassword(password);
-            hist.setLogin(lg);
-            passwordHistoryDao.save(hist);
-            return true;
-        }
-        return false;
-
+        final PasswordHistoryEntity hist = new PasswordHistoryEntity();
+        hist.setPassword(password);
+        hist.setLogin(lg);
+        passwordHistoryDao.save(hist);
+        return true;
     }
 
     @Override
@@ -292,17 +292,25 @@ public class LoginDataServiceImpl implements LoginDataService {
     public boolean resetPassword(String login, String sysId, String password, boolean isActivate) {
 
         LoginEntity lg = getLoginByManagedSys(login, sysId);
-
+        if (lg == null) {
+            return false;
+        }
 
         PasswordPolicyAssocSearchBean searchBean = new PasswordPolicyAssocSearchBean();
         searchBean.setUserId(lg.getUserId());
         searchBean.setManagedSystemId(sysId);
         Policy plcy = passwordPolicyProvider.getPasswordPolicyByUser(searchBean);
 
-        String pswdExpValue = getPolicyAttribute(plcy.getPolicyAttributes(),
+        String changePswdOnReset = getPolicyAttribute(plcy.getPolicyAttributes(),
+                "CHNG_PSWD_ON_RESET");
+        boolean preservePassword = "false".equalsIgnoreCase(changePswdOnReset);
+
+        String pswdExpValue = preservePassword
+                ? getPolicyAttribute(plcy.getPolicyAttributes(),
+                "PWD_EXPIRATION")
+                : getPolicyAttribute(plcy.getPolicyAttributes(),
                 "NUM_DAYS_FORGET_PWD_TOKEN_VALID");
-        // String changePswdOnReset = getPolicyAttribute(
-        // plcy.getPolicyAttributes(), "CHNG_PSWD_ON_RESET");
+
         String gracePeriod = getPolicyAttribute(plcy.getPolicyAttributes(),
                 "PWD_EXP_GRACE");
 
@@ -338,10 +346,7 @@ public class LoginDataServiceImpl implements LoginDataService {
 
         loginDao.update(lg);
 
-        if (lg != null) {
-            return true;
-        }
-        return false;
+        return true;
     }
 
     @Override
