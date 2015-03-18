@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.jws.WebService;
+
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -313,11 +314,7 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 		loginDS.bulkUnLock(status);
 		return resp;
 	}
-	
-	
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.auth.ws.LoginDataWebService#removeLogin(java.lang.String, java.lang.String)
-	 */
+
     @Override
 	public Response removeLogin(String principal, String managedSysId) {
 		Response resp = new Response(ResponseStatus.SUCCESS);
@@ -325,22 +322,23 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 		return resp;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.auth.ws.LoginDataWebService#resetPassword(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
-	 */
     @Override
-	public Response resetPassword(String principal,String managedSysId, String password) {
-		return resetPasswordAndNotifyUser(principal, managedSysId, password, false);
+    @Deprecated
+	public Response resetPassword(String principal, String managedSysId, String password) {
+		return resetPasswordAndNotifyUser(principal, managedSysId, null, password, false);
 	}
+    
 
-    /* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.auth.ws.LoginDataWebService#resetPassword(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
-	 */
+	@Override
+	public Response resetPasswordWithContentProvider(final String principal, final String managedSysId, final String password, final String contentProviderId) {
+		return resetPasswordAndNotifyUser(principal, managedSysId, contentProviderId, password, false);
+	}
+    
     @Override
-    public Response resetPasswordAndNotifyUser(String principal,String managedSysId, String password, boolean notifyUserViaEmail) {
+    public Response resetPasswordAndNotifyUser(final String principal, final String managedSysId, final String contentProviderId, final String password, final boolean notifyUserViaEmail) {
 
         Response resp = new Response(ResponseStatus.SUCCESS);
-        boolean result = loginDS.resetPassword(principal, managedSysId, password);
+        boolean result = loginDS.resetPassword(principal, managedSysId, contentProviderId, password, true);
         if (!result) {
             resp.setStatus(ResponseStatus.FAILURE);
         }

@@ -60,7 +60,6 @@ import java.util.*;
 
 /**
  * LDAPLoginModule provides basic password based authentication using an LDAP directory.
- * @author suneet
  *
  */
 @Component("ldapLoginModule")
@@ -170,7 +169,28 @@ public class LDAPLoginModule extends AbstractLoginModule {
         if (mse == null)
             throw new AuthenticationException(
                     AuthenticationConstants.RESULT_INVALID_CONFIGURATION);
-        init(mse);
+
+        String host = mse.getHostUrl();
+        String adminUserName = mse.getUserId();
+        String adminPassword = this.decryptPassword(systemUserId, mse.getPswd());
+        String protocol = mse.getCommProtocol();
+        String managedSysId = mse.getId();
+        String baseDn = null;
+        String searchFilter = null;
+        String pkAttribute = null;
+        String dn = null;
+        Set<ManagedSystemObjectMatchEntity> managedSystemObjectMatchEntities = mse.getMngSysObjectMatchs();
+        if (CollectionUtils.isNotEmpty(managedSystemObjectMatchEntities)) {
+            for (ManagedSystemObjectMatchEntity objectMatchEntity : managedSystemObjectMatchEntities) {
+                if ("USER".equals(objectMatchEntity.getObjectType())) {
+                    baseDn = objectMatchEntity.getBaseDn();
+                    searchFilter = objectMatchEntity.getSearchFilter();
+                    pkAttribute = objectMatchEntity.getKeyField();
+                    dn = objectMatchEntity.getKeyField();
+                    break;
+                }
+            }
+        }
 
         // current date
         Date curDate = new Date(System.currentTimeMillis());
@@ -187,8 +207,8 @@ public class LDAPLoginModule extends AbstractLoginModule {
         // if ok - then success
         // // get the user status in idm and check that
 
-        LdapContext ldapCtx = connect(adminUserName, adminPassword);
-        NamingEnumeration ne = search(ldapCtx, principal);
+        LdapContext ldapCtx = connect(adminUserName, adminPassword, host, protocol);
+        NamingEnumeration ne = search(ldapCtx, principal,dn,searchFilter,baseDn);
         if (ne == null) {
 //            log("AUTHENTICATION", "AUTHENTICATION", "FAIL", "INVALID LOGIN",
 //                    domainId, null, principal, null, null, clientIP, nodeIP);
@@ -237,20 +257,20 @@ public class LDAPLoginModule extends AbstractLoginModule {
         tokenParam.put("TOKEN_ISSUER", tokenIssuer);
         tokenParam.put("PRINCIPAL", principal);
 
-        lg = loginManager.getLoginByManagedSys(distinguishedName, managedSysId);
+       LoginResponse loginResponce = loginManager.getLoginByManagedSys(distinguishedName, managedSysId);
 
-        if (lg == null) {
+        if (loginResponce.getStatus() == ResponseStatus.FAILURE) {
 //            log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
 //                    "MATCHING IDENTITY NOT FOUND", domainId, null, principal,
 //                    null, null, clientIP, nodeIP);
             throw new AuthenticationException(
                     AuthenticationConstants.RESULT_INVALID_LOGIN);
         }
-
-        user = this.userManager.getUser(lg.getUserId());
+        Login lg = loginResponce.getPrincipal();
+        UserEntity user = this.userManager.getUser(lg.getUserId());
 
         // try to login to AD with this user
-        LdapContext tempCtx = connect(distinguishedName, password);
+        LdapContext tempCtx = connect(distinguishedName, password, host, protocol);
         if (tempCtx == null) {
 //            log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
 //                    "RESULT_INVALID_PASSWORD", domainId, null, principal, null,
@@ -270,7 +290,7 @@ public class LDAPLoginModule extends AbstractLoginModule {
                 if (failCount >= authFailCount) {
                     // lock the record and save the record.
                     lg.setIsLocked(1);
-                    loginManager.updateLogin(lg);
+                    loginManager.saveLogin(lg);
 
                     // set the flag on the primary user record
                     user.setSecondaryStatus(UserStatusEnum.LOCKED);
@@ -283,7 +303,7 @@ public class LDAPLoginModule extends AbstractLoginModule {
                             AuthenticationConstants.RESULT_LOGIN_LOCKED);
                 } else {
                     // update the counter save the record
-                    loginManager.updateLogin(lg);
+                    loginManager.saveLogin(lg);
 //                    log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
 //                            "INVALID_PASSWORD", domainId, null, principal,
 //                            null, null, clientIP, nodeIP);
@@ -356,7 +376,7 @@ public class LDAPLoginModule extends AbstractLoginModule {
 
         log.info("Good Authn: Login object updated.");
 
-        loginManager.updateLogin(lg);
+        loginManager.saveLogin(lg);
 
         // check the user status
         if (user.getStatus() != null) {
@@ -385,7 +405,7 @@ public class LDAPLoginModule extends AbstractLoginModule {
         return sub;
     }
 
-    public LdapContext connect(String userName, String password) {
+    public LdapContext connect(String userName, String password, String host, String protocol) {
 
         // LdapContext ctxLdap = null;
         Hashtable<String, String> envDC = new Hashtable();
@@ -413,7 +433,7 @@ public class LDAPLoginModule extends AbstractLoginModule {
         }
     }
 
-    private NamingEnumeration search(LdapContext ctx, String searchValue) {
+    private NamingEnumeration search(LdapContext ctx, String searchValue, String dn, String searchFilter, String baseDn) {
         SearchControls searchCtls = new SearchControls();
 
         // Specify the attributes to returned
@@ -424,13 +444,13 @@ public class LDAPLoginModule extends AbstractLoginModule {
         try {
             searchCtls.setSearchScope(SearchControls.SUBTREE_SCOPE);
 
-            String searchFilter = this.searchFilter.replace("?", searchValue);
+            String searchFilter_ = searchFilter.replace("?", searchValue);
 
 
             log.debug("Search Filter=" + searchFilter);
-            log.debug("BaseDN=" + this.baseDn);
+            log.debug("BaseDN=" + baseDn);
 
-            return ctx.search(baseDn, searchFilter, searchCtls);
+            return ctx.search(baseDn, searchFilter_, searchCtls);
         } catch (NamingException ne) {
             ne.printStackTrace();
         }

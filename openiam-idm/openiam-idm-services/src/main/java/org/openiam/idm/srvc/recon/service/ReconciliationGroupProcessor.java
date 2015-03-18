@@ -3,6 +3,7 @@ package org.openiam.idm.srvc.recon.service;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.base.SysConfiguration;
 import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.connector.type.ObjectValue;
@@ -87,6 +88,9 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
     @Autowired
     @Qualifier("reconciliationFactory")
     private ReconciliationCommandFactory commandFactory;
+
+    @Autowired
+    protected SysConfiguration sysConfiguration;
 
     @Autowired
     @Qualifier("identityManager")
@@ -455,7 +459,8 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
 
                 IdentityDto identityDto = identityService.getIdentityByManagedSys(gr.getId(), mSys.getId());
                 if (identityDto == null) {
-                    return targetGroupPrincipal;
+                    // SET Default OpenIAM identity to avoid NULL pointer
+                    identityDto = identityService.getIdentityByManagedSys(gr.getId(), sysConfiguration.getDefaultManagedSysId());
                 }
                 // situation TARGET EXIST, IDM EXIST do modify
                 // if user exists but don;t have principal for current target

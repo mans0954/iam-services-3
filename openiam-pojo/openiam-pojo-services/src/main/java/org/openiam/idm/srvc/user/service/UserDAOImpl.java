@@ -6,6 +6,7 @@ import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
 import org.hibernate.criterion.*;
 import org.openiam.base.OrderConstants;
+import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.SearchParam;
 import org.openiam.base.ws.SortParam;
 import org.openiam.core.dao.BaseDaoImpl;
@@ -16,6 +17,7 @@ import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.DelegationFilterSearch;
 import org.openiam.idm.srvc.user.dto.SearchAttribute;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
@@ -35,6 +37,8 @@ import static org.hibernate.criterion.Projections.rowCount;
 public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements UserDAO {
     @Value("${openiam.dbType}")
     private String dbType;
+    @Autowired
+    protected SysConfiguration sysConfiguration;
 
     @Override
     protected String getPKfieldName() {
@@ -417,6 +421,13 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
 
         return criteria;
     }
+    
+    @Override
+    public List<UserEntity> getUsersForMSys(final String mSysId) {
+        Criteria criteria = getSession().createCriteria(UserEntity.class).createAlias("principalList", "l")
+                        .add(Restrictions.eq("l.managedSysId", mSysId)).setFetchMode("principalList", FetchMode.JOIN);
+        return criteria.list();
+    }
 
     public List<UserEntity> getSuperiors(String userId, final int from, final int size) {
         Criteria criteria = getSuperiorsCriteria(userId);
@@ -701,7 +712,8 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         if(CollectionUtils.isNotEmpty(idCollection)){
             final Criteria criteria = super.getCriteria();
             criteria.add(createInClauseForList(idCollection));
-
+            criteria.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
+//            criteria.setProjection(Projections.groupProperty(getPKfieldName()) );
             if(CollectionUtils.isNotEmpty(searchBean.getSortBy())){
 
                 addSorting(criteria, searchBean.getSortBy());
@@ -713,34 +725,40 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         return Collections.EMPTY_LIST;
     }
 
-    private void addSorting(Criteria criteria, List<SortParam> sortParams) {
-        for (SortParam sort: sortParams){
+    private void addSorting(Criteria criteria, List<SortParam> sortParam) {
+        for (SortParam sort: sortParam){
             OrderConstants orderDir = (sort.getOrderBy()==null)?OrderConstants.ASC:sort.getOrderBy();
 
             if("name".equals(sort.getSortBy())){
                 criteria.addOrder(createOrder("firstName",orderDir));
                 criteria.addOrder(createOrder("lastName", orderDir));
             } else if("phone".equals(sort.getSortBy())){
-                criteria.createAlias("phones", "p", Criteria.LEFT_JOIN);
+                criteria.createAlias("phones", "p", Criteria.LEFT_JOIN, Restrictions.eq("p.isDefault", true));
                 criteria.addOrder(createOrder("p.countryCd", orderDir));
                 criteria.addOrder(createOrder("p.areaCd", orderDir));
                 criteria.addOrder(createOrder("p.phoneNbr", orderDir));
                 criteria.addOrder(createOrder("p.phoneExt", orderDir));
             } else if("email".equals(sort.getSortBy())){
-                criteria.createAlias("emailAddresses", "ea", Criteria.LEFT_JOIN);
+                criteria.createAlias("emailAddresses", "ea", Criteria.LEFT_JOIN, Restrictions.eq("ea.isDefault", true));
                 criteria.addOrder(createOrder("ea.emailAddress", orderDir));
             }else if("userStatus".equals(sort.getSortBy())){
                 criteria.addOrder(createOrder("status",orderDir));
             }else if("accountStatus".equals(sort.getSortBy())){
                 criteria.addOrder(createOrder("secondaryStatus",orderDir));
             }else if("principal".equals(sort.getSortBy())){
-                criteria.createAlias("principalList", "l", Criteria.LEFT_JOIN);
+                criteria.createAlias("principalList", "l", Criteria.LEFT_JOIN, Restrictions.eq("l.managedSysId", sysConfiguration.getDefaultManagedSysId()));
+
                 criteria.addOrder(createOrder("l.login", orderDir));
             }else if("organization".equals(sort.getSortBy())
                      || "department".equals(sort.getSortBy())){
-                criteria.createAlias("affiliations", "org", Criteria.LEFT_JOIN);
-                criteria.addOrder(createOrder("org.organizationType.name", orderDir));
-                criteria.addOrder(createOrder("org.name", orderDir));
+
+//                String typeId = ("organization".equals(sort.getSortBy()))?organizationTypeId: departmentTypeId;
+
+                criteria.createAlias("affiliations", "org", Criteria.LEFT_JOIN); //, Restrictions.eq("org.organizationType.id", typeId)
+//                criteria.add(Restrictions.or(Restrictions.eq("org.organizationTypeId", typeId), Restrictions.isNull("org.organizationTypeId")));
+//                criteria.createAlias("org.organizationType", "tp", Criteria.LEFT_JOIN, Restrictions.eq("tp.id", typeId));
+//                criteria.addOrder(createOrder("tp.name", orderDir));
+//                criteria.addOrder(createOrder("org.name", orderDir));
             } else {
                 criteria.addOrder(createOrder(sort.getSortBy(),orderDir));
             }

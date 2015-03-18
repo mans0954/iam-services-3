@@ -9,6 +9,7 @@ import java.util.Set;
 import javax.persistence.*;
 import javax.validation.constraints.Size;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Fetch;
@@ -18,6 +19,7 @@ import org.hibernate.annotations.Where;
 import org.openiam.base.domain.AbstractMetdataTypeEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.grp.dto.Group;
+import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
@@ -49,10 +51,6 @@ public class GroupEntity extends AbstractMetdataTypeEntity {
     @JoinColumn(name = "MANAGED_SYS_ID", referencedColumnName = "MANAGED_SYS_ID", insertable = true, updatable = true, nullable=true)
     private ManagedSysEntity managedSystem;
     
-    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    @JoinColumn(name = "COMPANY_ID", referencedColumnName = "COMPANY_ID", insertable = true, updatable = true)
-    private OrganizationEntity company;
-
     @Column(name = "GROUP_DESC", length = 512)
     @Size(max = 512, message = "group.description.too.long")
     private String description;
@@ -111,6 +109,37 @@ public class GroupEntity extends AbstractMetdataTypeEntity {
 	@Where(clause="ASSOCIATION_TYPE='GROUP'")
 	private Set<ApproverAssociationEntity> approverAssociations;
 
+
+    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch= FetchType.LAZY)
+    @JoinColumn(name = "GRP_CLASSIFICATION", referencedColumnName ="TYPE_ID", insertable = true, updatable = true, nullable=true)
+    @Internationalized
+    protected MetadataTypeEntity classification;
+
+    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch= FetchType.LAZY)
+    @JoinColumn(name = "AD_GRP_TYPE", referencedColumnName ="TYPE_ID", insertable = true, updatable = true, nullable=true)
+    @Internationalized
+    protected MetadataTypeEntity adGroupType;
+
+    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch= FetchType.LAZY)
+    @JoinColumn(name = "AD_GRP_SCOPE", referencedColumnName ="TYPE_ID", insertable = true, updatable = true, nullable=true)
+    @Internationalized
+    protected MetadataTypeEntity adGroupScope;
+
+    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch= FetchType.LAZY)
+    @JoinColumn(name = "GRP_RISK", referencedColumnName ="TYPE_ID", insertable = true, updatable = true, nullable=true)
+    @Internationalized
+    protected MetadataTypeEntity risk;
+
+    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
+    @JoinTable(name = "GROUP_ORGANIZATION", joinColumns = { @JoinColumn(name = "GRP_ID") }, inverseJoinColumns = { @JoinColumn(name = "COMPANY_ID") })
+    @Fetch(FetchMode.SUBSELECT)
+    private Set<OrganizationEntity> organizationSet = new HashSet<OrganizationEntity>(0);
+
+    @Column(name = "MAX_USER_NUMBER")
+    private Integer maxUserNumber;
+    @Column(name = "MEMBERSHIP_DURATION_SECONDS")
+    private Long membershipDuration;
+
     public String getName() {
         return name;
     }
@@ -134,14 +163,6 @@ public class GroupEntity extends AbstractMetdataTypeEntity {
     public void setCreatedBy(String createdBy) {
         this.createdBy = createdBy;
     }
-
-    public OrganizationEntity getCompany() {
-		return company;
-	}
-
-	public void setCompany(OrganizationEntity company) {
-		this.company = company;
-	}
 
 	public String getDescription() {
         return description;
@@ -317,6 +338,80 @@ public class GroupEntity extends AbstractMetdataTypeEntity {
 		}
 	}
 
+    public MetadataTypeEntity getClassification() {
+        return classification;
+    }
+
+    public void setClassification(MetadataTypeEntity classification) {
+        this.classification = classification;
+    }
+
+    public MetadataTypeEntity getAdGroupType() {
+        return adGroupType;
+    }
+
+    public void setAdGroupType(MetadataTypeEntity adGroupType) {
+        this.adGroupType = adGroupType;
+    }
+
+    public MetadataTypeEntity getAdGroupScope() {
+        return adGroupScope;
+    }
+
+    public void setAdGroupScope(MetadataTypeEntity adGroupScope) {
+        this.adGroupScope = adGroupScope;
+    }
+
+    public MetadataTypeEntity getRisk() {
+        return risk;
+    }
+
+    public void setRisk(MetadataTypeEntity risk) {
+        this.risk = risk;
+    }
+
+    public Integer getMaxUserNumber() {
+        return maxUserNumber;
+    }
+
+    public void setMaxUserNumber(Integer maxUserNumber) {
+        this.maxUserNumber = maxUserNumber;
+    }
+
+    public Long getMembershipDuration() {
+        return membershipDuration;
+    }
+
+    public void setMembershipDuration(Long membershipDuration) {
+        this.membershipDuration = membershipDuration;
+    }
+
+    public Set<OrganizationEntity> getOrganizationSet() {
+        return organizationSet;
+    }
+
+    public void setOrganizationSet(Set<OrganizationEntity> organizationSet) {
+        this.organizationSet = organizationSet;
+    }
+
+    public void addOrganization(final OrganizationEntity org) {
+        if (org != null) {
+            if (organizationSet == null) {
+                organizationSet = new HashSet<OrganizationEntity>();
+            }
+            organizationSet.add(org);
+        }
+    }
+    public void removeOrganization(final String orgid) {
+        if (CollectionUtils.isNotEmpty(organizationSet)) {
+            for (final Iterator<OrganizationEntity> it = organizationSet.iterator(); it.hasNext();) {
+                final OrganizationEntity org = it.next();
+                if(org.getId().equals(orgid))
+                    it.remove();
+                    break;
+                }
+            }
+    }
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -325,7 +420,6 @@ public class GroupEntity extends AbstractMetdataTypeEntity {
 
         GroupEntity that = (GroupEntity) o;
 
-        if (company != null ? !company.equals(that.company) : that.company != null) return false;
         if (createDate != null ? !createDate.equals(that.createDate) : that.createDate != null) return false;
         if (createdBy != null ? !createdBy.equals(that.createdBy) : that.createdBy != null) return false;
         if (managedSystem != null ? !managedSystem.equals(that.managedSystem) : that.managedSystem != null)
@@ -333,6 +427,10 @@ public class GroupEntity extends AbstractMetdataTypeEntity {
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
         if (status != null ? !status.equals(that.status) : that.status != null) return false;
 
+        if (classification != null ? !classification.equals(that.classification) : that.classification != null) return false;
+        if (adGroupType != null ? !adGroupType.equals(that.adGroupType) : that.adGroupType != null) return false;
+        if (adGroupScope != null ? !adGroupScope.equals(that.adGroupScope) : that.adGroupScope != null) return false;
+        if (risk != null ? !risk.equals(that.risk) : that.risk != null) return false;
         return true;
     }
 
@@ -343,17 +441,22 @@ public class GroupEntity extends AbstractMetdataTypeEntity {
         result = 31 * result + (createDate != null ? createDate.hashCode() : 0);
         result = 31 * result + (createdBy != null ? createdBy.hashCode() : 0);
         result = 31 * result + (managedSystem != null ? managedSystem.hashCode() : 0);
-        result = 31 * result + (company != null ? company.hashCode() : 0);
         result = 31 * result + (status != null ? status.hashCode() : 0);
+
+        result = 31 * result + (classification != null ? classification.hashCode() : 0);
+        result = 31 * result + (adGroupType != null ? adGroupType.hashCode() : 0);
+        result = 31 * result + (adGroupScope != null ? adGroupScope.hashCode() : 0);
+        result = 31 * result + (risk != null ? risk.hashCode() : 0);
         return result;
     }
 
     @Override
 	public String toString() {
 		return String
-				.format("GroupEntity [id=%s, name=%s, createDate=%s, createdBy=%s, managedSystem=%s, description=%s, status=%s, lastUpdate=%s, lastUpdatedBy=%s]",
+				.format("GroupEntity [id=%s, name=%s, createDate=%s, createdBy=%s, managedSystem=%s, description=%s, status=%s, lastUpdate=%s, lastUpdatedBy=%s, classification=%s, adGroupType=%s, adGroupScope=%s, risk=%s]",
 						id, name, createDate, createdBy, managedSystem,
-						description, status, lastUpdate, lastUpdatedBy);
+						description, status, lastUpdate, lastUpdatedBy,
+                        classification, adGroupType, adGroupScope, risk);
 	}
 
     

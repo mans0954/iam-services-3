@@ -35,7 +35,9 @@ import org.openiam.base.ws.ResponseStatus;
 	"methodId",
 	"redirectTo",
 	"substitutionList",
-	"errorMappingList"
+	"errorMappingList",
+	"loginURL",
+	"postbackURLParamName"
 })
 public class URIFederationResponse extends Response {
 
@@ -51,6 +53,8 @@ public class URIFederationResponse extends Response {
 	private RoundRobinServer server;
 	private String patternId;
 	private String cpId;
+	private String loginURL;
+	private String postbackURLParamName;
 	private String authCookieName;
 	private String authCookieDomain;
 	private String methodId;
@@ -145,19 +149,35 @@ public class URIFederationResponse extends Response {
 	public void setCpId(String cpId) {
 		this.cpId = cpId;
 	}
+	
+	public String getLoginURL() {
+		return loginURL;
+	}
 
 	public String getAuthCookieName() {
 		return authCookieName;
 	}
 
+	public void setLoginURL(String loginURL) {
+		this.loginURL = loginURL;
+	}
+	
 	public void setAuthCookieName(String authCookieName) {
 		this.authCookieName = authCookieName;
 	}
 
+	public String getPostbackURLParamName() {
+		return postbackURLParamName;
+	}
+	
 	public String getAuthCookieDomain() {
 		return authCookieDomain;
 	}
 
+	public void setPostbackURLParamName(String postbackURLParamName) {
+		this.postbackURLParamName = postbackURLParamName;
+	}
+	
 	public void setAuthCookieDomain(String authCookieDomain) {
 		this.authCookieDomain = authCookieDomain;
 	}

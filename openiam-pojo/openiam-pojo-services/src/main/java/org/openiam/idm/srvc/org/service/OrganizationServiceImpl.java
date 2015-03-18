@@ -7,9 +7,11 @@ import org.apache.commons.lang.time.StopWatch;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.ResponseCode;
+import org.openiam.dozer.converter.LocationDozerConverter;
 import org.openiam.dozer.converter.OrganizationAttributeDozerConverter;
 import org.openiam.dozer.converter.OrganizationDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
+import org.openiam.idm.searchbeans.LocationSearchBean;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
@@ -18,6 +20,9 @@ import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
+import org.openiam.idm.srvc.loc.domain.LocationEntity;
+import org.openiam.idm.srvc.loc.dto.Location;
+import org.openiam.idm.srvc.loc.service.LocationDAO;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
 import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
@@ -30,6 +35,7 @@ import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
+import org.openiam.idm.srvc.searchbean.converter.LocationSearchBeanConverter;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.user.service.UserDAO;
@@ -58,7 +64,15 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     private static final Log log = LogFactory.getLog(OrganizationServiceImpl.class);
 	@Autowired
 	private OrganizationTypeDAO orgTypeDAO;
-	
+
+    @Autowired
+    private LocationDozerConverter locationDozerConverter;
+    @Autowired
+    private LocationDAO locationDao;
+
+    @Autowired
+    private LocationSearchBeanConverter locationSearchBeanConverter;
+
 	@Autowired
 	private MetadataElementDAO metadataDAO;
 
@@ -276,6 +290,12 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
                 curEntity.setCreatedBy(requestorId);
                 curEntity.addApproverAssociation(createDefaultApproverAssociations(curEntity, requestorId));
                 addRequiredAttributes(curEntity);
+                if (StringUtils.isNotBlank(newEntity.getOrganizationType().getId())) {
+                    curEntity.setOrganizationType(orgTypeDAO.findById(newEntity.getOrganizationType().getId()));
+                }
+                if (StringUtils.isNotBlank(newEntity.getType().getId())) {
+                    curEntity.setType(typeDAO.findById(newEntity.getType().getId()));
+                }
 
             } else {
                 curEntity = orgDao.findById(organization.getId());
@@ -284,6 +304,8 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
                 mergeParents(curEntity, newEntity);
                 mergeChildren(curEntity, newEntity);
                 mergeUsers(curEntity, newEntity);
+                mergeGroups(curEntity, newEntity);
+                mergeLocations(curEntity, newEntity);
                 mergeApproverAssociations(curEntity, newEntity);
 
                 if(curEntity.getAdminResource() == null) {
@@ -296,15 +318,15 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
 
             }
 
-            if (newEntity.getOrganizationType() == null) {
+            if (newEntity.getOrganizationType() == null || StringUtils.isBlank(newEntity.getOrganizationType().getId())) {
                 curEntity.setOrganizationType(null);
-            } else if (curEntity.getOrganizationType() == null || StringUtils.equals(curEntity.getOrganizationType().getId(), newEntity.getOrganizationType().getId())) {
+            } else if (curEntity.getOrganizationType() == null || !StringUtils.equals(curEntity.getOrganizationType().getId(), newEntity.getOrganizationType().getId())) {
                 curEntity.setOrganizationType(orgTypeDAO.findById(newEntity.getOrganizationType().getId()));
             }
 
-            if (newEntity.getType() == null) {
+            if (newEntity.getType() == null || StringUtils.isBlank(newEntity.getType().getId())) {
                 curEntity.setType(null);
-            } else if (curEntity.getType() == null || StringUtils.equals(curEntity.getType().getId(), newEntity.getType().getId())) {
+            } else if (curEntity.getType() == null || !StringUtils.equals(curEntity.getType().getId(), newEntity.getType().getId())) {
                 curEntity.setType(typeDAO.findById(newEntity.getType().getId()));
             }
 
@@ -447,6 +469,84 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
         }
     }
 
+    private void mergeLocations(final OrganizationEntity curEntity, final OrganizationEntity newEntity) {
+        if (curEntity.getLocations() == null) {
+            curEntity.setLocations(new HashSet<LocationEntity>());
+        }
+        if (newEntity != null && newEntity.getLocations() != null) {
+            List<String> currIds = new ArrayList<String>();
+            for (LocationEntity loc : curEntity.getLocations()) {
+                currIds.add(loc.getId());
+            }
+            final Set<LocationEntity> toAdd = new HashSet<LocationEntity>();
+            final Set<LocationEntity> toRemove = new HashSet<LocationEntity>();
+            if (CollectionUtils.isNotEmpty(newEntity.getLocations())) {
+                Iterator<LocationEntity> iterator = newEntity.getLocations().iterator();
+                while (iterator.hasNext()) {
+                    LocationEntity nloc = iterator.next();
+                    if (currIds.contains(nloc.getId())) {
+                        currIds.remove(nloc.getId());
+                        // location exists
+                    } else {
+                        // add
+                        toAdd.add(locationDao.findById(nloc.getId()));
+                    }
+                    //remove
+                    for (LocationEntity cloc : curEntity.getLocations()) {
+                        if (currIds.contains(cloc.getId())) {
+                            toRemove.add(cloc);
+                            break;
+                        }
+                    }
+                    curEntity.getLocations().removeAll(toRemove);
+                    curEntity.getLocations().addAll(toAdd);
+                }
+
+            } else {
+                curEntity.getLocations().clear();
+            }
+        }
+    }
+
+    private void mergeGroups(final OrganizationEntity curEntity, final OrganizationEntity newEntity) {
+        if (curEntity.getGroups() == null) {
+            curEntity.setGroups(new HashSet<GroupEntity>());
+        }
+        if (newEntity != null && newEntity.getGroups() != null) {
+            List<String> currIds = new ArrayList<String>();
+            for (GroupEntity group : curEntity.getGroups()) {
+                currIds.add(group.getId());
+            }
+            final Set<GroupEntity> toAdd = new HashSet<GroupEntity>();
+            final Set<GroupEntity> toRemove = new HashSet<GroupEntity>();
+            if (CollectionUtils.isNotEmpty(newEntity.getGroups())) {
+                Iterator<GroupEntity> iterator = newEntity.getGroups().iterator();
+                while (iterator.hasNext()) {
+                    GroupEntity ngroup = iterator.next();
+                    if (currIds.contains(ngroup.getId())) {
+                        currIds.remove(ngroup.getId());
+                        // group exists
+                    } else {
+                        // add
+                        toAdd.add(groupDAO.findById(ngroup.getId()));
+                    }
+                    //remove
+                    for (GroupEntity cgroup : curEntity.getGroups()) {
+                        if (currIds.contains(cgroup.getId())) {
+                            toRemove.add(cgroup);
+                            break;
+                        }
+                    }
+                    curEntity.getGroups().removeAll(toRemove);
+                    curEntity.getGroups().addAll(toAdd);
+                }
+
+            } else {
+                curEntity.getGroups().clear();
+            }
+        }
+    }
+
     private void mergeUsers(final OrganizationEntity curEntity, final OrganizationEntity newEntity) {
         if (curEntity.getUsers() == null) {
             curEntity.setUsers(new HashSet<UserEntity>());
@@ -528,7 +628,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     private void mergeOrgProperties(final OrganizationEntity curEntity, final OrganizationEntity newEntity) {
         BeanUtils.copyProperties(newEntity, curEntity,
                 new String[] {"attributes", "parentOrganizations", "childOrganizations", "users", "approverAssociations",
-                "adminResource", "organizationType", "type", "lstUpdate", "lstUpdatedBy", "createDate", "createdBy"});
+                "adminResource", "groups", "locations", "organizationType", "type", "lstUpdate", "lstUpdatedBy", "createDate", "createdBy"});
     }
 
     private void mergeAttributes(final OrganizationEntity curEntity, final OrganizationEntity newEntity) {
@@ -670,11 +770,11 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
 
             if (entity != null) {
                 final GroupEntity example = new GroupEntity();
-                example.setCompany(entity);
+                example.addOrganization(entity);
                 final List<GroupEntity> groups = groupDAO.getByExample(example);
                 if(groups != null) {
                     for(final GroupEntity group : groups) {
-                        group.setCompany(null);
+                        group.removeOrganization(entity.getId());
                         groupDAO.update(group);
                     }
                 }
@@ -963,7 +1063,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
             }
         }
 
-        if(organization.getOrganizationType() == null) {
+        if(organization.getOrganizationType() == null || StringUtils.isBlank(organization.getOrganizationType().getId())) {
             throw new BasicDataServiceException(ResponseCode.ORGANIZATION_TYPE_NOT_SET);
         }
 
@@ -987,4 +1087,152 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
             return null;
         }
     }
+
+    /// LOCATIONS
+
+    @Override
+    @Transactional
+    public void addLocation(LocationEntity val) {
+        if (val == null)
+            throw new NullPointerException("val is null");
+
+        if (val.getOrganization() == null || StringUtils.isBlank(val.getOrganization().getId()))
+            throw new NullPointerException("organizationId for the location is not defined.");
+
+        final OrganizationEntity org = orgDao.findById(val.getOrganization().getId());
+        val.setOrganization(org);
+        locationDao.save(val);
+    }
+
+
+    @Override
+    @Transactional
+    public void updateLocation(LocationEntity val) {
+        if (val == null)
+            throw new NullPointerException("val is null");
+        if (val.getId() == null)
+            throw new NullPointerException("LocationId is null");
+        if (val.getOrganization() == null || StringUtils.isBlank(val.getOrganization().getId()))
+            throw new NullPointerException("organizationId for the location is not defined.");
+
+        final LocationEntity entity = locationDao.findById(val.getId());
+        final OrganizationEntity org = orgDao.findById(val.getOrganization().getId());
+
+        if (entity != null && org != null) {
+            entity.setName(val.getName());
+            entity.setDescription(val.getDescription());
+            entity.setCountry(val.getCountry());
+            entity.setBldgNum(val.getBldgNum());
+            entity.setStreetDirection(val.getStreetDirection());
+            entity.setAddress1(val.getAddress1());
+            entity.setAddress2(val.getAddress2());
+            entity.setAddress3(val.getAddress3());
+            entity.setCity(val.getCity());
+            entity.setState(val.getState());
+            entity.setPostalCd(val.getPostalCd());
+            entity.setOrganization(val.getOrganization());
+            entity.setOrganization(org);
+            entity.setInternalLocationId(val.getInternalLocationId());
+            entity.setIsActive(val.getIsActive());
+            entity.setSensitiveLocation(val.getSensitiveLocation());
+
+            locationDao.update(entity);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void removeLocation(final String locationId) {
+        final LocationEntity entity = locationDao.findById(locationId);
+
+        if(entity != null) {
+            locationDao.delete(entity);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void removeAllLocations(String organizationId) {
+        if (organizationId == null)
+            throw new NullPointerException("organizationId is null");
+
+        locationDao.removeByOrganizationId(organizationId);
+
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public LocationEntity getLocationById(String locationId) {
+        if (locationId == null)
+            throw new NullPointerException("locationId is null");
+        return locationDao.findById(locationId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<LocationEntity> getLocationList(String organizationId) {
+        return this.getLocationList(organizationId, 0, Integer.MAX_VALUE);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public int getNumOfLocations(LocationSearchBean searchBean) {
+        if (searchBean == null)
+            throw new NullPointerException("searchBean is null");
+
+        return locationDao.count(locationSearchBeanConverter.convert(searchBean));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Location> getLocationDtoList(String organizationId, boolean isDeep) {
+        return locationDozerConverter.convertToDTOList(getLocationList(organizationId), isDeep);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<LocationEntity> getLocationList(String organizationId, Integer from, Integer size ) {
+        if (organizationId == null)
+            throw new NullPointerException("organizationId is null");
+
+        LocationSearchBean searchBean = new LocationSearchBean();
+        searchBean.setOrganizationId(organizationId);
+        /* searchBean.setParentType(ContactConstants.PARENT_TYPE_USER); */
+        return getLocationList(searchBean, from, size);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<LocationEntity> getLocationList(LocationSearchBean searchBean, Integer from, Integer size) {
+        if (searchBean == null)
+            throw new NullPointerException("searchBean is null");
+
+        return locationDao.getByExample(locationSearchBeanConverter.convert(searchBean), from, size);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public int getNumOfLocationsForOrganization(String organizationId) {
+        return orgDao.findById(organizationId).getLocations().size();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public int getNumOfLocationsForUser(String userId) {
+        List<OrganizationEntity> orgList = orgDao.getOrganizationsForUser(userId, null, 0, Integer.MAX_VALUE);
+        int count = 0;
+        for (OrganizationEntity org : orgList) {
+            count = count + org.getLocations().size();
+        }
+        return count;
+    }
+
+    public List<LocationEntity> getLocationListByOrganizationId(Set<String> orgsId, Integer from, Integer size) {
+        return locationDao.findByOrganizationList(orgsId, from, size);
+    }
+
+    public List<LocationEntity> getLocationListByOrganizationId(Set<String> orgsId) {
+        return locationDao.findByOrganizationList(orgsId);
+    }
+
 }

@@ -18,7 +18,8 @@
 	<context:annotation-config />
 	<context:component-scan
 		base-package="org.openiam.authmanager.service.integration,
-					  org.openiam.authentication.integration" />
+					  org.openiam.authentication.integration,
+					  org.openiam.provisioning" />
 
 	<tx:annotation-driven transaction-manager="transactionManager" />
 

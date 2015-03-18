@@ -94,21 +94,22 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
     @Override
     public boolean isResponseValid(String userId, List<UserIdentityAnswerEntity> newAnswerList, int requiredCorrectAns)
             throws Exception {
-		final int correctAns = getNumOfCorrectAnswers(userId, newAnswerList);
-		if (correctAns >= requiredCorrectAns && requiredCorrectAns > 0) {
-			return true;
-		}
-		return false;
-	}
-	
-	@Override
-	public Integer getNumOfRequiredQuestions(final String userId) {
-		Policy passwordPolicy = null;
-		if(StringUtils.isNotBlank(userId)) {
-			final UserEntity user = userDAO.findById(userId);
-			passwordPolicy = passwordService.getPasswordPolicyForUser(user);
-		}
-		if(passwordPolicy == null) {
+        final int correctAns = getNumOfCorrectAnswers(userId, newAnswerList);
+        if (correctAns >= requiredCorrectAns && requiredCorrectAns > 0) {
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public Integer getNumOfRequiredQuestions(final String userId) {
+        Policy passwordPolicy = null;
+        if (StringUtils.isNotBlank(userId)) {
+            PasswordPolicyAssocSearchBean searchBean = new PasswordPolicyAssocSearchBean();
+            searchBean.setUserId(userId);
+            passwordPolicy = passwordService.getPasswordPolicyForUser(searchBean);
+        }
+        if (passwordPolicy == null) {
             passwordPolicy = passwordService.getGlobalPasswordPolicy();
         }
 
@@ -127,9 +128,10 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
     @Override
     public Integer getNumOfCorrectAnswers(final String userId) {
         Policy passwordPolicy = null;
-        if(StringUtils.isNotBlank(userId)) {
-            final UserEntity user = userDAO.findById(userId);
-            passwordPolicy = passwordService.getPasswordPolicyForUser(user);
+        if (StringUtils.isNotBlank(userId)) {
+            PasswordPolicyAssocSearchBean searchBean = new PasswordPolicyAssocSearchBean();
+            searchBean.setUserId(userId);
+            passwordPolicy = passwordService.getPasswordPolicyForUser(searchBean);
         }
         if (passwordPolicy == null) {
             passwordPolicy = passwordService.getGlobalPasswordPolicy();
@@ -146,26 +148,26 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
         }
         return count;
     }
-	
-	@Override
-	public boolean isUserAnsweredSecurityQuestions(final String userId) throws Exception {
-		final Integer numOfRequiredQuestions = getNumOfRequiredQuestions(userId);
-		final List<UserIdentityAnswerEntity> answerList = answersByUser(userId);
-		
-		
-		boolean retVal = false;
-		if(numOfRequiredQuestions == null) {
-			retVal = true;
-		} else if(CollectionUtils.isNotEmpty(answerList)) {
-			if(answerList.size() >= numOfRequiredQuestions.intValue()) {
-				retVal = true;
-			}
-		}
-		
-		return retVal;
-	}
 
-	private int getNumOfCorrectAnswers(final String userId, final List<UserIdentityAnswerEntity> newAnswerList)
+    @Override
+    public boolean isUserAnsweredSecurityQuestions(final String userId) throws Exception {
+        final Integer numOfRequiredQuestions = getNumOfRequiredQuestions(userId);
+        final List<UserIdentityAnswerEntity> answerList = answersByUser(userId);
+
+
+        boolean retVal = false;
+        if (numOfRequiredQuestions == null) {
+            retVal = true;
+        } else if (CollectionUtils.isNotEmpty(answerList)) {
+            if (answerList.size() >= numOfRequiredQuestions.intValue()) {
+                retVal = true;
+            }
+        }
+
+        return retVal;
+    }
+
+    private int getNumOfCorrectAnswers(final String userId, final List<UserIdentityAnswerEntity> newAnswerList)
             throws Exception {
         int correctAns = 0;
 
@@ -208,15 +210,15 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
     @Override
     public List<IdentityQuestionEntity> findQuestionBeans(final IdentityQuestionSearchBean searchBean, final int from, final int size) {
         List<IdentityQuestionEntity> resultList = null;
-    	if (searchBean != null && searchBean.getKey() != null) {
-    		final IdentityQuestionEntity entity = questionDAO.findById(searchBean.getKey());
-    		if (entity != null) {
-    			resultList = new LinkedList<IdentityQuestionEntity>();
-    			resultList.add(entity);
-    		}
-    	} else {
-    		resultList = questionDAO.getByExample(questionSearchBeanConverter.convert(searchBean), from, size);
-    	}
+        if (searchBean != null && searchBean.getKey() != null) {
+            final IdentityQuestionEntity entity = questionDAO.findById(searchBean.getKey());
+            if (entity != null) {
+                resultList = new LinkedList<IdentityQuestionEntity>();
+                resultList.add(entity);
+            }
+        } else {
+            resultList = questionDAO.getByExample(questionSearchBeanConverter.convert(searchBean), from, size);
+        }
         return resultList;
     }
 

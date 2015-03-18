@@ -33,6 +33,7 @@ import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.UserDataService;
+import org.openiam.provision.dto.PasswordSync;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.script.ScriptIntegration;
@@ -104,6 +105,9 @@ public class BaseProvisioningHelper {
     @Value("${openiam.idm.ws.path}")
     private String serviceContext;
 
+    @Value("${org.openiam.debug.hidden.attributes}")
+    protected String hiddenAttributes;
+
     protected static final Log log = LogFactory
             .getLog(BaseProvisioningHelper.class);
 
@@ -159,41 +163,51 @@ public class BaseProvisioningHelper {
     }
 
     protected int executePreProcess(PreProcessor ppScript,
-            Map<String, Object> bindingMap, ProvisionUser user, String operation) {
+            Map<String, Object> bindingMap, ProvisionUser user, PasswordSync passwordSync, String operation) {
         if ("ADD".equalsIgnoreCase(operation)) {
             return ppScript.add(user, bindingMap);
-        }
+        } else
         if ("MODIFY".equalsIgnoreCase(operation)) {
             return ppScript.modify(user, bindingMap);
-        }
+        } else
         if ("DELETE".equalsIgnoreCase(operation)) {
             return ppScript.delete(user, bindingMap);
-        }
+        } else
         if ("SET_PASSWORD".equalsIgnoreCase(operation)) {
-            return ppScript.setPassword(bindingMap);
+            return ppScript.setPassword(passwordSync, bindingMap);
+        } else
+        if ("RESET_PASSWORD".equalsIgnoreCase(operation)) {
+            return ppScript.resetPassword(passwordSync, bindingMap);
+        } else
+        if ("DISABLE".equalsIgnoreCase(operation)) {
+            return ppScript.disable(user, bindingMap);
         }
-
         return 0;
 
     }
 
     protected int executePostProcess(PostProcessor ppScript,
-            Map<String, Object> bindingMap, ProvisionUser user,
+            Map<String, Object> bindingMap, ProvisionUser user, PasswordSync passwordSync,
             String operation, boolean success) {
         if ("ADD".equalsIgnoreCase(operation)) {
             return ppScript.add(user, bindingMap, success);
-        }
+        } else
         if ("MODIFY".equalsIgnoreCase(operation)) {
             return ppScript.modify(user, bindingMap, success);
 
-        }
+        } else
         if ("DELETE".equalsIgnoreCase(operation)) {
             return ppScript.delete(user, bindingMap, success);
 
-        }
-
+        } else
         if ("SET_PASSWORD".equalsIgnoreCase(operation)) {
-            return ppScript.setPassword(bindingMap, success);
+            return ppScript.setPassword(passwordSync, bindingMap, success);
+        }
+        if ("RESET_PASSWORD".equalsIgnoreCase(operation)) {
+            return ppScript.resetPassword(passwordSync, bindingMap, success);
+        } else
+        if ("DISABLE".equalsIgnoreCase(operation)) {
+            return ppScript.disable(user, bindingMap, success);
         }
         return 0;
 

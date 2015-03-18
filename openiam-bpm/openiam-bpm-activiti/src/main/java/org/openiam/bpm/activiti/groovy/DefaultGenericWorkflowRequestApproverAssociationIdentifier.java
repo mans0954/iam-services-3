@@ -30,54 +30,23 @@ public class DefaultGenericWorkflowRequestApproverAssociationIdentifier extends 
 	}
 	
 	public void calculateApprovers() {
-		if(CollectionUtils.isNotEmpty(request.getCustomApproverIds())) {
-			approverUserIds.addAll(request.getCustomApproverIds());
-		} else if(isRequestForEntityCreation(request)) {
-			approverUserIds.addAll(getApproversForEntityCreation(request));
-		} else {
-			List<ApproverAssociationEntity> approverAssocationList = null;
-			
-			/* for user target objects, use the supervisors - no approver association */
-			if(AssociationType.USER.equals(request.getAssociationType()) && StringUtils.isNotEmpty(request.getUserCentricUserId())) {
-				final List<UserEntity> supervisors = userDataService.getSuperiors(request.getUserCentricUserId(), 0, Integer.MAX_VALUE);
-				if(CollectionUtils.isNotEmpty(supervisors)) {
-					for(final UserEntity supervisor : supervisors) {
-						if(supervisor != null ) {
-							approverUserIds.add(supervisor.getId());
-						}
-					}
-				}
-			} else {
-				if(CollectionUtils.isNotEmpty(request.getCustomApproverAssociationIds())) {
-					approverAssocationList = approverAssociationDAO.findByIds(request.getCustomApproverAssociationIds());
-				} else {
-					approverAssocationList = new LinkedList<ApproverAssociationEntity>();
-					
-					final List<ApproverAssociationEntity> associationApprovers = approverAssociationDAO.getByAssociation(request.getAssociationId(), request.getAssociationType());
-					if(CollectionUtils.isNotEmpty(associationApprovers)) {
-						approverAssocationList.addAll(associationApprovers);
-					}
-					
-					final List<ApproverAssociationEntity> memberAssociationApprovers = approverAssociationDAO.getByAssociation(request.getMemberAssociationId(), request.getMemberAssociationType());
-					if(CollectionUtils.isNotEmpty(memberAssociationApprovers)) {
-						approverAssocationList.addAll(memberAssociationApprovers);
-					}
-				}
-				if(CollectionUtils.isEmpty(approverAssocationList)) {
-					final String message = String.format("Can't find approver association for %s %s, using default approver association", request.getAssociationType(), request.getAssociationId());
-                    idmAuditLog.addAttribute(AuditAttributeName.WARNING, message);
-					LOG.warn(message);
-					approverAssocationList = getDefaultApproverAssociations();
-				}
-				if(CollectionUtils.isNotEmpty(approverAssocationList)) {
-					for(final ApproverAssociationEntity entity : approverAssocationList) {
-						approverAssociationIds.add(entity.getId());
-					}
-				}
+		if(this.mergeCustomApproverIdsWithApproverAssociations){
+			if(CollectionUtils.isNotEmpty(request.getCustomApproverIds())) {
+				approverUserIds.addAll(request.getCustomApproverIds());
+			} else if(isRequestForEntityCreation(request)) {
+				approverUserIds.addAll(getApproversForEntityCreation(request));
 			}
-            idmAuditLog.addAttributeAsJson(AuditAttributeName.APPROVER_ASSOCIATIONS, approverAssocationList, jacksonMapper);
+			buildApproverAssociationList();
+		} else {
+			if(CollectionUtils.isNotEmpty(request.getCustomApproverIds())) {
+				approverUserIds.addAll(request.getCustomApproverIds());
+			} else if(isRequestForEntityCreation(request)) {
+				approverUserIds.addAll(getApproversForEntityCreation(request));
+			} else {
+				buildApproverAssociationList();
+			}
 		}
-		
+
 		if(CollectionUtils.isNotEmpty(request.getAdditionalApproverIds())) {
 			approverUserIds.addAll(request.getAdditionalApproverIds());
 		}
@@ -91,5 +60,49 @@ public class DefaultGenericWorkflowRequestApproverAssociationIdentifier extends 
 				approverUserIds.add(defaultApproverUserId);
 			}
 		}
+	}
+
+	public void buildApproverAssociationList(){
+		List<ApproverAssociationEntity> approverAssocationList = null;
+
+			/* for user target objects, use the supervisors - no approver association */
+		if(AssociationType.USER.equals(request.getAssociationType()) && StringUtils.isNotEmpty(request.getUserCentricUserId())) {
+			final List<UserEntity> supervisors = userDataService.getSuperiors(request.getUserCentricUserId(), 0, Integer.MAX_VALUE);
+			if(CollectionUtils.isNotEmpty(supervisors)) {
+				for(final UserEntity supervisor : supervisors) {
+					if(supervisor != null ) {
+						approverUserIds.add(supervisor.getId());
+					}
+				}
+			}
+		} else {
+			if(CollectionUtils.isNotEmpty(request.getCustomApproverAssociationIds())) {
+				approverAssocationList = approverAssociationDAO.findByIds(request.getCustomApproverAssociationIds());
+			} else {
+				approverAssocationList = new LinkedList<ApproverAssociationEntity>();
+
+				final List<ApproverAssociationEntity> associationApprovers = approverAssociationDAO.getByAssociation(request.getAssociationId(), request.getAssociationType());
+				if(CollectionUtils.isNotEmpty(associationApprovers)) {
+					approverAssocationList.addAll(associationApprovers);
+				}
+
+				final List<ApproverAssociationEntity> memberAssociationApprovers = approverAssociationDAO.getByAssociation(request.getMemberAssociationId(), request.getMemberAssociationType());
+				if(CollectionUtils.isNotEmpty(memberAssociationApprovers)) {
+					approverAssocationList.addAll(memberAssociationApprovers);
+				}
+			}
+			if(CollectionUtils.isEmpty(approverAssocationList)) {
+				final String message = String.format("Can't find approver association for %s %s, using default approver association", request.getAssociationType(), request.getAssociationId());
+				idmAuditLog.addAttribute(AuditAttributeName.WARNING, message);
+				LOG.warn(message);
+				approverAssocationList = getDefaultApproverAssociations();
+			}
+			if(CollectionUtils.isNotEmpty(approverAssocationList)) {
+				for(final ApproverAssociationEntity entity : approverAssocationList) {
+					approverAssociationIds.add(entity.getId());
+				}
+			}
+		}
+		idmAuditLog.addAttributeAsJson(AuditAttributeName.APPROVER_ASSOCIATIONS, approverAssocationList, jacksonMapper);
 	}
 }

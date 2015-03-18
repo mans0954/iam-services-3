@@ -17,6 +17,7 @@ public enum ActivitiRequestType {
 	REMOVE_USER_FROM_ORG("removeUserFromOrganization", "Remove User from Organization", true),
 	
 	ATTESTATION("attestationWorkflow", "Attestation", true),
+    GROUP_ATTESTATION("groupAttestationWorkflow", "Group Attestation", true),
 	RESOURCE_CERTIFICATION("resourceCertification", "Resource Certification", true),
 	
 	ADD_SUPERIOR("addSuperior", "Add Superior", true),

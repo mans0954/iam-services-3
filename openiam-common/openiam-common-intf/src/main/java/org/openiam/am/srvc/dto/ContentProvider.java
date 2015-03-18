@@ -38,6 +38,8 @@ import java.util.concurrent.atomic.AtomicInteger;
         "themeId",
         "groupingXrefs",
         "showOnApplicationPage",
+        "loginURL",
+        "postbackURLParamName",
         "authProviderId",
         "authCookieName",
         "authCookieDomain"
@@ -62,6 +64,8 @@ public class ContentProvider extends KeyNameDTO {
 	private String authProviderId;
 	private String authCookieName;
 	private String authCookieDomain;
+	private String loginURL;
+	private String postbackURLParamName;
 	
 	/*
 	 * federation variables.  Internal use only
@@ -211,41 +215,63 @@ public class ContentProvider extends KeyNameDTO {
 		this.authProviderId = authProviderId;
 	}
 	
+	
+	
 	public String getManagedSysName() {
 		return managedSysName;
 	}
 	public void setManagedSysName(String managedSysName) {
 		this.managedSysName = managedSysName;
 	}
-	
 	public String getAuthCookieName() {
 		return authCookieName;
 	}
-
 	public void setAuthCookieName(String authCookieName) {
 		this.authCookieName = authCookieName;
 	}
-
 	public String getAuthCookieDomain() {
 		return authCookieDomain;
 	}
-
 	public void setAuthCookieDomain(String authCookieDomain) {
 		this.authCookieDomain = authCookieDomain;
 	}
-	
+	public String getLoginURL() {
+		return loginURL;
+	}
+	public void setLoginURL(String loginURL) {
+		this.loginURL = loginURL;
+	}
+	public String getPostbackURLParamName() {
+		return postbackURLParamName;
+	}
+	public void setPostbackURLParamName(String postbackURLParamName) {
+		this.postbackURLParamName = postbackURLParamName;
+	}
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
+		result = prime
+				* result
+				+ ((authCookieDomain == null) ? 0 : authCookieDomain.hashCode());
+		result = prime * result
+				+ ((authCookieName == null) ? 0 : authCookieName.hashCode());
 		result = prime * result
 				+ ((authProviderId == null) ? 0 : authProviderId.hashCode());
 		result = prime * result
 				+ ((domainPattern == null) ? 0 : domainPattern.hashCode());
 		result = prime * result + (isPublic ? 1231 : 1237);
 		result = prime * result + ((isSSL == null) ? 0 : isSSL.hashCode());
-		result = prime * result + ((managedSysId == null) ? 0 : managedSysId.hashCode());
-		result = prime * result + ((managedSysName == null) ? 0 : managedSysName.hashCode());
+		result = prime * result
+				+ ((loginURL == null) ? 0 : loginURL.hashCode());
+		result = prime * result
+				+ ((managedSysId == null) ? 0 : managedSysId.hashCode());
+		result = prime * result
+				+ ((managedSysName == null) ? 0 : managedSysName.hashCode());
+		result = prime
+				* result
+				+ ((postbackURLParamName == null) ? 0 : postbackURLParamName
+						.hashCode());
 		result = prime
 				* result
 				+ ((resourceCoorelatedName == null) ? 0
@@ -257,8 +283,6 @@ public class ContentProvider extends KeyNameDTO {
 		result = prime * result + (showOnApplicationPage ? 1231 : 1237);
 		result = prime * result + ((themeId == null) ? 0 : themeId.hashCode());
 		result = prime * result + ((url == null) ? 0 : url.hashCode());
-		result = prime * result + ((authCookieName == null) ? 0 : authCookieName.hashCode());
-		result = prime * result + ((authCookieDomain == null) ? 0 : authCookieDomain.hashCode());
 		return result;
 	}
 	@Override
@@ -270,6 +294,16 @@ public class ContentProvider extends KeyNameDTO {
 		if (getClass() != obj.getClass())
 			return false;
 		ContentProvider other = (ContentProvider) obj;
+		if (authCookieDomain == null) {
+			if (other.authCookieDomain != null)
+				return false;
+		} else if (!authCookieDomain.equals(other.authCookieDomain))
+			return false;
+		if (authCookieName == null) {
+			if (other.authCookieName != null)
+				return false;
+		} else if (!authCookieName.equals(other.authCookieName))
+			return false;
 		if (authProviderId == null) {
 			if (other.authProviderId != null)
 				return false;
@@ -287,6 +321,11 @@ public class ContentProvider extends KeyNameDTO {
 				return false;
 		} else if (!isSSL.equals(other.isSSL))
 			return false;
+		if (loginURL == null) {
+			if (other.loginURL != null)
+				return false;
+		} else if (!loginURL.equals(other.loginURL))
+			return false;
 		if (managedSysId == null) {
 			if (other.managedSysId != null)
 				return false;
@@ -296,6 +335,11 @@ public class ContentProvider extends KeyNameDTO {
 			if (other.managedSysName != null)
 				return false;
 		} else if (!managedSysName.equals(other.managedSysName))
+			return false;
+		if (postbackURLParamName == null) {
+			if (other.postbackURLParamName != null)
+				return false;
+		} else if (!postbackURLParamName.equals(other.postbackURLParamName))
 			return false;
 		if (resourceCoorelatedName == null) {
 			if (other.resourceCoorelatedName != null)
@@ -323,16 +367,6 @@ public class ContentProvider extends KeyNameDTO {
 			if (other.url != null)
 				return false;
 		} else if (!url.equals(other.url))
-			return false;
-		if (authCookieName == null) {
-			if (other.authCookieName != null)
-				return false;
-		} else if (!authCookieName.equals(other.authCookieName))
-			return false;
-		if (authCookieDomain == null) {
-			if (other.authCookieDomain != null)
-				return false;
-		} else if (!authCookieDomain.equals(other.authCookieDomain))
 			return false;
 		return true;
 	}

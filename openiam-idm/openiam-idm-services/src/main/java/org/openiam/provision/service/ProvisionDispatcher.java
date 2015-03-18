@@ -55,10 +55,12 @@ import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.idm.srvc.res.service.ResourceService;
+import org.openiam.provision.dto.PasswordSync;
 import org.openiam.provision.dto.ProvOperationEnum;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.provision.type.ExtensibleAttribute;
+import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.thread.Sweepable;
@@ -68,6 +70,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jms.core.BrowserCallback;
 import org.springframework.jms.core.JmsTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
@@ -99,17 +102,21 @@ public class ProvisionDispatcher implements Sweepable {
     private ResourceService resourceService;
     @Autowired
     private ProvisionService provisionService;
+
     @Autowired
     private ResourceDozerConverter resourceDozerConverter;
+
     @Autowired
     private LoginDozerConverter loginDozerConverter;
+
     @Autowired
     protected LoginDataService loginManager;
+
     @Autowired
     protected ProvisionConnectorService connectorService;
 
-    @Value(",${org.openiam.debug.hidden.attributes},")
-    private String hiddenAttributes;
+    @Autowired
+    private ProvisionSelectedResourceHelper provisionSelectedResourceHelper;
 
     @Autowired
     protected AuditLogService auditLogService;
@@ -128,6 +135,9 @@ public class ProvisionDispatcher implements Sweepable {
 
     private final Object mutext = new Object();
 
+    @Override
+    //TODO change when Spring 3.2.2 @Scheduled(fixedDelayString = "${org.openiam.prov.threadsweep}")
+    @Scheduled(fixedDelay=3000)
     public void sweep() {
 
         jmsTemplate.browse(queue, new BrowserCallback<Object>() {
@@ -170,6 +180,12 @@ public class ProvisionDispatcher implements Sweepable {
                     process(data);
                 }
             });
+            try {
+                //chance to other threads to be executed
+                Thread.sleep(200);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -192,7 +208,7 @@ public class ProvisionDispatcher implements Sweepable {
                 try {
                     // update target sys identity
                     // do de-provisioning
-                    ObjectResponse response = deprovision(data);
+                    ObjectResponse response = deprovision(data, idmAuditLog);
                     StatusCodeType statusCodeType = response.getStatus();
                     if (statusCodeType == StatusCodeType.FAILURE
                             && ErrorCode.NO_SUCH_IDENTIFIER.equals(response.getError())) {
@@ -308,7 +324,7 @@ public class ProvisionDispatcher implements Sweepable {
                 suspendReq.setScriptHandler(mSys.getSuspendHandler());
                 suspendReq.setHostLoginId(mSys.getUserId());
 
-                ExtensibleUser extUser = buildFromRules(managedSysId, data.getBindingMap());
+                ExtensibleUser extUser = provisionSelectedResourceHelper.buildFromRules(managedSysId, data.getBindingMap());
                 suspendReq.setExtensibleObject(extUser);
 
                 String passwordDecoded = mSys.getPswd();
@@ -355,7 +371,7 @@ public class ProvisionDispatcher implements Sweepable {
                 suspendReq.setScriptHandler(mSys.getSuspendHandler());
                 suspendReq.setHostLoginId(mSys.getUserId());
 
-                ExtensibleUser extUser = buildFromRules(managedSysId, data.getBindingMap());
+                ExtensibleUser extUser = provisionSelectedResourceHelper.buildFromRules(managedSysId, data.getBindingMap());
                 suspendReq.setExtensibleObject(extUser);
 
                 String passwordDecoded = mSys.getPswd();
@@ -442,13 +458,15 @@ public class ProvisionDispatcher implements Sweepable {
 
 	}
 
-    private ObjectResponse deprovision(ProvisionDataContainer data) {
+    private ObjectResponse deprovision(ProvisionDataContainer data, IdmAuditLog idmAuditLog) {
 
         String requestId = data.getRequestId();
         Login targetSysLogin = data.getIdentity();
         ResourceEntity resEntity = resourceService.findResourceById(data.getResourceId());
         Resource res = resourceDozerConverter.convertToDTO(resEntity, true);
         ManagedSysDto mSys = managedSystemWebService.getManagedSysByResource(res.getId());
+        idmAuditLog.setTargetManagedSys(mSys.getId(), mSys.getName());
+
         ProvisionConnectorEntity connectorEntity = connectorService.getProvisionConnectorsById(mSys.getConnectorId());
         if (connectorEntity == null) {
             return null;
@@ -496,32 +514,33 @@ public class ProvisionDispatcher implements Sweepable {
                 matchObj = objArr[0];
             }
 
-            ExtensibleUser extUser = buildFromRules(managedSysId, bindingMap);
+            // get the attributes at the target system
+            // this lookup only for getting attributes from the
+            // system
+            Map<String, ExtensibleAttribute> currentValueMap = new HashMap<>();
+            boolean targetSystemUserExists = getCurrentObjectAtTargetSystem(requestId, targetSysLogin, provisionSelectedResourceHelper.buildEmptyAttributesExtensibleUser(managedSysId), mSys,
+                    matchObj, currentValueMap, res);
+            bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_USER_EXISTS, targetSystemUserExists);
+            bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_ATTRIBUTES, currentValueMap);
+            ExtensibleObject extUser = provisionSelectedResourceHelper.buildFromRules(managedSysId, bindingMap);
             try {
                 idmAuditLog.addCustomRecord("ATTRIBUTES", extUser.getAttributesAsJSON());
             } catch (JsonGenerationException jge) {
                 log.error(jge);
             }
-            // get the attributes at the target system
-            // this lookup only for getting attributes from the
-            // system
-            Map<String, ExtensibleAttribute> currentValueMap = new HashMap<>();
-            boolean isExistedInTargetSystem = getCurrentObjectAtTargetSystem(requestId, targetSysLogin, extUser, mSys,
-                    matchObj, currentValueMap);
+
             boolean connectorSuccess = false;
 
             // pre-processing
-            bindingMap.put("targetSystemAttributes", currentValueMap);
-
             ResourceProp preProcessProp = res.getResourceProperty("PRE_PROCESS");
             String preProcessScript = preProcessProp != null ? preProcessProp.getValue() : null;
             if (StringUtils.isNotBlank(preProcessScript)) {
                 PreProcessor ppScript = createPreProcessScript(preProcessScript, bindingMap);
                 if (ppScript != null) {
-                    int executePreProcessResult = executePreProcess(ppScript, bindingMap, targetSysProvUser,
-                            isExistedInTargetSystem ? "MODIFY" : "ADD");
+                    int executePreProcessResult = AbstractProvisioningService.executePreProcess(ppScript, bindingMap, targetSysProvUser, null, null,
+                            targetSystemUserExists ? "MODIFY" : "ADD");
                     idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "executePreProcessResult: "
-                            + (isExistedInTargetSystem ? "[MODIFY]" : "[ADD] = ") + executePreProcessResult);
+                            + (targetSystemUserExists ? "[MODIFY]" : "[ADD] = ") + executePreProcessResult);
                     if (executePreProcessResult == ProvisioningConstants.FAIL) {
                         response.setStatus(ResponseStatus.FAILURE);
                         response.setErrorCode(ResponseCode.FAIL_PREPROCESSOR);
@@ -530,8 +549,12 @@ public class ProvisionDispatcher implements Sweepable {
                 }
             }
 
-            if (!isExistedInTargetSystem) {
-                ObjectResponse resp = provisionService.requestAddModify(extUser, targetSysLogin, true, requestId,
+            if (!targetSystemUserExists) {
+
+                // updates the attributes with the correct operation codes
+                extUser = updateAttributeList(extUser, null);
+
+                ObjectResponse resp = provisionService.requestAddModify((ExtensibleUser)extUser, targetSysLogin, true, requestId,
                         idmAuditLog);
                 connectorSuccess = resp.getStatus() != StatusCodeType.FAILURE;
 
@@ -546,7 +569,7 @@ public class ProvisionDispatcher implements Sweepable {
                             new ExtensibleAttribute("ORIG_IDENTITY", targetSysLogin.getOrigPrincipalName(),
                                     AttributeOperationEnum.REPLACE.getValue(), "String"));
                 }
-                ObjectResponse resp = provisionService.requestAddModify(extUser, targetSysLogin, false, requestId,
+                ObjectResponse resp = provisionService.requestAddModify((ExtensibleUser)extUser, targetSysLogin, false, requestId,
                         idmAuditLog);
                 connectorSuccess = resp.getStatus() != StatusCodeType.FAILURE;
             }
@@ -557,10 +580,10 @@ public class ProvisionDispatcher implements Sweepable {
             if (StringUtils.isNotBlank(postProcessScript)) {
                 PostProcessor ppScript = createPostProcessScript(postProcessScript, bindingMap);
                 if (ppScript != null) {
-                    int executePostProcessResult = executePostProcess(ppScript, bindingMap, targetSysProvUser,
-                            isExistedInTargetSystem ? "MODIFY" : "ADD", connectorSuccess);
+                    int executePostProcessResult = AbstractProvisioningService.executePostProcess(ppScript, bindingMap, targetSysProvUser, null, null,
+                            targetSystemUserExists ? "MODIFY" : "ADD", connectorSuccess);
                     idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "executePostProcessResult "
-                            + (isExistedInTargetSystem ? "[MODIFY]" : "[ADD] =") + executePostProcessResult);
+                            + (targetSystemUserExists ? "[MODIFY]" : "[ADD] =") + executePostProcessResult);
                     if (executePostProcessResult == ProvisioningConstants.FAIL) {
                         response.setStatus(ResponseStatus.FAILURE);
                         response.setErrorCode(ResponseCode.FAIL_POSTPROCESSOR);
@@ -587,53 +610,52 @@ public class ProvisionDispatcher implements Sweepable {
      * Update the list of attributes with the correct operation values so that
      * they can be passed to the connector
      */
-    private ExtensibleUser updateAttributeList(org.openiam.provision.type.ExtensibleUser extUser,
+    static ExtensibleObject updateAttributeList(org.openiam.provision.type.ExtensibleObject extObject,
             Map<String, ExtensibleAttribute> currentValueMap) {
-        if (extUser == null) {
+        if (extObject == null) {
             return null;
         }
         log.debug("updateAttributeList: Updating operations on attributes being passed to connectors");
-        // log.debug("updateAttributeList: Current attributeMap = " +
-        // currentValueMap);
 
-        List<ExtensibleAttribute> extAttrList = extUser.getAttributes();
+        List<ExtensibleAttribute> extAttrList = extObject.getAttributes();
         if (extAttrList == null) {
-            log.debug("Extended user attributes is null");
+            log.debug("Extended object attributes is null");
             return null;
         }
 
-        // log.debug("updateAttributeList: New Attribute List = " +
-        // extAttrList);
-        if (extAttrList != null && currentValueMap == null) {
+        if (currentValueMap == null) {
             for (ExtensibleAttribute attr : extAttrList) {
-                attr.setOperation(1);
+                if(attr.getOperation() == -1) {
+                    attr.setOperation(AttributeOperationEnum.ADD.getValue());
+                }
             }
         } else {
-
             for (ExtensibleAttribute attr : extAttrList) {
-                String nm = attr.getName();
-                if (currentValueMap == null) {
-                    attr.setOperation(1);
-                } else {
+                if(attr.getOperation() == -1) {
+                    String nm = attr.getName();
                     ExtensibleAttribute curAttr = currentValueMap.get(nm);
+                    attr.setOperation(AttributeOperationEnum.NO_CHANGE.getValue());
                     if (attr.valuesAreEqual(curAttr)) {
                         log.debug("- Op = 0 - AttrName = " + nm);
-                        attr.setOperation(0);
+                        attr.setOperation(AttributeOperationEnum.NO_CHANGE.getValue());
                     } else if (curAttr == null || !curAttr.containsAnyValue()) {
                         log.debug("- Op = 1 - AttrName = " + nm);
-                        attr.setOperation(1);
-                    } else {
+                        attr.setOperation(AttributeOperationEnum.ADD.getValue());
+                    } else if (!attr.containsAnyValue() && curAttr.containsAnyValue()) {
+                        log.debug("- Op = 3 - AttrName = " + nm);
+                        attr.setOperation(AttributeOperationEnum.DELETE.getValue());
+                    } else if(attr.containsAnyValue() && curAttr.containsAnyValue()) {
                         log.debug("- Op = 2 - AttrName = " + nm);
-                        attr.setOperation(2);
+                        attr.setOperation(AttributeOperationEnum.REPLACE.getValue());
                     }
                 }
             }
         }
-        return extUser;
+        return extObject;
     }
 
     private boolean getCurrentObjectAtTargetSystem(String requestId, Login mLg, ExtensibleUser extUser,
-            ManagedSysDto mSys, ManagedSystemObjectMatch matchObj, Map<String, ExtensibleAttribute> curValueMap) {
+            ManagedSysDto mSys, ManagedSystemObjectMatch matchObj, Map<String, ExtensibleAttribute> curValueMap, Resource res) {
 
         String identity = mLg.getLogin();
         log.debug("Getting the current attributes in the target system for =" + identity);
@@ -663,8 +685,33 @@ public class ProvisionDispatcher implements Sweepable {
         }
         reqType.setExtensibleObject(extUser);
         reqType.setScriptHandler(mSys.getLookupHandler());
+//PRE processor
+        Map<String, Object> bindingMap = new HashMap<>();
+        ResourceProp preProcessProp = res.getResourceProperty("PRE_PROCESS");
+        String preProcessScript = preProcessProp != null ? preProcessProp.getValue() : null;
+        if (StringUtils.isNotBlank(preProcessScript)) {
+            PreProcessor ppScript = createPreProcessScript(preProcessScript, bindingMap);
+            if (ppScript != null) {
+                int executePreProcessResult = AbstractProvisioningService.executePreProcess(ppScript, bindingMap, null, null, reqType,
+                        "LOOKUP");
+                if (executePreProcessResult == ProvisioningConstants.FAIL) {
+                    return false;
+                }
+            }
+        }
 
         SearchResponse lookupSearchResponse = connectorAdapter.lookupRequest(mSys, reqType);
+//POST processor
+        ResourceProp postProcessProp = res.getResourceProperty("POST_PROCESS");
+        String postProcessScript = postProcessProp != null ? postProcessProp.getValue() : null;
+        if (StringUtils.isNotBlank(postProcessScript)) {
+            PostProcessor ppScript = createPostProcessScript(postProcessScript, bindingMap);
+            if (ppScript != null) {
+                AbstractProvisioningService.executePostProcess(ppScript, bindingMap, null, null, lookupSearchResponse,
+                        "LOOKUP", lookupSearchResponse.getStatus() == StatusCodeType.SUCCESS);
+            }
+        }
+
         if (lookupSearchResponse.getStatus() == StatusCodeType.SUCCESS) {
             List<ExtensibleAttribute> extAttrList = lookupSearchResponse.getObjectList().size() > 0 ? lookupSearchResponse
                     .getObjectList().get(0).getAttributeList()
@@ -681,116 +728,6 @@ public class ProvisionDispatcher implements Sweepable {
         }
 
         return false;
-    }
-
-    private ExtensibleUser buildFromRules(String managedSysId, Map<String, Object> bindingMap) {
-
-        List<AttributeMap> attrMap = managedSystemWebService.getAttributeMapsByManagedSysId(managedSysId);
-
-        ExtensibleUser extUser = new ExtensibleUser();
-
-        if (attrMap != null) {
-
-            log.debug("buildFromRules: attrMap IS NOT null");
-
-            for (AttributeMap attr : attrMap) {
-
-                if ("INACTIVE".equalsIgnoreCase(attr.getStatus())) {
-                    continue;
-                }
-
-                String objectType = attr.getMapForObjectType();
-                if (objectType != null) {
-
-                    if (objectType.equalsIgnoreCase(PolicyMapObjectTypeOptions.USER.name())) {
-                        Object output = "";
-                        try {
-                            output = ProvisionServiceUtil.getOutputFromAttrMap(attr, bindingMap, scriptRunner);
-                        } catch (ScriptEngineException see) {
-                            log.error("Error in script = '", see);
-                            continue;
-                        } catch (MissingPropertyException mpe) {
-                            log.error("Error in script = '", mpe);
-                            continue;
-                        }
-
-                        log.debug("buildFromRules: OBJECTTYPE="+objectType+", ATTRIBUTE=" + attr.getAttributeName() +
-                                ", SCRIPT OUTPUT=" +
-                                (hiddenAttributes.toLowerCase().contains(","+attr.getAttributeName().toLowerCase()+",")
-                                        ? "******" : output));
-
-                        if (output != null) {
-                            ExtensibleAttribute newAttr;
-                            if (output instanceof String) {
-
-                                // if its memberOf object than dont add it to
-                                // the list
-                                // the connectors can detect a delete if an
-                                // attribute is not in the list
-
-                                newAttr = new ExtensibleAttribute(attr.getAttributeName(), (String) output, 1, attr
-                                        .getDataType().getValue());
-                                newAttr.setObjectType(objectType);
-                                extUser.getAttributes().add(newAttr);
-
-                            } else if (output instanceof Integer) {
-
-                                // if its memberOf object than dont add it to
-                                // the list
-                                // the connectors can detect a delete if an
-                                // attribute is not in the list
-
-                                newAttr = new ExtensibleAttribute(attr.getAttributeName(),
-                                        ((Integer) output).toString(), 1, attr.getDataType().getValue());
-                                newAttr.setObjectType(objectType);
-                                extUser.getAttributes().add(newAttr);
-
-                            } else if (output instanceof Date) {
-                                // date
-                                Date d = (Date) output;
-                                String DATE_FORMAT = "MM/dd/yyyy";
-                                SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT);
-
-                                newAttr = new ExtensibleAttribute(attr.getAttributeName(), sdf.format(d), 1, attr
-                                        .getDataType().getValue());
-                                newAttr.setObjectType(objectType);
-
-                                extUser.getAttributes().add(newAttr);
-                            } else if (output instanceof byte[]) {
-                                extUser.getAttributes().add(
-                                        new ExtensibleAttribute(attr.getAttributeName(), (byte[]) output, 1, attr
-                                                .getDataType().getValue()));
-
-                            } else if (output instanceof BaseAttributeContainer) {
-                                // process a complex object which can be passed
-                                // to the connector
-                                newAttr = new ExtensibleAttribute(attr.getAttributeName(),
-                                        (BaseAttributeContainer) output, 1, attr.getDataType().getValue());
-                                newAttr.setObjectType(objectType);
-                                extUser.getAttributes().add(newAttr);
-
-                            } else if (output instanceof List) {
-                                // process a list - multi-valued object
-                                if (CollectionUtils.isNotEmpty((List)output)) {
-                                    newAttr = new ExtensibleAttribute(attr.getAttributeName(), (List) output, 1, attr
-                                            .getDataType().getValue());
-                                    newAttr.setObjectType(objectType);
-                                    extUser.getAttributes().add(newAttr);
-                                    log.debug("buildFromRules: added attribute to extUser:" + attr.getAttributeName());
-                                }
-                            }
-                        }
-                    } else if (PolicyMapObjectTypeOptions.PRINCIPAL.name().equalsIgnoreCase(objectType)) {
-
-                        extUser.setPrincipalFieldName(attr.getAttributeName());
-                        extUser.setPrincipalFieldDataType(attr.getDataType().getValue());
-
-                    }
-                }
-            }
-        }
-
-        return extUser;
     }
 
     private String getDecryptedPassword(ManagedSysDto managedSys) throws ConnectorDataException {
@@ -823,40 +760,6 @@ public class ProvisionDispatcher implements Sweepable {
             log.error(ce);
             return null;
         }
-    }
-
-    private int executePreProcess(PreProcessor ppScript, Map<String, Object> bindingMap, ProvisionUser user,
-            String operation) {
-        if ("ADD".equalsIgnoreCase(operation)) {
-            return ppScript.add(user, bindingMap);
-        }
-        if ("MODIFY".equalsIgnoreCase(operation)) {
-            return ppScript.modify(user, bindingMap);
-        }
-        if ("DELETE".equalsIgnoreCase(operation)) {
-            return ppScript.delete(user, bindingMap);
-        }
-        if ("SET_PASSWORD".equalsIgnoreCase(operation)) {
-            return ppScript.setPassword(bindingMap);
-        }
-        return 0;
-    }
-
-    private static int executePostProcess(PostProcessor ppScript, Map<String, Object> bindingMap, ProvisionUser user,
-            String operation, boolean success) {
-        if ("ADD".equalsIgnoreCase(operation)) {
-            return ppScript.add(user, bindingMap, success);
-        }
-        if ("MODIFY".equalsIgnoreCase(operation)) {
-            return ppScript.modify(user, bindingMap, success);
-        }
-        if ("DELETE".equalsIgnoreCase(operation)) {
-            return ppScript.delete(user, bindingMap, success);
-        }
-        if ("SET_PASSWORD".equalsIgnoreCase(operation)) {
-            return ppScript.setPassword(bindingMap, success);
-        }
-        return 0;
     }
 
 	private static class LoginChanges extends Login {

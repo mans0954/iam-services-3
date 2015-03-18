@@ -32,18 +32,25 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.openiam.exception.ScriptEngineException;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.stereotype.Component;
+
 import javax.annotation.PostConstruct;
+import javax.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Value;
 
 /* 
  * Spring bean created through XML. Not using annotations, as the actual implementation of the 
  * interface is configurable via the properties file
  */
+@Component("configurableGroovyScriptEngine")
+@Transactional
 public class GroovyScriptEngineIntegration implements ScriptIntegration, ApplicationContextAware {
 
     public static final String APP_CONTEXT = "context";
@@ -119,10 +126,11 @@ public class GroovyScriptEngineIntegration implements ScriptIntegration, Applica
 
     @Override
     public Object instantiateClass(Map<String, Object> bindingMap, String storageDirectory, String scriptName) throws IOException {
-        log.info("instantiateClass called.");
 
         try {
             String fullPath = storageDirectory + scriptName;
+            log.info("instantiateClass called: "+fullPath+".");
+
             Class cl = gse.loadScriptByName(fullPath);
             Object instance = cl.newInstance();
 

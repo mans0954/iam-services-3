@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import static org.hibernate.criterion.Projections.id;
 import static org.hibernate.criterion.Projections.rowCount;
 import static org.hibernate.criterion.Restrictions.eq;
 
@@ -248,6 +249,11 @@ implements BaseDao<T, PrimaryKey> {
     @LocalizedDatabaseGet
     public List<T> findAll() {
         return getCriteria().list();
+    }
+
+    public List<PrimaryKey> getAllIds(){
+        Criteria criteria = getCriteria().setProjection(id());
+        return criteria.list();
     }
 
     public Long countAll() {

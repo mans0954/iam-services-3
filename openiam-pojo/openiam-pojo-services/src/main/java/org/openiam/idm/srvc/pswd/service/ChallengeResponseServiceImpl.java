@@ -138,8 +138,9 @@ public class ChallengeResponseServiceImpl implements ChallengeResponseService {
     @Override
     public boolean isResponseValid(String userId, List<UserIdentityAnswerEntity> newAnswerList) throws Exception {
         int requiredCorrect = newAnswerList.size();
-        final UserEntity user = userMgr.getUser(userId);
-        final Policy policy = passwordMgr.getPasswordPolicyForUser(user);
+        PasswordPolicyAssocSearchBean searchBean = new PasswordPolicyAssocSearchBean();
+        searchBean.setUserId(userId);
+        final Policy policy = passwordMgr.getPasswordPolicyForUser(searchBean);
         final PolicyAttribute attr = policy.getAttribute("QUEST_ANSWER_CORRECT");
 
         if (attr != null) {

@@ -20,6 +20,7 @@
  */
 package org.openiam.idm.srvc.auth.spi;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.exception.AuthenticationException;
@@ -58,7 +59,9 @@ import java.util.*;
  * DefaultLoginModule provides basic password based authentication using the OpenIAM repository.
  * @author suneet
  *
+ * @author suneet
  */
+@Scope("prototype")
 @Component("activeDirectoryLoginModule")
 public class ActiveDirectoryLoginModule extends AbstractLoginModule {
 

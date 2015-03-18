@@ -219,13 +219,37 @@ public interface GroupDataWebService {
                                  final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
     							 final @WebParam(name = "from", targetNamespace = "") int from,
     							 final @WebParam(name = "size", targetNamespace = "") int size);
-
+    /**
+     * Return a paged List of Groups based on parameters, which are specified in GroupSearchBean object
+     * @param searchBean -  GroupSearchBean object
+     * @param requesterId - the User ID who request this operation.  This param is required if delegation filter is set
+     * @param from - where to start in the list
+     * @param size - how many to return
+     * @return List of Group objects. Returns null if no groups are found.
+     */
     @WebMethod
     public List<Group> findBeansLocalize(final @WebParam(name = "searchBean") GroupSearchBean searchBean,
                                  final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
                                  final @WebParam(name = "from", targetNamespace = "") int from,
                                  final @WebParam(name = "size", targetNamespace = "") int size,
                                  final @WebParam(name = "language", targetNamespace = "") Language language);
+    /**
+     * Return a paged List of Groups  for given groupOwner based on parameters, which are specified in GroupSearchBean object
+     * @param searchBean -  GroupSearchBean object
+     * @param requesterId - the User ID who request this operation.  This param is required if delegation filter is set
+     * @param ownerId - the User ID who is the owner for the searching groups
+     * @param from - where to start in the list
+     * @param size - how many to return
+     * @return List of Group objects. Returns null if no groups are found.
+     */
+    @WebMethod
+    public List<Group> findGroupsForOwner(final @WebParam(name = "searchBean") GroupSearchBean searchBean,
+                                          final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
+                                          final @WebParam(name = "ownerId", targetNamespace = "") String ownerId,
+                                          final @WebParam(name = "from", targetNamespace = "") int from,
+                                          final @WebParam(name = "size", targetNamespace = "") int size,
+                                          final @WebParam(name = "language", targetNamespace = "") Language language);
+
     /**
      * Returns total number of Groups based on parameters, which are specified in GroupSearchBean object
      * @param searchBean -  GroupSearchBean object
@@ -235,6 +259,18 @@ public interface GroupDataWebService {
     @WebMethod
     public int countBeans(final @WebParam(name = "searchBean") GroupSearchBean searchBean,
                           final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+
+    /**
+     * Returns total number of Groups for given groupOwner based on parameters, which are specified in GroupSearchBean object
+     * @param searchBean -  GroupSearchBean object
+     * @param requesterId - the User ID who request this operation.  This param is required if delegation filter is set
+     * @param ownerId - the User ID who is the owner for the searching groups
+     * @return - Integer, total number of groups based on parameters, which are specified in GroupSearchBean object
+     */
+    @WebMethod
+    public int countGroupsForOwner(final @WebParam(name = "searchBean") GroupSearchBean searchBean,
+                                   final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
+                                   final @WebParam(name = "ownerId", targetNamespace = "") String ownerId);
 
     /**
      * Gets a paged List of Groups directly entitled to the User specified by the userId

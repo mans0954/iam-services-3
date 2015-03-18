@@ -27,6 +27,9 @@ public interface RoleDataService {
 	@Deprecated
     public RoleEntity getRoleByName(final String roleName, String requesterId);
     
+
+    public Role getRoleDtoByName(final String roleName, String requesterId);
+
     public RoleEntity getRoleLocalized(final String roleId, final String requestorId, final LanguageEntity language);
     
     public void saveRole(final RoleEntity role, final String requestorId) throws BasicDataServiceException;
@@ -94,6 +97,9 @@ public interface RoleDataService {
 
     @Deprecated
     public List<RoleEntity> getRolesForUser(final String userId, String requesterId, final int from, final int size);
+
+    public List<Role> getRolesDtoForUser(final String userId, String requesterId, final int from, final int size);
+
     
     @Deprecated
     public int getNumOfRolesForUser(final String userId, String requesterId);

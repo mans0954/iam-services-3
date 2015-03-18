@@ -137,11 +137,15 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
         	theme = uiThemeDAO.findById(provider.getUiTheme().getId());
         }
         provider.setUiTheme(theme);
-        
+          
         if(provider.getAuthProvider() != null && StringUtils.isNotBlank(provider.getAuthProvider().getId())) {
         	provider.setAuthProvider(authProviderDAO.findById(provider.getAuthProvider().getId()));
         } else {
         	provider.setAuthProvider(null);
+        }
+        
+        if(StringUtils.isBlank(provider.getLoginURL())) {
+        	provider.setLoginURL("/idp/login.html");
         }
         
         if(CollectionUtils.isNotEmpty(provider.getServerSet())) {
@@ -151,6 +155,10 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
         }
         
         final String cpURL = provider.getResource().getURL();
+        
+        if(StringUtils.isBlank(provider.getPostbackURLParamName())) {
+        	provider.setPostbackURLParamName("postbackURL");
+        }
         
         if(StringUtils.isBlank(provider.getId())) {
             final ResourceTypeEntity resourceType = resourceTypeDAO.findById(resourceTypeId);
@@ -173,12 +181,12 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
             provider.setGroupingXrefs(null);
             contentProviderDao.save(provider);
             if(CollectionUtils.isNotEmpty(incomingXrefs)) {
-            	for(final AuthLevelGroupingContentProviderXrefEntity xref : incomingXrefs) {
+            	incomingXrefs.forEach(xref -> {
             		final AuthLevelGroupingEntity grouping = authLevelGroupingDAO.findById(xref.getId().getGroupingId());
             		xref.setContentProvider(provider);
             		xref.setGrouping(grouping);
             		xref.setId(new AuthLevelGroupingContentProviderXrefIdEntity(grouping.getId(), provider.getId()));
-            	}
+            	});
             }
             provider.setGroupingXrefs(incomingXrefs);
             contentProviderDao.merge(provider);
@@ -192,12 +200,13 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
         		provider.setPatternSet(dbEntity.getPatternSet());
         		
         		if(CollectionUtils.isNotEmpty(provider.getGroupingXrefs())) {
-        			for(AuthLevelGroupingContentProviderXrefEntity xref : provider.getGroupingXrefs()) {
+        			
+        			provider.getGroupingXrefs().forEach(xref -> {
         				xref.setContentProvider(provider);
         				final AuthLevelGroupingEntity grouping = authLevelGroupingDAO.findById(xref.getId().getGroupingId());
         				xref.setGrouping(grouping);
         				xref.setId(new AuthLevelGroupingContentProviderXrefIdEntity(grouping.getId(), provider.getId()));
-        			}
+        			});
         		}
 
         		contentProviderDao.merge(provider);

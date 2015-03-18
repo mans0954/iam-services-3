@@ -5,11 +5,9 @@ import org.openiam.base.ws.SearchMode;
 import org.openiam.base.ws.SearchParam;
 import org.openiam.idm.srvc.user.dto.SearchAttribute;
 import org.openiam.idm.srvc.user.dto.User;
+import org.springframework.beans.factory.annotation.Value;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlSchemaType;
-import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.*;
 import java.io.Serializable;
 import java.util.*;
 

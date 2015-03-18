@@ -10,4 +10,5 @@ public class ESIndexType {
     public static final String PHONE = "phone";
     public static final String LOGIN = "login";
     public static final String IDENTITY = "identity";
+    public static final String LOCATION = "location";
 }

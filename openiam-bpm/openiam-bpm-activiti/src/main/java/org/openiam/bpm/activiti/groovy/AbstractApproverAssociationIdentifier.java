@@ -30,6 +30,9 @@ public abstract class AbstractApproverAssociationIdentifier {
 	
 	@Autowired
 	protected CustomJacksonMapper jacksonMapper;
+
+	@Value("${org.openiam.idm.activiti.merge.custom.approver.with.approver.associations}")
+	protected Boolean mergeCustomApproverIdsWithApproverAssociations;
 	
 	protected static Logger LOG = Logger.getLogger(AbstractApproverAssociationIdentifier.class);
 	

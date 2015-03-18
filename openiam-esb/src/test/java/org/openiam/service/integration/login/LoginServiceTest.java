@@ -2,10 +2,12 @@ package org.openiam.service.integration.login;
 
 import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.LoginSearchBean;
 import org.openiam.idm.srvc.auth.dto.Login;
+import org.openiam.idm.srvc.auth.login.lucene.LoginSearchDAO;
 import org.openiam.idm.srvc.auth.ws.LoginDataWebService;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.ws.UserDataWebService;
@@ -15,6 +17,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 
 public class LoginServiceTest extends AbstractKeyServiceTest<Login, LoginSearchBean> {
 	
@@ -69,4 +72,13 @@ public class LoginServiceTest extends AbstractKeyServiceTest<Login, LoginSearchB
 		return loginServiceClient.findBeans(searchBean, from, size);
 	}
 
+	@Test
+	public void testElasticSearch() {
+		final LoginSearchBean sb = newSearchBean();
+		sb.setUserId("3000");
+		Assert.assertTrue(CollectionUtils.isNotEmpty(find(sb, 0, 1)));
+		
+		sb.setManagedSysId("0");
+		Assert.assertTrue(CollectionUtils.isNotEmpty(find(sb, 0, 1)));
+	}
 }

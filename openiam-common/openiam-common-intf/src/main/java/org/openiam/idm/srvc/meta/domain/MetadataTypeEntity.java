@@ -25,6 +25,7 @@ import java.util.Set;
 
 @Entity
 @Table(name = "METADATA_TYPE")
+@Cacheable
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(MetadataType.class)
 @Internationalized

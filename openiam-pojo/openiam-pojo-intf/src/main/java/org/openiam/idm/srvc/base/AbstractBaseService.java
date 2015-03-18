@@ -19,4 +19,8 @@ public abstract class AbstractBaseService {
 	
 	@Autowired
 	protected PropertyValueSweeper propertyValueSweeper;
+	
+	public String getString(final String key) {
+		return propertyValueSweeper.getString(key);
+	}
 }

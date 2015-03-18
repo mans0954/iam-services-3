@@ -1,5 +1,6 @@
 package org.openiam.authmanager.service;
 
+import org.openiam.authmanager.common.SetStringResponse;
 import org.openiam.authmanager.model.ResourceEntitlementToken;
 import org.openiam.authmanager.model.UserEntitlementsMatrix;
 
@@ -15,5 +16,9 @@ public interface AuthorizationManagerAdminService {
 	public UserEntitlementsMatrix getUserEntitlementsMatrix(final String entityId);
 
     public Set<String> getOwnerIdsForResource(String resourceId);
-    public HashMap<String, HashSet<String>> getOwnerIdsForResourceSet(Set<String> resourceIdSet);
+    public HashMap<String, SetStringResponse> getOwnerIdsForResourceSet(Set<String> resourceIdSet);
+
+	public Set<String> getOwnerIdsForGroup(String groupId);
+
+    public HashMap<String,SetStringResponse> getOwnerIdsForGroupSet(Set<String> groupIdSet);
 }
