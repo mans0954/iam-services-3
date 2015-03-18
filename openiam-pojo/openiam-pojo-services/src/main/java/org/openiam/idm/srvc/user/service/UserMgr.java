@@ -2300,7 +2300,13 @@ public class UserMgr implements UserDataService {
     public List<UserAttributeEntity> getUserAttributeList(String userId, final LanguageEntity language) {
     	return userAttributeDao.findUserAttributes(userId);
     }
-    
+
+    @Transactional(readOnly = true)
+    public List<UserAttribute> getUserAttributesDtoList(String userId) {
+        List<UserAttributeEntity> attributeEntities = userAttributeDao.findUserAttributes(userId);
+        return userAttributeDozerConverter.convertToDTOList(attributeEntities, false);
+    }
+
     @Transactional(readOnly = true)
     public Map<String, UserAttributeEntity> getUserAttributes(String userId) {
         Map<String, UserAttributeEntity> result = null;

@@ -6,6 +6,8 @@ import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openiam.am.srvc.dao.AuthProviderDao;
 import org.openiam.am.srvc.domain.AuthProviderEntity;
 import org.openiam.dozer.converter.ManagedSysDozerConverter;
@@ -13,6 +15,8 @@ import org.openiam.dozer.converter.ManagedSystemObjectMatchDozerConverter;
 import org.openiam.idm.searchbeans.AttributeMapSearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
+import org.openiam.idm.srvc.key.constant.KeyName;
+import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
@@ -30,13 +34,19 @@ import org.openiam.idm.srvc.res.service.ResourceService;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.service.RoleDAO;
+import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ManagedSystemServiceImpl implements ManagedSystemService {
-
+    private static final Log log = LogFactory
+            .getLog(ManagedSystemServiceImpl.class);
     @Autowired
     private ManagedSysDAO managedSysDAO;
 
@@ -82,6 +92,15 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     private ResourceService resourceService;
 
     private static final String resourceTypeId="MANAGED_SYS";
+
+    @Autowired
+    @Qualifier("cryptor")
+    private Cryptor cryptor;
+
+    @Autowired
+    private KeyManagementService keyManagementService;
+    @Value("${org.openiam.idm.system.user.id}")
+    private String systemUserId;
 
     @Override
     @Transactional(readOnly = true)
@@ -159,6 +178,7 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     }
     
     @Override
+    @CacheEvict(value = "decryptManagedSysPassword", allEntries=true)
     @Transactional
     public void addManagedSys(ManagedSysDto sys) {
         final ManagedSysEntity entity = managedSysDozerConverter.convertToEntity(sys, true);
@@ -182,6 +202,7 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     }
 
     @Override
+    @CacheEvict(value = "decryptManagedSysPassword", allEntries=true)
     @Transactional
     public void updateManagedSys(ManagedSysDto sys) {
         final ManagedSysEntity entity = managedSysDozerConverter.convertToEntity(sys, true);
@@ -400,6 +421,20 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     @Transactional(readOnly = true)
     public List<AuthProviderEntity> findAuthProvidersByManagedSysId(String managedSysId) {
         return authProviderDao.getByManagedSysId(managedSysId);
+    }
+
+
+    @Cacheable(value="decryptManagedSysPassword", key="{ #managedSys.id}")
+    public String getDecryptedPassword(ManagedSysDto managedSys) {
+        String result = null;
+        if (managedSys.getPswd() != null) {
+            try {
+                result = cryptor.decrypt(keyManagementService.getUserKey(systemUserId, KeyName.password.name()), managedSys.getPswd());
+            } catch (Exception e) {
+                log.error(e);
+            }
+        }
+        return result;
     }
 
 	@Override

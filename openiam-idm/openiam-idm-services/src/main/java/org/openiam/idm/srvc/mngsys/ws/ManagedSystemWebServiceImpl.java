@@ -52,6 +52,8 @@ import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -265,6 +267,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
      * @return
      */
     @Override
+    @Cacheable(value="managedSysObjectParam", key="{ #managedSystemId, #objectType}")
     public ManagedSystemObjectMatch[] managedSysObjectParam(
             String managedSystemId, String objectType) {
         if (managedSystemId == null) {
@@ -470,6 +473,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
      * (org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch)
      */
     @Override
+    @CacheEvict(value = "managedSysObjectParam", allEntries=true)
     public Response saveManagedSystemObjectMatch(ManagedSystemObjectMatch obj) {
     	final Response response = new Response(ResponseStatus.SUCCESS);
         try {
@@ -493,12 +497,14 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     }
 
     @Override
+    @CacheEvict(value = "managedSysObjectParam", allEntries=true)
     public void removeManagedSystemObjectMatch(ManagedSystemObjectMatch obj) {
         this.managedSystemService.deleteManagedSystemObjectMatch(obj.getObjectSearchId());
     }
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value="resourceAttributeMaps", key="{ #attributeMapId}")
     public AttributeMap getAttributeMap(String attributeMapId) {
         if (attributeMapId == null) {
             throw new IllegalArgumentException("attributeMapId is null");
@@ -510,6 +516,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     }
 
     @Override
+    @CacheEvict(value = "resourceAttributeMaps", allEntries=true)
     public AttributeMap addAttributeMap(AttributeMap attributeMap) {
         if (attributeMap == null) {
             throw new IllegalArgumentException("AttributeMap object is null");
@@ -521,11 +528,13 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     }
 
     @Override
+    @CacheEvict(value = "resourceAttributeMaps", allEntries=true)
     public void deleteAttributesMapList(List<String> ids) throws Exception {
         managedSystemService.deleteAttributesMapList(ids);
     }
 
     @Override
+    @CacheEvict(value = "resourceAttributeMaps", allEntries=true)
     public List<AttributeMap> saveAttributesMap(List<AttributeMap> attrMap,
             String mSysId, String resId, String synchConfigId) throws Exception {
         if (CollectionUtils.isEmpty(attrMap)
@@ -542,6 +551,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     }
 
     @Override
+    @CacheEvict(value = "resourceAttributeMaps", allEntries=true)
     public AttributeMap updateAttributeMap(AttributeMap attributeMap) {
         if (attributeMap == null) {
             throw new IllegalArgumentException("attributeMap object is null");
@@ -552,6 +562,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     }
 
     @Override
+    @CacheEvict(value = "resourceAttributeMaps", allEntries=true)
     public void removeAttributeMap(String attributeMapId) {
         if (attributeMapId == null) {
             throw new IllegalArgumentException("attributeMapId is null");
@@ -560,6 +571,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     }
 
     @Override
+    @CacheEvict(value = "resourceAttributeMaps", allEntries=true)
     public void removeResourceAttributeMaps(String resourceId) {
         if (resourceId == null) {
             throw new IllegalArgumentException("resourceId is null");
@@ -570,6 +582,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
 
     @Override
 	@Transactional(readOnly = true)
+    @Cacheable(value="resourceAttributeMaps", key="{ #resourceId}")
     public List<AttributeMap> getResourceAttributeMaps(final String resourceId) {
         if (resourceId == null) {
             throw new IllegalArgumentException("resourceId is null");
@@ -587,6 +600,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     }
 
     @Override
+    @Cacheable(value="resourceAttributeMaps", key="{ #searchBean.cacheUniqueBeanKey}")
     public List<AttributeMap> findResourceAttributeMaps(
             AttributeMapSearchBean searchBean) {
         if (searchBean == null) {
