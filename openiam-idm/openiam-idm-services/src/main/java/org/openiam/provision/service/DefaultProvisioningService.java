@@ -924,6 +924,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         bindingMap.put(USER, pUser);
         bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, null);
         bindingMap.put(TARGET_SYSTEM_IDENTITY, null);
+        bindingMap.put(USER_ATTRIBUTES, userMgr.getUserAttributesDto(pUser.getId()));
+
         if (!isAdd) {
             ProvisionUser u = new ProvisionUser(userDozerConverter.convertToDTO(userEntity, true));
             provisionSelectedResourceHelper.setCurrentSuperiors(u);
@@ -1715,16 +1717,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             if (matchObj != null && StringUtils.isNotEmpty(matchObj.getSearchBaseDn())) {
                 reqType.setBaseDN(matchObj.getSearchBaseDn());
             }
-            String passwordDecoded;
-            try {
-                passwordDecoded = getDecryptedPassword(mSys);
-            } catch (ConnectorDataException e) {
-                idmAuditLog.fail();
-                idmAuditLog.setFailureReason(ResponseCode.FAIL_ENCRYPTION);
-                response.setStatus(ResponseStatus.FAILURE);
-                response.setErrorCode(ResponseCode.FAIL_ENCRYPTION);
-                return response;
-            }
+            String passwordDecoded = managedSysDataService.getDecryptedPassword(mSys);
             reqType.setHostLoginPassword(passwordDecoded);
             reqType.setHostUrl(mSys.getHostUrl());
             reqType.setScriptHandler(mSys.getLookupHandler());
@@ -2988,6 +2981,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         bindingMap.put("org", user.getPrimaryOrganization());
         bindingMap.put("operation", operation);
         bindingMap.put(USER, user);
+        bindingMap.put(USER_ATTRIBUTES, userMgr.getUserAttributesDto(user.getId()));
         bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, null);
         bindingMap.put(TARGET_SYSTEM_IDENTITY, null);
         int callPreProcessor = callPreProcessor("DISABLE", user, bindingMap, null);

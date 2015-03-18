@@ -30,20 +30,18 @@
         <property name="connectionFactory" ref="connectionFactory" />
         <property name="destination" ref="mailQueue" />
         <property name="messageListener" ref="mailDispatcher" />
-        <!--<property name="concurrency" value="3" />-->
-        <!--<property name="maxConcurrentConsumers" value="5" />-->
+       <!-- <property name="concurrency" value="3" /> -->
+       <!-- <property name="maxConcurrentConsumers" value="5" /> -->
         <property name="taskExecutor" ref="jmsReceiverThreadPoolTaskExecutor" />
         <property name="transactionManager" ref="jtaTransactionManager" />
         <property name="errorHandler" ref="mailErrorHandler"/>
     </bean>
-
 
 	<jee:jndi-lookup id="logQueue" jndi-name="${jms.queue.log}" expected-type="javax.jms.Queue" />
 
     <jee:jndi-lookup id="provQueue" jndi-name="${jms.queue.prov}" expected-type="javax.jms.Queue" />
 
     <jee:jndi-lookup id="subsQueue" jndi-name="${jms.queue.subs}" expected-type="javax.jms.Queue" />
-
 
     <jee:jndi-lookup id="metaElementQueue" jndi-name="${jms.queue.metaelem}" expected-type="javax.jms.Queue" />
 

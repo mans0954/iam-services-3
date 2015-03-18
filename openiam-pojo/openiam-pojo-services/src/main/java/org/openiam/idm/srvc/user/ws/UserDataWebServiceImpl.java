@@ -1089,9 +1089,8 @@ public class UserDataWebServiceImpl implements UserDataWebService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<UserAttribute> getUserAttributes(final String userId) {
-        return getUserAttributesInternationalized(userId, null);
+        return userManager.getUserAttributesDtoList(userId);
     }
     
 	@Override

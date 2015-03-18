@@ -145,7 +145,6 @@ public interface UserDataWebService {
      * @return a List of UserAttributes associated with this user
      */
     @WebMethod
-    @Deprecated
     public List<UserAttribute> getUserAttributes(@WebParam(name = "userId", targetNamespace = "") String userId);
     
     @WebMethod

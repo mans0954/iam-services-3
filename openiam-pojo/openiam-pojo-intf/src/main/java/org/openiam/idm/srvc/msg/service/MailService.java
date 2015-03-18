@@ -5,6 +5,7 @@ import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
+import java.util.Date;
 
 /**
  * Provides methods to be able to send emails and send direct message to authorized users.
@@ -48,7 +49,7 @@ public interface MailService {
      * @param cc
      * @param subject
      * @param msg
-     * @param attachement
+     * @param attachment
      * @param isHtmlFormat 
      */
     public void sendEmail(String from, String to, String cc, String subject,
@@ -67,7 +68,22 @@ public interface MailService {
      * @param attachmentPath
      */
     public void sendEmails(String from, String[] to, String[] cc, String[] bcc, String subject, String msg, boolean isHtmlFormat, String[] attachmentPath);
-    
+
+    /**
+     * sending a email from one user to multiple user,cc and bcc having multiple attachement at a time.
+     *
+     * @param from
+     * @param to
+     * @param cc
+     * @param bcc
+     * @param subject
+     * @param msg
+     * @param isHtmlFormat
+     * @param attachmentPath
+     * @param executionDateTime - execution time
+     */
+    public void sendEmailsByDateTime(String from, String[] to, String[] cc, String[] bcc, String subject, String msg, boolean isHtmlFormat, String[] attachmentPath, Date executionDateTime);
+
     /**
      *  sending out direct private message to authorized user on twitter.
      * @param userid

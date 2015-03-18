@@ -154,6 +154,9 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     protected LoginDataService loginManager;
     @Autowired
     protected ManagedSystemWebService managedSysService;
+
+    @Autowired
+    protected ManagedSystemService managedSysDataService;
     @Autowired
     protected RoleDataService roleDataService;
     @Autowired
@@ -247,32 +250,6 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         if (pUser.getCreatedBy() == null || pUser.getCreatedBy().isEmpty()) {
             pUser.setCreatedBy("NA");
         }
-    }
-
-    protected String getDecryptedPassword(ManagedSysDto managedSys) throws ConnectorDataException {
-        String result = null;
-        if (managedSys.getPswd() != null) {
-            try {
-                result = cryptor.decrypt(keyManagementService.getUserKey(systemUserId, KeyName.password.name()), managedSys.getPswd());
-            } catch (Exception e) {
-                log.error(e);
-                throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, e.getMessage());
-            }
-        }
-        return result;
-    }
-
-    protected String getDecryptedPassword(final String userId, final String encodedPassword) {
-        String result = null;
-        if (StringUtils.isNotEmpty(encodedPassword)) {
-            try {
-                result = cryptor.decrypt(keyManagementService.getUserKey(userId, KeyName.password.name()), encodedPassword);
-            } catch (Exception e) {
-                log.error(e);
-                e.printStackTrace();
-            }
-        }
-        return result;
     }
 
     protected void sendResetPasswordToUser(LoginEntity identity, String password) {
@@ -1557,12 +1534,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         userReq.setRequestID(requestId);
         userReq.setTargetID(managedSysId);
         userReq.setHostLoginId(mSys.getUserId());
-        String passwordDecoded = mSys.getPswd();
-        try {
-            passwordDecoded = getDecryptedPassword(mSys);
-        } catch (ConnectorDataException e) {
-            e.printStackTrace();
-        }
+        String passwordDecoded = managedSysDataService.getDecryptedPassword(mSys);
+
         userReq.setHostLoginPassword(passwordDecoded);
         userReq.setHostUrl(mSys.getHostUrl());
         if (mSys.getPort() != null) {
@@ -1624,12 +1597,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         request.setTargetID(mLg.getManagedSysId());
         request.setHostLoginId(mSys.getUserId());
         request.setExtensibleObject(new ExtensibleUser());
-        String passwordDecoded = mSys.getPswd();
-        try {
-            passwordDecoded = getDecryptedPassword(mSys);
-        } catch (ConnectorDataException e) {
-            e.printStackTrace();
-        }
+        String passwordDecoded = managedSysDataService.getDecryptedPassword(mSys);
+
         request.setHostLoginPassword(passwordDecoded);
         request.setHostUrl(mSys.getHostUrl());
         if (matchObj != null) {
@@ -1654,12 +1623,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         req.setTargetID(login.getManagedSysId());
         req.setHostLoginId(mSys.getUserId());
         req.setExtensibleObject(extensibleUser);
-        String passwordDecoded = mSys.getPswd();
-        try {
-            passwordDecoded = getDecryptedPassword(mSys);
-        } catch (ConnectorDataException e) {
-            e.printStackTrace();
-        }
+        String passwordDecoded = managedSysDataService.getDecryptedPassword(mSys);
+
         req.setHostLoginPassword(passwordDecoded);
         req.setHostUrl(mSys.getHostUrl());
         if (matchObj != null) {
@@ -1687,12 +1652,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         req.setTargetID(login.getManagedSysId());
         req.setHostLoginId(mSys.getUserId());
         req.setExtensibleObject(extensibleUser);
-        String passwordDecoded = mSys.getPswd();
-        try {
-            passwordDecoded = getDecryptedPassword(mSys);
-        } catch (ConnectorDataException e) {
-            e.printStackTrace();
-        }
+        String passwordDecoded = managedSysDataService.getDecryptedPassword(mSys);
+
         req.setHostLoginPassword(passwordDecoded);
         req.setHostUrl(mSys.getHostUrl());
         req.setBaseDN((matchObj != null) ? matchObj.getBaseDn() : null);
@@ -1753,12 +1714,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         resumeReq.setHostLoginId(mSys.getUserId());
         resumeReq.setExtensibleObject(extensibleUser);
 
-        String passwordDecoded = mSys.getPswd();
-        try {
-            passwordDecoded = getDecryptedPassword(mSys);
-        } catch (ConnectorDataException e) {
-            e.printStackTrace();
-        }
+        String passwordDecoded = managedSysDataService.getDecryptedPassword(mSys);
+
         resumeReq.setHostLoginPassword(passwordDecoded);
         resumeReq.setHostUrl(mSys.getHostUrl());
 
