@@ -13,7 +13,7 @@ import java.util.Map;
  * Add User:
  * The following objects are passed to addUser: ProvisionUser and BindingMap. The binding map contains the following keys:
  * matchParam
- * operation : ADD, UPDATE, DELTE
+ * operation : ADD, UPDATE, DELETE
  * sysId : Managed SystemID
  * targetSystemAttributes : Attributes that will be sent to the target system
  * targetSystemIdentity : TargetSystemIdentity
@@ -45,6 +45,10 @@ public interface ProvisionServicePreProcessor <T> {
     int modify(T object, Map<String, Object> bindingMap);
     int delete(T object, Map<String, Object> bindingMap);
     int setPassword(PasswordSync passwordSync,Map<String, Object> bindingMap);
+    int resetPassword(PasswordSync passwordSync,Map<String, Object> bindingMap);
+    int disable(T object, Map<String, Object> bindingMap);
+
+
     void setMuleContext(MuleContext ctx);
     void setApplicationContext(ApplicationContext ctx);
 }

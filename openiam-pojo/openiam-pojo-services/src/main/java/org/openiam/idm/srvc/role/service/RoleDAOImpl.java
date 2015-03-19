@@ -171,6 +171,20 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
         }
     }
 
+    @Override
+    public List<RoleEntity> getByExample(RoleEntity t, int startAt, int size) {
+        final Criteria criteria = getExampleCriteria(t);
+        if (startAt > -1) {
+            criteria.setFirstResult(startAt);
+        }
+
+        if (size > -1) {
+            criteria.setMaxResults(size);
+        }
+
+        return (List<RoleEntity>) criteria.list();
+    }
+
 	@Override
 	public List<RoleEntity> getRolesForGroup(final String groupId, final Set<String> filter, final int from, final int size) {
 		final Criteria criteria = getEntitlementRolesCriteria(null, groupId, null, filter);

@@ -76,7 +76,7 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 
 	@Override
 	@LocalizedServiceGet
-	@Transactional
+	@Transactional(readOnly=true)
 	public List<MetadataElementEntity> findBeans(final MetadataElementSearchBean searchBean, final int from, final int size, final LanguageEntity language) {
 		List<MetadataElementEntity> retVal = null;
 		if(searchBean.hasMultipleKeys()) {
@@ -88,6 +88,7 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 	}
 	
 	@Override
+	@Transactional(readOnly=true)
 	public List<MetadataTypeEntity> findBeans(final MetadataTypeSearchBean searchBean, final int from, final int size) {
 		List<MetadataTypeEntity> retVal = null;
 		if(searchBean.hasMultipleKeys()) {
@@ -99,7 +100,13 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 		return retVal;
 	}
 
-	@Override
+    @Override
+    @Transactional(readOnly=true)
+    public MetadataTypeEntity findById(String id) {
+        return metadataTypeDao.findById(id);
+    }
+
+    @Override
 	@Transactional
 	public void save(MetadataElementEntity entity) {
 		if(entity != null) {
@@ -221,6 +228,8 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 					entity.setElementAttributes(dbEntity.getElementAttributes());
 				}
 			}
+			log.debug("METADATA_TYPE SAVE : " + entity.toString());
+
 			if(StringUtils.isBlank(entity.getId())) {
 				metadataTypeDao.save(entity);
 			} else {
@@ -262,11 +271,13 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public int count(final MetadataElementSearchBean searchBean) {
 		return metadataElementDao.count(searchBean);
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public int count(final MetadataTypeSearchBean searchBean) {
 		int retVal = 0;
 		if(searchBean.hasMultipleKeys()) {
@@ -289,6 +300,7 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public List<MetadataElementEntity> findElementByName(String name) {
 		final MetadataElementSearchBean searchBean = new MetadataElementSearchBean();
 		searchBean.setAttributeName(name);

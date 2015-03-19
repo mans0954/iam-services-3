@@ -236,13 +236,11 @@
             <a>adminResource.coorelatedName</a>
             <b>adminResourceCoorelatedName</b>
         </field>
-        <field>
-            <a>company.id</a>
-            <b>companyId</b>
-        </field>
-        <field>
-            <a>company.name</a>
-            <b>companyName</b>
+        <field
+                custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
+                custom-converter-param="dto2entityShallowDozerMapper">
+            <a>organizationSet</a>
+            <b>organizations</b>
         </field>
         <field
                 custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
@@ -290,6 +288,44 @@
             <a>users</a>
             <b>users</b>
         </field-exclude>
+
+        <field>
+            <a>classification.id</a>
+            <b>classificationId</b>
+        </field>
+        <field>
+            <a>classification.displayName</a>
+            <b>classificationName</b>
+        </field>
+
+        <field>
+            <a>adGroupType.id</a>
+            <b>adGroupTypeId</b>
+        </field>
+        <field>
+            <a>adGroupType.displayName</a>
+            <b>adGroupTypeName</b>
+        </field>
+
+        <field>
+            <a>adGroupScope.id</a>
+            <b>adGroupScopeId</b>
+        </field>
+        <field>
+            <a>adGroupScope.displayName</a>
+            <b>adGroupScopeName</b>
+        </field>
+
+        <field>
+            <a>risk.id</a>
+            <b>riskId</b>
+        </field>
+        <field>
+            <a>risk.displayName</a>
+            <b>riskName</b>
+        </field>
+
+
     </mapping>
 
     <mapping>

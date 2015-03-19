@@ -27,25 +27,33 @@ import org.openiam.base.SysConfiguration;
 import org.openiam.exception.AuthenticationException;
 import org.openiam.exception.EncryptionException;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
+import org.openiam.idm.srvc.auth.dto.Login;
+import org.openiam.idm.srvc.auth.dto.SSOToken;
 import org.openiam.idm.srvc.auth.dto.Subject;
-import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
+import org.openiam.idm.srvc.auth.sso.SSOTokenFactory;
 import org.openiam.idm.srvc.auth.sso.SSOTokenModule;
+import org.openiam.idm.srvc.auth.ws.LoginDataWebService;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.policy.dto.Policy;
+import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.policy.service.PolicyDataService;
 import org.openiam.idm.srvc.pswd.service.PasswordService;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDataService;
+import org.openiam.idm.srvc.user.ws.UserDataWebService;
 import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 
+import java.util.Calendar;
 import java.util.Date;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author suneet
@@ -57,9 +65,15 @@ public abstract class AbstractLoginModule implements LoginModule {
     protected SSOTokenModule defaultToken;
 
     @Autowired
-    protected LoginDataService loginManager;
+    @Qualifier("loginWS")
+    protected LoginDataWebService loginManager;
 
     @Autowired
+    @Qualifier("userWS")
+    protected UserDataWebService userDataWebService;
+
+    @Autowired
+    @Qualifier("userManager")
     protected UserDataService userManager;
 
     @Autowired
@@ -78,12 +92,11 @@ public abstract class AbstractLoginModule implements LoginModule {
     @Autowired
     protected SysConfiguration sysConfiguration;
 
-    protected UserEntity user;
-    protected LoginEntity lg;
-    protected String authPolicyId;
-
     @Value("${KEYSTORE}")
     protected String keystore;
+
+    @Value("${org.openiam.idm.system.user.id}")
+    protected String systemUserId;
 
     @Autowired
     protected KeyManagementService keyManagementService;
@@ -141,7 +154,7 @@ public abstract class AbstractLoginModule implements LoginModule {
 
     }
 
-    public void setResultCode(LoginEntity lg, Subject sub, Date curDate, Policy pwdPolicy) throws AuthenticationException {
+    public void setResultCode(Login lg, Subject sub, Date curDate, Policy pwdPolicy) throws AuthenticationException {
         if (lg.getFirstTimeLogin() == 1) {
             sub.setResultCode(AuthenticationConstants.RESULT_SUCCESS_FIRST_TIME);
         } else if (lg.getPwdExp() != null) {
@@ -167,7 +180,7 @@ public abstract class AbstractLoginModule implements LoginModule {
 
     }
 
-    public Integer setDaysToPassworExpiration(LoginEntity lg, Date curDate, Subject sub, Policy pwdPolicy) {
+    public Integer setDaysToPassworExpiration(Login lg, Date curDate, Subject sub, Policy pwdPolicy) {
         if (pwdPolicy != null && StringUtils.isBlank(pwdPolicy.getAttribute("PWD_EXPIRATION").getValue1())) {
             return null;
         }
@@ -217,19 +230,116 @@ public abstract class AbstractLoginModule implements LoginModule {
         */
     }
 
-    public void setUser(UserEntity user) {
-        this.user = user;
-    }
-
-    public void setLg(LoginEntity lg) {
-        this.lg = lg;
-    }
-
-    public void setAuthPolicyId(String authPolicyId) {
-        this.authPolicyId = authPolicyId;
-    }
-
     public void setSysConfiguration(SysConfiguration sysConfiguration) {
         this.sysConfiguration = sysConfiguration;
     }
+
+
+    protected SSOToken token(String userId, Map tokenParam) throws Exception {
+
+        log.debug("Generating Security Token");
+
+        tokenParam.put("USER_ID", userId);
+
+        SSOTokenModule tkModule = SSOTokenFactory
+                .createModule((String) tokenParam.get("TOKEN_TYPE"));
+        tkModule.setCryptor(cryptor);
+        tkModule.setKeyManagementService(keyManagementService);
+        tkModule.setTokenLife(Integer.parseInt((String) tokenParam
+                .get("TOKEN_LIFE")));
+
+        return tkModule.createToken(tokenParam);
+    }
+
+    protected String getPolicyAttribute(Set<PolicyAttribute> attr, String name) {
+        assert name != null : "Name parameter is null";
+
+        for (PolicyAttribute policyAtr : attr) {
+            if (policyAtr.getName().equalsIgnoreCase(name)) {
+                return policyAtr.getValue1();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * If the password has expired, but its before the grace period then its a good login
+     * If the password has expired and after the grace period, then its an exception.
+     * You should also set the days to expiration
+     *
+     * @param lg
+     * @return
+     */
+    protected int passwordExpired(Login lg, Date curDate) {
+        log.debug("passwordExpired Called.");
+        log.debug("- Password Exp =" + lg.getPwdExp());
+        log.debug("- Password Grace Period =" + lg.getGracePeriod());
+
+        if (lg.getGracePeriod() == null) {
+            // set an early date
+            Date gracePeriodDate = getGracePeriodDate(lg, curDate);
+            log.debug("Calculated the gracePeriod Date to be: "
+                    + gracePeriodDate);
+
+            if (gracePeriodDate == null) {
+                lg.setGracePeriod(new Date(0));
+            } else {
+                lg.setGracePeriod(gracePeriodDate);
+            }
+        }
+        if (lg.getPwdExp() != null) {
+            if (curDate.after(lg.getPwdExp())
+                    && curDate.after(lg.getGracePeriod())) {
+                // check for password expiration, but successful login
+                return AuthenticationConstants.RESULT_PASSWORD_EXPIRED;
+            }
+            if ((curDate.after(lg.getPwdExp()) && curDate.before(lg
+                    .getGracePeriod()))) {
+                // check for password expiration, but successful login
+                return AuthenticationConstants.RESULT_SUCCESS_PASSWORD_EXP;
+            }
+        }
+        return AuthenticationConstants.RESULT_SUCCESS_PASSWORD_EXP;
+    }
+
+    private Date getGracePeriodDate(Login lg, Date curDate) {
+
+        Date pwdExpDate = lg.getPwdExp();
+
+        if (pwdExpDate == null) {
+            return null;
+        }
+
+        Policy plcy = passwordManager.getPasswordPolicy(lg.getLogin(), lg.getManagedSysId());
+        if (plcy == null) {
+            return null;
+        }
+
+        /*
+        String pswdExpValue = getPolicyAttribute(plcy.getPolicyAttributes(),
+                "PWD_EXPIRATION");
+        String changePswdOnReset = getPolicyAttribute(
+                plcy.getPolicyAttributes(), "CHNG_PSWD_ON_RESET");
+		*/
+        String gracePeriod = getPolicyAttribute(plcy.getPolicyAttributes(),
+                "PWD_EXP_GRACE");
+
+        log.debug("Grace period policy value= " + gracePeriod);
+
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(pwdExpDate);
+
+        log.debug("Password Expiration date =" + pwdExpDate);
+
+        if (gracePeriod != null && !gracePeriod.isEmpty()) {
+            cal.add(Calendar.DATE, Integer.parseInt(gracePeriod));
+            log.debug("Calculated grace period date=" + cal.getTime());
+            return cal.getTime();
+        }
+        return null;
+
+    }
+
+
+
 }

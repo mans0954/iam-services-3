@@ -31,15 +31,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-public abstract class AbstractLdapCommand<Request extends RequestType, Response extends ResponseType>  extends AbstractCommand<Request, Response> {
+public abstract class AbstractLdapCommand<Request extends RequestType, Response extends ResponseType> extends AbstractCommand<Request, Response> {
 
     public static final int PAGE_SIZE = 100;
 
     @Autowired
     private ResourceDataService resourceDataService;
-
+    protected String patternForCTRLCHAR = "[\u0000-\u001F]";
     public static final String DN_IDENTITY_MATCH_REGEXP = "{0}=(.*?)(?:,.*)*$";
-	public static final String OU_ATTRIBUTE = "ou";
+    public static final String OU_ATTRIBUTE = "ou";
 
     public LdapContext connect(ManagedSysEntity managedSys) throws ConnectorDataException {
         ConnectionMgr conMgr = ConnectionFactory.create(ConnectionManagerConstant.LDAP_CONNECTION);
@@ -52,28 +52,29 @@ public abstract class AbstractLdapCommand<Request extends RequestType, Response 
             log.debug("Ldapcontext = " + ldapctx);
 
             if (ldapctx == null) {
-                throw  new ConnectorDataException(ErrorCode.DIRECTORY_ERROR, "Unable to connect to directory.");
+                throw new ConnectorDataException(ErrorCode.DIRECTORY_ERROR, "Unable to connect to directory.");
             }
         } catch (NamingException e) {
             log.error(e.getMessage(), e);
-            throw  new ConnectorDataException(ErrorCode.DIRECTORY_ERROR, e.getMessage());
+            throw new ConnectorDataException(ErrorCode.DIRECTORY_ERROR, e.getMessage());
         }
         return ldapctx;
     }
 
-    public Set<ResourceProp> getResourceAttributes (String resId ) {
+    public Set<ResourceProp> getResourceAttributes(String resId) {
         Resource r = resourceDataService.getResource(resId, null);
         if (r != null) {
             return r.getResourceProps();
         }
         return null;
     }
+
     public ResourceProp getResourceAttr(Set<ResourceProp> resSet, String name) {
         if (resSet == null) {
             return null;
         }
-        for (ResourceProp rp : resSet ) {
-            if ( rp.getName().equalsIgnoreCase(name))  {
+        for (ResourceProp rp : resSet) {
+            if (rp.getName().equalsIgnoreCase(name)) {
                 return rp;
             }
         }
@@ -82,30 +83,30 @@ public abstract class AbstractLdapCommand<Request extends RequestType, Response 
 
     public boolean getResourceBoolean(Set<ResourceProp> rpSet, String property, boolean defaultValue) {
         ResourceProp prop = getResourceAttr(rpSet, property);
-		if (prop == null || prop.getValue() == null) {
-			return defaultValue;
-		} else {
-			return "Y".equalsIgnoreCase(prop.getValue());
-		}
-	}
+        if (prop == null || prop.getValue() == null) {
+            return defaultValue;
+        } else {
+            return "Y".equalsIgnoreCase(prop.getValue());
+        }
+    }
 
-	public String getResourceString(Set<ResourceProp> rpSet, String property, String defaultValue) {
-		ResourceProp prop = getResourceAttr(rpSet, property);
-		return (prop == null || prop.getValue() == null) ? defaultValue : prop.getValue();
-	}
+    public String getResourceString(Set<ResourceProp> rpSet, String property, String defaultValue) {
+        ResourceProp prop = getResourceAttr(rpSet, property);
+        return (prop == null || prop.getValue() == null) ? defaultValue : prop.getValue();
+    }
 
-	protected String buildIdentityDn(String keyFieldValue, String ou, ManagedSystemObjectMatch matchObj) {
-		StringBuilder builderIdentityDn = new StringBuilder();
-		builderIdentityDn.append(matchObj.getKeyField());
-		builderIdentityDn.append('=').append(keyFieldValue).append(',');
-		if(StringUtils.isNotBlank(ou)) {
-			builderIdentityDn.append(ou).append(',');
-		}
-		builderIdentityDn.append(matchObj.getBaseDn());
-		return builderIdentityDn.toString();
-	}
+    protected String buildIdentityDn(String keyFieldValue, String ou, ManagedSystemObjectMatch matchObj) {
+        StringBuilder builderIdentityDn = new StringBuilder();
+        builderIdentityDn.append(matchObj.getKeyField());
+        builderIdentityDn.append('=').append(keyFieldValue).append(',');
+        if (StringUtils.isNotBlank(ou)) {
+            builderIdentityDn.append(ou).append(',');
+        }
+        builderIdentityDn.append(matchObj.getBaseDn());
+        return builderIdentityDn.toString();
+    }
 
-	protected boolean identityExists(String ldapName, LdapContext ctx) {
+    protected boolean identityExists(String ldapName, LdapContext ctx) {
 
         try {
             LdapContext lCtx = (LdapContext) ctx.lookup(ldapName);
@@ -146,25 +147,25 @@ public abstract class AbstractLdapCommand<Request extends RequestType, Response 
             if (ldapctx != null) {
                 ldapctx.close();
             }
-            ldapctx=null;
+            ldapctx = null;
         } catch (NamingException n) {
             log.error(n);
         }
     }
 
-    protected void buildMembershipList(ExtensibleAttribute att, List<BaseAttribute>targetMembershipList) {
+    protected void buildMembershipList(ExtensibleAttribute att, List<BaseAttribute> targetMembershipList) {
         if (att == null)
             return;
         if (att.getAttributeContainer() != null) {
-            targetMembershipList.addAll( att.getAttributeContainer().getAttributeList() );
+            targetMembershipList.addAll(att.getAttributeContainer().getAttributeList());
         }
     }
 
-    protected void buildSupervisorMembershipList(ExtensibleAttribute att, List<BaseAttribute>supervisorMembershipList) {
+    protected void buildSupervisorMembershipList(ExtensibleAttribute att, List<BaseAttribute> supervisorMembershipList) {
         if (att == null)
             return;
         if (att.getAttributeContainer() != null) {
-            supervisorMembershipList.addAll( att.getAttributeContainer().getAttributeList() );
+            supervisorMembershipList.addAll(att.getAttributeContainer().getAttributeList());
         }
     }
 
@@ -179,8 +180,8 @@ public abstract class AbstractLdapCommand<Request extends RequestType, Response 
     }
 
     protected BasicAttributes getBasicAttributes(ExtensibleObject obj, String idField,
-                    List<BaseAttribute> targetMembershipList, boolean groupMembershipEnabled,
-                    List<BaseAttribute> supervisorMembershipList, boolean supervisorMembershipEnabled) {
+                                                 List<BaseAttribute> targetMembershipList, boolean groupMembershipEnabled,
+                                                 List<BaseAttribute> supervisorMembershipList, boolean supervisorMembershipEnabled) {
 
         BasicAttributes attrs = new BasicAttributes();
 
@@ -264,7 +265,7 @@ public abstract class AbstractLdapCommand<Request extends RequestType, Response 
     }
 
     public NamingEnumeration lookupSearch(ManagedSysEntity managedSys, ManagedSystemObjectMatch matchObj, LdapContext ctx,
-                                           String searchValue, String[] attrAry, String objectBaseDN) throws NamingException {
+                                          String searchValue, String[] attrAry, String objectBaseDN) throws NamingException {
 
         // !! TimeOut Error with  Oracle LDAP: String attrIds[] = {"1.1", "+", "*", "accountUnlockTime", "aci", "aclRights", "aclRightsInfo", "altServer", "attributeTypes", "changeHasReplFixupOp", "changeIsReplFixupOp", "copiedFrom", "copyingFrom", "createTimestamp", "creatorsName", "deletedEntryAttrs", "dITContentRules", "dITStructureRules", "dncomp", "ds-pluginDigest", "ds-pluginSignature", "ds6ruv", "dsKeyedPassword", "entrydn", "entryid", "hasSubordinates", "idmpasswd", "isMemberOf", "ldapSchemas", "ldapSyntaxes", "matchingRules", "matchingRuleUse", "modDNEnabledSuffixes", "modifiersName", "modifyTimestamp", "nameForms", "namingContexts", "nsAccountLock", "nsBackendSuffix", "nscpEntryDN", "nsds5ReplConflict", "nsIdleTimeout", "nsLookThroughLimit", "nsRole", "nsRoleDN", "nsSchemaCSN", "nsSizeLimit", "nsTimeLimit", "nsUniqueId", "numSubordinates", "objectClasses", "parentid", "passwordAllowChangeTime", "passwordExpirationTime", "passwordExpWarned", "passwordHistory", "passwordPolicySubentry", "passwordRetryCount", "pwdAccountLockedTime", "pwdChangedTime", "pwdFailureTime", "pwdGraceUseTime", "pwdHistory", "pwdLastAuthTime", "pwdPolicySubentry", "pwdReset", "replicaIdentifier", "replicationCSN", "retryCountResetTime", "subschemaSubentry", "supportedControl", "supportedExtension", "supportedLDAPVersion", "supportedSASLMechanisms", "supportedSSLCiphers", "targetUniqueId", "vendorName", "vendorVersion"};
         String attrIds[] = ArrayUtils.isEmpty(attrAry) ? new String[0] : attrAry;

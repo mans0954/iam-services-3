@@ -17,7 +17,7 @@
  */
 
 /**
- * 
+ *
  */
 package org.openiam.provision.dto;
 
@@ -32,72 +32,83 @@ import java.util.List;
 
 /**
  * Password object used for synchronization
- * @author suneet
  *
+ * @author suneet
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "PasswordSync", propOrder = {
-    "managedSystemId",
-    "principal",
-    "userId",
-    "password",
-    "requestorId",
-    "sendPasswordToUser",
-    "passThruAttributes",
-    "attributeList",
-    "preventChangeCountIncrement"
+        "managedSystemId",
+        "principal",
+        "userId",
+        "password",
+        "requestorId",
+        "sendPasswordToUser",
+        "passThruAttributes",
+        "attributeList",
+        "preventChangeCountIncrement",
+        "userActivateFlag"
 })
-public class PasswordSync extends BaseObject  {
+public class PasswordSync extends BaseObject {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 2746720616086920826L;
+    /**
+     *
+     */
+    private static final long serialVersionUID = 2746720616086920826L;
 
-	private String managedSystemId;
+    private String managedSystemId;
     private String principal;
     private String userId;
-	private String password;
-	private String requestorId;
-	private boolean sendPasswordToUser = false;
-	private boolean passThruAttributes = true;
-	private List<ExtensibleAttribute> attributeList = new ArrayList<ExtensibleAttribute>();
-	private boolean preventChangeCountIncrement;
-	
-	public PasswordSync() {
-		
-	}
-	
-	public String getManagedSystemId() {
-		return managedSystemId;
-	}
-	public void setManagedSystemId(String managedSystemId) {
-		this.managedSystemId = managedSystemId;
-	}
+    private String password;
+    private String requestorId;
+    private boolean sendPasswordToUser = false;
+    private boolean passThruAttributes = true;
+    private List<ExtensibleAttribute> attributeList = new ArrayList<ExtensibleAttribute>();
+    private boolean preventChangeCountIncrement;
+    private boolean userActivateFlag;
+
+    public PasswordSync() {
+
+    }
+
+    public String getManagedSystemId() {
+        return managedSystemId;
+    }
+
+    public void setManagedSystemId(String managedSystemId) {
+        this.managedSystemId = managedSystemId;
+    }
+
     public String getPrincipal() {
         return principal;
     }
+
     public void setPrincipal(String principal) {
         this.principal = principal;
     }
+
     public String getUserId() {
         return userId;
     }
+
     public void setUserId(String userId) {
         this.userId = userId;
     }
-	public String getPassword() {
-		return password;
-	}
-	public void setPassword(String password) {
-		this.password = password;
-	}
-	public String getRequestorId() {
-		return requestorId;
-	}
-	public void setRequestorId(String requestorId) {
-		this.requestorId = requestorId;
-	}
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getRequestorId() {
+        return requestorId;
+    }
+
+    public void setRequestorId(String requestorId) {
+        this.requestorId = requestorId;
+    }
 
     public boolean isPassThruAttributes() {
         return passThruAttributes;
@@ -123,12 +134,20 @@ public class PasswordSync extends BaseObject  {
         this.sendPasswordToUser = sendPasswordToUser;
     }
 
-	public boolean isPreventChangeCountIncrement() {
-		return preventChangeCountIncrement;
-	}
+    public boolean isPreventChangeCountIncrement() {
+        return preventChangeCountIncrement;
+    }
 
-	public void setPreventChangeCountIncrement(boolean preventChangeCountIncrement) {
-		this.preventChangeCountIncrement = preventChangeCountIncrement;
-	}
+    public void setPreventChangeCountIncrement(boolean preventChangeCountIncrement) {
+        this.preventChangeCountIncrement = preventChangeCountIncrement;
+    }
+
+    public boolean getUserActivateFlag() {
+        return userActivateFlag;
+    }
+
+    public void setUserActivateFlag(boolean userActivateFlag) {
+        this.userActivateFlag = userActivateFlag;
+    }
 }
 

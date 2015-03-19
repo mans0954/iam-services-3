@@ -1,7 +1,9 @@
 package org.openiam.provision.service;
 
+import groovy.lang.MissingPropertyException;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.openiam.base.BaseAttributeContainer;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.exception.ScriptEngineException;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
@@ -13,27 +15,30 @@ import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.auth.dto.ProvLoginStatusEnum;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
+import org.openiam.idm.srvc.mngsys.dto.PolicyMapObjectTypeOptions;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.provision.dto.ProvOperationEnum;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.resp.ProvisionUserResponse;
+import org.openiam.provision.type.ExtensibleAttribute;
+import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.util.UserUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Component
 public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
 
     public ProvisionUserResponse provisionSelectedResources(final List<String> userIds, final String requestorUserId, final Collection<String> resourceList) {
-        final List<ProvisionDataContainer> dataList = new LinkedList<ProvisionDataContainer>();
+        final List<ProvisionDataContainer> dataList = new LinkedList<>();
         ProvisionUserResponse res = new ProvisionUserResponse();
         res.setStatus(ResponseStatus.FAILURE);
         try {
@@ -76,14 +81,14 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
                                 // set
                                 Resource res = resourceDataService.getResource(resId, null);
                                 try {
-                                    Map<String, Object> bindingMap = new HashMap<String, Object>();
+                                    Map<String, Object> bindingMap = new HashMap<>();
                                     bindingMap.put("sysId", sysConfiguration.getDefaultManagedSysId());
                                     bindingMap.put("operation", "MODIFY");
                                     bindingMap.put(AbstractProvisioningService.USER, userEntity);
                                     bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_IDENTITY_STATUS, null);
                                     bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_IDENTITY, null);
                                     // Protects other resources if one resource failed
-                                    Map<String, Object> tmpMap = new HashMap<String, Object>(bindingMap); // prevent
+                                    Map<String, Object> tmpMap = new HashMap<>(bindingMap); // prevent
                                     // bindingMap
                                     // rewrite
                                     // in
@@ -133,7 +138,7 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
                                                     final Login primaryIdentity,
                                                     final String requestId) {
 
-        Map<String, Object> bindingMap = new HashMap<String, Object>(tmpMap); // prevent data rewriting
+        Map<String, Object> bindingMap = new HashMap<>(tmpMap); // prevent data rewriting
 
         String managedSysId = managedSysDaoService.getManagedSysIdByResource(res.getId(), "ACTIVE");
         if (managedSysId != null) {
@@ -208,6 +213,7 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
             if (!isMngSysIdentityExistsInOpeniam) {
                 try {
                     log.debug(" - Building principal Name for: " + managedSysId);
+                    bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_ATTRIBUTES, new HashMap<>());
                     String newPrincipalName = ProvisionServiceUtil
                             .buildUserPrincipalName(attrMap, scriptRunner, bindingMap);
                     if (StringUtils.isBlank(newPrincipalName)) {
@@ -240,9 +246,7 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
                 }
             }
 
-            bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_ATTRIBUTES, null);
             bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_IDENTITY, mLg != null ? mLg.getLogin() : null);
-
             if (mLg != null) {
                 bindingMap.put("lg", mLg);
                 String decPassword = "";
@@ -287,5 +291,165 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
         }
         return null;
     }
+
+    /**
+     * Build ExtensibleUser attributes by PolicyMap groovy scripts
+     *
+     * @param managedSysId
+     * @param bindingMap
+     * @return
+     */
+    public ExtensibleUser buildFromRules(String managedSysId, Map<String, Object> bindingMap) {
+
+        List<AttributeMap> attrMap = managedSysService.getAttributeMapsByManagedSysId(managedSysId);
+
+        ExtensibleUser extUser = new ExtensibleUser();
+
+        if (attrMap != null) {
+
+            //used just to check on hidden to defin show the value in logs or not
+            String[] hiddenAttributesArr = hiddenAttributes.toLowerCase().trim().split(",");
+            List<String> hiddenAttributesList = Arrays.asList(hiddenAttributesArr);
+
+            log.debug("buildFromRules: attrMap IS NOT null");
+
+            for (AttributeMap attr : attrMap) {
+
+                if ("INACTIVE".equalsIgnoreCase(attr.getStatus())) {
+                    continue;
+                }
+
+                String objectType = attr.getMapForObjectType();
+                if (objectType != null) {
+
+                    if (objectType.equalsIgnoreCase(PolicyMapObjectTypeOptions.USER.name())) {
+                        Object output = "";
+                        try {
+                            output = ProvisionServiceUtil.getOutputFromAttrMap(attr, bindingMap, scriptRunner);
+                        } catch (ScriptEngineException see) {
+                            log.error("Error in script = '", see);
+                            continue;
+                        } catch (MissingPropertyException mpe) {
+                            log.error("Error in script = '", mpe);
+                            continue;
+                        }
+
+                        log.debug("buildFromRules: OBJECTTYPE="+objectType+", ATTRIBUTE=" + attr.getAttributeName() +
+                                ", SCRIPT OUTPUT=" +
+                                (hiddenAttributesList.contains(attr.getAttributeName().toLowerCase())
+                                        ? "******" : output));
+
+                        if (output != null) {
+                            ExtensibleAttribute newAttr;
+                            if (output instanceof String) {
+
+                                // if its memberOf object than dont add it to
+                                // the list
+                                // the connectors can detect a delete if an
+                                // attribute is not in the list
+
+                                newAttr = new ExtensibleAttribute(attr.getAttributeName(), (String) output, -1, attr
+                                        .getDataType().getValue());
+                                newAttr.setObjectType(objectType);
+                                extUser.getAttributes().add(newAttr);
+
+                            } else if (output instanceof Integer) {
+
+                                // if its memberOf object than dont add it to
+                                // the list
+                                // the connectors can detect a delete if an
+                                // attribute is not in the list
+
+                                newAttr = new ExtensibleAttribute(attr.getAttributeName(),
+                                        ((Integer) output).toString(), -1, attr.getDataType().getValue());
+                                newAttr.setObjectType(objectType);
+                                extUser.getAttributes().add(newAttr);
+
+                            } else if (output instanceof Date) {
+                                // date
+                                Date d = (Date) output;
+                                String DATE_FORMAT = "MM/dd/yyyy";
+                                SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT);
+
+                                newAttr = new ExtensibleAttribute(attr.getAttributeName(), sdf.format(d), -1, attr
+                                        .getDataType().getValue());
+                                newAttr.setObjectType(objectType);
+
+                                extUser.getAttributes().add(newAttr);
+                            } else if (output instanceof byte[]) {
+                                extUser.getAttributes().add(
+                                        new ExtensibleAttribute(attr.getAttributeName(), (byte[]) output, -1, attr
+                                                .getDataType().getValue()));
+
+                            } else if (output instanceof BaseAttributeContainer) {
+                                // process a complex object which can be passed
+                                // to the connector
+                                newAttr = new ExtensibleAttribute(attr.getAttributeName(),
+                                        (BaseAttributeContainer) output, -1, attr.getDataType().getValue());
+                                newAttr.setObjectType(objectType);
+                                extUser.getAttributes().add(newAttr);
+
+                            } else if (output instanceof ExtensibleAttribute) {
+                                newAttr = (ExtensibleAttribute)output;
+                                extUser.getAttributes().add(newAttr);
+
+                            } else if (output instanceof List) {
+                                // process a list - multi-valued object
+                                if (CollectionUtils.isNotEmpty((List)output)) {
+                                    newAttr = new ExtensibleAttribute(attr.getAttributeName(), (List) output, -1, attr
+                                            .getDataType().getValue());
+                                    newAttr.setObjectType(objectType);
+                                    extUser.getAttributes().add(newAttr);
+                                    log.debug("buildFromRules: added attribute to extUser:" + attr.getAttributeName());
+                                }
+                            }
+                        }
+                    } else if (PolicyMapObjectTypeOptions.PRINCIPAL.name().equalsIgnoreCase(objectType)) {
+
+                        extUser.setPrincipalFieldName(attr.getAttributeName());
+                        extUser.setPrincipalFieldDataType(attr.getDataType().getValue());
+
+                    }
+                }
+            }
+        }
+
+        return extUser;
+    }
+
+    /**
+     * Build ExtensibleUser with attributes without values. We don't need to process groovy scripts in this method.
+     * Used for lookup request.
+     *
+     * @param managedSysId
+     * @return
+     */
+    public ExtensibleUser buildEmptyAttributesExtensibleUser(String managedSysId) {
+        List<AttributeMap> attrMap = managedSysService.getAttributeMapsByManagedSysId(managedSysId);
+        ExtensibleUser extUser = new ExtensibleUser();
+        if (attrMap != null) {
+            for (AttributeMap attr : attrMap) {
+                if ("INACTIVE".equalsIgnoreCase(attr.getStatus())) {
+                    continue;
+                }
+                String objectType = attr.getMapForObjectType();
+                if (objectType != null) {
+                    if (PolicyMapObjectTypeOptions.USER.name().equalsIgnoreCase(objectType)) {
+                        ExtensibleAttribute newAttr = new ExtensibleAttribute(attr.getAttributeName(), null);
+                        newAttr.setObjectType(objectType);
+                        extUser.getAttributes().add(newAttr);
+
+                    } else if (PolicyMapObjectTypeOptions.PRINCIPAL.name().equalsIgnoreCase(objectType)) {
+                        extUser.setPrincipalFieldName(attr.getAttributeName());
+                        extUser.setPrincipalFieldDataType(attr.getDataType().getValue());
+                    }
+                }
+            }
+        }
+
+        return extUser;
+    }
+
+
 
 }

@@ -61,24 +61,24 @@ public class AddressEntity {
     @Size(max = 400, message = "validator.address.address2.toolong")
     private String address2;
 
-    @Column(name = "ADDRESS3", length = 45)
-    @Size(max = 45, message = "validator.address.address3.toolong")
+    @Column(name = "ADDRESS3", length = 400)
+    @Size(max = 400, message = "validator.address.address3.toolong")
     private String address3;
 
-    @Column(name = "ADDRESS4", length = 45)
-    @Size(max = 45, message = "validator.address.address4.toolong")
+    @Column(name = "ADDRESS4", length = 400)
+    @Size(max = 400, message = "validator.address.address4.toolong")
     private String address4;
 
-    @Column(name = "ADDRESS5", length = 45)
-    @Size(max = 45, message = "validator.address.address5.toolong")
+    @Column(name = "ADDRESS5", length = 400)
+    @Size(max = 400, message = "validator.address.address5.toolong")
     private String address5;
 
-    @Column(name = "ADDRESS6", length = 45)
-    @Size(max = 45, message = "validator.address.address6.toolong")
+    @Column(name = "ADDRESS6", length = 400)
+    @Size(max = 400, message = "validator.address.address6.toolong")
     private String address6;
 
-    @Column(name = "ADDRESS7", length = 45)
-    @Size(max = 45, message = "validator.address.address7.toolong")
+    @Column(name = "ADDRESS7", length = 400)
+    @Size(max = 400, message = "validator.address.address7.toolong")
     private String address7;
 
     @Column(name = "CITY", length = 100)
@@ -121,6 +121,9 @@ public class AddressEntity {
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
     @JoinColumn(name = "TYPE_ID", insertable=true, updatable=true)
     private MetadataTypeEntity metadataType;
+
+    @Column(name = "COPY_FROM_LOCATION_ID", length = 32, nullable = false)
+    private String locationId;
 
     public AddressEntity() {
     }
@@ -349,6 +352,7 @@ public class AddressEntity {
 				+ ((streetDirection == null) ? 0 : streetDirection.hashCode());
 		result = prime * result + ((suite == null) ? 0 : suite.hashCode());
         result = prime * result + ((metadataType == null) ? 0 : metadataType.hashCode());
+        result = prime * result + ((locationId == null) ? 0 : locationId.hashCode());
 		return result;
 	}
 
@@ -465,6 +469,12 @@ public class AddressEntity {
                 return false;
         } else if (!metadataType.equals(other.metadataType))
             return false;
+        if (locationId == null) {
+            if (other.locationId != null)
+                return false;
+        } else if (!locationId.equals(other.locationId))
+            return false;
+
 		return true;
 	}
 
@@ -495,7 +505,16 @@ public class AddressEntity {
         sb.append(", lastUpdate=").append(lastUpdate);
         sb.append(", createDate=").append(createDate);
         sb.append(", metadataType=").append(metadataType);
+        sb.append(", locationId=").append(locationId);
         sb.append('}');
         return sb.toString();
+    }
+
+    public String getLocationId() {
+        return locationId;
+    }
+
+    public void setLocationId(String locationId) {
+        this.locationId = locationId;
     }
 }

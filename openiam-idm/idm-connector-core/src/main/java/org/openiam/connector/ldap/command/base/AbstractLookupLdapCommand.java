@@ -12,6 +12,8 @@ import org.openiam.provision.type.ExtensibleObject;
 import javax.naming.ldap.LdapContext;
 
 public abstract class AbstractLookupLdapCommand<ExtObject extends ExtensibleObject> extends AbstractLdapCommand<LookupRequest<ExtObject>, SearchResponse> {
+
+
     @Override
     public SearchResponse execute(LookupRequest<ExtObject> lookupRequest) throws ConnectorDataException {
         log.debug("LOOKUP operation called.");

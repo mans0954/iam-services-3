@@ -43,6 +43,12 @@ public class ContentProviderEntity implements Serializable {
 	@Column(name = "DOMAIN_PATTERN", length = 100, nullable = false)
 	private String domainPattern;
 	
+	@Column(name = "LOGIN_URL", length = 300, nullable = false)
+	private String loginURL;
+	
+	@Column(name = "POSTBACK_URL_PARAM_NAME", length = 50, nullable = false)
+	private String postbackURLParamName;
+	
 	@Column(name = "IS_SSL", nullable = true)
 	@Type(type = "yes_no")
 	private Boolean isSSL;
@@ -198,6 +204,20 @@ public class ContentProviderEntity implements Serializable {
 		this.showOnApplicationPage = showOnApplicationPage;
 	}
 
+	public String getLoginURL() {
+		return loginURL;
+	}
+	public void setLoginURL(String loginURL) {
+		this.loginURL = loginURL;
+	}
+	
+	public String getPostbackURLParamName() {
+		return postbackURLParamName;
+	}
+	public void setPostbackURLParamName(String postbackURLParamName) {
+		this.postbackURLParamName = postbackURLParamName;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -212,6 +232,8 @@ public class ContentProviderEntity implements Serializable {
                  + ((contextPath == null) ? 0 : contextPath.hashCode());
 		*/
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result + ((loginURL == null) ? 0 : loginURL.hashCode());
+		result = prime * result + ((postbackURLParamName == null) ? 0 : postbackURLParamName.hashCode());
 		result = prime * result
 				+ ((resource == null) ? 0 : resource.hashCode());
 		result = prime * result
@@ -271,6 +293,19 @@ public class ContentProviderEntity implements Serializable {
 			return false;
 		if (showOnApplicationPage != other.showOnApplicationPage)
 			return false;
+		
+		if (loginURL == null) {
+			if (other.loginURL != null)
+				return false;
+		} else if (!loginURL.equals(other.loginURL))
+			return false;
+
+		if (postbackURLParamName == null) {
+			if (other.postbackURLParamName != null)
+				return false;
+		} else if (!postbackURLParamName.equals(other.postbackURLParamName))
+			return false;
+		
 		return true;
 	}
 }

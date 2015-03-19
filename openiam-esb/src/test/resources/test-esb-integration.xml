@@ -17,7 +17,8 @@
 	<context:annotation-config />
 	<context:component-scan
 		base-package="org.openiam.authmanager.service.integration,
-										  org.openiam.authentication.integration" />
+					  org.openiam.authentication.integration,
+					  org.openiam.provisioning" />
 
 	<tx:annotation-driven transaction-manager="transactionManager" />
 
@@ -220,5 +221,27 @@
 		<property name="serviceClass" value="org.openiam.connector.ConnectorService" />
 		<property name="address"
 			value="${openiam.service_host}${openiam.idm.ws.path}CSVConnectorService" />
+	</bean>
+	
+	<bean id="provisionServiceClient" class="org.openiam.provision.service.ProvisionService"
+		factory-bean="defaultProvisionServiceFactory" factory-method="create" />
+		
+	<bean id="defaultProvisionServiceFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
+		<property name="serviceClass"
+			value="org.openiam.provision.service.ProvisionService" />
+		<property name="address"
+			value="${openiam.service_host}${openiam.connector.ws.path}ProvisioningService" />
+	</bean>
+	
+		<!-- Audit Service -->
+	<bean id="auditServiceClient" class="org.openiam.idm.srvc.audit.ws.IdmAuditLogWebDataService"
+		factory-bean="auditServiceFactory" factory-method="create" />
+
+
+	<bean id="auditServiceFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
+		<property name="serviceClass"
+			value="org.openiam.idm.srvc.audit.ws.IdmAuditLogWebDataService" />
+		<property name="address"
+			value="${openiam.service_host}${openiam.idm.ws.path}AuditService" />
 	</bean>
 </beans>

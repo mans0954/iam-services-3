@@ -23,14 +23,14 @@ public class BaseProperty implements Serializable {
         super();
     }
 
-    private BaseProperty(String name, String value, String attribute) {
+    public BaseProperty(String name, String value, String attribute) {
         super();
         this.name = name;
         this.value = value;
         this.attribute = attribute;
     }
 
-    private BaseProperty(String name, String value) {
+    public BaseProperty(String name, String value) {
         super();
         this.name = name;
         this.value = value;

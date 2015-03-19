@@ -29,18 +29,20 @@ public interface RoleDataWebService {
 	public Response validateDelete(final String roleId);
 	
     /**
+     * Not Localized, for internal use only!
+     *
      * This method retrieves an existing Role object. Dependent objects such as
      * users are also retrieved. Null is returned if the Role is not found.
      *
      * @param roleId - the Role ID
      * @param requesterId - the User ID who request this operation. This param is required if delegation filter is set
      * @return - a Role Object if it is found, otherwise null will be returned.
-     */
+    */
     @WebMethod
-    @Deprecated
     Role getRole(@WebParam(name = "roleId", targetNamespace = "") String roleId,
                  @WebParam(name="requesterId", targetNamespace="") String requesterId);
-    
+
+
     @WebMethod
     Role getRoleLocalized(@WebParam(name = "roleId", targetNamespace = "") String roleId,
                  		  @WebParam(name="requesterId", targetNamespace="") String requesterId,

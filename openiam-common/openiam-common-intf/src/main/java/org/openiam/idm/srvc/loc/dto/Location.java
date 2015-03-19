@@ -21,6 +21,10 @@
  */
 package org.openiam.idm.srvc.loc.dto;
 
+import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.continfo.domain.AddressEntity;
+import org.openiam.idm.srvc.loc.domain.LocationEntity;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
@@ -47,9 +51,9 @@ import java.io.Serializable;
         "postalCd",
         "organizationId",
         "internalLocationId",
-        "active"
+        "isActive"
 })
-
+@DozerDTOCorrespondence(LocationEntity.class)
 public class Location implements Serializable {
 
     /**
@@ -69,7 +73,7 @@ public class Location implements Serializable {
     protected String state;
     protected String postalCd;
     protected String organizationId;
-    protected Integer active;
+    protected boolean isActive;
     protected String internalLocationId;
 
 
@@ -177,12 +181,12 @@ public class Location implements Serializable {
         this.organizationId = organizationId;
     }
 
-    public Integer getActive() {
-        return active;
+    public Boolean getIsActive() {
+        return isActive;
     }
 
-    public void setActive(Integer active) {
-        this.active = active;
+    public void setIsActive(Boolean isActive) {
+        this.isActive = isActive;
     }
 
     public String getDescription() {

@@ -154,7 +154,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
         try {
             validate(group);
             final GroupEntity entity = groupDozerConverter.convertToEntity(group, true);
-            groupManager.saveGroup(entity, requesterId);
+            groupManager.saveGroup(entity, group.getOwner(), requesterId);
             response.setResponseValue(entity.getId());
         } catch (BasicDataServiceException e) {
             log.error("Error save", e);
@@ -408,10 +408,15 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     }
 
     @Override
-    @Deprecated
+    /**
+     * Without @Localization for internal use only
+     */
+    @Transactional(readOnly=true)
     public List<Group> findBeans(final GroupSearchBean searchBean, final String requesterId, final int from,
             final int size) {
-        return findBeansLocalize(searchBean, requesterId, from, size, getDefaultLanguage());
+        final List<GroupEntity> groupEntityList = groupManager.findBeans(searchBean, requesterId, from, size);
+        List<Group> groupList = groupDozerConverter.convertToDTOList(groupEntityList, false);
+        return groupList;
     }
 
     @Override
@@ -433,6 +438,20 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     public int countBeans(final GroupSearchBean searchBean, final String requesterId) {
         return groupManager.countBeans(searchBean, requesterId);
     }
+
+    @Override
+    @LocalizedServiceGet
+    public List<Group> findGroupsForOwner(final GroupSearchBean searchBean, final String requesterId, String ownerId, final int from, final int size,
+                                         final Language language) {
+        final List<GroupEntity> groupEntityList = groupManager.findGroupsForOwner(searchBean, requesterId, ownerId, from, size, languageConverter.convertToEntity(language, false));
+        List<Group> groupList = groupDozerConverter.convertToDTOList(groupEntityList, false);
+        return groupList;
+    }
+    @Override
+    public int countGroupsForOwner(final GroupSearchBean searchBean, final String requesterId, String ownerId) {
+        return groupManager.countGroupsForOwner(searchBean, requesterId, ownerId);
+    }
+
 
     @Override
     @Deprecated

@@ -9,7 +9,9 @@ import org.openiam.idm.searchbeans.PolicySearchBean;
 import org.openiam.idm.srvc.policy.domain.PolicyAttributeEntity;
 import org.openiam.idm.srvc.policy.domain.PolicyDefParamEntity;
 import org.openiam.idm.srvc.policy.domain.PolicyEntity;
+import org.openiam.idm.srvc.policy.domain.PolicyObjectAssocEntity;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,7 +20,10 @@ public class PolicyServiceImpl implements PolicyService {
 	
 	@Autowired
 	private PolicyDAO policyDao;
-	
+
+	@Autowired
+	PolicyObjectAssocDAO policyObjectAssocDAO;
+
 	@Autowired
 	private PolicyDefParamDAO policyDefParamDao;
 
@@ -72,6 +77,10 @@ public class PolicyServiceImpl implements PolicyService {
 	public void delete(final String policyId) {
 		final PolicyEntity entity = policyDao.findById(policyId);
 		if(entity != null) {
+			List<PolicyObjectAssocEntity> assocList = policyObjectAssocDAO.findByPolicy(policyId);
+			for (PolicyObjectAssocEntity assoc : assocList) {
+				policyObjectAssocDAO.delete(assoc);
+			}
 			policyDao.delete(entity);
 		}
 	}
