@@ -4,14 +4,12 @@ import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.PolicySearchBean;
 import org.openiam.idm.srvc.policy.domain.PolicyAttributeEntity;
 import org.openiam.idm.srvc.policy.domain.PolicyDefParamEntity;
 import org.openiam.idm.srvc.policy.domain.PolicyEntity;
 import org.openiam.idm.srvc.policy.domain.PolicyObjectAssocEntity;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -78,9 +76,12 @@ public class PolicyServiceImpl implements PolicyService {
 		final PolicyEntity entity = policyDao.findById(policyId);
 		if(entity != null) {
 			List<PolicyObjectAssocEntity> assocList = policyObjectAssocDAO.findByPolicy(policyId);
-			for (PolicyObjectAssocEntity assoc : assocList) {
-				policyObjectAssocDAO.delete(assoc);
-			}
+            if (CollectionUtils.isNotEmpty(assocList)) {
+                for (PolicyObjectAssocEntity assoc : assocList) {
+                    policyObjectAssocDAO.delete(assoc);
+                }
+            }
+
 			policyDao.delete(entity);
 		}
 	}

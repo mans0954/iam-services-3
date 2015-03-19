@@ -1,12 +1,6 @@
 package org.openiam.idm.srvc.mngsys.domain;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
@@ -30,8 +24,8 @@ public class ReconciliationResourceAttributeMapEntity implements
     @Column(name = "RECON_RES_ATTR_MAP_ID", length = 32, nullable = false)
     private String reconciliationResourceAttributeMapId;
 
-    @ManyToOne(optional = true)
-    @JoinColumn(name = "ATTR_POLICY_ID", nullable = true, updatable = true)
+    @ManyToOne(optional = false, cascade = CascadeType.ALL)
+    @JoinColumn(name = "ATTR_POLICY_ID", nullable = false, updatable = true)
     private PolicyEntity attributePolicy;
 
     @ManyToOne(optional = true)

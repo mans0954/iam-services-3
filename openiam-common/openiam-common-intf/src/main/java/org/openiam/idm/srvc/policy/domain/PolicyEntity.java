@@ -4,21 +4,12 @@ package org.openiam.idm.srvc.policy.domain;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
+import javax.persistence.*;
 
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.mngsys.domain.ReconciliationResourceAttributeMapEntity;
 import org.openiam.idm.srvc.policy.dto.Policy;
 
 @Entity
@@ -73,8 +64,10 @@ public class PolicyEntity implements java.io.Serializable {
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "POLICY_ID", insertable = true, updatable = true)
-    private Set<PolicyAttributeEntity> policyAttributes = new HashSet<PolicyAttributeEntity>(
-            0);
+    private Set<PolicyAttributeEntity> policyAttributes = new HashSet<PolicyAttributeEntity>(0);
+
+    @OneToMany(fetch = FetchType.LAZY, orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "attributePolicy")
+    private Set<ReconciliationResourceAttributeMapEntity> attributeMaps = new HashSet<ReconciliationResourceAttributeMapEntity>(0);
 
     public PolicyEntity() {
     }
@@ -153,6 +146,14 @@ public class PolicyEntity implements java.io.Serializable {
 
     public void setPolicyAttributes(Set<PolicyAttributeEntity> policyAttributes) {
         this.policyAttributes = policyAttributes;
+    }
+
+    public Set<ReconciliationResourceAttributeMapEntity> getAttributeMaps() {
+        return attributeMaps;
+    }
+
+    public void setAttributeMaps(Set<ReconciliationResourceAttributeMapEntity> attributeMaps) {
+        this.attributeMaps = attributeMaps;
     }
 
     public PolicyAttributeEntity getAttribute(String name) {
