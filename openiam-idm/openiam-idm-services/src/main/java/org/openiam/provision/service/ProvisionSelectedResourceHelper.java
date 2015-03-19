@@ -278,12 +278,15 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
                 switch (onDeleteProp) {
                     case "DISABLE":
                         data.setOperation(ProvOperationEnum.ENABLE);
+                        bindingMap.put("operation", "RESUME");
                         break;
                     default:
                         data.setOperation(ProvOperationEnum.UPDATE);
+                        bindingMap.put("operation", "MODIFY");
                 }
             } else {
                 data.setOperation(ProvOperationEnum.CREATE);
+                bindingMap.put("operation", "ADD");
             }
             data.setRequestId(requestId);
             data.setResourceId(res.getId());
