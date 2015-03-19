@@ -26,4 +26,11 @@ public class SynchReviewSearchBean extends AbstractSearchBean<SynchReview, Strin
         this.synchConfigId = synchConfigId;
     }
 
+    @Override
+    public String getCacheUniqueBeanKey() {
+        return new StringBuilder()
+                .append(synchConfigId != null ? synchConfigId : "")
+                .append(getKey() != null ? getKey() : "")
+                .toString();
+    }
 }

@@ -24,8 +24,6 @@ public class OrganizationTypeSearchBean extends AbstractSearchBean<OrganizationT
 	private Set<String> childIds;
     private Set<String> excludeIds;
 	private String name;
-	
-	
 
 	public Set<String> getKeySet() {
 		return keySet;
@@ -93,4 +91,16 @@ public class OrganizationTypeSearchBean extends AbstractSearchBean<OrganizationT
 			this.parentIds.add(parentId);
 		}
 	}
+
+    @Override
+    public String getCacheUniqueBeanKey() {
+        return new StringBuilder()
+                .append(name != null ? name : "")
+                .append(keySet != null ? keySet.toString().hashCode() : "")
+                .append(parentIds != null ? parentIds.toString().hashCode() : "")
+                .append(childIds != null ? childIds.toString().hashCode() : "")
+                .append(excludeIds != null ? excludeIds.toString().hashCode() : "")
+                .append(getKey() != null ? getKey() : "")
+                .toString();
+    }
 }

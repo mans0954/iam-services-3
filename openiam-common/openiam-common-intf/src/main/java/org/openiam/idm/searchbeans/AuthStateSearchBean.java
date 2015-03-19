@@ -59,5 +59,11 @@ public class AuthStateSearchBean extends AbstractSearchBean<AuthStateEntity, Aut
 				onlyActive, super.toString());
 	}
 
-	
+    @Override
+    public String getCacheUniqueBeanKey() {
+        return new StringBuilder()
+                .append(onlyActive)
+                .append(getKey() != null ? getKey() : "")
+                .toString();
+    }
 }

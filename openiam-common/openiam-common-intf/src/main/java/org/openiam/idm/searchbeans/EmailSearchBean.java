@@ -79,4 +79,16 @@ public class EmailSearchBean extends AbstractSearchBean<EmailAddress, String> im
     public void setMetadataTypeId(String metadataTypeId) {
         this.metadataTypeId = metadataTypeId;
     }
+
+    @Override
+    public String getCacheUniqueBeanKey() {
+        return new StringBuilder()
+                .append(name != null ? name : "")
+                .append(email != null ? email : "")
+                .append(parentId != null ? parentId : "")
+                .append(metadataTypeId != null ? metadataTypeId : "")
+                .append(emailMatchToken != null ? emailMatchToken : "")
+                .append(getKey() != null ? getKey() : "")
+                .toString();
+    }
 }

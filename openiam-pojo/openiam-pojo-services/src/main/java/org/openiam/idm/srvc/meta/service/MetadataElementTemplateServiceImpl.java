@@ -226,6 +226,7 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 	}
 
 	@Override
+    @Transactional(readOnly = true)
 	public PageTempate getTemplate(TemplateRequest request) {
 		MetadataElementPageTemplateEntity entity = null;
 		if(StringUtils.isNotEmpty(request.getTemplateId())) {
@@ -340,11 +341,7 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 	}
 	
 	private MetadataElementEntity getElement(final String id, final LanguageEntity language) {
-		final MetadataElementSearchBean searchBean = new MetadataElementSearchBean();
-		searchBean.setDeepCopy(true);
-		searchBean.setKey(id);
-		final List<MetadataElementEntity> resultList = elementService.findBeans(searchBean, 0, 1, language);
-		return (CollectionUtils.isNotEmpty(resultList)) ? resultList.get(0) : null;
+       return elementDAO.findById(id);
 	}
 	
 	private LanguageEntity getLanguage(final String languageId) {
@@ -619,10 +616,12 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
         if (typeId != null) {
             MetadataElementSearchBean searchBean = new MetadataElementSearchBean();
             searchBean.setAttributeName(element.getAttributeName());
+
             Set<String> ids = new HashSet<String>();
             ids.add(typeId);
             searchBean.setTypeIdSet(ids);
-            List<MetadataElementEntity> list = metadataService.findBeans(searchBean, 0, Integer.MAX_VALUE, null);
+
+            List<MetadataElementEntity> list = elementDAO.getByExample(searchBean, 0, Integer.MAX_VALUE);
             if (list.size() > 0) {
                 return list.get(0);
             }

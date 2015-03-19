@@ -287,19 +287,24 @@ public class IdmAuditLogEntity implements Serializable {
 
     @Override
     public int hashCode() {
-        int result1 = id != null ? id.hashCode() : 0;
-        result1 = 31 * result1 + (userId != null ? userId.hashCode() : 0);
-        result1 = 31 * result1 + (principal != null ? principal.hashCode() : 0);
-        result1 = 31 * result1 + (managedSysId != null ? managedSysId.hashCode() : 0);
-        result1 = 31 * result1 + (timestamp != null ? timestamp.hashCode() : 0);
-        result1 = 31 * result1 + (source != null ? source.hashCode() : 0);
-        result1 = 31 * result1 + (clientIP != null ? clientIP.hashCode() : 0);
-        result1 = 31 * result1 + (nodeIP != null ? nodeIP.hashCode() : 0);
-        result1 = 31 * result1 + (action != null ? action.hashCode() : 0);
-        result1 = 31 * result1 + (result != null ? result.hashCode() : 0);
-        result1 = 31 * result1 + (hash != null ? hash.hashCode() : 0);
-        result1 = 31 * result1 + (sessionID != null ? sessionID.hashCode() : 0);
-        return result1;
+        final int prime = 31;
+        int result = 1;
+
+        result = prime * result + ((id == null) ? 0 : id.hashCode());
+        result = prime * result + ((action == null) ? 0 : action.hashCode());
+        result = prime * result + ((clientIP == null) ? 0 : clientIP.hashCode());
+        result = prime * result + ((hash == null) ? 0 : hash.hashCode());
+        result = prime * result + ((nodeIP == null) ? 0 : nodeIP.hashCode());
+        result = prime * result + ((this.result == null) ? 0 : this.result.hashCode());
+        result = prime * result + ((source == null) ? 0 : source.hashCode());
+        result = prime * result + ((timestamp == null) ? 0 : timestamp.hashCode());
+        result = prime * result + ((userId == null) ? 0 : userId.hashCode());
+        result = prime * result + ((principal == null) ? 0 : principal.hashCode());
+        result = prime * result + ((managedSysId == null) ? 0 : managedSysId.hashCode());
+        result = prime * result + ((sessionID == null) ? 0 : sessionID.hashCode());
+        result = prime * result + ((correlationId == null) ? 0 : correlationId.hashCode());
+
+        return result;
     }
 
     @Override

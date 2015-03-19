@@ -143,4 +143,21 @@ public class MetadataElementSearchBean extends AbstractSearchBean<MetadataElemen
 	public String getKey() {
 		return (CollectionUtils.isNotEmpty(keySet)) ? keySet.iterator().next() : null;
 	}
+
+
+    @Override
+    public String getCacheUniqueBeanKey() {
+        return new StringBuilder()
+                .append(attributeName != null ? attributeName : "")
+                .append(typeIdSet != null ? typeIdSet.toString().hashCode() : "")
+                .append(auditable)
+                .append(required)
+                .append(selfEditable)
+                .append(templateId != null ? templateId : "")
+                .append(groupings != null ? groupings.toString().hashCode() : "")
+                .append(excludedGroupings != null ? excludedGroupings.toString().hashCode() : "")
+                .append(getKey() != null ? getKey() : "")
+                .append(getKeys() != null ? getKeys().toString().hashCode() : "")
+                .toString();
+    }
 }

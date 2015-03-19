@@ -63,6 +63,7 @@
 	    timeToLiveSeconds="28880"
 	    overflowToDisk="true"
     />
+
 	<cache name="query.organization.findChildOrganization"
 	    maxElementsInMemory="1000"
 	    eternal="false"
@@ -214,5 +215,71 @@
     timeToLiveSeconds="28880"
     overflowToDisk="true"
     />
-                      
+
+    <cache name="CoreBuilderCache"
+           maxElementsInMemory="100000"
+           eternal="false"
+           overflowToDisk="false"
+           timeToLiveSeconds="600"
+           memoryStoreEvictionPolicy="LRU"
+            />
+
+    <cache name="languages"
+                         maxElementsInMemory="100000"
+                         eternal="false"
+                         overflowToDisk="false"
+                         timeToLiveSeconds="600"
+                         memoryStoreEvictionPolicy="LRU"
+        />
+    <cache name="metadataTypes"
+           maxElementsInMemory="100000"
+           eternal="false"
+           overflowToDisk="false"
+           timeToLiveSeconds="600"
+           memoryStoreEvictionPolicy="LRU"
+            />
+    <cache name="metadataElements"
+           maxElementsInMemory="100000"
+           eternal="false"
+           overflowToDisk="false"
+           timeToLiveSeconds="600"
+           memoryStoreEvictionPolicy="LRU"
+            />
+    <cache name="resources"
+           maxElementsInMemory="100000"
+           eternal="false"
+           overflowToDisk="false"
+           timeToLiveSeconds="600"
+           memoryStoreEvictionPolicy="LRU"
+            />
+    <cache name="decryptManagedSysPassword"
+           maxElementsInMemory="100000"
+           eternal="false"
+           overflowToDisk="false"
+           timeToLiveSeconds="600"
+           memoryStoreEvictionPolicy="LRU"
+            />
+    <cache name="resourceAttributeMaps"
+           maxElementsInMemory="100000"
+           eternal="false"
+           overflowToDisk="false"
+           timeToLiveSeconds="600"
+           memoryStoreEvictionPolicy="LRU"
+            />
+    <cache name="managedSysObjectParam"
+           maxElementsInMemory="100000"
+           eternal="false"
+           overflowToDisk="false"
+           timeToLiveSeconds="600"
+           memoryStoreEvictionPolicy="LRU"
+            />
+
+    <cache name="resourcePropCache"
+           maxElementsInMemory="100000"
+           eternal="false"
+           overflowToDisk="false"
+           timeToLiveSeconds="600"
+           memoryStoreEvictionPolicy="LRU"
+            />
+
 </ehcache>

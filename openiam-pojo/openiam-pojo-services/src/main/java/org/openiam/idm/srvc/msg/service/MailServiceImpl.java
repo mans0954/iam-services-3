@@ -22,10 +22,7 @@ import twitter4j.*;
 import twitter4j.conf.ConfigurationBuilder;
 
 import javax.jws.WebService;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -137,7 +134,18 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
         log.debug("To:" + to + ", From:" + from + ", Subject:" + subject + ", CC:" + cc + ", BCC:" + bcc
                 + ", Attachment:" + attachmentPath);
 
+
+        Message message = fillMessage(from, to, cc, bcc, subject, msg, isHtmlFormat, attachmentPath);
+        try {
+            mailSender.send(message);
+        } catch (Exception e) {
+            log.error(e.toString());
+        }
+    }
+
+    private Message fillMessage(String from, String[] to, String[] cc, String[] bcc, String subject, String msg, boolean isHtmlFormat, String[] attachmentPath) {
         Message message = new Message();
+
         if (from != null && from.length() > 0) {
             message.setFrom(from);
         } else {
@@ -176,6 +184,13 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
                 message.addAttachments(attachmentPathString);
             }
         }
+        return message;
+    }
+
+    @Override
+    public void sendEmailsByDateTime(String from, String[] to, String[] cc, String[] bcc, String subject, String msg, boolean isHtmlFormat, String[] attachmentPath, Date executionDateTime) {
+        Message message = fillMessage(from, to, cc, bcc, subject, msg, isHtmlFormat, attachmentPath);
+        message.setExecutionDateTime(executionDateTime);
         try {
             mailSender.send(message);
         } catch (Exception e) {

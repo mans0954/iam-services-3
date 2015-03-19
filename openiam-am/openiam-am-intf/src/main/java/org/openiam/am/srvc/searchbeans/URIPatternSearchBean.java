@@ -31,4 +31,13 @@ public class URIPatternSearchBean extends AbstractSearchBean<URIPattern, String>
     public void setContentProviderId(String contentProviderId) {
         this.contentProviderId = contentProviderId;
     }
+
+    @Override
+    public String getCacheUniqueBeanKey() {
+        return new StringBuilder()
+                .append(pattern != null ? pattern : "")
+                .append(contentProviderId != null ? contentProviderId : "")
+                .append(getKey() != null ? getKey() : "")
+                .toString();
+    }
 }

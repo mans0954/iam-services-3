@@ -75,4 +75,15 @@ public class PhoneSearchBean extends AbstractSearchBean<Phone, String> implement
         this.isDefault = isDefault;
     }
 
+    @Override
+    public String getCacheUniqueBeanKey() {
+        return new StringBuilder()
+                .append(phoneNbr != null ? phoneNbr : "")
+                .append(phoneAreaCd != null ? phoneAreaCd : "")
+                .append(parentId != null ? parentId : "")
+                .append(metadataTypeId != null ? metadataTypeId : "")
+                .append(isDefault != null ? isDefault.booleanValue() : "")
+                .append(getKey() != null ? getKey() : "")
+                .toString();
+    }
 }

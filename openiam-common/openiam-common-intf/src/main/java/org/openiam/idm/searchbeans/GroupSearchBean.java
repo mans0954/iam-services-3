@@ -170,4 +170,18 @@ public class GroupSearchBean extends EntitlementsSearchBean<Group, String> imple
     public void setKeys(final Set<String> keySet) {
         this.keySet = keySet;
     }
+
+    @Override
+    public String getCacheUniqueBeanKey() {
+        return new StringBuilder()
+                .append(name != null ? name : "")
+                .append(managedSysId != null ? managedSysId : "")
+                .append(type != null ? type : "")
+                .append(isRootsOnly)
+                .append(adminResourceId != null ? adminResourceId : "")
+                .append(attributes != null ? attributes.toString().hashCode() : "")
+                .append(getKey() != null ? getKey() : "")
+                .append(getKeys() != null ? getKeys().hashCode() : "")
+                .toString();
+    }
 }

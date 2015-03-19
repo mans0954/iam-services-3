@@ -17,6 +17,7 @@ import org.openiam.idm.srvc.user.domain.ProfilePictureEntity;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;
+import org.openiam.idm.srvc.user.dto.ProfilePicture;
 import org.openiam.idm.srvc.user.dto.UserProfileRequestModel;
 import org.openiam.validator.EntityValidator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -255,8 +256,17 @@ public class UserProfileServiceImpl implements UserProfileService {
 	}
 
     @Override
-    public ProfilePictureEntity getProfilePictureById(String picId) {
-        return profilePictureDAO.findById(picId);
+    @Transactional(readOnly = true)
+    public ProfilePicture getProfilePictureById(String picId) {
+        ProfilePictureEntity pictureEntity = profilePictureDAO.findById(picId);
+        ProfilePicture profilePicture = new ProfilePicture();
+        profilePicture.setId(pictureEntity.getId());
+        profilePicture.setName(pictureEntity.getName());
+        profilePicture.setPicture(pictureEntity.getPicture());
+        if(pictureEntity.getUser() != null) {
+            profilePicture.setUser(userDozerConverter.convertToDTO(pictureEntity.getUser(),true));
+        }
+        return profilePicture;
     }
 
     @Override
