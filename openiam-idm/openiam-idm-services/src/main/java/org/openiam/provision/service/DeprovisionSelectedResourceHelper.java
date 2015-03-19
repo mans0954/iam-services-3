@@ -202,18 +202,21 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
             data.setResourceId(res.getId());
             data.setIdentity(targetSysLogin);
             data.setProvUser(targetSysProvUser);
-            data.setBindingMap(bindingMap);
 
             switch (onDeleteProp) {
                 case "DELETE":
                     data.setOperation(ProvOperationEnum.DELETE);
+                    bindingMap.put("operation", "DELETE");
                     break;
                 case "DISABLE":
                     data.setOperation(ProvOperationEnum.DISABLE);
+                    bindingMap.put("operation", "SUSPEND");
                     break;
                 default:
                     data.setOperation(ProvOperationEnum.UPDATE);
+                    bindingMap.put("operation", "MODIFY");
             }
+            data.setBindingMap(bindingMap);
 
             return data;
         }

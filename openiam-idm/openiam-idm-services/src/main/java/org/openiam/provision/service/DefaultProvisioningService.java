@@ -1912,8 +1912,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
                             // pre-process
 
-                            bindingMap.put("IDENTITY", lg);
-                            bindingMap.put("RESOURCE", res);
+                            bindingMap.put(IDENTITY, lg);
+                            bindingMap.put(TARGET_SYS_RES, res);
                             bindingMap.put("PASSWORD_SYNC", passwordSync);
 
 
@@ -3072,17 +3072,18 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         ManagedSysDto mSys = managedSysService
                                 .getManagedSys(managedSysId);
 
+                        final ResourceEntity res = resourceService.findResourceById(mSys.getResourceId());
+                        log.debug(" - Managed System Id = " + managedSysId);
+                        log.debug(" - Resource Id = " + res.getId());
+                        //Pre-processor script
 
                         bindingMap.put(TARGET_SYSTEM_IDENTITY, lg.getLogin());
                         bindingMap.put("sysId", managedSysId);
                         bindingMap.put("operation", operation);
                         bindingMap.put(USER, user);
                         bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, null);
+                        bindingMap.put(TARGET_SYS_RES, res);
 
-                        final ResourceEntity res = resourceService.findResourceById(mSys.getResourceId());
-                        log.debug(" - Managed System Id = " + managedSysId);
-                        log.debug(" - Resource Id = " + res.getId());
-                        //Pre-processor script
                         final String preProcessScript = getResourceProperty(res, "PRE_PROCESS");
                         if (preProcessScript != null && !preProcessScript.isEmpty()) {
                             final PreProcessor ppScript = createPreProcessScript(preProcessScript);
