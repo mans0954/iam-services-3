@@ -2,6 +2,7 @@ package org.openiam.provision.service;
 
 import java.util.*;
 
+import javax.annotation.PostConstruct;
 import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
 import javax.jms.Queue;
@@ -49,7 +50,6 @@ import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.idm.srvc.res.service.ResourceService;
-import org.openiam.provision.dto.PasswordSync;
 import org.openiam.provision.dto.ProvOperationEnum;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.resp.ProvisionUserResponse;
@@ -116,6 +116,9 @@ public class ProvisionDispatcher implements Sweepable {
     @Autowired
     protected AuditLogService auditLogService;
 
+    @Value("${org.openiam.debug.hidden.attributes}")
+    protected String hiddenAttributes;
+
     @Autowired
     @Qualifier("cryptor")
     private Cryptor cryptor;
@@ -131,6 +134,8 @@ public class ProvisionDispatcher implements Sweepable {
 
     private final Object mutex = new Object();
     private volatile int switch_ = 0;
+
+    private String[] hiddenAttrs = null;
 
     @Override
     //TODO change when Spring 3.2.2 @Scheduled(fixedDelayString = "${org.openiam.prov.threadsweep}")
@@ -518,7 +523,7 @@ public class ProvisionDispatcher implements Sweepable {
             bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_ATTRIBUTES, currentValueMap);
             ExtensibleObject extUser = provisionSelectedResourceHelper.buildFromRules(managedSysId, bindingMap);
             try {
-                idmAuditLog.addCustomRecord("ATTRIBUTES", extUser.getAttributesAsJSON());
+                idmAuditLog.addCustomRecord("ATTRIBUTES", extUser.getAttributesAsJSON(hiddenAttrs));
             } catch (JsonGenerationException jge) {
                 log.error(jge);
             }
@@ -794,6 +799,13 @@ public class ProvisionDispatcher implements Sweepable {
         public void setIsLocked(int isLocked) {
             fieldsAffected.add("isLocked");
             super.setIsLocked(isLocked);
+        }
+    }
+
+    @PostConstruct
+    private void initDispatcher() {
+        if (StringUtils.isNotBlank(hiddenAttributes)) {
+            hiddenAttrs = hiddenAttributes.trim().toLowerCase().split("\\s*,\\s*");
         }
     }
 }
