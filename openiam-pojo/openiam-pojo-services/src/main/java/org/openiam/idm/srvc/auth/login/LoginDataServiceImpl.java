@@ -350,14 +350,10 @@ public class LoginDataServiceImpl implements LoginDataService {
     }
 
     @Override
+    @Transactional
     public String encryptPassword(String userId, String password)
             throws Exception {
         if (password != null) {
-//            byte[] key = keyManagementService.getUserKey(userId,
-//                    KeyName.password.name());
-//            if(key != null) {
-//                return cryptor.encrypt(key, password);
-//            }
             return keyManagementService.encrypt(userId, KeyName.password, password);
         }
         return null;
@@ -369,9 +365,6 @@ public class LoginDataServiceImpl implements LoginDataService {
             throws Exception {
         if (password != null) {
             return keyManagementService.decrypt(userId, KeyName.password, password);
-//            return cryptor.decrypt(
-//                    keyManagementService.getUserKey(userId,
-//                            KeyName.password.name()), password);
         }
         return null;
     }
