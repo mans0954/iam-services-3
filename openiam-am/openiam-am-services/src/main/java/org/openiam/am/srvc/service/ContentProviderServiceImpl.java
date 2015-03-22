@@ -306,6 +306,12 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
         	}
         }
         
+        if(CollectionUtils.isNotEmpty(pattern.getXssRules())) {
+        	pattern.getXssRules().forEach(rule -> {
+        		rule.setPattern(pattern);
+        	});
+        }
+        
         if(CollectionUtils.isNotEmpty(pattern.getServers())) {
         	for(final URIPatternServerEntity server : pattern.getServers()) {
         		server.setPattern(pattern);
@@ -433,6 +439,11 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
         				xref.setPattern(pattern);
         				xref.setId(new AuthLevelGroupingURIPatternXrefIdEntity(grouping.getId(), pattern.getId()));
         			}
+        		}
+        		
+        		if(CollectionUtils.isEmpty(pattern.getXssRules())) {
+        			dbEntity.getXssRules().clear();
+        			pattern.setXssRules(dbEntity.getXssRules());
         		}
         		
         		if(CollectionUtils.isEmpty(pattern.getSubstitutions())) {

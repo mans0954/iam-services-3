@@ -5,6 +5,7 @@ import org.openiam.am.srvc.comparator.AuthLevelGroupingXrefComparator;
 import org.openiam.am.srvc.comparator.URIPatternMethodComparator;
 import org.openiam.am.srvc.comparator.URIPatternSubstitutionComparator;
 import org.openiam.am.srvc.domain.AuthLevelGroupingURIPatternXrefEntity;
+import org.openiam.am.srvc.domain.URIParamXSSRuleEntity;
 import org.openiam.am.srvc.domain.URIPatternEntity;
 import org.openiam.am.srvc.domain.URIPatternErrorMappingEntity;
 import org.openiam.am.srvc.domain.URIPatternMethodEntity;
@@ -56,7 +57,9 @@ import java.util.TreeSet;
         "redirectToGroovyScript",
         "showOnApplicationPage",
         "url",
-        "applicationName"
+        "applicationName",
+        "ignoreXSS",
+        "xssRules"
 })
 @DozerDTOCorrespondence(URIPatternEntity.class)
 public class URIPattern extends AbstractMatchMode {
@@ -79,10 +82,12 @@ public class URIPattern extends AbstractMatchMode {
 	private Set<URIPatternSubstitution> substitutions;
 	private String redirectTo;
 	private Set<URIPatternErrorMapping> errorMappings;
+	private Set<URIParamXSSRule> xssRules;
 	private String redirectToGroovyScript;
 	private boolean showOnApplicationPage;
 	private String url;
 	private String applicationName;
+	private boolean ignoreXSS;
 	
 	@Transient
 	@XmlTransient
@@ -348,6 +353,22 @@ public class URIPattern extends AbstractMatchMode {
 	public void setApplicationName(String applicationName) {
 		this.applicationName = applicationName;
 	}
+	
+	public boolean isIgnoreXSS() {
+		return ignoreXSS;
+	}
+
+	public void setIgnoreXSS(boolean ignoreXSS) {
+		this.ignoreXSS = ignoreXSS;
+	}
+
+	public Set<URIParamXSSRule> getXssRules() {
+		return xssRules;
+	}
+
+	public void setXssRules(Set<URIParamXSSRule> xssRules) {
+		this.xssRules = xssRules;
+	}
 
 	@Override
 	public int hashCode() {
@@ -373,6 +394,7 @@ public class URIPattern extends AbstractMatchMode {
 		result = prime * result + ((themeId == null) ? 0 : themeId.hashCode());
 		result = prime * result
 				+ ((applicationName == null) ? 0 : applicationName.hashCode());
+		result = prime * result + (ignoreXSS ? 1231 : 1237);
 		return result;
 	}
 	@Override
@@ -421,11 +443,12 @@ public class URIPattern extends AbstractMatchMode {
 				return false;
 		} else if (!themeId.equals(other.themeId))
 			return false;
-		
 		if(showOnApplicationPage != other.showOnApplicationPage) {
 			return false;
 		}
-		
+		if(ignoreXSS != other.ignoreXSS) {
+			return false;
+		}
 		if (applicationName == null) {
 			if (other.applicationName != null)
 				return false;
