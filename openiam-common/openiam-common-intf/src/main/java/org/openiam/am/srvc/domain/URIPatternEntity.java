@@ -52,6 +52,10 @@ public class URIPatternEntity extends AbstractMatchModeEntity {
 	@Type(type = "yes_no")
 	private boolean showOnApplicationPage;
 	
+	@Column(name = "IGNORE_XSS", nullable = false)
+	@Type(type = "yes_no")
+	private boolean ignoreXSS;
+	
 	@Column(name="APPLICATION_NAME", length=100)
 	private String applicationName;
 
@@ -79,6 +83,9 @@ public class URIPatternEntity extends AbstractMatchModeEntity {
 	
 	@OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "pattern", orphanRemoval=true)
 	private Set<URIPatternErrorMappingEntity> errorMappings;
+	
+	@OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "pattern", orphanRemoval=true)
+	private Set<URIParamXSSRuleEntity> xssRules;
 
 	//@OneToMany(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, mappedBy="uriPattern")
 	@ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
@@ -322,6 +329,22 @@ public class URIPatternEntity extends AbstractMatchModeEntity {
 		this.applicationName = applicationName;
 	}
 
+	public boolean isIgnoreXSS() {
+		return ignoreXSS;
+	}
+
+	public void setIgnoreXSS(boolean ignoreXSS) {
+		this.ignoreXSS = ignoreXSS;
+	}
+
+	public Set<URIParamXSSRuleEntity> getXssRules() {
+		return xssRules;
+	}
+
+	public void setXssRules(Set<URIParamXSSRuleEntity> xssRules) {
+		this.xssRules = xssRules;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -331,6 +354,8 @@ public class URIPatternEntity extends AbstractMatchModeEntity {
 		result = prime * result
 				+ ((contentProvider == null) ? 0 : contentProvider.hashCode());
 		result = prime * result + (isPublic ? 1231 : 1237);
+		result = prime * result + (ignoreXSS ? 1231 : 1237);
+		
 		result = prime * result + (showOnApplicationPage ? 1231 : 1237);
 		result = prime * result + ((pattern == null) ? 0 : pattern.hashCode());
 		result = prime * result
@@ -369,6 +394,9 @@ public class URIPatternEntity extends AbstractMatchModeEntity {
 		if (isPublic != other.isPublic)
 			return false;
 		if(showOnApplicationPage != other.showOnApplicationPage) {
+			return false;
+		}
+		if(ignoreXSS != other.ignoreXSS) {
 			return false;
 		}
 		if (pattern == null) {

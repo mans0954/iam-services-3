@@ -829,6 +829,10 @@
 			<a>resource.url</a>
 			<b>url</b>
 		</field>
+		<field-exclude>
+			<a>xssRules</a>
+			<b>xssRules</b>
+		</field-exclude>
 	</mapping>
 	<mapping>
 		<class-a>org.openiam.idm.srvc.recon.domain.ReconciliationConfigEntity
