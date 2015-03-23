@@ -47,6 +47,20 @@
 						"groupingId" : "NONE"
 					}
 				}
+			],
+			"xssRules" : [
+				{
+					"paramName" : "currentPassword",
+					"ignoreXSS" : true
+				},
+				{
+					"paramName" : "newPassword",
+					"ignoreXSS" : true
+				},
+				{
+					"paramName" : "newPasswordConfirm",
+					"ignoreXSS" : true
+				}
 			]
 		},
 		{
@@ -72,8 +86,26 @@
 			]
 		},
 		{
+			"pattern" : "/idp/login.html",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "NONE"
+					}
+				}
+			],
+			"xssRules" : [
+				{
+					"paramName" : "password",
+					"ignoreXSS" : true
+				}
+			]
+		},
+		{
 			"pattern" : "/idp/SAMLLogin.html",
 			"isPublic" : true,
+			"ignoreXSS" : true,
 			"groupingXrefs" : [
 				{
 					"id" : {
@@ -112,6 +144,16 @@
 					"id" : {
 						"groupingId" : "PASSWORD_AUTH"
 					}
+				}
+			],
+			"xssRules" : [
+				{
+					"paramName" : "newPassword",
+					"ignoreXSS" : true
+				},
+				{
+					"paramName" : "newPasswordConfirm",
+					"ignoreXSS" : true
 				}
 			]
 		},
@@ -194,6 +236,7 @@
 		},
 		{
 			"pattern" : "/selfservice/language/languageSupport.html",
+			"ignoreXSS" : true,
 			"isPublic" : true,
 			"groupingXrefs" : [
 				{
@@ -260,6 +303,7 @@
 		},
 		{
 			"pattern" : "/idp/sp/*",
+			"ignoreXSS" : true,
 			"isPublic" : true,
 			"groupingXrefs" : [
 				{

@@ -22,6 +22,7 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.Optional;
 import java.util.Set;
 
 @Entity
@@ -190,6 +191,39 @@ public class URIPatternEntity extends AbstractMatchModeEntity {
 			}
 		}
 		return retVal;
+	}
+	
+	public URIParamXSSRuleEntity getXssRule(final String paramName) {
+		if(paramName != null && this.xssRules != null) {
+			final Optional<URIParamXSSRuleEntity> optional = this.xssRules.stream().filter(e -> StringUtils.equalsIgnoreCase(paramName, e.getParamName())).findFirst();
+			if(optional.isPresent()) {
+				return optional.get();
+			}
+		}
+		return null;
+	}
+	
+	public boolean hasXssRule(final String paramName) {
+		boolean hasRule = false;
+		if(paramName != null) {
+			if(this.xssRules != null) {
+				hasRule = this.xssRules
+							  .stream()
+							  .filter(e -> StringUtils.equalsIgnoreCase(e.getParamName(), paramName))
+							  .findFirst()
+							  .isPresent();
+			}
+		}
+		return hasRule;
+	}
+	
+	public void addXssRule(final URIParamXSSRuleEntity entity) {
+		if(entity != null) {
+			if(this.xssRules == null) {
+				this.xssRules = new HashSet<URIParamXSSRuleEntity>();
+			}
+			this.xssRules.add(entity);
+		}
 	}
 	
 	public URIPatternMetaEntity getMetaEntity(final String id) {
