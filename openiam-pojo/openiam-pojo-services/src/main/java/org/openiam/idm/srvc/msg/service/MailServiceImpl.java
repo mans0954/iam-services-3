@@ -170,18 +170,25 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
             }
         }
 
-        if (subjectPrefix != null) {
-            subject = subjectPrefix + " " + subject;
-        }
         if (bcc != null && bcc.length > 0) {
             for (String bccString : bcc) {
                 message.addBcc(bccString);
             }
         }
 
+        if (StringUtils.isNotBlank(subjectPrefix)) {
+            String subj = subjectPrefix.trim();
+            if (subject != null && subject.length() > 0) {
+                subject = subj + " " + subject;
+            } else {
+                subject = subj;
+            }
+        }
+
         if (subject != null && subject.length() > 0) {
             message.setSubject(subject);
         }
+
         if (msg != null && msg.length() > 0) {
             message.setBody(msg);
         }
