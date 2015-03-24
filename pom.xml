@@ -977,6 +977,7 @@
 							<Project-Git-Branch>${git.branch}</Project-Git-Branch>
 							<Last-Commit-Timestamp>${git.commit.time}</Last-Commit-Timestamp>
 							<Built-Timestamp>${git.build.time}</Built-Timestamp>
+							<Openiam-Version>${project.version}</Openiam-Version>
 							<Built-By>${git.build.user.name}, ${git.build.user.email}</Built-By>
 						</manifestEntries>
 					</archive>
@@ -990,6 +991,7 @@
 						<manifestEntries>
 							<Organization>${pom.organization.name}</Organization>
 							<Project>${pom.name}</Project>
+							<Openiam-Version>${project.version}</Openiam-Version>
 							<Project-Version>${pom.version}.${git.commit.id.abbrev}</Project-Version>
 							<Project-Git-Hash>${git.commit.id}</Project-Git-Hash>
 							<Project-Git-Branch>${git.branch}</Project-Git-Branch>
