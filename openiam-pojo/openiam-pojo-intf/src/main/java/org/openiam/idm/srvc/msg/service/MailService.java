@@ -41,6 +41,21 @@ public interface MailService {
     boolean sendNotification(
             @WebParam(name = "req", targetNamespace = "")
             NotificationRequest req);
+
+    /**
+     * sending a email to one user,cc and having one attachment at time.
+     * @param from
+     * @param to
+     * @param cc
+     * @param subject
+     * @param msg
+     * @param attachment
+     * @param isHtmlFormat
+     * @param executionDateTime - execution time
+     */
+    public void sendEmailByDateTime(String from, String to, String cc, String subject,
+                          String msg ,String attachment ,boolean isHtmlFormat, Date executionDateTime);
+
     
     /**
      * sending a email to one user,cc and having one attachment at time.

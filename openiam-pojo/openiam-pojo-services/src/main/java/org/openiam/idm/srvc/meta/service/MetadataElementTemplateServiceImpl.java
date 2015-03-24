@@ -279,7 +279,11 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 								
 								if(targetLanguage != null) {
 									//pageElement.setDisplayName(getLanguageValue(targetLanguage, elementEntity.getLanguageMap()));
-									pageElement.setDisplayName(elementEntity.getDisplayName());
+									if(MapUtils.isNotEmpty(elementEntity.getLanguageMap())) {
+										final LanguageMappingEntity displayNameXref = elementEntity.getLanguageMap().get(targetLanguage.getId());
+										final String displayName = (displayNameXref != null) ? displayNameXref.getValue() : null;
+										pageElement.setDisplayName(displayName);
+									}
 									pageElement.setDefaultValue(elementEntity.getStaticDefaultValue());
 									if(StringUtils.isBlank(pageElement.getDefaultValue())) {
 										//pageElement.setDefaultValue(getLanguageValue(targetLanguage, elementEntity.getDefaultValueLanguageMap()));
