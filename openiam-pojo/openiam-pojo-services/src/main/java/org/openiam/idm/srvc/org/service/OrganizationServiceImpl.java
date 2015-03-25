@@ -802,7 +802,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     public Set<String> getDelegationFilter(String requesterId, String organizationTypeId) {
         Set<String> filterData = null;
         if (StringUtils.isNotBlank(requesterId)) {
-            Map<String, UserAttribute> requesterAttributes = userDataService.getUserAttributesDto(requesterId);
+            Map<String, UserAttribute> requesterAttributes = userDataService.getUserAttributesDtoNoLocalized(requesterId);
             filterData = getDelegationFilter(requesterAttributes, organizationTypeId);
 
         }
@@ -832,7 +832,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
         Set<String> allowedOrgTypes = null;
         Map<String, UserAttribute> requesterAttributes = null;
         if (StringUtils.isNotBlank(requesterId)) {
-            requesterAttributes = userDataService.getUserAttributesDto(requesterId);
+            requesterAttributes = userDataService.getUserAttributesDtoNoLocalized(requesterId);
             filterData = getDelegationFilter(requesterAttributes, organizationTypeId);
         }
         allowedOrgTypes = organizationTypeService.getAllowedParentsIds(orgTypeId, requesterAttributes);

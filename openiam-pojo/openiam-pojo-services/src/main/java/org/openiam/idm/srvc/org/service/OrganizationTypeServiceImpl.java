@@ -184,7 +184,7 @@ public class OrganizationTypeServiceImpl implements OrganizationTypeService, Ini
 //        }
         Map<String, UserAttribute> requesterAttributes = null;
         if (StringUtils.isNotBlank(requesterId)) {
-            requesterAttributes = userDataService.getUserAttributesDto(requesterId);
+            requesterAttributes = userDataService.getUserAttributesDtoNoLocalized(requesterId);
         }
         return getAllowedParentsIds(organizationTypeId, requesterAttributes);
     }
@@ -232,7 +232,7 @@ public class OrganizationTypeServiceImpl implements OrganizationTypeService, Ini
     public List<OrganizationTypeEntity> findAllowedChildrenByDelegationFilter(String requesterId){
         Set<String> allowedTypeIds = new HashSet<String>();
         if(StringUtils.isNotBlank(requesterId)){
-            Map<String, UserAttribute> userAttributeMap = userDataService.getUserAttributesDto(requesterId);
+            Map<String, UserAttribute> userAttributeMap = userDataService.getUserAttributesDtoNoLocalized(requesterId);
             allowedTypeIds = findAllowedChildrenByDelegationFilter(userAttributeMap);
         }
         OrganizationTypeSearchBean searchBean = new OrganizationTypeSearchBean();

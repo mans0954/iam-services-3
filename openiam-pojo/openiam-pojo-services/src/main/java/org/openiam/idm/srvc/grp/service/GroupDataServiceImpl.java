@@ -715,7 +715,7 @@ public class GroupDataServiceImpl implements GroupDataService {
     private Set<String> getDelegationFilter(String requesterId){
         Set<String> filterData = null;
         if(StringUtils.isNotBlank(requesterId)){
-            Map<String, UserAttribute> attrbutes =  userDataService.getUserAttributesDto(requesterId);
+            Map<String, UserAttribute> attrbutes =  userDataService.getUserAttributesDtoNoLocalized(requesterId);
             filterData = new HashSet<String>(DelegationFilterHelper.getGroupFilterFromString(attrbutes));
             List<String> rolesFromDelegation = DelegationFilterHelper.getRoleFilterFromString(attrbutes);
             System.out.println("================================== GroupDataService.getDelegationFilter==== rolesFromDelegation= "+rolesFromDelegation+", requesterId="+requesterId);

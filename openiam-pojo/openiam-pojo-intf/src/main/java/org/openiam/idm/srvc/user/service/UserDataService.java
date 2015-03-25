@@ -255,11 +255,15 @@ public interface UserDataService {
 
     List<UserEntity> getUsersForMSys(String mSysId);
 
+    public Map<String, UserAttribute> getUserAttributesDtoNoLocalized(String userId);
+
     public Map<String, UserAttribute> getUserAttributesDto(String userId);
     
     public List<UserAttributeEntity> getUserAttributeList(String userId, final LanguageEntity language);
 
     public List<UserAttribute> getUserAttributesDtoList(String userId);
+
+    public List<UserAttribute> getUserAttributesDtoListNoLocalized(String userId);
 
     public Map<String, UserAttributeEntity> getUserAttributes(String userId);
 

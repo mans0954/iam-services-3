@@ -141,28 +141,27 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
     @Override
     @LocalizedDatabaseGet
     public List<T> getByExample(final SearchBean searchBean, int from, int size) {
-    	 final Criteria criteria = getExampleCriteria(searchBean);
-         if (from > -1) {
-             criteria.setFirstResult(from);
-         }
+         return getByExampleNoLocalized(searchBean, from, size);
+    }
 
-         if (size > -1) {
-             criteria.setMaxResults(size);
-         }
+    @Override
+    public List<T> getByExampleNoLocalized(final SearchBean searchBean, int from, int size) {
+        final Criteria criteria = getExampleCriteria(searchBean);
+        if (from > -1) {
+            criteria.setFirstResult(from);
+        }
+
+        if (size > -1) {
+            criteria.setMaxResults(size);
+        }
 
         if (searchBean instanceof AbstractSearchBean) {
             AbstractSearchBean sb = (AbstractSearchBean)searchBean;
-//            if (StringUtils.isNotBlank(sb.getSortBy())) {
-//                criteria.addOrder(sb.getOrderBy().equals(OrderConstants.DESC) ?
-//                        Order.desc(sb.getSortBy()) :
-//                        Order.asc(sb.getSortBy()));
-//            }
-
             if(CollectionUtils.isNotEmpty(sb.getSortBy())){
                 this.setOderByCriteria(criteria, sb);
             }
         }
-         return (List<T>) criteria.list();
+        return (List<T>) criteria.list();
     }
 
     @Override

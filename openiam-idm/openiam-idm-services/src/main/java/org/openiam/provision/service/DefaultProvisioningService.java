@@ -924,7 +924,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         bindingMap.put(USER, pUser);
         bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, null);
         bindingMap.put(TARGET_SYSTEM_IDENTITY, null);
-        bindingMap.put(USER_ATTRIBUTES, userMgr.getUserAttributesDto(pUser.getId()));
+        bindingMap.put(USER_ATTRIBUTES, userMgr.getUserAttributesDtoNoLocalized(pUser.getId()));
 
         if (!isAdd) {
             ProvisionUser u = new ProvisionUser(userDozerConverter.convertToDTO(userEntity, true));
@@ -2727,7 +2727,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         bindingMap.put("org", pUser.getPrimaryOrganization());
         bindingMap.put("operation", operation);
         bindingMap.put(AbstractProvisioningService.USER, pUser);
-        bindingMap.put(AbstractProvisioningService.USER_ATTRIBUTES, userMgr.getUserAttributesDto(pUser.getId()));
+        bindingMap.put(AbstractProvisioningService.USER_ATTRIBUTES, userMgr.getUserAttributesDtoNoLocalized(pUser.getId()));
 
         UserEntity userEntity = userMgr.getUser(pUser.getId());
 
@@ -2981,7 +2981,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         bindingMap.put("org", user.getPrimaryOrganization());
         bindingMap.put("operation", operation);
         bindingMap.put(USER, user);
-        bindingMap.put(USER_ATTRIBUTES, userMgr.getUserAttributesDto(user.getId()));
+        bindingMap.put(USER_ATTRIBUTES, userMgr.getUserAttributesDtoNoLocalized(user.getId()));
         bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, null);
         bindingMap.put(TARGET_SYSTEM_IDENTITY, null);
         int callPreProcessor = callPreProcessor("DISABLE", user, bindingMap, null);

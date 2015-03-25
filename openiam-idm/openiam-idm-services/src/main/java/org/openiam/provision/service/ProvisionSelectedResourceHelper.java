@@ -166,7 +166,7 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
             bindingMap.put(AbstractProvisioningService.TARGET_SYS_RES_ID, res.getId());
             bindingMap.put(AbstractProvisioningService.TARGET_SYS_MANAGED_SYS_ID, managedSysId);
             bindingMap.put(AbstractProvisioningService.USER, targetSysProvUser);
-            bindingMap.put(AbstractProvisioningService.USER_ATTRIBUTES,userMgr.getUserAttributesDto(pUser.getId()));
+            bindingMap.put(AbstractProvisioningService.USER_ATTRIBUTES,userMgr.getUserAttributesDtoNoLocalized(pUser.getId()));
 
             List<AttributeMap> attrMap = managedSysService.getResourceAttributeMaps(res.getId());
 

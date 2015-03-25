@@ -13,5 +13,7 @@ public interface UserAttributeDAO extends BaseDao<UserAttributeEntity, String>{
 	
     public List<UserAttributeEntity> findUserAttributes(String userId);
 
+    public List<UserAttributeEntity> findUserAttributesNoLocalized(String userId);
+
     void deleteUserAttributes(String userId);
 }
