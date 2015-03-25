@@ -1124,7 +1124,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                         throw new IllegalArgumentException("Attribute with this name alreday exists");
                     }
                     UserAttributeEntity e = userAttributeDozerConverter.convertToEntity(entry.getValue(), true);
-                    e.setUser(userEntity);
+                    e.setUserId(userEntity.getId());
                     userEntity.getUserAttributes().put(entry.getKey(), e);
                     // Audit Log -----------------------------------------------------------------------------------
                     IdmAuditLog auditLog = new IdmAuditLog();

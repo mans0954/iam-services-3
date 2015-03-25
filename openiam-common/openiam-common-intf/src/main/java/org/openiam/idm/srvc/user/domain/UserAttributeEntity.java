@@ -31,9 +31,8 @@ public class UserAttributeEntity extends AbstractAttributeEntity {
     @Type(type = "yes_no")
     private boolean isMultivalued = false;
 
-    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    @JoinColumn(name = "USER_ID", referencedColumnName = "USER_ID", insertable = true, updatable = false)
-    private UserEntity user;
+    @Column(name = "USER_ID")
+    private String userId;
     
     public UserAttributeEntity() {
     }
@@ -54,12 +53,12 @@ public class UserAttributeEntity extends AbstractAttributeEntity {
 		this.isMultivalued = isMultivalued;
 	}
 
-	public UserEntity getUser() {
-		return user;
+	public String getUserId() {
+		return userId;
 	}
 
-	public void setUser(UserEntity user) {
-		this.user = user;
+	public void setUserId(String userId) {
+		this.userId = userId;
 	}
 
 	@Override
@@ -67,7 +66,7 @@ public class UserAttributeEntity extends AbstractAttributeEntity {
 		final int prime = 31;
 		int result = super.hashCode();
 		result = prime * result + (isMultivalued ? 1231 : 1237);
-		result = prime * result + ((user == null) ? 0 : user.hashCode());
+		result = prime * result + ((userId == null) ? 0 : userId.hashCode());
 		result = prime * result + ((values == null) ? 0 : values.hashCode());
 		return result;
 	}
@@ -83,10 +82,10 @@ public class UserAttributeEntity extends AbstractAttributeEntity {
 		UserAttributeEntity other = (UserAttributeEntity) obj;
 		if (isMultivalued != other.isMultivalued)
 			return false;
-		if (user == null) {
-			if (other.user != null)
+		if (userId == null) {
+			if (other.userId != null)
 				return false;
-		} else if (!user.equals(other.user))
+		} else if (!userId.equals(other.userId))
 			return false;
 		if (values == null) {
 			if (other.values != null)
@@ -99,8 +98,8 @@ public class UserAttributeEntity extends AbstractAttributeEntity {
 	@Override
 	public String toString() {
 		return String
-				.format("UserAttributeEntity [values=%s, isMultivalued=%s, user=%s, toString()=%s]",
-						values, isMultivalued, user, super.toString());
+				.format("UserAttributeEntity [values=%s, isMultivalued=%s, userId=%s, toString()=%s]",
+						values, isMultivalued, userId, super.toString());
 	}
 
 	public void copyValues(UserAttribute userAttr) {

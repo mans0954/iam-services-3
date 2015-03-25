@@ -247,7 +247,7 @@ public class UserMgr implements UserDataService {
         if(user!=null && user.getType()!=null && StringUtils.isNotBlank(user.getType().getId())){
             MetadataElementSearchBean sb = new MetadataElementSearchBean();
             sb.addTypeId(user.getType().getId());
-            List<MetadataElementEntity> elementList = metadataElementDAO.getByExample(sb, -1, -1);
+            List<MetadataElementEntity> elementList = metadataElementDAO.getByExampleNoLocalized(sb, -1, -1);
             if(CollectionUtils.isNotEmpty(elementList)){
                 for(MetadataElementEntity element: elementList){
                     if(element.isRequired()){
@@ -532,7 +532,7 @@ public class UserMgr implements UserDataService {
 
         if (StringUtils.isNotBlank(searchBean.getRequesterId())) {
             // check and add delegation filter if necessary
-            Map<String, UserAttribute> requesterAttributes = this.getUserAttributesDto(searchBean.getRequesterId());
+            Map<String, UserAttribute> requesterAttributes = this.getUserAttributesDtoNoLocalized(searchBean.getRequesterId());
 
             validateSearchBean(searchBean,  requesterAttributes);
 
@@ -786,12 +786,9 @@ public class UserMgr implements UserDataService {
         if (attribute == null)
             throw new NullPointerException("Attribute can not be null");
 
-        if (attribute.getUser() == null || StringUtils.isBlank(attribute.getUser().getId())) {
+        if (StringUtils.isBlank(attribute.getUserId())) {
             throw new NullPointerException("User has not been associated with this attribute.");
         }
-
-        UserEntity userEntity = userDao.findById(attribute.getUser().getId());
-        attribute.setUser(userEntity);
 
         MetadataElementEntity element = null;
         if (attribute.getElement() != null && StringUtils.isNotEmpty(attribute.getElement().getId())) {
@@ -808,13 +805,11 @@ public class UserMgr implements UserDataService {
         if (attribute == null)
             throw new NullPointerException("Attribute can not be null");
 
-        if (attribute.getUser() == null || StringUtils.isBlank(attribute.getUser().getId())) {
+        if (StringUtils.isBlank(attribute.getUserId())) {
             throw new NullPointerException("User has not been associated with this attribute.");
         }
         final UserAttributeEntity userAttribute = userAttributeDao.findById(attribute.getId());
         if (userAttribute != null) {
-            UserEntity userEntity = userDao.findById(attribute.getUser().getId());
-            attribute.setUser(userEntity);
             attribute.setElement(userAttribute.getElement());
             userAttributeDao.merge(attribute);
         }
@@ -2258,7 +2253,7 @@ public class UserMgr implements UserDataService {
         DelegationFilterSearchBean filter = new DelegationFilterSearchBean();
 
         if (StringUtils.isNotBlank(requestorId)) {
-            Map<String, UserAttribute> requestorAttributes = this.getUserAttributesDto(requestorId);
+            Map<String, UserAttribute> requestorAttributes = this.getUserAttributesDtoNoLocalized(requestorId);
 
             if (DelegationFilterHelper.isOrgFilterSet(requestorAttributes)) {
                 filter.setOrganizationIdSet(new HashSet<String>(DelegationFilterHelper.getOrgIdFilterFromString(requestorAttributes)));
@@ -2278,6 +2273,18 @@ public class UserMgr implements UserDataService {
     @Transactional(readOnly = true)
     public List<UserEntity> getUsersForMSys(String mSysId) {
         return userDao.getUsersForMSys(mSysId);
+    }
+
+    @Transactional(readOnly = true)
+    public Map<String, UserAttribute> getUserAttributesDtoNoLocalized(String userId) {
+        List<UserAttribute> userAttributes = getUserAttributesDtoListNoLocalized(userId);
+        Map<String, UserAttribute> attributeMap = new HashMap<>();
+        if(userAttributes != null) {
+            for(UserAttribute attr : userAttributes) {
+                attributeMap.put(attr.getName(), attr);
+            }
+        }
+        return attributeMap;
     }
 
     @Transactional(readOnly = true)
@@ -2301,6 +2308,12 @@ public class UserMgr implements UserDataService {
     @Transactional(readOnly = true)
     public List<UserAttribute> getUserAttributesDtoList(String userId) {
         List<UserAttributeEntity> attributeEntities = userAttributeDao.findUserAttributes(userId);
+        return userAttributeDozerConverter.convertToDTOList(attributeEntities, false);
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserAttribute> getUserAttributesDtoListNoLocalized(String userId) {
+        List<UserAttributeEntity> attributeEntities = userAttributeDao.findUserAttributesNoLocalized(userId);
         return userAttributeDozerConverter.convertToDTOList(attributeEntities, false);
     }
 
@@ -2393,7 +2406,7 @@ public class UserMgr implements UserDataService {
     @Transactional(readOnly = true)
     public boolean validateSearchBean(UserSearchBean searchBean) throws BasicDataServiceException {
         if (StringUtils.isNotBlank(searchBean.getRequesterId())) {
-            Map<String, UserAttribute> requesterAttributes = this.getUserAttributesDto(searchBean.getRequesterId());
+            Map<String, UserAttribute> requesterAttributes = this.getUserAttributesDtoNoLocalized(searchBean.getRequesterId());
             return  validateSearchBean(searchBean, requesterAttributes);
         }
         return true;
