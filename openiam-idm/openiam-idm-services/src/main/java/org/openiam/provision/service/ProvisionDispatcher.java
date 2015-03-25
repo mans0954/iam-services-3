@@ -131,9 +131,7 @@ public class ProvisionDispatcher implements Sweepable {
     @Qualifier("transactionManager")
     private PlatformTransactionManager platformTransactionManager;
 
-
     private final Object mutex = new Object();
-    private volatile int switch_ = 0;
 
     private String[] hiddenAttrs = null;
 
@@ -145,9 +143,7 @@ public class ProvisionDispatcher implements Sweepable {
         jmsTemplate.browse(queue, new BrowserCallback<Object>() {
             @Override
             public Object doInJms(Session session, QueueBrowser browser) throws JMSException {
-                if (switch_ == 0) {
-                    switch_ = 1;
-                    Thread currentThread = Thread.currentThread();
+                synchronized (mutex) {
                     final List<ProvisionDataContainer> list = new ArrayList<ProvisionDataContainer>();
                     Enumeration e = browser.getEnumeration();
                     while (e.hasMoreElements()) {
@@ -156,10 +152,8 @@ public class ProvisionDispatcher implements Sweepable {
                     }
 
                     process(list);
-                    switch_ = 0;
+
                     return Boolean.TRUE;
-                } else {
-                    return Boolean.FALSE;
                 }
             }
         });

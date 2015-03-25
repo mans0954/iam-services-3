@@ -187,8 +187,8 @@
 		<property name="password" value="${mail.password}" />
 		<property name="javaMailProperties">
 			<props>
-				<prop key="mail.smtp.auth">false</prop>
-				<prop key="mail.smtp.starttls.enable">false</prop>
+				<prop key="mail.smtp.auth">${mail.smtp.auth}</prop>
+				<prop key="mail.smtp.starttls.enable">${mail.smtp.starttls.enable}</prop>
 			</props>
 		</property>
 	</bean>
@@ -198,8 +198,8 @@
 		<property name="port" value="${mail.port}" />
 		<property name="username" value="${mail.username}" />
 		<property name="password" value="${mail.password}" />
-		<property name="auth" value="false" />
-		<property name="starttls" value="false" />
+		<property name="auth" value="${mail.smtp.auth}" />
+		<property name="starttls" value="${mail.smtp.starttls.enable}" />
 	</bean>
 
 	<bean id="locationDAO" class="org.openiam.idm.srvc.loc.service.LocationDAOImpl">

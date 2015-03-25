@@ -183,7 +183,7 @@ public class UserEntity {
     private Date claimDate;
 
     @Column(name = "NICKNAME", length = 40)
-    @Size(max = 40, message = "validator.user.nick.name.toolong")
+    @Size(max = 100, message = "validator.user.nick.name.toolong")
     private String nickname;
 
     @Column(name = "MAIDEN_NAME", length = 40)
