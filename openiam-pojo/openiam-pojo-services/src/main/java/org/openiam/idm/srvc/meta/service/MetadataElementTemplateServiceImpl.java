@@ -569,7 +569,7 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 									if (attribute == null) { /* add new attribute */
 										UserAttributeEntity userAttribute = new UserAttributeEntity();
 										userAttribute.setName(element.getAttributeName());
-											userAttribute.setUser(user);
+											userAttribute.setUserId(user.getId());
 										final MetadataElementEntity metadataElement = getMetadataElement(userTypeId, element);
 										userAttribute.setElement(metadataElement);
 										userAttribute.setIsMultivalued(isMultiSelect);

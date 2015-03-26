@@ -31,9 +31,8 @@ public class UserAttributeEntity extends AbstractAttributeEntity {
     @Type(type = "yes_no")
     private boolean isMultivalued = false;
 
-    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
-    @JoinColumn(name = "USER_ID", referencedColumnName = "USER_ID", insertable = true, updatable = false)
-    private UserEntity user;
+    @Column(name = "USER_ID")
+    private String userId;
     
     public UserAttributeEntity() {
     }
@@ -54,43 +53,53 @@ public class UserAttributeEntity extends AbstractAttributeEntity {
 		this.isMultivalued = isMultivalued;
 	}
 
-	public UserEntity getUser() {
-		return user;
+	public String getUserId() {
+		return userId;
 	}
 
-	public void setUser(UserEntity user) {
-		this.user = user;
-	}
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
-
-        UserAttributeEntity that = (UserAttributeEntity) o;
-
-        if (isMultivalued != that.isMultivalued) return false;
-        if (user != null ? !user.getId().equals(that.user.getId()) : that.user != null) return false;
-        if (values != null ? !values.equals(that.values) : that.values != null) return false;
-
-        return true;
+	public void setUserId(String userId) {
+		this.userId = userId;
     }
 
     @Override
     public int hashCode() {
+		final int prime = 31;
         int result = super.hashCode();
-        result = 31 * result + (values != null ? values.hashCode() : 0);
-        result = 31 * result + (isMultivalued ? 1 : 0);
-        result = 31 * result + (user != null ? user.getId().hashCode() : 0);
+		result = prime * result + (isMultivalued ? 1231 : 1237);
+		result = prime * result + ((userId == null) ? 0 : userId.hashCode());
+		result = prime * result + ((values == null) ? 0 : values.hashCode());
         return result;
     }
 
     @Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		UserAttributeEntity other = (UserAttributeEntity) obj;
+		if (isMultivalued != other.isMultivalued)
+			return false;
+		if (userId == null) {
+			if (other.userId != null)
+				return false;
+		} else if (!userId.equals(other.userId))
+			return false;
+		if (values == null) {
+			if (other.values != null)
+				return false;
+		} else if (!values.equals(other.values))
+			return false;
+		return true;
+	}
+
+	@Override
 	public String toString() {
 		return String
-				.format("UserAttributeEntity [values=%s, isMultivalued=%s, user=%s, toString()=%s]",
-						values, isMultivalued, user, super.toString());
+				.format("UserAttributeEntity [values=%s, isMultivalued=%s, userId=%s, toString()=%s]",
+						values, isMultivalued, userId, super.toString());
 	}
 
 	public void copyValues(UserAttribute userAttr) {

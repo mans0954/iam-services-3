@@ -786,12 +786,9 @@ public class UserMgr implements UserDataService {
         if (attribute == null)
             throw new NullPointerException("Attribute can not be null");
 
-        if (attribute.getUser() == null || StringUtils.isBlank(attribute.getUser().getId())) {
+        if (StringUtils.isBlank(attribute.getUserId())) {
             throw new NullPointerException("User has not been associated with this attribute.");
         }
-
-        UserEntity userEntity = userDao.findById(attribute.getUser().getId());
-        attribute.setUser(userEntity);
 
         MetadataElementEntity element = null;
         if (attribute.getElement() != null && StringUtils.isNotEmpty(attribute.getElement().getId())) {
@@ -808,13 +805,11 @@ public class UserMgr implements UserDataService {
         if (attribute == null)
             throw new NullPointerException("Attribute can not be null");
 
-        if (attribute.getUser() == null || StringUtils.isBlank(attribute.getUser().getId())) {
+        if (StringUtils.isBlank(attribute.getUserId())) {
             throw new NullPointerException("User has not been associated with this attribute.");
         }
         final UserAttributeEntity userAttribute = userAttributeDao.findById(attribute.getId());
         if (userAttribute != null) {
-            UserEntity userEntity = userDao.findById(attribute.getUser().getId());
-            attribute.setUser(userEntity);
             attribute.setElement(userAttribute.getElement());
             userAttributeDao.merge(attribute);
         }
