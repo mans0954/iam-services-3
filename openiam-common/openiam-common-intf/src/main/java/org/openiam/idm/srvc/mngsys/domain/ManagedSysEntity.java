@@ -104,6 +104,9 @@ public class ManagedSysEntity implements Serializable {
     @JoinColumn(name = "MANAGED_SYS_ID", referencedColumnName = "MANAGED_SYS_ID")
     private List<ManagedSysRuleEntity> rules = new ArrayList<ManagedSysRuleEntity>(0);
 
+    @OneToMany(fetch = FetchType.LAZY, orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "managedSystem")
+    private Set<AttributeMapEntity> attributeMaps = new HashSet<AttributeMapEntity>(0);
+
     @OneToMany(orphanRemoval = false, cascade = {CascadeType.DETACH, CascadeType.REFRESH}, mappedBy = "managedSystem", fetch = FetchType.LAZY)
     private Set<GroupEntity> groups;
 
@@ -404,6 +407,14 @@ public class ManagedSysEntity implements Serializable {
 
     public void setChangedByEndUser(boolean changedByEndUser) {
         this.changedByEndUser = changedByEndUser;
+    }
+
+    public Set<AttributeMapEntity> getAttributeMaps() {
+        return attributeMaps;
+    }
+
+    public void setAttributeMaps(Set<AttributeMapEntity> attributeMaps) {
+        this.attributeMaps = attributeMaps;
     }
 
     @Override
