@@ -254,7 +254,7 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 		if(entity != null) {
 			final Map<String, UserAttributeEntity> attributeName2UserAttributeMap = new HashMap<String, UserAttributeEntity>();
 			if(userId != null) {
-				final List<UserAttributeEntity> attributeList = attributeDAO.findUserAttributes(userId);
+				final List<UserAttributeEntity> attributeList = attributeDAO.findUserAttributesLocalized(userId);
 				for(final UserAttributeEntity attribute : attributeList) {
 					attributeName2UserAttributeMap.put(attribute.getName(), attribute);
 				}
@@ -499,7 +499,7 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 			final Map<String, MetadataElementEntity> elementMap = getMetadataElementMap(template);
 			
 			/* create user attribute maps for fast access */
-			final List<UserAttributeEntity> attributes = attributeDAO.findUserAttributes(userId);
+			final List<UserAttributeEntity> attributes = attributeDAO.findUserAttributesLocalized(userId);
 			final Map<String, UserAttributeEntity> attributeName2UserAttributeMap = new HashMap<String, UserAttributeEntity>();
 			if(CollectionUtils.isNotEmpty(attributes)) {
 				for(final UserAttributeEntity attribute : attributes) {

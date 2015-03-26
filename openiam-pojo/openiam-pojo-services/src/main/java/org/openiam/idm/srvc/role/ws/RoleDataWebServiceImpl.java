@@ -44,6 +44,7 @@ import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.domain.RolePolicyEntity;
 import org.openiam.idm.srvc.role.dto.Role;
+import org.openiam.idm.srvc.role.dto.RoleAttribute;
 import org.openiam.idm.srvc.role.dto.RolePolicy;
 import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -157,7 +158,12 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 		}
 	}
 
-	@Override
+    @Override
+    public List<RoleAttribute> getRoleAttributes(String roleId) {
+        return roleDataService.getRoleAttributes(roleId);
+    }
+
+    @Override
 	public Response addGroupToRole(String roleId, String groupId, String requesterId) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLog idmAuditLog = new IdmAuditLog();
@@ -240,9 +246,12 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	}
 
 	@Override
-	@Deprecated
 	public Role getRole(String roleId, String requesterId) {
-		return getRoleLocalized(roleId, requesterId, null);
+        Role retVal = null;
+        if (StringUtils.isNotBlank(roleId)) {
+            retVal = roleDataService.getRoleDTO(roleId);
+        }
+        return retVal;
 	}
 
 	@Override

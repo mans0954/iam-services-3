@@ -6,6 +6,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.ResponseCode;
+import org.openiam.dozer.converter.RoleAttributeDozerConverter;
 import org.openiam.dozer.converter.RoleDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
@@ -28,6 +29,7 @@ import org.openiam.idm.srvc.role.domain.RoleAttributeEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.domain.RolePolicyEntity;
 import org.openiam.idm.srvc.role.dto.Role;
+import org.openiam.idm.srvc.role.dto.RoleAttribute;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
@@ -72,6 +74,9 @@ public class RoleDataServiceImpl implements RoleDataService {
 	
 	@Autowired
 	private RoleDozerConverter roleDozerConverter;
+
+    @Autowired
+    private RoleAttributeDozerConverter roleAttributeDozerConverter;
 
 	@Autowired
     @Qualifier("entityValidator")
@@ -354,6 +359,13 @@ public class RoleDataServiceImpl implements RoleDataService {
         
         bean.setRoleAttributes(dbProps);
 	}
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<RoleAttribute> getRoleAttributes(String roleId) {
+        List<RoleAttributeEntity> attributes = roleAttributeDAO.findByRoleId(roleId);
+        return roleAttributeDozerConverter.convertToDTOList(attributes, false);
+    }
 
     private void auditLogRemoveAttribute(final RoleEntity role, final RoleAttributeEntity roleAttr, final String requesterId){
         // Audit Log -----------------------------------------------------------------------------------
@@ -663,8 +675,9 @@ public class RoleDataServiceImpl implements RoleDataService {
 	}
 	
 	@Override
+    @Transactional(readOnly = true)
 	public Role getRoleDTO(String id) {
-		return roleDozerConverter.convertToDTO(roleDao.findById(id), true);
+		return roleDozerConverter.convertToDTO(roleDao.findByIdNoLocalized(id), true);
 	}
 	
 	@Override

@@ -18,7 +18,7 @@ import java.util.List;
 @Internationalized
 public class RoleAttributeEntity extends AbstractAttributeEntity {
     
-    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
     @JoinColumn(name = "ROLE_ID", referencedColumnName = "ROLE_ID", insertable = true, updatable = false)
     private RoleEntity role;
 
@@ -68,7 +68,7 @@ public class RoleAttributeEntity extends AbstractAttributeEntity {
 		final int prime = 31;
 		int result = super.hashCode();
 		result = prime * result + (isMultivalued ? 1231 : 1237);
-		result = prime * result + ((role == null) ? 0 : role.hashCode());
+		result = prime * result + ((role == null) ? 0 : role.getId().hashCode());
 		result = prime * result + ((values == null) ? 0 : values.hashCode());
 		return result;
 	}
@@ -87,7 +87,7 @@ public class RoleAttributeEntity extends AbstractAttributeEntity {
 		if (role == null) {
 			if (other.role != null)
 				return false;
-		} else if (!role.equals(other.role))
+		} else if (!role.getId().equals(other.role.getId()))
 			return false;
 		if (values == null) {
 			if (other.values != null)

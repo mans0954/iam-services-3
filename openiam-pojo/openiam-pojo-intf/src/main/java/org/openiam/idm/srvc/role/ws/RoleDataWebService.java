@@ -42,6 +42,8 @@ public interface RoleDataWebService {
     Role getRole(@WebParam(name = "roleId", targetNamespace = "") String roleId,
                  @WebParam(name="requesterId", targetNamespace="") String requesterId);
 
+    @WebMethod
+    List<RoleAttribute> getRoleAttributes(@WebParam(name = "roleId", targetNamespace = "") String roleId);
 
     @WebMethod
     Role getRoleLocalized(@WebParam(name = "roleId", targetNamespace = "") String roleId,

@@ -24,7 +24,10 @@ public class ReconciliationResourceAttributeMapEntity implements
     @Column(name = "RECON_RES_ATTR_MAP_ID", length = 32, nullable = false)
     private String reconciliationResourceAttributeMapId;
 
-    @ManyToOne(optional = false, cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "reconResAttribute", orphanRemoval = true, cascade = CascadeType.ALL, optional = false)
+    private AttributeMapEntity attributeMap;
+
+    @ManyToOne(optional = false)
     @JoinColumn(name = "ATTR_POLICY_ID", nullable = false, updatable = true)
     private PolicyEntity attributePolicy;
 
@@ -56,5 +59,13 @@ public class ReconciliationResourceAttributeMapEntity implements
     public void setDefaultAttributePolicy(
             DefaultReconciliationAttributeMapEntity defaultAttributePolicy) {
         this.defaultAttributePolicy = defaultAttributePolicy;
+    }
+
+    public AttributeMapEntity getAttributeMap() {
+        return attributeMap;
+    }
+
+    public void setAttributeMap(AttributeMapEntity attributeMap) {
+        this.attributeMap = attributeMap;
     }
 }
