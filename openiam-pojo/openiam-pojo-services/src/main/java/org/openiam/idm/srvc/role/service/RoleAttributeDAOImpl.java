@@ -14,6 +14,7 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import static org.hibernate.criterion.Example.create;
 
+import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.srvc.role.domain.RoleAttributeEntity;
 import org.openiam.idm.srvc.role.dto.*;
@@ -23,7 +24,10 @@ import org.springframework.stereotype.Repository;
 public class RoleAttributeDAOImpl extends BaseDaoImpl<RoleAttributeEntity, String> implements RoleAttributeDAO {
 
     private static final Log log = LogFactory.getLog(RoleAttributeDAOImpl.class);
-    
+
+    public List<RoleAttributeEntity> findByRoleId(String roleId) {
+        return getCriteria().add(Restrictions.eq("role.id",roleId)).list();
+    }
 
 	@Override
 	protected String getPKfieldName() {

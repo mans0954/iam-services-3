@@ -247,7 +247,7 @@ public class UserMgr implements UserDataService {
         if(user!=null && user.getType()!=null && StringUtils.isNotBlank(user.getType().getId())){
             MetadataElementSearchBean sb = new MetadataElementSearchBean();
             sb.addTypeId(user.getType().getId());
-            List<MetadataElementEntity> elementList = metadataElementDAO.getByExample(sb, -1, -1);
+            List<MetadataElementEntity> elementList = metadataElementDAO.getByExampleNoLocalize(sb, -1, -1);
             if(CollectionUtils.isNotEmpty(elementList)){
                 for(MetadataElementEntity element: elementList){
                     if(element.isRequired()){

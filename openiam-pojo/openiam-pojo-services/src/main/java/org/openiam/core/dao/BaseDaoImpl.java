@@ -172,6 +172,11 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
     }
 
     @Override
+    public List<T> getByExampleNoLocalize(SearchBean searchBean, int from, int size) {
+        return this.getByExample(searchBean, -1, -1);
+    }
+
+    @Override
     public int count(T t) {
         return ((Number) getExampleCriteria(t).setProjection(rowCount())
                 .uniqueResult()).intValue();

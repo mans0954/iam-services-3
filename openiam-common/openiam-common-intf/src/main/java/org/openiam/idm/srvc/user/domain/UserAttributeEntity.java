@@ -31,7 +31,7 @@ public class UserAttributeEntity extends AbstractAttributeEntity {
     @Type(type = "yes_no")
     private boolean isMultivalued = false;
 
-    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
     @JoinColumn(name = "USER_ID", referencedColumnName = "USER_ID", insertable = true, updatable = false)
     private UserEntity user;
     
@@ -62,41 +62,31 @@ public class UserAttributeEntity extends AbstractAttributeEntity {
 		this.user = user;
 	}
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = super.hashCode();
-		result = prime * result + (isMultivalued ? 1231 : 1237);
-		result = prime * result + ((user == null) ? 0 : user.hashCode());
-		result = prime * result + ((values == null) ? 0 : values.hashCode());
-		return result;
-	}
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (!super.equals(obj))
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		UserAttributeEntity other = (UserAttributeEntity) obj;
-		if (isMultivalued != other.isMultivalued)
-			return false;
-		if (user == null) {
-			if (other.user != null)
-				return false;
-		} else if (!user.equals(other.user))
-			return false;
-		if (values == null) {
-			if (other.values != null)
-				return false;
-		} else if (!values.equals(other.values))
-			return false;
-		return true;
-	}
+        UserAttributeEntity that = (UserAttributeEntity) o;
 
-	@Override
+        if (isMultivalued != that.isMultivalued) return false;
+        if (user != null ? !user.getId().equals(that.user.getId()) : that.user != null) return false;
+        if (values != null ? !values.equals(that.values) : that.values != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + (values != null ? values.hashCode() : 0);
+        result = 31 * result + (isMultivalued ? 1 : 0);
+        result = 31 * result + (user != null ? user.getId().hashCode() : 0);
+        return result;
+    }
+
+    @Override
 	public String toString() {
 		return String
 				.format("UserAttributeEntity [values=%s, isMultivalued=%s, user=%s, toString()=%s]",

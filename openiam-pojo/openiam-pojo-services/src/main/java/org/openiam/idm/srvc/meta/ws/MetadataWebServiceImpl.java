@@ -46,6 +46,7 @@ import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
+import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
 import org.openiam.idm.srvc.meta.dto.MetadataElement;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.meta.service.MetadataService;
@@ -76,6 +77,21 @@ public class MetadataWebServiceImpl implements MetadataWebService {
     private static Logger LOG = Logger.getLogger(MetadataWebServiceImpl.class);
 
     @Override
+    public MetadataElement getElementByAttrNameAndTypeId(String attrName, String typeId, final Language language) {
+        return metadataService.findElementByAttrNameAndTypeId(attrName, typeId, language);
+    }
+
+    @Override
+    public String getElementIdByAttrNameAndTypeId(String attrName, String typeId) {
+        return metadataService.findElementIdByAttrNameAndTypeId(attrName, typeId);
+    }
+
+    @Override
+    public MetadataType getByNameGrouping(String name, MetadataTypeGrouping grouping, final Language language) {
+        return metadataService.findMetadataTypeByNameAndGrouping(name, grouping, language);
+    }
+
+    @Override
     public List<MetadataElement> findElementBeans(final MetadataElementSearchBean searchBean, final int from, final int size, final Language language) {
         return metadataService.findBeans(searchBean, from, size, language);
     }
@@ -86,8 +102,8 @@ public class MetadataWebServiceImpl implements MetadataWebService {
     }
 
     @Override
-    public MetadataElement getMetadataElementById(String id) {
-        return metadataService.findElementById(id);
+    public MetadataElement getMetadataElementById(String id, Language language) {
+        return metadataService.findElementById(id, language);
     }
 
     @Override
