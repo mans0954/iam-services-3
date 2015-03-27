@@ -27,8 +27,9 @@ public class AttributeMapEntity implements java.io.Serializable {
     @Column(name = "ATTRIBUTE_MAP_ID", length = 32, nullable = false)
     private String attributeMapId;
 
-    @Column(name = "MANAGED_SYS_ID", length = 32)
-    private String managedSysId;
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "MANAGED_SYS_ID", nullable = false)
+    private ManagedSysEntity managedSystem;
 
     @Column(name = "RESOURCE_ID", length = 32)
     private String resourceId;
@@ -82,17 +83,17 @@ public class AttributeMapEntity implements java.io.Serializable {
     public AttributeMapEntity() {
     }
 
-    public AttributeMapEntity(String attributeMapId, String managedSysId) {
+    public AttributeMapEntity(String attributeMapId, ManagedSysEntity managedSystem) {
         this.attributeMapId = attributeMapId;
-        this.managedSysId = managedSysId;
+        this.managedSystem = managedSystem;
     }
 
-    public AttributeMapEntity(String attributeMapId, String managedSysId,
+    public AttributeMapEntity(String attributeMapId, ManagedSysEntity managedSystem,
             String resourceId, String synchConfigId, String mapForObjectType, String attributeName,
             String targetAttributeName, Integer authoritativeSrc, String rule,
             String status, Date startDate, Date endDate, Integer storeInIamdb) {
         this.attributeMapId = attributeMapId;
-        this.managedSysId = managedSysId;
+        this.managedSystem = managedSystem;
         this.resourceId = resourceId;
         this.synchConfigId = synchConfigId;
         this.mapForObjectType = mapForObjectType;
@@ -112,14 +113,6 @@ public class AttributeMapEntity implements java.io.Serializable {
 
     public void setAttributeMapId(String attributeMapId) {
         this.attributeMapId = attributeMapId;
-    }
-
-    public String getManagedSysId() {
-        return this.managedSysId;
-    }
-
-    public void setManagedSysId(String managedSysId) {
-        this.managedSysId = managedSysId;
     }
 
     public String getResourceId() {
@@ -243,10 +236,18 @@ public class AttributeMapEntity implements java.io.Serializable {
         return defaultValue;
     }
 
+    public ManagedSysEntity getManagedSystem() {
+        return managedSystem;
+    }
+
+    public void setManagedSystem(ManagedSysEntity managedSystem) {
+        this.managedSystem = managedSystem;
+    }
+
     @Override
     public String toString() {
         return "AttributeMap{" + "attributeMapId='" + attributeMapId + '\''
-                + ", managedSysId='" + managedSysId + '\'' + ", resourceId='"
+                + ", managedSysId='" + managedSystem.getId() + '\'' + ", resourceId='"
                 + resourceId + '\''  + ", synchConfigId='"
                 + synchConfigId + '\'' + ", mapForObjectType='" + mapForObjectType
                 + '\'' + ", attributeName='" + attributeName + '\''

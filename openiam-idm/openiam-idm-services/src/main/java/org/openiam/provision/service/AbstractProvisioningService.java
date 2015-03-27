@@ -100,6 +100,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 
+import javax.annotation.PostConstruct;
 import java.util.*;
 
 /**
@@ -213,9 +214,19 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     protected String serviceHost;
     @Value("${openiam.idm.ws.path}")
     protected String serviceContext;
+
+    @Value("${org.openiam.idm.postProcessor.cache}")
+    protected boolean cachePostProcessorEnable;
+    @Value("${org.openiam.idm.preProcessor.cache}")
+    protected boolean cachePreProcessorEnable;
+
     @Autowired
     @Qualifier("configurableGroovyScriptEngine")
     protected ScriptIntegration scriptRunner;
+
+    private Map<String,ProvisionServicePreProcessor> preProcessorInstanceMap = new HashMap<String, ProvisionServicePreProcessor>();
+    private Map<String,ProvisionServicePostProcessor> postProcessorInstanceMap = new HashMap<String, ProvisionServicePostProcessor>();
+
     @Autowired
     private String eventProcessor;
     @Autowired
@@ -236,6 +247,36 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
 
     @Autowired
     private ManagedSystemObjectMatchDozerConverter managedSystemObjectMatchDozerConverter;
+
+
+    @PostConstruct
+    public void populateMovieCache() {
+        if(cachePreProcessorEnable) {
+            try{
+                Map<String, Object> bindingMap = new HashMap<String, Object>();
+                ProvisionServicePreProcessor<ProvisionUser> preProcessorInstance = preProcessorInstanceMap.get(preProcessor);
+                if(preProcessorInstance == null) {
+                    preProcessorInstance = (ProvisionServicePreProcessor<ProvisionUser>) scriptRunner.instantiateClass(bindingMap, preProcessor);
+                    preProcessorInstanceMap.put(preProcessor, preProcessorInstance);
+                }
+            } catch(Exception exc) {
+                log.error(exc);
+            }
+        }
+        if(cachePostProcessorEnable) {
+            try {
+                Map<String, Object> bindingMap = new HashMap<String, Object>();
+                ProvisionServicePostProcessor<ProvisionUser> postProcessorInstance = postProcessorInstanceMap.get(postProcessor);
+                if(postProcessorInstance == null) {
+                    postProcessorInstance = (ProvisionServicePostProcessor<ProvisionUser>) scriptRunner.instantiateClass(bindingMap, postProcessor);
+                    postProcessorInstanceMap.put(postProcessor, postProcessorInstance);
+                }
+            } catch(Exception exc) {
+                log.error(exc);
+            }
+        }
+    }
+
 
     protected void checkAuditingAttributes(ProvisionUser pUser) {
         if (pUser.getRequestClientIP() == null || pUser.getRequestClientIP().isEmpty()) {
@@ -542,7 +583,13 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     protected ProvisionServicePreProcessor<ProvisionUser> createProvPreProcessScript(String scriptName, Map<String, Object> tmpMap) {
         Map<String, Object> bindingMap = new HashMap<String, Object>();
         try {
-            return (ProvisionServicePreProcessor<ProvisionUser>) scriptRunner.instantiateClass(bindingMap, scriptName);
+            ProvisionServicePreProcessor<ProvisionUser> preProcessorInstance;
+            if(cachePreProcessorEnable) {
+                preProcessorInstance = preProcessorInstanceMap.get(scriptName);
+            } else {
+                preProcessorInstance = (ProvisionServicePreProcessor<ProvisionUser>) scriptRunner.instantiateClass(bindingMap, scriptName);
+            }
+            return preProcessorInstance;
         } catch (Exception ce) {
             log.error(ce);
             return null;
@@ -552,7 +599,13 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     protected ProvisionServicePostProcessor<ProvisionUser> createProvPostProcessScript(String scriptName, Map<String, Object> tmpMap) {
         Map<String, Object> bindingMap = new HashMap<String, Object>();
         try {
-            return (ProvisionServicePostProcessor<ProvisionUser>) scriptRunner.instantiateClass(bindingMap, scriptName);
+            ProvisionServicePostProcessor<ProvisionUser> postProcessorInstance;
+            if(cachePostProcessorEnable) {
+                postProcessorInstance = postProcessorInstanceMap.get(scriptName);
+            } else {
+                postProcessorInstance = (ProvisionServicePostProcessor<ProvisionUser>) scriptRunner.instantiateClass(bindingMap, scriptName);
+            }
+            return postProcessorInstance;
         } catch (Exception ce) {
             log.error(ce);
             return null;
@@ -1124,7 +1177,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                         throw new IllegalArgumentException("Attribute with this name alreday exists");
                     }
                     UserAttributeEntity e = userAttributeDozerConverter.convertToEntity(entry.getValue(), true);
-                    e.setUser(userEntity);
+                    e.setUserId(userEntity.getId());
                     userEntity.getUserAttributes().put(entry.getKey(), e);
                     // Audit Log -----------------------------------------------------------------------------------
                     IdmAuditLog auditLog = new IdmAuditLog();
@@ -1719,7 +1772,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         resumeReq.setHostLoginPassword(passwordDecoded);
         resumeReq.setHostUrl(mSys.getHostUrl());
 
-        log.debug("Resume request will be sent for user login " + login.getLogin());
+        log.debug((operation ? "Suspend" : "Resume") + " request will be sent for user login " + login.getLogin());
         return operation ? connectorAdapter.suspendRequest(mSys, resumeReq, MuleContextProvider.getCtx()) :
                 connectorAdapter.resumeRequest(mSys, resumeReq, MuleContextProvider.getCtx());
     }

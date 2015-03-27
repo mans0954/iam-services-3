@@ -28,14 +28,14 @@ public class AttributeMapDAOImpl extends
         return (List<AttributeMapEntity>) this.getCriteria()
                 .add(Restrictions.eq("resourceId", resourceId))
                 .addOrder(Order.asc("mapForObjectType"))
-                .addOrder(Order.asc("managedSysId")).list();
+                .addOrder(Order.asc("managedSystem.id")).list();
     }
 
     public List<AttributeMapEntity> findByManagedSysId(String managedSysId) {
         return (List<AttributeMapEntity>) this.getCriteria()
-                .add(Restrictions.eq("managedSysId", managedSysId))
+                .add(Restrictions.eq("managedSystem.id", managedSysId))
                 .addOrder(Order.asc("mapForObjectType"))
-                .addOrder(Order.asc("managedSysId")).list();
+                .addOrder(Order.asc("managedSystem.id")).list();
     }
 
     public List<AttributeMapEntity> findBySynchConfigId(String synchConfigId) {
@@ -73,21 +73,21 @@ public class AttributeMapDAOImpl extends
     }
 
     public AttributeMapEntity add(AttributeMapEntity entity) {
-        if (StringUtils.isEmpty(entity.getManagedSysId())
+        if ((entity.getManagedSystem() == null)
                 && StringUtils.isEmpty(entity.getSynchConfigId())) {
-            String reason = "managedSysId or synchConfigId must be specified";
+            String reason = "managedSys or synchConfigId must be specified";
             throw new DataException(reason, new Exception(
-                    "managedSysId and synchConfigId are null"));
+                    "managedSys and synchConfigId are null"));
         }
         return super.add(entity);
     }
 
     public void update(AttributeMapEntity entity) {
-        if (StringUtils.isEmpty(entity.getManagedSysId())
+        if ((entity.getManagedSystem() == null)
                 && StringUtils.isEmpty(entity.getSynchConfigId())) {
-            String reason = "managedSysId or synchConfigId must be specified";
+            String reason = "managedSys or synchConfigId must be specified";
             throw new DataException(reason, new Exception(
-                    "managedSysId and synchConfigId are null"));
+                    "managedSys and synchConfigId are null"));
         }
         super.update(entity);
     }

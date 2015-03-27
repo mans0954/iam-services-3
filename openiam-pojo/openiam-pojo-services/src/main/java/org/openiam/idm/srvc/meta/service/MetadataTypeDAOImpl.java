@@ -16,6 +16,7 @@ import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.srvc.cat.domain.CategoryEntity;
 import org.openiam.idm.srvc.cat.service.CategoryDAO;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
+import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -24,6 +25,11 @@ import org.springframework.stereotype.Repository;
  */
 @Repository("metadataTypeDAO")
 public class MetadataTypeDAOImpl extends BaseDaoImpl<MetadataTypeEntity, String> implements MetadataTypeDAO {
+
+    @Override
+    public MetadataTypeEntity findByNameGrouping(String name, MetadataTypeGrouping grouping) {
+        return (MetadataTypeEntity)getCriteria().add(Restrictions.eq("description",name)).add(Restrictions.eq("grouping",grouping)).uniqueResult();
+    }
 
     @Override
     protected Criteria getExampleCriteria(final MetadataTypeEntity entity) {

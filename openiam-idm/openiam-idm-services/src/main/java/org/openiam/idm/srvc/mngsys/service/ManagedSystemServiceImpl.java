@@ -363,7 +363,7 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
         if (attrMap == null)
             return null;
         for (AttributeMapEntity a : attrMap) {
-            a.setManagedSysId(mSysId);
+            a.setManagedSystem(getManagedSysById(mSysId));
             a.setResourceId(resId);
             a.setSynchConfigId(synchConfigId);
             if (a.getAttributeMapId() == null

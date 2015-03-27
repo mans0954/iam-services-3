@@ -7,6 +7,7 @@ import org.openiam.idm.srvc.role.domain.RoleAttributeEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.domain.RolePolicyEntity;
 import org.openiam.idm.srvc.role.dto.Role;
+import org.openiam.idm.srvc.role.dto.RoleAttribute;
 
 import java.util.List;
 
@@ -182,6 +183,8 @@ public interface RoleDataService {
     public void validateRole2RoleAddition(final String parentId, final String memberId) throws BasicDataServiceException;
     
     public Role getRoleDTO(final String roleId);
+
+    public List<RoleAttribute> getRoleAttributes(final String roleId);
 
     public void addAttribute(RoleAttributeEntity attribute);
     public void updateAttribute(RoleAttributeEntity attribute);

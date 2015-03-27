@@ -14,6 +14,7 @@ import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.lang.service.LanguageMappingDAO;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
+import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
 import org.openiam.idm.srvc.meta.domain.MetadataValidValueEntity;
 import org.openiam.idm.srvc.meta.dto.MetadataElement;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
@@ -88,9 +89,32 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
     private static final Log log = LogFactory.getLog(MetadataServiceImpl.class);
 
     @Override
+    @Transactional(readOnly = true)
+    public String findElementIdByAttrNameAndTypeId(String attrName, String typeId) {
+        return metadataElementDao.findIdByAttrNameTypeId(attrName, typeId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    @LocalizedServiceGet
+    public MetadataType findMetadataTypeByNameAndGrouping(String name, MetadataTypeGrouping grouping, final Language language) {
+        MetadataTypeEntity metadataTypeEntity = metadataTypeDao.findByNameGrouping(name, grouping);
+        return metaDataTypeDozerConverter.convertToDTO(metadataTypeEntity, true);
+    }
+
+    @Override
     @Transactional(readOnly=true)
-    public MetadataElement findElementById(String id) {
+    @LocalizedServiceGet
+    public MetadataElement findElementById(String id, Language language) {
         MetadataElementEntity metadataElementEntity = metadataElementDao.findById(id);
+        return metadataElementEntity != null ? metaDataElementDozerConverter.convertToDTO(metadataElementEntity,true) : null;
+    }
+
+    @Override
+    @Transactional(readOnly=true)
+    @LocalizedServiceGet
+    public MetadataElement findElementByAttrNameAndTypeId(String attrName, String typeId, final Language language) {
+        MetadataElementEntity metadataElementEntity = metadataElementDao.findByAttrNameTypeId(attrName, typeId);
         return metadataElementEntity != null ? metaDataElementDozerConverter.convertToDTO(metadataElementEntity,true) : null;
     }
 
