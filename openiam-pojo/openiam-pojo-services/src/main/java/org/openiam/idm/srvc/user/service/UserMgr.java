@@ -604,7 +604,17 @@ public class UserMgr implements UserDataService {
         }
 
         if (searchBean.getPrincipal() != null) {
-            nonEmptyListOfLists.add(loginSearchDAO.findUserIds(0, Integer.MAX_VALUE, searchBean.getPrincipal()));
+        	/* 
+        	 * DO NOT MERGE INTO 4.0!!!!  Only for 3.3.1 to solve IDMAPPS-2735.
+        	 * Use 4.0 code 
+        	 */
+        	if(searchBean.getPrincipal().isUseLucene()) {
+        		nonEmptyListOfLists.add(loginSearchDAO.findUserIds(0, Integer.MAX_VALUE, searchBean.getPrincipal()));
+        	} else {
+        		List<String> userIds = loginDao.getUserIds(searchBean.getPrincipal());
+        		userIds = (userIds != null) ? userIds : Collections.EMPTY_LIST;
+        		nonEmptyListOfLists.add(userIds);
+        	}
         }
 
         if (searchBean.getEmailAddressMatchToken() != null && searchBean.getEmailAddressMatchToken().isValid()) {

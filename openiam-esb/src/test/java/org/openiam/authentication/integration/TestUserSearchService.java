@@ -22,6 +22,7 @@ import org.openiam.base.ws.SearchParam;
 import org.openiam.idm.searchbeans.LoginSearchBean;
 import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.auth.dto.Login;
+import org.openiam.idm.srvc.auth.ws.LoginDataWebService;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.ws.UserDataWebService;
@@ -46,6 +47,9 @@ public class TestUserSearchService extends AbstractTestNGSpringContextTests {
 	@Qualifier("jdbcTemplate")
 	protected JdbcTemplate jdbcTemplate;
 	
+	@Resource(name="loginServiceClient")
+	private LoginDataWebService loginServiceClient;
+	
 	private List<User> userList = null;
 	private static final String QUERY = "SELECT " +
 										"	u.FIRST_NAME AS FIRST_NAME, " +
@@ -55,6 +59,7 @@ public class TestUserSearchService extends AbstractTestNGSpringContextTests {
 										"	u.EMPLOYEE_ID AS EMPLOYEE_ID, " +
 										"	e.EMAIL_ADDRESS AS EMAIL, " +
 										"	l.LOGIN AS LOGIN, " +
+										"	l.LOGIN_ID AS LOGIN_ID, " +
 										"	l.MANAGED_SYS_ID AS MANAGED_SYS_ID " +
 										"FROM USERS u, LOGIN l, EMAIL_ADDRESS e " +
 										"	WHERE u.USER_ID=l.USER_ID " +
@@ -79,10 +84,12 @@ public class TestUserSearchService extends AbstractTestNGSpringContextTests {
 					final String emailAddress = rs.getString("EMAIL");
 					final String login = rs.getString("LOGIN");
 					final String managedSysId = rs.getString("MANAGED_SYS_ID");
+					final String loginId = rs.getString("LOGIN_ID");
 					
 					User user = userMap.get(userId);
 					if(user == null) {
 						user = new User();
+						user.setId(userId);
 						user.setFirstName(firstName);
 						user.setLastName(lastName);
 						user.setMaidenName(maidenName);
@@ -103,6 +110,7 @@ public class TestUserSearchService extends AbstractTestNGSpringContextTests {
 					final Login principal = new Login();
 					principal.setLogin(login);
 					principal.setManagedSysId(managedSysId);
+					principal.setLoginId(loginId);
 					user.getPrincipalList().add(principal);
 				}
 				return new LinkedList<>(userMap.values());
@@ -125,6 +133,79 @@ public class TestUserSearchService extends AbstractTestNGSpringContextTests {
 	    			Assert.assertEquals(String.format("User result: %s did not match query:%s", result.getFirstName(), user.getFirstName()), user.getFirstName(), result.getFirstName());
 	    		}
     		}
+    	}
+    }
+    
+    /* DO NOT MERGE INTO 4.0!!!!  Only for 3.3.1 to solve IDMAPPS-2735.  Delete this function */
+    @Test
+    public void testIDMAPPS2735UsingUserService() {
+    	for(final MatchType matchType : MatchType.values()) {
+    		for(final User u : userList) {
+        		if(CollectionUtils.isNotEmpty(u.getPrincipalList())) {
+        			for(final Login login : u.getPrincipalList()) {
+        				String searchTerm = null;
+        				if(matchType.equals(MatchType.EXACT)) {
+        					searchTerm = login.getLogin();
+        				} else {
+        					searchTerm = login.getLogin().substring(0, login.getLogin().length() / 2);
+        				}
+        				final LoginSearchBean loginSearchBean = new LoginSearchBean();
+        				loginSearchBean.setUseLucene(false);
+        				loginSearchBean.setManagedSysId(login.getManagedSysId());
+        				loginSearchBean.setLoginMatchToken(new SearchParam(searchTerm, matchType));
+        				
+        				final UserSearchBean searchBean = new UserSearchBean();
+        				searchBean.setPrincipal(loginSearchBean);
+        				final List<User> results = userDataWebService.findBeans(searchBean, 0, Integer.MAX_VALUE);
+        				Assert.assertTrue(CollectionUtils.isNotEmpty(results));
+        				
+        				boolean contains = false;
+        				for(final User serviceUser : results) {
+        					if(serviceUser.getId().equals(u.getId())) {
+        						contains = true;
+        					}
+        				}
+        				
+        				Assert.assertTrue(String.format("Could not find user with searchTerm:'%s', matchMode:%s, managedSysId:%s, expected userId:%s", 
+        												searchTerm, matchType, login.getManagedSysId(), u.getId()), contains);
+        			}
+        		}
+    		}
+    	}
+    }
+    
+    /* DO NOT MERGE INTO 4.0!!!!  Only for 3.3.1 to solve IDMAPPS-2735.  Delete this function */
+    @Test
+    public void testIDMAPPS2735UsingLoginService() {
+    	for(final MatchType matchType : MatchType.values()) {
+    		for(final User u : userList) {
+        		if(CollectionUtils.isNotEmpty(u.getPrincipalList())) {
+        			for(final Login login : u.getPrincipalList()) {
+        				String searchTerm = null;
+        				if(matchType.equals(MatchType.EXACT)) {
+        					searchTerm = login.getLogin();
+        				} else {
+        					searchTerm = login.getLogin().substring(0, login.getLogin().length() / 2);
+        				}
+        				final LoginSearchBean searchBean = new LoginSearchBean();
+        				searchBean.setUseLucene(false);
+        				searchBean.setManagedSysId(login.getManagedSysId());
+        				searchBean.setLoginMatchToken(new SearchParam(searchTerm, matchType));
+        				Assert.assertTrue(loginServiceClient.count(searchBean) > 0);
+        				
+        				final List<Login> loginList = loginServiceClient.findBeans(searchBean, 0, Integer.MAX_VALUE);
+        				Assert.assertTrue(CollectionUtils.isNotEmpty(loginList));
+        				boolean contains = false;
+        				for(final Login l : loginList) {
+        					if(l.getLoginId().equals(login.getLoginId())) {
+        						contains = true;
+        					}
+        				}
+        				
+        				Assert.assertTrue(contains);
+        			}
+        		}
+        	}
     	}
     }
     

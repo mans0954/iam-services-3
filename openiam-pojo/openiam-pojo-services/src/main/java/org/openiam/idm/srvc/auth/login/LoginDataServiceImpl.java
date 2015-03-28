@@ -185,10 +185,18 @@ public class LoginDataServiceImpl implements LoginDataService {
         return false;
     }
 
+    /* 
+     * DO NOT MERGE INTO 4.0!!!!  Only for 3.3.1 to solve IDMAPPS-2735 
+     * Use 4.0 code 
+     */
     @Override
     @Transactional(readOnly = true)
     public Integer count(LoginSearchBean searchBean) {
-        return loginSearchDAO.count(searchBean);
+    	if(searchBean == null || searchBean.isUseLucene()) {
+    		return loginSearchDAO.count(searchBean);
+    	} else {
+    		return loginDao.count(searchBean);
+    	}
     }
 
     @Override
@@ -202,7 +210,15 @@ public class LoginDataServiceImpl implements LoginDataService {
                 retVal.add(entity);
             }
         } else {
-            retVal = loginSearchDAO.find(from, size, null, searchBean);
+        	/* 
+             * DO NOT MERGE INTO 4.0!!!!  Only for 3.3.1 to solve IDMAPPS-2735 
+             * Use 4.0 code 
+             */
+        	if(searchBean.isUseLucene()) {
+        		retVal = loginSearchDAO.find(from, size, null, searchBean);
+        	} else {
+        		retVal = loginDao.getByExample(searchBean, from, size);
+        	}
         }
         return retVal;
     }
