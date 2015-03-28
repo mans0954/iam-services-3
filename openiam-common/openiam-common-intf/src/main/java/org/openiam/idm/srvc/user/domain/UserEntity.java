@@ -788,7 +788,7 @@ public class UserEntity extends KeyEntity {
     public void setResources(Set<ResourceEntity> resources) {
         this.resources = resources;
     }
-    
+
     public void addResource(final ResourceEntity entity) {
     	if(entity != null) {
     		if(this.resources == null) {
@@ -797,7 +797,15 @@ public class UserEntity extends KeyEntity {
     		this.resources.add(entity);
     	}
     }
-    
+    public void addRole(final RoleEntity entity) {
+        if(entity != null) {
+            if(this.roles == null) {
+                this.roles = new HashSet<>();
+            }
+            this.roles.add(entity);
+        }
+    }
+
     public void removeResource(final ResourceEntity entity) {
     	if(entity != null) {
     		if(this.resources != null) {

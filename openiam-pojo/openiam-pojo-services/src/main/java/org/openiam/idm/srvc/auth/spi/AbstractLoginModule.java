@@ -223,11 +223,14 @@ public abstract class AbstractLoginModule implements AuthenticationModule {
     }
 
     protected ManagedSysEntity getManagedSystem(final AuthenticationContext context) {
+        return getManagedSystem(context, getAuthProvider(context));
+    }
+
+    protected ManagedSysEntity getManagedSystem(final AuthenticationContext context, final AuthProviderEntity authProvider) {
         final IdmAuditLog event = context.getEvent();
-        final AuthProviderEntity authProvider = getAuthProvider(context);
         ManagedSysEntity managedSystem = (authProvider != null) ? authProvider.getManagedSystem() : null;
         if (managedSystem == null) {
-            final String warning = String.format("Auth provider %s does not have a managed system corresopnding to it.  Using default: %s", context.getAuthProviderId(), sysConfiguration.getDefaultManagedSysId());
+            final String warning = String.format("Auth provider %s does not have a managed system corresopnding to it.  Using default: %s", authProvider.getId(), sysConfiguration.getDefaultManagedSysId());
             log.warn(warning);
             event.addWarning(warning);
             managedSystem = managedSysDAO.findById(sysConfiguration.getDefaultManagedSysId());
