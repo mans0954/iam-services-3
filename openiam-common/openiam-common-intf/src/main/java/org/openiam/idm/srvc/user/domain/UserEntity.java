@@ -220,8 +220,10 @@ public class UserEntity {
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "user", fetch = FetchType.LAZY)
     private Set<UserNoteEntity> userNotes = new HashSet<UserNoteEntity>(0);
 
-    @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "user", fetch = FetchType.LAZY)
-    @MapKey(name = "name")
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @MapKeyColumn(name = "name")
+    @JoinColumn(name="USER_ID")
+    @Fetch(FetchMode.SUBSELECT)
     private Map<String, UserAttributeEntity> userAttributes = new HashMap<String, UserAttributeEntity>(0);
 
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "parent", fetch = FetchType.LAZY)
@@ -725,7 +727,7 @@ public class UserEntity {
     		if(this.userAttributes == null) {
     			this.userAttributes = new HashMap<String, UserAttributeEntity>();
     		}
-    		entity.setUser(this);
+    		entity.setUserId(this.getId());
     		this.userAttributes.put(entity.getName(), entity);
     	}
     }

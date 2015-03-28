@@ -8,6 +8,7 @@ import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
+import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
 import org.openiam.idm.srvc.meta.domain.MetadataValidValueEntity;
 import org.openiam.idm.srvc.meta.dto.MetadataElement;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
@@ -22,10 +23,16 @@ import org.openiam.idm.srvc.meta.dto.MetadataType;
  */
 
 public interface MetadataService {
-	
+
+    String findElementIdByAttrNameAndTypeId(String attrName, String typeId);
+
+    MetadataElement findElementByAttrNameAndTypeId(String attrName, String typeId, final Language language);
+
+    MetadataType findMetadataTypeByNameAndGrouping(String name, MetadataTypeGrouping grouping, final Language language);
+
 	public List<MetadataElement> findElementByName(final String name);
 
-    public MetadataElement findElementById(final String id);
+    public MetadataElement findElementById(final String id, Language language);
 
     public MetadataType findById(final String id);
 
