@@ -76,6 +76,7 @@ public class PasswordGenerator {
     private static final String NUMERIC_CHARS = "NUMERIC_CHARS";
     private static final String LIMIT_NUM_REPEAT_CHAR = "LIMIT_NUM_REPEAT_CHAR";
     private static final String REJECT_CHARS_IN_PSWD = "REJECT_CHARS_IN_PSWD";
+    private static final String ALPHA_CHARS = "ALPHA_CHARS";
 
     public static String generatePassword(int length) {
 
@@ -150,6 +151,7 @@ public class PasswordGenerator {
         PolicyAttribute paSpecialChars = policy.getAttribute(NON_ALPHA_CHARS);
         PolicyAttribute paLowerCase = policy.getAttribute(LOWERCASE_CHARS);
         PolicyAttribute paUpCase = policy.getAttribute(UPPERCASE_CHARS);
+        PolicyAttribute paLatters = policy.getAttribute(ALPHA_CHARS);
         PolicyAttribute paNumbers = policy.getAttribute(NUMERIC_CHARS);
         PolicyAttribute repeatLimit = policy.getAttribute(LIMIT_NUM_REPEAT_CHAR);
         PolicyAttribute notAllowedChars = policy.getAttribute(REJECT_CHARS_IN_PSWD);
@@ -226,23 +228,11 @@ public class PasswordGenerator {
             if (used < intLengthMin) {
                 while (used != passwordLength) {
                     log.debug("Adding more chars!");
-                    int random = rand.nextInt(4);
-                    switch (random) {
-                        case 0:
-                            addAtGroup(specialAsList, intSpecialMin, toInt(intSpecialMax), notAllowedChar, repeats, listSpecialChars, rand);
-                            break;
-                        case 1:
-                            addAtGroup(upperAsList, intUpperMin, toInt(intUpperMax), notAllowedChar, repeats, listUpperChars, rand);
-                            break;
-                        case 2:
-
-                            addAtGroup(numericAsList, intNumberMin, toInt(intNumberMax), notAllowedChar, repeats, listNumericChars, rand);
-                            break;
-                        case 3:
-                            addAtGroup(lowerAsList, intLowerMin, toInt(intLowerMax), notAllowedChar, repeats, listLowerChars, rand);
-                            break;
-                        default:
-                            break;
+                    if (!addAtGroup(upperAsList, intUpperMin, toInt(intUpperMax), notAllowedChar, repeats, listUpperChars, rand)) {
+                        if (!addAtGroup(lowerAsList, intLowerMin, toInt(intLowerMax), notAllowedChar, repeats, listLowerChars, rand))
+                            if (!addAtGroup(numericAsList, intNumberMin, toInt(intNumberMax), notAllowedChar, repeats, listNumericChars, rand)) {
+                                addAtGroup(specialAsList, intSpecialMin, toInt(intSpecialMax), notAllowedChar, repeats, listSpecialChars, rand);
+                            }
                     }
                     used = specialAsList.size() + upperAsList.size() + numericAsList.size() + lowerAsList.size();
                 }
@@ -293,6 +283,22 @@ public class PasswordGenerator {
                 }
             }
         }
+
+//        if (paLatters.isRequired()) {
+//            Integer minLat = paLatters.getValue1() == null ? null : Integer.valueOf(paLatters.getValue1());
+//            Integer maxLat = paLatters.getValue2() == null ? null : Integer.valueOf(paLatters.getValue2());
+//
+//            int intULCount = upperAsList.size()+lowerAsList.size();
+//            if (minLat!=null && minLat > intULCount) {
+//                for (int i =0; i<minLat-intULCount;i++){
+//                    if (intUpperMax == null || upperAsList.size() <intUpperMax ){
+//                        addAtGroup(numericAsList, intNumberMin, toInt(intNumberMax), notAllowedChar, repeats, listNumericChars, rand);
+//                    }
+//                }
+//            }
+//
+//        }
+
         passwordAsList.addAll(specialAsList);
         passwordAsList.addAll(upperAsList);
         passwordAsList.addAll(numericAsList);
@@ -326,14 +332,16 @@ public class PasswordGenerator {
         return result;
     }
 
-    private static void addAtGroup(List<String> result, int minSimbolsCount, int maxSimbolCount, String notAllow, Integer repeatios, List<String> alphabetis, Random rand) {
+    private static boolean addAtGroup(List<String> result, int minSimbolsCount, int maxSimbolCount, String notAllow, Integer repeatios, List<String> alphabetis, Random rand) {
         if (maxSimbolCount == 0 || result.size() < maxSimbolCount) {
             String s = String.valueOf(alphabetis.get(rand.nextInt(alphabetis.size())));
             while (!isAccessibleForRepeations(repeatios, s, result) || notAllow.contains(s)) {
                 s = String.valueOf(alphabetis.get(rand.nextInt(alphabetis.size())));
             }
             result.add(s);
+            return true;
         }
+        return false;
     }
 
     private static boolean deleteFromGroup(List<String> result, int minSimbolsCount, Random rand) {
