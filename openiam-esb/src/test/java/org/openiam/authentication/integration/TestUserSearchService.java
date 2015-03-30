@@ -126,6 +126,7 @@ public class TestUserSearchService extends AbstractTestNGSpringContextTests {
     		final User user = userList.get(i);
     		if(StringUtils.isNotBlank(user.getFirstName())) {
 	    		final UserSearchBean searchBean = new UserSearchBean();
+				searchBean.setDeepCopy(false);
 	    		searchBean.setFirstNameMatchToken(new SearchParam(user.getFirstName(), matchType));
 	    		final List<User> results = userDataWebService.findBeans(searchBean, 0, 10);
 	    		Assert.assertTrue(String.format("No results were produced for firstName:%s", user.getFirstName()), CollectionUtils.isNotEmpty(results));
@@ -155,7 +156,8 @@ public class TestUserSearchService extends AbstractTestNGSpringContextTests {
         				loginSearchBean.setLoginMatchToken(new SearchParam(searchTerm, matchType));
         				
         				final UserSearchBean searchBean = new UserSearchBean();
-        				searchBean.setPrincipal(loginSearchBean);
+						searchBean.setDeepCopy(false);
+						searchBean.setPrincipal(loginSearchBean);
         				final List<User> results = userDataWebService.findBeans(searchBean, 0, Integer.MAX_VALUE);
         				Assert.assertTrue(CollectionUtils.isNotEmpty(results));
         				
@@ -222,6 +224,7 @@ public class TestUserSearchService extends AbstractTestNGSpringContextTests {
     	if(searchTerm != null) {
 	    	final UserSearchBean searchBean = new UserSearchBean();
 			searchBean.setFirstNameMatchToken(new SearchParam(searchTerm, matchType));
+			searchBean.setDeepCopy(false);
 			final List<User> results = userDataWebService.findBeans(searchBean, 0, 10);
 			Assert.assertTrue(String.format("No results were produced for firstName:%s", searchTerm), CollectionUtils.isNotEmpty(results));
 			for(final User result : results) {
@@ -238,7 +241,8 @@ public class TestUserSearchService extends AbstractTestNGSpringContextTests {
     		if(StringUtils.isNotBlank(user.getLastName())) {
 	    		final UserSearchBean searchBean = new UserSearchBean();
 	    		searchBean.setLastNameMatchToken(new SearchParam(user.getLastName(), matchType));
-	    		final List<User> results = userDataWebService.findBeans(searchBean, 0, 10);
+				searchBean.setDeepCopy(false);
+				final List<User> results = userDataWebService.findBeans(searchBean, 0, 10);
 	    		Assert.assertTrue(String.format("No results were produced for lastName:%s", user.getLastName()), CollectionUtils.isNotEmpty(results));
 	    		for(final User result : results) {
 	    			Assert.assertEquals(String.format("User result: %s did not match query:%s", result.getLastName(), user.getLastName()), user.getLastName(), result.getLastName());
@@ -256,7 +260,8 @@ public class TestUserSearchService extends AbstractTestNGSpringContextTests {
 	    		final UserSearchBean searchBean = new UserSearchBean();
 	    		searchBean.setLastNameMatchToken(new SearchParam(user.getLastName(), matchType));
 	    		searchBean.setFirstNameMatchToken(new SearchParam(user.getFirstName(), matchType));
-	    		final List<User> results = userDataWebService.findBeans(searchBean, 0, 10);
+				searchBean.setDeepCopy(false);
+				final List<User> results = userDataWebService.findBeans(searchBean, 0, 10);
 	    		Assert.assertTrue(String.format("No results were produced for name:%s %s", user.getFirstName(), user.getLastName()), CollectionUtils.isNotEmpty(results));
 	    		for(final User result : results) {
 	    			Assert.assertEquals(String.format("User result: %s did not match query:%s", result.getFirstName(), user.getFirstName()), user.getFirstName(), result.getFirstName());
@@ -280,6 +285,7 @@ public class TestUserSearchService extends AbstractTestNGSpringContextTests {
     	if(searchTerm != null) {
 	    	final UserSearchBean searchBean = new UserSearchBean();
 			searchBean.setLastNameMatchToken(new SearchParam(searchTerm, matchType));
+			searchBean.setDeepCopy(false);
 			final List<User> results = userDataWebService.findBeans(searchBean, 0, 10);
 			Assert.assertTrue(String.format("No results were produced for lastName:%s", searchTerm), CollectionUtils.isNotEmpty(results));
 			for(final User result : results) {
@@ -296,7 +302,8 @@ public class TestUserSearchService extends AbstractTestNGSpringContextTests {
     		if(StringUtils.isNotBlank(user.getMaidenName())) {
 	    		final UserSearchBean searchBean = new UserSearchBean();
 	    		searchBean.setMaidenNameMatchToken(new SearchParam(user.getMaidenName(), matchType));
-	    		final List<User> results = userDataWebService.findBeans(searchBean, 0, 10);
+				searchBean.setDeepCopy(false);
+				final List<User> results = userDataWebService.findBeans(searchBean, 0, 10);
 	    		Assert.assertTrue(String.format("No results were produced for maidenName:%s", user.getMaidenName()), CollectionUtils.isNotEmpty(results));
 	    		for(final User result : results) {
 	    			Assert.assertEquals(String.format("User result: %s did not match query:%s", result.getMaidenName(), user.getMaidenName()), user.getMaidenName(), result.getMaidenName());
@@ -318,6 +325,7 @@ public class TestUserSearchService extends AbstractTestNGSpringContextTests {
     	if(searchTerm != null) {
 	    	final UserSearchBean searchBean = new UserSearchBean();
 			searchBean.setMaidenNameMatchToken(new SearchParam(searchTerm, matchType));
+			searchBean.setDeepCopy(false);
 			final List<User> results = userDataWebService.findBeans(searchBean, 0, 10);
 			Assert.assertTrue(String.format("No results were produced for maidenName:%s", searchTerm), CollectionUtils.isNotEmpty(results));
 			for(final User result : results) {
@@ -334,7 +342,8 @@ public class TestUserSearchService extends AbstractTestNGSpringContextTests {
     		if(StringUtils.isNotBlank(user.getEmployeeId())) {
 	    		final UserSearchBean searchBean = new UserSearchBean();
 	    		searchBean.setEmployeeIdMatchToken(new SearchParam(user.getEmployeeId(), matchType));
-	    		final List<User> results = userDataWebService.findBeans(searchBean, 0, 10);
+				searchBean.setDeepCopy(false);
+				final List<User> results = userDataWebService.findBeans(searchBean, 0, 10);
 	    		Assert.assertTrue(String.format("No results were produced for employeeId:%s", user.getEmployeeId()), CollectionUtils.isNotEmpty(results));
 	    		for(final User result : results) {
 	    			Assert.assertEquals(String.format("User result: %s did not match query:%s", result.getEmployeeId(), user.getEmployeeId()), user.getEmployeeId(), result.getEmployeeId());
@@ -356,6 +365,7 @@ public class TestUserSearchService extends AbstractTestNGSpringContextTests {
     	if(searchTerm != null) {
 	    	final UserSearchBean searchBean = new UserSearchBean();
 			searchBean.setEmployeeIdMatchToken(new SearchParam(searchTerm, matchType));
+			searchBean.setDeepCopy(false);
 			final List<User> results = userDataWebService.findBeans(searchBean, 0, 10);
 			Assert.assertTrue(String.format("No results were produced for employeeId:%s", searchTerm), CollectionUtils.isNotEmpty(results));
 			for(final User result : results) {
