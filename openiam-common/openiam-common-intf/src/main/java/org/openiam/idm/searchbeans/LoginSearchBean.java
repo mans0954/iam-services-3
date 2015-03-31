@@ -20,10 +20,15 @@ import java.io.Serializable;
 	"login",
 	"managedSysId",
 	"userId",
-	"loginMatchToken"
+	"loginMatchToken",
+	"useLucene"
 })
 public class LoginSearchBean extends AbstractSearchBean<Login, String> implements SearchBean<Login, String>, Serializable {
 
+	/* DO NOT MERGE INTO 4.0!!!!  Only for 3.3.1 to solve IDMAPPS-2735 */
+	@Deprecated
+	private boolean useLucene = true;
+	
 	@Deprecated
 	private String login;
 	
@@ -76,7 +81,19 @@ public class LoginSearchBean extends AbstractSearchBean<Login, String> implement
 		this.userId = userId;
 	}
 
-    @Override
+	/* DO NOT MERGE INTO 4.0!!!!  Only for 3.3.1 to solve IDMAPPS-2735 */
+	@Deprecated
+    public boolean isUseLucene() {
+		return useLucene;
+	}
+
+	/* DO NOT MERGE INTO 4.0!!!!  Only for 3.3.1 to solve IDMAPPS-2735 */
+	@Deprecated
+	public void setUseLucene(boolean useLucene) {
+		this.useLucene = useLucene;
+	}
+
+	@Override
     public String getCacheUniqueBeanKey() {
         return new StringBuilder()
                 .append(login != null ? login : "")
