@@ -23,10 +23,12 @@ import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.history.HistoricTaskInstanceQuery;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
+import org.activiti.engine.task.TaskQuery;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.activiti.model.dto.TaskSearchBean;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
@@ -211,8 +213,14 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 		
 			identifier.init(bindingMap);
 			
-			final List<String> approverAssociationIds = identifier.getApproverAssociationIds();
-			final List<String> approverUserIds = identifier.getApproverIds();
+			List<String> approverAssociationIds = null;
+			List<String> approverUserIds = null;
+			if(CollectionUtils.isNotEmpty(request.getCustomApproverIds())) {
+				approverUserIds = request.getCustomApproverIds(); 
+			} else {
+				approverAssociationIds = identifier.getApproverAssociationIds();
+				approverUserIds = identifier.getApproverIds();
+			}
 
             idmAuditLog.addAttributeAsJson(AuditAttributeName.APPROVER_ASSOCIATIONS, approverAssociationIds, jacksonMapper);
             idmAuditLog.addAttributeAsJson(AuditAttributeName.REQUEST_APPROVER_IDS, approverUserIds, jacksonMapper);
@@ -259,6 +267,21 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			idmAuditLog = auditLogService.findById(idmAuditLog.getId());
             idmAuditLog.setTargetTask(processInstance.getId(), taskName);
 			response.succeed();
+			response.setApproverAssociationIds(approverAssociationIds);
+			response.setApproverUserIds(approverUserIds);
+			
+			response.setActivityId(processInstance.getActivityId());
+			response.setBusinessKey(processInstance.getBusinessKey());
+			response.setDeploymentId(processInstance.getDeploymentId());
+			response.setId(processInstance.getId());
+			response.setName(processInstance.getName());
+			response.setParentId(processInstance.getParentId());
+			response.setProcessDefinitionId(processInstance.getProcessDefinitionId());
+			response.setProcessDefinitionKey(processInstance.getProcessDefinitionKey());
+			response.setProcessDefinitionName(processInstance.getProcessDefinitionName());
+			response.setProcessDefinitionVersion(processInstance.getProcessDefinitionVersion());
+			response.setProcessInstanceId(processInstance.getProcessInstanceId());
+			response.setTenantId(processInstance.getTenantId());
 			idmAuditLog.succeed();
 		} catch (PageTemplateException e) {
             idmAuditLog.fail();
@@ -773,15 +796,17 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 	@Override
 	@WebMethod
 	@Transactional
+	@Deprecated
 	public int getNumOfAssignedTasks(String userId) {
-		return (int)taskService.createTaskQuery().taskAssignee(userId).count();
+		return countTasks(new TaskSearchBean().setAssigneeId(userId));
 	}
 
 	@Override
 	@WebMethod
 	@Transactional
+	@Deprecated
 	public int getNumOfCandidateTasks(String userId) {
-		return (int)taskService.createTaskQuery().taskCandidateUser(userId).count();
+		return countTasks(new TaskSearchBean().setCandidateId(userId));
 	}
 
 	@Override
@@ -958,7 +983,10 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
     public Response deleteTask(String taskId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
-			taskService.deleteTask(taskId, true);
+        	taskService.unclaim(taskId);
+        	/* as of activiti 5.17.0, you can't delete a task that's part of a running process, so we just unclaim it */
+        	//taskService.deleteCandidateUser(taskId, null);
+			//taskService.deleteTask(taskId, true);
 		} catch(ActivitiException e) {
 			log.info("Activiti Exception", e);
 			response.setStatus(ResponseStatus.FAILURE);
@@ -991,7 +1019,9 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 				parentAuditLogId = (String)auditLogId;
 			}
             
-			taskService.deleteTask(task.getId(), true);
+			/* as of activiti 5.17.0, you can't delete a task that's part of a running process, so we just unclaim it */
+			taskService.unclaim(taskId);
+			//taskService.deleteTask(task.getId(), true);
             idmAuditLog.succeed();
 		} catch(ActivitiException e) {
 			log.info("Activiti Exception", e);
@@ -1025,6 +1055,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 	@Override
 	@WebMethod
 	@Transactional
+	@Deprecated
 	public TaskListWrapper getTasksForUser(final String userId, final int from, final int size) {
 		final TaskListWrapper taskListWrapper = new TaskListWrapper();
 		final List<Task> assignedTasks = taskService.createTaskQuery().taskAssignee(userId).listPage(from, size);
@@ -1091,15 +1122,48 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
     @Override
     @WebMethod
     @Transactional
+    @Deprecated
     public List<TaskWrapper> getTasksForMemberAssociation(String memberAssociationId) {
-        List<TaskWrapper> memberAssociationTaskList = new LinkedList<TaskWrapper>();
-        final List<Task> taskList = taskService.createTaskQuery().processVariableValueEquals(ActivitiConstants.MEMBER_ASSOCIATION_ID.getName(), memberAssociationId).list();
-        if(CollectionUtils.isNotEmpty(taskList)) {
-            for(final Task task : taskList) {
-                memberAssociationTaskList.add(new TaskWrapper(task, runtimeService));
-            }
-        }
-        return memberAssociationTaskList;
+    	final TaskSearchBean searchBean = new TaskSearchBean();
+    	searchBean.setMemberAssociationId(memberAssociationId);
+    	return findTasks(searchBean, 0, Integer.MAX_VALUE);
     }
 
+	@Override
+	@Transactional
+	public List<TaskWrapper> findTasks(TaskSearchBean searchBean, int from, int size) {
+		List<TaskWrapper> wrapperList = new LinkedList<TaskWrapper>();
+		final List<Task> taskList = get(searchBean).listPage(from, size);
+		if(taskList != null) {
+			taskList.forEach(task -> {
+				wrapperList.add(new TaskWrapper(task, runtimeService));
+			});
+		}
+		return wrapperList;
+	}
+
+	@Override
+	@Transactional
+	public int countTasks(TaskSearchBean searchBean) {
+		return (int)get(searchBean).count();
+	}
+
+	private TaskQuery get(final TaskSearchBean searchBean) {
+		final TaskQuery query = taskService.createTaskQuery();
+		if(searchBean != null) {
+			if(StringUtils.isNotBlank(searchBean.getAssigneeId())) {
+				query.taskAssignee(searchBean.getAssigneeId());
+			}
+			if(StringUtils.isNotBlank(searchBean.getCandidateId())) {
+				query.taskCandidateUser(searchBean.getCandidateId());
+			}
+			if(StringUtils.isNotBlank(searchBean.getMemberAssociationId())) {
+				query.processVariableValueEquals(ActivitiConstants.MEMBER_ASSOCIATION_ID.getName(), searchBean.getMemberAssociationId());
+			}
+			if(StringUtils.isNotBlank(searchBean.getProcessDefinitionId())) {
+				query.processDefinitionId(searchBean.getProcessDefinitionId());
+			}
+		}
+		return query;
+	}
 }

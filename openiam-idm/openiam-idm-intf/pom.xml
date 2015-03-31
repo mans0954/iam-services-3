@@ -99,7 +99,7 @@
 		<dependency>
 		  <groupId>org.activiti</groupId>
 		  <artifactId>activiti-engine</artifactId>
-		  <version>5.10</version>
+		  <version>${activiti.version}</version>
 		</dependency>
 
         <dependency>
