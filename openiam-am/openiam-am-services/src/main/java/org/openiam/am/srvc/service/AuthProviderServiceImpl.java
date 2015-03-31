@@ -91,15 +91,28 @@ public class AuthProviderServiceImpl implements AuthProviderService {
     	}
     	
     	if(!provider.getType().isHasPasswordPolicy()) {
-    		provider.setPolicy(null);
+    		provider.setPasswordPolicy(null);
     	} else {
-    		if(provider.getPolicy() == null || StringUtils.isBlank(provider.getPolicy().getId())) {
+    		if(provider.getPasswordPolicy() == null || StringUtils.isBlank(provider.getPasswordPolicy().getId())) {
     			if(provider.getType().isPasswordPolicyRequired()) {
-    				throw new IllegalArgumentException("Policy not set");
+    				throw new IllegalArgumentException("Password Policy not set");
     			}
-    			provider.setPolicy(null);
+    			provider.setPasswordPolicy(null);
     		} else {
-    			provider.setPolicy(policyDAO.findById(provider.getPolicy().getId()));
+    			provider.setPasswordPolicy(policyDAO.findById(provider.getPasswordPolicy().getId()));
+    		}
+    	}
+    	
+    	if(!provider.getType().isHasAuthnPolicy()) {
+    		provider.setAuthenticationPolicy(null);
+    	} else {
+    		if(provider.getAuthenticationPolicy() == null || StringUtils.isBlank(provider.getAuthenticationPolicy().getId())) {
+    			if(provider.getType().isAuthnPolicyRequired()) {
+    				throw new IllegalArgumentException("Authenticaiton Policy not set");
+    			}
+    			provider.setAuthenticationPolicy(null);
+    		} else {
+    			provider.setAuthenticationPolicy(policyDAO.findById(provider.getAuthenticationPolicy().getId()));
     		}
     	}
     	

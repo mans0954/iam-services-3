@@ -245,7 +245,7 @@ public abstract class AbstractLoginModule implements AuthenticationModule {
             throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_FOUND);
         }
 
-        final PolicyEntity policy = authProvider.getPolicy();
+        final PolicyEntity policy = authProvider.getPasswordPolicy();
         final AuthProviderTypeEntity authProviderType = authProvider.getType();
         if (authProviderType.isPasswordPolicyRequired()) {
             if (policy == null) {

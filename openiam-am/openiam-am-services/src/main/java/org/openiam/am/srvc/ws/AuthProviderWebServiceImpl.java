@@ -173,8 +173,14 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService, Appli
             }
             
             if(type.isPasswordPolicyRequired()) {
-            	if(StringUtils.isBlank(provider.getPolicyId())) {
-                	throw new BasicDataServiceException(ResponseCode.POLICY_NOT_SET);
+            	if(StringUtils.isBlank(provider.getPasswordPolicyId())) {
+                	throw new BasicDataServiceException(ResponseCode.PASSWORD_POLICY_NOT_SET);
+            	}
+            }
+            
+            if(type.isAuthnPolicyRequired()) {
+            	if(StringUtils.isBlank(provider.getAuthnPolicyId())) {
+            		throw new BasicDataServiceException(ResponseCode.AUTHN_POLICY_NOT_SET);
             	}
             }
             

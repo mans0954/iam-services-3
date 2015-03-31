@@ -416,7 +416,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
         		if(contentProvider != null) {
 	        		final AuthProviderEntity authProvider = contentProvider.getAuthProvider();
 	        		if(authProvider != null) {
-	        			policy = authProvider.getPolicy();
+	        			policy = authProvider.getPasswordPolicy();
 	        			managedSystem = authProvider.getManagedSystem();
 	        		}
         		}
@@ -424,7 +424,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
         }
         if(policy == null || managedSystem == null) {
         	final AuthProviderEntity authProvider = authProviderDAO.findById(sysConfiguration.getDefaultAuthProviderId());
-        	policy = authProvider.getPolicy();
+        	policy = authProvider.getPasswordPolicy();
         	managedSystem = authProvider.getManagedSystem();
         }
         String tokenLife = getPolicyAttribute(policy,  "TOKEN_LIFE");
@@ -663,7 +663,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
             	throw new BasicDataServiceException(ResponseCode.OTP_TYPE_MISSING);
             }
             
-            final PolicyEntity policy = authProvider.getPolicy();
+            final PolicyEntity policy = authProvider.getPasswordPolicy();
             final PolicyAttributeEntity attribute = policy.getAttribute("OTP_SMS_LIFETIME");
             int numOfMinutesOfSMSValidity = 30;
             if(attribute != null) {

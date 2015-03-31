@@ -25,7 +25,9 @@ import java.util.Set;
         "passwordPolicyRequired",
         "supportsJustInTimeAuthentication",
         "supportsSMSOTP",
-        "supportsTOTP"
+        "supportsTOTP",
+        "hasAuthnPolicy",
+        "authnPolicyRequired"
 })
 @DozerDTOCorrespondence(AuthProviderTypeEntity.class)
 public class AuthProviderType extends KeyNameDTO {
@@ -39,6 +41,8 @@ public class AuthProviderType extends KeyNameDTO {
     private boolean supportsJustInTimeAuthentication;
     private boolean supportsSMSOTP;
     private boolean supportsTOTP;
+    private boolean hasAuthnPolicy;
+    private boolean authnPolicyRequired;
     
     @XmlTransient
     private Set<AuthAttributeEntity> attributeSet;
@@ -142,6 +146,22 @@ public class AuthProviderType extends KeyNameDTO {
 		this.supportsTOTP = supportsTOTP;
 	}
 
+	public boolean isHasAuthnPolicy() {
+		return hasAuthnPolicy;
+	}
+
+	public void setHasAuthnPolicy(boolean hasAuthnPolicy) {
+		this.hasAuthnPolicy = hasAuthnPolicy;
+	}
+
+	public boolean isAuthnPolicyRequired() {
+		return authnPolicyRequired;
+	}
+
+	public void setAuthnPolicyRequired(boolean authnPolicyRequired) {
+		this.authnPolicyRequired = authnPolicyRequired;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -156,6 +176,8 @@ public class AuthProviderType extends KeyNameDTO {
 		result = prime * result + (supportsJustInTimeAuthentication ? 1231 : 1237);
 		result = prime * result + (supportsSMSOTP ? 1231 : 1237);
 		result = prime * result + (supportsTOTP ? 1231 : 1237);
+		result = prime * result + (hasAuthnPolicy ? 1231 : 1237);
+		result = prime * result + (authnPolicyRequired ? 1231 : 1237);
 		return result;
 	}
 
@@ -187,6 +209,10 @@ public class AuthProviderType extends KeyNameDTO {
 		if (supportsSMSOTP != other.supportsSMSOTP)
 			return false;
 		if (supportsTOTP != other.supportsTOTP)
+			return false;
+		if (hasAuthnPolicy != other.hasAuthnPolicy)
+			return false;
+		if (authnPolicyRequired != other.authnPolicyRequired)
 			return false;
 		return true;
 	}

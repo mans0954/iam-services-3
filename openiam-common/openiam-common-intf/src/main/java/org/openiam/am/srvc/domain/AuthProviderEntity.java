@@ -101,7 +101,11 @@ public class AuthProviderEntity extends AbstractKeyNameEntity {
     
     @ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name="POLICY_ID", referencedColumnName = "POLICY_ID", insertable = true, updatable = true, nullable=true)
-    private PolicyEntity policy;
+    private PolicyEntity passwordPolicy;
+    
+    @ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @JoinColumn(name="AUTH_POLICY_ID", referencedColumnName = "POLICY_ID", insertable = true, updatable = true, nullable=true)
+    private PolicyEntity authenticationPolicy;
 
     public String getDescription() {
         return description;
@@ -175,13 +179,15 @@ public class AuthProviderEntity extends AbstractKeyNameEntity {
         this.resourceAttributeMap = resourceAttributeMap;
     }
 
-	public PolicyEntity getPolicy() {
-		return policy;
+	public PolicyEntity getPasswordPolicy() {
+		return passwordPolicy;
 	}
 
-	public void setPolicy(PolicyEntity policy) {
-		this.policy = policy;
+	public void setPasswordPolicy(PolicyEntity passwordPolicy) {
+		this.passwordPolicy = passwordPolicy;
 	}
+	
+	
 
 	public boolean isDefaultProvider() {
 		return defaultProvider;
@@ -256,6 +262,14 @@ public class AuthProviderEntity extends AbstractKeyNameEntity {
 		this.supportsTOTP = supportsTOTP;
 	}
 
+	public PolicyEntity getAuthenticationPolicy() {
+		return authenticationPolicy;
+	}
+
+	public void setAuthenticationPolicy(PolicyEntity authenticationPolicy) {
+		this.authenticationPolicy = authenticationPolicy;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -269,7 +283,8 @@ public class AuthProviderEntity extends AbstractKeyNameEntity {
 		result = prime * result + (isSignRequest ? 1231 : 1237);
 		result = prime * result
 				+ ((managedSystem == null) ? 0 : managedSystem.hashCode());
-		result = prime * result + ((policy == null) ? 0 : policy.hashCode());
+		result = prime * result + ((passwordPolicy == null) ? 0 : passwordPolicy.hashCode());
+		result = prime * result + ((authenticationPolicy == null) ? 0 : authenticationPolicy.hashCode());
 		result = prime * result + Arrays.hashCode(privateKey);
 		result = prime * result + Arrays.hashCode(publicKey);
 		result = prime * result
@@ -311,11 +326,19 @@ public class AuthProviderEntity extends AbstractKeyNameEntity {
 				return false;
 		} else if (!managedSystem.equals(other.managedSystem))
 			return false;
-		if (policy == null) {
-			if (other.policy != null)
+		
+		if (passwordPolicy == null) {
+			if (other.passwordPolicy != null)
 				return false;
-		} else if (!policy.equals(other.policy))
+		} else if (!passwordPolicy.equals(other.passwordPolicy))
 			return false;
+		
+		if (authenticationPolicy == null) {
+			if (other.authenticationPolicy != null)
+				return false;
+		} else if (!authenticationPolicy.equals(other.authenticationPolicy))
+			return false;
+		
 		if (!Arrays.equals(privateKey, other.privateKey))
 			return false;
 		if (!Arrays.equals(publicKey, other.publicKey))

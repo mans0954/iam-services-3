@@ -67,9 +67,13 @@ public class PolicyEntity extends AbstractKeyNameEntity {
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<PolicyAttributeEntity> policyAttributes = new HashSet<PolicyAttributeEntity>(0);
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.DETACH, CascadeType.REFRESH}, mappedBy = "policy")
+    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.DETACH, CascadeType.REFRESH}, mappedBy = "passwordPolicy")
     @Fetch(FetchMode.SUBSELECT)
-    private Set<AuthProviderEntity> authProviders;
+    private Set<AuthProviderEntity> passwordPolicyProviders;
+    
+    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.DETACH, CascadeType.REFRESH}, mappedBy = "authenticationPolicy")
+    @Fetch(FetchMode.SUBSELECT)
+    private Set<AuthProviderEntity> authenticationPolicyProviders;
 
     public PolicyEntity() {
     }
@@ -177,15 +181,25 @@ public class PolicyEntity extends AbstractKeyNameEntity {
         this.enablement = enablemement;
     }
 
-    public Set<AuthProviderEntity> getAuthProviders() {
-        return authProviders;
-    }
+    public Set<AuthProviderEntity> getPasswordPolicyProviders() {
+		return passwordPolicyProviders;
+	}
 
-    public void setAuthProviders(Set<AuthProviderEntity> authProviders) {
-        this.authProviders = authProviders;
-    }
+	public void setPasswordPolicyProviders(
+			Set<AuthProviderEntity> passwordPolicyProviders) {
+		this.passwordPolicyProviders = passwordPolicyProviders;
+	}
 
-    @Override
+	public Set<AuthProviderEntity> getAuthenticationPolicyProviders() {
+		return authenticationPolicyProviders;
+	}
+
+	public void setAuthenticationPolicyProviders(
+			Set<AuthProviderEntity> authenticationPolicyProviders) {
+		this.authenticationPolicyProviders = authenticationPolicyProviders;
+	}
+
+	@Override
     public int hashCode() {
         final int prime = 31;
         int result = super.hashCode();
