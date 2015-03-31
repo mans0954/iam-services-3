@@ -224,8 +224,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     @Qualifier("configurableGroovyScriptEngine")
     protected ScriptIntegration scriptRunner;
 
-    private Map<String,ProvisionServicePreProcessor> preProcessorInstanceMap = new HashMap<String, ProvisionServicePreProcessor>();
-    private Map<String,ProvisionServicePostProcessor> postProcessorInstanceMap = new HashMap<String, ProvisionServicePostProcessor>();
+    private Map<String, ProvisionServicePreProcessor> preProcessorInstanceMap = new HashMap<String, ProvisionServicePreProcessor>();
+    private Map<String, ProvisionServicePostProcessor> postProcessorInstanceMap = new HashMap<String, ProvisionServicePostProcessor>();
 
     @Autowired
     private String eventProcessor;
@@ -251,27 +251,27 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
 
     @PostConstruct
     public void populateMovieCache() {
-        if(cachePreProcessorEnable) {
-            try{
+        if (cachePreProcessorEnable) {
+            try {
                 Map<String, Object> bindingMap = new HashMap<String, Object>();
                 ProvisionServicePreProcessor<ProvisionUser> preProcessorInstance = preProcessorInstanceMap.get(preProcessor);
-                if(preProcessorInstance == null) {
+                if (preProcessorInstance == null) {
                     preProcessorInstance = (ProvisionServicePreProcessor<ProvisionUser>) scriptRunner.instantiateClass(bindingMap, preProcessor);
                     preProcessorInstanceMap.put(preProcessor, preProcessorInstance);
                 }
-            } catch(Exception exc) {
+            } catch (Exception exc) {
                 log.error(exc);
             }
         }
-        if(cachePostProcessorEnable) {
+        if (cachePostProcessorEnable) {
             try {
                 Map<String, Object> bindingMap = new HashMap<String, Object>();
                 ProvisionServicePostProcessor<ProvisionUser> postProcessorInstance = postProcessorInstanceMap.get(postProcessor);
-                if(postProcessorInstance == null) {
+                if (postProcessorInstance == null) {
                     postProcessorInstance = (ProvisionServicePostProcessor<ProvisionUser>) scriptRunner.instantiateClass(bindingMap, postProcessor);
                     postProcessorInstanceMap.put(postProcessor, postProcessorInstance);
                 }
-            } catch(Exception exc) {
+            } catch (Exception exc) {
                 log.error(exc);
             }
         }
@@ -421,11 +421,11 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                 // We must be sure that Identity exists in BindingMap before
                 // all other scripts like as Password will be processed.
                 // Primary identity must be generated first and must be put into BindingMap first.
-                if(primaryIdentityRule != null && primaryPasswordRule != null) {
+                if (primaryIdentityRule != null && primaryPasswordRule != null) {
                     String identityOutput = (String) ProvisionServiceUtil.getOutputFromAttrMap(
                             primaryIdentityRule, bindingMap, se);
                     primaryIdentity.setLogin(identityOutput);
-                    bindingMap.put(TARGET_SYSTEM_IDENTITY,identityOutput);
+                    bindingMap.put(TARGET_SYSTEM_IDENTITY, identityOutput);
 
                     String passwordOutput = (String) ProvisionServiceUtil.getOutputFromAttrMap(
                             primaryPasswordRule, bindingMap, se);
@@ -584,7 +584,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         Map<String, Object> bindingMap = new HashMap<String, Object>();
         try {
             ProvisionServicePreProcessor<ProvisionUser> preProcessorInstance;
-            if(cachePreProcessorEnable) {
+            if (cachePreProcessorEnable) {
                 preProcessorInstance = preProcessorInstanceMap.get(scriptName);
             } else {
                 preProcessorInstance = (ProvisionServicePreProcessor<ProvisionUser>) scriptRunner.instantiateClass(bindingMap, scriptName);
@@ -600,7 +600,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         Map<String, Object> bindingMap = new HashMap<String, Object>();
         try {
             ProvisionServicePostProcessor<ProvisionUser> postProcessorInstance;
-            if(cachePostProcessorEnable) {
+            if (cachePostProcessorEnable) {
                 postProcessorInstance = postProcessorInstanceMap.get(scriptName);
             } else {
                 postProcessorInstance = (ProvisionServicePostProcessor<ProvisionUser>) scriptRunner.instantiateClass(bindingMap, scriptName);
@@ -616,20 +616,15 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                                              Map<String, Object> bindingMap, ProvisionUser user, PasswordSync passwordSync, String operation) {
         if ("ADD".equalsIgnoreCase(operation)) {
             return ppScript.add(user, bindingMap);
-        } else
-        if ("MODIFY".equalsIgnoreCase(operation)) {
+        } else if ("MODIFY".equalsIgnoreCase(operation)) {
             return ppScript.modify(user, bindingMap);
-        } else
-        if ("DELETE".equalsIgnoreCase(operation)) {
+        } else if ("DELETE".equalsIgnoreCase(operation)) {
             return ppScript.delete(user, bindingMap);
-        } else
-        if ("SET_PASSWORD".equalsIgnoreCase(operation)) {
+        } else if ("SET_PASSWORD".equalsIgnoreCase(operation)) {
             return ppScript.setPassword(passwordSync, bindingMap);
-        } else
-        if ("RESET_PASSWORD".equalsIgnoreCase(operation)) {
+        } else if ("RESET_PASSWORD".equalsIgnoreCase(operation)) {
             return ppScript.resetPassword(passwordSync, bindingMap);
-        } else
-        if ("DISABLE".equalsIgnoreCase(operation)) {
+        } else if ("DISABLE".equalsIgnoreCase(operation)) {
             return ppScript.disable(user, bindingMap);
         }
 
@@ -640,74 +635,57 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                                               Map<String, Object> bindingMap, ProvisionUser user, PasswordSync passwordSync, String operation) {
         if ("ADD".equalsIgnoreCase(operation)) {
             return ppScript.add(user, bindingMap);
-        } else
-        if ("MODIFY".equalsIgnoreCase(operation)) {
+        } else if ("MODIFY".equalsIgnoreCase(operation)) {
             return ppScript.modify(user, bindingMap);
-        } else
-        if ("DELETE".equalsIgnoreCase(operation)) {
+        } else if ("DELETE".equalsIgnoreCase(operation)) {
             return ppScript.delete(user, bindingMap);
-        } else
-        if ("SET_PASSWORD".equalsIgnoreCase(operation)) {
+        } else if ("SET_PASSWORD".equalsIgnoreCase(operation)) {
             return ppScript.setPassword(passwordSync, bindingMap);
-        } else
-        if ("RESET_PASSWORD".equalsIgnoreCase(operation)) {
+        } else if ("RESET_PASSWORD".equalsIgnoreCase(operation)) {
             return ppScript.resetPassword(passwordSync, bindingMap);
-        } else
-        if ("DISABLE".equalsIgnoreCase(operation)) {
+        } else if ("DISABLE".equalsIgnoreCase(operation)) {
             return ppScript.disable(user, bindingMap);
         }
         return 0;
     }
 
     static int executePreProcess(PreProcessor<ProvisionUser> ppScript,
-                                    Map<String, Object> bindingMap, ProvisionUser user, PasswordSync passwordSync, LookupRequest lookupRequest,  String operation) {
-        log.info("======= call PreProcessor: ppScript=" + ppScript + ", operation="+operation);
+                                 Map<String, Object> bindingMap, ProvisionUser user, PasswordSync passwordSync, LookupRequest lookupRequest, String operation) {
+        log.info("======= call PreProcessor: ppScript=" + ppScript + ", operation=" + operation);
         if ("ADD".equalsIgnoreCase(operation)) {
             return ppScript.add(user, bindingMap);
-        } else
-        if ("MODIFY".equalsIgnoreCase(operation)) {
+        } else if ("MODIFY".equalsIgnoreCase(operation)) {
             return ppScript.modify(user, bindingMap);
-        } else
-        if ("DELETE".equalsIgnoreCase(operation)) {
+        } else if ("DELETE".equalsIgnoreCase(operation)) {
             return ppScript.delete(user, bindingMap);
-        } else
-        if ("SET_PASSWORD".equalsIgnoreCase(operation)) {
+        } else if ("SET_PASSWORD".equalsIgnoreCase(operation)) {
             return ppScript.setPassword(passwordSync, bindingMap);
-        } else
-        if ("RESET_PASSWORD".equalsIgnoreCase(operation)) {
+        } else if ("RESET_PASSWORD".equalsIgnoreCase(operation)) {
             return ppScript.resetPassword(passwordSync, bindingMap);
-        } else
-        if ("DISABLE".equalsIgnoreCase(operation)) {
+        } else if ("DISABLE".equalsIgnoreCase(operation)) {
             return ppScript.disable(user, bindingMap);
-        } else
-        if ("LOOKUP".equalsIgnoreCase(operation)) {
+        } else if ("LOOKUP".equalsIgnoreCase(operation)) {
             return ppScript.lookupRequest(lookupRequest);
         }
         return 0;
     }
 
     static int executePostProcess(PostProcessor<ProvisionUser> ppScript,
-                                     Map<String, Object> bindingMap, ProvisionUser user, PasswordSync passwordSync, SearchResponse searchResponse, String operation,  boolean success) {
-        log.info("======= call PostProcessor: ppScript=" + ppScript + ", operation="+operation);
+                                  Map<String, Object> bindingMap, ProvisionUser user, PasswordSync passwordSync, SearchResponse searchResponse, String operation, boolean success) {
+        log.info("======= call PostProcessor: ppScript=" + ppScript + ", operation=" + operation);
         if ("ADD".equalsIgnoreCase(operation)) {
             return ppScript.add(user, bindingMap, success);
-        } else
-        if ("MODIFY".equalsIgnoreCase(operation)) {
+        } else if ("MODIFY".equalsIgnoreCase(operation)) {
             return ppScript.modify(user, bindingMap, success);
-        } else
-        if ("DELETE".equalsIgnoreCase(operation)) {
+        } else if ("DELETE".equalsIgnoreCase(operation)) {
             return ppScript.delete(user, bindingMap, success);
-        } else
-        if ("SET_PASSWORD".equalsIgnoreCase(operation)) {
+        } else if ("SET_PASSWORD".equalsIgnoreCase(operation)) {
             return ppScript.setPassword(passwordSync, bindingMap, success);
-        } else
-        if ("RESET_PASSWORD".equalsIgnoreCase(operation)) {
+        } else if ("RESET_PASSWORD".equalsIgnoreCase(operation)) {
             return ppScript.resetPassword(passwordSync, bindingMap, success);
-        } else
-        if ("DISABLE".equalsIgnoreCase(operation)) {
+        } else if ("DISABLE".equalsIgnoreCase(operation)) {
             return ppScript.disable(user, bindingMap, success);
-        } else
-        if ("LOOKUP".equalsIgnoreCase(operation)) {
+        } else if ("LOOKUP".equalsIgnoreCase(operation)) {
             return ppScript.lookupRequest(searchResponse);
         }
         return 0;
@@ -717,6 +695,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         // Processing emails
         Set<EmailAddress> emailAddresses = pUser.getEmailAddresses();
         if (CollectionUtils.isNotEmpty(emailAddresses)) {
+            this.manageDefaultEmails(emailAddresses);
             for (EmailAddress e : emailAddresses) {
                 if (e.getOperation() == null) {
                     continue;
@@ -792,6 +771,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         // Processing phones
         Set<Phone> phones = pUser.getPhones();
         if (CollectionUtils.isNotEmpty(phones)) {
+            this.manageDefaultPhone(phones);
             for (Phone e : phones) {
                 if (e.getOperation() == null) {
                     continue;
@@ -863,6 +843,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         // Processing addresses
         Set<Address> addresses = pUser.getAddresses();
         if (CollectionUtils.isNotEmpty(addresses)) {
+            this.manageDefaultAddresses(addresses);
             for (Address e : addresses) {
                 if (e.getOperation() == null) {
                     continue;
@@ -926,6 +907,113 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
             }
         }
     }
+
+
+    private void manageDefaultAddresses(Set<Address> addresses) {
+        for (Address a : addresses) {
+            switch (a.getOperation()) {
+                case ADD:
+                    if (a.getIsDefault()) {
+                        for (Address another : addresses) {
+                            if (a != another && another.getIsDefault()) {
+                                another.setIsDefault(false);
+                                if (AttributeOperationEnum.NO_CHANGE.equals(another.getOperation())) {
+                                    another.setOperation(AttributeOperationEnum.REPLACE);
+                                }
+                            }
+                        }
+                    }
+                    break;
+                case REPLACE:
+                    if (a.getIsDefault()) {
+                        for (Address another : addresses) {
+                            if (a != another && another.getIsDefault() &&
+                                    !AttributeOperationEnum.ADD.equals(another.getOperation())) {
+                                another.setIsDefault(false);
+                                if (AttributeOperationEnum.NO_CHANGE.equals(another.getOperation())) {
+                                    another.setOperation(AttributeOperationEnum.REPLACE);
+                                }
+                            }
+                        }
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+
+    }
+
+    private void manageDefaultPhone(Set<Phone> phones) {
+        for (Phone phone : phones) {
+            switch (phone.getOperation()) {
+                case ADD:
+                    if (phone.getIsDefault()) {
+                        for (Phone another : phones) {
+                            if (phone != another && another.getIsDefault()) {
+                                another.setIsDefault(false);
+                                if (AttributeOperationEnum.NO_CHANGE.equals(another.getOperation())) {
+                                    another.setOperation(AttributeOperationEnum.REPLACE);
+                                }
+                            }
+                        }
+                    }
+                    break;
+                case REPLACE:
+                    if (phone.getIsDefault()) {
+                        for (Phone another : phones) {
+                            if (phone != another && another.getIsDefault() &&
+                                    !AttributeOperationEnum.ADD.equals(another.getOperation())) {
+                                another.setIsDefault(false);
+                                if (AttributeOperationEnum.NO_CHANGE.equals(another.getOperation())) {
+                                    another.setOperation(AttributeOperationEnum.REPLACE);
+                                }
+                            }
+                        }
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+
+    }
+
+    private void manageDefaultEmails(Set<EmailAddress> emailAddresses) {
+        for (EmailAddress emailAddress : emailAddresses) {
+            switch (emailAddress.getOperation()) {
+                case ADD:
+                    if (emailAddress.getIsDefault()) {
+                        for (EmailAddress another : emailAddresses) {
+                            if (emailAddress != another && another.getIsDefault()) {
+                                another.setIsDefault(false);
+                                if (AttributeOperationEnum.NO_CHANGE.equals(another.getOperation())) {
+                                    another.setOperation(AttributeOperationEnum.REPLACE);
+                                }
+                            }
+                        }
+                    }
+                    break;
+                case REPLACE:
+                    if (emailAddress.getIsDefault()) {
+                        for (EmailAddress another : emailAddresses) {
+                            if (emailAddress != another && another.getIsDefault() &&
+                                    !AttributeOperationEnum.ADD.equals(another.getOperation())) {
+                                another.setIsDefault(false);
+                                if (AttributeOperationEnum.NO_CHANGE.equals(another.getOperation())) {
+                                    another.setOperation(AttributeOperationEnum.REPLACE);
+                                }
+                            }
+                        }
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+
+    }
+
 
     public void updateUserProperties(final UserEntity userEntity, final ProvisionUser pUser, final IdmAuditLog parentLog) {
         MetadataTypeEntity type = null;
@@ -1368,7 +1456,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
             for (RoleEntity ure : userEntity.getRoles()) {
                 Role ar = roleDozerConverter.convertToDTO(ure, false);
                 for (Role r : pUser.getRoles()) {
-                    if (StringUtils.equals(r.getId(),ar.getId())) {
+                    if (StringUtils.equals(r.getId(), ar.getId())) {
                         ar.setOperation(r.getOperation()); // get operation value from pUser
                         break;
                     }
@@ -1400,7 +1488,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                 } else if (operation == AttributeOperationEnum.DELETE) {
                     Set<OrganizationEntity> affiliations = userEntity.getAffiliations();
                     for (OrganizationEntity a : affiliations) {
-                        if (StringUtils.equals(o.getId(),a.getId())) {
+                        if (StringUtils.equals(o.getId(), a.getId())) {
                             userEntity.getAffiliations().remove(a);
                             // Audit Log ---------------------------------------------------
                             IdmAuditLog auditLog = new IdmAuditLog();
@@ -1492,7 +1580,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     if (CollectionUtils.isNotEmpty(entities)) {
                         for (final Iterator<LoginEntity> it = entities.iterator(); it.hasNext(); ) {
                             final LoginEntity en = it.next();
-                            if (StringUtils.equals(en.getLoginId(),e.getLoginId())) {
+                            if (StringUtils.equals(en.getLoginId(), e.getLoginId())) {
                                 it.remove();
                                 // Audit Log ---------------------------------------------------
                                 IdmAuditLog auditLog = new IdmAuditLog();
@@ -1530,7 +1618,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
 
                     if (CollectionUtils.isNotEmpty(userEntity.getPrincipalList())) {
                         for (final LoginEntity en : userEntity.getPrincipalList()) {
-                            if (StringUtils.equals(en.getLoginId(),e.getLoginId())) {
+                            if (StringUtils.equals(en.getLoginId(), e.getLoginId())) {
 
                                 if (!en.getLogin().equals(e.getLogin())) {
                                     e.setOrigPrincipalName(en.getLogin());
