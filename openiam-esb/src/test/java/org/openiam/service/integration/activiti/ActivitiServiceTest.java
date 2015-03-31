@@ -67,9 +67,25 @@ public class ActivitiServiceTest extends AbstractServiceTest {
     	}
     }
 	
-	@Test
-	public void testSelfRegistrationAccept() throws InterruptedException {
-		final NewUserProfileRequestModel request = createNewHireRequest(ActivitiRequestType.SELF_REGISTRATION);
+	private void confirmUser(final NewUserProfileRequestModel request) throws InterruptedException {
+		/* confirm user */
+		final String emailAddress = request.getEmails().get(0).getEmailAddress();
+		final UserSearchBean userSearchBean = new UserSearchBean();
+		userSearchBean.setEmailAddressMatchToken(new SearchParam(emailAddress, MatchType.EXACT));
+		final List<User> userList = userServiceClient.findBeans(userSearchBean, 0, 1);
+		Assert.assertTrue(CollectionUtils.isNotEmpty(userList), String.format("Could not find use with email '%s'", emailAddress));
+		final User user = userList.get(0);
+		//blocked by IDMAPPS-2742
+	}
+	
+	private void sendAndConfirmRequestWithNoApprover(final NewUserProfileRequestModel request) throws InterruptedException {
+		final SaveTemplateProfileResponse templateResponse = activitiClient.initiateNewHireRequest(request);
+		Assert.assertTrue(templateResponse.isSuccess());
+		Thread.sleep(5000L);
+		confirmUser(request);
+	}
+	
+	private void sendAndConfirmRequestWithApprover(final NewUserProfileRequestModel request) throws InterruptedException {
 		final SaveTemplateProfileResponse templateResponse = activitiClient.initiateNewHireRequest(request);
 		Assert.assertTrue(templateResponse.isSuccess());
 		Thread.sleep(5000L);
@@ -93,23 +109,26 @@ public class ActivitiServiceTest extends AbstractServiceTest {
 		Assert.assertTrue(CollectionUtils.isEmpty(wrappers));
 		Thread.sleep(10000L);
 		
-		/* confirm user */
-		final String emailAddress = request.getEmails().get(0).getEmailAddress();
-		final UserSearchBean userSearchBean = new UserSearchBean();
-		userSearchBean.setEmailAddressMatchToken(new SearchParam(emailAddress, MatchType.EXACT));
-		final List<User> userList = userServiceClient.findBeans(userSearchBean, 0, 1);
-		Assert.assertTrue(CollectionUtils.isNotEmpty(userList), String.format("Could not find use with email '%s'", emailAddress));
-		final User user = userList.get(0);
+		confirmUser(request);
 	}
 	
 	@Test
-	public void testNewHireWithApprover() {
+	public void testSelfRegistrationAccept() throws InterruptedException {
+		final NewUserProfileRequestModel request = createNewHireRequest(ActivitiRequestType.SELF_REGISTRATION);
+		sendAndConfirmRequestWithApprover(request);
+		
+	}
+	
+	@Test
+	public void testNewHireWithApprover() throws InterruptedException {
 		final NewUserProfileRequestModel request = createNewHireRequest(ActivitiRequestType.NEW_HIRE_WITH_APPROVAL);
+		sendAndConfirmRequestWithApprover(request);
 	}
 	
 	@Test
-	public void testNewHireWithNoApprover() {
+	public void testNewHireWithNoApprover() throws InterruptedException {
 		final NewUserProfileRequestModel request = createNewHireRequest(ActivitiRequestType.NEW_HIRE_NO_APPROVAL);
+		sendAndConfirmRequestWithNoApprover(request);
 	}
 	
 	@Test
