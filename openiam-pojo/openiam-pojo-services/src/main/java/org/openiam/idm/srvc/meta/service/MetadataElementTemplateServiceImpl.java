@@ -287,14 +287,19 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 									pageElement.setDefaultValue(elementEntity.getStaticDefaultValue());
 									if(StringUtils.isBlank(pageElement.getDefaultValue())) {
 										//pageElement.setDefaultValue(getLanguageValue(targetLanguage, elementEntity.getDefaultValueLanguageMap()));
-										pageElement.setDefaultValue(elementEntity.getDefaultValue());
+										final Map<String, LanguageMappingEntity> defValLanguageMap = elementEntity.getDefaultValueLanguageMap();
+										final LanguageMappingEntity displayNameXref = (defValLanguageMap != null) ? defValLanguageMap.get(targetLanguage.getId()) : null;
+										final String defaultValue = (displayNameXref != null) ? displayNameXref.getValue() : null;
+										pageElement.setDefaultValue(defaultValue);
 									}
 									if(CollectionUtils.isNotEmpty(elementEntity.getValidValues())) {
 										for(final MetadataValidValueEntity validValueEntity : elementEntity.getValidValues()) {
 											final String validValueId = validValueEntity.getId();
 											final String value = validValueEntity.getUiValue();
 											//final String displayName = getLanguageValue(targetLanguage, validValueEntity.getLanguageMap());
-											final String displayName =  validValueEntity.getDisplayName();
+											//final String displayName =  validValueEntity.getDisplayName();
+											final LanguageMappingEntity displayNameXref = validValueEntity.getLanguageMap().get(targetLanguage.getId());
+											final String displayName = (displayNameXref != null) ? displayNameXref.getValue() : null;
 											final Integer displayOrder = validValueEntity.getDisplayOrder();
 											if(displayName != null && value != null) {
 												pageElement.addValidValue(new PageElementValidValue(validValueId, value, displayName, displayOrder));
