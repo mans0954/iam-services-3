@@ -5,6 +5,7 @@ import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.base.TreeObjectId;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.dozer.converter.RoleAttributeDozerConverter;
 import org.openiam.dozer.converter.RoleDozerConverter;
@@ -740,5 +741,11 @@ public class RoleDataServiceImpl implements RoleDataService {
 
             roleAttributeDAO.merge(attribute);
         }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<TreeObjectId> getRolesWithSubRolesIds(List<String> roleIds, String requesterId) {
+        return roleDao.findRolesWithSubRolesIds(roleIds,  getDelegationFilter(requesterId));
     }
 }

@@ -11,6 +11,7 @@ import org.hibernate.criterion.*;
 import org.openiam.base.Tuple;
 import org.openiam.base.ws.SortParam;
 import org.openiam.core.dao.BaseDaoImpl;
+import org.openiam.base.TreeObjectId;
 import org.openiam.idm.searchbeans.AbstractSearchBean;
 import org.openiam.idm.searchbeans.RoleSearchBean;
 import org.openiam.idm.searchbeans.SearchBean;
@@ -22,10 +23,7 @@ import org.openiam.util.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static org.hibernate.criterion.Projections.rowCount;
 
@@ -313,6 +311,28 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
             ret = getHibernateTemplate().find("select ra.role from RoleAttributeEntity ra left join ra.values av where ra.name = ? and ((ra.isMultivalued = false and ra.value = ?) or (ra.isMultivalued = true and av in ?))", attrName, attrValue, attrValue);
         }
         return ret;
+    }
+
+    @Override
+    public List<TreeObjectId> findRolesWithSubRolesIds(List<String> initialRoleIds, final Set<String> filter) {
+        List<TreeObjectId> result = new LinkedList<TreeObjectId>();
+        if(initialRoleIds != null) {
+            for (String roleId : initialRoleIds) {
+                result.add(populateTreeObjectId(new TreeObjectId(roleId), filter));
+            }
+        }
+        return result;
+    }
+
+    private TreeObjectId populateTreeObjectId(final TreeObjectId root, final Set<String> filter){
+        List<String> ids = (List<String>)getChildRolesCriteria(root.getValue(), filter).setProjection(Projections.id()).list();
+        if(ids != null) {
+            for(String id : ids) {
+                TreeObjectId objectId = new TreeObjectId(id);
+                root.addChild(populateTreeObjectId(objectId, filter));
+            }
+        }
+        return root;
     }
 
 }

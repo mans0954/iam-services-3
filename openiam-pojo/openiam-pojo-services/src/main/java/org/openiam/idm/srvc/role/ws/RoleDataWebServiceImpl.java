@@ -24,6 +24,7 @@ package org.openiam.idm.srvc.role.ws;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.openiam.base.SysConfiguration;
+import org.openiam.base.TreeObjectId;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
@@ -679,5 +680,10 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
     public List<Role> findRolesByAttributeValue(String attrName, String attrValue) {
         return roleDozerConverter.convertToDTOList(
                 roleDataService.findRolesByAttributeValue(attrName, attrValue), true);
+    }
+
+    @Override
+    public List<TreeObjectId> getRolesWithSubRolesIds(List<String> roleIds, String requesterId) {
+        return roleDataService.getRolesWithSubRolesIds(roleIds, requesterId);
     }
 }

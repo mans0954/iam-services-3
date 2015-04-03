@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.role.service;
 
+import org.openiam.base.TreeObjectId;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.RoleSearchBean;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
@@ -189,4 +190,6 @@ public interface RoleDataService {
     public void addAttribute(RoleAttributeEntity attribute);
     public void updateAttribute(RoleAttributeEntity attribute);
 
+
+    List<TreeObjectId> getRolesWithSubRolesIds(List<String> roleIds, final String requesterId);
 }
