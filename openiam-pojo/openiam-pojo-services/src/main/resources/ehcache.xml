@@ -225,11 +225,10 @@
             />
 
     <cache name="languages"
-                         maxElementsInMemory="100000"
-                         eternal="false"
-                         overflowToDisk="false"
-                         timeToLiveSeconds="600"
-                         memoryStoreEvictionPolicy="LRU"
+            maxElementsInMemory="100000"
+            eternal="false"
+            overflowToDisk="false"
+            memoryStoreEvictionPolicy="LRU"
         />
     <cache name="metadataTypes"
            maxElementsInMemory="100000"
@@ -249,28 +248,24 @@
            maxElementsInMemory="100000"
            eternal="false"
            overflowToDisk="false"
-           timeToLiveSeconds="600"
            memoryStoreEvictionPolicy="LRU"
             />
     <cache name="decryptManagedSysPassword"
            maxElementsInMemory="100000"
            eternal="false"
            overflowToDisk="false"
-           timeToLiveSeconds="600"
            memoryStoreEvictionPolicy="LRU"
             />
     <cache name="resourceAttributeMaps"
            maxElementsInMemory="100000"
            eternal="false"
            overflowToDisk="false"
-           timeToLiveSeconds="600"
            memoryStoreEvictionPolicy="LRU"
             />
     <cache name="managedSysObjectParam"
            maxElementsInMemory="100000"
            eternal="false"
            overflowToDisk="false"
-           timeToLiveSeconds="600"
            memoryStoreEvictionPolicy="LRU"
             />
 
@@ -278,7 +273,13 @@
            maxElementsInMemory="100000"
            eternal="false"
            overflowToDisk="false"
-           timeToLiveSeconds="600"
+           memoryStoreEvictionPolicy="LRU"
+            />
+
+    <cache name="RolesWithSubRolesIds"
+           maxElementsInMemory="100000"
+           eternal="false"
+           overflowToDisk="false"
            memoryStoreEvictionPolicy="LRU"
             />
 
