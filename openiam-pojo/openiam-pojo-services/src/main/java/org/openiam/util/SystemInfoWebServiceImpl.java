@@ -63,4 +63,11 @@ public class SystemInfoWebServiceImpl implements SystemInfoWebService, ServletCo
     public void setServletContext(ServletContext servletContext) {
         this.servletContext = servletContext;
     }
+
+	@Override
+	public String getProjectVersion() {
+		return getWarManifestInfo("Openiam-Version");
+	}
+	
+	
 }

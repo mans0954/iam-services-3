@@ -306,6 +306,12 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
         	}
         }
         
+        if(CollectionUtils.isNotEmpty(pattern.getXssRules())) {
+        	pattern.getXssRules().forEach(rule -> {
+        		rule.setPattern(pattern);
+        	});
+        }
+        
         if(CollectionUtils.isNotEmpty(pattern.getServers())) {
         	for(final URIPatternServerEntity server : pattern.getServers()) {
         		server.setPattern(pattern);
@@ -433,6 +439,11 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
         				xref.setPattern(pattern);
         				xref.setId(new AuthLevelGroupingURIPatternXrefIdEntity(grouping.getId(), pattern.getId()));
         			}
+        		}
+        		
+        		if(CollectionUtils.isEmpty(pattern.getXssRules())) {
+        			dbEntity.getXssRules().clear();
+        			pattern.setXssRules(dbEntity.getXssRules());
         		}
         		
         		if(CollectionUtils.isEmpty(pattern.getSubstitutions())) {
@@ -701,11 +712,23 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
 					for(final URIPatternEntity defaultPattern : patternWrapper.getPatterns()) {
 						if(StringUtils.equals(pattern.getPattern(), defaultPattern.getPattern())) {
 							pattern.setIsPublic(true);
+							pattern.setIgnoreXSS(defaultPattern.isIgnoreXSS());
 							if(CollectionUtils.isNotEmpty(defaultPattern.getGroupingXrefs())) {
 								for(final AuthLevelGroupingURIPatternXrefEntity defaultGrouping : defaultPattern.getGroupingXrefs()) {
 									if(!pattern.hasAuthGrouping(defaultGrouping.getId().getGroupingId())) {
 										final AuthLevelGroupingEntity grouping = authLevelGroupingDAO.findById(defaultGrouping.getId().getGroupingId());
 										pattern.addGroupingXref(new AuthLevelGroupingURIPatternXrefEntity(pattern, grouping));
+									}
+								}
+							}
+							if(CollectionUtils.isNotEmpty(defaultPattern.getXssRules())) {
+								for(final URIParamXSSRuleEntity rule : defaultPattern.getXssRules()) {
+									if(pattern.hasXssRule(rule.getParamName())) {
+										//final URIParamXSSRuleEntity dbRule = pattern.getXssRule(rule.getParamName());
+										//dbRule.setIgnoreXSS(rule.isIgnoreXSS());
+									} else {
+										rule.setPattern(pattern);
+										pattern.addXssRule(rule);
 									}
 								}
 							}
@@ -723,7 +746,12 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
 						pattern.setContentProvider(contentProvider);
 						pattern.setIsPublic(defaultPattern.getIsPublic());
 						pattern.setPattern(defaultPattern.getPattern());
+						pattern.setIgnoreXSS(defaultPattern.isIgnoreXSS());
 						pattern.setMatchMode(PatternMatchMode.IGNORE);
+						pattern.setXssRules(defaultPattern.getXssRules());
+						if(pattern.getXssRules() != null) {
+							pattern.getXssRules().forEach(e -> { e.setPattern(pattern); });
+						}
 						if(CollectionUtils.isNotEmpty(defaultPattern.getGroupingXrefs())) {
 							final Set<AuthLevelGroupingURIPatternXrefEntity> groupingXrefs = new HashSet<>();
 							for(final AuthLevelGroupingURIPatternXrefEntity defaultGrouping : defaultPattern.getGroupingXrefs()) {

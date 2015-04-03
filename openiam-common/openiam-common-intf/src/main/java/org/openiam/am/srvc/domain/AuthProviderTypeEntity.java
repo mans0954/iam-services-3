@@ -45,6 +45,14 @@ public class AuthProviderTypeEntity extends AbstractKeyNameEntity {
     @Type(type = "yes_no")
     private boolean hasPasswordPolicy;
     
+    @Column(name="HAS_AUTHN_POLICY")
+    @Type(type = "yes_no")
+    private boolean hasAuthnPolicy;
+    
+    @Column(name="AUTHN_POLICY_REQUIRED")
+    @Type(type = "yes_no")
+    private boolean authnPolicyRequired;
+    
     @Column(name="SUPPORTS_JUST_IN_TIME_AUTH")
     @Type(type = "yes_no")
     private boolean supportsJustInTimeAuthentication;
@@ -168,6 +176,22 @@ public class AuthProviderTypeEntity extends AbstractKeyNameEntity {
 		this.supportsTOTP = supportsTOTP;
 	}
 
+	public boolean isHasAuthnPolicy() {
+		return hasAuthnPolicy;
+	}
+
+	public void setHasAuthnPolicy(boolean hasAuthnPolicy) {
+		this.hasAuthnPolicy = hasAuthnPolicy;
+	}
+
+	public boolean isAuthnPolicyRequired() {
+		return authnPolicyRequired;
+	}
+
+	public void setAuthnPolicyRequired(boolean authnPolicyRequired) {
+		this.authnPolicyRequired = authnPolicyRequired;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -182,6 +206,8 @@ public class AuthProviderTypeEntity extends AbstractKeyNameEntity {
 		result = prime * result + (supportsJustInTimeAuthentication ? 1231 : 1237);
 		result = prime * result + (supportsSMSOTP ? 1231 : 1237);
 		result = prime * result + (supportsTOTP ? 1231 : 1237);
+		result = prime * result + (hasAuthnPolicy ? 1231 : 1237);
+		result = prime * result + (authnPolicyRequired ? 1231 : 1237);
 		return result;
 	}
 
@@ -213,6 +239,10 @@ public class AuthProviderTypeEntity extends AbstractKeyNameEntity {
 		if (supportsSMSOTP != other.supportsSMSOTP)
 			return false;
 		if (supportsTOTP != other.supportsTOTP)
+			return false;
+		if (hasAuthnPolicy != other.hasAuthnPolicy)
+			return false;
+		if (authnPolicyRequired != other.authnPolicyRequired)
 			return false;
 		return true;
 	}

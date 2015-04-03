@@ -20,19 +20,18 @@
 	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
         <property name="locations">
             <list>
-                <value>classpath:test.activiti.bpm.properties</value>
-				<value>file:${confpath}/conf/datasource.properties</value>
-				<value>file:${confpath}/conf/service-urls.properties</value>
+				<value>file:/data/openiam/conf/datasource.properties</value>
+				<value>file:/data/openiam/conf/service-urls.properties</value>
             </list>
         </property>
         <property name="ignoreResourceNotFound" value="true"/>
     </bean>
     
 	<bean id="bpmDataSource" class="org.apache.commons.dbcp.BasicDataSource" >
-		<property name="driverClassName" value="${org.openiam.bpm.activiti.jdbc.driver}" />
-		<property name="url" value="${org.openiam.bpm.activiti.jdbc.url}" />
-		<property name="username" value="${org.openiam.bpm.activiti.jdbc.username}" />
-		<property name="password" value="${org.openiam.bpm.activiti.jdbc.password}" />
+		<property name="driverClassName" value="com.mysql.jdbc.Driver" />
+		<property name="url" value="jdbc:mysql://localhost:3306/activiti?useUnicode=true&amp;characterEncoding=UTF-8" />
+		<property name="username" value="idmuser" />
+		<property name="password" value="idmuser" />
 		<property name="defaultAutoCommit" value="false" />
 	</bean>   
 	
@@ -43,7 +42,7 @@
 	<bean id="processEngineConfiguration" class="org.activiti.spring.SpringProcessEngineConfiguration">
 		<property name="dataSource" ref="bpmDataSource" />
 		<property name="transactionManager" ref="bpmTransactionManager" />
-		<property name="databaseSchemaUpdate" value="false" />
+		<property name="databaseSchemaUpdate" value="true" />
 		<property name="jobExecutorActivate" value="false" />
 		<property name="deploymentResources" value="classpath:*bpmn20.xml" />
 	</bean>

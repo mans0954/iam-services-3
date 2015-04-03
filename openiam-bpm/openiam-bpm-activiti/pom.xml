@@ -161,6 +161,13 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
         </dependency>
+
+		<dependency>
+        	<groupId>org.slf4j</groupId>
+        	<artifactId>slf4j-log4j12</artifactId>
+        	<version>${slf4j.simple.version}</version>
+        	<scope>test</scope>
+    	</dependency>
     </dependencies>
 
     <developers>

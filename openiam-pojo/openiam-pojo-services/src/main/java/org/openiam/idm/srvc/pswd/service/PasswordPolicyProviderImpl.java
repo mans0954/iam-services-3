@@ -57,7 +57,7 @@ public class PasswordPolicyProviderImpl implements PasswordPolicyProvider {
     	Policy retVal = null;
     	final AuthProviderEntity authProvider = authProviderDAO.findById(sysConfiguration.getDefaultAuthProviderId());
     	if(authProvider != null) {
-    		final PolicyEntity policyEntity = authProvider.getPolicy();
+    		final PolicyEntity policyEntity = authProvider.getPasswordPolicy();
     		if(policyEntity != null) {
     			retVal = policyDozerConverter.convertToDTO(policyEntity, true);
     		}
@@ -78,7 +78,7 @@ public class PasswordPolicyProviderImpl implements PasswordPolicyProvider {
 			if(contentProvider != null) {
 				final AuthProviderEntity authProvider = contentProvider.getAuthProvider();
 				if(authProvider != null) {
-					final PolicyEntity policyEntity = authProvider.getPolicy();
+					final PolicyEntity policyEntity = authProvider.getPasswordPolicy();
 					if(policyEntity != null) {
 						retVal = policyDozerConverter.convertToDTO(policyEntity, true);
 					}

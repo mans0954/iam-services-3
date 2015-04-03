@@ -6,6 +6,7 @@ import java.util.Set;
 import javax.jws.WebMethod;
 import javax.jws.WebService;
 
+import org.openiam.activiti.model.dto.TaskSearchBean;
 import org.openiam.base.ws.Response;
 import org.openiam.bpm.request.ActivitiClaimRequest;
 import org.openiam.bpm.request.ActivitiRequestDecision;
@@ -43,14 +44,23 @@ public interface ActivitiService {
 	@WebMethod
 	public Response makeDecision(final ActivitiRequestDecision newHireRequest);
 	
+    /* use findTasks */
+    @Deprecated
 	@WebMethod
 	public TaskListWrapper getTasksForUser(final String userId, final int from, final int size);
+    
+    /* use findTasks */
+    @Deprecated
     @WebMethod
     public List<TaskWrapper> getTasksForMemberAssociation(String memberAssociationId);
 	
+    /* use countTasks */
+    @Deprecated
 	@WebMethod
 	public int getNumOfAssignedTasks(final String userId);
 	
+    /* use countTasks */
+    @Deprecated
 	@WebMethod
 	public int getNumOfCandidateTasks(final String userId);
 	
@@ -77,4 +87,10 @@ public interface ActivitiService {
 	
 	@WebMethod
 	public Response deleteTasksForUser(final String userId);
+	
+	@WebMethod
+	public List<TaskWrapper> findTasks(final TaskSearchBean searchBean, final int from, final int size);
+	
+	@WebMethod
+	public int countTasks(final TaskSearchBean searchBean);
 }

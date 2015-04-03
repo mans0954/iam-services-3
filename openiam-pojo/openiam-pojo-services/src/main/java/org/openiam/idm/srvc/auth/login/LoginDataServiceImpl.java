@@ -508,7 +508,7 @@ public class LoginDataServiceImpl implements LoginDataService {
 //        for (SecurityDomain secDom : securityDomainList) {
         final AuthProviderEntity authProvider = authProviderDAO.findById(sysConfiguration.getDefaultAuthProviderId());
         if (authProvider != null) {
-            final PolicyEntity policy = authProvider.getPolicy();
+            final PolicyEntity policy = authProvider.getPasswordPolicy();
             if (policy != null && policy.getAttribute("AUTO_UNLOCK_TIME") != null) {
                 final String autoUnlockTime = policy.getAttribute("AUTO_UNLOCK_TIME").getValue1();
                 if (autoUnlockTime != null) {

@@ -2,9 +2,15 @@ package org.openiam.bpm.activiti;
 
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
+import org.testng.annotations.Test;
 
-@ContextConfiguration(locations={"classpath:test-bpm-context.xml","classpath:applicationContext.xml", "classpath:idmservice-Context.xml"})
+@ContextConfiguration(locations={"classpath:test-bpm-context.xml"})
 public class TestNewHire extends AbstractTestNGSpringContextTests {
+	
+	@Test
+	public void test() {
+		
+	}
 	
 	/*
 	private static Logger log = Logger.getLogger(TestNewHire.class);
