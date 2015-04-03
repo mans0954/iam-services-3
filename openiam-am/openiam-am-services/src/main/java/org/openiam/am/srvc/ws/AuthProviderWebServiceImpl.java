@@ -107,6 +107,11 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService, Appli
     public List<AuthProviderType> getAuthProviderTypeList() {
         return authProviderTypeDozerConverter.convertToDTOList(authProviderService.getAuthProviderTypeList(), true);
     }
+    @Override
+    @Transactional(readOnly = true)
+    public List<AuthProviderType> getSocialAuthProviderTypeList(){
+        return authProviderTypeDozerConverter.convertToDTOList(authProviderService.getSocialAuthProviderTypeList(), true);
+    }
 
     /*
     *==================================================

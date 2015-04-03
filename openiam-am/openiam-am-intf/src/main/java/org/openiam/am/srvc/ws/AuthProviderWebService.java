@@ -1,5 +1,6 @@
 package org.openiam.am.srvc.ws;
 
+import org.openiam.am.srvc.domain.AuthProviderTypeEntity;
 import org.openiam.am.srvc.dto.AuthAttribute;
 import org.openiam.am.srvc.dto.AuthProvider;
 import org.openiam.am.srvc.dto.AuthProviderAttribute;
@@ -30,6 +31,8 @@ public interface AuthProviderWebService {
     public AuthProviderType getAuthProviderType(@WebParam(name = "providerType", targetNamespace = "")String providerType);
     @WebMethod
     public List<AuthProviderType> getAuthProviderTypeList();
+    @WebMethod
+    public List<AuthProviderType> getSocialAuthProviderTypeList();
 
     /*
     *==================================================
