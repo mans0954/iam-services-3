@@ -257,6 +257,25 @@ public abstract class AbstractLoginModule implements AuthenticationModule {
         }
         return policy;
     }
+    protected PolicyEntity getAuthPolicy(final AuthenticationContext context) throws BasicDataServiceException {
+        if (StringUtils.isBlank(context.getAuthProviderId())) {
+            throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_SET);
+        }
+
+        final AuthProviderEntity authProvider = getAuthProvider(context);
+        if (authProvider == null) {
+            throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_FOUND);
+        }
+
+        final PolicyEntity policy = authProvider.getAuthenticationPolicy();
+        final AuthProviderTypeEntity authProviderType = authProvider.getType();
+        if (authProviderType.isPasswordPolicyRequired()) {
+            if (policy == null) {
+                throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_SET);
+            }
+        }
+        return policy;
+    }
 
     protected String getPolicyAttribute(final PolicyEntity policy, final String attributeName) {
         final PolicyAttributeEntity entity = policy.getAttribute(attributeName);

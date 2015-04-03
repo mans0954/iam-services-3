@@ -173,7 +173,7 @@ public class AbstractSocialLoginModule<Profile extends AbstractSocialProfile> ex
 
         }
 
-        final PolicyEntity policy = getPolicy(context);
+        final PolicyEntity policy = getAuthPolicy(context);
         final String tokenType = getPolicyAttribute(policy, "TOKEN_TYPE");
         String tokenLife = getPolicyAttribute(policy, "TOKEN_LIFE");
         final String tokenIssuer = getPolicyAttribute(policy, "TOKEN_ISSUER");
