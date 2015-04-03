@@ -223,11 +223,14 @@ public abstract class AbstractLoginModule implements AuthenticationModule {
     }
 
     protected ManagedSysEntity getManagedSystem(final AuthenticationContext context) {
+        return getManagedSystem(context, getAuthProvider(context));
+    }
+
+    protected ManagedSysEntity getManagedSystem(final AuthenticationContext context, final AuthProviderEntity authProvider) {
         final IdmAuditLog event = context.getEvent();
-        final AuthProviderEntity authProvider = getAuthProvider(context);
         ManagedSysEntity managedSystem = (authProvider != null) ? authProvider.getManagedSystem() : null;
         if (managedSystem == null) {
-            final String warning = String.format("Auth provider %s does not have a managed system corresopnding to it.  Using default: %s", context.getAuthProviderId(), sysConfiguration.getDefaultManagedSysId());
+            final String warning = String.format("Auth provider %s does not have a managed system corresopnding to it.  Using default: %s", authProvider.getId(), sysConfiguration.getDefaultManagedSysId());
             log.warn(warning);
             event.addWarning(warning);
             managedSystem = managedSysDAO.findById(sysConfiguration.getDefaultManagedSysId());
@@ -246,6 +249,25 @@ public abstract class AbstractLoginModule implements AuthenticationModule {
         }
 
         final PolicyEntity policy = authProvider.getPasswordPolicy();
+        final AuthProviderTypeEntity authProviderType = authProvider.getType();
+        if (authProviderType.isPasswordPolicyRequired()) {
+            if (policy == null) {
+                throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_SET);
+            }
+        }
+        return policy;
+    }
+    protected PolicyEntity getAuthPolicy(final AuthenticationContext context) throws BasicDataServiceException {
+        if (StringUtils.isBlank(context.getAuthProviderId())) {
+            throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_SET);
+        }
+
+        final AuthProviderEntity authProvider = getAuthProvider(context);
+        if (authProvider == null) {
+            throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_FOUND);
+        }
+
+        final PolicyEntity policy = authProvider.getAuthenticationPolicy();
         final AuthProviderTypeEntity authProviderType = authProvider.getType();
         if (authProviderType.isPasswordPolicyRequired()) {
             if (policy == null) {

@@ -16,7 +16,8 @@ import javax.xml.bind.annotation.XmlType;
         "requestSource",
         "languageId",
         "patternId",
-        "methodId"
+        "methodId",
+        "socialUserProfile"
 })
 public class AuthenticationRequest {
 	private String languageId;
@@ -27,6 +28,7 @@ public class AuthenticationRequest {
     private String requestSource; // where did this request come from
     private String patternId;
     private String methodId;
+    private String socialUserProfile; // user profile in socials networks
 
     public AuthenticationRequest() {
     }
@@ -95,5 +97,11 @@ public class AuthenticationRequest {
 		this.methodId = methodId;
 	}
 
-	
+    public String getSocialUserProfile() {
+        return socialUserProfile;
+    }
+
+    public void setSocialUserProfile(String socialUserProfile) {
+        this.socialUserProfile = socialUserProfile;
+    }
 }

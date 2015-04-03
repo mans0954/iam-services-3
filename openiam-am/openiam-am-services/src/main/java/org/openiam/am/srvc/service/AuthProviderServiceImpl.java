@@ -7,6 +7,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.am.srvc.dao.*;
 import org.openiam.am.srvc.domain.*;
+import org.openiam.am.srvc.dto.AuthProviderType;
 import org.openiam.am.srvc.searchbeans.AuthProviderSearchBean;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.exception.BasicDataServiceException;
@@ -57,8 +58,26 @@ public class AuthProviderServiceImpl implements AuthProviderService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<AuthProviderTypeEntity> getAuthProviderTypeList() {
         return authProviderTypeDao.findAll();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<AuthProviderTypeEntity> getSocialAuthProviderTypeList(){
+        List<AuthProviderTypeEntity> allTypes = getAuthProviderTypeList();
+        List<AuthProviderTypeEntity> selectedTypes = new ArrayList<>();
+        if(CollectionUtils.isNotEmpty(allTypes)){
+            for(AuthProviderTypeEntity type: allTypes){
+                if("GOOGLE_AUTH_PROVIDER".equals(type.getId()) || "FACEBOOK_AUTH_PROVIDER".equals(type.getId())){
+                    if(CollectionUtils.isNotEmpty(type.getProviderSet())){
+                        selectedTypes.add(type);
+                    }
+                }
+            }
+        }
+        return selectedTypes;
     }
 
     /*

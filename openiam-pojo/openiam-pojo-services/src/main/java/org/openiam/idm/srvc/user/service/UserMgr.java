@@ -1798,7 +1798,8 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
 
         if (principalList != null && !principalList.isEmpty()) {
             for (LoginEntity lg : principalList) {
-                lg.setManagedSysId(sysConfiguration.getDefaultManagedSysId());
+                if(StringUtils.isBlank(lg.getManagedSysId()))
+                    lg.setManagedSysId(sysConfiguration.getDefaultManagedSysId());
                 lg.setFirstTimeLogin(1);
                 lg.setIsLocked(0);
                 lg.setCreateDate(new Date(System.currentTimeMillis()));

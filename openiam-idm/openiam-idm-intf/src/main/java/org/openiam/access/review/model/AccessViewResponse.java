@@ -1,6 +1,6 @@
 package org.openiam.access.review.model;
 
-import org.codehaus.jackson.annotate.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.openiam.base.TreeNode;
 
 import javax.xml.bind.annotation.XmlAccessType;
