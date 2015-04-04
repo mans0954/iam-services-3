@@ -7,10 +7,7 @@ import org.openiam.base.domain.AbstractMetdataTypeEntity;
 import org.openiam.base.domain.KeyEntity;
 import org.openiam.core.dao.lucene.LuceneLastUpdate;
 import org.openiam.dozer.DozerDTOCorrespondence;
-import org.openiam.elasticsearch.annotation.ElasticsearchField;
-import org.openiam.elasticsearch.annotation.ElasticsearchFieldBridge;
-import org.openiam.elasticsearch.annotation.ElasticsearchIndex;
-import org.openiam.elasticsearch.annotation.ElasticsearchMapping;
+import org.openiam.elasticsearch.annotation.*;
 import org.openiam.elasticsearch.bridge.UserBrigde;
 import org.openiam.elasticsearch.constants.ESIndexName;
 import org.openiam.elasticsearch.constants.ESIndexType;
@@ -47,10 +44,11 @@ public class EmailAddressEntity extends AbstractMetdataTypeEntity {
 //        @Field(analyze = Analyze.YES),
 //        @Field(name = "emailAddress", analyze = Analyze.YES, store = Store.YES)
 //    })
-    @ElasticsearchField(name = "emailAddress", store = ElasticsearchStore.Yes, index = Index.Analyzed)
+    @ElasticsearchFields(fields = {@ElasticsearchField(name = "emailAddress", store = ElasticsearchStore.Yes, index = Index.Not_Analyzed),
+                                   @ElasticsearchField(name = "emailAddressTokenized", store = ElasticsearchStore.Yes, index = Index.Analyzed)})
     @Column(name = "EMAIL_ADDRESS", length = 320)
     @Size(max = 320, message = "validator.email.toolong")
-    private String emailAddress;
+    protected String emailAddress;
 
     @Column(name = "IS_DEFAULT")
     @Type(type = "yes_no")
@@ -58,7 +56,6 @@ public class EmailAddressEntity extends AbstractMetdataTypeEntity {
 
     @ManyToOne
     @JoinColumn(name = "PARENT_ID")
-//    @Field(name="parent", bridge=@FieldBridge(impl=UserBridge.class), store=Store.YES)
     @ElasticsearchField(name = "userId", bridge=@ElasticsearchFieldBridge(impl = UserBrigde.class), store = ElasticsearchStore.Yes, index = Index.Not_Analyzed/*, mapToParent=true*/)
     private UserEntity parent;
 

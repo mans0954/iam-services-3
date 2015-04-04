@@ -28,23 +28,18 @@ import java.util.Date;
 @Cacheable
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(IdentityDto.class)
-@ElasticsearchIndex(indexName = ESIndexName.IDENTITY)
-@ElasticsearchMapping(typeName = ESIndexType.IDENTITY)
 @AttributeOverride(name = "id", column = @Column(name = "IDENTITY_ID"))
 public class IdentityEntity extends KeyEntity  {
 
 //    @Field(name = "identity", analyze = Analyze.YES, store = Store.YES)
-	@ElasticsearchField(name = "identity", store = ElasticsearchStore.Yes, index = Index.Analyzed)
     @Column(name="IDENTIFICATION",length=320)
     private String identity;
 
 //    @Field(name = "managedSysId", analyze = Analyze.NO, store = Store.YES)
-	@ElasticsearchField(name = "managedSysId", store = ElasticsearchStore.Yes, index = Index.Not_Analyzed)
     @Column(name="MANAGED_SYS_ID",length=50)
     private String managedSysId;
 
 //    @Field(name = "referredObjectId", analyze = Analyze.NO, store = Store.YES)
-	@ElasticsearchField(name = "referredObjectId", store = ElasticsearchStore.Yes, index = Index.Not_Analyzed)
     @Column(name="REFERRED_OBJECT_ID",length=32)
     private String referredObjectId;
 

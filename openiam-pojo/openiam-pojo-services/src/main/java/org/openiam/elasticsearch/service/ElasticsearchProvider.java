@@ -203,22 +203,35 @@ public class ElasticsearchProvider implements InitializingBean, DisposableBean {
                         result.addField(new ElasticsearchFieldMetadata(true, field, field.getName(), ElasticsearchType.String, ElasticsearchStore.Yes, Index.Not_Analyzed));
                         continue;
                     }
-                    annotation =  getFieldAnnotation(field, ElasticsearchField.class);
+                    annotation =  getFieldAnnotation(field, ElasticsearchFields.class);
                     if(annotation!=null){
-                        ElasticsearchField esAnnotation = (ElasticsearchField)annotation;
-                        Class bridgeClazz = esAnnotation.bridge().impl();
-                        ElasticsearchBrigde bridge = null;
-                        if(void.class.isAssignableFrom(bridgeClazz)){
-                            bridge = null;
-                        } else if(!ElasticsearchBrigde.class.isAssignableFrom(bridgeClazz)){
-                            logger.warn(String.format("Elasticsearch Bridge for fiels %s should implement %s interface", field.getName(), ElasticsearchBrigde.class.getName()));
-                        }else{
-                            bridge = (ElasticsearchBrigde)bridgeClazz.newInstance();
+                        ElasticsearchFields fieldsAnnotation = (ElasticsearchFields)annotation;
+                        if(fieldsAnnotation.fields()!=null && fieldsAnnotation.fields().length>0){
+                            for(ElasticsearchField childAnnotation :fieldsAnnotation.fields()){
+                                mapFieldAnnotation(field, childAnnotation,result);
+                            }
                         }
 
-                        result.addField(new ElasticsearchFieldMetadata(false, field, esAnnotation.name(), esAnnotation.type(), esAnnotation.store(), esAnnotation.index(),
-                                                                       esAnnotation.analyzerName(),esAnnotation.indexAnalyzerName(),esAnnotation.searchAnalyzerName(),
-                                                                       bridge,esAnnotation.mapToParent()));
+
+                    } else {
+                        mapFieldAnnotation(field, (ElasticsearchField)getFieldAnnotation(field, ElasticsearchField.class),result);
+//                        annotation =  getFieldAnnotation(field, ElasticsearchField.class);
+//                        if(annotation!=null){
+//                            ElasticsearchField esAnnotation = (ElasticsearchField)annotation;
+//                            Class bridgeClazz = esAnnotation.bridge().impl();
+//                            ElasticsearchBrigde bridge = null;
+//                            if(void.class.isAssignableFrom(bridgeClazz)){
+//                                bridge = null;
+//                            } else if(!ElasticsearchBrigde.class.isAssignableFrom(bridgeClazz)){
+//                                logger.warn(String.format("Elasticsearch Bridge for fiels %s should implement %s interface", field.getName(), ElasticsearchBrigde.class.getName()));
+//                            }else{
+//                                bridge = (ElasticsearchBrigde)bridgeClazz.newInstance();
+//                            }
+//
+//                            result.addField(new ElasticsearchFieldMetadata(false, field, esAnnotation.name(), esAnnotation.type(), esAnnotation.store(), esAnnotation.index(),
+//                                    esAnnotation.analyzerName(),esAnnotation.indexAnalyzerName(),esAnnotation.searchAnalyzerName(),
+//                                    bridge,esAnnotation.mapToParent()));
+//                        }
                     }
                 }
             }
@@ -230,7 +243,6 @@ public class ElasticsearchProvider implements InitializingBean, DisposableBean {
         }
         return result;
     }
-
 
     public void deleteData(String id, Class<?> entityClass) throws Exception {
         if(StringUtils.isNotBlank(id)){
@@ -483,6 +495,24 @@ public class ElasticsearchProvider implements InitializingBean, DisposableBean {
 
     private <A extends Annotation> A getFieldAnnotation(Field field, Class<A> annotationClass){
         return field.getAnnotation(annotationClass);
+    }
+
+    private void mapFieldAnnotation(Field field, ElasticsearchField annotation, ElasticsearchMetadata metadata) throws Exception{
+        if(annotation!=null){
+            Class bridgeClazz = annotation.bridge().impl();
+            ElasticsearchBrigde bridge = null;
+            if(void.class.isAssignableFrom(bridgeClazz)){
+                bridge = null;
+            } else if(!ElasticsearchBrigde.class.isAssignableFrom(bridgeClazz)){
+                logger.warn(String.format("Elasticsearch Bridge for fiels %s should implement %s interface", field.getName(), ElasticsearchBrigde.class.getName()));
+            }else{
+                bridge = (ElasticsearchBrigde)bridgeClazz.newInstance();
+            }
+
+            metadata.addField(new ElasticsearchFieldMetadata(false, field, annotation.name(), annotation.type(), annotation.store(), annotation.index(),
+                    annotation.analyzerName(),annotation.indexAnalyzerName(),annotation.searchAnalyzerName(),
+                    bridge,annotation.mapToParent()));
+        }
     }
 
     @Override

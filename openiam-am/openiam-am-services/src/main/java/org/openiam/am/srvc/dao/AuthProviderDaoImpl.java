@@ -1,5 +1,6 @@
 package org.openiam.am.srvc.dao;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.Query;
@@ -42,6 +43,14 @@ public class AuthProviderDaoImpl extends BaseDaoImpl<AuthProviderEntity, String>
     		if(searchBean.getDefaultAuthProvider() != null) {
     			criteria.add(Restrictions.eq("defaultProvider", searchBean.getDefaultAuthProvider()));
     		}
+            if(CollectionUtils.isNotEmpty(searchBean.getContentProviderIds())){
+                criteria.createAlias("contentProviders", "cp");
+                criteria.add(Restrictions.in("cp.id", searchBean.getContentProviderIds()));
+            }
+            if(CollectionUtils.isNotEmpty(searchBean.getUriPatternIds())){
+                criteria.createAlias("uriPatterns", "up");
+                criteria.add(Restrictions.in("up.id", searchBean.getUriPatternIds()));
+            }
     	}
     	return criteria;
     }
