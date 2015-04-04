@@ -31,7 +31,7 @@ public class UserSearchDAO extends AbstractHibernateSearchDao<UserEntity, UserSe
             if(MatchType.EXACT.equals(param.getMatchType())){
                 clause = buildExactClause("firstName", param.getValue());
             } else {
-                clause = buildTokenizedClause("firstName", param.getValue(), param.getMatchType());
+                clause = buildTokenizedClause("firstNameTokenized", param.getValue(), param.getMatchType());
             }
 
 			if(clause != null) {
@@ -45,7 +45,7 @@ public class UserSearchDAO extends AbstractHibernateSearchDao<UserEntity, UserSe
             if(MatchType.EXACT.equals(param.getMatchType())){
                 clause = buildExactClause("lastName", param.getValue());
             } else {
-                clause = buildTokenizedClause("lastName", param.getValue(), param.getMatchType());
+                clause = buildTokenizedClause("lastNameTokenized", param.getValue(), param.getMatchType());
             }
 
 			if(clause != null) {
@@ -60,7 +60,7 @@ public class UserSearchDAO extends AbstractHibernateSearchDao<UserEntity, UserSe
             if(MatchType.EXACT.equals(param.getMatchType())){
                 clause = buildExactClause("maidenName", param.getValue());
             } else {
-                clause = buildTokenizedClause("maidenName", param.getValue(), param.getMatchType());
+                clause = buildTokenizedClause("maidenNameTokenized", param.getValue(), param.getMatchType());
             }
 
 			if(clause != null) {
