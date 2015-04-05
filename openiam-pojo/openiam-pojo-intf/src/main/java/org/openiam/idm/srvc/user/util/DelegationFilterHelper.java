@@ -118,9 +118,14 @@ public class DelegationFilterHelper {
     private static boolean isFilerSet(Map<String, UserAttribute> attrMap, String key){
         boolean result = false;
         if(attrMap!=null){
-            if (attrMap.get(key) != null)  {
-                String filter =  attrMap.get(key).getValue();
-                result = (filter != null && !filter.trim().isEmpty());
+            UserAttribute ua = attrMap.get(key);
+            if (ua != null)  {
+                if(ua.getIsMultivalued()) {
+                    result = ua.getValues() != null && ua.getValues().size() >0;
+                } else {
+                    String filter =  ua.getValue();
+                    result = (filter != null && !filter.trim().isEmpty());
+                }
             }
         }
         return result;
