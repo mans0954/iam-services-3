@@ -1,5 +1,8 @@
 package org.openiam.bpm.activiti;
 
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -19,16 +22,21 @@ import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
 import org.activiti.engine.history.HistoricActivityInstance;
 import org.activiti.engine.history.HistoricActivityInstanceQuery;
+import org.activiti.engine.history.HistoricDetail;
+import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.history.HistoricTaskInstanceQuery;
+import org.activiti.engine.history.HistoricVariableInstance;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
 import org.activiti.engine.task.TaskQuery;
+import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.activiti.model.dto.TaskSearchBean;
+import org.openiam.base.BaseIdentity;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
@@ -47,6 +55,9 @@ import org.openiam.bpm.request.ActivitiClaimRequest;
 import org.openiam.bpm.request.ActivitiRequestDecision;
 import org.openiam.bpm.request.GenericWorkflowRequest;
 import org.openiam.bpm.request.HistorySearchBean;
+import org.openiam.bpm.response.ActivitiHistoricDetail;
+import org.openiam.bpm.response.ActivitiJSONField;
+import org.openiam.bpm.response.ActivitiUserField;
 import org.openiam.bpm.response.TaskHistoryWrapper;
 import org.openiam.bpm.response.TaskListWrapper;
 import org.openiam.bpm.response.TaskWrapper;
@@ -70,6 +81,7 @@ import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.synch.service.generic.ObjectAdapterMap;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;
+import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserProfileRequestModel;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.service.UserProfileService;
@@ -85,7 +97,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Transactional;import org.springframework.util.ReflectionUtils;
+
 
 @Component("activitiBPMService")
 @WebService(endpointInterface = "org.openiam.bpm.activiti.ActivitiService", 
@@ -362,6 +375,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			taskService.claim(potentialTaskToClaim.getId(), request.getRequestorUserId());
 			taskService.setAssignee(potentialTaskToClaim.getId(), request.getRequestorUserId());
 			
+			taskService.setVariable(potentialTaskToClaim.getId(), ActivitiConstants.ASSIGNEE_ID.getName(), request.getRequestorUserId());
 			final Object auditLogId = taskService.getVariable(potentialTaskToClaim.getId(), ActivitiConstants.AUDIT_LOG_ID.getName());
 			if(auditLogId != null && auditLogId instanceof String) {
 				parentAuditLogId = (String)auditLogId;
@@ -853,10 +867,123 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 		return retVal;
 	}
 	
+	private void setValue(final Field field, final ActivitiHistoricDetail entity, final Object obj) {
+		try {
+			final PropertyDescriptor descriptor = new PropertyDescriptor(field.getName(), entity.getClass());
+			final Method method = PropertyUtils.getWriteMethod(descriptor);
+			if(method != null) {
+				ReflectionUtils.invokeMethod(method, entity, obj);
+			}
+		} catch(Throwable e) {
+			log.error("Can't call method", e);
+		}
+	}
+
+	@Override
+	public ActivitiHistoricDetail getHistoryDetail(final String activityInstanceId) {
+		final HistoricActivityInstance instance = historyService.createHistoricActivityInstanceQuery().activityInstanceId(activityInstanceId).singleResult();
+		final List<HistoricVariableInstance> queryInstances = historyService.createHistoricVariableInstanceQuery().processInstanceId(instance.getProcessInstanceId()).list();
+		final List<HistoricProcessInstance> processInstances = historyService.createHistoricProcessInstanceQuery().processInstanceId(instance.getProcessInstanceId()).includeProcessVariables().list();
+		
+		final ActivitiHistoricDetail detail = new ActivitiHistoricDetail();
+		if(queryInstances != null) {
+			queryInstances.forEach(variable -> {
+				final ActivitiConstants constant = ActivitiConstants.getByName(variable.getVariableName());
+				final Object value = variable.getValue();
+				if(constant != null && constant.getFieldName() != null && value != null) {
+					Field field = null;
+					try {
+						field = detail.getClass().getDeclaredField(constant.getFieldName());
+					} catch (Exception e1) {
+					}
+					if(field != null) {
+						field.setAccessible(true);
+						if(StringUtils.equals(field.getName(), constant.getFieldName())) {
+							/* it's a match.  now try to set it */
+							if(String.class.equals(field.getType())) {
+								setValue(field, detail, value);
+							} else if(field.getType().isInstance(Number.class)) {
+								setValue(field, detail, value);
+							} else if(field.getType().equals(Boolean.class)) {
+								setValue(field, detail, value);
+							} else if(field.getType().equals(List.class)) {
+								setValue(field, detail, value);
+							} else if(field.isAnnotationPresent(ActivitiJSONField.class)) {
+								if(value instanceof String) {
+									try {
+										final Object deserializedValue = jacksonMapper.readValue((String)value, field.getType());
+										setValue(field, detail, deserializedValue);
+									} catch (Throwable e) {
+										log.error(String.format("Can't use jackson to deserialize '%s', which should be of type '%s'.", value, field.getType()), e);
+									}
+								} else {
+									log.error(String.format("Can't use jackson to deserialize '%s', which should be of type '%s'.", value, field.getType()));
+								}
+							} else {
+								log.warn(String.format("Unknown field '%s' with type '%s' and value '%s'", field.getName(), field.getType(), value));
+							}
+							
+							if(field.isAnnotationPresent(ActivitiUserField.class)) {
+								final ActivitiUserField userFieldAnnotation = field.getAnnotation(ActivitiUserField.class);
+								if(userFieldAnnotation != null) {
+									final Field userField = ReflectionUtils.findField(ActivitiHistoricDetail.class, userFieldAnnotation.value());
+									if(userField != null) {
+										userField.setAccessible(true);
+										if(field.getType().equals(List.class)) {
+											final List<User> userList = new LinkedList<>();
+											((List<String>)value).forEach(id -> {
+												final User user = userDataService.getUserDto(id);
+												if(user != null) {
+													userList.add(getUser(user, userFieldAnnotation));
+												}
+											});
+											setValue(userField, detail, userList);
+										} else { /* assume String */
+											final User user = userDataService.getUserDto((String)value);
+											if(user != null) {
+												setValue(userField, detail, getUser(user, userFieldAnnotation));
+											}
+										}
+									}
+								}
+							}
+						} else {
+							log.error(String.format("Field '%s' has a type '%s'", field.getName(), field.getType()));
+						}
+					}
+				}
+			});
+		}
+		
+		if(CollectionUtils.isNotEmpty(processInstances)) {
+			processInstances.forEach(processInstance -> {
+				if(processInstance.getProcessVariables() != null) {
+					processInstance.getProcessVariables().forEach((key, value) -> {
+						
+					});
+				}
+			});
+		}
+		return detail;
+	}
+	
+	private User getUser(final User user, final ActivitiUserField userFieldAnnotation) {
+		if(userFieldAnnotation.exposeDetails()) {
+			return user;
+		} else {
+			final User retVal = new User();
+			retVal.setId(user.getId());
+			retVal.setFirstName(user.getFirstName());
+			retVal.setLastName(user.getLastName());
+			return retVal;
+		}
+	}
+	
 	@Override
 	@Transactional
 	public List<TaskHistoryWrapper> getHistoryForInstance(final String executionId) {
 		final List<TaskHistoryWrapper> retVal = new LinkedList<TaskHistoryWrapper>();
+		
 		if(StringUtils.isNotBlank(executionId)) {
 			final List<HistoricTaskInstance> instances = historyService.createHistoricTaskInstanceQuery().executionId(executionId).list();
 			final Map<String, HistoricTaskInstance> taskDefinitionMap = new HashMap<String, HistoricTaskInstance>();
@@ -871,18 +998,22 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			if(CollectionUtils.isNotEmpty(activityList)) {
 				for(int i = 0; i < activityList.size(); i++) {
 					final HistoricActivityInstance instance = activityList.get(i);
-					final TaskHistoryWrapper wrapper = new TaskHistoryWrapper(instance);
-					if(taskDefinitionMap.containsKey(wrapper.getActivityId())) {
-						wrapper.setTask(new TaskWrapper(taskDefinitionMap.get(wrapper.getActivityId())));
-					}
-					if(StringUtils.isNotBlank(wrapper.getAssigneeId())) {
-						final UserEntity user =  userDataService.getUser(wrapper.getAssigneeId());
-						wrapper.setUserInfo(user);
-					}
-					retVal.add(wrapper);
-					
-					if(i < activityList.size() - 1) {
-						wrapper.addNextTask(activityList.get(i + 1).getId());
+					if(StringUtils.isNotBlank(instance.getActivityName())) {
+						final TaskHistoryWrapper wrapper = new TaskHistoryWrapper(instance);
+						if(taskDefinitionMap.containsKey(wrapper.getActivityId())) {
+							wrapper.setTask(new TaskWrapper(taskDefinitionMap.get(wrapper.getActivityId())));
+						}
+						if(StringUtils.isNotBlank(wrapper.getAssigneeId())) {
+							final UserEntity user =  userDataService.getUser(wrapper.getAssigneeId());
+							wrapper.setUserInfo(user);
+						}
+						retVal.add(wrapper);
+						
+						/*
+						if(i < activityList.size() - 1) {
+							wrapper.addNextTask(activityList.get(i + 1).getId());
+						}
+						*/
 					}
 					
 					/*
@@ -899,6 +1030,13 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 					*/
                 }
             }
+			
+			for(int i = 0; i < retVal.size(); i++) {
+				final TaskHistoryWrapper wrapper = retVal.get(i);
+				if(i < retVal.size() - 1) {
+					wrapper.addNextTask(retVal.get(i + 1).getId());
+				}
+			}
         }
         return retVal;
     }

@@ -5,6 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.elasticsearch.common.lang3.StringUtils;
 import org.openiam.activiti.model.dto.TaskSearchBean;
 import org.openiam.am.srvc.dto.ContentProvider;
 import org.openiam.am.srvc.dto.PatternMatchMode;
@@ -17,7 +18,12 @@ import org.openiam.base.ws.MatchType;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.SearchParam;
 import org.openiam.bpm.activiti.ActivitiService;
+import org.openiam.bpm.activiti.delegate.user.edit.displaymapper.EditUserDisplayMapperDelegate;
 import org.openiam.bpm.request.ActivitiRequestDecision;
+import org.openiam.bpm.request.HistorySearchBean;
+import org.openiam.bpm.response.ActivitiHistoricDetail;
+import org.openiam.bpm.response.ActivitiUserField;
+import org.openiam.bpm.response.TaskHistoryWrapper;
 import org.openiam.bpm.response.TaskListWrapper;
 import org.openiam.bpm.response.TaskWrapper;
 import org.openiam.bpm.util.ActivitiRequestType;
@@ -32,6 +38,7 @@ import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
 import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
 import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;
 import org.openiam.idm.srvc.user.dto.User;
+import org.openiam.idm.srvc.user.dto.UserProfileRequestModel;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.service.integration.AbstractServiceTest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,7 +74,7 @@ public class ActivitiServiceTest extends AbstractServiceTest {
     	}
     }
 	
-	private void confirmUser(final NewUserProfileRequestModel request) throws InterruptedException {
+	private User confirmUser(final NewUserProfileRequestModel request) throws InterruptedException {
 		/* confirm user */
 		final String emailAddress = request.getEmails().get(0).getEmailAddress();
 		final UserSearchBean userSearchBean = new UserSearchBean();
@@ -76,16 +83,18 @@ public class ActivitiServiceTest extends AbstractServiceTest {
 		Assert.assertTrue(CollectionUtils.isNotEmpty(userList), String.format("Could not find use with email '%s'", emailAddress));
 		final User user = userList.get(0);
 		//blocked by IDMAPPS-2742
+		
+		return user;
 	}
 	
-	private void sendAndConfirmRequestWithNoApprover(final NewUserProfileRequestModel request) throws InterruptedException {
+	private User sendAndConfirmRequestWithNoApprover(final NewUserProfileRequestModel request) throws InterruptedException {
 		final SaveTemplateProfileResponse templateResponse = activitiClient.initiateNewHireRequest(request);
 		Assert.assertTrue(templateResponse.isSuccess());
 		Thread.sleep(5000L);
-		confirmUser(request);
+		return confirmUser(request);
 	}
 	
-	private void sendAndConfirmRequestWithApprover(final NewUserProfileRequestModel request) throws InterruptedException {
+	private User sendAndConfirmRequestWithApprover(final NewUserProfileRequestModel request) throws InterruptedException {
 		final SaveTemplateProfileResponse templateResponse = activitiClient.initiateNewHireRequest(request);
 		Assert.assertTrue(templateResponse.isSuccess());
 		Thread.sleep(5000L);
@@ -109,14 +118,65 @@ public class ActivitiServiceTest extends AbstractServiceTest {
 		Assert.assertTrue(CollectionUtils.isEmpty(wrappers));
 		Thread.sleep(10000L);
 		
-		confirmUser(request);
+		return confirmUser(request);
 	}
 	
 	@Test
 	public void testSelfRegistrationAccept() throws InterruptedException {
 		final NewUserProfileRequestModel request = createNewHireRequest(ActivitiRequestType.SELF_REGISTRATION);
 		sendAndConfirmRequestWithApprover(request);
+	}
+	
+	@Test
+	public void testGetHistoryDetail() throws InterruptedException {
+		final NewUserProfileRequestModel request = createNewHireRequest(ActivitiRequestType.SELF_REGISTRATION);
+		final User user = sendAndConfirmRequestWithApprover(request);
 		
+		final HistorySearchBean searchBean = new HistorySearchBean();
+		searchBean.setAssigneeId(requestor.getId());
+		final List<TaskWrapper> beans = activitiClient.getHistory(searchBean, 0, 1);
+		Assert.assertTrue(CollectionUtils.isNotEmpty(beans));
+		final TaskWrapper wrapper = beans.get(0);
+
+		final String executionId = wrapper.getExecutionId();
+		final List<TaskHistoryWrapper> wrappers = activitiClient.getHistoryForInstance(executionId);
+		Assert.assertTrue(CollectionUtils.isNotEmpty(wrappers));
+	
+		//boolean hasListUsers = false;
+		boolean hasSingleUser = false;
+		for(final TaskHistoryWrapper historyWrapper : wrappers) {
+			final ActivitiHistoricDetail detail = activitiClient.getHistoryDetail(historyWrapper.getId());
+			Assert.assertNotNull(detail);
+			
+			/*
+			if(CollectionUtils.isNotEmpty(detail.getCandidateUserIds()) && CollectionUtils.isNotEmpty(detail.getCandidateUsers())) {
+				hasListUsers = true;
+			}
+			
+			if(CollectionUtils.isNotEmpty(detail.getCustomApproverIds()) && CollectionUtils.isNotEmpty(detail.getCustomApprovers())) {
+				hasListUsers = true;
+			}
+			*/
+			
+			if(StringUtils.isNotBlank(detail.getNewUserId()) && detail.getNewUser() != null) {
+				hasSingleUser = true;
+			}
+			
+			if(StringUtils.isNotBlank(detail.getRequestor()) && detail.getRequestorUser() != null) {
+				hasSingleUser = true;
+			}
+			
+			if(StringUtils.isNotBlank(detail.getExecutorId()) && detail.getExecutor() != null) {
+				hasSingleUser = true;
+			}
+			
+			if(StringUtils.isNotBlank(detail.getAssigneeUserId()) && detail.getAssigneeUser() != null) {
+				hasSingleUser = true;
+			}
+		}
+		
+		//Assert.assertTrue(hasListUsers);
+		Assert.assertTrue(hasSingleUser);
 	}
 	
 	@Test
@@ -132,8 +192,19 @@ public class ActivitiServiceTest extends AbstractServiceTest {
 	}
 	
 	@Test
-	public void testEditUserWorkflow() {
-		
+	public void testEditUserWorkflow() throws InterruptedException {
+		final NewUserProfileRequestModel request = createNewHireRequest(ActivitiRequestType.NEW_HIRE_NO_APPROVAL);
+		final User user = sendAndConfirmRequestWithNoApprover(request);
+		final UserProfileRequestModel editUserRequest = createEditUserRequest(user);
+		final Response response = activitiClient.initiateEditUserWorkflow(editUserRequest);
+		Assert.assertTrue(response.isSuccess());
+		//TODO: validate user got edited
+	}
+	
+	private UserProfileRequestModel createEditUserRequest(final User user) {
+		final UserProfileRequestModel request = new UserProfileRequestModel();
+		//TODO: create reqeust
+		return request;
 	}
 	
 	private NewUserProfileRequestModel createNewHireRequest(final ActivitiRequestType type) {
