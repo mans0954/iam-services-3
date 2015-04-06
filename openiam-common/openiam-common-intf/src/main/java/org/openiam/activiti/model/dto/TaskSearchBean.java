@@ -13,7 +13,8 @@ import javax.xml.bind.annotation.XmlType;
 	"assigneeId",
 	"candidateId",
 	"processDefinitionId",
-	"memberAssociationId"
+	"memberAssociationId",
+	"ownerId"
 })
 public class TaskSearchBean implements Serializable {
 	
@@ -23,6 +24,8 @@ public class TaskSearchBean implements Serializable {
 	private String candidateId;
 	private String processDefinitionId;
 	private String memberAssociationId;
+	private String ownerId;
+	
 	public String getAssigneeId() {
 		return assigneeId;
 	}
@@ -50,6 +53,12 @@ public class TaskSearchBean implements Serializable {
 	public TaskSearchBean setMemberAssociationId(String memberAssociationId) {
 		this.memberAssociationId = memberAssociationId;
 		return this;
+	}
+	public String getOwnerId() {
+		return ownerId;
+	}
+	public void setOwnerId(String ownerId) {
+		this.ownerId = ownerId;
 	}
 	
 	

@@ -37,6 +37,7 @@ public enum ActivitiConstants {
 	LOGIN("Login",  "login", false),
 	AUDIT_LOG_ID("AuditLogId", null, false),
 	ASSIGNEE_ID("AssigneeUserId", "assigneeUserId", true),
+	TERMINATED_BY_OWNER("TermintedByOwner", "terminatedByOwner", true),
 	OPENIAM_VERSION("OPENIAM_VERSION", "openiamVersion", false),
 	
 	LOOP_COUNTER("loopCounter", null, false),

@@ -1154,11 +1154,65 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 
     @Override
     @Transactional
-    public Response deleteTask(String taskId) {
+    public Response deleteTask(String taskId, final String userId) {
+    	final Response response = new Response(ResponseStatus.SUCCESS);
+        final IdmAuditLog idmAuditLog = new IdmAuditLog();
+        idmAuditLog.setRequestorUserId(userId);
+        idmAuditLog.setAction(AuditAction.TERMINATED_WORKFLOW.value());
+        idmAuditLog.setSource(AuditSource.WORKFLOW.value());
+        String parentAuditLogId = null;
+		try {
+			final Task task = taskService.createTaskQuery().taskOwner(userId).taskId(taskId).singleResult();
+			if(task == null) {
+				throw new ActivitiException(String.format("Task ID '%s' does not exist, or is not owned by '%s'", taskId, userId));
+			}
+            idmAuditLog.setTargetTask(task.getId(), task.getName());
+            final Object auditLogId = taskService.getVariable(task.getId(), ActivitiConstants.AUDIT_LOG_ID.getName());
+			if(auditLogId != null && auditLogId instanceof String) {
+				parentAuditLogId = (String)auditLogId;
+			}
+			
+			taskService.setVariableLocal(task.getId(), ActivitiConstants.TERMINATED_BY_OWNER.getName(), true);
+            
+			runtimeService.deleteProcessInstance(task.getProcessInstanceId(), "Terminated by owner");
+			/* as of activiti 5.17.0, you can't delete a task that's part of a running process, so we just unclaim it */
+			//taskService.unclaim(taskId);
+			
+			taskService.deleteTask(task.getId());
+			//taskService.deleteTask(task.getId(), true);
+            idmAuditLog.succeed();
+		} catch(ActivitiException e) {
+			log.info("Activiti Exception", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(ResponseCode.USER_STATUS);
+			response.setErrorText(e.getMessage());
+            idmAuditLog.setFailureReason(e.getMessage());
+            idmAuditLog.setException(e);
+            idmAuditLog.fail();
+		} catch(Throwable e) {
+			log.error("Error while creating newhire request", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(ResponseCode.USER_STATUS);
+			response.setErrorText(e.getMessage());
+            idmAuditLog.setFailureReason(e.getMessage());
+            idmAuditLog.setException(e);
+            idmAuditLog.fail();
+        } finally {
+            if (parentAuditLogId != null) {
+                IdmAuditLog parent = auditLogService.findById(parentAuditLogId);
+                if (parent != null) {
+                    parent.addChild(idmAuditLog);
+                    idmAuditLog.addParent(parent);
+                    parent = auditLogService.save(parent);
+                }
+            }
+        }
+		return response;
+    	/*
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
         	taskService.unclaim(taskId);
-        	/* as of activiti 5.17.0, you can't delete a task that's part of a running process, so we just unclaim it */
+        	// as of activiti 5.17.0, you can't delete a task that's part of a running process, so we just unclaim it
         	//taskService.deleteCandidateUser(taskId, null);
 			//taskService.deleteTask(taskId, true);
 		} catch(ActivitiException e) {
@@ -1174,15 +1228,16 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 		}
 
         return response;
+        */
     }
 
 	@Override
 	@Transactional
-	public Response deleteTaskForUser(String taskId, String userId) {
+	public Response unclaimTask(String taskId, String userId) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
         final IdmAuditLog idmAuditLog = new IdmAuditLog();
         idmAuditLog.setRequestorUserId(userId);
-        idmAuditLog.setAction(AuditAction.TERMINATED_WORKFLOW.value());
+        idmAuditLog.setAction(AuditAction.UNCLAIM_TASK.value());
         idmAuditLog.setSource(AuditSource.WORKFLOW.value());
         String parentAuditLogId = null;
 		try {
@@ -1336,6 +1391,9 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			}
 			if(StringUtils.isNotBlank(searchBean.getProcessDefinitionId())) {
 				query.processDefinitionId(searchBean.getProcessDefinitionId());
+			}
+			if(StringUtils.isNotBlank(searchBean.getOwnerId())) {
+				query.taskOwner(searchBean.getOwnerId());
 			}
 		}
 		return query;

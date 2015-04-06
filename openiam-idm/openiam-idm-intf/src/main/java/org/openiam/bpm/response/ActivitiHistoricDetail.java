@@ -20,6 +20,7 @@ import org.openiam.idm.srvc.user.dto.User;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ActivitiHistoricDetail", propOrder = {
+	"terminatedByOwner",
 	"comment",
 	"approved",
 	"newUserId",
@@ -58,6 +59,7 @@ public class ActivitiHistoricDetail/* extends Response*/ implements Serializable
 
 	private String comment;
 	private Boolean approved;
+	private Boolean terminatedByOwner;
 	
 	@ActivitiUserField(value="newUser", exposeDetails=true)
 	private String newUserId;
@@ -359,6 +361,14 @@ public class ActivitiHistoricDetail/* extends Response*/ implements Serializable
 
 	public void setAssigneeUser(User assigneeUser) {
 		this.assigneeUser = assigneeUser;
+	}
+
+	public Boolean getTerminatedByOwner() {
+		return terminatedByOwner;
+	}
+
+	public void setTerminatedByOwner(Boolean terminatedByOwner) {
+		this.terminatedByOwner = terminatedByOwner;
 	}
 	
 	

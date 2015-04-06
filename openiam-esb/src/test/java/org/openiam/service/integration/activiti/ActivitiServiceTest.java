@@ -287,6 +287,7 @@ public class ActivitiServiceTest extends AbstractServiceTest {
 		
 		request.setTestRequest(true);
 		request.addCustomApproverId(requestor.getId());
+		request.setRequestorUserId(requestor.getId());
 		return request;
 	}
 	
@@ -297,23 +298,21 @@ public class ActivitiServiceTest extends AbstractServiceTest {
 	
 	@Test
 	public void testDeleteTask() throws InterruptedException {
-		final NewUserProfileRequestModel request = new NewUserProfileRequestModel();
-		request.setActivitiRequestType(ActivitiRequestType.SELF_REGISTRATION);
-		request.setLanguageId(getDefaultLanguage().getId());
+		final NewUserProfileRequestModel request = createNewHireRequest(ActivitiRequestType.NEW_HIRE_WITH_APPROVAL);
 		
-		final User user = new User();
-		user.setFirstName(getRandomName());
-		user.setLastName(getRandomName());
-		request.setUser(user);
-		final SaveTemplateProfileResponse templateResponse= activitiClient.initiateNewHireRequest(request);
+		final SaveTemplateProfileResponse templateResponse = activitiClient.initiateNewHireRequest(request);
 		Assert.assertTrue(templateResponse.isSuccess());
 		Thread.sleep(5000L);
 		
-		final TaskListWrapper wrapper = activitiClient.getTasksForUser(templateResponse.getApproverUserIds().get(0), 0, Integer.MAX_VALUE);
-		Assert.assertNotNull(wrapper);
-		Assert.assertTrue(CollectionUtils.isNotEmpty(wrapper.getAssignedTasks()));
-		wrapper.getAssignedTasks().forEach(task -> {
-			final Response response = activitiClient.deleteTask(task.getId());
+		
+		final TaskSearchBean searchBean = new TaskSearchBean();
+		searchBean.setOwnerId(requestor.getId());
+		
+		final List<TaskWrapper> wrappers = activitiClient.findTasks(searchBean, 0, Integer.MAX_VALUE);
+		Assert.assertNotNull(wrappers);
+		Assert.assertTrue(CollectionUtils.isNotEmpty(wrappers));
+		wrappers.forEach(task -> {
+			final Response response = activitiClient.deleteTask(task.getId(), requestor.getId());
 			Assert.assertTrue(response.isSuccess());
 		});
 	}
