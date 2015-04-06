@@ -375,7 +375,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			taskService.claim(potentialTaskToClaim.getId(), request.getRequestorUserId());
 			taskService.setAssignee(potentialTaskToClaim.getId(), request.getRequestorUserId());
 			
-			taskService.setVariable(potentialTaskToClaim.getId(), ActivitiConstants.ASSIGNEE_ID.getName(), request.getRequestorUserId());
+			taskService.setVariableLocal(potentialTaskToClaim.getId(), ActivitiConstants.ASSIGNEE_ID.getName(), request.getRequestorUserId());
 			final Object auditLogId = taskService.getVariable(potentialTaskToClaim.getId(), ActivitiConstants.AUDIT_LOG_ID.getName());
 			if(auditLogId != null && auditLogId instanceof String) {
 				parentAuditLogId = (String)auditLogId;
@@ -751,7 +751,11 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			if(auditLogId != null && auditLogId instanceof String) {
 				parentAuditLogId = (String)auditLogId;
 			}
+			
+			final Task task = taskService.createTaskQuery().taskId(assignedTask.getId()).list().get(0);
             
+			taskService.setVariablesLocal(assignedTask.getId(), variables);
+			taskService.addComment(assignedTask.getId(), task.getProcessInstanceId(), request.getComment());
         	taskService.complete(assignedTask.getId(), variables);
         	response.succeed();
             idmAuditLog.succeed();
@@ -878,79 +882,94 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			log.error("Can't call method", e);
 		}
 	}
-
-	@Override
-	public ActivitiHistoricDetail getHistoryDetail(final String activityInstanceId) {
+	
+	private void pouplateField(final ActivitiConstants constant, final ActivitiHistoricDetail detail, final Object value) {
+		Field field = null;
+		try {
+			field = detail.getClass().getDeclaredField(constant.getFieldName());
+		} catch (Exception e1) {
+		}
+		if(field != null) {
+			field.setAccessible(true);
+			if(StringUtils.equals(field.getName(), constant.getFieldName())) {
+				/* it's a match.  now try to set it */
+				if(String.class.equals(field.getType())) {
+					setValue(field, detail, value);
+				} else if(field.getType().isInstance(Number.class)) {
+					setValue(field, detail, value);
+				} else if(field.getType().equals(Boolean.class)) {
+					setValue(field, detail, value);
+				} else if(field.getType().equals(List.class)) {
+					setValue(field, detail, value);
+				} else if(field.isAnnotationPresent(ActivitiJSONField.class)) {
+					if(value instanceof String) {
+						try {
+							final Object deserializedValue = jacksonMapper.readValue((String)value, field.getType());
+							setValue(field, detail, deserializedValue);
+						} catch (Throwable e) {
+							log.error(String.format("Can't use jackson to deserialize '%s', which should be of type '%s'.", value, field.getType()), e);
+						}
+					} else {
+						log.error(String.format("Can't use jackson to deserialize '%s', which should be of type '%s'.", value, field.getType()));
+					}
+				} else {
+					log.warn(String.format("Unknown field '%s' with type '%s' and value '%s'", field.getName(), field.getType(), value));
+				}
+				
+				if(field.isAnnotationPresent(ActivitiUserField.class)) {
+					final ActivitiUserField userFieldAnnotation = field.getAnnotation(ActivitiUserField.class);
+					if(userFieldAnnotation != null) {
+						final Field userField = ReflectionUtils.findField(ActivitiHistoricDetail.class, userFieldAnnotation.value());
+						if(userField != null) {
+							userField.setAccessible(true);
+							if(field.getType().equals(List.class)) {
+								final List<User> userList = new LinkedList<>();
+								((List<String>)value).forEach(id -> {
+									final User user = userDataService.getUserDto(id);
+									if(user != null) {
+										userList.add(getUser(user, userFieldAnnotation));
+									}
+								});
+								setValue(userField, detail, userList);
+							} else { /* assume String */
+								final User user = userDataService.getUserDto((String)value);
+								if(user != null) {
+									setValue(userField, detail, getUser(user, userFieldAnnotation));
+								}
+							}
+						}
+					}
+				}
+			} else {
+				log.error(String.format("Field '%s' has a type '%s'", field.getName(), field.getType()));
+			}
+		}
+	}
+	
+	private void populateLocalVariables(final ActivitiHistoricDetail detail, final String taskId) {
+		final HistoricTaskInstance task = historyService.createHistoricTaskInstanceQuery().taskId(taskId).includeProcessVariables().includeTaskLocalVariables().singleResult();
+		final Map<String, Object> localVariables = task.getTaskLocalVariables();
+		if(localVariables != null) {
+			localVariables.forEach((variableName, value) -> {
+				final ActivitiConstants constant = ActivitiConstants.getByName(variableName);
+				if(constant != null && constant.getFieldName() != null && value != null && constant.isLocal()) {
+					pouplateField(constant, detail, value);
+				}
+			});
+		}
+	}
+	
+	private void populateGlobalVariables(final ActivitiHistoricDetail detail, final String activityInstanceId) {
 		final HistoricActivityInstance instance = historyService.createHistoricActivityInstanceQuery().activityInstanceId(activityInstanceId).singleResult();
 		final List<HistoricVariableInstance> queryInstances = historyService.createHistoricVariableInstanceQuery().processInstanceId(instance.getProcessInstanceId()).list();
 		final List<HistoricProcessInstance> processInstances = historyService.createHistoricProcessInstanceQuery().processInstanceId(instance.getProcessInstanceId()).includeProcessVariables().list();
 		
-		final ActivitiHistoricDetail detail = new ActivitiHistoricDetail();
 		if(queryInstances != null) {
 			queryInstances.forEach(variable -> {
 				final ActivitiConstants constant = ActivitiConstants.getByName(variable.getVariableName());
 				final Object value = variable.getValue();
-				if(constant != null && constant.getFieldName() != null && value != null) {
-					Field field = null;
-					try {
-						field = detail.getClass().getDeclaredField(constant.getFieldName());
-					} catch (Exception e1) {
-					}
-					if(field != null) {
-						field.setAccessible(true);
-						if(StringUtils.equals(field.getName(), constant.getFieldName())) {
-							/* it's a match.  now try to set it */
-							if(String.class.equals(field.getType())) {
-								setValue(field, detail, value);
-							} else if(field.getType().isInstance(Number.class)) {
-								setValue(field, detail, value);
-							} else if(field.getType().equals(Boolean.class)) {
-								setValue(field, detail, value);
-							} else if(field.getType().equals(List.class)) {
-								setValue(field, detail, value);
-							} else if(field.isAnnotationPresent(ActivitiJSONField.class)) {
-								if(value instanceof String) {
-									try {
-										final Object deserializedValue = jacksonMapper.readValue((String)value, field.getType());
-										setValue(field, detail, deserializedValue);
-									} catch (Throwable e) {
-										log.error(String.format("Can't use jackson to deserialize '%s', which should be of type '%s'.", value, field.getType()), e);
-									}
-								} else {
-									log.error(String.format("Can't use jackson to deserialize '%s', which should be of type '%s'.", value, field.getType()));
-								}
-							} else {
-								log.warn(String.format("Unknown field '%s' with type '%s' and value '%s'", field.getName(), field.getType(), value));
-							}
-							
-							if(field.isAnnotationPresent(ActivitiUserField.class)) {
-								final ActivitiUserField userFieldAnnotation = field.getAnnotation(ActivitiUserField.class);
-								if(userFieldAnnotation != null) {
-									final Field userField = ReflectionUtils.findField(ActivitiHistoricDetail.class, userFieldAnnotation.value());
-									if(userField != null) {
-										userField.setAccessible(true);
-										if(field.getType().equals(List.class)) {
-											final List<User> userList = new LinkedList<>();
-											((List<String>)value).forEach(id -> {
-												final User user = userDataService.getUserDto(id);
-												if(user != null) {
-													userList.add(getUser(user, userFieldAnnotation));
-												}
-											});
-											setValue(userField, detail, userList);
-										} else { /* assume String */
-											final User user = userDataService.getUserDto((String)value);
-											if(user != null) {
-												setValue(userField, detail, getUser(user, userFieldAnnotation));
-											}
-										}
-									}
-								}
-							}
-						} else {
-							log.error(String.format("Field '%s' has a type '%s'", field.getName(), field.getType()));
-						}
-					}
+				if(constant != null && constant.getFieldName() != null && value != null && !constant.isLocal()) {
+					pouplateField(constant, detail, value);
 				}
 			});
 		}
@@ -964,11 +983,15 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 				}
 			});
 		}
-		return detail;
 	}
-	
+
 	private User getUser(final User user, final ActivitiUserField userFieldAnnotation) {
 		if(userFieldAnnotation.exposeDetails()) {
+			if(user.getPrincipalList() != null) {
+				user.getPrincipalList().forEach(e -> {
+					e.setPassword(null);
+				});
+			}
 			return user;
 		} else {
 			final User retVal = new User();
@@ -1000,6 +1023,11 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 					final HistoricActivityInstance instance = activityList.get(i);
 					if(StringUtils.isNotBlank(instance.getActivityName())) {
 						final TaskHistoryWrapper wrapper = new TaskHistoryWrapper(instance);
+						
+						final ActivitiHistoricDetail details = new ActivitiHistoricDetail();
+						wrapper.setVariableDetails(details);
+						populateGlobalVariables(details, instance.getId());
+						
 						if(taskDefinitionMap.containsKey(wrapper.getActivityId())) {
 							wrapper.setTask(new TaskWrapper(taskDefinitionMap.get(wrapper.getActivityId())));
 						}
@@ -1007,6 +1035,10 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 							final UserEntity user =  userDataService.getUser(wrapper.getAssigneeId());
 							wrapper.setUserInfo(user);
 						}
+						if(StringUtils.isNotBlank(wrapper.getTaskId())) {
+							populateLocalVariables(details, wrapper.getTaskId());
+						}
+						//wrapper.
 						retVal.add(wrapper);
 						
 						/*
@@ -1074,6 +1106,10 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
             } else {
                 query.unfinished();
             }
+        }
+        
+        if(StringUtils.isNotBlank(searchBean.getInvolvedUserId())) {
+        	query.taskInvolvedUser(searchBean.getInvolvedUserId());
         }
 
         if (StringUtils.isNotBlank(searchBean.getProcessInstanceId())) {

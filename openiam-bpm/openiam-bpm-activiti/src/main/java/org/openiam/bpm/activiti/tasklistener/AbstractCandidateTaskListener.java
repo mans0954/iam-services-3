@@ -45,11 +45,15 @@ public abstract class AbstractCandidateTaskListener extends AbstractActivitiJob 
 		
 			final Collection<String> candidateUsersIds = activitiHelper.getCandidateUserIds(execution, targetUserId, supervisorIds);
 			
+			//delegateTask.setVariableLocal(variableName, value)
+			delegateTask.setVariableLocal(ActivitiConstants.CANDIDATE_USERS_IDS.getName(), candidateUsersIds);
 			idmAuditLog.addAttributeAsJson(AuditAttributeName.CANDIDATE_USER_IDS, candidateUsersIds, customJacksonMapper);
 		
 			if(candidateUsersIds != null) {
 				if(candidateUsersIds.size() == 1) {
-					delegateTask.setAssignee(candidateUsersIds.iterator().next());
+					final String assigneeId = candidateUsersIds.iterator().next(); 
+					delegateTask.setAssignee(assigneeId);
+					delegateTask.setVariable(ActivitiConstants.ASSIGNEE_ID.getName(), assigneeId);
 				} else {
 					for(final String candidateId : candidateUsersIds) {
 						delegateTask.addCandidateUser(candidateId);

@@ -145,7 +145,7 @@ public class ActivitiServiceTest extends AbstractServiceTest {
 		//boolean hasListUsers = false;
 		boolean hasSingleUser = false;
 		for(final TaskHistoryWrapper historyWrapper : wrappers) {
-			final ActivitiHistoricDetail detail = activitiClient.getHistoryDetail(historyWrapper.getId());
+			final ActivitiHistoricDetail detail = historyWrapper.getVariableDetails();
 			Assert.assertNotNull(detail);
 			
 			/*

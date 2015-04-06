@@ -29,7 +29,8 @@ import org.openiam.idm.srvc.user.domain.UserEntity;
 	"task",
 	"nextIds",
 	"calledProcessInstanceId",
-	"tenantId"
+	"tenantId",
+	"variableDetails"
 })
 public class TaskHistoryWrapper {
 	
@@ -50,7 +51,8 @@ public class TaskHistoryWrapper {
 	private String calledProcessInstanceId;
 	private String taskId;
 	private String tenantId;
-
+	private ActivitiHistoricDetail variableDetails;
+	
 	public TaskHistoryWrapper() {}
 	
 	public TaskHistoryWrapper(final HistoricActivityInstance instance) {
@@ -219,6 +221,14 @@ public class TaskHistoryWrapper {
 
 	public void setTenantId(String tenantId) {
 		this.tenantId = tenantId;
+	}
+
+	public ActivitiHistoricDetail getVariableDetails() {
+		return variableDetails;
+	}
+
+	public void setVariableDetails(ActivitiHistoricDetail variableDetails) {
+		this.variableDetails = variableDetails;
 	}
 	
 	

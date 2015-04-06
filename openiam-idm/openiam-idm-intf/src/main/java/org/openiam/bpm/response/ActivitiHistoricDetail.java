@@ -1,5 +1,6 @@
 package org.openiam.bpm.response;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,13 +23,16 @@ import org.openiam.idm.srvc.user.dto.User;
 	"comment",
 	"approved",
 	"newUserId",
+	"newUser",
 	"assigneeUserId",
 	"assigneeUser",
 	"candidateUserIds",
+	"candidateUsers",
+	"executorId",
+	"executor",
 	"taskName",
 	"taskDescription",
 	"requestor",
-	"executorId",
 	"approverAssociationIds",
 	"associationId",
 	"associationType",
@@ -45,13 +49,10 @@ import org.openiam.idm.srvc.user.dto.User;
 	"group",
 	"role",
 	"organization",
-	"newUser",
-	"candidateUsers",
 	"requestorUser",
-	"executor",
 	"customApprovers"
 })
-public class ActivitiHistoricDetail extends Response {
+public class ActivitiHistoricDetail/* extends Response*/ implements Serializable {
 	
 	public ActivitiHistoricDetail() {}
 

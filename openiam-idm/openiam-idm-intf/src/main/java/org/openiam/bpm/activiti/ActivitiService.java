@@ -79,9 +79,6 @@ public interface ActivitiService {
 	public List<TaskHistoryWrapper> getHistoryForInstance(final String instanceId);
 	
 	@WebMethod
-	public ActivitiHistoricDetail getHistoryDetail(final String activityInstanceId);
-	
-	@WebMethod
 	public int count(final HistorySearchBean searchBean);
 	
 	@WebMethod
