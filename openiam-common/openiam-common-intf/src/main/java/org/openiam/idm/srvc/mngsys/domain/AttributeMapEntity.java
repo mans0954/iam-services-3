@@ -247,7 +247,7 @@ public class AttributeMapEntity implements java.io.Serializable {
     @Override
     public String toString() {
         return "AttributeMap{" + "attributeMapId='" + attributeMapId + '\''
-                + ", managedSysId='" + managedSystem.getId() + '\'' + ", resourceId='"
+                + ", managedSys='" + managedSystem + '\'' + ", resourceId='"
                 + resourceId + '\''  + ", synchConfigId='"
                 + synchConfigId + '\'' + ", mapForObjectType='" + mapForObjectType
                 + '\'' + ", attributeName='" + attributeName + '\''
@@ -259,5 +259,64 @@ public class AttributeMapEntity implements java.io.Serializable {
                 + storeInIamdb + ", selected=" + selected + ", dataType='"
                 + dataType + '\'' + ", defaultValue='" + defaultValue + '\''
                 + '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        AttributeMapEntity entity = (AttributeMapEntity) o;
+
+        if (attributeMapId != null ? !attributeMapId.equals(entity.attributeMapId) : entity.attributeMapId != null)
+            return false;
+        if (attributeName != null ? !attributeName.equals(entity.attributeName) : entity.attributeName != null)
+            return false;
+        if (authoritativeSrc != null ? !authoritativeSrc.equals(entity.authoritativeSrc) : entity.authoritativeSrc != null)
+            return false;
+        if (dataType != entity.dataType) return false;
+        if (defaultValue != null ? !defaultValue.equals(entity.defaultValue) : entity.defaultValue != null)
+            return false;
+        if (endDate != null ? !endDate.equals(entity.endDate) : entity.endDate != null) return false;
+        if (managedSystem != null ? !managedSystem.equals(entity.managedSystem) : entity.managedSystem != null)
+            return false;
+        if (mapForObjectType != null ? !mapForObjectType.equals(entity.mapForObjectType) : entity.mapForObjectType != null)
+            return false;
+        if (reconResAttribute != null ? !reconResAttribute.equals(entity.reconResAttribute) : entity.reconResAttribute != null)
+            return false;
+        if (resourceId != null ? !resourceId.equals(entity.resourceId) : entity.resourceId != null) return false;
+        if (rule != null ? !rule.equals(entity.rule) : entity.rule != null) return false;
+        if (selected != null ? !selected.equals(entity.selected) : entity.selected != null) return false;
+        if (startDate != null ? !startDate.equals(entity.startDate) : entity.startDate != null) return false;
+        if (status != null ? !status.equals(entity.status) : entity.status != null) return false;
+        if (storeInIamdb != null ? !storeInIamdb.equals(entity.storeInIamdb) : entity.storeInIamdb != null)
+            return false;
+        if (synchConfigId != null ? !synchConfigId.equals(entity.synchConfigId) : entity.synchConfigId != null)
+            return false;
+        if (targetAttributeName != null ? !targetAttributeName.equals(entity.targetAttributeName) : entity.targetAttributeName != null)
+            return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = attributeMapId != null ? attributeMapId.hashCode() : 0;
+        result = 31 * result + (managedSystem != null ? managedSystem.hashCode() : 0);
+        result = 31 * result + (resourceId != null ? resourceId.hashCode() : 0);
+        result = 31 * result + (synchConfigId != null ? synchConfigId.hashCode() : 0);
+        result = 31 * result + (mapForObjectType != null ? mapForObjectType.hashCode() : 0);
+        result = 31 * result + (attributeName != null ? attributeName.hashCode() : 0);
+        result = 31 * result + (targetAttributeName != null ? targetAttributeName.hashCode() : 0);
+        result = 31 * result + (authoritativeSrc != null ? authoritativeSrc.hashCode() : 0);
+        result = 31 * result + (rule != null ? rule.hashCode() : 0);
+        result = 31 * result + (status != null ? status.hashCode() : 0);
+        result = 31 * result + (startDate != null ? startDate.hashCode() : 0);
+        result = 31 * result + (endDate != null ? endDate.hashCode() : 0);
+        result = 31 * result + (storeInIamdb != null ? storeInIamdb.hashCode() : 0);
+        result = 31 * result + (selected != null ? selected.hashCode() : 0);
+        result = 31 * result + (dataType != null ? dataType.hashCode() : 0);
+        result = 31 * result + (defaultValue != null ? defaultValue.hashCode() : 0);
+        return result;
     }
 }

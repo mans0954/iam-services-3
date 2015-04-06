@@ -68,4 +68,31 @@ public class ReconciliationResourceAttributeMapEntity implements
     public void setAttributeMap(AttributeMapEntity attributeMap) {
         this.attributeMap = attributeMap;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        ReconciliationResourceAttributeMapEntity that = (ReconciliationResourceAttributeMapEntity) o;
+
+        if (attributeMap != null ? !attributeMap.equals(that.attributeMap) : that.attributeMap != null) return false;
+        if (attributePolicy != null ? !attributePolicy.equals(that.attributePolicy) : that.attributePolicy != null)
+            return false;
+        if (defaultAttributePolicy != null ? !defaultAttributePolicy.equals(that.defaultAttributePolicy) : that.defaultAttributePolicy != null)
+            return false;
+        if (reconciliationResourceAttributeMapId != null ? !reconciliationResourceAttributeMapId.equals(that.reconciliationResourceAttributeMapId) : that.reconciliationResourceAttributeMapId != null)
+            return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = reconciliationResourceAttributeMapId != null ? reconciliationResourceAttributeMapId.hashCode() : 0;
+        result = 31 * result + (attributeMap != null ? attributeMap.hashCode() : 0);
+        result = 31 * result + (attributePolicy != null ? attributePolicy.hashCode() : 0);
+        result = 31 * result + (defaultAttributePolicy != null ? defaultAttributePolicy.hashCode() : 0);
+        return result;
+    }
 }
