@@ -32,6 +32,8 @@ public interface RoleDAO extends BaseDao<RoleEntity, String> {
 
     public List<RoleEntity> findRolesByAttributeValue(String attrName, String attrValue);
 
+    public RoleEntity findRoleByName(String roleName);
+
     public List<TreeObjectId> findRolesWithSubRolesIds(List<String> initialRoleIds, final Set<String> filter);
 
 }

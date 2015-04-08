@@ -183,7 +183,12 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
         return (List<RoleEntity>) criteria.list();
     }
 
-	@Override
+    @Override
+    public RoleEntity findRoleByName(String roleName) {
+        return (RoleEntity)getCriteria().add(Restrictions.eq("name",roleName)).uniqueResult();
+    }
+
+    @Override
 	public List<RoleEntity> getRolesForGroup(final String groupId, final Set<String> filter, final int from, final int size) {
 		final Criteria criteria = getEntitlementRolesCriteria(null, groupId, null, filter);
         return getList(criteria, from, size);
