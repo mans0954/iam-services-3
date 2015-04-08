@@ -140,7 +140,7 @@ public class DefaultLoginModule extends AbstractLoginModule {
         // check the password
         String decryptPswd = this.decryptPassword(lg.getUserId(), lg.getPassword());
         Policy pwdPlcy = passwordManager.getPasswordPolicy(lg.getLogin(), lg.getManagedSysId());
-        if (decryptPswd != null && !decryptPswd.equals(password)) {
+        if (StringUtils.isEmpty(password) || !StringUtils.equals(decryptPswd, password)) {
 
             // if failed auth count is part of the polices, then do the
             // following processing
