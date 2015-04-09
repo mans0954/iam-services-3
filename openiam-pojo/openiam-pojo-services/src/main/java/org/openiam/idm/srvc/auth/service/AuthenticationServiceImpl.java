@@ -132,6 +132,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
     @Override
     @ManagedAttribute
     public void globalLogout(String userId) throws Throwable {
+
         IdmAuditLog newLogoutEvent = new IdmAuditLog();
         newLogoutEvent.setUserId(userId);
         UserEntity userEntity = userManager.getUser(userId);
