@@ -60,6 +60,10 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
             if(resource.getRisk() != null) {
                 criteria.add(Restrictions.eq("risk", resource.getRisk()));
             }
+            
+            if(StringUtils.isNotBlank(resource.getReferenceId())) {
+            	criteria.add(Restrictions.eq("referenceId", resource.getReferenceId()));
+            }
 
 			if (StringUtils.isNotEmpty(resource.getName())) {
 				String resourceName = resource.getName();

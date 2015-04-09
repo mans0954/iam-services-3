@@ -17,6 +17,7 @@ public class ResourceSearchBeanConverter implements SearchBeanConverter<Resource
         resource.setRisk(searchBean.getRisk());
         resource.setURL(searchBean.getURL());
 		resource.setCoorelatedName(searchBean.getCoorelatedName());
+		resource.setReferenceId(StringUtils.trimToNull(searchBean.getReferenceId()));
 		if(StringUtils.isNotBlank(searchBean.getResourceTypeId())) {
 			final ResourceTypeEntity type = new ResourceTypeEntity();
 			type.setId(searchBean.getResourceTypeId());

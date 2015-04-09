@@ -17,6 +17,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlType;
+
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -42,7 +43,8 @@ import java.util.Set;
         "risk",
         "displayNameMap",
         "displayName",
-        "coorelatedName"
+        "coorelatedName",
+        "referenceId"
 })
 @XmlSeeAlso({
         Role.class,
@@ -75,6 +77,7 @@ public class Resource extends AdminResourceDTO {
 	    
     private String displayName;
     private String coorelatedName;
+    private String referenceId;
 
     //private boolean isSSL = false;
 
@@ -230,6 +233,14 @@ public class Resource extends AdminResourceDTO {
 		this.coorelatedName = coorelatedName;
 	}
 
+	public String getReferenceId() {
+		return referenceId;
+	}
+
+	public void setReferenceId(String referenceId) {
+		this.referenceId = referenceId;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -247,6 +258,7 @@ public class Resource extends AdminResourceDTO {
 		result = prime * result
 				+ ((resourceType == null) ? 0 : resourceType.hashCode());
 		result = prime * result + ((risk == null) ? 0 : risk.hashCode());
+		result = prime * result + ((referenceId == null) ? 0 : referenceId.hashCode());
 		return result;
 	}
 
@@ -292,6 +304,12 @@ public class Resource extends AdminResourceDTO {
 		} else if (!resourceType.equals(other.resourceType))
 			return false;
 		if (risk != other.risk)
+			return false;
+		
+		if (referenceId == null) {
+			if (other.referenceId != null)
+				return false;
+		} else if (!referenceId.equals(other.referenceId))
 			return false;
 		return true;
 	}

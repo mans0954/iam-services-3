@@ -8,6 +8,7 @@ import javax.jws.WebService;
 
 import org.openiam.activiti.model.dto.TaskSearchBean;
 import org.openiam.base.ws.Response;
+import org.openiam.bpm.dto.BasicWorkflowResponse;
 import org.openiam.bpm.request.ActivitiClaimRequest;
 import org.openiam.bpm.request.ActivitiRequestDecision;
 import org.openiam.bpm.request.GenericWorkflowRequest;
@@ -32,7 +33,7 @@ public interface ActivitiService {
 	public String sayHello();
 	
 	@WebMethod
-	public Response initiateWorkflow(final GenericWorkflowRequest request);
+	public BasicWorkflowResponse initiateWorkflow(final GenericWorkflowRequest request);
 	
 	@WebMethod
 	public SaveTemplateProfileResponse initiateEditUserWorkflow(final UserProfileRequestModel request);
@@ -95,4 +96,7 @@ public interface ActivitiService {
 	
 	@WebMethod
 	public int countTasks(final TaskSearchBean searchBean);
+	
+	@WebMethod
+	public String getProcessInstanceIdByExecutionId(final String executionId);
 }

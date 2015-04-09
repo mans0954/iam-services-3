@@ -44,6 +44,7 @@ public abstract class AbstractCandidateTaskListener extends AbstractActivitiJob 
 			
 		
 			final Collection<String> candidateUsersIds = activitiHelper.getCandidateUserIds(execution, targetUserId, supervisorIds);
+			addUsersToProtectingResource(delegateTask, candidateUsersIds);
 			
 			//delegateTask.setVariableLocal(variableName, value)
 			delegateTask.setVariableLocal(ActivitiConstants.CANDIDATE_USERS_IDS.getName(), candidateUsersIds);

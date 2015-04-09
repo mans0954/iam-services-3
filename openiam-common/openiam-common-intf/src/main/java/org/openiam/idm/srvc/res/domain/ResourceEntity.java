@@ -3,7 +3,6 @@ package org.openiam.idm.srvc.res.domain;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.*;
 import org.openiam.base.domain.AbstractMetdataTypeEntity;
-
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
@@ -21,6 +20,7 @@ import javax.persistence.Entity;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
 import javax.validation.constraints.Size;
+
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -120,6 +120,9 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
     
     @Transient
     private String displayName;
+    
+    @Column(name="REFERENCE_ID")
+    private String referenceId;
 
     public ResourceRisk getRisk() {
         return risk;
@@ -398,6 +401,13 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
 		this.coorelatedName = coorelatedName;
 	}
 
+	public String getReferenceId() {
+		return referenceId;
+	}
+
+	public void setReferenceId(String referenceId) {
+		this.referenceId = referenceId;
+	}
 
     @Override
     public boolean equals(Object o) {
@@ -413,6 +423,7 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
             return false;
         if (coorelatedName != null ? !coorelatedName.equals(that.coorelatedName) : that.coorelatedName != null)
             return false;
+        if (referenceId != null ? !referenceId.equals(that.referenceId) : that.referenceId != null) return false;
         if (description != null ? !description.equals(that.description) : that.description != null) return false;
         if (displayName != null ? !displayName.equals(that.displayName) : that.displayName != null) return false;
         if (displayOrder != null ? !displayOrder.equals(that.displayOrder) : that.displayOrder != null) return false;
@@ -420,7 +431,6 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
         if (resourceType != null ? !resourceType.equals(that.resourceType) : that.resourceType != null) return false;
         if (risk != that.risk) return false;
-
         return true;
     }
 
@@ -438,6 +448,7 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
         result = 31 * result + (coorelatedName != null ? coorelatedName.hashCode() : 0);
         result = 31 * result + (adminResource != null ? adminResource.hashCode() : 0);
         result = 31 * result + (displayName != null ? displayName.hashCode() : 0);
+        result = 31 * result + (referenceId != null ? referenceId.hashCode() : 0);
         return result;
     }
 }

@@ -10,6 +10,7 @@ import org.apache.log4j.Logger;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.bpm.activiti.ActivitiService;
+import org.openiam.bpm.dto.BasicWorkflowResponse;
 import org.openiam.bpm.request.GenericWorkflowRequest;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.bpm.util.ActivitiRequestType;
@@ -79,7 +80,7 @@ public class AttestationInitializer {
 					request.addParameter(ActivitiConstants.ATTESTATION_URL.getName(), attestationURL);
 					request.setRequestorUserId(systemUserId);
 					request.setDeletable(false);
-					final Response response = activitiService.initiateWorkflow(request);
+					final BasicWorkflowResponse response = activitiService.initiateWorkflow(request);
 					if(!ResponseStatus.SUCCESS.equals(response.getStatus())) {
 						LOG.info(String.format("Could not initialize re-certification task for user %s.  Reason: %s", employeeId, response.getErrorCode()));
 					}

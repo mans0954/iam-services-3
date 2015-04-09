@@ -39,6 +39,7 @@ public enum ActivitiConstants {
 	ASSIGNEE_ID("AssigneeUserId", "assigneeUserId", true),
 	TERMINATED_BY_OWNER("TermintedByOwner", "terminatedByOwner", true),
 	OPENIAM_VERSION("OPENIAM_VERSION", "openiamVersion", false),
+	WORKFLOW_RESOURCE_ID("WORKFLOW_RESOURCE_ID", null, false),
 	
 	LOOP_COUNTER("loopCounter", null, false),
 	

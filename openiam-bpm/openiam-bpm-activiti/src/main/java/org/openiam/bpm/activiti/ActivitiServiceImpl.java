@@ -27,6 +27,7 @@ import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.history.HistoricTaskInstanceQuery;
 import org.activiti.engine.history.HistoricVariableInstance;
+import org.activiti.engine.runtime.Execution;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
 import org.activiti.engine.task.TaskQuery;
@@ -51,6 +52,8 @@ import org.openiam.bpm.activiti.groovy.DefaultEditUserApproverAssociationIdentif
 import org.openiam.bpm.activiti.groovy.DefaultGenericWorkflowRequestApproverAssociationIdentifier;
 import org.openiam.bpm.activiti.groovy.DefaultNewHireRequestApproverAssociationIdentifier;
 import org.openiam.bpm.activiti.model.ActivitiJSONStringWrapper;
+import org.openiam.bpm.dto.AbstractWorkflowResponse;
+import org.openiam.bpm.dto.BasicWorkflowResponse;
 import org.openiam.bpm.request.ActivitiClaimRequest;
 import org.openiam.bpm.request.ActivitiRequestDecision;
 import org.openiam.bpm.request.GenericWorkflowRequest;
@@ -78,6 +81,9 @@ import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
 import org.openiam.idm.srvc.meta.exception.PageTemplateException;
 import org.openiam.idm.srvc.meta.service.MetadataElementTemplateService;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.res.service.ResourceService;
+import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.idm.srvc.synch.service.generic.ObjectAdapterMap;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;
@@ -147,6 +153,12 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 
     @Value("${org.openiam.idm.activiti.merge.custom.approver.with.approver.associations}")
     protected Boolean mergeCustomApproverIdsWithApproverAssociations;
+    
+    @Value("${org.openiam.workflow.resource.type}")
+    private String workflowResourceType;
+    
+    @Value("${org.openiam.workflow.master.resource}")
+    private String workflowMasterResourceId;
 
     @Autowired
     @Qualifier("configurableGroovyScriptEngine")
@@ -179,10 +191,31 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
     @Autowired
     private PhoneDozerConverter phoneDozerConverter;
     
+    @Autowired
+    private ResourceTypeDAO resourceTypeDAO;
+    
+    @Autowired
+    private ResourceService resourceService;
+    
 	@Override
 	@WebMethod
 	public String sayHello() {
 		return "Hello";
+	}
+	
+	private ResourceEntity createAndSaveWorkflowResource(final String name, final String requestor) {
+		final UserEntity user = userDataService.getUser(requestor);
+		final ResourceEntity workflowMasterResource = resourceService.findResourceById(workflowMasterResourceId);
+		
+		final ResourceEntity resource = new ResourceEntity();
+		resource.setResourceType(resourceTypeDAO.findById(workflowResourceType));
+		resource.setName(name);
+		resource.setCoorelatedName(String.format("Resource protecting workflow '%s'", name));
+		resource.addUser(user);
+		resource.addChildResource(workflowMasterResource);
+		
+		resourceService.save(resource, requestor);
+		return resource;
 	}
 	
 	@Override
@@ -256,7 +289,10 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 				approverCardinatlity.add(approverUserIds);
 			}
 			
+			final ResourceEntity resource = createAndSaveWorkflowResource(taskName, request.getRequestorUserId());
+			
 			final Map<String, Object> variables = new HashMap<String, Object>();
+			variables.put(ActivitiConstants.WORKFLOW_RESOURCE_ID.getName(), resource.getId());
 			variables.put(ActivitiConstants.OPENIAM_VERSION.getName(), sysInfoService.getProjectVersion());
 			variables.put(ActivitiConstants.APPROVER_CARDINALTITY.getName(), approverCardinatlity);
 			variables.put(ActivitiConstants.APPROVER_ASSOCIATION_IDS.getName(), approverAssociationIds);
@@ -277,24 +313,13 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
             variables.put(ActivitiConstants.AUDIT_LOG_ID.getName(), idmAuditLog.getId());
             
 			final ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(requestType.getKey(), variables);
+			resource.setReferenceId(processInstance.getId());
+			resourceService.save(resource, request.getRequestorUserId());
+			populate(response, processInstance, resource, approverAssociationIds, approverUserIds, request.getRequestorUserId());
+			
 			idmAuditLog = auditLogService.findById(idmAuditLog.getId());
             idmAuditLog.setTargetTask(processInstance.getId(), taskName);
 			response.succeed();
-			response.setApproverAssociationIds(approverAssociationIds);
-			response.setApproverUserIds(approverUserIds);
-			
-			response.setActivityId(processInstance.getActivityId());
-			response.setBusinessKey(processInstance.getBusinessKey());
-			response.setDeploymentId(processInstance.getDeploymentId());
-			response.setId(processInstance.getId());
-			response.setName(processInstance.getName());
-			response.setParentId(processInstance.getParentId());
-			response.setProcessDefinitionId(processInstance.getProcessDefinitionId());
-			response.setProcessDefinitionKey(processInstance.getProcessDefinitionKey());
-			response.setProcessDefinitionName(processInstance.getProcessDefinitionName());
-			response.setProcessDefinitionVersion(processInstance.getProcessDefinitionVersion());
-			response.setProcessInstanceId(processInstance.getProcessInstanceId());
-			response.setTenantId(processInstance.getTenantId());
 			idmAuditLog.succeed();
 		} catch (PageTemplateException e) {
             idmAuditLog.fail();
@@ -332,6 +357,30 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
             idmAuditLog = auditLogService.save(idmAuditLog);
 		}
 		return response;
+	}
+	
+	private void populate(final AbstractWorkflowResponse response, 
+						  final ProcessInstance processInstance, 
+						  final ResourceEntity resource, 
+						  final List<String> approverAssociationIds, 
+						  final List<String> approverUserIds,
+						  final String taskOwner) {
+		response.setActivityId(processInstance.getActivityId());
+		response.setBusinessKey(processInstance.getBusinessKey());
+		response.setDeploymentId(processInstance.getDeploymentId());
+		response.setId(processInstance.getId());
+		response.setName(processInstance.getName());
+		response.setParentId(processInstance.getParentId());
+		response.setProcessDefinitionId(processInstance.getProcessDefinitionId());
+		response.setProcessDefinitionKey(processInstance.getProcessDefinitionKey());
+		response.setProcessDefinitionName(processInstance.getProcessDefinitionName());
+		response.setProcessDefinitionVersion(processInstance.getProcessDefinitionVersion());
+		response.setProcessInstanceId(processInstance.getProcessInstanceId());
+		response.setTenantId(processInstance.getTenantId());
+		response.setProtectingResourceId(resource.getId());
+		response.setApproverAssociationIds(approverAssociationIds);
+		response.setApproverUserIds(approverUserIds);
+		response.addProcessOwner(taskOwner);
 	}
 
 	@Override
@@ -461,7 +510,10 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 				approverCardinatlity.add(approverUserIds);
 			}
 			
+			final ResourceEntity resource = createAndSaveWorkflowResource(description, request.getRequestorUserId());
+			
 			final Map<String, Object> variables = new HashMap<String, Object>();
+			variables.put(ActivitiConstants.WORKFLOW_RESOURCE_ID.getName(), resource.getId());
 			variables.put(ActivitiConstants.OPENIAM_VERSION.getName(), sysInfoService.getProjectVersion());
 			variables.put(ActivitiConstants.APPROVER_CARDINALTITY.getName(), approverCardinatlity);
 			variables.put(ActivitiConstants.APPROVER_ASSOCIATION_IDS.getName(), approverAssociationIds);
@@ -478,7 +530,11 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
             idmAuditLog = auditLogService.save(idmAuditLog);
             variables.put(ActivitiConstants.AUDIT_LOG_ID.getName(), idmAuditLog.getId());
 
-            ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(ActivitiRequestType.EDIT_USER.getKey(), variables);
+            final ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(ActivitiRequestType.EDIT_USER.getKey(), variables);
+            resource.setReferenceId(processInstance.getId());
+			resourceService.save(resource, request.getRequestorUserId());
+			populate(response, processInstance, resource, approverAssociationIds, approverUserIds, request.getRequestorUserId());
+			
             idmAuditLog = auditLogService.findById(idmAuditLog.getId());
             for(Map.Entry<String,Object> varEntry : variables.entrySet()) {
                 idmAuditLog.addCustomRecord(varEntry.getKey(), (varEntry.getValue() != null) ? varEntry.getValue().toString() : null);
@@ -557,14 +613,14 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 	
 	@Override
 	@Transactional
-	public Response initiateWorkflow(final GenericWorkflowRequest request) {
+	public BasicWorkflowResponse initiateWorkflow(final GenericWorkflowRequest request) {
 		IdmAuditLog idmAuditLog = new IdmAuditLog();
         idmAuditLog.setRequestorUserId(request.getRequestorUserId());
         //idmAuditLog.setAction(AuditAction.INITIATE_WORKFLOW.value());
         idmAuditLog.setAction(request.getActivitiRequestType());
         idmAuditLog.setBaseObject(request);
         idmAuditLog.setSource(AuditSource.WORKFLOW.value());
-		final Response response = new Response();
+		final BasicWorkflowResponse response = new BasicWorkflowResponse();
 		try {
             idmAuditLog.addAttributeAsJson(AuditAttributeName.REQUEST, request, jacksonMapper);
 
@@ -613,10 +669,11 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
                 }
             }
 
-
+            final ResourceEntity resource = createAndSaveWorkflowResource(request.getName(), request.getRequestorUserId());
 
             idmAuditLog.addAttributeAsJson(AuditAttributeName.REQUEST_APPROVER_IDS, approverUserIds, jacksonMapper);
 			final Map<String, Object> variables = new HashMap<String, Object>();
+			variables.put(ActivitiConstants.WORKFLOW_RESOURCE_ID.getName(), resource.getId());
 			variables.put(ActivitiConstants.OPENIAM_VERSION.getName(), sysInfoService.getProjectVersion());
 			variables.put(ActivitiConstants.WORKFLOW_NAME.getName(), request.getActivitiRequestType());
 			variables.put(ActivitiConstants.APPROVER_CARDINALTITY.getName(), approverCardinatlity);
@@ -654,9 +711,13 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
             idmAuditLog = auditLogService.save(idmAuditLog);
             variables.put(ActivitiConstants.AUDIT_LOG_ID.getName(), idmAuditLog.getId());
 			
-			final ProcessInstance instance = runtimeService.startProcessInstanceByKey(request.getActivitiRequestType(), variables);
+			final ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(request.getActivitiRequestType(), variables);
+			resource.setReferenceId(processInstance.getId());
+			resourceService.save(resource, request.getRequestorUserId());
+			populate(response, processInstance, resource, approverAssociationIds, approverUserIds, request.getRequestorUserId());
+			
 			idmAuditLog = auditLogService.findById(idmAuditLog.getId());
-            idmAuditLog.setTargetTask(instance.getId(), request.getName());
+            idmAuditLog.setTargetTask(processInstance.getId(), request.getName());
             for (Map.Entry<String, Object> varEntry : variables.entrySet()) {
                 idmAuditLog.addCustomRecord(varEntry.getKey(), (varEntry.getValue() != null) ? varEntry.getValue().toString() : null);
             }
@@ -693,6 +754,12 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
         }
         return response;
     }
+	
+	@Override
+	public String getProcessInstanceIdByExecutionId(String executionId) {
+		final List<HistoricActivityInstance> results = historyService.createHistoricActivityInstanceQuery().executionId(executionId).list();
+		return (CollectionUtils.isNotEmpty(results)) ? results.get(0).getProcessInstanceId() : null;
+	}
 
     private List<String> getCandidateUserIdsFromApproverAssociations(final GenericWorkflowRequest request, final List<String> approverAssociationIds){
         List<String> candidateIds = new LinkedList<>();

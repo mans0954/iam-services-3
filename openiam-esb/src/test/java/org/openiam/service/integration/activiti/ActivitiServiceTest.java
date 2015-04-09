@@ -13,6 +13,7 @@ import org.openiam.am.srvc.dto.URIPattern;
 import org.openiam.am.srvc.dto.URIPatternParameter;
 import org.openiam.am.srvc.searchbeans.ContentProviderSearchBean;
 import org.openiam.am.srvc.ws.AuthResourceAttributeWebService;
+import org.openiam.authmanager.service.AuthorizationManagerWebService;
 import org.openiam.base.Tuple;
 import org.openiam.base.ws.MatchType;
 import org.openiam.base.ws.Response;
@@ -50,6 +51,10 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 public class ActivitiServiceTest extends AbstractServiceTest {
+	
+	@Autowired
+	@Qualifier("authorizationManagerServiceClient")
+	private AuthorizationManagerWebService authorizationManagerServiceClient;
 	
 	@Autowired
 	@Qualifier("activitiClient")
@@ -117,6 +122,46 @@ public class ActivitiServiceTest extends AbstractServiceTest {
 		wrappers = activitiClient.findTasks(searchBean, 0, Integer.MAX_VALUE);
 		Assert.assertTrue(CollectionUtils.isEmpty(wrappers));
 		Thread.sleep(10000L);
+		
+		/* confirm resources, and entitlements */
+		authorizationManagerServiceClient.refreshCache();
+		authorizationManagerServiceClient.refreshCache();
+		Assert.assertNotNull(templateResponse.getProtectingResourceId());
+		if(CollectionUtils.isNotEmpty(templateResponse.getProcessOwners())) {
+			templateResponse.getProcessOwners().forEach(userId -> {
+				Assert.assertFalse(authorizationManagerServiceClient.isUserEntitledToResource(userId, "WORKFLOW_MASTER"), 
+								   String.format("User '%s' should not have been entitled to master reosurce", userId));
+				
+				Assert.assertFalse(authorizationManagerServiceClient.isUserEntitledToResource(userId, "USER_WNCS_WORKFLOW"), 
+						   String.format("User '%s' should not have been entitled to menu", userId));
+				
+				Assert.assertTrue(authorizationManagerServiceClient.isUserEntitledToResource(userId, templateResponse.getProtectingResourceId()), 
+						   String.format("User '%s' should not have been entitled to protecting resource '%s'", userId, templateResponse.getProtectingResourceId()));
+			});
+		}
+		
+		if(CollectionUtils.isNotEmpty(templateResponse.getApproverUserIds())) {
+			templateResponse.getApproverUserIds().forEach(userId -> {
+				Assert.assertFalse(authorizationManagerServiceClient.isUserEntitledToResource(userId, "WORKFLOW_MASTER"), 
+								   String.format("User '%s' should not have been entitled to master reosurce", userId));
+				
+				Assert.assertFalse(authorizationManagerServiceClient.isUserEntitledToResource(userId, "USER_WNCS_WORKFLOW"), 
+						   String.format("User '%s' should not have been entitled to menu", userId));
+				
+				Assert.assertTrue(authorizationManagerServiceClient.isUserEntitledToResource(userId, templateResponse.getProtectingResourceId()), 
+						   String.format("User '%s' should not have been entitled to protecting resource '%s'", userId, templateResponse.getProtectingResourceId()));
+			});
+		}
+		
+		/* assert sysadmin is entitled */
+		Assert.assertTrue(authorizationManagerServiceClient.isUserEntitledToResource("3000", "WORKFLOW_MASTER"), 
+				   String.format("User '%s' should not have been entitled to master reosurce", "3000"));
+
+		Assert.assertTrue(authorizationManagerServiceClient.isUserEntitledToResource("3000", "USER_WNCS_WORKFLOW"), 
+		   String.format("User '%s' should not have been entitled to menu", "3000"));
+
+		Assert.assertTrue(authorizationManagerServiceClient.isUserEntitledToResource("3000", templateResponse.getProtectingResourceId()), 
+		   String.format("User '%s' should not have been entitled to protecting resource '%s'", "3000", templateResponse.getProtectingResourceId()));
 		
 		return confirmUser(request);
 	}
@@ -193,7 +238,7 @@ public class ActivitiServiceTest extends AbstractServiceTest {
 	
 	@Test
 	public void testEditUserWorkflow() throws InterruptedException {
-		final NewUserProfileRequestModel request = createNewHireRequest(ActivitiRequestType.NEW_HIRE_NO_APPROVAL);
+		final NewUserProfileRequestModel request = createNewHireRequest(ActivitiRequestType.EDIT_USER);
 		final User user = sendAndConfirmRequestWithNoApprover(request);
 		final UserProfileRequestModel editUserRequest = createEditUserRequest(user);
 		final Response response = activitiClient.initiateEditUserWorkflow(editUserRequest);
