@@ -119,6 +119,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     @Value("${org.openiam.debug.hidden.attributes}")
     private String hiddenAttributes;
 
+    @Value("${org.openiam.send.user.activation.link}")
+    private Boolean sendActivationLink;
+
     private static final Log log = LogFactory.getLog(DefaultProvisioningService.class);
     private String errorDescription;
 
@@ -1328,7 +1331,11 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
         if (isAdd) { // send email notifications
             if (pUser.isEmailCredentialsToNewUsers()) {
-                sendCredentialsToUser(finalProvUser.getUser(), primaryIdentity.getLogin(), decPassword);
+                if(this.sendActivationLink){
+                    sendActivationLink(finalProvUser.getUser(), primaryIdentity);
+                } else {
+                    sendCredentialsToUser(finalProvUser.getUser(), primaryIdentity.getLogin(), decPassword);
+                }
             }
             if (pUser.isEmailCredentialsToSupervisor()) {
                 if (pUser.getSuperiors() != null) {
