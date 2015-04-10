@@ -247,7 +247,7 @@ public class AttributeMapEntity implements java.io.Serializable {
     @Override
     public String toString() {
         return "AttributeMap{" + "attributeMapId='" + attributeMapId + '\''
-                + ", managedSysId='" + managedSystem.getId() + '\'' + ", resourceId='"
+                + ", managedSys='" + managedSystem + '\'' + ", resourceId='"
                 + resourceId + '\''  + ", synchConfigId='"
                 + synchConfigId + '\'' + ", mapForObjectType='" + mapForObjectType
                 + '\'' + ", attributeName='" + attributeName + '\''
@@ -259,5 +259,37 @@ public class AttributeMapEntity implements java.io.Serializable {
                 + storeInIamdb + ", selected=" + selected + ", dataType='"
                 + dataType + '\'' + ", defaultValue='" + defaultValue + '\''
                 + '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        AttributeMapEntity entity = (AttributeMapEntity) o;
+        if (attributeMapId != null ? !attributeMapId.equals(entity.attributeMapId) : entity.attributeMapId != null)
+            return false;
+        if (attributeName != null ? !attributeName.equals(entity.attributeName) : entity.attributeName != null)
+            return false;
+        if (managedSystem != null ? !managedSystem.equals(entity.managedSystem) : entity.managedSystem != null)
+            return false;
+        if (mapForObjectType != null ? !mapForObjectType.equals(entity.mapForObjectType) : entity.mapForObjectType != null)
+            return false;
+        if (resourceId != null ? !resourceId.equals(entity.resourceId) : entity.resourceId != null) return false;
+        if (targetAttributeName != null ? !targetAttributeName.equals(entity.targetAttributeName) : entity.targetAttributeName != null)
+            return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = attributeMapId != null ? attributeMapId.hashCode() : 0;
+        result = 31 * result + (managedSystem != null ? managedSystem.hashCode() : 0);
+        result = 31 * result + (resourceId != null ? resourceId.hashCode() : 0);
+        result = 31 * result + (mapForObjectType != null ? mapForObjectType.hashCode() : 0);
+        result = 31 * result + (attributeName != null ? attributeName.hashCode() : 0);
+        result = 31 * result + (targetAttributeName != null ? targetAttributeName.hashCode() : 0);
+        return result;
     }
 }

@@ -12,6 +12,7 @@ import org.openiam.authmanager.dao.*;
 import org.openiam.authmanager.model.ResourceEntitlementToken;
 import org.openiam.authmanager.model.UserEntitlementsMatrix;
 import org.openiam.authmanager.service.AuthorizationManagerAdminService;
+import org.openiam.idm.srvc.res.dto.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -604,7 +605,6 @@ public class AuthorizationManagerAdminServiceImpl implements AuthorizationManage
 		return matrix;
 	}
 
-
     public Set<String> getOwnerIdsForResource(String resourceId){
 		if(StringUtils.isBlank(resourceId)){
 			return Collections.EMPTY_SET;
@@ -619,8 +619,10 @@ public class AuthorizationManagerAdminServiceImpl implements AuthorizationManage
         final Map<String, Set<AuthorizationRole>> role2RoleMap = getRole2RoleMap(roleMap, true);
         final Map<String, Set<AuthorizationRole>> group2RoleMap = getGroup2RoleMap(roleMap);
 
-        return getOwnerIdsForResource(resourceMap.get(resourceId), resourceMap,  resource2RoleMap, resource2GroupMap,
-                                      group2GroupMap, role2RoleMap,group2RoleMap);
+		final AuthorizationResource resource = resourceMap.get(resourceId);
+		final String adminResourceId = resource != null ? resource.getAdminResourceId() : null;
+        return getUserIdsForResource(adminResourceId, resourceMap, resource2RoleMap, resource2GroupMap,
+				group2GroupMap, role2RoleMap, group2RoleMap);
     }
 
     public HashMap<String, SetStringResponse> getOwnerIdsForResourceSet(Set<String> resourceIdSet){
@@ -642,26 +644,73 @@ public class AuthorizationManagerAdminServiceImpl implements AuthorizationManage
 
         if(CollectionUtils.isNotEmpty(resourceIdSet)) for (String resourceId : resourceIdSet) {
             setString = new SetStringResponse();
-            setString.setSetString(getOwnerIdsForResource(resourceMap.get(resourceId), resourceMap,
+			final AuthorizationResource resource = resourceMap.get(resourceId);
+			final String adminResourceId = resource != null ? resource.getAdminResourceId() : null;
+			setString.setSetString(getUserIdsForResource(adminResourceId, resourceMap,
 					resource2RoleMap, resource2GroupMap,
-                    group2GroupMap, role2RoleMap, group2RoleMap));
+					group2GroupMap, role2RoleMap, group2RoleMap));
             ownerIdsMap.put(resourceId, setString);
         }
         return ownerIdsMap;
     }
 
-
-    private Set<String> getOwnerIdsForResource(AuthorizationResource resource,
-                                               Map<String, AuthorizationResource> resourceMap,
-                                               Map<String, Set<AuthorizationRole>> resource2RoleMap,
-                                               Map<String, Set<AuthorizationGroup>> resource2GroupMap,
-                                               Map<String, Set<AuthorizationGroup>> group2GroupMap,
-                                               Map<String, Set<AuthorizationRole>> role2RoleMap,
-                                               Map<String, Set<AuthorizationRole>> group2RoleMap){
-		if(resource==null){
+	public Set<String> getUserIdsEntitledForResource(String resourceId){
+		if(StringUtils.isBlank(resourceId)){
 			return Collections.EMPTY_SET;
 		}
-		return getOwnerIds(resource.getAdminResourceId(), resourceMap, resource2RoleMap, resource2GroupMap,
+
+		final Map<String, AuthorizationResource> resourceMap = getResourceMap();
+		final Map<String, AuthorizationGroup> groupMap = getGroupMap();
+		final Map<String, AuthorizationRole> roleMap = getRoleMap();
+		final Map<String, Set<AuthorizationRole>> resource2RoleMap = getResource2RoleMap(roleMap);
+		final Map<String, Set<AuthorizationGroup>> resource2GroupMap = getResource2GroupMap(groupMap);
+		final Map<String, Set<AuthorizationGroup>> group2GroupMap = getGroup2GroupMap(groupMap, true);
+		final Map<String, Set<AuthorizationRole>> role2RoleMap = getRole2RoleMap(roleMap, true);
+		final Map<String, Set<AuthorizationRole>> group2RoleMap = getGroup2RoleMap(roleMap);
+
+		return getUserIdsForResource(resourceId, resourceMap, resource2RoleMap, resource2GroupMap,
+				group2GroupMap, role2RoleMap, group2RoleMap);
+	}
+
+	public HashMap<String, SetStringResponse> getUserIdsEntitledForResourceSet(Set<String> resourceIdSet){
+		HashMap<String, SetStringResponse> userIdsMap = new HashMap<String, SetStringResponse>();
+		if(CollectionUtils.isEmpty(resourceIdSet)){
+			return userIdsMap;
+		}
+
+		final Map<String, AuthorizationResource> resourceMap = getResourceMap();
+		final Map<String, AuthorizationGroup> groupMap = getGroupMap();
+		final Map<String, AuthorizationRole> roleMap = getRoleMap();
+		final Map<String, Set<AuthorizationRole>> resource2RoleMap = getResource2RoleMap(roleMap);
+		final Map<String, Set<AuthorizationGroup>> resource2GroupMap = getResource2GroupMap(groupMap);
+		final Map<String, Set<AuthorizationGroup>> group2GroupMap = getGroup2GroupMap(groupMap, true);
+		final Map<String, Set<AuthorizationRole>> role2RoleMap = getRole2RoleMap(roleMap, true);
+		final Map<String, Set<AuthorizationRole>> group2RoleMap = getGroup2RoleMap(roleMap);
+
+		SetStringResponse setString;
+
+		if(CollectionUtils.isNotEmpty(resourceIdSet)) for (String resourceId : resourceIdSet) {
+			setString = new SetStringResponse();
+			setString.setSetString(getUserIdsForResource(resourceId, resourceMap,
+					resource2RoleMap, resource2GroupMap,
+					group2GroupMap, role2RoleMap, group2RoleMap));
+			userIdsMap.put(resourceId, setString);
+		}
+		return userIdsMap;
+	}
+
+	private Set<String> getUserIdsForResource(String resourceId,
+											  Map<String, AuthorizationResource> resourceMap,
+											  Map<String, Set<AuthorizationRole>> resource2RoleMap,
+											  Map<String, Set<AuthorizationGroup>> resource2GroupMap,
+											  Map<String, Set<AuthorizationGroup>> group2GroupMap,
+											  Map<String, Set<AuthorizationRole>> role2RoleMap,
+											  Map<String, Set<AuthorizationRole>> group2RoleMap){
+		if(StringUtils.isBlank(resourceId)){
+			return Collections.EMPTY_SET;
+		}
+
+		return getEntitledUserIds(resourceId, resourceMap, resource2RoleMap, resource2GroupMap,
 				group2GroupMap, role2RoleMap, group2RoleMap);
     }
 
@@ -721,22 +770,22 @@ public class AuthorizationManagerAdminServiceImpl implements AuthorizationManage
 		if(group==null){
 			return Collections.EMPTY_SET;
 		}
-		return getOwnerIds(group.getAdminResourceId(), resourceMap, resource2RoleMap, resource2GroupMap,
-							group2GroupMap, role2RoleMap, group2RoleMap);
+		return getEntitledUserIds(group.getAdminResourceId(), resourceMap, resource2RoleMap, resource2GroupMap,
+				group2GroupMap, role2RoleMap, group2RoleMap);
 	}
 
-	private Set<String> getOwnerIds(String adminResourceId,
-									Map<String, AuthorizationResource> resourceMap,
-									Map<String, Set<AuthorizationRole>> resource2RoleMap,
-									Map<String, Set<AuthorizationGroup>> resource2GroupMap,
-									Map<String, Set<AuthorizationGroup>> group2GroupMap,
-									Map<String, Set<AuthorizationRole>> role2RoleMap,
-									Map<String, Set<AuthorizationRole>> group2RoleMap){
-		Set<String> ownerIds = new HashSet<>();
+	private Set<String> getEntitledUserIds(String resourceId,
+										   Map<String, AuthorizationResource> resourceMap,
+										   Map<String, Set<AuthorizationRole>> resource2RoleMap,
+										   Map<String, Set<AuthorizationGroup>> resource2GroupMap,
+										   Map<String, Set<AuthorizationGroup>> group2GroupMap,
+										   Map<String, Set<AuthorizationRole>> role2RoleMap,
+										   Map<String, Set<AuthorizationRole>> group2RoleMap){
+		Set<String> userIds = new HashSet<>();
 
 		AuthorizationResource adminResource = null;
-		if(StringUtils.isNotBlank(adminResourceId)) {
-			adminResource = resourceMap.get(adminResourceId);
+		if(StringUtils.isNotBlank(resourceId)) {
+			adminResource = resourceMap.get(resourceId);
 			if (adminResource != null) {
 
 				Set<AuthorizationRole> roleSet = resource2RoleMap.get(adminResource.getId());
@@ -786,7 +835,7 @@ public class AuthorizationManagerAdminServiceImpl implements AuthorizationManage
 						compiledGroupIdSet.add(grp.getId());
 					}
 
-					ownerIds.addAll(userDAO.getUserIdsForGroups(compiledGroupIdSet));
+					userIds.addAll(userDAO.getUserIdsForGroups(compiledGroupIdSet));
 				}
 
 				// get users for compiled roles
@@ -796,15 +845,15 @@ public class AuthorizationManagerAdminServiceImpl implements AuthorizationManage
 						compiledRoleIdSet.add(role.getId());
 					}
 
-					ownerIds.addAll(userDAO.getUserIdsForRoles(compiledRoleIdSet));
+					userIds.addAll(userDAO.getUserIdsForRoles(compiledRoleIdSet));
 				}
 
 				// get users for admin resource
 				final Set<String> resourceIdSet = new HashSet<String>();
 				resourceIdSet.add(adminResource.getId());
-				ownerIds.addAll(userDAO.getUserIdsForResources(resourceIdSet));
+				userIds.addAll(userDAO.getUserIdsForResources(resourceIdSet));
 			}
 		}
-		return ownerIds;
+		return userIds;
 	}
 }

@@ -24,6 +24,7 @@ package org.openiam.idm.srvc.role.ws;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.openiam.base.SysConfiguration;
+import org.openiam.base.TreeObjectId;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
@@ -52,12 +53,17 @@ import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.internationalization.LocalizedServiceGet;
 import org.openiam.util.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.PostConstruct;
 import javax.jws.WebMethod;
 import javax.jws.WebService;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author suneet
@@ -369,6 +375,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	}
 
 	@Override
+    @CacheEvict(value = "RolesWithSubRolesIds", allEntries=true)
 	public Response saveRole(Role role, final String requesterId) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
 		try {
@@ -553,6 +560,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	}
 
 	@Override
+    @CacheEvict(value = "RolesWithSubRolesIds", allEntries=true)
 	public Response addChildRole(final String roleId, final String childRoleId, String requesterId) {
 		final RolePolicyResponse response = new RolePolicyResponse(ResponseStatus.SUCCESS);
 		try {
@@ -573,6 +581,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	}
 
 	@Override
+    @CacheEvict(value = "RolesWithSubRolesIds", allEntries=true)
 	public Response removeChildRole(final String roleId, final String childRoleId, String requesterId) {
 		final RolePolicyResponse response = new RolePolicyResponse(ResponseStatus.SUCCESS);
 		try {
@@ -643,6 +652,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	}
 
 	@Override
+    @CacheEvict(value = "RolesWithSubRolesIds", allEntries=true)
 	public Response canAddChildRole(String roleId, String childRoleId) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
 		try {
@@ -679,5 +689,11 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
     public List<Role> findRolesByAttributeValue(String attrName, String attrValue) {
         return roleDozerConverter.convertToDTOList(
                 roleDataService.findRolesByAttributeValue(attrName, attrValue), true);
+    }
+
+    @Override
+    @Cacheable(value="RolesWithSubRolesIds", key="{#roleIds, #requesterId}")
+    public List<TreeObjectId> getRolesWithSubRolesIds(List<String> roleIds, String requesterId) {
+        return roleDataService.getRolesWithSubRolesIds(roleIds, requesterId);
     }
 }

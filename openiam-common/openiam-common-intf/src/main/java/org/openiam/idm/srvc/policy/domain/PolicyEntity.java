@@ -219,4 +219,45 @@ public class PolicyEntity implements java.io.Serializable {
                 + rule + ", ruleSrcUrl=" + ruleSrcUrl + ", enablement="
                 + enablement + ", policyAttributes=" + policyAttributes + "]";
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        PolicyEntity that = (PolicyEntity) o;
+
+        if (createDate != null ? !createDate.equals(that.createDate) : that.createDate != null) return false;
+        if (createdBy != null ? !createdBy.equals(that.createdBy) : that.createdBy != null) return false;
+        if (description != null ? !description.equals(that.description) : that.description != null) return false;
+        if (enablement != null ? !enablement.equals(that.enablement) : that.enablement != null) return false;
+        if (lastUpdate != null ? !lastUpdate.equals(that.lastUpdate) : that.lastUpdate != null) return false;
+        if (lastUpdatedBy != null ? !lastUpdatedBy.equals(that.lastUpdatedBy) : that.lastUpdatedBy != null)
+            return false;
+        if (name != null ? !name.equals(that.name) : that.name != null) return false;
+        if (policyDefId != null ? !policyDefId.equals(that.policyDefId) : that.policyDefId != null) return false;
+        if (policyId != null ? !policyId.equals(that.policyId) : that.policyId != null) return false;
+        if (rule != null ? !rule.equals(that.rule) : that.rule != null) return false;
+        if (ruleSrcUrl != null ? !ruleSrcUrl.equals(that.ruleSrcUrl) : that.ruleSrcUrl != null) return false;
+        if (status != null ? !status.equals(that.status) : that.status != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = policyId != null ? policyId.hashCode() : 0;
+        result = 31 * result + (policyDefId != null ? policyDefId.hashCode() : 0);
+        result = 31 * result + (name != null ? name.hashCode() : 0);
+        result = 31 * result + (description != null ? description.hashCode() : 0);
+        result = 31 * result + (status != null ? status.hashCode() : 0);
+        result = 31 * result + (createDate != null ? createDate.hashCode() : 0);
+        result = 31 * result + (createdBy != null ? createdBy.hashCode() : 0);
+        result = 31 * result + (lastUpdate != null ? lastUpdate.hashCode() : 0);
+        result = 31 * result + (lastUpdatedBy != null ? lastUpdatedBy.hashCode() : 0);
+        result = 31 * result + (rule != null ? rule.hashCode() : 0);
+        result = 31 * result + (ruleSrcUrl != null ? ruleSrcUrl.hashCode() : 0);
+        result = 31 * result + (enablement != null ? enablement.hashCode() : 0);
+        return result;
+    }
 }

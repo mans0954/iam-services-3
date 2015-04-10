@@ -945,20 +945,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         // audit logging
         checkAuditingAttributes(pUser);
 
-        if (!isAdd) {
-            // get the current roles
-            List<Role> curRoleList = roleDataService.getUserRolesAsFlatList(pUser.getId());
-
-            // get all groups for user
-            List<Group> curGroupList = groupDozerConverter.convertToDTOList(
-                    groupManager.getGroupsForUser(pUser.getId(), null, -1, -1), false);
-            // make the role and group list before these updates available to
-            // the
-            // attribute policies
-            bindingMap.put("currentRoleList", curRoleList);
-            bindingMap.put("currentGroupList", curGroupList);
-        }
-
         // dealing with principals
         if (!isAdd) {
             List<LoginEntity> curPrincipalList = userEntity.getPrincipalList();
@@ -2751,12 +2737,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         ProvisionUser u = new ProvisionUser(userDozerConverter.convertToDTO(userEntity, true));
         provisionSelectedResourceHelper.setCurrentSuperiors(u);
         bindingMap.put("userBeforeModify", u);
-
-        List<Role> curRoleList = roleDataService.getUserRolesAsFlatList(pUser.getId());
-        List<Group> curGroupList = groupDozerConverter.convertToDTOList(
-                groupManager.getGroupsForUser(pUser.getId(), null, -1, -1), false);
-        bindingMap.put("currentRoleList", curRoleList);
-        bindingMap.put("currentGroupList", curGroupList);
 
         bindingMap.put(TARGET_SYS_MANAGED_SYS_ID, managedSysId);
         ManagedSysDto managedSys = managedSysService.getManagedSys(managedSysId);
