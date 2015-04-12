@@ -154,9 +154,6 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
     @Value("${org.openiam.idm.activiti.merge.custom.approver.with.approver.associations}")
     protected Boolean mergeCustomApproverIdsWithApproverAssociations;
     
-    @Value("${org.openiam.workflow.master.resource}")
-    private String workflowMasterResourceId;
-
     @Autowired
     @Qualifier("configurableGroovyScriptEngine")
     protected ScriptIntegration scriptRunner;
@@ -194,6 +191,9 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
     @Autowired
     private ResourceService resourceService;
     
+    @Value("${org.openiam.workflow.resource.type}")
+    private String workflowResourceType;
+    
 	@Override
 	@WebMethod
 	public String sayHello() {
@@ -202,10 +202,10 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 	
 	private ResourceEntity createAndSaveWorkflowResource(final String name, final String requestor) {
 		final UserEntity user = userDataService.getUser(requestor);
-		final ResourceEntity workflowMasterResource = resourceService.findResourceById(workflowMasterResourceId);
+		final ResourceEntity workflowMasterResource = resourceService.findResourceById(propertyValueSweeper.getString("org.openiam.workflow.master.resource"));
 		
 		final ResourceEntity resource = new ResourceEntity();
-		resource.setResourceType(resourceTypeDAO.findById(propertyValueSweeper.getString("org.openiam.workflow.resource.type")));
+		resource.setResourceType(resourceTypeDAO.findById(workflowResourceType));
 		resource.setName(String.format("%s_%s", name, System.currentTimeMillis()));
 		resource.setCoorelatedName(String.format("Resource protecting workflow '%s'", name));
 		resource.addUser(user);
