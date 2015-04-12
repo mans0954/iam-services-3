@@ -154,9 +154,6 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
     @Value("${org.openiam.idm.activiti.merge.custom.approver.with.approver.associations}")
     protected Boolean mergeCustomApproverIdsWithApproverAssociations;
     
-    @Value("${org.openiam.workflow.resource.type}")
-    private String workflowResourceType;
-    
     @Value("${org.openiam.workflow.master.resource}")
     private String workflowMasterResourceId;
 
@@ -208,7 +205,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 		final ResourceEntity workflowMasterResource = resourceService.findResourceById(workflowMasterResourceId);
 		
 		final ResourceEntity resource = new ResourceEntity();
-		resource.setResourceType(resourceTypeDAO.findById(workflowResourceType));
+		resource.setResourceType(resourceTypeDAO.findById(propertyValueSweeper.getString("org.openiam.workflow.resource.type")));
 		resource.setName(String.format("%s_%s", name, System.currentTimeMillis()));
 		resource.setCoorelatedName(String.format("Resource protecting workflow '%s'", name));
 		resource.addUser(user);
