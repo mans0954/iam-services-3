@@ -209,7 +209,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 		
 		final ResourceEntity resource = new ResourceEntity();
 		resource.setResourceType(resourceTypeDAO.findById(workflowResourceType));
-		resource.setName(name);
+		resource.setName(String.format("%s_%s", name, System.currentTimeMillis()));
 		resource.setCoorelatedName(String.format("Resource protecting workflow '%s'", name));
 		resource.addUser(user);
 		resource.addChildResource(workflowMasterResource);
