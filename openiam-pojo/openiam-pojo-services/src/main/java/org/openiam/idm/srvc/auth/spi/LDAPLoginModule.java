@@ -198,7 +198,7 @@ public class LDAPLoginModule extends AbstractLoginModule {
         tokenParam.put("TOKEN_ISSUER", tokenIssuer);
         tokenParam.put("PRINCIPAL", principal);
 
-       LoginResponse loginResponce = loginManager.getLoginByManagedSys(distinguishedName, managedSysId);
+       LoginResponse loginResponce = loginManager.getLoginByManagedSys(principal, managedSysId);
 
         if (loginResponce.getStatus() == ResponseStatus.FAILURE) {
 //            log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
@@ -333,7 +333,7 @@ public class LDAPLoginModule extends AbstractLoginModule {
 
         // Successful login
         sub.setUserId(lg.getUserId());
-        sub.setPrincipal(distinguishedName);
+        sub.setPrincipal(principal);
         sub.setSsoToken(token(lg.getUserId(), tokenParam));
         setResultCode(lg, sub, curDate, null);
 

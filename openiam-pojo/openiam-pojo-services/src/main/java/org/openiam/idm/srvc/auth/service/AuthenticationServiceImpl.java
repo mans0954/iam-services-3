@@ -561,6 +561,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<AuthStateEntity> findBeans(AuthStateSearchBean searchBean,
                                            int from, int size) {
         return authStateDao.getByExample(searchBean, from, size);
