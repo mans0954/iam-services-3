@@ -480,6 +480,8 @@ public class GroupDataServiceImpl implements GroupDataService {
                 } else {
                     return;
                 }
+                groupDao.merge(group);
+
             } else {
                 if(CollectionUtils.isNotEmpty(group.getParentGroups())) {
                     Set<String> ids = new HashSet<>();
@@ -510,7 +512,6 @@ public class GroupDataServiceImpl implements GroupDataService {
 
                 addRequiredAttributes(group);
             }
-            groupDao.merge(group);
         }
     }
     @Override
