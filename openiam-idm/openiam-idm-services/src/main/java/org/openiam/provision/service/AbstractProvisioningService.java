@@ -67,6 +67,8 @@ import org.openiam.idm.srvc.org.service.OrganizationService;
 import org.openiam.idm.srvc.policy.dto.PasswordPolicyAssocSearchBean;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.pswd.dto.Password;
+import org.openiam.idm.srvc.pswd.dto.PasswordResetTokenRequest;
+import org.openiam.idm.srvc.pswd.dto.PasswordResetTokenResponse;
 import org.openiam.idm.srvc.pswd.dto.PasswordValidationResponse;
 import org.openiam.idm.srvc.pswd.service.PasswordHistoryDAO;
 import org.openiam.idm.srvc.pswd.service.PasswordPolicyProvider;
@@ -113,6 +115,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
 
     public static final String NEW_USER_EMAIL_SUPERVISOR_NOTIFICATION = "NEW_USER_EMAIL_SUPERVISOR";
     public static final String NEW_USER_EMAIL_NOTIFICATION = "NEW_USER_EMAIL";
+    public static final String NEW_USER_ACTIVATION_NOTIFICATION="NEW_USER_ACTIVATION_NOTIFICATION";
     public static final String PASSWORD_EMAIL_NOTIFICATION = "USER_PASSWORD_EMAIL";
 
     public static final String MATCH_PARAM = "matchParam";
@@ -219,6 +222,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     protected boolean cachePostProcessorEnable;
     @Value("${org.openiam.idm.preProcessor.cache}")
     protected boolean cachePreProcessorEnable;
+    @Value("${org.openiam.user.activation.uri}")
+    private String userActivationUri;
 
     @Autowired
     @Qualifier("configurableGroovyScriptEngine")
@@ -321,6 +326,40 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
             log.error(me.toString());
         }
 
+    }
+    protected void sendActivationLink(User user, Login login){
+        try {
+
+            final PasswordResetTokenRequest tokenRequest = new PasswordResetTokenRequest(login.getLogin(), login.getManagedSysId());
+            final PasswordResetTokenResponse tokenResponse = passwordManager.generatePasswordResetToken(tokenRequest);
+
+            if (tokenResponse != null && tokenResponse.isSuccess() && tokenResponse.getPasswordResetToken() != null) {
+                String token = tokenResponse.getPasswordResetToken();
+
+                MuleClient client = new MuleClient(MuleContextProvider.getCtx());
+
+                List<NotificationParam> msgParams = new LinkedList<NotificationParam>();
+                msgParams.add(new NotificationParam(MailTemplateParameters.SERVICE_HOST.value(), serviceHost));
+                msgParams.add(new NotificationParam(MailTemplateParameters.SERVICE_CONTEXT.value(), serviceContext));
+                msgParams.add(new NotificationParam(MailTemplateParameters.BASE_URL.value(), userActivationUri));
+                msgParams.add(new NotificationParam(MailTemplateParameters.USER_ID.value(), user.getId()));
+                msgParams.add(new NotificationParam(MailTemplateParameters.TOKEN.value(), token));
+//                msgParams.add(new NotificationParam(MailTemplateParameters.FIRST_NAME.value(), user.getFirstName()));
+//                msgParams.add(new NotificationParam(MailTemplateParameters.LAST_NAME.value(), user.getLastName()));
+
+                Map<String, String> msgProp = new HashMap<String, String>();
+                msgProp.put("SERVICE_HOST", serviceHost);
+                msgProp.put("SERVICE_CONTEXT", serviceContext);
+                NotificationRequest notificationRequest = new NotificationRequest();
+                notificationRequest.setUserId(user.getId());
+                notificationRequest.setParamList(msgParams);
+                notificationRequest.setNotificationType(NEW_USER_ACTIVATION_NOTIFICATION);
+                client.sendAsync("vm://notifyUserByEmailMessage", notificationRequest, msgProp);
+            }
+
+        } catch (MuleException me) {
+            log.error(me.toString());
+        }
     }
 
     protected void sendCredentialsToUser(User user, String identity, String password) {

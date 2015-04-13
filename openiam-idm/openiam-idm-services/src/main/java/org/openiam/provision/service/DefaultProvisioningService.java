@@ -119,6 +119,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     @Value("${org.openiam.debug.hidden.attributes}")
     private String hiddenAttributes;
 
+    @Value("${org.openiam.send.user.activation.link}")
+    private Boolean sendActivationLink;
+
     private static final Log log = LogFactory.getLog(DefaultProvisioningService.class);
     private String errorDescription;
 
@@ -922,6 +925,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         bindingMap.put("org", pUser.getPrimaryOrganization());
         bindingMap.put("operation", isAdd ? "ADD" : "MODIFY");
         bindingMap.put(USER, pUser);
+        bindingMap.put("sendActivationLink", sendActivationLink);
         bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, null);
         bindingMap.put(TARGET_SYSTEM_IDENTITY, null);
         bindingMap.put(USER_ATTRIBUTES, userMgr.getUserAttributesDto(pUser.getId()));
@@ -1326,9 +1330,25 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             }
         }
 
+        int callPostProcessorResult = callPostProcessor(isAdd ? "ADD" : "MODIFY", finalProvUser, bindingMap, null);
+        auditLog.addAttribute(AuditAttributeName.DESCRIPTION, "callPostProcessor result="
+                + (callPostProcessorResult == 1 ? "SUCCESS" : "FAIL"));
+        if (callPostProcessorResult != ProvisioningConstants.SUCCESS) {
+            resp.setStatus(ResponseStatus.FAILURE);
+            resp.setErrorCode(ResponseCode.FAIL_POSTPROCESSOR);
+            auditLog.addAttribute(AuditAttributeName.DESCRIPTION, "PostProcessor error.");
+            return resp;
+        }
+        /* Response object */
+        userMgr.updateUser(userEntity);
+
         if (isAdd) { // send email notifications
             if (pUser.isEmailCredentialsToNewUsers()) {
-                sendCredentialsToUser(finalProvUser.getUser(), primaryIdentity.getLogin(), decPassword);
+                if(this.sendActivationLink){
+                    sendActivationLink(finalProvUser.getUser(), primaryIdentity);
+                } else {
+                    sendCredentialsToUser(finalProvUser.getUser(), primaryIdentity.getLogin(), decPassword);
+                }
             }
             if (pUser.isEmailCredentialsToSupervisor()) {
                 if (pUser.getSuperiors() != null) {
@@ -1342,18 +1362,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 }
             }
         }
-        int callPostProcessorResult = callPostProcessor(isAdd ? "ADD" : "MODIFY", finalProvUser, bindingMap, null);
-        auditLog.addAttribute(AuditAttributeName.DESCRIPTION, "callPostProcessor result="
-                + (callPostProcessorResult == 1 ? "SUCCESS" : "FAIL"));
-        if (callPostProcessorResult != ProvisioningConstants.SUCCESS) {
-            resp.setStatus(ResponseStatus.FAILURE);
-            resp.setErrorCode(ResponseCode.FAIL_POSTPROCESSOR);
-            auditLog.addAttribute(AuditAttributeName.DESCRIPTION, "PostProcessor error.");
-            return resp;
-        }
-        /* Response object */
-
-        userMgr.updateUser(userEntity);
 
         if (isAdd) {
             log.debug("DEFAULT PROVISIONING SERVICE: addUser complete");
