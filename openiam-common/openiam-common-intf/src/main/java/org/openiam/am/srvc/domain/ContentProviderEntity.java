@@ -49,7 +49,7 @@ public class ContentProviderEntity extends AbstractKeyNameEntity {
 	@Column(name = "POSTBACK_URL_PARAM_NAME", length = 50, nullable = false)
 	private String postbackURLParamName;
 	
-	@Column(name = "AUTH_COOKIE_DOMAIN", length = 100, nullable = false)
+	@Column(name = "AUTH_COOKIE_DOMAIN", length = 100, nullable = true)
 	private String authCookieDomain;
 	
 	@Column(name = "IS_SSL", nullable = true)
