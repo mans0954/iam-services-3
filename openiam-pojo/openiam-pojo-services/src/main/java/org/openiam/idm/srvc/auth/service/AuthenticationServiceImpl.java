@@ -78,6 +78,7 @@ import org.openiam.idm.srvc.auth.sso.SSOTokenModule;
 import org.openiam.idm.srvc.auth.ws.AuthenticationResponse;
 import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.continfo.dto.Phone;
+import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.policy.domain.PolicyAttributeEntity;
@@ -708,6 +709,19 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 		}
 		return response;
 	}
+	
+	private String decryptTOTP(final Phone phone, final String userId) {
+		final String secret = phone.getTotpSecret();
+		String retVal = null;
+		if(secret != null) {
+			try {
+				retVal = keyManagementService.decrypt(userId, KeyName.token, secret);
+			} catch (Throwable e) {
+				log.error("Can't decrypt secret", e);
+			}
+		}
+		return retVal;
+	}
 
 	@Override
 	public Response confirmOTPToken(final OTPServiceRequest request) {
@@ -753,7 +767,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 	            login.setSmsActive(true);
             } else {
             	final AbstractTOTPModule module = new GoogleAuthTOTPModule();
-            	final String secret = (StringUtils.isNotBlank(request.getSecret())) ? request.getSecret() : request.getPhone().getTotpSecret();
+            	final String secret = (StringUtils.isNotBlank(request.getSecret())) ? request.getSecret() : decryptTOTP(request.getPhone(), userId);
             	try {
             		if(!module.validateToken(secret, Integer.valueOf(request.getOtpCode()).intValue())) {
             			throw new BasicDataServiceException(ResponseCode.TOPT_CODE_INVALID);
