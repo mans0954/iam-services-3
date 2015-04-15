@@ -61,9 +61,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.PostConstruct;
 import javax.jws.WebMethod;
 import javax.jws.WebService;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author suneet
@@ -98,7 +96,12 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
     @Autowired
     private LanguageDozerConverter languageConverter;
 
-	@Override
+    @PostConstruct
+    public void dataPreparation(){
+        roleDataService.rebuildRoleHierarchyCache();
+    }
+
+    @Override
 	public Response validateEdit(Role role) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
 		try {

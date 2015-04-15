@@ -1,4 +1,4 @@
-package org.openiam.idm.srvc.org.service;
+package org.openiam.idm.srvc.role.service;
 
 import org.apache.commons.lang.time.StopWatch;
 import org.apache.commons.logging.Log;
@@ -13,23 +13,21 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
-@Component("organizationTypeTask")
-public class OrganizationTypeTask implements Sweepable {
+@Component("roleTask")
+public class RoleTask implements Sweepable {
+    private static final Log log = LogFactory.getLog(RoleTask.class);
 
-    private static final Log log = LogFactory.getLog(OrganizationTypeTask.class);
+    private final Object mutex = new Object();
 
     @Autowired
     @Qualifier("transactionManager")
     private PlatformTransactionManager platformTransactionManager;
 
     @Autowired
-    private OrganizationTypeService organizationTypeService;
+    private RoleDataService roleDataService;
 
-    private final Object mutex = new Object();
-
-    @Override
     //TODO change when Spring 3.2.2 @Scheduled(fixedDelayString = "${org.openiam.org.manager.threadsweep}")
-    @Scheduled(fixedDelay=300000)
+    @Scheduled(fixedDelay=600000)
     public void sweep() {
         final StopWatch sw = new StopWatch();
         sw.start();
@@ -38,16 +36,15 @@ public class OrganizationTypeTask implements Sweepable {
         String res = transactionTemplate.execute(new TransactionCallback<String>() {
             @Override
             public String doInTransaction(TransactionStatus status) {
-                synchronized(mutex) {
-                    organizationTypeService.fireUpdateOrgTypeMap();
+                synchronized (mutex) {
+                    roleDataService.rebuildRoleHierarchyCache();
                 }
                 return "OK";
             }
         });
 
         sw.stop();
-        log.debug(String.format("Done creating orgs trees. Took: %s ms", sw.getTime()));
+        log.debug(String.format("Done roles HierarchyCache rebuild. Took: %s ms", sw.getTime()));
     }
-
 
 }

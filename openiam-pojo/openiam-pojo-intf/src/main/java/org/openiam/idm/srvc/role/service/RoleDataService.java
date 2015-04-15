@@ -192,4 +192,6 @@ public interface RoleDataService {
 
 
     List<TreeObjectId> getRolesWithSubRolesIds(List<String> roleIds, final String requesterId);
+
+    void rebuildRoleHierarchyCache();
 }
