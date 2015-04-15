@@ -122,7 +122,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
     public List<ContentProvider> findBeans(ContentProviderSearchBean cpsb, Integer from, Integer size) {
         ContentProviderEntity example = contentProviderSearchBeanConverter.convert(cpsb);
         List<ContentProviderEntity> contentProviderEntities =  contentProviderDao.getByExample(example, from, size);
-        return contentProviderEntities != null ? contentProviderDozerConverter.convertToDTOList(contentProviderEntities, false) : null;
+        return contentProviderEntities != null ? contentProviderDozerConverter.convertToDTOList(contentProviderEntities, cpsb.isDeepCopy()) : null;
     }
 
     @Override
