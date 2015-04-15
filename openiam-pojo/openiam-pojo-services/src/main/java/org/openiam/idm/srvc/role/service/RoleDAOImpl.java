@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static org.hibernate.criterion.Projections.rowCount;
 
@@ -39,6 +40,10 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
     protected String getPKfieldName() {
         return "id";
     }
+
+
+    private final ConcurrentHashMap<String, TreeObjectId> rolesHierarchyIds = new ConcurrentHashMap<String, TreeObjectId>();
+
 
     @Override
     protected Criteria getExampleCriteria(final SearchBean searchBean) {
@@ -323,10 +328,25 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
         List<TreeObjectId> result = new LinkedList<TreeObjectId>();
         if(initialRoleIds != null) {
             for (String roleId : initialRoleIds) {
-                result.add(populateTreeObjectId(new TreeObjectId(roleId), filter));
+                if(!rolesHierarchyIds.containsKey(roleId)) {
+                    rolesHierarchyIds.putIfAbsent(roleId, populateTreeObjectId(new TreeObjectId(roleId), filter));
+                }
+                result.add(rolesHierarchyIds.get(roleId));
             }
         }
         return result;
+    }
+
+    @Override
+    public void rolesHierarchyRebuild() {
+        rolesHierarchyIds.clear();
+        List<String> allParentIds = findAllParentsIds();
+        if(allParentIds != null) {
+            for(String parentRoleId : allParentIds) {
+                TreeObjectId treeObjectId = populateTreeObjectId(new TreeObjectId(parentRoleId), null);
+                rolesHierarchyIds.putIfAbsent(parentRoleId, treeObjectId);
+            }
+        }
     }
 
     private TreeObjectId populateTreeObjectId(final TreeObjectId root, final Set<String> filter){
@@ -340,4 +360,8 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
         return root;
     }
 
+    @Override
+    public List<String> findAllParentsIds() {
+        return getCriteria().add(Restrictions.isEmpty("parentRoles")).setProjection(Projections.id()).list();
+    }
 }
