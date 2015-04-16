@@ -150,9 +150,6 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 
     @Value("${org.openiam.activiti.new.user.approver.association.groovy.script}")
     private String newUserApproverAssociationGroovyScript;
-
-    @Value("${org.openiam.idm.activiti.merge.custom.approver.with.approver.associations}")
-    protected Boolean mergeCustomApproverIdsWithApproverAssociations;
     
     @Autowired
     @Qualifier("configurableGroovyScriptEngine")
@@ -648,7 +645,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
             final List<String> approverUserIds = identifier.getApproverIds();
 
             List<Object> approverCardinatlity = new LinkedList<Object>();
-            if(mergeCustomApproverIdsWithApproverAssociations){
+            if(propertyValueSweeper.getBoolean("org.openiam.idm.activiti.merge.custom.approver.with.approver.associations")){
                 final List<String> mergedIds = new LinkedList<String>();
 
                 if (CollectionUtils.isNotEmpty(approverUserIds)) {

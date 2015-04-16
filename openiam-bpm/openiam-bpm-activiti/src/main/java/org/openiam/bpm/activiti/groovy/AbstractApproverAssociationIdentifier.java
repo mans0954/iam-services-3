@@ -31,9 +31,6 @@ public abstract class AbstractApproverAssociationIdentifier {
 	@Autowired
 	protected CustomJacksonMapper jacksonMapper;
 
-	@Value("${org.openiam.idm.activiti.merge.custom.approver.with.approver.associations}")
-	protected Boolean mergeCustomApproverIdsWithApproverAssociations;
-	
 	protected static Logger LOG = Logger.getLogger(AbstractApproverAssociationIdentifier.class);
 	
 	protected final List<String> approverAssociationIds = new LinkedList<String>();
@@ -44,6 +41,10 @@ public abstract class AbstractApproverAssociationIdentifier {
 	
 	protected String getDefaultApproverAssociationResourceId() {
 		return propertyValueSweeper.getString("org.openiam.idm.activiti.default.approver.association.resource.id");
+	}
+	
+	protected boolean mergeApproverAssociationsWithCustomApprovers() {
+		return propertyValueSweeper.getBoolean("org.openiam.idm.activiti.merge.custom.approver.with.approver.associations");
 	}
 	
 	protected void init(final Map<String, Object> bindingMap) {
