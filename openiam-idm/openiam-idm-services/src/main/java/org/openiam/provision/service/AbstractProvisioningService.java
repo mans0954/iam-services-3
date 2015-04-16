@@ -686,6 +686,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         // Processing emails
         Set<EmailAddress> emailAddresses = pUser.getEmailAddresses();
         if (CollectionUtils.isNotEmpty(emailAddresses)) {
+            this.manageDefaultEmails(emailAddresses);
             for (EmailAddress e : emailAddresses) {
                 if (e.getOperation() == null) {
                     continue;
@@ -761,6 +762,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         // Processing phones
         Set<Phone> phones = pUser.getPhones();
         if (CollectionUtils.isNotEmpty(phones)) {
+            this.manageDefaultPhone(phones);
             for (Phone e : phones) {
                 if (e.getOperation() == null) {
                     continue;
@@ -832,6 +834,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         // Processing addresses
         Set<Address> addresses = pUser.getAddresses();
         if (CollectionUtils.isNotEmpty(addresses)) {
+            this.manageDefaultAddresses(addresses);
             for (Address e : addresses) {
                 if (e.getOperation() == null) {
                     continue;
@@ -894,6 +897,111 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                 }
             }
         }
+    }
+
+    private void manageDefaultAddresses(Set<Address> addresses) {
+        for (Address a : addresses) {
+            switch (a.getOperation()) {
+                case ADD:
+                    if (a.getIsDefault()) {
+                        for (Address another : addresses) {
+                            if (a != another && another.getIsDefault()) {
+                                another.setIsDefault(false);
+                                if (AttributeOperationEnum.NO_CHANGE.equals(another.getOperation())) {
+                                    another.setOperation(AttributeOperationEnum.REPLACE);
+                                }
+                            }
+                        }
+                    }
+                    break;
+                case REPLACE:
+                    if (a.getIsDefault()) {
+                        for (Address another : addresses) {
+                            if (a != another && another.getIsDefault() &&
+                                    !AttributeOperationEnum.ADD.equals(another.getOperation())) {
+                                another.setIsDefault(false);
+                                if (AttributeOperationEnum.NO_CHANGE.equals(another.getOperation())) {
+                                    another.setOperation(AttributeOperationEnum.REPLACE);
+                                }
+                            }
+                        }
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+
+    }
+
+    private void manageDefaultPhone(Set<Phone> phones) {
+        for (Phone phone : phones) {
+            switch (phone.getOperation()) {
+                case ADD:
+                    if (phone.getIsDefault()) {
+                        for (Phone another : phones) {
+                            if (phone != another && another.getIsDefault()) {
+                                another.setIsDefault(false);
+                                if (AttributeOperationEnum.NO_CHANGE.equals(another.getOperation())) {
+                                    another.setOperation(AttributeOperationEnum.REPLACE);
+                                }
+                            }
+                        }
+                    }
+                    break;
+                case REPLACE:
+                    if (phone.getIsDefault()) {
+                        for (Phone another : phones) {
+                            if (phone != another && another.getIsDefault() &&
+                                    !AttributeOperationEnum.ADD.equals(another.getOperation())) {
+                                another.setIsDefault(false);
+                                if (AttributeOperationEnum.NO_CHANGE.equals(another.getOperation())) {
+                                    another.setOperation(AttributeOperationEnum.REPLACE);
+                                }
+                            }
+                        }
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+
+    }
+
+    private void manageDefaultEmails(Set<EmailAddress> emailAddresses) {
+        for (EmailAddress emailAddress : emailAddresses) {
+            switch (emailAddress.getOperation()) {
+                case ADD:
+                    if (emailAddress.getIsDefault()) {
+                        for (EmailAddress another : emailAddresses) {
+                            if (emailAddress != another && another.getIsDefault()) {
+                                another.setIsDefault(false);
+                                if (AttributeOperationEnum.NO_CHANGE.equals(another.getOperation())) {
+                                    another.setOperation(AttributeOperationEnum.REPLACE);
+                                }
+                            }
+                        }
+                    }
+                    break;
+                case REPLACE:
+                    if (emailAddress.getIsDefault()) {
+                        for (EmailAddress another : emailAddresses) {
+                            if (emailAddress != another && another.getIsDefault() &&
+                                    !AttributeOperationEnum.ADD.equals(another.getOperation())) {
+                                another.setIsDefault(false);
+                                if (AttributeOperationEnum.NO_CHANGE.equals(another.getOperation())) {
+                                    another.setOperation(AttributeOperationEnum.REPLACE);
+                                }
+                            }
+                        }
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+
     }
 
     public void updateUserProperties(final UserEntity userEntity, final ProvisionUser pUser, final IdmAuditLog parentLog) {
