@@ -20,7 +20,6 @@
  */
 package org.openiam.idm.srvc.auth.spi;
 
-import com.sun.jndi.ldap.LdapCtxFactory;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -42,9 +41,6 @@ import org.openiam.provision.resp.LookupUserResponse;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.springframework.stereotype.Component;
 
-import javax.naming.CommunicationException;
-import javax.naming.Context;
-import javax.naming.NamingException;
 import javax.naming.ldap.LdapContext;
 import java.util.*;
 
@@ -265,65 +261,6 @@ public class LDAPLoginModule extends AbstractLoginModule {
         setResultCode(lg, subj, curDate, passwordPolicy);
 
         return subj;
-    }
-
-    public LdapContext connect(String userName, String password, ManagedSysDto managedSys) throws NamingException {
-
-        if (keystore != null && !keystore.isEmpty())  {
-            System.setProperty("javax.net.ssl.trustStore", keystore);
-            System.setProperty("javax.net.ssl.keyStorePassword", keystorePasswd);
-        }
-
-        if (managedSys == null) {
-            log.debug("ManagedSys is null");
-            return null;
-        }
-
-        String hostUrl = managedSys.getHostUrl();
-        if (managedSys.getPort() > 0 ) {
-            hostUrl = hostUrl + ":" + String.valueOf(managedSys.getPort());
-        }
-
-        log.debug("connect: Connecting to target system: " + managedSys.getId() );
-        log.debug("connect: Managed System object : " + managedSys);
-
-        log.info(" directory login = " + managedSys.getUserId() );
-        log.info(" directory login passwrd= *****" );
-        log.info(" javax.net.ssl.trustStore= " + System.getProperty("javax.net.ssl.trustStore"));
-        log.info(" javax.net.ssl.keyStorePassword= " + System.getProperty("javax.net.ssl.keyStorePassword"));
-
-        Hashtable<String, String> envDC = new Hashtable();
-        envDC.put(Context.PROVIDER_URL, hostUrl);
-        envDC.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
-        envDC.put(Context.SECURITY_AUTHENTICATION, "simple" ); // simple
-        envDC.put(Context.SECURITY_PRINCIPAL, userName);
-        envDC.put(Context.SECURITY_CREDENTIALS, password);
-
-        // Connections Pool configuration
-        envDC.put("com.sun.jndi.ldap.connect.pool", "true");
-        // Here is an example of a command line that sets the maximum pool size to 20, the preferred pool size to 10, and the idle timeout to 5 minutes for pooled connections.
-        envDC.put("com.sun.jndi.ldap.connect.pool.prefsize", "10");
-        envDC.put("com.sun.jndi.ldap.connect.pool.maxsize", "20");
-        envDC.put("com.sun.jndi.ldap.connect.pool.timeout", "300000");
-
-        LdapContext ldapContext;
-        try {
-            ldapContext = (LdapContext) new LdapCtxFactory().getInitialContext((Hashtable) envDC);
-
-        } catch (CommunicationException ce) {
-            log.debug("Throw communication exception.", ce);
-            throw ce;
-
-        } catch(NamingException ne) {
-            log.error(ne.toString(), ne);
-            throw ne;
-
-        } catch (Throwable e) {
-            log.error(e.toString(), e);
-            return null;
-        }
-
-        return ldapContext;
     }
 
 }
