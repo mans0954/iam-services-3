@@ -20,7 +20,6 @@
  */
 package org.openiam.idm.srvc.auth.spi;
 
-import com.sun.jndi.ldap.LdapCtxFactory;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -43,14 +42,8 @@ import org.openiam.provision.type.ExtensibleAttribute;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import javax.naming.CommunicationException;
-import javax.naming.Context;
-import javax.naming.NamingException;
 import javax.naming.ldap.LdapContext;
 import java.util.*;
-
-// import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
-// import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 
 /**
  * DefaultLoginModule provides basic password based authentication using the OpenIAM repository.
