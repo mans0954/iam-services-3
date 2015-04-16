@@ -47,10 +47,7 @@ import org.openiam.idm.srvc.auth.context.PasswordCredential;
 import org.openiam.idm.srvc.auth.domain.AuthStateEntity;
 import org.openiam.idm.srvc.auth.domain.AuthStateId;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
-import org.openiam.idm.srvc.auth.dto.AuthenticationRequest;
-import org.openiam.idm.srvc.auth.dto.LoginModuleSelector;
-import org.openiam.idm.srvc.auth.dto.SSOToken;
-import org.openiam.idm.srvc.auth.dto.Subject;
+import org.openiam.idm.srvc.auth.dto.*;
 import org.openiam.idm.srvc.auth.login.AuthStateDAO;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
@@ -58,6 +55,8 @@ import org.openiam.idm.srvc.auth.service.AuthenticationService;
 import org.openiam.idm.srvc.auth.sso.SSOTokenFactory;
 import org.openiam.idm.srvc.auth.sso.SSOTokenModule;
 import org.openiam.idm.srvc.auth.ws.AuthenticationResponse;
+import org.openiam.idm.srvc.auth.ws.LoginDataWebService;
+import org.openiam.idm.srvc.auth.ws.LoginResponse;
 import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.policy.domain.PolicyAttributeEntity;
@@ -98,7 +97,8 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
     private AuthStateDAO authStateDao;
 
     @Autowired
-    private LoginDataService loginManager;
+    @Qualifier("loginWS")
+    protected LoginDataWebService loginManager;
 
     @Value("${org.openiam.core.login.authentication.context.class}")
     private String authContextClass;
@@ -125,6 +125,12 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
     @Autowired
     @Qualifier("configurableGroovyScriptEngine")
     private ScriptIntegration scriptRunner;
+
+    @Value("${org.openiam.auth.credentials.validator.groovy.script}")
+    protected String authCredentialsValidatorScript;
+
+    @Autowired
+    protected AuthCredentialsValidator defaultAuthCredentialsValidator;
 
     private BeanFactory beanFactory;
 
@@ -199,7 +205,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
             String loginModName = null;
             LoginModuleSelector modSel = new LoginModuleSelector();
 
-            LoginEntity lg = null;
+            Login lg = null;
 
             newLoginEvent.setManagedSysId(sysConfiguration.getDefaultManagedSysId());
 
@@ -254,7 +260,8 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 
                 }
 
-                lg = loginManager.getLoginByManagedSys(principal, sysConfiguration.getDefaultManagedSysId());
+                LoginResponse lgResp = loginManager.getLoginByManagedSys(principal, sysConfiguration.getDefaultManagedSysId());
+                lg = lgResp.getPrincipal();
 
                 if (lg == null) {
                     newLoginEvent.fail();
@@ -437,12 +444,13 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
         String attrValue = getPolicyAttribute(plcy.getPolicyAttributes(), "FAILED_AUTH_COUNT");
         String tokenLife = getPolicyAttribute(plcy.getPolicyAttributes(), "TOKEN_LIFE");
         String tokenIssuer = getPolicyAttribute(plcy.getPolicyAttributes(), "TOKEN_ISSUER");
-        String managedSySId = getPolicyAttribute(plcy.getPolicyAttributes(), "MANAGED_SYS_ID");
-        if (StringUtils.isBlank(managedSySId)){
-            managedSySId = sysConfiguration.getDefaultManagedSysId();
+        String managedSyId = getPolicyAttribute(plcy.getPolicyAttributes(), "MANAGED_SYS_ID");
+        if (StringUtils.isBlank(managedSyId)){
+            managedSyId = sysConfiguration.getDefaultManagedSysId();
         }
         // get the userId of this token
-        LoginEntity lg = loginManager.getLoginByManagedSys(principal, managedSySId);
+        LoginResponse lgResp = loginManager.getLoginByManagedSys(principal, managedSyId);
+        Login lg = lgResp.getPrincipal();
 
         if (lg == null) {
             resp.setStatus(ResponseStatus.FAILURE);
@@ -457,14 +465,28 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
         tokenParam.put("USER_ID", lg.getUserId());
         tokenParam.put("PRINCIPAL", principal);
 
-        if (!isUserStatusValid(lg.getUserId())) {
 
-            log.debug("RenewToken: user status failed for userId = "
-                    + lg.getUserId());
+        AuthCredentialsValidator validator = null;
+        try {
+            if (StringUtils.isNotBlank(authCredentialsValidatorScript)) {
+                validator = (AuthCredentialsValidator)scriptRunner.instantiateClass(null, authCredentialsValidatorScript);
+                log.debug("Using custom credentials validator " + authCredentialsValidatorScript);
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage(),e);
+        }
+        if (validator == null) {
+            validator = defaultAuthCredentialsValidator;
+            log.debug("Using default credentials validator");
+        }
 
+        UserEntity user = userManager.getUser(lg.getUserId());
+        try {
+            validator.execute(user, lg, AuthCredentialsValidator.RENEW, new HashMap<String, Object>());
+        } catch (AuthenticationException ae) {
+            log.debug("RenewToken: user status failed for userId = " + lg.getUserId());
             resp.setStatus(ResponseStatus.FAILURE);
             return resp;
-
         }
 
         final AuthStateId id = new AuthStateId();
@@ -501,35 +523,6 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
             resp.setErrorText(e.getMessage());
         }
         return resp;
-
-    }
-
-    private boolean isUserStatusValid(String userId) {
-
-        UserEntity u = userManager.getUser(userId);
-
-        UserStatusEnum en = u.getStatus();
-
-        UserStatusEnum secondaryStatus = u.getSecondaryStatus();
-
-        if (en == UserStatusEnum.DELETED || en == UserStatusEnum.INACTIVE
-                || en == UserStatusEnum.LEAVE || en == UserStatusEnum.TERMINATED) {
-            return false;
-
-        }
-        if (secondaryStatus != null) {
-
-            log.debug("- Secondary status for user = "
-                    + secondaryStatus.toString());
-
-            if (secondaryStatus == UserStatusEnum.DISABLED
-                    || secondaryStatus == UserStatusEnum.LOCKED
-                    || secondaryStatus == UserStatusEnum.LOCKED_ADMIN) {
-                return false;
-
-            }
-        }
-        return true;
 
     }
 

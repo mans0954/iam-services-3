@@ -115,7 +115,7 @@ public class DefaultLoginModule extends AbstractLoginModule {
             log.debug("Using default credentials validator");
         }
 
-        validator.execute(user, lg, new HashMap<String, Object>());
+        validator.execute(user, lg, AuthCredentialsValidator.NEW, new HashMap<String, Object>());
 
         Integer daysToExp = getDaysToPasswordExpiration(lg, curDate, passwordPolicy);
         if (daysToExp != null) {

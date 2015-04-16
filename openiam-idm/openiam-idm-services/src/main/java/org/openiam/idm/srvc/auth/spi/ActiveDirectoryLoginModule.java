@@ -165,7 +165,7 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
 
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("distinguishedName", distinguishedName);
-        validator.execute(user, lg, params);
+        validator.execute(user, lg, AuthCredentialsValidator.NEW, params);
 
         Integer daysToExp = getDaysToPasswordExpiration(lg, curDate, passwordPolicy);
         if (daysToExp != null) {

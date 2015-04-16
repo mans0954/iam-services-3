@@ -29,7 +29,7 @@ public class DefaultAuthCredentialsValidator implements AuthCredentialsValidator
 
     private static final Log log = LogFactory.getLog(DefaultAuthCredentialsValidator.class);
 
-    public void execute(UserEntity user, Login lg, Map<String, Object> bindingMap) throws AuthenticationException {
+    public void execute(UserEntity user, Login lg, int operation, Map<String, Object> bindingMap) throws AuthenticationException {
 
         Date curDate = new Date(System.currentTimeMillis());
 
