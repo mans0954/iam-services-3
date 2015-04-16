@@ -20,13 +20,21 @@
  */
 package org.openiam.idm.srvc.auth.spi;
 
+import com.sun.jndi.ldap.LdapCtxFactory;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.SysConfiguration;
+import org.openiam.base.id.UUIDGen;
+import org.openiam.base.ws.ResponseCode;
+import org.openiam.base.ws.ResponseStatus;
+import org.openiam.connector.type.constant.StatusCodeType;
+import org.openiam.connector.type.request.LookupRequest;
+import org.openiam.connector.type.response.SearchResponse;
 import org.openiam.exception.AuthenticationException;
 import org.openiam.exception.EncryptionException;
-import org.openiam.idm.srvc.auth.domain.LoginEntity;
+import org.openiam.idm.srvc.audit.constant.AuditAction;
+import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.SSOToken;
 import org.openiam.idm.srvc.auth.dto.Subject;
@@ -36,24 +44,36 @@ import org.openiam.idm.srvc.auth.sso.SSOTokenModule;
 import org.openiam.idm.srvc.auth.ws.LoginDataWebService;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
+import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
+import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.policy.service.PolicyDataService;
 import org.openiam.idm.srvc.pswd.service.PasswordService;
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.ws.UserDataWebService;
+import org.openiam.provision.resp.LookupUserResponse;
+import org.openiam.provision.service.*;
+import org.openiam.provision.type.ExtensibleAttribute;
+import org.openiam.provision.type.ExtensibleUser;
+import org.openiam.script.ScriptIntegration;
+import org.openiam.util.MuleContextProvider;
 import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Map;
-import java.util.Set;
+import javax.naming.CommunicationException;
+import javax.naming.Context;
+import javax.naming.NamingException;
+import javax.naming.ldap.LdapContext;
+import java.util.*;
 
 /**
  * @author suneet
@@ -63,6 +83,17 @@ public abstract class AbstractLoginModule implements LoginModule {
     @Autowired
     @Qualifier("defaultSSOToken")
     protected SSOTokenModule defaultToken;
+
+    @Autowired
+    @Qualifier("defaultProvision")
+    protected ProvisionService provisionService;
+
+    @Autowired
+    protected ManagedSystemService managedSysDataService;
+
+    @Autowired
+    @Qualifier("managedSysService")
+    protected ManagedSystemWebService managedSystemWebService;
 
     @Autowired
     @Qualifier("loginWS")
@@ -81,6 +112,16 @@ public abstract class AbstractLoginModule implements LoginModule {
     protected Cryptor cryptor;
 
     @Autowired
+    @Qualifier("configurableGroovyScriptEngine")
+    protected ScriptIntegration scriptRunner;
+
+    @Autowired
+    protected ManagedSystemWebService managedSysService;
+
+    @Autowired
+    protected ConnectorAdapter connectorAdapter;
+
+    @Autowired
     protected ResourceDataService resourceService;
 
     @Autowired
@@ -95,11 +136,21 @@ public abstract class AbstractLoginModule implements LoginModule {
     @Value("${KEYSTORE}")
     protected String keystore;
 
+    @Value("${KEYSTORE_PSWD}")
+    protected String keystorePasswd;
+
     @Value("${org.openiam.idm.system.user.id}")
     protected String systemUserId;
 
+    @Value("${org.openiam.auth.credentials.validator.groovy.script}")
+    protected String authCredentialsValidatorScript;
+
+    @Autowired
+    protected AuthCredentialsValidator defaultAuthCredentialsValidator;
+
     @Autowired
     protected KeyManagementService keyManagementService;
+
     private static final Log log = LogFactory.getLog(AbstractLoginModule.class);
 
     public String decryptPassword(String userId, String encPassword)
@@ -180,7 +231,7 @@ public abstract class AbstractLoginModule implements LoginModule {
 
     }
 
-    public Integer setDaysToPassworExpiration(Login lg, Date curDate, Subject sub, Policy pwdPolicy) {
+    public Integer getDaysToPasswordExpiration(Login lg, Date curDate, Policy pwdPolicy) {
         if (pwdPolicy != null && StringUtils.isBlank(pwdPolicy.getAttribute("PWD_EXPIRATION").getValue1())) {
             return null;
         }
@@ -204,36 +255,10 @@ public abstract class AbstractLoginModule implements LoginModule {
 
     }
 
-    /**
-     * Logs a message into the audit log.
-     *
-     * @param objectTypeId
-     * @param actionId
-     * @param actionStatus
-     * @param reason
-     * @param userId
-     * @param principal
-     * @param linkedLogId
-     * @param clientId
-     */
-    public void log(String objectTypeId, String actionId, String actionStatus,
-                    String reason, String userId, String principal,
-                    String linkedLogId, String clientId, String clientIP, String nodeIP) {
-        /*
-        IdmAuditLog log = new IdmAuditLog(objectTypeId, actionId, actionStatus,
-                reason,  userId, principal, linkedLogId, clientId);
-
-        log.setHost(clientIP);
-        log.setNodeIP(nodeIP);
-
-        auditLogUtil.log(log);
-        */
-    }
 
     public void setSysConfiguration(SysConfiguration sysConfiguration) {
         this.sysConfiguration = sysConfiguration;
     }
-
 
     protected SSOToken token(String userId, Map tokenParam) throws Exception {
 
@@ -340,6 +365,60 @@ public abstract class AbstractLoginModule implements LoginModule {
 
     }
 
+    public LdapContext connect(String userName, String password, ManagedSysDto managedSys) throws NamingException {
 
+        if (keystore != null && !keystore.isEmpty())  {
+            System.setProperty("javax.net.ssl.trustStore", keystore);
+            System.setProperty("javax.net.ssl.keyStorePassword", keystorePasswd);
+        }
+
+        if (managedSys == null) {
+            log.debug("ManagedSys is null");
+            return null;
+        }
+
+        String hostUrl = managedSys.getHostUrl();
+        if (managedSys.getPort() > 0 ) {
+            hostUrl = hostUrl + ":" + String.valueOf(managedSys.getPort());
+        }
+
+        log.debug("connect: Connecting to target system: " + managedSys.getId() );
+        log.debug("connect: Managed System object : " + managedSys);
+
+        log.info(" directory login = " + managedSys.getUserId() );
+        log.info(" directory login passwrd= *****" );
+        log.info(" javax.net.ssl.trustStore= " + System.getProperty("javax.net.ssl.trustStore"));
+        log.info(" javax.net.ssl.keyStorePassword= " + System.getProperty("javax.net.ssl.keyStorePassword"));
+
+        Hashtable<String, String> envDC = new Hashtable();
+        envDC.put(Context.PROVIDER_URL, hostUrl);
+        envDC.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
+        envDC.put(Context.SECURITY_AUTHENTICATION, "simple" ); // simple
+        envDC.put(Context.SECURITY_PRINCIPAL, userName);
+        envDC.put(Context.SECURITY_CREDENTIALS, password);
+
+        // Connections Pool configuration
+        envDC.put("com.sun.jndi.ldap.connect.pool", "true");
+        // Here is an example of a command line that sets the maximum pool size to 20, the preferred pool size to 10, and the idle timeout to 5 minutes for pooled connections.
+        envDC.put("com.sun.jndi.ldap.connect.pool.prefsize", "10");
+        envDC.put("com.sun.jndi.ldap.connect.pool.maxsize", "20");
+        envDC.put("com.sun.jndi.ldap.connect.pool.timeout", "300000");
+
+        LdapContext ldapContext = null;
+        try {
+            ldapContext = (LdapContext) new LdapCtxFactory().getInitialContext((Hashtable) envDC);
+
+        } catch (CommunicationException ce) {
+            log.error("Throw communication exception.", ce);
+
+        } catch(NamingException ne) {
+            log.error(ne.toString(), ne);
+
+        } catch (Throwable e) {
+            log.error(e.toString(), e);
+        }
+
+        return ldapContext;
+    }
 
 }

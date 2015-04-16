@@ -18,7 +18,7 @@
 /**
  *
  */
-package org.openiam.idm.srvc.auth.service;
+package org.openiam.idm.srvc.auth.spi;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -53,7 +53,8 @@ import org.openiam.idm.srvc.auth.dto.SSOToken;
 import org.openiam.idm.srvc.auth.dto.Subject;
 import org.openiam.idm.srvc.auth.login.AuthStateDAO;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
-import org.openiam.idm.srvc.auth.spi.AbstractLoginModule;
+import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
+import org.openiam.idm.srvc.auth.service.AuthenticationService;
 import org.openiam.idm.srvc.auth.sso.SSOTokenFactory;
 import org.openiam.idm.srvc.auth.sso.SSOTokenModule;
 import org.openiam.idm.srvc.auth.ws.AuthenticationResponse;

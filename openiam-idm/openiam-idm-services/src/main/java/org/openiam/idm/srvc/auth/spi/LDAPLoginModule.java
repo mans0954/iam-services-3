@@ -1,12 +1,30 @@
+/*
+ * Copyright 2009, OpenIAM LLC This file is part of the OpenIAM Identity and
+ * Access Management Suite
+ * 
+ * OpenIAM Identity and Access Management Suite is free software: you can
+ * redistribute it and/or modify it under the terms of the Lesser GNU General
+ * Public License version 3 as published by the Free Software Foundation.
+ * 
+ * OpenIAM is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the Lesser GNU General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU General Public License along with
+ * OpenIAM. If not, see <http://www.gnu.org/licenses/>. *
+ */
+
+/**
+ *
+ */
 package org.openiam.idm.srvc.auth.spi;
 
+import com.sun.jndi.ldap.LdapCtxFactory;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.base.id.UUIDGen;
-import org.openiam.connector.type.constant.StatusCodeType;
-import org.openiam.connector.type.request.PasswordRequest;
-import org.openiam.connector.type.response.ResponseType;
 import org.openiam.exception.AuthenticationException;
 import org.openiam.idm.srvc.auth.context.AuthenticationContext;
 import org.openiam.idm.srvc.auth.context.PasswordCredential;
@@ -16,35 +34,48 @@ import org.openiam.idm.srvc.auth.dto.Subject;
 import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
 import org.openiam.idm.srvc.auth.ws.LoginResponse;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
-import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.resp.LookupUserResponse;
-import org.openiam.provision.service.ConnectorAdapter;
-import org.openiam.provision.service.ProvisionService;
 import org.openiam.provision.type.ExtensibleAttribute;
-import org.openiam.provision.type.ExtensibleUser;
-import org.openiam.util.MuleContextProvider;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
+import javax.naming.CommunicationException;
+import javax.naming.Context;
+import javax.naming.NamingException;
+import javax.naming.ldap.LdapContext;
 import java.util.*;
 
 /**
- * Created by Vitaly on 2/9/2015.
+ * LDAPLoginModule provides basic password based authentication using an LDAP directory.
+ *
+ * @author suneet
  */
-@Component("mngSysLoginModule")
-public class MngSysLoginModule extends AbstractLoginModule {
+@Component("ldapLoginModule")
+public class LDAPLoginModule extends AbstractLoginModule {
 
-    @Autowired
-    protected ConnectorAdapter connectorAdapter;
+    private static final Log log = LogFactory.getLog(LDAPLoginModule.class);
 
-    private static final Log log = LogFactory.getLog(MngSysLoginModule.class);
 
+    public LDAPLoginModule() {
+    }
+
+    /*
+    public void globalLogout(String securityDomain, String principal) {
+        // TODO Auto-generated method stub
+
+    }
+    */
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.openiam.idm.srvc.auth.spi.LoginModule#login(org.openiam.idm.srvc.
+     * auth.context.AuthenticationContext)
+     */
     @Override
     public Subject login(AuthenticationContext authContext) throws Exception {
 
@@ -90,10 +121,20 @@ public class MngSysLoginModule extends AbstractLoginModule {
         }
 
         // Find user in target system
-        LookupUserResponse resp = provisionService.getTargetSystemUser(principal, managedSysId, new ArrayList<ExtensibleAttribute>());
+        List<ExtensibleAttribute> attrs = new ArrayList<ExtensibleAttribute>();
+        attrs.add(new ExtensibleAttribute("distinguishedName", null));
+        LookupUserResponse resp = provisionService.getTargetSystemUser(principal, managedSysId, attrs);
         log.debug("Lookup for user identity =" + principal + " in target system = " + mSys.getName() + ". Result = " + resp.getStatus() + ", " + resp.getErrorCode());
 
         if (resp.isFailure()) {
+            throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_LOGIN);
+        }
+
+        String distinguishedName = null;
+        if (CollectionUtils.isNotEmpty(resp.getAttrList())) {
+            distinguishedName = resp.getAttrList().get(0).getValue();
+        }
+        if (StringUtils.isEmpty(distinguishedName)) {
             throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_LOGIN);
         }
 
@@ -117,7 +158,9 @@ public class MngSysLoginModule extends AbstractLoginModule {
             log.debug("Using default credentials validator");
         }
 
-        validator.execute(user, lg, new HashMap<String, Object>());
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("distinguishedName", distinguishedName);
+        validator.execute(user, lg, params);
 
         Integer daysToExp = getDaysToPasswordExpiration(lg, curDate, passwordPolicy);
         if (daysToExp != null) {
@@ -132,27 +175,10 @@ public class MngSysLoginModule extends AbstractLoginModule {
             throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_PASSWORD);
         }
 
-        ManagedSystemObjectMatch matchObj = null;
-        ManagedSystemObjectMatch[] objArr = managedSystemWebService.managedSysObjectParam(managedSysId, ManagedSystemObjectMatch.USER);
-        if (objArr != null && objArr.length > 0) {
-            matchObj = objArr[0];
-        }
+        // try to login to AD with this user
+        LdapContext ldapCtx = connect(distinguishedName, password, mSys);
 
-        // checking password is valid at target system
-        // Try to login to ManagedSystem with this user
-        PasswordRequest passwRequest = new PasswordRequest(password, null, principal);
-        passwRequest.setRequestID(UUIDGen.getUUID());
-        passwRequest.setTargetID(managedSysId);
-        passwRequest.setHostLoginId(mSys.getUserId());
-        passwRequest.setHostLoginPassword(mSys.getDecryptPassword());
-        passwRequest.setHostUrl(mSys.getHostUrl());
-        passwRequest.setBaseDN((matchObj != null) ? matchObj.getBaseDn() : null);
-        passwRequest.setOperation("TEST_PASSWORD");
-        passwRequest.setScriptHandler(mSys.getPasswordHandler());
-        passwRequest.setExtensibleObject(new ExtensibleUser());
-        ResponseType responseType = connectorAdapter.validatePassword(mSys, passwRequest, MuleContextProvider.getCtx());
-
-        if (StatusCodeType.FAILURE.equals(responseType.getStatus())) {
+        if (ldapCtx == null) {
             // get the authentication lock out policy
             String attrValue = getPolicyAttribute(authPolicy.getPolicyAttributes(), "FAILED_AUTH_COUNT");
 
@@ -239,6 +265,65 @@ public class MngSysLoginModule extends AbstractLoginModule {
         setResultCode(lg, subj, curDate, passwordPolicy);
 
         return subj;
+    }
+
+    public LdapContext connect(String userName, String password, ManagedSysDto managedSys) throws NamingException {
+
+        if (keystore != null && !keystore.isEmpty())  {
+            System.setProperty("javax.net.ssl.trustStore", keystore);
+            System.setProperty("javax.net.ssl.keyStorePassword", keystorePasswd);
+        }
+
+        if (managedSys == null) {
+            log.debug("ManagedSys is null");
+            return null;
+        }
+
+        String hostUrl = managedSys.getHostUrl();
+        if (managedSys.getPort() > 0 ) {
+            hostUrl = hostUrl + ":" + String.valueOf(managedSys.getPort());
+        }
+
+        log.debug("connect: Connecting to target system: " + managedSys.getId() );
+        log.debug("connect: Managed System object : " + managedSys);
+
+        log.info(" directory login = " + managedSys.getUserId() );
+        log.info(" directory login passwrd= *****" );
+        log.info(" javax.net.ssl.trustStore= " + System.getProperty("javax.net.ssl.trustStore"));
+        log.info(" javax.net.ssl.keyStorePassword= " + System.getProperty("javax.net.ssl.keyStorePassword"));
+
+        Hashtable<String, String> envDC = new Hashtable();
+        envDC.put(Context.PROVIDER_URL, hostUrl);
+        envDC.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
+        envDC.put(Context.SECURITY_AUTHENTICATION, "simple" ); // simple
+        envDC.put(Context.SECURITY_PRINCIPAL, userName);
+        envDC.put(Context.SECURITY_CREDENTIALS, password);
+
+        // Connections Pool configuration
+        envDC.put("com.sun.jndi.ldap.connect.pool", "true");
+        // Here is an example of a command line that sets the maximum pool size to 20, the preferred pool size to 10, and the idle timeout to 5 minutes for pooled connections.
+        envDC.put("com.sun.jndi.ldap.connect.pool.prefsize", "10");
+        envDC.put("com.sun.jndi.ldap.connect.pool.maxsize", "20");
+        envDC.put("com.sun.jndi.ldap.connect.pool.timeout", "300000");
+
+        LdapContext ldapContext;
+        try {
+            ldapContext = (LdapContext) new LdapCtxFactory().getInitialContext((Hashtable) envDC);
+
+        } catch (CommunicationException ce) {
+            log.debug("Throw communication exception.", ce);
+            throw ce;
+
+        } catch(NamingException ne) {
+            log.error(ne.toString(), ne);
+            throw ne;
+
+        } catch (Throwable e) {
+            log.error(e.toString(), e);
+            return null;
+        }
+
+        return ldapContext;
     }
 
 }
