@@ -1570,7 +1570,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 }
             }
 
-            if (passwordSync.getSendPasswordToUser()) {
+            if (passwordSync.getSendPasswordToUser() &&
+                    identity.getManagedSysId().equals(sysConfiguration.getDefaultManagedSysId())) {
                 sendResetPasswordToUser(identity, password);
             }
 
@@ -2673,7 +2674,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     }
 
     private ExtensibleUser buildMngSysAttributesForIDMUser(ProvisionUser pUser, boolean targetSystemUserExists, List<ExtensibleAttribute> mngSysAttrs, String managedSysId,
-                                                                      String operation) {
+                                                           String operation) {
 
         Map<String, Object> bindingMap = new HashMap<>();
         bindingMap.put("sysId", sysConfiguration.getDefaultManagedSysId());
@@ -2861,7 +2862,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         }
 
         ProvisionUser pUser = new ProvisionUser(usr);
-        ExtensibleUser extensibleUser =  buildMngSysAttributesForIDMUser(pUser, targetSysUserExists, mngSysAttrs, managedSysId, "VIEW");
+        ExtensibleUser extensibleUser = buildMngSysAttributesForIDMUser(pUser, targetSysUserExists, mngSysAttrs, managedSysId, "VIEW");
 
         List<ExtensibleAttribute> idmAttrs = extensibleUser.getAttributes();
         List<ExtensibleAttribute> idmAttrsToDelete = new ArrayList<ExtensibleAttribute>();
