@@ -96,9 +96,10 @@ public class MngSysLoginModule extends AbstractLoginModule {
         if (resp.isFailure()) {
             throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_LOGIN);
         }
+        principal = lg.getLogin();
 
         // checking password policy
-        Policy passwordPolicy = passwordManager.getPasswordPolicy(lg.getLogin(), lg.getManagedSysId());
+        Policy passwordPolicy = passwordManager.getPasswordPolicy(principal, lg.getManagedSysId());
         if (passwordPolicy == null) {
             throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_CONFIGURATION);
         }
@@ -117,13 +118,19 @@ public class MngSysLoginModule extends AbstractLoginModule {
             log.debug("Using default credentials validator");
         }
 
-        validator.execute(user, lg, AuthCredentialsValidator.NEW, new HashMap<String, Object>());
+        AuthenticationException changePassword = null;
+        try {
+            validator.execute(user, lg, AuthCredentialsValidator.NEW, new HashMap<String, Object>());
 
-        Integer daysToExp = getDaysToPasswordExpiration(lg, curDate, passwordPolicy);
-        if (daysToExp != null) {
-            subj.setDaysToPwdExp(0);
-            if (daysToExp > -1) {
-                subj.setDaysToPwdExp(daysToExp);
+        } catch (AuthenticationException ae) {
+            // we should validate password before change password
+            if (AuthenticationConstants.RESULT_PASSWORD_CHANGE_AFTER_RESET == ae.getErrorCode() ||
+                    AuthenticationConstants.RESULT_PASSWORD_EXPIRED == ae.getErrorCode() ||
+                    AuthenticationConstants.RESULT_SUCCESS_PASSWORD_EXP == ae.getErrorCode()) {
+                changePassword = ae;
+
+            } else {
+                throw ae;
             }
         }
 
@@ -191,6 +198,19 @@ public class MngSysLoginModule extends AbstractLoginModule {
                 log.error("No auth fail password policy value found");
                 throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_CONFIGURATION);
 
+            }
+        }
+
+        // now we can change password
+        if (changePassword != null) {
+            throw changePassword;
+        }
+
+        Integer daysToExp = getDaysToPasswordExpiration(lg, curDate, passwordPolicy);
+        if (daysToExp != null) {
+            subj.setDaysToPwdExp(0);
+            if (daysToExp > -1) {
+                subj.setDaysToPwdExp(daysToExp);
             }
         }
 
