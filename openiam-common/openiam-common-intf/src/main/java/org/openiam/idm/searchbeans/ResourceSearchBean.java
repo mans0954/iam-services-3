@@ -156,6 +156,13 @@ public class ResourceSearchBean extends EntitlementsSearchBean<Resource, String>
                 .append(attributes != null ? attributes.toString().hashCode() : "")
                 .append(getKey() != null ? getKey() : "")
                 .append(excludeResourceTypes != null ? excludeResourceTypes.toString().hashCode() : "")
+                .append(groupIdSet != null ? groupIdSet.toString().hashCode() : "")
+                .append(roleIdSet != null ? roleIdSet.toString().hashCode() : "")
+                .append(resourceIdSet != null ? resourceIdSet.toString().hashCode() : "")
+                .append(organizationIdSet != null ? organizationIdSet.toString().hashCode() : "")
+                .append(userIdSet != null ? userIdSet.toString().hashCode() : "")
+                .append(getParentIdSet() != null ? getParentIdSet().toString().hashCode() : "")
+                .append(getChildIdSet() != null ? getChildIdSet().toString().hashCode() : "")
                 .toString();
     }
 }
