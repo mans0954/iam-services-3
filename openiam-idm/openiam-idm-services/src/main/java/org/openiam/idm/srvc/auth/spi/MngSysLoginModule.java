@@ -13,23 +13,22 @@ import org.openiam.idm.srvc.auth.context.PasswordCredential;
 import org.openiam.idm.srvc.auth.dto.AuthenticationRequest;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.Subject;
+import org.openiam.idm.srvc.auth.service.AuthCredentialsValidator;
 import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
+import org.openiam.idm.srvc.auth.service.AuthenticationUtils;
 import org.openiam.idm.srvc.auth.ws.LoginResponse;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
-import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.resp.LookupUserResponse;
 import org.openiam.provision.service.ConnectorAdapter;
-import org.openiam.provision.service.ProvisionService;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.util.MuleContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
@@ -104,23 +103,10 @@ public class MngSysLoginModule extends AbstractLoginModule {
             throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_CONFIGURATION);
         }
 
-        AuthCredentialsValidator validator = null;
-        try {
-            if (StringUtils.isNotBlank(authCredentialsValidatorScript)) {
-                validator = (AuthCredentialsValidator)scriptRunner.instantiateClass(null, authCredentialsValidatorScript);
-                log.debug("Using custom credentials validator " + authCredentialsValidatorScript);
-            }
-        } catch (Exception e) {
-            log.error(e.getMessage(),e);
-        }
-        if (validator == null) {
-            validator = defaultAuthCredentialsValidator;
-            log.debug("Using default credentials validator");
-        }
 
         AuthenticationException changePassword = null;
         try {
-            validator.execute(user, lg, AuthCredentialsValidator.NEW, new HashMap<String, Object>());
+            authenticationUtils.getCredentialsValidator().execute(user, lg, AuthCredentialsValidator.NEW, new HashMap<String, Object>());
 
         } catch (AuthenticationException ae) {
             // we should validate password before change password

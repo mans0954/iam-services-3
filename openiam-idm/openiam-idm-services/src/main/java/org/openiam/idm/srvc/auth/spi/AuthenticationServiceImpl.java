@@ -49,9 +49,10 @@ import org.openiam.idm.srvc.auth.domain.AuthStateId;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.*;
 import org.openiam.idm.srvc.auth.login.AuthStateDAO;
-import org.openiam.idm.srvc.auth.login.LoginDataService;
+import org.openiam.idm.srvc.auth.service.AuthCredentialsValidator;
 import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
 import org.openiam.idm.srvc.auth.service.AuthenticationService;
+import org.openiam.idm.srvc.auth.service.AuthenticationUtils;
 import org.openiam.idm.srvc.auth.sso.SSOTokenFactory;
 import org.openiam.idm.srvc.auth.sso.SSOTokenModule;
 import org.openiam.idm.srvc.auth.ws.AuthenticationResponse;
@@ -63,7 +64,6 @@ import org.openiam.idm.srvc.policy.domain.PolicyAttributeEntity;
 import org.openiam.idm.srvc.policy.domain.PolicyEntity;
 import org.openiam.idm.srvc.policy.service.PolicyDAO;
 import org.openiam.idm.srvc.user.domain.UserEntity;
-import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.util.UserUtils;
@@ -117,24 +117,21 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
     private SysConfiguration sysConfiguration;
 
     @Autowired
-    protected KeyManagementService keyManagementService;
-
-    @Value("${org.openiam.core.login.login.module.default}")
-    private String defaultLoginModule;
-
-    @Autowired
     @Qualifier("configurableGroovyScriptEngine")
     private ScriptIntegration scriptRunner;
 
-    @Value("${org.openiam.auth.credentials.validator.groovy.script}")
-    protected String authCredentialsValidatorScript;
+    @Autowired
+    protected KeyManagementService keyManagementService;
 
     @Autowired
-    protected AuthCredentialsValidator defaultAuthCredentialsValidator;
+    protected AuthenticationUtils authenticationUtils;
 
     private BeanFactory beanFactory;
 
     private static final Log log = LogFactory.getLog(AuthenticationServiceImpl.class);
+
+    @Value("${org.openiam.core.login.login.module.default}")
+    private String defaultLoginModule;
 
     @Override
     @ManagedAttribute
@@ -466,19 +463,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
         tokenParam.put("PRINCIPAL", principal);
 
 
-        AuthCredentialsValidator validator = null;
-        try {
-            if (StringUtils.isNotBlank(authCredentialsValidatorScript)) {
-                validator = (AuthCredentialsValidator)scriptRunner.instantiateClass(null, authCredentialsValidatorScript);
-                log.debug("Using custom credentials validator " + authCredentialsValidatorScript);
-            }
-        } catch (Exception e) {
-            log.error(e.getMessage(),e);
-        }
-        if (validator == null) {
-            validator = defaultAuthCredentialsValidator;
-            log.debug("Using default credentials validator");
-        }
+        AuthCredentialsValidator validator = authenticationUtils.getCredentialsValidator();
 
         UserEntity user = userManager.getUser(lg.getUserId());
         try {
@@ -574,4 +559,5 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
         }
         return response;
     }
+
 }
