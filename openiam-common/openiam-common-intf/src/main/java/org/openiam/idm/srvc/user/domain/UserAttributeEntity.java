@@ -17,7 +17,7 @@ import java.util.List;
 @Internationalized
 @AttributeOverrides(value={
 	@AttributeOverride(name = "id", column = @Column(name = "ID")),
-	@AttributeOverride(name = "value", column = @Column(name="VALUE", length=4096))
+	@AttributeOverride(name = "value", column = @Column(name="VALUE", length=4000))
 })
 public class UserAttributeEntity extends AbstractAttributeEntity {
     private static final long serialVersionUID = 6695609793883291213L;

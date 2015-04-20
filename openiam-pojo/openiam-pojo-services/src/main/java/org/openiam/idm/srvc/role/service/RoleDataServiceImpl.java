@@ -95,6 +95,12 @@ public class RoleDataServiceImpl implements RoleDataService {
     @Autowired
     protected AuditLogService auditLogService;
 
+    /**
+     * Cache for whole roles hierarchy
+     * Used when Roles number > 250k records
+     */
+    private final Map<String, TreeObjectId> rolesTree = new HashMap<String, TreeObjectId>();
+
 	private static final Log log = LogFactory.getLog(RoleDataServiceImpl.class);
 
     @Override
@@ -747,5 +753,13 @@ public class RoleDataServiceImpl implements RoleDataService {
     @Transactional(readOnly = true)
     public List<TreeObjectId> getRolesWithSubRolesIds(List<String> roleIds, String requesterId) {
         return roleDao.findRolesWithSubRolesIds(roleIds,  getDelegationFilter(requesterId));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public void rebuildRoleHierarchyCache() {
+        log.info("Role Hierarchy Cache preparation running ....");
+        roleDao.rolesHierarchyRebuild();
+        log.info("Role Hierarchy Cache preparation done.");
     }
 }

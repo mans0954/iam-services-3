@@ -123,7 +123,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
         int count = 0;
         if (Boolean.TRUE.equals(searchBean.getRootsOnly())) {
             final List<ResourceEntity> resultsEntities = resourceService
-                    .findBeans(searchBean, 0, Integer.MAX_VALUE, null);
+                    .findBeans(searchBean, 0, Integer.MAX_VALUE);
             count = (resultsEntities != null) ? resultsEntities.size() : 0;
         } else {
             count = resourceService.count(searchBean);
@@ -137,7 +137,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     @Transactional(readOnly = true)
     @Cacheable(value="resources", key="{ #searchBean.cacheUniqueBeanKey, #from, #size, #language}")
     public List<Resource> findBeans(final ResourceSearchBean searchBean, final int from, final int size, final Language language) {
-        final List<ResourceEntity> resultsEntities = resourceService.findBeans(searchBean, from, size, languageConverter.convertToEntity(language, false));
+        final List<ResourceEntity> resultsEntities = resourceService.findBeansLocalized(searchBean, from, size, languageConverter.convertToEntity(language, false));
         final List<Resource> finalList = resourceConverter.convertToDTOList(resultsEntities,searchBean.isDeepCopy());
         return finalList;
     }
