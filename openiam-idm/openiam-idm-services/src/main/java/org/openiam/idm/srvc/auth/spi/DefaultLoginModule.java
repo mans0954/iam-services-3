@@ -28,6 +28,7 @@ import org.openiam.idm.srvc.auth.context.AuthenticationContext;
 import org.openiam.idm.srvc.auth.context.PasswordCredential;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.Subject;
+import org.openiam.idm.srvc.auth.service.AuthCredentialsValidator;
 import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
 import org.openiam.idm.srvc.auth.ws.LoginResponse;
 import org.openiam.idm.srvc.policy.dto.Policy;
@@ -102,23 +103,10 @@ public class DefaultLoginModule extends AbstractLoginModule {
             throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_CONFIGURATION);
         }
 
-        AuthCredentialsValidator validator = null;
-        try {
-            if (StringUtils.isNotBlank(authCredentialsValidatorScript)) {
-                validator = (AuthCredentialsValidator)scriptRunner.instantiateClass(null, authCredentialsValidatorScript);
-                log.debug("Using custom credentials validator " + authCredentialsValidatorScript);
-            }
-        } catch (Exception e) {
-            log.error(e.getMessage(),e);
-        }
-        if (validator == null) {
-            validator = defaultAuthCredentialsValidator;
-            log.debug("Using default credentials validator");
-        }
 
         AuthenticationException changePassword = null;
         try {
-            validator.execute(user, lg, AuthCredentialsValidator.NEW, new HashMap<String, Object>());
+            authenticationUtils.getCredentialsValidator().execute(user, lg, AuthCredentialsValidator.NEW, new HashMap<String, Object>());
 
         } catch (AuthenticationException ae) {
             // we should validate password before change password
