@@ -1,4 +1,4 @@
-package org.openiam.idm.srvc.auth.spi;
+package org.openiam.idm.srvc.auth.service;
 
 
 import org.openiam.exception.AuthenticationException;
