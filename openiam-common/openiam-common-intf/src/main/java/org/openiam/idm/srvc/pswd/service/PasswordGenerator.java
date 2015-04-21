@@ -23,10 +23,6 @@ package org.openiam.idm.srvc.pswd.service;
 
 import java.util.*;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.ListUtils;
-import org.apache.commons.collections.SetUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.idm.srvc.policy.dto.Policy;
@@ -41,20 +37,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class PasswordGenerator {
 
-    /*
-    @Value("${PSWD_GEN_CHARSET}")
-    private String charset;
-
-    public String generatePassword(int length) {
-        Random rand = new Random(System.currentTimeMillis());
-        StringBuffer sb = new StringBuffer();
-        for (int i = 0; i < length; i++) {
-            int pos = rand.nextInt(charset.length());
-            sb.append(charset.charAt(pos));
-        }
-        return sb.toString();
-    }
-    */
     private static final Log log = LogFactory.getLog(PasswordGenerator.class);
     private static final char[] lowerChars = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
     private static final char[] upperChars = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'};
@@ -78,14 +60,15 @@ public class PasswordGenerator {
     private static final String REJECT_CHARS_IN_PSWD = "REJECT_CHARS_IN_PSWD";
     private static final String ALPHA_CHARS = "ALPHA_CHARS";
 
+    private static final int DEFAULT_PASSWORD_LENGTH = 12;
+
     public static String generatePassword(int length) {
 
         boolean foundRequiredChar = false;
 
         boolean lcase = false, ucase = false, numchar = false, specialchar = false;
 
-
-        Random rand = new Random(System.currentTimeMillis());
+        Random rand = new Random(UUID.randomUUID().getLeastSignificantBits());
         StringBuilder sb = new StringBuilder();
 
         for (int i = 0; i < length; i++) {
@@ -146,12 +129,12 @@ public class PasswordGenerator {
 
     public static String generatePassword(Policy policy) {
         log.debug("Start password generation!");
-        Random rand = new Random(System.currentTimeMillis());
+        Random rand = new Random(UUID.randomUUID().getLeastSignificantBits());
         PolicyAttribute paLength = policy.getAttribute(PWD_LEN);
         PolicyAttribute paSpecialChars = policy.getAttribute(NON_ALPHA_CHARS);
         PolicyAttribute paLowerCase = policy.getAttribute(LOWERCASE_CHARS);
         PolicyAttribute paUpCase = policy.getAttribute(UPPERCASE_CHARS);
-        PolicyAttribute paLatters = policy.getAttribute(ALPHA_CHARS);
+        PolicyAttribute paAlphaChars = policy.getAttribute(ALPHA_CHARS);
         PolicyAttribute paNumbers = policy.getAttribute(NUMERIC_CHARS);
         PolicyAttribute repeatLimit = policy.getAttribute(LIMIT_NUM_REPEAT_CHAR);
         PolicyAttribute notAllowedChars = policy.getAttribute(REJECT_CHARS_IN_PSWD);
@@ -168,70 +151,101 @@ public class PasswordGenerator {
 
         int intSpecialMin = toInt(paSpecialChars.getValue1());
         Integer intSpecialMax = toInteger(paSpecialChars.getValue2());
-        if (toInt(intSpecialMax) > listSpecialChars.size()) {
-            intSpecialMax = listSpecialChars.size();
+        if (intSpecialMin>0 && toInt(intSpecialMax) == 0) {
+            intLengthMax = null;
         }
-        if (intSpecialMin == 0 && intSpecialMax == null) {
-            intSpecialMax = intLengthMax;
-        }
-
         int intLowerMin = toInt(paLowerCase.getValue1());
         Integer intLowerMax = toInteger(paLowerCase.getValue2());
-        if (toInt(intLowerMax) > listLowerChars.size()) {
-            intLowerMax = listLowerChars.size();
+        if (intLowerMin>0 && toInt(intLowerMax) == 0) {
+            intLowerMax = null;
         }
-        if (intLowerMin == 0 && intLowerMax == null) {
-            intLowerMax = intLengthMax;
-        }
-
         int intUpperMin = toInt(paUpCase.getValue1());
         Integer intUpperMax = toInteger(paUpCase.getValue2());
-        if (toInt(intUpperMax) > listUpperChars.size()) {
-            intUpperMax = listUpperChars.size();
+        if (intUpperMin>0 && toInt(intUpperMax) == 0) {
+            intUpperMax = null;
         }
-        if (intUpperMin == 0 && intUpperMax == null) {
-            intUpperMax = intLengthMax;
-        }
-
         int intNumberMin = toInt(paNumbers.getValue1());
         Integer intNumberMax = toInteger(paNumbers.getValue2());
-        if (toInt(intNumberMax) > listNumericChars.size()) {
-            intNumberMax = listNumericChars.size();
+        if (intNumberMin>0 && toInt(intNumberMax) == 0) {
+            intNumberMax = null;
         }
-        if (intNumberMin == 0 && intNumberMax == null) {
-            intNumberMax = intLengthMax;
+        int intAlphaMin = toInt(paAlphaChars.getValue1());
+        Integer intAlphaMax = toInteger(paAlphaChars.getValue2());
+        if (intAlphaMin>0 && toInt(intAlphaMax) == 0) {
+            intAlphaMax = null;
         }
+
+        if (intAlphaMin > intUpperMin + intLowerMin) {
+            intUpperMin += rand.nextInt(1 + intAlphaMin - intUpperMin - intLowerMin);
+            intLowerMin = intAlphaMin - intUpperMin;
+        }
+
+        if (intAlphaMax != null && (intLowerMax == null || intUpperMax == null
+                || intAlphaMax < toInt(intLowerMax)+toInt(intUpperMax))) {
+            boolean isNormalization = intLowerMax != null && intUpperMax != null;
+            if (intUpperMax == null || isNormalization) {
+                if (isNormalization) {
+                    intUpperMax = intUpperMax - rand.nextInt(1 + intUpperMax + intLowerMax - intAlphaMax);
+                    if (intUpperMax < intUpperMin) {
+                        intUpperMax = intUpperMin;
+                    }
+                } else if (intLowerMax == null) {
+                    intUpperMax = intUpperMin + rand.nextInt(1 + intAlphaMax - intUpperMin - intLowerMin);
+                } else {
+                    intUpperMax = intAlphaMax - intLowerMax;
+                }
+            }
+            if (intLowerMax == null || isNormalization) {
+                intLowerMax = intAlphaMax - intUpperMax;
+                if (intLowerMax < intLowerMin) {
+                    intLowerMax = intLowerMin;
+                }
+            }
+        }
+
+        intLengthMin = Math.max(intLengthMin, intSpecialMin+intLowerMin+intUpperMin+intNumberMin);
+        if (intLengthMax == null) {
+            if (intSpecialMax != null && intNumberMax != null && intLowerMax != null && intUpperMax != null) {
+                intLengthMax = intSpecialMax + intNumberMax + intLowerMax + intUpperMax;
+            } else {
+                intLengthMax = Math.max(intLengthMin, DEFAULT_PASSWORD_LENGTH);
+            }
+        }
+
+        if (intSpecialMax == null) { intSpecialMax = intLengthMax; }
+        if (intNumberMax == null) { intNumberMax = intLengthMax; }
+        if (intLowerMax == null) { intLowerMax = intLengthMax; }
+        if (intUpperMax == null) { intUpperMax = intLengthMax; }
 
         Integer repeats = toInteger(repeatLimit.getValue1());
         log.debug("Fill initially!");
         List<String> passwordAsList = new ArrayList<>();
-        List<String> specialAsList = getArrayOfGroup(intSpecialMin, toInt(intSpecialMax), notAllowedChar, repeats, listSpecialChars, rand);
-        List<String> upperAsList = getArrayOfGroup(intUpperMin, toInt(intUpperMax), notAllowedChar, repeats, listUpperChars, rand);
-        List<String> numericAsList = getArrayOfGroup(intNumberMin, toInt(intNumberMax), notAllowedChar, repeats, listNumericChars, rand);
-        List<String> lowerAsList = getArrayOfGroup(intLowerMin, toInt(intLowerMax), notAllowedChar, repeats, listLowerChars, rand);
+        List<String> specialAsList = getArrayOfGroup(intSpecialMin, intSpecialMax, notAllowedChar, repeats, listSpecialChars, rand);
+        List<String> numericAsList = getArrayOfGroup(intNumberMin, intNumberMax, notAllowedChar, repeats, listNumericChars, rand);
+        List<String> upperAsList = getArrayOfGroup(intUpperMin, intUpperMax, notAllowedChar, repeats, listUpperChars, rand);
+        List<String> lowerAsList = getArrayOfGroup(intLowerMin, intLowerMax, notAllowedChar, repeats, listLowerChars, rand);
         log.debug("End Fill initially!");
         int used = specialAsList.size() + upperAsList.size() + numericAsList.size() + lowerAsList.size();
         log.debug("Calculate password length!");
         if (!(used >= intLengthMin && used <= toInt(intLengthMax))) {
             int passwordLength = 0;
             if (intLengthMin == 0 && (intLengthMax == null || intLengthMax == 0)) {
-                //8 by default
-                passwordLength = 12;
-            } else if (intLengthMin != 0 && (intLengthMax == null || intLengthMax == 0)) {
+                passwordLength = DEFAULT_PASSWORD_LENGTH;
+            } else if (intLengthMin != 0 && (intLengthMax == null || intLengthMax == 0 || intLengthMin == intLengthMax)) {
                 // will be the smallest length
                 passwordLength = intLengthMin;
             } else {
                 do {
-                    passwordLength = rand.nextInt(intLengthMax - intLengthMin) + intLengthMin;
+                    passwordLength = rand.nextInt(1 + intLengthMax - intLengthMin) + intLengthMin;
                 } while (passwordLength == 0);
             }
             if (used < intLengthMin) {
                 while (used != passwordLength) {
                     log.debug("Adding more chars!");
-                    if (!addAtGroup(upperAsList, intUpperMin, toInt(intUpperMax), notAllowedChar, repeats, listUpperChars, rand)) {
-                        if (!addAtGroup(lowerAsList, intLowerMin, toInt(intLowerMax), notAllowedChar, repeats, listLowerChars, rand))
-                            if (!addAtGroup(numericAsList, intNumberMin, toInt(intNumberMax), notAllowedChar, repeats, listNumericChars, rand)) {
-                                addAtGroup(specialAsList, intSpecialMin, toInt(intSpecialMax), notAllowedChar, repeats, listSpecialChars, rand);
+                    if (!addAtGroup(upperAsList, intUpperMax, notAllowedChar, repeats, listUpperChars, rand)) {
+                        if (!addAtGroup(lowerAsList, intLowerMax, notAllowedChar, repeats, listLowerChars, rand))
+                            if (!addAtGroup(numericAsList, intNumberMax, notAllowedChar, repeats, listNumericChars, rand)) {
+                                addAtGroup(specialAsList, intSpecialMax, notAllowedChar, repeats, listSpecialChars, rand);
                             }
                     }
                     used = specialAsList.size() + upperAsList.size() + numericAsList.size() + lowerAsList.size();
@@ -284,21 +298,6 @@ public class PasswordGenerator {
             }
         }
 
-//        if (paLatters.isRequired()) {
-//            Integer minLat = paLatters.getValue1() == null ? null : Integer.valueOf(paLatters.getValue1());
-//            Integer maxLat = paLatters.getValue2() == null ? null : Integer.valueOf(paLatters.getValue2());
-//
-//            int intULCount = upperAsList.size()+lowerAsList.size();
-//            if (minLat!=null && minLat > intULCount) {
-//                for (int i =0; i<minLat-intULCount;i++){
-//                    if (intUpperMax == null || upperAsList.size() <intUpperMax ){
-//                        addAtGroup(numericAsList, intNumberMin, toInt(intNumberMax), notAllowedChar, repeats, listNumericChars, rand);
-//                    }
-//                }
-//            }
-//
-//        }
-
         passwordAsList.addAll(specialAsList);
         passwordAsList.addAll(upperAsList);
         passwordAsList.addAll(numericAsList);
@@ -323,17 +322,17 @@ public class PasswordGenerator {
         return result;
     }
 
-    private static List<String> getArrayOfGroup(int minSimbolsCount, int maxSimbolCount, String notAllow, Integer repeatios, List<String> alphabetis, Random rand) {
+    private static List<String> getArrayOfGroup(int minSimbolsCount, Integer maxSimbolCount, String notAllow, Integer repeatios, List<String> alphabetis, Random rand) {
         List<String> result = new ArrayList<>();
-        int iteration = maxSimbolCount > minSimbolsCount ? rand.nextInt(maxSimbolCount - minSimbolsCount) + minSimbolsCount : minSimbolsCount;
+        int iteration = toInt(maxSimbolCount) > minSimbolsCount ? rand.nextInt(1 + toInt(maxSimbolCount) - minSimbolsCount) + minSimbolsCount : minSimbolsCount;
         for (int i = 0; i < iteration; i++) {
-            addAtGroup(result, minSimbolsCount, maxSimbolCount, notAllow, repeatios, alphabetis, rand);
+            addAtGroup(result, maxSimbolCount, notAllow, repeatios, alphabetis, rand);
         }
         return result;
     }
 
-    private static boolean addAtGroup(List<String> result, int minSimbolsCount, int maxSimbolCount, String notAllow, Integer repeatios, List<String> alphabetis, Random rand) {
-        if (maxSimbolCount == 0 || result.size() < maxSimbolCount) {
+    private static boolean addAtGroup(List<String> result, Integer maxSimbolCount, String notAllow, Integer repeatios, List<String> alphabetis, Random rand) {
+        if (maxSimbolCount == null || result.size() < toInt(maxSimbolCount)) {
             String s = String.valueOf(alphabetis.get(rand.nextInt(alphabetis.size())));
             while (!isAccessibleForRepeations(repeatios, s, result) || notAllow.contains(s)) {
                 s = String.valueOf(alphabetis.get(rand.nextInt(alphabetis.size())));
