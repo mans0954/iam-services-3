@@ -194,7 +194,7 @@ public class PolicyServiceImpl implements PolicyService {
     @Override
     @Transactional(readOnly = true)
     public ITPolicy findITPolicy() {
-        return itPolicyDozerConverter.convertToDTO(itPolicyDao.findITPolicy(), true);
+        return itPolicyDozerConverter.convertToDTO(itPolicyDao.findITPolicy(), false);
     }
 
     @Override
