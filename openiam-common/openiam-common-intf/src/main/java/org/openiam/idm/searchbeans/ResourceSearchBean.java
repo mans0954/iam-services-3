@@ -25,7 +25,8 @@ import java.util.Set;
         "URL",
         "metadataType",
         "coorelatedName",
-		"adminResourceId"
+		"adminResourceId",
+        "ownerId"
 })
 public class ResourceSearchBean extends EntitlementsSearchBean<Resource, String> implements SearchBean<Resource, String>, Serializable {
 
@@ -41,7 +42,8 @@ public class ResourceSearchBean extends EntitlementsSearchBean<Resource, String>
     private String metadataType;
     private String URL;
 	private String coorelatedName;
-	private String adminResourceId;
+    private String adminResourceId;
+    private String ownerId;
 
     public String getCoorelatedName() {
         return coorelatedName;
@@ -142,6 +144,14 @@ public class ResourceSearchBean extends EntitlementsSearchBean<Resource, String>
 		this.adminResourceId = adminResourceId;
 	}
 
+    public String getOwnerId() {
+        return ownerId;
+    }
+
+    public void setOwnerId(String ownerId) {
+        this.ownerId = ownerId;
+    }
+
     @Override
     public String getCacheUniqueBeanKey() {
         return new StringBuilder()
@@ -149,6 +159,7 @@ public class ResourceSearchBean extends EntitlementsSearchBean<Resource, String>
                 .append(resourceTypeId != null ? resourceTypeId : "")
                 .append(rootsOnly)
                 .append(adminResourceId != null ? adminResourceId : "")
+                .append(ownerId != null ? ownerId : "")
                 .append(risk != null ? risk.name() : "")
                 .append(metadataType != null ? metadataType : "")
                 .append(URL != null ? URL : "")
