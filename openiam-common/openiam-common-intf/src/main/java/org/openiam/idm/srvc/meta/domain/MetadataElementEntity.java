@@ -63,7 +63,7 @@ public class MetadataElementEntity extends KeyEntity {
 	@Type(type = "yes_no")
 	private boolean isPublic = true;
     
-	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+	@ManyToOne(fetch = FetchType.LAZY,cascade=CascadeType.ALL)
     @JoinColumn(name="RESOURCE_ID", referencedColumnName = "RESOURCE_ID", insertable = true, updatable = false)
 	private ResourceEntity resource;
 
