@@ -697,4 +697,68 @@
 			<b>patternId</b>
 		</field>
 	</mapping>
+
+	<mapping>
+		<class-a>org.openiam.am.srvc.domain.OAuthCodeEntity</class-a>
+		<class-b>org.openiam.am.srvc.dto.OAuthCode</class-b>
+		<field>
+			<a>id</a>
+			<b>id</b>
+		</field>
+		<field>
+			<a>code</a>
+			<b>code</b>
+		</field>
+		<field>
+			<a>expiredOn</a>
+			<b>expiredOn</b>
+		</field>
+		<field>
+			<a>client.id</a>
+			<b>clientId</b>
+		</field>
+		<field>
+			<a>user.id</a>
+			<b>userId</b>
+		</field>
+		<field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
+			   custom-converter-param="dto2entityShallowDozerMapper">
+			<a>scopeSet</a>
+			<b>scopeSet</b>
+		</field>
+	</mapping>
+
+	<mapping>
+		<class-a>org.openiam.am.srvc.domain.OAuthTokenEntity</class-a>
+		<class-b>org.openiam.am.srvc.dto.OAuthToken</class-b>
+		<field>
+			<a>id</a>
+			<b>id</b>
+		</field>
+		<field>
+			<a>token</a>
+			<b>token</b>
+		</field>
+		<field>
+			<a>refreshToken</a>
+			<b>refreshToken</b>
+		</field>
+		<field>
+			<a>expiredOn</a>
+			<b>expiredOn</b>
+		</field>
+		<field>
+			<a>client.id</a>
+			<b>clientId</b>
+		</field>
+		<field>
+			<a>user.id</a>
+			<b>userId</b>
+		</field>
+		<field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
+			   custom-converter-param="dto2entityShallowDozerMapper">
+			<a>scopeSet</a>
+			<b>scopeSet</b>
+		</field>
+	</mapping>
 </mappings>

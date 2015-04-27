@@ -95,6 +95,14 @@ public class AuthProviderEntity extends AbstractKeyNameEntity {
     @Fetch(FetchMode.SUBSELECT)
     private Set<URIPatternEntity> uriPatterns;
 
+	@OneToMany(fetch = FetchType.LAZY,cascade = { CascadeType.DETACH, CascadeType.REFRESH }, mappedBy = "client")
+	@Fetch(FetchMode.SUBSELECT)
+	private Set<OAuthCodeEntity> oAuthCodes;
+
+	@OneToMany(fetch = FetchType.LAZY,cascade = { CascadeType.DETACH, CascadeType.REFRESH }, mappedBy = "client")
+	@Fetch(FetchMode.SUBSELECT)
+	private Set<OAuthTokenEntity> oAuthTokens;
+
     @OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "provider")
     @MapKey(name = "name")
     private Map<String, AuthResourceAttributeMapEntity> resourceAttributeMap=new HashMap<String, AuthResourceAttributeMapEntity>(0);
@@ -268,6 +276,22 @@ public class AuthProviderEntity extends AbstractKeyNameEntity {
 
 	public void setAuthenticationPolicy(PolicyEntity authenticationPolicy) {
 		this.authenticationPolicy = authenticationPolicy;
+	}
+
+	public Set<OAuthCodeEntity> getoAuthCodes() {
+		return oAuthCodes;
+	}
+
+	public void setoAuthCodes(Set<OAuthCodeEntity> oAuthCodes) {
+		this.oAuthCodes = oAuthCodes;
+	}
+
+	public Set<OAuthTokenEntity> getoAuthTokens() {
+		return oAuthTokens;
+	}
+
+	public void setoAuthTokens(Set<OAuthTokenEntity> oAuthTokens) {
+		this.oAuthTokens = oAuthTokens;
 	}
 
 	@Override
