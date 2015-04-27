@@ -1134,7 +1134,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 
     @Override
     public ProfilePicture getProfilePictureByUserId(String userId, String requesterId) {
-        return profilePictureDozerConverter.convertToDTO(userProfileService.getProfilePictureByUserId(userId), true);
+        return profilePictureDozerConverter.convertToDTO(userProfileService.getProfilePictureByUserId(userId), false);
     }
 
     @Override
