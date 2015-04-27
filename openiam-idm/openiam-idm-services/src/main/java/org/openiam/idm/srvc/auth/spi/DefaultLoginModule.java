@@ -23,6 +23,7 @@ package org.openiam.idm.srvc.auth.spi;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.dozer.converter.PasswordHistoryDozerConverter;
 import org.openiam.exception.AuthenticationException;
 import org.openiam.idm.srvc.auth.context.AuthenticationContext;
 import org.openiam.idm.srvc.auth.context.PasswordCredential;
@@ -32,8 +33,12 @@ import org.openiam.idm.srvc.auth.service.AuthCredentialsValidator;
 import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
 import org.openiam.idm.srvc.auth.ws.LoginResponse;
 import org.openiam.idm.srvc.policy.dto.Policy;
+import org.openiam.idm.srvc.pswd.domain.PasswordHistoryEntity;
+import org.openiam.idm.srvc.pswd.dto.PasswordHistory;
+import org.openiam.idm.srvc.pswd.service.PasswordHistoryDAO;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
@@ -48,6 +53,11 @@ import java.util.*;
 public class DefaultLoginModule extends AbstractLoginModule {
 
     private static final Log log = LogFactory.getLog(DefaultLoginModule.class);
+
+    @Autowired
+    private PasswordHistoryDAO passwordHistoryDao;
+    @Autowired
+    private PasswordHistoryDozerConverter passwordHistoryDozerConverter;
 
     public DefaultLoginModule() {
     }
@@ -90,6 +100,11 @@ public class DefaultLoginModule extends AbstractLoginModule {
             throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_LOGIN);
         }
         principal = lg.getLogin();
+
+        List<PasswordHistoryEntity> phList = passwordHistoryDao.getPasswordHistoryByLoginId(lg.getLoginId(), 0, Integer.MAX_VALUE);
+        Set<PasswordHistoryEntity> phESet = new HashSet<PasswordHistoryEntity>(phList);
+        Set<PasswordHistory> phSet = passwordHistoryDozerConverter.convertToDTOSet(phESet, false);
+        lg.setPasswordHistory(phSet);
 
         // checking if User is valid
         UserEntity user = userManager.getUser(lg.getUserId());
