@@ -191,7 +191,7 @@ public class AuthProviderServiceImpl implements AuthProviderService {
         Map<String, AuthResourceAttributeMapEntity> resourceAttributeMap = provider.getResourceAttributeMap();
         provider.setProviderAttributeSet(null);
         provider.setResourceAttributeMap(null);
-        authProviderDao.add(provider);
+        authProviderDao.save(provider);
         if(providerAttributeSet!=null && !providerAttributeSet.isEmpty()){
             saveAuthProviderAttributes(provider, providerAttributeSet);
         }

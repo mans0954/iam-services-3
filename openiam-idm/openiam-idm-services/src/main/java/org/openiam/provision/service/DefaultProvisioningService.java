@@ -119,6 +119,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     @Value("${org.openiam.debug.hidden.attributes}")
     private String hiddenAttributes;
 
+    @Value("${org.openiam.send.user.activation.link}")
+    private Boolean sendActivationLink;
+
     private static final Log log = LogFactory.getLog(DefaultProvisioningService.class);
     private String errorDescription;
 
@@ -922,6 +925,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         bindingMap.put("org", pUser.getPrimaryOrganization());
         bindingMap.put("operation", isAdd ? "ADD" : "MODIFY");
         bindingMap.put(USER, pUser);
+        bindingMap.put("sendActivationLink", sendActivationLink);
         bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, null);
         bindingMap.put(TARGET_SYSTEM_IDENTITY, null);
         bindingMap.put(USER_ATTRIBUTES, userMgr.getUserAttributesDto(pUser.getId()));
@@ -944,20 +948,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         // make sure that our object as the attribute set that will be used for
         // audit logging
         checkAuditingAttributes(pUser);
-
-        if (!isAdd) {
-            // get the current roles
-            List<Role> curRoleList = roleDataService.getUserRolesAsFlatList(pUser.getId());
-
-            // get all groups for user
-            List<Group> curGroupList = groupDozerConverter.convertToDTOList(
-                    groupManager.getGroupsForUser(pUser.getId(), null, -1, -1), false);
-            // make the role and group list before these updates available to
-            // the
-            // attribute policies
-            bindingMap.put("currentRoleList", curRoleList);
-            bindingMap.put("currentGroupList", curGroupList);
-        }
 
         // dealing with principals
         if (!isAdd) {
@@ -1340,9 +1330,25 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             }
         }
 
+        int callPostProcessorResult = callPostProcessor(isAdd ? "ADD" : "MODIFY", finalProvUser, bindingMap, null);
+        auditLog.addAttribute(AuditAttributeName.DESCRIPTION, "callPostProcessor result="
+                + (callPostProcessorResult == 1 ? "SUCCESS" : "FAIL"));
+        if (callPostProcessorResult != ProvisioningConstants.SUCCESS) {
+            resp.setStatus(ResponseStatus.FAILURE);
+            resp.setErrorCode(ResponseCode.FAIL_POSTPROCESSOR);
+            auditLog.addAttribute(AuditAttributeName.DESCRIPTION, "PostProcessor error.");
+            return resp;
+        }
+        /* Response object */
+        userMgr.updateUser(userEntity);
+
         if (isAdd) { // send email notifications
             if (pUser.isEmailCredentialsToNewUsers()) {
-                sendCredentialsToUser(finalProvUser.getUser(), primaryIdentity.getLogin(), decPassword);
+                if(this.sendActivationLink){
+                    sendActivationLink(finalProvUser.getUser(), primaryIdentity);
+                } else {
+                    sendCredentialsToUser(finalProvUser.getUser(), primaryIdentity.getLogin(), decPassword);
+                }
             }
             if (pUser.isEmailCredentialsToSupervisor()) {
                 if (pUser.getSuperiors() != null) {
@@ -1356,18 +1362,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 }
             }
         }
-        int callPostProcessorResult = callPostProcessor(isAdd ? "ADD" : "MODIFY", finalProvUser, bindingMap, null);
-        auditLog.addAttribute(AuditAttributeName.DESCRIPTION, "callPostProcessor result="
-                + (callPostProcessorResult == 1 ? "SUCCESS" : "FAIL"));
-        if (callPostProcessorResult != ProvisioningConstants.SUCCESS) {
-            resp.setStatus(ResponseStatus.FAILURE);
-            resp.setErrorCode(ResponseCode.FAIL_POSTPROCESSOR);
-            auditLog.addAttribute(AuditAttributeName.DESCRIPTION, "PostProcessor error.");
-            return resp;
-        }
-        /* Response object */
-
-        userMgr.updateUser(userEntity);
 
         if (isAdd) {
             log.debug("DEFAULT PROVISIONING SERVICE: addUser complete");
@@ -2752,12 +2746,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         provisionSelectedResourceHelper.setCurrentSuperiors(u);
         bindingMap.put("userBeforeModify", u);
 
-        List<Role> curRoleList = roleDataService.getUserRolesAsFlatList(pUser.getId());
-        List<Group> curGroupList = groupDozerConverter.convertToDTOList(
-                groupManager.getGroupsForUser(pUser.getId(), null, -1, -1), false);
-        bindingMap.put("currentRoleList", curRoleList);
-        bindingMap.put("currentGroupList", curGroupList);
-
         bindingMap.put(TARGET_SYS_MANAGED_SYS_ID, managedSysId);
         ManagedSysDto managedSys = managedSysService.getManagedSys(managedSysId);
         bindingMap.put(TARGET_SYS_RES_ID, managedSys.getResourceId());
@@ -3102,7 +3090,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         if (operation) {
                             // suspend
                             log.debug("preparing suspendRequest object");
-                            lg.setStatus(LoginStatusEnum.INACTIVE);
 
                             resp = suspend(requestId, login, mSys, buildMngSysAttributes(login, "SUSPEND"), operation);
 

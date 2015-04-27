@@ -600,7 +600,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     }
 
     @Override
-    @Cacheable(value="resourceAttributeMaps", key="{ #searchBean.cacheUniqueBeanKey}")
+//    @Cacheable(value="resourceAttributeMaps", key="{ #searchBean.cacheUniqueBeanKey}") //TODO: take into account deleting of attribute policies
     public List<AttributeMap> findResourceAttributeMaps(
             AttributeMapSearchBean searchBean) {
         if (searchBean == null) {

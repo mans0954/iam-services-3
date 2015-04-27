@@ -13,6 +13,7 @@ import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -21,6 +22,9 @@ public class AcceptProfileProvisionDelegate extends AcceptEntitlementsNotifierDe
 
     @Autowired
     private LoginDataService loginDS;
+
+    @Value("${org.openiam.send.user.activation.link}")
+    private Boolean sendActivationLink;
 
     public AcceptProfileProvisionDelegate() {
         super();
@@ -55,7 +59,12 @@ public class AcceptProfileProvisionDelegate extends AcceptEntitlementsNotifierDe
                 identity = login.getLogin();
                 password = loginDS.decryptPassword(login.getUserId(), login.getPassword());
             }
-            sendEmail(execution, requestor, newUser, newUser.getId(), null, identity, password, request);
+            if(sendActivationLink) {
+                sendEmail("NEW_USER_ACTIVATION_REMIND", execution, requestor, newUser, newUser.getId(), null, identity, password, request);
+            } else {
+                sendEmail(execution, requestor, newUser, newUser.getId(), null, identity, password, request);
+            }
+
             idmAuditLog.succeed();
         } catch (Throwable e) {
             idmAuditLog.setException(e);
@@ -95,9 +104,22 @@ public class AcceptProfileProvisionDelegate extends AcceptEntitlementsNotifierDe
                            final String identity,
                            final String password,
                            final NewUserProfileRequestModel profileRequestModel) {
+
+        sendEmail(getNotificationType(execution), execution, requestor, newUser, userId, email, identity, password, profileRequestModel);
+    }
+
+    private void sendEmail(final String notificationType,
+                           final DelegateExecution execution,
+                           final UserEntity requestor,
+                           final UserEntity newUser,
+                           final String userId,
+                           final String email,
+                           final String identity,
+                           final String password,
+                           final NewUserProfileRequestModel profileRequestModel) {
         final NotificationRequest request = new NotificationRequest();
         request.setUserId(userId);
-        request.setNotificationType(getNotificationType(execution));
+        request.setNotificationType(notificationType);
         request.setTo(email);
         request.getParamList().add(new NotificationParam("TARGET_REQUEST", profileRequestModel));
         request.getParamList().add(new NotificationParam("COMMENT", getComment(execution)));

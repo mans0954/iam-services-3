@@ -89,32 +89,20 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
         log.debug("To:" + to + ", From:" + from + ", Subject:" + subject + ", Cc:" + cc + ", Attachement:" + attachment
                 + ", Format:" + isHtmlFormat);
 
-        Message message = new Message();
-        if (from != null && from.length() > 0) {
-            message.setFrom(from);
-        } else {
-            message.setFrom(defaultSender);
+        Message message = fillMessage(from, to, cc, null, subject, msg, isHtmlFormat, attachment, null);
+        try {
+            mailSender.send(message);
+        } catch (Throwable e) {
+            log.error("can't send email", e);
         }
+    }
 
-        message.addTo(to);
+    public void sendEmailByDateTime(String from, String to, String cc, String subject, String msg, String attachment,
+                                    boolean isHtmlFormat, Date executionDateTime) {
+        log.debug("To:" + to + ", From:" + from + ", Subject:" + subject + ", Cc:" + cc + ", Attachement:" + attachment
+                + ", Format:" + isHtmlFormat);
 
-        if (cc != null && !cc.isEmpty()) {
-            message.addCc(cc);
-        }
-
-        if (subjectPrefix != null) {
-            subject = subjectPrefix + " " + subject;
-        }
-        /*
-         * if (optionalBccAddress != null && !optionalBccAddress.isEmpty()) {
-         * message.addBcc(optionalBccAddress); }
-         */
-        message.setSubject(subject);
-        message.setBody(msg);
-        message.setBodyType(isHtmlFormat ? Message.BodyType.HTML_TEXT : Message.BodyType.PLAIN_TEXT);
-        if (attachment != null && from.length() > 0) {
-            message.addAttachments(attachment);
-        }
+        Message message = fillMessage(from, to, cc, null, subject, msg, isHtmlFormat, attachment, executionDateTime);
         try {
             mailSender.send(message);
         } catch (Throwable e) {
@@ -134,8 +122,7 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
         log.debug("To:" + to + ", From:" + from + ", Subject:" + subject + ", CC:" + cc + ", BCC:" + bcc
                 + ", Attachment:" + attachmentPath);
 
-
-        Message message = fillMessage(from, to, cc, bcc, subject, msg, isHtmlFormat, attachmentPath);
+        Message message = fillMessage(from, to, cc, bcc, subject, msg, isHtmlFormat, attachmentPath, null);
         try {
             mailSender.send(message);
         } catch (Exception e) {
@@ -143,7 +130,28 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
         }
     }
 
-    private Message fillMessage(String from, String[] to, String[] cc, String[] bcc, String subject, String msg, boolean isHtmlFormat, String[] attachmentPath) {
+    @Override
+    public void sendEmailsByDateTime(String from, String[] to, String[] cc, String[] bcc, String subject, String msg, boolean isHtmlFormat, String[] attachmentPath, Date executionDateTime) {
+        Message message = fillMessage(from, to, cc, bcc, subject, msg, isHtmlFormat, attachmentPath, executionDateTime);
+
+        try {
+            mailSender.send(message);
+        } catch (Exception e) {
+            log.error(e.toString());
+        }
+    }
+
+    private Message fillMessage(String from, String to, String cc, String bcc, String subject, String msg, boolean isHtmlFormat, String attachment, Date executionDateTime) {
+        return fillMessage(from, (to != null) ? new String[]{to} : null,
+                (cc != null)? new String[]{cc} : null,
+                (bcc != null)? new String[]{bcc} : null,
+                subject, msg,
+                isHtmlFormat,
+                (attachment != null)? new String[]{attachment} : null,
+                executionDateTime);
+    }
+
+    private Message fillMessage(String from, String[] to, String[] cc, String[] bcc, String subject, String msg, boolean isHtmlFormat, String[] attachmentPath, Date executionDateTime) {
         Message message = new Message();
 
         if (from != null && from.length() > 0) {
@@ -162,20 +170,31 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
             }
         }
 
-        if (subjectPrefix != null) {
-            subject = subjectPrefix + " " + subject;
-        }
         if (bcc != null && bcc.length > 0) {
             for (String bccString : bcc) {
                 message.addBcc(bccString);
             }
         }
 
+        if (StringUtils.isNotBlank(subjectPrefix)) {
+            String subj = subjectPrefix.trim();
+            if (subject != null && subject.length() > 0) {
+                subject = subj + " " + subject;
+            } else {
+                subject = subj;
+            }
+        }
+
         if (subject != null && subject.length() > 0) {
             message.setSubject(subject);
         }
+
         if (msg != null && msg.length() > 0) {
             message.setBody(msg);
+        }
+
+        if (executionDateTime != null) {
+            message.setExecutionDateTime(executionDateTime);
         }
 
         message.setBodyType(isHtmlFormat ? Message.BodyType.HTML_TEXT : Message.BodyType.PLAIN_TEXT);
@@ -185,17 +204,6 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
             }
         }
         return message;
-    }
-
-    @Override
-    public void sendEmailsByDateTime(String from, String[] to, String[] cc, String[] bcc, String subject, String msg, boolean isHtmlFormat, String[] attachmentPath, Date executionDateTime) {
-        Message message = fillMessage(from, to, cc, bcc, subject, msg, isHtmlFormat, attachmentPath);
-        message.setExecutionDateTime(executionDateTime);
-        try {
-            mailSender.send(message);
-        } catch (Exception e) {
-            log.error(e.toString());
-        }
     }
 
     /**
@@ -247,8 +255,8 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 
         String emailBody = createEmailBody(bindingMap, emailDetails[SCRIPT_IDX]);
         if (emailBody != null) {
-            sendEmail(null, req.getTo(), req.getCc(), emailDetails[SUBJECT_IDX], emailBody, null,
-                    isHtmlFormat(emailDetails));
+            sendEmailByDateTime(null, req.getTo(), req.getCc(), emailDetails[SUBJECT_IDX], emailBody, null,
+                    isHtmlFormat(emailDetails), req.getExecutionDateTime());
             return true;
         }
         return false;
@@ -304,8 +312,8 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 
         String emailBody = createEmailBody(bindingMap, emailDetails[SCRIPT_IDX]);
         if (emailBody != null) {
-            sendEmail(null, usr.getEmail(), null, emailDetails[SUBJECT_IDX], emailBody, null,
-                    isHtmlFormat(emailDetails));
+            sendEmailByDateTime(null, usr.getEmail(), null, emailDetails[SUBJECT_IDX], emailBody, null,
+                    isHtmlFormat(emailDetails), req.getExecutionDateTime());
             return true;
         }
         log.warn("Email not sent - failure occurred");

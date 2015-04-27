@@ -21,7 +21,7 @@ public class AttributeUtil {
 
     public static UserAttributeEntity buildUserAttribute(UserEntity user, MetadataElementEntity metadataElementEntity){
         UserAttributeEntity attribute = new UserAttributeEntity();
-        attribute.setUser(user);
+        attribute.setUserId(user.getId());
 
         if(metadataElementEntity!=null){
             attribute.setElement(metadataElementEntity);

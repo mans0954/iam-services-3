@@ -24,6 +24,7 @@ package org.openiam.idm.srvc.auth.spi;
 import org.openiam.exception.AuthenticationException;
 import org.openiam.idm.srvc.auth.context.AuthenticationContext;
 import org.openiam.idm.srvc.auth.dto.Subject;
+import org.openiam.idm.srvc.auth.service.AuthCredentialsValidator;
 
 /**
  * Interface for a LoginModule.  A LoginModule is responsible for authentication. All LoginModules in OpenIAM must
@@ -53,4 +54,5 @@ public interface LoginModule {
 	 * @param principal
 	 */
 	//void globalLogout(String securityDomain, String principal);
+
 }

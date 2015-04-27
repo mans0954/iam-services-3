@@ -175,6 +175,9 @@ public class UserMgr implements UserDataService {
     @Value("${org.openiam.department.type.id}")
     private String departmentTypeId;
 
+    @Value("${org.openiam.usersearch.lucene.enabled}")
+    private Boolean isLuceneEnabled;
+
     @Autowired
     @Qualifier("authorizationManagerService")
     private AuthorizationManagerService authorizationManagerService;
@@ -247,7 +250,7 @@ public class UserMgr implements UserDataService {
         if(user!=null && user.getType()!=null && StringUtils.isNotBlank(user.getType().getId())){
             MetadataElementSearchBean sb = new MetadataElementSearchBean();
             sb.addTypeId(user.getType().getId());
-            List<MetadataElementEntity> elementList = metadataElementDAO.getByExample(sb, -1, -1);
+            List<MetadataElementEntity> elementList = metadataElementDAO.getByExampleNoLocalize(sb, -1, -1);
             if(CollectionUtils.isNotEmpty(elementList)){
                 for(MetadataElementEntity element: elementList){
                     if(element.isRequired()){
@@ -604,7 +607,17 @@ public class UserMgr implements UserDataService {
         }
 
         if (searchBean.getPrincipal() != null) {
-            nonEmptyListOfLists.add(loginSearchDAO.findUserIds(0, Integer.MAX_VALUE, searchBean.getPrincipal()));
+        	/* 
+        	 * DO NOT MERGE INTO 4.0!!!!  Only for 3.3.1 to solve IDMAPPS-2735.
+        	 * Use 4.0 code 
+        	 */
+        	if(isLuceneEnabled && searchBean.getPrincipal().isUseLucene()) {
+        		nonEmptyListOfLists.add(loginSearchDAO.findUserIds(0, Integer.MAX_VALUE, searchBean.getPrincipal()));
+        	} else {
+        		List<String> userIds = loginDao.getUserIds(searchBean.getPrincipal());
+        		userIds = (userIds != null) ? userIds : Collections.EMPTY_LIST;
+        		nonEmptyListOfLists.add(userIds);
+        	}
         }
 
         if (searchBean.getEmailAddressMatchToken() != null && searchBean.getEmailAddressMatchToken().isValid()) {
@@ -786,12 +799,9 @@ public class UserMgr implements UserDataService {
         if (attribute == null)
             throw new NullPointerException("Attribute can not be null");
 
-        if (attribute.getUser() == null || StringUtils.isBlank(attribute.getUser().getId())) {
+        if (StringUtils.isBlank(attribute.getUserId())) {
             throw new NullPointerException("User has not been associated with this attribute.");
         }
-
-        UserEntity userEntity = userDao.findById(attribute.getUser().getId());
-        attribute.setUser(userEntity);
 
         MetadataElementEntity element = null;
         if (attribute.getElement() != null && StringUtils.isNotEmpty(attribute.getElement().getId())) {
@@ -808,13 +818,11 @@ public class UserMgr implements UserDataService {
         if (attribute == null)
             throw new NullPointerException("Attribute can not be null");
 
-        if (attribute.getUser() == null || StringUtils.isBlank(attribute.getUser().getId())) {
+        if (StringUtils.isBlank(attribute.getUserId())) {
             throw new NullPointerException("User has not been associated with this attribute.");
         }
         final UserAttributeEntity userAttribute = userAttributeDao.findById(attribute.getId());
         if (userAttribute != null) {
-            UserEntity userEntity = userDao.findById(attribute.getUser().getId());
-            attribute.setUser(userEntity);
             attribute.setElement(userAttribute.getElement());
             userAttributeDao.merge(attribute);
         }

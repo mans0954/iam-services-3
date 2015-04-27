@@ -50,6 +50,9 @@ import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.idm.srvc.res.service.ResourceService;
+import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
+import org.openiam.idm.srvc.user.dto.UserAttribute;
+import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.ProvOperationEnum;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.resp.ProvisionUserResponse;
@@ -131,9 +134,11 @@ public class ProvisionDispatcher implements Sweepable {
     @Qualifier("transactionManager")
     private PlatformTransactionManager platformTransactionManager;
 
+    @Autowired
+    @Qualifier("userManager")
+    private UserDataService userDataService;
 
     private final Object mutex = new Object();
-    private volatile int switch_ = 0;
 
     private String[] hiddenAttrs = null;
 
@@ -145,9 +150,7 @@ public class ProvisionDispatcher implements Sweepable {
         jmsTemplate.browse(queue, new BrowserCallback<Object>() {
             @Override
             public Object doInJms(Session session, QueueBrowser browser) throws JMSException {
-                if (switch_ == 0) {
-                    switch_ = 1;
-                    Thread currentThread = Thread.currentThread();
+                synchronized (mutex) {
                     final List<ProvisionDataContainer> list = new ArrayList<ProvisionDataContainer>();
                     Enumeration e = browser.getEnumeration();
                     while (e.hasMoreElements()) {
@@ -156,10 +159,8 @@ public class ProvisionDispatcher implements Sweepable {
                     }
 
                     process(list);
-                    switch_ = 0;
+
                     return Boolean.TRUE;
-                } else {
-                    return Boolean.FALSE;
                 }
             }
         });
@@ -521,6 +522,8 @@ public class ProvisionDispatcher implements Sweepable {
                     matchObj, currentValueMap, res);
             bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_USER_EXISTS, targetSystemUserExists);
             bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_ATTRIBUTES, currentValueMap);
+            Map<String, UserAttribute> attributes = userDataService.getUserAttributesDto(targetSysProvUser.getId());
+            bindingMap.put(AbstractProvisioningService.USER_ATTRIBUTES, attributes);
             ExtensibleObject extUser = provisionSelectedResourceHelper.buildFromRules(managedSysId, bindingMap);
             try {
                 idmAuditLog.addCustomRecord("ATTRIBUTES", extUser.getAttributesAsJSON(hiddenAttrs));

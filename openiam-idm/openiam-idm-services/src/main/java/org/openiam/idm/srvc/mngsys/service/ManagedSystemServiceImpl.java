@@ -1,8 +1,6 @@
 package org.openiam.idm.srvc.mngsys.service;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -27,6 +25,7 @@ import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
 import org.openiam.idm.srvc.mngsys.domain.ReconciliationResourceAttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
+import org.openiam.idm.srvc.policy.domain.PolicyEntity;
 import org.openiam.idm.srvc.policy.service.PolicyDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
@@ -35,6 +34,7 @@ import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.service.RoleDAO;
 import org.openiam.util.encrypt.Cryptor;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -360,20 +360,31 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     public List<AttributeMapEntity> saveAttributesMap(
             List<AttributeMapEntity> attrMap, String mSysId, String resId,
             String synchConfigId) throws Exception {
-        if (attrMap == null)
+
+        if (attrMap == null) {
             return null;
-        for (AttributeMapEntity a : attrMap) {
-            a.setManagedSysId(mSysId);
-            a.setResourceId(resId);
-            a.setSynchConfigId(synchConfigId);
-            if (a.getAttributeMapId() == null
-                    || a.getAttributeMapId().equalsIgnoreCase("NEW")) {
-                // new
-                a.setAttributeMapId(null);
-                a.setAttributeMapId(this.addAttributeMap(a).getAttributeMapId());
+        }
+
+        ManagedSysEntity mngSys = getManagedSysById(mSysId);
+        Map<String, AttributeMapEntity> curAttrMapsMap = new HashMap<String, AttributeMapEntity>();
+        Set<AttributeMapEntity> curAttrMaps = mngSys.getAttributeMaps();
+        for (AttributeMapEntity ame : curAttrMaps) {
+            curAttrMapsMap.put(ame.getAttributeMapId(), ame);
+        }
+        for (AttributeMapEntity ame : attrMap) {
+            ReconciliationResourceAttributeMapEntity rram = ame.getReconResAttribute();
+            PolicyEntity policy = policyDAO.findById(rram.getAttributePolicy().getPolicyId());
+            rram.setAttributePolicy(policy);
+            ame.setReconResAttribute(rram);
+            ame.setManagedSystem(mngSys);
+            ame.setResourceId(resId);
+            ame.setSynchConfigId(synchConfigId);
+            if (StringUtils.isNotBlank(ame.getAttributeMapId())) {
+                AttributeMapEntity attrMapEntity = curAttrMapsMap.get(ame.getAttributeMapId());
+                BeanUtils.copyProperties(ame, attrMapEntity, new String[]{"reconResAttribute"});
+                attrMapEntity.getReconResAttribute().setAttributePolicy(ame.getReconResAttribute().getAttributePolicy());
             } else {
-                // update
-                this.updateAttributeMap(a);
+                curAttrMaps.add(ame);
             }
         }
         return new ArrayList<AttributeMapEntity>(attrMap);
