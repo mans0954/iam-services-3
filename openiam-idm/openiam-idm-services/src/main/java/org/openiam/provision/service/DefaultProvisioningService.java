@@ -3090,7 +3090,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         if (operation) {
                             // suspend
                             log.debug("preparing suspendRequest object");
-                            lg.setStatus(LoginStatusEnum.INACTIVE);
 
                             resp = suspend(requestId, login, mSys, buildMngSysAttributes(login, "SUSPEND"), operation);
 

@@ -32,18 +32,20 @@ public class AuthenticationUtils {
 
     private AuthCredentialsValidator validator;
 
-    @PostConstruct
+     @PostConstruct
     public void populateCredentialsValidator() {
-        if (cacheCredentialsValidatorEnable) {
-            try {
-                if (StringUtils.isNotBlank(authCredentialsValidatorScript)) {
-                    validator = (AuthCredentialsValidator)scriptRunner.instantiateClass(null, authCredentialsValidatorScript);
-                    log.debug("Using custom credentials validator " + authCredentialsValidatorScript);
-                } else {
-                    validator = defaultAuthCredentialsValidator;
+        if(validator == null) {
+            if (cacheCredentialsValidatorEnable) {
+                try {
+                    if (StringUtils.isNotBlank(authCredentialsValidatorScript)) {
+                        validator = (AuthCredentialsValidator)scriptRunner.instantiateClass(null, authCredentialsValidatorScript);
+                        log.debug("Using custom credentials validator " + authCredentialsValidatorScript);
+                    } else {
+                        validator = defaultAuthCredentialsValidator;
+                    }
+                } catch (Exception exc) {
+                    log.error(exc);
                 }
-            } catch (Exception exc) {
-                log.error(exc);
             }
         }
     }
