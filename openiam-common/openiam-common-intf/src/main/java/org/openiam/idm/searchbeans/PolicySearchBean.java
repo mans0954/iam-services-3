@@ -61,6 +61,16 @@ public class PolicySearchBean extends AbstractSearchBean<Policy, String> impleme
     }
 
     @Override
+    public String getCacheUniqueBeanKey() {
+        return new StringBuilder()
+                .append(name != null ? name : "")
+                .append(policyDefId != null ? policyDefId : "")
+                .append(attributes != null ? attributes.toString().hashCode() : "")
+                .append(getKey() != null ? getKey() : "")
+                .toString();
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;

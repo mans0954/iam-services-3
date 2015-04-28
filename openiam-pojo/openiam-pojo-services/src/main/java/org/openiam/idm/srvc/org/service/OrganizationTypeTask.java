@@ -16,7 +16,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 @Component("organizationTypeTask")
 public class OrganizationTypeTask implements Sweepable {
 
-    private static final Log log = LogFactory.getLog(OrganizationTask.class);
+    private static final Log log = LogFactory.getLog(OrganizationTypeTask.class);
 
     @Autowired
     @Qualifier("transactionManager")

@@ -16,4 +16,11 @@ import org.openiam.idm.srvc.ui.theme.dto.UITheme;
 public class UIThemeSearchBean extends AbstractSearchBean<UITheme, String> implements SearchBean<UITheme, String>, Serializable {
 
 	public UIThemeSearchBean() {}
+
+    @Override
+    public String getCacheUniqueBeanKey() {
+        return new StringBuilder()
+                .append(getKey() != null ? getKey() : "")
+                .toString();
+    }
 }

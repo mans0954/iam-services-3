@@ -4,6 +4,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.MatchMode;
+import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
@@ -22,10 +23,19 @@ import java.util.Set;
  */
 @Repository("metadataElementDAO")
 public class MetadataElementDAOImpl extends BaseDaoImpl<MetadataElementEntity, String> implements MetadataElementDAO {
-    
-	
-	
-	@Override
+
+
+    @Override
+    public MetadataElementEntity findByAttrNameTypeId(String attrName, String typeId) {
+        return (MetadataElementEntity)getCriteria().add(Restrictions.eq("attributeName",attrName)).add(Restrictions.eq("metadataType.id",typeId)).uniqueResult();
+    }
+
+    @Override
+    public String findIdByAttrNameTypeId(String attrName, String typeId) {
+        return (String)getCriteria().add(Restrictions.eq("attributeName", attrName)).add(Restrictions.eq("metadataType.id", typeId)).setProjection(Projections.id()).uniqueResult();
+    }
+
+    @Override
 	protected Criteria getExampleCriteria(final SearchBean searchBean) {
 		final Criteria criteria = getCriteria();
 		if(searchBean != null && searchBean instanceof MetadataElementSearchBean) {

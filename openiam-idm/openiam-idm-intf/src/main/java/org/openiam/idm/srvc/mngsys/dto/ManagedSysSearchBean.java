@@ -25,4 +25,11 @@ public class ManagedSysSearchBean extends AbstractSearchBean<ProvisionConnectorD
         this.name = name;
     }
 
+    @Override
+    public String getCacheUniqueBeanKey() {
+        return new StringBuilder()
+                .append(name != null ? name : "")
+                .append(getKey() != null ? getKey() : "")
+                .toString();
+    }
 }

@@ -32,4 +32,13 @@ public class AuthAttributeSearchBean extends AbstractSearchBean<AuthAttribute, S
     public void setAttributeName(String attributeName) {
         this.attributeName = attributeName;
     }
+
+    @Override
+    public String getCacheUniqueBeanKey() {
+        return new StringBuilder()
+                .append(attributeName != null ? attributeName : "")
+                .append(providerType != null ? providerType : "")
+                .append(getKey() != null ? getKey() : "")
+                .toString();
+    }
 }

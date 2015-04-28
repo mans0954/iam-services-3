@@ -39,6 +39,9 @@ public class OracleCommandFactory extends AbstractCommandFactory {
 	@Autowired
 	@Qualifier("testOracleCommand")
     private ConnectorCommand testOracleCommand;
+	@Autowired
+	@Qualifier("lookupAttributeNamesCommand")
+	private ConnectorCommand lookupAttributeNamesCommand;
 
 	public ConnectorCommand getConnectorCommand(CommandType commandType,
 			ExtensibleObjectType extensibleObjectType)
@@ -55,6 +58,7 @@ public class OracleCommandFactory extends AbstractCommandFactory {
 				return deleteUserOracleCommand;
 			case RESUME:
 				return resumeOracleCommand;
+			case RESET_PASSWORD:
 			case SET_PASSWORD:
 				return setPasswordOracleCommand;
 			case SUSPEND:
@@ -65,6 +69,8 @@ public class OracleCommandFactory extends AbstractCommandFactory {
 	            return testOracleCommand;
 			case LOOKUP:
 				return lookupUserOracleCommand;
+			case LOOKUP_ATTRIBUTE_NAME:
+				return lookupAttributeNamesCommand;
 			default:
 				throw new ConnectorDataException(
 						ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION, error);

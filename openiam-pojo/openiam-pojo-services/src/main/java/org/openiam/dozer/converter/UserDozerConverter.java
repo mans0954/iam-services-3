@@ -47,7 +47,7 @@ public class UserDozerConverter extends AbstractDozerEntityConverter<User, UserE
                 userNoteEntity.setUser(userEntity);
             }
             for (Map.Entry<String, UserAttributeEntity> attributeEntityEntry : userEntity.getUserAttributes().entrySet()) {
-                attributeEntityEntry.getValue().setUser(userEntity);
+                attributeEntityEntry.getValue().setUserId(userEntity.getId());
                 UserAttribute userAttributeSrc = dto.getUserAttributes().get(attributeEntityEntry.getKey());
                 if (StringUtils.isEmpty(userAttributeSrc.getMetadataId())) {
                     attributeEntityEntry.getValue().setElement(null);

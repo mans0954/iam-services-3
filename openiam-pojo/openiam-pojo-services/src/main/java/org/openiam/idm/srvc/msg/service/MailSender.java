@@ -24,6 +24,9 @@ public class MailSender {
         jmsTemplate.send(queue, new MessageCreator() {
             public javax.jms.Message createMessage(Session session) throws JMSException {
                 javax.jms.Message message = session.createObjectMessage(mail);
+                if (mail.getProcessingTime() != null) {
+                    message.setLongProperty("_HQ_SCHED_DELIVERY", mail.getProcessingTime().getTime()); //HornetQ Scheduled Delivery Property
+                }
                 return message;
             }
         });

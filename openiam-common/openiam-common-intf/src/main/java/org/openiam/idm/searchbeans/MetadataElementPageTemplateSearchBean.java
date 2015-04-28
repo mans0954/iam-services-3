@@ -79,4 +79,14 @@ public class MetadataElementPageTemplateSearchBean extends AbstractSearchBean<Me
 	public String getKey() {
 		return (CollectionUtils.isNotEmpty(keySet)) ? keySet.iterator().next() : null;
 	}
+
+    @Override
+    public String getCacheUniqueBeanKey() {
+        return new StringBuilder()
+                .append(patternIds != null ? patternIds.toString().hashCode() : "")
+                .append(keySet != null ? keySet.toString().hashCode() : "")
+                .append(name != null ? name.toString().hashCode() : "")
+                .append(getKey() != null ? getKey() : "")
+                .toString();
+    }
 }

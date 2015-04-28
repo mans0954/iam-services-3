@@ -176,7 +176,7 @@ public class MetadataDispatcher implements Sweepable {
                                 if(StringUtils.isBlank(attr.getValue())
                                    && CollectionUtils.isEmpty(attr.getValues())){
                                     attr.setValue(metadataElementEntity.getStaticDefaultValue());
-                                    attr.setUser(user);
+                                    attr.setUserId(user.getId());
                                     attr.setElement(metadataElementEntity);
                                     userManager.updateAttribute(attr);
                                 }

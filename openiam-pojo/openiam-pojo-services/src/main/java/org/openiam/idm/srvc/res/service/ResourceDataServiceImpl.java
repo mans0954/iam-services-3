@@ -40,6 +40,8 @@ import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.internationalization.LocalizedServiceGet;
 import org.openiam.util.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -74,6 +76,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 
 
     @Override
+    @Cacheable(value="resourcePropCache", key="{ #resourceId, #propName}")
     public String getResourcePropValueByName(@WebParam(name = "resourceId", targetNamespace = "") String resourceId, @WebParam(name = "propName", targetNamespace = "") String propName) {
         return resourceService.getResourcePropValueByName(resourceId, propName);
     }
@@ -81,6 +84,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     @Override
     @LocalizedServiceGet
     @Transactional(readOnly=true)
+    @Cacheable(value="resources", key="{ #resourceId,#language}")
     public Resource getResource(final String resourceId, final Language language) {
         Resource resource = null;
         try {
@@ -119,7 +123,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
         int count = 0;
         if (Boolean.TRUE.equals(searchBean.getRootsOnly())) {
             final List<ResourceEntity> resultsEntities = resourceService
-                    .findBeans(searchBean, 0, Integer.MAX_VALUE, null);
+                    .findBeans(searchBean, 0, Integer.MAX_VALUE);
             count = (resultsEntities != null) ? resultsEntities.size() : 0;
         } else {
             count = resourceService.count(searchBean);
@@ -131,8 +135,9 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
+    @Cacheable(value="resources", key="{ #searchBean.cacheUniqueBeanKey, #from, #size, #language}")
     public List<Resource> findBeans(final ResourceSearchBean searchBean, final int from, final int size, final Language language) {
-        final List<ResourceEntity> resultsEntities = resourceService.findBeans(searchBean, from, size, languageConverter.convertToEntity(language, false));
+        final List<ResourceEntity> resultsEntities = resourceService.findBeansLocalized(searchBean, from, size, languageConverter.convertToEntity(language, false));
         final List<Resource> finalList = resourceConverter.convertToDTOList(resultsEntities,searchBean.isDeepCopy());
         return finalList;
     }
@@ -182,6 +187,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     }
 
     @Override
+    @CacheEvict(value = "resources", allEntries=true)
     public Response saveResource(Resource resource, final String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
@@ -240,6 +246,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
         return resourceTypeList;
     }
 
+    @CacheEvict(value = "resourcePropCache", allEntries=true)
     public Response addResourceProp(final ResourceProp resourceProp, String requesterId) {
         IdmAuditLog idmAuditLog = new IdmAuditLog();
         idmAuditLog.setAction(AuditAction.ADD_RESOURCE_PROP.value());
@@ -247,6 +254,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
         return saveOrUpdateResourceProperty(resourceProp, idmAuditLog);
     }
 
+    @CacheEvict(value = "resourcePropCache", allEntries=true)
     public Response updateResourceProp(final ResourceProp resourceProp, String requesterId) {
         IdmAuditLog idmAuditLog = new IdmAuditLog();
         idmAuditLog.setAction(AuditAction.UPDATE_RESOURCE_PROP.value());
@@ -254,6 +262,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
         return saveOrUpdateResourceProperty(resourceProp, idmAuditLog);
     }
 
+    @CacheEvict(value = "resourcePropCache", allEntries=true)
     private Response saveOrUpdateResourceProperty(final ResourceProp prop, IdmAuditLog idmAuditLog) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
@@ -304,6 +313,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
         return response;
     }
 
+    @CacheEvict(value = "resourcePropCache", allEntries=true)
     public Response removeResourceProp(String resourcePropId, String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLog idmAuditLog = new IdmAuditLog();
@@ -336,6 +346,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     }
 
     @Override
+    @CacheEvict(value = "resources", allEntries=true)
     public Response removeUserFromResource(final String resourceId, final String userId, String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLog idmAuditLog = new IdmAuditLog();
@@ -374,6 +385,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 
     @Override
     @Transactional
+    @CacheEvict(value = "resources", allEntries=true)
     public Response addUserToResource(final String resourceId, final String userId, final String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLog idmAuditLog = new IdmAuditLog ();
@@ -428,6 +440,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     }
 
     @Override
+    @CacheEvict(value = "resources", allEntries=true)
     public Response deleteResource(final String resourceId, final String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
@@ -505,6 +518,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     }
 
     @Override
+    @CacheEvict(value = "resources", allEntries=true)
     public Response addChildResource(final String resourceId, final String childResourceId, final String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLog idmAuditLog = new IdmAuditLog ();
@@ -541,6 +555,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     }
 
     @Override
+    @CacheEvict(value = "resources", allEntries=true)
     public Response deleteChildResource(final String resourceId, final String memberResourceId, final String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLog idmAuditLog = new IdmAuditLog ();
@@ -581,6 +596,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     }
 
     @Override
+    @CacheEvict(value = "resources", allEntries=true)
     public Response addGroupToResource(final String resourceId, final String groupId, final String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLog idmAuditLog = new IdmAuditLog ();
@@ -618,6 +634,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     }
 
     @Override
+    @CacheEvict(value = "resources", allEntries=true)
     public Response removeGroupToResource(final String resourceId, final String groupId, final String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLog idmAuditLog = new IdmAuditLog ();
@@ -655,6 +672,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     }
 
     @Override
+    @CacheEvict(value = "resources", allEntries=true)
     public Response addRoleToResource(final String resourceId, final String roleId, final String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLog idmAuditLog = new IdmAuditLog ();
@@ -692,6 +710,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     }
 
     @Override
+    @CacheEvict(value = "resources", allEntries=true)
     public Response removeRoleToResource(final String resourceId, final String roleId, final String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLog idmAuditLog = new IdmAuditLog ();

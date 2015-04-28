@@ -46,6 +46,7 @@ import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
+import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
 import org.openiam.idm.srvc.meta.dto.MetadataElement;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.meta.service.MetadataService;
@@ -73,28 +74,51 @@ public class MetadataWebServiceImpl implements MetadataWebService {
     @Autowired
     private MetaDataTypeDozerConverter metaDataTypeDozerConverter;
 
-    @Autowired
-    private MetaDataElementDozerConverter metaDataElementDozerConverter;
-    
-    @Autowired
-    private LanguageDozerConverter languageConverter;
-
     private static Logger LOG = Logger.getLogger(MetadataWebServiceImpl.class);
 
     @Override
-    @LocalizedServiceGet
-    @Transactional(readOnly = true)
-    public List<MetadataElement> findElementBeans(final MetadataElementSearchBean searchBean, final int from, final int size, final Language language) {
-        final List<MetadataElementEntity> entityList = metadataService.findBeans(searchBean, from, size, languageConverter.convertToEntity(language, false));
-        return (entityList != null) ? metaDataElementDozerConverter.convertToDTOList(entityList,searchBean.isDeepCopy()) : null;
+    public MetadataElement getElementByAttrNameAndTypeId(String attrName, String typeId, final Language language) {
+        return metadataService.findElementByAttrNameAndTypeId(attrName, typeId, language);
     }
 
     @Override
-    @LocalizedServiceGet
-    @Transactional(readOnly = true)
+    public String getElementIdByAttrNameAndTypeId(String attrName, String typeId) {
+        return metadataService.findElementIdByAttrNameAndTypeId(attrName, typeId);
+    }
+
+    @Override
+    public MetadataType getByNameGrouping(String name, MetadataTypeGrouping grouping, final Language language) {
+        return metadataService.findMetadataTypeByNameAndGrouping(name, grouping, language);
+    }
+
+    @Override
+    public List<MetadataElement> findElementBeans(final MetadataElementSearchBean searchBean, final int from, final int size, final Language language) {
+        return metadataService.findBeans(searchBean, from, size, language);
+    }
+
+    @Override
+    public List<MetadataElement> findElementBeansNoLocalize(final MetadataElementSearchBean searchBean, final int from, final int size) {
+        return metadataService.findBeans(searchBean, from, size);
+    }
+
+    @Override
+    public MetadataElement getMetadataElementById(String id, Language language) {
+        return metadataService.findElementById(id, language);
+    }
+
+    @Override
+    public MetadataType getMetadataTypeById(String id) {
+        return metadataService.findById(id);
+    }
+
+    @Override
     public List<MetadataType> findTypeBeans(final MetadataTypeSearchBean searchBean, final int from, final int size, final Language language) {
-        final List<MetadataTypeEntity> entityList = metadataService.findBeans(searchBean, from, size);
-        return (entityList != null) ? metaDataTypeDozerConverter.convertToDTOList(entityList, true) : null;
+        return metadataService.findBeans(searchBean, from, size, language);
+    }
+
+    @Override
+    public List<MetadataType> findTypeBeansNoLocalize(final MetadataTypeSearchBean searchBean, final int from, final int size) {
+        return metadataService.findBeansNoLocalize(searchBean, from, size);
     }
 
     @Override
@@ -134,17 +158,16 @@ public class MetadataWebServiceImpl implements MetadataWebService {
                 throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
             }
 
-            final MetadataElementEntity entity = metaDataElementDozerConverter.convertToEntity(dto, true);
-            if (StringUtils.isBlank(entity.getAttributeName())) {
+            if (StringUtils.isBlank(dto.getAttributeName())) {
                 throw new BasicDataServiceException(ResponseCode.ATTRIBUTE_NAME_MISSING);
             }
 
-            if (entity.getMetadataType() == null) {
+            if (dto.getMetadataTypeId() == null) {
                 throw new BasicDataServiceException(ResponseCode.METADATA_TYPE_MISSING);
             }
 
-            metadataService.save(entity);
-            response.setResponseValue(entity.getId());
+            String id = metadataService.save(dto);
+            response.setResponseValue(id);
             response.setStatus(ResponseStatus.SUCCESS);
         } catch (BasicDataServiceException e) {
             response.setErrorCode(e.getCode());
@@ -167,7 +190,7 @@ public class MetadataWebServiceImpl implements MetadataWebService {
             Set<String> ids = new HashSet<String>();
             ids.add(id);
             searchBean.setTypeIdSet(ids);
-            List<MetadataElementEntity> list = metadataService.findBeans(searchBean, -1, -1, null);
+            List<MetadataElement> list = metadataService.findBeans(searchBean, -1, -1, null);
             if (!CollectionUtils.isEmpty(list))
                 throw new BasicDataServiceException(ResponseCode.METATYPE_LINKED_WITH_METAELEMENT);
             metadataService.deleteMetdataType(id);

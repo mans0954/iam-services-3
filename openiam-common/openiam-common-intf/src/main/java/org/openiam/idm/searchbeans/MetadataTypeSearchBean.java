@@ -113,4 +113,17 @@ public class MetadataTypeSearchBean extends AbstractSearchBean<MetadataType, Str
         return (CollectionUtils.isNotEmpty(keySet)) ? keySet.iterator().next()
                 : null;
     }
+
+    @Override
+    public String getCacheUniqueBeanKey() {
+        return new StringBuilder()
+                .append(name != null ? name : "")
+                .append(active != null ? active.booleanValue() : "")
+                .append(syncManagedSys != null ? syncManagedSys.booleanValue() : "")
+                .append(categoryIds != null ? categoryIds.toString().hashCode() : "")
+                .append(getKeys() != null ? getKeys().toString().hashCode() : "")
+                .append(grouping != null ? grouping.toString().hashCode() : "")
+                .append(getKey() != null ? getKey() : "")
+                .toString();
+    }
 }
