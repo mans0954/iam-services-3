@@ -522,9 +522,9 @@ public class GroupDataServiceImpl implements GroupDataService {
             List<MetadataElementEntity> elementList = metadataElementDAO.getByExample(sb, -1, -1);
             if(CollectionUtils.isNotEmpty(elementList)){
                 for(MetadataElementEntity element: elementList){
-                    if(element.isRequired()){
+                    //if(element.isRequired()){
                         groupAttrDao.save(AttributeUtil.buildGroupAttribute(group, element));
-                    }
+                    //}
                 }
             }
         }

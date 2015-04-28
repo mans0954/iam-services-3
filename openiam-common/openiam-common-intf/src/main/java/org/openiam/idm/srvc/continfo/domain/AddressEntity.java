@@ -122,7 +122,7 @@ public class AddressEntity {
     @JoinColumn(name = "TYPE_ID", insertable=true, updatable=true)
     private MetadataTypeEntity metadataType;
 
-    @Column(name = "COPY_FROM_LOCATION_ID", length = 32, nullable = false)
+    @Column(name = "COPY_FROM_LOCATION_ID", length = 32, nullable = true)
     private String locationId;
 
     public AddressEntity() {
