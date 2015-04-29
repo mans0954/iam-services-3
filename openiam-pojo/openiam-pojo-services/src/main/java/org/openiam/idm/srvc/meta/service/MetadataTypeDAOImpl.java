@@ -19,6 +19,7 @@ import org.openiam.idm.srvc.cat.domain.CategoryEntity;
 import org.openiam.idm.srvc.cat.service.CategoryDAO;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.searchbean.converter.MetadataTypeSearchBeanConverter;
+import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -94,6 +95,18 @@ public class MetadataTypeDAOImpl extends BaseDaoImpl<MetadataTypeEntity, String>
 		return criteria;
     }
 
+//    @SuppressWarnings("unchecked")
+//    @Override
+//    public List<MetadataTypeEntity> findTypesInCategory(String categoryId) {
+//		final Criteria criteria = getCriteria().createAlias("categories", "category").add(
+//				Restrictions.eq("category.id", categoryId));
+//		return criteria.list();
+//    }
+//
+	@Override
+	public MetadataTypeEntity findByNameGrouping(String name, MetadataTypeGrouping grouping) {
+		return (MetadataTypeEntity)getCriteria().add(Restrictions.eq("description",name)).add(Restrictions.eq("grouping",grouping)).uniqueResult();
+	}
     @Override
     protected String getPKfieldName() {
     	return "id";

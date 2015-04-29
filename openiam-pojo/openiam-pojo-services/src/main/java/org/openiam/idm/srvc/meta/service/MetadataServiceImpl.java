@@ -7,15 +7,20 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.base.service.AbstractLanguageService;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.exception.BasicDataServiceException;
+import org.openiam.dozer.converter.MetaDataElementDozerConverter;
+import org.openiam.dozer.converter.MetaDataTypeDozerConverter;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
+import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.lang.service.LanguageMappingDAO;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
 import org.openiam.idm.srvc.meta.domain.MetadataValidValueEntity;
+import org.openiam.idm.srvc.meta.dto.MetadataElement;
+import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
@@ -65,7 +70,13 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
     
     @Autowired
     private LanguageMappingDAO languageMappingDAO;
-    
+
+    @Autowired
+    private MetaDataTypeDozerConverter metaDataTypeDozerConverter;
+
+    @Autowired
+    private MetaDataElementDozerConverter metaDataElementDozerConverter;
+
     @Value("${org.openiam.resource.type.ui.widget}")
     private String uiWidgetResourceType;
 
@@ -78,42 +89,69 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 
     private static final Log log = LogFactory.getLog(MetadataServiceImpl.class);
 
-	@Override
+    @Override
+    @Transactional(readOnly = true)
+    @LocalizedServiceGet
+    public MetadataType findMetadataTypeByNameAndGrouping(String name, MetadataTypeGrouping grouping, final Language language) {
+        MetadataTypeEntity metadataTypeEntity = metadataTypeDao.findByNameGrouping(name, grouping);
+        return metaDataTypeDozerConverter.convertToDTO(metadataTypeEntity, true);
+    }
+
+    @Override
+    @Transactional(readOnly=true)
+    @LocalizedServiceGet
+    public MetadataElement findElementById(String id, Language language) {
+        MetadataElementEntity metadataElementEntity = metadataElementDao.findById(id);
+        return metadataElementEntity != null ? metaDataElementDozerConverter.convertToDTO(metadataElementEntity,true) : null;
+    }
+
+    @Override
+    @Transactional(readOnly=true)
+    @LocalizedServiceGet
+    public MetadataElement findElementByAttrNameAndTypeId(String attrName, String typeId, final Language language) {
+        MetadataElementEntity metadataElementEntity = metadataElementDao.findByAttrNameTypeId(attrName, typeId);
+        return metadataElementEntity != null ? metaDataElementDozerConverter.convertToDTO(metadataElementEntity, true) : null;
+    }
+
+    @Override
 	@LocalizedServiceGet
 	@Transactional(readOnly=true)
-	public List<MetadataElementEntity> findBeans(final MetadataElementSearchBean searchBean, final int from, final int size, final LanguageEntity language) {
+	public List<MetadataElement> findBeans(final MetadataElementSearchBean searchBean, final int from, final int size, final Language language) {
 		List<MetadataElementEntity> retVal = null;
 		if(searchBean != null  && searchBean.hasMultipleKeys()) {
 			retVal = metadataElementDao.findByIds(searchBean.getKeys());
 		} else {
 			retVal = metadataElementDao.getByExample(searchBean, from, size);
 		}
-		return retVal;
+
+        return (retVal != null) ? metaDataElementDozerConverter.convertToDTOList(retVal,true) : null;
 	}
-	
-	@Override
-	@LocalizedServiceGet
-	@Transactional
-	public List<MetadataTypeEntity> findBeans(final MetadataTypeSearchBean searchBean, final int from, final int size, final LanguageEntity language) {
+
+    @Override
+    @LocalizedServiceGet
+	@Transactional(readOnly=true)
+	public List<MetadataType> findBeans(final MetadataTypeSearchBean searchBean, final int from, final int size, final Language language) {
 		List<MetadataTypeEntity> retVal = null;
 		if(searchBean != null && searchBean.hasMultipleKeys()) {
 			retVal = metadataTypeDao.findByIds(searchBean.getKeys());
 		} else {
 			retVal = metadataTypeDao.getByExample(searchBean, from, size);
 		}
-		return retVal;
+        return (retVal != null) ? metaDataTypeDozerConverter.convertToDTOList(retVal,true) : null;
 	}
 
     @Override
     @Transactional(readOnly=true)
-    public MetadataTypeEntity findById(String id) {
-        return metadataTypeDao.findById(id);
+    public MetadataType findById(String id) {
+        MetadataTypeEntity metadataTypeEntity = metadataTypeDao.findById(id);
+        return metadataTypeEntity != null ? metaDataTypeDozerConverter.convertToDTO(metadataTypeEntity, true) : null;
     }
 
     @Override
 	@Transactional
-	public void save(MetadataElementEntity entity) {
-		if(entity != null) {
+	public void save(MetadataElement element) {
+		if(element != null) {
+            MetadataElementEntity entity = metaDataElementDozerConverter.convertToEntity(element,true);
 			if(StringUtils.isBlank(entity.getId())) {
 				final ResourceEntity resource = new ResourceEntity();
 				resource.setName(String.format("%s_%s", entity.getAttributeName(), "" + System.currentTimeMillis()));
@@ -160,6 +198,7 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 			}
 			metadataElementDao.merge(entity);
             this.send(entity);
+			element.setId(entity.getId());
 		}
 	}
 
@@ -223,31 +262,34 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 	
 	@Override
 	@Transactional
-	public void save(MetadataTypeEntity entity) throws BasicDataServiceException {
-		if(entity != null) {
-			if(StringUtils.isNotBlank(entity.getId())) {
+	public void save(MetadataType dto) throws BasicDataServiceException {
+		if(dto!=null) {
+			final MetadataTypeEntity entity = metaDataTypeDozerConverter.convertToEntity(dto, true);
+
+			if (StringUtils.isNotBlank(entity.getId())) {
 				final MetadataTypeEntity dbEntity = metadataTypeDao.findById(entity.getId());
-				if(dbEntity != null) {
+				if (dbEntity != null) {
 					entity.setCategories(dbEntity.getCategories());
 					entity.setElementAttributes(dbEntity.getElementAttributes());
 				}
 			}
-			if(StringUtils.isBlank(entity.getId())) {
+			if (StringUtils.isBlank(entity.getId())) {
 				metadataTypeDao.save(entity);
 			} else {
-				if(entity.isUsedForSMSOTP()) {
-					final List<MetadataTypeEntity> phoneTypesWithOTP = getPhonesWithSMSOTPEnabled();
-					if(CollectionUtils.isNotEmpty(phoneTypesWithOTP)) {
-						for(final MetadataTypeEntity phoneTypeWithOTP : phoneTypesWithOTP) {
-							if(!StringUtils.equals(phoneTypeWithOTP.getId(), entity.getId())) {
+				if (entity.isUsedForSMSOTP()) {
+					final List<MetadataType> phoneTypesWithOTP = getPhonesWithSMSOTPEnabled();
+					if (CollectionUtils.isNotEmpty(phoneTypesWithOTP)) {
+						for (final MetadataType phoneTypeWithOTP : phoneTypesWithOTP) {
+							if (!StringUtils.equals(phoneTypeWithOTP.getId(), entity.getId())) {
 								throw new BasicDataServiceException(ResponseCode.PHONE_MARKED_FOR_SMS_OTP, phoneTypeWithOTP.getName());
 							}
 						}
 					}
 				}
-				
+
 				metadataTypeDao.merge(entity);
 			}
+			dto.setId(entity.getId());
 		}
 	}
 	
@@ -312,19 +354,19 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 
 	@Override
 	@Transactional(readOnly=true)
-	public List<MetadataElementEntity> findElementByName(String name) {
+	public List<MetadataElement> findElementByName(String name) {
 		final MetadataElementSearchBean searchBean = new MetadataElementSearchBean();
 		searchBean.setAttributeName(name);
-		return findBeans(searchBean, 0, Integer.MAX_VALUE, null);
+        return findBeans(searchBean, 0, Integer.MAX_VALUE, null);
 	}
 
 	@Override
 	@Transactional(readOnly=true)
-	public List<MetadataTypeEntity> getPhonesWithSMSOTPEnabled() {
+	public List<MetadataType> getPhonesWithSMSOTPEnabled() {
 		final MetadataTypeSearchBean searchBean = new MetadataTypeSearchBean();
 		searchBean.setUsedForSMSOTP(true);
 		searchBean.setGrouping(MetadataTypeGrouping.PHONE);
 		final List<MetadataTypeEntity> entitiesMarkedForSMSOTP = metadataTypeDao.getByExample(searchBean);
-		return entitiesMarkedForSMSOTP;
+		return  (entitiesMarkedForSMSOTP != null) ? metaDataTypeDozerConverter.convertToDTOList(entitiesMarkedForSMSOTP,true) : null;
 	}
 }

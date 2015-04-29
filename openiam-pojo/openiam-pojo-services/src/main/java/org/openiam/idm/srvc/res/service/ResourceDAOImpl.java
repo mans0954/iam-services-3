@@ -5,6 +5,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
+import org.hibernate.FetchMode;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
@@ -368,6 +369,11 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
             }
 			if(StringUtils.isNotBlank(searchBean.getAdminResourceId())){
 				criteria.add(Restrictions.eq("adminResource.id", searchBean.getAdminResourceId()));
+			}
+			if(StringUtils.isNotBlank(searchBean.getOwnerId())) {
+				criteria.createAlias("adminResource", "ar");
+				criteria.createAlias("ar.users", "aru");
+				criteria.add(Restrictions.eq("aru.id", searchBean.getOwnerId()));
 			}
 		}
 	}

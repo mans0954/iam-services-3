@@ -226,6 +226,7 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 	}
 
 	@Override
+    @Transactional(readOnly = true)
 	public PageTempate getTemplate(TemplateRequest request) {
 		MetadataElementPageTemplateEntity entity = null;
 		if(StringUtils.isNotEmpty(request.getTemplateId())) {
@@ -253,7 +254,7 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 		if(entity != null) {
 			final Map<String, UserAttributeEntity> attributeName2UserAttributeMap = new HashMap<String, UserAttributeEntity>();
 			if(userId != null) {
-				final List<UserAttributeEntity> attributeList = attributeDAO.findUserAttributes(userId);
+				final List<UserAttributeEntity> attributeList = attributeDAO.findUserAttributesLocalized(userId);
 				for(final UserAttributeEntity attribute : attributeList) {
 					attributeName2UserAttributeMap.put(attribute.getName(), attribute);
 				}
@@ -278,18 +279,27 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 								
 								if(targetLanguage != null) {
 									//pageElement.setDisplayName(getLanguageValue(targetLanguage, elementEntity.getLanguageMap()));
-									pageElement.setDisplayName(elementEntity.getDisplayName());
+									if(MapUtils.isNotEmpty(elementEntity.getLanguageMap())) {
+										final LanguageMappingEntity displayNameXref = elementEntity.getLanguageMap().get(targetLanguage.getId());
+										final String displayName = (displayNameXref != null) ? displayNameXref.getValue() : null;
+										pageElement.setDisplayName(displayName);
+									}
 									pageElement.setDefaultValue(elementEntity.getStaticDefaultValue());
 									if(StringUtils.isBlank(pageElement.getDefaultValue())) {
 										//pageElement.setDefaultValue(getLanguageValue(targetLanguage, elementEntity.getDefaultValueLanguageMap()));
-										pageElement.setDefaultValue(elementEntity.getDefaultValue());
+										final Map<String, LanguageMappingEntity> defValLanguageMap = elementEntity.getDefaultValueLanguageMap();
+										final LanguageMappingEntity displayNameXref = (defValLanguageMap != null) ? defValLanguageMap.get(targetLanguage.getId()) : null;
+										final String defaultValue = (displayNameXref != null) ? displayNameXref.getValue() : null;
+										pageElement.setDefaultValue(defaultValue);
 									}
 									if(CollectionUtils.isNotEmpty(elementEntity.getValidValues())) {
 										for(final MetadataValidValueEntity validValueEntity : elementEntity.getValidValues()) {
 											final String validValueId = validValueEntity.getId();
 											final String value = validValueEntity.getUiValue();
 											//final String displayName = getLanguageValue(targetLanguage, validValueEntity.getLanguageMap());
-											final String displayName =  validValueEntity.getDisplayName();
+											//final String displayName =  validValueEntity.getDisplayName();
+											final LanguageMappingEntity displayNameXref = validValueEntity.getLanguageMap().get(targetLanguage.getId());
+											final String displayName = (displayNameXref != null) ? displayNameXref.getValue() : null;
 											final Integer displayOrder = validValueEntity.getDisplayOrder();
 											if(displayName != null && value != null) {
 												pageElement.addValidValue(new PageElementValidValue(validValueId, value, displayName, displayOrder));
@@ -342,11 +352,7 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 	}
 	
 	private MetadataElementEntity getElement(final String id, final LanguageEntity language) {
-		final MetadataElementSearchBean searchBean = new MetadataElementSearchBean();
-		searchBean.setDeepCopy(true);
-		searchBean.setKey(id);
-		final List<MetadataElementEntity> resultList = elementService.findBeans(searchBean, 0, 1, language);
-		return (CollectionUtils.isNotEmpty(resultList)) ? resultList.get(0) : null;
+       return elementDAO.findById(id);
 	}
 	
 	private LanguageEntity getLanguage(final String languageId) {
@@ -500,7 +506,7 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 			final Map<String, MetadataElementEntity> elementMap = getMetadataElementMap(template);
 			
 			/* create user attribute maps for fast access */
-			final List<UserAttributeEntity> attributes = attributeDAO.findUserAttributes(userId);
+			final List<UserAttributeEntity> attributes = attributeDAO.findUserAttributesLocalized(userId);
 			final Map<String, UserAttributeEntity> attributeName2UserAttributeMap = new HashMap<String, UserAttributeEntity>();
 			if(CollectionUtils.isNotEmpty(attributes)) {
 				for(final UserAttributeEntity attribute : attributes) {
@@ -621,10 +627,12 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
         if (typeId != null) {
             MetadataElementSearchBean searchBean = new MetadataElementSearchBean();
             searchBean.setAttributeName(element.getAttributeName());
+
             Set<String> ids = new HashSet<String>();
             ids.add(typeId);
             searchBean.setTypeIdSet(ids);
-            List<MetadataElementEntity> list = metadataService.findBeans(searchBean, 0, Integer.MAX_VALUE, null);
+
+            List<MetadataElementEntity> list = elementDAO.getByExample(searchBean, 0, Integer.MAX_VALUE);
             if (list.size() > 0) {
                 return list.get(0);
             }

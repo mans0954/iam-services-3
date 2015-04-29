@@ -145,7 +145,6 @@ public interface UserDataWebService {
      * @return a List of UserAttributes associated with this user
      */
     @WebMethod
-    @Deprecated
     public List<UserAttribute> getUserAttributes(@WebParam(name = "userId", targetNamespace = "") String userId);
     
     @WebMethod
@@ -540,11 +539,14 @@ public interface UserDataWebService {
      *            - the superior's User ID
      * @param suborinateId
      *            - the subordinate's User ID
+     * @param requesterId
+     *            - ID of the requestor
      * @return a Response Object, containing the result of this operation
      */
     @WebMethod
     public Response addSuperior(@WebParam(name = "superiorId", targetNamespace = "") String superiorId,
-                                @WebParam(name = "suborinateId", targetNamespace = "") String suborinateId);
+                                @WebParam(name = "suborinateId", targetNamespace = "") String suborinateId,
+                                @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     /**
      * Removes the User specified by superiorId from being a Superior of the

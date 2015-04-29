@@ -23,7 +23,9 @@ import org.openiam.idm.srvc.auth.sso.SSOTokenModule;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
+import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.meta.service.MetadataService;
+import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.policy.domain.PolicyEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
@@ -61,6 +63,8 @@ public class AbstractSocialLoginModule<Profile extends AbstractSocialProfile> ex
     @Autowired
     @Qualifier("metadataService")
     protected  MetadataService metadataService;
+    @Autowired
+    private MetadataTypeDAO metadataTypeDao;
     @Autowired
     @Qualifier("customJacksonMapper")
     protected  ObjectMapper jsonMapper;
@@ -230,13 +234,13 @@ public class AbstractSocialLoginModule<Profile extends AbstractSocialProfile> ex
         final MetadataTypeSearchBean searchBean = new MetadataTypeSearchBean();
         searchBean.setGrouping(MetadataTypeGrouping.EMAIL);
         searchBean.setActive(true);
-        final List<MetadataTypeEntity> types = metadataService.findBeans(searchBean, 0, Integer.MAX_VALUE, null);
+        final List<MetadataType> types = metadataService.findBeans(searchBean, 0, Integer.MAX_VALUE, null);
 
         EmailAddressEntity email = new EmailAddressEntity();
         email.setEmailAddress(profile.getEmail());
         email.setIsActive(true);
         email.setIsDefault(true);
-        email.setType(types.get(0));
+        email.setType(metadataTypeDao.findById(types.get(0).getId()));
 
         emailAddressList.add(email);
         userEntity.setEmailAddresses(emailAddressList);

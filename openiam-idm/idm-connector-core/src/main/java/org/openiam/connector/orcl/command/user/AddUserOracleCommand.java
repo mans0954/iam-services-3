@@ -44,37 +44,22 @@ public class AddUserOracleCommand extends AbstractAddOracleCommand<ExtensibleUse
         String identifiedBy = null;
         ExtensibleObject obj = crudRequest.getExtensibleObject();
         
-        if (StringUtils.isNotBlank(crudRequest.getObjectIdentity())) {
-            // Extract attribues into a map. Also save groups
-            HashMap<String, String> attributes = new HashMap<String, String>();
-            attributes.put("login", crudRequest.getObjectIdentity());
-            if (obj == null) {
-                log.debug("Object: not provided, just identity, seems it is delete operation");
-            } else {
-                log.debug("Object:" + obj.getName() + " - operation="
-                        + obj.getOperation());
-                
-                // Extract attributes
-                for (ExtensibleAttribute att : obj.getAttributes()) {
-                    if (att != null) {
-                        attributes.put(att.getName(), att.getValue());
-                    }
-                }
+        if (StringUtils.isBlank(crudRequest.getObjectIdentity())) {
+            throw new ConnectorDataException(ErrorCode.INVALID_ATTRIBUTE, "No identity specified");
+        }
+
+        log.debug("Create user:" + crudRequest.getObjectIdentity());
+
+        // Extract attributes
+        for (ExtensibleAttribute att : obj.getAttributes()) {
+            if ("PASSWORD".equalsIgnoreCase(att.getName())) {
+                identifiedBy = att.getValue();
             }
-            
-            
-           identifiedBy = attributes.get("password");
-            
-          
+        }
 
-            if(log.isDebugEnabled()) {
-                log.debug(String.format("Number of attributes to persist in ADD = %s", attributes.size()));
-            }
-
-            
-
-        if(StringUtils.isBlank(identifiedBy))
+        if(StringUtils.isBlank(identifiedBy)) {
             throw new ConnectorDataException(ErrorCode.INVALID_ATTRIBUTE, "No password specified");
+        }
 
         final String sql = String.format(INSERT_SQL,  crudRequest.getObjectIdentity(), identifiedBy);
         if(log.isDebugEnabled()) {
@@ -88,7 +73,6 @@ public class AddUserOracleCommand extends AbstractAddOracleCommand<ExtensibleUse
             throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, e.getMessage());
         }
     }
-        }
 
     protected boolean identityExists(final Connection connection, final String principalName) throws ConnectorDataException {
     	

@@ -111,4 +111,5 @@ public interface AuthenticationService {
     
     @WebMethod
     public Response save(final @WebParam(name = "entity", targetNamespace = "") AuthStateEntity entity);
+
 }

@@ -175,7 +175,7 @@ public interface UserDataService {
      * Returns a List of supervisor objects that represents the supervisors for
      * this employee or user.
      * 
-     * @param employeeId
+     * @param superiorId
      * @return
      */
     // public List<UserEntity> getSupervisors(String employeeId);
@@ -262,6 +262,8 @@ public interface UserDataService {
     public Map<String, UserAttribute> getUserAttributesDto(String userId);
     
     public List<UserAttributeEntity> getUserAttributeList(String userId, final LanguageEntity language);
+
+    public List<UserAttribute> getUserAttributesDtoList(String userId);
 
     public Map<String, UserAttributeEntity> getUserAttributes(String userId);
 

@@ -92,4 +92,5 @@ public class MetadataTypeSearchBean extends AbstractKeyNameSearchBean<MetadataTy
         return (CollectionUtils.isNotEmpty(keySet)) ? keySet.iterator().next()
                 : null;
     }
+
 }

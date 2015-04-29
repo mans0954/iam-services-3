@@ -14,6 +14,7 @@ import org.hibernate.annotations.GenericGenerator;
 import org.openiam.am.srvc.domain.AuthProviderEntity;
 import org.openiam.base.domain.AbstractKeyNameEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.mngsys.domain.ReconciliationResourceAttributeMapEntity;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.hibernate.annotations.Cache;
 
@@ -75,6 +76,9 @@ public class PolicyEntity extends AbstractKeyNameEntity {
     @Fetch(FetchMode.SUBSELECT)
     private Set<AuthProviderEntity> authenticationPolicyProviders;
 
+    @OneToMany(fetch = FetchType.LAZY, orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "attributePolicy")
+    private Set<ReconciliationResourceAttributeMapEntity> attributeMaps = new HashSet<ReconciliationResourceAttributeMapEntity>(0);
+
     public PolicyEntity() {
     }
 
@@ -132,6 +136,14 @@ public class PolicyEntity extends AbstractKeyNameEntity {
 
     public void setPolicyAttributes(Set<PolicyAttributeEntity> policyAttributes) {
         this.policyAttributes = policyAttributes;
+    }
+
+    public Set<ReconciliationResourceAttributeMapEntity> getAttributeMaps() {
+        return attributeMaps;
+    }
+
+    public void setAttributeMaps(Set<ReconciliationResourceAttributeMapEntity> attributeMaps) {
+        this.attributeMaps = attributeMaps;
     }
 
     public PolicyAttributeEntity getAttribute(String name) {
@@ -289,9 +301,9 @@ public class PolicyEntity extends AbstractKeyNameEntity {
     @Override
     public String toString() {
         return String
-                .format("PolicyEntity [policyDef=%s, description=%s, status=%s, createDate=%s, createdBy=%s, lastUpdate=%s, lastUpdatedBy=%s, rule=%s, ruleSrcUrl=%s, enablement=%s, toString()=%s]",
+                .format("PolicyEntity [policyDef=%s, description=%s, status=%s, createDate=%s, createdBy=%s, lastUpdate=%s, lastUpdatedBy=%s, rule=%s, ruleSrcUrl=%s, enablement=%s, policyAttributes=%s, toString()=%s]",
                         policyDef, description, status, createDate,
                         createdBy, lastUpdate, lastUpdatedBy, rule, ruleSrcUrl,
-                        enablement, super.toString());
+                        enablement, policyAttributes, super.toString());
     }
 }

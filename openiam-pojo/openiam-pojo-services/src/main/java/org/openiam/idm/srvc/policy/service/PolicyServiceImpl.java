@@ -1,27 +1,34 @@
 package org.openiam.idm.srvc.policy.service;
 
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.exception.BasicDataServiceException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.openiam.dozer.converter.ITPolicyDozerConverter;
+import org.openiam.dozer.converter.PolicyDefParamDozerConverter;
+import org.openiam.dozer.converter.PolicyDozerConverter;
 import org.openiam.idm.searchbeans.PolicySearchBean;
 import org.openiam.idm.srvc.policy.domain.PolicyAttributeEntity;
 import org.openiam.idm.srvc.policy.domain.PolicyDefParamEntity;
 import org.openiam.idm.srvc.policy.domain.PolicyEntity;
-import org.openiam.idm.srvc.res.domain.ResourceEntity;
-import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
+import org.openiam.idm.srvc.batch.domain.BatchTaskEntity;
+import org.openiam.idm.srvc.batch.service.BatchService;
+import org.openiam.idm.srvc.policy.domain.*;
+import org.openiam.idm.srvc.policy.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class PolicyServiceImpl implements PolicyService {
-	
+
+    private static final Log log = LogFactory.getLog(PolicyServiceImpl.class);
+
 	@Autowired
 	private PolicyDAO policyDao;
 	
@@ -31,15 +38,42 @@ public class PolicyServiceImpl implements PolicyService {
 	@Autowired
 	private PolicyDefDAO policyDefDAO;
 
+    /**
+     * The policy dozer converter.
+     */
+    @Autowired
+    private PolicyDozerConverter policyDozerConverter;
+
+    @Autowired
+    private ITPolicyDozerConverter itPolicyDozerConverter;
+
+    @Autowired
+    private ITPolicyDAO itPolicyDao;
+
+    /**
+     * The policy def param dozer converter.
+     */
+    @Autowired
+    private PolicyDefParamDozerConverter policyDefParamDozerConverter;
+
+    @Autowired
+    private BatchService batchService;
+
+    @Value("${batch.task.password.exp.id}")
+    private String passwordExpirationBatchTaskId;
+
+
 	@Override
 	@Transactional(readOnly=true)
-	public PolicyEntity getPolicy(String policyId) {
-		return policyDao.findById(policyId);
+	public Policy getPolicy(String policyId) {
+        PolicyEntity policyEntity = policyDao.findById(policyId);
+        return policyDozerConverter.convertToDTO(policyEntity, true);
 	}
 
 	@Override
 	@Transactional
-	public void save(final PolicyEntity pe) {
+	public void save(final Policy policy) {
+		final PolicyEntity pe = policyDozerConverter.convertToEntity(policy, true);
 		if(CollectionUtils.isNotEmpty(pe.getPolicyAttributes())) {
 			for(final PolicyAttributeEntity attribute : pe.getPolicyAttributes()) {
 				attribute.setPolicy(pe);
@@ -65,12 +99,32 @@ public class PolicyServiceImpl implements PolicyService {
 		} else {
 			policyDao.save(pe);
 		}
+        try {
+            this.policyPostProcessor(pe);
+        } catch (Exception e) {
+            log.error("can't run policy post processor");
+            log.error(e);
+        }
+        policy.setId(pe.getId());
 	}
+
+	// TODO: check because added boolean parameter to call batchService.save(bte);
+    private void policyPostProcessor(PolicyEntity pe) {
+        // turn on Task Password near expiration
+        PolicyAttributeEntity pae = pe.getAttribute("PWD_EXP_WARN");
+        boolean state = (pae == null) ? false : pae.isRequired();
+        BatchTaskEntity bte = batchService.findById(passwordExpirationBatchTaskId);
+        if (bte.isEnabled() != state) {
+            bte.setEnabled(state);
+            batchService.save(bte, true);
+        }
+    }
 
 	@Override
 	@Transactional(readOnly=true)
-	public List<PolicyEntity> findPolicyByName(String policyDefId, String policyName) {
-		return policyDao.findPolicyByName(policyDefId, policyName);
+	public List<Policy> findPolicyByName(String policyDefId, String policyName) {
+        List<PolicyEntity> policyEntities = policyDao.findPolicyByName(policyDefId, policyName);
+        return policyDozerConverter.convertToDTOList(policyEntities, false);
 	}
 
 	@Override
@@ -98,14 +152,39 @@ public class PolicyServiceImpl implements PolicyService {
 
 	@Override
 	@Transactional(readOnly=true)
-	public List<PolicyEntity> findBeans(PolicySearchBean searchBean, int from,
+	public List<Policy> findBeans(PolicySearchBean searchBean, int from,
 			int size) {
-		return policyDao.getByExample(searchBean, from, size);
+        List<PolicyEntity> entities = policyDao.getByExample(searchBean, from, size);
+        return policyDozerConverter.convertToDTOList(entities, true);
 	}
 	
 	@Override
 	@Transactional(readOnly=true)
-	public List<PolicyDefParamEntity> findPolicyDefParamByGroup(final String policyDefId, final String pswdGroup) {
-		return policyDefParamDao.findPolicyDefParamByGroup(policyDefId, pswdGroup);
+	public List<PolicyDefParam> findPolicyDefParamByGroup(final String policyDefId, final String pswdGroup) {
+		List<PolicyDefParamEntity> entities =  policyDefParamDao.findPolicyDefParamByGroup(policyDefId, pswdGroup);
+        return policyDefParamDozerConverter.convertToDTOList(entities, true);
 	}
+
+    @Override
+    @Transactional(readOnly = true)
+    public ITPolicy findITPolicy() {
+        return itPolicyDozerConverter.convertToDTO(itPolicyDao.findITPolicy(), false);
+    }
+
+    @Override
+    @Transactional
+    public void resetITPolicy() {
+        ITPolicyEntity itPolicyEntity = itPolicyDao.findITPolicy();
+        if(itPolicyEntity != null){
+            itPolicyDao.delete(itPolicyEntity);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void saveITPolicy(ITPolicy itPolicy) {
+        ITPolicyEntity pe = itPolicyDozerConverter.convertToEntity(itPolicy, true);
+        itPolicyDao.save(pe);
+        itPolicy.setPolicyId(pe.getPolicyId());
+    }
 }
