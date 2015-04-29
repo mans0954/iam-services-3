@@ -54,11 +54,6 @@ public class DefaultLoginModule extends AbstractLoginModule {
 
     private static final Log log = LogFactory.getLog(DefaultLoginModule.class);
 
-    @Autowired
-    private PasswordHistoryDAO passwordHistoryDao;
-    @Autowired
-    private PasswordHistoryDozerConverter passwordHistoryDozerConverter;
-
     public DefaultLoginModule() {
     }
 
@@ -101,9 +96,7 @@ public class DefaultLoginModule extends AbstractLoginModule {
         }
         principal = lg.getLogin();
 
-        List<PasswordHistoryEntity> phList = passwordHistoryDao.getPasswordHistoryByLoginId(lg.getLoginId(), 0, Integer.MAX_VALUE);
-        Set<PasswordHistoryEntity> phESet = new HashSet<PasswordHistoryEntity>(phList);
-        Set<PasswordHistory> phSet = passwordHistoryDozerConverter.convertToDTOSet(phESet, false);
+        Set<PasswordHistory> phSet = passwordManager.getPasswordHistory(lg.getLoginId(), 0, Integer.MAX_VALUE);
         lg.setPasswordHistory(phSet);
 
         // checking if User is valid

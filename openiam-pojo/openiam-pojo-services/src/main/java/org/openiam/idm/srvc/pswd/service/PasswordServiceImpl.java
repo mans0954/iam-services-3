@@ -21,7 +21,9 @@
 package org.openiam.idm.srvc.pswd.service;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.collections.CollectionUtils;
@@ -30,6 +32,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.dozer.converter.LoginDozerConverter;
+import org.openiam.dozer.converter.PasswordHistoryDozerConverter;
 import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.exception.ObjectNotFoundException;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
@@ -45,12 +48,8 @@ import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.policy.service.PolicyDAO;
 import org.openiam.idm.srvc.policy.service.PolicyDataService;
 import org.openiam.idm.srvc.policy.service.PolicyObjectAssocDAO;
-import org.openiam.idm.srvc.pswd.dto.Password;
-import org.openiam.idm.srvc.pswd.dto.PasswordResetTokenRequest;
-import org.openiam.idm.srvc.pswd.dto.PasswordResetTokenResponse;
-import org.openiam.idm.srvc.pswd.dto.PasswordRule;
-import org.openiam.idm.srvc.pswd.dto.PasswordValidationResponse;
-import org.openiam.idm.srvc.pswd.dto.ValidatePasswordResetTokenResponse;
+import org.openiam.idm.srvc.pswd.dto.*;
+import org.openiam.idm.srvc.pswd.domain.PasswordHistoryEntity;
 import org.openiam.idm.srvc.pswd.rule.PasswordRuleException;
 import org.openiam.idm.srvc.pswd.rule.PasswordRuleViolation;
 import org.openiam.idm.srvc.pswd.rule.PasswordValidator;
@@ -109,6 +108,9 @@ public class PasswordServiceImpl implements PasswordService {
 
     @Autowired
     protected PasswordPolicyProvider passwordPolicyProvider;
+
+    @Autowired
+    private PasswordHistoryDozerConverter passwordHistoryDozerConverter;
 
     private static final Log log = LogFactory.getLog(PasswordServiceImpl.class);
     private static final long DAY_AS_MILLIS = 86400000l;
@@ -497,5 +499,11 @@ public class PasswordServiceImpl implements PasswordService {
 
         return (curTime + tokenLife);
 
+    }
+
+    @Override
+    public Set<PasswordHistory> getPasswordHistory(String id, Integer from, Integer count) {
+        Set<PasswordHistoryEntity> phESet = new HashSet<PasswordHistoryEntity>(passwordHistoryDao.getPasswordHistoryByLoginId(id, 0, count));
+        return passwordHistoryDozerConverter.convertToDTOSet(phESet, false);
     }
 }
