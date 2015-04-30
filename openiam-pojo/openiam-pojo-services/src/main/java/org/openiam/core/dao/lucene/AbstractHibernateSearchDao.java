@@ -274,7 +274,7 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType extends Serializa
             logger.error("Can't index ", e);
           //  throw e;
         } finally {
-        	//fullTextSession.close();
+            session.close();
         }
     }
 
