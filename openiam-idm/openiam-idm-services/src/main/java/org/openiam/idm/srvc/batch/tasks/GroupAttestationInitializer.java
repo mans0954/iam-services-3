@@ -7,6 +7,7 @@ import org.openiam.authmanager.service.AuthorizationManagerAdminService;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.bpm.activiti.ActivitiService;
+import org.openiam.bpm.dto.BasicWorkflowResponse;
 import org.openiam.bpm.request.GenericWorkflowRequest;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.bpm.util.ActivitiRequestType;
@@ -71,7 +72,7 @@ public class GroupAttestationInitializer {
                         request.addParameter(ActivitiConstants.ATTESTATION_URL.getName(), attestationURL);
                         request.setRequestorUserId(systemUserId);
                         request.setDeletable(false);
-                        final Response response = activitiService.initiateWorkflow(request);
+                        final BasicWorkflowResponse response = activitiService.initiateWorkflow(request);
                         if(!ResponseStatus.SUCCESS.equals(response.getStatus())) {
                             LOG.info(String.format("Could not initialize Group Attestation task for group %s.  Reason: %s", groupId, response.getErrorCode()));
                         }

@@ -22,7 +22,8 @@ import org.openiam.idm.srvc.meta.dto.PageTempate;
         "groupIds",
         "loginList",
         "organizationIds",
-        "supervisorIds"
+        "supervisorIds",
+        "customApproverIds"
 })
 public class NewUserProfileRequestModel extends UserProfileRequestModel implements Serializable {
 
@@ -31,6 +32,7 @@ public class NewUserProfileRequestModel extends UserProfileRequestModel implemen
 	private List<String> groupIds;
 	private List<String> supervisorIds;
 	private List<String> organizationIds;
+	private List<String> customApproverIds;
 
 	public List<String> getRoleIds() {
 		return roleIds;
@@ -79,6 +81,23 @@ public class NewUserProfileRequestModel extends UserProfileRequestModel implemen
 
 	public void setOrganizationIds(List<String> organizationIds) {
 		this.organizationIds = organizationIds;
+	}
+	
+	public void addCustomApproverId(final String arg) {
+		if(arg != null) {
+			if(this.customApproverIds == null) {
+				this.customApproverIds = new LinkedList<String>();
+			}
+			this.customApproverIds.add(arg);
+		}
+	}
+
+	public List<String> getCustomApproverIds() {
+		return customApproverIds;
+	}
+
+	public void setCustomApproverIds(List<String> customApproverIds) {
+		this.customApproverIds = customApproverIds;
 	}
 
 	@Override

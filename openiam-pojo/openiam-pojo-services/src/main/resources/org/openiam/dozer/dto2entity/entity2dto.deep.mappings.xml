@@ -734,8 +734,12 @@
 		<class-a>org.openiam.idm.srvc.policy.domain.PolicyEntity</class-a>
 		<class-b>org.openiam.idm.srvc.policy.dto.Policy</class-b>
 		<field-exclude>
-			<a>authProviders</a>
-			<b>authProviders</b>
+			<a>passwordPolicyProviders</a>
+			<b>passwordPolicyProviders</b>
+		</field-exclude>
+		<field-exclude>
+			<a>authenticationPolicyProviders</a>
+			<b>authenticationPolicyProviders</b>
 		</field-exclude>
 		<field>
 			<a>policyDef.id</a>
@@ -1030,8 +1034,12 @@
 		<class-a>org.openiam.am.srvc.domain.AuthProviderEntity</class-a>
 		<class-b>org.openiam.am.srvc.dto.AuthProvider</class-b>
 		<field>
-			<a>policy.id</a>
-			<b>policyId</b>
+			<a>passwordPolicy.id</a>
+			<b>passwordPolicyId</b>
+		</field>
+		<field>
+			<a>authenticationPolicy.id</a>
+			<b>authnPolicyId</b>
 		</field>
 		<field>
 			<a>type.id</a>

@@ -24,7 +24,8 @@ import java.util.Set;
         "URL",
         "metadataType",
         "coorelatedName",
-		"adminResourceId"
+		"adminResourceId",
+		"referenceId"
 })
 public class ResourceSearchBean extends EntitlementsSearchBean<Resource, String> implements SearchBean<Resource, String>, Serializable {
 
@@ -40,6 +41,7 @@ public class ResourceSearchBean extends EntitlementsSearchBean<Resource, String>
     private String URL;
 	private String coorelatedName;
 	private String adminResourceId;
+	private String referenceId;
 
     public String getCoorelatedName() {
         return coorelatedName;
@@ -131,6 +133,17 @@ public class ResourceSearchBean extends EntitlementsSearchBean<Resource, String>
 	public void setAdminResourceId(String adminResourceId) {
 		this.adminResourceId = adminResourceId;
 	}
+	
+	
+	
+	public String getReferenceId() {
+		return referenceId;
+	}
+
+	public void setReferenceId(String referenceId) {
+		this.referenceId = referenceId;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;

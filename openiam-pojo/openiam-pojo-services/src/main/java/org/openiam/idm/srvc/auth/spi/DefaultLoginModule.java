@@ -144,7 +144,7 @@ public class DefaultLoginModule extends AbstractLoginModule {
 
         }
 
-        final PolicyEntity policy = getPolicy(context);
+        final PolicyEntity policy = getAuthPolicy(context);
         final String attrValue = getPolicyAttribute(policy, "FAILED_AUTH_COUNT");
         final String tokenType = getPolicyAttribute(policy, "TOKEN_TYPE");
         String tokenLife = getPolicyAttribute(policy, "TOKEN_LIFE");

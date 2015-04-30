@@ -36,6 +36,7 @@ import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.continfo.service.*;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
+import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
@@ -1167,7 +1168,16 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
 	@Transactional
 	public void addTOPTTokenToPhone(String phoneId, String secret) {
 		final PhoneEntity phone = phoneDao.findById(phoneId);
-		phone.setTotpSecret(secret);
+		if(StringUtils.isNotBlank(secret)) {
+        	try {
+				final String encrytedPassword = keyManagementService.encrypt(phone.getParent().getId(), KeyName.token, secret);
+				phone.setTotpSecret(encrytedPassword);
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		} else {
+			phone.setTotpSecret(null);
+		}
 		phoneDao.update(phone);
 	}
 
@@ -1182,6 +1192,15 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
 
         if (val.getType() == null || StringUtils.isBlank(val.getType().getId())) {
             throw new NullPointerException("MetadataType for the phone is not defined.");
+        }
+        
+        if(StringUtils.isNotBlank(val.getTotpSecret())) {
+        	try {
+				final String encryptedString = keyManagementService.encrypt(val.getParent().getId(), KeyName.token, val.getTotpSecret());
+				val.setTotpSecret(encryptedString);
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
         }
 
         PhoneEntity example = new PhoneEntity();
@@ -1798,7 +1817,8 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
 
         if (principalList != null && !principalList.isEmpty()) {
             for (LoginEntity lg : principalList) {
-                lg.setManagedSysId(sysConfiguration.getDefaultManagedSysId());
+                if(StringUtils.isBlank(lg.getManagedSysId()))
+                    lg.setManagedSysId(sysConfiguration.getDefaultManagedSysId());
                 lg.setFirstTimeLogin(1);
                 lg.setIsLocked(0);
                 lg.setCreateDate(new Date(System.currentTimeMillis()));

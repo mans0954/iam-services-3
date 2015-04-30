@@ -14,6 +14,7 @@ import org.openiam.idm.srvc.user.domain.UserEntity;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "TaskHistoryWrapper", propOrder = {
 	"id",
+	"taskId",
 	"activityId",
 	"activityName",
 	"activityType",
@@ -26,7 +27,10 @@ import org.openiam.idm.srvc.user.domain.UserEntity;
 	"processInstanceId",
 	"startTime",
 	"task",
-	"nextIds"
+	"nextIds",
+	"calledProcessInstanceId",
+	"tenantId",
+	"variableDetails"
 })
 public class TaskHistoryWrapper {
 	
@@ -44,7 +48,11 @@ public class TaskHistoryWrapper {
 	private Date startTime;
 	private TaskWrapper task;
 	private Set<String> nextIds;
-
+	private String calledProcessInstanceId;
+	private String taskId;
+	private String tenantId;
+	private ActivitiHistoricDetail variableDetails;
+	
 	public TaskHistoryWrapper() {}
 	
 	public TaskHistoryWrapper(final HistoricActivityInstance instance) {
@@ -59,6 +67,9 @@ public class TaskHistoryWrapper {
 		this.processDefinitionId = instance.getProcessDefinitionId();
 		this.processInstanceId = instance.getProcessInstanceId();
 		this.startTime = instance.getStartTime();
+		this.taskId = instance.getTaskId();
+		this.calledProcessInstanceId = instance.getCalledProcessInstanceId();
+		this.tenantId = instance.getTenantId();
 	}
 	
 	public void setUserInfo(final UserEntity user) {
@@ -187,4 +198,38 @@ public class TaskHistoryWrapper {
 			this.nextIds.add(id);
 		}
 	}
+
+	public String getCalledProcessInstanceId() {
+		return calledProcessInstanceId;
+	}
+
+	public void setCalledProcessInstanceId(String calledProcessInstanceId) {
+		this.calledProcessInstanceId = calledProcessInstanceId;
+	}
+
+	public String getTaskId() {
+		return taskId;
+	}
+
+	public void setTaskId(String taskId) {
+		this.taskId = taskId;
+	}
+
+	public String getTenantId() {
+		return tenantId;
+	}
+
+	public void setTenantId(String tenantId) {
+		this.tenantId = tenantId;
+	}
+
+	public ActivitiHistoricDetail getVariableDetails() {
+		return variableDetails;
+	}
+
+	public void setVariableDetails(ActivitiHistoricDetail variableDetails) {
+		this.variableDetails = variableDetails;
+	}
+	
+	
 }

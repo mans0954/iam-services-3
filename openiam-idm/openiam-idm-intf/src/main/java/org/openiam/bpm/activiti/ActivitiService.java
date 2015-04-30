@@ -6,11 +6,15 @@ import java.util.Set;
 import javax.jws.WebMethod;
 import javax.jws.WebService;
 
+import org.openiam.activiti.model.dto.TaskSearchBean;
 import org.openiam.base.ws.Response;
+import org.openiam.bpm.dto.BasicWorkflowResponse;
 import org.openiam.bpm.request.ActivitiClaimRequest;
 import org.openiam.bpm.request.ActivitiRequestDecision;
 import org.openiam.bpm.request.GenericWorkflowRequest;
 import org.openiam.bpm.request.HistorySearchBean;
+import org.openiam.bpm.response.ActivitiHistoricDetail;
+import org.openiam.bpm.response.ActivitiHistoricDetail;
 import org.openiam.bpm.response.NewHireResponse;
 import org.openiam.bpm.response.ProcessWrapper;
 import org.openiam.bpm.response.TaskHistoryWrapper;
@@ -29,7 +33,7 @@ public interface ActivitiService {
 	public String sayHello();
 	
 	@WebMethod
-	public Response initiateWorkflow(final GenericWorkflowRequest request);
+	public BasicWorkflowResponse initiateWorkflow(final GenericWorkflowRequest request);
 	
 	@WebMethod
 	public SaveTemplateProfileResponse initiateEditUserWorkflow(final UserProfileRequestModel request);
@@ -43,14 +47,23 @@ public interface ActivitiService {
 	@WebMethod
 	public Response makeDecision(final ActivitiRequestDecision newHireRequest);
 	
+    /* use findTasks */
+    @Deprecated
 	@WebMethod
 	public TaskListWrapper getTasksForUser(final String userId, final int from, final int size);
+    
+    /* use findTasks */
+    @Deprecated
     @WebMethod
     public List<TaskWrapper> getTasksForMemberAssociation(String memberAssociationId);
 	
+    /* use countTasks */
+    @Deprecated
 	@WebMethod
 	public int getNumOfAssignedTasks(final String userId);
 	
+    /* use countTasks */
+    @Deprecated
 	@WebMethod
 	public int getNumOfCandidateTasks(final String userId);
 	
@@ -70,11 +83,20 @@ public interface ActivitiService {
 	public int count(final HistorySearchBean searchBean);
 	
 	@WebMethod
-	public Response deleteTask(final String taskId);
+	public Response deleteTask(final String taskId, final String userId);
 	
 	@WebMethod
-	public Response deleteTaskForUser(final String taskId, final String userId);
+	public Response unclaimTask(final String taskId, final String userId);
 	
 	@WebMethod
 	public Response deleteTasksForUser(final String userId);
+	
+	@WebMethod
+	public List<TaskWrapper> findTasks(final TaskSearchBean searchBean, final int from, final int size);
+	
+	@WebMethod
+	public int countTasks(final TaskSearchBean searchBean);
+	
+	@WebMethod
+	public String getProcessInstanceIdByExecutionId(final String executionId);
 }

@@ -7,6 +7,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.am.srvc.dao.*;
 import org.openiam.am.srvc.domain.*;
+import org.openiam.am.srvc.dto.AuthProviderType;
 import org.openiam.am.srvc.searchbeans.AuthProviderSearchBean;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.exception.BasicDataServiceException;
@@ -57,8 +58,26 @@ public class AuthProviderServiceImpl implements AuthProviderService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<AuthProviderTypeEntity> getAuthProviderTypeList() {
         return authProviderTypeDao.findAll();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<AuthProviderTypeEntity> getSocialAuthProviderTypeList(){
+        List<AuthProviderTypeEntity> allTypes = getAuthProviderTypeList();
+        List<AuthProviderTypeEntity> selectedTypes = new ArrayList<>();
+        if(CollectionUtils.isNotEmpty(allTypes)){
+            for(AuthProviderTypeEntity type: allTypes){
+                if("GOOGLE_AUTH_PROVIDER".equals(type.getId()) || "FACEBOOK_AUTH_PROVIDER".equals(type.getId())){
+                    if(CollectionUtils.isNotEmpty(type.getProviderSet())){
+                        selectedTypes.add(type);
+                    }
+                }
+            }
+        }
+        return selectedTypes;
     }
 
     /*
@@ -91,15 +110,28 @@ public class AuthProviderServiceImpl implements AuthProviderService {
     	}
     	
     	if(!provider.getType().isHasPasswordPolicy()) {
-    		provider.setPolicy(null);
+    		provider.setPasswordPolicy(null);
     	} else {
-    		if(provider.getPolicy() == null || StringUtils.isBlank(provider.getPolicy().getId())) {
+    		if(provider.getPasswordPolicy() == null || StringUtils.isBlank(provider.getPasswordPolicy().getId())) {
     			if(provider.getType().isPasswordPolicyRequired()) {
-    				throw new IllegalArgumentException("Policy not set");
+    				throw new IllegalArgumentException("Password Policy not set");
     			}
-    			provider.setPolicy(null);
+    			provider.setPasswordPolicy(null);
     		} else {
-    			provider.setPolicy(policyDAO.findById(provider.getPolicy().getId()));
+    			provider.setPasswordPolicy(policyDAO.findById(provider.getPasswordPolicy().getId()));
+    		}
+    	}
+    	
+    	if(!provider.getType().isHasAuthnPolicy()) {
+    		provider.setAuthenticationPolicy(null);
+    	} else {
+    		if(provider.getAuthenticationPolicy() == null || StringUtils.isBlank(provider.getAuthenticationPolicy().getId())) {
+    			if(provider.getType().isAuthnPolicyRequired()) {
+    				throw new IllegalArgumentException("Authenticaiton Policy not set");
+    			}
+    			provider.setAuthenticationPolicy(null);
+    		} else {
+    			provider.setAuthenticationPolicy(policyDAO.findById(provider.getAuthenticationPolicy().getId()));
     		}
     	}
     	

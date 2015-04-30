@@ -8,6 +8,7 @@ import org.openiam.base.domain.KeyEntity;
 import org.openiam.core.dao.lucene.LuceneLastUpdate;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.elasticsearch.annotation.ElasticsearchField;
+import org.openiam.elasticsearch.annotation.ElasticsearchFields;
 import org.openiam.elasticsearch.annotation.ElasticsearchIndex;
 import org.openiam.elasticsearch.annotation.ElasticsearchMapping;
 import org.openiam.elasticsearch.constants.*;
@@ -36,7 +37,9 @@ import java.util.*;
 public class LoginEntity extends KeyEntity {
 
     //@Field(name = "login", analyze = Analyze.YES, store = Store.YES)
-    @ElasticsearchField(name = "login", store = ElasticsearchStore.Yes, index = Index.Analyzed)
+//    @ElasticsearchField(name = "login", store = ElasticsearchStore.Yes, index = Index.Analyzed)
+    @ElasticsearchFields(fields = {@ElasticsearchField(name = "login", store = ElasticsearchStore.Yes, index = Index.Not_Analyzed),
+                                    @ElasticsearchField(name = "loginTokenized", store = ElasticsearchStore.Yes, index = Index.Analyzed)})
     @Column(name="LOGIN",length=320)
     private String login;
     

@@ -1,5 +1,8 @@
 package org.openiam.bpm.activiti;
 
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -19,14 +22,22 @@ import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
 import org.activiti.engine.history.HistoricActivityInstance;
 import org.activiti.engine.history.HistoricActivityInstanceQuery;
+import org.activiti.engine.history.HistoricDetail;
+import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.history.HistoricTaskInstanceQuery;
+import org.activiti.engine.history.HistoricVariableInstance;
+import org.activiti.engine.runtime.Execution;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
+import org.activiti.engine.task.TaskQuery;
+import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.activiti.model.dto.TaskSearchBean;
+import org.openiam.base.BaseIdentity;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
@@ -41,10 +52,15 @@ import org.openiam.bpm.activiti.groovy.DefaultEditUserApproverAssociationIdentif
 import org.openiam.bpm.activiti.groovy.DefaultGenericWorkflowRequestApproverAssociationIdentifier;
 import org.openiam.bpm.activiti.groovy.DefaultNewHireRequestApproverAssociationIdentifier;
 import org.openiam.bpm.activiti.model.ActivitiJSONStringWrapper;
+import org.openiam.bpm.dto.AbstractWorkflowResponse;
+import org.openiam.bpm.dto.BasicWorkflowResponse;
 import org.openiam.bpm.request.ActivitiClaimRequest;
 import org.openiam.bpm.request.ActivitiRequestDecision;
 import org.openiam.bpm.request.GenericWorkflowRequest;
 import org.openiam.bpm.request.HistorySearchBean;
+import org.openiam.bpm.response.ActivitiHistoricDetail;
+import org.openiam.bpm.response.ActivitiJSONField;
+import org.openiam.bpm.response.ActivitiUserField;
 import org.openiam.bpm.response.TaskHistoryWrapper;
 import org.openiam.bpm.response.TaskListWrapper;
 import org.openiam.bpm.response.TaskWrapper;
@@ -65,14 +81,19 @@ import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
 import org.openiam.idm.srvc.meta.exception.PageTemplateException;
 import org.openiam.idm.srvc.meta.service.MetadataElementTemplateService;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.res.service.ResourceService;
+import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.idm.srvc.synch.service.generic.ObjectAdapterMap;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;
+import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserProfileRequestModel;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.service.UserProfileService;
 import org.openiam.idm.util.CustomJacksonMapper;
 import org.openiam.script.ScriptIntegration;
+import org.openiam.util.SystemInfoWebService;
 import org.openiam.validator.EntityValidator;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -82,7 +103,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Transactional;import org.springframework.util.ReflectionUtils;
+
 
 @Component("activitiBPMService")
 @WebService(endpointInterface = "org.openiam.bpm.activiti.ActivitiService", 
@@ -128,16 +150,16 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 
     @Value("${org.openiam.activiti.new.user.approver.association.groovy.script}")
     private String newUserApproverAssociationGroovyScript;
-
-    @Value("${org.openiam.idm.activiti.merge.custom.approver.with.approver.associations}")
-    protected Boolean mergeCustomApproverIdsWithApproverAssociations;
-
+    
     @Autowired
     @Qualifier("configurableGroovyScriptEngine")
     protected ScriptIntegration scriptRunner;
 	
     @Autowired
     private MetadataElementTemplateService pageTemplateService;
+    
+    @Autowired
+    private SystemInfoWebService sysInfoService;
 
     @Autowired
     private ActivitiHelper activitiHelper;
@@ -160,10 +182,34 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
     @Autowired
     private PhoneDozerConverter phoneDozerConverter;
     
+    @Autowired
+    private ResourceTypeDAO resourceTypeDAO;
+    
+    @Autowired
+    private ResourceService resourceService;
+    
+    @Value("${org.openiam.workflow.resource.type}")
+    private String workflowResourceType;
+    
 	@Override
 	@WebMethod
 	public String sayHello() {
 		return "Hello";
+	}
+	
+	private ResourceEntity createAndSaveWorkflowResource(final String name, final String requestor) {
+		final UserEntity user = userDataService.getUser(requestor);
+		final ResourceEntity workflowMasterResource = resourceService.findResourceById(propertyValueSweeper.getString("org.openiam.workflow.master.resource"));
+		
+		final ResourceEntity resource = new ResourceEntity();
+		resource.setResourceType(resourceTypeDAO.findById(workflowResourceType));
+		resource.setName(String.format("%s_%s", name, System.currentTimeMillis()));
+		resource.setCoorelatedName(String.format("Resource protecting workflow '%s'", name));
+		resource.addUser(user);
+		resource.addChildResource(workflowMasterResource);
+		
+		resourceService.save(resource, requestor);
+		return resource;
 	}
 	
 	@Override
@@ -207,8 +253,14 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 		
 			identifier.init(bindingMap);
 			
-			final List<String> approverAssociationIds = identifier.getApproverAssociationIds();
-			final List<String> approverUserIds = identifier.getApproverIds();
+			List<String> approverAssociationIds = null;
+			List<String> approverUserIds = null;
+			if(CollectionUtils.isNotEmpty(request.getCustomApproverIds())) {
+				approverUserIds = request.getCustomApproverIds(); 
+			} else {
+				approverAssociationIds = identifier.getApproverAssociationIds();
+				approverUserIds = identifier.getApproverIds();
+			}
 
             idmAuditLog.addAttributeAsJson(AuditAttributeName.APPROVER_ASSOCIATIONS, approverAssociationIds, jacksonMapper);
             idmAuditLog.addAttributeAsJson(AuditAttributeName.REQUEST_APPROVER_IDS, approverUserIds, jacksonMapper);
@@ -231,7 +283,11 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 				approverCardinatlity.add(approverUserIds);
 			}
 			
+			final ResourceEntity resource = createAndSaveWorkflowResource(taskName, request.getRequestorUserId());
+			
 			final Map<String, Object> variables = new HashMap<String, Object>();
+			variables.put(ActivitiConstants.WORKFLOW_RESOURCE_ID.getName(), resource.getId());
+			variables.put(ActivitiConstants.OPENIAM_VERSION.getName(), sysInfoService.getProjectVersion());
 			variables.put(ActivitiConstants.APPROVER_CARDINALTITY.getName(), approverCardinatlity);
 			variables.put(ActivitiConstants.APPROVER_ASSOCIATION_IDS.getName(), approverAssociationIds);
 			variables.put(ActivitiConstants.REQUEST.getName(), new ActivitiJSONStringWrapper(jacksonMapper.writeValueAsString(request)));
@@ -251,6 +307,10 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
             variables.put(ActivitiConstants.AUDIT_LOG_ID.getName(), idmAuditLog.getId());
             
 			final ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(requestType.getKey(), variables);
+			resource.setReferenceId(processInstance.getId());
+			resourceService.save(resource, request.getRequestorUserId());
+			populate(response, processInstance, resource, approverAssociationIds, approverUserIds, request.getRequestorUserId());
+			
 			idmAuditLog = auditLogService.findById(idmAuditLog.getId());
             idmAuditLog.setTargetTask(processInstance.getId(), taskName);
 			response.succeed();
@@ -291,6 +351,30 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
             idmAuditLog = auditLogService.save(idmAuditLog);
 		}
 		return response;
+	}
+	
+	private void populate(final AbstractWorkflowResponse response, 
+						  final ProcessInstance processInstance, 
+						  final ResourceEntity resource, 
+						  final List<String> approverAssociationIds, 
+						  final List<String> approverUserIds,
+						  final String taskOwner) {
+		response.setActivityId(processInstance.getActivityId());
+		response.setBusinessKey(processInstance.getBusinessKey());
+		response.setDeploymentId(processInstance.getDeploymentId());
+		response.setId(processInstance.getId());
+		response.setName(processInstance.getName());
+		response.setParentId(processInstance.getParentId());
+		response.setProcessDefinitionId(processInstance.getProcessDefinitionId());
+		response.setProcessDefinitionKey(processInstance.getProcessDefinitionKey());
+		response.setProcessDefinitionName(processInstance.getProcessDefinitionName());
+		response.setProcessDefinitionVersion(processInstance.getProcessDefinitionVersion());
+		response.setProcessInstanceId(processInstance.getProcessInstanceId());
+		response.setTenantId(processInstance.getTenantId());
+		response.setProtectingResourceId(resource.getId());
+		response.setApproverAssociationIds(approverAssociationIds);
+		response.setApproverUserIds(approverUserIds);
+		response.addProcessOwner(taskOwner);
 	}
 
 	@Override
@@ -334,6 +418,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			taskService.claim(potentialTaskToClaim.getId(), request.getRequestorUserId());
 			taskService.setAssignee(potentialTaskToClaim.getId(), request.getRequestorUserId());
 			
+			taskService.setVariableLocal(potentialTaskToClaim.getId(), ActivitiConstants.ASSIGNEE_ID.getName(), request.getRequestorUserId());
 			final Object auditLogId = taskService.getVariable(potentialTaskToClaim.getId(), ActivitiConstants.AUDIT_LOG_ID.getName());
 			if(auditLogId != null && auditLogId instanceof String) {
 				parentAuditLogId = (String)auditLogId;
@@ -419,7 +504,11 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 				approverCardinatlity.add(approverUserIds);
 			}
 			
+			final ResourceEntity resource = createAndSaveWorkflowResource(description, request.getRequestorUserId());
+			
 			final Map<String, Object> variables = new HashMap<String, Object>();
+			variables.put(ActivitiConstants.WORKFLOW_RESOURCE_ID.getName(), resource.getId());
+			variables.put(ActivitiConstants.OPENIAM_VERSION.getName(), sysInfoService.getProjectVersion());
 			variables.put(ActivitiConstants.APPROVER_CARDINALTITY.getName(), approverCardinatlity);
 			variables.put(ActivitiConstants.APPROVER_ASSOCIATION_IDS.getName(), approverAssociationIds);
 			variables.put(ActivitiConstants.REQUEST.getName(), new ActivitiJSONStringWrapper(jacksonMapper.writeValueAsString(request)));
@@ -435,7 +524,11 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
             idmAuditLog = auditLogService.save(idmAuditLog);
             variables.put(ActivitiConstants.AUDIT_LOG_ID.getName(), idmAuditLog.getId());
 
-            ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(ActivitiRequestType.EDIT_USER.getKey(), variables);
+            final ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(ActivitiRequestType.EDIT_USER.getKey(), variables);
+            resource.setReferenceId(processInstance.getId());
+			resourceService.save(resource, request.getRequestorUserId());
+			populate(response, processInstance, resource, approverAssociationIds, approverUserIds, request.getRequestorUserId());
+			
             idmAuditLog = auditLogService.findById(idmAuditLog.getId());
             for(Map.Entry<String,Object> varEntry : variables.entrySet()) {
                 idmAuditLog.addCustomRecord(varEntry.getKey(), (varEntry.getValue() != null) ? varEntry.getValue().toString() : null);
@@ -514,14 +607,14 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 	
 	@Override
 	@Transactional
-	public Response initiateWorkflow(final GenericWorkflowRequest request) {
+	public BasicWorkflowResponse initiateWorkflow(final GenericWorkflowRequest request) {
 		IdmAuditLog idmAuditLog = new IdmAuditLog();
         idmAuditLog.setRequestorUserId(request.getRequestorUserId());
         //idmAuditLog.setAction(AuditAction.INITIATE_WORKFLOW.value());
         idmAuditLog.setAction(request.getActivitiRequestType());
         idmAuditLog.setBaseObject(request);
         idmAuditLog.setSource(AuditSource.WORKFLOW.value());
-		final Response response = new Response();
+		final BasicWorkflowResponse response = new BasicWorkflowResponse();
 		try {
             idmAuditLog.addAttributeAsJson(AuditAttributeName.REQUEST, request, jacksonMapper);
 
@@ -552,7 +645,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
             final List<String> approverUserIds = identifier.getApproverIds();
 
             List<Object> approverCardinatlity = new LinkedList<Object>();
-            if(mergeCustomApproverIdsWithApproverAssociations){
+            if(propertyValueSweeper.getBoolean("org.openiam.idm.activiti.merge.custom.approver.with.approver.associations")){
                 final List<String> mergedIds = new LinkedList<String>();
 
                 if (CollectionUtils.isNotEmpty(approverUserIds)) {
@@ -570,10 +663,12 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
                 }
             }
 
-
+            final ResourceEntity resource = createAndSaveWorkflowResource(request.getName(), request.getRequestorUserId());
 
             idmAuditLog.addAttributeAsJson(AuditAttributeName.REQUEST_APPROVER_IDS, approverUserIds, jacksonMapper);
 			final Map<String, Object> variables = new HashMap<String, Object>();
+			variables.put(ActivitiConstants.WORKFLOW_RESOURCE_ID.getName(), resource.getId());
+			variables.put(ActivitiConstants.OPENIAM_VERSION.getName(), sysInfoService.getProjectVersion());
 			variables.put(ActivitiConstants.WORKFLOW_NAME.getName(), request.getActivitiRequestType());
 			variables.put(ActivitiConstants.APPROVER_CARDINALTITY.getName(), approverCardinatlity);
 			variables.put(ActivitiConstants.APPROVER_ASSOCIATION_IDS.getName(), approverAssociationIds);
@@ -610,9 +705,13 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
             idmAuditLog = auditLogService.save(idmAuditLog);
             variables.put(ActivitiConstants.AUDIT_LOG_ID.getName(), idmAuditLog.getId());
 			
-			final ProcessInstance instance = runtimeService.startProcessInstanceByKey(request.getActivitiRequestType(), variables);
+			final ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(request.getActivitiRequestType(), variables);
+			resource.setReferenceId(processInstance.getId());
+			resourceService.save(resource, request.getRequestorUserId());
+			populate(response, processInstance, resource, approverAssociationIds, approverUserIds, request.getRequestorUserId());
+			
 			idmAuditLog = auditLogService.findById(idmAuditLog.getId());
-            idmAuditLog.setTargetTask(instance.getId(), request.getName());
+            idmAuditLog.setTargetTask(processInstance.getId(), request.getName());
             for (Map.Entry<String, Object> varEntry : variables.entrySet()) {
                 idmAuditLog.addCustomRecord(varEntry.getKey(), (varEntry.getValue() != null) ? varEntry.getValue().toString() : null);
             }
@@ -649,6 +748,12 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
         }
         return response;
     }
+	
+	@Override
+	public String getProcessInstanceIdByExecutionId(String executionId) {
+		final List<HistoricActivityInstance> results = historyService.createHistoricActivityInstanceQuery().executionId(executionId).list();
+		return (CollectionUtils.isNotEmpty(results)) ? results.get(0).getProcessInstanceId() : null;
+	}
 
     private List<String> getCandidateUserIdsFromApproverAssociations(final GenericWorkflowRequest request, final List<String> approverAssociationIds){
         List<String> candidateIds = new LinkedList<>();
@@ -707,7 +812,11 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			if(auditLogId != null && auditLogId instanceof String) {
 				parentAuditLogId = (String)auditLogId;
 			}
+			
+			final Task task = taskService.createTaskQuery().taskId(assignedTask.getId()).list().get(0);
             
+			taskService.setVariablesLocal(assignedTask.getId(), variables);
+			taskService.addComment(assignedTask.getId(), task.getProcessInstanceId(), request.getComment());
         	taskService.complete(assignedTask.getId(), variables);
         	response.succeed();
             idmAuditLog.succeed();
@@ -766,15 +875,17 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 	@Override
 	@WebMethod
 	@Transactional
+	@Deprecated
 	public int getNumOfAssignedTasks(String userId) {
-		return (int)taskService.createTaskQuery().taskAssignee(userId).count();
+		return countTasks(new TaskSearchBean().setAssigneeId(userId));
 	}
 
 	@Override
 	@WebMethod
 	@Transactional
+	@Deprecated
 	public int getNumOfCandidateTasks(String userId) {
-		return (int)taskService.createTaskQuery().taskCandidateUser(userId).count();
+		return countTasks(new TaskSearchBean().setCandidateId(userId));
 	}
 
 	@Override
@@ -821,10 +932,142 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 		return retVal;
 	}
 	
+	private void setValue(final Field field, final ActivitiHistoricDetail entity, final Object obj) {
+		try {
+			final PropertyDescriptor descriptor = new PropertyDescriptor(field.getName(), entity.getClass());
+			final Method method = PropertyUtils.getWriteMethod(descriptor);
+			if(method != null) {
+				ReflectionUtils.invokeMethod(method, entity, obj);
+			}
+		} catch(Throwable e) {
+			log.error("Can't call method", e);
+		}
+	}
+	
+	private void pouplateField(final ActivitiConstants constant, final ActivitiHistoricDetail detail, final Object value) {
+		Field field = null;
+		try {
+			field = detail.getClass().getDeclaredField(constant.getFieldName());
+		} catch (Exception e1) {
+		}
+		if(field != null) {
+			field.setAccessible(true);
+			if(StringUtils.equals(field.getName(), constant.getFieldName())) {
+				/* it's a match.  now try to set it */
+				if(String.class.equals(field.getType())) {
+					setValue(field, detail, value);
+				} else if(field.getType().isInstance(Number.class)) {
+					setValue(field, detail, value);
+				} else if(field.getType().equals(Boolean.class)) {
+					setValue(field, detail, value);
+				} else if(field.getType().equals(List.class)) {
+					setValue(field, detail, value);
+				} else if(field.isAnnotationPresent(ActivitiJSONField.class)) {
+					if(value instanceof String) {
+						try {
+							final Object deserializedValue = jacksonMapper.readValue((String)value, field.getType());
+							setValue(field, detail, deserializedValue);
+						} catch (Throwable e) {
+							log.error(String.format("Can't use jackson to deserialize '%s', which should be of type '%s'.", value, field.getType()), e);
+						}
+					} else {
+						log.error(String.format("Can't use jackson to deserialize '%s', which should be of type '%s'.", value, field.getType()));
+					}
+				} else {
+					log.warn(String.format("Unknown field '%s' with type '%s' and value '%s'", field.getName(), field.getType(), value));
+				}
+				
+				if(field.isAnnotationPresent(ActivitiUserField.class)) {
+					final ActivitiUserField userFieldAnnotation = field.getAnnotation(ActivitiUserField.class);
+					if(userFieldAnnotation != null) {
+						final Field userField = ReflectionUtils.findField(ActivitiHistoricDetail.class, userFieldAnnotation.value());
+						if(userField != null) {
+							userField.setAccessible(true);
+							if(field.getType().equals(List.class)) {
+								final List<User> userList = new LinkedList<>();
+								((List<String>)value).forEach(id -> {
+									final User user = userDataService.getUserDto(id);
+									if(user != null) {
+										userList.add(getUser(user, userFieldAnnotation));
+									}
+								});
+								setValue(userField, detail, userList);
+							} else { /* assume String */
+								final User user = userDataService.getUserDto((String)value);
+								if(user != null) {
+									setValue(userField, detail, getUser(user, userFieldAnnotation));
+								}
+							}
+						}
+					}
+				}
+			} else {
+				log.error(String.format("Field '%s' has a type '%s'", field.getName(), field.getType()));
+			}
+		}
+	}
+	
+	private void populateLocalVariables(final ActivitiHistoricDetail detail, final String taskId) {
+		final HistoricTaskInstance task = historyService.createHistoricTaskInstanceQuery().taskId(taskId).includeProcessVariables().includeTaskLocalVariables().singleResult();
+		final Map<String, Object> localVariables = task.getTaskLocalVariables();
+		if(localVariables != null) {
+			localVariables.forEach((variableName, value) -> {
+				final ActivitiConstants constant = ActivitiConstants.getByName(variableName);
+				if(constant != null && constant.getFieldName() != null && value != null && constant.isLocal()) {
+					pouplateField(constant, detail, value);
+				}
+			});
+		}
+	}
+	
+	private void populateGlobalVariables(final ActivitiHistoricDetail detail, final String activityInstanceId) {
+		final HistoricActivityInstance instance = historyService.createHistoricActivityInstanceQuery().activityInstanceId(activityInstanceId).singleResult();
+		final List<HistoricVariableInstance> queryInstances = historyService.createHistoricVariableInstanceQuery().processInstanceId(instance.getProcessInstanceId()).list();
+		final List<HistoricProcessInstance> processInstances = historyService.createHistoricProcessInstanceQuery().processInstanceId(instance.getProcessInstanceId()).includeProcessVariables().list();
+		
+		if(queryInstances != null) {
+			queryInstances.forEach(variable -> {
+				final ActivitiConstants constant = ActivitiConstants.getByName(variable.getVariableName());
+				final Object value = variable.getValue();
+				if(constant != null && constant.getFieldName() != null && value != null && !constant.isLocal()) {
+					pouplateField(constant, detail, value);
+				}
+			});
+		}
+		
+		if(CollectionUtils.isNotEmpty(processInstances)) {
+			processInstances.forEach(processInstance -> {
+				if(processInstance.getProcessVariables() != null) {
+					processInstance.getProcessVariables().forEach((key, value) -> {
+						
+					});
+				}
+			});
+		}
+	}
+
+	private User getUser(final User user, final ActivitiUserField userFieldAnnotation) {
+		if(userFieldAnnotation.exposeDetails()) {
+			if(user.getPrincipalList() != null) {
+				user.getPrincipalList().forEach(e -> {
+					e.setPassword(null);
+				});
+			}
+			return user;
+		} else {
+			final User retVal = new User();
+			retVal.setId(user.getId());
+			retVal.setFirstName(user.getFirstName());
+			retVal.setLastName(user.getLastName());
+			return retVal;
+		}
+	}
+	
 	@Override
 	@Transactional
 	public List<TaskHistoryWrapper> getHistoryForInstance(final String executionId) {
 		final List<TaskHistoryWrapper> retVal = new LinkedList<TaskHistoryWrapper>();
+		
 		if(StringUtils.isNotBlank(executionId)) {
 			final List<HistoricTaskInstance> instances = historyService.createHistoricTaskInstanceQuery().executionId(executionId).list();
 			final Map<String, HistoricTaskInstance> taskDefinitionMap = new HashMap<String, HistoricTaskInstance>();
@@ -839,18 +1082,31 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			if(CollectionUtils.isNotEmpty(activityList)) {
 				for(int i = 0; i < activityList.size(); i++) {
 					final HistoricActivityInstance instance = activityList.get(i);
-					final TaskHistoryWrapper wrapper = new TaskHistoryWrapper(instance);
-					if(taskDefinitionMap.containsKey(wrapper.getActivityId())) {
-						wrapper.setTask(new TaskWrapper(taskDefinitionMap.get(wrapper.getActivityId())));
-					}
-					if(StringUtils.isNotBlank(wrapper.getAssigneeId())) {
-						final UserEntity user =  userDataService.getUser(wrapper.getAssigneeId());
-						wrapper.setUserInfo(user);
-					}
-					retVal.add(wrapper);
-					
-					if(i < activityList.size() - 1) {
-						wrapper.addNextTask(activityList.get(i + 1).getId());
+					if(StringUtils.isNotBlank(instance.getActivityName())) {
+						final TaskHistoryWrapper wrapper = new TaskHistoryWrapper(instance);
+						
+						final ActivitiHistoricDetail details = new ActivitiHistoricDetail();
+						wrapper.setVariableDetails(details);
+						populateGlobalVariables(details, instance.getId());
+						
+						if(taskDefinitionMap.containsKey(wrapper.getActivityId())) {
+							wrapper.setTask(new TaskWrapper(taskDefinitionMap.get(wrapper.getActivityId())));
+						}
+						if(StringUtils.isNotBlank(wrapper.getAssigneeId())) {
+							final UserEntity user =  userDataService.getUser(wrapper.getAssigneeId());
+							wrapper.setUserInfo(user);
+						}
+						if(StringUtils.isNotBlank(wrapper.getTaskId())) {
+							populateLocalVariables(details, wrapper.getTaskId());
+						}
+						//wrapper.
+						retVal.add(wrapper);
+						
+						/*
+						if(i < activityList.size() - 1) {
+							wrapper.addNextTask(activityList.get(i + 1).getId());
+						}
+						*/
 					}
 					
 					/*
@@ -867,6 +1123,13 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 					*/
                 }
             }
+			
+			for(int i = 0; i < retVal.size(); i++) {
+				final TaskHistoryWrapper wrapper = retVal.get(i);
+				if(i < retVal.size() - 1) {
+					wrapper.addNextTask(retVal.get(i + 1).getId());
+				}
+			}
         }
         return retVal;
     }
@@ -904,6 +1167,10 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
             } else {
                 query.unfinished();
             }
+        }
+        
+        if(StringUtils.isNotBlank(searchBean.getInvolvedUserId())) {
+        	query.taskInvolvedUser(searchBean.getInvolvedUserId());
         }
 
         if (StringUtils.isNotBlank(searchBean.getProcessInstanceId())) {
@@ -948,10 +1215,67 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 
     @Override
     @Transactional
-    public Response deleteTask(String taskId) {
+    public Response deleteTask(String taskId, final String userId) {
+    	final Response response = new Response(ResponseStatus.SUCCESS);
+        final IdmAuditLog idmAuditLog = new IdmAuditLog();
+        idmAuditLog.setRequestorUserId(userId);
+        idmAuditLog.setAction(AuditAction.TERMINATED_WORKFLOW.value());
+        idmAuditLog.setSource(AuditSource.WORKFLOW.value());
+        String parentAuditLogId = null;
+		try {
+			final Task task = taskService.createTaskQuery().taskOwner(userId).taskId(taskId).singleResult();
+			if(task == null) {
+				throw new ActivitiException(String.format("Task ID '%s' does not exist, or is not owned by '%s'", taskId, userId));
+			}
+            idmAuditLog.setTargetTask(task.getId(), task.getName());
+            final Object auditLogId = taskService.getVariable(task.getId(), ActivitiConstants.AUDIT_LOG_ID.getName());
+			if(auditLogId != null && auditLogId instanceof String) {
+				parentAuditLogId = (String)auditLogId;
+			}
+			
+			taskService.setVariableLocal(task.getId(), ActivitiConstants.TERMINATED_BY_OWNER.getName(), true);
+            
+			runtimeService.deleteProcessInstance(task.getProcessInstanceId(), "Terminated by owner");
+			/* as of activiti 5.17.0, you can't delete a task that's part of a running process, so we just unclaim it */
+			//taskService.unclaim(taskId);
+			
+			taskService.deleteTask(task.getId());
+			//taskService.deleteTask(task.getId(), true);
+            idmAuditLog.succeed();
+		} catch(ActivitiException e) {
+			log.info("Activiti Exception", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(ResponseCode.USER_STATUS);
+			response.setErrorText(e.getMessage());
+            idmAuditLog.setFailureReason(e.getMessage());
+            idmAuditLog.setException(e);
+            idmAuditLog.fail();
+		} catch(Throwable e) {
+			log.error("Error while creating newhire request", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(ResponseCode.USER_STATUS);
+			response.setErrorText(e.getMessage());
+            idmAuditLog.setFailureReason(e.getMessage());
+            idmAuditLog.setException(e);
+            idmAuditLog.fail();
+        } finally {
+            if (parentAuditLogId != null) {
+                IdmAuditLog parent = auditLogService.findById(parentAuditLogId);
+                if (parent != null) {
+                    parent.addChild(idmAuditLog);
+                    idmAuditLog.addParent(parent);
+                    parent = auditLogService.save(parent);
+                }
+            }
+        }
+		return response;
+    	/*
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
-			taskService.deleteTask(taskId, true);
+        	taskService.unclaim(taskId);
+        	// as of activiti 5.17.0, you can't delete a task that's part of a running process, so we just unclaim it
+        	//taskService.deleteCandidateUser(taskId, null);
+			//taskService.deleteTask(taskId, true);
 		} catch(ActivitiException e) {
 			log.info("Activiti Exception", e);
 			response.setStatus(ResponseStatus.FAILURE);
@@ -965,15 +1289,16 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 		}
 
         return response;
+        */
     }
 
 	@Override
 	@Transactional
-	public Response deleteTaskForUser(String taskId, String userId) {
+	public Response unclaimTask(String taskId, String userId) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
         final IdmAuditLog idmAuditLog = new IdmAuditLog();
         idmAuditLog.setRequestorUserId(userId);
-        idmAuditLog.setAction(AuditAction.TERMINATED_WORKFLOW.value());
+        idmAuditLog.setAction(AuditAction.UNCLAIM_TASK.value());
         idmAuditLog.setSource(AuditSource.WORKFLOW.value());
         String parentAuditLogId = null;
 		try {
@@ -984,7 +1309,9 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 				parentAuditLogId = (String)auditLogId;
 			}
             
-			taskService.deleteTask(task.getId(), true);
+			/* as of activiti 5.17.0, you can't delete a task that's part of a running process, so we just unclaim it */
+			taskService.unclaim(taskId);
+			//taskService.deleteTask(task.getId(), true);
             idmAuditLog.succeed();
 		} catch(ActivitiException e) {
 			log.info("Activiti Exception", e);
@@ -1018,6 +1345,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 	@Override
 	@WebMethod
 	@Transactional
+	@Deprecated
 	public TaskListWrapper getTasksForUser(final String userId, final int from, final int size) {
 		final TaskListWrapper taskListWrapper = new TaskListWrapper();
 		final List<Task> assignedTasks = taskService.createTaskQuery().taskAssignee(userId).listPage(from, size);
@@ -1084,15 +1412,51 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
     @Override
     @WebMethod
     @Transactional
+    @Deprecated
     public List<TaskWrapper> getTasksForMemberAssociation(String memberAssociationId) {
-        List<TaskWrapper> memberAssociationTaskList = new LinkedList<TaskWrapper>();
-        final List<Task> taskList = taskService.createTaskQuery().processVariableValueEquals(ActivitiConstants.MEMBER_ASSOCIATION_ID.getName(), memberAssociationId).list();
-        if(CollectionUtils.isNotEmpty(taskList)) {
-            for(final Task task : taskList) {
-                memberAssociationTaskList.add(new TaskWrapper(task, runtimeService));
-            }
-        }
-        return memberAssociationTaskList;
+    	final TaskSearchBean searchBean = new TaskSearchBean();
+    	searchBean.setMemberAssociationId(memberAssociationId);
+    	return findTasks(searchBean, 0, Integer.MAX_VALUE);
     }
 
+	@Override
+	@Transactional
+	public List<TaskWrapper> findTasks(TaskSearchBean searchBean, int from, int size) {
+		List<TaskWrapper> wrapperList = new LinkedList<TaskWrapper>();
+		final List<Task> taskList = get(searchBean).listPage(from, size);
+		if(taskList != null) {
+			taskList.forEach(task -> {
+				wrapperList.add(new TaskWrapper(task, runtimeService));
+			});
+		}
+		return wrapperList;
+	}
+
+	@Override
+	@Transactional
+	public int countTasks(TaskSearchBean searchBean) {
+		return (int)get(searchBean).count();
+	}
+
+	private TaskQuery get(final TaskSearchBean searchBean) {
+		final TaskQuery query = taskService.createTaskQuery();
+		if(searchBean != null) {
+			if(StringUtils.isNotBlank(searchBean.getAssigneeId())) {
+				query.taskAssignee(searchBean.getAssigneeId());
+			}
+			if(StringUtils.isNotBlank(searchBean.getCandidateId())) {
+				query.taskCandidateUser(searchBean.getCandidateId());
+			}
+			if(StringUtils.isNotBlank(searchBean.getMemberAssociationId())) {
+				query.processVariableValueEquals(ActivitiConstants.MEMBER_ASSOCIATION_ID.getName(), searchBean.getMemberAssociationId());
+			}
+			if(StringUtils.isNotBlank(searchBean.getProcessDefinitionId())) {
+				query.processDefinitionId(searchBean.getProcessDefinitionId());
+			}
+			if(StringUtils.isNotBlank(searchBean.getOwnerId())) {
+				query.taskOwner(searchBean.getOwnerId());
+			}
+		}
+		return query;
+	}
 }

@@ -81,7 +81,9 @@ public class UserEntity extends KeyEntity {
     private MetadataTypeEntity employeeType;
 
     @Column(name = "FIRST_NAME", length = 50)
-    @ElasticsearchField(name = "firstName", store = ElasticsearchStore.Yes, index = Index.Analyzed)
+//    @ElasticsearchField(name = "firstName", store = ElasticsearchStore.Yes, index = Index.Analyzed)
+    @ElasticsearchFields(fields = {@ElasticsearchField(name = "firstName", store = ElasticsearchStore.Yes, index = Index.Not_Analyzed),
+                                   @ElasticsearchField(name = "firstNameTokenized", store = ElasticsearchStore.Yes, index = Index.Analyzed)})
     @Size(max = 50, message = "validator.user.first.name.toolong")
     private String firstName;
 
@@ -97,7 +99,9 @@ public class UserEntity extends KeyEntity {
     private MetadataTypeEntity jobCode;
 
     @Column(name = "LAST_NAME", length = 50)
-    @ElasticsearchField(name = "lastName", store = ElasticsearchStore.Yes, index = Index.Analyzed)
+//    @ElasticsearchField(name = "lastName", store = ElasticsearchStore.Yes, index = Index.Analyzed)
+    @ElasticsearchFields(fields = {@ElasticsearchField(name = "lastName", store = ElasticsearchStore.Yes, index = Index.Not_Analyzed),
+                                   @ElasticsearchField(name = "lastNameTokenized", store = ElasticsearchStore.Yes, index = Index.Analyzed)})
     @Size(max = 50, message = "validator.user.last.name.toolong")
     private String lastName;
 
@@ -184,7 +188,9 @@ public class UserEntity extends KeyEntity {
 
     @Column(name = "MAIDEN_NAME", length = 40)
     @Size(max = 40, message = "validator.user.maiden.name.toolong")
-    @ElasticsearchField(name = "maidenName", store = ElasticsearchStore.Yes, index = Index.Analyzed)
+//    @ElasticsearchField(name = "maidenName", store = ElasticsearchStore.Yes, index = Index.Analyzed)
+    @ElasticsearchFields(fields = {@ElasticsearchField(name = "maidenName", store = ElasticsearchStore.Yes, index = Index.Not_Analyzed),
+                                   @ElasticsearchField(name = "maidenNameTokenized", store = ElasticsearchStore.Yes, index = Index.Analyzed)})
     private String maidenName;
 
     @Column(name = "PASSWORD_THEME", length = 20)
@@ -788,7 +794,7 @@ public class UserEntity extends KeyEntity {
     public void setResources(Set<ResourceEntity> resources) {
         this.resources = resources;
     }
-    
+
     public void addResource(final ResourceEntity entity) {
     	if(entity != null) {
     		if(this.resources == null) {
@@ -797,7 +803,15 @@ public class UserEntity extends KeyEntity {
     		this.resources.add(entity);
     	}
     }
-    
+    public void addRole(final RoleEntity entity) {
+        if(entity != null) {
+            if(this.roles == null) {
+                this.roles = new HashSet<>();
+            }
+            this.roles.add(entity);
+        }
+    }
+
     public void removeResource(final ResourceEntity entity) {
     	if(entity != null) {
     		if(this.resources != null) {

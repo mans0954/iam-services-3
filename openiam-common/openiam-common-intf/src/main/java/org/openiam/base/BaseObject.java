@@ -19,7 +19,8 @@ import javax.xml.bind.annotation.XmlType;
         "requestorUserId",
         "requestorLogin",
         "requestClientIP",
-        "requestorSessionID"
+        "requestorSessionID",
+        "testRequest"
 })
 public class BaseObject implements Serializable {
 
@@ -39,7 +40,12 @@ public class BaseObject implements Serializable {
     protected String requestorUserId;
     protected String requestorLogin;
     protected String requestClientIP;
-
+    
+    /* 
+     * if true, means that the request is called as a 'test' - not as a real-world call 
+     * the service code should (or should not) perform an action based on this flag 
+     */
+    private boolean testRequest;
 
     public BaseObject() {
 
@@ -88,6 +94,14 @@ public class BaseObject implements Serializable {
 	}
 	
 	
+
+	public boolean isTestRequest() {
+		return testRequest;
+	}
+
+	public void setTestRequest(boolean testRequest) {
+		this.testRequest = testRequest;
+	}
 
 	@Override
 	public int hashCode() {

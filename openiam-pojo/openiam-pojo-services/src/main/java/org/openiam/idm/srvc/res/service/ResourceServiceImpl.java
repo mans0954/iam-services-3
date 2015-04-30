@@ -146,6 +146,9 @@ public class ResourceServiceImpl implements ResourceService {
             final ResourceEntity dbObject = resourceDao.findById(entity.getId());
             entity.setAdminResource(dbObject.getAdminResource());
             entity.setApproverAssociations(dbObject.getApproverAssociations());
+            if(dbObject.getReferenceId() != null) {
+            	entity.setReferenceId(dbObject.getReferenceId());
+            }
 
             if (isAdminResource) {
                 entity.setAdminResource(null);

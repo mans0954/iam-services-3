@@ -28,7 +28,8 @@ import java.util.Set;
         "attributes",
         "resource",
         "resourceAttributeMap",
-        "policyId",
+        "passwordPolicyId",
+        "authnPolicyId",
         "defaultProvider",
         "springBeanName",
         "groovyScriptURL",
@@ -46,7 +47,8 @@ public class AuthProvider extends KeyNameDTO {
     private boolean isSignRequest=false;
     private byte[] publicKey;
     private byte[] privateKey;
-    private String policyId;
+    private String passwordPolicyId;
+    private String authnPolicyId;
     private boolean defaultProvider;
     private String groovyScriptURL;
     private String springBeanName;
@@ -166,14 +168,6 @@ public class AuthProvider extends KeyNameDTO {
         }
     }
 
-	public String getPolicyId() {
-		return policyId;
-	}
-
-	public void setPolicyId(String policyId) {
-		this.policyId = policyId;
-	}
-
 	public boolean isDefaultProvider() {
 		return defaultProvider;
 	}
@@ -231,6 +225,22 @@ public class AuthProvider extends KeyNameDTO {
 		this.supportsTOTP = supportsTOTP;
 	}
 
+	public String getPasswordPolicyId() {
+		return passwordPolicyId;
+	}
+
+	public void setPasswordPolicyId(String passwordPolicyId) {
+		this.passwordPolicyId = passwordPolicyId;
+	}
+
+	public String getAuthnPolicyId() {
+		return authnPolicyId;
+	}
+
+	public void setAuthnPolicyId(String authnPolicyId) {
+		this.authnPolicyId = authnPolicyId;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -244,8 +254,6 @@ public class AuthProvider extends KeyNameDTO {
 		result = prime * result + (isSignRequest ? 1231 : 1237);
 		result = prime * result
 				+ ((managedSysId == null) ? 0 : managedSysId.hashCode());
-		result = prime * result
-				+ ((policyId == null) ? 0 : policyId.hashCode());
 		result = prime * result + Arrays.hashCode(privateKey);
 		result = prime * result
 				+ ((providerType == null) ? 0 : providerType.hashCode());
@@ -258,6 +266,8 @@ public class AuthProvider extends KeyNameDTO {
 		result = prime * result + (supportsSMSOTP ? 1231 : 1237);
 		result = prime * result + (supportsTOTP ? 1231 : 1237);
 		result = prime * result + ((smsOTPGroovyScript == null) ? 0 : smsOTPGroovyScript.hashCode());
+		result = prime * result + ((passwordPolicyId == null) ? 0 : passwordPolicyId.hashCode());
+		result = prime * result + ((authnPolicyId == null) ? 0 : authnPolicyId.hashCode());
 		return result;
 	}
 
@@ -288,11 +298,6 @@ public class AuthProvider extends KeyNameDTO {
 			if (other.managedSysId != null)
 				return false;
 		} else if (!managedSysId.equals(other.managedSysId))
-			return false;
-		if (policyId == null) {
-			if (other.policyId != null)
-				return false;
-		} else if (!policyId.equals(other.policyId))
 			return false;
 		if (!Arrays.equals(privateKey, other.privateKey))
 			return false;
@@ -329,6 +334,18 @@ public class AuthProvider extends KeyNameDTO {
 				return false;
 		} else if (!smsOTPGroovyScript.equals(other.smsOTPGroovyScript))
 			return false;
+		
+		if (passwordPolicyId == null) {
+			if (other.passwordPolicyId != null)
+				return false;
+		} else if (!passwordPolicyId.equals(other.passwordPolicyId))
+			return false;
+		
+		if (authnPolicyId == null) {
+			if (other.authnPolicyId != null)
+				return false;
+		} else if (!authnPolicyId.equals(other.authnPolicyId))
+			return false;		
 		return true;
 	}
 

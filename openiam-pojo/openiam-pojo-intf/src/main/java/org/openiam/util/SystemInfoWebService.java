@@ -32,5 +32,8 @@ public interface SystemInfoWebService {
 
     @WebMethod
     public Boolean isLinux();
+    
+    @WebMethod
+    public String getProjectVersion();
 
 }

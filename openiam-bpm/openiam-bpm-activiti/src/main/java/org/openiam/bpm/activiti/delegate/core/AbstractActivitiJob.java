@@ -1,5 +1,6 @@
 package org.openiam.bpm.activiti.delegate.core;
 
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -28,6 +29,7 @@ import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
 import org.openiam.idm.srvc.msg.service.MailService;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.service.OrganizationDataService;
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.role.dto.Role;
@@ -150,6 +152,22 @@ public abstract class AbstractActivitiJob implements JavaDelegate, TaskListener 
 
     protected List<Resource> getResources(final List<String> resourceIds) {
         return resourceDataService.getResourcesByIds(resourceIds, null);
+    }
+    
+    protected void addUsersToProtectingResource(final DelegateTask task, final Collection<String> userIds) {
+    	if(CollectionUtils.isNotEmpty(userIds)) {
+	    	final String resourceId = getStringVariable(task.getExecution(), ActivitiConstants.WORKFLOW_RESOURCE_ID);
+	    	if(StringUtils.isNotBlank(resourceId)) { /* won't be here prior to 4.0 */
+	    		final Resource resource = getResource(resourceId);
+	    		if(resource != null) {
+	    			userIds.forEach(userId -> {
+	    				resourceDataService.addUserToResource(resourceId, userId, "WORKFLOW");
+	    			});
+	    		} else { /* fail silently, but log it! */
+	    			LOG.error(String.format("Can't find resource with id '%s'.  This resource should protect this workflow", resourceId));
+	    		}
+	    	}
+    	}
     }
 	
 	protected List<String> getSupervisorsForUser(final UserEntity  user) {

@@ -58,7 +58,9 @@ public class PolicyServiceImpl implements PolicyService {
 		}
 		
 		if (StringUtils.isNotBlank(pe.getId())) {
-			pe.setAuthProviders(policyDao.findById(pe.getId()).getAuthProviders());
+			final PolicyEntity dbEntity = policyDao.findById(pe.getId());
+			pe.setPasswordPolicyProviders(dbEntity.getPasswordPolicyProviders());
+			pe.setAuthenticationPolicyProviders(dbEntity.getAuthenticationPolicyProviders());
 			policyDao.merge(pe);
 		} else {
 			policyDao.save(pe);
@@ -76,7 +78,11 @@ public class PolicyServiceImpl implements PolicyService {
 	public void delete(final String policyId) throws BasicDataServiceException {
 		final PolicyEntity entity = policyDao.findById(policyId);
 		if(entity != null) {
-			if(CollectionUtils.isNotEmpty(entity.getAuthProviders())) {
+			if(CollectionUtils.isNotEmpty(entity.getPasswordPolicyProviders())) {
+				throw new BasicDataServiceException(ResponseCode.POLICY_HAS_AUTH_PROVIDERS);
+			}
+			
+			if(CollectionUtils.isNotEmpty(entity.getAuthenticationPolicyProviders())) {
 				throw new BasicDataServiceException(ResponseCode.POLICY_HAS_AUTH_PROVIDERS);
 			}
 			

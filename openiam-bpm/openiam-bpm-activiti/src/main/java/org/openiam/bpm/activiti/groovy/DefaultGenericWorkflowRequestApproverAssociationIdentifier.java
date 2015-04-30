@@ -30,7 +30,7 @@ public class DefaultGenericWorkflowRequestApproverAssociationIdentifier extends 
 	}
 	
 	public void calculateApprovers() {
-		if(this.mergeCustomApproverIdsWithApproverAssociations){
+		if(mergeApproverAssociationsWithCustomApprovers()){
 			if(CollectionUtils.isNotEmpty(request.getCustomApproverIds())) {
 				approverUserIds.addAll(request.getCustomApproverIds());
 			} else if(isRequestForEntityCreation(request)) {

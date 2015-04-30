@@ -1,5 +1,7 @@
 package org.openiam.idm.srvc.meta.dto;
 
+import java.util.List;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
@@ -7,6 +9,7 @@ import javax.xml.bind.annotation.XmlType;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.bpm.dto.AbstractWorkflowResponse;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "SaveTemplateProfileResponse", propOrder = {
@@ -16,16 +19,16 @@ import org.openiam.base.ws.ResponseStatus;
 	"login",
 	"userId"
 })
-public class SaveTemplateProfileResponse extends Response {
+public class SaveTemplateProfileResponse extends AbstractWorkflowResponse {
 	
 	private String currentValue;
 	private String elementName;
 	private String plaintextPassword;
 	private String login;
 	private String userId;
-
+	
 	public SaveTemplateProfileResponse() {
-		
+		super();
 	}
 	
 	public SaveTemplateProfileResponse(final ResponseStatus code) {
@@ -71,6 +74,8 @@ public class SaveTemplateProfileResponse extends Response {
 	public void setUserId(String userId) {
 		this.userId = userId;
 	}
+
+	
 	
 	
 }

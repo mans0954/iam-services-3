@@ -1,5 +1,6 @@
 package org.openiam.provision.service;
 
+import com.fasterxml.jackson.core.JsonGenerationException;
 import groovy.lang.MissingPropertyException;
 
 import java.text.SimpleDateFormat;
@@ -15,7 +16,6 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.jackson.JsonGenerationException;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseAttributeContainer;
 import org.openiam.base.ws.ResponseCode;
