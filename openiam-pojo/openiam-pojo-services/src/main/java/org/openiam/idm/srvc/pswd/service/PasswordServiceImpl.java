@@ -502,6 +502,7 @@ public class PasswordServiceImpl implements PasswordService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Set<PasswordHistory> getPasswordHistory(String id, Integer from, Integer count) {
         Set<PasswordHistoryEntity> phESet = new HashSet<PasswordHistoryEntity>(passwordHistoryDao.getPasswordHistoryByLoginId(id, 0, count));
         return passwordHistoryDozerConverter.convertToDTOSet(phESet, false);
