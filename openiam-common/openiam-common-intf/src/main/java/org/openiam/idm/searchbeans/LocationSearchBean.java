@@ -54,4 +54,5 @@ public class LocationSearchBean extends AbstractSearchBean<Location, String> imp
     public void setName(String name) {
         this.name = name;
     }
+
 }

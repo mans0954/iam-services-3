@@ -154,4 +154,5 @@ public class GroupSearchBean extends EntitlementsSearchBean<Group, String> imple
     public void setKeys(final Set<String> keySet) {
         this.keySet = keySet;
     }
+
 }

@@ -4,13 +4,9 @@ import javax.persistence.*;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
-import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.openiam.base.domain.AbstractAttributeEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
-import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.internationalization.Internationalized;
 
@@ -24,7 +20,7 @@ import java.util.List;
 @Internationalized
 @AttributeOverrides(value={
 	@AttributeOverride(name = "id", column = @Column(name = "ID")),
-	@AttributeOverride(name = "value", column = @Column(name="VALUE", length=4096))
+	@AttributeOverride(name = "value", column = @Column(name="VALUE", length=4000))
 })
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class UserAttributeEntity extends AbstractAttributeEntity {
@@ -70,17 +66,17 @@ public class UserAttributeEntity extends AbstractAttributeEntity {
 		this.user = user;
 	}
 
-	@Override
-	public int hashCode() {
+    @Override
+    public int hashCode() {
 		final int prime = 31;
-		int result = super.hashCode();
+        int result = super.hashCode();
 		result = prime * result + (isMultivalued ? 1231 : 1237);
 		result = prime * result + ((user == null) ? 0 : user.hashCode());
 		result = prime * result + ((values == null) ? 0 : values.hashCode());
-		return result;
-	}
+        return result;
+    }
 
-	@Override
+    @Override
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;

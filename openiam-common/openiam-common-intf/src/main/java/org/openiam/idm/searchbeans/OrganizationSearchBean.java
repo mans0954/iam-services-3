@@ -199,4 +199,5 @@ public class OrganizationSearchBean extends EntitlementsSearchBean<Organization,
         result = 31 * result + (internalOrgId != null ? internalOrgId.hashCode() : 0);
         return result;
     }
+
 }

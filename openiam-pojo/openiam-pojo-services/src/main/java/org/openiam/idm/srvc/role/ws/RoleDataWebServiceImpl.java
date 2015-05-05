@@ -24,6 +24,7 @@ package org.openiam.idm.srvc.role.ws;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.openiam.base.SysConfiguration;
+import org.openiam.base.TreeObjectId;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
@@ -42,6 +43,7 @@ import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.dto.Role;
+import org.openiam.idm.srvc.role.dto.RoleAttribute;
 import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDataService;
@@ -51,6 +53,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.PostConstruct;
 import javax.jws.WebMethod;
 import javax.jws.WebService;
 import java.util.List;
@@ -85,7 +88,12 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
     @Autowired
     private LanguageDozerConverter languageConverter;
 
-	@Override
+    @PostConstruct
+    public void dataPreparation(){
+        roleDataService.rebuildRoleHierarchyCache();
+    }
+
+    @Override
 	public Response validateEdit(Role role) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
 		try {
@@ -151,7 +159,12 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 		}
 	}
 
-	@Override
+    @Override
+    public List<RoleAttribute> getRoleAttributes(String roleId) {
+        return roleDataService.getRoleAttributes(roleId);
+    }
+
+    @Override
 	public Response addGroupToRole(String roleId, String groupId, String requesterId) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLog idmAuditLog = new IdmAuditLog();
@@ -550,5 +563,10 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
     public List<Role> findRolesByAttributeValue(String attrName, String attrValue) {
         return roleDozerConverter.convertToDTOList(
                 roleDataService.findRolesByAttributeValue(attrName, attrValue), true);
+    }
+
+    @Override
+    public List<TreeObjectId> getRolesWithSubRolesIds(List<String> roleIds, String requesterId) {
+        return roleDataService.getRolesWithSubRolesIds(roleIds, requesterId);
     }
 }

@@ -9,8 +9,12 @@ import org.openiam.am.srvc.domain.*;
 import org.openiam.am.srvc.domain.pk.AuthLevelGroupingContentProviderXrefIdEntity;
 import org.openiam.am.srvc.domain.pk.AuthLevelGroupingURIPatternXrefIdEntity;
 import org.openiam.am.srvc.dto.PatternMatchMode;
+import org.openiam.am.srvc.dozer.converter.ContentProviderDozerConverter;
+import org.openiam.am.srvc.dto.ContentProvider;
 import org.openiam.am.srvc.model.URIPatternJSONWrapper;
 import org.openiam.am.srvc.searchbeans.URIPatternSearchBean;
+import org.openiam.am.srvc.searchbeans.ContentProviderSearchBean;
+import org.openiam.am.srvc.searchbeans.converter.ContentProviderSearchBeanConverter;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
@@ -44,6 +48,11 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
     private static final String patternResourceTypeId="URL_PATTERN";
     private static final String patternMethodResourceTypeId = "URI_PATTERN_METHOD";
     
+
+    @Autowired
+    private ContentProviderSearchBeanConverter contentProviderSearchBeanConverter;
+    @Autowired
+    private ContentProviderDozerConverter contentProviderDozerConverter;
     @Autowired
     private ContentProviderDao contentProviderDao;
     @Autowired
@@ -112,14 +121,18 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
     }
 
     @Override
-    public int getNumOfContentProviders(ContentProviderEntity example) {
+    @Transactional(readOnly = true)
+    public int getNumOfContentProviders(ContentProviderSearchBean cpsb) {
+        ContentProviderEntity example = contentProviderSearchBeanConverter.convert(cpsb);
         return contentProviderDao.count(example);
     }
 
     @Override
-    @Transactional
-    public List<ContentProviderEntity> findBeans(ContentProviderEntity example, int from, int size) {
-        return contentProviderDao.getByExample(example, from, size);
+    @Transactional(readOnly = true)
+    public List<ContentProvider> findBeans(ContentProviderSearchBean cpsb, Integer from, Integer size) {
+        ContentProviderEntity example = contentProviderSearchBeanConverter.convert(cpsb);
+        List<ContentProviderEntity> contentProviderEntities =  contentProviderDao.getByExample(example, from, size);
+        return contentProviderEntities != null ? contentProviderDozerConverter.convertToDTOList(contentProviderEntities, cpsb.isDeepCopy()) : null;
     }
 
     @Override

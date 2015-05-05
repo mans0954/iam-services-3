@@ -17,6 +17,8 @@ import java.util.Arrays;
 @DozerDTOCorrespondence(ProfilePictureEntity.class)
 
 public class ProfilePicture extends KeyNameDTO {
+    public ProfilePicture() {
+    }
 
     private byte[] picture;
 

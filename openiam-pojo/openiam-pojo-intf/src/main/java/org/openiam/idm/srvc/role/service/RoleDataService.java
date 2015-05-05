@@ -1,11 +1,13 @@
 package org.openiam.idm.srvc.role.service;
 
+import org.openiam.base.TreeObjectId;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.RoleSearchBean;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 import org.openiam.idm.srvc.role.domain.RoleAttributeEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.dto.Role;
+import org.openiam.idm.srvc.role.dto.RoleAttribute;
 
 import java.util.List;
 
@@ -182,7 +184,13 @@ public interface RoleDataService {
     
     public Role getRoleDTO(final String roleId);
 
+    public List<RoleAttribute> getRoleAttributes(final String roleId);
+
     public void addAttribute(RoleAttributeEntity attribute);
     public void updateAttribute(RoleAttributeEntity attribute);
 
+
+    List<TreeObjectId> getRolesWithSubRolesIds(List<String> roleIds, final String requesterId);
+
+    void rebuildRoleHierarchyCache();
 }

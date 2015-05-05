@@ -74,116 +74,101 @@ public class MngSysLoginModule extends AbstractLoginModule {
 
 	/*
     @Autowired
-    private ProvisionSelectedResourceHelper provisionSelectedResourceHelper;
-
-    @Autowired
     protected ConnectorAdapter connectorAdapter;
-
-    @Autowired
-    @Qualifier("managedSysService")
-    protected ManagedSystemWebService managedSystemWebService;
 
     private static final Log log = LogFactory.getLog(MngSysLoginModule.class);
 
     @Override
     public Subject login(AuthenticationContext authContext) throws Exception {
-        Subject sub = new Subject();
-        log.debug("login() in MngSysLoginModule called");
-        String clientIP = authContext.getClientIP();
-        String nodeIP = authContext.getNodeIP();
+
+        Date curDate = new Date(System.currentTimeMillis());
+        Subject subj = new Subject();
+
+        PasswordCredential cred = (PasswordCredential) authContext.getCredential();
+        String principal = cred.getPrincipal();
+        String password = cred.getPassword();
 
         String authPolicyId = (String)authContext.getAuthParam().get(AuthenticationRequest.AUTH_POLICY_ID);
         if(StringUtils.isEmpty(authPolicyId)) {
             authPolicyId = sysConfiguration.getDefaultAuthPolicyId();
         }
+        log.debug("Authentication policyid=" + authPolicyId);
         Policy authPolicy = policyDataService.getPolicy(authPolicyId);
-        PolicyAttribute policyAttribute = authPolicy
-                .getAttribute("MANAGED_SYS_ID");
+        if (authPolicy == null) {
+            log.error("No auth policy found");
+            throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_CONFIGURATION);
+        }
+
+        PolicyAttribute policyAttribute = authPolicy.getAttribute("MANAGED_SYS_ID");
         if (policyAttribute == null) {
-            throw new AuthenticationException(
-                    AuthenticationConstants.RESULT_INVALID_CONFIGURATION);
+            throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_CONFIGURATION);
         }
         ManagedSysDto mSys = managedSystemWebService.getManagedSys(policyAttribute.getValue1());
         if (mSys == null) {
-            throw new AuthenticationException(
-                    AuthenticationConstants.RESULT_INVALID_CONFIGURATION);
+            throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_CONFIGURATION);
         }
         String managedSysId = mSys.getId();
-        // current date
-        Date curDate = new Date(System.currentTimeMillis());
-        PasswordCredential cred = (PasswordCredential) authContext
-                .getCredential();
 
-        String principal = cred.getPrincipal();
-        String password = cred.getPassword();
+        // checking if Login exists in OpenIAM
+        LoginResponse lgResp = loginManager.getLoginByManagedSys(principal, managedSysId);
+        Login lg = lgResp.getPrincipal();
+        if (lg == null) {
+            throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_LOGIN);
+        }
 
-        //lookup by "adminPassword"
-        MuleContext muleContext = MuleContextProvider.getCtx();
-        LookupRequest<ExtensibleUser> reqType = new LookupRequest<ExtensibleUser>();
-        final String requestId = "R" + UUIDGen.getUUID();
-        reqType.setRequestID(requestId);
-        reqType.setSearchValue(principal);
-        reqType.setTargetID(managedSysId);
-        reqType.setHostLoginId(mSys.getUserId());
-        reqType.setHostLoginPassword(mSys.getDecryptPassword());
-        reqType.setHostUrl(mSys.getHostUrl());
+        // checking if User is valid
+        UserEntity user = userManager.getUser(lg.getUserId());
+        if (user == null) {
+            throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_LOGIN);
+        }
+
+        // Find user in target system
+        LookupUserResponse resp = provisionService.getTargetSystemUser(principal, managedSysId, new ArrayList<ExtensibleAttribute>());
+        log.debug("Lookup for user identity =" + principal + " in target system = " + mSys.getName() + ". Result = " + resp.getStatus() + ", " + resp.getErrorCode());
+
+        if (resp.isFailure()) {
+            throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_LOGIN);
+        }
+        principal = lg.getLogin();
+
+        // checking password policy
+        Policy passwordPolicy = passwordManager.getPasswordPolicy(principal, lg.getManagedSysId());
+        if (passwordPolicy == null) {
+            throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_CONFIGURATION);
+        }
+
+
+        AuthenticationException changePassword = null;
+        try {
+            authenticationUtils.getCredentialsValidator().execute(user, lg, AuthCredentialsValidator.NEW, new HashMap<String, Object>());
+
+        } catch (AuthenticationException ae) {
+            // we should validate password before change password
+            if (AuthenticationConstants.RESULT_PASSWORD_CHANGE_AFTER_RESET == ae.getErrorCode() ||
+                    AuthenticationConstants.RESULT_PASSWORD_EXPIRED == ae.getErrorCode() ||
+                    AuthenticationConstants.RESULT_SUCCESS_PASSWORD_EXP == ae.getErrorCode()) {
+                changePassword = ae;
+
+            } else {
+                throw ae;
+            }
+        }
+
+        // checking if provided Password is not empty
+        if (StringUtils.isEmpty(password)) {
+            throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_PASSWORD);
+        }
 
         ManagedSystemObjectMatch matchObj = null;
         ManagedSystemObjectMatch[] objArr = managedSystemWebService.managedSysObjectParam(managedSysId, ManagedSystemObjectMatch.USER);
-
         if (objArr != null && objArr.length > 0) {
             matchObj = objArr[0];
         }
-        if (matchObj != null && StringUtils.isNotEmpty(matchObj.getSearchBaseDn())) {
-            reqType.setBaseDN(matchObj.getSearchBaseDn());
-        }
-        ExtensibleUser extUser = provisionSelectedResourceHelper.buildEmptyAttributesExtensibleUser(managedSysId);
-        reqType.setExtensibleObject(extUser);
-        reqType.setScriptHandler(mSys.getLookupHandler());
-        SearchResponse lookupSearchResponse = connectorAdapter.lookupRequest(mSys, reqType, muleContext);
 
-       log.debug("Lookup for user identity =" + principal + " in target system = " +mSys.getName() + ". Result = "+lookupSearchResponse.getStatus()+", "+lookupSearchResponse.getErrorMsgAsStr());
-
-        if (lookupSearchResponse.getStatus() == StatusCodeType.FAILURE) {
-//            log("AUTHENTICATION", "AUTHENTICATION", "FAIL", "INVALID LOGIN",
-//                    domainId, null, principal, null, null, clientIP, nodeIP);
-            throw new AuthenticationException(
-                    AuthenticationConstants.RESULT_INVALID_LOGIN);
-        }
-
-        log.debug("Authentication policyid="
-                + authPolicyId);
-        // get the authentication lock out policy
-        Policy plcy = policyDataService.getPolicy(authPolicyId);
-        String attrValue = getPolicyAttribute(plcy.getPolicyAttributes(), "FAILED_AUTH_COUNT");
-
-        String tokenType = getPolicyAttribute(plcy.getPolicyAttributes(), "TOKEN_TYPE");
-        String tokenLife = getPolicyAttribute(plcy.getPolicyAttributes(), "TOKEN_LIFE");
-        String tokenIssuer = getPolicyAttribute(plcy.getPolicyAttributes(), "TOKEN_ISSUER");
-
-        Map tokenParam = new HashMap();
-        tokenParam.put("TOKEN_TYPE", tokenType);
-        tokenParam.put("TOKEN_LIFE", tokenLife);
-        tokenParam.put("TOKEN_ISSUER", tokenIssuer);
-        tokenParam.put("PRINCIPAL", principal);
-
-        LoginResponse lgResp = loginManager.getLoginByManagedSys(principal, managedSysId);
-
-        if (lgResp.getStatus() == ResponseStatus.FAILURE) {
-//            log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
-//                    "MATCHING IDENTITY NOT FOUND", domainId, null, principal,
-//                    null, null, clientIP, nodeIP);
-            throw new AuthenticationException(
-                    AuthenticationConstants.RESULT_INVALID_LOGIN);
-        }
-
-        Login lg = lgResp.getPrincipal();
-        UserEntity user = this.userManager.getUser(lg.getUserId());
-
-        // try to login to ManagedSystem with this user
-
+        // checking password is valid at target system
+        // Try to login to ManagedSystem with this user
         PasswordRequest passwRequest = new PasswordRequest(password, null, principal);
-        passwRequest.setRequestID(requestId);
+        passwRequest.setRequestID(UUIDGen.getUUID());
         passwRequest.setTargetID(managedSysId);
         passwRequest.setHostLoginId(mSys.getUserId());
         passwRequest.setHostLoginPassword(mSys.getDecryptPassword());
@@ -192,16 +177,15 @@ public class MngSysLoginModule extends AbstractLoginModule {
         passwRequest.setOperation("TEST_PASSWORD");
         passwRequest.setScriptHandler(mSys.getPasswordHandler());
         passwRequest.setExtensibleObject(new ExtensibleUser());
-        ResponseType responseType = connectorAdapter.validatePassword(mSys, passwRequest, muleContext);
+        ResponseType responseType = connectorAdapter.validatePassword(mSys, passwRequest, MuleContextProvider.getCtx());
 
-        if (responseType.getStatus() == StatusCodeType.FAILURE) {
-//            log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
-//                    "RESULT_INVALID_PASSWORD", domainId, null, principal, null,
-//                    null, clientIP, nodeIP);
-            log.warn("Authentication failed for "
-                    + mSys.getName() + " code= " + AuthenticationConstants.RESULT_INVALID_PASSWORD);
-            // update the auth fail count
-            if (attrValue != null && attrValue.length() > 0) {
+        if (StatusCodeType.FAILURE.equals(responseType.getStatus())) {
+            // get the authentication lock out policy
+            String attrValue = getPolicyAttribute(authPolicy.getPolicyAttributes(), "FAILED_AUTH_COUNT");
+
+            // if failed auth count is part of the polices, then do the
+            // following processing
+            if (StringUtils.isNotBlank(attrValue)) {
 
                 int authFailCount = Integer.parseInt(attrValue);
                 // increment the auth fail counter
@@ -221,69 +205,38 @@ public class MngSysLoginModule extends AbstractLoginModule {
                     user.setSecondaryStatus(UserStatusEnum.LOCKED);
                     userManager.updateUser(user);
 
-//                    log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
-//                            "ACCOUNT_LOCKED", domainId, null, principal, null,
-//                            null, clientIP, nodeIP);
-                    throw new AuthenticationException(
-                            AuthenticationConstants.RESULT_LOGIN_LOCKED);
+                    throw new AuthenticationException(AuthenticationConstants.RESULT_LOGIN_LOCKED);
+
                 } else {
                     // update the counter save the record
                     loginManager.saveLogin(lg);
-//                    log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
-//                            "INVALID_PASSWORD", domainId, null, principal,
-//                            null, null, clientIP, nodeIP);
 
-                    throw new AuthenticationException(
-                            AuthenticationConstants.RESULT_INVALID_PASSWORD);
+                    throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_PASSWORD);
                 }
+
             } else {
-                log.debug("No auth fail password policy value found");
-                throw new AuthenticationException(
-                        AuthenticationConstants.RESULT_INVALID_PASSWORD);
+                log.error("No auth fail password policy value found");
+                throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_CONFIGURATION);
 
             }
-
         }
 
-
-        if (user.getStatus() != null) {
-            if (user.getStatus().equals(UserStatusEnum.PENDING_START_DATE)) {
-                if (!pendingInitialStartDateCheck(user, curDate)) {
-//                    log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
-//                            "INVALID USER STATUS", domainId, null, principal,
-//                            null, null, clientIP, nodeIP);
-                    throw new AuthenticationException(
-                            AuthenticationConstants.RESULT_INVALID_USER_STATUS);
-                }
-            }
-            if (!user.getStatus().equals(UserStatusEnum.ACTIVE)
-                    && !user.getStatus().equals(
-                    UserStatusEnum.PENDING_INITIAL_LOGIN)) {
-                // invalid status
-//                log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
-//                        "INVALID USER STATUS", domainId, null, principal, null,
-//                        null, clientIP, nodeIP);
-                throw new AuthenticationException(
-                        AuthenticationConstants.RESULT_INVALID_USER_STATUS);
-            }
-            this.checkSecondaryStatus(user);
+        // now we can change password
+        if (changePassword != null) {
+            throw changePassword;
         }
 
-        int pswdResult = passwordExpired(lg, curDate);
-        if (pswdResult == AuthenticationConstants.RESULT_PASSWORD_EXPIRED) {
-//            log("AUTHENTICATION", "AUTHENTICATION", "FAIL", "PASSWORD_EXPIRED",
-//                    domainId, null, principal, null, null, clientIP, nodeIP);
-            throw new AuthenticationException(
-                    AuthenticationConstants.RESULT_PASSWORD_EXPIRED);
-        }
-        Integer daysToExp = setDaysToPassworExpiration(lg, curDate, sub, null);
+        Integer daysToExp = getDaysToPasswordExpiration(lg, curDate, passwordPolicy);
         if (daysToExp != null) {
-            sub.setDaysToPwdExp(0);
-            if (daysToExp > -1)
-                sub.setDaysToPwdExp(daysToExp);
+            subj.setDaysToPwdExp(0);
+            if (daysToExp > -1) {
+                subj.setDaysToPwdExp(daysToExp);
+            }
         }
 
-        // update the login and user records to show this authentication
+        log.debug("-login successful");
+        // good login - reset the counters
+
         lg.setLastAuthAttempt(curDate);
 
         // move the current login to prev login fields
@@ -292,43 +245,40 @@ public class MngSysLoginModule extends AbstractLoginModule {
 
         // assign values to the current login
         lg.setLastLogin(curDate);
-        lg.setLastLoginIP(clientIP);
-
-        // lg.setLastAuthAttempt(new Date(System.currentTimeMillis()));
-        // lg.setLastLogin(new Date(System.currentTimeMillis()));
+        lg.setLastLoginIP(authContext.getClientIP());
 
         lg.setAuthFailCount(0);
         lg.setFirstTimeLogin(0);
-
-        log.info("Good Authn: Login object updated.");
-
+        log.debug("-Good Authn: Login object updated.");
         loginManager.saveLogin(lg);
 
         // check the user status
-        if (user.getStatus() != null) {
-
-            if (user.getStatus().equals(UserStatusEnum.PENDING_INITIAL_LOGIN) ||
-                    // after the start date
-                    user.getStatus().equals(UserStatusEnum.PENDING_START_DATE)) {
-
-                user.setStatus(UserStatusEnum.ACTIVE);
-                userManager.updateUser(user);
-            }
+        if (UserStatusEnum.PENDING_INITIAL_LOGIN.equals(user.getStatus()) ||
+                // after the start date
+                UserStatusEnum.PENDING_START_DATE.equals(user.getStatus())) {
+            user.setStatus(UserStatusEnum.ACTIVE);
+            userManager.updateUser(user);
         }
 
         // Successful login
-        sub.setUserId(lg.getUserId());
-        sub.setPrincipal(principal);
-        sub.setSsoToken(token(lg.getUserId(), tokenParam));
-        setResultCode(lg, sub, curDate, null);
+        log.debug("-Populating subject after authentication");
 
-        // send message into to audit log
+        String tokenType = getPolicyAttribute(authPolicy.getPolicyAttributes(), "TOKEN_TYPE");
+        String tokenLife = getPolicyAttribute(authPolicy.getPolicyAttributes(), "TOKEN_LIFE");
+        String tokenIssuer = getPolicyAttribute(authPolicy.getPolicyAttributes(), "TOKEN_ISSUER");
 
-//        log("AUTHENTICATION", "AUTHENTICATION", "SUCCESS", null, domainId,
-//                user.getId(), distinguishedName, null, null, clientIP,
-//                nodeIP);
+        Map tokenParam = new HashMap();
+        tokenParam.put("TOKEN_TYPE", tokenType);
+        tokenParam.put("TOKEN_LIFE", tokenLife);
+        tokenParam.put("TOKEN_ISSUER", tokenIssuer);
+        tokenParam.put("PRINCIPAL", principal);
 
-        return sub;
+        subj.setUserId(lg.getUserId());
+        subj.setPrincipal(principal);
+        subj.setSsoToken(token(lg.getUserId(), tokenParam));
+        setResultCode(lg, subj, curDate, passwordPolicy);
+
+        return subj;
     }
     */
 }

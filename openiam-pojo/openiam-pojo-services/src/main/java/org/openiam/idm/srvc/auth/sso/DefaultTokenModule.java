@@ -105,8 +105,10 @@ public class DefaultTokenModule implements SSOTokenModule {
 			
 			log.debug("Token=" + token);
 			log.debug("cryptor =" + cryptor);
-			
+            long startTime = System.currentTimeMillis();
 			decString = cryptor.decrypt(keyManagementService.getUserKey(userId, KeyName.token.name()),token);
+            log.debug("decrypt time: " + (System.currentTimeMillis() - startTime));
+
 		}catch(EncryptionException encExcep) {
 			return false;
 		}

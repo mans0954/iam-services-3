@@ -8,24 +8,73 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.lucene.search.BooleanClause;
 import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.SQLQuery;
 import org.hibernate.Session;
+import org.hibernate.criterion.MatchMode;
+import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
+import org.openiam.base.ws.SearchParam;
 import org.openiam.core.dao.BaseDaoImpl;
+import org.openiam.idm.searchbeans.LoginSearchBean;
+import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
 @Repository("loginDAO")
-public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements
-        LoginDAO {
+public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements LoginDAO {
+	
+	/* DO NOT MERGE INTO 4.0!!!!  Only for 3.3.1 to solve IDMAPPS-2735.  Delete this function */
+	@Override
+	public List<String> getUserIds(LoginSearchBean searchBean) {
+		return getExampleCriteria(searchBean).setProjection(Projections.property("userId")).list();
+	}
+	
+	/* DO NOT MERGE INTO 4.0!!!!  Only for 3.3.1 to solve IDMAPPS-2735.  Delete this function */
+    @Override
+	protected Criteria getExampleCriteria(final SearchBean sb) {
+    	final Criteria criteria = super.getCriteria();
+    	if(sb != null) {
+    		if(sb instanceof LoginSearchBean) {
+    			final LoginSearchBean searchBean = (LoginSearchBean)sb;
+    			
+    			final SearchParam param = searchBean.getLoginMatchToken();
+    			if(param != null && param.isValid()) {
+    				final String value = StringUtils.trimToNull(param.getValue());
+    				if(value != null) {
+	    				switch(param.getMatchType()) {
+	    					case EXACT:
+	    						criteria.add(Restrictions.eq("lowerCaseLogin", StringUtils.lowerCase(value)));
+	    						break;
+	    					case STARTS_WITH:
+	    						criteria.add(Restrictions.ilike("lowerCaseLogin", value.toLowerCase(), MatchMode.START));
+	    						break;
+	    					default:
+	    						break;
+	    				}
+    				}
+    			}
+    			
+    			if(StringUtils.isNotBlank(searchBean.getManagedSysId())) {
+    				criteria.add(Restrictions.eq("managedSysId", searchBean.getManagedSysId()));
+    			}
+    			
+    			if(StringUtils.isNotBlank(searchBean.getUserId())) {
+    				criteria.add(Restrictions.eq("userId", searchBean.getUserId()));
+    			}
+    		}
+    	}
+    	return criteria;
+	}
 
-    private static final Log log = LogFactory.getLog(LoginDAOImpl.class);
+	private static final Log log = LogFactory.getLog(LoginDAOImpl.class);
     @Override
     public int changeIdentity(String principal, String pswd, String userId,
             String managedSysId) {
