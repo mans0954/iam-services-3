@@ -60,7 +60,9 @@ public class MailSenderClient {
 	
 	@Value("${mail.password}")
 	private String password;
+    @Value("${mail.smtp.auth}")
 	private boolean auth;
+    @Value("${mail.smtp.starttls.enable}")
 	private boolean starttls;
 
     private static final Log log = LogFactory.getLog(Message.class);
