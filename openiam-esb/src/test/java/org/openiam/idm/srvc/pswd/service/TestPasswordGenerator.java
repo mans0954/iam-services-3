@@ -16,7 +16,7 @@ import java.util.Arrays;
 @ContextConfiguration(locations={"classpath:test-integration-environment.xml"})
 public class TestPasswordGenerator extends AbstractTestNGSpringContextTests {
 
-    private static final String nonAlphaCharset = "!$@%&{}*#%+-_/?";
+    private static final String nonAlphaCharset = "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~";
     private static final String numericCharset = "0123456789";
     private static final String uppercaseCharset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     private static final String lowercaseCharset = "abcdefghijklmnopqrstuvwxyz";
