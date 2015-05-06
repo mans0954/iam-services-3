@@ -45,7 +45,7 @@ public class PasswordGenerator {
 
     private static final String charset = "!$@%&{}*#%+-_/?0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
-    private static final String specialCharset = "!$@%&{}*#%+-_/?";
+    private static final String specialCharset = "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~";
     private static final String numericCharset = "0123456789";
     private static final String upperCharset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     private static final String lowerCharset = "abcdefghijklmnopqrstuvwxyz";
