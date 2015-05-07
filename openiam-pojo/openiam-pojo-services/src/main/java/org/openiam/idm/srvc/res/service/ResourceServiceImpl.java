@@ -673,6 +673,7 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Resource getResourceDTO(String resourceId) {
         return resourceConverter.convertToDTO(resourceDao.findById(resourceId), true);
     }
