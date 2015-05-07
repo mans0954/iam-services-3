@@ -31,8 +31,8 @@
         			 </property>
         		</bean>
         		<bean class="org.springframework.scheduling.quartz.SimpleTriggerBean">
-        			 <property name="startDelay" value="${org.openiam.authorization.manager.threadsweep}" />
-        			 <property name="repeatInterval" value="${org.openiam.authorization.manager.threadsweep}" />
+        			 <property name="startDelay" value="${org.openiam.authorization.manager.menu.threadsweep}" />
+        			 <property name="repeatInterval" value="${org.openiam.authorization.manager.menu.threadsweep}" />
         			 <property name="jobDetail">
 						<bean class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
 							<property name="targetObject" ref="authorizationManagerMenuService" />
