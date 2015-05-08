@@ -44,21 +44,17 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
             criteria = this.getExampleCriteria(exampleEnity);
 
             if(groupSearchBean.hasMultipleKeys()) {
-                List<String> keys = new LinkedList<String>(groupSearchBean.getKeys());
-
-                if(keys.size() > 2000) {
-                    int pageSize = 2000;
+                List<String> keys = new LinkedList<>(groupSearchBean.getKeys());
+                final int maxListSize = 1000;
+                if(keys.size() > maxListSize) {
                     Disjunction disjunction = Restrictions.disjunction();
                     int count = 0;
-                    int pages = keys.size() / pageSize;
                     while(count <= keys.size()) {
-                        if((count+pageSize) <= keys.size()) {
-                            disjunction.add(Restrictions.in(getPKfieldName(), keys.subList(count, count + pageSize - 1)));
-                        } else {
-                            disjunction.add(Restrictions.in(getPKfieldName(), keys.subList(count, keys.size() - 1)));
-                        }
-
-                        count += pageSize;
+                        // Forced to generate sqlRestriction, because most DBs support only limited amount of parameters
+                        int upperRange = Math.min(count+maxListSize, keys.size()) - 1;
+                        final String sql = "GRP_ID in ('" + StringUtils.join(keys.subList(count, upperRange), "','") + "')";
+                        disjunction.add(Restrictions.sqlRestriction(sql));
+                        count += maxListSize;
                     }
                     criteria.add(disjunction);
                 } else {
