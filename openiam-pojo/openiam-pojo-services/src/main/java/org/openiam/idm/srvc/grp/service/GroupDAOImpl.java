@@ -20,10 +20,7 @@ import org.openiam.idm.srvc.searchbean.converter.GroupSearchBeanConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static org.hibernate.criterion.Projections.rowCount;
 
@@ -47,7 +44,26 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
             criteria = this.getExampleCriteria(exampleEnity);
 
             if(groupSearchBean.hasMultipleKeys()) {
-                criteria.add(Restrictions.in(getPKfieldName(), groupSearchBean.getKeys()));
+                List<String> keys = new LinkedList<String>(groupSearchBean.getKeys());
+
+                if(keys.size() > 2000) {
+                    int pageSize = 2000;
+                    Disjunction disjunction = Restrictions.disjunction();
+                    int count = 0;
+                    int pages = keys.size() / pageSize;
+                    while(count <= keys.size()) {
+                        if((count+pageSize) <= keys.size()) {
+                            disjunction.add(Restrictions.in(getPKfieldName(), keys.subList(count, count + pageSize - 1)));
+                        } else {
+                            disjunction.add(Restrictions.in(getPKfieldName(), keys.subList(count, keys.size() - 1)));
+                        }
+
+                        count += pageSize;
+                    }
+                    criteria.add(disjunction);
+                } else {
+                    criteria.add(Restrictions.in(getPKfieldName(), groupSearchBean.getKeys()));
+                }
             }else if(StringUtils.isNotBlank(groupSearchBean.getKey())) {
                 criteria.add(Restrictions.eq(getPKfieldName(), groupSearchBean.getKey()));
             }
