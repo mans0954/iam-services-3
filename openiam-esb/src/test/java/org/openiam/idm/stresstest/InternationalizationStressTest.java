@@ -7,6 +7,7 @@ import org.apache.commons.lang.time.StopWatch;
 import org.junit.Assert;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
+import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.ws.RoleDataWebService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -33,37 +34,37 @@ public class InternationalizationStressTest extends AbstractTestNGSpringContextT
 
 	private List<String> userIds = null;
 	private List<String> groupIds = null;
+	private List<String> roleIds = null;
 	
-	private AtomicInteger atomicInt = new AtomicInteger();
+	private AtomicInteger roleInt = new AtomicInteger();
+	private AtomicInteger groupInt = new AtomicInteger();
 	private AtomicInteger atomicUserInt = new AtomicInteger();
 	
 	@BeforeClass
 	public void before() {
-		userIds = jdbcTemplate.queryForList("SELECT USER_ID FROM USER_ROLE WHERE ROLE_ID='HP_ADMIN_ROLE_ID'", null, String.class);
-		groupIds = jdbcTemplate.queryForList("SELECT GRP_ID FROM openiam.GRP", null, String.class);
+		userIds = jdbcTemplate.queryForList("SELECT USER_ID FROM USERS", null, String.class);
+		groupIds = jdbcTemplate.queryForList("SELECT GRP_ID FROM GRP", null, String.class);
+		roleIds = jdbcTemplate.queryForList("SELECT ROLE_ID FROM ROLE", null, String.class);
 	}
 	
-	@Test(threadPoolSize = 20, invocationCount = 127130)
+	@Test(threadPoolSize = 100, invocationCount = 127130)
 	public void groupStressTest() {
-		final int nextInt = atomicInt.incrementAndGet();
-		if(nextInt < groupIds.size() - 1) {
-			final String id = groupIds.get(nextInt);
-			final StopWatch sw = new StopWatch();
-			sw.start();
+		final int groupIdx = groupInt.incrementAndGet() % groupIds.size();
+		final int roleIdx = roleInt.incrementAndGet() % roleIds.size();
+		final String groupId = groupIds.get(groupIdx);
+		final String roleId = roleIds.get(roleIdx);
+		final StopWatch sw = new StopWatch();
+		sw.start();
 			
-			int userIdx = atomicUserInt.incrementAndGet();
-			if(userIdx >= userIds.size()) {
-				userIdx = 0;
-				atomicUserInt.set(0);
-			}
+		int userIdx = atomicUserInt.incrementAndGet() % userIds.size();
+		final String userId = userIds.get(userIdx);
 			
-			final Group group = groupServiceFactory.getGroup(id, userIds.get(userIdx));
-			sw.stop();
-			Assert.assertNotNull(group);
-			System.out.println(String.format("%s:%s", nextInt, sw.getTime()));
-			//Assert.assertTrue(sw.getTime() <= 1000);
-		} else {
-			atomicInt.set(0);
-		}
+		//System.out.println(String.format("User ID: %s", userId));
+		final Group group = groupServiceFactory.getGroup(groupId, userId);
+		final Role role = roleServiceClient.getRole(roleId, userId);
+		sw.stop();
+		//Assert.assertNotNull(group);
+		System.out.println(String.format("%s ms.  UID: %s", sw.getTime(), userId));
+		//Assert.assertTrue(sw.getTime() <= 1000);
 	}
 }
