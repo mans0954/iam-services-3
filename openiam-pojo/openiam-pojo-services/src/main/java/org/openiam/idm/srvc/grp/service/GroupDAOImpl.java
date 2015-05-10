@@ -52,7 +52,7 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
                     while(count <= keys.size()) {
                         // Forced to generate sqlRestriction, because most DBs support only limited amount of parameters
                         int upperRange = Math.min(count+maxListSize, keys.size()) - 1;
-                        final String sql = "GRP_ID in ('" + StringUtils.join(keys.subList(count, upperRange), "','") + "')";
+                        final String sql = criteria.getAlias() + "_.GRP_ID in ('" + StringUtils.join(keys.subList(count, upperRange), "','") + "')";
                         disjunction.add(Restrictions.sqlRestriction(sql));
                         count += maxListSize;
                     }
