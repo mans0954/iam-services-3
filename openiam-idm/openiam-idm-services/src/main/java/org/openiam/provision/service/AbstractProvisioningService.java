@@ -1404,7 +1404,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     userEntity.getGroups().add(groupEntity);
                     // Audit Log ---------------------------------------------------
                     IdmAuditLog auditLog = new IdmAuditLog();
-                    auditLog.setAction(AuditAction.ADD_GROUP.value());
+                    auditLog.setAction(AuditAction.ADD_USER_TO_GROUP.value());
                     Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
                     String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
                     auditLog.setTargetUser(pUser.getId(), loginStr);
@@ -1421,7 +1421,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     deleteGroupSet.add(dg);
                     // Audit Log ---------------------------------------------------
                     IdmAuditLog auditLog = new IdmAuditLog();
-                    auditLog.setAction(AuditAction.DELETE_GROUP.value());
+                    auditLog.setAction(AuditAction.REMOVE_USER_FROM_GROUP.value());
                     Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
                     String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
                     auditLog.setTargetUser(pUser.getId(), loginStr);
@@ -1462,7 +1462,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     userEntity.getRoles().add(roleEntity);
                     // Audit Log ---------------------------------------------------
                     IdmAuditLog auditLog = new IdmAuditLog();
-                    auditLog.setAction(AuditAction.ADD_ROLE.value());
+                    auditLog.setAction(AuditAction.ADD_USER_TO_ROLE.value());
                     Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
                     String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
                     auditLog.setTargetUser(pUser.getId(), loginStr);
@@ -1478,7 +1478,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     deleteRoleSet.add(dr);
                     // Audit Log ---------------------------------------------------
                     IdmAuditLog auditLog = new IdmAuditLog();
-                    auditLog.setAction(AuditAction.DELETE_ROLE.value());
+                    auditLog.setAction(AuditAction.REMOVE_USER_FROM_ROLE.value());
                     Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
                     String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
                     auditLog.setTargetUser(pUser.getId(), loginStr);
