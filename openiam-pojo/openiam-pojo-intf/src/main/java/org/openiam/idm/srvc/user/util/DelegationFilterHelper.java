@@ -146,14 +146,15 @@ public class DelegationFilterHelper {
 
     private static String getFilterValue(Map<String, UserAttribute> attrMap, String key){
         StringBuilder value = new StringBuilder();
-        if(attrMap!=null){
+        if(attrMap!=null) {
             UserAttribute ua = attrMap.get(key);
             if (ua != null)  {
-                value.append(ua.getValue());
                 if(ua.getIsMultivalued()) {
                     for(String v : ua.getValues()) {
                         value.append(v);
                     }
+                } else {
+                    value.append(ua.getValue());
                 }
             }
         }
