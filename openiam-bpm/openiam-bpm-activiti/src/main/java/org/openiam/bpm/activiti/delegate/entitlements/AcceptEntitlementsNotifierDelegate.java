@@ -33,6 +33,7 @@ public class AcceptEntitlementsNotifierDelegate extends AbstractNotificationDele
 		
 		NOTIFICATION_MAP.put(ActivitiRequestType.REMOVE_SUPERIOR, "REMOVE_SUPERIOR_ACCEPT");
 		NOTIFICATION_MAP.put(ActivitiRequestType.ADD_SUPERIOR, "ADD_SUPERIOR_ACCEPT");
+        NOTIFICATION_MAP.put(ActivitiRequestType.REPLACE_SUPERIOR, "REPLACE_SUPERIOR_ACCEPT");
 		NOTIFICATION_MAP.put(ActivitiRequestType.DELETE_LOGIN, "DELETE_LOGIN_ACCEPT_NOTIFY");
 		NOTIFICATION_MAP.put(ActivitiRequestType.SAVE_LOGIN, "ADD_UPDATE_LOGIN_ACCEPT_NOTIFY");
 		

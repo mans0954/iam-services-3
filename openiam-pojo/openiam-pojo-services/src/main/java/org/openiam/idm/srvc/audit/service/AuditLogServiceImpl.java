@@ -221,7 +221,7 @@ public class AuditLogServiceImpl implements AuditLogService {
 	@Transactional(readOnly=true)
 	public List<IdmAuditLog> findBeans(AuditLogSearchBean searchBean,
 			int from, int size) {
-		List<IdmAuditLogEntity> idmAuditLogEntities = logDAO.getByExample(searchBean, from, size);
+		List<IdmAuditLogEntity> idmAuditLogEntities = logDAO.getByExampleNoLocalize(searchBean, from, size);
         List<IdmAuditLog> idmAuditLogs = new LinkedList<>();
         if(idmAuditLogEntities != null) {
            idmAuditLogs = auditLogDozerConverter.convertToDTOList(idmAuditLogEntities, false);
