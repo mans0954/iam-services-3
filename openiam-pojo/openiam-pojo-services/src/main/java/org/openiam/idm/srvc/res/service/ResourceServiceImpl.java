@@ -310,18 +310,8 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @Transactional(readOnly = true)
-    @LocalizedServiceGet
     public List<ResourceEntity> findBeans(final ResourceSearchBean searchBean, final int from, final int size, final LanguageEntity language) {
-        // final ResourceEntity resource =
-        // resourceSearchBeanConverter.convert(searchBean);
-        List<ResourceEntity> resultsEntities = null;
-        // if (Boolean.TRUE.equals(searchBean.getRootsOnly())) {
-        // resultsEntities = resourceDao.getRootResources(resource, from, size);
-        // } else {
-        resultsEntities = resourceDao.getByExample(searchBean, from, size);
-        // }
-        return resultsEntities;
-
+        return resourceDao.getByExampleNoLocalize(searchBean, from, size);
     }
 
     @Override

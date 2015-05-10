@@ -61,53 +61,55 @@ public class LinuxCommandFactory extends AbstractCommandFactory {
     private ConnectorCommand searchGroupLinuxCommand;
 
     public ConnectorCommand getConnectorCommand(CommandType commandType,
-            ExtensibleObjectType extensibleObjectType)
+                                                ExtensibleObjectType extensibleObjectType)
             throws ConnectorDataException {
         String error = String.format(ERROR_PATTERN, commandType,
                 extensibleObjectType, "LINUX");
         if (ExtensibleObjectType.USER == extensibleObjectType) {
             switch (commandType) {
-            case ADD:
-                return addUserLinuxCommand;
-            case DELETE:
-                return deleteUserLinuxCommand;
-            case RESUME:
-                return resumeLinuxCommand;
-            case SET_PASSWORD:
-                return setPasswordLinuxCommand;
-            case SUSPEND:
-                return suspendRequestType;
-            case MODIFY:
-                return modifyUserLinuxCommand;
-            case TEST:
-                return testLinuxCommand;
-            case EXPIRE_PASSWORD:
-                return expirePasswordLinuxCommand;
-            case LOOKUP:
-                return lookupUserLinuxCommand;
-            case SEARCH:
-                return searchUserLinuxCommand;
-            default:
-                throw new ConnectorDataException(
-                        ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION, error);
+                case ADD:
+                    return addUserLinuxCommand;
+                case DELETE:
+                    return deleteUserLinuxCommand;
+                case RESUME:
+                    return resumeLinuxCommand;
+                case SET_PASSWORD:
+                    return setPasswordLinuxCommand;
+                case RESET_PASSWORD:
+                    return setPasswordLinuxCommand;
+                case SUSPEND:
+                    return suspendRequestType;
+                case MODIFY:
+                    return modifyUserLinuxCommand;
+                case TEST:
+                    return testLinuxCommand;
+                case EXPIRE_PASSWORD:
+                    return expirePasswordLinuxCommand;
+                case LOOKUP:
+                    return lookupUserLinuxCommand;
+                case SEARCH:
+                    return searchUserLinuxCommand;
+                default:
+                    throw new ConnectorDataException(
+                            ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION, error);
             }
         } else if (ExtensibleObjectType.GROUP == extensibleObjectType) {
             switch (commandType) {
-            case ADD:
-                return addGroupLinuxCommand;
-            case DELETE:
-                return deleteGroupLinuxCommand;
-            case MODIFY:
-                return modifyGroupLinuxCommand;
-            case TEST:
-                return testLinuxCommand;
-            case LOOKUP:
-                return lookupGroupLinuxCommand;
-            case SEARCH:
-                return searchGroupLinuxCommand;
-            default:
-                throw new ConnectorDataException(
-                        ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION, error);
+                case ADD:
+                    return addGroupLinuxCommand;
+                case DELETE:
+                    return deleteGroupLinuxCommand;
+                case MODIFY:
+                    return modifyGroupLinuxCommand;
+                case TEST:
+                    return testLinuxCommand;
+                case LOOKUP:
+                    return lookupGroupLinuxCommand;
+                case SEARCH:
+                    return searchGroupLinuxCommand;
+                default:
+                    throw new ConnectorDataException(
+                            ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION, error);
             }
         } else {
             throw new ConnectorDataException(

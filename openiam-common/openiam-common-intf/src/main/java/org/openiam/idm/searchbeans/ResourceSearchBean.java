@@ -25,7 +25,8 @@ import java.util.Set;
         "metadataType",
         "coorelatedName",
 		"adminResourceId",
-		"referenceId"
+		"referenceId",
+		"ownerId"
 })
 public class ResourceSearchBean extends EntitlementsSearchBean<Resource, String> implements SearchBean<Resource, String>, Serializable {
 
@@ -42,6 +43,7 @@ public class ResourceSearchBean extends EntitlementsSearchBean<Resource, String>
 	private String coorelatedName;
 	private String adminResourceId;
 	private String referenceId;
+	private String ownerId;
 
     public String getCoorelatedName() {
         return coorelatedName;
@@ -142,6 +144,14 @@ public class ResourceSearchBean extends EntitlementsSearchBean<Resource, String>
 
 	public void setReferenceId(String referenceId) {
 		this.referenceId = referenceId;
+	}
+
+	public String getOwnerId() {
+		return ownerId;
+	}
+
+	public void setOwnerId(String ownerId) {
+		this.ownerId = ownerId;
 	}
 
 	@Override

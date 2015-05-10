@@ -5,10 +5,8 @@ import java.util.List;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
-import org.openiam.idm.srvc.lang.domain.LanguageEntity;
-import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
-import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
-import org.openiam.idm.srvc.meta.domain.MetadataValidValueEntity;
+import org.openiam.idm.srvc.lang.dto.Language;
+import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
 import org.openiam.idm.srvc.meta.dto.MetadataElement;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
 
@@ -22,29 +20,35 @@ import org.openiam.idm.srvc.meta.dto.MetadataType;
  */
 
 public interface MetadataService {
-	
-	public List<MetadataElementEntity> findElementByName(final String name);
+// new in 3.3.1
+    MetadataElement findElementByAttrNameAndTypeId(String attrName, String typeId, final Language language);
+// new in 3.3.1
+    MetadataType findMetadataTypeByNameAndGrouping(String name, MetadataTypeGrouping grouping, final Language language);
 
-    public MetadataTypeEntity findById(final String id);
+	List<MetadataElement> findElementByName(final String name);
 
-	public List<MetadataElementEntity> findBeans(final MetadataElementSearchBean searchBean, final int from, final int size, final LanguageEntity entity);
-	
-	public List<MetadataTypeEntity> findBeans(final MetadataTypeSearchBean searchBean, final int from, final int size, final LanguageEntity entity);
-	
-	public int count(final MetadataElementSearchBean searchBean);
-	
-	public int count(final MetadataTypeSearchBean searchBean);
-	
-	public void save(final MetadataElementEntity entity);
+    MetadataElement findElementById(final String id, Language language);
 
-	public void deleteMetdataElement(final String id);
+    MetadataType findById(final String id);
+
+	List<MetadataElement> findBeans(final MetadataElementSearchBean searchBean, final int from, final int size, final Language language);
+
+	List<MetadataType> findBeans(final MetadataTypeSearchBean searchBean, final int from, final int size, final Language language);
+
+	int count(final MetadataElementSearchBean searchBean);
 	
-	public void save(final MetadataTypeEntity entity) throws BasicDataServiceException;
+	int count(final MetadataTypeSearchBean searchBean);
 	
-	public void deleteMetdataType(final String id);
+	void save(final MetadataElement entity);
+
+	void deleteMetdataElement(final String id);
+	
+	void save(final MetadataType entity) throws BasicDataServiceException;
+	
+	void deleteMetdataType(final String id);
 	
 	//public void save(final MetadataValidValueEntity entity);
-	public void delteMetaValidValue(final String validValueId);
+	void delteMetaValidValue(final String validValueId);
 	
-	public List<MetadataTypeEntity> getPhonesWithSMSOTPEnabled();
+	List<MetadataType> getPhonesWithSMSOTPEnabled();
 }

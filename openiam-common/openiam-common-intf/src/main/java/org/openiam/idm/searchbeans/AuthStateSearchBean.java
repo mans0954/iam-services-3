@@ -59,5 +59,4 @@ public class AuthStateSearchBean extends AbstractSearchBean<AuthStateEntity, Aut
 				onlyActive, super.toString());
 	}
 
-	
 }

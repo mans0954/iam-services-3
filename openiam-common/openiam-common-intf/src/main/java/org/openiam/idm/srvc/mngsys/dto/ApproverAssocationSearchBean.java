@@ -27,6 +27,5 @@ public class ApproverAssocationSearchBean extends AbstractSearchBean<ApproverAss
 	public void setAssociationEntityId(String associationEntityId) {
 		this.associationEntityId = associationEntityId;
 	}
-	
-	
+
 }

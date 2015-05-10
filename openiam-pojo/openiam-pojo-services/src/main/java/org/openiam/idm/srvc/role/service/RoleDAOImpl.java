@@ -11,6 +11,7 @@ import org.hibernate.criterion.*;
 import org.openiam.base.Tuple;
 import org.openiam.base.ws.SortParam;
 import org.openiam.core.dao.BaseDaoImpl;
+import org.openiam.base.TreeObjectId;
 import org.openiam.idm.searchbeans.AbstractSearchBean;
 import org.openiam.idm.searchbeans.RoleSearchBean;
 import org.openiam.idm.searchbeans.SearchBean;
@@ -22,10 +23,8 @@ import org.openiam.util.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static org.hibernate.criterion.Projections.rowCount;
 
@@ -48,6 +47,10 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
     protected String getPKfieldName() {
         return "id";
     }
+
+
+    private final ConcurrentHashMap<String, TreeObjectId> rolesHierarchyIds = new ConcurrentHashMap<String, TreeObjectId>();
+
 
     @Override
     protected Criteria getExampleCriteria(final SearchBean searchBean) {
@@ -321,4 +324,45 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
         return criteria.list();
     }
 
+    @Override
+    public List<TreeObjectId> findRolesWithSubRolesIds(List<String> initialRoleIds, final Set<String> filter) {
+        List<TreeObjectId> result = new LinkedList<TreeObjectId>();
+        if(initialRoleIds != null) {
+            for (String roleId : initialRoleIds) {
+                if(!rolesHierarchyIds.containsKey(roleId)) {
+                    rolesHierarchyIds.putIfAbsent(roleId, populateTreeObjectId(new TreeObjectId(roleId), filter));
+                }
+                result.add(rolesHierarchyIds.get(roleId));
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public void rolesHierarchyRebuild() {
+        rolesHierarchyIds.clear();
+        List<String> allParentIds = findAllParentsIds();
+        if(allParentIds != null) {
+            for(String parentRoleId : allParentIds) {
+                TreeObjectId treeObjectId = populateTreeObjectId(new TreeObjectId(parentRoleId), null);
+                rolesHierarchyIds.putIfAbsent(parentRoleId, treeObjectId);
+            }
+        }
+    }
+
+    private TreeObjectId populateTreeObjectId(final TreeObjectId root, final Set<String> filter){
+        List<String> ids = (List<String>)getChildRolesCriteria(root.getValue(), filter).setProjection(Projections.id()).list();
+        if(ids != null) {
+            for(String id : ids) {
+                TreeObjectId objectId = new TreeObjectId(id);
+                root.addChild(populateTreeObjectId(objectId, filter));
+            }
+        }
+        return root;
+    }
+
+    @Override
+    public List<String> findAllParentsIds() {
+        return getCriteria().add(Restrictions.isEmpty("parentRoles")).setProjection(Projections.id()).list();
+    }
 }

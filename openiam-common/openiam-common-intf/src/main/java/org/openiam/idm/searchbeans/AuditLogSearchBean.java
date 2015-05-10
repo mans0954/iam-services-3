@@ -139,4 +139,5 @@ public class AuditLogSearchBean extends AbstractSearchBean<IdmAuditLog, String> 
     public void setResult(String result) {
         this.result = result;
     }
+
 }

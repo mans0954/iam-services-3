@@ -110,4 +110,5 @@ public class IdentitySearchBean extends AbstractSearchBean<IdentityDto, String> 
     public void setType(IdentityTypeEnum type) {
         this.type = type;
     }
+
 }

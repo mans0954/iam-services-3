@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.role.ws;
 
+import org.openiam.base.TreeObjectId;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.RoleSearchBean;
 import org.openiam.idm.srvc.lang.dto.Language;
@@ -39,6 +40,9 @@ public interface RoleDataWebService {
     Role getRoleLocalized(@WebParam(name = "roleId", targetNamespace = "") String roleId,
                  		  @WebParam(name="requesterId", targetNamespace="") String requesterId,
                  		  @WebParam(name="language", targetNamespace="") Language language);
+
+    @WebMethod
+    List<RoleAttribute> getRoleAttributes(@WebParam(name = "roleId", targetNamespace = "") String roleId);
 
     /**
      * This method creates a new role or update existed one. For example:
@@ -321,4 +325,8 @@ public interface RoleDataWebService {
     @WebMethod
     public List<Role> findRolesByAttributeValue(final @WebParam(name = "attrName", targetNamespace = "") String attrName,
                                                 final @WebParam(name = "attrValue", targetNamespace = "") String attrValue);
+
+    @WebMethod
+    public List<TreeObjectId> getRolesWithSubRolesIds(final @WebParam(name="roleIds", targetNamespace="") List<String> roleIds,
+                                                      final @WebParam(name="requesterId", targetNamespace="") String requesterId);
 }

@@ -153,4 +153,5 @@ public class RoleSearchBean extends EntitlementsSearchBean<Role, String> impleme
     public void setKeys(final Set<String> keySet) {
         this.keySet = keySet;
     }
+
 }

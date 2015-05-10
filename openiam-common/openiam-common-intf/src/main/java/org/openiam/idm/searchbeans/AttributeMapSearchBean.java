@@ -34,4 +34,5 @@ public class AttributeMapSearchBean extends AbstractSearchBean<AttributeMap, Str
     public void setSynchConfigId(String synchConfigId) {
         this.synchConfigId = synchConfigId;
     }
+
 }

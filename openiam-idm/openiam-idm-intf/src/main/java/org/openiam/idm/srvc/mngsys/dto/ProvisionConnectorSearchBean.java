@@ -31,4 +31,5 @@ public class ProvisionConnectorSearchBean extends AbstractSearchBean<ProvisionCo
     public void setConnectorTypeId(String connectorTypeId) {
         this.connectorTypeId = connectorTypeId;
     }
+
 }

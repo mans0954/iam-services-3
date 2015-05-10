@@ -586,7 +586,6 @@ public class URIPatternServiceTest extends AbstractContentProviderServiceTest<UR
 	public void testXSSRuleOnPattern() {
 		URIPattern pattern = newInstance();
 		pattern.setIgnoreXSS(true);
-		saveAndAssert(pattern);
 		final Response response = saveAndAssert(pattern);
 		pattern = get((String)response.getResponseValue());
 		Assert.assertTrue(pattern.isIgnoreXSS());

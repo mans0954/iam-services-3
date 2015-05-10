@@ -3,10 +3,12 @@ package org.openiam.idm.srvc.lang.service;
 import java.util.List;
 import java.util.Map;
 
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.LanguageSearchBean;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 import org.openiam.idm.srvc.lang.domain.LanguageLocaleEntity;
 import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
+import org.openiam.idm.srvc.lang.dto.Language;
 
 /**
  * <code>LanguageDataService</code> provides a service to manage the list of
@@ -17,70 +19,30 @@ import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
  */
 
 public interface LanguageDataService {
-
-    /**
-     * Adds a new language to the list
-     * 
-     * @param lg
-     * @return
-     */
-    public LanguageEntity addLanguage(LanguageEntity lg);
-
-    /**
-     * Updates an existing language in the list
-     * 
-     * @param lg
-     */
-    public void updateLanguage(LanguageEntity lg);
-
-    /**
-     * Removes a languages from the list of languages
-     * 
-     * @param langCd
-     */
-    public void removeLanguage(String langCd);
-
-    /**
-     * Returns an list of all languages
-     * 
-     * @return
-     */
-    public List<LanguageEntity> allLanguages();
-
     /**
      * Returns an list of those languages that are in use
      * 
      * @return
      */
-    public List<LanguageEntity> getUsedLanguages();
-
-    public List<LanguageEntity> getUsedLanguages(final LanguageEntity language);
+    public List<Language> getUsedLanguages(Language language);
 
     /**
      * Returns the language specified by the language
      * 
-     * @param languageCd
+     * @param id
      * @return
      */
-    public LanguageEntity getLanguage(String id);
+    public Language getLanguage(String id);
 
-    public List<LanguageEntity> findBeans(final LanguageSearchBean searchBean, int from, int size);
+    public List<Language> findBeans(final LanguageSearchBean searchBean, int from, int size);
 
-    public List<LanguageEntity> findBeans(final LanguageSearchBean searchBean, int from, int size,
-            final LanguageEntity language);
+    public List<Language> findBeans(final LanguageSearchBean searchBean, int from, int size,
+            final Language language);
 
-    public LanguageLocaleEntity addLanguageLocale(LanguageLocaleEntity lgl);
 
-    public void updateLanguageLocale(LanguageLocaleEntity lgl);
+    Language getDefaultLanguage();
 
-    void removeLanguageLocale(LanguageLocaleEntity lgl);
+    String save(Language language) throws BasicDataServiceException;
 
-    List<LanguageLocaleEntity> getLanguageLocaleByLanguage(String languageId);
-
-    LanguageMappingEntity addLanguageMapping(LanguageMappingEntity lgl);
-
-    LanguageEntity getDefaultLanguage();
-
-    Map<String, LanguageLocaleEntity> getAllLocales();
-
+    int count(final LanguageSearchBean searchBean);
 }

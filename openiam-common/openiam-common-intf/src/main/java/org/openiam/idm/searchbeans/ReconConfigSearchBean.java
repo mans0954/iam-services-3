@@ -51,4 +51,5 @@ public class ReconConfigSearchBean extends AbstractSearchBean<ReconciliationConf
     public void setManagedSysId(String managedSysId) {
         this.managedSysId = managedSysId;
     }
+
 }

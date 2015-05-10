@@ -68,6 +68,7 @@ public class PropertyValueServiceTest extends AbstractServiceTest {
 		}
 		
 		doCheck = false;
+		dtoList = propertyValuerServiceClient.getAll();
 		for(final PropertyValue dto : dtoList) {
 			if(!dto.isMultilangual()) {
 				if(!dto.isEmptyValueAllowed()) {
@@ -83,6 +84,7 @@ public class PropertyValueServiceTest extends AbstractServiceTest {
 		}
 		
 		doCheck = false;
+		dtoList = propertyValuerServiceClient.getAll();
 		for(final PropertyValue dto : dtoList) {
 			if(!dto.isMultilangual()) {
 				if(dto.getType().equals(PropertyType.Boolean)) {

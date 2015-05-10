@@ -8,16 +8,13 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.am.srvc.domain.AuthLevelAttributeEntity;
 import org.openiam.am.srvc.domain.AuthLevelGroupingEntity;
 import org.openiam.am.srvc.domain.ContentProviderEntity;
-import org.openiam.am.srvc.domain.ContentProviderServerEntity;
 import org.openiam.am.srvc.domain.URIPatternEntity;
-import org.openiam.am.srvc.domain.URIPatternMetaEntity;
 import org.openiam.am.srvc.dozer.converter.*;
 import org.openiam.am.srvc.dto.*;
 import org.openiam.am.srvc.groovy.AbstractRedirectURLGroovyProcessor;
 import org.openiam.am.srvc.searchbeans.ContentProviderSearchBean;
 import org.openiam.am.srvc.searchbeans.URIPatternSearchBean;
 import org.openiam.am.srvc.searchbeans.converter.ContentProviderSearchBeanConverter;
-import org.openiam.am.srvc.searchbeans.converter.URIPatternSearchBeanConverter;
 import org.openiam.am.srvc.service.AuthProviderService;
 import org.openiam.am.srvc.service.ContentProviderService;
 import org.openiam.am.srvc.uriauth.exception.InvalidPatternException;
@@ -26,7 +23,6 @@ import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.exception.BasicDataServiceException;
-import org.openiam.exception.EsbErrorToken;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
 import org.openiam.script.ScriptIntegration;
@@ -41,9 +37,7 @@ import javax.jws.WebService;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -234,16 +228,13 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
     }
 
     @Override
-    @Transactional(readOnly = true)
-    // TODO This method works slow in     convertToDTOList
-    public List<ContentProvider> findBeans(ContentProviderSearchBean searchBean, int from, int size) {
-        final List<ContentProviderEntity> result = contentProviderService.findBeans(contentProviderSearchBeanConverter.convert(searchBean), from, size);
-        return contentProviderDozerConverter.convertToDTOList(result, searchBean.isDeepCopy());
+    public List<ContentProvider> findBeans(ContentProviderSearchBean searchBean,int from, int size) {
+        return contentProviderService.findBeans(searchBean, from, size);
     }
 
     @Override
     public int getNumOfContentProviders(ContentProviderSearchBean searchBean) {
-        return contentProviderService.getNumOfContentProviders(contentProviderSearchBeanConverter.convert(searchBean));
+        return contentProviderService.getNumOfContentProviders(searchBean);
     }
 
     @Override

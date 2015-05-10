@@ -305,10 +305,16 @@ public class LoginDataServiceImpl implements LoginDataService {
         searchBean.setContentProviderId(contentProviderId);
         final Policy plcy = passwordPolicyProvider.getPasswordPolicyByUser(searchBean);
 
-        String pswdExpValue = getPolicyAttribute(plcy.getPolicyAttributes(),
+        String changePswdOnReset = getPolicyAttribute(plcy.getPolicyAttributes(),
+                "CHNG_PSWD_ON_RESET");
+        boolean preservePassword = "false".equalsIgnoreCase(changePswdOnReset);
+
+        String pswdExpValue = preservePassword
+                ? getPolicyAttribute(plcy.getPolicyAttributes(),
+                "PWD_EXPIRATION")
+                : getPolicyAttribute(plcy.getPolicyAttributes(),
                 "NUM_DAYS_FORGET_PWD_TOKEN_VALID");
-        // String changePswdOnReset = getPolicyAttribute(
-        // plcy.getPolicyAttributes(), "CHNG_PSWD_ON_RESET");
+
         String gracePeriod = getPolicyAttribute(plcy.getPolicyAttributes(),
                 "PWD_EXP_GRACE");
 
@@ -351,14 +357,10 @@ public class LoginDataServiceImpl implements LoginDataService {
     }
 
     @Override
+    @Transactional
     public String encryptPassword(String userId, String password)
             throws Exception {
         if (password != null) {
-//            byte[] key = keyManagementService.getUserKey(userId,
-//                    KeyName.password.name());
-//            if(key != null) {
-//                return cryptor.encrypt(key, password);
-//            }
             return keyManagementService.encrypt(userId, KeyName.password, password);
         }
         return null;
@@ -370,9 +372,6 @@ public class LoginDataServiceImpl implements LoginDataService {
             throws Exception {
         if (password != null) {
             return keyManagementService.decrypt(userId, KeyName.password, password);
-//            return cryptor.decrypt(
-//                    keyManagementService.getUserKey(userId,
-//                            KeyName.password.name()), password);
         }
         return null;
     }
