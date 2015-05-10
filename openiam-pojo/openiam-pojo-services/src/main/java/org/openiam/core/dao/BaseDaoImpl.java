@@ -190,7 +190,7 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
 
     @Override
     public List<T> getByExampleNoLocalize(SearchBean searchBean, int from, int size) {
-        return this.getByExample(searchBean, -1, -1);
+        return this.getByExample(searchBean, from, size);
     }
 
     @Override
