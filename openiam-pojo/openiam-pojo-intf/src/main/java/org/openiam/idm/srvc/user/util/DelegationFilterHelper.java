@@ -150,6 +150,9 @@ public class DelegationFilterHelper {
             UserAttribute ua = attrMap.get(key);
             if (ua != null)  {
                 if(ua.getIsMultivalued()) {
+                    if(ua.getValue() != null) {
+                        value.append(ua.getValue()).append(",");
+                    }
                     for(String v : ua.getValues()) {
                         value.append(v);
                     }
