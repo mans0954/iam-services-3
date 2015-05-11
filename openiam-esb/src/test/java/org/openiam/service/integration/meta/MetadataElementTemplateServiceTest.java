@@ -9,9 +9,11 @@ import org.apache.commons.collections.CollectionUtils;
 import org.openiam.am.srvc.dto.URIPattern;
 import org.openiam.am.srvc.ws.ContentProviderWebService;
 import org.openiam.base.ws.Response;
+import org.openiam.idm.searchbeans.LoginSearchBean;
 import org.openiam.idm.searchbeans.MetadataElementPageTemplateSearchBean;
 import org.openiam.idm.searchbeans.MetadataTemplateTypeFieldSearchBean;
 import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
+import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateEntity;
 import org.openiam.idm.srvc.meta.dto.MetadataElement;
 import org.openiam.idm.srvc.meta.dto.MetadataElementPageTemplate;
@@ -117,7 +119,16 @@ public class MetadataElementTemplateServiceTest extends AbstractKeyNameServiceTe
 	protected void setNameForSearch(MetadataElementPageTemplateSearchBean searchBean, String name) {
 		searchBean.setName(name);
 	}
-
+	
+	@Test
+	public void clusterTest() throws Exception {
+		final ClusterKey<MetadataElementPageTemplate, MetadataElementPageTemplateSearchBean> key = doClusterTest();
+		final MetadataElementPageTemplate instance = key.getDto();
+		if(instance != null && instance.getId() != null) {
+			deleteAndAssert(instance);
+    	}
+	}
+	
 	@Test
 	public void fullSaveUpdateTest() throws Exception {
 		MetadataElementPageTemplate test = newInstance();

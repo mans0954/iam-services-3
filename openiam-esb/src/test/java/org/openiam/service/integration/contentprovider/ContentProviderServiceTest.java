@@ -16,6 +16,8 @@ import org.openiam.am.srvc.ws.AuthProviderWebService;
 import org.openiam.am.srvc.ws.ContentProviderWebService;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
+import org.openiam.idm.searchbeans.IdentityQuestionSearchBean;
+import org.openiam.idm.srvc.pswd.dto.IdentityQuestion;
 import org.openiam.service.integration.AbstractKeyNameServiceTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -23,6 +25,32 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 public class ContentProviderServiceTest extends AbstractContentProviderServiceTest<ContentProvider, ContentProviderSearchBean> {
+	
+	
+	@Test
+	public void clusterTest() throws Exception {
+		final ClusterKey<ContentProvider, ContentProviderSearchBean> key = doClusterTest();
+		final ContentProvider instance = key.getDto();
+		if(instance != null && instance.getId() != null) {
+			deleteAndAssert(instance);
+    	}
+	}
+	
+	public ClusterKey<ContentProvider, ContentProviderSearchBean> doClusterTest() throws Exception {
+		/* create and save */
+		ContentProvider instance = createBean();
+		Response response = saveAndAssert(instance);
+		instance.setId((String)response.getResponseValue());
+
+		/* find */
+		final ContentProviderSearchBean searchBean = newSearchBean();
+		searchBean.setDeepCopy(useDeepCopyOnFindBeans());
+		searchBean.setKey(instance.getId());
+
+		/* confirm save on both nodes */
+		instance = assertClusteredSave(searchBean);
+		return new ClusterKey<ContentProvider, ContentProviderSearchBean>(instance, searchBean);
+	}
 	
 	@Test
 	public void testErrorCodes() {

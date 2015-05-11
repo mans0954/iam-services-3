@@ -6,6 +6,7 @@ import org.mortbay.jetty.servlet.HashSessionIdManager;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.idm.searchbeans.GroupSearchBean;
+import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
 import org.openiam.idm.searchbeans.PolicySearchBean;
 import org.openiam.idm.srvc.auth.dto.AuthenticationRequest;
 import org.openiam.idm.srvc.auth.dto.SSOToken;
@@ -14,6 +15,7 @@ import org.openiam.idm.srvc.auth.ws.AuthenticationResponse;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.dto.GroupAttribute;
 import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
+import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.policy.dto.PolicyConstants;
@@ -29,7 +31,6 @@ import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -110,6 +111,15 @@ public class PolicyTest extends AbstractKeyNameServiceTest<Policy, PolicySearchB
 	@Override
 	protected void setNameForSearch(PolicySearchBean searchBean, String name) {
 		searchBean.setName(name);
+	}
+	
+	@Test
+	public void clusterTest() throws Exception {
+		final ClusterKey<Policy, PolicySearchBean> key = doClusterTest();
+		final Policy instance = key.getDto();
+		if(instance != null && instance.getPolicyId() != null) {
+			deleteAndAssert(instance);
+    	}
 	}
 
 	@Override

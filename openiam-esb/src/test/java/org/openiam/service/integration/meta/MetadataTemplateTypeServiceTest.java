@@ -5,7 +5,9 @@ import java.util.List;
 import org.apache.commons.collections.CollectionUtils;
 import org.junit.Assert;
 import org.openiam.base.ws.Response;
+import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.searchbeans.MetadataTemplateTypeSearchBean;
+import org.openiam.idm.srvc.meta.dto.MetadataElement;
 import org.openiam.idm.srvc.meta.dto.MetadataTemplateType;
 import org.openiam.idm.srvc.meta.ws.MetadataElementTemplateWebService;
 import org.openiam.idm.srvc.meta.ws.MetadataWebService;
@@ -31,6 +33,4 @@ public class MetadataTemplateTypeServiceTest extends AbstractServiceTest {
 		}
 	}
 	
-	
-
 }
