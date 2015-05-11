@@ -86,6 +86,31 @@ public class BatchTaskServiceTest extends AbstractKeyNameServiceTest<BatchTask, 
 		searchBean.setName(name);
 	}
 
+	
+	@Test
+	public void clusterTest() throws Exception {
+		final ClusterKey<BatchTask, BatchTaskSearchBean> key = doClusterTest();
+		BatchTask instance = key.getDto();
+		if(instance != null && instance.getId() != null) {
+			deleteAndAssert(instance);
+    	}
+	}
+	
+//	public ClusterKey<T, S> doClusterTest() throws Exception {
+//		/* create and save */
+//		T instance = createBean();
+//		Response response = saveAndAssert(instance);
+//		instance.setId((String)response.getResponseValue());
+//
+//		/* find */
+//		final S searchBean = newSearchBean();
+//		searchBean.setDeepCopy(useDeepCopyOnFindBeans());
+//		searchBean.setKey(instance.getId());
+//
+//		/* confirm save on both nodes */
+//		instance = assertClusteredSave(searchBean);
+//		return new ClusterKey<T, S>(instance, searchBean);
+//	}
 
 //	@Test
 //	public void testScheduledTaskFind() throws Exception {

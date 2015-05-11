@@ -3,6 +3,8 @@ package org.openiam.service.integration.login;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.openiam.am.srvc.dto.ContentProvider;
+import org.openiam.am.srvc.searchbeans.ContentProviderSearchBean;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.LoginSearchBean;
@@ -90,5 +92,30 @@ public class LoginServiceTest extends AbstractKeyServiceTest<Login, LoginSearchB
 		
 		sb.setManagedSysId("0");
 		Assert.assertTrue(CollectionUtils.isNotEmpty(find(sb, 0, 1)));
+	}
+	
+	@Test
+	public void clusterTest() throws Exception {
+		final ClusterKey<Login, LoginSearchBean> key = doClusterTest();
+		final Login instance = key.getDto();
+		if(instance != null && instance.getLoginId() != null) {
+			deleteAndAssert(instance);
+    	}
+	}
+	
+	public ClusterKey<Login, LoginSearchBean> doClusterTest() throws Exception {
+		/* create and save */
+		Login instance = createBean();
+		Response response = saveAndAssert(instance);
+		instance.setLoginId((String)response.getResponseValue());
+
+		/* find */
+		final LoginSearchBean searchBean = newSearchBean();
+		searchBean.setDeepCopy(useDeepCopyOnFindBeans());
+		searchBean.setKey(instance.getLoginId());
+
+		/* confirm save on both nodes */
+		instance = assertClusteredSave(searchBean);
+		return new ClusterKey<Login, LoginSearchBean>(instance, searchBean);
 	}
 }

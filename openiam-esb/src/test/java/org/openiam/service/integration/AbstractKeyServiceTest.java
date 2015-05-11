@@ -41,36 +41,11 @@ public abstract class AbstractKeyServiceTest<T, S extends AbstractSearchBean<T, 
 		return response;
 	}
 	
-//	@Test
-//	public void clusterTest() throws Exception {
-//		ClusterKey<T, S> key = doClusterTest();
-//		T instance = key.getDto();
-//		if(instance != null && instance.getId() != null) {
-//			deleteAndAssert(instance);
-//    	}
-//	}
-	
 	protected Response deleteAndAssert(final T instance) {
 		Response response = delete(instance);
 		Assert.assertTrue(response.isSuccess(), String.format("Could not delete element '%s' with ID '%s.  Response: %s", instance, getId(instance), response));
 		return response;
 	}
-	
-//	public ClusterKey<T, S> doClusterTest() throws Exception {
-//		/* create and save */
-//		T instance = createBean();
-//		Response response = saveAndAssert(instance);
-//		instance.setId((String)response.getResponseValue());
-//
-//		/* find */
-//		final S searchBean = newSearchBean();
-//		searchBean.setDeepCopy(useDeepCopyOnFindBeans());
-//		searchBean.setKey(instance.getId());
-//
-//    	/* confirm save on both nodes */
-//    	instance = assertClusteredSave(searchBean);
-//    	return new ClusterKey<T, S>(instance, searchBean);
-//	}
 	
 	protected boolean useDeepCopyOnFindBeans() {
 		return false;

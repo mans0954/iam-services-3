@@ -4,14 +4,17 @@ import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.openiam.base.ws.Response;
+import org.openiam.idm.searchbeans.MetadataElementPageTemplateSearchBean;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
 import org.openiam.idm.srvc.meta.dto.MetadataElement;
+import org.openiam.idm.srvc.meta.dto.MetadataElementPageTemplate;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.meta.ws.MetadataWebService;
 import org.openiam.service.integration.AbstractKeyNameServiceTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.testng.annotations.Test;
 
 public class MetadataElementTest extends AbstractKeyNameServiceTest<MetadataElement, MetadataElementSearchBean> {
 	
@@ -21,6 +24,15 @@ public class MetadataElementTest extends AbstractKeyNameServiceTest<MetadataElem
 		element.setAttributeName(getRandomName());
 		element.setMetadataTypeId(metadataServiceClient.findTypeBeans(null, 0, 1, null).get(0).getId());
 		return element;
+	}
+	
+	@Test
+	public void clusterTest() throws Exception {
+		final ClusterKey<MetadataElement, MetadataElementSearchBean> key = doClusterTest();
+		final MetadataElement instance = key.getDto();
+		if(instance != null && instance.getId() != null) {
+			deleteAndAssert(instance);
+    	}
 	}
 
 	@Override

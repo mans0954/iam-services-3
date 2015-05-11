@@ -3,8 +3,10 @@ package org.openiam.service.integration.challengeresponse;
 import java.util.List;
 
 import org.openiam.base.ws.Response;
+import org.openiam.idm.searchbeans.BatchTaskSearchBean;
 import org.openiam.idm.searchbeans.IdentityAnswerSearchBean;
 import org.openiam.idm.searchbeans.IdentityQuestionSearchBean;
+import org.openiam.idm.srvc.batch.dto.BatchTask;
 import org.openiam.idm.srvc.pswd.dto.IdentityQuestion;
 import org.openiam.idm.srvc.pswd.dto.UserIdentityAnswer;
 import org.openiam.idm.srvc.pswd.service.ChallengeResponseWebService;
@@ -12,6 +14,7 @@ import org.openiam.service.integration.AbstractKeyServiceTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.testng.annotations.Test;
 
 public class IdentityQuestionServiceTest extends AbstractChallengeResponseServiceTest<IdentityQuestion, IdentityQuestionSearchBean> {
 
@@ -58,5 +61,30 @@ public class IdentityQuestionServiceTest extends AbstractChallengeResponseServic
 	@Override
 	protected void setId(IdentityQuestion bean, String id) {
 		bean.setId(id);
+	}
+	
+	@Test
+	public void clusterTest() throws Exception {
+		final ClusterKey<IdentityQuestion, IdentityQuestionSearchBean> key = doClusterTest();
+		final IdentityQuestion instance = key.getDto();
+		if(instance != null && instance.getId() != null) {
+			deleteAndAssert(instance);
+    	}
+	}
+	
+	public ClusterKey<IdentityQuestion, IdentityQuestionSearchBean> doClusterTest() throws Exception {
+		/* create and save */
+		IdentityQuestion instance = createBean();
+		Response response = saveAndAssert(instance);
+		instance.setId((String)response.getResponseValue());
+
+		/* find */
+		final IdentityQuestionSearchBean searchBean = newSearchBean();
+		searchBean.setDeepCopy(useDeepCopyOnFindBeans());
+		searchBean.setKey(instance.getId());
+
+		/* confirm save on both nodes */
+		instance = assertClusteredSave(searchBean);
+		return new ClusterKey<IdentityQuestion, IdentityQuestionSearchBean>(instance, searchBean);
 	}
 }
