@@ -7,6 +7,7 @@
        xmlns:util="http://www.springframework.org/schema/util"
        xmlns:context="http://www.springframework.org/schema/context"
        xmlns:aop="http://www.springframework.org/schema/aop" xmlns:task="http://www.springframework.org/schema/task"
+       xmlns:ehcache="http://www.springframework.org/schema/cache"
 
        xsi:schemaLocation="http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
@@ -14,7 +15,7 @@
        http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee.xsd
        http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
        http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
-       http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-3.0.xsd">
+       http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-3.0.xsd http://www.springframework.org/schema/cache http://www.springframework.org/schema/cache/spring-cache.xsd">
 
     <import resource="jmsContext.xml" />
 
@@ -99,6 +100,27 @@
 		<property name="ignoreResourceNotFound" value="true" />
 	</bean>
 
+    <ehcache:annotation-driven />
+
+    <bean id="cacheManager" class="org.springframework.cache.ehcache.EhCacheCacheManager">
+        <property name="cacheManager" ref="coreCacheManager"/>
+    </bean>
+
+
+    <bean id="coreCacheManager" class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean">
+        <property name="configLocation" value="classpath:ehcache.xml"/>
+        <property name="shared" value="true"/>
+    </bean>
+
+    <bean id="coreLogBuilderCache" class="org.springframework.cache.ehcache.EhCacheFactoryBean">
+        <property name="cacheManager">
+            <ref local="coreCacheManager"/>
+        </property>
+        <property name="cacheName">
+            <value>CoreBuilderCache</value>
+        </property>
+    </bean>
+
 	<bean
 		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
 		<property name="properties" ref="pojoProperties" />
@@ -165,8 +187,8 @@
 		<property name="password" value="${mail.password}" />
 		<property name="javaMailProperties">
 			<props>
-				<prop key="mail.smtp.auth">false</prop>
-				<prop key="mail.smtp.starttls.enable">false</prop>
+				<prop key="mail.smtp.auth">${mail.smtp.auth}</prop>
+				<prop key="mail.smtp.starttls.enable">${mail.smtp.starttls.enable}</prop>
 			</props>
 		</property>
 	</bean>
@@ -176,8 +198,8 @@
 		<property name="port" value="${mail.port}" />
 		<property name="username" value="${mail.username}" />
 		<property name="password" value="${mail.password}" />
-		<property name="auth" value="false" />
-		<property name="starttls" value="false" />
+		<property name="auth" value="${mail.smtp.auth}" />
+		<property name="starttls" value="${mail.smtp.starttls.enable}" />
 	</bean>
 
 	<bean id="locationDAO" class="org.openiam.idm.srvc.loc.service.LocationDAOImpl">
@@ -249,9 +271,11 @@
 		<prop key="hibernate.dialect">${openiam.hibernate.dialect}</prop>
 		<prop key="hibernate.show_sql">${openiam.hibernate.show.sql}</prop>
 		<prop key="hibernate.generate_statistics">${openiam.hibernate.generate.statistics}</prop>
-		<!--prop key="hibernate.cache.provider_class">org.hibernate.cache.EhCacheProvider</prop -->
+
+        <prop key="hibernate.cache.region.factory_class">net.sf.ehcache.hibernate.EhCacheRegionFactory</prop>
 		<prop key="hibernate.cache.use_second_level_cache">${openiam.hibernate.second.level.cache.enabled}</prop>
 		<prop key="hibernate.cache.use_query_cache">${openiam.hibernate.query.cache.enabled}</prop>
+
 		<prop key="hibernate.use_sql_comments">${openiam.hibernate.sql.comments.enabled}</prop>
 		<prop key="hibernate.connection.autoReconnect">${openiam.hibernate.auto.connect.enabled}</prop>
 

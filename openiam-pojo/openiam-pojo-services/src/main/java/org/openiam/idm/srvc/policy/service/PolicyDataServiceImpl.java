@@ -33,22 +33,11 @@ import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.exception.BasicDataServiceException;
-import org.openiam.dozer.converter.ITPolicyDozerConverter;
-import org.openiam.dozer.converter.PolicyDefParamDozerConverter;
-import org.openiam.dozer.converter.PolicyDozerConverter;
-import org.openiam.dozer.converter.PolicyObjectAssocDozerConverter;
-import org.openiam.exception.EsbErrorToken;
 import org.openiam.idm.searchbeans.PolicySearchBean;
-import org.openiam.idm.srvc.batch.domain.BatchTaskEntity;
-import org.openiam.idm.srvc.batch.service.BatchService;
-import org.openiam.idm.srvc.policy.domain.*;
 import org.openiam.idm.srvc.policy.dto.*;
 
-import org.openiam.util.ws.collection.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 // TODO: Auto-generated Javadoc
 
@@ -62,51 +51,19 @@ import org.springframework.transaction.annotation.Transactional;
 
 @WebService(endpointInterface = "org.openiam.idm.srvc.policy.service.PolicyDataService", targetNamespace = "urn:idm.openiam.org/srvc/policy/service", portName = "PolicyWebServicePort", serviceName = "PolicyWebService")
 @Service("policyDataService")
-@Transactional
 public class PolicyDataServiceImpl implements PolicyDataService {
 
     private static final Log log = LogFactory.getLog(PolicyDataServiceImpl.class);
 
     @Autowired
-    private ITPolicyDAO itPolicyDao;
-
-    @Autowired
-    private PolicyObjectAssocDAO policyObjectAssocDAO;
-
-    /**
-     * The policy dozer converter.
-     */
-    @Autowired
-    private PolicyDozerConverter policyDozerConverter;
-
-    @Autowired
-    private ITPolicyDozerConverter itPolicyDozerConverter;
-
-    @Autowired
-    private PolicyObjectAssocDozerConverter policyAssocObjectDozerConverter;
-
-    /**
-     * The policy def param dozer converter.
-     */
-    @Autowired
-    private PolicyDefParamDozerConverter policyDefParamDozerConverter;
-
-    @Autowired
     private PolicyService policyService;
-
-    @Autowired
-    private BatchService batchService;
-
-    @Value("${batch.task.password.exp.id}")
-    private String passwordExpirationBatchTaskId;
 
     @Override
     public Policy getPolicy(String policyId) {
         if (policyId == null) {
             throw new NullPointerException("PolicyId is null");
         }
-        final PolicyEntity p = policyService.getPolicy(policyId);
-        return policyDozerConverter.convertToDTO(p, true);
+        return policyService.getPolicy(policyId);
     }
 
     @Override
@@ -125,9 +82,9 @@ public class PolicyDataServiceImpl implements PolicyDataService {
             throw new NullPointerException("policyDefId is null");
         }
 
-        final List<PolicyDefParam> policyList = policyDefParamDozerConverter
-                .convertToDTOList(policyService.findPolicyDefParamByGroup(
-                        policyDefId, pswdGroup), true);
+        final List<PolicyDefParam> policyList = policyService.findPolicyDefParamByGroup(
+                policyDefId, pswdGroup);
+
 
         if (CollectionUtils.isEmpty(policyList)) {
             return null;
@@ -148,9 +105,9 @@ public class PolicyDataServiceImpl implements PolicyDataService {
                         ResponseCode.POLICY_NAME_NOT_SET);
             }
 
-            final List<PolicyEntity> found = policyService.findPolicyByName(policy.getPolicyDefId(), policy.getName());
+            final List<Policy> found = policyService.findPolicyByName(policy.getPolicyDefId(), policy.getName());
             if (found != null && found.size() > 0) {
-                if (StringUtils.isBlank(policy.getPolicyId()) && found != null) {
+                if (StringUtils.isBlank(policy.getPolicyId())) {
                     throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
                 }
 
@@ -188,16 +145,10 @@ public class PolicyDataServiceImpl implements PolicyDataService {
                     }
                 }
             }
-            final PolicyEntity pe = policyDozerConverter.convertToEntity(policy, true);
-            policyService.save(pe);
-            try {
-                this.policyPostProcessor(pe);
-            } catch (Exception e) {
-                log.error("can't run policy post processor");
-                log.error(e);
-            }
 
-            response.setResponseValue(pe.getPolicyId());
+            String id = policyService.save(policy);
+
+            response.setResponseValue(id);
         } catch (BasicDataServiceException e) {
             log.warn("Can't save policty", e);
             response.setErrorCode(e.getCode());
@@ -209,17 +160,6 @@ public class PolicyDataServiceImpl implements PolicyDataService {
         }
 
         return response;
-    }
-
-    private void policyPostProcessor(PolicyEntity pe) {
-        // turn on Task Password near expiration
-        PolicyAttributeEntity pae = pe.getAttribute("PWD_EXP_WARN");
-        boolean state = (pae == null) ? false : pae.isRequired();
-        BatchTaskEntity bte = batchService.findById(passwordExpirationBatchTaskId);
-        if (bte.isEnabled() != state) {
-            bte.setEnabled(state);
-            batchService.save(bte);
-        }
     }
 
     @Override
@@ -260,33 +200,20 @@ public class PolicyDataServiceImpl implements PolicyDataService {
 
     @Override
     public List<PolicyObjectAssoc> getAssociationsForPolicy(String policyId) {
-
-        List<PolicyObjectAssoc> policyObjectAssoc = policyAssocObjectDozerConverter
-                .convertToDTOList(policyObjectAssocDAO.findByPolicy(policyId),
-                        true);
-
-        return policyObjectAssoc;
+        return policyService.getAssociationsForPolicy(policyId);
     }
 
     @Override
     public Response savePolicyAssoc(PolicyObjectAssoc poa) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
-            if (poa.getPolicyId() == null) {
+            if (poa == null || poa.getPolicyId() == null) {
                 throw new BasicDataServiceException(
                         ResponseCode.INVALID_ARGUMENTS);
             }
 
-
-            PolicyObjectAssocEntity poaEntity = policyAssocObjectDozerConverter
-                    .convertToEntity(poa, true);
-            if (poaEntity == null || poaEntity.getPolicyObjectId() == null) {
-                poaEntity.setObjectId(null);
-                poaEntity = policyObjectAssocDAO.add(poaEntity);
-                response.setResponseValue(poaEntity.getPolicyObjectId());
-            } else {
-                policyObjectAssocDAO.update(poaEntity);
-            }
+           String id = policyService.savePolicyAssoc(poa);
+           response.setResponseValue(id);
         } catch (BasicDataServiceException e) {
 
             response.setStatus(ResponseStatus.FAILURE);
@@ -301,7 +228,7 @@ public class PolicyDataServiceImpl implements PolicyDataService {
 
     @Override
     public List<Policy> findBeans(final PolicySearchBean searchBean, int from, int size) {
-        return policyDozerConverter.convertToDTOList(policyService.findBeans(searchBean, from, size), true);
+        return policyService.findBeans(searchBean, from, size);
     }
 
     @Override
@@ -311,17 +238,14 @@ public class PolicyDataServiceImpl implements PolicyDataService {
 
     @Override
     public ITPolicy findITPolicy() {
-        return itPolicyDozerConverter.convertToDTO(itPolicyDao.findITPolicy(), true);
+        return policyService.findITPolicy();
     }
 
     @Override
     public Response resetITPolicy() {
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        final ITPolicyEntity itPolicy = itPolicyDao.findITPolicy();
-        if (itPolicy != null) {
-            itPolicyDao.delete(itPolicy);
-        }
-        return response;
+       final Response response = new Response(ResponseStatus.SUCCESS);
+       policyService.resetITPolicy();
+       return response;
     }
 
     @Override
@@ -342,9 +266,8 @@ public class PolicyDataServiceImpl implements PolicyDataService {
                 itPolicy.setCreateDate(found.getCreateDate());
                 itPolicy.setCreatedBy(found.getCreatedBy());
             }
-            ITPolicyEntity pe = itPolicyDao.merge(
-                    itPolicyDozerConverter.convertToEntity(itPolicy, true));
-            response.setResponseValue(pe.getPolicyId());
+            String id = policyService.saveITPolicy(itPolicy);
+            response.setResponseValue(id);
 
         } catch (BasicDataServiceException e) {
             response.setErrorCode(e.getCode());

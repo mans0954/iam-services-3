@@ -88,10 +88,6 @@
             <a>element.displayName</a>
             <b>metadataName</b>
         </field>
-        <field>
-            <a>user.id</a>
-            <b>userId</b>
-        </field>
     </mapping>
 
     <mapping>

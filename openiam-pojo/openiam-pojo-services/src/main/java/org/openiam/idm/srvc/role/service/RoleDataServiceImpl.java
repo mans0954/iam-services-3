@@ -5,7 +5,9 @@ import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.base.TreeObjectId;
 import org.openiam.base.ws.ResponseCode;
+import org.openiam.dozer.converter.RoleAttributeDozerConverter;
 import org.openiam.dozer.converter.RoleDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
@@ -28,6 +30,7 @@ import org.openiam.idm.srvc.role.domain.RoleAttributeEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.domain.RolePolicyEntity;
 import org.openiam.idm.srvc.role.dto.Role;
+import org.openiam.idm.srvc.role.dto.RoleAttribute;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
@@ -73,6 +76,9 @@ public class RoleDataServiceImpl implements RoleDataService {
 	@Autowired
 	private RoleDozerConverter roleDozerConverter;
 
+    @Autowired
+    private RoleAttributeDozerConverter roleAttributeDozerConverter;
+
 	@Autowired
     @Qualifier("entityValidator")
     private EntityValidator entityValidator;
@@ -88,6 +94,12 @@ public class RoleDataServiceImpl implements RoleDataService {
 
     @Autowired
     protected AuditLogService auditLogService;
+
+    /**
+     * Cache for whole roles hierarchy
+     * Used when Roles number > 250k records
+     */
+    private final Map<String, TreeObjectId> rolesTree = new HashMap<String, TreeObjectId>();
 
 	private static final Log log = LogFactory.getLog(RoleDataServiceImpl.class);
 
@@ -105,8 +117,15 @@ public class RoleDataServiceImpl implements RoleDataService {
         }
         return null;
 	}
-	
-	@Override
+
+    @Override
+    @Transactional(readOnly = true)
+    public Role getRoleDtoByName(String roleName, String requesterId) {
+        RoleEntity roleEntity = getRoleByName(roleName,requesterId);
+        return roleDozerConverter.convertToDTO(roleEntity, true);
+    }
+
+    @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
 	public RoleEntity getRoleLocalized(final String roleId, final String requesterId, final LanguageEntity language) {
@@ -347,6 +366,13 @@ public class RoleDataServiceImpl implements RoleDataService {
         
         bean.setRoleAttributes(dbProps);
 	}
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<RoleAttribute> getRoleAttributes(String roleId) {
+        List<RoleAttributeEntity> attributes = roleAttributeDAO.findByRoleId(roleId);
+        return roleAttributeDozerConverter.convertToDTOList(attributes, false);
+    }
 
     private void auditLogRemoveAttribute(final RoleEntity role, final RoleAttributeEntity roleAttr, final String requesterId){
         // Audit Log -----------------------------------------------------------------------------------
@@ -656,8 +682,9 @@ public class RoleDataServiceImpl implements RoleDataService {
 	}
 	
 	@Override
+    @Transactional(readOnly = true)
 	public Role getRoleDTO(String id) {
-		return roleDozerConverter.convertToDTO(roleDao.findById(id), true);
+		return roleDozerConverter.convertToDTO(roleDao.findByIdNoLocalized(id), true);
 	}
 	
 	@Override
@@ -720,5 +747,19 @@ public class RoleDataServiceImpl implements RoleDataService {
 
             roleAttributeDAO.merge(attribute);
         }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<TreeObjectId> getRolesWithSubRolesIds(List<String> roleIds, String requesterId) {
+        return roleDao.findRolesWithSubRolesIds(roleIds,  getDelegationFilter(requesterId));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public void rebuildRoleHierarchyCache() {
+        log.info("Role Hierarchy Cache preparation running ....");
+        roleDao.rolesHierarchyRebuild();
+        log.info("Role Hierarchy Cache preparation done.");
     }
 }

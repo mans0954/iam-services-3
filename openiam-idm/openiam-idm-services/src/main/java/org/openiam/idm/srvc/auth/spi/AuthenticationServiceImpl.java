@@ -57,6 +57,8 @@ import org.openiam.idm.srvc.auth.spi.AbstractLoginModule;
 import org.openiam.idm.srvc.auth.sso.SSOTokenFactory;
 import org.openiam.idm.srvc.auth.sso.SSOTokenModule;
 import org.openiam.idm.srvc.auth.ws.AuthenticationResponse;
+import org.openiam.idm.srvc.auth.ws.LoginDataWebService;
+import org.openiam.idm.srvc.auth.ws.LoginResponse;
 import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.policy.domain.PolicyAttributeEntity;
@@ -97,7 +99,8 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
     private AuthStateDAO authStateDao;
 
     @Autowired
-    private LoginDataService loginManager;
+    @Qualifier("loginWS")
+    protected LoginDataWebService loginManager;
 
     @Value("${org.openiam.core.login.authentication.context.class}")
     private String authContextClass;
@@ -124,6 +127,9 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
     @Autowired
     @Qualifier("configurableGroovyScriptEngine")
     private ScriptIntegration scriptRunner;
+
+	@Autowired
+    protected AuthenticationUtils authenticationUtils;
 
     private BeanFactory beanFactory;
 
@@ -238,7 +244,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
                 if (StringUtils.isBlank(password)) {
 
                     log.debug("Invalid password");
-                    /*
+	                /*
 	                log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
 	                        "INVALID PASSWORD", secDomainId, null, principal, null,
 	                        null, clientIP, nodeIP);
@@ -338,7 +344,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 
             Map<String, Object> authParamMap = new HashMap<String, Object>();
             authParamMap.put("AUTH_SYS_ID", sysConfiguration.getDefaultManagedSysId());
-            authParamMap.put(AuthenticationRequest.AUTH_POLICY_ID, authPolicyId);
+            authParamMap.put(AuthenticationRequest.AUTH_POLICY_ID,authPolicyId);
             ctx.setAuthParam(authParamMap);
             ctx.setLoginModule(loginModName);
 
@@ -349,6 +355,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
             if (modSel.getModuleType() == LoginModuleSelector.MODULE_TYPE_LOGIN_MODULE) {
                 try {
                     sub = loginModule.login(ctx);
+
                 } catch (AuthenticationException ae) {
                     final String erroCodeAsString = Integer.valueOf(ae.getErrorCode()).toString();
                     newLoginEvent.fail();
@@ -559,6 +566,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<AuthStateEntity> findBeans(AuthStateSearchBean searchBean,
                                            int from, int size) {
         return authStateDao.getByExample(searchBean, from, size);

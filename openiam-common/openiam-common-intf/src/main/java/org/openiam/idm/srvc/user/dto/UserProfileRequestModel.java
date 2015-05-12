@@ -33,7 +33,7 @@ public class UserProfileRequestModel extends BaseObject {
 	private User user;
 	private PageTempate pageTemplate;
 	private String languageId;
-	
+
 	public UserProfileRequestModel() {
 		
 	}

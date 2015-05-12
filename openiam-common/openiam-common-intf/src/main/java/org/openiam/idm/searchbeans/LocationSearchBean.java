@@ -54,4 +54,15 @@ public class LocationSearchBean extends AbstractSearchBean<Location, String> imp
     public void setName(String name) {
         this.name = name;
     }
+
+    @Override
+    public String getCacheUniqueBeanKey() {
+        return new StringBuilder()
+                .append(organizationId != null ? organizationId : "")
+                .append(userId != null ? userId : "")
+                .append(country != null ? country : "")
+                .append(name != null ? name : "")
+                .append(getKey() != null ? getKey() : "")
+                .toString();
+    }
 }

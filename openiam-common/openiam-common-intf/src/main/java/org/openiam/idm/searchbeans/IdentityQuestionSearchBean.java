@@ -31,6 +31,14 @@ public class IdentityQuestionSearchBean extends AbstractSearchBean<IdentityQuest
 	public void setActive(Boolean active) {
 		this.active = active;
 	}
-	
-	
+
+
+    @Override
+    public String getCacheUniqueBeanKey() {
+        return new StringBuilder()
+                .append(groupId != null ? groupId : "")
+                .append(active != null ? active.booleanValue() : "")
+                .append(getKey() != null ? getKey() : "")
+                .toString();
+    }
 }

@@ -43,6 +43,9 @@ public interface GroupDataService {
     public List<GroupEntity> getChildGroups(final String groupId, final String requesterId, final int from, final int size);
     public List<GroupEntity> getParentGroups(final String groupId, final String requesterId, final int from, final int size);
     public List<GroupEntity> getGroupsForResource(final String resourceId, final String requesterId, final int from, final int size);
+
+    public List<Group> getGroupsDtoForUser(final String userId, String requesterId, final int from, final int size);
+
     public List<GroupEntity> getGroupsForUser(final String userId, String requesterId, final int from, final int size);
     public List<GroupEntity> getGroupsForRole(final String roleId, String requesterId, final int from, final int size);
 

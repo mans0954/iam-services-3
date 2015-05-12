@@ -214,6 +214,15 @@ public class Group extends AdminResourceDTO implements Serializable {
         }
     }
 
+    public void addRole(final Role role) {
+        if(role != null) {
+            if(roles == null) {
+                roles = new HashSet<Role>();
+            }
+            roles.add(role);
+        }
+    }
+
     public Set<Group> getChildGroups() {
 		return childGroups;
 	}

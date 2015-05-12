@@ -12,7 +12,7 @@ public interface UserProfileService {
 	//public CreateUserToken createNewUserProfile(final NewUserProfileRequestModel request) throws Exception;
 	public void validate(final NewUserProfileRequestModel request) throws Exception;
 
-    public ProfilePictureEntity getProfilePictureById(String picId);
+    public ProfilePicture getProfilePictureById(String picId);
 
     public ProfilePictureEntity getProfilePictureByUserId(String userId);
 
