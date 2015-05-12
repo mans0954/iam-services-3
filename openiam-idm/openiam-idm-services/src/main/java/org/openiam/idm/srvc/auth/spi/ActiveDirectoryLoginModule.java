@@ -24,27 +24,41 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.base.ws.ResponseStatus;
 import org.openiam.exception.AuthenticationException;
 import org.openiam.idm.srvc.auth.context.AuthenticationContext;
 import org.openiam.idm.srvc.auth.context.PasswordCredential;
-import org.openiam.idm.srvc.auth.dto.AuthenticationRequest;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.Subject;
-import org.openiam.idm.srvc.auth.service.AuthCredentialsValidator;
 import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
 import org.openiam.idm.srvc.auth.ws.LoginResponse;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
+import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
+import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
+import org.openiam.idm.srvc.mngsys.service.AttributeMapDAO;
+import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
-import org.openiam.provision.resp.LookupUserResponse;
-import org.openiam.provision.type.ExtensibleAttribute;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import javax.naming.Context;
+import javax.naming.NamingEnumeration;
+import javax.naming.NamingException;
+import javax.naming.directory.Attributes;
+import javax.naming.directory.SearchControls;
+import javax.naming.directory.SearchResult;
+import javax.naming.ldap.InitialLdapContext;
 import javax.naming.ldap.LdapContext;
 import java.util.*;
+
+// import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
+// import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 
 /**
  * DefaultLoginModule provides basic password based authentication using the OpenIAM repository.
@@ -57,6 +71,13 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
 
     private static final Log log = LogFactory
             .getLog(ActiveDirectoryLoginModule.class);
+
+    PolicyAttribute baseDNAttribute = null;
+    @Autowired
+    private ManagedSysDAO managedSysDAO;
+
+    @Autowired
+    private AttributeMapDAO attributeMapDAO;
 
 
     public ActiveDirectoryLoginModule() {
@@ -75,209 +96,245 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
     }
     */
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * org.openiam.idm.srvc.auth.spi.LoginModule#login(org.openiam.idm.srvc.
-     * auth.context.AuthenticationContext)
-     */
     @Override
     public Subject login(AuthenticationContext authContext) throws Exception {
 
-        Date curDate = new Date(System.currentTimeMillis());
-        Subject subj = new Subject();
+        Subject sub = new Subject();
 
-        PasswordCredential cred = (PasswordCredential) authContext.getCredential();
+        String authPolicyId = sysConfiguration.getDefaultAuthPolicyId();
+        Policy authPolicy = policyDataService.getPolicy(authPolicyId);
+        PolicyAttribute policyAttribute = authPolicy
+                .getAttribute("MANAGED_SYS_ID");
+
+        baseDNAttribute = authPolicy
+                .getAttribute("BASEDN");
+
+        if (policyAttribute == null) {
+            throw new AuthenticationException(
+                    AuthenticationConstants.RESULT_INVALID_CONFIGURATION);
+        }
+        ManagedSysEntity mngSys = managedSysDAO.findById(policyAttribute.getValue1());
+        if (mngSys == null)
+            throw new AuthenticationException(
+                    AuthenticationConstants.RESULT_INVALID_CONFIGURATION);
+        String host = mngSys.getHostUrl();
+        String managedSysId = mngSys.getId();
+        String adminUserName = mngSys.getUserId();
+        String adminPassword = this.decryptPassword(systemUserId, mngSys.getPswd());
+        String protocol = mngSys.getCommProtocol();
+        String baseDn = null;
+        Set<ManagedSystemObjectMatchEntity> managedSystemObjectMatchEntities = mngSys.getMngSysObjectMatchs();
+        if (CollectionUtils.isNotEmpty(managedSystemObjectMatchEntities)) {
+            for (ManagedSystemObjectMatchEntity objectMatchEntity : managedSystemObjectMatchEntities) {
+                if ("USER".equals(objectMatchEntity.getObjectType())) {
+                    baseDn = objectMatchEntity.getBaseDn();
+                    break;
+                }
+            }
+        }
+
+        log.debug("login() in ActiveDirectoryLoginModule called");
+
+        // current date
+        Date curDate = new Date(System.currentTimeMillis());
+        PasswordCredential cred = (PasswordCredential) authContext
+                .getCredential();
+
         String principal = cred.getPrincipal();
         String password = cred.getPassword();
 
-        String authPolicyId = (String)authContext.getAuthParam().get(AuthenticationRequest.AUTH_POLICY_ID);
-        if(StringUtils.isEmpty(authPolicyId)) {
-            authPolicyId = sysConfiguration.getDefaultAuthPolicyId();
+
+        // check the user against AD
+
+        // connect to ad with the admin account
+        LdapContext ldapCtx = connect(adminUserName, adminPassword, host, protocol);
+        log.info("Connection as admin to ad = " + ldapCtx);
+        // search for the identity in the base dn
+        List<AttributeMapEntity> attributeMapEntities = attributeMapDAO.findByManagedSysId(managedSysId);
+        String[] returnArgs = new String[attributeMapEntities.size() + 1];
+        int iter = 0;
+        for (AttributeMapEntity attributeMapEntity : attributeMapEntities) {
+            returnArgs[iter++] = attributeMapEntity.getAttributeName();
         }
-        log.debug("Authentication policyid=" + authPolicyId);
-        Policy authPolicy = policyDataService.getPolicy(authPolicyId);
-        if (authPolicy == null) {
-            log.error("No auth policy found");
-            throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_CONFIGURATION);
+        returnArgs[iter] = "distinguishedName";
+        NamingEnumeration nameEnum = search(ldapCtx, principal, baseDn, returnArgs);
+
+        // if found that get the full name, add the password and try to
+        // authenticate.
+        String distinguishedName = getDN(nameEnum);
+
+        log.info("Distinguished name=" + distinguishedName);
+        //maybe reset password and distinguishedName is entered
+        if (distinguishedName == null) {
+            distinguishedName = principal;
         }
+        if (distinguishedName == null) {
+//            log("AUTHENTICATION", "AUTHENTICATION", "FAIL", "INVALID_LOGIN",
+//                    domainId, null, principal, null, null, clientIP, nodeIP);
+            throw new AuthenticationException(
+                    AuthenticationConstants.RESULT_INVALID_LOGIN);
 
-        PolicyAttribute policyAttribute = authPolicy.getAttribute("MANAGED_SYS_ID");
-        if (policyAttribute == null) {
-            throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_CONFIGURATION);
         }
-        ManagedSysDto mSys = managedSystemWebService.getManagedSys(policyAttribute.getValue1());
-        if (mSys == null) {
-            throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_CONFIGURATION);
-        }
-        String managedSysId = mSys.getId();
-
-        // checking if Login exists in OpenIAM
-        LoginResponse lgResp = loginManager.getLoginByManagedSys(principal, managedSysId);
-        Login lg = lgResp.getPrincipal();
-        if (lg == null) {
-            throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_LOGIN);
-        }
-
-        // checking if User is valid
-        UserEntity user = userManager.getUser(lg.getUserId());
-        if (user == null) {
-            throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_LOGIN);
-        }
-
-        // Find user in target system
-        List<ExtensibleAttribute> attrs = new ArrayList<ExtensibleAttribute>();
-        attrs.add(new ExtensibleAttribute("distinguishedName", null));
-        LookupUserResponse resp = provisionService.getTargetSystemUser(principal, managedSysId, attrs);
-        log.debug("Lookup for user identity =" + principal + " in target system = " + mSys.getName() + ". Result = " + resp.getStatus() + ", " + resp.getErrorCode());
-
-        if (resp.isFailure()) {
-            throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_LOGIN);
-        }
-        principal = lg.getLogin();
-
-        String distinguishedName = null;
-        if (CollectionUtils.isNotEmpty(resp.getAttrList())) {
-            distinguishedName = resp.getAttrList().get(0).getValue();
-        }
-        if (StringUtils.isEmpty(distinguishedName)) {
-            throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_LOGIN);
-        }
-
-        // checking password policy
-        Policy passwordPolicy = passwordManager.getPasswordPolicy(principal, lg.getManagedSysId());
-        if (passwordPolicy == null) {
-            throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_CONFIGURATION);
-        }
-
-
-        AuthenticationException changePassword = null;
-        try {
-            Map<String, Object> params = new HashMap<String, Object>();
-            params.put("distinguishedName", distinguishedName);
-            authenticationUtils.getCredentialsValidator().execute(user, lg, AuthCredentialsValidator.NEW, params);
-
-        } catch (AuthenticationException ae) {
-            // we should validate password before change password
-            if (AuthenticationConstants.RESULT_PASSWORD_EXPIRED == ae.getErrorCode() ||
-                    AuthenticationConstants.RESULT_PASSWORD_EXPIRED == ae.getErrorCode() ||
-                    AuthenticationConstants.RESULT_SUCCESS_PASSWORD_EXP == ae.getErrorCode()) {
-                changePassword = ae;
-
-            } else {
-                throw ae;
-            }
-        }
-
-        // checking if provided Password is not empty
-        if (StringUtils.isEmpty(password)) {
-            throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_PASSWORD);
-        }
-
         // try to login to AD with this user
-        LdapContext ldapCtx = connect(distinguishedName, password, mSys);
+        LdapContext tempCtx = connect(distinguishedName, password, host, protocol);
+        if (tempCtx == null) {
+//            log("AUTHENTICATION", "AUTHENTICATION", "FAIL", "INVALID_PASSWORD",
+//                    domainId, null, principal, null, null, clientIP, nodeIP);
+            throw new AuthenticationException(
+                    AuthenticationConstants.RESULT_INVALID_PASSWORD);
 
-        if (ldapCtx == null) {
-            // get the authentication lock out policy
-            String attrValue = getPolicyAttribute(authPolicy.getPolicyAttributes(), "FAILED_AUTH_COUNT");
-
-            // if failed auth count is part of the polices, then do the
-            // following processing
-            if (StringUtils.isNotBlank(attrValue)) {
-
-                int authFailCount = Integer.parseInt(attrValue);
-                // increment the auth fail counter
-                int failCount = 0;
-                if (lg.getAuthFailCount() != null) {
-                    failCount = lg.getAuthFailCount().intValue();
-                }
-                failCount++;
-                lg.setAuthFailCount(failCount);
-                lg.setLastAuthAttempt(new Date(System.currentTimeMillis()));
-                if (failCount >= authFailCount) {
-                    // lock the record and save the record.
-                    lg.setIsLocked(1);
-                    loginManager.saveLogin(lg);
-
-                    // set the flag on the primary user record
-                    user.setSecondaryStatus(UserStatusEnum.LOCKED);
-                    userManager.updateUser(user);
-
-                    throw new AuthenticationException(AuthenticationConstants.RESULT_LOGIN_LOCKED);
-
-                } else {
-                    // update the counter save the record
-                    loginManager.saveLogin(lg);
-
-                    throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_PASSWORD);
-                }
-
-            } else {
-                log.error("No auth fail password policy value found");
-                throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_CONFIGURATION);
-
-            }
         }
 
-        // now we can change password
-        if (changePassword != null) {
-            throw changePassword;
-        }
+        log.debug("Authentication policyid="
+                + sysConfiguration.getDefaultAuthPolicyId());
+        // get the authentication lock out policy
+        Policy plcy = policyDataService.getPolicy(sysConfiguration
+                .getDefaultAuthPolicyId());
+//        String attrValue = getPolicyAttribute(plcy.getPolicyAttributes(), "FAILED_AUTH_COUNT");
 
-        Integer daysToExp = getDaysToPasswordExpiration(lg, curDate, passwordPolicy);
-        if (daysToExp != null) {
-            subj.setDaysToPwdExp(0);
-            if (daysToExp > -1) {
-                subj.setDaysToPwdExp(daysToExp);
-            }
-        }
-
-        log.debug("-login successful");
-        // good login - reset the counters
-
-        lg.setLastAuthAttempt(curDate);
-
-        // move the current login to prev login fields
-        lg.setPrevLogin(lg.getLastLogin());
-        lg.setPrevLoginIP(lg.getLastLoginIP());
-
-        // assign values to the current login
-        lg.setLastLogin(curDate);
-        lg.setLastLoginIP(authContext.getClientIP());
-
-        lg.setAuthFailCount(0);
-        lg.setFirstTimeLogin(0);
-        log.debug("-Good Authn: Login object updated.");
-        loginManager.saveLogin(lg);
-
-        // check the user status
-        if (UserStatusEnum.PENDING_INITIAL_LOGIN.equals(user.getStatus()) ||
-                // after the start date
-                UserStatusEnum.PENDING_START_DATE.equals(user.getStatus())) {
-            user.setStatus(UserStatusEnum.ACTIVE);
-            userManager.updateUser(user);
-        }
-
-        // Successful login
-        log.debug("-Populating subject after authentication");
-
-        String tokenType = getPolicyAttribute(authPolicy.getPolicyAttributes(), "TOKEN_TYPE");
-        String tokenLife = getPolicyAttribute(authPolicy.getPolicyAttributes(), "TOKEN_LIFE");
-        String tokenIssuer = getPolicyAttribute(authPolicy.getPolicyAttributes(), "TOKEN_ISSUER");
+        String tokenType = getPolicyAttribute(plcy.getPolicyAttributes(), "TOKEN_TYPE");
+        String tokenLife = getPolicyAttribute(plcy.getPolicyAttributes(), "TOKEN_LIFE");
+        String tokenIssuer = getPolicyAttribute(plcy.getPolicyAttributes(), "TOKEN_ISSUER");
 
         Map tokenParam = new HashMap();
         tokenParam.put("TOKEN_TYPE", tokenType);
         tokenParam.put("TOKEN_LIFE", tokenLife);
         tokenParam.put("TOKEN_ISSUER", tokenIssuer);
-        tokenParam.put("PRINCIPAL", principal);
+        tokenParam.put("PRINCIPAL", distinguishedName);
+        LoginResponse lg2Resp = loginManager.getLoginByManagedSys(distinguishedName, managedSysId);
 
-        subj.setUserId(lg.getUserId());
-        subj.setPrincipal(principal);
-        subj.setSsoToken(token(lg.getUserId(), tokenParam));
-        setResultCode(lg, subj, curDate, passwordPolicy);
+        if (lg2Resp.getStatus() == ResponseStatus.FAILURE) {
+            throw new AuthenticationException(
+                    AuthenticationConstants.RESULT_INVALID_LOGIN);
+        }
+        Login lg = lg2Resp.getPrincipal();
+        UserEntity user = this.userManager.getUser(lg.getUserId());
 
-        return subj;
+
+        // update the login and user records to show this authentication
+        lg.setLastAuthAttempt(new Date(System.currentTimeMillis()));
+        lg.setLastLogin(new Date(System.currentTimeMillis()));
+        lg.setAuthFailCount(0);
+        lg.setFirstTimeLogin(0);
+        log.info("Good Authn: Login object updated.");
+        loginManager.saveLogin(lg);
+
+        // check the user status
+        if (user.getStatus() != null) {
+            if (user.getStatus().equals(UserStatusEnum.PENDING_INITIAL_LOGIN) ||
+                    // after the start date
+                    user.getStatus().equals(UserStatusEnum.PENDING_START_DATE)) {
+
+                user.setStatus(UserStatusEnum.ACTIVE);
+                userManager.updateUser(user);
+            }
+        }
+
+        // Successful login
+        sub.setUserId(lg.getUserId());
+        sub.setPrincipal(distinguishedName);
+        sub.setSsoToken(token(lg.getUserId(), tokenParam));
+        setResultCode(lg, sub, curDate, null);
+
+        // send message into to audit log
+
+//        log("AUTHENTICATION", "AUTHENTICATION", "SUCCESS", null, domainId,
+//                user.getId(), principal, null, null, clientIP, nodeIP);
+
+        return sub;
     }
 
+    public LdapContext connect(String userName, String password, String host, String protocol) {
+
+        // LdapContext ctxLdap = null;
+        Hashtable<String, String> envDC = new Hashtable();
+
+        System.setProperty("javax.net.ssl.trustStore", keystore);
+
+        log.info("Connecting to AD using principal=" + userName);
+
+        envDC.put(Context.PROVIDER_URL, host);
+        envDC.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
+        envDC.put(Context.SECURITY_AUTHENTICATION, "simple"); // simple
+        envDC.put(Context.SECURITY_PRINCIPAL, userName); // "administrator@diamelle.local"
+        envDC.put(Context.SECURITY_CREDENTIALS, password);
+        if (protocol != null && protocol.equalsIgnoreCase("SSL")) {
+            envDC.put(Context.SECURITY_PROTOCOL, protocol);
+        }
+
+        try {
+            return (new InitialLdapContext(envDC, null));
+        } catch (NamingException ne) {
+            log.info(ne.getMessage());
+
+        }
+        return null;
+    }
+
+    private NamingEnumeration search(LdapContext ctx, String searchValue, String baseDn, String returnedAtts[]) {
+        SearchControls searchCtls = new SearchControls();
+
+        // Specify the attributes to returned
+//        String returnedAtts[] = {"distinguishedName", "sAMAccountName", "cn",
+//                "sn", "userPrincipalName"};
+        searchCtls.setReturningAttributes(returnedAtts);
+
+        // Specify the search scope
+        try {
+            searchCtls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+
+            String searchFilter = "(&(objectClass=person)(sAMAccountName="
+                    + searchValue + "))";
+            if (baseDNAttribute != null && StringUtils.isNotBlank(baseDNAttribute.getValue1())) {
+                searchFilter = baseDNAttribute.getValue1().replace("?", searchValue);
+            }
+
+            System.out.println("Search Filter=" + searchFilter);
+            System.out.println("BaseDN=" + baseDn);
+            NamingEnumeration result = ctx.search(baseDn, searchFilter, searchCtls);
+            return result;
+        } catch (NamingException ne) {
+            ne.printStackTrace();
+        }
+        return null;
+
+    }
+
+    private String getDN(NamingEnumeration nameEnum) {
+        String distinguishedName = null;
+
+        try {
+            while (nameEnum.hasMoreElements()) {
+                SearchResult sr = (SearchResult) nameEnum.next();
+                Attributes attrs = sr.getAttributes();
+                if (attrs != null) {
+                    distinguishedName = (String) attrs.get("distinguishedName")
+                            .get();
+                    log.info("getDN distguished name=" + distinguishedName);
+                    if (distinguishedName != null) {
+                        return distinguishedName;
+                    }
+                }
+            }
+        } catch (NamingException ne) {
+            ne.printStackTrace();
+        }
+        return null;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.openiam.idm.srvc.auth.spi.LoginModule#logout(java.lang.String,
+     * java.lang.String, java.lang.String)
+     */
+    /*
+    public void logout(String securityDomain, String principal,
+            String managedSysId) {
+
+        log("AUTHENTICATION", "LOGOUT", "SUCCESS", null, securityDomain, null,
+                principal, null, null, null, null);
+
+    }
+    */
 }

@@ -47,10 +47,7 @@ import org.openiam.idm.srvc.auth.context.PasswordCredential;
 import org.openiam.idm.srvc.auth.domain.AuthStateEntity;
 import org.openiam.idm.srvc.auth.domain.AuthStateId;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
-import org.openiam.idm.srvc.auth.dto.AuthenticationRequest;
-import org.openiam.idm.srvc.auth.dto.LoginModuleSelector;
-import org.openiam.idm.srvc.auth.dto.SSOToken;
-import org.openiam.idm.srvc.auth.dto.Subject;
+import org.openiam.idm.srvc.auth.dto.*;
 import org.openiam.idm.srvc.auth.login.AuthStateDAO;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.auth.spi.AbstractLoginModule;
@@ -128,7 +125,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
     @Qualifier("configurableGroovyScriptEngine")
     private ScriptIntegration scriptRunner;
 
-	@Autowired
+    @Autowired
     protected AuthenticationUtils authenticationUtils;
 
     private BeanFactory beanFactory;
@@ -244,7 +241,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
                 if (StringUtils.isBlank(password)) {
 
                     log.debug("Invalid password");
-	                /*
+                    /*
 	                log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
 	                        "INVALID PASSWORD", secDomainId, null, principal, null,
 	                        null, clientIP, nodeIP);
@@ -344,7 +341,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 
             Map<String, Object> authParamMap = new HashMap<String, Object>();
             authParamMap.put("AUTH_SYS_ID", sysConfiguration.getDefaultManagedSysId());
-            authParamMap.put(AuthenticationRequest.AUTH_POLICY_ID,authPolicyId);
+            authParamMap.put(AuthenticationRequest.AUTH_POLICY_ID, authPolicyId);
             ctx.setAuthParam(authParamMap);
             ctx.setLoginModule(loginModName);
 
@@ -446,8 +443,13 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
             managedSySId = sysConfiguration.getDefaultManagedSysId();
         }
         // get the userId of this token
-        LoginEntity lg = loginManager.getLoginByManagedSys(principal, managedSySId);
+        LoginResponse loginResponse = loginManager.getLoginByManagedSys(principal, managedSySId);
+        if (loginResponse==null){
+            resp.setStatus(ResponseStatus.FAILURE);
+            return resp;
+        }
 
+        Login lg = loginResponse.getPrincipal();
         if (lg == null) {
             resp.setStatus(ResponseStatus.FAILURE);
             return resp;
