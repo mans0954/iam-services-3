@@ -176,9 +176,12 @@ public class AuthProviderServiceTest extends AbstractKeyNameServiceTest<AuthProv
 		provider.setPublicKey(new byte[]{'e', 'f', 'g', 'h'});
 		provider.setProviderType(authProviderServiceClient.getAuthProviderTypeList().get(0).getId());
 		provider.setSignRequest(true);
-		provider.setResource(new Resource());
-		
-		final List<AuthAttribute> authAttributes = authProviderServiceClient.findAuthAttributeBeans(new AuthAttributeSearchBean(), Integer.MAX_VALUE, 0);
+
+
+		AuthAttributeSearchBean authAttributeSearchBean = new AuthAttributeSearchBean();
+		authAttributeSearchBean.setProviderType(provider.getProviderType());
+
+		final List<AuthAttribute> authAttributes = authProviderServiceClient.findAuthAttributeBeans(authAttributeSearchBean, Integer.MAX_VALUE, 0);
 		//AuthAttributeEntity
 		if(CollectionUtils.isNotEmpty(authAttributes)) {
 			final Set<AuthProviderAttribute> attributes = new HashSet<>();
