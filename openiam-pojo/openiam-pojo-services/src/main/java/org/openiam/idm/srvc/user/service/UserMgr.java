@@ -1757,6 +1757,23 @@ public class UserMgr implements UserDataService {
         newUserEntity.setRoles(null);
         // newUserEntity.setEmailAddresses(null);
 
+        if (newUserEntity.getEmployeeType() != null && StringUtils.isNotBlank(newUserEntity.getEmployeeType().getId())) {
+            newUserEntity.setEmployeeType(metadataTypeDAO.findById(newUserEntity.getEmployeeType().getId()));
+        } else {
+            newUserEntity.setEmployeeType(null);
+        }
+
+        if (newUserEntity.getJobCode() != null && StringUtils.isNotBlank(newUserEntity.getJobCode().getId())) {
+            newUserEntity.setJobCode(metadataTypeDAO.findById(newUserEntity.getJobCode().getId()));
+        } else {
+            newUserEntity.setJobCode(null);
+        }
+        if (newUserEntity.getType() != null && StringUtils.isNotBlank(newUserEntity.getType().getId())) {
+            newUserEntity.setType(metadataTypeDAO.findById(newUserEntity.getType().getId()));
+        }else {
+            newUserEntity.setType(null);
+        }
+
         this.addUser(newUserEntity);
 
         if (principalList != null && !principalList.isEmpty()) {
