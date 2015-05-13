@@ -7,6 +7,7 @@ import java.util.Set;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
+import org.openiam.idm.searchbeans.ResourceTypeSearchBean;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.dto.GroupAttribute;
 import org.openiam.idm.srvc.org.dto.Organization;
@@ -48,7 +49,7 @@ public class ResourceServiceTest extends AbstractAttributeServiceTest<Resource, 
 	@Override
 	protected Resource newInstance() {
 		final Resource resource = new Resource();
-		resource.setResourceType(resourceDataService.findResourceTypes(null, 0, 1, null).get(0));
+		resource.setResourceType(resourceDataService.findResourceTypes(new ResourceTypeSearchBean(), 0, 1, null).get(0));
 		return resource;
 	}
 

@@ -7,6 +7,7 @@ import java.util.Set;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
+import org.openiam.idm.searchbeans.OrganizationTypeSearchBean;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.dto.GroupAttribute;
 import org.openiam.idm.srvc.org.dto.Organization;
@@ -54,7 +55,7 @@ public class OrganizationServiceTest extends AbstractAttributeServiceTest<Organi
 	@Override
 	protected Organization newInstance() {
 		final Organization organization = new Organization();
-		organization.setOrganizationTypeId(organizationTypeClient.findBeans(null, 0, 1, null).get(0).getId());
+		organization.setOrganizationTypeId(organizationTypeClient.findBeans(new OrganizationTypeSearchBean(), 0, 1, null).get(0).getId());
 		return organization;
 	}
 
