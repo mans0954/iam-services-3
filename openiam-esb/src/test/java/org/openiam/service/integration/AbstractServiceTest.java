@@ -168,7 +168,7 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 	}
 	
 	protected final List<Language> getAllLanguages() {
-		return languageServiceClient.findBeans(null, 0, Integer.MAX_VALUE, null);
+		return languageServiceClient.findBeans(new LanguageSearchBean(), 0, Integer.MAX_VALUE, null);
 	}
 	
 	protected String getRandomName(final int count) {

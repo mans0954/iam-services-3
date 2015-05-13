@@ -7,12 +7,10 @@ import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.openiam.am.srvc.dto.URIPattern;
+import org.openiam.am.srvc.searchbeans.URIPatternSearchBean;
 import org.openiam.am.srvc.ws.ContentProviderWebService;
 import org.openiam.base.ws.Response;
-import org.openiam.idm.searchbeans.LoginSearchBean;
-import org.openiam.idm.searchbeans.MetadataElementPageTemplateSearchBean;
-import org.openiam.idm.searchbeans.MetadataTemplateTypeFieldSearchBean;
-import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
+import org.openiam.idm.searchbeans.*;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateEntity;
 import org.openiam.idm.srvc.meta.dto.MetadataElement;
@@ -42,19 +40,19 @@ public class MetadataElementTemplateServiceTest extends AbstractKeyNameServiceTe
 	private MetadataElementTemplateWebService metadataTemplateServiceClient;
 
 	private MetadataTemplateType getFirstType() {
-		return metadataTemplateServiceClient.findTemplateTypes(null, 0, 1).get(0);
+		return metadataTemplateServiceClient.findTemplateTypes(new MetadataTemplateTypeSearchBean(), 0, 1).get(0);
 	}
 	
 	private List<MetadataTemplateTypeField> getAllUIFields(final int from, final int size) {
-		return metadataTemplateServiceClient.findUIFIelds(null, from, size);
+		return metadataTemplateServiceClient.findUIFIelds(new MetadataTemplateTypeFieldSearchBean(), from, size);
 	}
 	
 	private List<MetadataElement> getAllMetadataElement(final int from, final int size) {
-		return metadataServiceClient.findElementBeans(null, from, size, getDefaultLanguage());
+		return metadataServiceClient.findElementBeans(new MetadataElementSearchBean(), from, size, getDefaultLanguage());
 	}
 	
 	private List<URIPattern> getAllURIPatterns(final int from, final int size) {
-		return contentProviderServiceClient.findUriPatterns(null, from, size);
+		return contentProviderServiceClient.findUriPatterns(new URIPatternSearchBean(), from, size);
 	}
 	
 	@Override

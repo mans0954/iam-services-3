@@ -4,6 +4,7 @@ import org.openiam.authmanager.service.AuthorizationManagerWebService;
 import org.openiam.base.KeyDTO;
 import org.openiam.base.KeyNameDTO;
 import org.openiam.base.ws.Response;
+import org.openiam.idm.searchbeans.OrganizationTypeSearchBean;
 import org.openiam.idm.searchbeans.ResourceTypeSearchBean;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
@@ -92,7 +93,7 @@ public abstract class AbstractEntitlementsTest<Parent extends KeyDTO, Child exte
 	
 	protected Organization createOrganization() {
 		Organization organization = new Organization();
-		organization.setOrganizationTypeId(organizationTypeClient.findBeans(null, 0, 1, null).get(0).getId());
+		organization.setOrganizationTypeId(organizationTypeClient.findBeans(new OrganizationTypeSearchBean(), 0, 1, null).get(0).getId());
 		organization.setName(getRandomName());
 		final Response wsResponse = organizationServiceClient.saveOrganization(organization, null);
 		Assert.assertTrue(wsResponse.isSuccess(), String.format("Could not save %s.  Reason: %s", organization, wsResponse));
@@ -103,7 +104,7 @@ public abstract class AbstractEntitlementsTest<Parent extends KeyDTO, Child exte
 	protected Resource createResource() {
 		Resource resource = new Resource();
 		final ResourceTypeSearchBean resourceTypeSearchBean = new ResourceTypeSearchBean();
-//		resourceTypeSearchBean.setSupportsHierarchy(true);
+		resourceTypeSearchBean.setSupportsHierarchy(true);
 		resource.setResourceType(resourceDataService.findResourceTypes(resourceTypeSearchBean, 0, 1, null).get(0));
 		resource.setName(getRandomName());
 		final Response wsResponse = resourceDataService.saveResource(resource, null);
