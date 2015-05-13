@@ -157,7 +157,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
             }
 
             final ResourceEntity resource = new ResourceEntity();
-            resource.setName(resourceTypeId+"_"+provider.getName() + "_" + System.currentTimeMillis());
+            resource.setName(resourceTypeId + "_" + provider.getName() + "_" + System.currentTimeMillis());
             resource.setResourceType(resourceType);
             resource.setId(null);
             resource.setIsPublic(false);
@@ -169,7 +169,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
             provider.setManagedSystem(managedSys);
             provider.setUiTheme(theme);
             
-            final Set<AuthLevelGroupingContentProviderXrefEntity> incomingXrefs = provider.getGroupingXrefs();
+            final Set<AuthLevelGroupingContentProviderXrefEntity> incomingXrefs = new HashSet<>(provider.getGroupingXrefs());
             provider.setGroupingXrefs(null);
             contentProviderDao.save(provider);
             if(CollectionUtils.isNotEmpty(incomingXrefs)) {

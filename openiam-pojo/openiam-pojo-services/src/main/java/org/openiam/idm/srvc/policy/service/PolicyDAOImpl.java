@@ -102,7 +102,13 @@ public class PolicyDAOImpl extends BaseDaoImpl<PolicyEntity, String> implements
                     name = name.substring(0, name.length() - 1);
                     matchMode = (matchMode == MatchMode.END) ? MatchMode.ANYWHERE : MatchMode.START;
                 }
-                criteria.add(Restrictions.ilike("name", name, matchMode));
+                if (matchMode != null) {
+                    criteria.add(Restrictions.ilike("name", name, matchMode));
+                } else {
+                    criteria.add(Restrictions.eq("name", name));
+//                    criterion = (caseInsensitive) ? Restrictions.eq(fieldName, value).ignoreCase() : Restrictions.eq(fieldName, value);
+                }
+//                criteria.add(Restrictions.ilike("name", name, matchMode));
             }
         }
         return criteria;
