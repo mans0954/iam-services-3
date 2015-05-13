@@ -3,12 +3,16 @@ package org.openiam.idm.stresstest;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.annotation.Resource;
+
 import org.apache.commons.lang.time.StopWatch;
 import org.junit.Assert;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
+import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.ws.RoleDataWebService;
+import org.openiam.idm.srvc.user.ws.UserDataWebService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -30,11 +34,16 @@ public class InternationalizationStressTest extends AbstractTestNGSpringContextT
 	private RoleDataWebService roleServiceClient;
 	
 	@Autowired
+	@Qualifier("userServiceClient")
+    private UserDataWebService userServiceClient;
+	
+	@Autowired
 	private JdbcTemplate jdbcTemplate;
 
 	private List<String> userIds = null;
 	private List<String> groupIds = null;
 	private List<String> roleIds = null;
+	private List<String> userIdsInHpAdmin = null;
 	
 	private AtomicInteger roleInt = new AtomicInteger();
 	private AtomicInteger groupInt = new AtomicInteger();
@@ -45,8 +54,25 @@ public class InternationalizationStressTest extends AbstractTestNGSpringContextT
 		userIds = jdbcTemplate.queryForList("SELECT USER_ID FROM USERS", null, String.class);
 		groupIds = jdbcTemplate.queryForList("SELECT GRP_ID FROM GRP", null, String.class);
 		roleIds = jdbcTemplate.queryForList("SELECT ROLE_ID FROM ROLE", null, String.class);
+		userIdsInHpAdmin = jdbcTemplate.queryForList("SELECT USER_ID FROM USER_ROLE WHERE ROLE_ID ='HP_ADMIN_ROLE_ID'", null, String.class);
 	}
 	
+	@Test(threadPoolSize = 100, invocationCount = 127130)
+	public void testUserAttributeStressTest() {
+		final int userIdx = atomicUserInt.incrementAndGet() % userIds.size();
+		final String userId = userIds.get(userIdx);
+		
+		final Language language = new Language();
+		language.setId("1");
+		final StopWatch sw = new StopWatch();
+		sw.start();
+		userServiceClient.getUserAttributesInternationalized(userId, language);
+		sw.stop();
+		//if(sw.getTime() > 20000) {
+			System.out.println(String.format("IDX: %s, %s ms.  UID: %s", userIdx, sw.getTime(), userId));
+		//}
+	}
+		
 	@Test(threadPoolSize = 100, invocationCount = 127130)
 	public void groupStressTest() {
 		final int groupIdx = groupInt.incrementAndGet() % groupIds.size();
