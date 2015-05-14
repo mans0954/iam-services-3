@@ -95,6 +95,7 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
         return types;
     }
 	
+	//DO NOT MERGE INTO DEVELOPMENT!!
 	protected ContentProvider createContentProvider() {
 		final ContentProvider cp = new ContentProvider();
 		cp.setName(getRandomName());
@@ -105,11 +106,14 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 //		cp.setAuthProviderId(authProviderServiceClient.findAuthProviderBeans(null, 0, 1).get(0).getId());
 		cp.setManagedSysId("0");
 		
+		/*
+		 * ONLY required in 4.0 when you create a CP. In 3.x, you first create a CP, then a Server.
 		final ContentProviderServer server = new ContentProviderServer();
 		server.setServerURL(getRandomName());
 		final Set<ContentProviderServer> serverSet = new HashSet<ContentProviderServer>();
 		serverSet.add(server);
 		cp.setServerSet(serverSet);
+		*/
 		
 		final Set<AuthLevelGroupingContentProviderXref> groupingXrefs = new HashSet<AuthLevelGroupingContentProviderXref>();
 		//for(final AuthLevelGrouping grouping : contentProviderServiceClient.getAuthLevelGroupingList()) {
