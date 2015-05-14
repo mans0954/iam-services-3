@@ -88,10 +88,6 @@
             <a>element.displayName</a>
             <b>metadataName</b>
         </field>
-        <field>
-            <a>user.id</a>
-            <b>userId</b>
-        </field>
     </mapping>
 
     <mapping>
@@ -141,6 +137,16 @@
         <class-a>org.openiam.idm.srvc.auth.domain.LoginAttributeEntity
         </class-a>
         <class-b>org.openiam.idm.srvc.auth.dto.LoginAttribute</class-b>
+    </mapping>
+
+    <mapping>
+        <class-a>org.openiam.idm.srvc.pswd.domain.PasswordHistoryEntity
+        </class-a>
+        <class-b>org.openiam.idm.srvc.pswd.dto.PasswordHistory</class-b>
+        <field>
+            <a>login.loginId</a>
+            <b>loginId</b>
+        </field>
     </mapping>
 
     <mapping>

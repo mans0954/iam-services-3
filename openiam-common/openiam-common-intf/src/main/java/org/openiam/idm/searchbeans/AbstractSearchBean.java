@@ -15,7 +15,7 @@ import java.util.Set;
         "deepCopy",
         "sortBy"
 })
-public class AbstractSearchBean<T, KeyType> {
+public abstract class AbstractSearchBean<T, KeyType> {
 
 	private boolean deepCopy = true;
 	private KeyType key;
@@ -54,6 +54,12 @@ public class AbstractSearchBean<T, KeyType> {
 		result = prime * result + ((key == null) ? 0 : key.hashCode());
 		return result;
 	}
+
+    /**
+     * This method must be used only for as a key for secondary level cache
+     * @return
+     */
+    public abstract String getCacheUniqueBeanKey();
 
 	@Override
 	public boolean equals(Object obj) {

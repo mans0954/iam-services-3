@@ -73,45 +73,50 @@ public class InternationalizationJoinpointProvider implements InitializingBean, 
 	
 	@AfterReturning(pointcut="@annotation(org.openiam.internationalization.LocalizedServiceGet)", returning="returnValue")
 	public void afterServiceGet(final JoinPoint joinPoint, final Object returnValue) {		
-		boolean validMethodCall = true;
-		if(joinPoint.getArgs() == null || joinPoint.getArgs().length == 0) {
-			validMethodCall = false;
-		}
-		
-		final Object lastArgument = joinPoint.getArgs()[joinPoint.getArgs().length - 1];
-		
-		if(lastArgument != null && !(lastArgument instanceof Language) && !(lastArgument instanceof LanguageEntity)) {
-			validMethodCall = false;
-		}
-			
-		if(!validMethodCall) {
-			throw new IllegalStateException(String.format("The LAST argument for methods annotated with %s must be either of type %s or %s", 
-					LocalizedServiceGet.class.getCanonicalName(), LanguageEntity.class.getCanonicalName(), Language.class.getCanonicalName()));
-		}
-		
-		if(lastArgument != null) {
-			String languageId = null;
-			if(lastArgument instanceof Language) {
-				languageId = ((Language)lastArgument).getId();
-			}
-			if(lastArgument instanceof LanguageEntity) {
-				languageId = ((LanguageEntity)lastArgument).getId();
-			}
-			
-			if(returnValue != null) {
-				if(returnValue instanceof Collection) {
-					for(final Object obj : (Collection)returnValue) {
-						if(obj instanceof BaseIdentity) {
-							internationalizationProvider.doServiceGet((BaseIdentity)obj, languageId);
-						}
-					}
-				} else {
-					if(returnValue instanceof BaseIdentity) {
-						internationalizationProvider.doServiceGet((BaseIdentity)returnValue, languageId);
-					}
-				}
-			}
-		}
+		try {
+            boolean validMethodCall = true;
+            if(joinPoint.getArgs() == null || joinPoint.getArgs().length == 0) {
+                validMethodCall = false;
+            }
+
+            final Object lastArgument = joinPoint.getArgs()[joinPoint.getArgs().length - 1];
+
+            if(lastArgument != null && !(lastArgument instanceof Language) && !(lastArgument instanceof LanguageEntity)) {
+                validMethodCall = false;
+            }
+
+            if(!validMethodCall) {
+                throw new IllegalStateException(String.format("The LAST argument for methods annotated with %s must be either of type %s or %s",
+                        LocalizedServiceGet.class.getCanonicalName(), LanguageEntity.class.getCanonicalName(), Language.class.getCanonicalName()));
+            }
+
+            if(lastArgument != null) {
+                String languageId = null;
+                if(lastArgument instanceof Language) {
+                    languageId = ((Language)lastArgument).getId();
+                }
+                if(lastArgument instanceof LanguageEntity) {
+                    languageId = ((LanguageEntity)lastArgument).getId();
+                }
+
+                if(returnValue != null) {
+                    if(returnValue instanceof Collection) {
+                        for(final Object obj : (Collection)returnValue) {
+                            if(obj instanceof BaseIdentity) {
+                                internationalizationProvider.doServiceGet((BaseIdentity)obj, languageId);
+                            }
+                        }
+                    } else {
+                        if(returnValue instanceof BaseIdentity) {
+                            internationalizationProvider.doServiceGet((BaseIdentity)returnValue, languageId);
+                        }
+                    }
+                }
+            }
+        } catch(ArrayIndexOutOfBoundsException e) {
+            e.printStackTrace();
+        }
+
 	}
 	
 	private void checkArguments(final JoinPoint joinpoint) throws Throwable {

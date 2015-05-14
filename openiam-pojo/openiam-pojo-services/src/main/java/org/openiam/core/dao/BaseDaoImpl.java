@@ -117,6 +117,19 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
         return (List<T>) criteria.list();
     }
 
+    public List<T> getByExampleNoLocalize(T t, int startAt, int size) {
+        final Criteria criteria = getExampleCriteria(t);
+        if (startAt > -1) {
+            criteria.setFirstResult(startAt);
+        }
+
+        if (size > -1) {
+            criteria.setMaxResults(size);
+        }
+
+        return (List<T>) criteria.list();
+    }
+
     @Override
     public List<String> getIDsByExample(SearchBean searchBean, int from, int size) {
         final Criteria criteria = getExampleCriteria(searchBean);
@@ -169,6 +182,15 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
     @LocalizedDatabaseGet
     public List<T> getByExample(T t) {
         return getByExample(t, -1, -1);
+    }
+
+    public List<T> getByExampleNoLocalize(T t) {
+        return getByExample(t, -1, -1);
+    }
+
+    @Override
+    public List<T> getByExampleNoLocalize(SearchBean searchBean, int from, int size) {
+        return this.getByExample(searchBean, from, size);
     }
 
     @Override

@@ -118,9 +118,14 @@ public class DelegationFilterHelper {
     private static boolean isFilerSet(Map<String, UserAttribute> attrMap, String key){
         boolean result = false;
         if(attrMap!=null){
-            if (attrMap.get(key) != null)  {
-                String filter =  attrMap.get(key).getValue();
-                result = (filter != null && !filter.trim().isEmpty());
+            UserAttribute ua = attrMap.get(key);
+            if (ua != null)  {
+                if(ua.getIsMultivalued()) {
+                    result = ua.getValues() != null && ua.getValues().size() >0;
+                } else {
+                    String filter =  ua.getValue();
+                    result = (filter != null && !filter.trim().isEmpty());
+                }
             }
         }
         return result;
@@ -140,12 +145,22 @@ public class DelegationFilterHelper {
     }
 
     private static String getFilterValue(Map<String, UserAttribute> attrMap, String key){
-        String value = null;
-        if(attrMap!=null){
-            if (attrMap.get(key) != null)  {
-                value =  attrMap.get(key).getValue();
+        StringBuilder value = new StringBuilder();
+        if(attrMap!=null) {
+            UserAttribute ua = attrMap.get(key);
+            if (ua != null)  {
+                if(ua.getIsMultivalued()) {
+                    if(ua.getValue() != null) {
+                        value.append(ua.getValue()).append(",");
+                    }
+                    for(String v : ua.getValues()) {
+                        value.append(v);
+                    }
+                } else {
+                    value.append(ua.getValue());
+                }
             }
         }
-        return value;
+        return value.toString();
     }
 }

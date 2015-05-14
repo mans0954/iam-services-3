@@ -165,8 +165,8 @@ public class AuthProviderServiceImpl implements AuthProviderService {
             throw new NullPointerException("provider type is null");
         if(provider.getManagedSysId()==null  || provider.getManagedSysId().trim().isEmpty())
             throw new NullPointerException("ManageSys is not set for provider");
-        if(provider.getResource() ==null)
-            throw new NullPointerException("Resource is not set for provider");
+//        if(provider.getResource() ==null)
+//            throw new NullPointerException("Resource is not set for provider");
         if(provider.getName()==null  || provider.getName().trim().isEmpty())
             throw new NullPointerException("provider name is null");
 
@@ -176,7 +176,7 @@ public class AuthProviderServiceImpl implements AuthProviderService {
             throw new NullPointerException("Cannot create resource for provider. Resource type is not found");
         }
         
-        final ResourceEntity resource = provider.getResource();
+        final ResourceEntity resource = new ResourceEntity();
         resource.setName(System.currentTimeMillis() + "_" + provider.getName());
         resource.setResourceType(resourceType);
         resource.setId(null);
@@ -191,7 +191,7 @@ public class AuthProviderServiceImpl implements AuthProviderService {
         Map<String, AuthResourceAttributeMapEntity> resourceAttributeMap = provider.getResourceAttributeMap();
         provider.setProviderAttributeSet(null);
         provider.setResourceAttributeMap(null);
-        authProviderDao.add(provider);
+        authProviderDao.save(provider);
         if(providerAttributeSet!=null && !providerAttributeSet.isEmpty()){
             saveAuthProviderAttributes(provider, providerAttributeSet);
         }

@@ -22,6 +22,9 @@ public class ScriptCommandFactory extends AbstractCommandFactory {
     @Qualifier("expirePasswordCommand")
     private ConnectorCommand expirePasswordCommand;
     @Autowired
+    @Qualifier("attributeNamesLookupScriptCommand")
+    private ConnectorCommand attributeNamesLookupScriptCommand;
+    @Autowired
     @Qualifier("lookupScriptCommand")
     private ConnectorCommand lookupScriptCommand;
     @Autowired
@@ -64,6 +67,8 @@ public class ScriptCommandFactory extends AbstractCommandFactory {
             return setPasswordScriptCommand;
         case SUSPEND:
             return suspendScriptCommand;
+        case LOOKUP_ATTRIBUTE_NAME:
+             return attributeNamesLookupScriptCommand;
         case LOOKUP:
             return lookupScriptCommand;
         case EXPIRE_PASSWORD:

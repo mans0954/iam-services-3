@@ -42,21 +42,21 @@ import java.net.InetAddress;
 import java.util.*;
 
 /**
- * Implementation class for <code>IdmAuditLogDataService</code>. All audit logging activities
+ * Implementation class for <code>IdmAuditLogDataService</code>. All audit logging activities 
  * persisted through this service.
  */
 @Service("auditDataService")
 public class AuditLogServiceImpl implements AuditLogService {
-
-    @Autowired
+    
+	@Autowired
     private JmsTemplate jmsTemplate;
-
-    @Autowired
+	
+	@Autowired
     @Qualifier(value = "logQueue")
     private Queue queue;
-
-    @Autowired
-    private IdmAuditLogDAO logDAO;
+	
+	@Autowired
+	private IdmAuditLogDAO logDAO;
 
     @Autowired
     private LoginDAO loginDAO;
@@ -88,28 +88,31 @@ public class AuditLogServiceImpl implements AuditLogService {
 
     @PostConstruct
     public void init() {
-        try {
-            nodeIP = InetAddress.getLocalHost().getCanonicalHostName();
-        } catch (Throwable e) {
-            LOG.error("Can't get IP Address of this ESB - nodeIP for all audit logs will be set to null", e);
-        }
+    	try {
+    		nodeIP = InetAddress.getLocalHost().getCanonicalHostName();
+    	} catch(Throwable e) {
+    		LOG.error("Can't get IP Address of this ESB - nodeIP for all audit logs will be set to null", e);
+    	}
     }
-
+    
     private IdmAuditLogEntity prepare(final IdmAuditLog log) {
 //        IdmAuditLogEntity auditLogEntity = log.getId() == null ? auditLogDozerConverter.convertToEntity(log, false) : logDAO.findById(log.getId());
         IdmAuditLogEntity auditLogEntity = auditLogDozerConverter.convertToEntity(log, false);// : logDAO.findById(log.getId());
         auditLogEntity.setTimestamp(new Date(System.currentTimeMillis()));
-        if (log != null) {
-            if (auditLogEntity.getId() == null || auditLogEntity.getHash() == null) {
+        try {
+            Thread.sleep(1); //TODO: Subject to discuss. Waiting for timestamp is changed (this will explicitly change hashCodes for similar children logs)
+        } catch (InterruptedException e) {}
+        if(log != null) {
+    		if(auditLogEntity.getId() == null || auditLogEntity.getHash() == null) {
                 auditLogEntity.setHash(DigestUtils.sha256Hex(log.concat()));
             }
-            LOG.info(">>>>>>>>>>>>>>>>>>>>>>>Try to check AUDIT LOG =" + log.toString());
+
             auditLogEntity.setNodeIP(nodeIP);
 
-            if (CollectionUtils.isNotEmpty(log.getChildLogs())) {
-                for (final IdmAuditLog ch : log.getChildLogs()) {
+    		if(CollectionUtils.isNotEmpty(log.getChildLogs())) {
+    			for(final IdmAuditLog ch : log.getChildLogs()) {
                     IdmAuditLogEntity chEntity = prepare(ch);
-                    if (!logExists(auditLogEntity.getChildLogs(), chEntity)) {
+                    if(!logExists(auditLogEntity.getChildLogs(), chEntity)) {
 //                        System.out.println("ADDING LOG ");
 //                    if(!auditLogEntity.getChildLogs().contains(chEntity)) {
                         auditLogEntity.addChild(chEntity);
@@ -117,43 +120,43 @@ public class AuditLogServiceImpl implements AuditLogService {
                     } else {
 //                        System.out.println("SKIP LOG ");
                     }
-                }
-            }
+    			}
+    		}
 
-            //required - the UI sends a transient instance to the service, so fix it here
-            if (CollectionUtils.isNotEmpty(log.getCustomRecords())) {
+    		//required - the UI sends a transient instance to the service, so fix it here
+    		if(CollectionUtils.isNotEmpty(log.getCustomRecords())) {
                 List<IdmAuditLogCustomEntity> auditLogCustomEntities = idmAuditLogCustomDozerConverter.convertToEntityList(new ArrayList<IdmAuditLogCustom>(log.getCustomRecords()), false);
-                for (final IdmAuditLogCustomEntity custom : auditLogCustomEntities) {
+                for(final IdmAuditLogCustomEntity custom : auditLogCustomEntities) {
                     auditLogEntity.addCustomRecord(custom);
-                }
-            }
+    			}
+    		}
 
-            if (CollectionUtils.isNotEmpty(log.getTargets())) {
-                for (final AuditLogTarget target : log.getTargets()) {
-                    if (StringUtils.isNotEmpty(target.getTargetId()) && StringUtils.isEmpty(target.getObjectPrincipal())) {
-                        if (AuditTarget.USER.value().equals(target.getTargetType())) {
+    		if(CollectionUtils.isNotEmpty(log.getTargets())) {
+    			for(final AuditLogTarget target : log.getTargets()) {
+                    if(StringUtils.isNotEmpty(target.getTargetId()) && StringUtils.isEmpty(target.getObjectPrincipal())) {
+                        if(AuditTarget.USER.value().equals(target.getTargetType())) {
                             List<LoginEntity> principals = loginDAO.findUser(target.getTargetId());
                             LoginEntity loginEntity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), principals);
                             target.setObjectPrincipal(loginEntity.getLogin());
-                        } else if (AuditTarget.ROLE.value().equals(target.getTargetType())) {
+                        } else if(AuditTarget.ROLE.value().equals(target.getTargetType())) {
                             RoleEntity role = roleDAO.findById(target.getTargetId());
                             target.setObjectPrincipal(role.getName());
-                        } else if (AuditTarget.GROUP.value().equals(target.getTargetType())) {
+                        } else if(AuditTarget.GROUP.value().equals(target.getTargetType())) {
                             GroupEntity role = groupDAO.findById(target.getTargetId());
                             target.setObjectPrincipal(role.getName());
-                        } else if (AuditTarget.ORG.value().equals(target.getTargetType())) {
+                        } else if(AuditTarget.ORG.value().equals(target.getTargetType())) {
                             OrganizationEntity org = organizationDAO.findById(target.getTargetId());
                             target.setObjectPrincipal(org.getName());
-                        } else if (AuditTarget.RESOURCE.value().equals(target.getTargetType())) {
+                        } else if(AuditTarget.RESOURCE.value().equals(target.getTargetType())) {
                             ResourceEntity res = resourceDAO.findById(target.getTargetId());
                             target.setObjectPrincipal(res.getName());
                         }
                     }
-                    auditLogEntity.addTarget(target.getTargetId(), target.getTargetType(), target.getObjectPrincipal());
-                }
+                    auditLogEntity.addTarget(target.getTargetId(),target.getTargetType(), target.getObjectPrincipal());
+    			}
 
-            }
-            if (StringUtils.isEmpty(log.getPrincipal()) && StringUtils.isNotEmpty(log.getUserId())) {
+    		}
+            if(StringUtils.isEmpty(log.getPrincipal()) && StringUtils.isNotEmpty(log.getUserId())) {
                 List<LoginEntity> principals = loginDAO.findUser(log.getUserId());
                 LoginEntity loginEntity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), principals);
                 if (loginEntity != null) {
@@ -166,11 +169,10 @@ public class AuditLogServiceImpl implements AuditLogService {
     }
 
     private boolean logExists(Set<IdmAuditLogEntity> logEntitySet, IdmAuditLogEntity logEntity) {
-        if (CollectionUtils.isNotEmpty(logEntitySet)) {
+        if(CollectionUtils.isNotEmpty(logEntitySet)){
 
-            for (IdmAuditLogEntity log : logEntitySet) {
-                System.out.print(log);
-                if (log != null) {
+            for(IdmAuditLogEntity log : logEntitySet){
+                if(log!=null){
 //                    StringBuilder sb = new StringBuilder();
 //                    sb.append("====================================================\n");
 //                    sb.append(String.format("       LOG: %s\n", log));
@@ -183,8 +185,8 @@ public class AuditLogServiceImpl implements AuditLogService {
 //
 //                    System.out.println(sb.toString());
 
-                    if (log.equals(logEntity)
-                            && logTargetsEquals(log.getTargets(), logEntity.getTargets())) {
+                    if(log.equals(logEntity)
+                        && logTargetsEquals(log.getTargets(), logEntity.getTargets())) {
 //                        System.out.println("LOG EXISTS");
                         return true;
                     }
@@ -193,58 +195,57 @@ public class AuditLogServiceImpl implements AuditLogService {
         }
         return false;
     }
-
     private boolean logTargetsEquals(Set<AuditLogTargetEntity> target, Set<AuditLogTargetEntity> source) {
-        if (CollectionUtils.isNotEmpty(target) ? !target.equals(source) : CollectionUtils.isNotEmpty(source))
+        if(CollectionUtils.isNotEmpty(target) ? !target.equals(source) : CollectionUtils.isNotEmpty(source))
             return false;
         return true;
     }
 
     @Override
-    public void enqueue(final IdmAuditLog event) {
-        if (event != null) {
-            send(event);
+	public void enqueue(final IdmAuditLog event) {
+        if(event != null){
+		    send(event);
         }
-    }
+	}
+	
+	 private void send(final IdmAuditLog log) {
+		 jmsTemplate.send(queue, new MessageCreator() {
+			 public javax.jms.Message createMessage(Session session) throws JMSException {
+				 javax.jms.Message message = session.createObjectMessage(log);
+				 return message;
+			 }
+		 });
+	 }
 
-    private void send(final IdmAuditLog log) {
-        jmsTemplate.send(queue, new MessageCreator() {
-            public javax.jms.Message createMessage(Session session) throws JMSException {
-                javax.jms.Message message = session.createObjectMessage(log);
-                return message;
-            }
-        });
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<IdmAuditLog> findBeans(AuditLogSearchBean searchBean,
-                                       int from, int size) {
-        List<IdmAuditLogEntity> idmAuditLogEntities = logDAO.getByExample(searchBean, from, size);
+	@Override
+	@Transactional(readOnly=true)
+	public List<IdmAuditLog> findBeans(AuditLogSearchBean searchBean,
+			int from, int size) {
+		List<IdmAuditLogEntity> idmAuditLogEntities = logDAO.getByExampleNoLocalize(searchBean, from, size);
         List<IdmAuditLog> idmAuditLogs = new LinkedList<>();
-        if (idmAuditLogEntities != null) {
-            idmAuditLogs = auditLogDozerConverter.convertToDTOList(idmAuditLogEntities, false);
+        if(idmAuditLogEntities != null) {
+           idmAuditLogs = auditLogDozerConverter.convertToDTOList(idmAuditLogEntities, false);
         }
         return idmAuditLogs;
-    }
+	}
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional(readOnly=true)
     public List<String> findIDs(AuditLogSearchBean searchBean, int from, int size) {
         return logDAO.getIDsByExample(searchBean, from, size);
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public int count(AuditLogSearchBean searchBean) {
-        return logDAO.count(searchBean);
-    }
+	@Transactional(readOnly=true)
+	public int count(AuditLogSearchBean searchBean) {
+		return logDAO.count(searchBean);
+	}
 
-    @Override
-    @Transactional(readOnly = true)
-    public IdmAuditLog findById(String id) {
+	@Override
+	@Transactional(readOnly=true)
+	public IdmAuditLog findById(String id) {
         return auditLogDozerConverter.convertToDTO(logDAO.findById(id), true);
-    }
+	}
 
     @Override
     @Transactional
@@ -257,10 +258,10 @@ public class AuditLogServiceImpl implements AuditLogService {
             } else {
                 logDAO.persist(auditLogEntity);
             }
-        } catch (Exception ex) {
-            LOG.error("Can't save audit log", ex);
+        } catch(Exception ex) {
+        	LOG.error("Can't save audit log", ex);
         }
         final String id = auditLogEntity.getId();
-        return auditLogDozerConverter.convertToDTO(auditLogEntity, true);
+        return auditLogDozerConverter.convertToDTO(auditLogEntity,true);
     }
 }

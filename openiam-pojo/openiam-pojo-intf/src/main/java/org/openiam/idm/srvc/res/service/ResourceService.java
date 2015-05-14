@@ -27,7 +27,8 @@ public interface ResourceService {
 	public List<ResourceEntity> findResourcesByIds(final Collection<String> resourceIdCollection);
 	public ResourceEntity findResourceByName(final String name);
 	public int count(final ResourceSearchBean searchBean);
-	public List<ResourceEntity> findBeans(final ResourceSearchBean searchBean, final int from, final int size, final LanguageEntity language);
+	public List<ResourceEntity> findBeans(final ResourceSearchBean searchBean, final int from, final int size);
+	public List<ResourceEntity> findBeansLocalized(final ResourceSearchBean searchBean, final int from, final int size, final LanguageEntity language);
 	public int getNumOfChildResources(final String resourceId);
 	public List<ResourceEntity> getParentResources(final  String resourceId, final int from, final int size);
 	public int getNumOfParentResources(final String resourceId);

@@ -23,6 +23,7 @@ package org.openiam.idm.srvc.msg.dto;
 
 import javax.xml.bind.annotation.*;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 
@@ -40,7 +41,8 @@ import java.util.List;
         "to",
         "paramList",
         "requestId",
-        "linkedRequestId"
+        "linkedRequestId",
+        "executionDateTime"
 })
 @XmlRootElement(name = "NotificationRequest")
 @XmlSeeAlso({
@@ -54,6 +56,7 @@ public class NotificationRequest {
     String cc;
     String requestId;
     String linkedRequestId;
+    Date executionDateTime;
     List<NotificationParam> paramList = new ArrayList<NotificationParam>();
 
     public NotificationRequest() {
@@ -95,6 +98,7 @@ public class NotificationRequest {
                 ", userId='" + userId + '\'' +
                 ", to='" + to + '\'' +
                 ", cc='" + cc + '\'' +
+                ", executionDateTime='" + executionDateTime + '\'' +
                 ", requestId='" + requestId + '\'' +
                 ", linkedRequestId='" + linkedRequestId + '\'' +
                 ", paramList=" + paramList +
@@ -173,5 +177,11 @@ public class NotificationRequest {
         this.linkedRequestId = linkedRequestId;
     }
 
+    public Date getExecutionDateTime() {
+        return executionDateTime;
+    }
 
+    public void setExecutionDateTime(Date executionDateTime) {
+        this.executionDateTime = executionDateTime;
+    }
 }

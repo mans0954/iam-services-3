@@ -8,7 +8,11 @@ import org.openiam.am.srvc.dao.*;
 import org.openiam.am.srvc.domain.*;
 import org.openiam.am.srvc.domain.pk.AuthLevelGroupingContentProviderXrefIdEntity;
 import org.openiam.am.srvc.domain.pk.AuthLevelGroupingURIPatternXrefIdEntity;
+import org.openiam.am.srvc.dozer.converter.ContentProviderDozerConverter;
+import org.openiam.am.srvc.dto.ContentProvider;
 import org.openiam.am.srvc.model.URIPatternJSONWrapper;
+import org.openiam.am.srvc.searchbeans.ContentProviderSearchBean;
+import org.openiam.am.srvc.searchbeans.converter.ContentProviderSearchBeanConverter;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
@@ -38,11 +42,15 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
 	private final Log log = LogFactory.getLog(this.getClass());
     private static final String resourceTypeId="CONTENT_PROVIDER";
     private static final String patternResourceTypeId="URL_PATTERN";
+
+    @Autowired
+    private ContentProviderSearchBeanConverter contentProviderSearchBeanConverter;
+    @Autowired
+    private ContentProviderDozerConverter contentProviderDozerConverter;
     @Autowired
     private ContentProviderDao contentProviderDao;
     @Autowired
     private ContentProviderServerDao contentProviderServerDao;
-
     @Autowired
     private URIPatternDao uriPatternDao;
     @Autowired
@@ -103,14 +111,18 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
     }
 
     @Override
-    public Integer getNumOfContentProviders(ContentProviderEntity example) {
+    @Transactional(readOnly = true)
+    public Integer getNumOfContentProviders(ContentProviderSearchBean cpsb) {
+        ContentProviderEntity example = contentProviderSearchBeanConverter.convert(cpsb);
         return contentProviderDao.count(example);
     }
 
     @Override
-    @Transactional
-    public List<ContentProviderEntity> findBeans(ContentProviderEntity example, Integer from, Integer size) {
-        return contentProviderDao.getByExample(example, from, size);
+    @Transactional(readOnly = true)
+    public List<ContentProvider> findBeans(ContentProviderSearchBean cpsb, Integer from, Integer size) {
+        ContentProviderEntity example = contentProviderSearchBeanConverter.convert(cpsb);
+        List<ContentProviderEntity> contentProviderEntities =  contentProviderDao.getByExample(example, from, size);
+        return contentProviderEntities != null ? contentProviderDozerConverter.convertToDTOList(contentProviderEntities, cpsb.isDeepCopy()) : null;
     }
 
     @Override
@@ -145,7 +157,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
             }
 
             final ResourceEntity resource = new ResourceEntity();
-            resource.setName(resourceTypeId+"_"+provider.getName() + "_" + System.currentTimeMillis());
+            resource.setName(resourceTypeId + "_" + provider.getName() + "_" + System.currentTimeMillis());
             resource.setResourceType(resourceType);
             resource.setId(null);
             resource.setIsPublic(false);
@@ -157,7 +169,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
             provider.setManagedSystem(managedSys);
             provider.setUiTheme(theme);
             
-            final Set<AuthLevelGroupingContentProviderXrefEntity> incomingXrefs = provider.getGroupingXrefs();
+            final Set<AuthLevelGroupingContentProviderXrefEntity> incomingXrefs = new HashSet<>(provider.getGroupingXrefs());
             provider.setGroupingXrefs(null);
             contentProviderDao.save(provider);
             if(CollectionUtils.isNotEmpty(incomingXrefs)) {

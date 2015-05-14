@@ -11,6 +11,7 @@ import org.hibernate.criterion.*;
 import org.openiam.base.Tuple;
 import org.openiam.base.ws.SortParam;
 import org.openiam.core.dao.BaseDaoImpl;
+import org.openiam.base.TreeObjectId;
 import org.openiam.idm.searchbeans.AbstractSearchBean;
 import org.openiam.idm.searchbeans.RoleSearchBean;
 import org.openiam.idm.searchbeans.SearchBean;
@@ -22,10 +23,8 @@ import org.openiam.util.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static org.hibernate.criterion.Projections.rowCount;
 
@@ -41,6 +40,10 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
     protected String getPKfieldName() {
         return "id";
     }
+
+
+    private final ConcurrentHashMap<String, TreeObjectId> rolesHierarchyIds = new ConcurrentHashMap<String, TreeObjectId>();
+
 
     @Override
     protected Criteria getExampleCriteria(final SearchBean searchBean) {
@@ -170,6 +173,35 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
             }
         }
     }
+    
+    public List<RoleEntity> getByExample(final SearchBean searchBean) {
+        return getByExample(searchBean, -1, -1);
+    }
+
+    public List<RoleEntity> getByExample(final SearchBean searchBean, int from, int size) {
+        final Criteria criteria = getExampleCriteria(searchBean);
+        if (from > -1) {
+            criteria.setFirstResult(from);
+        }
+
+        if (size > -1) {
+            criteria.setMaxResults(size);
+        }
+
+        if (searchBean instanceof AbstractSearchBean) {
+            AbstractSearchBean sb = (AbstractSearchBean)searchBean;
+//            if (StringUtils.isNotBlank(sb.getSortBy())) {
+//                criteria.addOrder(sb.getOrderBy().equals(OrderConstants.DESC) ?
+//                        Order.desc(sb.getSortBy()) :
+//                        Order.asc(sb.getSortBy()));
+//            }
+
+            if(CollectionUtils.isNotEmpty(sb.getSortBy())){
+                this.setOderByCriteria(criteria, sb);
+            }
+        }
+        return (List<RoleEntity>) criteria.list();
+    }
 
     @Override
     public List<RoleEntity> getByExample(RoleEntity t, int startAt, int size) {
@@ -185,7 +217,16 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
         return (List<RoleEntity>) criteria.list();
     }
 
-	@Override
+    public List<RoleEntity> findAll() {
+        return (List<RoleEntity>) getCriteria().list();
+    }
+
+    @Override
+    public RoleEntity findRoleByName(String roleName) {
+        return (RoleEntity)getCriteria().add(Restrictions.eq("name",roleName)).uniqueResult();
+    }
+
+    @Override
 	public List<RoleEntity> getRolesForGroup(final String groupId, final Set<String> filter, final int from, final int size) {
 		final Criteria criteria = getEntitlementRolesCriteria(null, groupId, null, filter);
         return getList(criteria, from, size);
@@ -315,4 +356,45 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
         return ret;
     }
 
+    @Override
+    public List<TreeObjectId> findRolesWithSubRolesIds(List<String> initialRoleIds, final Set<String> filter) {
+        List<TreeObjectId> result = new LinkedList<TreeObjectId>();
+        if(initialRoleIds != null) {
+            for (String roleId : initialRoleIds) {
+                if(!rolesHierarchyIds.containsKey(roleId)) {
+                    rolesHierarchyIds.putIfAbsent(roleId, populateTreeObjectId(new TreeObjectId(roleId), filter));
+                }
+                result.add(rolesHierarchyIds.get(roleId));
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public void rolesHierarchyRebuild() {
+        rolesHierarchyIds.clear();
+        List<String> allParentIds = findAllParentsIds();
+        if(allParentIds != null) {
+            for(String parentRoleId : allParentIds) {
+                TreeObjectId treeObjectId = populateTreeObjectId(new TreeObjectId(parentRoleId), null);
+                rolesHierarchyIds.putIfAbsent(parentRoleId, treeObjectId);
+            }
+        }
+    }
+
+    private TreeObjectId populateTreeObjectId(final TreeObjectId root, final Set<String> filter){
+        List<String> ids = (List<String>)getChildRolesCriteria(root.getValue(), filter).setProjection(Projections.id()).list();
+        if(ids != null) {
+            for(String id : ids) {
+                TreeObjectId objectId = new TreeObjectId(id);
+                root.addChild(populateTreeObjectId(objectId, filter));
+            }
+        }
+        return root;
+    }
+
+    @Override
+    public List<String> findAllParentsIds() {
+        return getCriteria().add(Restrictions.isEmpty("parentRoles")).setProjection(Projections.id()).list();
+    }
 }

@@ -212,4 +212,17 @@ public class OrganizationSearchBean extends EntitlementsSearchBean<Organization,
         result = 31 * result + (internalOrgId != null ? internalOrgId.hashCode() : 0);
         return result;
     }
+
+    @Override
+    public String getCacheUniqueBeanKey() {
+        return new StringBuilder()
+                .append(name != null ? name : "")
+                .append(validParentTypeId != null ? validParentTypeId : "")
+                .append(internalOrgId != null ? internalOrgId : "")
+                .append(adminResourceId != null ? adminResourceId : "")
+                .append(attributes != null ? attributes.toString().hashCode() : "")
+                .append(getKey() != null ? getKey() : "")
+                .append(getKeys() != null ? getKeys().hashCode() : "")
+                .toString();
+    }
 }

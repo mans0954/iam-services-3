@@ -24,9 +24,11 @@ public abstract class AbstractNotificationDelegate extends AbstractActivitiJob {
 		
 		final String taskName = getStringVariable(execution, ActivitiConstants.TASK_NAME);
 		final String taskDescription = getStringVariable(execution, ActivitiConstants.TASK_DESCRIPTION);
+        final String cardinalityUserId = getStringVariable(execution, ActivitiConstants.CARDINALITY_OBJECT);
 		
 		final String taskOwner = getRequestorId(execution);
 		final UserEntity owner = getUserEntity(taskOwner);
+        final UserEntity cardinalityUser = getUserEntity(cardinalityUserId);
 		
 		final NotificationRequest request = new NotificationRequest();
 		request.setUserId(toNotify.getId());
@@ -37,6 +39,9 @@ public abstract class AbstractNotificationDelegate extends AbstractActivitiJob {
 		request.getParamList().add(new NotificationParam("COMMENT", getComment(execution)));
 		request.getParamList().add(new NotificationParam("REQUEST_REASON", taskName));
 		request.getParamList().add(new NotificationParam("REQUEST_DESCRIPTION", taskDescription));
+        if (cardinalityUser != null) {
+            request.getParamList().add(new NotificationParam("CARDINALITY_USER", cardinalityUser));
+        }
 		mailService.sendNotification(request);
 	}
 }

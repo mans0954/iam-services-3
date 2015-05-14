@@ -126,11 +126,11 @@ public class MailSenderClient {
             // add the Multipart to the message
             message.setContent(mp);
 
-
             if (username != null && !username.isEmpty()) {
                 properties.setProperty("mail.user", username);
                 properties.setProperty("mail.password", password);
-                properties.put("mail.smtp.auth", "true");
+                properties.put("mail.smtp.auth", auth);
+                properties.put("mail.smtp.starttls.enable", starttls);
                 Transport mailTransport = session.getTransport();
                 mailTransport.connect(host, username, password);
                 mailTransport.sendMessage(message, message.getAllRecipients());

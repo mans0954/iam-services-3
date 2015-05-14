@@ -30,4 +30,13 @@ public class SynchConfigSearchBean extends AbstractSearchBean<SynchConfig, Strin
     public void setSynchType(String synchType) {
         this.synchType = synchType;
     }
+
+    @Override
+    public String getCacheUniqueBeanKey() {
+        return new StringBuilder()
+                .append(name != null ? name : "")
+                .append(synchType != null ? synchType : "")
+                .append(getKey() != null ? getKey() : "")
+                .toString();
+    }
 }

@@ -5,13 +5,19 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.service.AbstractLanguageService;
+import org.openiam.dozer.converter.MetaDataElementDozerConverter;
+import org.openiam.dozer.converter.MetaDataTypeDozerConverter;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
+import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.lang.service.LanguageMappingDAO;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
+import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
 import org.openiam.idm.srvc.meta.domain.MetadataValidValueEntity;
+import org.openiam.idm.srvc.meta.dto.MetadataElement;
+import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
@@ -20,6 +26,8 @@ import org.openiam.internationalization.LocalizedServiceGet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.core.MessageCreator;
 import org.springframework.stereotype.Service;
@@ -61,7 +69,13 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
     
     @Autowired
     private LanguageMappingDAO languageMappingDAO;
-    
+
+    @Autowired
+    private MetaDataTypeDozerConverter metaDataTypeDozerConverter;
+
+    @Autowired
+    private MetaDataElementDozerConverter metaDataElementDozerConverter;
+
     @Value("${org.openiam.resource.type.ui.widget}")
     private String uiWidgetResourceType;
 
@@ -74,22 +88,67 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 
     private static final Log log = LogFactory.getLog(MetadataServiceImpl.class);
 
-	@Override
+    @Override
+    @Transactional(readOnly = true)
+    public String findElementIdByAttrNameAndTypeId(String attrName, String typeId) {
+        return metadataElementDao.findIdByAttrNameTypeId(attrName, typeId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    @LocalizedServiceGet
+    public MetadataType findMetadataTypeByNameAndGrouping(String name, MetadataTypeGrouping grouping, final Language language) {
+        MetadataTypeEntity metadataTypeEntity = metadataTypeDao.findByNameGrouping(name, grouping);
+        return metaDataTypeDozerConverter.convertToDTO(metadataTypeEntity, true);
+    }
+
+    @Override
+    @Transactional(readOnly=true)
+    @LocalizedServiceGet
+    public MetadataElement findElementById(String id, Language language) {
+        MetadataElementEntity metadataElementEntity = metadataElementDao.findById(id);
+        return metadataElementEntity != null ? metaDataElementDozerConverter.convertToDTO(metadataElementEntity,true) : null;
+    }
+
+    @Override
+    @Transactional(readOnly=true)
+    @LocalizedServiceGet
+    public MetadataElement findElementByAttrNameAndTypeId(String attrName, String typeId, final Language language) {
+        MetadataElementEntity metadataElementEntity = metadataElementDao.findByAttrNameTypeId(attrName, typeId);
+        return metadataElementEntity != null ? metaDataElementDozerConverter.convertToDTO(metadataElementEntity,true) : null;
+    }
+
+    @Override
 	@LocalizedServiceGet
 	@Transactional(readOnly=true)
-	public List<MetadataElementEntity> findBeans(final MetadataElementSearchBean searchBean, final int from, final int size, final LanguageEntity language) {
+    @Cacheable(value="metadataElements", key="{ #searchBean.cacheUniqueBeanKey, #from, #size, #language}")
+   // @Cacheable(value="metadataElements")
+	public List<MetadataElement> findBeans(final MetadataElementSearchBean searchBean, final int from, final int size, final Language language) {
 		List<MetadataElementEntity> retVal = null;
 		if(searchBean.hasMultipleKeys()) {
 			retVal = metadataElementDao.findByIds(searchBean.getKeys());
 		} else {
 			retVal = metadataElementDao.getByExample(searchBean, from, size);
 		}
-		return retVal;
+
+        return (retVal != null) ? metaDataElementDozerConverter.convertToDTOList(retVal,true) : null;
 	}
-	
-	@Override
+
+    @Override
+    @Transactional(readOnly=true)
+    /**
+     * Without localization loop
+     */
+    @Cacheable(value="metadataElements",  key="{ #searchBean.cacheUniqueBeanKey, #from, #size }")
+    public List<MetadataElement> findBeans(MetadataElementSearchBean searchBean, int from, int size) {
+       return this.findBeans(searchBean, from, size, null);
+    }
+
+    @Override
+    @LocalizedServiceGet
 	@Transactional(readOnly=true)
-	public List<MetadataTypeEntity> findBeans(final MetadataTypeSearchBean searchBean, final int from, final int size) {
+    @Cacheable(value="metadataTypes", key="{ #searchBean.cacheUniqueBeanKey, #from, #size,#language}")
+	public List<MetadataType> findBeans(final MetadataTypeSearchBean searchBean, final int from, final int size, final Language language) {
 		List<MetadataTypeEntity> retVal = null;
 		if(searchBean.hasMultipleKeys()) {
 			retVal = metadataTypeDao.findByIds(searchBean.getKeys());
@@ -97,19 +156,28 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 			final MetadataTypeEntity entity = metadataTypeSearchBeanConverter.convert(searchBean);
 			retVal = metadataTypeDao.getByExample(entity, from, size);
 		}
-		return retVal;
+        return (retVal != null) ? metaDataTypeDozerConverter.convertToDTOList(retVal,true) : null;
 	}
 
     @Override
+    @Cacheable(value="metadataTypes", key="{ #searchBean.cacheUniqueBeanKey, #from, #size }")
+    public List<MetadataType> findBeansNoLocalize(MetadataTypeSearchBean searchBean, int from, int size) {
+        return this.findBeans(searchBean, from, size, null);
+    }
+
+    @Override
     @Transactional(readOnly=true)
-    public MetadataTypeEntity findById(String id) {
-        return metadataTypeDao.findById(id);
+    public MetadataType findById(String id) {
+        MetadataTypeEntity metadataTypeEntity = metadataTypeDao.findById(id);
+        return metadataTypeEntity != null ? metaDataTypeDozerConverter.convertToDTO(metadataTypeEntity, true) : null;
     }
 
     @Override
 	@Transactional
-	public void save(MetadataElementEntity entity) {
-		if(entity != null) {
+    @CacheEvict(value = "metadataElements", allEntries=true)
+	public String save(MetadataElement element) {
+		if(element != null) {
+            MetadataElementEntity entity = metaDataElementDozerConverter.convertToEntity(element,true);
 			if(StringUtils.isBlank(entity.getId())) {
 				final ResourceEntity resource = new ResourceEntity();
 				resource.setName(String.format("%s_%s", entity.getAttributeName(), "" + System.currentTimeMillis()));
@@ -156,7 +224,10 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 			}
 			metadataElementDao.merge(entity);
             this.send(entity);
+
+            return entity.getId();
 		}
+        return null;
 	}
 
     private void send(final MetadataElementEntity entity) {
@@ -219,7 +290,8 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 	
 	@Override
 	@Transactional
-	public void save(MetadataTypeEntity entity) {
+    @CacheEvict(value = "metadataTypes", allEntries=true)
+	public String save(MetadataTypeEntity entity) {
 		if(entity != null) {
 			if(StringUtils.isNotBlank(entity.getId())) {
 				final MetadataTypeEntity dbEntity = metadataTypeDao.findById(entity.getId());
@@ -235,11 +307,14 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 			} else {
 				metadataTypeDao.merge(entity);
 			}
+            return entity.getId();
 		}
+        return null;
 	}
 	
 	@Override
 	@Transactional
+    @CacheEvict(value = "metadataElements", allEntries=true)
 	public void deleteMetdataElement(String id) {
 		final MetadataElementEntity entity = metadataElementDao.findById(id);
 		if(entity != null) {
@@ -263,6 +338,7 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 
 	@Override
 	@Transactional
+    @CacheEvict(value = "metadataTypes", allEntries=true)
 	public void deleteMetdataType(String id) {
 		final MetadataTypeEntity entity = metadataTypeDao.findById(id);
 		if(entity != null) {
@@ -301,9 +377,9 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 
 	@Override
 	@Transactional(readOnly=true)
-	public List<MetadataElementEntity> findElementByName(String name) {
+	public List<MetadataElement> findElementByName(String name) {
 		final MetadataElementSearchBean searchBean = new MetadataElementSearchBean();
 		searchBean.setAttributeName(name);
-		return findBeans(searchBean, 0, Integer.MAX_VALUE, null);
+        return findBeans(searchBean, 0, Integer.MAX_VALUE, null);
 	}
 }

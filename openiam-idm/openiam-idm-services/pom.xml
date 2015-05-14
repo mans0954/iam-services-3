@@ -4,14 +4,14 @@
     <parent>
         <artifactId>idm-core</artifactId>
         <groupId>org.openiam</groupId>
-        <version>3.3.RELEASE</version>
+        <version>3.3.2.RELEASE</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.openiam</groupId>
     <artifactId>openiam-idm-services</artifactId>
     <packaging>jar</packaging>
     <name>openiam-idm-services</name>
-    <version>3.3.RELEASE</version>
+    <version>3.3.2.RELEASE</version>
     <description>OpenIAM idm sepcific service</description>
     <ciManagement>
         <system>idm</system>

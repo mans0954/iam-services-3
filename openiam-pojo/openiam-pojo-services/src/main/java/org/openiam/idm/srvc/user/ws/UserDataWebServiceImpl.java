@@ -470,15 +470,15 @@ public class UserDataWebServiceImpl implements UserDataWebService {
     }
 
     @Override
-    public Response addSuperior(String requesterId, String userId) {
+    public Response addSuperior(String superiorId, String suborinateId, String requesterId) {
 
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
-            if (StringUtils.equals(requesterId, userId)) {
+            if (StringUtils.equals(superiorId, suborinateId)) {
                 throw new BasicDataServiceException(ResponseCode.CANT_ADD_YOURSELF_AS_CHILD);
             }
-            User superior = getUserWithDependent(userId, null, true);
-            User subordinate = getUserWithDependent(requesterId, userId, true);
+            User superior = getUserWithDependent(superiorId, null, true);
+            User subordinate = getUserWithDependent(suborinateId, requesterId, true);
             if (superior == null || subordinate == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }
@@ -490,7 +490,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
             if (contrary != null) {
                 throw new BasicDataServiceException(ResponseCode.CIRCULAR_DEPENDENCY);
             }
-            userManager.addSuperior(userId, requesterId);
+            userManager.addSuperior(superiorId, suborinateId);
 
         } catch (BasicDataServiceException e) {
             response.setErrorCode(e.getCode());
@@ -1089,17 +1089,16 @@ public class UserDataWebServiceImpl implements UserDataWebService {
     }
 
     @Override
-    @Transactional(readOnly = true)
-    @Deprecated
     public List<UserAttribute> getUserAttributes(final String userId) {
-        return getUserAttributesInternationalized(userId, null);
+        return userManager.getUserAttributesDtoList(userId);
     }
     
 	@Override
     @Transactional(readOnly = true)
 	public List<UserAttribute> getUserAttributesInternationalized(final String userId, final Language language) {
         final List<UserAttributeEntity> attributes = userManager.getUserAttributeList(userId, languageConverter.convertToEntity(language, false));
-        return userAttributeDozerConverter.convertToDTOList(attributes, true);
+        final List<UserAttribute> retval = userAttributeDozerConverter.convertToDTOList(attributes, true);
+        return retval;
 	}
 
     @Override
@@ -1131,12 +1130,12 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 
     @Override
     public ProfilePicture getProfilePictureById(String picId, String requesterId) {
-        return profilePictureDozerConverter.convertToDTO(userProfileService.getProfilePictureById(picId), true);
+        return userProfileService.getProfilePictureById(picId);
     }
 
     @Override
     public ProfilePicture getProfilePictureByUserId(String userId, String requesterId) {
-        return profilePictureDozerConverter.convertToDTO(userProfileService.getProfilePictureByUserId(userId), true);
+        return profilePictureDozerConverter.convertToDTO(userProfileService.getProfilePictureByUserId(userId), false);
     }
 
     @Override

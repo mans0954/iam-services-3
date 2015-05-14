@@ -185,7 +185,6 @@ public class GroupDataServiceImpl implements GroupDataService {
     }
 
     @Override
-    @Deprecated
     public List<GroupEntity> getChildGroups(final String groupId, final String requesterId, final int from, final int size) {
         return getChildGroupsLocalize(groupId, requesterId, from, size, getDefaultLanguage());
     }
@@ -252,7 +251,16 @@ public class GroupDataServiceImpl implements GroupDataService {
 
 
     @Override
-    @Deprecated
+    @Transactional(readOnly = true)
+    public List<Group> getGroupsDtoForUser(String userId, String requesterId, int from, int size) {
+        List<GroupEntity> groupEntities = groupDao.getGroupsForUser(userId, getDelegationFilter(requesterId), from, size);
+        return groupDozerConverter.convertToDTOList(groupEntities, false);
+    }
+
+    @Override
+    /**
+     * without localization, for internal use only
+     */
     public List<GroupEntity> getGroupsForUser(final String userId, final String requesterId, int from, int size) {
         return getGroupsForUserLocalize(userId, requesterId, from, size, getDefaultLanguage());
     }
@@ -472,6 +480,8 @@ public class GroupDataServiceImpl implements GroupDataService {
                 } else {
                     return;
                 }
+                groupDao.merge(group);
+
             } else {
                 if(CollectionUtils.isNotEmpty(group.getParentGroups())) {
                     Set<String> ids = new HashSet<>();
@@ -502,7 +512,6 @@ public class GroupDataServiceImpl implements GroupDataService {
 
                 addRequiredAttributes(group);
             }
-            groupDao.merge(group);
         }
     }
     @Override
@@ -513,9 +522,9 @@ public class GroupDataServiceImpl implements GroupDataService {
             List<MetadataElementEntity> elementList = metadataElementDAO.getByExample(sb, -1, -1);
             if(CollectionUtils.isNotEmpty(elementList)){
                 for(MetadataElementEntity element: elementList){
-                    if(element.isRequired()){
+                    //if(element.isRequired()){
                         groupAttrDao.save(AttributeUtil.buildGroupAttribute(group, element));
-                    }
+                    //}
                 }
             }
         }

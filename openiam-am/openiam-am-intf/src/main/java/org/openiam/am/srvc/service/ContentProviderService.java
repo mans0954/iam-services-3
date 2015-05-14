@@ -2,6 +2,8 @@ package org.openiam.am.srvc.service;
 
 import org.openiam.am.srvc.domain.*;
 import org.openiam.am.srvc.dto.AuthLevelGrouping;
+import org.openiam.am.srvc.dto.ContentProvider;
+import org.openiam.am.srvc.searchbeans.ContentProviderSearchBean;
 import org.openiam.exception.BasicDataServiceException;
 
 import java.util.List;
@@ -30,9 +32,9 @@ public interface ContentProviderService {
 
     ContentProviderEntity getContentProvider(String providerId);
 
-    Integer getNumOfContentProviders(ContentProviderEntity example);
+    Integer getNumOfContentProviders(ContentProviderSearchBean cpsb);
 
-    List<ContentProviderEntity> findBeans(ContentProviderEntity example, Integer from, Integer size);
+    List<ContentProvider> findBeans(ContentProviderSearchBean cpsb, Integer from, Integer size);
 
     void saveContentProvider(ContentProviderEntity providerEntity);
 

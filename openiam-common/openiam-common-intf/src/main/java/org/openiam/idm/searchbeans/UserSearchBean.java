@@ -574,4 +574,14 @@ public class UserSearchBean extends EntitlementsSearchBean<User, String> impleme
     public void setUserType(String userType) {
         this.userType = userType;
     }
+
+    @Override
+    public String getCacheUniqueBeanKey() {
+        return new StringBuilder()
+                .append(firstName != null ? firstName : "")
+                .append(lastName != null ? lastName : "")
+                .append(hashCode())
+                .append(getKey() != null ? getKey() : "")
+                .toString();
+    }
 }

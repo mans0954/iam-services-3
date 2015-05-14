@@ -8,58 +8,70 @@ import org.openiam.idm.searchbeans.SearchBean;
 
 public interface BaseDao<T, PrimaryKey extends Serializable> {
 
-  T findById(PrimaryKey id);
-  
-  T findInitializedObjectById(PrimaryKey id);
+    T findById(PrimaryKey id);
 
-  T findById(PrimaryKey id, String ... fetchFields);
+    T findInitializedObjectById(PrimaryKey id);
 
-  T findByIdNoLocalized(PrimaryKey id, String ... fetchFields);
+    T findById(PrimaryKey id, String... fetchFields);
 
-  List<T> findByIds(Collection<PrimaryKey> idCollection);
-  
-  List<T> findByIds(Collection<PrimaryKey> idCollection, final int from, final int size);
+    T findByIdNoLocalized(PrimaryKey id, String... fetchFields);
 
-  List<T> findAll();
+    List<T> findByIds(Collection<PrimaryKey> idCollection);
 
-  List<PrimaryKey> getAllIds();
+    List<T> findByIds(Collection<PrimaryKey> idCollection, final int from, final int size);
 
-  Long countAll();
-  
-  void update(T t);
+    List<T> findAll();
 
-  T merge(T t);
+    List<PrimaryKey> getAllIds();
 
-  void refresh(T t);
+    Long countAll();
 
-  void save(T t);
+    void update(T t);
 
-  T add(T t);
+    T merge(T t);
 
-  void persist(T t);
+    void refresh(T t);
 
-  void delete(T t);
+    void save(T t);
 
-  void save(Collection<T> entities);
+    T add(T t);
 
-  void deleteAll()  throws Exception;
+    void persist(T t);
 
-  void attachDirty(T t);
+    void delete(T t);
 
-  void attachClean(T t);
+    void save(Collection<T> entities);
 
-  void evict(T t);
+    void deleteAll() throws Exception;
 
-  List<T> getByExample(T t, int startAt, int size);
-  List<T> getByExample(T t);
-  List<T> getByExample(SearchBean searchBean);
-  List<T> getByExample(SearchBean searchBean, int from, int size);
-  List<String> getIDsByExample(SearchBean searchBean, int from, int size);
+    void attachDirty(T t);
 
-  int count(SearchBean searchBean);
-  int count(T t);
+    void attachClean(T t);
 
-  void flush();
-  void clear();
+    void evict(T t);
+
+    List<T> getByExample(T t, int startAt, int size);
+
+    List<T> getByExampleNoLocalize(T t, int startAt, int size);
+
+    List<T> getByExample(T t);
+
+    List<T> getByExampleNoLocalize(T t);
+
+    List<T> getByExample(SearchBean searchBean);
+
+    List<T> getByExample(SearchBean searchBean, int from, int size);
+
+    List<T> getByExampleNoLocalize(SearchBean searchBean, int from, int size);
+
+    List<String> getIDsByExample(SearchBean searchBean, int from, int size);
+
+    int count(SearchBean searchBean);
+
+    int count(T t);
+
+    void flush();
+
+    void clear();
 
 }

@@ -139,7 +139,7 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
                                                     final String requestId) {
 
         Map<String, Object> bindingMap = new HashMap<>(tmpMap); // prevent data rewriting
-
+        log.debug(" - provisionResource started ");
         String managedSysId = managedSysDaoService.getManagedSysIdByResource(res.getId(), "ACTIVE");
         if (managedSysId != null) {
             // we are checking if SrcSystemId is set in ProvisionUser it
@@ -166,6 +166,7 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
             bindingMap.put(AbstractProvisioningService.TARGET_SYS_RES_ID, res.getId());
             bindingMap.put(AbstractProvisioningService.TARGET_SYS_MANAGED_SYS_ID, managedSysId);
             bindingMap.put(AbstractProvisioningService.USER, targetSysProvUser);
+            bindingMap.put(AbstractProvisioningService.USER_ATTRIBUTES,userMgr.getUserAttributesDto(pUser.getId()));
 
             List<AttributeMap> attrMap = managedSysService.getResourceAttributeMaps(res.getId());
 
@@ -252,6 +253,7 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
                 String decPassword = "";
                 try {
                     decPassword = loginManager.decryptPassword(mLg.getUserId(), mLg.getPassword());
+                    log.debug(" - decryptPassword ");
                 } catch (Exception e) {
                     log.debug(" - Failed to decrypt password for " + mLg.getUserId());
                 }
@@ -260,12 +262,14 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
 
             // Identity of current target system
             Login targetSysLogin = loginDozerConverter.convertToDTO(mLg, false);
+            log.debug(" - targetSysLogin converted ");
             for (Login l : pUser.getPrincipalList()) { // saving Login
                 // properties from pUser
                 if (l.getLoginId() != null && l.getLoginId().equals(targetSysLogin.getLoginId())) {
                     targetSysLogin.setOperation(l.getOperation());
                     targetSysLogin.setOrigPrincipalName(l.getOrigPrincipalName());
                     targetSysLogin.setInitialStatus(l.getStatus());
+                    break;
                 }
             }
 
@@ -274,19 +278,22 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
                 switch (onDeleteProp) {
                     case "DISABLE":
                         data.setOperation(ProvOperationEnum.ENABLE);
+                        bindingMap.put("operation", "RESUME");
                         break;
                     default:
                         data.setOperation(ProvOperationEnum.UPDATE);
+                        bindingMap.put("operation", "MODIFY");
                 }
             } else {
                 data.setOperation(ProvOperationEnum.CREATE);
+                bindingMap.put("operation", "ADD");
             }
             data.setRequestId(requestId);
             data.setResourceId(res.getId());
             data.setIdentity(targetSysLogin);
             data.setProvUser(targetSysProvUser);
             data.setBindingMap(bindingMap);
-
+            log.debug(" - provisionResource finished ");
             return data;
         }
         return null;

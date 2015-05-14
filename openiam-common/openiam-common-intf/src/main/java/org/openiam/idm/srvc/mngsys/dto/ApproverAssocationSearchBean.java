@@ -35,6 +35,14 @@ public class ApproverAssocationSearchBean extends AbstractSearchBean<ApproverAss
 	public void setAssociationEntityId(String associationEntityId) {
 		this.associationEntityId = associationEntityId;
 	}
-	
-	
+
+    @Override
+    public String getCacheUniqueBeanKey() {
+        return new StringBuilder()
+                .append(associationType != null ? associationType : "")
+                .append(id != null ? id : "")
+                .append(associationEntityId != null ? associationEntityId : "")
+                .append(getKey() != null ? getKey() : "")
+                .toString();
+    }
 }
