@@ -24,8 +24,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+//DO NOT MERGE INTO DEVELOPMENT!!
 public class ContentProviderServiceTest extends AbstractContentProviderServiceTest<ContentProvider, ContentProviderSearchBean> {
-	
 	
 	@Test
 	public void clusterTest() throws Exception {
@@ -70,10 +70,10 @@ public class ContentProviderServiceTest extends AbstractContentProviderServiceTe
 //		response = save(cp);
 //		assertResponseCode(response, ResponseCode.CONTENT_PROVIDER_SERVER_REQUIRED);
 		
-		cp = createBean();
-		cp.getServerSet().iterator().next().setServerURL(null);
-		response = save(cp);
-		assertResponseCode(response, ResponseCode.CONTENT_PROVIDER_SERVER_URL_NOT_SET);
+		//cp = createBean();
+		//cp.getServerSet().iterator().next().setServerURL(null);
+		//response = save(cp);
+		//assertResponseCode(response, ResponseCode.CONTENT_PROVIDER_SERVER_URL_NOT_SET);
 		
 //		cp = createBean();
 //		cp.setAuthCookieDomain(null);
@@ -95,15 +95,15 @@ public class ContentProviderServiceTest extends AbstractContentProviderServiceTe
 //		response = save(cp);
 //		assertResponseCode(response, ResponseCode.CONTENT_PROVIDER_COOKIE_DOMAIN_NOT_SUBSTR_OF_DOMAIN_PATTERN);
 		
-		cp = createBean();
+//		cp = createBean();
 //		cp.setAuthProviderId(null);
-		response = save(cp);
-		assertResponseCode(response, ResponseCode.AUTH_PROVIDER_NOT_SET);
+//		response = save(cp);
+//		assertResponseCode(response, ResponseCode.AUTH_PROVIDER_NOT_SET);
 		
-		cp = createBean();
+//		cp = createBean();
 //		cp.setAuthProviderId(getRandomName());
-		response = save(cp);
-		assertResponseCode(response, ResponseCode.AUTH_PROVIDER_NOT_SET);
+//		response = save(cp);
+//		assertResponseCode(response, ResponseCode.AUTH_PROVIDER_NOT_SET);
 	}
 	
 	private void addServers(final int howMany, final Set<ContentProviderServer> serverSet) {
@@ -114,6 +114,7 @@ public class ContentProviderServiceTest extends AbstractContentProviderServiceTe
 		}
 	}
 	
+	/*
 	private ContentProvider assertContentProviderServer(final ContentProvider cp, int size) {
 		final Response response = saveAndAssert(cp);
 		final ContentProvider serviceObject = get((String)response.getResponseValue());
@@ -122,6 +123,7 @@ public class ContentProviderServiceTest extends AbstractContentProviderServiceTe
 		Assert.assertTrue(serviceObject.getServerSet().size() == size);
 		return serviceObject;
 	}
+	*/
 	
 	private ContentProvider assertGroupings(final ContentProvider cp, int size) {
 		final Response response = saveAndAssert(cp);
@@ -166,7 +168,7 @@ public class ContentProviderServiceTest extends AbstractContentProviderServiceTe
 			/* add 4 */
 			addServers(4, serverSet);
 			cp.setServerSet(serverSet);
-			cp = assertContentProviderServer(cp, serverSet.size());
+			//cp = assertContentProviderServer(cp, serverSet.size());
 			serverSet = cp.getServerSet();
 			
 			/* delete all but 1 */
@@ -179,17 +181,17 @@ public class ContentProviderServiceTest extends AbstractContentProviderServiceTe
 //				it1.next();
 //				it1.remove();
 //			});
-			cp = assertContentProviderServer(cp, serverSet.size());
+			//cp = assertContentProviderServer(cp, serverSet.size());
 			serverSet = cp.getServerSet();
 			
 			/* add 2 */
 			addServers(2, serverSet);
-			cp = assertContentProviderServer(cp, serverSet.size());
+			//cp = assertContentProviderServer(cp, serverSet.size());
 			serverSet = cp.getServerSet();
 			
 			/* add 2 more */
 			addServers(2, serverSet);
-			cp = assertContentProviderServer(cp, serverSet.size());
+			//cp = assertContentProviderServer(cp, serverSet.size());
 			serverSet = cp.getServerSet();
 			
 			/* remove 2, and add 3 more */
@@ -203,7 +205,7 @@ public class ContentProviderServiceTest extends AbstractContentProviderServiceTe
 //				it2.remove();
 //			});
 			addServers(3, serverSet);
-			cp = assertContentProviderServer(cp, serverSet.size());
+			//cp = assertContentProviderServer(cp, serverSet.size());
 		} finally {
 			if(cp != null && cp.getId() != null) {
 				delete(cp);

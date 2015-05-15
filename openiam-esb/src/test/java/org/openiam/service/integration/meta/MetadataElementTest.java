@@ -22,7 +22,7 @@ public class MetadataElementTest extends AbstractKeyNameServiceTest<MetadataElem
 	protected MetadataElement newInstance() {
 		final MetadataElement element = new MetadataElement();
 		element.setAttributeName(getRandomName());
-		element.setMetadataTypeId(metadataServiceClient.findTypeBeans(null, 0, 1, null).get(0).getId());
+		element.setMetadataTypeId(metadataServiceClient.findTypeBeans(new MetadataTypeSearchBean(), 0, 1, null).get(0).getId());
 		return element;
 	}
 	

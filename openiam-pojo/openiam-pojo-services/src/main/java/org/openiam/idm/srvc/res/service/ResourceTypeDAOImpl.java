@@ -27,8 +27,12 @@ public class ResourceTypeDAOImpl extends BaseDaoImpl<ResourceTypeEntity, String>
     protected Criteria getExampleCriteria(SearchBean searchBean) {
         Criteria criteria = null;
         if (searchBean != null && searchBean instanceof ResourceTypeSearchBean) {
-            final ResourceTypeEntity entity = converter.convert((ResourceTypeSearchBean) searchBean);
+        	final ResourceTypeSearchBean resourceTypeSearchBean = (ResourceTypeSearchBean) searchBean;
+            final ResourceTypeEntity entity = converter.convert(resourceTypeSearchBean);
             criteria = getExampleCriteria(entity);
+            if(resourceTypeSearchBean.getSupportsHierarchy() != null) {
+            	criteria.add(Restrictions.eq("supportsHierarchy", resourceTypeSearchBean.getSupportsHierarchy()));
+            }
         } else {
             criteria = super.getCriteria();
         }
