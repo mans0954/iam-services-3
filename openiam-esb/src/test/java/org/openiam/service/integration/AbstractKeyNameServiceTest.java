@@ -9,7 +9,7 @@ public abstract class AbstractKeyNameServiceTest<T, S extends AbstractSearchBean
 
 	protected abstract T newInstance();
 	protected abstract S newSearchBean();
-	protected abstract Response save(T t);
+	protected abstract Response save(T t) throws Exception;
 	protected abstract Response delete(T t);
 	protected abstract T get(final String key);
 	public abstract List<T> find(final S searchBean, final int from, final int size);

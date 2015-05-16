@@ -156,7 +156,7 @@ public class PolicyTest extends AbstractKeyNameServiceTest<Policy, PolicySearchB
 		return new ClusterKey<Policy, PolicySearchBean>(instance, searchBean);
 	}
 	
-	public Policy assertSave(final Policy instance) {
+	public Policy assertSave(final Policy instance) throws Exception {
 		final Response wsResponse = super.saveAndAssert(instance);
 		final String id = (String)wsResponse.getResponseValue();
 		Policy instance1 = get(id);

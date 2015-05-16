@@ -1,6 +1,7 @@
 package org.openiam.service.integration.provisioning;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.junit.Assert;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.UserSearchBean;
@@ -8,6 +9,8 @@ import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
 import org.openiam.idm.srvc.meta.dto.MetadataElement;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.user.dto.User;
+import org.openiam.provision.dto.ProvisionUser;
+import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.provision.service.ProvisionService;
 import org.openiam.service.integration.AbstractKeyNameServiceTest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +18,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 
-import javax.validation.constraints.AssertTrue;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -97,8 +99,19 @@ public abstract class AbstractUserManagementServiceTest extends AbstractKeyNameS
     }
 
     @Override
-    protected Response save(User user) {
-        return null;
+    protected Response save(User user) throws Exception {
+        ProvisionUserResponse userResponse = null;
+        if(StringUtils.isNotBlank(user.getId())){
+            userResponse = provisionService.modifyUser(new ProvisionUser(user));
+        } else {
+            userResponse = provisionService.addUser(new ProvisionUser(user));
+        }
+
+        Assert.assertTrue(userResponse.isSuccess());
+        Assert.assertNotNull(userResponse.getUser());
+        Assert.assertNotNull(userResponse.getUser().getId());
+
+        return userResponse;
     }
 
     @Override
@@ -108,12 +121,20 @@ public abstract class AbstractUserManagementServiceTest extends AbstractKeyNameS
 
     @Override
     protected User get(String key) {
-        return null;
+        UserSearchBean userSearchBean = newSearchBean();
+        userSearchBean.setKey(key);
+        userSearchBean.setDeepCopy(true);
+        userSearchBean.setInitDefaulLogin(true);
+        List<User> userList = this.find(userSearchBean, 0,1);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(userList));
+        return userList.get(0);
     }
 
     @Override
     public List<User> find(UserSearchBean searchBean, int from, int size) {
-        return null;
+        List<User> userList = userServiceClient.findBeans(searchBean, from, size);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(userList));
+        return userList;
     }
 
     @Override

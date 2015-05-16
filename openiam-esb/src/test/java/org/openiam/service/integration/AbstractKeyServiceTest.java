@@ -13,7 +13,7 @@ import org.testng.annotations.Test;
 public abstract class AbstractKeyServiceTest<T, S extends AbstractSearchBean<T, String>> extends AbstractServiceTest {
 	protected abstract T newInstance();
 	protected abstract S newSearchBean();
-	protected abstract Response save(T t);
+	protected abstract Response save(T t) throws Exception;
 	protected abstract Response delete(T t);
 	protected abstract T get(final String key);
 	public abstract List<T> find(final S searchBean, final int from, final int size);
@@ -35,7 +35,7 @@ public abstract class AbstractKeyServiceTest<T, S extends AbstractSearchBean<T, 
     	return list1.get(0);
 	}
 
-	protected Response saveAndAssert(T t) {
+	protected Response saveAndAssert(T t) throws Exception {
 		final Response response = save(t);
 		Assert.assertTrue(response.isSuccess(), String.format("Could not save entity.  %s", response));
 		return response;
