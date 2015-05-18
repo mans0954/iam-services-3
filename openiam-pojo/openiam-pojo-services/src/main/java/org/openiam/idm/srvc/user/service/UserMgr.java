@@ -717,7 +717,8 @@ public class UserMgr implements UserDataService {
             entityList = finalizedIdList;
         }
 
-        if(searchBean.getInitDefaulLoginFlag()){
+        if(CollectionUtils.isNotEmpty(entityList)
+                && searchBean.getInitDefaulLoginFlag()){
             for(UserEntity usr: entityList){
                 usr.setDefaultLogin(sysConfiguration.getDefaultManagedSysId());
             }

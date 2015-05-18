@@ -1,7 +1,7 @@
 package org.openiam.service.integration.provisioning;
 
 
-import junit.framework.Assert;
+import org.testng.Assert;
 import org.apache.commons.collections.CollectionUtils;
 import org.junit.Test;
 import org.openiam.idm.searchbeans.UserSearchBean;
@@ -25,7 +25,7 @@ public class UserManagmentServiceTest extends AbstractUserManagementServiceTest 
     public void minimalUserCreate() throws Exception {
         User user = doCreate();
 
-        User foundUser = get(user.getId());
+        User foundUser = getAndAssert(user.getId());
 
         Assert.assertNotNull(foundUser.getDefaultLogin());
         Assert.assertEquals(UserStatusEnum.PENDING_INITIAL_LOGIN, foundUser.getStatus());
@@ -60,8 +60,9 @@ public class UserManagmentServiceTest extends AbstractUserManagementServiceTest 
         user.setTitle(getRandomName());
         user.setUserTypeInd(getRandomName());
 
-        save(user);
-        User foundUser = get(user.getId());
+        saveAndAssert(user);
+
+        User foundUser = getAndAssert(user.getId());
 
         Assert.assertEquals(user.getFirstName(), foundUser.getFirstName());
         Assert.assertEquals(user.getLastName(), foundUser.getLastName());
@@ -91,29 +92,23 @@ public class UserManagmentServiceTest extends AbstractUserManagementServiceTest 
         Assert.assertEquals(user.getUserTypeInd(), foundUser.getUserTypeInd());
     }
 
+
+    @Test
+    public void minimalUserDelete() throws Exception {
+        User user = doCreate();
+
+        ProvisionUserResponse response = (ProvisionUserResponse)deleteAndAssert(user);
+
+        User dbUser = get(user.getId());
+
+        Assert.assertNull(dbUser, String.format("Can not delete user with ID: %s", user.getId()));
+    }
+
     private User doCreate() throws Exception{
         User user = super.createBean();
         user.setFirstName(getRandomName());
         user.setLastName(getRandomName());
 
-        return ((ProvisionUserResponse)save(user)).getUser();
-    }
-
-
-    protected Date removeMillis(Date date){
-        Calendar c = Calendar.getInstance();
-        c.setTime(date);
-        c.set(Calendar.MILLISECOND,0);
-        return c.getTime();
-    }
-
-    protected Date getDate(Date date){
-        Calendar c = Calendar.getInstance();
-        c.setTime(date);
-        c.set(Calendar.MILLISECOND,0);
-        c.set(Calendar.SECOND,0);
-        c.set(Calendar.MINUTE,0);
-        c.set(Calendar.HOUR_OF_DAY,0);
-        return c.getTime();
+        return ((ProvisionUserResponse)saveAndAssert(user)).getUser();
     }
 }
