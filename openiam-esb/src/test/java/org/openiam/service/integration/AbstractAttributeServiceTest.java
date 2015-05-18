@@ -22,7 +22,7 @@ public abstract class AbstractAttributeServiceTest<T extends AbstractMetadataTyp
 	protected abstract Set<A> getAttributes(final T t);
 	
 	@Test
-	public void attributeClusterTest() {
+	public void attributeClusterTest() throws Exception {
 		T instance = newInstance();
 		instance.setName(getRandomName());
 		Response response = save(instance);

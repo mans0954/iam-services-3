@@ -125,7 +125,7 @@ public class ContentProviderServiceTest extends AbstractContentProviderServiceTe
 	}
 	*/
 	
-	private ContentProvider assertGroupings(final ContentProvider cp, int size) {
+	private ContentProvider assertGroupings(final ContentProvider cp, int size) throws Exception {
 		final Response response = saveAndAssert(cp);
 		final ContentProvider serviceObject = get((String)response.getResponseValue());
 		Assert.assertNotNull(serviceObject);
@@ -135,7 +135,7 @@ public class ContentProviderServiceTest extends AbstractContentProviderServiceTe
 	}
 	
 	@Test
-	public void testGroupings() {
+	public void testGroupings() throws Exception {
 		ContentProvider cp = null;
 		try {
 			cp = createBean();
@@ -214,7 +214,7 @@ public class ContentProviderServiceTest extends AbstractContentProviderServiceTe
 	}
 	
 	@Test
-	public void testCreateDefautPatterns() {
+	public void testCreateDefautPatterns() throws Exception {
 		ContentProvider cp = null;
 		try {
 			cp = super.createContentProvider();

@@ -180,7 +180,7 @@ public class MetadataElementTemplateServiceTest extends AbstractKeyNameServiceTe
 		}
 	}
 	
-	private MetadataElementPageTemplate assertFullClusteredSave(final MetadataElementPageTemplate test) {
+	private MetadataElementPageTemplate assertFullClusteredSave(final MetadataElementPageTemplate test) throws Exception {
 		saveAndAssert(test);
 		final MetadataElementPageTemplate testCluster1 = get(test.getId());
 		final MetadataElementPageTemplate testCluster2 = get(test.getId());

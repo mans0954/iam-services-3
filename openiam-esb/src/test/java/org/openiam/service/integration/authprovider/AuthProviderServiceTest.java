@@ -137,7 +137,7 @@ public class AuthProviderServiceTest extends AbstractKeyNameServiceTest<AuthProv
 	}
 	
 	@Override
-	protected Response saveAndAssert(final AuthProvider instance) {
+	protected Response saveAndAssert(final AuthProvider instance) throws Exception {
 		final Response response = super.saveAndAssert(instance);
 		final String id = (String)response.getResponseValue();
 		final AuthProvider instance1 = get(id);
