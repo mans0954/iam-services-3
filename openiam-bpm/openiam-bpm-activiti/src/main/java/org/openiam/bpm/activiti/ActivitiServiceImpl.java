@@ -544,15 +544,16 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 
             List<Object> approverCardinatlity = new LinkedList<Object>();
             if(mergeCustomApproverIdsWithApproverAssociations){
-                final List<String> mergedIds = new LinkedList<String>();
+//                final List<String> mergedIds = new LinkedList<String>();
 
                 if (CollectionUtils.isNotEmpty(approverUserIds)) {
-                    mergedIds.addAll(approverUserIds);
+//                    mergedIds.addAll(approverUserIds);
+                    approverCardinatlity = buildApproverCardinatlity(request, approverUserIds);
                 }
+
                 if (CollectionUtils.isNotEmpty(approverAssociationIds)) {
-                    mergedIds.addAll(getCandidateUserIdsFromApproverAssociations(request,approverAssociationIds));
+                    approverCardinatlity.addAll(approverAssociationIds);
                 }
-                approverCardinatlity = buildApproverCardinatlity(request, mergedIds);
             } else {
                 if (CollectionUtils.isNotEmpty(approverAssociationIds)) {
                     approverCardinatlity.addAll(approverAssociationIds);
