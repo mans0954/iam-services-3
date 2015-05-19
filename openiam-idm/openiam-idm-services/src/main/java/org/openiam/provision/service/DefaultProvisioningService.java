@@ -726,7 +726,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 }
             } else {
                 pUser.setStatus(status);
-                pUser.setSecondaryStatus(UserStatusEnum.INACTIVE);
+                pUser.setSecondaryStatus(null);
                 pUser.setLastUpdatedBy(requestorId);
                 pUser.setLastUpdate(new Date());
                 pUser.setNotProvisioninResourcesIds(processedResources);
