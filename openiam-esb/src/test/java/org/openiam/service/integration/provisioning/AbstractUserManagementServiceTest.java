@@ -122,7 +122,11 @@ public abstract class AbstractUserManagementServiceTest extends AbstractKeyNameS
 
     @Override
     protected Response delete(User user) {
-        return provisionService.deleteByUserId(user.getId(), UserStatusEnum.REMOVE, "3000");
+        ProvisionUser pUser = new ProvisionUser(user);
+        pUser.setStatus(UserStatusEnum.REMOVE);
+
+        return provisionService.modifyUser(pUser);
+//        return provisionService.deleteByUserId(user.getId(), UserStatusEnum.REMOVE, "3000");
     }
 
     protected User getAndAssert(String key){

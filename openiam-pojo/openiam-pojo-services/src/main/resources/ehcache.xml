@@ -276,11 +276,5 @@
            memoryStoreEvictionPolicy="LRU"
             />
 
-    <cache name="RolesWithSubRolesIds"
-           maxElementsInMemory="100000"
-           eternal="false"
-           overflowToDisk="false"
-           memoryStoreEvictionPolicy="LRU"
-            />
 
 </ehcache>

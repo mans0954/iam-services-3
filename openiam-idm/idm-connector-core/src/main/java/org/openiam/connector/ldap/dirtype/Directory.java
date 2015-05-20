@@ -30,6 +30,8 @@ public interface Directory {
     
     ModificationItem[] setPassword(PasswordRequest reqType) throws UnsupportedEncodingException;
 
+    ModificationItem[] resetPassword(PasswordRequest reqType) throws UnsupportedEncodingException;
+
     ModificationItem[] suspend(SuspendResumeRequest request);
 
     ModificationItem[] resume(SuspendResumeRequest request);

@@ -330,4 +330,11 @@
 	<!--<jaxws:client id="propertyValuerServiceClient"-->
                   <!--serviceClass="org.openiam.idm.srvc.property.ws.PropertyValueWebService"-->
                   <!--address="${openiam.service_host}${openiam.connector.ws.path}PropertyValueWebService" />-->
+
+
+    <jaxws:client id="reconciliationServiceClient"
+                  serviceClass="org.openiam.idm.srvc.recon.ws.ReconciliationWebService"
+                  address="${openiam.service_host}${openiam.connector.ws.path}ReconciliationWebService" />
+
+
 </beans>
