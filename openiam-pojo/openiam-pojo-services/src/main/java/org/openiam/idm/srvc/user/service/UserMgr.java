@@ -2281,8 +2281,9 @@ public class UserMgr implements UserDataService {
         if (StringUtils.isNotBlank(requestorId)) {
             Map<String, UserAttribute> requestorAttributes = this.getUserAttributesDto(requestorId);
 
-            if (DelegationFilterHelper.isOrgFilterSet(requestorAttributes)) {
-                filter.setOrganizationIdSet(new HashSet<String>(DelegationFilterHelper.getOrgIdFilterFromString(requestorAttributes)));
+            Set<String> orgDelFilter = organizationService.getDelegationFilter(requestorAttributes, null);
+            if (CollectionUtils.isNotEmpty(orgDelFilter)) {
+                filter.setOrganizationIdSet(orgDelFilter);
             }
 
             if (DelegationFilterHelper.isGroupFilterSet(requestorAttributes)) {
