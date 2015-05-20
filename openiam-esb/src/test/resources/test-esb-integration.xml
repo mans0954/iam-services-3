@@ -95,7 +95,6 @@
 	<bean id="groupServiceClient" class="org.openiam.idm.srvc.grp.ws.GroupDataWebService"
 		factory-bean="groupServiceFactory" factory-method="create" />
 
-
 	<bean id="groupServiceFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
 		<property name="serviceClass"
 			value="org.openiam.idm.srvc.grp.ws.GroupDataWebService" />
@@ -103,9 +102,28 @@
 			value="${openiam.service_host}${openiam.idm.ws.path}GroupDataWebService" />
 	</bean>
 
+    <bean id="identityServiceClient" class="org.openiam.idm.srvc.auth.ws.IdentityWebService"
+          factory-bean="identityServiceFactory" factory-method="create" />
+
+    <bean id="identityServiceFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
+        <property name="serviceClass"
+                  value="org.openiam.idm.srvc.auth.ws.IdentityWebService" />
+        <property name="address"
+                  value="${openiam.service_host}${openiam.idm.ws.path}IdentityWebService" />
+    </bean>
+
+    <bean id="groupProvisionServiceClient" class="org.openiam.provision.service.ObjectProvisionService"
+          factory-bean="groupProvisionServiceFactory" factory-method="create" />
+
+    <bean id="groupProvisionServiceFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
+        <property name="serviceClass"
+                  value="org.openiam.provision.service.ObjectProvisionService" />
+        <property name="address"
+                  value="${openiam.service_host}${openiam.idm.ws.path}GroupProvisionService" />
+    </bean>
+
 	<bean id="resourceServiceClient" class="org.openiam.idm.srvc.res.service.ResourceDataService"
 		factory-bean="resourceServiceFactory" factory-method="create" />
-
 
 	<bean id="resourceServiceFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
 		<property name="serviceClass"

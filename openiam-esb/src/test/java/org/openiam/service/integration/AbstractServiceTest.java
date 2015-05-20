@@ -1,12 +1,5 @@
 package org.openiam.service.integration;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.RandomStringUtils;
 import org.junit.runner.RunWith;
@@ -14,15 +7,14 @@ import org.openiam.am.srvc.dto.AuthLevelGrouping;
 import org.openiam.am.srvc.dto.AuthLevelGroupingContentProviderXref;
 import org.openiam.am.srvc.dto.AuthLevelGroupingContentProviderXrefId;
 import org.openiam.am.srvc.dto.ContentProvider;
-import org.openiam.am.srvc.dto.ContentProviderServer;
 import org.openiam.am.srvc.ws.AuthProviderWebService;
 import org.openiam.am.srvc.ws.ContentProviderWebService;
 import org.openiam.authmanager.service.AuthorizationManagerWebService;
-import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.idm.searchbeans.LanguageSearchBean;
 import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
+import org.openiam.idm.srvc.auth.ws.LoginDataWebService;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.lang.dto.LanguageMapping;
 import org.openiam.idm.srvc.lang.service.LanguageWebService;
@@ -40,6 +32,12 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.Assert;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations={"classpath:test-integration-environment.xml","classpath:test-esb-integration.xml"})
 public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTests {
@@ -51,6 +49,10 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 	@Autowired
 	@Qualifier("userServiceClient")
 	protected UserDataWebService userServiceClient;
+
+    @Autowired
+    @Qualifier("loginServiceClient")
+    protected LoginDataWebService loginServiceClient;
 	
 	@Autowired
 	@Qualifier("authProviderServiceClient")

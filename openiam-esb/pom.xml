@@ -284,6 +284,9 @@
 	        <artifactId>maven-surefire-plugin</artifactId>
 	        <version>2.4.2</version>
 	        <configuration>
+                <suiteXmlFiles>
+                    <suiteXmlFile>${basedir}/src/test/resources/testng.xml</suiteXmlFile>
+                </suiteXmlFiles>
 	          <additionalClasspathElements>
 	          	<additionalClasspathElement>${basedir}/src/test/resources</additionalClasspathElement>
 	          </additionalClasspathElements>
