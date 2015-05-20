@@ -105,16 +105,6 @@ public class UserManagmentServiceTest extends AbstractUserManagementServiceTest 
     }
 
     @Test
-    public void minimalUserDeleteById() throws Exception {
-        User user = doCreate();
-
-        ProvisionUserResponse response = provisionService.deleteByUserId(user.getId(), UserStatusEnum.REMOVE, "3000");
-        Assert.assertTrue(response.isSuccess(), String.format("Could not delete element '%s' with ID '%s.  Response: %s", user, user.getId(), response));
-
-        User dbUser = get(user.getId());
-        Assert.assertNull(dbUser, String.format("Can not delete user with ID: %s", user.getId()));
-    }
-    @Test
     public void minimalUserDeleteTest() throws Exception {
         User user = doCreate();
         user = get(user.getId());
