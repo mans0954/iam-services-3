@@ -47,6 +47,7 @@
 	<test name="integration.user">
 		<classes>
 			<class name="org.openiam.service.integration.login.LoginServiceTest" />
+			<class name="org.openiam.service.integration.provisioning.UserManagmentServiceTest" />
 		</classes>
 	</test>
 	
