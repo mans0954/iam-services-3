@@ -191,4 +191,20 @@ public class UserManagmentServiceTest extends AbstractUserManagementServiceTest 
         }
     }
 
+    @Test(groups ={"COMPLETE_USER"}, dependsOnMethods = {"completeUserCreateTest"})
+    public void completeUserUpdateTest() throws Exception {
+        User user = getAndAssert(getUserId());
+
+        user.setFirstName(getRandomName());
+        user.setLastName(getRandomName());
+
+        saveAndAssert(user);
+
+        User foundUser = getAndAssert(user.getId());
+
+        Assert.assertEquals(foundUser.getId(), user.getId());
+        Assert.assertEquals(user.getFirstName(), foundUser.getFirstName());
+        Assert.assertEquals(user.getLastName(), foundUser.getLastName());
+    }
+
 }
