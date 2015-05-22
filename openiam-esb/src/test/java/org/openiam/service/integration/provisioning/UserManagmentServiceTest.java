@@ -1,27 +1,77 @@
 package org.openiam.service.integration.provisioning;
 
 
+import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
+import org.openiam.idm.srvc.meta.dto.MetadataType;
+import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.testng.Assert;
-import org.apache.commons.collections.CollectionUtils;
-import org.junit.Test;
-import org.openiam.idm.searchbeans.UserSearchBean;
+import org.testng.annotations.Test;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
-import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.resp.ProvisionUserResponse;
 
-import java.util.Calendar;
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by alexander on 14.05.15.
  */
 public class UserManagmentServiceTest extends AbstractUserManagementServiceTest {
 
-    @Test
+        protected User createFullBean() {
+        final User user = super.createBean();
+
+        MetadataTypeSearchBean searchBean = new MetadataTypeSearchBean();
+        searchBean.setName(USER_TYPE);
+        List<MetadataType> userTypeList = metadataServiceClient.findTypeBeans(searchBean, 0, 1,null);
+
+        Assert.assertFalse(userTypeList.isEmpty(), String.format("MetadataType %s is not found", USER_TYPE));
+
+        user.setMdTypeId(userTypeList.get(0).getId());
+
+        user.setClassification(getRandomName());
+        user.setBirthdate(new Date());
+        user.setClaimDate(new Date());
+        user.setCostCenter(getRandomName());
+        user.setEmployeeId(getRandomName());
+        user.setEmployeeTypeId(getMetadataTypesByGrouping(MetadataTypeGrouping.USER_TYPE).get(0).getId());
+        user.setJobCodeId(getMetadataTypesByGrouping(MetadataTypeGrouping.JOB_CODE).get(0).getId());
+        user.setLocationCd(getRandomName());
+        user.setLocationName(getRandomName());
+        user.setMaidenName(getRandomName());
+        user.setMailCode(getRandomName());
+        user.setMiddleInit(getRandomName(1));
+        user.setNickname(getRandomName());
+        user.setPrefix(getRandomName(3));
+        user.setSecondaryStatus(UserStatusEnum.ACTIVE);
+        user.setSex("M");
+        user.setShowInSearch(Integer.valueOf(1));
+        user.setStatus(UserStatusEnum.ACTIVE);
+        user.setSuffix(getRandomName(3));
+        user.setTitle(getRandomName());
+        user.setUserTypeInd(getRandomName());
+
+        return user;
+    }
+
+    private User doCreateFullBean() throws Exception{
+        User user = createFullBean();
+        user = ((ProvisionUserResponse)saveAndAssert(user)).getUser();
+
+        pushUserId(user.getId());
+        return user;
+    }
+
+    private User doCreate() throws Exception{
+        User user = super.createBean();
+        user = ((ProvisionUserResponse)saveAndAssert(user)).getUser();
+        pushUserId(user.getId());
+        return user;
+    }
+
+    @Test(groups ={"MINIMAL_USER"})
     public void minimalUserCreate() throws Exception {
         User user = doCreate();
 
@@ -31,7 +81,7 @@ public class UserManagmentServiceTest extends AbstractUserManagementServiceTest 
         Assert.assertEquals(UserStatusEnum.PENDING_INITIAL_LOGIN, foundUser.getStatus());
     }
 
-    @Test
+    @Test(groups ={"MINIMAL_USER"})
     public void minimalUserUpdate() throws Exception {
         User user = doCreate();
 
@@ -93,28 +143,18 @@ public class UserManagmentServiceTest extends AbstractUserManagementServiceTest 
     }
 
 
-    @Test
+    @Test(groups ={"MINIMAL_USER"})
     public void minimalUserDelete() throws Exception {
         User user = doCreate();
 
-        ProvisionUserResponse response = (ProvisionUserResponse)deleteAndAssert(user);
+        deleteAndAssert(user);
 
         User dbUser = get(user.getId());
 
         Assert.assertNull(dbUser, String.format("Can not delete user with ID: %s", user.getId()));
     }
 
-    @Test
-    public void minimalUserDeleteById() throws Exception {
-        User user = doCreate();
-
-        ProvisionUserResponse response = provisionService.deleteByUserId(user.getId(), UserStatusEnum.REMOVE, "3000");
-        Assert.assertTrue(response.isSuccess(), String.format("Could not delete element '%s' with ID '%s.  Response: %s", user, user.getId(), response));
-
-        User dbUser = get(user.getId());
-        Assert.assertNull(dbUser, String.format("Can not delete user with ID: %s", user.getId()));
-    }
-    @Test
+    @Test(groups ={"MINIMAL_USER"})
     public void minimalUserDeleteTest() throws Exception {
         User user = doCreate();
         user = get(user.getId());
@@ -126,13 +166,29 @@ public class UserManagmentServiceTest extends AbstractUserManagementServiceTest 
         Assert.assertNull(dbUser, String.format("Can not delete user with ID: %s", user.getId()));
     }
 
+    @Test(groups ={"COMPLETE_USER"})
+    public void completeUserCreateTest() throws Exception {
+        User user = doCreateFullBean();
 
+        Thread.sleep(5000);
 
-    private User doCreate() throws Exception{
-        User user = super.createBean();
-        user.setFirstName(getRandomName());
-        user.setLastName(getRandomName());
+        User foundUser = getAndAssert(user.getId());
 
-        return ((ProvisionUserResponse)saveAndAssert(user)).getUser();
+        Assert.assertEquals(foundUser.getId(), user.getId());
+        Assert.assertNotNull(foundUser.getDefaultLogin());
+
+        Map<String, UserAttribute> userAttributeMap = foundUser.getUserAttributes();
+        Assert.assertFalse(userAttributeMap.isEmpty(), "User must have required attributes");
+
+        Assert.assertEquals( userAttributeMap.keySet().size(), NUMBER_OF_REQUIRED_ATTRIBUTES);
+
+        for(String attrName: userAttributeMap.keySet()){
+            UserAttribute attr = userAttributeMap.get(attrName);
+
+            Assert.assertNotNull(attr, "Attribute Can not be null");
+            Assert.assertNotNull(attr.getMetadataId(), "Attribute Metadata can not be null");
+            Assert.assertNotNull(attr.getValue(), "Attribute Value can not be null");
+        }
     }
+
 }

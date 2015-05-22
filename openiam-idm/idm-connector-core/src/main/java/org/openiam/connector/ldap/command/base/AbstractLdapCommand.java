@@ -1,14 +1,17 @@
 package org.openiam.connector.ldap.command.base;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.base.BaseAttribute;
+import org.openiam.connector.common.command.AbstractCommand;
 import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.connector.type.constant.ErrorCode;
 import org.openiam.connector.type.request.RequestType;
 import org.openiam.connector.type.response.ResponseType;
 import org.openiam.connector.util.ConnectionManagerConstant;
 import org.openiam.connector.util.ConnectionMgr;
+import org.openiam.connector.util.connect.ConnectionFactory;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
@@ -17,14 +20,14 @@ import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
-import org.openiam.connector.common.command.AbstractCommand;
-import org.openiam.connector.util.connect.ConnectionFactory;
-import org.openiam.provision.type.ExtensibleObjectType;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
-import javax.naming.directory.*;
+import javax.naming.directory.Attribute;
+import javax.naming.directory.BasicAttribute;
+import javax.naming.directory.BasicAttributes;
+import javax.naming.directory.SearchControls;
 import javax.naming.ldap.LdapContext;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -213,10 +216,15 @@ public abstract class AbstractLdapCommand<Request extends RequestType, Response 
                 if (groupMembershipEnabled) {
                     buildMembershipList(att, targetMembershipList);
                 }
+
             } else if (att.getDataType().equalsIgnoreCase("byteArray")) {
 
                 attrs.put(new BasicAttribute(att.getName(), att.getValueAsByteArray()));
 
+            } else if (att.getAttributeContainer() != null && CollectionUtils.isNotEmpty(att.getAttributeContainer().getAttributeList())) {
+                for (BaseAttribute attribute : att.getAttributeContainer().getAttributeList()) {
+                    attrs.put(new BasicAttribute(att.getName(), attribute.getValue()));
+                }
             } else if (att.getName() != null) {
 
                 // set an attribute to null

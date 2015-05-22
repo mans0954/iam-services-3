@@ -25,7 +25,6 @@ public abstract class AbstractKeyNameServiceTest<T, S extends AbstractSearchBean
 	protected T createBean() {
 		final T bean = super.createBean();
 		setName(bean, getRandomName());
-//		bean.setName(getRandomName());
 		return bean;
 	}
 	

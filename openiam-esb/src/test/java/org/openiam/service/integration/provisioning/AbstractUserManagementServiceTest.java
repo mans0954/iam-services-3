@@ -2,6 +2,8 @@ package org.openiam.service.integration.provisioning;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.openiam.idm.srvc.lang.dto.Language;
+import org.openiam.idm.srvc.lang.dto.LanguageMapping;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.testng.Assert;
 import org.openiam.base.ws.MatchType;
@@ -28,17 +30,28 @@ import java.util.*;
  */
 public abstract class AbstractUserManagementServiceTest extends AbstractKeyNameServiceTest<User, UserSearchBean> {
     protected MetadataType userType = null;
+    private List<String> userIdList = new ArrayList<>();
     protected Map<String, MetadataElement> defaultUserAttributes = new HashMap<>();
+
+    protected String REQUESTER_ID="3000";
+    protected String USER_TYPE="TEST_USER";
+    protected String DRIVERS_LICENSE ="DRIVERS_LICENSE";
+    protected String USER_BIRTH_YEAR ="USER_BIRTH_YEAR";
+    protected String FAVORITE_FOODS ="FAVORITE_FOODS";
+    protected String EMERGENCY_CONTACT ="EMERGENCY_CONTACT";
+    protected String RANDOM_ATTRIBUTE ="EMERGENCY_CONTACT";
+    protected int NUMBER_OF_REQUIRED_ATTRIBUTES =0;
 
     @Autowired
     @Qualifier("provisionServiceClient")
     protected ProvisionService provisionService;
 
-    @BeforeClass
+    @BeforeClass(alwaysRun = true)
     public void _init() {
         userType = new MetadataType();
-        userType.setDescription("TEST_USER");
+        userType.setDescription(USER_TYPE);
         userType.setGrouping(MetadataTypeGrouping.USER_OBJECT_TYPE);
+        userType.setDisplayNameMap(generateRandomLanguageMapping());
 
         Response wsResponse = metadataServiceClient.saveMetadataType(userType);
 
@@ -47,15 +60,22 @@ public abstract class AbstractUserManagementServiceTest extends AbstractKeyNameS
 
         userType.setId((String)wsResponse.getResponseValue());
 
-        createMetaDataElement("DRIVERS_LICENSE", true);
-        createMetaDataElement("USER_BIRTH_YEAR", true);
-        createMetaDataElement("FAVORITE_FOODS", true);
-        createMetaDataElement("EMERGENCY_CONTACT", false);
-        createMetaDataElement(getRandomName(), false);
+        createMetaDataElement(DRIVERS_LICENSE, true);
+        createMetaDataElement(USER_BIRTH_YEAR, true);
+        createMetaDataElement(FAVORITE_FOODS, true);
+        createMetaDataElement(EMERGENCY_CONTACT, false);
+        RANDOM_ATTRIBUTE = getRandomName();
+        createMetaDataElement(RANDOM_ATTRIBUTE, false);
 
     }
-    @AfterClass
+    @AfterClass(alwaysRun = true)
     public void _destroy() {
+
+        if(CollectionUtils.isNotEmpty(userIdList)){
+            for(String userId: userIdList){
+                this.delete(userId);
+            }
+        }
 
         if(!defaultUserAttributes.isEmpty()){
             for(String attrName: defaultUserAttributes.keySet()){
@@ -87,6 +107,16 @@ public abstract class AbstractUserManagementServiceTest extends AbstractKeyNameS
         attr.setId((String)wsResponse.getResponseValue());
         defaultUserAttributes.put(name, attr);
 
+        if(required)
+            NUMBER_OF_REQUIRED_ATTRIBUTES++;
+
+    }
+    @Override
+    protected User createBean() {
+        final User bean = super.createBean();
+        bean.setFirstName(getRandomName());
+        bean.setLastName(getRandomName());
+        return bean;
     }
 
     @Override
@@ -122,11 +152,10 @@ public abstract class AbstractUserManagementServiceTest extends AbstractKeyNameS
 
     @Override
     protected Response delete(User user) {
-        ProvisionUser pUser = new ProvisionUser(user);
-        pUser.setStatus(UserStatusEnum.REMOVE);
-
-        return provisionService.modifyUser(pUser);
-//        return provisionService.deleteByUserId(user.getId(), UserStatusEnum.REMOVE, "3000");
+        return delete(user.getId());
+    }
+    protected Response delete(String userId) {
+        return provisionService.deleteByUserId(userId, UserStatusEnum.REMOVE, REQUESTER_ID);
     }
 
     protected User getAndAssert(String key){
@@ -198,4 +227,14 @@ public abstract class AbstractUserManagementServiceTest extends AbstractKeyNameS
         c.set(Calendar.HOUR_OF_DAY,0);
         return c.getTime();
     }
+
+    protected void pushUserId(String userId){
+        if(StringUtils.isNotBlank(userId))
+            this.userIdList.add(userId);
+    }
+    protected String getUserId(){
+        Assert.assertTrue(CollectionUtils.isNotEmpty(userIdList), "User is not created");
+        return this.userIdList.get(0);
+    }
+
 }
