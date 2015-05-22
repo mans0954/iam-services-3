@@ -30,7 +30,7 @@ import java.util.*;
  */
 public abstract class AbstractUserManagementServiceTest extends AbstractKeyNameServiceTest<User, UserSearchBean> {
     protected MetadataType userType = null;
-    private List<String> userIdList = new ArrayList<>();
+    protected List<String> userIdList = new ArrayList<>();
     protected Map<String, MetadataElement> defaultUserAttributes = new HashMap<>();
 
     protected String REQUESTER_ID="3000";
@@ -72,7 +72,8 @@ public abstract class AbstractUserManagementServiceTest extends AbstractKeyNameS
     public void _destroy() {
 
         if(CollectionUtils.isNotEmpty(userIdList)){
-            for(String userId: userIdList){
+            while(!userIdList.isEmpty()){
+                String userId = userIdList.get(0);
                 this.delete(userId);
             }
         }
@@ -155,7 +156,10 @@ public abstract class AbstractUserManagementServiceTest extends AbstractKeyNameS
         return delete(user.getId());
     }
     protected Response delete(String userId) {
-        return provisionService.deleteByUserId(userId, UserStatusEnum.REMOVE, REQUESTER_ID);
+        Response response = provisionService.deleteByUserId(userId, UserStatusEnum.REMOVE, REQUESTER_ID);
+        if(response.isSuccess())
+            dropUserId(userId);
+        return response;
     }
 
     protected User getAndAssert(String key){
@@ -236,5 +240,8 @@ public abstract class AbstractUserManagementServiceTest extends AbstractKeyNameS
         Assert.assertTrue(CollectionUtils.isNotEmpty(userIdList), "User is not created");
         return this.userIdList.get(0);
     }
-
+    protected void dropUserId(String userId){
+        Assert.assertTrue(CollectionUtils.isNotEmpty(userIdList), "User is not created");
+        this.userIdList.remove(userId);
+    }
 }

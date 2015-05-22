@@ -1,7 +1,9 @@
 package org.openiam.service.integration.provisioning;
 
 
+import org.openiam.base.AttributeOperationEnum;
 import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
+import org.openiam.idm.srvc.meta.dto.MetadataElement;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.testng.Assert;
@@ -20,7 +22,7 @@ import java.util.Map;
  */
 public class UserManagmentServiceTest extends AbstractUserManagementServiceTest {
 
-        protected User createFullBean() {
+    protected User createFullBean() {
         final User user = super.createBean();
 
         MetadataTypeSearchBean searchBean = new MetadataTypeSearchBean();
@@ -161,7 +163,7 @@ public class UserManagmentServiceTest extends AbstractUserManagementServiceTest 
 
         ProvisionUserResponse response = provisionService.deleteUser(getDefaultManagedSystemId(), user.getDefaultLogin(), UserStatusEnum.REMOVE, "3000");
         Assert.assertTrue(response.isSuccess(), String.format("Could not delete element '%s' with ID '%s.  Response: %s", user, user.getId(), response));
-
+        dropUserId(user.getId());
         User dbUser = get(user.getId());
         Assert.assertNull(dbUser, String.format("Can not delete user with ID: %s", user.getId()));
     }
@@ -205,6 +207,59 @@ public class UserManagmentServiceTest extends AbstractUserManagementServiceTest 
         Assert.assertEquals(foundUser.getId(), user.getId());
         Assert.assertEquals(user.getFirstName(), foundUser.getFirstName());
         Assert.assertEquals(user.getLastName(), foundUser.getLastName());
+    }
+
+    @Test(groups ={"COMPLETE_USER"}, dependsOnMethods = {"completeUserUpdateTest"})
+    public void completeUserAddAttributeWithMetadataTest() throws Exception {
+        User user = getAndAssert(getUserId());
+
+        final UserAttribute userAttribute = new UserAttribute();
+        userAttribute.setOperation(AttributeOperationEnum.ADD);
+
+        for(String attrName: defaultUserAttributes.keySet()){
+            MetadataElement metadataElement = defaultUserAttributes.get(attrName);
+            if(metadataElement.getRequired())
+                continue;
+            userAttribute.setName(attrName);
+            userAttribute.setValue(metadataElement.getStaticDefaultValue());
+            userAttribute.setMetadataId(metadataElement.getId());
+            break;
+        }
+        user.getUserAttributes().put(userAttribute.getName(), userAttribute);
+
+        saveAndAssert(user);
+
+        User foundUser = getAndAssert(user.getId());
+
+        Assert.assertEquals(foundUser.getUserAttributes().size(), user.getUserAttributes().size());
+
+        UserAttribute dbUserAttribute = foundUser.getUserAttributes().get(userAttribute.getName());
+
+        Assert.assertNotNull(dbUserAttribute, "User Attribute not saved");
+        Assert.assertEquals(dbUserAttribute.getValue(), userAttribute.getValue());
+        Assert.assertEquals(dbUserAttribute.getMetadataId(), userAttribute.getMetadataId());
+    }
+
+    @Test(groups ={"COMPLETE_USER"}, dependsOnMethods = {"completeUserAddAttributeWithMetadataTest"})
+    public void completeUserModifyAttributeWithMetadataTest() throws Exception {
+        User user = getAndAssert(getUserId());
+
+        UserAttribute userAttribute = user.getUserAttributes().get(DRIVERS_LICENSE);
+        userAttribute.setOperation(AttributeOperationEnum.REPLACE);
+        userAttribute.setValue(getRandomName());
+
+        user.getUserAttributes().put(userAttribute.getName(), userAttribute);
+
+        saveAndAssert(user);
+
+        User foundUser = getAndAssert(user.getId());
+
+        Assert.assertEquals(foundUser.getUserAttributes().size(), user.getUserAttributes().size());
+
+        UserAttribute dbUserAttribute = foundUser.getUserAttributes().get(userAttribute.getName());
+
+        Assert.assertNotNull(dbUserAttribute, "User Attribute not saved");
+        Assert.assertEquals(dbUserAttribute.getValue(), userAttribute.getValue());
     }
 
 }
