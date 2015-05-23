@@ -39,7 +39,7 @@ public abstract class AbstractUserManagementServiceTest extends AbstractKeyNameS
     protected String USER_BIRTH_YEAR ="USER_BIRTH_YEAR";
     protected String FAVORITE_FOODS ="FAVORITE_FOODS";
     protected String EMERGENCY_CONTACT ="EMERGENCY_CONTACT";
-    protected String RANDOM_ATTRIBUTE ="EMERGENCY_CONTACT";
+    protected String RANDOM_ATTRIBUTE =null;
     protected int NUMBER_OF_REQUIRED_ATTRIBUTES =0;
 
     @Autowired

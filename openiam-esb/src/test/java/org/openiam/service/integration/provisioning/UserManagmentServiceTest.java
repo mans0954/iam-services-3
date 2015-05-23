@@ -2,6 +2,7 @@ package org.openiam.service.integration.provisioning;
 
 
 import org.openiam.base.AttributeOperationEnum;
+import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
 import org.openiam.idm.srvc.meta.dto.MetadataElement;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
@@ -13,6 +14,7 @@ import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.resp.ProvisionUserResponse;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -210,6 +212,24 @@ public class UserManagmentServiceTest extends AbstractUserManagementServiceTest 
     }
 
     @Test(groups ={"COMPLETE_USER"}, dependsOnMethods = {"completeUserUpdateTest"})
+    public void completeUserGetAllAttributeTest() throws Exception {
+        User user = getAndAssert(getUserId());
+
+        Map<String, UserAttribute> userAttributeMap = user.getUserAttributes();
+
+        List<UserAttribute> dbAttributeList = userServiceClient.getUserAttributes(getUserId());
+
+        Assert.assertEquals(userAttributeMap.values().size(), dbAttributeList.size());
+
+        for(UserAttribute attr : dbAttributeList){
+            UserAttribute userAttr  = userAttributeMap.get(attr.getName());
+
+            Assert.assertNotNull(userAttr, String.format("User Attribute %s not exists in user but return from service method: userServiceClient.getUserAttributes()", userAttr.getName()));
+
+        }
+    }
+
+    @Test(groups ={"COMPLETE_USER"}, dependsOnMethods = {"completeUserGetAllAttributeTest"})
     public void completeUserAddAttributeWithMetadataTest() throws Exception {
         User user = getAndAssert(getUserId());
 
@@ -262,4 +282,181 @@ public class UserManagmentServiceTest extends AbstractUserManagementServiceTest 
         Assert.assertEquals(dbUserAttribute.getValue(), userAttribute.getValue());
     }
 
+    @Test(groups ={"COMPLETE_USER"}, dependsOnMethods = {"completeUserModifyAttributeWithMetadataTest"})
+    public void completeUserDeleteAttributeWithMetadataTest() throws Exception {
+        User user = getAndAssert(getUserId());
+
+        UserAttribute userAttribute = null;
+        for(String attrName: defaultUserAttributes.keySet()){
+            MetadataElement metadataElement = defaultUserAttributes.get(attrName);
+            if(metadataElement.getRequired())
+                continue;
+            userAttribute = user.getUserAttributes().get(attrName);
+            break;
+        }
+        userAttribute.setOperation(AttributeOperationEnum.DELETE);
+        user.getUserAttributes().put(userAttribute.getName(), userAttribute);
+        saveAndAssert(user);
+
+        User foundUser = getAndAssert(user.getId());
+        Assert.assertNotEquals(foundUser.getUserAttributes().size(), user.getUserAttributes().size());
+        UserAttribute dbUserAttribute = foundUser.getUserAttributes().get(userAttribute.getName());
+        Assert.assertNull(dbUserAttribute, "User Attribute not deleted");
+    }
+
+
+    @Test(groups ={"COMPLETE_USER"}, dependsOnMethods = {"completeUserDeleteAttributeWithMetadataTest"})
+    public void completeUserAddAttribute() throws Exception {
+        User user = getAndAssert(getUserId());
+
+        final UserAttribute userAttribute = new UserAttribute();
+        userAttribute.setOperation(AttributeOperationEnum.ADD);
+        userAttribute.setName(getRandomName());
+        userAttribute.setValue(getRandomName());
+        userAttribute.setMetadataId(null);
+        user.getUserAttributes().put(userAttribute.getName(), userAttribute);
+
+        saveAndAssert(user);
+
+        User foundUser = getAndAssert(user.getId());
+
+        Assert.assertEquals(foundUser.getUserAttributes().size(), user.getUserAttributes().size());
+        UserAttribute dbUserAttribute = foundUser.getUserAttributes().get(userAttribute.getName());
+        Assert.assertEquals(dbUserAttribute.getValue(), userAttribute.getValue());
+    }
+    @Test(groups ={"COMPLETE_USER"}, dependsOnMethods = {"completeUserAddAttribute"})
+    public void completeUserAddMVAttributeWithMetadata() throws Exception {
+        User user = getAndAssert(getUserId());
+
+        MetadataElement elem = defaultUserAttributes.get(RANDOM_ATTRIBUTE);
+        final UserAttribute userAttribute = new UserAttribute();
+        userAttribute.setOperation(AttributeOperationEnum.ADD);
+        userAttribute.setName(elem.getAttributeName());
+        userAttribute.setIsMultivalued(true);
+        List<String> values = new ArrayList<String>();
+        values.add(getRandomName());
+        values.add(getRandomName());
+        values.add(getRandomName());
+        values.add(getRandomName());
+        userAttribute.setValues(values);
+        userAttribute.setMetadataId(elem.getId());
+        user.getUserAttributes().put(userAttribute.getName(), userAttribute);
+
+        saveAndAssert(user);
+
+        User foundUser = getAndAssert(user.getId());
+
+        Assert.assertEquals(foundUser.getUserAttributes().size(), user.getUserAttributes().size());
+        UserAttribute dbUserAttribute = foundUser.getUserAttributes().get(userAttribute.getName());
+
+        Assert.assertEquals(dbUserAttribute.getIsMultivalued(), userAttribute.getIsMultivalued());
+
+        Assert.assertEquals(dbUserAttribute.getValues().size(), values.size());
+    }
+    @Test(groups ={"COMPLETE_USER"}, dependsOnMethods = {"completeUserAddMVAttributeWithMetadata"})
+    public void completeUserUpdateMVAttributeWithMetadata() throws Exception {
+        User user = getAndAssert(getUserId());
+
+        MetadataElement elem = defaultUserAttributes.get(RANDOM_ATTRIBUTE);
+        final UserAttribute userAttribute = user.getAttribute(RANDOM_ATTRIBUTE);
+
+        List<String> origValues = new ArrayList<>(userAttribute.getValues());
+
+        userAttribute.setOperation(AttributeOperationEnum.REPLACE);
+        userAttribute.setIsMultivalued(true);
+        List<String> values = new ArrayList<String>();
+        values.add(getRandomName());
+        values.add(getRandomName());
+        values.add(getRandomName());
+        values.add(getRandomName());
+        values.add(getRandomName());
+        userAttribute.setValues(values);
+        user.getUserAttributes().put(userAttribute.getName(), userAttribute);
+
+        saveAndAssert(user);
+
+        User foundUser = getAndAssert(user.getId());
+
+
+        UserAttribute dbUserAttribute = foundUser.getUserAttributes().get(userAttribute.getName());
+        Assert.assertEquals(dbUserAttribute.getIsMultivalued(), userAttribute.getIsMultivalued());
+
+        Assert.assertTrue(dbUserAttribute.getValues().size() > origValues.size());
+        for(int i=0;i<origValues.size();i++){
+            String origValue = origValues.get(i);
+            String newValue = dbUserAttribute.getValues().get(i);
+            Assert.assertNotEquals(newValue, origValue);
+        }
+    }
+    @Test(groups ={"COMPLETE_USER"}, dependsOnMethods = {"completeUserUpdateMVAttributeWithMetadata"})
+    public void completeUserDeleteMVAttributeWithMetadata() throws Exception {
+        User user = getAndAssert(getUserId());
+
+        final UserAttribute userAttribute = user.getAttribute(RANDOM_ATTRIBUTE);
+        userAttribute.setOperation(AttributeOperationEnum.DELETE);
+
+        user.getUserAttributes().put(userAttribute.getName(), userAttribute);
+
+        saveAndAssert(user);
+
+        User foundUser = getAndAssert(user.getId());
+
+        UserAttribute dbUserAttribute = foundUser.getUserAttributes().get(userAttribute.getName());
+        Assert.assertNull(dbUserAttribute);
+    }
+
+    @Test(groups ={"COMPLETE_USER"}, dependsOnMethods = {"completeUserDeleteMVAttributeWithMetadata"})
+    public void completeUserAddExistedAttribute() throws Exception {
+        User user = getAndAssert(getUserId());
+
+        MetadataElement elem = defaultUserAttributes.get(DRIVERS_LICENSE);
+        final UserAttribute userAttribute = new UserAttribute();
+        userAttribute.setOperation(AttributeOperationEnum.ADD);
+        userAttribute.setName(elem.getAttributeName());
+        userAttribute.setValue(getRandomName());
+        userAttribute.setMetadataId(elem.getId());
+
+        user.getUserAttributes().put(userAttribute.getName(), userAttribute);
+
+        final Response response = save(user);
+        Assert.assertTrue(response.isFailure(), "Attribute with the same name can be added");
+        Assert.assertNotNull(response.getErrorCode(), String.format("Error code must not be null"));
+        // TODO: need to assert with error code when it is added
+    }
+
+
+
+    @Test(groups ={"COMPLETE_USER"}, dependsOnMethods = {"completeUserAddExistedAttribute"})
+    public void completeUserDeleteRequiredAttribute() throws Exception {
+        User user = getAndAssert(getUserId());
+
+        UserAttribute userAttribute = null;
+        for(String attrName: defaultUserAttributes.keySet()) {
+            MetadataElement metadataElement = defaultUserAttributes.get(attrName);
+            if (metadataElement.getRequired()) {
+                userAttribute = user.getUserAttributes().get(attrName);
+                break;
+            }
+        }
+        userAttribute.setOperation(AttributeOperationEnum.DELETE);
+        user.getUserAttributes().put(userAttribute.getName(), userAttribute);
+        saveAndAssert(user);
+
+        User foundUser = getAndAssert(user.getId());
+        // required Attribute must not be deleted
+        Assert.assertEquals(foundUser.getUserAttributes().size(), user.getUserAttributes().size());
+        UserAttribute dbUserAttribute = foundUser.getUserAttributes().get(userAttribute.getName());
+        Assert.assertNotNull(dbUserAttribute, "User Attribute is deleted");
+    }
+
+    @Test(groups ={"COMPLETE_USER"}, dependsOnMethods = {"completeUserDeleteRequiredAttribute"})
+    public void completeUserDeleteTest() throws Exception {
+        User user = getAndAssert(getUserId());
+
+        deleteAndAssert(user);
+
+        User foundUser = get(user.getId());
+        // required Attribute must not be deleted
+        Assert.assertNull(foundUser, "User cannot be deleted");
+    }
 }
