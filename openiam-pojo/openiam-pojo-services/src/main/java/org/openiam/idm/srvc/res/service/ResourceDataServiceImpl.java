@@ -1,6 +1,7 @@
 package org.openiam.idm.srvc.res.service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
@@ -31,6 +32,7 @@ import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
+import org.openiam.idm.srvc.res.domain.ResourceToResourceMembershipXrefEntity;
 import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
 import org.openiam.idm.srvc.res.dto.*;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
@@ -139,6 +141,30 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     public List<Resource> findBeans(final ResourceSearchBean searchBean, final int from, final int size, final Language language) {
         final List<ResourceEntity> resultsEntities = resourceService.findBeans(searchBean, from, size, languageConverter.convertToEntity(language, false));
         final List<Resource> finalList = resourceConverter.convertToDTOList(resultsEntities,searchBean.isDeepCopy());
+        if(searchBean != null) {
+        	if(searchBean.isIncludeAccessRights()) {
+        		if(CollectionUtils.isNotEmpty(resultsEntities)) {
+        			final Map<String, Resource> resourceMap = new HashMap<String, Resource>();
+        			finalList.forEach(e -> {
+        				resourceMap.put(e.getId(), e);
+        			});
+		        	resultsEntities.forEach(entity -> {
+		        		if(CollectionUtils.isNotEmpty(searchBean.getParentIdSet())) {
+		        			/* it makes no logical sense if you're asking for multiple parentIds, and wanting access rights */
+		        			if(CollectionUtils.size(searchBean.getParentIdSet()) > 1) {
+		        				throw new IllegalArgumentException("Can only have one parent ID if including access rights");
+		        			}
+		        			final String parentId = searchBean.getParentIdSet().iterator().next();
+		        			final ResourceToResourceMembershipXrefEntity xref = entity.getParent(parentId);
+		        			if(xref != null && xref.getRights() != null) {
+		        				final List<String> rightIds = xref.getRights().stream().map(e -> e.getId()).collect(Collectors.toList());
+		        				resourceMap.get(entity.getId()).setAccessRightIds(rightIds);
+		        			}
+		        		}
+			        });
+	        	}
+        	}
+        }
         return finalList;
     }
 
@@ -519,7 +545,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 
     @Override
     @CacheEvict(value = "resources", allEntries=true)
-    public Response addChildResource(final String resourceId, final String childResourceId, final String requesterId) {
+    public Response addChildResource(final String resourceId, final String childResourceId, final String requesterId, final Set<String> rights) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLog idmAuditLog = new IdmAuditLog ();
         idmAuditLog.setRequestorUserId(requesterId);
@@ -532,8 +558,8 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
         idmAuditLog.setAuditDescription(
                         String.format("Add child resource: %s to resource: %s", childResourceId, resourceId));
         try {
-            resourceService.validateResource2ResourceAddition(resourceId, childResourceId);
-            resourceService.addChildResource(resourceId, childResourceId);
+            resourceService.validateResource2ResourceAddition(resourceId, childResourceId, rights);
+            resourceService.addChildResource(resourceId, childResourceId, rights);
             idmAuditLog.succeed();
         } catch (BasicDataServiceException e) {
             response.setResponseValue(e.getResponseValue());
@@ -864,10 +890,10 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     }
 
     @Override
-    public Response validateAddChildResource(String resourceId, String childResourceId) {
+    public Response validateAddChildResource(String resourceId, String childResourceId, final Set<String> rights) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
-            resourceService.validateResource2ResourceAddition(resourceId, childResourceId);
+            resourceService.validateResource2ResourceAddition(resourceId, childResourceId, rights);
         } catch (BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
@@ -878,4 +904,9 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
         }
         return response;
     }
+
+	@Override
+	public boolean isMemberOfAnyEntity(final String resourceId) {
+		return resourceService.isMemberOfAnyEntity(resourceId);
+	}
 }

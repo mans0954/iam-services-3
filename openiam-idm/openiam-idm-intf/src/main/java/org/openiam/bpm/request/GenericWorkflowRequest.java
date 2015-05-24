@@ -31,7 +31,8 @@ import org.openiam.idm.srvc.mngsys.domain.AssociationType;
         "userCentricUserId",
         "jsonSerializedParams",
         "additionalApproverIds",
-        "deletable"
+        "deletable",
+        "accessRights"
 })
 public class GenericWorkflowRequest extends BaseObject {
 
@@ -52,6 +53,7 @@ public class GenericWorkflowRequest extends BaseObject {
     private boolean deletable = true;
     private boolean isCustomApproversSequential;
     private Set<String> additionalApproverIds;
+    private Set<String> accessRights;
 
     public String getActivitiRequestType() {
         return activitiRequestType;
@@ -203,4 +205,14 @@ public class GenericWorkflowRequest extends BaseObject {
     public void setCustomApproversSequential(boolean isCustomApproversSequential) {
         this.isCustomApproversSequential = isCustomApproversSequential;
     }
+
+	public Set<String> getAccessRights() {
+		return accessRights;
+	}
+
+	public void setAccessRights(Set<String> accessRights) {
+		this.accessRights = accessRights;
+	}
+    
+    
 }

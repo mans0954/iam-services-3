@@ -23,12 +23,15 @@ import java.util.Set;
         "roleIdSet",
         "resourceIdSet",
         "userIdSet",
-        "organizationIdSet"
+        "organizationIdSet",
+        "includeAccessRights"
 })
 public abstract class EntitlementsSearchBean<T extends KeyNameDTO, KeyType extends Serializable> extends AbstractKeyNameSearchBean<T, KeyType> {
     private Set<String> parentIdSet;
     private Set<String> childIdSet;
 
+    /** requires custom service logic */
+    protected boolean includeAccessRights;
 
     /**
      * Set of Group IDs that this object belongs to.
@@ -109,7 +112,15 @@ public abstract class EntitlementsSearchBean<T extends KeyNameDTO, KeyType exten
         this.organizationIdSet = organizationIdSet;
     }
 
-    public void addParentId(String parentId){
+    public boolean isIncludeAccessRights() {
+		return includeAccessRights;
+	}
+
+	public void setIncludeAccessRights(boolean includeAccessRights) {
+		this.includeAccessRights = includeAccessRights;
+	}
+
+	public void addParentId(String parentId){
         if(StringUtils.isNotBlank(parentId)){
             if(this.parentIdSet==null)
                 this.parentIdSet = new HashSet<>();

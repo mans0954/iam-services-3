@@ -37,18 +37,14 @@
         	<a>adminResource.coorelatedName</a>
         	<b>adminResourceCoorelatedName</b>
         </field>
-		<field
-			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
-			custom-converter-param="dto2entityShallowDozerMapper">
+		<field-exclude>
 			<a>parentResources</a>
 			<b>parentResources</b>
-		</field>
-		<field
-			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
-			custom-converter-param="dto2entityShallowDozerMapper">
+		</field-exclude>
+		<field-exclude>
 			<a>childResources</a>
 			<b>childResources</b>
-		</field>
+		</field-exclude>
 		<field
 			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
 			custom-converter-param="dto2entityShallowDozerMapper">

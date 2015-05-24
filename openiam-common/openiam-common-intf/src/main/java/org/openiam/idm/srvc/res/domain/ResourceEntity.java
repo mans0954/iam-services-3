@@ -4,6 +4,7 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.*;
 import org.openiam.base.domain.AbstractMetdataTypeEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.access.domain.AccessRightEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
@@ -21,11 +22,14 @@ import javax.persistence.OrderBy;
 import javax.persistence.Table;
 import javax.validation.constraints.Size;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "RES")
@@ -59,19 +63,14 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
     @Enumerated(EnumType.STRING)
     private ResourceRisk risk;
 
-    @ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
-    @JoinTable(name = "res_to_res_membership",
-            joinColumns = {@JoinColumn(name = "MEMBER_RESOURCE_ID")},
-            inverseJoinColumns = {@JoinColumn(name = "RESOURCE_ID")})
+    
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="memberEntity", orphanRemoval=true)
     @Fetch(FetchMode.SUBSELECT)
-    private Set<ResourceEntity> parentResources = new HashSet<ResourceEntity>(0);
+    private Set<ResourceToResourceMembershipXrefEntity> parentResources = new HashSet<ResourceToResourceMembershipXrefEntity>(0);
 
-    @ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
-    @JoinTable(name = "res_to_res_membership",
-            joinColumns = {@JoinColumn(name = "RESOURCE_ID")},
-            inverseJoinColumns = {@JoinColumn(name = "MEMBER_RESOURCE_ID")})
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="entity", orphanRemoval=true)
     @Fetch(FetchMode.SUBSELECT)
-    private Set<ResourceEntity> childResources = new HashSet<ResourceEntity>(0);
+    private Set<ResourceToResourceMembershipXrefEntity> childResources = new HashSet<ResourceToResourceMembershipXrefEntity>(0);
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="resource", orphanRemoval=true)
     @OrderBy("name asc")
@@ -203,20 +202,29 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
     public void setURL(String URL) {
         this.URL = URL;
     }
+    
+    public ResourceToResourceMembershipXrefEntity getParent(final String parentId) {
+    	final Optional<ResourceToResourceMembershipXrefEntity> xref = 
+    			this.getParentResources()
+    				.stream()
+    				.filter(e -> parentId.equals(e.getEntity().getId()))
+    				.findFirst();
+    	return xref.isPresent() ? xref.get() : null;
+    }
 
-    public Set<ResourceEntity> getParentResources() {
+    public Set<ResourceToResourceMembershipXrefEntity> getParentResources() {
         return parentResources;
     }
 
-    public void setParentResources(Set<ResourceEntity> parentResources) {
+    public void setParentResources(Set<ResourceToResourceMembershipXrefEntity> parentResources) {
         this.parentResources = parentResources;
     }
 
-    public Set<ResourceEntity> getChildResources() {
+    public Set<ResourceToResourceMembershipXrefEntity> getChildResources() {
         return childResources;
     }
 
-    public void setChildResources(Set<ResourceEntity> childResources) {
+    public void setChildResources(Set<ResourceToResourceMembershipXrefEntity> childResources) {
         this.childResources = childResources;
     }
 
@@ -294,48 +302,44 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
     	}
     }
 
-    public void addParentResource(final ResourceEntity resource) {
-    	if(resource != null) {
-    		if(this.parentResources == null) {
-    			this.parentResources = new LinkedHashSet<ResourceEntity>();
-    		}
-    		this.parentResources.add(resource);
-    	}
-    }
     
-	public void addChildResource(final ResourceEntity resource) {
+	public void addChildResource(final ResourceEntity resource, final Collection<AccessRightEntity> rights) {
 		if(resource != null) {
 			if(this.childResources == null) {
-				this.childResources = new LinkedHashSet<ResourceEntity>();
+				this.childResources = new LinkedHashSet<ResourceToResourceMembershipXrefEntity>();
 			}
-			this.childResources.add(resource);
+			ResourceToResourceMembershipXrefEntity theXref = null;
+			for(final ResourceToResourceMembershipXrefEntity xref : this.childResources) {
+				if(xref.getEntity().getId().equals(getId()) && xref.getMemberEntity().getId().equals(resource.getId())) {
+					theXref = xref;
+					break;
+				}
+			}
+			
+			if(theXref == null) {
+				theXref = new ResourceToResourceMembershipXrefEntity();
+				theXref.setEntity(this);
+				theXref.setMemberEntity(resource);
+			}
+			if(rights != null) {
+				theXref.setRights(new HashSet<AccessRightEntity>(rights));
+			}
+			this.childResources.add(theXref);
 		}
 	}
 	
 	public boolean hasChildResoruce(final ResourceEntity entity) {
 		boolean contains = false;
 		if(childResources != null) {
-			contains = childResources.contains(entity);
+			contains = (childResources.stream().map(e -> e.getMemberEntity()).filter(e -> e.getId().equals(entity.getId())).count() > 0);
 		}
 		return contains;
 	}
 	
-	public void removeChildResource(final String resourceId) {
-		if(resourceId != null && childResources != null) {
-			for(final Iterator<ResourceEntity> it = childResources.iterator(); it.hasNext();) {
-				final ResourceEntity resource = it.next();
-				if(resource.getId().equals(resourceId)) {
-					it.remove();
-					break;
-				}
-			}
-		}
-	}
-	
-	public void removeChildResource(final ResourceEntity resource) {
-		if(resource != null) {
+	public void removeChildResource(final ResourceEntity entity) {
+		if(entity != null) {
 			if(this.childResources != null) {
-				this.childResources.remove(resource);
+				this.childResources.removeIf(e -> e.getMemberEntity().getId().equals(entity.getId()));
 			}
 		}
 	}

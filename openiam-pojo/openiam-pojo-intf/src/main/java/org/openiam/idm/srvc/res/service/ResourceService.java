@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.res.service;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
@@ -58,7 +59,7 @@ public interface ResourceService {
 	@Deprecated
 	public List<ResourceEntity> getChildResources(final String resourceId, final int from, final int size);
 	
-	public void addChildResource(final String parentResourceId, final String childResourceId);
+	public void addChildResource(final String parentResourceId, final String childResourceId, final Set<String> rights);
 	public void deleteChildResource(final String resourceId, final String childResourceId);
 
 	public void addResourceGroup(final String resourceId, final String groupId);
@@ -70,7 +71,9 @@ public interface ResourceService {
 	public int getNumOfResourcesForRole(final String roleId, final ResourceSearchBean searchBean);
     public void addResourceToRole(final String resourceId, final String roleId);
     
-    public void validateResource2ResourceAddition(final String parentId, final String memberId) throws BasicDataServiceException;
+    public void validateResource2ResourceAddition(final String parentId, final String memberId, final Set<String> rights) throws BasicDataServiceException;
+    
+    public boolean isMemberOfAnyEntity(final String resourceId);
     
     public Resource getResourceDTO(final String resourceId);
     

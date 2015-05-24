@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import org.activiti.engine.delegate.DelegateExecution;
 import org.activiti.engine.delegate.DelegateTask;
@@ -217,6 +218,10 @@ public abstract class AbstractActivitiJob implements JavaDelegate, TaskListener 
 	
 	protected String getMemberAssociationId(final DelegateExecution execution) {
 		return getStringVariable(execution, ActivitiConstants.MEMBER_ASSOCIATION_ID);
+	}
+	
+	protected Set<String> getAccessRights(final DelegateExecution execution) {
+		return getObjectVariable(execution, ActivitiConstants.ACCESS_RIGHTS, Set.class);
 	}
 	
 	protected void addAuditLogChild(final DelegateExecution execution, final IdmAuditLog log) {

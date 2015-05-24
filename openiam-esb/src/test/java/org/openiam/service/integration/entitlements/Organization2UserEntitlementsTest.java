@@ -1,6 +1,7 @@
 package org.openiam.service.integration.entitlements;
 
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.openiam.base.ws.Response;
@@ -22,7 +23,7 @@ public class Organization2UserEntitlementsTest extends AbstractEntitlementsTest<
 	}
 
 	@Override
-	protected Response addChildToParent(Organization parent, User child) {
+	protected Response addChildToParent(Organization parent, User child, final Set<String> rights) {
 		return organizationServiceClient.addUserToOrg(parent.getId(), child.getId());
 	}
 
@@ -42,13 +43,13 @@ public class Organization2UserEntitlementsTest extends AbstractEntitlementsTest<
 	}
 
 	@Override
-	protected boolean isChildInParent(Organization parent, User child) {
+	protected boolean isChildInParent(Organization parent, User child, final Set<String> rights) {
 		final List<Organization> organizations = organizationServiceClient.getOrganizationsForUserLocalized(child.getId(), null, 0, 100, getDefaultLanguage());
 		return (CollectionUtils.isNotEmpty(organizations)) ? organizations.contains(parent) : false;
 	}
 
 	@Override
-	protected boolean parentHasChild(Organization parent, User child) {
+	protected boolean parentHasChild(Organization parent, User child, final Set<String> rights) {
 		final UserSearchBean searchBean = new UserSearchBean();
 		searchBean.addOrganizationId(parent.getId());
 		final List<User> users = userServiceClient.findBeans(searchBean, 0, 100);

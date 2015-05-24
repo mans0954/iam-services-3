@@ -25,6 +25,7 @@ public enum ActivitiConstants {
 	IS_ADMIN("IsAdmin", null, false),
 	IS_COMPLETE("IsComplete", null, false),
 	MEMBER_ASSOCIATION_ID("MemberAssociationId", "memberAssociationId", false),
+	ACCESS_RIGHTS("AccessRights", "accessRights", false),
 	MEMBER_ASSOCIATION_TYPE("MemberAssociationType", "memberAssociationType", false),
 	APPROVER_CARDINALTITY("ApproverCardindality", null, false),
 	REQUEST_METADATA_MAP("RequestMetadataMap", null, false),

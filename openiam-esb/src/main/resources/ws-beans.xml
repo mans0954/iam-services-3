@@ -93,5 +93,7 @@
     <jaxws:endpoint id="activitiServiceEndpoint" implementor="#activitiBPMService" address="/ActivitiService"/>
     
     <jaxws:endpoint id="propertyValueServiceEndpoint" implementor="#propertyValueWS" address="/PropertyValueWebService"/>
+    
+    <jaxws:endpoint id="accessRightServiceEndpoint" implementor="#accessRightWS" address="/AccessRightDataService"/>
 
 </beans>

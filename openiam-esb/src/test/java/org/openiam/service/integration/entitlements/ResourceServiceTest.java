@@ -4,6 +4,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.junit.Assert;
+import org.openiam.base.Tuple;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
@@ -15,6 +18,7 @@ import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.service.integration.AbstractAttributeServiceTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.testng.annotations.Test;
 
 public class ResourceServiceTest extends AbstractAttributeServiceTest<Resource, ResourceSearchBean, ResourceProp> {
 
@@ -47,7 +51,7 @@ public class ResourceServiceTest extends AbstractAttributeServiceTest<Resource, 
 	@Override
 	protected Resource newInstance() {
 		final Resource resource = new Resource();
-		resource.setResourceType(resourceDataService.findResourceTypes(null, 0, 1, null).get(0));
+		resource.setResourceType(resourceDataService.findResourceTypes(null, 0, Integer.MAX_VALUE, null).stream().filter(e -> e.isSupportsHierarchy()).findFirst().get());
 		return resource;
 	}
 
@@ -76,4 +80,89 @@ public class ResourceServiceTest extends AbstractAttributeServiceTest<Resource, 
 		return resourceDataService.findBeans(searchBean, from, size, null);
 	}
 
+	@Test
+	public void testAddChildResource() {
+		Tuple<Resource, Resource> t = null;
+		try {
+			addChildResource();
+		} finally {
+			if(t != null) {
+				delete(t.getValue());
+				delete(t.getKey());
+			}
+		}
+	}
+	
+	@Test
+	public void testRemoveChildResource() {
+		Tuple<Resource, Resource> t = null;
+		try {
+			t = addChildResource();
+			Response response = resourceDataService.deleteChildResource(t.getKey().getId(), t.getValue().getId(), "3000");
+			Assert.assertTrue(String.format("Can't delete resource: %s", response), response.isSuccess());
+		} finally {
+			if(t != null) {
+				delete(t.getValue());
+				delete(t.getKey());
+			}
+		}
+	}
+	
+	@Test
+	public void testTouchFindBeansWithRights() {
+		final Tuple<Resource, Resource> t = addChildResource();
+		try {
+			
+			/* check parents */
+			final ResourceSearchBean sb = new ResourceSearchBean();
+			sb.addParentId(t.getKey().getId());
+			sb.setIncludeAccessRights(true);
+			List<Resource> resources = find(sb, 0, Integer.MAX_VALUE);
+			/* assert you get back any results */
+			Assert.assertTrue(CollectionUtils.isNotEmpty(resources));
+			
+			/* assert you get back the correct results */
+			Assert.assertTrue(resources.stream().map(e -> e.getId()).filter(e -> e.equals(t.getValue().getId())).findAny().isPresent());
+			resources.forEach(e -> {
+				Assert.assertTrue(CollectionUtils.isEmpty(e.getAccessRightIds()));
+			});
+			
+			/* check children */
+			sb.setParentIdSet(null);
+			sb.addChildId(t.getValue().getId());
+			resources = find(sb, 0, Integer.MAX_VALUE);
+			
+			/* assert you get back any results */
+			Assert.assertTrue(CollectionUtils.isNotEmpty(resources));
+			
+			/* assert you get back the correct results */
+			Assert.assertTrue(resources.stream().map(e -> e.getId()).filter(e -> e.equals(t.getKey().getId())).findAny().isPresent());
+			resources.forEach(e -> {
+				Assert.assertTrue(CollectionUtils.isEmpty(e.getAccessRightIds()));
+			});
+		} finally {
+			if(t != null) {
+				delete(t.getValue());
+				delete(t.getKey());
+			}
+		}
+	}
+	
+	private Tuple<Resource, Resource> addChildResource() {
+		Resource resource1 = super.createBean();
+		Response response = saveAndAssert(resource1);
+		resource1 = get((String)response.getResponseValue());
+		
+		Resource resource2 = super.createBean();
+		response = saveAndAssert(resource2);
+		resource2 = get((String)response.getResponseValue());
+		
+		response = resourceDataService.addChildResource(resource1.getId(), resource2.getId(), "3000", null);
+		Assert.assertTrue(String.format("Could not add child resource: %s", response), response.isSuccess());
+		
+		response = resourceDataService.addChildResource(resource1.getId(), resource2.getId(), "3000", null);
+		Assert.assertTrue(String.format("Resource shoudl not have been added: %s", response), response.isFailure());
+		
+		return new Tuple<Resource, Resource>(resource1, resource2);
+	}
 }

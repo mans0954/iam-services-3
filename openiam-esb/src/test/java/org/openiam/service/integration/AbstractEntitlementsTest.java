@@ -1,10 +1,16 @@
 package org.openiam.service.integration;
 
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.openiam.authmanager.service.AuthorizationManagerWebService;
 import org.openiam.base.KeyDTO;
 import org.openiam.base.KeyNameDTO;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.ResourceTypeSearchBean;
+import org.openiam.idm.srvc.access.dto.AccessRight;
+import org.openiam.idm.srvc.access.ws.AccessRightDataService;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
 import org.openiam.idm.srvc.org.dto.Organization;
@@ -44,6 +50,10 @@ public abstract class AbstractEntitlementsTest<Parent extends KeyDTO, Child exte
 	@Autowired
 	@Qualifier("organizationTypeClient")
 	private OrganizationTypeDataService organizationTypeClient;
+	
+	@Autowired
+	@Qualifier("accessRightServiceClient")
+	protected AccessRightDataService accessRightServiceClient;
 
 	@Test
 	public void clusterTest() {
@@ -53,22 +63,11 @@ public abstract class AbstractEntitlementsTest<Parent extends KeyDTO, Child exte
 		try {
 			parent = createParent();
 			child = createChild();
-			response = addChildToParent(parent, child);
-			refreshAuthorizationManager();
-			refreshAuthorizationManager();
-			Assert.assertTrue(response.isSuccess(), String.format("Could not add child to parent.  %s", response));
-			Assert.assertTrue(isChildInParent(parent, child), String.format("Child %s not in parent %s", child, parent));
-			Assert.assertTrue(isChildInParent(parent, child), String.format("Child %s not in parent %s", child, parent));
-			Assert.assertTrue(parentHasChild(parent, child), String.format("Parent does not have child", parent, child));
-			Assert.assertTrue(parentHasChild(parent, child), String.format("Parent does not have child", parent, child));
-			response = removeChildFromParent(parent, child);
-			refreshAuthorizationManager();
-			refreshAuthorizationManager();
-			Assert.assertTrue(response.isSuccess(), String.format("Could remove child from parent.  %s", response));
-			Assert.assertFalse(isChildInParent(parent, child), String.format("Child %s in parent %s", child, parent));
-			Assert.assertFalse(isChildInParent(parent, child), String.format("Child %s in parent %s", child, parent));
-			Assert.assertFalse(parentHasChild(parent, child), String.format("Parent has child", parent, child));
-			Assert.assertFalse(parentHasChild(parent, child), String.format("Parent has child", parent, child));
+			final List<AccessRight> rights = accessRightServiceClient.findBeans(null, 0, 1, getDefaultLanguage());
+			doAddAndRemove(parent, child, null);
+			
+			final Set<String> rightIds = rights.stream().map(e -> e.getId()).collect(Collectors.toSet());
+			doAddAndRemove(parent, child, rightIds);
 		} finally {
 			if(parent != null) {
 				response = deleteParent(parent);
@@ -79,6 +78,26 @@ public abstract class AbstractEntitlementsTest<Parent extends KeyDTO, Child exte
 				Assert.assertTrue(response.isSuccess(), String.format("Could not delete child.  %s", response));
 			}
 		}
+	}
+	
+	private void doAddAndRemove(final Parent parent, final Child child, final Set<String> rightIds) {
+		Response response = addChildToParent(parent, child, rightIds);
+		refreshAuthorizationManager();
+		refreshAuthorizationManager();
+		Assert.assertTrue(response.isSuccess(), String.format("Could not add child to parent.  %s", response));
+		Assert.assertTrue(isChildInParent(parent, child, rightIds), String.format("Child %s not in parent %s", child, parent));
+		Assert.assertTrue(isChildInParent(parent, child, rightIds), String.format("Child %s not in parent %s", child, parent));
+		Assert.assertTrue(parentHasChild(parent, child, rightIds), String.format("Parent does not have child", parent, child));
+		Assert.assertTrue(parentHasChild(parent, child, rightIds), String.format("Parent does not have child", parent, child));
+		response = removeChildFromParent(parent, child);
+		refreshAuthorizationManager();
+		refreshAuthorizationManager();
+		Assert.assertTrue(response.isSuccess(), String.format("Could remove child from parent.  %s", response));
+		Assert.assertFalse(isChildInParent(parent, child, rightIds), String.format("Child %s in parent %s", child, parent));
+		Assert.assertFalse(isChildInParent(parent, child, rightIds), String.format("Child %s in parent %s", child, parent));
+		Assert.assertFalse(parentHasChild(parent, child, rightIds), String.format("Parent has child", parent, child));
+		Assert.assertFalse(parentHasChild(parent, child, rightIds), String.format("Parent has child", parent, child));
+		
 	}
 	
 	protected Group createGroup() {
@@ -123,10 +142,10 @@ public abstract class AbstractEntitlementsTest<Parent extends KeyDTO, Child exte
 	
 	protected abstract Parent createParent();
 	protected abstract Child createChild();
-	protected abstract Response addChildToParent(final Parent parent, final Child child);
+	protected abstract Response addChildToParent(final Parent parent, final Child child, final Set<String> rights);
 	protected abstract Response removeChildFromParent(final Parent parent, final Child child);
 	protected abstract Response deleteParent(final Parent parent);
 	protected abstract Response deleteChild(final Child child);
-	protected abstract boolean isChildInParent(final Parent parent, final Child child);
-	protected abstract boolean parentHasChild(final Parent parent, final Child child);
+	protected abstract boolean isChildInParent(final Parent parent, final Child child, final Set<String> rights);
+	protected abstract boolean parentHasChild(final Parent parent, final Child child, final Set<String> rights);
 }

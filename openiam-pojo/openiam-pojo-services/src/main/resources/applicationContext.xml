@@ -265,35 +265,12 @@
 		<property name="hibernateProperties" ref="hibernateProperties" />
 
 		<property name="packagesToScan"
-			value="org.openiam.core.domain*,
-											   org.openiam.idm.srvc.grp.domain*,
-											   org.openiam.idm.srvc.role.domain*,
-                                               org.openiam.idm.srvc.user.domain*,
-                                               org.openiam.am.srvc.domain*,
-                                               org.openiam.idm.srvc.mngsys.domain*,
-                                               org.openiam.idm.srvc.synch.domain*,
-                                               org.openiam.idm.srvc.org.domain*,
-											   org.openiam.idm.srvc.auth.domain*,
-											   org.openiam.idm.srvc.cat.domain*,
-                                               org.openiam.idm.srvc.continfo.domain*,
-                                               org.openiam.idm.srvc.res.domain*,
-                                               org.openiam.idm.srvc.recon.domain*,
-                                               org.openiam.idm.srvc.meta.domain*,
-                                               org.openiam.idm.srvc.policy.domain*,
-                                               org.openiam.idm.srvc.audit.domain*,
-                                               org.openiam.idm.srvc.pswd.domain*,
-                                               org.openiam.idm.srvc.lang.domain*,
-                                               org.openiam.idm.srvc.report.domain*,
-                                               org.openiam.idm.srvc.prov*,
-                                               org.openiam.idm.srvc.batch.domain*,
-                                               org.openiam.idm.srvc.ui*,
-                                               org.openiam.property.domain*,
-                                               org.openiam.idm.srvc.loc.domain*" />
+			value="org.openiam.*" />
 	</bean>
 	<util:properties id="hibernateProperties"
 		location="classpath:openiam.hibernate.properties">
 		<prop key="hibernate.dialect">${openiam.hibernate.dialect}</prop>
-		<prop key="hibernate.show_sql">${openiam.hibernate.show.sql}</prop>
+		<prop key="hibernate.show_sql">true</prop>
 		<prop key="hibernate.generate_statistics">${openiam.hibernate.generate.statistics}</prop>
 		<prop key="hibernate.use_sql_comments">${openiam.hibernate.sql.comments.enabled}</prop>
 		<prop key="hibernate.connection.autoReconnect">${openiam.hibernate.auto.connect.enabled}</prop>

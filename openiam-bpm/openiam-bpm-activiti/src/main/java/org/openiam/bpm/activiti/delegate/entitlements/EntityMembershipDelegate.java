@@ -30,6 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
     @Autowired
@@ -44,6 +45,7 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
 		Response response = null;
 		final String associationId = getAssociationId(execution);
 		final String memberAssociationId = getMemberAssociationId(execution);
+		final Set<String> accessRights = getAccessRights(execution);
 		
 		Group group = null;
 		Role role = null;
@@ -102,7 +104,7 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
 						break;
 					case ADD_RESOURCE_TO_RESOURCE:
 						action = AuditAction.ADD_CHILD_RESOURCE;
-						response = resourceDataService.addChildResource(associationId, memberAssociationId, systemUserId);
+						response = resourceDataService.addChildResource(associationId, memberAssociationId, systemUserId, accessRights);
 						break;
 					case REMOVE_RESOURCE_FROM_RESOURCE:
 						action = AuditAction.REMOVE_CHILD_RESOURCE;

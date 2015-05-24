@@ -1,6 +1,7 @@
 package org.openiam.service.integration.entitlements;
 
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.openiam.base.ws.Response;
@@ -21,7 +22,7 @@ public class Group2GroupEntitlementsTest extends AbstractEntitlementsTest<Group,
 	}
 
 	@Override
-	protected Response addChildToParent(Group parent, Group child) {
+	protected Response addChildToParent(Group parent, Group child, final Set<String> rights) {
 		return groupServiceClient.addChildGroup(parent.getId(), child.getId(), null);
 	}
 
@@ -41,7 +42,7 @@ public class Group2GroupEntitlementsTest extends AbstractEntitlementsTest<Group,
 	}
 
 	@Override
-	protected boolean isChildInParent(Group parent, Group child) {
+	protected boolean isChildInParent(Group parent, Group child, final Set<String> rights) {
 		final GroupSearchBean searchBean = new GroupSearchBean();
 		searchBean.addParentId(parent.getId());
 		final List<Group> children = groupServiceClient.findBeansLocalize(searchBean, null, 0, 100, getDefaultLanguage());
@@ -49,7 +50,7 @@ public class Group2GroupEntitlementsTest extends AbstractEntitlementsTest<Group,
 	}
 
 	@Override
-	protected boolean parentHasChild(Group parent, Group child) {
+	protected boolean parentHasChild(Group parent, Group child, final Set<String> rights) {
 		final GroupSearchBean searchBean = new GroupSearchBean();
 		searchBean.addChildId(child.getId());
 		final List<Group> parents = groupServiceClient.findBeansLocalize(searchBean, null, 0, 100, getDefaultLanguage());

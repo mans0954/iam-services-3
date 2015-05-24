@@ -119,38 +119,6 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 				}
 			}
 
-			if (CollectionUtils.isNotEmpty(resource.getParentResources())) {
-				final Set<String> parentResourceIds = new HashSet<String>();
-				for (final ResourceEntity parent : resource
-						.getParentResources()) {
-					if (parent != null
-							&& StringUtils.isNotBlank(parent.getId())) {
-						parentResourceIds.add(parent.getId());
-					}
-				}
-
-				if (CollectionUtils.isNotEmpty(parentResourceIds)) {
-					criteria.createAlias("parentResources", "parent").add(
-							Restrictions.in("parent.id",
-									parentResourceIds));
-				}
-			}
-
-			if (CollectionUtils.isNotEmpty(resource.getChildResources())) {
-				final Set<String> childResoruceIds = new HashSet<String>();
-				for (final ResourceEntity child : resource.getChildResources()) {
-					if (child != null
-							&& StringUtils.isNotBlank(child.getId())) {
-						childResoruceIds.add(child.getId());
-					}
-				}
-
-				if (CollectionUtils.isNotEmpty(childResoruceIds)) {
-					criteria.createAlias("childResources", "child").add(
-							Restrictions.in("child.id",
-									childResoruceIds));
-				}
-			}
 			if(resource.getAdminResource() != null) {
 				final ResourceEntity adminResource = resource.getAdminResource();
 				if (StringUtils.isNotBlank(adminResource.getId())) {
@@ -350,15 +318,19 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
                 criteria.createAlias("groups", "gr");
                 criteria.add(Restrictions.in("gr.id", searchBean.getGroupIdSet()));
             }
+            
+            if(CollectionUtils.isNotEmpty(searchBean.getChildIdSet())) {
+            	criteria.createAlias("childResources", "childXrefs")
+						.createAlias("childXrefs.memberEntity", "child").add(
+						Restrictions.in("child.id", searchBean.getChildIdSet()));
+			}
+			
+			if(CollectionUtils.isNotEmpty(searchBean.getParentIdSet())) {
+				criteria.createAlias("parentResources", "parentXrefs")
+						.createAlias("parentXrefs.entity", "parent").add(
+						Restrictions.in("parent.id", searchBean.getParentIdSet()));
+			}
 
-            if(CollectionUtils.isNotEmpty(searchBean.getParentIdSet())){
-                criteria.createAlias("parentResources", "pr");
-                criteria.add(Restrictions.in("pr.id", searchBean.getParentIdSet()));
-            }
-            if(CollectionUtils.isNotEmpty(searchBean.getChildIdSet())){
-                criteria.createAlias("childResources", "ch");
-                criteria.add(Restrictions.in("ch.id", searchBean.getChildIdSet()));
-            }
             if(CollectionUtils.isNotEmpty(searchBean.getRoleIdSet())){
                 criteria.createAlias("roles", "r");
                 criteria.add(Restrictions.in("r.id", searchBean.getRoleIdSet()));
