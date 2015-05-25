@@ -45,7 +45,7 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
 		Response response = null;
 		final String associationId = getAssociationId(execution);
 		final String memberAssociationId = getMemberAssociationId(execution);
-		final Set<String> accessRights = getAccessRights(execution);
+		final Set<String> rights = getAccessRights(execution);
 		
 		Group group = null;
 		Role role = null;
@@ -64,7 +64,7 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
 				switch(requestType) {
 					case ADD_GROUP_TO_GROUP:
 						action = AuditAction.ADD_CHILD_GROUP;
-						response = groupDataService.addChildGroup(associationId, memberAssociationId, systemUserId);
+						response = groupDataService.addChildGroup(associationId, memberAssociationId, systemUserId, rights);
 						break;
 					case REMOVE_GROUP_FROM_GROUP:
 						action = AuditAction.REMOVE_CHILD_GROUP;
@@ -104,7 +104,7 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
 						break;
 					case ADD_RESOURCE_TO_RESOURCE:
 						action = AuditAction.ADD_CHILD_RESOURCE;
-						response = resourceDataService.addChildResource(associationId, memberAssociationId, systemUserId, accessRights);
+						response = resourceDataService.addChildResource(associationId, memberAssociationId, systemUserId, rights);
 						break;
 					case REMOVE_RESOURCE_FROM_RESOURCE:
 						action = AuditAction.REMOVE_CHILD_RESOURCE;

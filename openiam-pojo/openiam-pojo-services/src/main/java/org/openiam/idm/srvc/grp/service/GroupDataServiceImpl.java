@@ -15,6 +15,7 @@ import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.searchbeans.RoleSearchBean;
+import org.openiam.idm.srvc.access.service.AccessRightDAO;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
@@ -24,6 +25,7 @@ import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.auth.login.IdentityDAO;
 import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
+import org.openiam.idm.srvc.grp.domain.GroupToGroupMembershipXrefEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.dto.GroupOwner;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
@@ -39,6 +41,7 @@ import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.service.OrganizationDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.res.domain.ResourceToResourceMembershipXrefEntity;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.idm.srvc.role.service.RoleDAO;
@@ -58,6 +61,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * <code>GroupDataServiceImpl</code> provides a service to manage groups as
@@ -126,6 +130,9 @@ public class GroupDataServiceImpl implements GroupDataService {
 
     @Autowired
     protected AuditLogService auditLogService;
+    
+    @Autowired
+    private AccessRightDAO accessRightDAO;
 
     @Autowired
     @Qualifier("authorizationManagerAdminService")
@@ -193,7 +200,9 @@ public class GroupDataServiceImpl implements GroupDataService {
     @LocalizedServiceGet
     @Deprecated
     public List<GroupEntity> getChildGroupsLocalize(final String groupId, final String requesterId, final int from, final int size, final LanguageEntity language) {
-        return groupDao.getChildGroups(groupId, getDelegationFilter(requesterId), from, size);
+    	final GroupSearchBean sb = new GroupSearchBean();
+    	sb.addParentId(groupId);;
+        return findBeansLocalize(sb, requesterId, from, size, language);
     }
 
     @Override
@@ -206,7 +215,9 @@ public class GroupDataServiceImpl implements GroupDataService {
     @LocalizedServiceGet
     @Deprecated
     public List<GroupEntity> getParentGroupsLocalize(final String groupId, final String requesterId, final int from, final int size, final LanguageEntity language) {
-        return groupDao.getParentGroups(groupId, getDelegationFilter(requesterId), from, size);
+    	final GroupSearchBean sb = new GroupSearchBean();
+    	sb.addChildId(groupId);;
+        return findBeansLocalize(sb, requesterId, from, size, language);
     }
 
 
@@ -364,13 +375,17 @@ public class GroupDataServiceImpl implements GroupDataService {
     @Override
     @Deprecated
     public int getNumOfChildGroups(final String groupId, final String requesterId) {
-        return groupDao.getNumOfChildGroups(groupId, getDelegationFilter(requesterId));
+    	final GroupSearchBean sb = new GroupSearchBean();
+    	sb.addParentId(groupId);;
+        return countBeans(sb, requesterId);
     }
 
     @Override
     @Deprecated
     public int getNumOfParentGroups(final String groupId, final String requesterId) {
-        return groupDao.getNumOfParentGroups(groupId, getDelegationFilter(requesterId));
+    	final GroupSearchBean sb = new GroupSearchBean();
+    	sb.addChildId(groupId);;
+        return countBeans(sb, requesterId);
     }
 
     @Override
@@ -492,13 +507,16 @@ public class GroupDataServiceImpl implements GroupDataService {
 
             } else {
                 if(CollectionUtils.isNotEmpty(group.getParentGroups())) {
-                    Set<String> ids = new HashSet<>();
-                    for(GroupEntity grp: group.getParentGroups()){
-                        if(StringUtils.isNotBlank(grp.getId()))
-                            ids.add(grp.getId());
-                    }
+                    final Set<String> ids = group.getParentGroups().stream().map(e -> e.getId()).filter(e -> StringUtils.isNotBlank(e)).collect(Collectors.toSet());
                     if(CollectionUtils.isNotEmpty(ids)){
-                        group.setParentGroups(new HashSet<>(groupDao.findByIds(ids)));
+                        group.setParentGroups(
+	                        groupDao.findByIds(ids).stream().map(e -> {
+	        	    			final GroupToGroupMembershipXrefEntity xref = new GroupToGroupMembershipXrefEntity();
+	        	    			xref.setEntity(e);
+	        	    			xref.setMemberEntity(group);
+	        	    			return xref;
+	        	    		}).collect(Collectors.toSet())
+	        	    	);
                     }
                 } else {
                     group.setParentGroups(null);
@@ -670,11 +688,11 @@ public class GroupDataServiceImpl implements GroupDataService {
 		if(entity != null) {
 			if(!visitedSet.contains(entity)) {
 				visitedSet.add(entity);
-				final Set<GroupEntity> children = entity.getChildGroups();
+				final Set<GroupToGroupMembershipXrefEntity> children = entity.getChildGroups();
 				if(CollectionUtils.isNotEmpty(children)) {
-					for(final GroupEntity child : children) {
+					children.stream().map(e -> e.getMemberEntity()).forEach(child -> {
 						visitGroups(child, visitedSet);
-					}
+					});
 				}
 			}
 		}
@@ -698,15 +716,12 @@ public class GroupDataServiceImpl implements GroupDataService {
 	}
 
 	@Override
-	public void addChildGroup(String groupId, String childGroupId) {
+	public void addChildGroup(String groupId, String childGroupId, final Set<String> rights) {
 		if(groupId != null && childGroupId != null) {
 			final GroupEntity group = groupDao.findById(groupId);
 			final GroupEntity child = groupDao.findById(childGroupId);
 			if(group != null && child != null) {
-				if(!group.hasChildGroup(childGroupId)) {
-					group.addChildGroup(child);
-					groupDao.update(group);
-				}
+				group.addChildGroup(child, accessRightDAO.findByIds(rights));
 			}
 		}
 	}
@@ -714,9 +729,10 @@ public class GroupDataServiceImpl implements GroupDataService {
 	@Override
 	public void removeChildGroup(String groupId, String childGroupId) {
 		if(groupId != null && childGroupId != null) {
-			final GroupEntity childGroup = groupDao.findById(childGroupId);
-			if(childGroup != null) {
-                childGroup.removeParentGroup(groupId);
+			final GroupEntity child = groupDao.findById(childGroupId);
+			final GroupEntity parent = groupDao.findById(groupId);
+			if(parent != null && child != null) {
+				parent.removeChildGroup(child);
 			}
 		}
 	}
@@ -747,7 +763,7 @@ public class GroupDataServiceImpl implements GroupDataService {
 
 	@Override
 	@Transactional
-	public void validateGroup2GroupAddition(String parentId, String memberId) throws BasicDataServiceException {
+	public void validateGroup2GroupAddition(String parentId, String memberId, final Set<String> rights) throws BasicDataServiceException {
 		final GroupEntity parent = groupDao.findById(parentId);
 		final GroupEntity child = groupDao.findById(memberId);
 		
@@ -759,9 +775,11 @@ public class GroupDataServiceImpl implements GroupDataService {
 			throw new BasicDataServiceException(ResponseCode.CIRCULAR_DEPENDENCY);
 		}
 		
+		/*
 		if(parent.hasChildGroup(child.getId())) {
 			throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS);
 		}
+		*/
 		
 		if(StringUtils.equals(parentId, memberId)) {
 			throw new BasicDataServiceException(ResponseCode.CANT_ADD_YOURSELF_AS_CHILD);
@@ -771,18 +789,19 @@ public class GroupDataServiceImpl implements GroupDataService {
 	private boolean causesCircularDependency(final GroupEntity parent, final GroupEntity child, final Set<GroupEntity> visitedSet) {
 		boolean retval = false;
 		if(parent != null && child != null) {
-			if(!visitedSet.contains(child)) {
-				visitedSet.add(child);
-				if(CollectionUtils.isNotEmpty(parent.getParentGroups())) {
-					for(final GroupEntity entity : parent.getParentGroups()) {
-						retval = entity.getId().equals(child.getId());
-						if(retval) {
-							break;
-						}
-						causesCircularDependency(parent, entity, visitedSet);
-					}
-				}
-			}
+			if (!visitedSet.contains(child)) {
+                visitedSet.add(child);
+                if (CollectionUtils.isNotEmpty(parent.getParentGroups())) {
+                    for (final GroupToGroupMembershipXrefEntity xref : parent.getParentGroups()) {
+                    	final GroupEntity entity = xref.getEntity();
+                        retval = entity.getId().equals(child.getId());
+                        if (retval) {
+                            break;
+                        }
+                        causesCircularDependency(parent, entity, visitedSet);
+                    }
+                }
+            }
 		}
 		return retval;
 	}
@@ -815,4 +834,17 @@ public class GroupDataServiceImpl implements GroupDataService {
     	searchBean.addAttribute(attrName, attrValue);
         return groupDao.getByExample(searchBean);
     }
+
+	@Override
+	@Transactional(readOnly = true)
+	public boolean hasAttachedEntities(String groupId) {
+		final GroupEntity group = groupDao.findById(groupId);
+		if(group != null) {
+			return CollectionUtils.isNotEmpty(group.getChildGroups()) ||
+				   CollectionUtils.isNotEmpty(group.getRoles()) ||
+				   CollectionUtils.isNotEmpty(group.getResources());
+		} else {
+			return false;
+		}
+	}
 }

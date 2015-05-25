@@ -232,18 +232,14 @@
             <a>organizationSet</a>
             <b>organizations</b>
         </field>
-		<field
-			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
-			custom-converter-param="dto2entityShallowDozerMapper">
+		<field-exclude>
 			<a>parentGroups</a>
 			<b>parentGroups</b>
-		</field>
-		<field
-			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
-			custom-converter-param="dto2entityShallowDozerMapper">
+		</field-exclude>
+		<field-exclude>
 			<a>childGroups</a>
 			<b>childGroups</b>
-		</field>
+		</field-exclude>
 		<field
 			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
 			custom-converter-param="dto2entityShallowDozerMapper">

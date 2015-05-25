@@ -100,8 +100,8 @@ public class ProvisionGroup extends org.openiam.idm.srvc.grp.dto.Group {
         this.lastUpdate = group.getLastUpdate();
         this.lastUpdatedBy = group.getLastUpdatedBy();
 
-        this.parentGroups = group.getParentGroups();
-        this.childGroups = group.getChildGroups();
+        //this.parentGroups = group.getParentGroups();
+        //this.childGroups = group.getChildGroups();
 
         this.managedSysId = group.getManagedSysId();
         this.managedSysName = group.getManagedSysName();
@@ -125,8 +125,8 @@ public class ProvisionGroup extends org.openiam.idm.srvc.grp.dto.Group {
         this.lastUpdate = group.getLastUpdate();
         this.lastUpdatedBy = group.getLastUpdatedBy();
 
-        this.parentGroups = group.getParentGroups();
-        this.childGroups = group.getChildGroups();
+        //this.parentGroups = group.getParentGroups();
+        //this.childGroups = group.getChildGroups();
 
         this.resources = group.getResources();
         this.roles = group.getRoles();

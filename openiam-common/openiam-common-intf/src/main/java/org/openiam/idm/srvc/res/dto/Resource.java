@@ -5,6 +5,7 @@ package org.openiam.idm.srvc.res.dto;
 import org.openiam.base.AdminResourceDTO;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.entitlements.AbstractEntitlementsDTO;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.lang.dto.LanguageMapping;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
@@ -45,8 +46,7 @@ import java.util.Set;
         "displayNameMap",
         "displayName",
         "coorelatedName",
-        "referenceId",
-        "accessRightIds"
+        "referenceId"
 })
 @XmlSeeAlso({
         Role.class,
@@ -54,7 +54,7 @@ import java.util.Set;
 })
 @DozerDTOCorrespondence(ResourceEntity.class)
 @Internationalized
-public class Resource extends AdminResourceDTO {
+public class Resource extends AbstractEntitlementsDTO {
 
 	@Internationalized
     private ResourceType resourceType;
@@ -85,7 +85,6 @@ public class Resource extends AdminResourceDTO {
     private String displayName;
     private String coorelatedName;
     private String referenceId;
-    private Set<String> accessRightIds;
 
     //private boolean isSSL = false;
 
@@ -256,16 +255,6 @@ public class Resource extends AdminResourceDTO {
 
 	public void setReferenceId(String referenceId) {
 		this.referenceId = referenceId;
-	}
-
-	public Set<String> getAccessRightIds() {
-		return accessRightIds;
-	}
-
-	public void setAccessRightIds(Collection<String> accessRightIds) {
-		if(accessRightIds != null) {
-			this.accessRightIds = new HashSet<String>(accessRightIds);
-		}
 	}
 
 	@Override

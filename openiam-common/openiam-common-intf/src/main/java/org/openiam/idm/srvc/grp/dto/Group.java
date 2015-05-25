@@ -7,6 +7,7 @@ import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseObject;
 import org.openiam.base.KeyNameDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.entitlements.AbstractEntitlementsDTO;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.res.dto.Resource;
@@ -57,7 +58,7 @@ import java.util.*;
         User.class
 })
 @DozerDTOCorrespondence(GroupEntity.class)
-public class Group extends AdminResourceDTO implements Serializable {
+public class Group extends AbstractEntitlementsDTO {
 
     private static final long serialVersionUID = 7657568959406790313L;
 
@@ -75,7 +76,10 @@ public class Group extends AdminResourceDTO implements Serializable {
     protected Date lastUpdate;
     protected String lastUpdatedBy;
 
+    @Deprecated
     protected Set<Group> parentGroups;
+    
+    @Deprecated
     protected Set<Group> childGroups;
 
     protected Set<Resource> resources;
@@ -188,14 +192,17 @@ public class Group extends AdminResourceDTO implements Serializable {
         this.operation = operation;
     }
 
+    @Deprecated
     public Set<Group> getParentGroups() {
 		return parentGroups;
 	}
 
+    @Deprecated
     public void setParentGroups(Set<Group> parentGroups) {
 		this.parentGroups = parentGroups;
 	}
 	
+    @Deprecated
 	public void addParentGroup(final Group group) {
 		if(group != null) {
 			if(parentGroups == null) {
@@ -223,14 +230,17 @@ public class Group extends AdminResourceDTO implements Serializable {
         }
     }
 
+    @Deprecated
     public Set<Group> getChildGroups() {
 		return childGroups;
 	}
 	
+    @Deprecated
 	public void setChildGroups(Set<Group> childGroups) {
 		this.childGroups = childGroups;
 	}
 	
+    @Deprecated
 	public void addChildGroup(final Group group) {
 		if(group != null) {
 			if(childGroups == null) {

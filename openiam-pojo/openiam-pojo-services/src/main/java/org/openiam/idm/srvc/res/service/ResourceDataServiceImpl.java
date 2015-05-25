@@ -22,6 +22,7 @@ import org.openiam.dozer.converter.ResourcePropDozerConverter;
 import org.openiam.dozer.converter.ResourceTypeDozerConverter;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.searchbeans.ResourceTypeSearchBean;
+import org.openiam.idm.srvc.access.service.AccessRightProcessor;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
@@ -73,6 +74,9 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 
     @Autowired
     protected SysConfiguration sysConfiguration;
+    
+    @Autowired
+    private AccessRightProcessor accessRightProcessor;
 
     private static final Log log = LogFactory.getLog(ResourceDataServiceImpl.class);
 
@@ -139,33 +143,10 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     @Transactional(readOnly = true)
 //    @Cacheable(value="resources", key="{ #searchBean.cacheUniqueBeanKey, #from, #size, #language}")
     public List<Resource> findBeans(final ResourceSearchBean searchBean, final int from, final int size, final Language language) {
-        final List<ResourceEntity> resultsEntities = resourceService.findBeans(searchBean, from, size, languageConverter.convertToEntity(language, false));
-        final List<Resource> finalList = resourceConverter.convertToDTOList(resultsEntities,searchBean.isDeepCopy());
-        if(searchBean != null) {
-        	if(searchBean.isIncludeAccessRights()) {
-        		if(CollectionUtils.isNotEmpty(resultsEntities)) {
-        			final Map<String, Resource> resourceMap = new HashMap<String, Resource>();
-        			finalList.forEach(e -> {
-        				resourceMap.put(e.getId(), e);
-        			});
-		        	resultsEntities.forEach(entity -> {
-		        		if(CollectionUtils.isNotEmpty(searchBean.getParentIdSet())) {
-		        			/* it makes no logical sense if you're asking for multiple parentIds, and wanting access rights */
-		        			if(CollectionUtils.size(searchBean.getParentIdSet()) > 1) {
-		        				throw new IllegalArgumentException("Can only have one parent ID if including access rights");
-		        			}
-		        			final String parentId = searchBean.getParentIdSet().iterator().next();
-		        			final ResourceToResourceMembershipXrefEntity xref = entity.getParent(parentId);
-		        			if(xref != null && xref.getRights() != null) {
-		        				final List<String> rightIds = xref.getRights().stream().map(e -> e.getId()).collect(Collectors.toList());
-		        				resourceMap.get(entity.getId()).setAccessRightIds(rightIds);
-		        			}
-		        		}
-			        });
-	        	}
-        	}
-        }
-        return finalList;
+        final List<ResourceEntity> entityList = resourceService.findBeans(searchBean, from, size, languageConverter.convertToEntity(language, false));
+        final List<Resource> dtoList = resourceConverter.convertToDTOList(entityList,searchBean.isDeepCopy());
+        accessRightProcessor.process(searchBean, dtoList, entityList);
+        return dtoList;
     }
 
     @Override

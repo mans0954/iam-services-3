@@ -51,15 +51,19 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
             }else if(StringUtils.isNotBlank(groupSearchBean.getKey())) {
                 criteria.add(Restrictions.eq(getPKfieldName(), groupSearchBean.getKey()));
             }
+            
+            if(CollectionUtils.isNotEmpty(groupSearchBean.getChildIdSet())) {
+            	criteria.createAlias("childGroups", "childXrefs")
+						.createAlias("childXrefs.memberEntity", "child").add(
+						Restrictions.in("child.id", groupSearchBean.getChildIdSet()));
+			}
+			
+			if(CollectionUtils.isNotEmpty(groupSearchBean.getParentIdSet())) {
+				criteria.createAlias("parentGroups", "parentXrefs")
+						.createAlias("parentXrefs.entity", "parent").add(
+						Restrictions.in("parent.id", groupSearchBean.getParentIdSet()));
+			}
 
-            if(CollectionUtils.isNotEmpty(groupSearchBean.getParentIdSet())){
-                criteria.createAlias("parentGroups", "p");
-                criteria.add(Restrictions.in("p.id", groupSearchBean.getParentIdSet()));
-            }
-            if(CollectionUtils.isNotEmpty(groupSearchBean.getChildIdSet())){
-                criteria.createAlias("childGroups", "ch");
-                criteria.add(Restrictions.in("ch.id", groupSearchBean.getChildIdSet()));
-            }
             if(CollectionUtils.isNotEmpty(groupSearchBean.getRoleIdSet())){
                 criteria.createAlias("roles", "r");
                 criteria.add(Restrictions.in("r.id", groupSearchBean.getRoleIdSet()));
@@ -229,20 +233,6 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
 
     @Override
     @Deprecated
-    public List<GroupEntity> getChildGroups(final String groupId, Set<String> filter, int from, int size) {
-        final Criteria criteria = getChildGroupsCriteria(groupId, filter);
-        return getList(criteria, from, size);
-    }
-
-    @Override
-    @Deprecated
-    public List<GroupEntity> getParentGroups(final String groupId, Set<String> filter, int from, int size) {
-        final Criteria criteria = getParentGroupsCriteria(groupId, filter);
-        return getList(criteria, from, size);
-    }
-
-    @Override
-    @Deprecated
     public int getNumOfGroupsForUser(final String userId, Set<String> filter) {
         final Criteria criteria = getEntitlementGroupsCriteria(userId, null, null, filter).setProjection(rowCount());
         return ((Number)criteria.uniqueResult()).intValue();
@@ -263,22 +253,6 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
         criteria.setProjection(rowCount());
         return ((Number)criteria.uniqueResult()).intValue();
     }
-
-    @Override
-    @Deprecated
-	public int getNumOfChildGroups(final String groupId, Set<String> filter) {
-		final Criteria criteria = getChildGroupsCriteria(groupId, filter);
-                       criteria.setProjection(rowCount());
-		return ((Number)criteria.uniqueResult()).intValue();
-	}
-
-	@Override
-	@Deprecated
-	public int getNumOfParentGroups(final String groupId, Set<String> filter) {
-        final Criteria criteria = getParentGroupsCriteria(groupId, filter);
-                       criteria.setProjection(rowCount());
-		return ((Number)criteria.uniqueResult()).intValue();
-	}
 
     private Criteria getEntitlementGroupsCriteria(String userId, String roleId, String resourceId, Set<String> filter){
         final Criteria criteria = super.getCriteria();
@@ -303,7 +277,7 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
         return criteria;
     }
 
-
+    @Deprecated
     private Criteria getParentGroupsCriteria(final String groupId, Set<String> filter) {
         final Criteria criteria = getCriteria().createAlias("childGroups", "group").add( Restrictions.eq("group.id", groupId));
         if(filter!=null && !filter.isEmpty()){
@@ -312,6 +286,7 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
         return criteria;
     }
 
+    @Deprecated
     private Criteria getChildGroupsCriteria(final String groupId, Set<String> filter) {
         final Criteria criteria = getCriteria().createAlias("parentGroups", "group").add( Restrictions.eq("group.id", groupId));
         if(filter!=null && !filter.isEmpty()){

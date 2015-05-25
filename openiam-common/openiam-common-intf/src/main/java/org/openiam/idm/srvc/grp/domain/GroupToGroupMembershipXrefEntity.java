@@ -1,6 +1,5 @@
-package org.openiam.idm.srvc.res.domain;
+package org.openiam.idm.srvc.grp.domain;
 
-import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.AttributeOverride;
@@ -19,46 +18,44 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.openiam.base.domain.KeyEntity;
-import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.access.domain.AccessRightEntity;
-import org.openiam.idm.srvc.membership.domain.AbstractMembershipXrefEntity;
-import org.openiam.idm.srvc.res.dto.Resource;
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
 
 @Entity
-@Table(name = "res_to_res_membership")
+@Table(name = "grp_to_grp_membership")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @AttributeOverride(name = "id", column = @Column(name = "MEMBERSHIP_ID"))
-public class ResourceToResourceMembershipXrefEntity extends KeyEntity {
+public class GroupToGroupMembershipXrefEntity extends KeyEntity {
 
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    @JoinColumn(name = "RESOURCE_ID", referencedColumnName = "RESOURCE_ID", insertable = true, updatable = false, nullable=false)
-    private ResourceEntity entity;
+    @JoinColumn(name = "GROUP_ID", referencedColumnName = "GRP_ID", insertable = true, updatable = false, nullable=false)
+    private GroupEntity entity;
     
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    @JoinColumn(name = "MEMBER_RESOURCE_ID", referencedColumnName = "RESOURCE_ID", insertable = true, updatable = false, nullable=false)
-    private ResourceEntity memberEntity;
-
+    @JoinColumn(name = "MEMBER_GROUP_ID", referencedColumnName = "GRP_ID", insertable = true, updatable = false, nullable=false)
+    private GroupEntity memberEntity;
+    
     /* this is eager.  If you're loading the XREF - it's to get the rights */
     @ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.EAGER)
-    @JoinTable(name = "RES_RES_MEMBERSHIP_RIGHTS",
+    @JoinTable(name = "GRP_GRP_MEMBERSHIP_RIGHTS",
             joinColumns = {@JoinColumn(name = "MEMBERSHIP_ID")},
             inverseJoinColumns = {@JoinColumn(name = "ACCESS_RIGHT_ID")})
     @Fetch(FetchMode.SUBSELECT)
     private Set<AccessRightEntity> rights;
 
-	public ResourceEntity getEntity() {
+	public GroupEntity getEntity() {
 		return entity;
 	}
 
-	public void setEntity(ResourceEntity entity) {
+	public void setEntity(GroupEntity entity) {
 		this.entity = entity;
 	}
 
-	public ResourceEntity getMemberEntity() {
+	public GroupEntity getMemberEntity() {
 		return memberEntity;
 	}
 
-	public void setMemberEntity(ResourceEntity memberEntity) {
+	public void setMemberEntity(GroupEntity memberEntity) {
 		this.memberEntity = memberEntity;
 	}
 
@@ -89,7 +86,7 @@ public class ResourceToResourceMembershipXrefEntity extends KeyEntity {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		ResourceToResourceMembershipXrefEntity other = (ResourceToResourceMembershipXrefEntity) obj;
+		GroupToGroupMembershipXrefEntity other = (GroupToGroupMembershipXrefEntity) obj;
 		if (entity == null) {
 			if (other.entity != null)
 				return false;
@@ -107,6 +104,6 @@ public class ResourceToResourceMembershipXrefEntity extends KeyEntity {
 			return false;
 		return true;
 	}
-
-
+    
+    
 }

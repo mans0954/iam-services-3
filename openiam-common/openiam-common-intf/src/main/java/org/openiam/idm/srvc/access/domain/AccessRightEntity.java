@@ -22,6 +22,7 @@ import org.hibernate.annotations.FetchMode;
 import org.openiam.base.domain.AbstractKeyNameEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.access.dto.AccessRight;
+import org.openiam.idm.srvc.grp.domain.GroupToGroupMembershipXrefEntity;
 import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
 import org.openiam.idm.srvc.meta.dto.MetadataElement;
 import org.openiam.idm.srvc.res.domain.ResourceToResourceMembershipXrefEntity;
@@ -45,6 +46,13 @@ public class AccessRightEntity extends AbstractKeyNameEntity {
             inverseJoinColumns = {@JoinColumn(name = "ACCESS_RIGHT_ID")})
     @Fetch(FetchMode.SUBSELECT)
 	private Set<ResourceToResourceMembershipXrefEntity> resource2ResourceMappings;
+    
+    @ManyToMany(cascade={},fetch=FetchType.LAZY)
+    @JoinTable(name = "GRP_GRP_MEMBERSHIP_RIGHTS",
+            joinColumns = {@JoinColumn(name = "MEMBERSHIP_ID")},
+            inverseJoinColumns = {@JoinColumn(name = "ACCESS_RIGHT_ID")})
+    @Fetch(FetchMode.SUBSELECT)
+	private Set<GroupToGroupMembershipXrefEntity> group2GroupMappings;
 
 	public Set<ResourceToResourceMembershipXrefEntity> getResource2ResourceMappings() {
 		return resource2ResourceMappings;
@@ -55,7 +63,16 @@ public class AccessRightEntity extends AbstractKeyNameEntity {
 		this.resource2ResourceMappings = resource2ResourceMappings;
 	}
     
-    @Transient
+    public Set<GroupToGroupMembershipXrefEntity> getGroup2GroupMappings() {
+		return group2GroupMappings;
+	}
+
+	public void setGroup2GroupMappings(
+			Set<GroupToGroupMembershipXrefEntity> group2GroupMappings) {
+		this.group2GroupMappings = group2GroupMappings;
+	}
+
+	@Transient
     private String displayName;
     
     @Transient

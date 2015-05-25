@@ -13,6 +13,7 @@ import org.openiam.dozer.converter.GroupAttributeDozerConverter;
 import org.openiam.dozer.converter.GroupDozerConverter;
 import org.openiam.exception.EsbErrorToken;
 import org.openiam.idm.searchbeans.GroupSearchBean;
+import org.openiam.idm.srvc.access.service.AccessRightProcessor;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
@@ -34,6 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.jws.WebMethod;
 import javax.jws.WebService;
+
 import java.util.*;
 
 /**
@@ -71,6 +73,9 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
 
     @Autowired
     protected LanguageDataService languageDataService;
+    
+    @Autowired
+    private AccessRightProcessor accessRightProcessor;
 
     public GroupDataWebServiceImpl() {
 
@@ -417,24 +422,20 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     @Transactional(readOnly=true)
     public List<Group> findBeans(final GroupSearchBean searchBean, final String requesterId, final int from,
             final int size) {
-        final List<GroupEntity> groupEntityList = groupManager.findBeans(searchBean, requesterId, from, size);
-        List<Group> groupList = groupDozerConverter.convertToDTOList(groupEntityList, false);
-        return groupList;
+        final List<GroupEntity> entityList = groupManager.findBeans(searchBean, requesterId, from, size);
+        List<Group> dtoList = groupDozerConverter.convertToDTOList(entityList, false);
+        accessRightProcessor.process(searchBean, dtoList, entityList);
+        return dtoList;
     }
 
     @Override
     @LocalizedServiceGet
     public List<Group> findBeansLocalize(final GroupSearchBean searchBean, final String requesterId, final int from, final int size,
                                          final Language language) {
-        final List<GroupEntity> groupEntityList = groupManager.findBeansLocalize(searchBean, requesterId, from, size, languageConverter.convertToEntity(language, false));
-        List<Group> groupList = groupDozerConverter.convertToDTOList(groupEntityList, false);
-//        Collections.sort(groupList, new Comparator<Group>() {
-//            @Override
-//            public int compare(Group o1, Group o2) {
-//                return o1.getName().compareTo(o2.getName());
-//            }
-//        });
-        return groupList;
+        final List<GroupEntity> entityList = groupManager.findBeansLocalize(searchBean, requesterId, from, size, languageConverter.convertToEntity(language, false));
+        final List<Group> dtoList = groupDozerConverter.convertToDTOList(entityList, false);
+        accessRightProcessor.process(searchBean, dtoList, entityList);
+        return dtoList;
     }
 
     @Override
@@ -526,7 +527,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     }
 
     @Override
-    public Response addChildGroup(final String groupId, final String childGroupId, final String requesterId) {
+    public Response addChildGroup(final String groupId, final String childGroupId, final String requesterId, final Set<String> rights) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLog auditLog = new IdmAuditLog();
         auditLog.setAction(AuditAction.ADD_CHILD_GROUP.value());
@@ -534,8 +535,8 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
         auditLog.setAuditDescription(String.format("Add child group: %s to group: %s", childGroupId, groupId));
 
         try {
-        	GroupEntity groupEntity = groupManager.getGroup(groupId);
-        	GroupEntity groupEntityChild = groupManager.getGroup(childGroupId);
+        	GroupEntity groupEntity = groupManager.getGroupLocalize(groupId, null);
+        	GroupEntity groupEntityChild = groupManager.getGroupLocalize(childGroupId, null);
         	if(groupEntity == null || groupEntityChild == null) {
         		throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
         	}
@@ -552,8 +553,8 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
                         "Cannot add group itself as child");
             }
 
-            groupManager.validateGroup2GroupAddition(groupId, childGroupId);
-            groupManager.addChildGroup(groupId, childGroupId);
+            groupManager.validateGroup2GroupAddition(groupId, childGroupId, rights);
+            groupManager.addChildGroup(groupId, childGroupId, rights);
             auditLog.succeed();
         } catch (BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);
@@ -654,10 +655,10 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     }
 
     @Override
-    public Response validateGroup2GroupAddition(String groupId, String childGroupId) {
+    public Response validateGroup2GroupAddition(String groupId, String childGroupId, final Set<String> rights) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
-            groupManager.validateGroup2GroupAddition(groupId, childGroupId);
+            groupManager.validateGroup2GroupAddition(groupId, childGroupId, rights);
         } catch (BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
@@ -682,4 +683,9 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
         return groupDozerConverter.convertToDTOList(
                 groupManager.findGroupsByAttributeValueLocalize(attrName, attrValue, languageConverter.convertToEntity(language, false)), true);
     }
+
+	@Override
+	public boolean hasAttachedEntities(String groupId) {
+		return groupManager.hasAttachedEntities(groupId);
+	}
 }

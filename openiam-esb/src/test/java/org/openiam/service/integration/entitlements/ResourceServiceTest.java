@@ -160,9 +160,6 @@ public class ResourceServiceTest extends AbstractAttributeServiceTest<Resource, 
 		response = resourceDataService.addChildResource(resource1.getId(), resource2.getId(), "3000", null);
 		Assert.assertTrue(String.format("Could not add child resource: %s", response), response.isSuccess());
 		
-		response = resourceDataService.addChildResource(resource1.getId(), resource2.getId(), "3000", null);
-		Assert.assertTrue(String.format("Resource shoudl not have been added: %s", response), response.isFailure());
-		
 		return new Tuple<Resource, Resource>(resource1, resource2);
 	}
 }
