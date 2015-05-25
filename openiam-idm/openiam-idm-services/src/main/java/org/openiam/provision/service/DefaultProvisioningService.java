@@ -1341,7 +1341,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
         if (isAdd) { // send email notifications
             if (pUser.isEmailCredentialsToNewUsers()) {
-                if(this.sendActivationLink){
+                if (this.sendActivationLink) {
                     sendActivationLink(finalProvUser.getUser(), primaryIdentity);
                 } else {
                     sendCredentialsToUser(finalProvUser.getUser(), primaryIdentity.getLogin(), decPassword);
@@ -1524,7 +1524,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                             ResponseType resp = resetPassword(requestId,
                                     login, password, managedSysDto,
                                     objectMatchDozerConverter.convertToDTO(matchObj, false),
-                                    buildMngSysAttributes(login, "RESET_PASSWORD"));
+                                    buildMngSysAttributes(login, "RESET_PASSWORD"), "RESET_PASSWORD");
                             log.info("============== Connector Reset Password get : " + new Date());
                             if (resp != null && resp.getStatus() == StatusCodeType.SUCCESS) {
                                 if (enableOnPassReset(res)) {
@@ -1824,16 +1824,21 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             pswd.setPrincipal(identity.getLogin());
             pswd.setPassword(passwordSync.getPassword());
 
-            try {
-                response = passwordManager.isPasswordValid(pswd);
-                if (response.isFailure()) {
-                    idmAuditLog.fail();
-                    idmAuditLog.setFailureReason("Invalid Password");
-                    return response;
+            if (!passwordSync.getResyncMode()) {
+                try {
+                    response = passwordManager.isPasswordValid(pswd);
+                    if (response.isFailure()) {
+                        idmAuditLog.fail();
+                        idmAuditLog.setFailureReason("Invalid Password");
+                        return response;
+                    }
+                } catch (ObjectNotFoundException oe) {
+                    idmAuditLog.setException(oe);
+                    log.error("Object not found", oe);
                 }
-            } catch (ObjectNotFoundException oe) {
-                idmAuditLog.setException(oe);
-                log.error("Object not found", oe);
+            }else {
+                idmAuditLog.addAttribute(AuditAttributeName.WARNING,"Password Validation Skipped. " +
+                        "In Resync Mode system pushes the same passwords!");
             }
 
             String encPassword = null;
@@ -1937,7 +1942,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                     passwordSync.getPassword(),
                                     managedSysDozerConverter.convertToDTO(mSys, false),
                                     objectMatchDozerConverter.convertToDTO(matchObj, false),
-                                    buildMngSysAttributes(login, "SET_PASSWORD"));
+                                    buildMngSysAttributes(login, "SET_PASSWORD"), "SET_PASSWORD");
 
                             boolean connectorSuccess = false;
                             log.info("============== Connector Set Password get : " + new Date());
@@ -2007,6 +2012,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         }
         return retVal;
     }
+
     private boolean enableOnPassReset(final ResourceEntity resource) {
         boolean retVal = true;
         if (resource != null) {
@@ -2307,7 +2313,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         ResponseType resp = resetPassword(requestId, loginDTO,
                                 passwordSync.getPassword(), managedSysDozerConverter.convertToDTO(mSys, false),
                                 objectMatchDozerConverter.convertToDTO(matchObj, false),
-                                buildMngSysAttributes(loginDTO, "SYNC_PASSWORD"));
+                                buildMngSysAttributes(loginDTO, "SYNC_PASSWORD"), "SET_PASSWORD");
                         if (resp.getStatus() == StatusCodeType.SUCCESS) {
                             auditLog.succeed();
                             auditLog.setAuditDescription("Set password for resource: " + res.getName() + " for user: " + targetLoginEntity.getLogin());
@@ -2707,7 +2713,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     }
 
     private ExtensibleUser buildMngSysAttributesForIDMUser(ProvisionUser pUser, boolean targetSystemUserExists, List<ExtensibleAttribute> mngSysAttrs, String managedSysId,
-                                                                      String operation) {
+                                                           String operation) {
 
         Map<String, Object> bindingMap = new HashMap<>();
         bindingMap.put("sysId", sysConfiguration.getDefaultManagedSysId());
@@ -2889,7 +2895,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         }
 
         ProvisionUser pUser = new ProvisionUser(usr);
-        ExtensibleUser extensibleUser =  buildMngSysAttributesForIDMUser(pUser, targetSysUserExists, mngSysAttrs, managedSysId, "VIEW");
+        ExtensibleUser extensibleUser = buildMngSysAttributesForIDMUser(pUser, targetSysUserExists, mngSysAttrs, managedSysId, "VIEW");
 
         List<ExtensibleAttribute> idmAttrs = extensibleUser.getAttributes();
         List<ExtensibleAttribute> idmAttrsToDelete = new ArrayList<ExtensibleAttribute>();

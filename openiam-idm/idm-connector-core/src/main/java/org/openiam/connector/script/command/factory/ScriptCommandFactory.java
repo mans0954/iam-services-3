@@ -49,6 +49,10 @@ public class ScriptCommandFactory extends AbstractCommandFactory {
     @Qualifier("searchScriptCommand")
     private ConnectorCommand searchScriptCommand;
 
+    @Autowired
+    @Qualifier("resetPasswordScriptCommand")
+    private ConnectorCommand resetPasswordScriptCommand;
+
     public ConnectorCommand getConnectorCommand(CommandType commandType, ExtensibleObjectType extensibleObjectType)
             throws ConnectorDataException {
         String error = String.format(ERROR_PATTERN, commandType, extensibleObjectType, "SalesForce");
@@ -64,7 +68,7 @@ public class ScriptCommandFactory extends AbstractCommandFactory {
         case SET_PASSWORD:
             return setPasswordScriptCommand;
         case RESET_PASSWORD:
-            return setPasswordScriptCommand;
+            return resetPasswordScriptCommand;
         case SUSPEND:
             return suspendScriptCommand;
         case LOOKUP_ATTRIBUTE_NAME:
