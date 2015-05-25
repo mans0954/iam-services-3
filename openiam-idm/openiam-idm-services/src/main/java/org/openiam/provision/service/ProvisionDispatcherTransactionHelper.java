@@ -31,7 +31,6 @@ import org.openiam.idm.srvc.auth.dto.ProvLoginStatusEnum;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
-import org.openiam.idm.srvc.mngsys.domain.ProvisionConnectorEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.mngsys.service.ProvisionConnectorService;
@@ -419,8 +418,7 @@ public class ProvisionDispatcherTransactionHelper {
         ManagedSysDto mSys = managedSystemWebService.getManagedSysByResource(res.getId());
         idmAuditLog.setTargetManagedSys(mSys.getId(), mSys.getName());
 
-        ProvisionConnectorEntity connectorEntity = connectorService.getProvisionConnectorsById(mSys.getConnectorId());
-        if (connectorEntity == null) {
+        if (mSys.getConnectorId() == null) {
             return null;
         }
 

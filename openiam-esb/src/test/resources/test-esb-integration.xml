@@ -132,17 +132,6 @@
 			value="${openiam.service_host}${openiam.idm.ws.path}ResourceDataWebService" />
 	</bean>
 
-	<bean id="managedSysServiceClient" class="org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService"
-		factory-bean="managedSysServiceFactory" factory-method="create" />
-
-
-	<bean id="managedSysServiceFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
-		<property name="serviceClass"
-			value="org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService" />
-		<property name="address"
-			value="${openiam.service_host}${openiam.idm.ws.path}ManagedSystemWebService" />
-	</bean>
-
 
 	<bean id="loginServiceClient" class="org.openiam.idm.srvc.auth.ws.LoginDataWebService"
 		factory-bean="loginServiceFactory" factory-method="create" />
@@ -354,5 +343,12 @@
                   serviceClass="org.openiam.idm.srvc.recon.ws.ReconciliationWebService"
                   address="${openiam.service_host}${openiam.connector.ws.path}ReconciliationWebService" />
 
+    <jaxws:client id="managedSysServiceClient"
+                  serviceClass="org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService"
+                  address="${openiam.service_host}${openiam.connector.ws.path}ManagedSystemWebService" />
+
+    <jaxws:client id="provisionConnectorWebServiceClient"
+                  serviceClass="org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService"
+                  address="${openiam.service_host}${openiam.connector.ws.path}ConnectorWebService" />
 
 </beans>

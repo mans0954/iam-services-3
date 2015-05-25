@@ -31,11 +31,9 @@ import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.request.LookupRequest;
 import org.openiam.connector.type.response.*;
-import org.openiam.exception.EsbErrorToken;
 import org.openiam.exception.ObjectNotFoundException;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
@@ -50,7 +48,6 @@ import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
-import org.openiam.idm.srvc.mngsys.domain.ProvisionConnectorEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.org.dto.Organization;
@@ -2297,9 +2294,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 passwordSync.isPreventChangeCountIncrement());
 
                         // update the target system
-
-                        final ProvisionConnectorEntity connector = connectorService.getProvisionConnectorsById(mSys
-                                .getConnectorId());
 
                         ManagedSystemObjectMatchEntity matchObj = null;
                         final List<ManagedSystemObjectMatchEntity> matcheList = managedSystemService.managedSysObjectParam(
