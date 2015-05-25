@@ -1,4 +1,3 @@
-/*  enable=false
 package org.openiam.service.integration.provisioning;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -12,6 +11,7 @@ import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.service.OrganizationDataService;
 import org.openiam.idm.srvc.policy.dto.*;
 import org.openiam.idm.srvc.policy.service.PolicyDataService;
+import org.openiam.idm.srvc.pswd.service.PasswordPolicyProvider;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
@@ -29,10 +29,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-*/
-/**
- * Created by anton on 17.05.15.
- *//*
+
 
 public class PasswordChangeServiceTest extends AbstractUserManagementServiceTest {
 
@@ -51,6 +48,10 @@ public class PasswordChangeServiceTest extends AbstractUserManagementServiceTest
     @Autowired
     @Qualifier("loginServiceClient")
     private LoginDataWebService loginServiceClient;
+/*
+    @Autowired
+    @Qualifier("passwordPolicyProvider")
+    private PasswordPolicyProvider passwordPolicyProvider;*/
 
     private static final String requestorId = "3000";
     private static final String oiamOrgId = "100";
@@ -60,7 +61,7 @@ public class PasswordChangeServiceTest extends AbstractUserManagementServiceTest
     public String lockedUserId = null;
     public String deactiveUserId = null;
 
-    @Test(priority = 1)
+    //@Test(priority = 1)
     public void changePasswordValidOIAMUser() throws Exception {
         PasswordSync passwordSync = new PasswordSync();
         passwordSync.setUserId(oiamUserId);
@@ -87,7 +88,7 @@ public class PasswordChangeServiceTest extends AbstractUserManagementServiceTest
     }
 
 
-    @Test
+    //@Test
     public void createUsers() throws Exception{
         oiamUserId = createOpeniamUser();
         adUserId = createAdUser();
@@ -95,7 +96,7 @@ public class PasswordChangeServiceTest extends AbstractUserManagementServiceTest
         deactiveUserId = createOpeniamUserDeactive();
     }
 
-    //@Test
+    @Test
     public void createPolicy() throws Exception {
         Set<PolicyAttribute> policyAttribute = new HashSet<>();
         //PolicyAttribute attribute = new PolicyAttribute();
@@ -157,8 +158,8 @@ public class PasswordChangeServiceTest extends AbstractUserManagementServiceTest
         }
 
         Policy policy = new Policy();
-        policy.setName(getRandomName());
-        policy.setDescription(getRandomName());
+        policy.setName("Test PSWD Policy");
+        policy.setDescription("Test Password Policy");
         policy.setStatus(1);
         policy.setPolicyDefId(PolicyConstants.PASSWORD_POLICY);
         policy.setPolicyAttributes(policyAttribute);
@@ -166,6 +167,9 @@ public class PasswordChangeServiceTest extends AbstractUserManagementServiceTest
 
         Response response = policyServiceClient.savePolicy(policy);
         String policyId = (String)response.getResponseValue();
+
+        /*Policy glPolicy = new Policy();
+        glPolicy = passwordPolicyProvider.getGlobalPasswordPolicy();*/
 
         PolicyObjectAssoc policyObjectAssoc = new PolicyObjectAssoc();
         policyObjectAssoc.setAssociationLevel("GLOBAL");
@@ -292,4 +296,3 @@ public class PasswordChangeServiceTest extends AbstractUserManagementServiceTest
     }
 
 }
-*/
