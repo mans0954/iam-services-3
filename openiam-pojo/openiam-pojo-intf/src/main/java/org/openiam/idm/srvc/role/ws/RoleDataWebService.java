@@ -10,7 +10,9 @@ import org.openiam.idm.srvc.role.dto.RoleAttribute;
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
+
 import java.util.List;
+import java.util.Set;
 
 /**
  * Interface permitting the management of Roles and related objects such as
@@ -274,11 +276,13 @@ public interface RoleDataWebService {
     @WebMethod
     public Response addChildRole(final @WebParam(name="roleId", targetNamespace="") String roleId,
     						     final @WebParam(name="parentRoleId", targetNamespace="") String childRoleId,
-                                 final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+                                 final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
+                                 final @WebParam(name = "rights", targetNamespace = "") Set<String> rights);
     
     @WebMethod
     public Response canAddChildRole(final @WebParam(name="roleId", targetNamespace="") String roleId,
-    						        final @WebParam(name="parentRoleId", targetNamespace="") String childRoleId);
+    						        final @WebParam(name="parentRoleId", targetNamespace="") String childRoleId,
+    						        final @WebParam(name = "rights", targetNamespace = "") Set<String> rights);
 
     /**
      * Remove Role specified by childRoleId from the membership list of Group specified by roleId
@@ -329,4 +333,7 @@ public interface RoleDataWebService {
     @WebMethod
     public List<TreeObjectId> getRolesWithSubRolesIds(final @WebParam(name="roleIds", targetNamespace="") List<String> roleIds,
                                                       final @WebParam(name="requesterId", targetNamespace="") String requesterId);
+    
+    @WebMethod
+    public boolean hasChildEntities(final @WebParam(name = "roleId", targetNamespace = "") String roleId);
 }

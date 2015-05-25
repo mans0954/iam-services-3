@@ -347,18 +347,14 @@
 			<a>roleAttributes</a>
 			<b>roleAttributes</b>
 		</field>
-		<field
-			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
-			custom-converter-param="dto2entityShallowDozerMapper">
+		<field-exclude>
 			<a>childRoles</a>
 			<b>childRoles</b>
-		</field>
-		<field
-			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
-			custom-converter-param="dto2entityShallowDozerMapper">
+		</field-exclude>
+		<field-exclude>
 			<a>parentRoles</a>
 			<b>parentRoles</b>
-		</field>
+		</field-exclude>
 		<field
 			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
 			custom-converter-param="dto2entityShallowDozerMapper">

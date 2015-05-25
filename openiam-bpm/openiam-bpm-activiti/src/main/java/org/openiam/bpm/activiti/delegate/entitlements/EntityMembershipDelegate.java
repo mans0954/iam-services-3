@@ -88,7 +88,7 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
 						break;
 					case ADD_ROLE_TO_ROLE:
 						action = AuditAction.ADD_CHILD_ROLE;
-						response = roleDataService.addChildRole(associationId, memberAssociationId, systemUserId);
+						response = roleDataService.addChildRole(associationId, memberAssociationId, systemUserId, rights);
 						break;
 					case REMOVE_ROLE_FROM_ROLE:
 						action = AuditAction.REMOVE_CHILD_ROLE;

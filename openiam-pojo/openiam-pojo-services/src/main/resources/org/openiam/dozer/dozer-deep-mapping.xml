@@ -124,14 +124,14 @@
 			<a>roleAttributes</a>
 			<b>roleAttributes</b>
 		</field>
-		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
+		<field-exclude>
 			<a>childRoles</a>
 			<b>childRoles</b>
-		</field>
-		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
+		</field-exclude>
+		<field-exclude>
 			<a>parentRoles</a>
 			<b>parentRoles</b>
-		</field>
+		</field-exclude>
         <field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
             <a>users</a>
             <b>users</b>

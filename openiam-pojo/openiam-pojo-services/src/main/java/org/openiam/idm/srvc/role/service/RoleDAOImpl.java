@@ -92,17 +92,19 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
                 criteria.createAlias("groups", "gr");
                 criteria.add(Restrictions.in("gr.id", roleSearchBean.getGroupIdSet()));
             }
+            
+            if(CollectionUtils.isNotEmpty(roleSearchBean.getChildIdSet())) {
+            	criteria.createAlias("childRoles", "childXrefs")
+						.createAlias("childXrefs.memberEntity", "child").add(
+						Restrictions.in("child.id", roleSearchBean.getChildIdSet()));
+			}
+			
+			if(CollectionUtils.isNotEmpty(roleSearchBean.getParentIdSet())) {
+				criteria.createAlias("parentRoles", "parentXrefs")
+						.createAlias("parentXrefs.entity", "parent").add(
+						Restrictions.in("parent.id", roleSearchBean.getParentIdSet()));
+			}
 
-            if(CollectionUtils.isNotEmpty(roleSearchBean.getParentIdSet())){
-            	//criteria.setCacheable(false); /* buggy with collections */
-                criteria.createAlias("parentRoles", "pr");
-                criteria.add(Restrictions.in("pr.id", roleSearchBean.getParentIdSet()));
-            }
-            if(CollectionUtils.isNotEmpty(roleSearchBean.getChildIdSet())){
-            	//criteria.setCacheable(false); /* buggy with collections */
-                criteria.createAlias("childRoles", "ch");
-                criteria.add(Restrictions.in("ch.id", roleSearchBean.getChildIdSet()));
-            }
             if(CollectionUtils.isNotEmpty(roleSearchBean.getResourceIdSet())){
                 criteria.createAlias("resources", "res");
                 criteria.add(Restrictions.in("res.id", roleSearchBean.getResourceIdSet()));
@@ -265,48 +267,35 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
 	@Override
 	@Deprecated
 	public List<RoleEntity> getChildRoles(final String roleId, final Set<String> filter, int from, int size) {
-		final Criteria criteria = getChildRolesCriteria(roleId, filter);
-		return  getList(criteria, from, size);
+		final RoleSearchBean sb = new RoleSearchBean();
+		sb.addParentId(roleId);
+		return getByExample(sb);
 	}
 	
 	@Override
+	@Deprecated
 	public List<RoleEntity> getParentRoles(final String roleId, final Set<String> filter, int from, int size) {
-		final Criteria criteria = getParentRolesCriteria(roleId, filter);
-		return getList(criteria, from, size);
+		final RoleSearchBean sb = new RoleSearchBean();
+		sb.addChildId(roleId);
+		return getByExample(sb);
 	}
 
 	@Override
 	@Deprecated
 	public int getNumOfChildRoles(final String roleId, final Set<String> filter) {
-        final Criteria criteria =  getChildRolesCriteria(roleId, filter);
-                       criteria.setProjection(rowCount());
-		return ((Number)criteria.uniqueResult()).intValue();
+		final RoleSearchBean sb = new RoleSearchBean();
+		sb.addParentId(roleId);
+		return count(sb);
 	}
 
 	@Override
+	@Deprecated
 	public int getNumOfParentRoles(final String roleId, final Set<String> filter) {
-		final Criteria criteria =  getParentRolesCriteria(roleId, filter);
-                       criteria.setProjection(rowCount());
-		
-		return ((Number)criteria.uniqueResult()).intValue();
+		final RoleSearchBean sb = new RoleSearchBean();
+		sb.addChildId(roleId);
+		return count(sb);
 	}
 
-    private Criteria getParentRolesCriteria(final String roleId, final Set<String> filter) {
-        final Criteria criteria = getCriteria().createAlias("childRoles", "role").add( Restrictions.eq("role.id", roleId));
-        if(filter!=null && !filter.isEmpty()){
-            criteria.add( Restrictions.in(getPKfieldName(), filter));
-        }
-        return criteria;
-    }
-
-    private Criteria getChildRolesCriteria(final String roleId, final Set<String> filter) {
-        final Criteria criteria = getCriteria().createAlias("parentRoles", "role").add( Restrictions.eq("role.id", roleId));
-        if(filter!=null && !filter.isEmpty()){
-            criteria.add( Restrictions.in(getPKfieldName(), filter));
-        }
-        return criteria;
-    }
-	
 	private Criteria getRolesForUserCriteria(final String userId, final Set<String> filter) {
 		return getCriteria()
 	               .createAlias("users", "u")
@@ -348,6 +337,17 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
                 rolesHierarchyIds.putIfAbsent(parentRoleId, treeObjectId);
             }
         }
+    }
+    
+    private Criteria getChildRolesCriteria(final String roleId, final Set<String> filter) {
+        final Criteria criteria = getCriteria().createAlias("parentRoles", "parentXrefs")
+					 						   .createAlias("parentXrefs.entity", "parent").add(
+					 						    Restrictions.eq("parent.id", roleId));
+        
+        if(filter!=null && !filter.isEmpty()){
+            criteria.add( Restrictions.in(getPKfieldName(), filter));
+        }
+        return criteria;
     }
 
     private TreeObjectId populateTreeObjectId(final TreeObjectId root, final Set<String> filter){
