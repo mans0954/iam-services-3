@@ -10,7 +10,7 @@ import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.searchbeans.AbstractSearchBean;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.searchbeans.SearchBean;
-import org.openiam.idm.srvc.org.domain.Org2OrgXrefEntity;
+import org.openiam.idm.srvc.org.domain.OrgToOrgMembershipXrefEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.searchbean.converter.OrganizationSearchBeanConverter;
@@ -75,20 +75,6 @@ public class OrganizationDAOImpl extends
         return criteria;
     }
 
-    private Criteria getLocationsForOrganizationsCriteria(final String userId,
-                                                          final Set<String> filter) {
-        final Criteria criteria = getCriteria();
-        if (StringUtils.isNotBlank(userId)) {
-            criteria.createAlias("users", "u").add(
-                    Restrictions.eq("u.id", userId));
-        }
-
-        if (filter != null && !filter.isEmpty()) {
-            criteria.add(Restrictions.in(getPKfieldName(), filter));
-        }
-        return criteria;
-    }
-
     @Override
     protected Criteria getExampleCriteria(final SearchBean searchBean) {
         Criteria criteria = getCriteria();
@@ -117,15 +103,18 @@ public class OrganizationDAOImpl extends
                 criteria.createAlias("users", "usr");
                 criteria.add(Restrictions.in("usr.id", organizationSearchBean.getUserIdSet()));
             }
-
-            if (CollectionUtils.isNotEmpty(organizationSearchBean.getParentIdSet())) {
-                criteria.createAlias("parentOrganizations", "pr");
-                criteria.add(Restrictions.in("pr.id", organizationSearchBean.getParentIdSet()));
-            }
-            if (CollectionUtils.isNotEmpty(organizationSearchBean.getChildIdSet())) {
-                criteria.createAlias("childOrganizations", "ch");
-                criteria.add(Restrictions.in("ch.id", organizationSearchBean.getChildIdSet()));
-            }
+            
+            if(CollectionUtils.isNotEmpty(organizationSearchBean.getChildIdSet())) {
+            	criteria.createAlias("childOrganizations", "childXrefs")
+						.createAlias("childXrefs.memberEntity", "child").add(
+						Restrictions.in("child.id", organizationSearchBean.getChildIdSet()));
+			}
+			
+			if(CollectionUtils.isNotEmpty(organizationSearchBean.getParentIdSet())) {
+				criteria.createAlias("parentOrganizations", "parentXrefs")
+						.createAlias("parentXrefs.entity", "parent").add(
+						Restrictions.in("parent.id", organizationSearchBean.getParentIdSet()));
+			}
 
             if (StringUtils.isNotBlank(organizationSearchBean
                     .getValidParentTypeId())) {
@@ -233,35 +222,6 @@ public class OrganizationDAOImpl extends
         return "id";
     }
 
-    @Override
-    @LocalizedDatabaseGet
-    public List<OrganizationEntity> getChildOrganizations(String orgId,
-                                                          Set<String> filter, final int from, final int size) {
-        return getList(getChildOrganizationsCriteria(orgId, filter), from, size);
-    }
-
-    @Override
-    @LocalizedDatabaseGet
-    public List<OrganizationEntity> getParentOrganizations(String orgId,
-                                                           Set<String> filter, final int from, final int size) {
-        return getList(getParentOrganizationsCriteria(orgId, filter), from,
-                size);
-    }
-
-    @Override
-    public int getNumOfParentOrganizations(String orgId, Set<String> filter) {
-        final Criteria criteria = getParentOrganizationsCriteria(orgId, filter)
-                .setProjection(rowCount());
-        return ((Number) criteria.uniqueResult()).intValue();
-    }
-
-    @Override
-    public int getNumOfChildOrganizations(String orgId, Set<String> filter) {
-        final Criteria criteria = getChildOrganizationsCriteria(orgId, filter)
-                .setProjection(rowCount());
-        return ((Number) criteria.uniqueResult()).intValue();
-    }
-
     // BUG in Hibernate!! count() fails for some queries, while the normal
     // select succeeds. the count query is indeed incorrect:
     // select count(*) as y0_ from COMPANY this_ where
@@ -274,42 +234,9 @@ public class OrganizationDAOImpl extends
         return criteria.list().size();
     }
 
-    private List<OrganizationEntity> getList(Criteria criteria, final int from,
-                                             final int size) {
-        if (from > -1) {
-            criteria.setFirstResult(from);
-        }
-
-        if (size > -1) {
-            criteria.setMaxResults(size);
-        }
-        criteria.addOrder(Order.asc("name"));
-        return criteria.list();
-    }
-
-    private Criteria getParentOrganizationsCriteria(String orgId,
-                                                    Set<String> filter) {
-        Criteria criteria = getCriteria().createAlias("childOrganizations",
-                "organization").add(Restrictions.eq("organization.id", orgId));
-        if (filter != null && !filter.isEmpty()) {
-            criteria.add(Restrictions.in(getPKfieldName(), filter));
-        }
-        return criteria;
-    }
-
-    private Criteria getChildOrganizationsCriteria(String orgId,
-                                                   Set<String> filter) {
-        Criteria criteria = getCriteria().createAlias("parentOrganizations",
-                "organization").add(Restrictions.eq("organization.id", orgId));
-        if (filter != null && !filter.isEmpty()) {
-            criteria.add(Restrictions.in(getPKfieldName(), filter));
-        }
-        return criteria;
-    }
-
     @Override
-    public List<Org2OrgXrefEntity> getOrgToOrgXrefList() {
-        List<Org2OrgXrefEntity> orgTypeXrefEntities = this.getSession().createCriteria(Org2OrgXrefEntity.class).list();
+    public List<OrgToOrgMembershipXrefEntity> getOrgToOrgXrefList() {
+        List<OrgToOrgMembershipXrefEntity> orgTypeXrefEntities = this.getSession().createCriteria(OrgToOrgMembershipXrefEntity.class).list();
         return orgTypeXrefEntities;
     }
 

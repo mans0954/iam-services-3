@@ -1,17 +1,21 @@
 package org.openiam.service.integration.entitlements;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.junit.Assert;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
+import org.openiam.idm.searchbeans.RoleSearchBean;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.service.integration.AbstractEntitlementsTest;
+import org.testng.annotations.Test;
 
-public class Organization2OrganizationEntitlementsTest extends AbstractEntitlementsTest<Organization, Organization> {
+public class Organization2OrganizationEntitlementsTest extends AbstractCircularEntitlementTest<Organization> {
 
 	@Override
 	protected Organization createParent() {
@@ -25,7 +29,7 @@ public class Organization2OrganizationEntitlementsTest extends AbstractEntitleme
 
 	@Override
 	protected Response addChildToParent(Organization parent, Organization child, final Set<String> rights) {
-		return organizationServiceClient.addChildOrganization(parent.getId(), child.getId());
+		return organizationServiceClient.addChildOrganization(parent.getId(), child.getId(), rights);
 	}
 
 	@Override
@@ -48,16 +52,35 @@ public class Organization2OrganizationEntitlementsTest extends AbstractEntitleme
 	protected boolean isChildInParent(Organization parent, Organization child, final Set<String> rights) {
 		final OrganizationSearchBean searchBean = new OrganizationSearchBean();
 		searchBean.addChildId(child.getId());
-		final List<Organization> parents = organizationServiceClient.findBeansLocalized(searchBean, null, 0, 100, getDefaultLanguage());
-		return (CollectionUtils.isNotEmpty(parents)) ? parents.contains(parent) : false;
+		//searchBean.setIncludeAccessRights(true);
+		final List<Organization> dtos = organizationServiceClient.findBeansLocalized(searchBean, null, 0, 100, getDefaultLanguage());
+		if(CollectionUtils.isNotEmpty(dtos)) {
+			final Optional<Organization> optional = dtos.stream().filter(e -> e.getId().equals(parent.getId())).findAny();
+			Assert.assertTrue(String.format("Can't find child org"), optional.isPresent());
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	@Override
 	protected boolean parentHasChild(Organization parent, Organization child, final Set<String> rights) {
 		final OrganizationSearchBean searchBean = new OrganizationSearchBean();
 		searchBean.addParentId(parent.getId());
-		final List<Organization> children = organizationServiceClient.findBeansLocalized(searchBean, null, 0, 100, getDefaultLanguage());
-		return (CollectionUtils.isNotEmpty(children)) ? children.contains(child) : false;
+		searchBean.setIncludeAccessRights(true);
+		final List<Organization> dtos = organizationServiceClient.findBeansLocalized(searchBean, null, 0, 100, getDefaultLanguage());
+		if(CollectionUtils.isNotEmpty(dtos)) {
+			final Optional<Organization> optional = dtos.stream().filter(e -> e.getId().equals(child.getId())).findAny();
+			Assert.assertTrue(String.format("Can't find parent organization"), optional.isPresent());
+			final Organization organization = optional.get();
+			if(CollectionUtils.isEmpty(rights)) {
+				Assert.assertTrue(CollectionUtils.isEmpty(organization.getAccessRightIds()));
+			} else {
+				Assert.assertEquals(organization.getAccessRightIds(), rights);
+			}
+			return true;
+		} else {
+			return false;
+		}
 	}
-
 }

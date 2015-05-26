@@ -14,6 +14,7 @@ import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.LocationSearchBean;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
+import org.openiam.idm.srvc.access.service.AccessRightDAO;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.base.AbstractBaseService;
@@ -29,12 +30,14 @@ import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
-import org.openiam.idm.srvc.org.domain.Org2OrgXrefEntity;
+import org.openiam.idm.srvc.org.domain.OrgToOrgMembershipXrefEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
+import org.openiam.idm.srvc.role.domain.RoleEntity;
+import org.openiam.idm.srvc.role.domain.RoleToRoleMembershipXrefEntity;
 import org.openiam.idm.srvc.searchbean.converter.LocationSearchBeanConverter;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
@@ -57,6 +60,7 @@ import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service("organizationService")
 @Transactional
@@ -131,6 +135,9 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
 
     @Autowired
     protected String postProcessorOrganization;
+    
+    @Autowired
+    private AccessRightDAO accessRightDAO;
 
     @Override
     @LocalizedServiceGet
@@ -186,20 +193,6 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     }
 
     @Override
-    @LocalizedServiceGet
-    @Transactional(readOnly = true)
-    public List<OrganizationEntity> getParentOrganizations(String orgId, String requesterId, int from, int size, final LanguageEntity langauge) {
-        return orgDao.getParentOrganizations(orgId, getDelegationFilter(requesterId, null), from, size);
-    }
-
-    @Override
-    @LocalizedServiceGet
-    @Transactional(readOnly = true)
-    public List<OrganizationEntity> getChildOrganizations(String orgId, String requesterId, int from, int size, final LanguageEntity langauge) {
-        return orgDao.getChildOrganizations(orgId, getDelegationFilter(requesterId, null), from, size);
-    }
-
-    @Override
     @Transactional(readOnly = true)
     public int count(final OrganizationSearchBean searchBean, String requesterId) {
         Set<String> filter = getDelegationFilter(requesterId, searchBean.getOrganizationTypeId());
@@ -210,18 +203,6 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
         }
 
         return orgDao.count(searchBean);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public int getNumOfParentOrganizations(String orgId, String requesterId) {
-        return orgDao.getNumOfParentOrganizations(orgId, getDelegationFilter(requesterId, null));
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public int getNumOfChildOrganizations(String orgId, String requesterId) {
-        return orgDao.getNumOfChildOrganizations(orgId, getDelegationFilter(requesterId, null));
     }
 
     @Override
@@ -301,8 +282,8 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
                 curEntity = orgDao.findById(organization.getId());
                 mergeOrgProperties(curEntity, newEntity);
                 mergeAttributes(curEntity, newEntity);
-                mergeParents(curEntity, newEntity);
-                mergeChildren(curEntity, newEntity);
+                //mergeParents(curEntity, newEntity);
+                //mergeChildren(curEntity, newEntity);
                 mergeUsers(curEntity, newEntity);
                 mergeGroups(curEntity, newEntity);
                 mergeLocations(curEntity, newEntity);
@@ -391,21 +372,21 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
 		return association;
 	}
 
+    /*
+	* This can be done better
     private void mergeParents(final OrganizationEntity curEntity, final OrganizationEntity newEntity) {
         if (curEntity.getParentOrganizations() == null) {
-            curEntity.setParentOrganizations(new HashSet<OrganizationEntity>());
+            curEntity.setParentOrganizations(new HashSet<OrgToOrgMembershipXrefEntity>());
         }
         if (newEntity != null && newEntity.getParentOrganizations() != null) {
-            List<String> currIds = new ArrayList<String>();
-            for (OrganizationEntity cpo : curEntity.getParentOrganizations()) {
-                currIds.add(cpo.getId());
-            }
+            final List<String> currIds = curEntity.getParentOrganizations().stream().map(e -> e.getEntity().getId()).collect(Collectors.toList());
             final Set<OrganizationEntity> toAdd = new HashSet<OrganizationEntity>();
             final Set<OrganizationEntity> toRemove = new HashSet<OrganizationEntity>();
             if (CollectionUtils.isNotEmpty(newEntity.getParentOrganizations())) {
-                Iterator<OrganizationEntity> iterator = newEntity.getParentOrganizations().iterator();
+                Iterator<OrgToOrgMembershipXrefEntity> iterator = newEntity.getParentOrganizations().iterator();
                 while (iterator.hasNext()) {
-                    OrganizationEntity nop = iterator.next();
+                	OrgToOrgMembershipXrefEntity xref = iterator.next();
+                	final OrganizationEntity nop = xref.getEntity();
                     if (currIds.contains(nop.getId())) {
                         currIds.remove(nop.getId());
                         // parent org exists
@@ -414,7 +395,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
                         toAdd.add(orgDao.findById(nop.getId()));
                     }
                     //remove
-                    for (OrganizationEntity cop : curEntity.getParentOrganizations()) {
+                    for (OrganizationEntity cop : curEntity.getParentOrganizations().stream().map(mapper)) {
                         if (currIds.contains(cop.getId())) {
                             toRemove.add(cop);
                             break;
@@ -468,6 +449,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
             }
         }
     }
+    */
 
     private void mergeLocations(final OrganizationEntity curEntity, final OrganizationEntity newEntity) {
         if (curEntity.getLocations() == null) {
@@ -717,18 +699,18 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
         final OrganizationEntity parent = orgDao.findById(organizationId);
         final OrganizationEntity child = orgDao.findById(childOrganizationId);
         if (parent != null && child != null) {
-            parent.removeChildOrganization(childOrganizationId);
+            parent.removeChild(child);
             orgDao.update(parent);
         }
     }
 
     @Override
     @Transactional
-    public void addChildOrganization(String organizationId, String childOrganizationId) {
+    public void addChildOrganization(String organizationId, String childOrganizationId, final Set<String> rightIds) {
         final OrganizationEntity parent = orgDao.findById(organizationId);
         final OrganizationEntity child = orgDao.findById(childOrganizationId);
         if (parent != null && child != null) {
-            parent.addChildOrganization(child);
+            parent.addChild(child, accessRightDAO.findByIds(rightIds));
             orgDao.update(parent);
         }
     }
@@ -860,7 +842,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
 
 	@Override
 	@Transactional
-	public void validateOrg2OrgAddition(String parentId, String memberId)
+	public void validateOrg2OrgAddition(String parentId, String memberId, final Set<String> rightIds)
 			throws BasicDataServiceException {
 		final OrganizationEntity parent = orgDao.findById(parentId);
 		final OrganizationEntity child = orgDao.findById(memberId);
@@ -868,9 +850,11 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
             throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
         }
 
+		/*
         if (parent.hasChildOrganization(memberId)) {
             throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS);
         }
+        */
 
         if (causesCircularDependency(parent, child, new HashSet<OrganizationEntity>())) {
             throw new BasicDataServiceException(ResponseCode.CIRCULAR_DEPENDENCY);
@@ -891,12 +875,13 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     }
 	
 	private boolean causesCircularDependency(final OrganizationEntity parent, final OrganizationEntity child, final Set<OrganizationEntity> visitedSet) {
-        boolean retval = false;
-        if (parent != null && child != null) {
-            if (!visitedSet.contains(child)) {
+		boolean retval = false;
+		if(parent != null && child != null) {
+			if (!visitedSet.contains(child)) {
                 visitedSet.add(child);
                 if (CollectionUtils.isNotEmpty(parent.getParentOrganizations())) {
-                    for (final OrganizationEntity entity : parent.getParentOrganizations()) {
+                    for (final OrgToOrgMembershipXrefEntity xref : parent.getParentOrganizations()) {
+                    	final OrganizationEntity entity = xref.getEntity();
                         retval = entity.getId().equals(child.getId());
                         if (retval) {
                             break;
@@ -905,8 +890,8 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
                     }
                 }
             }
-        }
-        return retval;
+		}
+		return retval;
     }
 
     @Override
@@ -921,14 +906,14 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
 
     @Transactional(readOnly = true)
     public void fireUpdateOrgMap() {
-        List<Org2OrgXrefEntity> xrefList = orgDao.getOrgToOrgXrefList();
+        List<OrgToOrgMembershipXrefEntity> xrefList = orgDao.getOrgToOrgXrefList();
 
         final Map<String, Set<String>> parentOrg2ChildOrgMap = new HashMap<String, Set<String>>();
         final Map<String, String> child2ParentOrgMap = new HashMap<String, String>();
 
-        for(final Org2OrgXrefEntity xref : xrefList) {
-            final String orgId = xref.getId().getOrganizationId();
-            final String memberOrgId = xref.getId().getMemberOrganizationId();
+        for(final OrgToOrgMembershipXrefEntity xref : xrefList) {
+            final String orgId = xref.getEntity().getId();
+            final String memberOrgId = xref.getMemberEntity().getId();
 
             if(!parentOrg2ChildOrgMap.containsKey(orgId)) {
                 parentOrg2ChildOrgMap.put(orgId, new HashSet<String>());
@@ -1007,21 +992,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     public List<OrganizationEntity> getOrganizationsForUser(String userId, String requesterId, final int from, final int size){
         return this.getOrganizationsForUser(userId, requesterId, from, size, getDefaultLanguage());
     }
-    @Deprecated
-    @Transactional(readOnly = true)
-    public List<OrganizationEntity> getParentOrganizations(final String orgId, String requesterId, final int from, final int size){
-        return this.getParentOrganizations(orgId, requesterId, from, size, getDefaultLanguage());
-    }
-    @Deprecated
-    @Transactional(readOnly = true)
-    public List<OrganizationEntity> getChildOrganizations(final String orgId, String requesterId, final int from, final int size){
-        return this.getChildOrganizations(orgId, requesterId, from, size, getDefaultLanguage());
-    }
-    @Deprecated
-    @Transactional(readOnly = true)
-    public List<OrganizationEntity> findBeans(final OrganizationSearchBean searchBean, String requesterId, final int from, final int size){
-        return this.findBeans(searchBean, requesterId, from, size, getDefaultLanguage());
-    }
+
     @Deprecated
     @Transactional(readOnly = true)
     public List<OrganizationEntity> getAllowedParentOrganizationsForType(final String orgTypeId, String requesterId){

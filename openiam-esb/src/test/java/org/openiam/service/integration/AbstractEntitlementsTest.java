@@ -80,7 +80,12 @@ public abstract class AbstractEntitlementsTest<Parent extends KeyDTO, Child exte
 		}
 	}
 	
-	private void doAddAndRemove(final Parent parent, final Child child, final Set<String> rightIds) {
+	protected void doAddAndRemove(final Parent parent, final Child child, final Set<String> rightIds) {
+		doAddChildToParent(parent, child, rightIds);
+		doRemoveChildFromParent(parent, child, rightIds);
+	}
+	
+	protected void doAddChildToParent(final Parent parent, final Child child, final Set<String> rightIds) {
 		Response response = addChildToParent(parent, child, rightIds);
 		refreshAuthorizationManager();
 		refreshAuthorizationManager();
@@ -89,7 +94,10 @@ public abstract class AbstractEntitlementsTest<Parent extends KeyDTO, Child exte
 		Assert.assertTrue(isChildInParent(parent, child, rightIds), String.format("Child %s not in parent %s", child, parent));
 		Assert.assertTrue(parentHasChild(parent, child, rightIds), String.format("Parent does not have child", parent, child));
 		Assert.assertTrue(parentHasChild(parent, child, rightIds), String.format("Parent does not have child", parent, child));
-		response = removeChildFromParent(parent, child);
+	}
+	
+	protected void doRemoveChildFromParent(final Parent parent, final Child child, final Set<String> rightIds) {
+		Response response = removeChildFromParent(parent, child);
 		refreshAuthorizationManager();
 		refreshAuthorizationManager();
 		Assert.assertTrue(response.isSuccess(), String.format("Could remove child from parent.  %s", response));
@@ -97,7 +105,6 @@ public abstract class AbstractEntitlementsTest<Parent extends KeyDTO, Child exte
 		Assert.assertFalse(isChildInParent(parent, child, rightIds), String.format("Child %s in parent %s", child, parent));
 		Assert.assertFalse(parentHasChild(parent, child, rightIds), String.format("Parent has child", parent, child));
 		Assert.assertFalse(parentHasChild(parent, child, rightIds), String.format("Parent has child", parent, child));
-		
 	}
 	
 	protected Group createGroup() {

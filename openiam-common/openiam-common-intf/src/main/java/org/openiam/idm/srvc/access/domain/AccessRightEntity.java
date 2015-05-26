@@ -25,7 +25,9 @@ import org.openiam.idm.srvc.access.dto.AccessRight;
 import org.openiam.idm.srvc.grp.domain.GroupToGroupMembershipXrefEntity;
 import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
 import org.openiam.idm.srvc.meta.dto.MetadataElement;
+import org.openiam.idm.srvc.org.domain.OrgToOrgMembershipXrefEntity;
 import org.openiam.idm.srvc.res.domain.ResourceToResourceMembershipXrefEntity;
+import org.openiam.idm.srvc.role.domain.RoleToRoleMembershipXrefEntity;
 import org.openiam.internationalization.Internationalized;
 import org.openiam.internationalization.InternationalizedCollection;
 
@@ -53,6 +55,20 @@ public class AccessRightEntity extends AbstractKeyNameEntity {
             inverseJoinColumns = {@JoinColumn(name = "ACCESS_RIGHT_ID")})
     @Fetch(FetchMode.SUBSELECT)
 	private Set<GroupToGroupMembershipXrefEntity> group2GroupMappings;
+    
+    @ManyToMany(cascade={},fetch=FetchType.LAZY)
+    @JoinTable(name = "ROLE_ROLE_MEMBERSHIP_RIGHTS",
+            joinColumns = {@JoinColumn(name = "MEMBERSHIP_ID")},
+            inverseJoinColumns = {@JoinColumn(name = "ACCESS_RIGHT_ID")})
+    @Fetch(FetchMode.SUBSELECT)
+	private Set<RoleToRoleMembershipXrefEntity> role2RoleMappings;
+    
+    @ManyToMany(cascade={},fetch=FetchType.LAZY)
+    @JoinTable(name = "ORG_TO_ORG_MEMBERSHIP_RIGHTS",
+            joinColumns = {@JoinColumn(name = "MEMBERSHIP_ID")},
+            inverseJoinColumns = {@JoinColumn(name = "ACCESS_RIGHT_ID")})
+    @Fetch(FetchMode.SUBSELECT)
+	private Set<OrgToOrgMembershipXrefEntity> org2OrgMappings;
 
 	public Set<ResourceToResourceMembershipXrefEntity> getResource2ResourceMappings() {
 		return resource2ResourceMappings;
@@ -71,6 +87,25 @@ public class AccessRightEntity extends AbstractKeyNameEntity {
 			Set<GroupToGroupMembershipXrefEntity> group2GroupMappings) {
 		this.group2GroupMappings = group2GroupMappings;
 	}
+
+	public Set<RoleToRoleMembershipXrefEntity> getRole2RoleMappings() {
+		return role2RoleMappings;
+	}
+
+	public void setRole2RoleMappings(
+			Set<RoleToRoleMembershipXrefEntity> role2RoleMappings) {
+		this.role2RoleMappings = role2RoleMappings;
+	}
+
+	public Set<OrgToOrgMembershipXrefEntity> getOrg2OrgMappings() {
+		return org2OrgMappings;
+	}
+
+	public void setOrg2OrgMappings(Set<OrgToOrgMembershipXrefEntity> org2OrgMappings) {
+		this.org2OrgMappings = org2OrgMappings;
+	}
+
+
 
 	@Transient
     private String displayName;

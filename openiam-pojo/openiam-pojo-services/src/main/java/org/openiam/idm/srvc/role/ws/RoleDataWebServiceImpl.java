@@ -315,7 +315,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "RoleId  is null or empty");
 			}
 			
-			final RoleEntity entity = roleDataService.getRole(roleId);
+			final RoleEntity entity = roleDataService.getRoleLocalized(roleId, requesterId, null);
 			if(entity == null) {
 				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND, String.format("No Role is found for roleId: %s", roleId));
 			}

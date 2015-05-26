@@ -11,7 +11,9 @@ import org.openiam.idm.srvc.org.dto.Organization;
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
+
 import java.util.List;
+import java.util.Set;
 
 
 @WebService(targetNamespace = "urn:idm.openiam.org/srvc/org/service", name = "OrganizationDataService")
@@ -87,6 +89,7 @@ public interface OrganizationDataService {
                                                               final @WebParam(name = "size", targetNamespace = "") int size);
 
     @WebMethod
+    @Deprecated
     public List<Organization> getParentOrganizationsLocalized(final @WebParam(name = "orgId", targetNamespace = "") String orgId,
     												 final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
                                                      final @WebParam(name = "from", targetNamespace = "") int from,
@@ -101,6 +104,7 @@ public interface OrganizationDataService {
                                                              final @WebParam(name = "size", targetNamespace = "") int size);
 
     @WebMethod
+    @Deprecated
     public List<Organization> getChildOrganizationsLocalized(final @WebParam(name = "orgId", targetNamespace = "") String orgId,
     												final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
                                                     final @WebParam(name = "from", targetNamespace = "") int from,
@@ -112,10 +116,12 @@ public interface OrganizationDataService {
               @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     @WebMethod
+    @Deprecated
     public int getNumOfParentOrganizations(@WebParam(name = "orgId", targetNamespace = "") String orgId,
                                            @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     @WebMethod
+    @Deprecated
     public int getNumOfChildOrganizations(@WebParam(name = "orgId", targetNamespace = "") String orgId,
                                           @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
@@ -135,7 +141,8 @@ public interface OrganizationDataService {
 
     @WebMethod
     public Response addChildOrganization(@WebParam(name = "organizationId", targetNamespace = "") String organizationId,
-                                         @WebParam(name = "childOrganizationId", targetNamespace = "") String childOrganizationId);
+                                         @WebParam(name = "childOrganizationId", targetNamespace = "") String childOrganizationId,
+                                         @WebParam(name = "rightIds", targetNamespace = "") Set<String> rightIds);
 
 
     @WebMethod

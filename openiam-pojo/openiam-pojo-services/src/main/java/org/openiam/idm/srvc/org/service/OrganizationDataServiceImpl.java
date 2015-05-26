@@ -14,6 +14,7 @@ import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.AddressSearchBean;
 import org.openiam.idm.searchbeans.LocationSearchBean;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
+import org.openiam.idm.srvc.access.service.AccessRightProcessor;
 import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.lang.dto.Language;
@@ -33,6 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.jws.WebParam;
 import javax.jws.WebService;
+
 import java.util.*;
 
 //import diamelle.common.continfo.*;
@@ -71,6 +73,9 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
 
     @Autowired
     private LanguageDozerConverter languageConverter;
+    
+    @Autowired
+    private AccessRightProcessor accessRightProcessor;
 
     @Override
     /**
@@ -118,12 +123,9 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     @LocalizedServiceGet
     public List<Organization> findBeansLocalized(final OrganizationSearchBean searchBean, final String requesterId, final int from, final int size, final Language language) {
         final List<OrganizationEntity> entityList = organizationService.findBeans(searchBean, requesterId, from, size, languageConverter.convertToEntity(language, false));
-        final List<Organization> resultList = new LinkedList<Organization>();
-        for(OrganizationEntity organizationEntity : entityList) {
-            resultList.add(organizationDozerConverter.convertToDTO(organizationEntity,false));
-        }
-
-        return resultList;
+        final List<Organization> dtoList = organizationDozerConverter.convertToDTOList(entityList, searchBean.isDeepCopy());
+        accessRightProcessor.process(searchBean, dtoList, entityList);
+        return dtoList;
     }
 
     @Override
@@ -134,10 +136,11 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
 
     @Override
     @LocalizedServiceGet
+    @Deprecated
     public List<Organization> getParentOrganizationsLocalized(String orgId, String requesterId, final int from, final int size, final Language language) {
-        final List<OrganizationEntity> entityList = organizationService.getParentOrganizations(orgId, requesterId, from, size, languageConverter.convertToEntity(language, false));
-        final List<Organization> organizationList = organizationDozerConverter.convertToDTOList(entityList, false);
-        return organizationList;
+    	final OrganizationSearchBean sb = new OrganizationSearchBean();
+    	sb.addChildId(orgId);
+    	return findBeansLocalized(sb, requesterId, from, size, language);
     }
 
     @Override
@@ -148,20 +151,27 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
 
     @Override
     @LocalizedServiceGet
+    @Deprecated
     public List<Organization> getChildOrganizationsLocalized(String orgId, String requesterId, final int from, final int size, final Language language) {
-        final List<OrganizationEntity> entityList = organizationService.getChildOrganizations(orgId, requesterId, from, size, languageConverter.convertToEntity(language, false));
-        final List<Organization> organizationList = organizationDozerConverter.convertToDTOList(entityList, false);
-        return organizationList;
+    	final OrganizationSearchBean sb = new OrganizationSearchBean();
+    	sb.addParentId(orgId);
+    	return findBeansLocalized(sb, requesterId, from, size, language);
     }
 
     @Override
+    @Deprecated
     public int getNumOfParentOrganizations(String orgId, String requesterId) {
-        return organizationService.getNumOfParentOrganizations(orgId, requesterId);
+        final OrganizationSearchBean sb = new OrganizationSearchBean();
+        sb.addChildId(orgId);
+        return count(sb, requesterId);
     }
 
     @Override
+    @Deprecated
     public int getNumOfChildOrganizations(String orgId, String requesterId) {
-        return organizationService.getNumOfChildOrganizations(orgId, requesterId);
+        final OrganizationSearchBean sb = new OrganizationSearchBean();
+        sb.addParentId(orgId);
+        return count(sb, requesterId);
     }
 
     @Override
@@ -305,14 +315,14 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     }
 
     @Override
-    public Response addChildOrganization(final String organizationId, final String childOrganizationId) {
+    public Response addChildOrganization(final String organizationId, final String childOrganizationId, final Set<String> rightIds) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
             if (organizationId == null || childOrganizationId == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }
-            organizationService.validateOrg2OrgAddition(organizationId, childOrganizationId);
-            organizationService.addChildOrganization(organizationId, childOrganizationId);
+            organizationService.validateOrg2OrgAddition(organizationId, childOrganizationId, rightIds);
+            organizationService.addChildOrganization(organizationId, childOrganizationId, rightIds);
         } catch (BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());

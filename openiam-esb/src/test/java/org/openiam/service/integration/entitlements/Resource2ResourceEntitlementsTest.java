@@ -13,7 +13,7 @@ import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.service.integration.AbstractEntitlementsTest;
 import org.testng.annotations.Test;
 
-public class Resource2ResourceEntitlementsTest extends AbstractEntitlementsTest<Resource, Resource> {
+public class Resource2ResourceEntitlementsTest extends AbstractCircularEntitlementTest<Resource> {
 	
 	@Override
 	protected Resource createParent() {
@@ -87,4 +87,6 @@ public class Resource2ResourceEntitlementsTest extends AbstractEntitlementsTest<
 		}
 	}
 
+	@Test
+	public void foo(){}
 }

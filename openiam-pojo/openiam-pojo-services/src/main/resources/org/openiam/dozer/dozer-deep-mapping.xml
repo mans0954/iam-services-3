@@ -19,6 +19,14 @@
 			<a>approverAssociations</a>
 			<b>approverAssociations</b>
 		</field-exclude>
+		<field-exclude>
+			<a>parentOrganizations</a>
+			<b>parentOrganizations</b>
+		</field-exclude>
+		<field-exclude>
+			<a>childOrganizations</a>
+			<b>childOrganizations</b>
+		</field-exclude>
 	</mapping>
           
 	<mapping>

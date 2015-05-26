@@ -1,9 +1,11 @@
 package org.openiam.idm.srvc.org.domain;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.persistence.AttributeOverride;
@@ -23,6 +25,7 @@ import javax.validation.constraints.Size;
 import org.openiam.base.domain.AbstractMetdataTypeEntity;
 import org.openiam.base.domain.KeyEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.access.domain.AccessRightEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.loc.domain.LocationEntity;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
@@ -34,6 +37,8 @@ import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.Where;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.role.domain.RoleEntity;
+import org.openiam.idm.srvc.role.domain.RoleToRoleMembershipXrefEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.internationalization.Internationalized;
 
@@ -102,19 +107,13 @@ public class OrganizationEntity extends AbstractMetdataTypeEntity {
     @Size(max = 10, message = "organization.symbol.too.long")
     private String symbol;
     
-	@ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
-    @JoinTable(name="COMPANY_TO_COMPANY_MEMBERSHIP",
-        joinColumns={@JoinColumn(name="MEMBER_COMPANY_ID")},
-        inverseJoinColumns={@JoinColumn(name="COMPANY_ID")})
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="memberEntity", orphanRemoval=true)
     @Fetch(FetchMode.SUBSELECT)
-    private Set<OrganizationEntity> parentOrganizations;
-    
-	@ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
-    @JoinTable(name="COMPANY_TO_COMPANY_MEMBERSHIP",
-        joinColumns={@JoinColumn(name="COMPANY_ID")},
-        inverseJoinColumns={@JoinColumn(name="MEMBER_COMPANY_ID")})
+    private Set<OrgToOrgMembershipXrefEntity> parentOrganizations = new HashSet<OrgToOrgMembershipXrefEntity>(0);
+
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="entity", orphanRemoval=true)
     @Fetch(FetchMode.SUBSELECT)
-    private Set<OrganizationEntity> childOrganizations;
+    private Set<OrgToOrgMembershipXrefEntity> childOrganizations = new HashSet<OrgToOrgMembershipXrefEntity>(0);
 
 	@ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
     @JoinTable(name = "USER_AFFILIATION", joinColumns = { @JoinColumn(name = "COMPANY_ID") }, inverseJoinColumns = { @JoinColumn(name = "USER_ID") })
@@ -267,58 +266,70 @@ public class OrganizationEntity extends AbstractMetdataTypeEntity {
         this.symbol = symbol;
     }
 
-	public Set<OrganizationEntity> getParentOrganizations() {
+	public Set<OrgToOrgMembershipXrefEntity> getParentOrganizations() {
 		return parentOrganizations;
 	}
 
-	public void setParentOrganizations(Set<OrganizationEntity> parentOrganizations) {
+	public void setParentOrganizations(Set<OrgToOrgMembershipXrefEntity> parentOrganizations) {
 		this.parentOrganizations = parentOrganizations;
 	}
 
-	public Set<OrganizationEntity> getChildOrganizations() {
+	public Set<OrgToOrgMembershipXrefEntity> getChildOrganizations() {
 		return childOrganizations;
 	}
 
-	public void setChildOrganizations(Set<OrganizationEntity> childOrganizations) {
+	public void setChildOrganizations(Set<OrgToOrgMembershipXrefEntity> childOrganizations) {
 		this.childOrganizations = childOrganizations;
 	}
 	
-	public void addChildOrganization(final OrganizationEntity entity) {
+	public OrgToOrgMembershipXrefEntity getParent(final String parentId) {
+    	final Optional<OrgToOrgMembershipXrefEntity> xref = 
+    			this.getParentOrganizations()
+    				.stream()
+    				.filter(e -> parentId.equals(e.getEntity().getId()))
+    				.findFirst();
+    	return xref.isPresent() ? xref.get() : null;
+    }
+
+	public void addChild(final OrganizationEntity entity, final Collection<AccessRightEntity> rights) {
 		if(entity != null) {
-			if(childOrganizations == null) {
-				childOrganizations = new LinkedHashSet<OrganizationEntity>();
+			if(this.childOrganizations == null) {
+				this.childOrganizations = new LinkedHashSet<OrgToOrgMembershipXrefEntity>();
 			}
-			childOrganizations.add(entity);
+			OrgToOrgMembershipXrefEntity theXref = null;
+			for(final OrgToOrgMembershipXrefEntity xref : this.childOrganizations) {
+				if(xref.getEntity().getId().equals(getId()) && xref.getMemberEntity().getId().equals(entity.getId())) {
+					theXref = xref;
+					break;
+				}
+			}
+			
+			if(theXref == null) {
+				theXref = new OrgToOrgMembershipXrefEntity();
+				theXref.setEntity(this);
+				theXref.setMemberEntity(entity);
+			}
+			if(rights != null) {
+				theXref.setRights(new HashSet<AccessRightEntity>(rights));
+			}
+			this.childOrganizations.add(theXref);
 		}
 	}
 	
-	public void removeChildOrganization(final String organizationId) {
-		if(organizationId != null) {
-			if(childOrganizations != null) {
-				for(final Iterator<OrganizationEntity> it = childOrganizations.iterator(); it.hasNext();) {
-					final OrganizationEntity entity = it.next();
-					if(entity.getId().equals(organizationId)) {
-						it.remove();
-						break;
-					}
-				}
-			}
+	public boolean hasChild(final OrganizationEntity entity) {
+		boolean contains = false;
+		if(childOrganizations != null) {
+			contains = (childOrganizations.stream().map(e -> e.getMemberEntity()).filter(e -> e.getId().equals(entity.getId())).count() > 0);
 		}
+		return contains;
 	}
 	
-	public boolean hasChildOrganization(final String organizationId) {
-		boolean retval = false;
-		if(organizationId != null) {
-			if(childOrganizations != null) {
-				for(final OrganizationEntity entity : childOrganizations) {
-					if(entity.getId().equals(organizationId)) {
-						retval = true;
-						break;
-					}
-				}
+	public void removeChild(final OrganizationEntity entity) {
+		if(entity != null) {
+			if(this.childOrganizations != null) {
+				this.childOrganizations.removeIf(e -> e.getMemberEntity().getId().equals(entity.getId()));
 			}
 		}
-		return retval;
 	}
 
     public Set<UserEntity> getUsers() {

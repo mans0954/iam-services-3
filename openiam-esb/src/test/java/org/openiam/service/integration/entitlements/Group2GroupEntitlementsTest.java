@@ -14,7 +14,7 @@ import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.service.integration.AbstractEntitlementsTest;
 import org.testng.annotations.Test;
 
-public class Group2GroupEntitlementsTest extends AbstractEntitlementsTest<Group, Group> {
+public class Group2GroupEntitlementsTest extends AbstractCircularEntitlementTest<Group> {
 	
 	@Override
 	protected Group createParent() {
@@ -87,5 +87,4 @@ public class Group2GroupEntitlementsTest extends AbstractEntitlementsTest<Group,
 			return false;
 		}
 	}
-
 }

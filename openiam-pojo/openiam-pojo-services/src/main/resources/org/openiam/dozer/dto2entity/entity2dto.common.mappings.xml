@@ -72,18 +72,6 @@
             <b>memberOrganizationTypeId</b>
         </field>
     </mapping>
-    <mapping>
-        <class-a>org.openiam.idm.srvc.org.domain.Org2OrgXrefEntity</class-a>
-        <class-b>org.openiam.idm.srvc.org.dto.Org2OrgXref</class-b>
-        <field>
-            <a>id.organizationId</a>
-            <b>organizationId</b>
-        </field>
-        <field>
-            <a>id.memberOrganizationId</a>
-            <b>memberOrganizationId</b>
-        </field>
-    </mapping>
 	<mapping>
 		<class-a>org.openiam.idm.srvc.role.domain.RoleAttributeEntity</class-a>
 		<class-b>org.openiam.idm.srvc.role.dto.RoleAttribute</class-b>
