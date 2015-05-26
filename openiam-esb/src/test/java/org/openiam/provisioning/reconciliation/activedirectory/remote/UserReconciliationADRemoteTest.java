@@ -6,10 +6,15 @@ import org.junit.runner.RunWith;
 import org.openiam.am.srvc.constants.SearchScopeType;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.srvc.audit.ws.IdmAuditLogWebDataService;
+import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.ws.LoginDataWebService;
+import org.openiam.idm.srvc.auth.ws.LoginResponse;
+import org.openiam.idm.srvc.key.constant.KeyName;
+import org.openiam.idm.srvc.key.ws.KeyManagementWS;
 import org.openiam.idm.srvc.lang.service.LanguageWebService;
 import org.openiam.idm.srvc.meta.ws.MetadataWebService;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
 import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorSearchBean;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
@@ -20,6 +25,7 @@ import org.openiam.idm.srvc.recon.ws.ReconciliationConfigResponse;
 import org.openiam.idm.srvc.recon.ws.ReconciliationWebService;
 import org.openiam.idm.srvc.user.ws.UserDataWebService;
 import org.openiam.provision.service.ProvisionService;
+import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
@@ -41,6 +47,7 @@ public class UserReconciliationADRemoteTest extends AbstractTestNGSpringContextT
 
 
     private static final Log log = LogFactory.getLog(UserReconciliationADRemoteTest.class);
+    public static final String TestUserSamAccountName = "sys.user";
 
     @Autowired
     @Qualifier("provisionServiceClient")
@@ -78,9 +85,20 @@ public class UserReconciliationADRemoteTest extends AbstractTestNGSpringContextT
     @Qualifier("provisionConnectorWebServiceClient")
     protected ProvisionConnectorWebService provisionConnectorWebServiceClient;
 
+    @Autowired
+    @Qualifier("cryptor")
+    private Cryptor cryptor;
+
+    @Autowired
+    @Qualifier("keyManagementWebServiceClient")
+    protected KeyManagementWS keyManagementWS;
+
     private List<String> deleteConnectorIdsList = new LinkedList<String>();
     private List<String> deleteManagedSysIdsList = new LinkedList<String>();
     private List<String> deleteReconConfigIdsList = new LinkedList<String>();
+    private List<String> deleteReconSituationIdsList = new LinkedList<String>();
+    private List<String> deleteMngSysObjectMatchIdsList = new LinkedList<String>();
+
     private ReconciliationConfig reconciliationConfig;
 
     // Powershell AD Remote Connector
@@ -110,11 +128,11 @@ public class UserReconciliationADRemoteTest extends AbstractTestNGSpringContextT
             deleteConnectorIdsList.add(connectorDto.getConnectorId());
 
             managedSysDto.setName("TEST-POWERSHELL-AD");
-            managedSysDto.setDecryptPassword("=tdWk2eqV8P");
+            managedSysDto.setPswd("=tdWk2eqV8P");
             managedSysDto.setConnectorId(connectorDto.getConnectorId());
             managedSysDto.setHostUrl("win02.ad.openiamdemo.info");
             managedSysDto.setStatus("ACTIVE");
-            managedSysDto.setUserId("Administrator");
+            managedSysDto.setUserId("AD\\Administrator");
             managedSysDto.setAddHandler("ADPowershell.ps1");
             managedSysDto.setModifyHandler("ADPowershell.ps1");
             managedSysDto.setDeleteHandler("ADPowershell.ps1");
@@ -132,14 +150,29 @@ public class UserReconciliationADRemoteTest extends AbstractTestNGSpringContextT
             managedSysDto.setChangedByEndUser(false);
             managedSysDto.setDescription("UserReconciliationADRemoveTest_Connector");
 
-            // Save ManagedSystem
-            Response response = managedSystemWebService.saveManagedSystem(managedSysDto);
-            Assert.assertTrue(response.isSuccess());
-            Assert.assertNotNull(response.getResponseValue());
 
-            String mngSysId = (String) response.getResponseValue();
+         //   managedSysDto.setMngSysObjectMatchs(objectMatches);
+
+            // Save ManagedSystem
+            Response saveMngSysResponse = managedSystemWebService.saveManagedSystem(managedSysDto);
+            Assert.assertTrue(saveMngSysResponse.isSuccess());
+            Assert.assertNotNull(saveMngSysResponse.getResponseValue());
+
+            String mngSysId = (String) saveMngSysResponse.getResponseValue();
             deleteManagedSysIdsList.add(mngSysId);
 
+         // Add Object Match
+            ManagedSystemObjectMatch managedSystemObjectMatch = new ManagedSystemObjectMatch();
+            managedSystemObjectMatch.setBaseDn("dc=ad,dc=openiamdemo,dc=info");
+            managedSystemObjectMatch.setKeyField("samaccountname");
+            managedSystemObjectMatch.setObjectType("USER");
+            managedSystemObjectMatch.setSearchBaseDn("dc=ad,dc=openiamdemo,dc=info");
+            managedSystemObjectMatch.setManagedSys(mngSysId);
+            Response saveManagedSysObjMatchResponse = managedSystemWebService.saveManagedSystemObjectMatch(managedSystemObjectMatch);
+            Assert.assertNotNull(saveManagedSysObjMatchResponse);
+            Assert.assertTrue(saveManagedSysObjMatchResponse.isSuccess());
+
+            //
             ManagedSysDto managedSysDto_1 = managedSystemWebService.getManagedSys(mngSysId);
             Assert.assertNotNull(managedSysDto_1);
             Assert.assertEquals(managedSysDto_1.getName(), "TEST-POWERSHELL-AD");
@@ -151,7 +184,7 @@ public class UserReconciliationADRemoteTest extends AbstractTestNGSpringContextT
             reconciliationConfig.setMatchFieldName("MANAGED_SYS_PRINCIPAL");
             reconciliationConfig.setCustomMatchAttr("SamAccountName");
             reconciliationConfig.setSearchFilter("{\"lastName\" : \"NONE\"}");
-            reconciliationConfig.setTargetSystemSearchFilter("(&(objectClass=user)(samaccountname=*))");
+            reconciliationConfig.setTargetSystemSearchFilter("(&(objectClass=user)(samaccountname="+ TestUserSamAccountName +"))");
             reconciliationConfig.setMatchScript("recon/UserSearchScript.groovy");
             reconciliationConfig.setReconType("USER");
 
@@ -198,9 +231,16 @@ public class UserReconciliationADRemoteTest extends AbstractTestNGSpringContextT
             Assert.assertEquals(reconciliationConfig1.getSituationSet().size(), 4);
 
 
-            
-
-
+            // Try to find the user in OpenIAM
+            LoginResponse loginResponse = loginServiceClient.getLoginByManagedSys(TestUserSamAccountName, mngSysId);
+            Assert.assertNotNull(loginResponse);
+            if(loginResponse.getPrincipal() != null) {
+                Login userPrincipal = loginResponse.getPrincipal();
+                // TODO check this functionality
+                userServiceClient.removeUser(userPrincipal.getUserId());
+                // TODO check this functionality
+                loginServiceClient.deleteLogin(userPrincipal.getLoginId());
+            }
 
         } catch(Throwable t) {
             reconciliationConfig = null;
@@ -212,14 +252,33 @@ public class UserReconciliationADRemoteTest extends AbstractTestNGSpringContextT
 
     @AfterClass(alwaysRun = true)
     public void _destroy() {
-        for(String sysId : deleteManagedSysIdsList) {
-            managedSystemWebService.removeManagedSystem(sysId);
+        /*try {
+            for(String objId : deleteMngSysObjectMatchIdsList) {
+                managedSystemWebService.removeManagedSystemObjectMatch(objId);
+            }
+        } catch(Throwable t) {
+            // do nothing
+        }*/
+        try {
+            for(String sysId : deleteManagedSysIdsList) {
+                managedSystemWebService.removeManagedSystem(sysId);
+            }
+        } catch(Throwable t) {
+            // do nothing
         }
-        for(String recId : deleteReconConfigIdsList) {
-            reconciliationWebService.removeConfig(recId, null);
+        try {
+            for(String recId : deleteReconConfigIdsList) {
+                reconciliationWebService.removeConfig(recId, null);
+            }
+        } catch(Throwable t) {
+            // do nothing
         }
-        for(String conId : deleteConnectorIdsList) {
-            provisionConnectorWebServiceClient.removeProvisionConnector(conId);
+        try {
+            for (String conId : deleteConnectorIdsList) {
+                provisionConnectorWebServiceClient.removeProvisionConnector(conId);
+            }
+        } catch(Throwable t) {
+            // do nothing
         }
     }
 
@@ -229,11 +288,14 @@ public class UserReconciliationADRemoteTest extends AbstractTestNGSpringContextT
         Assert.assertTrue(true);
         Assert.assertNotNull(reconciliationConfig);
 
-       // ReconciliationConfig reconciliationConfig = getReconciliationConfig_1();
+        Response testConnectionResponse = provisionService.testConnectionConfig(reconciliationConfig.getManagedSysId(),"3000");
+        Assert.assertNotNull(testConnectionResponse);
+        Assert.assertTrue(testConnectionResponse.isSuccess());
+
+    //    reconciliationWebService.startReconciliation(reconciliationConfig);
 
 
-        //reconciliationWebService.startReconciliation(reconciliationConfig);
-
+        int i = 0;
 
     }
 
