@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.recon.command.grp;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.AttributeOperationEnum;
@@ -66,11 +67,13 @@ public class CreateIdmGroupCommand  extends BaseReconciliationGroupCommand {
                     identity.setReferredObjectId(groupId);
                     identityService.save(identity);
                     provisionService.add(pGroup);
-                    for(String memberPrincipal : pGroup.getMembersIds()) {
-                        UserEntity user = userManager.getUserByPrincipal(memberPrincipal, mSysID, false);
-                        if(user != null) {
-                            Response response = groupDataWebService.addUserToGroup(groupId, user.getId(), DEFAULT_REQUESTER_ID);
-                            log.debug("User Member with principal = "+memberPrincipal+" was added to Group = "+identity.getIdentity() + " Managed Sys = "+identity.getManagedSysId() + ". \nResponse = "+response);
+                    if (CollectionUtils.isNotEmpty(pGroup.getMembersIds())) {
+                        for(String memberPrincipal : pGroup.getMembersIds()) {
+                            UserEntity user = userManager.getUserByPrincipal(memberPrincipal, mSysID, false);
+                            if(user != null) {
+                                Response response = groupDataWebService.addUserToGroup(groupId, user.getId(), DEFAULT_REQUESTER_ID);
+                                log.debug("User Member with principal = "+memberPrincipal+" was added to Group = "+identity.getIdentity() + " Managed Sys = "+identity.getManagedSysId() + ". \nResponse = "+response);
+                            }
                         }
                     }
                 }else{

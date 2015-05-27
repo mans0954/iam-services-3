@@ -1,13 +1,16 @@
 package org.openiam.idm.srvc.role.service;
 
+import org.openiam.base.TreeObjectId;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.RoleSearchBean;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 import org.openiam.idm.srvc.role.domain.RoleAttributeEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.dto.Role;
+import org.openiam.idm.srvc.role.dto.RoleAttribute;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Interface permitting the management of Roles and related objects such as
@@ -172,17 +175,28 @@ public interface RoleDataService {
     public List<RoleEntity> getChildRoles(final String roleId, final String requesterId, final int from, final int size);
     @Deprecated
     public int getNumOfChildRoles(final String roleId, final String requesterId);
-    public void addChildRole(final String roleId, final String childRoleId);
+    public void addChildRole(final String roleId, final String childRoleId, final Set<String> rights);
     public void removeChildRole(final String roleId, final String childRoleId);
     
+    @Deprecated
     public List<RoleEntity> getParentRoles(final String roleId, final String requesterId, final int from, final int size);
+    
+    @Deprecated
     public int getNumOfParentRoles(final String roleId, final String requesterId);
 
-    public void validateRole2RoleAddition(final String parentId, final String memberId) throws BasicDataServiceException;
+    public void validateRole2RoleAddition(final String parentId, final String memberId, final Set<String> rights) throws BasicDataServiceException;
     
     public Role getRoleDTO(final String roleId);
+
+    public List<RoleAttribute> getRoleAttributes(final String roleId);
 
     public void addAttribute(RoleAttributeEntity attribute);
     public void updateAttribute(RoleAttributeEntity attribute);
 
+
+    List<TreeObjectId> getRolesWithSubRolesIds(List<String> roleIds, final String requesterId);
+
+    void rebuildRoleHierarchyCache();
+    
+    public boolean hasChildEntities(String roleId);
 }

@@ -16,6 +16,7 @@ import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.searchbeans.ResourceTypeSearchBean;
+import org.openiam.idm.srvc.access.service.AccessRightDAO;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
@@ -32,6 +33,7 @@ import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.service.OrganizationDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
+import org.openiam.idm.srvc.res.domain.ResourceToResourceMembershipXrefEntity;
 import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
@@ -94,6 +96,9 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Autowired
     private MetadataElementPageTemplateDAO templateDAO;
+    
+    @Autowired
+    private AccessRightDAO accessRightDAO;
 
     @Value("${org.openiam.resource.admin.resource.type.id}")
     private String adminResourceTypeId;
@@ -310,18 +315,8 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @Transactional(readOnly = true)
-    @LocalizedServiceGet
     public List<ResourceEntity> findBeans(final ResourceSearchBean searchBean, final int from, final int size, final LanguageEntity language) {
-        // final ResourceEntity resource =
-        // resourceSearchBeanConverter.convert(searchBean);
-        List<ResourceEntity> resultsEntities = null;
-        // if (Boolean.TRUE.equals(searchBean.getRootsOnly())) {
-        // resultsEntities = resourceDao.getRootResources(resource, from, size);
-        // } else {
-        resultsEntities = resourceDao.getByExample(searchBean, from, size);
-        // }
-        return resultsEntities;
-
+        return resourceDao.getByExampleNoLocalize(searchBean, from, size);
     }
 
     @Override
@@ -380,50 +375,42 @@ public class ResourceServiceImpl implements ResourceService {
     @Override
     @Transactional(readOnly = true)
     public List<ResourceEntity> getChildResources(String resourceId, int from, int size) {
-        final ResourceEntity example = new ResourceEntity();
-        final ResourceEntity parent = new ResourceEntity();
-        parent.setId(resourceId);
-        example.addParentResource(parent);
-        final List<ResourceEntity> resultList = resourceDao.getByExample(example, from, size);
+        final ResourceSearchBean sb = new ResourceSearchBean();
+        sb.addParentId(resourceId);
+        final List<ResourceEntity> resultList = resourceDao.getByExample(sb, from, size);
         return resultList;
     }
 
     @Override
     @Transactional(readOnly = true)
     public int getNumOfChildResources(String resourceId) {
-        final ResourceEntity example = new ResourceEntity();
-        final ResourceEntity parent = new ResourceEntity();
-        parent.setId(resourceId);
-        example.addParentResource(parent);
-        return resourceDao.count(example);
+        final ResourceSearchBean sb = new ResourceSearchBean();
+        sb.addParentId(resourceId);
+        return resourceDao.count(sb);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<ResourceEntity> getParentResources(String resourceId, int from, int size) {
-        final ResourceEntity example = new ResourceEntity();
-        final ResourceEntity child = new ResourceEntity();
-        child.setId(resourceId);
-        example.addChildResource(child);
-        return resourceDao.getByExample(example, from, size);
+        final ResourceSearchBean sb = new ResourceSearchBean();
+        sb.addChildId(resourceId);
+        return resourceDao.getByExample(sb, from, size);
     }
 
     @Override
     @Transactional(readOnly = true)
     public int getNumOfParentResources(String resourceId) {
-        final ResourceEntity example = new ResourceEntity();
-        final ResourceEntity child = new ResourceEntity();
-        child.setId(resourceId);
-        example.addChildResource(child);
-        return resourceDao.count(example);
+        final ResourceSearchBean sb = new ResourceSearchBean();
+        sb.addChildId(resourceId);
+        return resourceDao.count(sb);
     }
 
     @Override
     @Transactional
-    public void addChildResource(String parentResourceId, String childResourceId) {
+    public void addChildResource(String parentResourceId, String childResourceId, final Set<String> rights) {
         final ResourceEntity parent = resourceDao.findById(parentResourceId);
         final ResourceEntity child = resourceDao.findById(childResourceId);
-        parent.addChildResource(child);
+        parent.addChildResource(child, accessRightDAO.findByIds(rights));
         resourceDao.save(parent);
     }
 
@@ -526,7 +513,7 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @Transactional
-    public void validateResource2ResourceAddition(final String parentId, final String memberId)
+    public void validateResource2ResourceAddition(final String parentId, final String memberId, final Set<String> rights)
             throws BasicDataServiceException {
         if (StringUtils.isBlank(parentId) || StringUtils.isBlank(memberId)) {
             throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS,
@@ -544,9 +531,12 @@ public class ResourceServiceImpl implements ResourceService {
             throw new BasicDataServiceException(ResponseCode.CIRCULAR_DEPENDENCY);
         }
 
+        /*
+         * This no longer makes sense within the context of Access Rights
         if (parent.hasChildResoruce(child)) {
             throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS);
         }
+        */
 
         if (StringUtils.equals(parentId, memberId)) {
             throw new BasicDataServiceException(ResponseCode.CANT_ADD_YOURSELF_AS_CHILD);
@@ -645,7 +635,8 @@ public class ResourceServiceImpl implements ResourceService {
             if (!visitedSet.contains(child)) {
                 visitedSet.add(child);
                 if (CollectionUtils.isNotEmpty(parent.getParentResources())) {
-                    for (final ResourceEntity entity : parent.getParentResources()) {
+                    for (final ResourceToResourceMembershipXrefEntity xref : parent.getParentResources()) {
+                    	final ResourceEntity entity = xref.getEntity();
                         retval = entity.getId().equals(child.getId());
                         if (retval) {
                             break;
@@ -672,4 +663,17 @@ public class ResourceServiceImpl implements ResourceService {
     public int countResourceTypes(final ResourceTypeSearchBean searchBean) {
         return resourceTypeDao.count(searchBean);
     }
+
+	@Override
+	@Transactional(readOnly=true)
+	public boolean isMemberOfAnyEntity(String resourceId) {
+		final ResourceEntity resource = findResourceById(resourceId);
+		if(resource != null) {
+			return CollectionUtils.isNotEmpty(resource.getChildResources()) ||
+				   CollectionUtils.isNotEmpty(resource.getGroups()) ||
+				   CollectionUtils.isNotEmpty(resource.getRoles());
+		} else {
+			return false;
+		}
+	}
 }

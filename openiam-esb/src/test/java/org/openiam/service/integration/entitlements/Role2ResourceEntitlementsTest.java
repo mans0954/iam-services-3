@@ -1,6 +1,7 @@
 package org.openiam.service.integration.entitlements;
 
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.openiam.base.ws.Response;
@@ -27,7 +28,7 @@ public class Role2ResourceEntitlementsTest extends AbstractEntitlementsTest<Role
 	}
 
 	@Override
-	protected Response addChildToParent(Role parent, Resource child) {
+	protected Response addChildToParent(Role parent, Resource child, final Set<String> rights) {
 		return resourceDataService.addRoleToResource(child.getId(), parent.getId(), null);
 	}
 
@@ -47,7 +48,7 @@ public class Role2ResourceEntitlementsTest extends AbstractEntitlementsTest<Role
 	}
 
 	@Override
-	protected boolean isChildInParent(Role parent, Resource child) {
+	protected boolean isChildInParent(Role parent, Resource child, final Set<String> rights) {
 		final ResourceSearchBean searchBean = new ResourceSearchBean();
         searchBean.addRoleId(parent.getId());
         final List<Resource> resources = resourceDataService.findBeans(searchBean, 0, 100, getDefaultLanguage());
@@ -55,7 +56,7 @@ public class Role2ResourceEntitlementsTest extends AbstractEntitlementsTest<Role
 	}
 
 	@Override
-	protected boolean parentHasChild(Role parent, Resource child) {
+	protected boolean parentHasChild(Role parent, Resource child, final Set<String> rights) {
 		final RoleSearchBean searchBean = new RoleSearchBean();
 		searchBean.addResourceId(child.getId());
 		final List<Role> roles = roleServiceClient.findBeans(searchBean, null, 0, 100);

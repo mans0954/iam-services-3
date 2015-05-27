@@ -1,10 +1,14 @@
 package org.openiam.idm.srvc.grp.domain;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.persistence.*;
 import javax.validation.constraints.Size;
@@ -18,6 +22,7 @@ import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Where;
 import org.openiam.base.domain.AbstractMetdataTypeEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.access.domain.AccessRightEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
@@ -25,6 +30,7 @@ import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationTypeEntity;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.res.domain.ResourceToResourceMembershipXrefEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.internationalization.Internationalized;
@@ -70,19 +76,13 @@ public class GroupEntity extends AbstractMetdataTypeEntity {
             inverseJoinColumns = { @JoinColumn(name = "RESOURCE_ID") })
     private Set<ResourceEntity> resources;
 
-    @ManyToMany(cascade = { CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH }, fetch = FetchType.LAZY)
-    @JoinTable(name = "grp_to_grp_membership",
-               joinColumns = { @JoinColumn(name = "MEMBER_GROUP_ID") },
-               inverseJoinColumns = { @JoinColumn(name = "GROUP_ID") })
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="memberEntity", orphanRemoval=true)
     @Fetch(FetchMode.SUBSELECT)
-    private Set<GroupEntity> parentGroups;
+    private Set<GroupToGroupMembershipXrefEntity> parentGroups = new HashSet<GroupToGroupMembershipXrefEntity>(0);
 
-    @ManyToMany(cascade = { CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH }, fetch = FetchType.LAZY)
-    @JoinTable(name = "grp_to_grp_membership",
-               joinColumns = { @JoinColumn(name = "GROUP_ID") },
-               inverseJoinColumns = { @JoinColumn(name = "MEMBER_GROUP_ID") })
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="entity", orphanRemoval=true)
     @Fetch(FetchMode.SUBSELECT)
-    private Set<GroupEntity> childGroups;
+    private Set<GroupToGroupMembershipXrefEntity> childGroups = new HashSet<GroupToGroupMembershipXrefEntity>(0);
 
     @OneToMany(fetch = FetchType.LAZY, orphanRemoval = true, cascade = { CascadeType.ALL }, mappedBy="group")
     //@JoinColumn(name = "GRP_ID", referencedColumnName = "GRP_ID")
@@ -196,72 +196,69 @@ public class GroupEntity extends AbstractMetdataTypeEntity {
         this.lastUpdatedBy = lastUpdatedBy;
     }
 
-    public Set<GroupEntity> getParentGroups() {
+    public Set<GroupToGroupMembershipXrefEntity> getParentGroups() {
         return parentGroups;
     }
 
-    public void addChildGroup(final GroupEntity entity) {
-        if (entity != null) {
-            if (childGroups == null) {
-                childGroups = new HashSet<GroupEntity>();
-            }
-            childGroups.add(entity);
-        }
+    public void addChildGroup(final GroupEntity entity, final Collection<AccessRightEntity> rights) {
+    	if(entity != null) {
+			if(this.childGroups == null) {
+				this.childGroups = new LinkedHashSet<GroupToGroupMembershipXrefEntity>();
+			}
+			GroupToGroupMembershipXrefEntity theXref = null;
+			for(final GroupToGroupMembershipXrefEntity xref : this.childGroups) {
+				if(xref.getEntity().getId().equals(getId()) && xref.getMemberEntity().getId().equals(entity.getId())) {
+					theXref = xref;
+					break;
+				}
+			}
+			
+			if(theXref == null) {
+				theXref = new GroupToGroupMembershipXrefEntity();
+				theXref.setEntity(this);
+				theXref.setMemberEntity(entity);
+			}
+			if(rights != null) {
+				theXref.setRights(new HashSet<AccessRightEntity>(rights));
+			}
+			this.childGroups.add(theXref);
+		}
     }
-
-    public void setParentGroups(Set<GroupEntity> parentGroups) {
+    
+    public void setParentGroups(Set<GroupToGroupMembershipXrefEntity> parentGroups) {
         this.parentGroups = parentGroups;
     }
 
     public boolean hasChildGroup(final String groupId) {
-        boolean retVal = false;
-        if (groupId != null) {
-            if (childGroups != null) {
-                for (final GroupEntity entity : childGroups) {
-                    if (entity.getId().equals(groupId)) {
-                        retVal = true;
-                        break;
-                    }
-                }
-            }
-        }
-        return retVal;
+    	boolean contains = false;
+		if(childGroups != null) {
+			contains = (childGroups.stream().map(e -> e.getMemberEntity()).filter(e -> e.getId().equals(groupId)).count() > 0);
+		}
+		return contains;
     }
 
-    public void removeParentGroup(String parentGroupId) {
-        if (parentGroupId != null) {
-            if (parentGroups != null) {
-                Iterator<GroupEntity> it = parentGroups.iterator();
-                while (it.hasNext()) {
-                    final GroupEntity g = it.next();
-                    if (g.getId().equals(parentGroupId)) {
-                        it.remove();
-                        break;
-                    }
-                }
-            }
-        }
+    public void removeChildGroup(final GroupEntity entity) {
+    	if(entity != null) {
+			if(this.childGroups != null) {
+				this.childGroups.removeIf(e -> e.getMemberEntity().getId().equals(entity.getId()));
+			}
+		}
+    }
+    
+    public GroupToGroupMembershipXrefEntity getParent(final String parentId) {
+    	final Optional<GroupToGroupMembershipXrefEntity> xref = 
+    			this.getParentGroups()
+    				.stream()
+    				.filter(e -> parentId.equals(e.getEntity().getId()))
+    				.findFirst();
+    	return xref.isPresent() ? xref.get() : null;
     }
 
-    public void removeChildGroup(final String groupId) {
-        if (groupId != null) {
-            if (childGroups != null) {
-                for (final Iterator<GroupEntity> it = childGroups.iterator(); it.hasNext();) {
-                    final GroupEntity group = it.next();
-                    if (group.getId().equals(groupId)) {
-                        it.remove();
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
-    public Set<GroupEntity> getChildGroups() {
+    public Set<GroupToGroupMembershipXrefEntity> getChildGroups() {
         return childGroups;
     }
 
-    public void setChildGroups(Set<GroupEntity> childGroups) {
+    public void setChildGroups(Set<GroupToGroupMembershipXrefEntity> childGroups) {
         this.childGroups = childGroups;
     }
 

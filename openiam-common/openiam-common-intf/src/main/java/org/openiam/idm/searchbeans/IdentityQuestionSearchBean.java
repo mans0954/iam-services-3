@@ -31,6 +31,6 @@ public class IdentityQuestionSearchBean extends AbstractSearchBean<IdentityQuest
 	public void setActive(Boolean active) {
 		this.active = active;
 	}
-	
-	
+
+
 }

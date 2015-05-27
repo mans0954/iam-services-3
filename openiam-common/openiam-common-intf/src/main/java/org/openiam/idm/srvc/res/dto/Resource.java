@@ -5,6 +5,7 @@ package org.openiam.idm.srvc.res.dto;
 import org.openiam.base.AdminResourceDTO;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.entitlements.AbstractEntitlementsDTO;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.lang.dto.LanguageMapping;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
@@ -18,6 +19,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlType;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -52,7 +54,7 @@ import java.util.Set;
 })
 @DozerDTOCorrespondence(ResourceEntity.class)
 @Internationalized
-public class Resource extends AdminResourceDTO {
+public class Resource extends AbstractEntitlementsDTO {
 
 	@Internationalized
     private ResourceType resourceType;
@@ -60,13 +62,18 @@ public class Resource extends AdminResourceDTO {
     private Integer displayOrder;
     private String URL;
 
+    @Deprecated
     private Set<Resource> parentResources = new HashSet<Resource>(0);
+    
+    @Deprecated
     private Set<Resource> childResources = new HashSet<Resource>(0);
 
+    @Deprecated
     private Set<Role> roles = new HashSet<Role>(0);
 
     private Set<ResourceProp> resourceProps = new HashSet<ResourceProp>(0); // defined as a Set in Hibernate map
 
+    @Deprecated
     private Set<Group> groups = new HashSet<Group>(0);
     private String minAuthLevel;
     private boolean isPublic = true;
@@ -130,6 +137,7 @@ public class Resource extends AdminResourceDTO {
         return null;
     }
     
+    @Deprecated
     public void addParentResource(final Resource resource) {
     	if(this.parentResources == null) {
     		this.parentResources = new LinkedHashSet<Resource>();
@@ -169,34 +177,42 @@ public class Resource extends AdminResourceDTO {
         URL = uRL;
     }
 
+    @Deprecated
     public Set<Role> getRoles() {
         return roles;
     }
 
+    @Deprecated
     public void setRoles(Set<Role> roles) {
         this.roles = roles;
     }
 
+    @Deprecated
     public Set<Group> getGroups() {
         return groups;
     }
 
+    @Deprecated
     public void setGroups(Set<Group> groups) {
         this.groups = groups;
     }
 
+    @Deprecated
 	public Set<Resource> getParentResources() {
 		return parentResources;
 	}
 
+    @Deprecated
 	public void setParentResources(Set<Resource> parentResources) {
 		this.parentResources = parentResources;
 	}
 
+	@Deprecated
 	public Set<Resource> getChildResources() {
 		return childResources;
 	}
 
+	@Deprecated
 	public void setChildResources(Set<Resource> childResources) {
 		this.childResources = childResources;
 	}

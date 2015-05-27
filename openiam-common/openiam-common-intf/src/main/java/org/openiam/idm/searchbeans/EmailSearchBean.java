@@ -79,4 +79,5 @@ public class EmailSearchBean extends AbstractSearchBean<EmailAddress, String> im
     public void setMetadataTypeId(String metadataTypeId) {
         this.metadataTypeId = metadataTypeId;
     }
+
 }

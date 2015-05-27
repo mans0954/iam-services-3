@@ -183,7 +183,7 @@ public class UserEntity extends KeyEntity {
     private Date claimDate;
 
     @Column(name = "NICKNAME", length = 40)
-    @Size(max = 40, message = "validator.user.nick.name.toolong")
+    @Size(max = 100, message = "validator.user.nick.name.toolong")
     private String nickname;
 
     @Column(name = "MAIDEN_NAME", length = 40)
@@ -218,8 +218,10 @@ public class UserEntity extends KeyEntity {
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "user", fetch = FetchType.LAZY)
     private Set<UserNoteEntity> userNotes = new HashSet<UserNoteEntity>(0);
 
-    @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "user", fetch = FetchType.LAZY)
-    @MapKey(name = "name")
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @MapKeyColumn(name = "name")
+    @JoinColumn(name="USER_ID")
+    @Fetch(FetchMode.SUBSELECT)
     private Map<String, UserAttributeEntity> userAttributes = new HashMap<String, UserAttributeEntity>(0);
 
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "parent", fetch = FetchType.LAZY)

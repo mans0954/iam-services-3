@@ -5,15 +5,19 @@ import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.base.TreeObjectId;
 import org.openiam.base.ws.ResponseCode;
+import org.openiam.dozer.converter.RoleAttributeDozerConverter;
 import org.openiam.dozer.converter.RoleDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.searchbeans.RoleSearchBean;
+import org.openiam.idm.srvc.access.service.AccessRightDAO;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
+import org.openiam.idm.srvc.grp.domain.GroupToGroupMembershipXrefEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
@@ -26,7 +30,9 @@ import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.idm.srvc.role.domain.RoleAttributeEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
+import org.openiam.idm.srvc.role.domain.RoleToRoleMembershipXrefEntity;
 import org.openiam.idm.srvc.role.dto.Role;
+import org.openiam.idm.srvc.role.dto.RoleAttribute;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
@@ -68,6 +74,9 @@ public class RoleDataServiceImpl implements RoleDataService {
 	@Autowired
 	private RoleDozerConverter roleDozerConverter;
 
+    @Autowired
+    private RoleAttributeDozerConverter roleAttributeDozerConverter;
+
 	@Autowired
     @Qualifier("entityValidator")
     private EntityValidator entityValidator;
@@ -83,6 +92,15 @@ public class RoleDataServiceImpl implements RoleDataService {
 
     @Autowired
     protected AuditLogService auditLogService;
+    
+    @Autowired
+    private AccessRightDAO accessRightDAO;
+
+    /**
+     * Cache for whole roles hierarchy
+     * Used when Roles number > 250k records
+     */
+    private final Map<String, TreeObjectId> rolesTree = new HashMap<String, TreeObjectId>();
 
 	private static final Log log = LogFactory.getLog(RoleDataServiceImpl.class);
 
@@ -206,27 +224,9 @@ public class RoleDataServiceImpl implements RoleDataService {
 					if(!visitedSet.contains(role)) {
 						visitedSet.add(role);
 						if(CollectionUtils.isNotEmpty(role.getChildRoles())) {
-							for(final RoleEntity child : role.getChildRoles()) {
+							role.getChildRoles().stream().map(e -> e.getMemberEntity()).forEach(child -> {
 								visitChildRoles(child.getId(), visitedSet);
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-	
-	private void visitParentRoles(final String id, final Set<RoleEntity> visitedSet) {
-		if(id != null) {
-			if(visitedSet != null) {
-				final RoleEntity role = roleDao.findById(id);
-				if(role != null) {
-					if(!visitedSet.contains(role)) {
-						visitedSet.add(role);
-						if(CollectionUtils.isNotEmpty(role.getParentRoles())) {
-							for(final RoleEntity child : role.getParentRoles()) {
-								visitParentRoles(child.getId(), visitedSet);
-							}
+							});
 						}
 					}
 				}
@@ -344,6 +344,13 @@ public class RoleDataServiceImpl implements RoleDataService {
         
         bean.setRoleAttributes(dbProps);
 	}
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<RoleAttribute> getRoleAttributes(String roleId) {
+        List<RoleAttributeEntity> attributes = roleAttributeDAO.findByRoleId(roleId);
+        return roleAttributeDozerConverter.convertToDTOList(attributes, false);
+    }
 
     private void auditLogRemoveAttribute(final RoleEntity role, final RoleAttributeEntity roleAttr, final String requesterId){
         // Audit Log -----------------------------------------------------------------------------------
@@ -521,24 +528,26 @@ public class RoleDataServiceImpl implements RoleDataService {
 
 	@Override
     @Transactional(readOnly = true)
+	@Deprecated
 	public List<RoleEntity> getParentRoles(final String id, final String requesterId, int from, int size) {
 		return roleDao.getParentRoles(id, getDelegationFilter(requesterId), from, size);
 	}
 
 	@Override
     @Transactional(readOnly = true)
+	@Deprecated
 	public int getNumOfParentRoles(final String id, final String requesterId) {
 		return roleDao.getNumOfParentRoles(id, getDelegationFilter(requesterId));
 	}
 
 	@Override
     @Transactional
-	public void addChildRole(final String id, final String childRoleId) {
+	public void addChildRole(final String id, final String childRoleId, final Set<String> rights) {
 		if(id != null && childRoleId != null && !id.equals(childRoleId)) {
 			final RoleEntity child = roleDao.findById(childRoleId);
 			final RoleEntity parent = roleDao.findById(id);
-			if(parent != null && child != null && !parent.hasChildRole(child.getId())) {
-				parent.addChildRole(child);
+			if(parent != null && child != null) {
+				parent.addChild(child, accessRightDAO.findByIds(rights));
 			}
 			roleDao.update(parent);
 		}
@@ -551,7 +560,7 @@ public class RoleDataServiceImpl implements RoleDataService {
 			final RoleEntity child = roleDao.findById(childRoleId);
 			final RoleEntity parent = roleDao.findById(id);
 			if(parent != null && child != null) {
-				parent.removeChildRole(child.getId());
+				parent.removeChild(child);
 			}
 			roleDao.update(parent);
 		}
@@ -599,7 +608,7 @@ public class RoleDataServiceImpl implements RoleDataService {
     
 	@Override
 	@Transactional
-	public void validateRole2RoleAddition(String parentId, String memberId) throws BasicDataServiceException {
+	public void validateRole2RoleAddition(final String parentId, final String memberId, final Set<String> rights) throws BasicDataServiceException {
 		final RoleEntity parent = roleDao.findById(parentId);
 		final RoleEntity child = roleDao.findById(memberId);
 		
@@ -611,9 +620,11 @@ public class RoleDataServiceImpl implements RoleDataService {
 			throw new BasicDataServiceException(ResponseCode.CIRCULAR_DEPENDENCY);
 		}
 		
-		if(parent.hasChildRole(child.getId())) {
+		/*
+		if(parent.hasChild(child)) {
 			throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS);
 		}
+		*/
 		
 		if(StringUtils.equals(parentId, memberId)) {
 			throw new BasicDataServiceException(ResponseCode.CANT_ADD_YOURSELF_AS_CHILD);
@@ -623,18 +634,19 @@ public class RoleDataServiceImpl implements RoleDataService {
 	private boolean causesCircularDependency(final RoleEntity parent, final RoleEntity child, final Set<RoleEntity> visitedSet) {
 		boolean retval = false;
 		if(parent != null && child != null) {
-			if(!visitedSet.contains(child)) {
-				visitedSet.add(child);
-				if(CollectionUtils.isNotEmpty(parent.getParentRoles())) {
-					for(final RoleEntity entity : parent.getParentRoles()) {
-						retval = entity.getId().equals(child.getId());
-						if(retval) {
-							break;
-						}
-						causesCircularDependency(parent, entity, visitedSet);
-					}
-				}
-			}
+			if (!visitedSet.contains(child)) {
+                visitedSet.add(child);
+                if (CollectionUtils.isNotEmpty(parent.getParentRoles())) {
+                    for (final RoleToRoleMembershipXrefEntity xref : parent.getParentRoles()) {
+                    	final RoleEntity entity = xref.getEntity();
+                        retval = entity.getId().equals(child.getId());
+                        if (retval) {
+                            break;
+                        }
+                        causesCircularDependency(parent, entity, visitedSet);
+                    }
+                }
+            }
 		}
 		return retval;
 	}
@@ -706,4 +718,28 @@ public class RoleDataServiceImpl implements RoleDataService {
             roleAttributeDAO.merge(attribute);
         }
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<TreeObjectId> getRolesWithSubRolesIds(List<String> roleIds, String requesterId) {
+        return roleDao.findRolesWithSubRolesIds(roleIds,  getDelegationFilter(requesterId));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public void rebuildRoleHierarchyCache() {
+        log.info("Role Hierarchy Cache preparation running ....");
+        roleDao.rolesHierarchyRebuild();
+        log.info("Role Hierarchy Cache preparation done.");
+    }
+
+	@Override
+	public boolean hasChildEntities(String roleId) {
+		final RoleEntity role = roleDao.findById(roleId);
+		if(role != null) {
+			return CollectionUtils.isNotEmpty(role.getChildRoles()) || CollectionUtils.isNotEmpty(role.getResources());
+		} else {
+			return false;
+		}
+	}
 }

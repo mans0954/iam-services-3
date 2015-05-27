@@ -141,6 +141,7 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
         bindingMap.put(AbstractProvisioningService.TARGET_SYS_RES_ID, res.getId());
         bindingMap.put(AbstractProvisioningService.TARGET_SYS_MANAGED_SYS_ID, managedSysId);
         bindingMap.put(AbstractProvisioningService.USER, targetSysProvUser);
+        bindingMap.put(AbstractProvisioningService.USER_ATTRIBUTES,userMgr.getUserAttributesDto(pUser.getId()));
 
         ManagedSystemObjectMatch matchObj = null;
         ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(managedSysId, ManagedSystemObjectMatch.USER);
@@ -201,18 +202,21 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
             data.setResourceId(res.getId());
             data.setIdentity(targetSysLogin);
             data.setProvUser(targetSysProvUser);
-            data.setBindingMap(bindingMap);
 
             switch (onDeleteProp) {
                 case "DELETE":
                     data.setOperation(ProvOperationEnum.DELETE);
+                    bindingMap.put("operation", "DELETE");
                     break;
                 case "DISABLE":
                     data.setOperation(ProvOperationEnum.DISABLE);
+                    bindingMap.put("operation", "SUSPEND");
                     break;
                 default:
                     data.setOperation(ProvOperationEnum.UPDATE);
+                    bindingMap.put("operation", "MODIFY");
             }
+            data.setBindingMap(bindingMap);
 
             return data;
         }

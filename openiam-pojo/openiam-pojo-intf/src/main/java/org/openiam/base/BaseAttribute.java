@@ -117,7 +117,6 @@ public class BaseAttribute implements Serializable {
         int result = 1;
         result = prime * result + ((attributeId == null) ? 0 : attributeId.hashCode());
         result = prime * result + ((name == null) ? 0 : name.hashCode());
-        result = prime * result + ((operationEnum == null) ? 0 : operationEnum.hashCode());
         result = prime * result + ((parentId == null) ? 0 : parentId.hashCode());
         result = prime * result + ((properties == null) ? 0 : properties.hashCode());
         result = prime * result + ((selected == null) ? 0 : selected.hashCode());
@@ -143,8 +142,6 @@ public class BaseAttribute implements Serializable {
             if (other.name != null)
                 return false;
         } else if (!name.equals(other.name))
-            return false;
-        if (operationEnum != other.operationEnum)
             return false;
         if (parentId == null) {
             if (other.parentId != null)

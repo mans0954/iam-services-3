@@ -45,4 +45,5 @@ public class AddressSearchBean  extends AbstractSearchBean<Address, String> impl
     public void setMetadataTypeId(String metadataTypeId) {
         this.metadataTypeId = metadataTypeId;
     }
+
 }

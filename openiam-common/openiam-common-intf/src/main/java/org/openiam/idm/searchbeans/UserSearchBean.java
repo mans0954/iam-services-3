@@ -574,4 +574,5 @@ public class UserSearchBean extends EntitlementsSearchBean<User, String> impleme
     public void setUserType(String userType) {
         this.userType = userType;
     }
+
 }

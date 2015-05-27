@@ -206,7 +206,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 		resource.setName(String.format("%s_%s", name, System.currentTimeMillis()));
 		resource.setCoorelatedName(String.format("Resource protecting workflow '%s'", name));
 		resource.addUser(user);
-		resource.addChildResource(workflowMasterResource);
+		resource.addChildResource(workflowMasterResource, null);
 		
 		resourceService.save(resource, requestor);
 		return resource;
@@ -676,6 +676,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			variables.put(ActivitiConstants.TASK_DESCRIPTION.getName(), request.getDescription());
 			variables.put(ActivitiConstants.REQUESTOR.getName(), request.getRequestorUserId());
 			variables.put(ActivitiConstants.DELETABLE.getName(), Boolean.valueOf(request.isDeletable()));
+			variables.put(ActivitiConstants.ACCESS_RIGHTS.getName(), request.getAccessRights());
 			if(request.getAssociationId() != null) {
 				variables.put(ActivitiConstants.ASSOCIATION_ID.getName(), request.getAssociationId());
 			}

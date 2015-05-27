@@ -96,4 +96,7 @@ public class GroupServiceTest extends AbstractAttributeServiceTest<Group, GroupS
 	protected Set<GroupAttribute> getAttributes(Group t) {
 		return t.getAttributes();
 	}
+	
+	@Test
+	public void foo() {}
 }

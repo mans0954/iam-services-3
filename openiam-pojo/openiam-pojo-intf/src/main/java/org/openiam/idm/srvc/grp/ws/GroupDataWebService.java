@@ -9,7 +9,9 @@ import org.openiam.idm.srvc.lang.dto.Language;
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
+
 import java.util.List;
+import java.util.Set;
 
 /**
  * <code>GroupDataWebService</code> provides a web service interface to manage groups as well
@@ -387,11 +389,13 @@ public interface GroupDataWebService {
     @WebMethod
     public Response addChildGroup(final @WebParam(name = "groupId") String groupId, 
     							  final @WebParam(name = "childGroupId") String childGroupId,
-                                  final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+                                  final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
+                                  final @WebParam(name = "rights", targetNamespace = "") Set<String> rights);
 
     @WebMethod
     public Response validateGroup2GroupAddition(final @WebParam(name = "groupId") String groupId, 
-			  									final @WebParam(name = "childGroupId") String childGroupId);
+			  									final @WebParam(name = "childGroupId") String childGroupId,
+			  									final @WebParam(name = "rights", targetNamespace = "") Set<String> rights);
     
     /**
      * Remove Group specified by childGroupId from the membership list of Group specified by groupId
@@ -431,4 +435,13 @@ public interface GroupDataWebService {
     public List<Group> findGroupsByAttributeValueLocalize(final @WebParam(name = "attrName", targetNamespace = "") String attrName,
                                                   final @WebParam(name = "attrValue", targetNamespace = "") String attrValue,
                                                   final @WebParam(name = "language", targetNamespace = "") Language language);
+    
+    
+    /**
+     * Does this group have any children?
+     * @param groupId
+     * @return
+     */
+    @WebMethod
+    public boolean hasAttachedEntities(final @WebParam(name = "groupId", targetNamespace = "") String groupId);
 }

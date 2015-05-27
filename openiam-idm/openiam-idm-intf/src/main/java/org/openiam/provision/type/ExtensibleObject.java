@@ -108,12 +108,13 @@ public class ExtensibleObject implements java.io.Serializable {
 		return attributes;
 	}
 
-    public String getAttributesAsJSON() throws IOException {
+    public String getAttributesAsJSON(String[] protectedProperties) throws IOException {
         Properties attrVals = new Properties();
         ObjectMapper mapper = new ObjectMapper();
+        String[] protectedProps = ArrayUtils.isEmpty(protectedProperties) ? PROTECTED_PROPERTIES : protectedProperties;
         for(ExtensibleAttribute attribute : this.getAttributes()) {
             Object val = null;
-            if (ArrayUtils.contains(PROTECTED_PROPERTIES, attribute.getName().toLowerCase())) { //TODO: Consider using of 'HIDDEN' mark from lookupAttributes instead of hardcoded array
+            if (ArrayUtils.contains(protectedProps, attribute.getName().toLowerCase())) { //TODO: Consider using of 'HIDDEN' mark from lookupAttributes instead of hardcoded array
                 val = "PROTECTED";
             } else if (attribute.getValue() != null) {
                 val = attribute.getValue();

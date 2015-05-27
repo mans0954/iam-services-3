@@ -30,6 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
     @Autowired
@@ -44,6 +45,7 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
 		Response response = null;
 		final String associationId = getAssociationId(execution);
 		final String memberAssociationId = getMemberAssociationId(execution);
+		final Set<String> rights = getAccessRights(execution);
 		
 		Group group = null;
 		Role role = null;
@@ -62,7 +64,7 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
 				switch(requestType) {
 					case ADD_GROUP_TO_GROUP:
 						action = AuditAction.ADD_CHILD_GROUP;
-						response = groupDataService.addChildGroup(associationId, memberAssociationId, systemUserId);
+						response = groupDataService.addChildGroup(associationId, memberAssociationId, systemUserId, rights);
 						break;
 					case REMOVE_GROUP_FROM_GROUP:
 						action = AuditAction.REMOVE_CHILD_GROUP;
@@ -86,7 +88,7 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
 						break;
 					case ADD_ROLE_TO_ROLE:
 						action = AuditAction.ADD_CHILD_ROLE;
-						response = roleDataService.addChildRole(associationId, memberAssociationId, systemUserId);
+						response = roleDataService.addChildRole(associationId, memberAssociationId, systemUserId, rights);
 						break;
 					case REMOVE_ROLE_FROM_ROLE:
 						action = AuditAction.REMOVE_CHILD_ROLE;
@@ -102,7 +104,7 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
 						break;
 					case ADD_RESOURCE_TO_RESOURCE:
 						action = AuditAction.ADD_CHILD_RESOURCE;
-						response = resourceDataService.addChildResource(associationId, memberAssociationId, systemUserId);
+						response = resourceDataService.addChildResource(associationId, memberAssociationId, systemUserId, rights);
 						break;
 					case REMOVE_RESOURCE_FROM_RESOURCE:
 						action = AuditAction.REMOVE_CHILD_RESOURCE;

@@ -69,4 +69,5 @@ public class MetadataElementPageTemplateSearchBean extends AbstractKeyNameSearch
 	public String getKey() {
 		return (CollectionUtils.isNotEmpty(keySet)) ? keySet.iterator().next() : null;
 	}
+
 }

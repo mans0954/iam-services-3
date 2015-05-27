@@ -12,10 +12,14 @@ import javax.jws.WebParam;
 import javax.jws.WebService;
 
 import java.util.List;
+import java.util.Set;
 
 @WebService(targetNamespace = "urn:idm.openiam.org/srvc/res/service", name = "ResourceDataWebService")
 public interface ResourceDataService {
 
+	@WebMethod
+	boolean isMemberOfAnyEntity(final @WebParam(name = "resourceId", targetNamespace = "") String resourceId);
+	
     @WebMethod
     Response validateDelete(final @WebParam(name = "resourceId", targetNamespace = "") String resourceId);
 
@@ -280,12 +284,14 @@ public interface ResourceDataService {
      */
     @WebMethod
     Response addChildResource(@WebParam(name = "resourceId", targetNamespace = "") final String resourceId,
-	    @WebParam(name = "memberResourceId", targetNamespace = "") final String memberResourceId,
-        final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+    						  @WebParam(name = "memberResourceId", targetNamespace = "") final String memberResourceId,
+    						  @WebParam(name = "requesterId", targetNamespace = "") final String requesterId,
+    						  @WebParam(name = "rights", targetNamespace = "") final Set<String> rights);
 
     @WebMethod
     Response validateAddChildResource(@WebParam(name = "resourceId", targetNamespace = "") final String resourceId,
-	    @WebParam(name = "childResourceId", targetNamespace = "") final String childResourceId);
+    								  @WebParam(name = "childResourceId", targetNamespace = "") final String childResourceId,
+    								  @WebParam(name = "rights", targetNamespace = "") final Set<String> rights);
 
     /**
      * Removes a child resource from a parent

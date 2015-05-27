@@ -32,6 +32,5 @@ public class IdentityAnswerSearchBean extends AbstractSearchBean<UserIdentityAns
 	public void setQuestionId(String questionId) {
 		this.questionId = questionId;
 	}
-	
-	
+
 }

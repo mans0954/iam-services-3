@@ -2346,19 +2346,16 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
         return userDao.getUsersForMSys(mSysId);
     }
 
+    @Transactional(readOnly = true)
     public Map<String, UserAttribute> getUserAttributesDto(String userId) {
-        Map<String, UserAttributeEntity> attributeEntityMap = this.getUserAttributes(userId);
-        if (attributeEntityMap != null && !attributeEntityMap.isEmpty()) {
-            Map<String, UserAttribute> attributeMap = new HashMap<String, UserAttribute>();
-            for (String key : attributeEntityMap.keySet()) {
-                UserAttributeEntity entity = attributeEntityMap.get(key);
-                if (entity != null) {
-                    attributeMap.put(key, userAttributeDozerConverter.convertToDTO(entity, false));
-                }
+        List<UserAttribute> userAttributes = getUserAttributesDtoList(userId);
+        Map<String, UserAttribute> attributeMap = new HashMap<String, UserAttribute>();
+        if(userAttributes != null) {
+            for(UserAttribute attr : userAttributes) {
+                attributeMap.put(attr.getName(), attr);
             }
-            return attributeMap;
         }
-        return null;
+        return attributeMap;
     }
 
     @Transactional(readOnly = true)
@@ -2366,7 +2363,13 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
     public List<UserAttributeEntity> getUserAttributeList(String userId, final LanguageEntity language) {
     	return userAttributeDao.findUserAttributes(userId);
     }
-    
+
+    @Transactional(readOnly = true)
+    public List<UserAttribute> getUserAttributesDtoList(String userId) {
+        List<UserAttributeEntity> attributeEntities = userAttributeDao.findUserAttributes(userId);
+        return userAttributeDozerConverter.convertToDTOList(attributeEntities, false);
+    }
+
     @Transactional(readOnly = true)
     public Map<String, UserAttributeEntity> getUserAttributes(String userId) {
         Map<String, UserAttributeEntity> result = null;

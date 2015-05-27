@@ -6,6 +6,7 @@ import groovy.lang.MissingPropertyException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import javax.annotation.PostConstruct;
 import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
 import javax.jms.Queue;
@@ -55,7 +56,9 @@ import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.idm.srvc.res.service.ResourceService;
-import org.openiam.provision.dto.PasswordSync;
+import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
+import org.openiam.idm.srvc.user.dto.UserAttribute;
+import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.ProvOperationEnum;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.resp.ProvisionUserResponse;
@@ -121,6 +124,9 @@ public class ProvisionDispatcher implements Sweepable {
     @Autowired
     protected AuditLogService auditLogService;
 
+    @Value("${org.openiam.debug.hidden.attributes}")
+    protected String hiddenAttributes;
+
     @Autowired
     @Qualifier("cryptor")
     private Cryptor cryptor;
@@ -133,7 +139,13 @@ public class ProvisionDispatcher implements Sweepable {
     @Qualifier("transactionManager")
     private PlatformTransactionManager platformTransactionManager;
 
-    private final Object mutext = new Object();
+    @Autowired
+    @Qualifier("userManager")
+    private UserDataService userDataService;
+
+    private final Object mutex = new Object();
+
+    private String[] hiddenAttrs = null;
 
     @Override
     //TODO change when Spring 3.2.2 @Scheduled(fixedDelayString = "${org.openiam.prov.threadsweep}")
@@ -143,7 +155,7 @@ public class ProvisionDispatcher implements Sweepable {
         jmsTemplate.browse(queue, new BrowserCallback<Object>() {
             @Override
             public Object doInJms(Session session, QueueBrowser browser) throws JMSException {
-                synchronized (mutext) {
+                synchronized (mutex) {
                     final List<List<ProvisionDataContainer>> batchList = new LinkedList<List<ProvisionDataContainer>>();
                     List<ProvisionDataContainer> list = new ArrayList<ProvisionDataContainer>();
                     Enumeration e = browser.getEnumeration();
@@ -522,9 +534,11 @@ public class ProvisionDispatcher implements Sweepable {
                     matchObj, currentValueMap, res);
             bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_USER_EXISTS, targetSystemUserExists);
             bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_ATTRIBUTES, currentValueMap);
+            Map<String, UserAttribute> attributes = userDataService.getUserAttributesDto(targetSysProvUser.getId());
+            bindingMap.put(AbstractProvisioningService.USER_ATTRIBUTES, attributes);
             ExtensibleObject extUser = provisionSelectedResourceHelper.buildFromRules(managedSysId, bindingMap);
             try {
-                idmAuditLog.addCustomRecord("ATTRIBUTES", extUser.getAttributesAsJSON());
+                idmAuditLog.addCustomRecord("ATTRIBUTES", extUser.getAttributesAsJSON(hiddenAttrs));
             } catch (JsonGenerationException jge) {
                 log.error(jge);
             }
@@ -611,7 +625,7 @@ public class ProvisionDispatcher implements Sweepable {
      * they can be passed to the connector
      */
     static ExtensibleObject updateAttributeList(org.openiam.provision.type.ExtensibleObject extObject,
-            Map<String, ExtensibleAttribute> currentValueMap) {
+                                                Map<String, ExtensibleAttribute> currentValueMap) {
         if (extObject == null) {
             return null;
         }
@@ -762,43 +776,50 @@ public class ProvisionDispatcher implements Sweepable {
         }
     }
 
-	private static class LoginChanges extends Login {
+    private static class LoginChanges extends Login {
 
-		private Set<String> fieldsAffected = new HashSet<>();
+        private Set<String> fieldsAffected = new HashSet<>();
 
-		public Set<String> getFieldsAffected() {
-			return fieldsAffected;
-		}
+        public Set<String> getFieldsAffected() {
+            return fieldsAffected;
+        }
 
-		@Override
-		public void setProvStatus(ProvLoginStatusEnum status) {
-			fieldsAffected.add("provStatus");
-			super.setProvStatus(status);
-		}
+        @Override
+        public void setProvStatus(ProvLoginStatusEnum status) {
+            fieldsAffected.add("provStatus");
+            super.setProvStatus(status);
+        }
 
-		public void setPassword(String password) {
-			fieldsAffected.add("password");
-			super.setPassword(password);
-		}
+        public void setPassword(String password) {
+            fieldsAffected.add("password");
+            super.setPassword(password);
+        }
 
-		public void setLogin(String login) {
-			fieldsAffected.add("login");
-			super.setLogin(login);
-		}
+        public void setLogin(String login) {
+            fieldsAffected.add("login");
+            super.setLogin(login);
+        }
 
-		public void setAuthFailCount(int authFailCount) {
-			fieldsAffected.add("authFailCount");
-			super.setAuthFailCount(authFailCount);
-		}
+        public void setAuthFailCount(int authFailCount) {
+            fieldsAffected.add("authFailCount");
+            super.setAuthFailCount(authFailCount);
+        }
 
-		public void setPasswordChangeCount(int passwordChangeCount) {
-			fieldsAffected.add("passwordChangeCount");
-			super.setPasswordChangeCount(passwordChangeCount);
-		}
+        public void setPasswordChangeCount(int passwordChangeCount) {
+            fieldsAffected.add("passwordChangeCount");
+            super.setPasswordChangeCount(passwordChangeCount);
+        }
 
-		public void setIsLocked(int isLocked) {
-			fieldsAffected.add("isLocked");
-			super.setIsLocked(isLocked);
-		}
-	}
+        public void setIsLocked(int isLocked) {
+            fieldsAffected.add("isLocked");
+            super.setIsLocked(isLocked);
+        }
+    }
+
+    @PostConstruct
+    private void initDispatcher() {
+        if (StringUtils.isNotBlank(hiddenAttributes)) {
+            hiddenAttrs = hiddenAttributes.trim().toLowerCase().split("\\s*,\\s*");
+        }
+    }
 }

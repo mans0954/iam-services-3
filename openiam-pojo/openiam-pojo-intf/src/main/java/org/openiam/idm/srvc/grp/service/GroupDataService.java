@@ -46,6 +46,9 @@ public interface GroupDataService {
     public List<GroupEntity> getChildGroups(final String groupId, final String requesterId, final int from, final int size);
     public List<GroupEntity> getParentGroups(final String groupId, final String requesterId, final int from, final int size);
     public List<GroupEntity> getGroupsForResource(final String resourceId, final String requesterId, final int from, final int size);
+
+    public List<Group> getGroupsDtoForUser(final String userId, String requesterId, final int from, final int size);
+
     public List<GroupEntity> getGroupsForUser(final String userId, String requesterId, final int from, final int size);
     public List<GroupEntity> getGroupsForRole(final String roleId, String requesterId, final int from, final int size);
 
@@ -115,10 +118,10 @@ public interface GroupDataService {
      */
     public void removeAttribute(final String attributeId);
 
-    public void addChildGroup(final String groupId, final String childGroupId);
+    public void addChildGroup(final String groupId, final String childGroupId, final Set<String> rights);
     public void removeChildGroup(final String groupId, final String childGroupId);
     
-    public void validateGroup2GroupAddition(final String parentId, final String memberId) throws BasicDataServiceException;
+    public void validateGroup2GroupAddition(final String parentId, final String memberId, final Set<String> rights) throws BasicDataServiceException;
     
     public Group getGroupDTO(final String groupId);
     public List<GroupEntity> findGroupsByAttributeValue(String attrName, String attrValue);
@@ -128,4 +131,6 @@ public interface GroupDataService {
 
     public int countGroupsForOwner(GroupSearchBean searchBean, String requesterId, String ownerId);
     public List<GroupEntity> findGroupsForOwner(GroupSearchBean searchBean, String requesterId, String ownerId, int from, int size, LanguageEntity languageEntity);
+    
+    public boolean hasAttachedEntities(String groupId);
 }

@@ -24,6 +24,7 @@ package org.openiam.idm.srvc.role.ws;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.openiam.base.SysConfiguration;
+import org.openiam.base.TreeObjectId;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
@@ -31,6 +32,7 @@ import org.openiam.exception.BasicDataServiceException;
 import org.openiam.dozer.converter.LanguageDozerConverter;
 import org.openiam.dozer.converter.RoleDozerConverter;
 import org.openiam.idm.searchbeans.RoleSearchBean;
+import org.openiam.idm.srvc.access.service.AccessRightProcessor;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
@@ -42,6 +44,7 @@ import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.dto.Role;
+import org.openiam.idm.srvc.role.dto.RoleAttribute;
 import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDataService;
@@ -51,9 +54,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.PostConstruct;
 import javax.jws.WebMethod;
 import javax.jws.WebService;
+
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author suneet
@@ -84,8 +90,16 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
     
     @Autowired
     private LanguageDozerConverter languageConverter;
+    
+    @Autowired
+    private AccessRightProcessor accessRightProcessor;
 
-	@Override
+    @PostConstruct
+    public void dataPreparation(){
+        roleDataService.rebuildRoleHierarchyCache();
+    }
+
+    @Override
 	public Response validateEdit(Role role) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
 		try {
@@ -151,7 +165,12 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 		}
 	}
 
-	@Override
+    @Override
+    public List<RoleAttribute> getRoleAttributes(String roleId) {
+        return roleDataService.getRoleAttributes(roleId);
+    }
+
+    @Override
 	public Response addGroupToRole(String roleId, String groupId, String requesterId) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLog idmAuditLog = new IdmAuditLog();
@@ -372,8 +391,10 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 
 	@Override
 	public List<Role> findBeans(final RoleSearchBean searchBean, String requesterId, final int from, final int size) {
-        final List<RoleEntity> found = roleDataService.findBeans(searchBean, requesterId, from, size);
-        return roleDozerConverter.convertToDTOList(found, false);
+        final List<RoleEntity> entityList = roleDataService.findBeans(searchBean, requesterId, from, size);
+        final List<Role> dtoList = roleDozerConverter.convertToDTOList(entityList, searchBean.isDeepCopy());
+        accessRightProcessor.process(searchBean, dtoList, entityList);
+        return dtoList;
 	}
 
 	@Override
@@ -410,6 +431,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 
 	@Override
 	@WebMethod
+	@Deprecated
 	public List<Role> getParentRoles(final String roleId, String requesterId, final int from, final int size) {
         final List<RoleEntity> entityList = roleDataService.getParentRoles(roleId, requesterId, from, size);
         return roleDozerConverter.convertToDTOList(entityList, false);
@@ -423,14 +445,14 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	}
 
 	@Override
-	public Response addChildRole(final String roleId, final String childRoleId, String requesterId) {
+	public Response addChildRole(final String roleId, final String childRoleId, String requesterId, final Set<String> rights) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
 		try {
 			if(roleId == null || childRoleId == null) {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "RoleId or child roleId is null");
 			}
-			roleDataService.validateRole2RoleAddition(roleId, childRoleId);
-			roleDataService.addChildRole(roleId, childRoleId);
+			roleDataService.validateRole2RoleAddition(roleId, childRoleId, rights);
+			roleDataService.addChildRole(roleId, childRoleId, rights);
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
@@ -514,10 +536,10 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	}
 
 	@Override
-	public Response canAddChildRole(String roleId, String childRoleId) {
+	public Response canAddChildRole(String roleId, String childRoleId, final Set<String> rights) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
 		try {
-			roleDataService.validateRole2RoleAddition(roleId, childRoleId);
+			roleDataService.validateRole2RoleAddition(roleId, childRoleId, rights);
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
@@ -551,4 +573,14 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
         return roleDozerConverter.convertToDTOList(
                 roleDataService.findRolesByAttributeValue(attrName, attrValue), true);
     }
+
+    @Override
+    public List<TreeObjectId> getRolesWithSubRolesIds(List<String> roleIds, String requesterId) {
+        return roleDataService.getRolesWithSubRolesIds(roleIds, requesterId);
+    }
+
+	@Override
+	public boolean hasChildEntities(String roleId) {
+		return roleDataService.hasChildEntities(roleId);
+	}
 }

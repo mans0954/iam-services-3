@@ -249,8 +249,8 @@
 		<property name="password" value="${mail.password}" />
 		<property name="javaMailProperties">
 			<props>
-				<prop key="mail.smtp.auth">false</prop>
-				<prop key="mail.smtp.starttls.enable">false</prop>
+				<prop key="mail.smtp.auth">${mail.smtp.auth}</prop>
+				<prop key="mail.smtp.starttls.enable">${mail.smtp.starttls.enable}</prop>
 			</props>
 		</property>
 	</bean>
@@ -265,30 +265,7 @@
 		<property name="hibernateProperties" ref="hibernateProperties" />
 
 		<property name="packagesToScan"
-			value="org.openiam.core.domain*,
-											   org.openiam.idm.srvc.grp.domain*,
-											   org.openiam.idm.srvc.role.domain*,
-                                               org.openiam.idm.srvc.user.domain*,
-                                               org.openiam.am.srvc.domain*,
-                                               org.openiam.idm.srvc.mngsys.domain*,
-                                               org.openiam.idm.srvc.synch.domain*,
-                                               org.openiam.idm.srvc.org.domain*,
-											   org.openiam.idm.srvc.auth.domain*,
-											   org.openiam.idm.srvc.cat.domain*,
-                                               org.openiam.idm.srvc.continfo.domain*,
-                                               org.openiam.idm.srvc.res.domain*,
-                                               org.openiam.idm.srvc.recon.domain*,
-                                               org.openiam.idm.srvc.meta.domain*,
-                                               org.openiam.idm.srvc.policy.domain*,
-                                               org.openiam.idm.srvc.audit.domain*,
-                                               org.openiam.idm.srvc.pswd.domain*,
-                                               org.openiam.idm.srvc.lang.domain*,
-                                               org.openiam.idm.srvc.report.domain*,
-                                               org.openiam.idm.srvc.prov*,
-                                               org.openiam.idm.srvc.batch.domain*,
-                                               org.openiam.idm.srvc.ui*,
-                                               org.openiam.property.domain*,
-                                               org.openiam.idm.srvc.loc.domain*" />
+			value="org.openiam.*" />
 	</bean>
 	<util:properties id="hibernateProperties"
 		location="classpath:openiam.hibernate.properties">

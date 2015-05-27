@@ -1,9 +1,11 @@
 package org.openiam.idm.srvc.role.domain;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
@@ -27,10 +29,12 @@ import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.Where;
 import org.openiam.base.domain.AbstractMetdataTypeEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.access.domain.AccessRightEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.res.domain.ResourceToResourceMembershipXrefEntity;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.internationalization.Internationalized;
@@ -73,19 +77,13 @@ public class RoleEntity extends AbstractMetdataTypeEntity {
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	private Set<RoleAttributeEntity> roleAttributes;
 	
-	@ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
-    @JoinTable(name="role_to_role_membership",
-        joinColumns={@JoinColumn(name="MEMBER_ROLE_ID")},
-        inverseJoinColumns={@JoinColumn(name="ROLE_ID")})
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="memberEntity", orphanRemoval=true)
     @Fetch(FetchMode.SUBSELECT)
-    private Set<RoleEntity> parentRoles;
-    
-	@ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
-    @JoinTable(name="role_to_role_membership",
-        joinColumns={@JoinColumn(name="ROLE_ID")},
-        inverseJoinColumns={@JoinColumn(name="MEMBER_ROLE_ID")})
+    private Set<RoleToRoleMembershipXrefEntity> parentRoles = new HashSet<RoleToRoleMembershipXrefEntity>(0);
+
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="entity", orphanRemoval=true)
     @Fetch(FetchMode.SUBSELECT)
-    private Set<RoleEntity> childRoles;
+    private Set<RoleToRoleMembershipXrefEntity> childRoles = new HashSet<RoleToRoleMembershipXrefEntity>(0);
 
     @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinTable(name = "RESOURCE_ROLE", joinColumns = { @JoinColumn(name = "ROLE_ID") }, inverseJoinColumns = { @JoinColumn(name = "RESOURCE_ID") })
@@ -185,58 +183,70 @@ public class RoleEntity extends AbstractMetdataTypeEntity {
 		this.roleAttributes = roleAttributes;
 	}
 
-	public Set<RoleEntity> getParentRoles() {
+	public Set<RoleToRoleMembershipXrefEntity> getParentRoles() {
 		return parentRoles;
 	}
 
-	public void setParentRoles(Set<RoleEntity> parentRoles) {
+	public void setParentRoles(Set<RoleToRoleMembershipXrefEntity> parentRoles) {
 		this.parentRoles = parentRoles;
 	}
 
-	public Set<RoleEntity> getChildRoles() {
+	public Set<RoleToRoleMembershipXrefEntity> getChildRoles() {
 		return childRoles;
 	}
 	
-	public boolean hasChildRole(final String id) {
-		boolean retVal = false;
-		if(id != null) {
-			if(childRoles != null) {
-				for(final RoleEntity role : childRoles) {
-					if(role.getId().equals(id)) {
-						retVal = true;
-						break;
-					}
-				}
-			}
-		}
-		return retVal;
-	}
-	
-	public void addChildRole(final RoleEntity role) {
-		if(role != null) {
-			if(childRoles == null) {
-				childRoles = new LinkedHashSet<RoleEntity>();
-			}
-			childRoles.add(role);
-		}
-	}
-	
-	public void removeChildRole(final String id) {
-		if(id != null) {
-			if(childRoles != null) {
-				for(final Iterator<RoleEntity> it = childRoles.iterator(); it.hasNext();) {
-					final RoleEntity role = it.next();
-					if(role.getId().equals(id)) {
-						it.remove();
-						break;
-					}
-				}
-			}
-		}
-	}
-
-	public void setChildRoles(Set<RoleEntity> childRoles) {
+	public void setChildRoles(Set<RoleToRoleMembershipXrefEntity> childRoles) {
 		this.childRoles = childRoles;
+	}
+	
+	public RoleToRoleMembershipXrefEntity getParent(final String parentId) {
+    	final Optional<RoleToRoleMembershipXrefEntity> xref = 
+    			this.getParentRoles()
+    				.stream()
+    				.filter(e -> parentId.equals(e.getEntity().getId()))
+    				.findFirst();
+    	return xref.isPresent() ? xref.get() : null;
+    }
+
+	public void addChild(final RoleEntity entity, final Collection<AccessRightEntity> rights) {
+		if(entity != null) {
+			if(this.childRoles == null) {
+				this.childRoles = new LinkedHashSet<RoleToRoleMembershipXrefEntity>();
+			}
+			RoleToRoleMembershipXrefEntity theXref = null;
+			for(final RoleToRoleMembershipXrefEntity xref : this.childRoles) {
+				if(xref.getEntity().getId().equals(getId()) && xref.getMemberEntity().getId().equals(entity.getId())) {
+					theXref = xref;
+					break;
+				}
+			}
+			
+			if(theXref == null) {
+				theXref = new RoleToRoleMembershipXrefEntity();
+				theXref.setEntity(this);
+				theXref.setMemberEntity(entity);
+			}
+			if(rights != null) {
+				theXref.setRights(new HashSet<AccessRightEntity>(rights));
+			}
+			this.childRoles.add(theXref);
+		}
+	}
+	
+	public boolean hasChild(final RoleEntity entity) {
+		boolean contains = false;
+		if(childRoles != null) {
+			contains = (childRoles.stream().map(e -> e.getMemberEntity()).filter(e -> e.getId().equals(entity.getId())).count() > 0);
+		}
+		return contains;
+	}
+	
+	public void removeChild(final RoleEntity entity) {
+		if(entity != null) {
+			if(this.childRoles != null) {
+				this.childRoles.removeIf(e -> e.getMemberEntity().getId().equals(entity.getId()));
+			}
+		}
 	}
 
 	public Date getCreateDate() {

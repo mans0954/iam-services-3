@@ -30,4 +30,5 @@ public class SynchConfigSearchBean extends AbstractSearchBean<SynchConfig, Strin
     public void setSynchType(String synchType) {
         this.synchType = synchType;
     }
+
 }

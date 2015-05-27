@@ -22,6 +22,7 @@
 package org.openiam.idm.srvc.msg.service;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -49,6 +50,8 @@ public class Message implements Serializable {
     private String body;
     private BodyType bodyType = BodyType.PLAIN_TEXT;
     private List<String> attachments = new LinkedList<String>();
+    private Date processingTime;
+
 
 	private static final Log log = LogFactory.getLog(Message.class);
 
@@ -109,6 +112,14 @@ public class Message implements Serializable {
 		}
 
 	}
+
+    public Date getProcessingTime() {
+        return processingTime;
+    }
+
+    public void setExecutionDateTime(Date processingTime) {
+        this.processingTime = processingTime;
+    }
 
     public BodyType getBodyType() {
         return bodyType;
