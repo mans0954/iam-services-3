@@ -6,10 +6,15 @@ import org.junit.runner.RunWith;
 import org.openiam.am.srvc.constants.SearchScopeType;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.srvc.audit.ws.IdmAuditLogWebDataService;
+import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.ws.LoginDataWebService;
+import org.openiam.idm.srvc.auth.ws.LoginResponse;
+import org.openiam.idm.srvc.key.constant.KeyName;
+import org.openiam.idm.srvc.key.ws.KeyManagementWS;
 import org.openiam.idm.srvc.lang.service.LanguageWebService;
 import org.openiam.idm.srvc.meta.ws.MetadataWebService;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
 import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorSearchBean;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
@@ -20,6 +25,7 @@ import org.openiam.idm.srvc.recon.ws.ReconciliationConfigResponse;
 import org.openiam.idm.srvc.recon.ws.ReconciliationWebService;
 import org.openiam.idm.srvc.user.ws.UserDataWebService;
 import org.openiam.provision.service.ProvisionService;
+import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
@@ -41,6 +47,7 @@ public class UserReconciliationADRemoteTest extends AbstractTestNGSpringContextT
 
 
     private static final Log log = LogFactory.getLog(UserReconciliationADRemoteTest.class);
+    public static final String TestUserSamAccountName = "sys.user";
 
     @Autowired
     @Qualifier("provisionServiceClient")
@@ -78,145 +85,200 @@ public class UserReconciliationADRemoteTest extends AbstractTestNGSpringContextT
     @Qualifier("provisionConnectorWebServiceClient")
     protected ProvisionConnectorWebService provisionConnectorWebServiceClient;
 
+    @Autowired
+    @Qualifier("cryptor")
+    private Cryptor cryptor;
+
+    @Autowired
+    @Qualifier("keyManagementWebServiceClient")
+    protected KeyManagementWS keyManagementWS;
+
     private List<String> deleteConnectorIdsList = new LinkedList<String>();
     private List<String> deleteManagedSysIdsList = new LinkedList<String>();
     private List<String> deleteReconConfigIdsList = new LinkedList<String>();
+    private List<String> deleteReconSituationIdsList = new LinkedList<String>();
+    private List<String> deleteMngSysObjectMatchIdsList = new LinkedList<String>();
+
+    private ReconciliationConfig reconciliationConfig;
 
     // Powershell AD Remote Connector
     @BeforeClass(alwaysRun = true)
     private ReconciliationConfig initReconciliationConfig() {
-
         ProvisionConnectorDto connectorDto = new ProvisionConnectorDto();
-        connectorDto.setName("TEST-POWERSHELL-AD-CONNECTOR");
-        connectorDto.setMetadataTypeId("RemoteConnector");
-        connectorDto.setClientCommProtocol("CLEAR");
-        connectorDto.setServiceUrl("win02.openiamdemo.com/PowershellConnectorAD/PowershellConnector.svc");
-        connectorDto.setServiceNameSpace("urn:idm.openiam.org/spml2/service");
-        connectorDto.setServicePort("443");
-        connectorDto.setConnectorInterface("REMOTE");
-
-        // Save Connector
-        provisionConnectorWebServiceClient.addProvisionConnector(connectorDto);
-        ProvisionConnectorSearchBean provisionConnectorSearchBean = new ProvisionConnectorSearchBean();
-        provisionConnectorSearchBean.setConnectorName("TEST-POWERSHELL-AD-CONNECTOR");
-        List<ProvisionConnectorDto> provisionConnectorDtoList = provisionConnectorWebServiceClient.getProvisionConnectors(provisionConnectorSearchBean, 0, 10);
-        Assert.assertNotNull(provisionConnectorDtoList);
-        Assert.assertEquals(provisionConnectorDtoList.size(), 1);
-        connectorDto = provisionConnectorDtoList.get(0);
-        deleteConnectorIdsList.add(connectorDto.getConnectorId());
-
+        reconciliationConfig = new ReconciliationConfig();
         ManagedSysDto managedSysDto = new ManagedSysDto();
-        managedSysDto.setName("TEST-POWERSHELL-AD");
-        managedSysDto.setDecryptPassword("=tdWk2eqV8P");
-        managedSysDto.setConnectorId(connectorDto.getConnectorId());
-        managedSysDto.setHostUrl("win02.ad.openiamdemo.info");
-        managedSysDto.setStatus("ACTIVE");
-        managedSysDto.setUserId("Administrator");
-        managedSysDto.setAddHandler("ADPowershell.ps1");
-        managedSysDto.setModifyHandler("ADPowershell.ps1");
-        managedSysDto.setDeleteHandler("ADPowershell.ps1");
-        managedSysDto.setPasswordHandler("ADPowershell.ps1");
-        managedSysDto.setSuspendHandler("ADPowershell.ps1");
-        managedSysDto.setSearchHandler("ADPowershell.ps1");
-        managedSysDto.setLookupHandler("ADPowershell.ps1");
-        managedSysDto.setTestConnectionHandler("ADPowershell.ps1");
-        managedSysDto.setReconcileResourceHandler("ADPowershell.ps1");
-        managedSysDto.setHandler5("ADPowershell.ps1");
-        managedSysDto.setAttributeNamesHandler("ADPowershell.ps1");
-        managedSysDto.setSearchScope(SearchScopeType.SUBTREE_SCOPE);
-        managedSysDto.setResumeHandler("ADPowershell.ps1");
-        managedSysDto.setSkipGroupProvision(Boolean.TRUE);
-        managedSysDto.setChangedByEndUser(false);
-        managedSysDto.setDescription("UserReconciliationADRemoveTest_Connector");
 
-        // Save ManagedSystem
-        Response response = managedSystemWebService.saveManagedSystem(managedSysDto);
-        Assert.assertTrue(response.isSuccess());
-        Assert.assertNotNull(response.getResponseValue());
+        try {
+            connectorDto.setName("TEST-POWERSHELL-AD-CONNECTOR");
+            connectorDto.setMetadataTypeId("RemoteConnector");
+            connectorDto.setClientCommProtocol("CLEAR");
+            connectorDto.setServiceUrl("win02.openiamdemo.com/PowershellConnectorAD/PowershellConnector.svc");
+            connectorDto.setServiceNameSpace("urn:idm.openiam.org/spml2/service");
+            connectorDto.setServicePort("443");
+            connectorDto.setConnectorInterface("REMOTE");
 
-        String mngSysId = (String)response.getResponseValue();
-        deleteManagedSysIdsList.add(mngSysId);
+            // Save Connector
+            provisionConnectorWebServiceClient.addProvisionConnector(connectorDto);
+            ProvisionConnectorSearchBean provisionConnectorSearchBean = new ProvisionConnectorSearchBean();
+            provisionConnectorSearchBean.setConnectorName("TEST-POWERSHELL-AD-CONNECTOR");
+            List<ProvisionConnectorDto> provisionConnectorDtoList = provisionConnectorWebServiceClient.getProvisionConnectors(provisionConnectorSearchBean, 0, 10);
+            Assert.assertNotNull(provisionConnectorDtoList);
+            Assert.assertEquals(provisionConnectorDtoList.size(), 1);
+            connectorDto = provisionConnectorDtoList.get(0);
+            deleteConnectorIdsList.add(connectorDto.getConnectorId());
 
-        ManagedSysDto managedSysDto_1 = managedSystemWebService.getManagedSys(mngSysId);
-        Assert.assertNotNull(managedSysDto_1);
-        Assert.assertEquals(managedSysDto_1.getName(), "TEST-POWERSHELL-AD");
+            managedSysDto.setName("TEST-POWERSHELL-AD");
+            managedSysDto.setPswd("=tdWk2eqV8P");
+            managedSysDto.setConnectorId(connectorDto.getConnectorId());
+            managedSysDto.setHostUrl("win02.ad.openiamdemo.info");
+            managedSysDto.setStatus("ACTIVE");
+            managedSysDto.setUserId("AD\\Administrator");
+            managedSysDto.setAddHandler("ADPowershell.ps1");
+            managedSysDto.setModifyHandler("ADPowershell.ps1");
+            managedSysDto.setDeleteHandler("ADPowershell.ps1");
+            managedSysDto.setPasswordHandler("ADPowershell.ps1");
+            managedSysDto.setSuspendHandler("ADPowershell.ps1");
+            managedSysDto.setSearchHandler("ADPowershell.ps1");
+            managedSysDto.setLookupHandler("ADPowershell.ps1");
+            managedSysDto.setTestConnectionHandler("ADPowershell.ps1");
+            managedSysDto.setReconcileResourceHandler("ADPowershell.ps1");
+            managedSysDto.setHandler5("ADPowershell.ps1");
+            managedSysDto.setAttributeNamesHandler("ADPowershell.ps1");
+            managedSysDto.setSearchScope(SearchScopeType.SUBTREE_SCOPE);
+            managedSysDto.setResumeHandler("ADPowershell.ps1");
+            managedSysDto.setSkipGroupProvision(Boolean.TRUE);
+            managedSysDto.setChangedByEndUser(false);
+            managedSysDto.setDescription("UserReconciliationADRemoveTest_Connector");
 
 
-        ReconciliationConfig reconciliationConfig = new ReconciliationConfig();
-        reconciliationConfig.setName("Test Powershell AD Reconciliation");
-        reconciliationConfig.setManagedSysId(managedSysDto_1.getId());
-        reconciliationConfig.setResourceId(managedSysDto_1.getResourceId());
-        reconciliationConfig.setTargetSystemMatchScript("recon/PowershellADSearchQuery.groovy");
-        reconciliationConfig.setMatchFieldName("MANAGED_SYS_PRINCIPAL");
-        reconciliationConfig.setCustomMatchAttr("SamAccountName");
-        reconciliationConfig.setSearchFilter("{\"lastName\" : \"NONE\"}");
-        reconciliationConfig.setTargetSystemSearchFilter("(&(objectClass=user)(samaccountname=*))");
-        reconciliationConfig.setMatchScript("recon/UserSearchScript.groovy");
-        reconciliationConfig.setReconType("USER");
+         //   managedSysDto.setMngSysObjectMatchs(objectMatches);
 
-        Set<ReconciliationSituation> reconciliationSituationSet = new HashSet<ReconciliationSituation>();
-        ReconciliationSituation reconciliationSituation1 = new ReconciliationSituation();
-    //    reconciliationSituation1.setReconSituationId("000000004cc3c375014cd380ec3c0443");
-     //   reconciliationSituation1.setReconConfigId("Test_Powershell_AD_Reconciliation_Id");
-        reconciliationSituation1.setSituation("IDM[not exists] and Resource[exists]");
-        reconciliationSituation1.setSituationResp("ADD_TO_IDM");
-        reconciliationSituation1.setScript("recon/PowershellADPopulationScript.groovy");
-        reconciliationSituationSet.add(reconciliationSituation1);
+            // Save ManagedSystem
+            Response saveMngSysResponse = managedSystemWebService.saveManagedSystem(managedSysDto);
+            Assert.assertTrue(saveMngSysResponse.isSuccess());
+            Assert.assertNotNull(saveMngSysResponse.getResponseValue());
 
-        ReconciliationSituation reconciliationSituation2 = new ReconciliationSituation();
-      //  reconciliationSituation2.setReconSituationId("000000004cc3c375014cd380ec3c0444");
-     //   reconciliationSituation2.setReconConfigId("Test_Powershell_AD_Reconciliation_Id");
-        reconciliationSituation2.setSituation("IDM[exists] and Resource[exists]");
-        reconciliationSituation2.setSituationResp("UPDATE_IDM_FROM_RES");
-        reconciliationSituation2.setScript("recon/PowershellADPopulationScript.groovy");
-        reconciliationSituationSet.add(reconciliationSituation2);
+            String mngSysId = (String) saveMngSysResponse.getResponseValue();
+            deleteManagedSysIdsList.add(mngSysId);
 
-        ReconciliationSituation reconciliationSituation3 = new ReconciliationSituation();
-     //   reconciliationSituation3.setReconSituationId("000000004cc3c375014cd380ec3c0445");
-     //   reconciliationSituation3.setReconConfigId("Test_Powershell_AD_Reconciliation_Id");
-        reconciliationSituation3.setSituation("IDM[exists] and Resource[not exists]");
-        reconciliationSituation3.setSituationResp("NOTHING");
-        reconciliationSituation3.setScript("recon/PowershellADPopulationScript.groovy");
-        reconciliationSituationSet.add(reconciliationSituation3);
+         // Add Object Match
+            ManagedSystemObjectMatch managedSystemObjectMatch = new ManagedSystemObjectMatch();
+            managedSystemObjectMatch.setBaseDn("dc=ad,dc=openiamdemo,dc=info");
+            managedSystemObjectMatch.setKeyField("samaccountname");
+            managedSystemObjectMatch.setObjectType("USER");
+            managedSystemObjectMatch.setSearchBaseDn("dc=ad,dc=openiamdemo,dc=info");
+            managedSystemObjectMatch.setManagedSys(mngSysId);
+            Response saveManagedSysObjMatchResponse = managedSystemWebService.saveManagedSystemObjectMatch(managedSystemObjectMatch);
+            Assert.assertNotNull(saveManagedSysObjMatchResponse);
+            Assert.assertTrue(saveManagedSysObjMatchResponse.isSuccess());
 
-        ReconciliationSituation reconciliationSituation4 = new ReconciliationSituation();
-      //  reconciliationSituation4.setReconSituationId("000000004cc3c375014cd380ec3c0446");
-     //   reconciliationSituation4.setReconConfigId("Test_Powershell_AD_Reconciliation_Id");
-        reconciliationSituation4.setSituation("IDM[deleted] and Resource[exists]");
-        reconciliationSituation4.setSituationResp("NOTHING");
-        reconciliationSituation4.setScript("recon/PowershellADPopulationScript.groovy");
-        reconciliationSituationSet.add(reconciliationSituation4);
+            //
+            ManagedSysDto managedSysDto_1 = managedSystemWebService.getManagedSys(mngSysId);
+            Assert.assertNotNull(managedSysDto_1);
+            Assert.assertEquals(managedSysDto_1.getName(), "TEST-POWERSHELL-AD");
 
-        reconciliationConfig.setSituationSet(reconciliationSituationSet);
+            reconciliationConfig.setName("Test Powershell AD Reconciliation");
+            reconciliationConfig.setManagedSysId(managedSysDto_1.getId());
+            reconciliationConfig.setResourceId(managedSysDto_1.getResourceId());
+            reconciliationConfig.setTargetSystemMatchScript("recon/PowershellADSearchQuery.groovy");
+            reconciliationConfig.setMatchFieldName("MANAGED_SYS_PRINCIPAL");
+            reconciliationConfig.setCustomMatchAttr("SamAccountName");
+            reconciliationConfig.setSearchFilter("{\"lastName\" : \"NONE\"}");
+            reconciliationConfig.setTargetSystemSearchFilter("(&(objectClass=user)(samaccountname="+ TestUserSamAccountName +"))");
+            reconciliationConfig.setMatchScript("recon/UserSearchScript.groovy");
+            reconciliationConfig.setReconType("USER");
 
-        // Save ReconciliationConfig
-        ReconciliationConfigResponse reconciliationConfigResponse = reconciliationWebService.addConfig(reconciliationConfig);
-        Assert.assertTrue(reconciliationConfigResponse.isSuccess());
-        Assert.assertNotNull(reconciliationConfigResponse.getConfig());
-        reconciliationConfig = reconciliationConfigResponse.getConfig();
-        deleteReconConfigIdsList.add(reconciliationConfig.getReconConfigId());
+            Set<ReconciliationSituation> reconciliationSituationSet = new HashSet<ReconciliationSituation>();
+            ReconciliationSituation reconciliationSituation1 = new ReconciliationSituation();
+            reconciliationSituation1.setSituation("IDM[not exists] and Resource[exists]");
+            reconciliationSituation1.setSituationResp("ADD_TO_IDM");
+            reconciliationSituation1.setScript("recon/PowershellADPopulationScript.groovy");
+            reconciliationSituationSet.add(reconciliationSituation1);
 
-        reconciliationConfigResponse = reconciliationWebService.getConfigById(reconciliationConfig.getReconConfigId());
-        Assert.assertTrue(reconciliationConfigResponse.isSuccess());
-        ReconciliationConfig reconciliationConfig1 =  reconciliationConfigResponse.getConfig();
-        Assert.assertNotNull(reconciliationConfig1);
-        Assert.assertEquals(reconciliationConfig1.getName(), "Test Powershell AD Reconciliation");
-        Assert.assertNotNull(reconciliationConfig1.getSituationSet());
-        Assert.assertEquals(reconciliationConfig1.getSituationSet().size(), 4);
+            ReconciliationSituation reconciliationSituation2 = new ReconciliationSituation();
+            reconciliationSituation2.setSituation("IDM[exists] and Resource[exists]");
+            reconciliationSituation2.setSituationResp("UPDATE_IDM_FROM_RES");
+            reconciliationSituation2.setScript("recon/PowershellADPopulationScript.groovy");
+            reconciliationSituationSet.add(reconciliationSituation2);
 
+            ReconciliationSituation reconciliationSituation3 = new ReconciliationSituation();
+            reconciliationSituation3.setSituation("IDM[exists] and Resource[not exists]");
+            reconciliationSituation3.setSituationResp("NOTHING");
+            reconciliationSituation3.setScript("recon/PowershellADPopulationScript.groovy");
+            reconciliationSituationSet.add(reconciliationSituation3);
+
+            ReconciliationSituation reconciliationSituation4 = new ReconciliationSituation();
+            reconciliationSituation4.setSituation("IDM[deleted] and Resource[exists]");
+            reconciliationSituation4.setSituationResp("NOTHING");
+            reconciliationSituation4.setScript("recon/PowershellADPopulationScript.groovy");
+            reconciliationSituationSet.add(reconciliationSituation4);
+
+            reconciliationConfig.setSituationSet(reconciliationSituationSet);
+
+            // Save ReconciliationConfig
+            ReconciliationConfigResponse reconciliationConfigResponse = reconciliationWebService.addConfig(reconciliationConfig);
+            Assert.assertTrue(reconciliationConfigResponse.isSuccess());
+            Assert.assertNotNull(reconciliationConfigResponse.getConfig());
+            reconciliationConfig = reconciliationConfigResponse.getConfig();
+            deleteReconConfigIdsList.add(reconciliationConfig.getReconConfigId());
+
+            reconciliationConfigResponse = reconciliationWebService.getConfigById(reconciliationConfig.getReconConfigId());
+            Assert.assertTrue(reconciliationConfigResponse.isSuccess());
+            ReconciliationConfig reconciliationConfig1 = reconciliationConfigResponse.getConfig();
+            Assert.assertNotNull(reconciliationConfig1);
+            Assert.assertEquals(reconciliationConfig1.getName(), "Test Powershell AD Reconciliation");
+            Assert.assertNotNull(reconciliationConfig1.getSituationSet());
+            Assert.assertEquals(reconciliationConfig1.getSituationSet().size(), 4);
+
+
+            // Try to find the user in OpenIAM
+            LoginResponse loginResponse = loginServiceClient.getLoginByManagedSys(TestUserSamAccountName, mngSysId);
+            Assert.assertNotNull(loginResponse);
+            if(loginResponse.getPrincipal() != null) {
+                Login userPrincipal = loginResponse.getPrincipal();
+                // TODO check this functionality
+                userServiceClient.removeUser(userPrincipal.getUserId());
+                // TODO check this functionality
+                loginServiceClient.deleteLogin(userPrincipal.getLoginId());
+            }
+
+        } catch(Throwable t) {
+            reconciliationConfig = null;
+            this._destroy();
+            t.printStackTrace();
+        }
         return reconciliationConfig;
     }
 
     @AfterClass(alwaysRun = true)
     public void _destroy() {
-        for(String sysId : deleteManagedSysIdsList) {
-            managedSystemWebService.removeManagedSystem(sysId);
+        /*try {
+            for(String objId : deleteMngSysObjectMatchIdsList) {
+                managedSystemWebService.removeManagedSystemObjectMatch(objId);
+            }
+        } catch(Throwable t) {
+            // do nothing
+        }*/
+        try {
+            for(String sysId : deleteManagedSysIdsList) {
+                managedSystemWebService.removeManagedSystem(sysId);
+            }
+        } catch(Throwable t) {
+            // do nothing
         }
-        for(String recId : deleteReconConfigIdsList) {
-            reconciliationWebService.removeConfig(recId, null);
+        try {
+            for(String recId : deleteReconConfigIdsList) {
+                reconciliationWebService.removeConfig(recId, null);
+            }
+        } catch(Throwable t) {
+            // do nothing
         }
-        for(String conId : deleteConnectorIdsList) {
-            provisionConnectorWebServiceClient.removeProvisionConnector(conId);
+        try {
+            for (String conId : deleteConnectorIdsList) {
+                provisionConnectorWebServiceClient.removeProvisionConnector(conId);
+            }
+        } catch(Throwable t) {
+            // do nothing
         }
     }
 
@@ -224,11 +286,16 @@ public class UserReconciliationADRemoteTest extends AbstractTestNGSpringContextT
     @Test
     public void testUserReconciliation() throws Exception {
         Assert.assertTrue(true);
-       // ReconciliationConfig reconciliationConfig = getReconciliationConfig_1();
+        Assert.assertNotNull(reconciliationConfig);
+
+        Response testConnectionResponse = provisionService.testConnectionConfig(reconciliationConfig.getManagedSysId(),"3000");
+        Assert.assertNotNull(testConnectionResponse);
+        Assert.assertTrue(testConnectionResponse.isSuccess());
+
+    //    reconciliationWebService.startReconciliation(reconciliationConfig);
 
 
-        //reconciliationWebService.startReconciliation(reconciliationConfig);
-
+        int i = 0;
 
     }
 

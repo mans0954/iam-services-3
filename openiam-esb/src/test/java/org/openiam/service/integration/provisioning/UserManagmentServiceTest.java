@@ -1,18 +1,22 @@
 package org.openiam.service.integration.provisioning;
 
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
+import org.openiam.idm.srvc.grp.dto.Group;
+import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
 import org.openiam.idm.srvc.meta.dto.MetadataElement;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
-import org.openiam.idm.srvc.user.dto.UserAttribute;
-import org.testng.Assert;
-import org.testng.annotations.Test;
-import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
+import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.user.dto.User;
+import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.resp.ProvisionUserResponse;
+import org.testng.Assert;
+import org.testng.annotations.Test;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -450,6 +454,136 @@ public class UserManagmentServiceTest extends AbstractUserManagementServiceTest 
     }
 
     @Test(groups ={"COMPLETE_USER"}, dependsOnMethods = {"completeUserDeleteRequiredAttribute"})
+    public void completeUserAddRole() throws Exception {
+        User user = getAndAssert(getUserId());
+
+        //create role
+        Role role = new Role();
+        role.setName(getRandomName());
+        role.setDescription(getRandomName());
+        Response res = roleServiceClient.saveRole(role, REQUESTER_ID);
+        Assert.assertNotNull(res, "Response can not be null");
+        Assert.assertTrue(res.isSuccess(), "Response should be successful");
+        String id = (String)res.getResponseValue();
+        Assert.assertNotNull(id, "Role id can not be null");
+        roleIdList.add(id);
+
+        Role r = roleServiceClient.getRole(id, REQUESTER_ID);
+        Assert.assertNotNull(r, "Role can not be null");
+        r.setOperation(AttributeOperationEnum.ADD);
+        user.getRoles().add(r);
+        saveAndAssert(user);
+        User foundUser = getAndAssert(user.getId());
+        Assert.assertNotNull(foundUser.getRoles());
+        boolean found = false;
+        for (Role ur: foundUser.getRoles()) {
+            if (StringUtils.equals(ur.getName(), r.getName())) {
+                found = true;
+                break;
+            }
+        }
+        Assert.assertTrue(found, "Role should be added to User");
+
+    }
+
+    @Test(groups ={"COMPLETE_USER"}, dependsOnMethods = {"completeUserAddRole"})
+    public void completeUserDeleteRole() throws Exception {
+        User user = getAndAssert(getUserId());
+        Assert.assertTrue(CollectionUtils.isNotEmpty(roleIdList));
+        Role role = null;
+        for (Role ur : user.getRoles()) {
+            if (StringUtils.equals(ur.getId(), roleIdList.get(0))) {
+                role = ur;
+                break;
+            }
+        }
+        Assert.assertNotNull(role, "Role is not found");
+        role.setOperation(AttributeOperationEnum.DELETE);
+        user.getRoles().add(role);
+        saveAndAssert(user);
+        User foundUser = getAndAssert(user.getId());
+        boolean found = false;
+        for (Role ur: foundUser.getRoles()) {
+            if (StringUtils.equals(ur.getName(), role.getName())) {
+                found = true;
+                break;
+            }
+        }
+        Assert.assertFalse(found, "Role should be deleted from User");
+
+        Response res = roleServiceClient.removeRole(role.getId(), REQUESTER_ID);
+        Assert.assertNotNull(res, "Response can not be null");
+        Assert.assertTrue(res.isSuccess(), "Response should be successful");
+        roleIdList.remove(role.getId());
+
+    }
+
+    @Test(groups ={"COMPLETE_USER"}, dependsOnMethods = {"completeUserDeleteRole"})
+    public void completeUserAddGroup() throws Exception {
+        User user = getAndAssert(getUserId());
+
+        //create group
+        Group group = new Group();
+        group.setName(getRandomName());
+        group.setDescription(getRandomName());
+        Response res = groupServiceClient.saveGroup(group, REQUESTER_ID);
+        Assert.assertNotNull(res, "Response can not be null");
+        Assert.assertTrue(res.isSuccess(), "Response should be successful");
+        String id = (String)res.getResponseValue();
+        Assert.assertNotNull(id, "Group id can not be null");
+        groupIdList.add(id);
+
+        Group g = groupServiceClient.getGroup(id, REQUESTER_ID);
+        Assert.assertNotNull(g, "Group can not be null");
+        g.setOperation(AttributeOperationEnum.ADD);
+        user.getGroups().add(g);
+        saveAndAssert(user);
+        User foundUser = getAndAssert(user.getId());
+        Assert.assertNotNull(foundUser.getGroups());
+        boolean found = false;
+        for (Group ug: foundUser.getGroups()) {
+            if (StringUtils.equals(ug.getName(), g.getName())) {
+                found = true;
+                break;
+            }
+        }
+        Assert.assertTrue(found, "Group should be added to User");
+
+    }
+
+    @Test(groups ={"COMPLETE_USER"}, dependsOnMethods = {"completeUserAddGroup"})
+    public void completeUserDeleteGroup() throws Exception {
+        User user = getAndAssert(getUserId());
+
+        Assert.assertTrue(CollectionUtils.isNotEmpty(groupIdList));
+        Group group = null;
+        for (Group gr : user.getGroups()) {
+            if (StringUtils.equals(gr.getId(), groupIdList.get(0))) {
+                group = gr;
+                break;
+            }
+        }
+        Assert.assertNotNull(group, "Group is not found");
+        group.setOperation(AttributeOperationEnum.DELETE);
+        user.getGroups().add(group);
+        saveAndAssert(user);
+        User foundUser = getAndAssert(user.getId());
+        boolean found = false;
+        for (Group ug: foundUser.getGroups()) {
+            if (StringUtils.equals(ug.getName(), group.getName())) {
+                found = true;
+                break;
+            }
+        }
+        Assert.assertFalse(found, "Group should be deleted from User");
+
+        Response res = groupServiceClient.deleteGroup(group.getId(), REQUESTER_ID);
+        Assert.assertNotNull(res, "Response can not be null");
+        Assert.assertTrue(res.isSuccess(), "Response should be successful");
+        groupIdList.remove(group.getId());
+    }
+
+    @Test(groups ={"COMPLETE_USER"}, dependsOnMethods = {"completeUserDeleteGroup"})
     public void completeUserDeleteTest() throws Exception {
         User user = getAndAssert(getUserId());
 

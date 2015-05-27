@@ -46,7 +46,9 @@ import java.util.List;
         "passThruAttributes",
         "attributeList",
         "preventChangeCountIncrement",
-        "userActivateFlag"
+        "userActivateFlag",
+        //skip validation
+        "resyncMode"
 })
 public class PasswordSync extends BaseObject {
 
@@ -65,6 +67,7 @@ public class PasswordSync extends BaseObject {
     private List<ExtensibleAttribute> attributeList = new ArrayList<ExtensibleAttribute>();
     private boolean preventChangeCountIncrement;
     private boolean userActivateFlag;
+    private boolean resyncMode;
 
     public PasswordSync() {
 
@@ -148,6 +151,14 @@ public class PasswordSync extends BaseObject {
 
     public void setUserActivateFlag(boolean userActivateFlag) {
         this.userActivateFlag = userActivateFlag;
+    }
+
+    public boolean getResyncMode() {
+        return resyncMode;
+    }
+
+    public void setResyncMode(boolean resyncMode) {
+        this.resyncMode = resyncMode;
     }
 }
 

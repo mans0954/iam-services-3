@@ -2,28 +2,34 @@ package org.openiam.service.integration.provisioning;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.openiam.idm.srvc.lang.dto.Language;
-import org.openiam.idm.srvc.lang.dto.LanguageMapping;
-import org.openiam.idm.srvc.user.dto.UserStatusEnum;
-import org.testng.Assert;
 import org.openiam.base.ws.MatchType;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.SearchParam;
 import org.openiam.idm.searchbeans.UserSearchBean;
+import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
 import org.openiam.idm.srvc.meta.dto.MetadataElement;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
+import org.openiam.idm.srvc.role.ws.RoleDataWebService;
 import org.openiam.idm.srvc.user.dto.User;
+import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.provision.service.ProvisionService;
 import org.openiam.service.integration.AbstractKeyNameServiceTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 
-import java.util.*;
+import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by alexander on 14.05.15.
@@ -31,6 +37,8 @@ import java.util.*;
 public abstract class AbstractUserManagementServiceTest extends AbstractKeyNameServiceTest<User, UserSearchBean> {
     protected MetadataType userType = null;
     protected List<String> userIdList = new ArrayList<>();
+    protected List<String> groupIdList = new ArrayList<>();
+    protected List<String> roleIdList = new ArrayList<>();
     protected Map<String, MetadataElement> defaultUserAttributes = new HashMap<>();
 
     protected String REQUESTER_ID="3000";
@@ -45,6 +53,12 @@ public abstract class AbstractUserManagementServiceTest extends AbstractKeyNameS
     @Autowired
     @Qualifier("provisionServiceClient")
     protected ProvisionService provisionService;
+
+    @Resource(name = "groupServiceClient")
+    protected GroupDataWebService groupServiceClient;
+
+    @Resource(name = "roleServiceClient")
+    protected RoleDataWebService roleServiceClient;
 
     @BeforeClass(alwaysRun = true)
     public void _init() {
@@ -71,10 +85,26 @@ public abstract class AbstractUserManagementServiceTest extends AbstractKeyNameS
     @AfterClass(alwaysRun = true)
     public void _destroy() {
 
-        if(CollectionUtils.isNotEmpty(userIdList)){
+        if(CollectionUtils.isNotEmpty(userIdList)) {
             while(!userIdList.isEmpty()){
                 String userId = userIdList.get(0);
                 this.delete(userId);
+            }
+        }
+        if(CollectionUtils.isNotEmpty(groupIdList)) {
+            while(!groupIdList.isEmpty()){
+                try {
+                    String groupId = groupIdList.get(0);
+                    groupServiceClient.deleteGroup(groupId, REQUESTER_ID);
+                } catch (Exception e) {}
+            }
+        }
+        if(CollectionUtils.isNotEmpty(roleIdList)) {
+            while(!groupIdList.isEmpty()){
+                try {
+                    String roleId = roleIdList.get(0);
+                    roleServiceClient.removeRole(roleId, REQUESTER_ID);
+                } catch (Exception e) {}
             }
         }
 
