@@ -6,6 +6,7 @@ import org.apache.cxf.endpoint.Client;
 import org.apache.cxf.frontend.ClientProxy;
 import org.apache.cxf.transport.http.HTTPConduit;
 import org.apache.cxf.transports.http.configuration.HTTPClientPolicy;
+import org.joda.time.DateTime;
 import org.junit.runner.RunWith;
 import org.openiam.am.srvc.constants.SearchScopeType;
 import org.openiam.base.ws.Response;
@@ -46,12 +47,12 @@ import java.util.List;
 import java.util.Set;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations={"classpath:test-integration-environment.xml","classpath:test-esb-integration.xml"})
+@ContextConfiguration(locations = {"classpath:test-integration-environment.xml", "classpath:test-esb-integration.xml"})
 public class UserReconciliationADRemoteTest extends AbstractTestNGSpringContextTests {
 
 
     private static final Log log = LogFactory.getLog(UserReconciliationADRemoteTest.class);
-    public static final String TestUserSamAccountName = "sys.user";
+    public static final String TestUserSamAccountName = "Unit.Test";
 
     @Autowired
     @Qualifier("provisionServiceClient")
@@ -151,7 +152,7 @@ public class UserReconciliationADRemoteTest extends AbstractTestNGSpringContextT
             managedSysDto.setDescription("UserReconciliationADRemoveTest_Connector");
 
 
-         //   managedSysDto.setMngSysObjectMatchs(objectMatches);
+            //   managedSysDto.setMngSysObjectMatchs(objectMatches);
 
             // Save ManagedSystem
             Response saveMngSysResponse = managedSystemWebService.saveManagedSystem(managedSysDto);
@@ -161,7 +162,7 @@ public class UserReconciliationADRemoteTest extends AbstractTestNGSpringContextT
             String mngSysId = (String) saveMngSysResponse.getResponseValue();
             deleteManagedSysIdsList.add(mngSysId);
 
-         // Add Object Match
+            // Add Object Match
             ManagedSystemObjectMatch managedSystemObjectMatch = new ManagedSystemObjectMatch();
             managedSystemObjectMatch.setBaseDn("dc=ad,dc=openiamdemo,dc=info");
             managedSystemObjectMatch.setKeyField("samaccountname");
@@ -184,10 +185,10 @@ public class UserReconciliationADRemoteTest extends AbstractTestNGSpringContextT
             reconciliationConfig.setMatchFieldName("MANAGED_SYS_PRINCIPAL");
             reconciliationConfig.setCustomMatchAttr("SamAccountName");
             reconciliationConfig.setSearchFilter("{\"lastName\" : \"NONE\"}");
-            reconciliationConfig.setTargetSystemSearchFilter("(&(objectClass=user)(samaccountname="+ TestUserSamAccountName +"))");
+            reconciliationConfig.setTargetSystemSearchFilter("(&(objectClass=user)(samaccountname=" + TestUserSamAccountName + "))");
             reconciliationConfig.setMatchScript("recon/UserSearchScript.groovy");
             reconciliationConfig.setReconType("USER");
-
+            reconciliationConfig.setLastExecTime(new DateTime().minusDays(1).toDate());
             Set<ReconciliationSituation> reconciliationSituationSet = new HashSet<ReconciliationSituation>();
             ReconciliationSituation reconciliationSituation1 = new ReconciliationSituation();
             reconciliationSituation1.setSituation("IDM[not exists] and Resource[exists]");
@@ -232,24 +233,22 @@ public class UserReconciliationADRemoteTest extends AbstractTestNGSpringContextT
 
 
             // Try to find the user in OpenIAM
-            LoginResponse loginResponse = loginServiceClient.getLoginByManagedSys(TestUserSamAccountName, mngSysId);
+            LoginResponse loginResponse = loginServiceClient.getLoginByManagedSys(TestUserSamAccountName, "0");
             Assert.assertNotNull(loginResponse);
-            if(loginResponse.getPrincipal() != null) {
+            if (loginResponse.getPrincipal() != null) {
                 Login userPrincipal = loginResponse.getPrincipal();
-                // TODO check this functionality
                 userServiceClient.removeUser(userPrincipal.getUserId());
-                // TODO check this functionality
                 loginServiceClient.deleteLogin(userPrincipal.getLoginId());
             }
 
-            // TODO CHECK MetadataTypes PRIMARY_LOCATION
+            // CHECK MetadataTypes PRIMARY_LOCATION
             MetadataType metadataType = metadataWebService.getMetadataTypeById("PRIMARY_LOCATION");
             Assert.assertNotNull(metadataType);
 
-        } catch(Throwable t) {
-            reconciliationConfig = null;
+        } catch (Throwable t) {
             this._destroy();
             t.printStackTrace();
+            reconciliationConfig = null;
         }
         return reconciliationConfig;
     }
@@ -257,45 +256,72 @@ public class UserReconciliationADRemoteTest extends AbstractTestNGSpringContextT
     @AfterClass(alwaysRun = true)
     public void _destroy() {
         try {
-            for(String sysId : deleteManagedSysIdsList) {
+            for (String sysId : deleteManagedSysIdsList) {
                 managedSystemWebService.removeManagedSystem(sysId);
             }
-        } catch(Throwable t) {
+        } catch (Throwable t) {
             // do nothing
         }
         try {
-            for(String recId : deleteReconConfigIdsList) {
+            for (String recId : deleteReconConfigIdsList) {
                 reconciliationWebService.removeConfig(recId, null);
             }
-        } catch(Throwable t) {
+        } catch (Throwable t) {
             // do nothing
         }
         try {
             for (String conId : deleteConnectorIdsList) {
                 provisionConnectorWebServiceClient.removeProvisionConnector(conId);
             }
-        } catch(Throwable t) {
+        } catch (Throwable t) {
             // do nothing
         }
+        try{
+            LoginResponse loginResponse = loginServiceClient.getLoginByManagedSys(TestUserSamAccountName, "0");
+            if (loginResponse.getPrincipal() != null) {
+                Login userPrincipal = loginResponse.getPrincipal();
+                userServiceClient.removeUser(userPrincipal.getUserId());
+                loginServiceClient.deleteLogin(userPrincipal.getLoginId());
+            }
+        } catch (Throwable t) {
+            // do nothing
+        }
+
     }
 
 
     @Test
     public void testUserReconciliation() throws Exception {
-        Assert.assertTrue(true);
-        Assert.assertNotNull(reconciliationConfig);
+        try {
+            Assert.assertTrue(true);
+            Assert.assertNotNull(reconciliationConfig);
 
-        Response testConnectionResponse = provisionService.testConnectionConfig(reconciliationConfig.getManagedSysId(),"3000");
-        Assert.assertNotNull(testConnectionResponse);
-        Assert.assertTrue(testConnectionResponse.isSuccess());
+            Response testConnectionResponse = provisionService.testConnectionConfig(reconciliationConfig.getManagedSysId(), "3000");
+            Assert.assertNotNull(testConnectionResponse);
+            Assert.assertTrue(testConnectionResponse.isSuccess());
 
-        //SET Timeout for waiting WS response
-        setWSClientTimeout(reconciliationWebService, 600000L);
-        reconciliationWebService.startReconciliation(reconciliationConfig);
+            //SET Timeout for waiting WS response
+            setWSClientTimeout(reconciliationWebService, 600000L);
+            reconciliationWebService.startReconciliation(reconciliationConfig);
+
+            LoginResponse loginDefaultResponse = loginServiceClient.getLoginByManagedSys(TestUserSamAccountName, "0");
+            Assert.assertNotNull(loginDefaultResponse);
+            Assert.assertNotNull(loginDefaultResponse.getPrincipal());
+            Assert.assertEquals(loginDefaultResponse.getPrincipal().getLogin(), TestUserSamAccountName);
+
+            LoginResponse loginADResponse = loginServiceClient.getLoginByManagedSys(TestUserSamAccountName, reconciliationConfig.getManagedSysId());
+            Assert.assertNotNull(loginADResponse);
+            Assert.assertNotNull(loginADResponse);
+            Assert.assertNotNull(loginADResponse.getPrincipal());
+            Assert.assertEquals(loginADResponse.getPrincipal().getLogin(), TestUserSamAccountName);
 
 
-        int i = 0;
-
+            int i = 0;
+        } catch (Throwable t) {
+            this._destroy();
+            t.printStackTrace();
+            reconciliationConfig = null;
+        }
     }
 
 
