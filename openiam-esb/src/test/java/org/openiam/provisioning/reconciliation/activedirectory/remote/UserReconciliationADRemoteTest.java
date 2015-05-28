@@ -2,6 +2,10 @@ package org.openiam.provisioning.reconciliation.activedirectory.remote;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.cxf.endpoint.Client;
+import org.apache.cxf.frontend.ClientProxy;
+import org.apache.cxf.transport.http.HTTPConduit;
+import org.apache.cxf.transports.http.configuration.HTTPClientPolicy;
 import org.junit.runner.RunWith;
 import org.openiam.am.srvc.constants.SearchScopeType;
 import org.openiam.base.ws.Response;
@@ -12,6 +16,7 @@ import org.openiam.idm.srvc.auth.ws.LoginResponse;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.ws.KeyManagementWS;
 import org.openiam.idm.srvc.lang.service.LanguageWebService;
+import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.meta.ws.MetadataWebService;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
@@ -84,6 +89,9 @@ public class UserReconciliationADRemoteTest extends AbstractTestNGSpringContextT
     @Qualifier("provisionConnectorWebServiceClient")
     protected ProvisionConnectorWebService provisionConnectorWebServiceClient;
 
+    @Autowired
+    @Qualifier("metadataServiceClient")
+    protected MetadataWebService metadataWebService;
 
     private List<String> deleteConnectorIdsList = new LinkedList<String>();
     private List<String> deleteManagedSysIdsList = new LinkedList<String>();
@@ -234,6 +242,10 @@ public class UserReconciliationADRemoteTest extends AbstractTestNGSpringContextT
                 loginServiceClient.deleteLogin(userPrincipal.getLoginId());
             }
 
+            // TODO CHECK MetadataTypes PRIMARY_LOCATION
+            MetadataType metadataType = metadataWebService.getMetadataTypeById('PRIMARY_LOCATION');
+            Assert.assertNotNull(metadataType);
+
         } catch(Throwable t) {
             reconciliationConfig = null;
             this._destroy();
@@ -277,6 +289,8 @@ public class UserReconciliationADRemoteTest extends AbstractTestNGSpringContextT
         Assert.assertNotNull(testConnectionResponse);
         Assert.assertTrue(testConnectionResponse.isSuccess());
 
+        //SET Timeout for waiting WS response
+        setWSClientTimeout(reconciliationWebService, 600000L);
         reconciliationWebService.startReconciliation(reconciliationConfig);
 
 
@@ -285,5 +299,15 @@ public class UserReconciliationADRemoteTest extends AbstractTestNGSpringContextT
     }
 
 
+    public static void setWSClientTimeout(Object wsService, long timeout) {
+        Client client = ClientProxy.getClient(wsService);
+        if (client != null) {
+            HTTPConduit conduit = (HTTPConduit) client.getConduit();
+            HTTPClientPolicy policy = new HTTPClientPolicy();
+            policy.setConnectionTimeout(timeout);
+            policy.setReceiveTimeout(timeout);
+            conduit.setClient(policy);
+        }
 
+    }
 }
