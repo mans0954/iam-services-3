@@ -104,6 +104,12 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
 						.createAlias("parentXrefs.entity", "parent").add(
 						Restrictions.in("parent.id", roleSearchBean.getParentIdSet()));
 			}
+			
+			if(CollectionUtils.isNotEmpty(roleSearchBean.getOrganizationIdSet())){    
+                criteria.createAlias("organizations", "organizationXrefs")
+						.createAlias("organizationXrefs.entity", "organization").add(
+						Restrictions.in("organization.id", roleSearchBean.getOrganizationIdSet()));
+            }
 
             if(CollectionUtils.isNotEmpty(roleSearchBean.getResourceIdSet())){
                 criteria.createAlias("resources", "res");

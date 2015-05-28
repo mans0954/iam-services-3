@@ -316,6 +316,10 @@
 			<a>users</a>
 			<b>users</b>
 		</field-exclude>
+		<field-exclude>
+			<a>organizations</a>
+			<b>organizations</b>
+		</field-exclude>
 	</mapping>
 
 	<mapping>
@@ -603,6 +607,10 @@
 		<field-exclude>
 			<a>groups</a>
 			<b>groups</b>
+		</field-exclude>
+		<field-exclude>
+			<a>roles</a>
+			<b>roles</b>
 		</field-exclude>
 	</mapping>
 	<mapping>

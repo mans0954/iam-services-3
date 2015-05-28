@@ -152,6 +152,16 @@ public interface OrganizationDataService {
     @WebMethod
     public Response removeGroupFromOrganization(@WebParam(name = "organizationId", targetNamespace = "") String organizationId,
                                          		@WebParam(name = "groupId", targetNamespace = "") String groupId);
+    
+    
+    @WebMethod
+    public Response addRoleToOrganization(@WebParam(name = "organizationId", targetNamespace = "") String organizationId,
+                                         @WebParam(name = "roleId", targetNamespace = "") String roleId,
+                                         @WebParam(name = "rightIds", targetNamespace = "") Set<String> rightIds);
+    
+    @WebMethod
+    public Response removeRoleFromOrganization(@WebParam(name = "organizationId", targetNamespace = "") String organizationId,
+                                         		@WebParam(name = "roleId", targetNamespace = "") String roleId);
 
 
     @WebMethod

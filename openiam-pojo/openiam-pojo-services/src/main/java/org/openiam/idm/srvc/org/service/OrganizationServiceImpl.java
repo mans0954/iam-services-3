@@ -38,6 +38,7 @@ import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.domain.RoleToRoleMembershipXrefEntity;
+import org.openiam.idm.srvc.role.service.RoleDAO;
 import org.openiam.idm.srvc.searchbean.converter.LocationSearchBeanConverter;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
@@ -118,6 +119,9 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     
     @Autowired
     private GroupDAO groupDAO;
+    
+    @Autowired
+    private RoleDAO roleDAO;
 
     private Map<String, Set<String>> organizationTree;
 
@@ -1220,6 +1224,28 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
 		final GroupEntity group = groupDAO.findById(groupId);
 		if(organization != null && group != null) {
 			organization.removeGroup(group);
+			orgDao.update(organization);
+		}
+	}
+
+	@Override
+	@Transactional
+	public void addRoleToOrganization(final String organizationId, final String roleId, final Set<String> rightIds) {
+		final OrganizationEntity organization = orgDao.findById(organizationId);
+		final RoleEntity role = roleDAO.findById(roleId);
+		if(organization != null && role != null) {
+			organization.addRole(role, accessRightDAO.findByIds(rightIds));
+			orgDao.update(organization);
+		}
+	}
+
+	@Override
+	@Transactional
+	public void removeRoleFromOrganization(final String organizationId, final String roleId) {
+		final OrganizationEntity organization = orgDao.findById(organizationId);
+		final RoleEntity role = roleDAO.findById(roleId);
+		if(organization != null && role != null) {
+			organization.removeRole(role);
 			orgDao.update(organization);
 		}
 	}

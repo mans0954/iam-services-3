@@ -33,6 +33,8 @@ import org.openiam.idm.srvc.access.domain.AccessRightEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
+import org.openiam.idm.srvc.org.domain.GroupToOrgMembershipXrefEntity;
+import org.openiam.idm.srvc.org.domain.RoleToOrgMembershipXrefEntity;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourceToResourceMembershipXrefEntity;
 import org.openiam.idm.srvc.role.dto.Role;
@@ -106,6 +108,10 @@ public class RoleEntity extends AbstractMetdataTypeEntity {
 	@OneToMany(cascade = {CascadeType.ALL}, fetch = FetchType.LAZY, mappedBy="associationEntityId", orphanRemoval=true)
 	@Where(clause="ASSOCIATION_TYPE='ROLE'")
 	private Set<ApproverAssociationEntity> approverAssociations;
+	
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="memberEntity", orphanRemoval=true)
+    @Fetch(FetchMode.SUBSELECT)
+    private Set<RoleToOrgMembershipXrefEntity> organizations = new HashSet<RoleToOrgMembershipXrefEntity>(0);
 
 	public String getName() {
 		return name;
@@ -198,6 +204,15 @@ public class RoleEntity extends AbstractMetdataTypeEntity {
 	public void setChildRoles(Set<RoleToRoleMembershipXrefEntity> childRoles) {
 		this.childRoles = childRoles;
 	}
+	
+	public RoleToOrgMembershipXrefEntity getOrganization(final String organizationId) {
+    	final Optional<RoleToOrgMembershipXrefEntity> xref = 
+    			this.getOrganizations()
+				.stream()
+				.filter(e -> organizationId.equals(e.getEntity().getId()))
+				.findFirst();
+    	return xref.isPresent() ? xref.get() : null;
+    }
 	
 	public RoleToRoleMembershipXrefEntity getChild(final String childId) {
 		final Optional<RoleToRoleMembershipXrefEntity> xref = 
@@ -322,6 +337,14 @@ public class RoleEntity extends AbstractMetdataTypeEntity {
 			}
 			this.approverAssociations.add(entity);
 		}
+	}
+
+	public Set<RoleToOrgMembershipXrefEntity> getOrganizations() {
+		return organizations;
+	}
+
+	public void setOrganizations(Set<RoleToOrgMembershipXrefEntity> organizations) {
+		this.organizations = organizations;
 	}
 
 	@Override

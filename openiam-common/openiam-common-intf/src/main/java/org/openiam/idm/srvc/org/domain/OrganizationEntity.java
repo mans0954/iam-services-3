@@ -140,6 +140,10 @@ public class OrganizationEntity extends AbstractMetdataTypeEntity {
 	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="entity", orphanRemoval=true)
     @Fetch(FetchMode.SUBSELECT)
 	private Set<GroupToOrgMembershipXrefEntity> groups;
+	
+	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="entity", orphanRemoval=true)
+    @Fetch(FetchMode.SUBSELECT)
+	private Set<RoleToOrgMembershipXrefEntity> roles;
 
 
     public OrganizationEntity() {
@@ -279,6 +283,15 @@ public class OrganizationEntity extends AbstractMetdataTypeEntity {
 
 	public void setChildOrganizations(Set<OrgToOrgMembershipXrefEntity> childOrganizations) {
 		this.childOrganizations = childOrganizations;
+	}
+	
+	public RoleToOrgMembershipXrefEntity getRole(final String roleId) {
+		final Optional<RoleToOrgMembershipXrefEntity> xref = 
+    			this.getRoles()
+    				.stream()
+    				.filter(e -> roleId.equals(e.getMemberEntity().getId()))
+    				.findFirst();
+    	return xref.isPresent() ? xref.get() : null;
 	}
 	
 	public GroupToOrgMembershipXrefEntity getGroup(final String groupId) {
@@ -441,8 +454,48 @@ public class OrganizationEntity extends AbstractMetdataTypeEntity {
 		}
 	}
 
+    public Set<RoleToOrgMembershipXrefEntity> getRoles() {
+		return roles;
+	}
 
-    @Override
+	public void setRoles(Set<RoleToOrgMembershipXrefEntity> roles) {
+		this.roles = roles;
+	}
+	
+	public void addRole(final RoleEntity entity, final Collection<AccessRightEntity> rights) {
+		if(entity != null) {
+			if(this.roles == null) {
+				this.roles = new LinkedHashSet<RoleToOrgMembershipXrefEntity>();
+			}
+			RoleToOrgMembershipXrefEntity theXref = null;
+			for(final RoleToOrgMembershipXrefEntity xref : this.roles) {
+				if(xref.getEntity().getId().equals(getId()) && xref.getMemberEntity().getId().equals(entity.getId())) {
+					theXref = xref;
+					break;
+				}
+			}
+			
+			if(theXref == null) {
+				theXref = new RoleToOrgMembershipXrefEntity();
+				theXref.setEntity(this);
+				theXref.setMemberEntity(entity);
+			}
+			if(rights != null) {
+				theXref.setRights(new HashSet<AccessRightEntity>(rights));
+			}
+			this.roles.add(theXref);
+		}
+	}
+	
+	public void removeRole(final RoleEntity entity) {
+		if(entity != null) {
+			if(this.roles != null) {
+				this.roles.removeIf(e -> e.getMemberEntity().getId().equals(entity.getId()));
+			}
+		}
+	}
+
+	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
