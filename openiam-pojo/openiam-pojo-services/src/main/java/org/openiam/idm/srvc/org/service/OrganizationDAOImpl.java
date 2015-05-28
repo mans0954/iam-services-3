@@ -121,6 +121,12 @@ public class OrganizationDAOImpl extends
 						.createAlias("roleXrefs.memberEntity", "role").add(
 						Restrictions.in("role.id", organizationSearchBean.getRoleIdSet()));
 			}
+            
+            if(CollectionUtils.isNotEmpty(organizationSearchBean.getResourceIdSet())) {
+            	criteria.createAlias("resources", "resourceXrefs")
+						.createAlias("resourceXrefs.memberEntity", "resource").add(
+						Restrictions.in("resource.id", organizationSearchBean.getResourceIdSet()));
+			}
 			
 			if(CollectionUtils.isNotEmpty(organizationSearchBean.getParentIdSet())) {
 				criteria.createAlias("parentOrganizations", "parentXrefs")

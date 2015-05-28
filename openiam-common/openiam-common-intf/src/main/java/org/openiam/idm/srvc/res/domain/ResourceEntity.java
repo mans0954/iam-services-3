@@ -9,6 +9,8 @@ import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.domain.GroupToGroupMembershipXrefEntity;
 import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
+import org.openiam.idm.srvc.org.domain.GroupToOrgMembershipXrefEntity;
+import org.openiam.idm.srvc.org.domain.ResourceToOrgMembershipXrefEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceRisk;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
@@ -123,6 +125,10 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
     
     @Column(name="REFERENCE_ID")
     private String referenceId;
+    
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="memberEntity", orphanRemoval=true)
+    @Fetch(FetchMode.SUBSELECT)
+    private Set<ResourceToOrgMembershipXrefEntity> organizations = new HashSet<ResourceToOrgMembershipXrefEntity>(0);
 
     public ResourceRisk getRisk() {
         return risk;
@@ -424,7 +430,25 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
 		this.referenceId = referenceId;
 	}
 
-    @Override
+    public Set<ResourceToOrgMembershipXrefEntity> getOrganizations() {
+		return organizations;
+	}
+
+	public void setOrganizations(
+			Set<ResourceToOrgMembershipXrefEntity> organizations) {
+		this.organizations = organizations;
+	}
+	
+	public ResourceToOrgMembershipXrefEntity getOrganization(final String organizationId) {
+    	final Optional<ResourceToOrgMembershipXrefEntity> xref = 
+    			this.getOrganizations()
+				.stream()
+				.filter(e -> organizationId.equals(e.getEntity().getId()))
+				.findFirst();
+    	return xref.isPresent() ? xref.get() : null;
+    }
+
+	@Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof ResourceEntity)) return false;

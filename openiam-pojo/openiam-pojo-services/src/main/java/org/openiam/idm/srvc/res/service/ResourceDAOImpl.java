@@ -330,6 +330,12 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 						.createAlias("parentXrefs.entity", "parent").add(
 						Restrictions.in("parent.id", searchBean.getParentIdSet()));
 			}
+			
+			if(CollectionUtils.isNotEmpty(searchBean.getOrganizationIdSet())){    
+                criteria.createAlias("organizations", "organizationXrefs")
+						.createAlias("organizationXrefs.entity", "organization").add(
+						Restrictions.in("organization.id", searchBean.getOrganizationIdSet()));
+            }
 
             if(CollectionUtils.isNotEmpty(searchBean.getRoleIdSet())){
                 criteria.createAlias("roles", "r");

@@ -89,6 +89,9 @@ public interface OrganizationService {
     public void addGroupToOrganization(final String organizationId, final String groupId, final Set<String> rightIds);
     public void removeGroupFromOrganization(final String organizationId, final String groupId);
     
+    public void addResourceToOrganization(final String organizationId, final String groupId, final Set<String> rightIds);
+    public void removeResourceFromOrganization(final String organizationId, final String groupId);
+    
     public void addRoleToOrganization(final String organizationId, final String roleId, final Set<String> rightIds);
     public void removeRoleFromOrganization(final String organizationId, final String roleId);
 }

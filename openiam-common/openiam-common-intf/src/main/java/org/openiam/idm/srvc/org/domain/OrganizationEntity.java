@@ -145,6 +145,9 @@ public class OrganizationEntity extends AbstractMetdataTypeEntity {
     @Fetch(FetchMode.SUBSELECT)
 	private Set<RoleToOrgMembershipXrefEntity> roles;
 
+	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="entity", orphanRemoval=true)
+    @Fetch(FetchMode.SUBSELECT)
+	private Set<ResourceToOrgMembershipXrefEntity> resources;
 
     public OrganizationEntity() {
     }
@@ -283,6 +286,15 @@ public class OrganizationEntity extends AbstractMetdataTypeEntity {
 
 	public void setChildOrganizations(Set<OrgToOrgMembershipXrefEntity> childOrganizations) {
 		this.childOrganizations = childOrganizations;
+	}
+	
+	public ResourceToOrgMembershipXrefEntity getResource(final String resourceId) {
+		final Optional<ResourceToOrgMembershipXrefEntity> xref = 
+    			this.getResources()
+    				.stream()
+    				.filter(e -> resourceId.equals(e.getMemberEntity().getId()))
+    				.findFirst();
+    	return xref.isPresent() ? xref.get() : null;
 	}
 	
 	public RoleToOrgMembershipXrefEntity getRole(final String roleId) {
@@ -491,6 +503,47 @@ public class OrganizationEntity extends AbstractMetdataTypeEntity {
 		if(entity != null) {
 			if(this.roles != null) {
 				this.roles.removeIf(e -> e.getMemberEntity().getId().equals(entity.getId()));
+			}
+		}
+	}
+
+	public Set<ResourceToOrgMembershipXrefEntity> getResources() {
+		return resources;
+	}
+
+	public void setResources(Set<ResourceToOrgMembershipXrefEntity> resources) {
+		this.resources = resources;
+	}
+	
+	public void addResource(final ResourceEntity entity, final Collection<AccessRightEntity> rights) {
+		if(entity != null) {
+			if(this.resources == null) {
+				this.resources = new LinkedHashSet<ResourceToOrgMembershipXrefEntity>();
+			}
+			ResourceToOrgMembershipXrefEntity theXref = null;
+			for(final ResourceToOrgMembershipXrefEntity xref : this.resources) {
+				if(xref.getEntity().getId().equals(getId()) && xref.getMemberEntity().getId().equals(entity.getId())) {
+					theXref = xref;
+					break;
+				}
+			}
+			
+			if(theXref == null) {
+				theXref = new ResourceToOrgMembershipXrefEntity();
+				theXref.setEntity(this);
+				theXref.setMemberEntity(entity);
+			}
+			if(rights != null) {
+				theXref.setRights(new HashSet<AccessRightEntity>(rights));
+			}
+			this.resources.add(theXref);
+		}
+	}
+	
+	public void removeResource(final ResourceEntity entity) {
+		if(entity != null) {
+			if(this.resources != null) {
+				this.resources.removeIf(e -> e.getMemberEntity().getId().equals(entity.getId()));
 			}
 		}
 	}

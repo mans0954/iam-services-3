@@ -371,6 +371,44 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
         }
         return response;
 	}
+	
+	@Override
+	public Response addResourceToOrganization(final String organizationId, final String resourceId, final Set<String> rightIds) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            if (organizationId == null || resourceId == null) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+            }
+            organizationService.addResourceToOrganization(organizationId, resourceId, rightIds);
+        } catch (BasicDataServiceException e) {
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+        } catch (Throwable e) {
+            log.error("Can't perform operation", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+        }
+        return response;
+	}
+
+	@Override
+	public Response removeResourceFromOrganization(final String organizationId, final String resourceId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            if (organizationId == null || resourceId == null) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+            }
+            organizationService.removeResourceFromOrganization(organizationId, resourceId);
+        } catch (BasicDataServiceException e) {
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+        } catch (Throwable e) {
+            log.error("Can't perform operation", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+        }
+        return response;
+	}
     
     @Override
 	public Response addGroupToOrganization(final String organizationId, final String groupId, final Set<String> rightIds) {

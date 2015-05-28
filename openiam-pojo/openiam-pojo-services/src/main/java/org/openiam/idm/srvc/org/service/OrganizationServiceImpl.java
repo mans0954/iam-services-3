@@ -35,6 +35,7 @@ import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.domain.RoleToRoleMembershipXrefEntity;
@@ -142,6 +143,9 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     
     @Autowired
     private AccessRightDAO accessRightDAO;
+    
+    @Autowired
+    private ResourceDAO resourceDAO;
 
     @Override
     @LocalizedServiceGet
@@ -1246,6 +1250,28 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
 		final RoleEntity role = roleDAO.findById(roleId);
 		if(organization != null && role != null) {
 			organization.removeRole(role);
+			orgDao.update(organization);
+		}
+	}
+
+	@Override
+	public void addResourceToOrganization(String organizationId,
+			String resourceId, Set<String> rightIds) {
+		final OrganizationEntity organization = orgDao.findById(organizationId);
+		final ResourceEntity resource = resourceDAO.findById(resourceId);
+		if(organization != null && resource != null) {
+			organization.addResource(resource, accessRightDAO.findByIds(rightIds));
+			orgDao.update(organization);
+		}
+	}
+
+	@Override
+	public void removeResourceFromOrganization(String organizationId,
+			String resourceId) {
+		final OrganizationEntity organization = orgDao.findById(organizationId);
+		final ResourceEntity resource = resourceDAO.findById(resourceId);
+		if(organization != null && resource != null) {
+			organization.removeResource(resource);
 			orgDao.update(organization);
 		}
 	}
