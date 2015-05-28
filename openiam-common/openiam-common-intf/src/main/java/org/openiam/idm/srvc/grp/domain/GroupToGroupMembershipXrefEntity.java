@@ -19,13 +19,14 @@ import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.openiam.base.domain.KeyEntity;
 import org.openiam.idm.srvc.access.domain.AccessRightEntity;
+import org.openiam.idm.srvc.membership.domain.AbstractMembershipXrefEntity;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 
 @Entity
 @Table(name = "grp_to_grp_membership")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @AttributeOverride(name = "id", column = @Column(name = "MEMBERSHIP_ID"))
-public class GroupToGroupMembershipXrefEntity extends KeyEntity {
+public class GroupToGroupMembershipXrefEntity extends AbstractMembershipXrefEntity {
 
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "GROUP_ID", referencedColumnName = "GRP_ID", insertable = true, updatable = false, nullable=false)

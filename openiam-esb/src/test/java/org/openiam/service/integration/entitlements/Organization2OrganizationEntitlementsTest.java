@@ -52,11 +52,17 @@ public class Organization2OrganizationEntitlementsTest extends AbstractCircularE
 	protected boolean isChildInParent(Organization parent, Organization child, final Set<String> rights) {
 		final OrganizationSearchBean searchBean = new OrganizationSearchBean();
 		searchBean.addChildId(child.getId());
-		//searchBean.setIncludeAccessRights(true);
+		searchBean.setIncludeAccessRights(true);
 		final List<Organization> dtos = organizationServiceClient.findBeansLocalized(searchBean, null, 0, 100, getDefaultLanguage());
 		if(CollectionUtils.isNotEmpty(dtos)) {
 			final Optional<Organization> optional = dtos.stream().filter(e -> e.getId().equals(parent.getId())).findAny();
 			Assert.assertTrue(String.format("Can't find child org"), optional.isPresent());
+			final Organization organization = optional.get();
+			if(CollectionUtils.isEmpty(rights)) {
+				Assert.assertTrue(CollectionUtils.isEmpty(organization.getAccessRightIds()));
+			} else {
+				Assert.assertEquals(organization.getAccessRightIds(), rights);
+			}
 			return true;
 		} else {
 			return false;
@@ -82,5 +88,15 @@ public class Organization2OrganizationEntitlementsTest extends AbstractCircularE
 		} else {
 			return false;
 		}
+	}
+
+	@Override
+	protected Organization getParentById(Organization parent) {
+		return organizationServiceClient.getOrganizationLocalized(parent.getId(), "3000", getDefaultLanguage());
+	}
+
+	@Override
+	protected Organization getChildById(Organization child) {
+		return organizationServiceClient.getOrganizationLocalized(child.getId(), "3000", getDefaultLanguage());
 	}
 }

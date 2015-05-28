@@ -6,6 +6,7 @@ import org.openiam.base.domain.AbstractMetdataTypeEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.access.domain.AccessRightEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
+import org.openiam.idm.srvc.grp.domain.GroupToGroupMembershipXrefEntity;
 import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
@@ -202,6 +203,16 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
     public void setURL(String URL) {
         this.URL = URL;
     }
+    
+	public ResourceToResourceMembershipXrefEntity getChild(final String childId) {
+		final Optional<ResourceToResourceMembershipXrefEntity> xref = 
+    			this.getChildResources()
+    				.stream()
+    				.filter(e -> childId.equals(e.getMemberEntity().getId()))
+    				.findFirst();
+    	return xref.isPresent() ? xref.get() : null;
+	}
+    
     
     public ResourceToResourceMembershipXrefEntity getParent(final String parentId) {
     	final Optional<ResourceToResourceMembershipXrefEntity> xref = 

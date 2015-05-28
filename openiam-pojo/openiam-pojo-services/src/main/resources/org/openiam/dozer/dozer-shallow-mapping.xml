@@ -27,6 +27,10 @@
 			<a>childOrganizations</a>
 			<b>childOrganizations</b>
 		</field-exclude>
+		<field-exclude>
+			<a>groups</a>
+			<b>groups</b>
+		</field-exclude>
 	</mapping>
 
 	<mapping>
@@ -169,6 +173,10 @@
 			<a>approverAssociations</a>
 			<b>approverAssociations</b>
 		</field-exclude>
+		<field-exclude>
+        	<a>organizations</a>
+        	<b>organizations</b>
+        </field-exclude>
 	</mapping>
 	
 	<mapping>

@@ -28,7 +28,7 @@ import org.openiam.idm.srvc.res.dto.Resource;
 @Table(name = "res_to_res_membership")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @AttributeOverride(name = "id", column = @Column(name = "MEMBERSHIP_ID"))
-public class ResourceToResourceMembershipXrefEntity extends KeyEntity {
+public class ResourceToResourceMembershipXrefEntity extends AbstractMembershipXrefEntity {
 
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "RESOURCE_ID", referencedColumnName = "RESOURCE_ID", insertable = true, updatable = false, nullable=false)

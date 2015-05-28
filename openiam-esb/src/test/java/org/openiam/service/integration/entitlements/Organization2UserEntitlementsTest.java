@@ -56,4 +56,15 @@ public class Organization2UserEntitlementsTest extends AbstractEntitlementsTest<
 		return (CollectionUtils.isNotEmpty(users)) ? users.contains(child) : false;
 	}
 
+	@Override
+	protected Organization getParentById(Organization parent) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	protected User getChildById(User child) {
+		return userServiceClient.getUserWithDependent(child.getId(), "3000", false);
+	}
+
 }

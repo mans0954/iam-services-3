@@ -56,6 +56,62 @@ public abstract class AbstractEntitlementsTest<Parent extends KeyDTO, Child exte
 	protected AccessRightDataService accessRightServiceClient;
 
 	@Test
+	public void testDeleteWithRelationship() {
+		Parent parent = null;
+		Child child = null;
+		Response response = null;
+		try {
+			parent = createParent();
+			child = createChild();
+			final List<AccessRight> rights = accessRightServiceClient.findBeans(null, 0, 1, getDefaultLanguage());
+			doAddChildToParent(parent, child, rights.stream().map(e -> e.getId()).collect(Collectors.toSet()));
+			
+			if(parent != null) { /* should still work - relationship should be removed */
+				response = deleteParent(parent);
+				Assert.assertTrue(response.isSuccess(), String.format("Could not delete parent.  %s", response));
+			}
+			
+			Assert.assertNull(getParentById(parent));
+			Assert.assertNotNull(getChildById(child));
+			if(child != null) {
+				response = deleteChild(child);
+				Assert.assertTrue(response.isSuccess(), String.format("Could not delete child.  %s", response));
+			}
+			Assert.assertNull(getChildById(child));
+		} finally {
+			
+		}
+	}
+	
+	@Test
+	public void testDeleteWithInverseRelationship() {
+		Parent parent = null;
+		Child child = null;
+		Response response = null;
+		try {
+			parent = createParent();
+			child = createChild();
+			final List<AccessRight> rights = accessRightServiceClient.findBeans(null, 0, 1, getDefaultLanguage());
+			doAddChildToParent(parent, child, rights.stream().map(e -> e.getId()).collect(Collectors.toSet()));
+			
+			if(child != null) {
+				response = deleteChild(child);
+				Assert.assertTrue(response.isSuccess(), String.format("Could not delete child.  %s", response));
+			}
+			Assert.assertNull(getChildById(child));
+			Assert.assertNotNull(getParentById(parent));
+			
+			if(parent != null) { /* should still work - relationship should be removed */
+				response = deleteParent(parent);
+				Assert.assertTrue(response.isSuccess(), String.format("Could not delete parent.  %s", response));
+			}
+			Assert.assertNull(getParentById(parent));
+		} finally {
+			
+		}
+	}
+	
+	@Test
 	public void clusterTest() {
 		Parent parent = null;
 		Child child = null;
@@ -147,6 +203,8 @@ public abstract class AbstractEntitlementsTest<Parent extends KeyDTO, Child exte
 		return role;
 	}
 	
+	protected abstract Parent getParentById(final Parent parent);
+	protected abstract Child getChildById(final Child child);
 	protected abstract Parent createParent();
 	protected abstract Child createChild();
 	protected abstract Response addChildToParent(final Parent parent, final Child child, final Set<String> rights);

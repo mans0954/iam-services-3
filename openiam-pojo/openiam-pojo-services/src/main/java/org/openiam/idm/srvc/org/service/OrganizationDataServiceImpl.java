@@ -333,6 +333,44 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
         }
         return response;
     }
+    
+    @Override
+	public Response addGroupToOrganization(final String organizationId, final String groupId, final Set<String> rightIds) {
+    	final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            if (organizationId == null || groupId == null) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+            }
+            organizationService.addGroupToOrganization(organizationId, groupId, rightIds);
+        } catch (BasicDataServiceException e) {
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+        } catch (Throwable e) {
+            log.error("Can't perform operation", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+        }
+        return response;
+	}
+
+	@Override
+	public Response removeGroupFromOrganization(final String organizationId, final String groupId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            if (organizationId == null || groupId == null) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+            }
+            organizationService.removeGroupFromOrganization(organizationId, groupId);
+        } catch (BasicDataServiceException e) {
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+        } catch (Throwable e) {
+            log.error("Can't perform operation", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+        }
+        return response;
+	}
 
     @Override
     public Response deleteOrganization(final String orgId) {

@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.org.service;
 
+import org.openiam.base.ws.Response;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.LocationSearchBean;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
@@ -16,6 +17,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import javax.jws.WebParam;
 
 public interface OrganizationService {
     @Deprecated
@@ -82,4 +85,7 @@ public interface OrganizationService {
 
     public List<LocationEntity> getLocationListByOrganizationId(Set<String> orgsId, Integer from, Integer size);
     public List<LocationEntity> getLocationListByOrganizationId(Set<String> orgsId);
+    
+    public void addGroupToOrganization(final String organizationId, final String groupId, final Set<String> rightIds);
+    public void removeGroupFromOrganization(final String organizationId, final String groupId);
 }

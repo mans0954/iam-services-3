@@ -285,7 +285,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
                 //mergeParents(curEntity, newEntity);
                 //mergeChildren(curEntity, newEntity);
                 mergeUsers(curEntity, newEntity);
-                mergeGroups(curEntity, newEntity);
+                //mergeGroups(curEntity, newEntity);
                 mergeLocations(curEntity, newEntity);
                 mergeApproverAssociations(curEntity, newEntity);
 
@@ -490,6 +490,8 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
         }
     }
 
+    /*
+     * Can be done better
     private void mergeGroups(final OrganizationEntity curEntity, final OrganizationEntity newEntity) {
         if (curEntity.getGroups() == null) {
             curEntity.setGroups(new HashSet<GroupEntity>());
@@ -528,6 +530,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
             }
         }
     }
+    */
 
     private void mergeUsers(final OrganizationEntity curEntity, final OrganizationEntity newEntity) {
         if (curEntity.getUsers() == null) {
@@ -751,15 +754,6 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
             }
 
             if (entity != null) {
-                final GroupEntity example = new GroupEntity();
-                example.addOrganization(entity);
-                final List<GroupEntity> groups = groupDAO.getByExample(example);
-                if(groups != null) {
-                    for(final GroupEntity group : groups) {
-                        group.removeOrganization(entity.getId());
-                        groupDAO.update(group);
-                    }
-                }
                 orgDao.delete(entity);
             }
 
@@ -1205,5 +1199,29 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     public List<LocationEntity> getLocationListByOrganizationId(Set<String> orgsId) {
         return locationDao.findByOrganizationList(orgsId);
     }
+
+	@Override
+	@Transactional
+	public void addGroupToOrganization(String organizationId, String groupId,
+			Set<String> rightIds) {
+		final OrganizationEntity organization = orgDao.findById(organizationId);
+		final GroupEntity group = groupDAO.findById(groupId);
+		if(organization != null && group != null) {
+			organization.addGroup(group, accessRightDAO.findByIds(rightIds));
+			orgDao.update(organization);
+		}
+	}
+
+	@Override
+	@Transactional
+	public void removeGroupFromOrganization(String organizationId,
+			String groupId) {
+		final OrganizationEntity organization = orgDao.findById(organizationId);
+		final GroupEntity group = groupDAO.findById(groupId);
+		if(organization != null && group != null) {
+			organization.removeGroup(group);
+			orgDao.update(organization);
+		}
+	}
 
 }

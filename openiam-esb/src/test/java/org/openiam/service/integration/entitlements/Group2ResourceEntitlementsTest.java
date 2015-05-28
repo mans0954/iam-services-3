@@ -59,4 +59,14 @@ public class Group2ResourceEntitlementsTest extends AbstractEntitlementsTest<Gro
         return (CollectionUtils.isNotEmpty(groups)) ? groups.contains(parent) : false;
 	}
 
+	@Override
+	protected Group getParentById(Group parent) {
+		return groupServiceClient.getGroupLocalize(parent.getId(), "3000", getDefaultLanguage());
+	}
+
+	@Override
+	protected Resource getChildById(Resource child) {
+		return resourceDataService.getResource(child.getId(), getDefaultLanguage());
+	}
+
 }

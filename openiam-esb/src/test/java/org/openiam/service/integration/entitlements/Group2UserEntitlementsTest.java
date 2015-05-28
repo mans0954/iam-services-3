@@ -61,4 +61,14 @@ public class Group2UserEntitlementsTest extends AbstractEntitlementsTest<Group, 
         return (CollectionUtils.isNotEmpty(groups)) ? groups.contains(parent) : false;
 	}
 
+	@Override
+	protected Group getParentById(Group parent) {
+		return groupServiceClient.getGroupLocalize(parent.getId(), "3000", getDefaultLanguage());
+	}
+
+	@Override
+	protected User getChildById(User child) {
+		return userServiceClient.getUserWithDependent(child.getId(), "3000", false);
+	}
+
 }

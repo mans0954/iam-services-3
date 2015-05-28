@@ -199,6 +199,15 @@ public class RoleEntity extends AbstractMetdataTypeEntity {
 		this.childRoles = childRoles;
 	}
 	
+	public RoleToRoleMembershipXrefEntity getChild(final String childId) {
+		final Optional<RoleToRoleMembershipXrefEntity> xref = 
+    			this.getChildRoles()
+    				.stream()
+    				.filter(e -> childId.equals(e.getMemberEntity().getId()))
+    				.findFirst();
+    	return xref.isPresent() ? xref.get() : null;
+	}
+	
 	public RoleToRoleMembershipXrefEntity getParent(final String parentId) {
     	final Optional<RoleToRoleMembershipXrefEntity> xref = 
     			this.getParentRoles()

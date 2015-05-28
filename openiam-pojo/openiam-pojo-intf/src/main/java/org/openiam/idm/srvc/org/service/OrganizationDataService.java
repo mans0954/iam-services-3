@@ -143,6 +143,15 @@ public interface OrganizationDataService {
     public Response addChildOrganization(@WebParam(name = "organizationId", targetNamespace = "") String organizationId,
                                          @WebParam(name = "childOrganizationId", targetNamespace = "") String childOrganizationId,
                                          @WebParam(name = "rightIds", targetNamespace = "") Set<String> rightIds);
+    
+    @WebMethod
+    public Response addGroupToOrganization(@WebParam(name = "organizationId", targetNamespace = "") String organizationId,
+                                         @WebParam(name = "groupId", targetNamespace = "") String groupId,
+                                         @WebParam(name = "rightIds", targetNamespace = "") Set<String> rightIds);
+    
+    @WebMethod
+    public Response removeGroupFromOrganization(@WebParam(name = "organizationId", targetNamespace = "") String organizationId,
+                                         		@WebParam(name = "groupId", targetNamespace = "") String groupId);
 
 
     @WebMethod

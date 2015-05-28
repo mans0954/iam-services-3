@@ -19,12 +19,13 @@ import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.openiam.base.domain.KeyEntity;
 import org.openiam.idm.srvc.access.domain.AccessRightEntity;
+import org.openiam.idm.srvc.membership.domain.AbstractMembershipXrefEntity;
 
 @Entity
 @Table(name = "COMPANY_TO_COMPANY_MEMBERSHIP")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @AttributeOverride(name = "id", column = @Column(name = "MEMBERSHIP_ID"))
-public class OrgToOrgMembershipXrefEntity extends KeyEntity {
+public class OrgToOrgMembershipXrefEntity extends AbstractMembershipXrefEntity {
     
 	@ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "COMPANY_ID", referencedColumnName = "COMPANY_ID", insertable = true, updatable = false, nullable=false)

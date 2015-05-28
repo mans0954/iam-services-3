@@ -442,18 +442,16 @@ public class GroupDataServiceImpl implements GroupDataService {
                 group.setManagedSystem(null);
             }
 
-            if(CollectionUtils.isNotEmpty(group.getOrganizationSet())) {
-                Set<String> ids = new HashSet<>();
-                for(OrganizationEntity org: group.getOrganizationSet()){
-                    if(StringUtils.isNotBlank(org.getId()))
-                        ids.add(org.getId());
-                }
+            /*
+            if(CollectionUtils.isNotEmpty(group.getOrganizations())) {
+                final Set<String> ids = group.getOrganizations().stream().map(e -> e.getId()).filter(e -> StringUtils.isNotBlank(e)).collect(Collectors.toSet());
                 if(CollectionUtils.isNotEmpty(ids)){
                     group.setOrganizationSet(new HashSet<>(organizationDAO.findByIds(ids)));
                 }
             } else {
                 group.setOrganizationSet(null);
             }
+            */
 
             if(group.getType() != null && StringUtils.isNotBlank(group.getType().getId())) {
                 group.setType(typeDAO.findById(group.getType().getId()));

@@ -68,9 +68,10 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
                 criteria.createAlias("roles", "r");
                 criteria.add(Restrictions.in("r.id", groupSearchBean.getRoleIdSet()));
             }
-            if(CollectionUtils.isNotEmpty(groupSearchBean.getOrganizationIdSet())){
-                criteria.createAlias("organizationSet", "org");
-                criteria.add(Restrictions.in("org.id", groupSearchBean.getOrganizationIdSet()));
+            if(CollectionUtils.isNotEmpty(groupSearchBean.getOrganizationIdSet())){    
+                criteria.createAlias("organizations", "organizationXrefs")
+						.createAlias("organizationXrefs.entity", "organization").add(
+						Restrictions.in("organization.id", groupSearchBean.getOrganizationIdSet()));
             }
             if(CollectionUtils.isNotEmpty(groupSearchBean.getResourceIdSet())){
                 criteria.createAlias("resources", "res");
@@ -153,17 +154,6 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
 //			if(group.getCompany() != null && StringUtils.isNotBlank(group.getCompany().getId())) {
 //				criteria.add(Restrictions.eq("company.id", group.getCompany().getId()));
 //			}
-
-            if(CollectionUtils.isNotEmpty(group.getOrganizationSet())) {
-                final Set<String> orgIds = new HashSet<String>();
-                for(final OrganizationEntity org : group.getOrganizationSet()) {
-                    if(org != null && StringUtils.isNotBlank(org.getId())) {
-                        orgIds.add(org.getId());
-                    }
-                }
-                criteria.createAlias("organizationSet", "orgs");
-                criteria.add(Restrictions.in("orgs.id", orgIds));
-            }
 
             if(CollectionUtils.isNotEmpty(group.getResources())) {
             	final Set<String> resourceIds = new HashSet<String>();

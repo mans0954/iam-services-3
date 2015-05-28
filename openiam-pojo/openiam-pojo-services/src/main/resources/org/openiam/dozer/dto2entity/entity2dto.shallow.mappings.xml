@@ -180,10 +180,6 @@
         	<b>adminResourceCoorelatedName</b>
         </field>
 		<field-exclude>
-			<a>organizationSet</a>
-			<b>organizations</b>
-		</field-exclude>
-		<field-exclude>
 			<a>parentGroups</a>
 			<b>parentGroups</b>
 		</field-exclude>
@@ -255,6 +251,10 @@
 			<a>risk.displayName</a>
 			<b>riskName</b>
 		</field>
+		<field-exclude>
+        	<a>organizations</a>
+        	<b>organizations</b>
+        </field-exclude>
 	</mapping>
 
 	<mapping>
@@ -599,6 +599,10 @@
 		<field-exclude>
 			<a>approverAssociations</a>
 			<b>approverAssociations</b>
+		</field-exclude>
+		<field-exclude>
+			<a>groups</a>
+			<b>groups</b>
 		</field-exclude>
 	</mapping>
 	<mapping>

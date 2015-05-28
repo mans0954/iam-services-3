@@ -59,4 +59,14 @@ public class Group2RoleEntitlementsTest extends AbstractEntitlementsTest<Group, 
 		return (CollectionUtils.isNotEmpty(roles)) ? roles.contains(child) : false;
 	}
 
+	@Override
+	protected Group getParentById(Group parent) {
+		return groupServiceClient.getGroupLocalize(parent.getId(), "3000", getDefaultLanguage());
+	}
+
+	@Override
+	protected Role getChildById(Role child) {
+		return roleServiceClient.getRoleLocalized(child.getId(), "3000", getDefaultLanguage());
+	}
+
 }

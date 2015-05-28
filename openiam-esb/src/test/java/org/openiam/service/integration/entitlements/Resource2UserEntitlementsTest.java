@@ -61,4 +61,14 @@ public class Resource2UserEntitlementsTest extends AbstractEntitlementsTest<Reso
 		return (CollectionUtils.isNotEmpty(resources)) ? resources.contains(parent) : false;
 	}
 
+	@Override
+	protected Resource getParentById(Resource parent) {
+		return resourceDataService.getResource(parent.getId(), getDefaultLanguage());
+	}
+
+	@Override
+	protected User getChildById(User child) {
+		return userServiceClient.getUserWithDependent(child.getId(), "3000", false);
+	}
+
 }

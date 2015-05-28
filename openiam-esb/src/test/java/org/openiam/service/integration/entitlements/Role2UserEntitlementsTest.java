@@ -60,4 +60,14 @@ public class Role2UserEntitlementsTest extends AbstractEntitlementsTest<Role, Us
         return (CollectionUtils.isNotEmpty(roles)) ? roles.contains(parent) : false;
 	}
 
+	@Override
+	protected Role getParentById(Role parent) {
+		return roleServiceClient.getRoleLocalized(parent.getId(), "3000", getDefaultLanguage());
+	}
+
+	@Override
+	protected User getChildById(User child) {
+		return userServiceClient.getUserWithDependent(child.getId(), "3000", false);
+	}
+
 }

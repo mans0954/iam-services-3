@@ -1,4 +1,4 @@
-package org.openiam.idm.srvc.role.domain;
+package org.openiam.idm.srvc.org.domain;
 
 import java.util.Set;
 
@@ -19,45 +19,44 @@ import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.openiam.base.domain.KeyEntity;
 import org.openiam.idm.srvc.access.domain.AccessRightEntity;
+import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.membership.domain.AbstractMembershipXrefEntity;
 
 @Entity
-@Table(name = "role_to_role_membership")
+@Table(name = "GROUP_ORGANIZATION")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @AttributeOverride(name = "id", column = @Column(name = "MEMBERSHIP_ID"))
-public class RoleToRoleMembershipXrefEntity extends AbstractMembershipXrefEntity {
+public class GroupToOrgMembershipXrefEntity extends AbstractMembershipXrefEntity {
 
 	@ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    @JoinColumn(name = "ROLE_ID", referencedColumnName = "ROLE_ID", insertable = true, updatable = false, nullable=false)
-    private RoleEntity entity;
+    @JoinColumn(name = "COMPANY_ID", referencedColumnName = "COMPANY_ID", insertable = true, updatable = false, nullable=false)
+    private OrganizationEntity entity;
     
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    @JoinColumn(name = "MEMBER_ROLE_ID", referencedColumnName = "ROLE_ID", insertable = true, updatable = false, nullable=false)
-    private RoleEntity memberEntity;
+    @JoinColumn(name = "GRP_ID", referencedColumnName = "GRP_ID", insertable = true, updatable = false, nullable=false)
+    private GroupEntity memberEntity;
 
     /* this is eager.  If you're loading the XREF - it's to get the rights */
     @ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.EAGER)
-    @JoinTable(name = "ROLE_ROLE_MEMBERSHIP_RIGHTS",
+    @JoinTable(name = "GRP_ORG_MEMBERSHIP_RIGHTS",
             joinColumns = {@JoinColumn(name = "MEMBERSHIP_ID")},
             inverseJoinColumns = {@JoinColumn(name = "ACCESS_RIGHT_ID")})
     @Fetch(FetchMode.SUBSELECT)
     private Set<AccessRightEntity> rights;
-    
-    
-    
-    public RoleEntity getEntity() {
+
+	public OrganizationEntity getEntity() {
 		return entity;
 	}
 
-	public void setEntity(RoleEntity entity) {
+	public void setEntity(OrganizationEntity entity) {
 		this.entity = entity;
 	}
 
-	public RoleEntity getMemberEntity() {
+	public GroupEntity getMemberEntity() {
 		return memberEntity;
 	}
 
-	public void setMemberEntity(RoleEntity memberEntity) {
+	public void setMemberEntity(GroupEntity memberEntity) {
 		this.memberEntity = memberEntity;
 	}
 
@@ -88,7 +87,7 @@ public class RoleToRoleMembershipXrefEntity extends AbstractMembershipXrefEntity
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		RoleToRoleMembershipXrefEntity other = (RoleToRoleMembershipXrefEntity) obj;
+		GroupToOrgMembershipXrefEntity other = (GroupToOrgMembershipXrefEntity) obj;
 		if (entity == null) {
 			if (other.entity != null)
 				return false;
@@ -106,4 +105,6 @@ public class RoleToRoleMembershipXrefEntity extends AbstractMembershipXrefEntity
 			return false;
 		return true;
 	}
+
+	
 }

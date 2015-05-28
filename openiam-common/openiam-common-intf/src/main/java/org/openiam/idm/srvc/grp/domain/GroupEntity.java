@@ -27,11 +27,13 @@ import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
+import org.openiam.idm.srvc.org.domain.GroupToOrgMembershipXrefEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationTypeEntity;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourceToResourceMembershipXrefEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
+import org.openiam.idm.srvc.role.domain.RoleToRoleMembershipXrefEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.internationalization.Internationalized;
 
@@ -130,10 +132,9 @@ public class GroupEntity extends AbstractMetdataTypeEntity {
     @Internationalized
     protected MetadataTypeEntity risk;
 
-    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
-    @JoinTable(name = "GROUP_ORGANIZATION", joinColumns = { @JoinColumn(name = "GRP_ID") }, inverseJoinColumns = { @JoinColumn(name = "COMPANY_ID") })
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="memberEntity", orphanRemoval=true)
     @Fetch(FetchMode.SUBSELECT)
-    private Set<OrganizationEntity> organizationSet = new HashSet<OrganizationEntity>(0);
+    private Set<GroupToOrgMembershipXrefEntity> organizations = new HashSet<GroupToOrgMembershipXrefEntity>(0);
 
     @Column(name = "MAX_USER_NUMBER")
     private Integer maxUserNumber;
@@ -244,6 +245,24 @@ public class GroupEntity extends AbstractMetdataTypeEntity {
 			}
 		}
     }
+    
+    public GroupToOrgMembershipXrefEntity getOrganization(final String organizationId) {
+    	final Optional<GroupToOrgMembershipXrefEntity> xref = 
+    			this.getOrganizations()
+				.stream()
+				.filter(e -> organizationId.equals(e.getEntity().getId()))
+				.findFirst();
+    	return xref.isPresent() ? xref.get() : null;
+    }
+    
+	public GroupToGroupMembershipXrefEntity getChild(final String childId) {
+		final Optional<GroupToGroupMembershipXrefEntity> xref = 
+    			this.getChildGroups()
+    				.stream()
+    				.filter(e -> childId.equals(e.getMemberEntity().getId()))
+    				.findFirst();
+    	return xref.isPresent() ? xref.get() : null;
+	}
     
     public GroupToGroupMembershipXrefEntity getParent(final String parentId) {
     	final Optional<GroupToGroupMembershipXrefEntity> xref = 
@@ -383,33 +402,15 @@ public class GroupEntity extends AbstractMetdataTypeEntity {
         this.membershipDuration = membershipDuration;
     }
 
-    public Set<OrganizationEntity> getOrganizationSet() {
-        return organizationSet;
-    }
+    public Set<GroupToOrgMembershipXrefEntity> getOrganizations() {
+		return organizations;
+	}
 
-    public void setOrganizationSet(Set<OrganizationEntity> organizationSet) {
-        this.organizationSet = organizationSet;
-    }
+	public void setOrganizations(Set<GroupToOrgMembershipXrefEntity> organizations) {
+		this.organizations = organizations;
+	}
 
-    public void addOrganization(final OrganizationEntity org) {
-        if (org != null) {
-            if (organizationSet == null) {
-                organizationSet = new HashSet<OrganizationEntity>();
-            }
-            organizationSet.add(org);
-        }
-    }
-    public void removeOrganization(final String orgid) {
-        if (CollectionUtils.isNotEmpty(organizationSet)) {
-            for (final Iterator<OrganizationEntity> it = organizationSet.iterator(); it.hasNext();) {
-                final OrganizationEntity org = it.next();
-                if(org.getId().equals(orgid))
-                    it.remove();
-                    break;
-                }
-            }
-    }
-    @Override
+	@Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof GroupEntity)) return false;
