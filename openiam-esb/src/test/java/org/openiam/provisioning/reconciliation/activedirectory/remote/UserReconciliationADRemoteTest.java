@@ -25,7 +25,6 @@ import org.openiam.idm.srvc.recon.ws.ReconciliationConfigResponse;
 import org.openiam.idm.srvc.recon.ws.ReconciliationWebService;
 import org.openiam.idm.srvc.user.ws.UserDataWebService;
 import org.openiam.provision.service.ProvisionService;
-import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
@@ -85,13 +84,6 @@ public class UserReconciliationADRemoteTest extends AbstractTestNGSpringContextT
     @Qualifier("provisionConnectorWebServiceClient")
     protected ProvisionConnectorWebService provisionConnectorWebServiceClient;
 
-    @Autowired
-    @Qualifier("cryptor")
-    private Cryptor cryptor;
-
-    @Autowired
-    @Qualifier("keyManagementWebServiceClient")
-    protected KeyManagementWS keyManagementWS;
 
     private List<String> deleteConnectorIdsList = new LinkedList<String>();
     private List<String> deleteManagedSysIdsList = new LinkedList<String>();
@@ -252,13 +244,6 @@ public class UserReconciliationADRemoteTest extends AbstractTestNGSpringContextT
 
     @AfterClass(alwaysRun = true)
     public void _destroy() {
-        /*try {
-            for(String objId : deleteMngSysObjectMatchIdsList) {
-                managedSystemWebService.removeManagedSystemObjectMatch(objId);
-            }
-        } catch(Throwable t) {
-            // do nothing
-        }*/
         try {
             for(String sysId : deleteManagedSysIdsList) {
                 managedSystemWebService.removeManagedSystem(sysId);
@@ -292,7 +277,7 @@ public class UserReconciliationADRemoteTest extends AbstractTestNGSpringContextT
         Assert.assertNotNull(testConnectionResponse);
         Assert.assertTrue(testConnectionResponse.isSuccess());
 
-    //    reconciliationWebService.startReconciliation(reconciliationConfig);
+        reconciliationWebService.startReconciliation(reconciliationConfig);
 
 
         int i = 0;
