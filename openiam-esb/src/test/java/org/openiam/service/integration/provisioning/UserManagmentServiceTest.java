@@ -68,13 +68,6 @@ public class UserManagmentServiceTest extends AbstractUserManagementServiceTest 
         return user;
     }
 
-    private User doCreate() throws Exception{
-        User user = super.createBean();
-        user = ((ProvisionUserResponse)saveAndAssert(user)).getUser();
-        pushUserId(user.getId());
-        return user;
-    }
-
     @Test(groups ={"MINIMAL_USER"})
     public void minimalUserCreate() throws Exception {
         User user = doCreate();

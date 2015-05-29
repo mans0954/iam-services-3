@@ -120,6 +120,13 @@ public abstract class AbstractUserManagementServiceTest extends AbstractKeyNameS
         return bean;
     }
 
+    protected User doCreate() throws Exception{
+        User user = super.createBean();
+        user = ((ProvisionUserResponse)saveAndAssert(user)).getUser();
+        pushUserId(user.getId());
+        return user;
+    }
+
     @Override
     protected User newInstance() {
         return new User();
@@ -140,6 +147,16 @@ public abstract class AbstractUserManagementServiceTest extends AbstractKeyNameS
         return response;
     }
 
+    protected Response saveAndAssert(ProvisionUser pUser) throws Exception {
+        final Response response = save(pUser);
+        Assert.assertTrue(response.isSuccess(), String.format("Could not save entity.  %s", response));
+
+        ProvisionUserResponse userResponse = (ProvisionUserResponse)response;
+        Assert.assertNotNull(userResponse.getUser(), String.format("Could not save entity.  %s", userResponse));
+        Assert.assertNotNull(userResponse.getUser().getId(), String.format("Could not save entity.  %s", userResponse));
+        return response;
+    }
+
     @Override
     protected Response save(User user) throws Exception {
         ProvisionUserResponse userResponse = null;
@@ -147,6 +164,16 @@ public abstract class AbstractUserManagementServiceTest extends AbstractKeyNameS
             userResponse = provisionService.modifyUser(new ProvisionUser(user));
         } else {
             userResponse = provisionService.addUser(new ProvisionUser(user));
+        }
+        return userResponse;
+    }
+
+    protected Response save(ProvisionUser pUser) throws Exception {
+        ProvisionUserResponse userResponse = null;
+        if(StringUtils.isNotBlank(pUser.getId())){
+            userResponse = provisionService.modifyUser(pUser);
+        } else {
+            userResponse = provisionService.addUser(pUser);
         }
         return userResponse;
     }
