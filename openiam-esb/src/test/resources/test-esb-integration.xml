@@ -92,26 +92,6 @@
 			value="${openiam.service_host}${openiam.idm.ws.path}RoleDataWebService" />
 	</bean>
 
-	<bean id="groupServiceClient" class="org.openiam.idm.srvc.grp.ws.GroupDataWebService"
-		factory-bean="groupServiceFactory" factory-method="create" />
-
-	<bean id="groupServiceFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
-		<property name="serviceClass"
-			value="org.openiam.idm.srvc.grp.ws.GroupDataWebService" />
-		<property name="address"
-			value="${openiam.service_host}${openiam.idm.ws.path}GroupDataWebService" />
-	</bean>
-
-    <bean id="identityServiceClient" class="org.openiam.idm.srvc.auth.ws.IdentityWebService"
-          factory-bean="identityServiceFactory" factory-method="create" />
-
-    <bean id="identityServiceFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
-        <property name="serviceClass"
-                  value="org.openiam.idm.srvc.auth.ws.IdentityWebService" />
-        <property name="address"
-                  value="${openiam.service_host}${openiam.idm.ws.path}IdentityWebService" />
-    </bean>
-
     <bean id="groupProvisionServiceClient" class="org.openiam.provision.service.ObjectProvisionService"
           factory-bean="groupProvisionServiceFactory" factory-method="create" />
 
@@ -172,16 +152,6 @@
 			value="org.openiam.idm.srvc.pswd.ws.PasswordWebService" />
 		<property name="address"
 			value="${openiam.service_host}${openiam.idm.ws.path}PasswordWebService" />
-	</bean>
-
-	<bean id="metadataServiceClient" class="org.openiam.idm.srvc.meta.ws.MetadataWebService"
-		factory-bean="metadataServiceClientFactory" factory-method="create" />
-
-	<bean id="metadataServiceClientFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
-		<property name="serviceClass"
-			value="org.openiam.idm.srvc.meta.ws.MetadataWebService" />
-		<property name="address"
-			value="${openiam.service_host}${openiam.idm.ws.path}MetadataWebService" />
 	</bean>
 
 	<bean id="metadataTemplateServiceClient"
@@ -350,5 +320,18 @@
     <jaxws:client id="provisionConnectorWebServiceClient"
                   serviceClass="org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService"
                   address="${openiam.service_host}${openiam.connector.ws.path}ConnectorWebService" />
+
+    <jaxws:client id="metadataServiceClient"
+                  serviceClass="org.openiam.idm.srvc.meta.ws.MetadataWebService"
+                  address="${openiam.service_host}${openiam.idm.ws.path}MetadataWebService" />
+
+    <jaxws:client id="identityServiceClient"
+                  serviceClass="org.openiam.idm.srvc.auth.ws.IdentityWebService"
+                  address="${openiam.service_host}${openiam.idm.ws.path}IdentityWebService" />
+
+    <jaxws:client id="groupServiceClient"
+                  serviceClass="org.openiam.idm.srvc.grp.ws.GroupDataWebService"
+                  address="${openiam.service_host}${openiam.idm.ws.path}GroupDataWebService" />
+
 
 </beans>

@@ -96,7 +96,7 @@ public class ManagedSysEntity implements Serializable {
     @Column(name = "CHANGE_END_USER", nullable = false)
     @Type(type = "yes_no")
     private boolean changedByEndUser = true;
-    ;
+
     @OneToMany(mappedBy = "managedSys")
     private Set<ManagedSystemObjectMatchEntity> mngSysObjectMatchs = new HashSet<ManagedSystemObjectMatchEntity>();
 

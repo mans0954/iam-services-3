@@ -112,6 +112,9 @@ public class ProvisionDispatcherTransactionHelper {
     @Autowired
     private ProvisionSelectedResourceHelper provisionSelectedResourceHelper;
 
+    @Autowired
+    private BuildUserPolicyMapHelper buildPolicyMapHelper;
+
     @Value("${org.openiam.debug.hidden.attributes}")
     protected String hiddenAttributes;
 
@@ -417,6 +420,7 @@ public class ProvisionDispatcherTransactionHelper {
         Resource res = resourceDozerConverter.convertToDTO(resEntity, true);
         ManagedSysDto mSys = managedSystemWebService.getManagedSysByResource(res.getId());
         idmAuditLog.setTargetManagedSys(mSys.getId(), mSys.getName());
+        ExtensibleUser extensibleUser = buildPolicyMapHelper.buildMngSysAttributes(targetSysLogin, data.getOperation().name());
 
         if (mSys.getConnectorId() == null) {
             return null;
@@ -437,7 +441,7 @@ public class ProvisionDispatcherTransactionHelper {
         request.setHostUrl(mSys.getHostUrl());
         request.setOperation("DELETE");
         request.setScriptHandler(mSys.getDeleteHandler());
-        request.setExtensibleObject(new ExtensibleUser());
+        request.setExtensibleObject(extensibleUser);
 
         return connectorAdapter.deleteRequest(mSys, request, MuleContextProvider.getCtx());
 
