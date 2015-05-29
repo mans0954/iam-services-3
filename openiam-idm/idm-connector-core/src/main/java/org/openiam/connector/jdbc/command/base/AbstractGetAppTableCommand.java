@@ -129,8 +129,7 @@ public abstract class AbstractGetAppTableCommand<ExtObject extends ExtensibleObj
                 String membershipTable = configuration.getUserGroupTableName();
                 String membershipTableUserId = configuration.getUserGroupTableNameUserId();
                 String membershipTableGroupId = configuration.getUserGroupTableNameGroupId();
-                String searchRule = configuration.getManagedSys().getSearchHandler();
-                if (CollectionUtils.isEmpty(attrMap) || StringUtils.isEmpty(searchRule)
+                if (CollectionUtils.isEmpty(attrMap)
                         || StringUtils.isEmpty(membershipTable) || StringUtils.isEmpty(membershipTableGroupId)
                         || StringUtils.isEmpty(membershipTableUserId))
                     throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, "Attribute Map is null");

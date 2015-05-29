@@ -9,6 +9,7 @@ import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -41,27 +42,27 @@ public abstract class AbstractAppTableCommand<Request extends RequestType, Respo
     protected String getTableName(AppTableConfiguration config, String objectType) throws ConnectorDataException {
         String result = "";
         switch (objectType.toLowerCase()) {
-        case "user":
-            result = config.getUserTableName();
-            break;
-        case "group":
-            result = config.getGroupTableName();
-            break;
-        case "role":
-            result = config.getRoleTableName();
-            break;
-        case "email":
-            result = config.getEmailTableName();
-            break;
-        default:
-            throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR);
+            case "user":
+                result = config.getUserTableName();
+                break;
+            case "group":
+                result = config.getGroupTableName();
+                break;
+            case "role":
+                result = config.getRoleTableName();
+                break;
+            case "email":
+                result = config.getEmailTableName();
+                break;
+            default:
+                throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR);
         }
         return result;
     }
 
     public ExtensibleObject createNewExtensibleObject(BaseAttribute ba) {
         if (ba == null || CollectionUtils.isEmpty(ba.getProperties()))
-            return null;
+            return new ExtensibleObject();
 
         ExtensibleObject newEO = new ExtensibleObject();
         newEO.setAttributes(new ArrayList<ExtensibleAttribute>());
@@ -217,7 +218,7 @@ public abstract class AbstractAppTableCommand<Request extends RequestType, Respo
     }
 
     protected boolean identityExists(final Connection con, final String tableName, final String principalName,
-            final ExtensibleObject obj) throws ConnectorDataException {
+                                     final ExtensibleObject obj) throws ConnectorDataException {
 
         PreparedStatement statement = null;
         final String principalFieldName = obj.getPrincipalFieldName();
@@ -250,7 +251,7 @@ public abstract class AbstractAppTableCommand<Request extends RequestType, Respo
     }
 
     protected PreparedStatement createSetPasswordStatement(final Connection con, final String resourceId,
-            final String tableName, final String principalName, final String password) throws ConnectorDataException {
+                                                           final String tableName, final String principalName, final String password) throws ConnectorDataException {
         String colName = null;
         String colDataType = null;
 
@@ -299,7 +300,7 @@ public abstract class AbstractAppTableCommand<Request extends RequestType, Respo
     }
 
     protected boolean addObject(Connection con, String principalName, ExtensibleObject object,
-            AppTableConfiguration config, String objectType) throws ConnectorDataException {
+                                AppTableConfiguration config, String objectType) throws ConnectorDataException {
         // build sql
         final StringBuilder columns = new StringBuilder("");
         final StringBuilder values = new StringBuilder("");
@@ -321,14 +322,15 @@ public abstract class AbstractAppTableCommand<Request extends RequestType, Respo
                 for (final ExtensibleAttribute att : attrList) {
                     if (att.getAttributeContainer() != null
                             && !CollectionUtils.isEmpty(att.getAttributeContainer().getAttributeList())) {
+                        String supportedObjType = null;
                         for (BaseAttribute a : att.getAttributeContainer().getAttributeList()) {
-                            String supportedObjType = a.getName();
+                            supportedObjType = a.getName();
                             ExtensibleObject ea = this.createNewExtensibleObject(a);
                             this.addObject(con, ea.getObjectId(), ea, config, supportedObjType);
-                            this.createMemberShip(con, config, principalName, objectType, ea.getObjectId(),
-                                    supportedObjType);
 
                         }
+                        this.manageMemberShip(con, config, principalName, objectType, att.getAttributeContainer().getAttributeList(),
+                                supportedObjType);
                     } else {
                         if (ctr != 0) {
                             columns.append(",");
@@ -387,7 +389,7 @@ public abstract class AbstractAppTableCommand<Request extends RequestType, Respo
     }
 
     protected void modifyObject(Connection con, String principalName, ExtensibleObject object,
-            AppTableConfiguration config, String objectType) throws ConnectorDataException {
+                                AppTableConfiguration config, String objectType) throws ConnectorDataException {
         // build sql
         final StringBuilder columns = new StringBuilder("");
         final StringBuilder values = new StringBuilder("");
@@ -408,14 +410,14 @@ public abstract class AbstractAppTableCommand<Request extends RequestType, Respo
                     for (final ExtensibleAttribute att : attrList) {
                         if (att.getAttributeContainer() != null
                                 && !CollectionUtils.isEmpty(att.getAttributeContainer().getAttributeList())) {
+                            String supportedObjType = null;
                             for (BaseAttribute a : att.getAttributeContainer().getAttributeList()) {
-                                String supportedObjType = a.getName();
+                                supportedObjType = a.getName();
                                 ExtensibleObject ea = this.createNewExtensibleObject(a);
                                 this.modifyObject(con, ea.getObjectId(), ea, config, supportedObjType);
-                                this.createMemberShip(con, config, principalName, objectType, ea.getObjectId(),
-                                        supportedObjType);
-
                             }
+                            this.manageMemberShip(con, config, principalName, objectType, att.getAttributeContainer().getAttributeList(),
+                                    supportedObjType);
                         } else {
                             if (ctr != 0) {
                                 columns.append(",");
@@ -459,40 +461,101 @@ public abstract class AbstractAppTableCommand<Request extends RequestType, Respo
         }
     }
 
-    protected void createMemberShip(Connection con, AppTableConfiguration config, String parentId,
-            String parentObjectType, String childId, String childObjectType) throws Exception {
+    protected void manageMemberShip(Connection con, AppTableConfiguration config, String parentId,
+                                    String parentObjectType, List<BaseAttribute> childs, String childObjectType) throws Exception {
+        if (childs == null) {
+            log.debug("No any linked entities");
+            return;
+        }
+
         String membershipTable = config.getUserGroupTableName();
         String membershipUserColumn = config.getUserGroupTableNameUserId();
         String membershipGroupColumn = config.getUserGroupTableNameGroupId();
+        List<String> childIds = new ArrayList<>();
+        for (BaseAttribute ba : childs) {
+            childIds.add(createNewExtensibleObject(ba).getObjectId());
+        }
+
         if (!StringUtils.isEmpty(membershipTable) && !StringUtils.isEmpty(membershipUserColumn)
-                && !StringUtils.isEmpty(membershipGroupColumn) && !StringUtils.isEmpty(childId)
+                && !StringUtils.isEmpty(membershipGroupColumn) && !CollectionUtils.isEmpty(childIds)
                 && !StringUtils.isEmpty(parentId) && "USER".equalsIgnoreCase(parentObjectType)
                 && "GROUP".equalsIgnoreCase(childObjectType)) {
             PreparedStatement ps = null;
-            // check is exist
-            String selectSQL = "select count(*) from %s where %s = ? and %s = ?";
-            selectSQL = String.format(selectSQL, membershipTable, membershipUserColumn, membershipGroupColumn);
-            ps = con.prepareStatement(selectSQL);
+            // select all linked groups
+            String selectLindedGroupdIdsSQL = "select %s from %s where %s = ? ";
+            selectLindedGroupdIdsSQL = String.format(selectLindedGroupdIdsSQL, membershipGroupColumn, membershipTable, membershipUserColumn);
+            ps = con.prepareStatement(selectLindedGroupdIdsSQL);
             ps.setString(1, parentId);
-            ps.setString(2, childId);
             ResultSet rs = ps.executeQuery();
-            boolean isExist = false;
+            List<String> groupIdsFromTargetSystem = new ArrayList<>();
             while (rs.next()) {
-                isExist = rs.getInt(1) > 0;
+                groupIdsFromTargetSystem.add(rs.getString(1));
             }
-            if (!isExist) {
-                String sql = "INSERT INTO %s (%s,%s) VALUES (?,?)";
-                sql = String.format(sql, membershipTable, membershipUserColumn, membershipGroupColumn);
+            Iterator<String> groupIdFromTargetSystemIterator = groupIdsFromTargetSystem.iterator();
+            while (groupIdFromTargetSystemIterator.hasNext()) {
+                String groupIdFromTargetSystem = groupIdFromTargetSystemIterator.next();
+                if (childIds.contains(groupIdFromTargetSystem)) {
+                    //link existed
+                    childIds.remove(groupIdFromTargetSystem);
+                    groupIdFromTargetSystemIterator.remove();
+                }
+            }
+
+            String sql = null;
+            if (CollectionUtils.isNotEmpty(childIds)) {
+                //add from childIds
+                sql = "INSERT INTO %s (%s,%s) VALUES (?,?)";
+                String sqlPrepared = null;
+                try {
+                    for (String childId : childIds) {
+                        sqlPrepared = String.format(sql, membershipTable, membershipUserColumn, membershipGroupColumn);
+                        ps = con.prepareStatement(sqlPrepared);
+                        ps.setString(1, parentId);
+                        ps.setString(2, childId);
+                        ps.executeUpdate();
+                    }
+                } catch (Exception e) {
+                    log.error("Exception during add Group to User");
+                    log.error(e);
+                }
+            }
+            //delete from groupIdsFromTargetSystem
+            if (CollectionUtils.isNotEmpty(groupIdsFromTargetSystem)) {
+                sql = "DELETE FROM %s WHERE %s=? AND ";
+                StringBuilder grouptIdsClause = new StringBuilder();
+                grouptIdsClause.append("(");
+                for (int i = 0; i < groupIdsFromTargetSystem.size(); i++) {
+                    grouptIdsClause.append(membershipGroupColumn);
+                    grouptIdsClause.append("=?");
+                    if (i != groupIdsFromTargetSystem.size() - 1) {
+                        grouptIdsClause.append(" OR ");
+                    }
+                }
+                grouptIdsClause.append(")");
+                sql += grouptIdsClause.toString();
+
+                log.debug("SQL CLAUSE TO DELETE GROUPS=" + sql);
+                // check is exist
+                sql = String.format(sql, membershipTable, membershipUserColumn);
                 ps = con.prepareStatement(sql);
                 ps.setString(1, parentId);
-                ps.setString(2, childId);
-                ps.executeUpdate();
+                int ctr = 2;
+                for (String childId : groupIdsFromTargetSystem) {
+                    ps.setString(ctr++, childId);
+                }
+                try {
+                    ps.executeUpdate();
+                } catch (Exception e) {
+                    log.error("Exception during delete Group from User");
+                    log.error(e);
+                }
             }
+
         }
     }
 
     protected void deleteMemberShip(Connection con, AppTableConfiguration config, String parentId,
-            String parentObjectType) throws Exception {
+                                    String parentObjectType) throws Exception {
         String membershipTable = config.getUserGroupTableName();
         String membershipUserColumn = config.getUserGroupTableNameUserId();
         if (!StringUtils.isEmpty(membershipTable) && !StringUtils.isEmpty(membershipUserColumn)
