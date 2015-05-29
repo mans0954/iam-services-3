@@ -368,7 +368,7 @@ public abstract class AbstractAppTableCommand<Request extends RequestType, Respo
                 // set the parameters
                 int counter = 1;
                 for (ExtensibleAttribute a : attrList) {
-                    if (a.getObjectType().equalsIgnoreCase(objectType)) {
+                    if (a.getAttributeContainer() == null && a.getObjectType().equalsIgnoreCase(objectType)) {
                         setStatement(statement, counter++, a.getDataType(), a.getValue());
                     }
                 }
@@ -412,6 +412,9 @@ public abstract class AbstractAppTableCommand<Request extends RequestType, Respo
                                 String supportedObjType = a.getName();
                                 ExtensibleObject ea = this.createNewExtensibleObject(a);
                                 this.modifyObject(con, ea.getObjectId(), ea, config, supportedObjType);
+                                this.createMemberShip(con, config, principalName, objectType, ea.getObjectId(),
+                                        supportedObjType);
+
                             }
                         } else {
                             if (ctr != 0) {
