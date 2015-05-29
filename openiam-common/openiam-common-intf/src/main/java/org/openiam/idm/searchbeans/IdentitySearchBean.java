@@ -16,7 +16,6 @@ import java.util.Date;
         "identity",
         "managedSysId",
         "referredObjectId",
-        "managedSysId",
         "status",
         "type",
         "createFromDate",
