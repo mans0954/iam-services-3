@@ -29,6 +29,7 @@ import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;
 import org.openiam.idm.srvc.recon.ws.ReconciliationConfigResponse;
 import org.openiam.idm.srvc.recon.ws.ReconciliationWebService;
+import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.ws.UserDataWebService;
 import org.openiam.provision.service.ProvisionService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -300,21 +301,43 @@ public class UserReconciliationADRemoteTest extends AbstractTestNGSpringContextT
             Assert.assertNotNull(testConnectionResponse);
             Assert.assertTrue(testConnectionResponse.isSuccess());
 
-            //SET Timeout for waiting WS response
+            // Start testing reconciliation process
+            // Check situation => IDM[not exists] and Resource[exists] => New user should be created in OpenIAM
+            LoginResponse loginADResponse = loginServiceClient.getLoginByManagedSys(TestUserSamAccountName, reconciliationConfig.getManagedSysId());
+            Assert.assertNotNull(loginADResponse);
+            Assert.assertNull(loginADResponse.getPrincipal());
+            // SET Timeout for waiting WS response
             setWSClientTimeout(reconciliationWebService, 600000L);
             reconciliationWebService.startReconciliation(reconciliationConfig);
-
             LoginResponse loginDefaultResponse = loginServiceClient.getLoginByManagedSys(TestUserSamAccountName, "0");
             Assert.assertNotNull(loginDefaultResponse);
             Assert.assertNotNull(loginDefaultResponse.getPrincipal());
             Assert.assertEquals(loginDefaultResponse.getPrincipal().getLogin(), TestUserSamAccountName);
-
-            LoginResponse loginADResponse = loginServiceClient.getLoginByManagedSys(TestUserSamAccountName, reconciliationConfig.getManagedSysId());
+            loginADResponse = loginServiceClient.getLoginByManagedSys(TestUserSamAccountName, reconciliationConfig.getManagedSysId());
             Assert.assertNotNull(loginADResponse);
             Assert.assertNotNull(loginADResponse);
             Assert.assertNotNull(loginADResponse.getPrincipal());
             Assert.assertEquals(loginADResponse.getPrincipal().getLogin(), TestUserSamAccountName);
 
+            // Check situation => IDM[exists] and Resource[exists]  => OpenIAM Should be updated from AD
+            loginADResponse = loginServiceClient.getLoginByManagedSys(TestUserSamAccountName, reconciliationConfig.getManagedSysId());
+            Assert.assertNotNull(loginADResponse);
+            Assert.assertNotNull(loginADResponse.getPrincipal());
+            Assert.assertEquals(loginADResponse.getPrincipal().getLogin(), TestUserSamAccountName);
+            User user = userServiceClient.getUserWithDependent(loginADResponse.getPrincipal().getUserId(), null, false);
+            // Check user last name after initial reconciliation => should be the same as in AD = "Test"
+            Assert.assertEquals(user.getLastName(),"Test");
+            user.setLastName("Test123");
+            userServiceClient.saveUserInfo(user, null);
+            User userUpdated = userServiceClient.getUserWithDependent(loginADResponse.getPrincipal().getUserId(), null, false);
+            // Change user last name in OpenIAM DB = "Test123"
+            Assert.assertEquals(userUpdated.getLastName(),"Test123");
+            // SET Timeout for waiting WS response
+            setWSClientTimeout(reconciliationWebService, 600000L);
+            reconciliationWebService.startReconciliation(reconciliationConfig);
+            User userAfterReconciliation = userServiceClient.getUserWithDependent(loginADResponse.getPrincipal().getUserId(), null, false);
+            // Last name should be reverted to AD values
+            Assert.assertEquals(userAfterReconciliation.getLastName(),"Test");
 
             int i = 0;
         } catch (Throwable t) {
