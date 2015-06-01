@@ -160,10 +160,10 @@
             <a>users</a>
             <b>users</b>
         </field>
-        <field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
-            <a>resources</a>
-            <b>resources</b>
-        </field>
+        <field-exclude>
+			<a>resources</a>
+			<b>resources</b>
+		</field-exclude>
         <field custom-converter="org.openiam.dozer.PersistentObjectConverter" custom-converter-param="shallowDozerMapper">
 			<a>managedSystem</a>
 			<b>managedSystem</b>

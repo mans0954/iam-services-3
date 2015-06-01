@@ -170,10 +170,11 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         for (String roleId : roles) {
             ResourceSearchBean rsb = new ResourceSearchBean();
             rsb.setDeepCopy(false);
+            rsb.addRoleId(roleId);
             // TODO This method shouldn't use Internationalization Aspect
 			// --Comment by Lev Bornovalov on merging 3.2.5 into 4.0
             // --Internationalized objects in 4.0 are cached, hence, should have negligable performance impact
-            List<org.openiam.idm.srvc.res.dto.Resource> resources = resourceDataService.getResourcesForRole(roleId, -1, -1, rsb, null);
+            List<org.openiam.idm.srvc.res.dto.Resource> resources = resourceDataService.findBeans(rsb, 0, Integer.MAX_VALUE, null);
             for (Resource res : resources) {
                 resourceIds.add(res.getId());
             }
@@ -185,9 +186,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     public ProvisionUserResponse deProvisionUsersToResourceByGroup(@WebParam(name = "usersIds", targetNamespace = "") List<String> users, @WebParam(name = "requestorUserId", targetNamespace = "") String requestorUserId, @WebParam(name = "groupsIds", targetNamespace = "") List<String> groups) {
         Set<String> resourceIds = new HashSet<String>();
         for (String groupId : groups) {
-            ResourceSearchBean rsb = new ResourceSearchBean();
+            final ResourceSearchBean rsb = new ResourceSearchBean();
             rsb.setDeepCopy(false);
-            List<org.openiam.idm.srvc.res.dto.Resource> resources = resourceDataService.getResourcesForGroup(groupId, -1, -1, rsb, null);
+            rsb.addGroupId(groupId);
+            List<org.openiam.idm.srvc.res.dto.Resource> resources = resourceDataService.findBeans(rsb, 0, Integer.MAX_VALUE, null);
             for (Resource res : resources) {
                 resourceIds.add(res.getId());
             }
@@ -199,11 +201,12 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     public ProvisionUserResponse provisionUsersToResourceByRole(final List<String> usersIds, final String requestorUserId, final List<String> roleList) {
         Set<String> resourceIds = new HashSet<String>();
         for (String roleId : roleList) {
-            ResourceSearchBean rsb = new ResourceSearchBean();
+            final ResourceSearchBean rsb = new ResourceSearchBean();
             rsb.setDeepCopy(false);
             rsb.setResourceTypeId(ResourceSearchBean.TYPE_MANAGED_SYS);
+            rsb.addRoleId(roleId);
             // TODO This method shouldn't use Internationalization Aspect
-            List<org.openiam.idm.srvc.res.dto.Resource> resources = resourceDataService.getResourcesForRole(roleId, -1, -1, rsb, null);
+            List<org.openiam.idm.srvc.res.dto.Resource> resources = resourceDataService.findBeans(rsb, 0, Integer.MAX_VALUE, null);
             for (Resource res : resources) {
                 resourceIds.add(res.getId());
             }
@@ -215,9 +218,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     public ProvisionUserResponse provisionUsersToResourceByGroup(final List<String> usersIds, final String requestorUserId, final List<String> groupList) {
         Set<String> resourceIds = new HashSet<String>();
         for (String groupId : groupList) {
-            ResourceSearchBean rsb = new ResourceSearchBean();
+            final ResourceSearchBean rsb = new ResourceSearchBean();
             rsb.setDeepCopy(false);
-            List<org.openiam.idm.srvc.res.dto.Resource> resources = resourceDataService.getResourcesForGroup(groupId, -1, -1, rsb, null);
+            rsb.addGroupId(groupId);
+            List<org.openiam.idm.srvc.res.dto.Resource> resources = resourceDataService.findBeans(rsb, 0, Integer.MAX_VALUE, null);
             for (Resource res : resources) {
                 resourceIds.add(res.getId());
             }
@@ -864,7 +868,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         final Login primLogin = loginDozerConverter.convertToDTO(lg, false);
         if (CollectionUtils.isNotEmpty(roleList)) {
             for (final RoleEntity role : roleList) {
-                final List<Resource> resourceList = resourceDataService.getResourcesForRole(role.getId(), 0, Integer.MAX_VALUE, new ResourceSearchBean(), null);
+            	final ResourceSearchBean sb = new ResourceSearchBean();
+            	sb.addRoleId(role.getId());
+            	sb.setDeepCopy(false);
+                final List<Resource> resourceList = resourceDataService.findBeans(sb, 0, Integer.MAX_VALUE, null);
                 if (CollectionUtils.isNotEmpty(resourceList)) {
                     for (final Resource resource : resourceList) {
                         ManagedSysDto managedSys = managedSysService.getManagedSysByResource(resource.getId());
@@ -2063,10 +2070,11 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         if (CollectionUtils.isNotEmpty(roleSet)) {
             for (Role rl : roleSet) {
                 if (rl.getId() != null) {
-                    ResourceSearchBean resourceSearchBean = new ResourceSearchBean();
+                    final ResourceSearchBean resourceSearchBean = new ResourceSearchBean();
                     resourceSearchBean.setDeepCopy(false);
                     resourceSearchBean.setResourceTypeId(ResourceSearchBean.TYPE_MANAGED_SYS);
-                    List<Resource> resources = resourceDataService.getResourcesForRole(rl.getId(), 0, Integer.MAX_VALUE, resourceSearchBean, null);
+                    resourceSearchBean.addRoleId(rl.getId());
+                    List<Resource> resources = resourceDataService.findBeans(resourceSearchBean, 0, Integer.MAX_VALUE, null);
                     if (CollectionUtils.isNotEmpty(resources)) {
                         for (Resource r : resources) {
                             r.setOperation(rl.getOperation()); // get operation value from role

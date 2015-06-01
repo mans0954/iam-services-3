@@ -475,11 +475,9 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
             }
         }
         for(RoleEntity re : member.getRoles()) {
-           for(ResourceEntity res : re.getResources()) {
-               if(res.getId().equalsIgnoreCase(resourceId)) {
-                   return true;
-               }
-           }
+        	if(re.getResource(resourceId) != null) {
+        		return true;
+        	}
         }
         return result;
     }

@@ -215,9 +215,9 @@
             <b>users</b>
         </field-exclude>
         <field-exclude>
-            <a>resources</a>
-            <b>resources</b>
-        </field-exclude>
+			<a>resources</a>
+			<b>resources</b>
+		</field-exclude>
         <field-exclude>
 			<a>approverAssociations</a>
 			<b>approverAssociations</b>

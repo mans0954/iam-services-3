@@ -47,10 +47,6 @@
 			<b>childResources</b>
 		</field-exclude>
 		<field-exclude>
-			<a>resourceRoles</a>
-			<b>resourceRoles</b>
-		</field-exclude>
-		<field-exclude>
 			<a>resourceProps</a>
 			<b>resourceProps</b>
 		</field-exclude>
@@ -69,6 +65,10 @@
 		<field-exclude>
 			<a>displayNameMap</a>
 			<b>displayNameMap</b>
+		</field-exclude>
+		<field-exclude>
+			<a>roles</a>
+			<b>roles</b>
 		</field-exclude>
 	</mapping>
 

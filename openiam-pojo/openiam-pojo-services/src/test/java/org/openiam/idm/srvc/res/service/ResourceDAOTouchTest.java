@@ -21,11 +21,6 @@ public class ResourceDAOTouchTest extends
     }
 
     @Test
-    public void touchGetResourcesByType() {
-        resourceDAO.getResourcesByType("");
-    }
-
-    @Test
     public void touchCount() {
         resourceDAO.count(new ResourceEntity());
     }

@@ -31,6 +31,7 @@ import org.openiam.base.domain.AbstractMetdataTypeEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.access.domain.AccessRightEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
+import org.openiam.idm.srvc.grp.domain.GroupToResourceMembershipXrefEntity;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.org.domain.GroupToOrgMembershipXrefEntity;
@@ -87,9 +88,9 @@ public class RoleEntity extends AbstractMetdataTypeEntity {
     @Fetch(FetchMode.SUBSELECT)
     private Set<RoleToRoleMembershipXrefEntity> childRoles = new HashSet<RoleToRoleMembershipXrefEntity>(0);
 
-    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    @JoinTable(name = "RESOURCE_ROLE", joinColumns = { @JoinColumn(name = "ROLE_ID") }, inverseJoinColumns = { @JoinColumn(name = "RESOURCE_ID") })
-    private Set<ResourceEntity> resources;
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="entity", orphanRemoval=true)
+    @Fetch(FetchMode.SUBSELECT)
+	private Set<RoleToResourceMembershipXrefEntity> resources;
 
     @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinTable(name = "USER_ROLE", joinColumns = { @JoinColumn(name = "ROLE_ID") }, inverseJoinColumns = { @JoinColumn(name = "USER_ID") })
@@ -289,13 +290,55 @@ public class RoleEntity extends AbstractMetdataTypeEntity {
 		this.createdBy = createdBy;
 	}
 
-    public Set<ResourceEntity> getResources() {
+    public Set<RoleToResourceMembershipXrefEntity> getResources() {
         return resources;
     }
 
-    public void setResources(Set<ResourceEntity> resources) {
+    public void setResources(Set<RoleToResourceMembershipXrefEntity> resources) {
         this.resources = resources;
     }
+    
+	public RoleToResourceMembershipXrefEntity getResource(final String resourceId) {
+		final Optional<RoleToResourceMembershipXrefEntity> xref = 
+    			this.getResources()
+    				.stream()
+    				.filter(e -> resourceId.equals(e.getMemberEntity().getId()))
+    				.findFirst();
+    	return xref.isPresent() ? xref.get() : null;
+	}
+	
+	public void addResource(final ResourceEntity entity, final Collection<AccessRightEntity> rights) {
+		if(entity != null) {
+			if(this.resources == null) {
+				this.resources = new LinkedHashSet<RoleToResourceMembershipXrefEntity>();
+			}
+			RoleToResourceMembershipXrefEntity theXref = null;
+			for(final RoleToResourceMembershipXrefEntity xref : this.resources) {
+				if(xref.getEntity().getId().equals(getId()) && xref.getMemberEntity().getId().equals(entity.getId())) {
+					theXref = xref;
+					break;
+				}
+			}
+			
+			if(theXref == null) {
+				theXref = new RoleToResourceMembershipXrefEntity();
+				theXref.setEntity(this);
+				theXref.setMemberEntity(entity);
+			}
+			if(rights != null) {
+				theXref.setRights(new HashSet<AccessRightEntity>(rights));
+			}
+			this.resources.add(theXref);
+		}
+	}
+	
+	public void removeResource(final ResourceEntity entity) {
+		if(entity != null) {
+			if(this.resources != null) {
+				this.resources.removeIf(e -> e.getMemberEntity().getId().equals(entity.getId()));
+			}
+		}
+	}
 
     public Set<UserEntity> getUsers() {
         return users;

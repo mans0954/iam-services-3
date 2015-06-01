@@ -97,6 +97,7 @@ public class Role extends AbstractEntitlementsDTO implements Comparable<Role> {
     private String managedSysId;
     private String managedSysName;
     
+    @Deprecated
     private Set<Resource> resources;
 
 
@@ -246,10 +247,12 @@ public class Role extends AbstractEntitlementsDTO implements Comparable<Role> {
         return getName().compareTo(o.getName());
     }
 
+    @Deprecated
     public Set<Resource> getResources() {
         return resources;
     }
 
+    @Deprecated
     public void setResources(Set<Resource> resources) {
         this.resources = resources;
     }

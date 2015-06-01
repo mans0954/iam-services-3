@@ -93,6 +93,12 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
                 criteria.add(Restrictions.in("gr.id", roleSearchBean.getGroupIdSet()));
             }
             
+            if(CollectionUtils.isNotEmpty(roleSearchBean.getResourceIdSet())) {
+            	criteria.createAlias("resources", "resourceXrefs")
+						.createAlias("resourceXrefs.memberEntity", "resource").add(
+						Restrictions.in("resource.id", roleSearchBean.getResourceIdSet()));
+			}
+            
             if(CollectionUtils.isNotEmpty(roleSearchBean.getChildIdSet())) {
             	criteria.createAlias("childRoles", "childXrefs")
 						.createAlias("childXrefs.memberEntity", "child").add(
@@ -111,10 +117,6 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
 						Restrictions.in("organization.id", roleSearchBean.getOrganizationIdSet()));
             }
 
-            if(CollectionUtils.isNotEmpty(roleSearchBean.getResourceIdSet())){
-                criteria.createAlias("resources", "res");
-                criteria.add(Restrictions.in("res.id", roleSearchBean.getResourceIdSet()));
-            }
             if(CollectionUtils.isNotEmpty(roleSearchBean.getUserIdSet())){
                 criteria.createAlias("users", "usr");
                 criteria.add(Restrictions.in("usr.id", roleSearchBean.getUserIdSet()));
@@ -161,19 +163,6 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
 				
 				if(entity.getAdminResource() != null && StringUtils.isNotBlank(entity.getAdminResource().getId())) {
 					criteria.add(Restrictions.eq("adminResource.id", entity.getAdminResource().getId()));
-				}
-				
-				if(CollectionUtils.isNotEmpty(entity.getResources())) {
-					final Set<String> resourceIds = new HashSet<String>();
-	            	for(final ResourceEntity resourceRole : entity.getResources()) {
-	            		if(resourceRole != null && StringUtils.isNotBlank(resourceRole.getId())) {
-	            			resourceIds.add(resourceRole.getId());
-	            		}
-	            	}
-	            	
-	            	if(CollectionUtils.isNotEmpty(resourceIds)) {
-	            		criteria.createAlias("resources", "rr").add( Restrictions.in("rr.id", resourceIds));
-	            	}
 				}
 			}
 		}

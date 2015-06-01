@@ -176,6 +176,7 @@ public interface ResourceDataService {
      * @return
      */
     @WebMethod
+    @Deprecated
     List<Resource> getResourcesForRole(
     	final @WebParam(name = "roleId", targetNamespace = "") String roleId,
     	final @WebParam(name = "from", targetNamespace = "") int from,
@@ -271,6 +272,7 @@ public interface ResourceDataService {
      * @return
      */
     @WebMethod
+    @Deprecated
     int getNumOfParentResources(@WebParam(name = "resourceId", targetNamespace = "") final String resourceId);
 
     /**
@@ -331,9 +333,9 @@ public interface ResourceDataService {
      * @return a Response Object, with details about the result of the operation
      */
     @WebMethod
-    Response removeGroupToResource(@WebParam(name = "resourceId", targetNamespace = "") final String resourceId,
-	    @WebParam(name = "groupId", targetNamespace = "") final String groupId,
-        final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+    Response removeGroupToResource(final @WebParam(name = "resourceId", targetNamespace = "") String resourceId,
+    							   final @WebParam(name = "groupId", targetNamespace = "") String groupId,
+    							   final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     /**
      * entitle a Role to a Resource
@@ -345,9 +347,10 @@ public interface ResourceDataService {
      * @return a Response Object, with details about the result of the operation
      */
     @WebMethod
-    Response addRoleToResource(@WebParam(name = "resourceId", targetNamespace = "") final String resourceId,
-	    @WebParam(name = "roleId", targetNamespace = "") final String roleId,
-        final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+    Response addRoleToResource(final @WebParam(name = "resourceId", targetNamespace = "") String resourceId,
+    						   final @WebParam(name = "roleId", targetNamespace = "") String roleId,
+    						   final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
+    						   final @WebParam(name = "rightIds", targetNamespace = "") Set<String> rightIds);
 
     /**
      * Disentitles a Resource from a Role
@@ -359,9 +362,9 @@ public interface ResourceDataService {
      * @return a Response Object, with details about the result of the operation
      */
     @WebMethod
-    Response removeRoleToResource(@WebParam(name = "resourceId", targetNamespace = "") final String resourceId,
-	    @WebParam(name = "roleId", targetNamespace = "") final String roleId,
-        final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+    Response removeRoleToResource(final @WebParam(name = "resourceId", targetNamespace = "") String resourceId,
+    							  final @WebParam(name = "roleId", targetNamespace = "") String roleId,
+    							  final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     /**
      * Gets the number of resources entitled to a Group

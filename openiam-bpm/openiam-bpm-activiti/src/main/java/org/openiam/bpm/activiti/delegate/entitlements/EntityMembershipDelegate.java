@@ -96,7 +96,7 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
 						break;
 					case ENTITLE_RESOURCE_TO_ROLE:
 						action = AuditAction.ADD_ROLE_TO_RESOURCE;
-						response = resourceDataService.addRoleToResource(associationId, memberAssociationId, systemUserId);
+						response = resourceDataService.addRoleToResource(associationId, memberAssociationId, systemUserId, rights);
 						break;
 					case DISENTITLE_RESOURCE_FROM_ROLE:
 						action = AuditAction.REMOVE_ROLE_FROM_RESOURCE;

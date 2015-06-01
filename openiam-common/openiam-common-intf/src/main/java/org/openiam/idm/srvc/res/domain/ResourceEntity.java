@@ -15,6 +15,7 @@ import org.openiam.idm.srvc.org.domain.ResourceToOrgMembershipXrefEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceRisk;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
+import org.openiam.idm.srvc.role.domain.RoleToResourceMembershipXrefEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.internationalization.Internationalized;
 import org.openiam.internationalization.InternationalizedCollection;
@@ -88,9 +89,9 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
     @JoinTable(name = "RESOURCE_USER", joinColumns = { @JoinColumn(name = "RESOURCE_ID") }, inverseJoinColumns = { @JoinColumn(name = "USER_ID") })
     private Set<UserEntity> users;
 
-    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    @JoinTable(name = "RESOURCE_ROLE", joinColumns = { @JoinColumn(name = "RESOURCE_ID") }, inverseJoinColumns = { @JoinColumn(name = "ROLE_ID") })
-    private Set<RoleEntity> roles;
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="memberEntity", orphanRemoval=true)
+    @Fetch(FetchMode.SUBSELECT)
+    private Set<RoleToResourceMembershipXrefEntity> roles = new HashSet<RoleToResourceMembershipXrefEntity>(0);
 
     @Column(name = "MIN_AUTH_LEVEL")
     private String minAuthLevel;
@@ -144,15 +145,6 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
     	this.id = id;
     }
     
-    public void addRole(final RoleEntity entity) {
-    	if(entity != null) {
-    		if(this.roles == null) {
-    			this.roles = new HashSet<RoleEntity>();
-    		}
-    		this.roles.add(entity);
-    	}
-    }
-    
     public void remove(final RoleEntity entity) {
     	if(entity != null) {
     		if(this.roles != null) {
@@ -161,15 +153,15 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
     	}
     }
   
-    public Set<RoleEntity> getRoles() {
-        return roles;
-    }
+    public Set<RoleToResourceMembershipXrefEntity> getRoles() {
+		return roles;
+	}
 
-    public void setRoles(Set<RoleEntity> roles) {
-        this.roles = roles;
-    }
+	public void setRoles(Set<RoleToResourceMembershipXrefEntity> roles) {
+		this.roles = roles;
+	}
 
-    public ResourceTypeEntity getResourceType() {
+	public ResourceTypeEntity getResourceType() {
         return resourceType;
     }
 
@@ -458,6 +450,15 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
 	public GroupToResourceMembershipXrefEntity getGroup(final String groupId) {
 		final Optional<GroupToResourceMembershipXrefEntity> xref = 
     			this.getGroups()
+    				.stream()
+    				.filter(e -> groupId.equals(e.getEntity().getId()))
+    				.findFirst();
+    	return xref.isPresent() ? xref.get() : null;
+	}
+	
+	public RoleToResourceMembershipXrefEntity getRole(final String groupId) {
+		final Optional<RoleToResourceMembershipXrefEntity> xref = 
+    			this.getRoles()
     				.stream()
     				.filter(e -> groupId.equals(e.getEntity().getId()))
     				.findFirst();
