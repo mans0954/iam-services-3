@@ -23,11 +23,12 @@ package org.openiam.provision.resp;
 
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.provision.dto.ProvisionUser;
+import org.openiam.connector.type.ObjectValue;
 import org.openiam.provision.type.ExtensibleAttribute;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlType;
 import java.util.List;
 
@@ -37,6 +38,7 @@ import java.util.List;
  *
  */
 @XmlAccessorType(XmlAccessType.FIELD)
+@XmlSeeAlso(ObjectValue.class)
 @XmlType(name = "LookupUserResponse", propOrder = {
     "attrList",
         "principalName",

@@ -45,7 +45,14 @@ public class PasswordPolicyProviderImpl implements PasswordPolicyProvider {
 
     @Override
     public Policy getPasswordPolicyByUser(PasswordPolicyAssocSearchBean searchBean) {
-        return getPasswordPolicyByUser(userManager.getUser(searchBean.getUserId()), searchBean.getManagedSystemId());
+        UserEntity user = userManager.getUser(searchBean.getUserId());
+        if(user != null) {
+            return getPasswordPolicyByUser(user, searchBean.getManagedSystemId());
+        } else {
+            log.info("User can't be found. Using global association password policy.");
+            // did not find anything - get the global policy
+            return getGlobalPasswordPolicy();
+        }
     }
 
     @Override

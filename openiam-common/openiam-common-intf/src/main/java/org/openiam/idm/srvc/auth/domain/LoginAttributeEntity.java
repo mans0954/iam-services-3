@@ -30,7 +30,7 @@ public class LoginAttributeEntity implements java.io.Serializable {
     @Column(name="NAME",length = 100)
     protected String name;
     
-    @Column(name="VALUE",length = 4096)
+    @Column(name="VALUE",length = 4000)
     protected String value;
     
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)

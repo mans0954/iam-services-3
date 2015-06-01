@@ -27,7 +27,7 @@ public class RequestAttributeEntity {
 	@Column(name="NAME",length=100)
 	private String name;
 	
-	@Column(name="VALUE",length=4096)
+	@Column(name="VALUE",length=4000)
 	private String value;
 	
 	@Column(name="METADATA_ID",length=20)

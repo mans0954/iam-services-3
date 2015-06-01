@@ -31,7 +31,6 @@ import org.openiam.idm.srvc.auth.dto.ProvLoginStatusEnum;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
-import org.openiam.idm.srvc.mngsys.domain.ProvisionConnectorEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.mngsys.service.ProvisionConnectorService;
@@ -112,6 +111,9 @@ public class ProvisionDispatcherTransactionHelper {
 
     @Autowired
     private ProvisionSelectedResourceHelper provisionSelectedResourceHelper;
+
+    @Autowired
+    private BuildUserPolicyMapHelper buildPolicyMapHelper;
 
     @Value("${org.openiam.debug.hidden.attributes}")
     protected String hiddenAttributes;
@@ -418,9 +420,9 @@ public class ProvisionDispatcherTransactionHelper {
         Resource res = resourceDozerConverter.convertToDTO(resEntity, true);
         ManagedSysDto mSys = managedSystemWebService.getManagedSysByResource(res.getId());
         idmAuditLog.setTargetManagedSys(mSys.getId(), mSys.getName());
+        ExtensibleUser extensibleUser = buildPolicyMapHelper.buildMngSysAttributes(targetSysLogin, data.getOperation().name());
 
-        ProvisionConnectorEntity connectorEntity = connectorService.getProvisionConnectorsById(mSys.getConnectorId());
-        if (connectorEntity == null) {
+        if (mSys.getConnectorId() == null) {
             return null;
         }
 
@@ -439,7 +441,7 @@ public class ProvisionDispatcherTransactionHelper {
         request.setHostUrl(mSys.getHostUrl());
         request.setOperation("DELETE");
         request.setScriptHandler(mSys.getDeleteHandler());
-        request.setExtensibleObject(new ExtensibleUser());
+        request.setExtensibleObject(extensibleUser);
 
         return connectorAdapter.deleteRequest(mSys, request, MuleContextProvider.getCtx());
 

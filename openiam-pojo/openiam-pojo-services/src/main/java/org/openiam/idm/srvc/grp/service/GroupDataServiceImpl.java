@@ -719,13 +719,10 @@ public class GroupDataServiceImpl implements GroupDataService {
             Map<String, UserAttribute> attrbutes =  userDataService.getUserAttributesDto(requesterId);
             filterData = new HashSet<String>(DelegationFilterHelper.getGroupFilterFromString(attrbutes));
             List<String> rolesFromDelegation = DelegationFilterHelper.getRoleFilterFromString(attrbutes);
-            System.out.println("================================== GroupDataService.getDelegationFilter==== rolesFromDelegation= "+rolesFromDelegation+", requesterId="+requesterId);
             if(rolesFromDelegation != null && rolesFromDelegation.size() > 0){
                 GroupSearchBean groupSearchBean = new GroupSearchBean();
                 groupSearchBean.setRoleIdSet(new HashSet<String>(rolesFromDelegation));
                 List<String> groupIds = groupDao.getIDsByExample(groupSearchBean, 0, Integer.MAX_VALUE);
-                System.out.println("================================== GroupDataService.getDelegationFilter==== groupIds= "+groupIds+", requesterId="+requesterId);
-                // TODO check: CONJUNCTION
                 // IF we can't find any groups by Role Delegation filter we add default skip ID to remove all others groups
                 if(groupIds == null || groupIds.size() == 0) {
                     filterData.add("NOTEXIST");

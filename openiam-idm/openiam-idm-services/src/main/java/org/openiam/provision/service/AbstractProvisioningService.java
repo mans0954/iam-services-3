@@ -115,7 +115,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
 
     public static final String NEW_USER_EMAIL_SUPERVISOR_NOTIFICATION = "NEW_USER_EMAIL_SUPERVISOR";
     public static final String NEW_USER_EMAIL_NOTIFICATION = "NEW_USER_EMAIL";
-    public static final String NEW_USER_ACTIVATION_NOTIFICATION="NEW_USER_ACTIVATION_NOTIFICATION";
+    public static final String NEW_USER_ACTIVATION_NOTIFICATION = "NEW_USER_ACTIVATION_NOTIFICATION";
     public static final String PASSWORD_EMAIL_NOTIFICATION = "USER_PASSWORD_EMAIL";
 
     public static final String MATCH_PARAM = "matchParam";
@@ -327,7 +327,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         }
 
     }
-    protected void sendActivationLink(User user, Login login){
+
+    protected void sendActivationLink(User user, Login login) {
         try {
 
             final PasswordResetTokenRequest tokenRequest = new PasswordResetTokenRequest(login.getLogin(), login.getManagedSysId());
@@ -1795,7 +1796,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
 
     protected ResponseType resetPassword(String requestId, Login login,
                                          String password, ManagedSysDto mSys,
-                                         ManagedSystemObjectMatch matchObj, ExtensibleUser extensibleUser) {
+                                         ManagedSystemObjectMatch matchObj, ExtensibleUser extensibleUser, String operation) {
 
         PasswordRequest req = new PasswordRequest();
         req.setObjectIdentity(login.getLogin());
@@ -1810,7 +1811,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         if (matchObj != null) {
             req.setBaseDN(matchObj.getBaseDn());
         }
-        req.setOperation("RESET_PASSWORD");
+//        "RESET_PASSWORD"
+        req.setOperation(operation);
         req.setPassword(password);
 
         req.setScriptHandler(mSys.getPasswordHandler());
@@ -1820,32 +1822,32 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
 
     }
 
-    protected ResponseType setPassword(String requestId, Login login, String prevDecPassword,
-                                       String newDecPasswordSync,
-                                       ManagedSysDto mSys,
-                                       ManagedSystemObjectMatch matchObj,
-                                       ExtensibleUser extensibleUser) {
-
-        PasswordRequest req = new PasswordRequest();
-        req.setObjectIdentity(login.getLogin());
-        req.setRequestID(requestId);
-        req.setTargetID(login.getManagedSysId());
-        req.setHostLoginId(mSys.getUserId());
-        req.setExtensibleObject(extensibleUser);
-        String passwordDecoded = managedSysDataService.getDecryptedPassword(mSys);
-
-        req.setHostLoginPassword(passwordDecoded);
-        req.setHostUrl(mSys.getHostUrl());
-        req.setBaseDN((matchObj != null) ? matchObj.getBaseDn() : null);
-        req.setOperation("SET_PASSWORD");
-        req.setPassword(newDecPasswordSync);
-        req.setScriptHandler(mSys.getPasswordHandler());
-        req.setCurrentPassword(prevDecPassword);
-        ResponseType respType = connectorAdapter.setPasswordRequest(mSys, req, MuleContextProvider.getCtx());
-
-        return respType;
-
-    }
+//    protected ResponseType setPassword(String requestId, Login login, String prevDecPassword,
+//                                       String newDecPasswordSync,
+//                                       ManagedSysDto mSys,
+//                                       ManagedSystemObjectMatch matchObj,
+//                                       ExtensibleUser extensibleUser) {
+//
+//        PasswordRequest req = new PasswordRequest();
+//        req.setObjectIdentity(login.getLogin());
+//        req.setRequestID(requestId);
+//        req.setTargetID(login.getManagedSysId());
+//        req.setHostLoginId(mSys.getUserId());
+//        req.setExtensibleObject(extensibleUser);
+//        String passwordDecoded = managedSysDataService.getDecryptedPassword(mSys);
+//
+//        req.setHostLoginPassword(passwordDecoded);
+//        req.setHostUrl(mSys.getHostUrl());
+//        req.setBaseDN((matchObj != null) ? matchObj.getBaseDn() : null);
+//        req.setOperation("SET_PASSWORD");
+//        req.setPassword(newDecPasswordSync);
+//        req.setScriptHandler(mSys.getPasswordHandler());
+//        req.setCurrentPassword(prevDecPassword);
+//        ResponseType respType = connectorAdapter.setPasswordRequest(mSys, req, MuleContextProvider.getCtx());
+//
+//        return respType;
+//
+//    }
 
     protected ProvisionUserResponse validatePassword(Login primaryLogin, ProvisionUser user, String requestId) {
 
