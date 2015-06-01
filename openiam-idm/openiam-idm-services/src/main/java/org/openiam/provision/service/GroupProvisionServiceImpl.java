@@ -2,6 +2,7 @@ package org.openiam.provision.service;
 
 
 import groovy.lang.MissingPropertyException;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -71,6 +72,7 @@ import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.jws.WebService;
+
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -230,6 +232,11 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
             return response;
         }
 
+        /*
+         * Lev Bornovalov - this logic was removed in order to remove an deprecate the 
+         * 'resources' collection from the Group object
+         * A new metohd - addResourceToGroup was added to simulate this functionality
+         * 
         Set<Resource> resources = pGroup.getResources();
         if (resources != null) {
             for(Resource res : resources) {
@@ -274,6 +281,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
                 }
             }
         }
+        */
         // SET POST ATTRIBUTES FOR DEFAULT SYS SCRIPT
 
         int callPostProcessorResult = callPostProcessor(isAdd ? "ADD" : "MODIFY", pGroup, bindingMap);
@@ -1204,5 +1212,51 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
     public Response deprovisionSelectedResources(String groupId, String requesterId, List<String> resourceList) {
         throw new UnsupportedOperationException("Not implemented yet");
     }
+
+	@Override
+	public Response addResourceToGroup(final ProvisionGroup pGroup, String resourceId) {
+		final Resource res = resourceDataService.getResource(resourceId, null);
+		res.setOperation(AttributeOperationEnum.ADD);
+		final Response response = new Response();
+		if(res != null) {
+            if (!pGroup.getNotProvisioninResourcesIds().contains(res.getId())) {
+            	final ManagedSysDto managedSys = managedSystemService.getManagedSysByResource(res.getId());
+	            if (managedSys != null) {
+	                if (!managedSys.getSkipGroupProvision()) {
+		                final String managedSysId = managedSys.getId();
+		                // do check if provisioning user has source resource
+		                // => we should skip it from double provisioning
+		                // reconciliation case
+		                if(!StringUtils.equals(managedSysId, pGroup.getSrcSystemId())) {
+			                final IdentityDto groupTargetIdentity = identityService.getIdentityByManagedSys(pGroup.getId(), managedSysId);
+			                if (groupTargetIdentity != null && res.getOperation() == AttributeOperationEnum.ADD
+			                        && groupTargetIdentity.getStatus() == LoginStatusEnum.INACTIVE) {
+			                    groupTargetIdentity.setStatus(LoginStatusEnum.ACTIVE);
+			                }
+			                final Response provIdentityResponse = provisioningIdentity(groupTargetIdentity, pGroup, managedSys, res, true);
+			                if (!provIdentityResponse.isSuccess()) {
+			                    return provIdentityResponse;
+			                }
+			                //Provisioning Members
+			                if (pGroup.getUpdateManagedSystemMembers().contains(managedSysId)) {
+			                    List<UserEntity> members = userDataService.getUsersForGroup(pGroup.getId(), systemUserId, 0, Integer.MAX_VALUE);
+			                    for (UserEntity member : members) {
+			                        if (!isMemberAvailableInResource(member, res.getId())) {
+			                            User user = userDozerConverter.convertToDTO(member, true);
+			                            provisionService.modifyUser(new ProvisionUser(user));
+			                        }
+			                    }
+			                }
+			
+			            }  else {
+			                // TODO WARNING
+			            }
+	                }
+	            }
+	        }
+		}
+		response.succeed();
+		return response;
+	}
 
 }

@@ -425,20 +425,22 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @Transactional
-    public void addResourceGroup(String resourceId, String groupId) {
-        final ResourceEntity entity = resourceDao.findById(resourceId);
-        final GroupEntity groupEntity = groupDao.findById(groupId);
-        entity.addGroup(groupEntity);
-        resourceDao.save(entity);
+    public void addResourceGroup(String resourceId, String groupId, final Set<String> rightIds) {
+        final ResourceEntity resource = resourceDao.findById(resourceId);
+        final GroupEntity group = groupDao.findById(groupId);
+        if(resource != null && group != null) {
+        	group.addResource(resource, accessRightDAO.findByIds(rightIds));
+        }
     }
 
     @Override
     @Transactional
     public void deleteResourceGroup(String resourceId, String groupId) {
-        final ResourceEntity entity = resourceDao.findById(resourceId);
-        final GroupEntity groupEntity = groupDao.findById(groupId);
-        entity.remove(groupEntity);
-        resourceDao.save(entity);
+        final ResourceEntity resource = resourceDao.findById(resourceId);
+        final GroupEntity group = groupDao.findById(groupId);
+        if(resource != null && group != null) {
+        	group.removeResource(resource);
+        }
     }
 
     @Override

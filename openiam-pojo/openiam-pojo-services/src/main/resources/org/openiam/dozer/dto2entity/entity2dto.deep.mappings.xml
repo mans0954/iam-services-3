@@ -57,12 +57,10 @@
 			<a>resourceProps</a>
 			<b>resourceProps</b>
 		</field>
-		<field
-			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
-			custom-converter-param="dto2entityShallowDozerMapper">
+		<field-exclude>
 			<a>groups</a>
 			<b>groups</b>
-		</field>
+		</field-exclude>
 		<field-exclude>
 			<a>users</a>
 			<b>users</b>
@@ -240,12 +238,10 @@
 			<a>attributes</a>
 			<b>attributes</b>
 		</field>
-		<field
-			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
-			custom-converter-param="dto2entityShallowDozerMapper">
+		<field-exclude>
 			<a>resources</a>
 			<b>resources</b>
-		</field>
+		</field-exclude>
 		<field
 			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
 			custom-converter-param="dto2entityShallowDozerMapper">

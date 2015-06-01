@@ -80,7 +80,7 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
 						break;
 					case ENTITLE_RESOURCE_TO_GROUP:
 						action = AuditAction.ADD_GROUP_TO_RESOURCE;
-						response = resourceDataService.addGroupToResource(associationId, memberAssociationId, systemUserId);
+						response = resourceDataService.addGroupToResource(associationId, memberAssociationId, systemUserId, rights);
 						break;
 					case DISENTITLE_RESOURCE_FROM_GROUP:
 						action = AuditAction.REMOVE_GROUP_FROM_RESOURCE;

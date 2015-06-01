@@ -317,6 +317,7 @@ public interface GroupDataWebService {
      * @return a paged List of Groups directly entitled to the Resource specified by the resourceId
      */
     @WebMethod
+    @Deprecated
     public List<Group> getGroupsForResource(final @WebParam(name = "resourceId") String resourceId,
                                             final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
                                             final @WebParam(name = "deepFlag", targetNamespace = "") boolean deepFlag,

@@ -7,6 +7,7 @@ import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.access.domain.AccessRightEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.domain.GroupToGroupMembershipXrefEntity;
+import org.openiam.idm.srvc.grp.domain.GroupToResourceMembershipXrefEntity;
 import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.org.domain.GroupToOrgMembershipXrefEntity;
@@ -88,12 +89,6 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
     private Set<UserEntity> users;
 
     @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    @JoinTable(name = "RESOURCE_GROUP",
-            joinColumns = { @JoinColumn(name = "RESOURCE_ID") },
-            inverseJoinColumns = { @JoinColumn(name = "GRP_ID") })
-    private Set<GroupEntity> groups;
-
-    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinTable(name = "RESOURCE_ROLE", joinColumns = { @JoinColumn(name = "RESOURCE_ID") }, inverseJoinColumns = { @JoinColumn(name = "ROLE_ID") })
     private Set<RoleEntity> roles;
 
@@ -130,6 +125,10 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
     @Fetch(FetchMode.SUBSELECT)
     private Set<ResourceToOrgMembershipXrefEntity> organizations = new HashSet<ResourceToOrgMembershipXrefEntity>(0);
 
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="memberEntity", orphanRemoval=true)
+    @Fetch(FetchMode.SUBSELECT)
+    private Set<GroupToResourceMembershipXrefEntity> groups = new HashSet<GroupToResourceMembershipXrefEntity>(0);
+    
     public ResourceRisk getRisk() {
         return risk;
     }
@@ -253,30 +252,38 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
         this.resourceProps = resourceProps;
     }
     
-    public void addGroup(final GroupEntity entity) {
-    	if(entity != null) {
-    		if(this.groups == null) {
-    			this.groups = new HashSet<GroupEntity>();
-    		}
-    		this.groups.add(entity);
-    	}
-    }
-    
-    public void remove(final GroupEntity entity) {
-    	if(entity != null) {
-    		if(this.groups != null) {
-    			this.groups.remove(entity);
-    		}
-    	}
-    }
-
-    public Set<GroupEntity> getGroups() {
+    public Set<GroupToResourceMembershipXrefEntity> getGroups() {
         return groups;
     }
 
-    public void setGroups(Set<GroupEntity> groups) {
+    public void setGroups(Set<GroupToResourceMembershipXrefEntity> groups) {
         this.groups = groups;
-   }
+    }
+    
+    public void addGroup(final GroupEntity entity, final Collection<AccessRightEntity> rights) {
+		if(entity != null) {
+			if(this.groups == null) {
+				this.groups = new LinkedHashSet<GroupToResourceMembershipXrefEntity>();
+			}
+			GroupToResourceMembershipXrefEntity theXref = null;
+			for(final GroupToResourceMembershipXrefEntity xref : this.groups) {
+				if(xref.getEntity().getId().equals(getId()) && xref.getMemberEntity().getId().equals(entity.getId())) {
+					theXref = xref;
+					break;
+				}
+			}
+			
+			if(theXref == null) {
+				theXref = new GroupToResourceMembershipXrefEntity();
+				theXref.setEntity(entity);
+				theXref.setMemberEntity(this);
+			}
+			if(rights != null) {
+				theXref.setRights(new HashSet<AccessRightEntity>(rights));
+			}
+			this.groups.add(theXref);
+		}
+	}
 
     public String getMinAuthLevel() {
         return minAuthLevel;
@@ -447,6 +454,15 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
 				.findFirst();
     	return xref.isPresent() ? xref.get() : null;
     }
+	
+	public GroupToResourceMembershipXrefEntity getGroup(final String groupId) {
+		final Optional<GroupToResourceMembershipXrefEntity> xref = 
+    			this.getGroups()
+    				.stream()
+    				.filter(e -> groupId.equals(e.getEntity().getId()))
+    				.findFirst();
+    	return xref.isPresent() ? xref.get() : null;
+	}
 
 	@Override
     public boolean equals(Object o) {

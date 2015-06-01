@@ -43,47 +43,13 @@ public interface GroupDataService {
      * @return
      */
     public List<GroupEntity> findBeans(final GroupSearchBean searchBean, String requesterId, final int from, final int size);
-    public List<GroupEntity> getChildGroups(final String groupId, final String requesterId, final int from, final int size);
-    public List<GroupEntity> getParentGroups(final String groupId, final String requesterId, final int from, final int size);
-    public List<GroupEntity> getGroupsForResource(final String resourceId, final String requesterId, final int from, final int size);
 
     public List<Group> getGroupsDtoForUser(final String userId, String requesterId, final int from, final int size);
 
-    public List<GroupEntity> getGroupsForUser(final String userId, String requesterId, final int from, final int size);
-    public List<GroupEntity> getGroupsForRole(final String roleId, String requesterId, final int from, final int size);
-
     public List<GroupEntity> findBeansLocalize(final GroupSearchBean searchBean, String requesterId, final int from, final int size, final LanguageEntity language);
     
-    @Deprecated
-    public List<GroupEntity> getChildGroupsLocalize(final String groupId, final String requesterId, final int from, final int size, final LanguageEntity language);
-    
-    @Deprecated
-    public List<GroupEntity> getParentGroupsLocalize(final String groupId, final String requesterId, final int from, final int size, final LanguageEntity language);
-    
-    @Deprecated
-    public List<GroupEntity> getGroupsForResourceLocalize(final String resourceId, final String requesterId, final int from, final int size, final LanguageEntity language);
-    
-    @Deprecated
-    public List<GroupEntity> getGroupsForUserLocalize(final String userId, String requesterId, final int from, final int size, final LanguageEntity language);
-    
-    @Deprecated
-    public List<GroupEntity> getGroupsForRoleLocalize(final String roleId, String requesterId, final int from, final int size, final LanguageEntity language);
-
     public Set<String> getGroupIdList();
 
-    @Deprecated
-    public int getNumOfGroupsForRole(final String roleId, final String requesterId);
-    
-    @Deprecated
-    public int getNumOfGroupsForUser(final String userId, final String requesterId);
-    @Deprecated
-    public int getNumOfGroupsForResource(final String resourceId, final String requesterId);
-    
-    @Deprecated
-    public int getNumOfChildGroups(final String groupId, final String requesterId);
-    
-    @Deprecated
-    public int getNumOfParentGroups(final String groupId, final String requesterId);
     public int countBeans(final GroupSearchBean searchBean, final String requesterId);
 
 

@@ -18,6 +18,7 @@ import org.openiam.authmanager.service.AuthorizationManagerAdminService;
 import org.openiam.authmanager.service.AuthorizationManagerMenuService;
 import org.openiam.authmanager.service.AuthorizationManagerService;
 import org.openiam.authmanager.ws.request.MenuEntitlementsRequest;
+import org.openiam.idm.srvc.access.service.AccessRightDAO;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
@@ -99,6 +100,9 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
 	 @Autowired
 	 @Qualifier("transactionTemplate")
 	 private TransactionTemplate transactionTemplate;
+	 
+	 @Autowired
+	 private AccessRightDAO accessRightDAO;
 
 	/*
 	private boolean forceThreadShutdown = false;
@@ -587,7 +591,7 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
             if(CollectionUtils.isNotEmpty(menuEntitlementsRequest.getNewlyEntitled())) {
                 List<ResourceEntity> resourceEntities = resourceDAOHibernate.findByIds(menuEntitlementsRequest.getNewlyEntitled());
                 for(final ResourceEntity resource : resourceEntities) {
-                    groupEntity.getResources().add(resource);
+                    groupEntity.addResource(resource, accessRightDAO.findAll());
                 }
 
             }

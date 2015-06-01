@@ -604,7 +604,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 
     @Override
     @CacheEvict(value = "resources", allEntries=true)
-    public Response addGroupToResource(final String resourceId, final String groupId, final String requesterId) {
+    public Response addGroupToResource(final String resourceId, final String groupId, final String requesterId, final Set<String> rightIds) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLog idmAuditLog = new IdmAuditLog ();
         idmAuditLog.setRequestorUserId(requesterId);
@@ -620,7 +620,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "GroupId or ResourceId is null");
             }
 
-            resourceService.addResourceGroup(resourceId, groupId);
+            resourceService.addResourceGroup(resourceId, groupId, rightIds);
             idmAuditLog.succeed();
         } catch (BasicDataServiceException e) {
             response.setErrorCode(e.getCode());

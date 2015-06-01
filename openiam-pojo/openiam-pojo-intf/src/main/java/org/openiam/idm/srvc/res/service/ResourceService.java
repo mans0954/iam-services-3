@@ -62,7 +62,7 @@ public interface ResourceService {
 	public void addChildResource(final String parentResourceId, final String childResourceId, final Set<String> rights);
 	public void deleteChildResource(final String resourceId, final String childResourceId);
 
-	public void addResourceGroup(final String resourceId, final String groupId);
+	public void addResourceGroup(final String resourceId, final String groupId, final Set<String> rightIds);
 	public void deleteResourceGroup(final String resourceId, final String groupId);
 
 	public void deleteResourceRole(final String resourceId, final String roleId);

@@ -30,6 +30,7 @@ import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.org.domain.GroupToOrgMembershipXrefEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationTypeEntity;
+import org.openiam.idm.srvc.org.domain.ResourceToOrgMembershipXrefEntity;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourceToResourceMembershipXrefEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
@@ -71,12 +72,6 @@ public class GroupEntity extends AbstractMetdataTypeEntity {
 
     @Column(name = "LAST_UPDATED_BY", length = 32)
     private String lastUpdatedBy;
-
-    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    @JoinTable(name = "RESOURCE_GROUP",
-            joinColumns = { @JoinColumn(name = "GRP_ID") },
-            inverseJoinColumns = { @JoinColumn(name = "RESOURCE_ID") })
-    private Set<ResourceEntity> resources;
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="memberEntity", orphanRemoval=true)
     @Fetch(FetchMode.SUBSELECT)
@@ -138,8 +133,13 @@ public class GroupEntity extends AbstractMetdataTypeEntity {
 
     @Column(name = "MAX_USER_NUMBER")
     private Integer maxUserNumber;
+    
     @Column(name = "MEMBERSHIP_DURATION_SECONDS")
     private Long membershipDuration;
+    
+	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="entity", orphanRemoval=true)
+    @Fetch(FetchMode.SUBSELECT)
+	private Set<GroupToResourceMembershipXrefEntity> resources;
 
     public String getName() {
         return name;
@@ -289,22 +289,57 @@ public class GroupEntity extends AbstractMetdataTypeEntity {
 		this.attributes = attributes;
 	}
 
-	public Set<ResourceEntity> getResources() {
-        return resources;
-    }
-    public void addResource(final ResourceEntity entity) {
-        if(entity != null) {
-            if(this.resources == null) {
-                this.resources = new HashSet<ResourceEntity>();
-            }
-            this.resources.add(entity);
-        }
-    }
-    public void setResources(Set<ResourceEntity> resources) {
-        this.resources = resources;
-    }
+    public Set<GroupToResourceMembershipXrefEntity> getResources() {
+		return resources;
+	}
 
-    public Set<RoleEntity> getRoles() {
+	public void setResources(Set<GroupToResourceMembershipXrefEntity> resources) {
+		this.resources = resources;
+	}
+	
+	public GroupToResourceMembershipXrefEntity getResource(final String resourceId) {
+		final Optional<GroupToResourceMembershipXrefEntity> xref = 
+    			this.getResources()
+    				.stream()
+    				.filter(e -> resourceId.equals(e.getMemberEntity().getId()))
+    				.findFirst();
+    	return xref.isPresent() ? xref.get() : null;
+	}
+	
+	public void addResource(final ResourceEntity entity, final Collection<AccessRightEntity> rights) {
+		if(entity != null) {
+			if(this.resources == null) {
+				this.resources = new LinkedHashSet<GroupToResourceMembershipXrefEntity>();
+			}
+			GroupToResourceMembershipXrefEntity theXref = null;
+			for(final GroupToResourceMembershipXrefEntity xref : this.resources) {
+				if(xref.getEntity().getId().equals(getId()) && xref.getMemberEntity().getId().equals(entity.getId())) {
+					theXref = xref;
+					break;
+				}
+			}
+			
+			if(theXref == null) {
+				theXref = new GroupToResourceMembershipXrefEntity();
+				theXref.setEntity(this);
+				theXref.setMemberEntity(entity);
+			}
+			if(rights != null) {
+				theXref.setRights(new HashSet<AccessRightEntity>(rights));
+			}
+			this.resources.add(theXref);
+		}
+	}
+	
+	public void removeResource(final ResourceEntity entity) {
+		if(entity != null) {
+			if(this.resources != null) {
+				this.resources.removeIf(e -> e.getMemberEntity().getId().equals(entity.getId()));
+			}
+		}
+	}
+
+	public Set<RoleEntity> getRoles() {
         return roles;
     }
 

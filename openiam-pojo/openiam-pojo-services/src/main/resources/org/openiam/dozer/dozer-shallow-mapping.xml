@@ -181,6 +181,10 @@
         	<a>organizations</a>
         	<b>organizations</b>
         </field-exclude>
+        <field-exclude>
+			<a>resources</a>
+			<b>resources</b>
+		</field-exclude>
 	</mapping>
 	
 	<mapping>

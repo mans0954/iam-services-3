@@ -314,9 +314,10 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
                 criteria.add(Restrictions.eq("type.id", searchBean.getMetadataType()));
             }
 
-            if(CollectionUtils.isNotEmpty(searchBean.getGroupIdSet())){
-                criteria.createAlias("groups", "gr");
-                criteria.add(Restrictions.in("gr.id", searchBean.getGroupIdSet()));
+            if(CollectionUtils.isNotEmpty(searchBean.getGroupIdSet())){    
+                criteria.createAlias("groups", "groupXrefs")
+						.createAlias("groupXrefs.entity", "group").add(
+						Restrictions.in("group.id", searchBean.getGroupIdSet()));
             }
             
             if(CollectionUtils.isNotEmpty(searchBean.getChildIdSet())) {

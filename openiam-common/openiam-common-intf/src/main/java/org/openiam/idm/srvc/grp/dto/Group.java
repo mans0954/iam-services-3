@@ -82,6 +82,7 @@ public class Group extends AbstractEntitlementsDTO {
     @Deprecated
     protected Set<Group> childGroups;
 
+    @Deprecated
     protected Set<Resource> resources;
 
     @XmlJavaTypeAdapter(RoleSetAdapter.class)
@@ -212,6 +213,7 @@ public class Group extends AbstractEntitlementsDTO {
 		}
 	}
 
+    @Deprecated
     public void addResource(final Resource resource) {
         if(resource != null) {
             if(resources == null) {
@@ -250,10 +252,12 @@ public class Group extends AbstractEntitlementsDTO {
 		}
 	}
 
+    @Deprecated
     public Set<Resource> getResources() {
         return resources;
     }
 
+    @Deprecated
     public void setResources(Set<Resource> resources) {
         this.resources = resources;
     }
