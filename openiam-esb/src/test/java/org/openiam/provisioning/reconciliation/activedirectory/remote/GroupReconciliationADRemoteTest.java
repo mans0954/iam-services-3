@@ -2,6 +2,10 @@ package org.openiam.provisioning.reconciliation.activedirectory.remote;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.cxf.endpoint.Client;
+import org.apache.cxf.frontend.ClientProxy;
+import org.apache.cxf.transport.http.HTTPConduit;
+import org.apache.cxf.transports.http.configuration.HTTPClientPolicy;
 import org.joda.time.DateTime;
 import org.junit.runner.RunWith;
 import org.openiam.am.srvc.constants.SearchScopeType;
@@ -21,6 +25,7 @@ import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;
 import org.openiam.idm.srvc.recon.ws.ReconciliationConfigResponse;
 import org.openiam.idm.srvc.recon.ws.ReconciliationWebService;
+import org.openiam.provision.service.ProvisionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
@@ -64,6 +69,10 @@ public class GroupReconciliationADRemoteTest extends AbstractTestNGSpringContext
     @Autowired
     @Qualifier("groupServiceClient")
     protected GroupDataWebService groupDataWebService;
+
+    @Autowired
+    @Qualifier("provisionServiceClient")
+    private ProvisionService provisionService;
 
     private List<String> deleteConnectorIdsList = new LinkedList<String>();
     private List<String> deleteManagedSysIdsList = new LinkedList<String>();
@@ -248,7 +257,27 @@ public class GroupReconciliationADRemoteTest extends AbstractTestNGSpringContext
         try {
             Assert.assertTrue(true);
             Assert.assertNotNull(reconciliationConfig);
-            //TODO implementation
+           // Test connection first
+            Response testConnectionResponse = provisionService.testConnectionConfig(reconciliationConfig.getManagedSysId(), "3000");
+            Assert.assertNotNull(testConnectionResponse);
+            Assert.assertTrue(testConnectionResponse.isSuccess());
+
+            // Start testing reconciliation process
+            // Check situation => IDM[not exists] and Resource[exists] => New group should be created in OpenIAM
+            // SET Timeout for waiting WS response
+            GroupSearchBean groupSearchBean = new GroupSearchBean();
+            groupSearchBean.setName(TestGroupCN);
+            groupSearchBean.setDeepCopy(false);
+            List<Group> groupsByName = groupDataWebService.findBeans(groupSearchBean, null, 0, 10);
+            Assert.assertNull(groupsByName);
+
+            setWSClientTimeout(reconciliationWebService, 600000L);
+            reconciliationWebService.startReconciliation(reconciliationConfig);
+
+            groupsByName = groupDataWebService.findBeans(groupSearchBean, null, 0, 10);
+            Assert.assertNotNull(groupsByName);
+            Assert.assertEquals(groupsByName.size(), 1);
+
 
         } catch (Throwable t) {
             this._destroy();
@@ -257,4 +286,15 @@ public class GroupReconciliationADRemoteTest extends AbstractTestNGSpringContext
         }
     }
 
+    private static void setWSClientTimeout(Object wsService, long timeout) {
+        Client client = ClientProxy.getClient(wsService);
+        if (client != null) {
+            HTTPConduit conduit = (HTTPConduit) client.getConduit();
+            HTTPClientPolicy policy = new HTTPClientPolicy();
+            policy.setConnectionTimeout(timeout);
+            policy.setReceiveTimeout(timeout);
+            conduit.setClient(policy);
+        }
+
+    }
 }

@@ -294,6 +294,7 @@ public class UserReconciliationADRemoteTest extends AbstractTestNGSpringContextT
             Assert.assertTrue(true);
             Assert.assertNotNull(reconciliationConfig);
 
+            setWSClientTimeout(reconciliationWebService, 600000L);
             Response testConnectionResponse = provisionService.testConnectionConfig(reconciliationConfig.getManagedSysId(), "3000");
             Assert.assertNotNull(testConnectionResponse);
             Assert.assertTrue(testConnectionResponse.isSuccess());
@@ -344,7 +345,7 @@ public class UserReconciliationADRemoteTest extends AbstractTestNGSpringContextT
     }
 
 
-    public static void setWSClientTimeout(Object wsService, long timeout) {
+    private static void setWSClientTimeout(Object wsService, long timeout) {
         Client client = ClientProxy.getClient(wsService);
         if (client != null) {
             HTTPConduit conduit = (HTTPConduit) client.getConduit();
