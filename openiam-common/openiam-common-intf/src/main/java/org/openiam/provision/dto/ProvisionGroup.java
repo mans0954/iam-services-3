@@ -129,7 +129,7 @@ public class ProvisionGroup extends org.openiam.idm.srvc.grp.dto.Group {
         //this.childGroups = group.getChildGroups();
 
         //this.setResources(group.getResources());
-        this.roles = group.getRoles();
+        //this.roles = group.getRoles();
         this.attributes = group.getAttributes();
     }
 

@@ -65,12 +65,9 @@ public class RoleEntity extends AbstractMetdataTypeEntity {
     @JoinColumn(name = "MANAGED_SYS_ID", referencedColumnName = "MANAGED_SYS_ID", insertable = true, updatable = true, nullable=true)
     private ManagedSysEntity managedSystem;
 
-    @ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
-    @JoinTable(name="GRP_ROLE",
-	    joinColumns={@JoinColumn(name="ROLE_ID")},
-	    inverseJoinColumns={@JoinColumn(name="GRP_ID")})
-	@Fetch(FetchMode.SUBSELECT)
-    private Set<GroupEntity> groups;
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="entity", orphanRemoval=true)
+    @Fetch(FetchMode.SUBSELECT)
+	private Set<RoleToGroupMembershipXrefEntity> groups;
 	
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="role", orphanRemoval=true)
     @OrderBy("name asc")
@@ -137,51 +134,7 @@ public class RoleEntity extends AbstractMetdataTypeEntity {
 	public void setStatus(String status) {
 		this.status = status;
 	}
-
-	public boolean hasGroup(final String groupId) {
-		boolean retVal = false;
-		if(groups != null) {
-			for(final GroupEntity entity : groups) {
-				if(entity.getId().equals(groupId)) {
-					retVal = true;
-					break;
-				}
-			}
-		}
-		return retVal;
-	}
-
-	public Set<GroupEntity> getGroups() {
-		return groups;
-	}
-
-	public void setGroups(Set<GroupEntity> groups) {
-		this.groups = groups;
-	}
 	
-	public void addGroup(final GroupEntity group) {
-		if(group != null) {
-			if(this.groups == null) {
-				this.groups = new LinkedHashSet<GroupEntity>();
-			}
-			this.groups.add(group);
-		}
-	}
-	
-	public void removeGroup(final String groupId) {
-		if(groupId != null) {
-			if(groups != null) {
-				for(final Iterator<GroupEntity> it = groups.iterator(); it.hasNext();) {
-					final GroupEntity entity = it.next();
-					if(entity.getId().equals(groupId)) {
-						it.remove();
-						break;
-					}
-				}
-			}
-		}
-	}
-
 	public Set<RoleAttributeEntity> getRoleAttributes() {
 		return roleAttributes;
 	}
@@ -298,6 +251,15 @@ public class RoleEntity extends AbstractMetdataTypeEntity {
         this.resources = resources;
     }
     
+    public RoleToGroupMembershipXrefEntity getGroup(final String groupId) {
+		final Optional<RoleToGroupMembershipXrefEntity> xref = 
+    			this.getGroups()
+    				.stream()
+    				.filter(e -> groupId.equals(e.getMemberEntity().getId()))
+    				.findFirst();
+    	return xref.isPresent() ? xref.get() : null;
+	}
+    
 	public RoleToResourceMembershipXrefEntity getResource(final String resourceId) {
 		final Optional<RoleToResourceMembershipXrefEntity> xref = 
     			this.getResources()
@@ -339,8 +301,49 @@ public class RoleEntity extends AbstractMetdataTypeEntity {
 			}
 		}
 	}
+	
+	public void addGroup(final GroupEntity entity, final Collection<AccessRightEntity> rights) {
+		if(entity != null) {
+			if(this.groups == null) {
+				this.groups = new LinkedHashSet<RoleToGroupMembershipXrefEntity>();
+			}
+			RoleToGroupMembershipXrefEntity theXref = null;
+			for(final RoleToGroupMembershipXrefEntity xref : this.groups) {
+				if(xref.getEntity().getId().equals(getId()) && xref.getMemberEntity().getId().equals(entity.getId())) {
+					theXref = xref;
+					break;
+				}
+			}
+			
+			if(theXref == null) {
+				theXref = new RoleToGroupMembershipXrefEntity();
+				theXref.setEntity(this);
+				theXref.setMemberEntity(entity);
+			}
+			if(rights != null) {
+				theXref.setRights(new HashSet<AccessRightEntity>(rights));
+			}
+			this.groups.add(theXref);
+		}
+	}
+	
+	public void removeGroup(final GroupEntity entity) {
+		if(entity != null) {
+			if(this.groups != null) {
+				this.groups.removeIf(e -> e.getMemberEntity().getId().equals(entity.getId()));
+			}
+		}
+	}
 
-    public Set<UserEntity> getUsers() {
+    public Set<RoleToGroupMembershipXrefEntity> getGroups() {
+		return groups;
+	}
+
+	public void setGroups(Set<RoleToGroupMembershipXrefEntity> groups) {
+		this.groups = groups;
+	}
+
+	public Set<UserEntity> getUsers() {
         return users;
     }
 

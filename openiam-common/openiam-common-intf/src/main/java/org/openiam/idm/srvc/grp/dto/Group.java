@@ -85,6 +85,7 @@ public class Group extends AbstractEntitlementsDTO {
     @Deprecated
     protected Set<Resource> resources;
 
+    @Deprecated
     @XmlJavaTypeAdapter(RoleSetAdapter.class)
     protected Set<Role> roles = new HashSet<Role>(0);
 
@@ -129,10 +130,12 @@ public class Group extends AbstractEntitlementsDTO {
         this.createdBy = createdBy;
     }
 
+    @Deprecated
     public Set<Role> getRoles() {
         return this.roles;
     }
 
+    @Deprecated
     public void setRoles(Set<Role> roles) {
         this.roles = roles;
     }
@@ -223,6 +226,7 @@ public class Group extends AbstractEntitlementsDTO {
         }
     }
 
+    @Deprecated
     public void addRole(final Role role) {
         if(role != null) {
             if(roles == null) {

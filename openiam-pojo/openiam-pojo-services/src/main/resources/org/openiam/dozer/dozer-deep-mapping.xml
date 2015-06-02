@@ -115,10 +115,10 @@
 			<a>groups</a>
 			<b>groups</b>
 		</field>
-		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
+		<field-exclude>
 			<a>roles</a>
 			<b>roles</b>
-		</field>
+		</field-exclude>
 		<field custom-converter="org.openiam.dozer.PersistentObjectConverter" custom-converter-param="shallowDozerMapper">
 			<a>managedSystem</a>
 			<b>managedSystem</b>
@@ -140,10 +140,10 @@
 	<mapping>
 		<class-a>org.openiam.idm.srvc.role.domain.RoleEntity</class-a>
 		<class-b>org.openiam.idm.srvc.role.domain.RoleEntity</class-b>
-		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
+		<field-exclude>
 			<a>groups</a>
 			<b>groups</b>
-		</field>
+		</field-exclude>
 		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
 			<a>roleAttributes</a>
 			<b>roleAttributes</b>

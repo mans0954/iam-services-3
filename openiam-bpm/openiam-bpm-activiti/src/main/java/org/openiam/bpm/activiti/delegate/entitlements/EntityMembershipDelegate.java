@@ -72,7 +72,7 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
 						break;
 					case ADD_ROLE_TO_GROUP:
 						action = AuditAction.ADD_ROLE_TO_GROUP;
-						response = roleDataService.addGroupToRole(memberAssociationId, associationId, systemUserId);
+						response = roleDataService.addGroupToRole(memberAssociationId, associationId, systemUserId, rights);
 						break;
 					case REMOVE_ROLE_FROM_GROUP:
 						action = AuditAction.REMOVE_ROLE_FROM_GROUP;

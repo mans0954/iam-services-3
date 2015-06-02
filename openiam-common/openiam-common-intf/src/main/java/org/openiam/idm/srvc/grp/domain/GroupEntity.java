@@ -34,6 +34,7 @@ import org.openiam.idm.srvc.org.domain.ResourceToOrgMembershipXrefEntity;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourceToResourceMembershipXrefEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
+import org.openiam.idm.srvc.role.domain.RoleToGroupMembershipXrefEntity;
 import org.openiam.idm.srvc.role.domain.RoleToRoleMembershipXrefEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.internationalization.Internationalized;
@@ -89,10 +90,7 @@ public class GroupEntity extends AbstractMetdataTypeEntity {
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<GroupAttributeEntity> attributes;
 
-    @ManyToMany(cascade = { CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH }, fetch = FetchType.LAZY)
-    @JoinTable(name = "GRP_ROLE", joinColumns = { @JoinColumn(name = "GRP_ID") }, inverseJoinColumns = { @JoinColumn(name = "ROLE_ID") })
-    @Fetch(FetchMode.SUBSELECT)
-    private Set<RoleEntity> roles;
+    
 
     @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinTable(name = "USER_GRP", joinColumns = { @JoinColumn(name = "GRP_ID") }, inverseJoinColumns = { @JoinColumn(name = "USER_ID") })
@@ -130,6 +128,10 @@ public class GroupEntity extends AbstractMetdataTypeEntity {
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="memberEntity", orphanRemoval=true)
     @Fetch(FetchMode.SUBSELECT)
     private Set<GroupToOrgMembershipXrefEntity> organizations = new HashSet<GroupToOrgMembershipXrefEntity>(0);
+    
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="memberEntity", orphanRemoval=true)
+    @Fetch(FetchMode.SUBSELECT)
+    private Set<RoleToGroupMembershipXrefEntity> roles;
 
     @Column(name = "MAX_USER_NUMBER")
     private Integer maxUserNumber;
@@ -255,6 +257,15 @@ public class GroupEntity extends AbstractMetdataTypeEntity {
     	return xref.isPresent() ? xref.get() : null;
     }
     
+    public RoleToGroupMembershipXrefEntity getRole(final String roleId) {
+    	final Optional<RoleToGroupMembershipXrefEntity> xref = 
+    			this.getRoles()
+				.stream()
+				.filter(e -> roleId.equals(e.getEntity().getId()))
+				.findFirst();
+    	return xref.isPresent() ? xref.get() : null;
+    }
+    
 	public GroupToGroupMembershipXrefEntity getChild(final String childId) {
 		final Optional<GroupToGroupMembershipXrefEntity> xref = 
     			this.getChildGroups()
@@ -297,6 +308,14 @@ public class GroupEntity extends AbstractMetdataTypeEntity {
 		this.resources = resources;
 	}
 	
+	public Set<RoleToGroupMembershipXrefEntity> getRoles() {
+		return roles;
+	}
+
+	public void setRoles(Set<RoleToGroupMembershipXrefEntity> roles) {
+		this.roles = roles;
+	}
+
 	public GroupToResourceMembershipXrefEntity getResource(final String resourceId) {
 		final Optional<GroupToResourceMembershipXrefEntity> xref = 
     			this.getResources()
@@ -338,14 +357,6 @@ public class GroupEntity extends AbstractMetdataTypeEntity {
 			}
 		}
 	}
-
-	public Set<RoleEntity> getRoles() {
-        return roles;
-    }
-
-    public void setRoles(Set<RoleEntity> roles) {
-        this.roles = roles;
-    }
 
     public Set<UserEntity> getUsers() {
         return users;

@@ -58,22 +58,6 @@ public interface RoleDataService {
      */
     //public void removeAttribute(final String roleAttributeId);
 
-    /** * Role-Group Methods ****** */
-
-    /**
-     * Returns an array of Role objects that are linked to a Group Returns null
-     * if no roles are found.
-     *
-     * @param groupId
-     * @return
-     */
-    @Deprecated
-     public List<RoleEntity> getRolesInGroup(String groupId, String requesterId, final int from, final int size);
-    
-    @Deprecated
-     public int getNumOfRolesForGroup(final String groupId, String requesterId);
-
-
     /**
      * This method adds particular roleId to a particular group.<br>
      * For example:
@@ -85,7 +69,7 @@ public interface RoleDataService {
      * @param groupId  The group for which the roleId is to be added .
      * @param roleId The roleId which is to be added to the group.
      */
-    public void addGroupToRole(String roleId, String groupId);
+    public void addGroupToRole(String roleId, String groupId, Set<String> rightIds);
     
     public void validateGroup2RoleAddition(String roleId, String groupId) throws BasicDataServiceException;
 
@@ -97,15 +81,7 @@ public interface RoleDataService {
      */
     public void removeGroupFromRole(String roleId, String groupId);
 
-
-    @Deprecated
-    public List<RoleEntity> getRolesForUser(final String userId, String requesterId, final int from, final int size);
-
     public List<Role> getRolesDtoForUser(final String userId, String requesterId, final int from, final int size);
-
-    
-    @Deprecated
-    public int getNumOfRolesForUser(final String userId, String requesterId);
 
     /**
      * Adds a user to a role using the UserRole object. Similar to addUserToRole, but allows you to update attributes likes start and end date.
@@ -165,25 +141,9 @@ public interface RoleDataService {
 
     public List<RoleEntity> findRolesByAttributeValue(String attrName, String attrValue);
     
-    @Deprecated
-    public List<RoleEntity> getRolesForResource(final String resourceId, final String requesterId, final int from, final int size);
-    
-    @Deprecated
-    public int getNumOfRolesForResource(final String resourceId, final String requesterId);
-    
-    @Deprecated
-    public List<RoleEntity> getChildRoles(final String roleId, final String requesterId, final int from, final int size);
-    @Deprecated
-    public int getNumOfChildRoles(final String roleId, final String requesterId);
     public void addChildRole(final String roleId, final String childRoleId, final Set<String> rights);
     public void removeChildRole(final String roleId, final String childRoleId);
     
-    @Deprecated
-    public List<RoleEntity> getParentRoles(final String roleId, final String requesterId, final int from, final int size);
-    
-    @Deprecated
-    public int getNumOfParentRoles(final String roleId, final String requesterId);
-
     public void validateRole2RoleAddition(final String parentId, final String memberId, final Set<String> rights) throws BasicDataServiceException;
     
     public Role getRoleDTO(final String roleId);

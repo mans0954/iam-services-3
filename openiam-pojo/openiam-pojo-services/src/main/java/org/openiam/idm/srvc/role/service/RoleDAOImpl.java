@@ -87,11 +87,11 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
                 criteria.add(Restrictions.eq("type.id", roleSearchBean.getType()));
             }
 
-
-            if(CollectionUtils.isNotEmpty(roleSearchBean.getGroupIdSet())){
-                criteria.createAlias("groups", "gr");
-                criteria.add(Restrictions.in("gr.id", roleSearchBean.getGroupIdSet()));
-            }
+            if(CollectionUtils.isNotEmpty(roleSearchBean.getGroupIdSet())) {
+            	criteria.createAlias("groups", "groupXrefs")
+						.createAlias("groupXrefs.memberEntity", "group").add(
+						Restrictions.in("group.id", roleSearchBean.getGroupIdSet()));
+			}
             
             if(CollectionUtils.isNotEmpty(roleSearchBean.getResourceIdSet())) {
             	criteria.createAlias("resources", "resourceXrefs")
@@ -194,47 +194,11 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
         return (List<RoleEntity>) criteria.list();
     }
 
-	@Override
-	@Deprecated
-	public List<RoleEntity> getRolesForGroup(final String groupId, final Set<String> filter, final int from, final int size) {
-		final Criteria criteria = getEntitlementRolesCriteria(null, groupId, null, filter);
-        return getList(criteria, from, size);
-	}
-
-	@Override
-	@Deprecated
-	public int getNumOfRolesForGroup(String groupId, final Set<String> filter) {
-		final Criteria criteria = getEntitlementRolesCriteria(null, groupId, null, filter).setProjection(rowCount());
-		return ((Number)criteria.uniqueResult()).intValue();
-	}
-
-	@Override
-	@Deprecated
-	public int getNumOfRolesForResource(final String resourceId, final Set<String> filter) {
-        final Criteria criteria = getEntitlementRolesCriteria(null, null, resourceId, filter).setProjection(rowCount());
-        return ((Number)criteria.uniqueResult()).intValue();
-	}
-
-	@Override
-	@Deprecated
-	public List<RoleEntity> getRolesForResource(final String resourceId, final Set<String> filter, final int from, final int size) {
-        final Criteria criteria = getEntitlementRolesCriteria(null, null, resourceId, filter);
-        return getList(criteria, from, size);
-	}
-
     @Override
     public List<RoleEntity> getRolesForUser(String userId, final Set<String> filter, int from, int size) {
         final Criteria criteria = getEntitlementRolesCriteria(userId, null, null, filter);
         return getList(criteria, from, size);
     }
-
-    @Override
-    @Deprecated
-    public int getNumOfRolesForUser(String userId, final Set<String> filter) {
-        final Criteria criteria = getEntitlementRolesCriteria(userId, null, null, filter).setProjection(rowCount());
-        return ((Number)criteria.uniqueResult()).intValue();
-    }
-
 
     private Criteria getEntitlementRolesCriteria(String userId, String groupId, String resourceId, final Set<String> filter){
         final Criteria criteria = super.getCriteria();
@@ -258,38 +222,6 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
 
         return criteria;
     }
-
-	@Override
-	@Deprecated
-	public List<RoleEntity> getChildRoles(final String roleId, final Set<String> filter, int from, int size) {
-		final RoleSearchBean sb = new RoleSearchBean();
-		sb.addParentId(roleId);
-		return getByExample(sb);
-	}
-	
-	@Override
-	@Deprecated
-	public List<RoleEntity> getParentRoles(final String roleId, final Set<String> filter, int from, int size) {
-		final RoleSearchBean sb = new RoleSearchBean();
-		sb.addChildId(roleId);
-		return getByExample(sb);
-	}
-
-	@Override
-	@Deprecated
-	public int getNumOfChildRoles(final String roleId, final Set<String> filter) {
-		final RoleSearchBean sb = new RoleSearchBean();
-		sb.addParentId(roleId);
-		return count(sb);
-	}
-
-	@Override
-	@Deprecated
-	public int getNumOfParentRoles(final String roleId, final Set<String> filter) {
-		final RoleSearchBean sb = new RoleSearchBean();
-		sb.addChildId(roleId);
-		return count(sb);
-	}
 
 	private Criteria getRolesForUserCriteria(final String userId, final Set<String> filter) {
 		return getCriteria()

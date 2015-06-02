@@ -171,7 +171,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
     }
 
     @Override
-	public Response addGroupToRole(String roleId, String groupId, String requesterId) {
+	public Response addGroupToRole(final String roleId, final String groupId, final String requesterId, final Set<String> rightIds) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLog idmAuditLog = new IdmAuditLog();
         idmAuditLog.setRequestorUserId(requesterId);
@@ -183,7 +183,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
         idmAuditLog.setAuditDescription(String.format("Add group to  role: %s", roleId));
 		try {
 			roleDataService.validateGroup2RoleAddition(roleId, groupId);
-			roleDataService.addGroupToRole(roleId, groupId);
+			roleDataService.addGroupToRole(roleId, groupId, rightIds);
             idmAuditLog.succeed();
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
@@ -255,20 +255,27 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	@Override
 	@Deprecated
 	public List<Role> getRolesInGroup(final String groupId, String requesterId, boolean deepFlag, final int from, final int size) {
-        final List<RoleEntity> entityList = roleDataService.getRolesInGroup(groupId, requesterId, from, size);
-        return roleDozerConverter.convertToDTOList(entityList, false);
+		final RoleSearchBean sb = new RoleSearchBean();
+		sb.addGroupId(groupId);
+		sb.setDeepCopy(deepFlag);
+		return findBeans(sb, requesterId, from, size);
 	}
 
 	@Override
 	@Deprecated
 	public List<Role> getRolesForUser(final String userId, final String requesterId, Boolean deepFlag, final int from, final int size) {
-        return roleDataService.getRolesDtoForUser(userId, requesterId, from, size);
+		final RoleSearchBean sb = new RoleSearchBean();
+		sb.addUserId(userId);
+		sb.setDeepCopy(deepFlag);
+		return findBeans(sb, requesterId, from, size);
 	}
 
 	@Override
 	@Deprecated
 	public int getNumOfRolesForUser(final String userId, String requesterId) {
-        return roleDataService.getNumOfRolesForUser(userId, requesterId);
+		final RoleSearchBean sb = new RoleSearchBean();
+		sb.addUserId(userId);
+		return countBeans(sb, requesterId);
 	}
 
 	@Override
@@ -406,42 +413,54 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	@Override
 	@Deprecated
 	public List<Role> getRolesForResource(final String resourceId, String requesterId, boolean deepFlag,  final int from, final int size) {
-        final List<RoleEntity> entityList = roleDataService.getRolesForResource(resourceId, requesterId, from, size);
-        return roleDozerConverter.convertToDTOList(entityList, false);
+		final RoleSearchBean sb = new RoleSearchBean();
+		sb.addResourceId(resourceId);
+		sb.setDeepCopy(deepFlag);
+		return findBeans(sb, requesterId, from, size);
 	}
 
 	@Override
 	@Deprecated
 	public int getNumOfRolesForResource(final String resourceId, String requesterId) {
-        return roleDataService.getNumOfRolesForResource(resourceId, requesterId);
+		final RoleSearchBean sb = new RoleSearchBean();
+		sb.addResourceId(resourceId);
+		return countBeans(sb, requesterId);
 	}
 
 	@Override
 	@Deprecated
 	public List<Role> getChildRoles(final String roleId, String requesterId, Boolean deepFlag, final  int from, final int size) {
-        final List<RoleEntity> entityList = roleDataService.getChildRoles(roleId, requesterId, from, size);
-        return roleDozerConverter.convertToDTOList(entityList, false);
+		final RoleSearchBean sb = new RoleSearchBean();
+		sb.addParentId(roleId);
+		sb.setDeepCopy(deepFlag);
+		return findBeans(sb, requesterId, from, size);
 	}
 
 	@Override
 	@Deprecated
 	public int getNumOfChildRoles(final String roleId, String requesterId) {
-        return roleDataService.getNumOfChildRoles(roleId, requesterId);
+		final RoleSearchBean sb = new RoleSearchBean();
+		sb.addParentId(roleId);
+		return countBeans(sb, requesterId);
 	}
 
 	@Override
 	@WebMethod
 	@Deprecated
 	public List<Role> getParentRoles(final String roleId, String requesterId, final int from, final int size) {
-        final List<RoleEntity> entityList = roleDataService.getParentRoles(roleId, requesterId, from, size);
-        return roleDozerConverter.convertToDTOList(entityList, false);
+		final RoleSearchBean sb = new RoleSearchBean();
+		sb.addChildId(roleId);
+		sb.setDeepCopy(false);
+		return findBeans(sb, requesterId, from, size);
 	}
 
 	@Override
 	@WebMethod
 	@Deprecated
 	public int getNumOfParentRoles(final String roleId, String requesterId) {
-        return roleDataService.getNumOfParentRoles(roleId, requesterId);
+		final RoleSearchBean sb = new RoleSearchBean();
+		sb.addChildId(roleId);
+		return countBeans(sb, requesterId);
 	}
 
 	@Override
@@ -492,7 +511,9 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	@Override
 	@Deprecated
 	public int getNumOfRolesForGroup(final String groupId, String requesterId) {
-        return roleDataService.getNumOfRolesForGroup(groupId, requesterId);
+		final RoleSearchBean sb = new RoleSearchBean();
+		sb.addGroupId(groupId);
+		return countBeans(sb, requesterId);
 	}
 
 	@Override

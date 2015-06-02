@@ -93,9 +93,10 @@ public interface RoleDataWebService {
      * @return a Response Object, containing the status of this operation.
      */
     @WebMethod
-    Response addGroupToRole(@WebParam(name = "roleId", targetNamespace = "") String roleId,
-                            @WebParam(name = "groupId", targetNamespace = "") String groupId,
-                            final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+    Response addGroupToRole(final @WebParam(name = "roleId", targetNamespace = "") String roleId,
+                            final @WebParam(name = "groupId", targetNamespace = "") String groupId,
+                            final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
+                            final @WebParam(name = "rightIds") Set<String> rightIds);
     
     @WebMethod
     Response validateGroup2RoleAddition(@WebParam(name = "roleId", targetNamespace = "") String roleId,

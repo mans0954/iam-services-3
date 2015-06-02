@@ -52,6 +52,12 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
                 criteria.add(Restrictions.eq(getPKfieldName(), groupSearchBean.getKey()));
             }
             
+            if(CollectionUtils.isNotEmpty(groupSearchBean.getRoleIdSet())){    
+                criteria.createAlias("roles", "roleXrefs")
+						.createAlias("roleXrefs.entity", "role").add(
+						Restrictions.in("role.id", groupSearchBean.getRoleIdSet()));
+            }
+            
             if(CollectionUtils.isNotEmpty(groupSearchBean.getChildIdSet())) {
             	criteria.createAlias("childGroups", "childXrefs")
 						.createAlias("childXrefs.memberEntity", "child").add(
@@ -64,10 +70,6 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
 						Restrictions.in("parent.id", groupSearchBean.getParentIdSet()));
 			}
 
-            if(CollectionUtils.isNotEmpty(groupSearchBean.getRoleIdSet())){
-                criteria.createAlias("roles", "r");
-                criteria.add(Restrictions.in("r.id", groupSearchBean.getRoleIdSet()));
-            }
             if(CollectionUtils.isNotEmpty(groupSearchBean.getOrganizationIdSet())){    
                 criteria.createAlias("organizations", "organizationXrefs")
 						.createAlias("organizationXrefs.entity", "organization").add(
