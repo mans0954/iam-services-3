@@ -127,6 +127,13 @@ public abstract class AbstractAppTableCommand<Request extends RequestType, Respo
         final String USER_GROUP_MEMBERSHIP_USR_ID = "USER_GROUP_MEMBERSHIP_USR_ID";
         final String ROLE_TABLE = "ROLE_TABLE";
         final String EMAIL_TABLE = "EMAIL_TABLE";
+        final String PRINCIPAL_PASSWORD = "PRINCIPAL_PASSWORD";
+        final String USER_STATUS_FIELD = "USER_STATUS_FIELD";
+        final String USER_STATUS_ACTIVE = "USER_STATUS_ACTIVE";
+        final String USER_STATUS_INACTIVE = "USER_STATUS_INACTIVE";
+        final String INCLUDE_IN_PASSWORD_SYNC = "INCLUDE_IN_PASSWORD_SYNC";
+        final String INCLUDE_IN_STATUS_SYNC = "INCLUDE_IN_STATUS_SYNC";
+
         AppTableConfiguration configuration = super.getConfiguration(targetID, AppTableConfiguration.class);
 
         final ResourceProp userProp = configuration.getResource().getResourceProperty(USER_TABLE);
@@ -148,6 +155,44 @@ public abstract class AbstractAppTableCommand<Request extends RequestType, Respo
         if (emailProp != null)
             configuration.setGroupTableName(emailProp.getValue());
 
+        final ResourceProp incudeInPasswordSync = configuration.getResource().getResourceProperty(INCLUDE_IN_PASSWORD_SYNC);
+        if (incudeInPasswordSync != null && "Y".equals(incudeInPasswordSync.getValue())) {
+            final ResourceProp principalPassword = configuration.getResource().getResourceProperty(PRINCIPAL_PASSWORD);
+            if (principalPassword != null)
+                configuration.setPrincipalPassword(principalPassword.getValue());
+            else {
+                throw new ConnectorDataException(ErrorCode.INVALID_CONFIGURATION, "No PRINCIPAL_PASSWORD property found");
+            }
+        } else {
+            log.debug("Password will not be synced, set and reset");
+        }
+
+        final ResourceProp incudeInStatusSync = configuration.getResource().getResourceProperty(INCLUDE_IN_STATUS_SYNC);
+        if (incudeInStatusSync != null && "Y".equals(incudeInStatusSync.getValue())) {
+
+            final ResourceProp userStatus = configuration.getResource().getResourceProperty(USER_STATUS_FIELD);
+            if (userStatus != null)
+                configuration.setUserStatus(userStatus.getValue());
+            else {
+                throw new ConnectorDataException(ErrorCode.INVALID_CONFIGURATION, "No USER_STATUS property found");
+            }
+
+            final ResourceProp userStatusActive = configuration.getResource().getResourceProperty(USER_STATUS_ACTIVE);
+            if (userStatusActive != null)
+                configuration.setActiveUserStatus(userStatusActive.getValue());
+            else {
+                throw new ConnectorDataException(ErrorCode.INVALID_CONFIGURATION, "No USER_STATUS_ACTIVE property found");
+            }
+
+            final ResourceProp userStatusInactive = configuration.getResource().getResourceProperty(USER_STATUS_INACTIVE);
+            if (userStatusInactive != null)
+                configuration.setInactiveUserStatus(userStatusInactive.getValue());
+            else {
+                throw new ConnectorDataException(ErrorCode.INVALID_CONFIGURATION, "No USER_STATUS_INACTIVE property found");
+            }
+        } else {
+            log.debug("Status will not be synced. Suspend and resume will not work!");
+        }
         final ResourceProp userGroupTName = configuration.getResource().getResourceProperty(USER_GROUP_MEMBERSHIP);
         if (userGroupTName != null)
             configuration.setUserGroupTableName(userGroupTName.getValue());
@@ -250,29 +295,29 @@ public abstract class AbstractAppTableCommand<Request extends RequestType, Respo
         return false;
     }
 
-    protected PreparedStatement createSetPasswordStatement(final Connection con, final String resourceId,
-                                                           final String tableName, final String principalName, final String password) throws ConnectorDataException {
+    protected PreparedStatement createChangeUserControlParamsStatement(final Connection con, final AppTableConfiguration configuration,
+                                                                       final String tableName, final String principalName, final String targetValue, boolean isPasswordIssue) throws ConnectorDataException {
         String colName = null;
         String colDataType = null;
 
-        final List<AttributeMapEntity> attrMap = attributeMaps(resourceId);
+        final List<AttributeMapEntity> attrMap = attributeMaps(configuration.getResourceId());
         if (attrMap == null)
             throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, "Attribute Map is null");
 
         String principalFieldName = null;
         String principalFieldDataType = null;
+        String controlParam = isPasswordIssue ? configuration.getPrincipalPassword() : configuration.getUserStatus();
         for (final AttributeMapEntity atr : attrMap) {
             if (atr.getDataType() == null) {
                 atr.setDataType(PolicyMapDataTypeOptions.STRING);
             }
 
-            final String objectType = atr.getMapForObjectType();
-            if (StringUtils.equalsIgnoreCase(objectType, "password")) {
+            if (StringUtils.equalsIgnoreCase(atr.getAttributeName(), controlParam)) {
                 colName = atr.getAttributeName();
                 colDataType = atr.getDataType().getValue();
             }
 
-            if (StringUtils.equalsIgnoreCase(objectType, "principal")) {
+            if (StringUtils.equalsIgnoreCase(atr.getMapForObjectType(), "principal")) {
                 principalFieldName = atr.getAttributeName();
                 principalFieldDataType = atr.getDataType().getValue();
 
@@ -288,7 +333,7 @@ public abstract class AbstractAppTableCommand<Request extends RequestType, Respo
         PreparedStatement statement = null;
         try {
             statement = con.prepareStatement(sql);
-            setStatement(statement, 1, colDataType, password);
+            setStatement(statement, 1, colDataType, targetValue);
             setStatement(statement, 2, principalFieldDataType, principalName);
             return statement;
         } catch (SQLException e) {
@@ -298,6 +343,57 @@ public abstract class AbstractAppTableCommand<Request extends RequestType, Respo
             this.closeStatement(statement);
         }
     }
+
+
+//    protected PreparedStatement createChangeStatusStatement(final Connection con, final AppTableConfiguration configuration,
+//                                                           final String tableName, final String principalName, final String password) throws ConnectorDataException {
+//        String colName = null;
+//        String colDataType = null;
+//
+//        final List<AttributeMapEntity> attrMap = attributeMaps(configuration.getResourceId());
+//        if (attrMap == null)
+//            throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, "Attribute Map is null");
+//
+//        String principalFieldName = null;
+//        String principalFieldDataType = null;
+//        String statusFieldName = configuration.getPrincipalPassword();
+//        for (final AttributeMapEntity atr : attrMap) {
+//            if (atr.getDataType() == null) {
+//                atr.setDataType(PolicyMapDataTypeOptions.STRING);
+//            }
+//
+//            if (StringUtils.equalsIgnoreCase(atr.getAttributeName(), statusFieldName)) {
+//                colName = atr.getAttributeName();
+//                colDataType = atr.getDataType().getValue();
+//            }
+//
+//            if (StringUtils.equalsIgnoreCase(atr.getMapForObjectType(), "principal")) {
+//                principalFieldName = atr.getAttributeName();
+//                principalFieldDataType = atr.getDataType().getValue();
+//
+//            }
+//        }
+//
+//        final String sql = String.format(UPDATE_SQL, tableName, colName, principalFieldName);
+//
+//        if (log.isDebugEnabled()) {
+//            log.debug(String.format("SQL: %s", sql));
+//        }
+//
+//        PreparedStatement statement = null;
+//        try {
+//            statement = con.prepareStatement(sql);
+//            setStatement(statement, 1, colDataType, password);
+//            setStatement(statement, 2, principalFieldDataType, principalName);
+//            return statement;
+//        } catch (SQLException e) {
+//            log.error(e.getMessage(), e);
+//            throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, e.getMessage());
+//        } finally {
+//            this.closeStatement(statement);
+//        }
+//    }
+
 
     protected boolean addObject(Connection con, String principalName, ExtensibleObject object,
                                 AppTableConfiguration config, String objectType) throws ConnectorDataException {

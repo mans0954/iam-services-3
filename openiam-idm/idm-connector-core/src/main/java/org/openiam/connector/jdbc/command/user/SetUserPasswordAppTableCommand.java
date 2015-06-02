@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+import org.apache.commons.lang.StringUtils;
 import org.openiam.connector.jdbc.command.base.AbstractAppTableCommand;
 import org.openiam.connector.jdbc.command.data.AppTableConfiguration;
 import org.openiam.connector.type.ConnectorDataException;
@@ -21,13 +22,18 @@ public class SetUserPasswordAppTableCommand extends AbstractAppTableCommand<Pass
         response.setStatus(StatusCodeType.SUCCESS);
 
         AppTableConfiguration configuration = this.getConfiguration(passwordRequest.getTargetID());
+        if (StringUtils.isBlank(configuration.getPrincipalPassword())) {
+            String message = "Password synchronization is furned off! Need to add attributes: 'INCLUDE_IN_PASSWORD_SYNC' = 'Y' and 'PRINCIPAL_PASSWORD' = NAME OF PASSWORD COLUMN";
+            log.warn(message);
+            return response;
+        }
         Connection con = this.getConnection(configuration.getManagedSys());
 
         PreparedStatement statement = null;
         try {
-            statement = createSetPasswordStatement(con, configuration.getResourceId(),
+            statement = createChangeUserControlParamsStatement(con, configuration,
                     this.getTableName(configuration, this.getObjectType()), passwordRequest.getObjectIdentity(),
-                    passwordRequest.getPassword());
+                    passwordRequest.getPassword(), true);
             statement.executeUpdate();
             return response;
         } catch (SQLException se) {
