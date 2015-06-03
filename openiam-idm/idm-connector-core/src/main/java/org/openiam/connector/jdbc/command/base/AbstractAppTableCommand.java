@@ -38,6 +38,9 @@ public abstract class AbstractAppTableCommand<Request extends RequestType, Respo
     protected static final String SELECT_ALL_SQL_QUERY = "SELECT %s FROM %s WHERE %s";
     protected static final String DELETE_SQL = "DELETE FROM %s WHERE %s=?";
     protected static final String UPDATE_SQL = "UPDATE %s SET %s WHERE %s=?";
+    protected static final String GROUP = "GROUP";
+    protected static final String USER = "USER";
+
 
     protected String getTableName(AppTableConfiguration config, String objectType) throws ConnectorDataException {
         String result = "";
@@ -324,7 +327,7 @@ public abstract class AbstractAppTableCommand<Request extends RequestType, Respo
             }
         }
 
-        final String sql = String.format(UPDATE_SQL, tableName, colName, principalFieldName);
+        final String sql = String.format(UPDATE_SQL, tableName, colName + "=?", principalFieldName);
 
         if (log.isDebugEnabled()) {
             log.debug(String.format("SQL: %s", sql));
@@ -339,8 +342,6 @@ public abstract class AbstractAppTableCommand<Request extends RequestType, Respo
         } catch (SQLException e) {
             log.error(e.getMessage(), e);
             throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, e.getMessage());
-        } finally {
-            this.closeStatement(statement);
         }
     }
 
@@ -414,10 +415,9 @@ public abstract class AbstractAppTableCommand<Request extends RequestType, Respo
                 if (log.isDebugEnabled()) {
                     log.debug(String.format("Number of attributes to persist in ADD = %s", attrList.size()));
                 }
-
                 for (final ExtensibleAttribute att : attrList) {
                     if (att.getAttributeContainer() != null
-                            && !CollectionUtils.isEmpty(att.getAttributeContainer().getAttributeList())) {
+                            && att.getAttributeContainer().getAttributeList() != null) {
                         String supportedObjType = null;
                         for (BaseAttribute a : att.getAttributeContainer().getAttributeList()) {
                             supportedObjType = a.getName();
@@ -425,8 +425,12 @@ public abstract class AbstractAppTableCommand<Request extends RequestType, Respo
                             this.addObject(con, ea.getObjectId(), ea, config, supportedObjType);
 
                         }
-                        this.manageMemberShip(con, config, principalName, objectType, att.getAttributeContainer().getAttributeList(),
-                                supportedObjType);
+                        if (supportedObjType == null) {
+                            this.deleteMemberShip(con, config, principalName, objectType);
+                        } else {
+                            this.manageMemberShip(con, config, principalName, objectType, att.getAttributeContainer().getAttributeList(),
+                                    supportedObjType);
+                        }
                     } else {
                         if (ctr != 0) {
                             columns.append(",");
@@ -488,7 +492,6 @@ public abstract class AbstractAppTableCommand<Request extends RequestType, Respo
                                 AppTableConfiguration config, String objectType) throws ConnectorDataException {
         // build sql
         final StringBuilder columns = new StringBuilder("");
-        final StringBuilder values = new StringBuilder("");
         String sql = "";
         int ctr = 0;
         final List<ExtensibleAttribute> attrList = object.getAttributes();
@@ -502,22 +505,24 @@ public abstract class AbstractAppTableCommand<Request extends RequestType, Respo
                     if (log.isDebugEnabled()) {
                         log.debug(String.format("Number of attributes to persist in ADD = %s", attrList.size()));
                     }
-
                     for (final ExtensibleAttribute att : attrList) {
                         if (att.getAttributeContainer() != null
-                                && !CollectionUtils.isEmpty(att.getAttributeContainer().getAttributeList())) {
+                                && att.getAttributeContainer().getAttributeList() != null) {
                             String supportedObjType = null;
                             for (BaseAttribute a : att.getAttributeContainer().getAttributeList()) {
                                 supportedObjType = a.getName();
                                 ExtensibleObject ea = this.createNewExtensibleObject(a);
                                 this.modifyObject(con, ea.getObjectId(), ea, config, supportedObjType);
                             }
-                            this.manageMemberShip(con, config, principalName, objectType, att.getAttributeContainer().getAttributeList(),
-                                    supportedObjType);
+                            if (supportedObjType == null) {
+                                this.deleteMemberShip(con, config, principalName, objectType);
+                            } else {
+                                this.manageMemberShip(con, config, principalName, objectType, att.getAttributeContainer().getAttributeList(),
+                                        supportedObjType);
+                            }
                         } else {
                             if (ctr != 0) {
                                 columns.append(",");
-                                values.append(",");
                             }
                             ctr++;
                             columns.append(att.getName() + "= ?");
@@ -536,7 +541,7 @@ public abstract class AbstractAppTableCommand<Request extends RequestType, Respo
 
                     int counter = 1;
                     for (ExtensibleAttribute a : attrList) {
-                        if (a.getObjectType().equalsIgnoreCase(objectType)) {
+                        if (a.getAttributeContainer() == null && a.getObjectType().equalsIgnoreCase(objectType)) {
                             setStatement(statement, counter++, a.getDataType(), a.getValue());
                         }
                     }
@@ -564,9 +569,24 @@ public abstract class AbstractAppTableCommand<Request extends RequestType, Respo
             return;
         }
 
-        String membershipTable = config.getUserGroupTableName();
-        String membershipUserColumn = config.getUserGroupTableNameUserId();
-        String membershipGroupColumn = config.getUserGroupTableNameGroupId();
+
+        String membershipTable = null;
+        String membershipUserColumn = null;
+        String membershipGroupColumn = null;
+        if (USER.equalsIgnoreCase(parentObjectType)
+                && GROUP.equalsIgnoreCase(childObjectType)) {
+            membershipTable = config.getUserGroupTableName();
+            membershipUserColumn = config.getUserGroupTableNameUserId();
+            membershipGroupColumn = config.getUserGroupTableNameGroupId();
+        }
+
+        if (GROUP.equalsIgnoreCase(parentObjectType)
+                && GROUP.equalsIgnoreCase(childObjectType)) {
+            membershipTable = config.getGroupGroupTableName();
+            membershipUserColumn = config.getGroupGroupTableNameGroupId();
+            membershipGroupColumn = config.getGroupGroupTableNameGroupChildId();
+        }
+
         List<String> childIds = new ArrayList<>();
         for (BaseAttribute ba : childs) {
             childIds.add(createNewExtensibleObject(ba).getObjectId());
@@ -574,8 +594,7 @@ public abstract class AbstractAppTableCommand<Request extends RequestType, Respo
 
         if (!StringUtils.isEmpty(membershipTable) && !StringUtils.isEmpty(membershipUserColumn)
                 && !StringUtils.isEmpty(membershipGroupColumn) && !CollectionUtils.isEmpty(childIds)
-                && !StringUtils.isEmpty(parentId) && "USER".equalsIgnoreCase(parentObjectType)
-                && "GROUP".equalsIgnoreCase(childObjectType)) {
+                && !StringUtils.isEmpty(parentId)) {
             PreparedStatement ps = null;
             // select all linked groups
             String selectLindedGroupdIdsSQL = "select %s from %s where %s = ? ";
@@ -630,7 +649,7 @@ public abstract class AbstractAppTableCommand<Request extends RequestType, Respo
                 grouptIdsClause.append(")");
                 sql += grouptIdsClause.toString();
 
-                log.debug("SQL CLAUSE TO DELETE GROUPS=" + sql);
+                log.debug("SQL CLAUSE TO DELETE MAMBERSHIP OF " + childObjectType + "=" + sql);
                 // check is exist
                 sql = String.format(sql, membershipTable, membershipUserColumn);
                 ps = con.prepareStatement(sql);
@@ -642,7 +661,7 @@ public abstract class AbstractAppTableCommand<Request extends RequestType, Respo
                 try {
                     ps.executeUpdate();
                 } catch (Exception e) {
-                    log.error("Exception during delete Group from User");
+                    log.error(String.format("Exception during delete %s from %s", childObjectType, parentObjectType));
                     log.error(e);
                 }
             }
@@ -652,12 +671,31 @@ public abstract class AbstractAppTableCommand<Request extends RequestType, Respo
 
     protected void deleteMemberShip(Connection con, AppTableConfiguration config, String parentId,
                                     String parentObjectType) throws Exception {
-        String membershipTable = config.getUserGroupTableName();
-        String membershipUserColumn = config.getUserGroupTableNameUserId();
-        if (!StringUtils.isEmpty(membershipTable) && !StringUtils.isEmpty(membershipUserColumn)
-                && !StringUtils.isEmpty(parentId) && "USER".equalsIgnoreCase(parentObjectType)) {
+
+        if (StringUtils.isEmpty(parentId) || StringUtils.isEmpty(parentObjectType))
+            return;
+
+        String membershipTable = null;
+        String membershipKeyDeletionColumn = null;
+        String membershipKeyChildDeletionColumn = null;
+        if (USER.equalsIgnoreCase(parentObjectType)) {
+            membershipTable = config.getUserGroupTableName();
+            membershipKeyDeletionColumn = config.getUserGroupTableNameUserId();
+        }
+
+        if (GROUP.equalsIgnoreCase(parentObjectType)) {
+            membershipTable = config.getGroupGroupTableName();
+            membershipKeyDeletionColumn = config.getGroupGroupTableNameGroupId();
+            membershipKeyChildDeletionColumn = config.getGroupGroupTableNameGroupChildId();
+        }
+        deleteStatement(con, parentId, membershipTable, membershipKeyDeletionColumn);
+        deleteStatement(con, parentId, membershipTable, membershipKeyChildDeletionColumn);
+    }
+
+    private void deleteStatement(Connection con, String parentId, String membershipTable, String membershipKeyDeletionColumn) throws SQLException {
+        if (!StringUtils.isEmpty(membershipTable) && !StringUtils.isEmpty(membershipKeyDeletionColumn)) {
             String sql = "DELETE FROM %s WHERE %s = ?";
-            sql = String.format(sql, membershipTable, membershipUserColumn);
+            sql = String.format(sql, membershipTable, membershipKeyDeletionColumn);
             PreparedStatement ps = con.prepareStatement(sql);
             ps.setString(1, parentId);
             ps.executeUpdate();
