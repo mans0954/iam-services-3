@@ -11,8 +11,10 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.base.BaseAttribute;
 import org.openiam.base.BaseProperty;
@@ -26,6 +28,7 @@ import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.dto.PolicyMapDataTypeOptions;
 import org.openiam.idm.srvc.mngsys.dto.PolicyMapObjectTypeOptions;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
+import org.openiam.idm.srvc.synch.dto.Attribute;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
 
@@ -136,6 +139,8 @@ public abstract class AbstractAppTableCommand<Request extends RequestType, Respo
         final String USER_STATUS_INACTIVE = "USER_STATUS_INACTIVE";
         final String INCLUDE_IN_PASSWORD_SYNC = "INCLUDE_IN_PASSWORD_SYNC";
         final String INCLUDE_IN_STATUS_SYNC = "INCLUDE_IN_STATUS_SYNC";
+        final String GROUP_TO_GROUP_PK_GENERATOR = "GROUP_TO_GROUP_PK_COLUMN_NAME";
+        final String USER_TO_GROUP_PK_GENERATOR = "USER_TO_GROUP_PK_COLUMN_NAME";
 
         AppTableConfiguration configuration = super.getConfiguration(targetID, AppTableConfiguration.class);
 
@@ -221,14 +226,16 @@ public abstract class AbstractAppTableCommand<Request extends RequestType, Respo
         if (groupGroupGrpChldId != null)
             configuration.setGroupGroupTableNameGroupChildId(groupGroupGrpChldId.getValue());
 
-        return configuration;
-    }
+        final ResourceProp groupGroupPKGenerator = configuration.getResource().getResourceProperty(
+                GROUP_TO_GROUP_PK_GENERATOR);
+        if (groupGroupPKGenerator != null)
+            configuration.setGroupToGroupPKGenerator(groupGroupPKGenerator.getValue());
+        final ResourceProp userGroupPKGenerator = configuration.getResource().getResourceProperty(
+                USER_TO_GROUP_PK_GENERATOR);
+        if (userGroupPKGenerator != null)
+            configuration.setUserToGroupPKGenerator(userGroupPKGenerator.getValue());
 
-    protected void setStatement(PreparedStatement statement, int column, ExtensibleAttribute att)
-            throws ConnectorDataException {
-        final String dataType = att.getDataType();
-        final String dataValue = att.getValue();
-        setStatement(statement, column, dataType, dataValue);
+        return configuration;
     }
 
     protected void setStatement(PreparedStatement statement, int column, String dataType, String value)
@@ -344,57 +351,6 @@ public abstract class AbstractAppTableCommand<Request extends RequestType, Respo
             throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, e.getMessage());
         }
     }
-
-
-//    protected PreparedStatement createChangeStatusStatement(final Connection con, final AppTableConfiguration configuration,
-//                                                           final String tableName, final String principalName, final String password) throws ConnectorDataException {
-//        String colName = null;
-//        String colDataType = null;
-//
-//        final List<AttributeMapEntity> attrMap = attributeMaps(configuration.getResourceId());
-//        if (attrMap == null)
-//            throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, "Attribute Map is null");
-//
-//        String principalFieldName = null;
-//        String principalFieldDataType = null;
-//        String statusFieldName = configuration.getPrincipalPassword();
-//        for (final AttributeMapEntity atr : attrMap) {
-//            if (atr.getDataType() == null) {
-//                atr.setDataType(PolicyMapDataTypeOptions.STRING);
-//            }
-//
-//            if (StringUtils.equalsIgnoreCase(atr.getAttributeName(), statusFieldName)) {
-//                colName = atr.getAttributeName();
-//                colDataType = atr.getDataType().getValue();
-//            }
-//
-//            if (StringUtils.equalsIgnoreCase(atr.getMapForObjectType(), "principal")) {
-//                principalFieldName = atr.getAttributeName();
-//                principalFieldDataType = atr.getDataType().getValue();
-//
-//            }
-//        }
-//
-//        final String sql = String.format(UPDATE_SQL, tableName, colName, principalFieldName);
-//
-//        if (log.isDebugEnabled()) {
-//            log.debug(String.format("SQL: %s", sql));
-//        }
-//
-//        PreparedStatement statement = null;
-//        try {
-//            statement = con.prepareStatement(sql);
-//            setStatement(statement, 1, colDataType, password);
-//            setStatement(statement, 2, principalFieldDataType, principalName);
-//            return statement;
-//        } catch (SQLException e) {
-//            log.error(e.getMessage(), e);
-//            throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, e.getMessage());
-//        } finally {
-//            this.closeStatement(statement);
-//        }
-//    }
-
 
     protected boolean addObject(Connection con, String principalName, ExtensibleObject object,
                                 AppTableConfiguration config, String objectType) throws ConnectorDataException {
@@ -568,16 +524,16 @@ public abstract class AbstractAppTableCommand<Request extends RequestType, Respo
             log.debug("No any linked entities");
             return;
         }
-
-
         String membershipTable = null;
         String membershipUserColumn = null;
         String membershipGroupColumn = null;
+        String pkMembershipName = null;
         if (USER.equalsIgnoreCase(parentObjectType)
                 && GROUP.equalsIgnoreCase(childObjectType)) {
             membershipTable = config.getUserGroupTableName();
             membershipUserColumn = config.getUserGroupTableNameUserId();
             membershipGroupColumn = config.getUserGroupTableNameGroupId();
+            pkMembershipName = config.getUserToGroupPKGenerator();
         }
 
         if (GROUP.equalsIgnoreCase(parentObjectType)
@@ -585,6 +541,7 @@ public abstract class AbstractAppTableCommand<Request extends RequestType, Respo
             membershipTable = config.getGroupGroupTableName();
             membershipUserColumn = config.getGroupGroupTableNameGroupId();
             membershipGroupColumn = config.getGroupGroupTableNameGroupChildId();
+            pkMembershipName = config.getUserToGroupPKGenerator();
         }
 
         List<String> childIds = new ArrayList<>();
@@ -619,19 +576,35 @@ public abstract class AbstractAppTableCommand<Request extends RequestType, Respo
             String sql = null;
             if (CollectionUtils.isNotEmpty(childIds)) {
                 //add from childIds
-                sql = "INSERT INTO %s (%s,%s) VALUES (?,?)";
+                sql = null;
+                boolean isUsePK = false;
+                if (StringUtils.isNotBlank(pkMembershipName)) {
+                    sql = "INSERT INTO %s (%s,%s,%s) VALUES (?,?,?)";
+                    isUsePK = true;
+                } else {
+                    sql = "INSERT INTO %s (%s,%s) VALUES (?,?)";
+                }
                 String sqlPrepared = null;
                 try {
                     for (String childId : childIds) {
-                        sqlPrepared = String.format(sql, membershipTable, membershipUserColumn, membershipGroupColumn);
+                        if (isUsePK) {
+                            sqlPrepared = String.format(sql, membershipTable, membershipUserColumn, membershipGroupColumn, pkMembershipName);
+                        } else {
+                            sqlPrepared = String.format(sql, membershipTable, membershipUserColumn, membershipGroupColumn);
+
+                        }
                         ps = con.prepareStatement(sqlPrepared);
                         ps.setString(1, parentId);
                         ps.setString(2, childId);
+                        if (isUsePK) {
+                            ps.setString(3, parentId + "_" + childId);
+                        }
                         ps.executeUpdate();
                     }
                 } catch (Exception e) {
                     log.error("Exception during add Group to User");
                     log.error(e);
+                    throw new ConnectorDataException(ErrorCode.SQL_ERROR, e);
                 }
             }
             //delete from groupIdsFromTargetSystem
@@ -663,6 +636,7 @@ public abstract class AbstractAppTableCommand<Request extends RequestType, Respo
                 } catch (Exception e) {
                     log.error(String.format("Exception during delete %s from %s", childObjectType, parentObjectType));
                     log.error(e);
+                    throw new ConnectorDataException(ErrorCode.SQL_ERROR, e);
                 }
             }
 

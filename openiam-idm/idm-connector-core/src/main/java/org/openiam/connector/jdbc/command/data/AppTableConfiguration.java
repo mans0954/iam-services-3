@@ -17,6 +17,8 @@ public class AppTableConfiguration extends ConnectorConfiguration {
     private String userStatus;
     private String activeUserStatus;
     private String inactiveUserStatus;
+    private String userToGroupPKGenerator;
+    private String groupToGroupPKGenerator;
 
 
     public void setUserTableName(String tableName) {
@@ -132,6 +134,22 @@ public class AppTableConfiguration extends ConnectorConfiguration {
         this.inactiveUserStatus = inactiveUserStatus;
     }
 
+    public String getUserToGroupPKGenerator() {
+        return userToGroupPKGenerator;
+    }
+
+    public void setUserToGroupPKGenerator(String userToGroupPKGenerator) {
+        this.userToGroupPKGenerator = userToGroupPKGenerator;
+    }
+
+    public String getGroupToGroupPKGenerator() {
+        return groupToGroupPKGenerator;
+    }
+
+    public void setGroupToGroupPKGenerator(String groupToGroupPKGenerator) {
+        this.groupToGroupPKGenerator = groupToGroupPKGenerator;
+    }
+
     @Override
     public String toString() {
         return "AppTableConfiguration{" +
@@ -149,6 +167,8 @@ public class AppTableConfiguration extends ConnectorConfiguration {
                 ", userStatus='" + userStatus + '\'' +
                 ", activeUserStatus='" + activeUserStatus + '\'' +
                 ", inactiveUserStatus='" + inactiveUserStatus + '\'' +
+                ", userToGroupPKGenerator='" + userToGroupPKGenerator + '\'' +
+                ", groupToGroupPKGenerator='" + groupToGroupPKGenerator + '\'' +
                 '}';
     }
 }
