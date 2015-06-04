@@ -42,6 +42,7 @@ import org.openiam.connector.type.response.*;
 import org.openiam.exception.EsbErrorToken;
 import org.openiam.exception.ObjectNotFoundException;
 import org.openiam.exception.ScriptEngineException;
+import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.searchbeans.RoleSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
@@ -75,6 +76,7 @@ import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
+import org.openiam.idm.srvc.user.dto.UserToResourceMembershipXref;
 import org.openiam.provision.dto.AccountLockEnum;
 import org.openiam.provision.dto.PasswordSync;
 import org.openiam.provision.dto.ProvisionUser;
@@ -98,9 +100,11 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.jws.WebParam;
 import javax.jws.WebService;
+
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * DefaultProvisioningService is responsible for receiving and processing
@@ -1120,12 +1124,17 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         resourceSet.addAll(getResourcesForRoles(roleSet));
         resourceSet.addAll(getResourcesForGroups(groupSet));
 
-        List<Organization> orgs = orgManager.getOrganizationsForUser(pUser.getId(), null, 0, 100);
-        for (Organization org : orgs) {
-            Resource res = resourceDataService.getResource(org.getAdminResourceId(), null);
-            if (res != null) {
-                resourceSet.add(res);
-            }
+        final OrganizationSearchBean sb = new OrganizationSearchBean();
+        sb.setDeepCopy(false);
+        sb.addUserId(pUser.getId());
+        final List<Organization> orgs = orgManager.findBeans(sb, null, 0, Integer.MAX_VALUE);
+        if(CollectionUtils.isNotEmpty(orgs)) {
+	        for (Organization org : orgs) {
+	            Resource res = resourceDataService.getResource(org.getAdminResourceId(), null);
+	            if (res != null) {
+	                resourceSet.add(res);
+	            }
+	        }
         }
 
 
@@ -2413,8 +2422,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         Set<Organization> existingOrganizations = pUser.getAffiliations();
                         pUser.setAffiliations(new HashSet<Organization>());
 
-                        Set<Resource> existingResources = pUser.getResources();
-                        pUser.setResources(new HashSet<Resource>());
+                        final Set<String> existingResourceIds = (pUser.getResources() != null) ?
+                        		pUser.getResources().stream().map(e -> e.getEntityId()).collect(Collectors.toSet()) : 
+                        		new HashSet<String>();
+                        pUser.setResources(new HashSet<UserToResourceMembershipXref>());
 
                         Response res = new Response(ResponseStatus.FAILURE);
                         for (OperationBean ob : bulkRequest.getOperations()) {
@@ -2567,21 +2578,21 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 case RESOURCE:
                                     boolean isModifiedResource = false;
                                     Resource resource = resourceService.getResourceDTO(ob.getObjectId());
-                                    if (existingResources.contains(resource)) {
+                                    if (existingResourceIds.contains(resource.getId())) {
                                         if (BulkOperationEnum.DELETE_ENTITLEMENT.equals(ob.getOperation())) {
-                                            existingResources.remove(resource);
+                                        	existingResourceIds.remove(resource.getId());
                                             resource.setOperation(AttributeOperationEnum.DELETE);
                                             isModifiedResource = true;
                                         }
                                     } else {
                                         if (BulkOperationEnum.ADD_ENTITLEMENT.equals(ob.getOperation())) {
-                                            existingResources.add(resource);
+                                        	existingResourceIds.add(resource.getId());
                                             resource.setOperation(AttributeOperationEnum.ADD);
                                             isModifiedResource = true;
                                         }
                                     }
                                     if (isModifiedResource) {
-                                        pUser.getResources().add(resource);
+                                        pUser.addResource(resource, ob.getRightIds());
                                         isEntitlementModified = true;
                                     }
                                     break;

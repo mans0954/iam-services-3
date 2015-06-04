@@ -135,8 +135,9 @@ public interface ResourceDataService {
      */
     @WebMethod
     Response addUserToResource(final @WebParam(name = "resourceId", targetNamespace = "") String resourceId,
-	    final @WebParam(name = "userId", targetNamespace = "") String userId,
-        final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+    						   final @WebParam(name = "userId", targetNamespace = "") String userId,
+    						   final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
+    						   final @WebParam(name = "rightIds", targetNamespace = "") Set<String> rightIds);
 
     /**
      * Disentitled a User from a Resource

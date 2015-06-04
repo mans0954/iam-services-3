@@ -20,6 +20,7 @@ import org.openiam.core.dao.UserKeyDao;
 import org.openiam.dozer.converter.*;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.*;
+import org.openiam.idm.srvc.access.service.AccessRightDAO;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.auth.login.AuthStateDAO;
@@ -168,6 +169,9 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
     private RoleDataService roleDataService;
     @Autowired
     private ApproverAssociationDAO approverAssociationDAO;
+    
+    @Autowired
+    private AccessRightDAO accessRightDAO;
 
     @Value("${org.openiam.user.search.max.results}")
     private int MAX_USER_SEARCH_RESULTS;
@@ -2441,17 +2445,27 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
     @Override
     @Transactional
     public void removeUserFromResource(String userId, String resourceId) {
-    	 final ResourceEntity resourceEntity = resourceDAO.findById(resourceId);
-    	 final UserEntity userEntity = userDao.findById(userId);
-    	 userEntity.removeResource(resourceEntity);
+    	 final ResourceEntity resource = resourceDAO.findById(resourceId);
+    	 final UserEntity user = userDao.findById(userId);
+    	 if(resource != null && user != null) {
+    		 resource.removeUser(user);
+    		 resourceDAO.update(resource);
+    		 //user.removeResource(resource);
+    		 //userDao.update(user); 
+    	 }
     }
 
     @Override
     @Transactional
-    public void addUserToResource(String userId, String resourceId) {
-    	final ResourceEntity resourceEntity = resourceDAO.findById(resourceId);
-    	final UserEntity userEntity = userDao.findById(userId);
-    	userEntity.addResource(resourceEntity);
+    public void addUserToResource(final String userId, final String resourceId, final Set<String> rightIds) {
+    	final ResourceEntity resource = resourceDAO.findById(resourceId);
+    	final UserEntity user = userDao.findById(userId);
+    	if(resource != null && user != null) {
+    		resource.addUser(user, accessRightDAO.findByIds(rightIds));
+    		resourceDAO.update(resource);
+    		//user.addResource(resource, accessRightDAO.findByIds(rightIds));
+    		//userDao.update(user);
+    	}
     }
 
 

@@ -390,10 +390,11 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
         return response;
     }
 
+    //DO NOT PUT TRANSACTIONAL HERE!!  The underlying collections that get modified won't persist.
     @Override
-    @Transactional
+    //@Transactional
     @CacheEvict(value = "resources", allEntries=true)
-    public Response addUserToResource(final String resourceId, final String userId, final String requesterId) {
+    public Response addUserToResource(final String resourceId, final String userId, final String requesterId, final Set<String> rightIds) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLog idmAuditLog = new IdmAuditLog ();
         idmAuditLog.setRequestorUserId(requesterId);
@@ -410,7 +411,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "ResourceId or UserId is not set");
             }
 
-            userDataService.addUserToResource(userId, resourceId);
+            userDataService.addUserToResource(userId, resourceId, rightIds);
             idmAuditLog.succeed();
         } catch (BasicDataServiceException e) {
             response.setErrorCode(e.getCode());

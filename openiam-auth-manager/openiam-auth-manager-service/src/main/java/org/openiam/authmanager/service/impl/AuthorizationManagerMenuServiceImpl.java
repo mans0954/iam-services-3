@@ -562,9 +562,7 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
             if(CollectionUtils.isNotEmpty(menuEntitlementsRequest.getDisentitled())) {
                 List<ResourceEntity> resourceEntities = resourceDAOHibernate.findByIds(menuEntitlementsRequest.getDisentitled());
                 for(ResourceEntity resourceEntity : resourceEntities) {
-                    if(userEntity.getResources().contains(resourceEntity)) {
-                        userEntity.getResources().remove(resourceEntity);
-                    }
+                	resourceEntity.removeUser(userEntity);
                 }
 
             }
@@ -572,7 +570,7 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
             if(CollectionUtils.isNotEmpty(menuEntitlementsRequest.getNewlyEntitled())) {
                 List<ResourceEntity> resourceEntities = resourceDAOHibernate.findByIds(menuEntitlementsRequest.getNewlyEntitled());
                 for(ResourceEntity resourceEntity : resourceEntities) {
-                       userEntity.getResources().add(resourceEntity);
+                	resourceEntity.addUser(userEntity, accessRightDAO.findAll());
                 }
 
             }
@@ -582,9 +580,7 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
             if(CollectionUtils.isNotEmpty(menuEntitlementsRequest.getDisentitled())) {
                 List<ResourceEntity> resourceEntities = resourceDAOHibernate.findByIds(menuEntitlementsRequest.getDisentitled());
                 for(ResourceEntity resourceEntity : resourceEntities) {
-                    if(groupEntity.getResources().contains(resourceEntity)) {
-                        groupEntity.getResources().remove(resourceEntity);
-                    }
+                	groupEntity.removeResource(resourceEntity);
                 }
             }
 

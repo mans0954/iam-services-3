@@ -147,7 +147,7 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         roles = user.getRoles();
         groups = user.getGroups();
         affiliations = user.getAffiliations();
-        resources = user.getResources();
+        setResources(user.getResources());
         setPassword(user.getPassword());
         setLogin(user.getLogin());
         if (user instanceof ProvisionUser) {
@@ -211,7 +211,7 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         user.setRoles(roles);
         user.setGroups(groups);
         user.setAffiliations(affiliations);
-        user.setResources(resources);
+        user.setResources(getResources());
         user.setUserOwnerId(userOwnerId);
         user.setDateChallengeRespChanged(dateChallengeRespChanged);
         user.setDatePasswordChanged(datePasswordChanged);

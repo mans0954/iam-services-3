@@ -8,11 +8,13 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.openiam.base.KeyDTO;
 import org.openiam.base.domain.KeyEntity;
 import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.searchbeans.RoleSearchBean;
+import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.entitlements.AbstractEntitlementsDTO;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.domain.GroupToGroupMembershipXrefEntity;
@@ -27,6 +29,8 @@ import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.domain.RoleToRoleMembershipXrefEntity;
 import org.openiam.idm.srvc.membership.domain.AbstractMembershipXrefEntity;
 import org.openiam.idm.srvc.role.dto.Role;
+import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.idm.srvc.user.dto.User;
 import org.springframework.stereotype.Component;
 
 /**
@@ -53,11 +57,18 @@ import org.springframework.stereotype.Component;
 @Component
 public class AccessRightProcessor {
 	
-	private <T extends AbstractEntitlementsDTO> Map<String, T> transform(final List<T> dtoList) {
+	private <T extends KeyDTO> Map<String, T> transform(final List<T> dtoList) {
 		return dtoList.stream().collect(Collectors.toMap(T::getId, Function.identity()));
 	}
 	
 	private <T extends AbstractEntitlementsDTO> void setRights(final Map<String, T> dtoMap, final AbstractMembershipXrefEntity xref, final KeyEntity entity) {
+		if(xref != null && xref.getRights() != null) {
+			final List<String> rightIds = xref.getRights().stream().map(e -> e.getId()).collect(Collectors.toList());
+			dtoMap.get(entity.getId()).setAccessRightIds(rightIds);
+		}
+	}
+	
+	private void setRightsForUser(final Map<String, User> dtoMap, final AbstractMembershipXrefEntity xref, final KeyEntity entity) {
 		if(xref != null && xref.getRights() != null) {
 			final List<String> rightIds = xref.getRights().stream().map(e -> e.getId()).collect(Collectors.toList());
 			dtoMap.get(entity.getId()).setAccessRightIds(rightIds);
@@ -70,6 +81,24 @@ public class AccessRightProcessor {
 		}
 	}
 
+	public void process(final UserSearchBean searchBean, final List<User> dtoList, final List<UserEntity> entityList) {
+		if(searchBean != null) {
+        	if(searchBean.isIncludeAccessRights()) {
+        		if(CollectionUtils.isNotEmpty(entityList)) {
+        			final Map<String, User> dtoMap = transform(dtoList);
+        			entityList.forEach(entity -> {
+        				if(CollectionUtils.isNotEmpty(searchBean.getResourceIdSet())) {
+        					assertLength(searchBean.getResourceIdSet());
+        					final String entityId = searchBean.getResourceIdSet().iterator().next();
+        					final AbstractMembershipXrefEntity xref = entity.getResource(entityId);
+        					setRightsForUser(dtoMap, xref, entity);
+        				}
+        			});
+        		}
+        	}
+		}
+	}
+	
 	public void process(final OrganizationSearchBean searchBean, final List<Organization> dtoList, final List<OrganizationEntity> entityList) {
 		if(searchBean != null) {
         	if(searchBean.isIncludeAccessRights()) {
@@ -101,6 +130,11 @@ public class AccessRightProcessor {
 		        			final String queryId = searchBean.getResourceIdSet().iterator().next();
 		        			final AbstractMembershipXrefEntity xref = entity.getResource(queryId);
 		        			setRights(dtoMap, xref, entity);
+		        		} else if(CollectionUtils.isNotEmpty(searchBean.getUserIdSet())) {
+		        			assertLength(searchBean.getUserIdSet());
+		        			final String entityId = searchBean.getUserIdSet().iterator().next();
+		        			//final AbstractMembershipXrefEntity xref = entity.getUser(entityId);
+		        			//setRights(dtoMap, xref, entity);
 		        		}
 			        });
 	        	}
@@ -139,6 +173,11 @@ public class AccessRightProcessor {
 		        			final String entityId = searchBean.getGroupIdSet().iterator().next();
 		        			final AbstractMembershipXrefEntity xref = entity.getGroup(entityId);
 		        			setRights(dtoMap, xref, entity);
+		        		} else if(CollectionUtils.isNotEmpty(searchBean.getUserIdSet())) {
+		        			assertLength(searchBean.getUserIdSet());
+		        			final String entityId = searchBean.getUserIdSet().iterator().next();
+		        			//final AbstractMembershipXrefEntity xref = entity.getUser(entityId);
+		        			//setRights(dtoMap, xref, entity);
 		        		}
 			        });
 	        	}
@@ -177,6 +216,11 @@ public class AccessRightProcessor {
 		        			final String entityId = searchBean.getRoleIdSet().iterator().next();
 		        			final AbstractMembershipXrefEntity xref = entity.getRole(entityId);
 		        			setRights(dtoMap, xref, entity);
+		        		} else if(CollectionUtils.isNotEmpty(searchBean.getUserIdSet())) {
+		        			assertLength(searchBean.getUserIdSet());
+		        			final String entityId = searchBean.getUserIdSet().iterator().next();
+		        			//final AbstractMembershipXrefEntity xref = entity.getUser(entityId);
+		        			//setRights(dtoMap, xref, entity);
 		        		}
 			        });
 	        	}
@@ -214,6 +258,11 @@ public class AccessRightProcessor {
 		        			assertLength(searchBean.getRoleIdSet());
 		        			final String entityId = searchBean.getRoleIdSet().iterator().next();
 		        			final AbstractMembershipXrefEntity xref = entity.getRole(entityId);
+		        			setRights(dtoMap, xref, entity);
+		        		} else if(CollectionUtils.isNotEmpty(searchBean.getUserIdSet())) {
+		        			assertLength(searchBean.getUserIdSet());
+		        			final String entityId = searchBean.getUserIdSet().iterator().next();
+		        			final AbstractMembershipXrefEntity xref = entity.getUser(entityId);
 		        			setRights(dtoMap, xref, entity);
 		        		}
 			        });

@@ -21,6 +21,7 @@ import org.openiam.connector.type.response.ResponseType;
 import org.openiam.connector.type.response.SearchResponse;
 import org.openiam.dozer.converter.*;
 import org.openiam.exception.ObjectNotFoundException;
+import org.openiam.idm.srvc.access.service.AccessRightDAO;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
@@ -82,6 +83,7 @@ import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
+import org.openiam.idm.srvc.user.dto.UserToResourceMembershipXref;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.PasswordSync;
 import org.openiam.provision.dto.ProvisionActionEvent;
@@ -100,8 +102,10 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 
 import javax.annotation.PostConstruct;
+
 import java.util.*;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 /**
  * Base class for the provisioning service
@@ -247,6 +251,9 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     protected AuditLogService auditLogService;
     @Autowired
     protected MetadataTypeDAO metadataTypeDAO;
+    
+    @Autowired
+    private AccessRightDAO accessRightDAO;
 
     @Autowired
     private ManagedSystemObjectMatchDozerConverter managedSystemObjectMatchDozerConverter;
@@ -1526,22 +1533,26 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     }
 
     public void updateResources(final UserEntity userEntity, final ProvisionUser pUser, final Set<Resource> resourceSet, final Set<Resource> deleteResourceSet, final IdmAuditLog parentLog) {
-
-        Set<Resource> ar = resourceDozerConverter.convertToDTOSet(userEntity.getResources(), false);
+    	final Set<ResourceEntity> userEntityResources = (userEntity.getResources() != null) ? 
+    			userEntity.getResources().stream().map(e -> e.getEntity()).collect(Collectors.toSet()) : null;
+        final Set<Resource> ar = resourceDozerConverter.convertToDTOSet(userEntityResources, false);
         resourceSet.addAll(ar);
 
         if (CollectionUtils.isNotEmpty(pUser.getResources())) {
             Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
-            for (Resource r : pUser.getResources()) {
-                AttributeOperationEnum operation = r.getOperation();
+            for (final UserToResourceMembershipXref xref : pUser.getResources()) {
+                final AttributeOperationEnum operation = xref.getOperation();
+                final String resourceId = xref.getEntityId();
+                final Resource r = resourceDataService.getResource(resourceId, null);
                 if (operation == null) {
                     continue;
                 } else if (operation == AttributeOperationEnum.ADD) {
-                    ResourceEntity resEntity = resourceService.findResourceById(r.getId());
-                    userEntity.getResources().add(resEntity);
+                    final ResourceEntity resEntity = resourceService.findResourceById(resourceId);
+                    //resEntity.addUser(userEntity, accessRightDAO.findByIds(xref.getAccessRightIds()));
+                    userEntity.addResource(resEntity, accessRightDAO.findByIds(xref.getAccessRightIds()));
                     resourceSet.add(r);
                     // Audit Log ---------------------------------------------------
-                    IdmAuditLog auditLog = new IdmAuditLog();
+                    final IdmAuditLog auditLog = new IdmAuditLog();
                     auditLog.setAction(AuditAction.ADD_USER_TO_RESOURCE.value());
 
                     String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
@@ -1551,14 +1562,15 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     parentLog.addChild(auditLog);
                     // --------------------------------------------------------------
                 } else if (operation == AttributeOperationEnum.DELETE) {
-                    ResourceEntity re = resourceService.findResourceById(r.getId());
-                    userEntity.getResources().remove(re);
+                	final ResourceEntity re = resourceService.findResourceById(resourceId);
+                    userEntity.removeResource(re);
+                	//re.removeUser(userEntity);
                     resourceSet.remove(r);
                     deleteResourceSet.add(r);
                     // Audit Log ---------------------------------------------------
-                    IdmAuditLog auditLog = new IdmAuditLog();
+                    final IdmAuditLog auditLog = new IdmAuditLog();
                     auditLog.setAction(AuditAction.REMOVE_USER_FROM_RESOURCE.value());
-                    String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
+                    final String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
                     auditLog.setTargetUser(pUser.getId(), loginStr);
                     auditLog.setTargetResource(re.getId(), re.getName());
                     auditLog.addCustomRecord("RESOURCE", re.getName());

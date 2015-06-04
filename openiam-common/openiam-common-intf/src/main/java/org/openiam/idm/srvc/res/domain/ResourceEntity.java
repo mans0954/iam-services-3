@@ -17,6 +17,7 @@ import org.openiam.idm.srvc.res.dto.ResourceRisk;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.domain.RoleToResourceMembershipXrefEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.idm.srvc.user.domain.UserToResourceMembershipXrefEntity;
 import org.openiam.internationalization.Internationalized;
 import org.openiam.internationalization.InternationalizedCollection;
 
@@ -85,9 +86,9 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<ResourcePropEntity> resourceProps = new HashSet<ResourcePropEntity>(0); // defined as a Set in Hibernate map
 
-    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    @JoinTable(name = "RESOURCE_USER", joinColumns = { @JoinColumn(name = "RESOURCE_ID") }, inverseJoinColumns = { @JoinColumn(name = "USER_ID") })
-    private Set<UserEntity> users;
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="entity", orphanRemoval=true)
+    @Fetch(FetchMode.SUBSELECT)
+    private Set<UserToResourceMembershipXrefEntity> users = new HashSet<UserToResourceMembershipXrefEntity>(0);
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="memberEntity", orphanRemoval=true)
     @Fetch(FetchMode.SUBSELECT)
@@ -301,22 +302,55 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
 		this.adminResource = adminResource;
 	}
 
-	public Set<UserEntity> getUsers() {
+	public Set<UserToResourceMembershipXrefEntity> getUsers() {
         return users;
     }
 
-    public void setUsers(Set<UserEntity> users) {
+    public void setUsers(Set<UserToResourceMembershipXrefEntity> users) {
         this.users = users;
     }
     
-    public void addUser(final UserEntity user) {
-    	if(user != null) {
-    		if(this.users == null) {
-    			this.users = new HashSet<UserEntity>();
-    		}
-    		this.users.add(user);
-    	}
+    public void removeUser(final UserEntity entity) {
+    	if(entity != null) {
+			if(this.users != null) {
+				this.users.removeIf(e -> e.getMemberEntity().getId().equals(entity.getId()));
+			}
+		}
     }
+    
+    public void addUser(final UserEntity entity, final Collection<AccessRightEntity> rights) {
+    	if(entity != null) {
+			if(this.users == null) {
+				this.users = new LinkedHashSet<UserToResourceMembershipXrefEntity>();
+			}
+			UserToResourceMembershipXrefEntity theXref = null;
+			for(final UserToResourceMembershipXrefEntity xref : this.users) {
+				if(xref.getEntity().getId().equals(getId()) && xref.getMemberEntity().getId().equals(entity.getId())) {
+					theXref = xref;
+					break;
+				}
+			}
+			
+			if(theXref == null) {
+				theXref = new UserToResourceMembershipXrefEntity();
+				theXref.setEntity(this);
+				theXref.setMemberEntity(entity);
+			}
+			if(rights != null) {
+				theXref.setRights(new HashSet<AccessRightEntity>(rights));
+			}
+			this.users.add(theXref);
+		}
+    }
+    
+    public UserToResourceMembershipXrefEntity getUser(final String userId) {
+		final Optional<UserToResourceMembershipXrefEntity> xref = 
+    			this.getUsers()
+    				.stream()
+    				.filter(e -> userId.equals(e.getMemberEntity().getId()))
+    				.findFirst();
+    	return xref.isPresent() ? xref.get() : null;
+	}
 
     
 	public void addChildResource(final ResourceEntity resource, final Collection<AccessRightEntity> rights) {

@@ -14,6 +14,7 @@ import org.openiam.elasticsearch.constants.ESIndexName;
 import org.openiam.elasticsearch.constants.ESIndexType;
 import org.openiam.elasticsearch.constants.ElasticsearchStore;
 import org.openiam.elasticsearch.constants.Index;
+import org.openiam.idm.srvc.access.domain.AccessRightEntity;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
@@ -23,6 +24,8 @@ import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
+import org.openiam.idm.srvc.role.domain.RoleToGroupMembershipXrefEntity;
+import org.openiam.idm.srvc.role.domain.RoleToResourceMembershipXrefEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.internationalization.Internationalized;
@@ -30,9 +33,9 @@ import org.openiam.internationalization.Internationalized;
 import javax.persistence.CascadeType;
 import javax.persistence.*;
 import javax.persistence.Entity;
-import javax.persistence.MapKey;
 import javax.persistence.Table;
 import javax.validation.constraints.Size;
+
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -260,10 +263,9 @@ public class UserEntity extends KeyEntity {
     @Fetch(FetchMode.SUBSELECT)
 	private Set<OrganizationEntity> affiliations = new HashSet<OrganizationEntity>(0);
 
-    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
-    @JoinTable(name = "RESOURCE_USER", joinColumns = { @JoinColumn(name = "USER_ID") }, inverseJoinColumns = { @JoinColumn(name = "RESOURCE_ID") })
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="memberEntity", orphanRemoval=true)
     @Fetch(FetchMode.SUBSELECT)
-    private Set<ResourceEntity> resources = new HashSet<ResourceEntity>(0);
+    private Set<UserToResourceMembershipXrefEntity> resources = new HashSet<UserToResourceMembershipXrefEntity>(0);
 
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "employee", fetch = FetchType.LAZY)
     // @Fetch(FetchMode.SUBSELECT)
@@ -789,22 +791,56 @@ public class UserEntity extends KeyEntity {
         this.affiliations = affiliations;
     }
 
-    public Set<ResourceEntity> getResources() {
+    public Set<UserToResourceMembershipXrefEntity> getResources() {
         return resources;
     }
 
-    public void setResources(Set<ResourceEntity> resources) {
+    public void setResources(Set<UserToResourceMembershipXrefEntity> resources) {
         this.resources = resources;
     }
-
-    public void addResource(final ResourceEntity entity) {
+    
+    public UserToResourceMembershipXrefEntity getResource(final String resourceId) {
+		final Optional<UserToResourceMembershipXrefEntity> xref = 
+    			this.getResources()
+    				.stream()
+    				.filter(e -> resourceId.equals(e.getEntity().getId()))
+    				.findFirst();
+    	return xref.isPresent() ? xref.get() : null;
+	}
+    
+    public void removeResource(final ResourceEntity entity) {
     	if(entity != null) {
-    		if(this.resources == null) {
-    			this.resources = new HashSet<>();
-    		}
-    		this.resources.add(entity);
-    	}
+			if(this.resources != null) {
+				this.resources.removeIf(e -> e.getEntity().getId().equals(entity.getId()));
+			}
+		}
     }
+    
+    public void addResource(final ResourceEntity entity, final Collection<AccessRightEntity> rights) {
+		if(entity != null) {
+			if(this.resources == null) {
+				this.resources = new LinkedHashSet<UserToResourceMembershipXrefEntity>();
+			}
+			UserToResourceMembershipXrefEntity theXref = null;
+			for(final UserToResourceMembershipXrefEntity xref : this.resources) {
+				if(xref.getEntity().getId().equals(entity.getId()) && xref.getMemberEntity().getId().equals(getId())) {
+					theXref = xref;
+					break;
+				}
+			}
+			
+			if(theXref == null) {
+				theXref = new UserToResourceMembershipXrefEntity();
+				theXref.setEntity(entity);
+				theXref.setMemberEntity(this);
+			}
+			if(rights != null) {
+				theXref.setRights(new HashSet<AccessRightEntity>(rights));
+			}
+			this.resources.add(theXref);
+		}
+	}
+
     public void addRole(final RoleEntity entity) {
         if(entity != null) {
             if(this.roles == null) {
@@ -812,14 +848,6 @@ public class UserEntity extends KeyEntity {
             }
             this.roles.add(entity);
         }
-    }
-
-    public void removeResource(final ResourceEntity entity) {
-    	if(entity != null) {
-    		if(this.resources != null) {
-    			this.resources.remove(entity);
-    		}
-    	}
     }
 
     public void updateUser(UserEntity newUser) {

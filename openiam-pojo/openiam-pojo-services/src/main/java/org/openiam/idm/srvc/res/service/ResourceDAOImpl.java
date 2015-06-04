@@ -192,6 +192,12 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
                 criteria.add(Restrictions.eq("type.id", searchBean.getMetadataType()));
             }
             
+            if(CollectionUtils.isNotEmpty(searchBean.getResourceIdSet())){    
+                criteria.createAlias("resources", "resourceXrefs")
+						.createAlias("resourceXrefs.entity", "resource").add(
+						Restrictions.in("resource.id", searchBean.getResourceIdSet()));
+            }
+            
             if(CollectionUtils.isNotEmpty(searchBean.getRoleIdSet())){    
                 criteria.createAlias("roles", "roleXrefs")
 						.createAlias("roleXrefs.entity", "role").add(
@@ -222,10 +228,12 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 						Restrictions.in("organization.id", searchBean.getOrganizationIdSet()));
             }
 
-            if(CollectionUtils.isNotEmpty(searchBean.getUserIdSet())){
-                criteria.createAlias("users", "usr");
-                criteria.add(Restrictions.in("usr.id", searchBean.getUserIdSet()));
+            if(CollectionUtils.isNotEmpty(searchBean.getUserIdSet())){    
+                criteria.createAlias("users", "userXrefs")
+						.createAlias("userXrefs.memberEntity", "user").add(
+						Restrictions.in("user.id", searchBean.getUserIdSet()));
             }
+            
 			if(StringUtils.isNotBlank(searchBean.getAdminResourceId())){
 				criteria.add(Restrictions.eq("adminResource.id", searchBean.getAdminResourceId()));
 			}

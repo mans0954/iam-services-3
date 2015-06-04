@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.*;
@@ -283,7 +284,7 @@ public interface UserDataService {
 
     void removeUserFromResource(String userId, String resourceId);
     
-    void addUserToResource(String userId, String resourceId);
+    void addUserToResource(String userId, String resourceId, Set<String> rightIds);
 
     boolean isHasResource(String userId, String resourceId);
 

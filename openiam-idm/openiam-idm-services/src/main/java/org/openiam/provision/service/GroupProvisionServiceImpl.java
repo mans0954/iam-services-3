@@ -48,6 +48,7 @@ import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.idm.srvc.user.domain.UserToResourceMembershipXrefEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDataService;
@@ -469,8 +470,8 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
 
     private boolean isMemberAvailableInResource(final UserEntity member, final String resourceId) {
         boolean result = false;
-        for(ResourceEntity res : member.getResources()) {
-            if(res.getId().equalsIgnoreCase(resourceId)) {
+        for(final UserToResourceMembershipXrefEntity xref : member.getResources()) {
+            if(xref.getEntity().getId().equalsIgnoreCase(resourceId)) {
                 return true;
             }
         }

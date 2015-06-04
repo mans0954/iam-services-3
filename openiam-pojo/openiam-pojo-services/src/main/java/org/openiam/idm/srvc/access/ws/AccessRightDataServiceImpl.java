@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.access.ws;
 
+import java.util.Collection;
 import java.util.List;
 
 import javax.jws.WebService;
@@ -97,6 +98,13 @@ public class AccessRightDataServiceImpl extends AbstractBaseService implements A
 	@Override
 	public int count(AccessRightSearchBean searchBean) {
 		return service.count(searchBean);
+	}
+
+	@Override
+	public List<AccessRight> getByIds(final Collection<String> ids) {
+		final List<AccessRightEntity> entities = service.findByIds(ids);
+		final List<AccessRight> dtos = converter.convertToDTOList(entities, true);
+		return dtos;
 	}
 
 }

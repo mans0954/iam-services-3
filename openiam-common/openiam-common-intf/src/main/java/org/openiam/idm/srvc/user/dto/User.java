@@ -9,10 +9,13 @@ import org.openiam.base.AbstractMetadataTypeDTO;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseConstants;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.access.domain.AccessRightEntity;
+import org.openiam.idm.srvc.access.dto.AccessRight;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
+import org.openiam.idm.srvc.grp.domain.GroupToResourceMembershipXrefEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.res.dto.Resource;
@@ -24,7 +27,9 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * User domain object.  This object is used to transfer data between the service layer
@@ -90,7 +95,8 @@ import java.util.*;
         "affiliations",
         "supervisors",
         "subordinates",
-        "isFromActivitiCreation"
+        "isFromActivitiCreation",
+        "accessRightIds"
 })
 @XmlSeeAlso({
         Login.class,
@@ -226,7 +232,7 @@ public class User extends AbstractMetadataTypeDTO {
 
     protected Set<Group> groups = new HashSet<Group>(0);
 
-    protected Set<Resource> resources = new HashSet<Resource>(0);
+    protected Set<UserToResourceMembershipXref> resources = new HashSet<UserToResourceMembershipXref>(0);
 
     // these fields are used only when userWS is used directly without provision
     private String login;
@@ -239,6 +245,8 @@ public class User extends AbstractMetadataTypeDTO {
 
     private boolean isFromActivitiCreation = false;
     // Constructors
+    
+    private Set<String> accessRightIds;
 
     /**
      * default constructor
@@ -762,16 +770,16 @@ public class User extends AbstractMetadataTypeDTO {
         this.groups = groups;
     }
 
-    public Set<Resource> getResources() {
+    public Set<UserToResourceMembershipXref> getResources() {
         return resources;
     }
 
     public void markResourceAsDeleted(final String resourceId) {
         if (resourceId != null) {
             if (resources != null) {
-                for (final Resource resource : resources) {
-                    if (StringUtils.equals(resource.getId(), resourceId)) {
-                        resource.setOperation(AttributeOperationEnum.DELETE);
+                for (final UserToResourceMembershipXref xref : resources) {
+                    if (StringUtils.equals(xref.getEntityId(), resourceId)) {
+                    	xref.setOperation(AttributeOperationEnum.DELETE);
                         break;
                     }
                 }
@@ -779,17 +787,70 @@ public class User extends AbstractMetadataTypeDTO {
         }
     }
 
+    @Deprecated
     public void addResource(final Resource resource) {
-        if (resource != null) {
+    	addResource(resource, null);
+    }
+    
+    public void addResourceWithRights(final Resource resource, final Set<AccessRight> rights) {
+    	if (resource != null) {
             if (resources == null) {
-                resources = new HashSet<Resource>();
+                resources = new HashSet<UserToResourceMembershipXref>();
             }
-            resource.setOperation(AttributeOperationEnum.ADD);
-            resources.add(resource);
+            
+            UserToResourceMembershipXref theXref = null;
+			for(final UserToResourceMembershipXref xref : this.resources) {
+				if(xref.getMemberEntityId().equals(getId()) && xref.getEntityId().equals(resource.getId())) {
+					theXref = xref;
+					break;
+				}
+			}
+            
+            //resource.setOperation(AttributeOperationEnum.ADD);
+			if(theXref == null) {
+				theXref = new UserToResourceMembershipXref();
+				theXref.setEntityId(resource.getId());
+				theXref.setMemberEntityId(getId());
+			}
+			theXref.setOperation(AttributeOperationEnum.ADD);
+			if(rights != null) {
+				theXref.setRights(rights);
+			}
+			this.resources.add(theXref);
         }
     }
+    
+    public void removeResource(final Resource resource) {
+    	if(resource != null) {
+    		UserToResourceMembershipXref theXref = null;
+    		if(resources != null) {
+    			for(final UserToResourceMembershipXref xref : resources) {
+    				if(xref.getEntityId().equals(resource.getId())) {
+    					theXref = xref;
+    					break;
+    				}
+    			}
+    		}
+    		
+    		if(theXref != null) {
+    			theXref.setOperation(AttributeOperationEnum.DELETE);
+    		}
+    	}
+    }
+    
+    public void addResource(final Resource resource, final Set<String> rights) {
+    	addResourceWithRights(resource, toAccessRightSet(rights));
+    }
+    
+    private Set<AccessRight> toAccessRightSet(final Set<String> rights) {
+    	return (rights != null) ? rights.stream().map(e -> {
+			final AccessRight right = new AccessRight();
+			right.setId(e);
+			return right;
+		}).collect(Collectors.toSet()) : null;
+    }
 
-    public void setResources(Set<Resource> resources) {
+    public void setResources(Set<UserToResourceMembershipXref> resources) {
         this.resources = resources;
     }
 
@@ -1294,6 +1355,15 @@ public class User extends AbstractMetadataTypeDTO {
         this.subordinates = subordinatesSet;
     }
 
+    public Set<String> getAccessRightIds() {
+		return accessRightIds;
+	}
+
+	public void setAccessRightIds(Collection<String> accessRightIds) {
+		if(accessRightIds != null) {
+			this.accessRightIds = new HashSet<String>(accessRightIds);
+		}
+	}
 
     @Override
     public boolean equals(Object o) {

@@ -118,11 +118,11 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
 							if(resource != null && user != null) {
 								final ProvisionUser pUser = new ProvisionUser(user);
 								resource.setOperation(AttributeOperationEnum.ADD);
-								pUser.addResource(resource);
+								pUser.addResource(resource, rights);
 								response = provisionService.modifyUser(pUser);
 							}
 						} else {
-							response = resourceDataService.addUserToResource(associationId, memberAssociationId, systemUserId);
+							response = resourceDataService.addUserToResource(associationId, memberAssociationId, systemUserId, rights);
 						}
 						break;
 					case RESOURCE_CERTIFICATION:

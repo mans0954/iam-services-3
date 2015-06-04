@@ -472,14 +472,14 @@ public class GroupDataServiceImpl implements GroupDataService {
 
         if(groupOwner!=null && StringUtils.isNotBlank(groupOwner.getId())){
             if("user".equals(groupOwner.getType())){
-                adminResource.addUser(userDAO.findById(groupOwner.getId()));
+                adminResource.addUser(userDAO.findById(groupOwner.getId()), accessRightDAO.findAll());
             } else if("group".equals(groupOwner.getType())){
                 adminResource.addGroup(groupDao.findById(groupOwner.getId()), accessRightDAO.findAll());
             } else {
-                adminResource.addUser(userDAO.findById(requestorId));
+                adminResource.addUser(userDAO.findById(requestorId), accessRightDAO.findAll());
             }
         } else {
-            adminResource.addUser(userDAO.findById(requestorId));
+            adminResource.addUser(userDAO.findById(requestorId), accessRightDAO.findAll());
         }
 
 

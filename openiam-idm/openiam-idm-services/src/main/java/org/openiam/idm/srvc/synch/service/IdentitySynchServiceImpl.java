@@ -56,6 +56,7 @@ import org.openiam.idm.srvc.synch.dto.*;
 import org.openiam.idm.srvc.synch.srcadapter.AdapterFactory;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.dto.User;
+import org.openiam.idm.srvc.user.dto.UserToResourceMembershipXref;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.service.AsynchUserProvisionService;
@@ -419,23 +420,23 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 
                 } else if (config.getTargetResource() != null && !config.getTargetResource().isEmpty()) {
 
-                    Set<Resource> resourceSet = new HashSet<Resource>();
+                    final Set<UserToResourceMembershipXref> xrefSet = new HashSet<UserToResourceMembershipXref>();
 
-                    Resource resource = new Resource();
-                    resource.setId(config.getTargetResource());
+                    final UserToResourceMembershipXref xref = new UserToResourceMembershipXref();
+                    xref.setEntityId(config.getTargetResource());
 
                     if ("ADD".equalsIgnoreCase(config.getOperation())) {
                         // add to resourceList
-                        resource.setOperation(AttributeOperationEnum.ADD);
-                        resourceSet.add(resource);
-                        pUser.setResources(resourceSet);
+                    	xref.setOperation(AttributeOperationEnum.ADD);
+                        xrefSet.add(xref);
+                        pUser.setResources(xrefSet);
 
                     } else {
                         // remove from resource List
 
-                        resource.setOperation(AttributeOperationEnum.DELETE);
-                        resourceSet.add(resource);
-                        pUser.setResources(resourceSet);
+                    	xref.setOperation(AttributeOperationEnum.DELETE);
+                    	xrefSet.add(xref);
+                        pUser.setResources(xrefSet);
 
                     }
                 }

@@ -7,9 +7,11 @@ import org.springframework.beans.BeanUtils;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "OperationBean", propOrder = {
@@ -17,13 +19,15 @@ import java.util.Map;
         "objectId",
         "objectName",
         "operation",
-        "properties"
+        "properties",
+        "rightIds"
 })
 public class OperationBean implements Serializable {
 
     private BulkOperationObjectType objectType;
     private String objectId;
     private String objectName;
+    private Set<String> rightIds;
     private BulkOperationEnum operation;
     private Map<String, Object> properties = new HashMap<String, Object>();
 
@@ -79,8 +83,18 @@ public class OperationBean implements Serializable {
     public void setProperties(Map<String, Object> properties) {
         this.properties = properties;
     }
+    
+    
 
-    @Override
+    public Set<String> getRightIds() {
+		return rightIds;
+	}
+
+	public void setRightIds(Set<String> rightIds) {
+		this.rightIds = rightIds;
+	}
+
+	@Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -90,6 +104,7 @@ public class OperationBean implements Serializable {
         if (objectId != null ? !objectId.equals(that.objectId) : that.objectId != null) return false;
         if (objectName != null ? !objectName.equals(that.objectName) : that.objectName != null) return false;
         if (objectType != null ? !objectType.equals(that.objectType) : that.objectType != null) return false;
+        if (rightIds != null ? !rightIds.equals(that.rightIds) : that.rightIds != null) return false;
 
         return true;
     }
@@ -99,6 +114,7 @@ public class OperationBean implements Serializable {
         int result = objectType != null ? objectType.hashCode() : 0;
         result = 31 * result + (objectId != null ? objectId.hashCode() : 0);
         result = 31 * result + (objectName != null ? objectName.hashCode() : 0);
+        result = 31 * result + (rightIds != null ? rightIds.hashCode() : 0);
         return result;
     }
 }

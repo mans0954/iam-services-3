@@ -227,7 +227,7 @@ public class ResourceServiceImpl implements ResourceService {
         adminResource.setName(String.format("RES_ADMIN_%s_%s", entity.getName(),
                 RandomStringUtils.randomAlphanumeric(2)));
         adminResource.setResourceType(resourceTypeDao.findById(adminResourceTypeId));
-        adminResource.addUser(userDAO.findById(requestorId));
+        adminResource.addUser(userDAO.findById(requestorId), accessRightDAO.findAll());
         return adminResource;
     }
 

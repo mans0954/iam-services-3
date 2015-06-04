@@ -155,14 +155,14 @@ public abstract class AbstractActivitiJob implements JavaDelegate, TaskListener 
         return resourceDataService.getResourcesByIds(resourceIds, null);
     }
     
-    protected void addUsersToProtectingResource(final DelegateTask task, final Collection<String> userIds) {
+    protected void addUsersToProtectingResource(final DelegateTask task, final Collection<String> userIds, final Set<String> rightIds) {
     	if(CollectionUtils.isNotEmpty(userIds)) {
 	    	final String resourceId = getStringVariable(task.getExecution(), ActivitiConstants.WORKFLOW_RESOURCE_ID);
 	    	if(StringUtils.isNotBlank(resourceId)) { /* won't be here prior to 4.0 */
 	    		final Resource resource = getResource(resourceId);
 	    		if(resource != null) {
 	    			userIds.forEach(userId -> {
-	    				resourceDataService.addUserToResource(resourceId, userId, "WORKFLOW");
+	    				resourceDataService.addUserToResource(resourceId, userId, "WORKFLOW", rightIds);
 	    			});
 	    		} else { /* fail silently, but log it! */
 	    			LOG.error(String.format("Can't find resource with id '%s'.  This resource should protect this workflow", resourceId));
