@@ -2395,18 +2395,22 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
 
     @Override
     @Transactional
-    public void addUserToGroup(String userId, String groupId) {
-        final GroupEntity groupEntity = groupDAO.findById(groupId);
-        final UserEntity userEntity = userDao.findById(userId);
-        userEntity.addGroup(groupEntity);
+    public void addUserToGroup(final String userId, final String groupId, final Set<String> rightIds) {
+        final GroupEntity group = groupDAO.findById(groupId);
+        final UserEntity user = userDao.findById(userId);
+        if(group != null && user != null) {
+        	user.addGroup(group, accessRightDAO.findByIds(rightIds));
+        }
     }
 
     @Override
     @Transactional
     public void removeUserFromGroup(String userId, String groupId) {
-    	final GroupEntity groupEntity = groupDAO.findById(groupId);
-    	final UserEntity userEntity = userDao.findById(userId);
-    	userEntity.removeGroup(groupEntity);
+    	final GroupEntity group = groupDAO.findById(groupId);
+    	final UserEntity user = userDao.findById(userId);
+    	if(group != null && user != null) {
+    		user.removeGroup(group);
+    	}
     }
 
     @Override

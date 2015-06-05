@@ -37,6 +37,8 @@ import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.domain.RoleToGroupMembershipXrefEntity;
 import org.openiam.idm.srvc.role.domain.RoleToRoleMembershipXrefEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.idm.srvc.user.domain.UserToGroupMembershipXrefEntity;
+import org.openiam.idm.srvc.user.domain.UserToResourceMembershipXrefEntity;
 import org.openiam.internationalization.Internationalized;
 
 @Entity
@@ -92,9 +94,10 @@ public class GroupEntity extends AbstractMetdataTypeEntity {
 
     
 
-    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    @JoinTable(name = "USER_GRP", joinColumns = { @JoinColumn(name = "GRP_ID") }, inverseJoinColumns = { @JoinColumn(name = "USER_ID") })
-    private Set<UserEntity> users = new HashSet<UserEntity>(0);
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="entity", orphanRemoval=true)
+    @Fetch(FetchMode.SUBSELECT)
+    private Set<UserToGroupMembershipXrefEntity> users = new HashSet<UserToGroupMembershipXrefEntity>(0);
+
     
 	@ManyToOne(fetch = FetchType.EAGER,cascade={CascadeType.ALL})
     @JoinColumn(name="ADMIN_RESOURCE_ID", referencedColumnName = "RESOURCE_ID", insertable = true, updatable = true, nullable=true)
@@ -357,12 +360,21 @@ public class GroupEntity extends AbstractMetdataTypeEntity {
 			}
 		}
 	}
+	
+	public UserToGroupMembershipXrefEntity getUser(final String userId) {
+		final Optional<UserToGroupMembershipXrefEntity> xref = 
+    			this.getUsers()
+    				.stream()
+    				.filter(e -> userId.equals(e.getMemberEntity().getId()))
+    				.findFirst();
+    	return xref.isPresent() ? xref.get() : null;
+	}
 
-    public Set<UserEntity> getUsers() {
+    public Set<UserToGroupMembershipXrefEntity> getUsers() {
         return users;
     }
 
-    public void setUsers(Set<UserEntity> users) {
+    public void setUsers(Set<UserToGroupMembershipXrefEntity> users) {
         this.users = users;
     }
 

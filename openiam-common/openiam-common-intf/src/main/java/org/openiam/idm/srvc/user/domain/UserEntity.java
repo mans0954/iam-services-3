@@ -248,11 +248,6 @@ public class UserEntity extends KeyEntity {
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "user", fetch = FetchType.LAZY)
     protected Set<UserKey> userKeys = new HashSet<UserKey>(0);
 
-    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
-    @JoinTable(name = "USER_GRP", joinColumns = { @JoinColumn(name = "USER_ID") }, inverseJoinColumns = { @JoinColumn(name = "GRP_ID") })
-    @Fetch(FetchMode.SUBSELECT)
-    private Set<GroupEntity> groups = new HashSet<GroupEntity>(0);
-
     @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch=FetchType.LAZY)
     @JoinTable(name = "USER_ROLE", joinColumns = { @JoinColumn(name = "USER_ID") }, inverseJoinColumns = { @JoinColumn(name = "ROLE_ID") })
     @Fetch(FetchMode.SUBSELECT)
@@ -266,6 +261,10 @@ public class UserEntity extends KeyEntity {
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="memberEntity", orphanRemoval=true)
     @Fetch(FetchMode.SUBSELECT)
     private Set<UserToResourceMembershipXrefEntity> resources = new HashSet<UserToResourceMembershipXrefEntity>(0);
+    
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="memberEntity", orphanRemoval=true)
+    @Fetch(FetchMode.SUBSELECT)
+    private Set<UserToGroupMembershipXrefEntity> groups = new HashSet<UserToGroupMembershipXrefEntity>(0);
 
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "employee", fetch = FetchType.LAZY)
     // @Fetch(FetchMode.SUBSELECT)
@@ -749,31 +748,56 @@ public class UserEntity extends KeyEntity {
     		}
     	}
     }
-    
-    public void addGroup(final GroupEntity group) {
-    	if(group != null) {
-    		if(this.groups == null) {
-    			this.groups = new HashSet<>();
-    		}
-    		this.groups.add(group);
-    	}
-    }
-    
-    public void removeGroup(final GroupEntity group) {
-    	if(group != null) {
-    		if(this.groups != null) {
-    			this.groups.remove(group);
-    		}
-    	}
-    }
 
-    public Set<GroupEntity> getGroups() {
+    public Set<UserToGroupMembershipXrefEntity> getGroups() {
         return groups;
     }
 
-    public void setGroups(Set<GroupEntity> groups) {
+    public void setGroups(Set<UserToGroupMembershipXrefEntity> groups) {
         this.groups = groups;
     }
+    
+    public UserToGroupMembershipXrefEntity getGroup(final String groupId) {
+		final Optional<UserToGroupMembershipXrefEntity> xref = 
+    			this.getGroups()
+    				.stream()
+    				.filter(e -> groupId.equals(e.getEntity().getId()))
+    				.findFirst();
+    	return xref.isPresent() ? xref.get() : null;
+	}
+    
+    public void removeGroup(final GroupEntity entity) {
+    	if(entity != null) {
+			if(this.groups != null) {
+				this.groups.removeIf(e -> e.getEntity().getId().equals(entity.getId()));
+			}
+		}
+    }
+    
+    public void addGroup(final GroupEntity entity, final Collection<AccessRightEntity> rights) {
+		if(entity != null) {
+			if(this.groups == null) {
+				this.groups = new LinkedHashSet<UserToGroupMembershipXrefEntity>();
+			}
+			UserToGroupMembershipXrefEntity theXref = null;
+			for(final UserToGroupMembershipXrefEntity xref : this.groups) {
+				if(xref.getEntity().getId().equals(entity.getId()) && xref.getMemberEntity().getId().equals(getId())) {
+					theXref = xref;
+					break;
+				}
+			}
+			
+			if(theXref == null) {
+				theXref = new UserToGroupMembershipXrefEntity();
+				theXref.setEntity(entity);
+				theXref.setMemberEntity(this);
+			}
+			if(rights != null) {
+				theXref.setRights(new HashSet<AccessRightEntity>(rights));
+			}
+			this.groups.add(theXref);
+		}
+	}
 
     public Set<RoleEntity> getRoles() {
         return roles;

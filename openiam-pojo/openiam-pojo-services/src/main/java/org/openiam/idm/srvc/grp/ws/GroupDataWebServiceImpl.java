@@ -283,7 +283,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     }
 
     @Override
-    public Response addUserToGroup(final String groupId, final String userId, final String requesterId) {
+    public Response addUserToGroup(final String groupId, final String userId, final String requesterId, final Set<String> rightIds) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLog auditLog = new IdmAuditLog();
         auditLog.setAction(AuditAction.ADD_USER_TO_GROUP.value());
@@ -299,7 +299,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Group Id is null or empty");
             }
 
-            userManager.addUserToGroup(userId, groupId);
+            userManager.addUserToGroup(userId, groupId, rightIds);
             auditLog.succeed();
         } catch (BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);

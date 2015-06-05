@@ -92,6 +92,11 @@ public class AccessRightProcessor {
         					final String entityId = searchBean.getResourceIdSet().iterator().next();
         					final AbstractMembershipXrefEntity xref = entity.getResource(entityId);
         					setRightsForUser(dtoMap, xref, entity);
+        				} else if(CollectionUtils.isNotEmpty(searchBean.getGroupIdSet())) {
+        					assertLength(searchBean.getGroupIdSet());
+        					final String entityId = searchBean.getGroupIdSet().iterator().next();
+        					final AbstractMembershipXrefEntity xref = entity.getGroup(entityId);
+        					setRightsForUser(dtoMap, xref, entity);
         				}
         			});
         		}
@@ -219,8 +224,8 @@ public class AccessRightProcessor {
 		        		} else if(CollectionUtils.isNotEmpty(searchBean.getUserIdSet())) {
 		        			assertLength(searchBean.getUserIdSet());
 		        			final String entityId = searchBean.getUserIdSet().iterator().next();
-		        			//final AbstractMembershipXrefEntity xref = entity.getUser(entityId);
-		        			//setRights(dtoMap, xref, entity);
+		        			final AbstractMembershipXrefEntity xref = entity.getUser(entityId);
+		        			setRights(dtoMap, xref, entity);
 		        		}
 			        });
 	        	}

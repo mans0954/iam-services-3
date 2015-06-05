@@ -145,7 +145,7 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         emailAddresses = user.getEmailAddresses();
         principalList = user.getPrincipalList();
         roles = user.getRoles();
-        groups = user.getGroups();
+        setGroups(user.getGroups());
         affiliations = user.getAffiliations();
         setResources(user.getResources());
         setPassword(user.getPassword());
@@ -209,7 +209,7 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         user.setShowInSearch(showInSearch);
         user.setPrincipalList(principalList);
         user.setRoles(roles);
-        user.setGroups(groups);
+        user.setGroups(getGroups());
         user.setAffiliations(affiliations);
         user.setResources(getResources());
         user.setUserOwnerId(userOwnerId);

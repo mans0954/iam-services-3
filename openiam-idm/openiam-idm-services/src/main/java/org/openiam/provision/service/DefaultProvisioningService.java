@@ -76,6 +76,7 @@ import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
+import org.openiam.idm.srvc.user.dto.UserToGroupMembershipXref;
 import org.openiam.idm.srvc.user.dto.UserToResourceMembershipXref;
 import org.openiam.provision.dto.AccountLockEnum;
 import org.openiam.provision.dto.PasswordSync;
@@ -2394,27 +2395,28 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
             final IdmAuditLog idmAuditLog = new IdmAuditLog();
             idmAuditLog.setAction(AuditAction.BULK_OPERATION.value());
-            String requestorId = bulkRequest.getRequesterId();
-            LoginEntity lRequestor = loginManager.getPrimaryIdentity(requestorId);
+            final String requestorId = bulkRequest.getRequesterId();
+            final LoginEntity lRequestor = loginManager.getPrimaryIdentity(requestorId);
             idmAuditLog.setRequestorUserId(requestorId);
             idmAuditLog.setRequestorPrincipal(lRequestor.getLogin());
 
-            List<String> failedUserIds = new ArrayList<String>();
+            final List<String> failedUserIds = new ArrayList<String>();
             try {
 
-                for (String userId : bulkRequest.getUserIds()) {
-                    User user = userMgr.getUserDto(userId);
+                for (final String userId : bulkRequest.getUserIds()) {
+                	final User user = userMgr.getUserDto(userId);
 
                     if (user != null) {
 
-                        ProvisionUser pUser = new ProvisionUser(user);
+                        final ProvisionUser pUser = new ProvisionUser(user);
                         pUser.setRequestorUserId(requestorId);
                         pUser.setRequestorLogin(lRequestor.getLogin());
 
                         boolean isEntitlementModified = false;
 
-                        Set<Group> existingGroups = pUser.getGroups();
-                        pUser.setGroups(new HashSet<Group>());
+                        final Set<String> existingGroupIds = (pUser.getGroups() != null) ?
+                        		pUser.getGroups().stream().map(e -> e.getEntityId()).collect(Collectors.toSet()) : null;
+                        pUser.setGroups(new HashSet<UserToGroupMembershipXref>());
 
                         Set<Role> existingRoles = pUser.getRoles();
                         pUser.setRoles(new HashSet<Role>());
@@ -2535,21 +2537,21 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                     boolean isModifiedGroup = false;
                                     Group group = groupDozerConverter.convertToDTO(
                                             groupManager.getGroup(ob.getObjectId(), requestorId), false);
-                                    if (existingGroups.contains(group)) {
+                                    if (existingGroupIds.contains(group.getId())) {
                                         if (BulkOperationEnum.DELETE_ENTITLEMENT.equals(ob.getOperation())) {
-                                            existingGroups.remove(group);
+                                        	existingGroupIds.remove(group.getId());
                                             group.setOperation(AttributeOperationEnum.DELETE);
                                             isModifiedGroup = true;
                                         }
                                     } else {
                                         if (BulkOperationEnum.ADD_ENTITLEMENT.equals(ob.getOperation())) {
-                                            existingGroups.add(group);
+                                        	existingGroupIds.add(group.getId());
                                             group.setOperation(AttributeOperationEnum.ADD);
                                             isModifiedGroup = true;
                                         }
                                     }
                                     if (isModifiedGroup) {
-                                        pUser.getGroups().add(group);
+                                    	pUser.addGroup(group, ob.getRightIds());
                                         isEntitlementModified = true;
                                     }
                                     break;

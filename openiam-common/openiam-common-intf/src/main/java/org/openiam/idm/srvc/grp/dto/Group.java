@@ -1,26 +1,27 @@
 package org.openiam.idm.srvc.grp.dto;
 
 
+import java.util.Date;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Set;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlSchemaType;
+import javax.xml.bind.annotation.XmlSeeAlso;
+import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+
 import org.apache.commons.lang.StringUtils;
-import org.openiam.base.AdminResourceDTO;
 import org.openiam.base.AttributeOperationEnum;
-import org.openiam.base.BaseObject;
-import org.openiam.base.KeyNameDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.entitlements.AbstractEntitlementsDTO;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.role.dto.Role;
-import org.openiam.idm.srvc.role.dto.RoleSetAdapter;
-import org.openiam.idm.srvc.role.dto.UserSetAdapter;
 import org.openiam.idm.srvc.user.dto.User;
-
-import javax.xml.bind.annotation.*;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-
-import java.io.Serializable;
-import java.util.*;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "Group", propOrder = {
@@ -86,7 +87,6 @@ public class Group extends AbstractEntitlementsDTO {
     protected Set<Resource> resources;
 
     @Deprecated
-    @XmlJavaTypeAdapter(RoleSetAdapter.class)
     protected Set<Role> roles = new HashSet<Role>(0);
 
     //@XmlJavaTypeAdapter(GroupAttributeMapAdapter.class)

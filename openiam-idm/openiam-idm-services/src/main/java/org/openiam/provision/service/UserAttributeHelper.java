@@ -34,6 +34,7 @@ import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
+import org.openiam.idm.srvc.user.dto.UserToGroupMembershipXref;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.type.*;
 
@@ -48,7 +49,9 @@ import java.util.*;
  * 
  * @author suneet
  * 
+ * Lev Bornovalov - This class has lost it's purpose.  Deprecating and marking for removal
  */
+@Deprecated
 public class UserAttributeHelper {
 
     protected static final Log log = LogFactory
@@ -170,12 +173,13 @@ public class UserAttributeHelper {
          */
 
         // groups
-        Set<Group> groupSet = pUser.getGroups();
+        /*
+        final Set<UserToGroupMembershipXref> groupSet = pUser.getGroups();
         if (groupSet != null) {
-            for (Group grp : groupSet) {
-                ExtensibleGroup extGroup = new ExtensibleGroup(grp);
-                log.info("Group being added to extGroup=" + grp);
-                extUser.getGroup().add(extGroup);
+            for (UserToGroupMembershipXref xref : groupSet) {
+                final ExtensibleGroup extGroup = new ExtensibleGroup(grp);
+                //log.info("Group being added to extGroup=" + grp);
+                extUser.addGroup(xref);
             }
         }
         // roles
@@ -187,6 +191,8 @@ public class UserAttributeHelper {
                 extUser.getRole().add(extRole);
             }
         }
+        */
+        
         // address
         Set<Address> addressList = pUser.getAddresses();
         if (addressList != null) {
@@ -389,14 +395,11 @@ public class UserAttributeHelper {
          */
 
         // groups
-        Set<Group> groupSet = pUser.getGroups();
+        /*
+        final Set<UserToGroupMembershipXref> groupSet = pUser.getGroups();
         if (groupSet != null) {
-            for (Group grp : groupSet) {
-                ExtensibleGroup extGroup = new ExtensibleGroup(grp);
-                log.info("Group being added to extGroup=" + grp);
-                // Check the current list. if not found, then the operation is
-                // an add
-                if (grp.getOperation() != AttributeOperationEnum.DELETE) {
+            for (final UserToGroupMembershipXref xref : groupSet) {
+                if (xref.getOperation() != AttributeOperationEnum.DELETE) {
                     if (curGroupList != null) {
                         boolean found = false;
                         for (Group cGroup : curGroupList) {
@@ -411,6 +414,7 @@ public class UserAttributeHelper {
                         extGroup.setOperation(1);
                     }
                 }
+                xref.setOperation(operation);
                 extUser.getGroup().add(extGroup);
             }
         }
@@ -531,6 +535,8 @@ public class UserAttributeHelper {
         }
 
         return extUser;
+        */
+        return null;
     }
 
     static private Set<Address> getFullAddressList(Set<Address> newAddressList,

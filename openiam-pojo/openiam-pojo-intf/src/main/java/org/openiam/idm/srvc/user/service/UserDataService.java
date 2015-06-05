@@ -276,7 +276,7 @@ public interface UserDataService {
 
     List<String> getUserIdsInGroup(String groupId, String requestrId);
 
-    void addUserToGroup(String userId, String groupId);
+    void addUserToGroup(String userId, String groupId, Set<String> rightIds);
 
     void removeUserFromGroup(String userId, String groupId);
 

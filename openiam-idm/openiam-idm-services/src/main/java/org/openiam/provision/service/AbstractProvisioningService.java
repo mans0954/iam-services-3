@@ -81,8 +81,10 @@ import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.idm.srvc.user.domain.UserToGroupMembershipXrefEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
+import org.openiam.idm.srvc.user.dto.UserToGroupMembershipXref;
 import org.openiam.idm.srvc.user.dto.UserToResourceMembershipXref;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.PasswordSync;
@@ -1379,36 +1381,36 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     public void updateGroups(final UserEntity userEntity, final ProvisionUser pUser,
                              final Set<Group> groupSet, final Set<Group> deleteGroupSet, final IdmAuditLog parentLog) {
         if (CollectionUtils.isNotEmpty(pUser.getGroups())) {
-            for (Group g : pUser.getGroups()) {
-                AttributeOperationEnum operation = g.getOperation();
+            for (final UserToGroupMembershipXref xref : pUser.getGroups()) {
+            	final AttributeOperationEnum operation = xref.getOperation();
                 if (operation == AttributeOperationEnum.ADD) {
-                    GroupEntity groupEntity = groupManager.getGroup(g.getId());
-                    userEntity.getGroups().add(groupEntity);
+                	final GroupEntity groupEntity = groupManager.getGroupLocalize(xref.getEntityId(), null);
+                	userEntity.addGroup(groupEntity, accessRightDAO.findByIds(xref.getAccessRightIds()));
                     // Audit Log ---------------------------------------------------
-                    IdmAuditLog auditLog = new IdmAuditLog();
+                    final IdmAuditLog auditLog = new IdmAuditLog();
                     auditLog.setAction(AuditAction.ADD_GROUP.value());
-                    Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
-                    String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
+                    final Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
+                    final String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
                     auditLog.setTargetUser(pUser.getId(), loginStr);
-                    auditLog.setTargetGroup(g.getId(), g.getName());
-                    auditLog.addCustomRecord("GROUP", g.getName());
+                    auditLog.setTargetGroup(groupEntity.getId(), groupEntity.getName());
+                    auditLog.addCustomRecord("GROUP", groupEntity.getName());
                     parentLog.addChild(auditLog);
                     //--------------------------------------------------------------
 
                 } else if (operation == AttributeOperationEnum.DELETE) {
-                    GroupEntity ge = groupManager.getGroup(g.getId());
-                    userEntity.getGroups().remove(ge);
-                    Group dg = groupDozerConverter.convertToDTO(ge, false);
+                	final GroupEntity ge = groupManager.getGroupLocalize(xref.getEntityId(), null);
+                	userEntity.removeGroup(ge);
+                    final Group dg = groupDozerConverter.convertToDTO(ge, false);
                     dg.setOperation(operation);
                     deleteGroupSet.add(dg);
                     // Audit Log ---------------------------------------------------
-                    IdmAuditLog auditLog = new IdmAuditLog();
+                    final IdmAuditLog auditLog = new IdmAuditLog();
                     auditLog.setAction(AuditAction.DELETE_GROUP.value());
-                    Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
-                    String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
+                    final Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
+                    final String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
                     auditLog.setTargetUser(pUser.getId(), loginStr);
-                    auditLog.setTargetGroup(g.getId(), g.getName());
-                    auditLog.addCustomRecord("GROUP", g.getName());
+                    auditLog.setTargetGroup(ge.getId(), ge.getName());
+                    auditLog.addCustomRecord("GROUP", ge.getName());
                     parentLog.addChild(auditLog);
                     //--------------------------------------------------------------
 
@@ -1418,14 +1420,20 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
             }
         }
         if (CollectionUtils.isNotEmpty(userEntity.getGroups())) {
-            for (GroupEntity gre : userEntity.getGroups()) {
-                Group gr = groupDozerConverter.convertToDTO(gre, false);
+            for (final UserToGroupMembershipXrefEntity xrefEntity : userEntity.getGroups()) {
+            	//comment by Lev Bornovalov - why would you do this?  Makes no sense.
+                final Group gr = groupDozerConverter.convertToDTO(xrefEntity.getEntity(), false);
+                pUser.getGroups().stream().filter(e -> e.getEntityId().equals(xrefEntity.getEntity().getId())).forEach(e -> {
+                	gr.setOperation(e.getOperation());
+                });
+                /*
                 for (Group g : pUser.getGroups()) {
                     if (StringUtils.equals(g.getId(), gr.getId())) {
                         gr.setOperation(g.getOperation()); // get operation value from pUser
                         break;
                     }
                 }
+                */
                 groupSet.add(gr);
             }
         }

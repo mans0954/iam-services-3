@@ -81,8 +81,9 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
 						Restrictions.in("resource.id", groupSearchBean.getResourceIdSet()));
 			}
             if(CollectionUtils.isNotEmpty(groupSearchBean.getUserIdSet())){
-                criteria.createAlias("users", "usr");
-                criteria.add(Restrictions.in("usr.id", groupSearchBean.getUserIdSet()));
+            	criteria.createAlias("users", "userXrefs")
+						.createAlias("userXrefs.memberEntity", "user").add(
+								Restrictions.in("user.id", groupSearchBean.getUserIdSet()));
             }
 
             if(CollectionUtils.isNotEmpty(groupSearchBean.getAttributes())) {

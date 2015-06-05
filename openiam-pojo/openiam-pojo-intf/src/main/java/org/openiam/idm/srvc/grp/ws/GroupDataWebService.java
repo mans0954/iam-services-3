@@ -172,7 +172,8 @@ public interface GroupDataWebService {
     @WebMethod
     public Response addUserToGroup(final @WebParam(name = "groupId", targetNamespace = "") String groupId,
                                    final @WebParam(name = "userId", targetNamespace = "") String userId,
-                                   final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+                                   final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
+                                   final @WebParam(name = "rightIds", targetNamespace = "") Set<String> rightIds);
 
 
     /**

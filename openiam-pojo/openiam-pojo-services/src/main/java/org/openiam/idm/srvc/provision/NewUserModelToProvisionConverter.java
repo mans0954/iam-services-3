@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.provision;
 
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
@@ -31,6 +32,7 @@ import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
+import org.openiam.idm.srvc.user.dto.UserToGroupMembershipXref;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.ProvisionUser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -135,7 +137,15 @@ public class NewUserModelToProvisionConverter {
 						userGroups.add(group);
 					}
 				}
-                user.setGroups(userGroups);
+				final Set<UserToGroupMembershipXref> xrefSet = 
+								userGroups.stream().map(e -> {
+									final UserToGroupMembershipXref xref = new UserToGroupMembershipXref();
+									xref.setEntityId(e.getId());
+									xref.setMemberEntityId(request.getUser().getId());
+									xref.setOperation(AttributeOperationEnum.ADD);
+									return xref;
+								}).collect(Collectors.toSet());
+                user.setGroups(xrefSet);
 			}
 
 			if(CollectionUtils.isNotEmpty(request.getOrganizationIds())) {

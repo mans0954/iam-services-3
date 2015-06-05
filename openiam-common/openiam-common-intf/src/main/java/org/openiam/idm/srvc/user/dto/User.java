@@ -21,6 +21,7 @@ import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.idm.srvc.user.domain.UserToGroupMembershipXrefEntity;
 import org.openiam.internationalization.Internationalized;
 
 import javax.persistence.EnumType;
@@ -230,7 +231,7 @@ public class User extends AbstractMetadataTypeDTO {
 
     protected Set<Organization> affiliations = new HashSet<Organization>(0);
 
-    protected Set<Group> groups = new HashSet<Group>(0);
+    protected Set<UserToGroupMembershipXref> groups = new HashSet<UserToGroupMembershipXref>(0);
 
     protected Set<UserToResourceMembershipXref> resources = new HashSet<UserToResourceMembershipXref>(0);
 
@@ -739,34 +740,40 @@ public class User extends AbstractMetadataTypeDTO {
         this.roles = roles;
     }
 
-    public Set<Group> getGroups() {
+    public Set<UserToGroupMembershipXref> getGroups() {
         return groups;
     }
-
-    public void addGroup(final Group group) {
-        if (group != null) {
-            if (groups == null) {
-                groups = new HashSet<Group>();
-            }
-            group.setOperation(AttributeOperationEnum.ADD);
-            groups.add(group);
-        }
+    
+    public void removeGroup(final String groupId) {
+    	if(groupId != null) {
+    		UserToGroupMembershipXref theXref = null;
+    		if(resources != null) {
+    			for(final UserToGroupMembershipXref xref : groups) {
+    				if(xref.getEntityId().equals(groupId)) {
+    					theXref = xref;
+    					break;
+    				}
+    			}
+    		}
+    		
+    		if(theXref != null) {
+    			theXref.setOperation(AttributeOperationEnum.DELETE);
+    		}
+    	}
     }
-
+    
+    public void removeGroup(final Group group) {
+    	if(group != null) {
+    		removeResource(group.getId());
+    	}
+    }
+    
+    @Deprecated
     public void markGroupAsDeleted(final String groupId) {
-        if (groupId != null) {
-            if (groups != null) {
-                for (final Group group : groups) {
-                    if (StringUtils.equals(group.getId(), groupId)) {
-                        group.setOperation(AttributeOperationEnum.DELETE);
-                        break;
-                    }
-                }
-            }
-        }
+    	removeGroup(groupId);
     }
 
-    public void setGroups(Set<Group> groups) {
+    public void setGroups(Set<UserToGroupMembershipXref> groups) {
         this.groups = groups;
     }
 
@@ -774,19 +781,60 @@ public class User extends AbstractMetadataTypeDTO {
         return resources;
     }
 
+    /**
+     * Do not use
+     * @param resourceId
+     */
+    @Deprecated
     public void markResourceAsDeleted(final String resourceId) {
-        if (resourceId != null) {
-            if (resources != null) {
-                for (final UserToResourceMembershipXref xref : resources) {
-                    if (StringUtils.equals(xref.getEntityId(), resourceId)) {
-                    	xref.setOperation(AttributeOperationEnum.DELETE);
-                        break;
-                    }
-                }
+        removeResource(resourceId);
+    }
+    
+    /**
+     * Use addGroupWithRights
+     * @param group
+     */
+    @Deprecated
+    public void addGroup(final Group group) {
+    	addGroup(group, null);
+    }
+    
+    public void addGroup(final Group group, final Set<String> rights) {
+    	addGroupWithRights(group, toAccessRightSet(rights));
+    }
+    
+    public void addGroupWithRights(final Group group, final Set<AccessRight> rights) {
+    	if (group != null) {
+            if (groups == null) {
+            	groups = new HashSet<UserToGroupMembershipXref>();
             }
+            
+            UserToGroupMembershipXref theXref = null;
+			for(final UserToGroupMembershipXref xref : this.groups) {
+				if(xref.getMemberEntityId().equals(getId()) && xref.getEntityId().equals(group.getId())) {
+					theXref = xref;
+					break;
+				}
+			}
+            
+            //resource.setOperation(AttributeOperationEnum.ADD);
+			if(theXref == null) {
+				theXref = new UserToGroupMembershipXref();
+				theXref.setEntityId(group.getId());
+				theXref.setMemberEntityId(getId());
+			}
+			theXref.setOperation(AttributeOperationEnum.ADD);
+			if(rights != null) {
+				theXref.setRights(rights);
+			}
+			this.groups.add(theXref);
         }
     }
 
+    /**
+     * Use addResourceWithRights
+     * @param resource
+     */
     @Deprecated
     public void addResource(final Resource resource) {
     	addResource(resource, null);
@@ -820,12 +868,12 @@ public class User extends AbstractMetadataTypeDTO {
         }
     }
     
-    public void removeResource(final Resource resource) {
-    	if(resource != null) {
+    public void removeResource(final String resourceId) {
+    	if(resourceId != null) {
     		UserToResourceMembershipXref theXref = null;
     		if(resources != null) {
     			for(final UserToResourceMembershipXref xref : resources) {
-    				if(xref.getEntityId().equals(resource.getId())) {
+    				if(xref.getEntityId().equals(resourceId)) {
     					theXref = xref;
     					break;
     				}
@@ -835,6 +883,12 @@ public class User extends AbstractMetadataTypeDTO {
     		if(theXref != null) {
     			theXref.setOperation(AttributeOperationEnum.DELETE);
     		}
+    	}
+    }
+    
+    public void removeResource(final Resource resource) {
+    	if(resource != null) {
+    		removeResource(resource.getId());
     	}
     }
     
