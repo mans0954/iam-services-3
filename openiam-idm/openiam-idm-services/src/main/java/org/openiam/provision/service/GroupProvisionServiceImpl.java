@@ -24,7 +24,9 @@ import org.openiam.connector.type.response.SearchResponse;
 import org.openiam.dozer.converter.AttributeMapDozerConverter;
 import org.openiam.dozer.converter.ManagedSystemObjectMatchDozerConverter;
 import org.openiam.dozer.converter.UserDozerConverter;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.exception.ScriptEngineException;
+import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.auth.dto.IdentityDto;
@@ -475,12 +477,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
                 return true;
             }
         }
-        for(RoleEntity re : member.getRoles()) {
-        	if(re.getResource(resourceId) != null) {
-        		return true;
-        	}
-        }
-        return result;
+        return (member.getRoles().stream().map(e -> e.getEntity()).filter(e -> e.getResource(resourceId) != null).count() > 0);
     }
 
     protected int callPreProcessor(String operation, ProvisionGroup pGroup, Map<String, Object> bindingMap ) {
@@ -1217,42 +1214,50 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
 		final Resource res = resourceDataService.getResource(resourceId, null);
 		res.setOperation(AttributeOperationEnum.ADD);
 		final Response response = new Response();
-		if(res != null) {
-            if (!pGroup.getNotProvisioninResourcesIds().contains(res.getId())) {
-            	final ManagedSysDto managedSys = managedSystemService.getManagedSysByResource(res.getId());
-	            if (managedSys != null) {
-	                if (!managedSys.getSkipGroupProvision()) {
-		                final String managedSysId = managedSys.getId();
-		                // do check if provisioning user has source resource
-		                // => we should skip it from double provisioning
-		                // reconciliation case
-		                if(!StringUtils.equals(managedSysId, pGroup.getSrcSystemId())) {
-			                final IdentityDto groupTargetIdentity = identityService.getIdentityByManagedSys(pGroup.getId(), managedSysId);
-			                if (groupTargetIdentity != null && res.getOperation() == AttributeOperationEnum.ADD
-			                        && groupTargetIdentity.getStatus() == LoginStatusEnum.INACTIVE) {
-			                    groupTargetIdentity.setStatus(LoginStatusEnum.ACTIVE);
-			                }
-			                final Response provIdentityResponse = provisioningIdentity(groupTargetIdentity, pGroup, managedSys, res, true);
-			                if (!provIdentityResponse.isSuccess()) {
-			                    return provIdentityResponse;
-			                }
-			                //Provisioning Members
-			                if (pGroup.getUpdateManagedSystemMembers().contains(managedSysId)) {
-			                    List<UserEntity> members = userDataService.getUsersForGroup(pGroup.getId(), systemUserId, 0, Integer.MAX_VALUE);
-			                    for (UserEntity member : members) {
-			                        if (!isMemberAvailableInResource(member, res.getId())) {
-			                            User user = userDozerConverter.convertToDTO(member, true);
-			                            provisionService.modifyUser(new ProvisionUser(user));
-			                        }
-			                    }
-			                }
-			
-			            }  else {
-			                // TODO WARNING
-			            }
-	                }
-	            }
-	        }
+		try {
+			if(res != null) {
+	            if (!pGroup.getNotProvisioninResourcesIds().contains(res.getId())) {
+	            	final ManagedSysDto managedSys = managedSystemService.getManagedSysByResource(res.getId());
+		            if (managedSys != null) {
+		                if (!managedSys.getSkipGroupProvision()) {
+			                final String managedSysId = managedSys.getId();
+			                // do check if provisioning user has source resource
+			                // => we should skip it from double provisioning
+			                // reconciliation case
+			                if(!StringUtils.equals(managedSysId, pGroup.getSrcSystemId())) {
+				                final IdentityDto groupTargetIdentity = identityService.getIdentityByManagedSys(pGroup.getId(), managedSysId);
+				                if (groupTargetIdentity != null && res.getOperation() == AttributeOperationEnum.ADD
+				                        && groupTargetIdentity.getStatus() == LoginStatusEnum.INACTIVE) {
+				                    groupTargetIdentity.setStatus(LoginStatusEnum.ACTIVE);
+				                }
+				                final Response provIdentityResponse = provisioningIdentity(groupTargetIdentity, pGroup, managedSys, res, true);
+				                if (!provIdentityResponse.isSuccess()) {
+				                    return provIdentityResponse;
+				                }
+				                //Provisioning Members
+				                if (pGroup.getUpdateManagedSystemMembers().contains(managedSysId)) {
+				                	final UserSearchBean sb = new UserSearchBean();
+				                	sb.addGroupId(pGroup.getId());
+				                    List<UserEntity> members = userDataService.findBeans(sb, 0, Integer.MAX_VALUE);
+				                    for (UserEntity member : members) {
+				                        if (!isMemberAvailableInResource(member, res.getId())) {
+				                            User user = userDozerConverter.convertToDTO(member, true);
+				                            provisionService.modifyUser(new ProvisionUser(user));
+				                        }
+				                    }
+				                }
+				
+				            }  else {
+				                // TODO WARNING
+				            }
+		                }
+		            }
+		        }
+			}
+		} catch(BasicDataServiceException e) {
+			response.fail();
+			response.setErrorCode(e.getCode());
+			log.error("Can't perform operation", e);
 		}
 		response.succeed();
 		return response;

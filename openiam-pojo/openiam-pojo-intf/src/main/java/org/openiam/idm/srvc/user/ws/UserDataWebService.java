@@ -611,6 +611,7 @@ public interface UserDataWebService {
      * @return the number of Users directly entitled to this Resource
      */
     @WebMethod
+    @Deprecated
     public int getNumOfUsersForResource(@WebParam(name = "resourceId", targetNamespace = "") final String resourceId,
                                         @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 

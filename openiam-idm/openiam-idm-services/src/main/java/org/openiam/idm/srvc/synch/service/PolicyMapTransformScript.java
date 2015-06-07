@@ -50,13 +50,15 @@ public class PolicyMapTransformScript extends AbstractTransformScript {
         if(userRoleList == null) {
             userRoleList = new LinkedList<Role>();
         }
-        RoleEntity role = ((RoleDataService)context.getBean("roleDataService")).getRoleByName("End User", null);
-        RoleDozerConverter roleDozerConverter = ((RoleDozerConverter)context.getBean("roleDozerConverter"));
-        Role r = roleDozerConverter.convertToDTO(role, false);
+        final RoleEntity role = ((RoleDataService)context.getBean("roleDataService")).getRoleByName("End User", null);
+        final RoleDozerConverter roleDozerConverter = ((RoleDozerConverter)context.getBean("roleDozerConverter"));
+        final Role r = roleDozerConverter.convertToDTO(role, false);
         userRoleList.add(r);
 
         if (userRoleList != null) {
-            pUser.setRoles(new HashSet<Role>(userRoleList));
+        	userRoleList.forEach(e -> {
+        		pUser.addRole(e, null);
+        	});
         }
 
         populateUser(rowObj, pUser);

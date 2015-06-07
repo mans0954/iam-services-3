@@ -111,41 +111,27 @@ public class NewUserModelToProvisionConverter {
 			}
 			
 			if(CollectionUtils.isNotEmpty(request.getRoleIds())) {
-                final Set<Role> userRoles = new HashSet<Role>();
 				for(final String roleId : request.getRoleIds()) {
 					final RoleEntity entity = roleDataService.getRoleLocalized(roleId, null, null);
 					if(entity != null) {
 						final Role role = roleDozerConverter.convertToDTO(entity, false);
-                        role.setOperation(AttributeOperationEnum.ADD);
-						userRoles.add(role);
+						user.addRole(role, null);
 					}
 					/*
 					final UserRole userRole = new UserRole(null, roleId);
 					userRoles.add(userRole);
 					*/
 				}
-                user.setRoles(userRoles);
 			}
 
 			if(CollectionUtils.isNotEmpty(request.getGroupIds())) {
-                final Set<Group> userGroups = new HashSet<Group>();
 				for(final String groupId : request.getGroupIds()) {
 					final GroupEntity entity = groupDataService.getGroupLocalize(groupId, null);
 					if(entity != null) {
 						final Group group = groupDozerConverter.convertToDTO(entity, false);
-                        group.setOperation(AttributeOperationEnum.ADD);
-						userGroups.add(group);
+                        user.addGroup(group, null);
 					}
 				}
-				final Set<UserToGroupMembershipXref> xrefSet = 
-								userGroups.stream().map(e -> {
-									final UserToGroupMembershipXref xref = new UserToGroupMembershipXref();
-									xref.setEntityId(e.getId());
-									xref.setMemberEntityId(request.getUser().getId());
-									xref.setOperation(AttributeOperationEnum.ADD);
-									return xref;
-								}).collect(Collectors.toSet());
-                user.setGroups(xrefSet);
 			}
 
 			if(CollectionUtils.isNotEmpty(request.getOrganizationIds())) {

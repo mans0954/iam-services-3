@@ -225,23 +225,6 @@ public interface UserDataService {
 
     public Map<String, UserAttributeEntity> getAllAttributes(String userId);
 
-    @Deprecated
-    public List<UserEntity> getUsersForResource(final String resourceId, String requesterId, final int from, final int size);
-    public List<UserEntity> getUsersForResource(UserSearchBean userSearchBean, int from, int size);
-
-    public int getNumOfUsersForResource(final String resourceId, String requesterId);
-
-    public List<UserEntity> getUsersForGroup(final String groupId, String requesterId, final int from, final int size);
-
-    @Deprecated
-    public int getNumOfUsersForGroup(final String groupId, String requesterId);
-
-    @Deprecated
-    public List<UserEntity> getUsersForRole(final String roleId, String requesterId, final int from, final int size);
-
-    @Deprecated
-    public int getNumOfUsersForRole(final String roleId, String requesterId);
-
     public String saveUserInfo(UserEntity userEntity, String supervisorId) throws Exception;
 
     public void deleteUser(String userId);
@@ -269,8 +252,6 @@ public interface UserDataService {
     public Map<String, UserAttributeEntity> getUserAttributes(String userId);
 
     List<UserEntity> getByExample(UserSearchBean searchBean, int start, int size);
-
-    boolean isRoleInUser(String userId, String roleId);
 
     List<String> getUserIdsInRole(String roleId, String requestrId);
 

@@ -82,10 +82,12 @@ import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.domain.UserToGroupMembershipXrefEntity;
+import org.openiam.idm.srvc.user.domain.UserToRoleMembershipXrefEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.user.dto.UserToGroupMembershipXref;
 import org.openiam.idm.srvc.user.dto.UserToResourceMembershipXref;
+import org.openiam.idm.srvc.user.dto.UserToRoleMembershipXref;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.PasswordSync;
 import org.openiam.provision.dto.ProvisionActionEvent;
@@ -1442,28 +1444,25 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     public void updateRoles(final UserEntity userEntity, final ProvisionUser pUser,
                             final Set<Role> roleSet, final Set<Role> deleteRoleSet, final IdmAuditLog parentLog) {
         if (CollectionUtils.isNotEmpty(pUser.getRoles())) {
-            for (Role r : pUser.getRoles()) {
-                AttributeOperationEnum operation = r.getOperation();
+            for (final UserToRoleMembershipXref xref : pUser.getRoles()) {
+                final AttributeOperationEnum operation = xref.getOperation();
                 if (operation == AttributeOperationEnum.ADD) {
-                    RoleEntity roleEntity = roleDataService.getRole(r.getId());
-                    if (userEntity.getRoles().contains(roleEntity)) {
-                        throw new IllegalArgumentException("Role with this name already exists");
-                    }
-                    userEntity.getRoles().add(roleEntity);
+                    final RoleEntity roleEntity = roleDataService.getRoleLocalized(xref.getEntityId(), null, null);
+                    userEntity.addRole(roleEntity, accessRightDAO.findByIds(xref.getAccessRightIds()));
                     // Audit Log ---------------------------------------------------
-                    IdmAuditLog auditLog = new IdmAuditLog();
+                    final IdmAuditLog auditLog = new IdmAuditLog();
                     auditLog.setAction(AuditAction.ADD_ROLE.value());
-                    Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
-                    String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
+                    final Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
+                    final String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
                     auditLog.setTargetUser(pUser.getId(), loginStr);
-                    auditLog.setTargetRole(r.getId(), r.getName());
-                    auditLog.addCustomRecord("ROLE", r.getName());
+                    auditLog.setTargetRole(roleEntity.getId(), roleEntity.getName());
+                    auditLog.addCustomRecord("ROLE", roleEntity.getName());
                     parentLog.addChild(auditLog);
                     //--------------------------------------------------------------
                 } else if (operation == AttributeOperationEnum.DELETE) {
-                    RoleEntity re = roleDataService.getRole(r.getId());
-                    userEntity.getRoles().remove(re);
-                    Role dr = roleDozerConverter.convertToDTO(re, false);
+                    final RoleEntity re = roleDataService.getRoleLocalized(xref.getEntityId(), null, null);
+                    userEntity.removeRole(re);
+                    final Role dr = roleDozerConverter.convertToDTO(re, false);
                     dr.setOperation(operation);
                     deleteRoleSet.add(dr);
                     // Audit Log ---------------------------------------------------
@@ -1472,8 +1471,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
                     String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
                     auditLog.setTargetUser(pUser.getId(), loginStr);
-                    auditLog.setTargetRole(r.getId(), r.getName());
-                    auditLog.addCustomRecord("ROLE", r.getName());
+                    auditLog.setTargetRole(dr.getId(), dr.getName());
+                    auditLog.addCustomRecord("ROLE", dr.getName());
                     parentLog.addChild(auditLog);
                     //-----------------------------------------------------------------
                 } else if (operation == AttributeOperationEnum.REPLACE) {
@@ -1482,14 +1481,12 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
             }
         }
         if (CollectionUtils.isNotEmpty(userEntity.getRoles())) {
-            for (RoleEntity ure : userEntity.getRoles()) {
-                Role ar = roleDozerConverter.convertToDTO(ure, false);
-                for (Role r : pUser.getRoles()) {
-                    if (StringUtils.equals(r.getId(), ar.getId())) {
-                        ar.setOperation(r.getOperation()); // get operation value from pUser
-                        break;
-                    }
-                }
+            for (final UserToRoleMembershipXrefEntity xrefEntity : userEntity.getRoles()) {
+            	//comment by Lev Bornovalov - why would you do this?  Makes no sense.
+                final Role ar = roleDozerConverter.convertToDTO(xrefEntity.getEntity(), false);
+                pUser.getRoles().stream().filter(e -> e.getEntityId().equals(xrefEntity.getEntity().getId())).forEach(e -> {
+                	ar.setOperation(e.getOperation());
+                });
                 roleSet.add(ar);
             }
         }

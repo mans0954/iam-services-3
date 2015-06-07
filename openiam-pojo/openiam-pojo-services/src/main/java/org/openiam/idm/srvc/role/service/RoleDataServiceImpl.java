@@ -47,6 +47,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service("roleDataService")
 public class RoleDataServiceImpl implements RoleDataService {
@@ -178,41 +179,25 @@ public class RoleDataServiceImpl implements RoleDataService {
     /**
      * Adds a user to a role using the UserRole object. Similar to addUserToRole, but allows you to update attributes likes start and end date.
      */
+   
     @Override
     @Transactional
-    public void assocUserToRole(String userId, String roleId) {
-        if (roleId == null)
-            throw new IllegalArgumentException("role is null");
-        if (userId == null)
-            throw new IllegalArgumentException("user object is null");
-        UserEntity userEntity = userDAO.findById(userId);
-        RoleEntity roleEntity = roleDao.findById(roleId);
-        userEntity.getRoles().add(roleEntity);
-    }
-
-    @Override
-    @Transactional
-	public void addUserToRole(String roleId, String userId) {
-          if (roleId == null)
-              throw new IllegalArgumentException("role is null");
-          if (userId == null)
-              throw new IllegalArgumentException("user object is null");
-
-            UserEntity userEntity = userDAO.findById(userId);
-            RoleEntity roleEntity = roleDao.findById(roleId);
-            userEntity.getRoles().add(roleEntity);
+	public void addUserToRole(String roleId, String userId, final Set<String> rightIds) {
+    	final UserEntity user = userDAO.findById(userId);
+    	final RoleEntity role = roleDao.findById(roleId);
+    	if(user != null && role != null) {
+    		user.addRole(role, accessRightDAO.findByIds(rightIds));
+    	}
 	}
 	
 	@Override
     @Transactional
 	public void removeUserFromRole(String roleId, String userId) {
-        if (roleId == null)
-            throw new IllegalArgumentException("role is null");
-        if (userId == null)
-            throw new IllegalArgumentException("user object is null");
-        UserEntity userEntity = userDAO.findById(userId);
-        RoleEntity roleEntity = roleDao.findById(roleId);
-        userEntity.getRoles().remove(roleEntity);
+        final UserEntity user = userDAO.findById(userId);
+        final RoleEntity role = roleDao.findById(roleId);
+        if(user != null && role != null) {
+        	user.removeRole(role);
+        }
 	}
 
 	private void visitChildRoles(final String id, final Set<RoleEntity> visitedSet) {
@@ -426,13 +411,7 @@ public class RoleDataServiceImpl implements RoleDataService {
 		}
 	}
 	*/
-
-	@Override
-    @Transactional(readOnly = true)
-	public List<RoleEntity> getUserRoles(String userId, final String requesterId, int from, int size) {
-		return roleDao.getRolesForUser(userId, getDelegationFilter(requesterId), from, size);
-	}
-
+	
     @Override
     @Transactional(readOnly = true)
     public List<Role> getRolesDtoForUser(String userId, String requesterId, int from, int size) {
@@ -445,8 +424,9 @@ public class RoleDataServiceImpl implements RoleDataService {
     @Override
     @Transactional(readOnly = true)
 	public List<Role> getUserRolesAsFlatList(String userId) {
-		UserEntity userEntity = userDAO.findById(userId);
-		Set<RoleEntity> userRoles = userEntity.getRoles();
+		final UserEntity userEntity = userDAO.findById(userId);
+		final Set<RoleEntity> userRoles = (userEntity.getRoles() != null) ? 
+				userEntity.getRoles().stream().map(e -> e.getEntity()).collect(Collectors.toSet()) : null;
 		
 		final Set<RoleEntity> visitedSet = new HashSet<RoleEntity>();
 

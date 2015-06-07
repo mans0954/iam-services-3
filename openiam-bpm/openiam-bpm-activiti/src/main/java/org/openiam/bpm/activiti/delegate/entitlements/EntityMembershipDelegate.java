@@ -257,12 +257,11 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
 							user = getUser(memberAssociationId);
 							if(role != null && user != null) {
 								final ProvisionUser pUser = new ProvisionUser(user);
-								role.setOperation(AttributeOperationEnum.ADD);
-					            pUser.addRole(role);
+								pUser.addRole(role, rights);
 					            response = provisionService.modifyUser(pUser);
 							}
 						} else {	
-							response = roleDataService.addUserToRole(associationId, memberAssociationId, systemUserId);
+							response = roleDataService.addUserToRole(associationId, memberAssociationId, systemUserId, rights);
 						}
 						break;
 					case REMOVE_USER_FROM_ROLE:

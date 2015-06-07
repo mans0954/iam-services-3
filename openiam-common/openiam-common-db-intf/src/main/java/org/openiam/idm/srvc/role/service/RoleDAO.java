@@ -9,9 +9,6 @@ import java.util.Map;
 import java.util.Set;
 
 public interface RoleDAO extends BaseDao<RoleEntity, String> {
-    public List<RoleEntity> getRolesForUser(final String userId, final Set<String> filter, final int from, final int size);
-
-
     public List<TreeObjectId> findRolesWithSubRolesIds(List<String> initialRoleIds, final Set<String> filter);
 
     public List<String> findAllParentsIds();

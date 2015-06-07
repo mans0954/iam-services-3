@@ -84,11 +84,6 @@ public interface RoleDataService {
     public List<Role> getRolesDtoForUser(final String userId, String requesterId, final int from, final int size);
 
     /**
-     * Adds a user to a role using the UserRole object. Similar to addUserToRole, but allows you to update attributes likes start and end date.
-     */
-    void assocUserToRole(String userId, String roleId);
-
-    /**
      * This method adds particular user directly to a role.<br>
      * For example:
      * <p/>
@@ -99,7 +94,7 @@ public interface RoleDataService {
      * @param roleId   The roleId to which the user will be associated.
      * @param userId   The userId to which the roleId is to be added .
      */
-    public void addUserToRole(String roleId, String userId);
+    public void addUserToRole(String roleId, String userId, Set<String> rightIds);
 
     /**
      * This method removes a particular user directly to a role.
@@ -117,14 +112,6 @@ public interface RoleDataService {
 //     */
 //    public List<UserEntity> getUsersInRole(final String roleId, final String requesterId, final int from, final int size);
 
-    /**
-     * Returns an array of Role objects that indicate the Roles a user is
-     * associated to.
-     *
-     * @param userId
-     * @return
-     */
-    public List<RoleEntity> getUserRoles(final String userId, String requesterId, final int from, final int size);
 
     /**
      * Returns a list of roles that a user belongs to. Roles can be hierarchical and this operation traverses the tree to roles that are in the

@@ -117,10 +117,12 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
 						Restrictions.in("organization.id", roleSearchBean.getOrganizationIdSet()));
             }
 
-            if(CollectionUtils.isNotEmpty(roleSearchBean.getUserIdSet())){
-                criteria.createAlias("users", "usr");
-                criteria.add(Restrictions.in("usr.id", roleSearchBean.getUserIdSet()));
+			if(CollectionUtils.isNotEmpty(roleSearchBean.getUserIdSet())){
+            	criteria.createAlias("users", "userXrefs")
+						.createAlias("userXrefs.memberEntity", "user").add(
+								Restrictions.in("user.id", roleSearchBean.getUserIdSet()));
             }
+            
 			if(StringUtils.isNotBlank(roleSearchBean.getAdminResourceId())) {
 				criteria.add(Restrictions.eq("adminResource.id", roleSearchBean.getAdminResourceId()));
 			}
@@ -192,52 +194,6 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
         }
 
         return (List<RoleEntity>) criteria.list();
-    }
-
-    @Override
-    public List<RoleEntity> getRolesForUser(String userId, final Set<String> filter, int from, int size) {
-        final Criteria criteria = getEntitlementRolesCriteria(userId, null, null, filter);
-        return getList(criteria, from, size);
-    }
-
-    private Criteria getEntitlementRolesCriteria(String userId, String groupId, String resourceId, final Set<String> filter){
-        final Criteria criteria = super.getCriteria();
-
-        if(StringUtils.isNotBlank(userId)){
-            criteria.createAlias("users", "u")
-                    .add(Restrictions.eq("u.id", userId));
-        }
-
-        if(StringUtils.isNotBlank(groupId)){
-            criteria.createAlias("groups", "groups").add( Restrictions.eq("groups.id", groupId));
-        }
-
-        if(StringUtils.isNotBlank(resourceId)){
-            criteria.createAlias("resources", "resources").add( Restrictions.eq("resources.id", resourceId));
-        }
-
-        if(filter!=null && !filter.isEmpty()){
-            criteria.add( Restrictions.in(getPKfieldName(), filter));
-        }
-
-        return criteria;
-    }
-
-	private Criteria getRolesForUserCriteria(final String userId, final Set<String> filter) {
-		return getCriteria()
-	               .createAlias("users", "u")
-	               .add(Restrictions.eq("u.id", userId));
-	}
-
-    private List<RoleEntity> getList(Criteria criteria, int from, int size){
-        if(from > -1) {
-            criteria.setFirstResult(from);
-        }
-
-        if(size > -1) {
-            criteria.setMaxResults(size);
-        }
-        return criteria.list();
     }
 
     @Override

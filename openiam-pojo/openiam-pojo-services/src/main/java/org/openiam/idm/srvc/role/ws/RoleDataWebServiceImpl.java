@@ -204,14 +204,14 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	}
 
 	@Override
-	public Response addUserToRole(String roleId, String userId, String requesterId) {
+	public Response addUserToRole(final String roleId, final String userId, final String requesterId, final Set<String> rightIds) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLog idmAuditLog = new IdmAuditLog();
+        final IdmAuditLog idmAuditLog = new IdmAuditLog();
         idmAuditLog.setAction(AuditAction.ADD_USER_TO_ROLE.value());
-        UserEntity user = userDataService.getUser(userId);
-        LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), user.getPrincipalList());
+        final UserEntity user = userDataService.getUser(userId);
+        final LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), user.getPrincipalList());
         idmAuditLog.setTargetUser(userId, primaryIdentity.getLogin());
-        RoleEntity roleEntity = roleDataService.getRole(roleId);
+        final RoleEntity roleEntity = roleDataService.getRole(roleId);
         idmAuditLog.setTargetRole(roleId, roleEntity.getName());
         idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAuditDescription(String.format("Add user to  role: %s", roleId));
@@ -220,7 +220,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "UserId or RoleId  is null or empty");
 			}
 			
-			roleDataService.addUserToRole(roleId, userId);
+			roleDataService.addUserToRole(roleId, userId, rightIds);
             idmAuditLog.succeed();
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
@@ -524,9 +524,9 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "RoleId or UserId  is null");
 			}
 
-			if(userDataService.isRoleInUser(userId, roleId)) {
-				throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS, String.format("User %s has already been added to role: %s", userId, roleId));
-			}
+			//if(userDataService.isRoleInUser(userId, roleId)) {
+			//	throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS, String.format("User %s has already been added to role: %s", userId, roleId));
+			//}
         } catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());

@@ -144,7 +144,7 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         addresses = user.getAddresses();
         emailAddresses = user.getEmailAddresses();
         principalList = user.getPrincipalList();
-        roles = user.getRoles();
+        setRoles(user.getRoles());
         setGroups(user.getGroups());
         affiliations = user.getAffiliations();
         setResources(user.getResources());

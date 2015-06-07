@@ -61,6 +61,7 @@ public final class OpenIAMHttpClient {
 				.setConnectionRequestTimeout(timeout)
 				.setSocketTimeout(timeout)
 				.build();
+		LOG.info(String.format("SMS-PARAMS: %s", params));
 		final HttpPost httpPost = new HttpPost(url.toExternalForm());
 		httpPost.setConfig(config);
 		if(MapUtils.isNotEmpty(headers)) {

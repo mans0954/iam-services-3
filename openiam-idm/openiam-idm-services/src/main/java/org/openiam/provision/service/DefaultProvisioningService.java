@@ -78,6 +78,7 @@ import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.dto.UserToGroupMembershipXref;
 import org.openiam.idm.srvc.user.dto.UserToResourceMembershipXref;
+import org.openiam.idm.srvc.user.dto.UserToRoleMembershipXref;
 import org.openiam.provision.dto.AccountLockEnum;
 import org.openiam.provision.dto.PasswordSync;
 import org.openiam.provision.dto.ProvisionUser;
@@ -869,7 +870,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 }
             }
         }
-        final List<RoleEntity> roleList = roleDataService.getUserRoles(user.getId(), null, 0, Integer.MAX_VALUE);
+        final RoleSearchBean roleSearchBean = new RoleSearchBean();
+        roleSearchBean.addUserId(user.getId());
+        final List<RoleEntity> roleList = roleDataService.findBeans(roleSearchBean, null, 0, Integer.MAX_VALUE);
         final Login primLogin = loginDozerConverter.convertToDTO(lg, false);
         if (CollectionUtils.isNotEmpty(roleList)) {
             for (final RoleEntity role : roleList) {
@@ -2418,8 +2421,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         		pUser.getGroups().stream().map(e -> e.getEntityId()).collect(Collectors.toSet()) : null;
                         pUser.setGroups(new HashSet<UserToGroupMembershipXref>());
 
-                        Set<Role> existingRoles = pUser.getRoles();
-                        pUser.setRoles(new HashSet<Role>());
+                        final Set<String> existingRolesIds = (pUser.getRoles() != null) ?
+                        		pUser.getRoles().stream().map(e -> e.getEntityId()).collect(Collectors.toSet()) : null;
+                        pUser.setRoles(new HashSet<UserToRoleMembershipXref>());
 
                         Set<Organization> existingOrganizations = pUser.getAffiliations();
                         pUser.setAffiliations(new HashSet<Organization>());
@@ -2559,21 +2563,21 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                     boolean isModifiedRole = false;
                                     Role role = roleDozerConverter.convertToDTO(
                                             roleDataService.getRole(ob.getObjectId(), requestorId), false);
-                                    if (existingRoles.contains(role)) {
+                                    if (existingRolesIds.contains(role.getId())) {
                                         if (BulkOperationEnum.DELETE_ENTITLEMENT.equals(ob.getOperation())) {
-                                            existingRoles.remove(role);
+                                        	existingRolesIds.remove(role.getId());
                                             role.setOperation(AttributeOperationEnum.DELETE);
                                             isModifiedRole = true;
                                         }
                                     } else {
                                         if (BulkOperationEnum.ADD_ENTITLEMENT.equals(ob.getOperation())) {
-                                            existingRoles.add(role);
+                                        	existingRolesIds.add(role.getId());
                                             role.setOperation(AttributeOperationEnum.ADD);
                                             isModifiedRole = true;
                                         }
                                     }
                                     if (isModifiedRole) {
-                                        pUser.getRoles().add(role);
+                                    	pUser.addRole(role, ob.getRightIds());
                                         isEntitlementModified = true;
                                     }
                                     break;

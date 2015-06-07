@@ -1671,83 +1671,6 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
     }
 
     @Override
-    @Transactional(readOnly = true)
-    @Deprecated
-    public List<UserEntity> getUsersForResource(String resourceId, String requesterId, int from, int size) {
-//        DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch(requesterId);
-//        return userDao.getUsersForResource(resourceId, delegationFilter, from, size);
-        UserSearchBean userSearchBean = new UserSearchBean();
-        userSearchBean.setRequesterId(requesterId);
-        userSearchBean.addResourceId(resourceId);
-
-        List<SortParam> sortParamList = new ArrayList<>();
-        sortParamList.add( new SortParam(OrderConstants.ASC, "name"));
-        userSearchBean.setSortBy(sortParamList);
-
-
-        return getUsersForResource(userSearchBean, from,size);
-    }
-    @Override
-    @Transactional(readOnly = true)
-    public List<UserEntity> getUsersForResource(UserSearchBean userSearchBean, int from, int size){
-        DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch(userSearchBean.getRequesterId());
-
-        String resourceId = userSearchBean.getResourceIdSet().iterator().next();
-
-        return userDao.getUsersForResource(resourceId, delegationFilter, userSearchBean.getSortBy(), from, size);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public int getNumOfUsersForResource(String resourceId, String requesterId) {
-        DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch(requesterId);
-        return userDao.getNumOfUsersForResource(resourceId, delegationFilter);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<UserEntity> getUsersForGroup(String groupId, String requesterId, int from, int size) {
-        DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch(requesterId);
-        if (DelegationFilterHelper.isAllowed(groupId, delegationFilter.getGroupIdSet())) {
-            return userDao.getUsersForGroup(groupId, delegationFilter, from, size);
-        }
-        return new ArrayList<UserEntity>(0);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    @Deprecated
-    public int getNumOfUsersForGroup(String groupId, String requesterId) {
-        DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch(requesterId);
-        if (DelegationFilterHelper.isAllowed(groupId, delegationFilter.getGroupIdSet())) {
-            return userDao.getNumOfUsersForGroup(groupId, delegationFilter);
-        }
-        return 0;
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    @Deprecated
-    public List<UserEntity> getUsersForRole(String roleId, String requesterId, int from, int size) {
-        DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch(requesterId);
-        if (DelegationFilterHelper.isAllowed(roleId, delegationFilter.getRoleIdSet())) {
-            return userDao.getUsersForRole(roleId, delegationFilter, from, size);
-        }
-        return new ArrayList<UserEntity>(0);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    @Deprecated
-    public int getNumOfUsersForRole(String roleId, String requesterId) {
-        DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch(requesterId);
-        if (DelegationFilterHelper.isAllowed(roleId, delegationFilter.getRoleIdSet())) {
-            return userDao.getNumOfUsersForRole(roleId, delegationFilter);
-        }
-        return 0;
-    }
-
-    @Override
     @Transactional
     public String saveUserInfo(UserEntity newUserEntity, String supervisorId) throws Exception {
         String userId = newUserEntity.getId();
@@ -1930,19 +1853,6 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
         user.setSecondaryStatus(null);
         userDao.update(user);
 		userIdentityAnswerDAO.deleteByUser(userId);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public boolean isRoleInUser(String userId, String roleId) {
-        boolean isExists = false;
-        UserEntity userEntity = userDao.findById(userId);
-        for (RoleEntity r : userEntity.getRoles()) {
-            if (r.getId().equals(roleId)) {
-                return true;
-            }
-        }
-        return isExists;
     }
 
     @Transactional(readOnly = true)

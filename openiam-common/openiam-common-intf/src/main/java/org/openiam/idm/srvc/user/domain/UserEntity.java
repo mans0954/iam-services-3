@@ -248,10 +248,9 @@ public class UserEntity extends KeyEntity {
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "user", fetch = FetchType.LAZY)
     protected Set<UserKey> userKeys = new HashSet<UserKey>(0);
 
-    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch=FetchType.LAZY)
-    @JoinTable(name = "USER_ROLE", joinColumns = { @JoinColumn(name = "USER_ID") }, inverseJoinColumns = { @JoinColumn(name = "ROLE_ID") })
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="memberEntity", orphanRemoval=true)
     @Fetch(FetchMode.SUBSELECT)
-    private Set<RoleEntity> roles = new HashSet<RoleEntity>(0);
+    private Set<UserToRoleMembershipXrefEntity> roles = new HashSet<UserToRoleMembershipXrefEntity>(0);
     
     @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
     @JoinTable(name = "USER_AFFILIATION", joinColumns = { @JoinColumn(name = "USER_ID") }, inverseJoinColumns = { @JoinColumn(name = "COMPANY_ID") })
@@ -799,13 +798,55 @@ public class UserEntity extends KeyEntity {
 		}
 	}
 
-    public Set<RoleEntity> getRoles() {
+    public Set<UserToRoleMembershipXrefEntity> getRoles() {
         return roles;
     }
 
-    public void setRoles(Set<RoleEntity> roles) {
+    public void setRoles(Set<UserToRoleMembershipXrefEntity> roles) {
         this.roles = roles;
     }
+    
+    public UserToRoleMembershipXrefEntity getRole(final String roleId) {
+		final Optional<UserToRoleMembershipXrefEntity> xref = 
+    			this.getRoles()
+    				.stream()
+    				.filter(e -> roleId.equals(e.getEntity().getId()))
+    				.findFirst();
+    	return xref.isPresent() ? xref.get() : null;
+	}
+    
+    public void removeRole(final RoleEntity entity) {
+    	if(entity != null) {
+			if(this.roles != null) {
+				this.roles.removeIf(e -> e.getEntity().getId().equals(entity.getId()));
+			}
+		}
+    }
+    
+    public void addRole(final RoleEntity entity, final Collection<AccessRightEntity> rights) {
+		if(entity != null) {
+			if(this.roles == null) {
+				this.roles = new LinkedHashSet<UserToRoleMembershipXrefEntity>();
+			}
+			UserToRoleMembershipXrefEntity theXref = null;
+			for(final UserToRoleMembershipXrefEntity xref : this.roles) {
+				if(xref.getEntity().getId().equals(entity.getId()) && xref.getMemberEntity().getId().equals(getId())) {
+					theXref = xref;
+					break;
+				}
+			}
+			
+			if(theXref == null) {
+				theXref = new UserToRoleMembershipXrefEntity();
+				theXref.setEntity(entity);
+				theXref.setMemberEntity(this);
+			}
+			if(rights != null) {
+				theXref.setRights(new HashSet<AccessRightEntity>(rights));
+			}
+			this.roles.add(theXref);
+		}
+	}
 
     public Set<OrganizationEntity> getAffiliations() {
         return affiliations;
@@ -864,15 +905,6 @@ public class UserEntity extends KeyEntity {
 			this.resources.add(theXref);
 		}
 	}
-
-    public void addRole(final RoleEntity entity) {
-        if(entity != null) {
-            if(this.roles == null) {
-                this.roles = new HashSet<>();
-            }
-            this.roles.add(entity);
-        }
-    }
 
     public void updateUser(UserEntity newUser) {
 	    if (newUser.getBirthdate() != null) {

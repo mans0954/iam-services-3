@@ -122,9 +122,10 @@ public interface RoleDataWebService {
      * @return a Response Object, containing the status of this operation.
      */
     @WebMethod
-    Response addUserToRole(@WebParam(name = "roleId", targetNamespace = "") String roleId,
-                           @WebParam(name = "userId", targetNamespace = "")  String userId,
-                           final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+    Response addUserToRole(final @WebParam(name = "roleId", targetNamespace = "") String roleId,
+    					   final @WebParam(name = "userId", targetNamespace = "")  String userId,
+                           final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
+                           final @WebParam(name = "rightIds", targetNamespace = "") Set<String> rightIds);
 
     /**
      * Removes the association between a single role and role.

@@ -407,9 +407,9 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         }
         
         if (StringUtils.isNotEmpty(groupId)) {
-        	criteria.createAlias("roles", "roleXrefs")
-					.createAlias("roleXrefs.entity", "role").add(
-							Restrictions.eq("role.id", groupId));
+        	criteria.createAlias("groups", "groupXrefs")
+					.createAlias("groupXrefs.entity", "group").add(
+							Restrictions.eq("group.id", groupId));
         } else if (delegationFilter != null && CollectionUtils.isNotEmpty(delegationFilter.getGroupIdSet())) {    
             criteria.createAlias("groups", "groupXrefs")
 					.createAlias("groupXrefs.entity", "group").add(
@@ -591,8 +591,11 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
     public List<String> getUserIdsForRoles(final Set<String> roleIds, final int from, final int size) {
         List<String> retVal = null;
         if (CollectionUtils.isNotEmpty(roleIds)) {
-            final Criteria criteria = getCriteria().createAlias("roles", "role").add(Restrictions.in("role.id", roleIds))
-                            .setProjection(Projections.property("id"));
+            final Criteria criteria = getCriteria().createAlias("roles", "roleXrefs")
+					   							   .createAlias("roleXrefs.entity", "role")
+					   							   .add(Restrictions.in("role.id", roleIds))
+					   							   .setProjection(Projections.property("id"));
+            
             if (from > -1) {
                 criteria.setFirstResult(from);
             }
@@ -610,8 +613,9 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         List<String> retVal = null;
         if (CollectionUtils.isNotEmpty(groupIds)) {
             final Criteria criteria = getCriteria().createAlias("groups", "groupXrefs")
-												   .createAlias("groupXrefs.entity", "group").add(Restrictions.in("group.id", groupIds))
-                            .setProjection(Projections.property("id"));
+												   .createAlias("groupXrefs.entity", "group")
+												   .add(Restrictions.in("group.id", groupIds))
+												   .setProjection(Projections.property("id"));
             if (from > -1) {
                 criteria.setFirstResult(from);
             }

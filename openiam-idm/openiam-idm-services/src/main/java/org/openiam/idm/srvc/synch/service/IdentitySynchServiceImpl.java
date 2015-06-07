@@ -375,12 +375,12 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
     }
 
     @Transactional
-    public Response bulkUserMigration(BulkMigrationConfig config) {
+    public Response bulkUserMigration(final BulkMigrationConfig config) {
 
         Response resp = new Response(ResponseStatus.SUCCESS);
         try {
             // select the user that we need to move
-            UserSearchBean search = buildSearch(config);
+            final UserSearchBean search = buildSearch(config);
             /*
             if (search.isEmpty()) {
                 resp.setStatus(ResponseStatus.FAILURE);
@@ -394,7 +394,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 
 
             // all the provisioning service
-            for ( User user :  searchResult) {
+            for (final  User user :  searchResult) {
 
                 log.debug("Migrating user: " + user.getId() + " " + user.getLastName());
 
@@ -402,20 +402,12 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 
                 if (config.getTargetRole() != null && !config.getTargetRole().isEmpty() ) {
 
-                    Role r = parseRole(config.getTargetRole());
-                    if ( pUser.getRoles() == null ) {
-                        Set<Role> roleSet = new HashSet<Role>();
-                        pUser.setRoles(roleSet);
-                    }
-
+                    final Role r = parseRole(config.getTargetRole());
                     if ("ADD".equalsIgnoreCase(config.getOperation())) {
                         // add to role
-                        r.setOperation(AttributeOperationEnum.ADD);
-                        pUser.getRoles().add(r);
+                    	pUser.addRole(r, config.getRightIds());
                     } else {
-                        // remove from role
-                        r.setOperation(AttributeOperationEnum.DELETE);
-                        pUser.getRoles().add(r);
+                    	pUser.removeRole(r.getId());
                     }
 
                 } else if (config.getTargetResource() != null && !config.getTargetResource().isEmpty()) {
@@ -523,15 +515,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 
                 ProvisionUser pUser = new ProvisionUser(user);
 
-                if (pUser.getRoles() == null ) {
-                    Set<Role> roles = new HashSet<Role>();
-                    roles.add(rl);
-                    pUser.setRoles(roles);
-
-                }  else {
-                    pUser.getRoles().add(rl);
-                }
-
+                pUser.addRole(rl, null);
                 provisionService.modifyUser(pUser);
 
             }

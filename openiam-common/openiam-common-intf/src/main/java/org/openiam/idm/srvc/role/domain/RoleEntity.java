@@ -40,6 +40,8 @@ import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourceToResourceMembershipXrefEntity;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.idm.srvc.user.domain.UserToGroupMembershipXrefEntity;
+import org.openiam.idm.srvc.user.domain.UserToRoleMembershipXrefEntity;
 import org.openiam.internationalization.Internationalized;
 
 @Entity
@@ -89,10 +91,10 @@ public class RoleEntity extends AbstractMetdataTypeEntity {
     @Fetch(FetchMode.SUBSELECT)
 	private Set<RoleToResourceMembershipXrefEntity> resources;
 
-    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    @JoinTable(name = "USER_ROLE", joinColumns = { @JoinColumn(name = "ROLE_ID") }, inverseJoinColumns = { @JoinColumn(name = "USER_ID") })
-    private Set<UserEntity> users = new HashSet<UserEntity>(0);
-
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="entity", orphanRemoval=true)
+    @Fetch(FetchMode.SUBSELECT)
+    private Set<UserToRoleMembershipXrefEntity> users = new HashSet<UserToRoleMembershipXrefEntity>(0);
+    
     @Column(name="CREATE_DATE",length=19)
 	private Date createDate;
     
@@ -342,12 +344,22 @@ public class RoleEntity extends AbstractMetdataTypeEntity {
 	public void setGroups(Set<RoleToGroupMembershipXrefEntity> groups) {
 		this.groups = groups;
 	}
+	
+	public UserToRoleMembershipXrefEntity getUser(final String userId) {
+		final Optional<UserToRoleMembershipXrefEntity> xref = 
+    			this.getUsers()
+    				.stream()
+    				.filter(e -> userId.equals(e.getMemberEntity().getId()))
+    				.findFirst();
+    	return xref.isPresent() ? xref.get() : null;
+	}
 
-	public Set<UserEntity> getUsers() {
+
+	public Set<UserToRoleMembershipXrefEntity> getUsers() {
         return users;
     }
 
-    public void setUsers(Set<UserEntity> users) {
+    public void setUsers(Set<UserToRoleMembershipXrefEntity> users) {
         this.users = users;
     }
     

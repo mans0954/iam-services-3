@@ -227,7 +227,7 @@ public class User extends AbstractMetadataTypeDTO {
 
     protected Set<EmailAddress> emailAddresses = new HashSet<EmailAddress>(0);
 
-    protected Set<Role> roles = new HashSet<Role>(0);
+    protected Set<UserToRoleMembershipXref> roles = new HashSet<UserToRoleMembershipXref>(0);
 
     protected Set<Organization> affiliations = new HashSet<Organization>(0);
 
@@ -709,34 +709,72 @@ public class User extends AbstractMetadataTypeDTO {
         this.mailCode = mailCode;
     }
 
-    public Set<Role> getRoles() {
+    public Set<UserToRoleMembershipXref> getRoles() {
         return roles;
     }
 
+    @Deprecated
     public void markRoleAsDeleted(final String id) {
-        if (id != null) {
-            if (roles != null) {
-                for (final Role role : roles) {
-                    if (StringUtils.equals(role.getId(), id)) {
-                        role.setOperation(AttributeOperationEnum.DELETE);
-                        break;
-                    }
-                }
-            }
-        }
+    	removeRole(id);
+    }
+    
+    public void removeRole(final String roleId) {
+    	if(roleId != null) {
+    		UserToRoleMembershipXref theXref = null;
+    		if(roles != null) {
+    			for(final UserToRoleMembershipXref xref : roles) {
+    				if(xref.getEntityId().equals(roleId)) {
+    					theXref = xref;
+    					break;
+    				}
+    			}
+    		}
+    		
+    		if(theXref != null) {
+    			theXref.setOperation(AttributeOperationEnum.DELETE);
+    		}
+    	}
     }
 
+    @Deprecated
     public void addRole(final Role role) {
-        if (role != null) {
+    	addRole(role, null);
+    }
+    
+    public void addRole(final Role role, final Set<String> rights) {
+    	addRoleWithRights(role, toAccessRightSet(rights));
+    }
+    
+    public void addRoleWithRights(final Role role, final Set<AccessRight> rights) {
+    	if (role != null) {
             if (roles == null) {
-                roles = new HashSet<Role>();
+            	roles = new HashSet<UserToRoleMembershipXref>();
             }
-            role.setOperation(AttributeOperationEnum.ADD);
-            roles.add(role);
+            
+            UserToRoleMembershipXref theXref = null;
+			for(final UserToRoleMembershipXref xref : this.roles) {
+				if(xref.getMemberEntityId().equals(getId()) && xref.getEntityId().equals(role.getId())) {
+					theXref = xref;
+					break;
+				}
+			}
+            
+            //resource.setOperation(AttributeOperationEnum.ADD);
+			if(theXref == null) {
+				theXref = new UserToRoleMembershipXref();
+				theXref.setEntityId(role.getId());
+				theXref.setMemberEntityId(getId());
+			}
+			theXref.setOperation(AttributeOperationEnum.ADD);
+			if(rights != null) {
+				theXref.setRights(rights);
+			}
+			this.roles.add(theXref);
         }
     }
 
-    public void setRoles(Set<Role> roles) {
+
+    public void setRoles(Set<UserToRoleMembershipXref> roles) {
         this.roles = roles;
     }
 
@@ -747,7 +785,7 @@ public class User extends AbstractMetadataTypeDTO {
     public void removeGroup(final String groupId) {
     	if(groupId != null) {
     		UserToGroupMembershipXref theXref = null;
-    		if(resources != null) {
+    		if(groups != null) {
     			for(final UserToGroupMembershipXref xref : groups) {
     				if(xref.getEntityId().equals(groupId)) {
     					theXref = xref;
