@@ -269,7 +269,6 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
 
         try {
             Map<String, Object> bindingMap = new HashMap<String, Object>();
-            bindingMap.put(ORG_ATTRIBUTES, getOrgAttributesDto(organization.getId()));
             if (!skipPrePostProcessors) {
                 OrganizationServicePrePostProcessor preProcessor = getPreProcessScript();
                 if (preProcessor != null &&  preProcessor.save(organization, bindingMap, idmAuditLog) != OrganizationServicePrePostProcessor.SUCCESS) {
@@ -758,7 +757,6 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
             }
 
             Map<String, Object> bindingMap = new HashMap<String, Object>();
-            bindingMap.put(ORG_ATTRIBUTES, getOrgAttributesDto(orgId));
             if (!skipPrePostProcessors) {
                 OrganizationServicePrePostProcessor preProcessor = getPreProcessScript();
                 if (preProcessor != null &&  preProcessor.delete(orgId, bindingMap, idmAuditLog) != OrganizationServicePrePostProcessor.SUCCESS) {
