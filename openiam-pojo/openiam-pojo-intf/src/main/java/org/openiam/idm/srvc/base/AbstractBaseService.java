@@ -8,6 +8,9 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import java.util.Map;
 
 public abstract class AbstractBaseService {
+
+    public static final String ORG_ATTRIBUTES = "orgAttributes";
+
     @Autowired
     protected AuditLogService auditLogService;
 
