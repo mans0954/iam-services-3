@@ -839,7 +839,7 @@ public class User extends AbstractMetadataTypeDTO {
     
     public void removeGroup(final Group group) {
     	if(group != null) {
-    		removeResource(group.getId());
+    		removeGroup(group.getId());
     	}
     }
     
