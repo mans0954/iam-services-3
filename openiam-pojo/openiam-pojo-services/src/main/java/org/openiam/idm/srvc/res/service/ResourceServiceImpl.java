@@ -598,6 +598,7 @@ public class ResourceServiceImpl implements ResourceService {
 		if(resource != null) {
 			return CollectionUtils.isNotEmpty(resource.getChildResources()) ||
 				   CollectionUtils.isNotEmpty(resource.getGroups()) ||
+				   CollectionUtils.isNotEmpty(resource.getOrganizations()) ||
 				   CollectionUtils.isNotEmpty(resource.getRoles());
 		} else {
 			return false;
