@@ -77,6 +77,7 @@ import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.dto.UserToGroupMembershipXref;
+import org.openiam.idm.srvc.user.dto.UserToOrganizationMembershipXref;
 import org.openiam.idm.srvc.user.dto.UserToResourceMembershipXref;
 import org.openiam.idm.srvc.user.dto.UserToRoleMembershipXref;
 import org.openiam.provision.dto.AccountLockEnum;
@@ -947,7 +948,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         // bind the objects to the scripting engine
         Map<String, Object> bindingMap = new HashMap<String, Object>();
         bindingMap.put("sysId", sysConfiguration.getDefaultManagedSysId());
-        bindingMap.put("org", pUser.getPrimaryOrganization());
+        bindingMap.put("org", organizationService.getOrganizationDTO(pUser.getPrimaryOrganizationId(), null));
         bindingMap.put("operation", isAdd ? "ADD" : "MODIFY");
         bindingMap.put(USER, pUser);
         bindingMap.put("sendActivationLink", sendActivationLink);
@@ -2425,8 +2426,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         		pUser.getRoles().stream().map(e -> e.getEntityId()).collect(Collectors.toSet()) : null;
                         pUser.setRoles(new HashSet<UserToRoleMembershipXref>());
 
-                        Set<Organization> existingOrganizations = pUser.getAffiliations();
-                        pUser.setAffiliations(new HashSet<Organization>());
+                        final Set<String> existingOrganizationIds = (pUser.getAffiliations() != null) ?
+                        		pUser.getAffiliations().stream().map(e -> e.getEntityId()).collect(Collectors.toSet()) : null;
+                        pUser.setAffiliations(new HashSet<UserToOrganizationMembershipXref>());
 
                         final Set<String> existingResourceIds = (pUser.getResources() != null) ?
                         		pUser.getResources().stream().map(e -> e.getEntityId()).collect(Collectors.toSet()) : 
@@ -2604,22 +2606,21 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                     break;
                                 case ORGANIZATION:
                                     boolean isModifiedOrg = false;
-                                    Organization organization = organizationService.getOrganizationDTO(ob.getObjectId(), null);
-                                    if (existingOrganizations.contains(organization)) {
+                                    final Organization organization = organizationService.getOrganizationDTO(ob.getObjectId(), null);
+                                    if (existingOrganizationIds.contains(organization.getId())) {
                                         if (BulkOperationEnum.DELETE_ENTITLEMENT.equals(ob.getOperation())) {
-                                            existingOrganizations.remove(organization);
-                                            organization.setOperation(AttributeOperationEnum.DELETE);
+                                        	existingOrganizationIds.remove(organization.getId());
+                                        	pUser.removeAffiliation(organization.getId());
                                             isModifiedOrg = true;
                                         }
                                     } else {
                                         if (BulkOperationEnum.ADD_ENTITLEMENT.equals(ob.getOperation())) {
-                                            existingOrganizations.add(organization);
-                                            organization.setOperation(AttributeOperationEnum.ADD);
+                                        	existingOrganizationIds.add(organization.getId());
+                                        	pUser.addAffiliation(organization, ob.getRightIds());
                                             isModifiedOrg = true;
                                         }
                                     }
                                     if (isModifiedOrg) {
-                                        pUser.getAffiliations().add(organization);
                                         isEntitlementModified = true;
                                     }
                                     break;
@@ -2759,7 +2760,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
         Map<String, Object> bindingMap = new HashMap<>();
         bindingMap.put("sysId", sysConfiguration.getDefaultManagedSysId());
-        bindingMap.put("org", pUser.getPrimaryOrganization());
+        bindingMap.put("org", organizationService.getOrganizationDTO(pUser.getPrimaryOrganizationId(), null));
         bindingMap.put("operation", operation);
         bindingMap.put(AbstractProvisioningService.USER, pUser);
         bindingMap.put(AbstractProvisioningService.USER_ATTRIBUTES, userMgr.getUserAttributesDto(pUser.getId()));
@@ -3007,7 +3008,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
         Map<String, Object> bindingMap = new HashMap<String, Object>();
         bindingMap.put("sysId", sysConfiguration.getDefaultManagedSysId());
-        bindingMap.put("org", user.getPrimaryOrganization());
+        bindingMap.put("org", organizationService.getOrganizationDTO(user.getPrimaryOrganizationId(), null));
         bindingMap.put("operation", operation);
         bindingMap.put(USER, user);
         bindingMap.put(USER_ATTRIBUTES, userMgr.getUserAttributesDto(user.getId()));

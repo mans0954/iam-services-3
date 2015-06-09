@@ -82,10 +82,12 @@ import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.domain.UserToGroupMembershipXrefEntity;
+import org.openiam.idm.srvc.user.domain.UserToOrganizationMembershipXrefEntity;
 import org.openiam.idm.srvc.user.domain.UserToRoleMembershipXrefEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.user.dto.UserToGroupMembershipXref;
+import org.openiam.idm.srvc.user.dto.UserToOrganizationMembershipXref;
 import org.openiam.idm.srvc.user.dto.UserToResourceMembershipXref;
 import org.openiam.idm.srvc.user.dto.UserToRoleMembershipXref;
 import org.openiam.idm.srvc.user.service.UserDataService;
@@ -1496,40 +1498,33 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
 
     public void updateAffiliations(final UserEntity userEntity, final ProvisionUser pUser, final IdmAuditLog parentLog) {
         if (CollectionUtils.isNotEmpty(pUser.getAffiliations())) {
-            for (Organization o : pUser.getAffiliations()) {
-                AttributeOperationEnum operation = o.getOperation();
+            for (final UserToOrganizationMembershipXref xref : pUser.getAffiliations()) {
+                final AttributeOperationEnum operation = xref.getOperation();
+                final OrganizationEntity org = organizationService.getOrganizationLocalized(xref.getEntityId(), null);
                 if (operation == AttributeOperationEnum.ADD) {
-                    OrganizationEntity org = organizationService.getOrganizationLocalized(o.getId(), null);
-                    userEntity.getAffiliations().add(org);
+                    userEntity.addAffiliation(org, accessRightDAO.findByIds(xref.getAccessRightIds()));
                     // Audit Log ---------------------------------------------------
-                    IdmAuditLog auditLog = new IdmAuditLog();
+                    final IdmAuditLog auditLog = new IdmAuditLog();
                     auditLog.setAction(AuditAction.ADD_USER_TO_ORG.value());
-                    Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
-                    String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
+                    final Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
+                    final String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
                     auditLog.setTargetUser(pUser.getId(), loginStr);
                     auditLog.setTargetOrg(org.getId(), org.getName());
                     auditLog.addCustomRecord("ORG", org.getName());
                     parentLog.addChild(auditLog);
                     // --------------------------------------------------------------
                 } else if (operation == AttributeOperationEnum.DELETE) {
-                    Set<OrganizationEntity> affiliations = userEntity.getAffiliations();
-                    for (OrganizationEntity a : affiliations) {
-                        if (StringUtils.equals(o.getId(), a.getId())) {
-                            userEntity.getAffiliations().remove(a);
-                            // Audit Log ---------------------------------------------------
-                            IdmAuditLog auditLog = new IdmAuditLog();
-                            auditLog.setAction(AuditAction.REMOVE_USER_FROM_ORG.value());
-                            Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
-                            String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
-                            auditLog.setTargetUser(pUser.getId(), loginStr);
-                            auditLog.setTargetOrg(o.getId(), o.getName());
-                            auditLog.addCustomRecord("ORG", o.getName());
-                            parentLog.addChild(auditLog);
-                            // -------------------------------------------------------------
-                            break;
-                        }
-                    }
-
+                	userEntity.removeAffiliation(org);
+                    // Audit Log ---------------------------------------------------
+                	final IdmAuditLog auditLog = new IdmAuditLog();
+                	auditLog.setAction(AuditAction.REMOVE_USER_FROM_ORG.value());
+                	final Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
+                	final String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
+                	auditLog.setTargetUser(pUser.getId(), loginStr);
+                	auditLog.setTargetOrg(org.getId(), org.getName());
+                	auditLog.addCustomRecord("ORG", org.getName());
+                	parentLog.addChild(auditLog);
+                	break;
                 } else if (operation == AttributeOperationEnum.REPLACE) {
                     throw new UnsupportedOperationException("Operation 'REPLACE' is not supported for affiliations");
                 }

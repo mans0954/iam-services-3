@@ -15,9 +15,6 @@ import java.util.Set;
  */
 
 public interface OrganizationDAO extends BaseDao<OrganizationEntity, String> {
-    public List<OrganizationEntity> getOrganizationsForUser(final String userId, final Set<String> filter, final int from, final int size);
-    public int getNumOfOrganizationsForUser(final String userId, final Set<String> filter);
-
     public List<OrgToOrgMembershipXrefEntity> getOrgToOrgXrefList();
 
     public List<OrganizationEntity> findAllByTypesAndIds(Set<String> allowedOrgTypes, Set<String> filterData);

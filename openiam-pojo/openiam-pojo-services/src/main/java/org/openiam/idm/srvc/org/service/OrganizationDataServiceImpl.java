@@ -94,23 +94,34 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     }
     
     @Override
+    @Deprecated
 	public int getNumOfOrganizationsForUser(final String userId, final String requesterId) {
-    	return organizationService.getNumOfOrganizationsForUser(userId, requesterId);
+    	final OrganizationSearchBean sb = new OrganizationSearchBean();
+    	sb.addUserId(userId);
+    	sb.setDeepCopy(false);
+    	return count(sb, requesterId);
 	}
 
     @Override
     /**
      * for internal use only, without  @LocalizedServiceGet
      */
+    @Deprecated
     public List<Organization> getOrganizationsForUser(final String userId, final String requesterId, final int from, final int size) {
-        return this.getOrganizationsForUserLocalized(userId, requesterId, from, size, getDefaultLanguage());
+    	final OrganizationSearchBean sb = new OrganizationSearchBean();
+    	sb.addUserId(userId);
+    	sb.setDeepCopy(false);
+    	return findBeansLocalized(sb, requesterId, from, size, null);
     }
 
     @Override
     @LocalizedServiceGet
+    @Deprecated
 	public List<Organization> getOrganizationsForUserLocalized(final String userId, final String requesterId, final int from, final int size, final Language language) {
-    	final List<OrganizationEntity> ogranizationEntity = organizationService.getOrganizationsForUser(userId, requesterId, from, size, languageConverter.convertToEntity(language, false));
-        return organizationDozerConverter.convertToDTOList(ogranizationEntity, false);
+    	final OrganizationSearchBean sb = new OrganizationSearchBean();
+    	sb.addUserId(userId);
+    	sb.setDeepCopy(false);
+    	return findBeansLocalized(sb, requesterId, from, size, language);
 	}
 
     @Override
@@ -225,14 +236,14 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
 	}
 
     @Override
-    public Response addUserToOrg(final String orgId, final String userId) {
+    public Response addUserToOrg(final String orgId, final String userId, final Set<String> rightIds) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
             if (orgId == null || userId == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }
 
-            organizationService.addUserToOrg(orgId, userId);
+            organizationService.addUserToOrg(orgId, userId, rightIds);
         } catch (BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
@@ -679,8 +690,10 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     @Transactional(readOnly = true)
     public List<Location> getLocationListByPageForUser(String userId, Integer from, Integer size) {
 
-        Set<String> orgsId = new HashSet<String>();
-        List<OrganizationEntity> orgList = organizationService.getOrganizationsForUser(userId, null, from, size, languageConverter.convertToEntity(getDefaultLanguage(), false));
+        final Set<String> orgsId = new HashSet<String>();
+        final OrganizationSearchBean sb = new OrganizationSearchBean();
+        sb.addUserId(userId);
+        List<OrganizationEntity> orgList = organizationService.findBeans(sb, null, from, size, languageConverter.convertToEntity(getDefaultLanguage(), false));
         for (OrganizationEntity org : orgList) {
             orgsId.add(org.getId());
         }

@@ -4,6 +4,33 @@
           http://dozer.sourceforge.net/schema/beanmapping.xsd">
 	
 	<mapping>
+		<class-a>org.openiam.idm.srvc.user.domain.UserToOrganizationMembershipXrefEntity</class-a>
+		<class-b>org.openiam.idm.srvc.user.dto.UserToOrganizationMembershipXref</class-b>
+		<field>
+			<a>entity.id</a>
+			<b>entityId</b>
+		</field>
+		<field>
+			<a>entity.organizationType.id</a>
+			<b>organizationTypeId</b>
+		</field>
+		<field>
+			<a>entity.name</a>
+			<b>name</b>
+		</field>
+		<field>
+			<a>memberEntity.id</a>
+			<b>memberEntityId</b>
+		</field>
+		<field
+			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
+			custom-converter-param="dto2entityShallowDozerMapper">
+			<a>rights</a>
+			<b>rights</b>
+		</field>
+	</mapping>
+	
+	<mapping>
 		<class-a>org.openiam.idm.srvc.user.domain.UserToResourceMembershipXrefEntity</class-a>
 		<class-b>org.openiam.idm.srvc.user.dto.UserToResourceMembershipXref</class-b>
 		<field>

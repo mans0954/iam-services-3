@@ -272,7 +272,7 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
 							user = getUser(memberAssociationId);
 							if(role != null && user != null) {
 								final ProvisionUser pUser = new ProvisionUser(user);
-								pUser.markRoleAsDeleted(role.getId());
+								pUser.removeRole(role.getId());
 								response = provisionService.modifyUser(pUser);
 							}
 						} else {	
@@ -287,11 +287,11 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
 							if(organization != null && user != null) {
 								organization.setOperation(AttributeOperationEnum.ADD);
 								final ProvisionUser pUser = new ProvisionUser(user);
-								pUser.addAffiliation(organization);
+								pUser.addAffiliation(organization, rights);
 								response = provisionService.modifyUser(pUser);
 							}
 						} else {	
-							response = organizationDataService.addUserToOrg(associationId, memberAssociationId);
+							response = organizationDataService.addUserToOrg(associationId, memberAssociationId, rights);
 						}
 						break;
 					case REMOVE_USER_FROM_ORG:
@@ -301,7 +301,7 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
 							user = getUser(memberAssociationId);
 							if(organization != null && user != null) {
 								final ProvisionUser pUser = new ProvisionUser(user);
-								pUser.markAffiliateAsDeleted(organization.getId());
+								pUser.removeAffiliation(organization.getId());
 								response = provisionService.modifyUser(pUser);
 							}
 						} else {	

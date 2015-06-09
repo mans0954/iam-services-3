@@ -50,8 +50,10 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         Criteria criteria = getCriteria();
 
         if (delegationFilter != null) {
-            if (CollectionUtils.isNotEmpty(delegationFilter.getOrganizationIdSet())) {
-                criteria.createAlias("affiliations", "aff").add(Restrictions.in("aff.id", delegationFilter.getOrganizationIdSet()));
+            if(CollectionUtils.isNotEmpty(delegationFilter.getOrganizationIdSet())){    
+                criteria.createAlias("affiliations", "affiliationXrefs")
+						.createAlias("affiliationXrefs.entity", "affiliation").add(
+						Restrictions.in("affiliation.id", delegationFilter.getOrganizationIdSet()));
             }
             
             if(CollectionUtils.isNotEmpty(delegationFilter.getRoleIdSet())){    
@@ -200,9 +202,6 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
             if (StringUtils.isNotEmpty(searchBean.getZipCode())) {
                 criteria.add(Restrictions.eq("postalCd", searchBean.getZipCode()));
             }
-            if (CollectionUtils.isNotEmpty(searchBean.getOrganizationIdSet())) {
-                criteria.createAlias("affiliations", "aff").add(Restrictions.in("aff.id", searchBean.getOrganizationIdSet()));
-            }
             if (StringUtils.isNotEmpty(searchBean.getPhoneAreaCd()) || StringUtils.isNotEmpty(searchBean.getPhoneNbr())) {
                 if (StringUtils.isNotEmpty(searchBean.getPhoneAreaCd())) {
                     criteria.add(Restrictions.eq("p.areaCd", searchBean.getPhoneAreaCd()));
@@ -232,6 +231,12 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
             		default:
     					break;
             	}
+            }
+            
+            if(CollectionUtils.isNotEmpty(searchBean.getOrganizationIdSet())){    
+                criteria.createAlias("affiliations", "affiliationXrefs")
+						.createAlias("affiliationXrefs.entity", "affiliation").add(
+						Restrictions.in("affiliation.id", searchBean.getOrganizationIdSet()));
             }
             
             if(CollectionUtils.isNotEmpty(searchBean.getRoleIdSet())){    
@@ -424,8 +429,10 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         }
 
         if (delegationFilter != null) {
-            if (CollectionUtils.isNotEmpty(delegationFilter.getOrganizationIdSet())) {
-                criteria.createAlias("affiliations", "aff").add(Restrictions.in("aff.id", delegationFilter.getOrganizationIdSet()));
+            if(CollectionUtils.isNotEmpty(delegationFilter.getOrganizationIdSet())){    
+                criteria.createAlias("affiliations", "affiliationXrefs")
+						.createAlias("affiliationXrefs.entity", "affiliation").add(
+						Restrictions.in("affiliation.id", delegationFilter.getOrganizationIdSet()));
             }
         }
         criteria.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
@@ -632,8 +639,10 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
     public List<String> getUserIdsForOrganizations(final Set<String> organizationIds, final int from, final int size) {
         List<String> retVal = null;
         if (CollectionUtils.isNotEmpty(organizationIds)) {
-            final Criteria criteria = getCriteria().createAlias("affiliations", "af").add(Restrictions.in("af.id", organizationIds))
-                            .setProjection(Projections.property("id"));
+            final Criteria criteria = getCriteria().createAlias("affiliations", "affiliationXrefs")
+												   .createAlias("affiliationXrefs.entity", "affiliation").add(
+												Restrictions.in("affiliation.id", organizationIds))
+													.setProjection(Projections.property("id"));
             if (from > -1) {
                 criteria.setFirstResult(from);
             }
@@ -772,7 +781,10 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
 
 //                String typeId = ("organization".equals(sort.getSortBy()))?organizationTypeId: departmentTypeId;
 
-                criteria.createAlias("affiliations", "org", Criteria.LEFT_JOIN); //, Restrictions.eq("org.organizationType.id", typeId)
+            	criteria.createAlias("affiliations", "affiliationXrefs")
+						.createAlias("affiliationXrefs.entity", "org", Criteria.LEFT_JOIN);
+            	
+                //criteria.createAlias("affiliations", "org", Criteria.LEFT_JOIN); //, Restrictions.eq("org.organizationType.id", typeId)
 //                criteria.add(Restrictions.or(Restrictions.eq("org.organizationTypeId", typeId), Restrictions.isNull("org.organizationTypeId")));
 //                criteria.createAlias("org.organizationType", "tp", Criteria.LEFT_JOIN, Restrictions.eq("tp.id", typeId));
 //                criteria.addOrder(createOrder("tp.name", orderDir));

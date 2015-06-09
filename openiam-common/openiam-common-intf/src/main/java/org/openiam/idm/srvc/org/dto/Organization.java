@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.http.MethodNotSupportedException;
 import org.openiam.base.AdminResourceDTO;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.KeyNameDTO;
@@ -367,8 +368,9 @@ public class Organization extends AbstractEntitlementsDTO implements Serializabl
 		this.organizationTypeId = organizationTypeId;
 	}
 
+	@Deprecated
 	public boolean isOrganization() {
-		return StringUtils.equalsIgnoreCase("organization", organizationTypeId);
+		return false;
 	}
 
 	public String getOrganizationTypeName() {

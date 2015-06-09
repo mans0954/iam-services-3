@@ -40,6 +40,8 @@ import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.domain.RoleToRoleMembershipXrefEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.idm.srvc.user.domain.UserToGroupMembershipXrefEntity;
+import org.openiam.idm.srvc.user.domain.UserToOrganizationMembershipXrefEntity;
 import org.openiam.internationalization.Internationalized;
 
 @Entity
@@ -115,9 +117,9 @@ public class OrganizationEntity extends AbstractMetdataTypeEntity {
     @Fetch(FetchMode.SUBSELECT)
     private Set<OrgToOrgMembershipXrefEntity> childOrganizations = new HashSet<OrgToOrgMembershipXrefEntity>(0);
 
-	@ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
-    @JoinTable(name = "USER_AFFILIATION", joinColumns = { @JoinColumn(name = "COMPANY_ID") }, inverseJoinColumns = { @JoinColumn(name = "USER_ID") })
-	private Set<UserEntity> users;
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="entity", orphanRemoval=true)
+    @Fetch(FetchMode.SUBSELECT)
+	private Set<UserToOrganizationMembershipXrefEntity> users;
 	
 	@ManyToOne(fetch = FetchType.EAGER,cascade={CascadeType.ALL})
     @JoinColumn(name="ADMIN_RESOURCE_ID", referencedColumnName = "RESOURCE_ID", insertable = true, updatable = true, nullable=true)
@@ -373,12 +375,21 @@ public class OrganizationEntity extends AbstractMetdataTypeEntity {
 			}
 		}
 	}
+	
+	public UserToOrganizationMembershipXrefEntity getUser(final String userId) {
+		final Optional<UserToOrganizationMembershipXrefEntity> xref = 
+    			this.getUsers()
+    				.stream()
+    				.filter(e -> userId.equals(e.getMemberEntity().getId()))
+    				.findFirst();
+    	return xref.isPresent() ? xref.get() : null;
+	}
 
-    public Set<UserEntity> getUsers() {
+    public Set<UserToOrganizationMembershipXrefEntity> getUsers() {
         return users;
     }
 
-    public void setUsers(Set<UserEntity> users) {
+    public void setUsers(Set<UserToOrganizationMembershipXrefEntity> users) {
         this.users = users;
     }
 

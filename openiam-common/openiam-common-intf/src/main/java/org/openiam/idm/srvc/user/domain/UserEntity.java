@@ -252,10 +252,9 @@ public class UserEntity extends KeyEntity {
     @Fetch(FetchMode.SUBSELECT)
     private Set<UserToRoleMembershipXrefEntity> roles = new HashSet<UserToRoleMembershipXrefEntity>(0);
     
-    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
-    @JoinTable(name = "USER_AFFILIATION", joinColumns = { @JoinColumn(name = "USER_ID") }, inverseJoinColumns = { @JoinColumn(name = "COMPANY_ID") })
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="memberEntity", orphanRemoval=true)
     @Fetch(FetchMode.SUBSELECT)
-	private Set<OrganizationEntity> affiliations = new HashSet<OrganizationEntity>(0);
+	private Set<UserToOrganizationMembershipXrefEntity> affiliations = new HashSet<UserToOrganizationMembershipXrefEntity>(0);
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="memberEntity", orphanRemoval=true)
     @Fetch(FetchMode.SUBSELECT)
@@ -848,13 +847,55 @@ public class UserEntity extends KeyEntity {
 		}
 	}
 
-    public Set<OrganizationEntity> getAffiliations() {
+    public Set<UserToOrganizationMembershipXrefEntity> getAffiliations() {
         return affiliations;
     }
 
-    public void setAffiliations(Set<OrganizationEntity> affiliations) {
+    public void setAffiliations(Set<UserToOrganizationMembershipXrefEntity> affiliations) {
         this.affiliations = affiliations;
     }
+    
+    public UserToOrganizationMembershipXrefEntity getAffiliation(final String organizationId) {
+		final Optional<UserToOrganizationMembershipXrefEntity> xref = 
+    			this.getAffiliations()
+    				.stream()
+    				.filter(e -> organizationId.equals(e.getEntity().getId()))
+    				.findFirst();
+    	return xref.isPresent() ? xref.get() : null;
+	}
+    
+    public void removeAffiliation(final OrganizationEntity entity) {
+    	if(entity != null) {
+			if(this.affiliations != null) {
+				this.affiliations.removeIf(e -> e.getEntity().getId().equals(entity.getId()));
+			}
+		}
+    }
+    
+    public void addAffiliation(final OrganizationEntity entity, final Collection<AccessRightEntity> rights) {
+		if(entity != null) {
+			if(this.affiliations == null) {
+				this.affiliations = new LinkedHashSet<UserToOrganizationMembershipXrefEntity>();
+			}
+			UserToOrganizationMembershipXrefEntity theXref = null;
+			for(final UserToOrganizationMembershipXrefEntity xref : this.affiliations) {
+				if(xref.getEntity().getId().equals(entity.getId()) && xref.getMemberEntity().getId().equals(getId())) {
+					theXref = xref;
+					break;
+				}
+			}
+			
+			if(theXref == null) {
+				theXref = new UserToOrganizationMembershipXrefEntity();
+				theXref.setEntity(entity);
+				theXref.setMemberEntity(this);
+			}
+			if(rights != null) {
+				theXref.setRights(new HashSet<AccessRightEntity>(rights));
+			}
+			this.affiliations.add(theXref);
+		}
+	}
 
     public Set<UserToResourceMembershipXrefEntity> getResources() {
         return resources;

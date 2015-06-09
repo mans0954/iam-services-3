@@ -28,11 +28,13 @@ import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.user.dto.User;
+import org.openiam.idm.srvc.user.dto.UserToOrganizationMembershipXref;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -146,7 +148,7 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         principalList = user.getPrincipalList();
         setRoles(user.getRoles());
         setGroups(user.getGroups());
-        affiliations = user.getAffiliations();
+        setAffiliations(user.getAffiliations());
         setResources(user.getResources());
         setPassword(user.getPassword());
         setLogin(user.getLogin());
@@ -208,9 +210,9 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         user.setAlternateContactId(alternateContactId);
         user.setShowInSearch(showInSearch);
         user.setPrincipalList(principalList);
-        user.setRoles(roles);
+        user.setRoles(getRoles());
         user.setGroups(getGroups());
-        user.setAffiliations(affiliations);
+        user.setAffiliations(getAffiliations());
         user.setResources(getResources());
         user.setUserOwnerId(userOwnerId);
         user.setDateChallengeRespChanged(dateChallengeRespChanged);
@@ -373,13 +375,13 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
     }
 
     // temporary solution
-    public Organization getPrimaryOrganization() {
-        Organization retVal = null;
+    public String getPrimaryOrganizationId() {
+        String retVal = null;
         if (CollectionUtils.isNotEmpty(affiliations)) {
-            for (final Organization organization : affiliations) {
-                if (!AttributeOperationEnum.DELETE.equals(organization.getOperation())) {
-                    if (organization.isOrganization()) {
-                        retVal = organization;
+            for (final UserToOrganizationMembershipXref xref : affiliations) {
+                if (!AttributeOperationEnum.DELETE.equals(xref.getOperation())) {
+                    if (StringUtils.equalsIgnoreCase("organization", xref.getOrganizationTypeId())) {
+                        retVal = xref.getEntityId();
                         break;
                     }
                 }
@@ -391,9 +393,9 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
     public boolean isOrganizationMarkedAsDeleted(final String organizationId) {
         boolean retVal = false;
         if (CollectionUtils.isNotEmpty(affiliations)) {
-            for (final Organization organization : affiliations) {
-                if (AttributeOperationEnum.DELETE.equals(organization.getOperation())) {
-                    if (StringUtils.equalsIgnoreCase(organizationId, organization.getId())) {
+        	for (final UserToOrganizationMembershipXref xref : affiliations) {
+                if (AttributeOperationEnum.DELETE.equals(xref.getOperation())) {
+                    if (StringUtils.equalsIgnoreCase(organizationId, xref.getEntityId())) {
                         retVal = true;
                         break;
                     }

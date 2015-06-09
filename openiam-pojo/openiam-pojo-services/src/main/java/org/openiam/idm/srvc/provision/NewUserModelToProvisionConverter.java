@@ -135,16 +135,13 @@ public class NewUserModelToProvisionConverter {
 			}
 
 			if(CollectionUtils.isNotEmpty(request.getOrganizationIds())) {
-                final Set<Organization> userOrganizations = new HashSet<Organization>();
 				for(final String organizationId : request.getOrganizationIds()) {
 					final OrganizationEntity entity = organizationDataService.getOrganizationLocalized(organizationId, null, null);
 					if(entity != null) {
 						final Organization organization = organizationDozerConverter.convertToDTO(entity, false);
-                        organization.setOperation(AttributeOperationEnum.ADD);
-						userOrganizations.add(organization);
+						user.addAffiliation(organization, null);
 					}
 				}
-                user.setAffiliations(userOrganizations);
 			}
 
 			if(CollectionUtils.isNotEmpty(request.getSupervisorIds())) {

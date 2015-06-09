@@ -30,8 +30,6 @@ public interface OrganizationService {
     @Deprecated
     public OrganizationEntity getOrganizationByName(final String name, String requesterId);
     @Deprecated
-    public List<OrganizationEntity> getOrganizationsForUser(String userId, String requesterId, final int from, final int size);
-    @Deprecated
     public List<OrganizationEntity> getAllowedParentOrganizationsForType(final String orgTypeId, String requesterId);
     @Deprecated
     public List<OrganizationEntity> findOrganizationsByAttributeValue(final String attrName, String attrValue);
@@ -42,14 +40,12 @@ public interface OrganizationService {
     public OrganizationEntity getOrganizationLocalized(String orgId, final LanguageEntity langauge);
     public OrganizationEntity getOrganizationLocalized(final String orgId, String requesterId, final LanguageEntity langauge);
     public OrganizationEntity getOrganizationByName(final String name, String requesterId, final LanguageEntity langauge);
-    public List<OrganizationEntity> getOrganizationsForUser(String userId, String requesterId, final int from, final int size, final LanguageEntity langauge);
     public List<OrganizationEntity> findBeans(final OrganizationSearchBean searchBean, String requesterId, final int from, final int size, final LanguageEntity langauge);
     public List<OrganizationEntity> getAllowedParentOrganizationsForType(final String orgTypeId, String requesterId, final LanguageEntity langauge);
     public List<OrganizationEntity> findOrganizationsByAttributeValue(final String attrName, String attrValue, final LanguageEntity langauge);
 
-    public int getNumOfOrganizationsForUser(final String userId, final String requesterId);
 	public int count(final OrganizationSearchBean searchBean, String requesterId);
-	public void addUserToOrg(final String orgId, final String userId);
+	public void addUserToOrg(final String orgId, final String userId, Set<String> rightIds);
 	public void removeUserFromOrg(String orgId, String userId);
 	public void removeAttribute(final String attributeId);
     public Organization save(final Organization organization, final String requestorId, final boolean skipPrePostProcessors) throws BasicDataServiceException;

@@ -175,19 +175,6 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     }
     
     @Override
-    @Transactional(readOnly = true)
-    public int getNumOfOrganizationsForUser(final String userId, final String requesterId) {
-    	return orgDao.getNumOfOrganizationsForUser(userId, getDelegationFilter(requesterId, null));
-    }
-
-    @Override
-    @LocalizedServiceGet
-    @Transactional(readOnly = true)
-    public List<OrganizationEntity> getOrganizationsForUser(String userId, String requesterId, final int from, final int size, final LanguageEntity langauge) {
-    	return orgDao.getOrganizationsForUser(userId, getDelegationFilter(requesterId, null), from, size);
-    }
-
-    @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
     public List<OrganizationEntity> findBeans(final OrganizationSearchBean searchBean, String requesterId, int from, int size, final LanguageEntity langauge) {
@@ -215,10 +202,12 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
 
     @Override
     @Transactional
-    public void addUserToOrg(String orgId, String userId) {
+    public void addUserToOrg(final String orgId, final String userId, final Set<String> rightIds) {
         final OrganizationEntity organization = orgDao.findById(orgId);
         final UserEntity user = userDAO.findById(userId);
-        user.getAffiliations().add(organization);
+        if(organization != null && user != null) {
+        	user.addAffiliation(organization, accessRightDAO.findByIds(rightIds));
+        }
     }
 
     @Override
@@ -226,7 +215,9 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     public void removeUserFromOrg(String orgId, String userId) {
         final OrganizationEntity organization = orgDao.findById(orgId);
         final UserEntity user = userDAO.findById(userId);
-        user.getAffiliations().remove(organization);
+        if(user != null && organization != null) {
+        	user.removeAffiliation(organization);
+        }
     }
 
     @Override
@@ -292,7 +283,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
                 mergeAttributes(curEntity, newEntity);
                 //mergeParents(curEntity, newEntity);
                 //mergeChildren(curEntity, newEntity);
-                mergeUsers(curEntity, newEntity);
+                //mergeUsers(curEntity, newEntity);
                 //mergeGroups(curEntity, newEntity);
                 mergeLocations(curEntity, newEntity);
                 mergeApproverAssociations(curEntity, newEntity);
@@ -538,7 +529,6 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
             }
         }
     }
-    */
 
     private void mergeUsers(final OrganizationEntity curEntity, final OrganizationEntity newEntity) {
         if (curEntity.getUsers() == null) {
@@ -578,6 +568,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
             }
         }
     }
+    */
 
     private void mergeApproverAssociations(final OrganizationEntity curEntity, final OrganizationEntity newEntity) {
         if (curEntity.getApproverAssociations() == null) {
@@ -990,10 +981,6 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     public OrganizationEntity getOrganizationByName(final String name, String requesterId){
         return this.getOrganizationByName(name, requesterId, getDefaultLanguage());
     }
-    @Deprecated
-    public List<OrganizationEntity> getOrganizationsForUser(String userId, String requesterId, final int from, final int size){
-        return this.getOrganizationsForUser(userId, requesterId, from, size, getDefaultLanguage());
-    }
 
     @Deprecated
     @Transactional(readOnly = true)
@@ -1192,7 +1179,9 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     @Override
     @Transactional(readOnly = true)
     public int getNumOfLocationsForUser(String userId) {
-        List<OrganizationEntity> orgList = orgDao.getOrganizationsForUser(userId, null, 0, Integer.MAX_VALUE);
+    	final OrganizationSearchBean sb = new OrganizationSearchBean();
+    	sb.addUserId(userId);
+        final List<OrganizationEntity> orgList = orgDao.getByExample(sb);
         int count = 0;
         for (OrganizationEntity org : orgList) {
             count = count + org.getLocations().size();

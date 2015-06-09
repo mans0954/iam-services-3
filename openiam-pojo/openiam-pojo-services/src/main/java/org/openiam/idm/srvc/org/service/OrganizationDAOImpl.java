@@ -35,47 +35,6 @@ public class OrganizationDAOImpl extends
     private OrganizationSearchBeanConverter organizationSearchBeanConverter;
 
     @Override
-    @LocalizedDatabaseGet
-    public int getNumOfOrganizationsForUser(final String userId,
-                                            final Set<String> filter) {
-        final Criteria criteria = getOrganizationsForUserCriteria(userId,
-                filter).setProjection(rowCount());
-        return ((Number) criteria.uniqueResult()).intValue();
-    }
-
-    @Override
-    @LocalizedDatabaseGet
-    public List<OrganizationEntity> getOrganizationsForUser(
-            final String userId, final Set<String> filter, final int from,
-            final int size) {
-        final Criteria criteria = getOrganizationsForUserCriteria(userId,
-                filter);
-
-        if (from > -1) {
-            criteria.setFirstResult(from);
-        }
-
-        if (size > -1) {
-            criteria.setMaxResults(size);
-        }
-        return criteria.list();
-    }
-
-    private Criteria getOrganizationsForUserCriteria(final String userId,
-                                                     final Set<String> filter) {
-        final Criteria criteria = getCriteria();
-        if (StringUtils.isNotBlank(userId)) {
-            criteria.createAlias("users", "u").add(
-                    Restrictions.eq("u.id", userId));
-        }
-
-        if (filter != null && !filter.isEmpty()) {
-            criteria.add(Restrictions.in(getPKfieldName(), filter));
-        }
-        return criteria;
-    }
-
-    @Override
     protected Criteria getExampleCriteria(final SearchBean searchBean) {
         Criteria criteria = getCriteria();
         if (searchBean != null && searchBean instanceof OrganizationSearchBean) {
@@ -99,9 +58,10 @@ public class OrganizationDAOImpl extends
                         organizationSearchBean.getInternalOrgId()));
             }
 
-            if (CollectionUtils.isNotEmpty(organizationSearchBean.getUserIdSet())) {
-                criteria.createAlias("users", "usr");
-                criteria.add(Restrictions.in("usr.id", organizationSearchBean.getUserIdSet()));
+            if(CollectionUtils.isNotEmpty(organizationSearchBean.getUserIdSet())){
+            	criteria.createAlias("users", "userXrefs")
+						.createAlias("userXrefs.memberEntity", "user").add(
+								Restrictions.in("user.id", organizationSearchBean.getUserIdSet()));
             }
             
             if(CollectionUtils.isNotEmpty(organizationSearchBean.getChildIdSet())) {

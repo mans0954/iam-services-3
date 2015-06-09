@@ -767,9 +767,9 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
                             OrganizationEntity org = null;
                             if(CollectionUtils.isNotEmpty(u.getAffiliations())){
                                 List<OrganizationEntity>  userOrgs = new ArrayList<OrganizationEntity>();
-                                for(OrganizationEntity o: u.getAffiliations()){
-                                    if(o.getOrganizationType().getId().equals(orgTypeId)){
-                                        userOrgs.add(o);
+                                for(UserToOrganizationMembershipXrefEntity xref : u.getAffiliations()){
+                                    if(xref.getEntity().getOrganizationType().getId().equals(orgTypeId)){
+                                        userOrgs.add(xref.getEntity());
                                     }
                                 }
                                 if(CollectionUtils.isNotEmpty(userOrgs)) {

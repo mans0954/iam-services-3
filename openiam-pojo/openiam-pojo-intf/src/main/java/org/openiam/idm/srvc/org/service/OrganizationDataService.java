@@ -36,6 +36,7 @@ public interface OrganizationDataService {
                                         final @WebParam(name = "language", targetNamespace = "") Language language);
 
     @WebMethod
+    @Deprecated
     public int getNumOfOrganizationsForUser(@WebParam(name = "userId", targetNamespace = "") String userId,
                                                       	   @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
@@ -47,6 +48,7 @@ public interface OrganizationDataService {
                                                                final @WebParam(name = "size", targetNamespace = "") int size);
 
     @WebMethod
+    @Deprecated
     public List<Organization> getOrganizationsForUserLocalized(final @WebParam(name = "userId", targetNamespace = "") String userId,
                                                       final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
                                                       final @WebParam(name = "from", targetNamespace = "") int from,
@@ -69,6 +71,7 @@ public interface OrganizationDataService {
      * Without localization for internal se only
      * Performance optimized method
      */
+    @Deprecated
     public List<Organization> findBeans(final @WebParam(name = "searchBean", targetNamespace = "") OrganizationSearchBean searchBean,
                                                  final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
                                                  final @WebParam(name = "from", targetNamespace = "") int from,
@@ -137,7 +140,8 @@ public interface OrganizationDataService {
 
     @WebMethod
     public Response addUserToOrg(@WebParam(name = "orgId", targetNamespace = "") String orgId,
-                                 @WebParam(name = "userId", targetNamespace = "") String userId);
+                                 @WebParam(name = "userId", targetNamespace = "") String userId,
+                                 @WebParam(name = "rightIds", targetNamespace = "") Set<String> rightIds);
 
     @WebMethod
     public Response addChildOrganization(@WebParam(name = "organizationId", targetNamespace = "") String organizationId,
