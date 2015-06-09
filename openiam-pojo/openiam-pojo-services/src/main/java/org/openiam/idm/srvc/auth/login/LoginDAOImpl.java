@@ -24,6 +24,7 @@ import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.searchbeans.LoginSearchBean;
 import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
