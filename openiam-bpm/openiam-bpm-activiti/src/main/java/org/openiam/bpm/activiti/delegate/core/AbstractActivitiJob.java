@@ -1,8 +1,6 @@
 package org.openiam.bpm.activiti.delegate.core;
 
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 import org.activiti.engine.delegate.DelegateExecution;
 import org.activiti.engine.delegate.DelegateTask;
@@ -172,7 +170,19 @@ public abstract class AbstractActivitiJob implements JavaDelegate, TaskListener 
 	
 	public String getStringVariable(final DelegateExecution execution, final ActivitiConstants key) {
 		try {
-			return (String)execution.getVariable(key.getName());
+			if (execution.hasVariable(key.getName())) {
+                Object var = execution.getVariable(key.getName());
+                if (var instanceof String) {
+                    return (String)var;
+                } else if (var instanceof Collection) {
+                    Collection<String> col = (Collection<String>)var;
+                    Iterator<String> it = col.iterator();
+                    if (it.hasNext()) {
+                        return (String)it.next();
+                    }
+                }
+			}
+			return null;
 		} catch(Throwable e) {
 			LOG.warn(String.format("Can't get variable '%s", key), e);
 			return null;
