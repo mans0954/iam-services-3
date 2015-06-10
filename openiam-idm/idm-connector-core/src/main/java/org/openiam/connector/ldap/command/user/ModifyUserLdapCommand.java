@@ -1,27 +1,30 @@
 package org.openiam.connector.ldap.command.user;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.base.BaseAttribute;
 import org.openiam.connector.ldap.command.base.AbstractCrudLdapCommand;
+import org.openiam.connector.ldap.dirtype.Directory;
+import org.openiam.connector.ldap.dirtype.DirectorySpecificImplFactory;
 import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.connector.type.constant.ErrorCode;
-import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.request.CrudRequest;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
-import org.openiam.connector.ldap.dirtype.Directory;
-import org.openiam.connector.ldap.dirtype.DirectorySpecificImplFactory;
 import org.openiam.provision.type.ExtensibleUser;
-import org.openiam.util.StringUtil;
 import org.springframework.stereotype.Service;
 
 import javax.naming.NameNotFoundException;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
-import javax.naming.directory.*;
+import javax.naming.directory.Attribute;
+import javax.naming.directory.BasicAttribute;
+import javax.naming.directory.DirContext;
+import javax.naming.directory.ModificationItem;
+import javax.naming.directory.SearchResult;
 import javax.naming.ldap.LdapContext;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -106,6 +109,10 @@ public class ModifyUserLdapCommand extends AbstractCrudLdapCommand<ExtensibleUse
 
                     modItemList.add(new ModificationItem(att.getOperation(), new BasicAttribute(att.getName(), att.getValueAsByteArray())));
 
+                } else if (att.getAttributeContainer() != null && CollectionUtils.isNotEmpty(att.getAttributeContainer().getAttributeList())) {
+                    for (BaseAttribute attribute : att.getAttributeContainer().getAttributeList()) {
+                        modItemList.add(new ModificationItem(attribute.getOperationEnum().getValue(), new BasicAttribute(att.getName(), attribute.getValue())));
+                    }
                 } else if (att.getOperation() > 0 && att.getName() != null) {
 
                     if ((att.getValue() == null || att.getValue().equals("null")) &&

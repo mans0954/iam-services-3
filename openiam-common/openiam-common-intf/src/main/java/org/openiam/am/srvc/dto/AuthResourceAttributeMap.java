@@ -74,4 +74,35 @@ public class AuthResourceAttributeMap extends SSOAttribute {
     public void setAmPolicyUrl(String amPolicyUrl) {
         this.amPolicyUrl = amPolicyUrl;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        AuthResourceAttributeMap that = (AuthResourceAttributeMap) o;
+
+        if (attributeMapId != null ? !attributeMapId.equals(that.attributeMapId) : that.attributeMapId != null)
+            return false;
+        if (providerId != null ? !providerId.equals(that.providerId) : that.providerId != null) return false;
+        if (amResAttributeId != null ? !amResAttributeId.equals(that.amResAttributeId) : that.amResAttributeId != null)
+            return false;
+        if (amReflectionKey != null ? !amReflectionKey.equals(that.amReflectionKey) : that.amReflectionKey != null)
+            return false;
+        if (amResAttributeName != null ? !amResAttributeName.equals(that.amResAttributeName) : that.amResAttributeName != null)
+            return false;
+        return !(amPolicyUrl != null ? !amPolicyUrl.equals(that.amPolicyUrl) : that.amPolicyUrl != null);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = attributeMapId != null ? attributeMapId.hashCode() : 0;
+        result = 31 * result + (providerId != null ? providerId.hashCode() : 0);
+        result = 31 * result + (amResAttributeId != null ? amResAttributeId.hashCode() : 0);
+        result = 31 * result + (amReflectionKey != null ? amReflectionKey.hashCode() : 0);
+        result = 31 * result + (amResAttributeName != null ? amResAttributeName.hashCode() : 0);
+        result = 31 * result + (amPolicyUrl != null ? amPolicyUrl.hashCode() : 0);
+        return result;
+    }
 }

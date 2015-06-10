@@ -34,12 +34,9 @@ public class ProvisionConnectorWebServiceImpl implements
 
 	@Autowired
 	private ProvisionConnectorService connectorService;
-	@Autowired
-	private ProvisionConnectorConverter provisionConnectorConverter;
+
 	@Autowired
 	private MetaDataTypeDozerConverter metaDataTypeDozerConverter;
-	@Autowired
-	private ProvisionConnectorSearchBeanConverter provisionConnectorSearchBeanConverter;
 
 	private static final Log log = LogFactory
                                      .getLog(ProvisionConnectorWebServiceImpl.class);   
@@ -48,25 +45,15 @@ public class ProvisionConnectorWebServiceImpl implements
 			@WebParam(name = "searchBean", targetNamespace = "") ProvisionConnectorSearchBean searchBean,
 			@WebParam(name = "size", targetNamespace = "") Integer size,
 			@WebParam(name = "from", targetNamespace = "") Integer from) {
-		List<ProvisionConnectorDto> provisionConnectors = new LinkedList<ProvisionConnectorDto>();
-		ProvisionConnectorEntity connectorEntity = provisionConnectorSearchBeanConverter
-				.convert(searchBean);
-		List<ProvisionConnectorEntity> connectors = connectorService
-				.getProvisionConnectorsByExample(connectorEntity, size, from);
-		if (connectors != null) {
-			provisionConnectors = provisionConnectorConverter.convertToDTOList(
-					connectors, false);
-		}
-		return provisionConnectors;
+		return connectorService
+				.getProvisionConnectorsByExample(searchBean, size, from);
 	}
 
 	@Override
 	public Integer getProvisionConnectorsCount(
 			@WebParam(name = "searchBean", targetNamespace = "") ProvisionConnectorSearchBean searchBean) {
-		ProvisionConnectorEntity connectorEntity = provisionConnectorSearchBeanConverter
-				.convert(searchBean);
 		return connectorService
-				.getProvisionConnectorsCountByExample(connectorEntity);
+				.getProvisionConnectorsCountByExample(searchBean);
 	}
 
 	@Override
@@ -82,17 +69,13 @@ public class ProvisionConnectorWebServiceImpl implements
 	@Override
 	public void addProvisionConnector(
 			@WebParam(name = "con", targetNamespace = "") ProvisionConnectorDto con) {
-		ProvisionConnectorEntity connectorEntity = provisionConnectorConverter
-				.convertToEntity(con, true);
-		connectorService.addProvisionConnector(connectorEntity);
+		connectorService.addProvisionConnector(con);
 	}
 
 	@Override
 	public void updateProvisionConnector(
 			@WebParam(name = "con", targetNamespace = "") ProvisionConnectorDto con) {
-		ProvisionConnectorEntity connectorEntity = provisionConnectorConverter
-				.convertToEntity(con, true);
-		connectorService.updateProvisionConnector(connectorEntity);
+		connectorService.updateProvisionConnector(con);
 	}
 
 	@Override
@@ -114,8 +97,7 @@ public class ProvisionConnectorWebServiceImpl implements
     @Transactional(readOnly = true)
 	public ProvisionConnectorDto getProvisionConnector(
 			@WebParam(name = "conId", targetNamespace = "") String conId) {
-		ProvisionConnectorEntity connectorEntity = connectorService
+		return connectorService
 				.getProvisionConnectorsById(conId);
-		return provisionConnectorConverter.convertToDTO(connectorEntity, true);
 	}
 }

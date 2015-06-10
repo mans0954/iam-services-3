@@ -5,8 +5,6 @@ import org.apache.commons.collections.ListUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.Criteria;
-import org.hibernate.criterion.Restrictions;
 import org.openiam.authmanager.service.AuthorizationManagerService;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseConstants;
@@ -43,7 +41,6 @@ import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
 import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
-import org.openiam.idm.srvc.mngsys.dto.ApproverAssociation;
 import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.service.OrganizationService;
@@ -167,8 +164,6 @@ public class UserMgr implements UserDataService {
     @Autowired
     private ApproverAssociationDAO approverAssociationDAO;
 
-    @Value("${org.openiam.user.search.max.results}")
-    private int MAX_USER_SEARCH_RESULTS;
 
     @Value("${org.openiam.organization.type.id}")
     private String organizationTypeId;
@@ -708,81 +703,25 @@ public class UserMgr implements UserDataService {
                 entityList.add(entity);
             }
         } else {
-            List<UserEntity> finalizedIdList = userDao.findByIds(getUserIds(searchBean), searchBean);
-            sortUsersByOrg(finalizedIdList, searchBean.getSortBy());
-            if (from > -1 && size > -1) {
-                if (finalizedIdList != null && finalizedIdList.size() >= from) {
-                    int to = from + size;
-                    if (to > finalizedIdList.size()) {
-                        to = finalizedIdList.size();
-                    }
-                    finalizedIdList = new ArrayList<UserEntity>(finalizedIdList.subList(from, to));
-                }
-            }
-            entityList = finalizedIdList;
+            entityList = userDao.findByIds(getUserIds(searchBean), searchBean, from, size);
         }
 
-        if(searchBean.getInitDefaulLoginFlag()){
-            for(UserEntity usr: entityList){
-                usr.setDefaultLogin(sysConfiguration.getDefaultManagedSysId());
-            }
+        if(CollectionUtils.isNotEmpty(entityList)
+                && searchBean.getInitDefaulLoginFlag()){
+            setDefaultLogin(entityList);
         }
 
         return entityList;
     }
 
-    private void sortUsersByOrg(List<UserEntity> userList, List<SortParam> sortParamList) {
-        if(CollectionUtils.isNotEmpty(userList) && CollectionUtils.isNotEmpty(sortParamList)) {
-            for (SortParam sort : sortParamList) {
-                final OrderConstants orderDir = (sort.getOrderBy() == null) ? OrderConstants.ASC : sort.getOrderBy();
-
-                if ("organization".equals(sort.getSortBy())
-                        || "department".equals(sort.getSortBy())) {
-
-                    final String typeId = ("organization".equals(sort.getSortBy()))?organizationTypeId: departmentTypeId;
-                    Collections.sort(userList, new Comparator<UserEntity>() {
-                        @Override
-                        public int compare(UserEntity u1, UserEntity u2) {
-                            int result = 0;
-                            OrganizationEntity org1 = this.getUserOrg(u1, typeId);
-                            OrganizationEntity org2 = this.getUserOrg(u2, typeId);
-                            if(org1==null && org2!=null)
-                                result = -1;
-                            else if(org1!=null && org2==null)
-                                result = 1;
-                            else if(org1==null && org2==null)
-                                result = 0;
-                            else
-                                result = org1.getName().compareTo(org2.getName());
-
-                            return orderDir == OrderConstants.ASC ? result: result*(-1);
-                        }
-
-                        private OrganizationEntity getUserOrg(UserEntity u, String orgTypeId){
-                            OrganizationEntity org = null;
-                            if(CollectionUtils.isNotEmpty(u.getAffiliations())){
-                                List<OrganizationEntity>  userOrgs = new ArrayList<OrganizationEntity>();
-                                for(OrganizationEntity o: u.getAffiliations()){
-                                    if(o.getOrganizationType().getId().equals(orgTypeId)){
-                                        userOrgs.add(o);
-                                    }
-                                }
-                                if(CollectionUtils.isNotEmpty(userOrgs)) {
-                                    Collections.sort(userOrgs, new Comparator<OrganizationEntity>() {
-                                        @Override
-                                        public int compare(OrganizationEntity o1, OrganizationEntity o2) {
-                                            return o1.getName().compareTo(o2.getName());
-                                        }
-                                    });
-                                    org = userOrgs.get(0);
-                                }
-                            }
-                            return org;
-                        }
-                    });
-
-                    break;
-                }
+    private void setDefaultLogin(List<UserEntity> entityList) {
+        List<String> userIds = new ArrayList<>();
+        userIds.add(null);
+        for(UserEntity usr: entityList){
+            userIds.set(0, usr.getId());
+            List<LoginEntity> entities = loginDao.findByUserIds(userIds, sysConfiguration.getDefaultManagedSysId());
+            if (CollectionUtils.isNotEmpty(entities)) {
+                usr.setDefaultLogin(entities.get(0).getLogin());
             }
         }
     }
@@ -790,7 +729,7 @@ public class UserMgr implements UserDataService {
     @Override
     @Transactional(readOnly = true)
     public int count(UserSearchBean searchBean) throws BasicDataServiceException {
-        return userDao.findByIds(getUserIds(searchBean)).size();
+        return userDao.countByIds(getUserIds(searchBean));
     }
 
     @Override
@@ -1757,6 +1696,23 @@ public class UserMgr implements UserDataService {
         newUserEntity.setRoles(null);
         // newUserEntity.setEmailAddresses(null);
 
+        if (newUserEntity.getEmployeeType() != null && StringUtils.isNotBlank(newUserEntity.getEmployeeType().getId())) {
+            newUserEntity.setEmployeeType(metadataTypeDAO.findById(newUserEntity.getEmployeeType().getId()));
+        } else {
+            newUserEntity.setEmployeeType(null);
+        }
+
+        if (newUserEntity.getJobCode() != null && StringUtils.isNotBlank(newUserEntity.getJobCode().getId())) {
+            newUserEntity.setJobCode(metadataTypeDAO.findById(newUserEntity.getJobCode().getId()));
+        } else {
+            newUserEntity.setJobCode(null);
+        }
+        if (newUserEntity.getType() != null && StringUtils.isNotBlank(newUserEntity.getType().getId())) {
+            newUserEntity.setType(metadataTypeDAO.findById(newUserEntity.getType().getId()));
+        }else {
+            newUserEntity.setType(null);
+        }
+
         this.addUser(newUserEntity);
 
         if (principalList != null && !principalList.isEmpty()) {
@@ -2268,8 +2224,9 @@ public class UserMgr implements UserDataService {
         if (StringUtils.isNotBlank(requestorId)) {
             Map<String, UserAttribute> requestorAttributes = this.getUserAttributesDto(requestorId);
 
-            if (DelegationFilterHelper.isOrgFilterSet(requestorAttributes)) {
-                filter.setOrganizationIdSet(new HashSet<String>(DelegationFilterHelper.getOrgIdFilterFromString(requestorAttributes)));
+            Set<String> orgDelFilter = organizationService.getDelegationFilter(requestorAttributes, null);
+            if (CollectionUtils.isNotEmpty(orgDelFilter)) {
+                filter.setOrganizationIdSet(orgDelFilter);
             }
 
             if (DelegationFilterHelper.isGroupFilterSet(requestorAttributes)) {

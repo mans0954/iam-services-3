@@ -32,7 +32,7 @@ public class AuthenticationUtils {
 
     private AuthCredentialsValidator validator;
 
-    @PostConstruct
+     @PostConstruct
     public void populateCredentialsValidator() {
         if(validator == null) {
             if (cacheCredentialsValidatorEnable) {

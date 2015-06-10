@@ -38,6 +38,24 @@ public class ActiveDirectoryImpl implements Directory {
     protected static final Log log = LogFactory.getLog(ActiveDirectoryImpl.class);
 
     final static String PASSWORD_ATTRIBUTE = "unicodePwd";
+    final static String PASSWORD_LAST_SET  = "pwdLastSet";
+
+    public ModificationItem[] resetPassword(PasswordRequest reqType) throws UnsupportedEncodingException {
+
+        String password = getUnicodePassword(reqType.getExtensibleObject());
+        if (StringUtils.isEmpty(password)) {
+            password = reqType.getPassword();
+        }
+
+        byte[] passwordBytes = ("\"" + password + "\"").getBytes("UTF-16LE");
+
+        ModificationItem[] mods = new ModificationItem[2];
+        mods[0] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute(PASSWORD_ATTRIBUTE, passwordBytes));
+        mods[1] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute(PASSWORD_LAST_SET, "0"));
+        return mods;
+
+
+    }
 
     public ModificationItem[] setPassword(PasswordRequest reqType) throws UnsupportedEncodingException {
 

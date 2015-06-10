@@ -17,6 +17,7 @@ import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.springframework.stereotype.Repository;
 
 @Repository("orgAttrDAO")
@@ -39,5 +40,13 @@ public class OrganizationAttributeDAOImpl extends BaseDaoImpl<OrganizationAttrib
 		final Query query = getSession().createQuery(DELETE_BY_ORGANIZATION_ID);
 		query.setParameter("organizationId", organizationId);
 		query.executeUpdate();
+	}
+
+	@Override
+	public List<OrganizationAttributeEntity> findOrgAttributes(String organizationId) {
+		Criteria criteria = getCriteria();
+		criteria.createAlias("organization", "organization")
+                .add(Restrictions.eq("organization.id", organizationId));
+		return (List<OrganizationAttributeEntity>) criteria.list();
 	}
 }

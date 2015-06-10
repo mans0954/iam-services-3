@@ -590,15 +590,8 @@ public class UserEntity {
     public String getDefaultLogin() {
         return defaultLogin;
     }
-    public void setDefaultLogin(String managedSys) {
-        if(this.principalList!=null && !this.principalList.isEmpty()){
-            for (LoginEntity principal: this.principalList){
-                if(StringUtils.equals(principal.getManagedSysId(), managedSys)){
-                    defaultLogin = principal.getLogin();
-                    break;
-                }
-            }
-        }
+    public void setDefaultLogin(String defaultLogin) {
+        this.defaultLogin = defaultLogin;
     }
 
     public Integer getShowInSearch() {

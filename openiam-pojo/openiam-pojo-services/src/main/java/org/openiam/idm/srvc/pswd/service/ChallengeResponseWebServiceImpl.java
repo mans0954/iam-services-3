@@ -187,7 +187,7 @@ public class ChallengeResponseWebServiceImpl implements ChallengeResponseWebServ
 						ResponseCode.OBJECT_NOT_FOUND);
 			}
 
-			if (StringUtils.isNotBlank(answer.getQuestionId())) {
+			if (StringUtils.isBlank(answer.getQuestionId())) {
 				throw new BasicDataServiceException(
 						ResponseCode.NO_IDENTITY_QUESTION);
 			}

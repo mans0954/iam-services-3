@@ -378,7 +378,6 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	}
 
 	@Override
-    @CacheEvict(value = "RolesWithSubRolesIds", allEntries=true)
 	public Response saveRole(Role role, final String requesterId) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
 		try {
@@ -563,7 +562,6 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	}
 
 	@Override
-    @CacheEvict(value = "RolesWithSubRolesIds", allEntries=true)
 	public Response addChildRole(final String roleId, final String childRoleId, String requesterId) {
 		final RolePolicyResponse response = new RolePolicyResponse(ResponseStatus.SUCCESS);
 		try {
@@ -584,7 +582,6 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	}
 
 	@Override
-    @CacheEvict(value = "RolesWithSubRolesIds", allEntries=true)
 	public Response removeChildRole(final String roleId, final String childRoleId, String requesterId) {
 		final RolePolicyResponse response = new RolePolicyResponse(ResponseStatus.SUCCESS);
 		try {
@@ -655,7 +652,6 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	}
 
 	@Override
-    @CacheEvict(value = "RolesWithSubRolesIds", allEntries=true)
 	public Response canAddChildRole(String roleId, String childRoleId) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
 		try {
@@ -695,7 +691,6 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
     }
 
     @Override
-    @Cacheable(value="RolesWithSubRolesIds", key="{#roleIds, #requesterId}")
     public List<TreeObjectId> getRolesWithSubRolesIds(List<String> roleIds, String requesterId) {
         return roleDataService.getRolesWithSubRolesIds(roleIds, requesterId);
     }

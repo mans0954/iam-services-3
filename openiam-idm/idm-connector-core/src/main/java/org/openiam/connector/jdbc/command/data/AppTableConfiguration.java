@@ -13,6 +13,13 @@ public class AppTableConfiguration extends ConnectorConfiguration {
     private String groupGroupTableNameGroupChildId;
     private String roleTableName;
     private String emailTableName;
+    private String principalPassword;
+    private String userStatus;
+    private String activeUserStatus;
+    private String inactiveUserStatus;
+    private String userToGroupPKGenerator;
+    private String groupToGroupPKGenerator;
+
 
     public void setUserTableName(String tableName) {
         this.userTableName = tableName;
@@ -92,5 +99,76 @@ public class AppTableConfiguration extends ConnectorConfiguration {
 
     public void setGroupGroupTableNameGroupChildId(String groupGroupTableNameGroupChildId) {
         this.groupGroupTableNameGroupChildId = groupGroupTableNameGroupChildId;
+    }
+
+    public String getPrincipalPassword() {
+        return principalPassword;
+    }
+
+    public void setPrincipalPassword(String principalPassword) {
+        this.principalPassword = principalPassword;
+    }
+
+    public String getUserStatus() {
+        return userStatus;
+    }
+
+    public void setUserStatus(String userStatus) {
+        this.userStatus = userStatus;
+    }
+
+
+    public String getActiveUserStatus() {
+        return activeUserStatus;
+    }
+
+    public void setActiveUserStatus(String activeUserStatus) {
+        this.activeUserStatus = activeUserStatus;
+    }
+
+    public String getInactiveUserStatus() {
+        return inactiveUserStatus;
+    }
+
+    public void setInactiveUserStatus(String inactiveUserStatus) {
+        this.inactiveUserStatus = inactiveUserStatus;
+    }
+
+    public String getUserToGroupPKGenerator() {
+        return userToGroupPKGenerator;
+    }
+
+    public void setUserToGroupPKGenerator(String userToGroupPKGenerator) {
+        this.userToGroupPKGenerator = userToGroupPKGenerator;
+    }
+
+    public String getGroupToGroupPKGenerator() {
+        return groupToGroupPKGenerator;
+    }
+
+    public void setGroupToGroupPKGenerator(String groupToGroupPKGenerator) {
+        this.groupToGroupPKGenerator = groupToGroupPKGenerator;
+    }
+
+    @Override
+    public String toString() {
+        return "AppTableConfiguration{" +
+                "userTableName='" + userTableName + '\'' +
+                ", groupTableName='" + groupTableName + '\'' +
+                ", userGroupTableName='" + userGroupTableName + '\'' +
+                ", userGroupTableNameUserId='" + userGroupTableNameUserId + '\'' +
+                ", userGroupTableNameGroupId='" + userGroupTableNameGroupId + '\'' +
+                ", groupGroupTableName='" + groupGroupTableName + '\'' +
+                ", groupGroupTableNameGroupId='" + groupGroupTableNameGroupId + '\'' +
+                ", groupGroupTableNameGroupChildId='" + groupGroupTableNameGroupChildId + '\'' +
+                ", roleTableName='" + roleTableName + '\'' +
+                ", emailTableName='" + emailTableName + '\'' +
+                ", principalPassword='" + principalPassword + '\'' +
+                ", userStatus='" + userStatus + '\'' +
+                ", activeUserStatus='" + activeUserStatus + '\'' +
+                ", inactiveUserStatus='" + inactiveUserStatus + '\'' +
+                ", userToGroupPKGenerator='" + userToGroupPKGenerator + '\'' +
+                ", groupToGroupPKGenerator='" + groupToGroupPKGenerator + '\'' +
+                '}';
     }
 }

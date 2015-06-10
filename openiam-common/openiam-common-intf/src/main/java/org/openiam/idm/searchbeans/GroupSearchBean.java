@@ -21,6 +21,7 @@ import java.util.*;
         "attributes",
         "updatedSince",
         "type",
+        "risk",
 		"adminResourceId"
 })
 public class GroupSearchBean extends EntitlementsSearchBean<Group, String> implements SearchBean<Group, String>, Serializable {
@@ -30,6 +31,7 @@ public class GroupSearchBean extends EntitlementsSearchBean<Group, String> imple
 	private String name;
 	private String managedSysId;
     private String type;
+    private String risk;
 	private boolean isRootsOnly;
 	private List<Tuple<String, String>> attributes;
 	private String adminResourceId;
@@ -92,9 +94,17 @@ public class GroupSearchBean extends EntitlementsSearchBean<Group, String> imple
         return type;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public void setRisk(String risk) {
+        this.risk = risk;
     }
+
+	public String getRisk() {
+		return risk;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
 
 	public String getAdminResourceId() {
 		return adminResourceId;

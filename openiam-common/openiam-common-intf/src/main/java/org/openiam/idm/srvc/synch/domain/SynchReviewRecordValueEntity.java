@@ -27,7 +27,7 @@ public class SynchReviewRecordValueEntity implements Serializable {
     @JoinColumn(name="SYNCH_REVIEW_RECORD_ID", referencedColumnName="SYNCH_REVIEW_RECORD_ID", insertable=true, updatable=false, nullable=false)
     private SynchReviewRecordEntity synchReviewRecord;
 
-    @Column(name="VALUE", length=4096, nullable=true)
+    @Column(name="VALUE", length=4000, nullable=true)
     private String value;
 
     public String getSynchReviewRecordValueId() {
