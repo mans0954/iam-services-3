@@ -400,6 +400,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                                                    String requestorId, List<String> skipManagedSysList, IdmAuditLog auditLog) {
         log.debug("----deleteUser called.------");
 
+        if (StringUtils.isEmpty(requestorId)) {
+            requestorId = systemUserId;
+        }
+
         ProvisionUserResponse response = new ProvisionUserResponse(ResponseStatus.SUCCESS);
         Map<String, Object> bindingMap = new HashMap<String, Object>();
 
