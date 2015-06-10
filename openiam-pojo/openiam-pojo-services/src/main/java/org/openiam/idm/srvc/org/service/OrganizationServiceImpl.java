@@ -179,10 +179,12 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     @Transactional(readOnly = true)
     public List<OrganizationEntity> findBeans(final OrganizationSearchBean searchBean, String requesterId, int from, int size, final LanguageEntity langauge) {
         Set<String> filter = getDelegationFilter(requesterId, null);
-        if (StringUtils.isBlank(searchBean.getKey()))
-            searchBean.setKeys(filter);
-        else if (!DelegationFilterHelper.isAllowed(searchBean.getKey(), filter)) {
-            return new ArrayList<OrganizationEntity>(0);
+        if(searchBean != null) {
+        	if (StringUtils.isBlank(searchBean.getKey())) {
+        		searchBean.setKeys(filter);
+        	} else if (!DelegationFilterHelper.isAllowed(searchBean.getKey(), filter)) {
+        		return new ArrayList<OrganizationEntity>(0);
+        	}
         }
         return orgDao.getByExample(searchBean, from, size);
     }

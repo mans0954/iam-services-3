@@ -31,6 +31,25 @@
 	</mapping>
 	
 	<mapping>
+		<class-a>org.openiam.idm.srvc.org.domain.GroupToOrgMembershipXrefEntity</class-a>
+		<class-b>org.openiam.idm.srvc.org.dto.GroupToOrgMembershipXref</class-b>
+		<field>
+			<a>entity.id</a>
+			<b>entityId</b>
+		</field>
+		<field>
+			<a>memberEntity.id</a>
+			<b>memberEntityId</b>
+		</field>
+		<field
+			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
+			custom-converter-param="dto2entityShallowDozerMapper">
+			<a>rights</a>
+			<b>rights</b>
+		</field>
+	</mapping>
+	
+	<mapping>
 		<class-a>org.openiam.idm.srvc.user.domain.UserToResourceMembershipXrefEntity</class-a>
 		<class-b>org.openiam.idm.srvc.user.dto.UserToResourceMembershipXref</class-b>
 		<field>

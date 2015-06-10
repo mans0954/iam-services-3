@@ -91,7 +91,7 @@ public class ProvisionGroup extends org.openiam.idm.srvc.grp.dto.Group {
         this.createDate = group.getCreateDate();
         this.createdBy = group.getCreatedBy();
 
-        this.organizations = group.getOrganizations();
+        setOrganizations(group.getOrganizations());
         this.owner = group.getOwner();
 
         this.description = group.getDescription();

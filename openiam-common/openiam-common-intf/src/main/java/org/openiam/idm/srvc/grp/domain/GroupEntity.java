@@ -39,6 +39,7 @@ import org.openiam.idm.srvc.role.domain.RoleToRoleMembershipXrefEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.domain.UserToGroupMembershipXrefEntity;
 import org.openiam.idm.srvc.user.domain.UserToResourceMembershipXrefEntity;
+import org.openiam.idm.srvc.user.domain.UserToRoleMembershipXrefEntity;
 import org.openiam.internationalization.Internationalized;
 
 @Entity
@@ -466,6 +467,31 @@ public class GroupEntity extends AbstractMetdataTypeEntity {
 
 	public void setOrganizations(Set<GroupToOrgMembershipXrefEntity> organizations) {
 		this.organizations = organizations;
+	}
+	
+	public void addOrganization(final OrganizationEntity entity, final Collection<AccessRightEntity> rights) {
+		if(entity != null) {
+			if(this.organizations == null) {
+				this.organizations = new LinkedHashSet<GroupToOrgMembershipXrefEntity>();
+			}
+			GroupToOrgMembershipXrefEntity theXref = null;
+			for(final GroupToOrgMembershipXrefEntity xref : this.organizations) {
+				if(xref.getEntity().getId().equals(entity.getId()) && xref.getMemberEntity().getId().equals(getId())) {
+					theXref = xref;
+					break;
+				}
+			}
+			
+			if(theXref == null) {
+				theXref = new GroupToOrgMembershipXrefEntity();
+				theXref.setEntity(entity);
+				theXref.setMemberEntity(this);
+			}
+			if(rights != null) {
+				theXref.setRights(new HashSet<AccessRightEntity>(rights));
+			}
+			this.organizations.add(theXref);
+		}
 	}
 
 	@Override

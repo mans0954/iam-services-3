@@ -296,10 +296,12 @@
             <a>risk.displayName</a>
             <b>riskName</b>
         </field>
-        <field-exclude>
+        <field
+			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
+			custom-converter-param="dto2entityShallowDozerMapper">
         	<a>organizations</a>
         	<b>organizations</b>
-        </field-exclude>
+        </field>
 	</mapping>
 
 	<mapping>

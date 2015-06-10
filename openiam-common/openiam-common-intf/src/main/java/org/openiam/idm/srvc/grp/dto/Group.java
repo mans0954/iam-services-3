@@ -1,10 +1,12 @@
 package org.openiam.idm.srvc.grp.dto;
 
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -16,12 +18,15 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.access.dto.AccessRight;
 import org.openiam.idm.srvc.entitlements.AbstractEntitlementsDTO;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
+import org.openiam.idm.srvc.org.dto.GroupToOrgMembershipXref;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.user.dto.User;
+import org.openiam.idm.srvc.user.dto.UserToRoleMembershipXref;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "Group", propOrder = {
@@ -107,7 +112,7 @@ public class Group extends AbstractEntitlementsDTO {
     protected Integer maxUserNumber;
     protected Long membershipDuration;
 
-	protected Set<Organization> organizations = new HashSet<Organization>(0);
+	protected Set<GroupToOrgMembershipXref> organizations = new HashSet<GroupToOrgMembershipXref>(0);
 
  	protected GroupOwner owner;
 
@@ -362,35 +367,80 @@ public class Group extends AbstractEntitlementsDTO {
 		this.membershipDuration = membershipDuration;
 	}
 
-	public Set<Organization> getOrganizations() {
+	public Set<GroupToOrgMembershipXref> getOrganizations() {
 		return organizations;
 	}
-
-	public void addOrganization(final Organization org) {
-		if (org != null) {
-			if (organizations == null) {
-				organizations = new HashSet<Organization>();
-			}
-			org.setOperation(AttributeOperationEnum.ADD);
-			organizations.add(org);
-		}
+	
+	public void setOrganizations(Set<GroupToOrgMembershipXref> organizations) {
+		this.organizations = organizations;
 	}
 
-	public void markOrganizationAsDeleted(final String id) {
-		if (id != null) {
-			if (organizations != null) {
-				for (final Organization organization : organizations) {
-					if (StringUtils.equals(organization.getId(), id)) {
-						organization.setOperation(AttributeOperationEnum.DELETE);
-						break;
-					}
+	@Deprecated
+	public void addOrganization(final Organization org) {
+		addOrganization(org, null);
+	}
+	
+	 private Set<AccessRight> toAccessRightSet(final Collection<String> rights) {
+	    	return (rights != null) ? rights.stream().map(e -> {
+				final AccessRight right = new AccessRight();
+				right.setId(e);
+				return right;
+			}).collect(Collectors.toSet()) : null;
+	    }
+	
+	public void addOrganization(final Organization org, final Collection<String> rights) {
+		addOrganizationWithRights(org, toAccessRightSet(rights));
+    }
+    
+    public void addOrganizationWithRights(final Organization org, final Collection<AccessRight> rights) {
+    	if (org != null) {
+            if (organizations == null) {
+            	organizations = new HashSet<GroupToOrgMembershipXref>();
+            }
+            
+            GroupToOrgMembershipXref theXref = null;
+			for(final GroupToOrgMembershipXref xref : this.organizations) {
+				if(xref.getMemberEntityId().equals(getId()) && xref.getEntityId().equals(org.getId())) {
+					theXref = xref;
+					break;
 				}
 			}
-		}
-	}
+            
+            //resource.setOperation(AttributeOperationEnum.ADD);
+			if(theXref == null) {
+				theXref = new GroupToOrgMembershipXref();
+				theXref.setEntityId(org.getId());
+				theXref.setMemberEntityId(getId());
+			}
+			theXref.setOperation(AttributeOperationEnum.ADD);
+			if(rights != null) {
+				theXref.setRights(new HashSet<AccessRight>(rights));
+			}
+			this.organizations.add(theXref);
+        }
+    }
 
-	public void setOrganizations(Set<Organization> organizations) {
-		this.organizations = organizations;
+	@Deprecated
+	public void markOrganizationAsDeleted(final String id) {
+		removeOrganization(id);
+	}
+	
+	public void removeOrganization(final String id) {
+		if(id != null) {
+    		GroupToOrgMembershipXref theXref = null;
+    		if(organizations != null) {
+    			for(final GroupToOrgMembershipXref xref : organizations) {
+    				if(xref.getEntityId().equals(id)) {
+    					theXref = xref;
+    					break;
+    				}
+    			}
+    		}
+    		
+    		if(theXref != null) {
+    			theXref.setOperation(AttributeOperationEnum.DELETE);
+    		}
+    	}
 	}
 
 	public GroupOwner getOwner() {

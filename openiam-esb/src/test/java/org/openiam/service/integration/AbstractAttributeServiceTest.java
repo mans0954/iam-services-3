@@ -10,11 +10,18 @@ import org.openiam.base.AbstractMetadataTypeDTO;
 import org.openiam.base.AdminResourceDTO;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.AbstractKeyNameSearchBean;
+import org.openiam.idm.srvc.access.ws.AccessRightDataService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
 public abstract class AbstractAttributeServiceTest<T extends AbstractMetadataTypeDTO, S extends AbstractKeyNameSearchBean<T, String>, A extends AbstractAttributeDTO> extends
 					  AbstractMetadataTypeServiceTest<T,S> {
+	
+	@Autowired
+	@Qualifier("accessRightServiceClient")
+	protected AccessRightDataService accessRightServiceClient;
 	
 	protected abstract A createAttribute(T t);
 	protected abstract Set<A> createAttributeSet();

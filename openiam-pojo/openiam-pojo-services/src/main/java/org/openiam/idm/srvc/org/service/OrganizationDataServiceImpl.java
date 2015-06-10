@@ -134,7 +134,7 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     @LocalizedServiceGet
     public List<Organization> findBeansLocalized(final OrganizationSearchBean searchBean, final String requesterId, final int from, final int size, final Language language) {
         final List<OrganizationEntity> entityList = organizationService.findBeans(searchBean, requesterId, from, size, languageConverter.convertToEntity(language, false));
-        final List<Organization> dtoList = organizationDozerConverter.convertToDTOList(entityList, searchBean.isDeepCopy());
+        final List<Organization> dtoList = organizationDozerConverter.convertToDTOList(entityList, (searchBean != null) ? searchBean.isDeepCopy() : false);
         accessRightProcessor.process(searchBean, dtoList, entityList);
         return dtoList;
     }

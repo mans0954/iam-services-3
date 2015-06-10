@@ -42,7 +42,7 @@ public class GroupCsvParser extends AbstractCSVParser<Group, GroupFields> implem
             case companyId:
                 Organization org = new Organization();
                 org.setId(objValue);
-                group.addOrganization(org);
+                group.addOrganization(org, null);
                 break;
             /*
             case ownerId:
@@ -105,7 +105,7 @@ public class GroupCsvParser extends AbstractCSVParser<Group, GroupFields> implem
             case companyId:
                 objValue = null;
                 if(CollectionUtils.isNotEmpty(group.getOrganizations())){
-                    objValue =((Organization)group.getOrganizations().iterator().next()).getId();
+                    objValue = group.getOrganizations().iterator().next().getEntityId();
                 }
                 break;
             /*

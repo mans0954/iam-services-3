@@ -1,5 +1,17 @@
 package org.openiam.idm.srvc.grp.service;
 
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
@@ -7,14 +19,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.authmanager.common.SetStringResponse;
 import org.openiam.authmanager.service.AuthorizationManagerAdminService;
-import org.openiam.authmanager.service.AuthorizationManagerService;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.dozer.converter.GroupDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
-import org.openiam.idm.searchbeans.RoleSearchBean;
+import org.openiam.idm.srvc.access.domain.AccessRightEntity;
 import org.openiam.idm.srvc.access.service.AccessRightDAO;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
@@ -37,31 +48,23 @@ import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
-import org.openiam.idm.srvc.org.domain.OrganizationEntity;
-import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.service.OrganizationDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
-import org.openiam.idm.srvc.res.domain.ResourceToResourceMembershipXrefEntity;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.idm.srvc.role.service.RoleDAO;
-import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
 import org.openiam.internationalization.LocalizedServiceGet;
 import org.openiam.util.AttributeUtil;
-import org.openiam.util.ws.collection.StringUtil;
 import org.openiam.validator.EntityValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * <code>GroupDataServiceImpl</code> provides a service to manage groups as
@@ -330,27 +333,30 @@ public class GroupDataServiceImpl implements GroupDataService {
     public void saveGroup(final GroupEntity group, final GroupOwner groupOwner, final String requestorId) throws BasicDataServiceException{
         if(group != null && entityValidator.isValid(group)) {
 
-            if(group.getManagedSystem() != null && group.getManagedSystem().getId() != null) {
+            if(group.getManagedSystem() != null && StringUtils.isNotBlank(group.getManagedSystem().getId())) {
                 final ManagedSysEntity mngSys = managedSysDAO.findById(group.getManagedSystem().getId());
-                group.setManagedSystem(managedSysDAO.findById(group.getManagedSystem().getId()));
-                if(mngSys.getResource() != null){
-                    group.addResource(mngSys.getResource(), accessRightDAO.findAll());
+                if(mngSys != null) {
+                	group.setManagedSystem(managedSysDAO.findById(group.getManagedSystem().getId()));
+                	if(mngSys.getResource() != null){
+                		group.addResource(mngSys.getResource(), accessRightDAO.findAll());
+                	}
                 }
 
             } else {
                 group.setManagedSystem(null);
             }
 
-            /*
             if(CollectionUtils.isNotEmpty(group.getOrganizations())) {
-                final Set<String> ids = group.getOrganizations().stream().map(e -> e.getId()).filter(e -> StringUtils.isNotBlank(e)).collect(Collectors.toSet());
-                if(CollectionUtils.isNotEmpty(ids)){
-                    group.setOrganizationSet(new HashSet<>(organizationDAO.findByIds(ids)));
-                }
+            	group.getOrganizations().forEach(xref -> {
+            		xref.setMemberEntity(group);
+            		xref.setEntity(organizationDAO.findById(xref.getEntity().getId()));
+            		final Set<String> rightIds = (xref.getRights() != null) ? xref.getRights().stream().map(e -> e.getId()).collect(Collectors.toSet()) : null;
+            		final List<AccessRightEntity> accessRightList = accessRightDAO.findByIds(rightIds);
+            		xref.setRights((accessRightList != null) ? new HashSet<AccessRightEntity>(accessRightList) : null);
+            	});
             } else {
-                group.setOrganizationSet(null);
+                group.setOrganizations(null);
             }
-            */
 
             if(group.getType() != null && StringUtils.isNotBlank(group.getType().getId())) {
                 group.setType(typeDAO.findById(group.getType().getId()));
@@ -382,6 +388,7 @@ public class GroupDataServiceImpl implements GroupDataService {
             if(StringUtils.isNotBlank(group.getId())) {
                 final GroupEntity dbGroup = groupDao.findById(group.getId());
                 if(dbGroup != null) {
+                	
                     group.setApproverAssociations(dbGroup.getApproverAssociations());
 
                     mergeAttribute(group, dbGroup, requestorId);
@@ -397,14 +404,37 @@ public class GroupDataServiceImpl implements GroupDataService {
                         group.setAdminResource(getNewAdminResource(group, groupOwner, requestorId));
                     }
                     group.getAdminResource().setCoorelatedName(group.getName());
+                    
+                    /* hibernate fails you just null out the PersistentSet.  As of Hibernate 4 */
+                    if(CollectionUtils.isEmpty(group.getOrganizations())) {
+                    	dbGroup.getOrganizations().clear();
+                    } else {
+                    	/* basically, we need to remove entries from the DB perstent set tha we don't need */
+                    	final Set<String> incomingOrganizationIds = (group.getOrganizations() != null) ? 
+                    			group.getOrganizations().stream().map(e -> e.getEntity().getId()).collect(Collectors.toSet()) : null;
+                    	group.getOrganizations().forEach(xref -> {
+                    		dbGroup.getOrganizations().removeIf(e -> {
+                    			return !incomingOrganizationIds.contains(xref.getEntity().getId());
+                    		});
+                    		dbGroup.addOrganization(xref.getEntity(), xref.getRights());
+                    	});
+                    }
+                    
+                    /* now set the persistent set  on the transient object */
+                    group.setOrganizations(dbGroup.getOrganizations());
+                    group.getOrganizations().forEach(xref -> {
+                    	xref.setMemberEntity(group);
+                    	xref.setEntity(organizationDAO.findById(xref.getEntity().getId()));
+                    });
                 } else {
                     return;
                 }
                 groupDao.merge(group);
 
             } else {
+            	/*
                 if(CollectionUtils.isNotEmpty(group.getParentGroups())) {
-                    final Set<String> ids = group.getParentGroups().stream().map(e -> e.getId()).filter(e -> StringUtils.isNotBlank(e)).collect(Collectors.toSet());
+                    final Set<String> ids = group.getParentGroups().stream().map(e -> e.getMemberEntity().getId()).filter(e -> StringUtils.isNotBlank(e)).collect(Collectors.toSet());
                     if(CollectionUtils.isNotEmpty(ids)){
                         group.setParentGroups(
 	                        groupDao.findByIds(ids).stream().map(e -> {
@@ -418,6 +448,7 @@ public class GroupDataServiceImpl implements GroupDataService {
                 } else {
                     group.setParentGroups(null);
                 }
+                */
                 group.setAdminResource(getNewAdminResource(group, groupOwner, requestorId));
                 group.setCreatedBy(requestorId);
                 group.setCreateDate(Calendar.getInstance().getTime());
