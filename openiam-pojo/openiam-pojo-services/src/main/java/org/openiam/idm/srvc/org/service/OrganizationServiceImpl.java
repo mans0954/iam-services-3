@@ -236,6 +236,20 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     public Organization save(final Organization organization, final String requestorId) throws BasicDataServiceException {
         return save(organization, requestorId, false);
     }
+    
+    private void setOrganizationType(final OrganizationEntity newEntity, final OrganizationEntity curEntity) {
+    	if (newEntity.getOrganizationType() == null || StringUtils.isBlank(newEntity.getOrganizationType().getId())) {
+            curEntity.setOrganizationType(null);
+        } else if (curEntity.getOrganizationType() == null || !StringUtils.equals(curEntity.getOrganizationType().getId(), newEntity.getOrganizationType().getId())) {
+            curEntity.setOrganizationType(orgTypeDAO.findById(newEntity.getOrganizationType().getId()));
+        }
+
+        if (newEntity.getType() == null || StringUtils.isBlank(newEntity.getType().getId())) {
+            curEntity.setType(null);
+        } else if (curEntity.getType() == null || !StringUtils.equals(curEntity.getType().getId(), newEntity.getType().getId())) {
+            curEntity.setType(typeDAO.findById(newEntity.getType().getId()));
+        }
+    }
 
     @Override
     @Transactional
@@ -278,11 +292,44 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
                 if (StringUtils.isNotBlank(newEntity.getType().getId())) {
                     curEntity.setType(typeDAO.findById(newEntity.getType().getId()));
                 }
-
+                setOrganizationType(newEntity, curEntity);
+                orgDao.save(curEntity);
             } else {
                 curEntity = orgDao.findById(organization.getId());
                 mergeOrgProperties(curEntity, newEntity);
                 mergeAttributes(curEntity, newEntity);
+                /*
+                newEntity.setResources(dbEntity.getResources());
+                newEntity.setUsers(dbEntity.getUsers());
+                newEntity.setGroups(dbEntity.getGroups());
+                newEntity.setRoles(dbEntity.getRoles());
+                newEntity.setApproverAssociations(dbEntity.getApproverAssociations());
+                newEntity.setChildOrganizations(childOrganizations);
+                */
+                /*
+                if(CollectionUtils.isNotEmpty(curEntity.getParentOrganizations())) {
+                	curEntity.getParentOrganizations().forEach(e -> {
+                		e.setEntity(curEntity);
+                	});
+                }
+                if(CollectionUtils.isNotEmpty(curEntity.getChildOrganizations())) {
+                	
+                }
+                if(CollectionUtils.isNotEmpty(curEntity.getRoles())) {
+                	
+                }
+                if(CollectionUtils.isNotEmpty(curEntity.getGroups())) {
+                	
+                }
+                if(CollectionUtils.isNotEmpty(curEntity.getResources())) {
+                	
+                }
+                */
+                //newEntity.setParentOrganizations(curEntity.getParentOrganizations());
+                //newEntity.setChildOrganizations(curEntity.getChildOrganizations());
+                //newEntity.setUsers(curEntity.getUsers());
+                //newEntity.setGroups(curEntity.getGroups());
+                //newEntity.setResources(curEntity.getResources());
                 //mergeParents(curEntity, newEntity);
                 //mergeChildren(curEntity, newEntity);
                 //mergeUsers(curEntity, newEntity);
@@ -297,22 +344,10 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
                 curEntity.getAdminResource().setCoorelatedName(curEntity.getName());
                 curEntity.setLstUpdate(Calendar.getInstance().getTime());
                 curEntity.setLstUpdatedBy(requestorId);
-
+                setOrganizationType(newEntity, curEntity);
+                orgDao.merge(curEntity);
             }
 
-            if (newEntity.getOrganizationType() == null || StringUtils.isBlank(newEntity.getOrganizationType().getId())) {
-                curEntity.setOrganizationType(null);
-            } else if (curEntity.getOrganizationType() == null || !StringUtils.equals(curEntity.getOrganizationType().getId(), newEntity.getOrganizationType().getId())) {
-                curEntity.setOrganizationType(orgTypeDAO.findById(newEntity.getOrganizationType().getId()));
-            }
-
-            if (newEntity.getType() == null || StringUtils.isBlank(newEntity.getType().getId())) {
-                curEntity.setType(null);
-            } else if (curEntity.getType() == null || !StringUtils.equals(curEntity.getType().getId(), newEntity.getType().getId())) {
-                curEntity.setType(typeDAO.findById(newEntity.getType().getId()));
-            }
-
-            orgDao.save(curEntity);
             final Organization org = organizationDozerConverter.convertToDTO(curEntity, false);
 
             if (!skipPrePostProcessors) {
@@ -614,7 +649,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     private void mergeOrgProperties(final OrganizationEntity curEntity, final OrganizationEntity newEntity) {
         BeanUtils.copyProperties(newEntity, curEntity,
                 new String[] {"attributes", "parentOrganizations", "childOrganizations", "users", "approverAssociations",
-                "adminResource", "groups", "locations", "organizationType", "type", "lstUpdate", "lstUpdatedBy", "createDate", "createdBy"});
+                "adminResource", "groups", "locations", "organizationType", "type", "lstUpdate", "lstUpdatedBy", "createDate", "createdBy", "resources", "roles"});
     }
 
     private void mergeAttributes(final OrganizationEntity curEntity, final OrganizationEntity newEntity) {
