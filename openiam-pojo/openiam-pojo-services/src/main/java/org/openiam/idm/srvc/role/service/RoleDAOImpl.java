@@ -145,6 +145,27 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
 				if(entity.getAdminResource() != null && StringUtils.isNotBlank(entity.getAdminResource().getId())) {
 					criteria.add(Restrictions.eq("adminResource.id", entity.getAdminResource().getId()));
 				}
+
+                if (StringUtils.isNotEmpty(entity.getDescription())) {
+                    String description = entity.getDescription();
+                    MatchMode descMatchMode = null;
+                    if (StringUtils.indexOf(description, "*") == 0) {
+                        descMatchMode = MatchMode.END;
+                        description = description.substring(1);
+                    }
+                    if (StringUtils.isNotBlank(description) && StringUtils.indexOf(description, "*") == description.length() - 1) {
+                        description = description.substring(0, description.length() - 1);
+                        descMatchMode = (descMatchMode == MatchMode.END) ? MatchMode.ANYWHERE : MatchMode.START;
+                    }
+
+                    if (StringUtils.isNotBlank(description)) {
+                        if (descMatchMode != null) {
+                            criteria.add(Restrictions.ilike("description", description, descMatchMode));
+                        } else {
+                            criteria.add(Restrictions.eq("description", description));
+                        }
+                    }
+                }
 				
 				if(CollectionUtils.isNotEmpty(entity.getResources())) {
 					final Set<String> resourceIds = new HashSet<String>();
@@ -173,6 +194,35 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
             }
         }
     }
+    
+    public List<RoleEntity> getByExample(final SearchBean searchBean) {
+        return getByExample(searchBean, -1, -1);
+    }
+
+    public List<RoleEntity> getByExample(final SearchBean searchBean, int from, int size) {
+        final Criteria criteria = getExampleCriteria(searchBean);
+        if (from > -1) {
+            criteria.setFirstResult(from);
+        }
+
+        if (size > -1) {
+            criteria.setMaxResults(size);
+        }
+
+        if (searchBean instanceof AbstractSearchBean) {
+            AbstractSearchBean sb = (AbstractSearchBean)searchBean;
+//            if (StringUtils.isNotBlank(sb.getSortBy())) {
+//                criteria.addOrder(sb.getOrderBy().equals(OrderConstants.DESC) ?
+//                        Order.desc(sb.getSortBy()) :
+//                        Order.asc(sb.getSortBy()));
+//            }
+
+            if(CollectionUtils.isNotEmpty(sb.getSortBy())){
+                this.setOderByCriteria(criteria, sb);
+            }
+        }
+        return (List<RoleEntity>) criteria.list();
+    }
 
     @Override
     public List<RoleEntity> getByExample(RoleEntity t, int startAt, int size) {
@@ -186,6 +236,10 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
         }
 
         return (List<RoleEntity>) criteria.list();
+    }
+
+    public List<RoleEntity> findAll() {
+        return (List<RoleEntity>) getCriteria().list();
     }
 
     @Override

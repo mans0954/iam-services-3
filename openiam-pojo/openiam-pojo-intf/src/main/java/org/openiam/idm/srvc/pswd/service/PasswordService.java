@@ -29,6 +29,8 @@ import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.pswd.dto.*;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 
+import java.util.Set;
+
 
 /**
  * Password service provides operations to manage passwords. This includes validation against policy,
@@ -158,6 +160,9 @@ public interface PasswordService {
      * @return
      */
     ValidatePasswordResetTokenResponse validatePasswordResetToken(String token);
+
+
+    Set<PasswordHistory> getPasswordHistory(String id, Integer from, Integer count);
 
 
 }

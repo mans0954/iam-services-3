@@ -154,7 +154,7 @@ public class PolicyServiceImpl implements PolicyService {
 	@Transactional(readOnly=true)
 	public List<Policy> findBeans(PolicySearchBean searchBean, int from,
 			int size) {
-        List<PolicyEntity> entities = policyDao.getByExample(searchBean, from, size);
+        List<PolicyEntity> entities = policyDao.getByExampleNoLocalize(searchBean, from, size);
         return policyDozerConverter.convertToDTOList(entities, true);
 	}
 	

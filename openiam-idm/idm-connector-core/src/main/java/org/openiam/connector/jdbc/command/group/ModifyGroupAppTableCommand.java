@@ -5,7 +5,7 @@ import org.openiam.provision.type.ExtensibleUser;
 import org.springframework.stereotype.Service;
 
 @Service("modifyGroupAppTableCommand")
-public class ModifyUserAppTableCommand extends AbstractModifyAppTableCommand<ExtensibleUser> {
+public class ModifyGroupAppTableCommand extends AbstractModifyAppTableCommand<ExtensibleUser> {
 
     @Override
     protected String getObjectType() {

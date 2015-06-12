@@ -9,6 +9,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -165,5 +166,48 @@ public class AuthProvider implements Serializable {
         for (AuthProviderAttribute attr: this.providerAttributeSet){
             providerAttributeMap.put(attr.getAttributeName(), attr);
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        AuthProvider that = (AuthProvider) o;
+
+        if (isSignRequest != that.isSignRequest) return false;
+        if (providerId != null ? !providerId.equals(that.providerId) : that.providerId != null) return false;
+        if (providerType != null ? !providerType.equals(that.providerType) : that.providerType != null) return false;
+        if (managedSysId != null ? !managedSysId.equals(that.managedSysId) : that.managedSysId != null) return false;
+        if (resourceId != null ? !resourceId.equals(that.resourceId) : that.resourceId != null) return false;
+        if (name != null ? !name.equals(that.name) : that.name != null) return false;
+        if (description != null ? !description.equals(that.description) : that.description != null) return false;
+        if (!Arrays.equals(publicKey, that.publicKey)) return false;
+        if (!Arrays.equals(privateKey, that.privateKey)) return false;
+        if (providerAttributeSet != null ? !providerAttributeSet.equals(that.providerAttributeSet) : that.providerAttributeSet != null)
+            return false;
+        if (resourceAttributeMap != null ? !resourceAttributeMap.equals(that.resourceAttributeMap) : that.resourceAttributeMap != null)
+            return false;
+        if (resource != null ? !resource.equals(that.resource) : that.resource != null) return false;
+        return !(providerAttributeMap != null ? !providerAttributeMap.equals(that.providerAttributeMap) : that.providerAttributeMap != null);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = providerId != null ? providerId.hashCode() : 0;
+        result = 31 * result + (providerType != null ? providerType.hashCode() : 0);
+        result = 31 * result + (managedSysId != null ? managedSysId.hashCode() : 0);
+        result = 31 * result + (resourceId != null ? resourceId.hashCode() : 0);
+        result = 31 * result + (name != null ? name.hashCode() : 0);
+        result = 31 * result + (description != null ? description.hashCode() : 0);
+        result = 31 * result + (isSignRequest ? 1 : 0);
+        result = 31 * result + (publicKey != null ? Arrays.hashCode(publicKey) : 0);
+        result = 31 * result + (privateKey != null ? Arrays.hashCode(privateKey) : 0);
+        result = 31 * result + (providerAttributeSet != null ? providerAttributeSet.hashCode() : 0);
+        result = 31 * result + (resourceAttributeMap != null ? resourceAttributeMap.hashCode() : 0);
+        result = 31 * result + (resource != null ? resource.hashCode() : 0);
+        result = 31 * result + (providerAttributeMap != null ? providerAttributeMap.hashCode() : 0);
+        return result;
     }
 }

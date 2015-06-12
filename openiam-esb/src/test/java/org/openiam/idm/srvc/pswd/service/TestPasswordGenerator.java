@@ -4,6 +4,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
+import org.openiam.idm.srvc.pswd.rule.NonAlphaNumericRule;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.Assert;
@@ -15,7 +16,7 @@ import java.util.Arrays;
 @ContextConfiguration(locations={"classpath:test-integration-environment.xml"})
 public class TestPasswordGenerator extends AbstractTestNGSpringContextTests {
 
-    private static final String nonAlphaCharset = "!$@%&{}*#%+-_/?";
+    private static final String nonAlphaCharset = "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~";
     private static final String numericCharset = "0123456789";
     private static final String uppercaseCharset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     private static final String lowercaseCharset = "abcdefghijklmnopqrstuvwxyz";
@@ -165,7 +166,7 @@ public class TestPasswordGenerator extends AbstractTestNGSpringContextTests {
             TestPolicy policy = new TestPolicy();
             policy.setAttribute(PWD_LEN, 10, 20);
             policy.setAttribute(NON_ALPHA_CHARS, PWD_LEN_PAIRS[index], PWD_LEN_PAIRS[index+1]);
-            runPasswordGeneratorTests(policy);
+            runPasswordGeneratorTests(policy, 200);
         }
     }
 
@@ -221,10 +222,14 @@ public class TestPasswordGenerator extends AbstractTestNGSpringContextTests {
     }
 
     private void runPasswordGeneratorTests(TestPolicy policy) {
+        runPasswordGeneratorTests(policy, TEST_ITERATIONS);
+    }
+
+    private void runPasswordGeneratorTests(TestPolicy policy, int iterations) {
 
         DuplicatesValidator duplicatesValidator = new DuplicatesValidator();
 
-        for (int j = 0; j < TEST_ITERATIONS; j++) {
+        for (int j = 0; j < iterations; j++) {
             final String password = PasswordGenerator.generatePassword(policy);
             LOG.info(String.format("%s. Password: %s", policy, password));
             policy.validatePassword(password);

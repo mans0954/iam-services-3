@@ -229,9 +229,10 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
 
     @Override
     @Transactional
-    public void saveManagedSystemObjectMatch(ManagedSystemObjectMatch objectMatch) {
+    public String saveManagedSystemObjectMatch(ManagedSystemObjectMatch objectMatch) {
         ManagedSystemObjectMatchEntity entity = managedSystemObjectMatchDozerConverter.convertToEntity(objectMatch, false);
         matchDAO.save(entity);
+        return entity.getObjectSearchId();
     }
 
     @Override

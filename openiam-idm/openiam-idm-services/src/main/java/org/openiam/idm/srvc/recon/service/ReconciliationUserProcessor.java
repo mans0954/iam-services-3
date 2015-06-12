@@ -268,7 +268,7 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
         this.saveReconciliationResults(config.getResourceId(), resultBean);
 
 		ReconciliationConfig reconConfig = reconConfigService.getConfigById(config.getReconConfigId());
-		reconConfig.setLastExecTime(new Date());
+        reconConfig.setLastExecTime(new Date());
         reconConfig.setExecStatus(ReconExecStatusOptions.FINISHED);
 		reconConfigService.updateConfig(reconConfig);
 

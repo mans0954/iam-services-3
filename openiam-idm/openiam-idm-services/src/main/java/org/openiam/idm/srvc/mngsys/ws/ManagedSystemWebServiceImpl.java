@@ -483,8 +483,10 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
 
             if(StringUtils.isNotBlank(obj.getObjectSearchId())) {
             	managedSystemService.updateManagedSystemObjectMatch(obj);
+                response.setResponseValue(obj.getObjectSearchId());
             } else {
-            	managedSystemService.saveManagedSystemObjectMatch(obj);
+            	String objId = managedSystemService.saveManagedSystemObjectMatch(obj);
+                response.setResponseValue(objId);
             }
         } catch (BasicDataServiceException e) {
             response.setErrorCode(e.getCode());

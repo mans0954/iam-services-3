@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+import org.apache.commons.lang.StringUtils;
 import org.openiam.connector.jdbc.command.base.AbstractAppTableCommand;
 import org.openiam.connector.jdbc.command.data.AppTableConfiguration;
 import org.openiam.connector.type.ConnectorDataException;
@@ -26,17 +27,25 @@ public class SuspendUserAppTableCommand extends AbstractAppTableCommand<SuspendR
         response.setStatus(StatusCodeType.SUCCESS);
 
         AppTableConfiguration configuration = this.getConfiguration(suspendRequest.getTargetID());
+
+        if (StringUtils.isBlank(configuration.getUserStatus()) ||
+                StringUtils.isBlank(configuration.getActiveUserStatus())
+                || StringUtils.isBlank(configuration.getInactiveUserStatus())) {
+            String message = "Status synchronization is turned off! Need to add attributes: 'INCLUDE_IN_STATUS_SYNC' = 'Y' " +
+                    "USER_STATUS_FIELD, USER_STATUS_ACTIVE,USER_STATUS_INACTIVE ";
+            log.warn(message);
+            return response;
+        }
+
         Connection con = this.getConnection(configuration.getManagedSys());
 
-        final String password = passwordGenerator.generatePassword(10);
 
         PreparedStatement statement = null;
         try {
-            statement = createSetPasswordStatement(con, configuration.getResourceId(),
+            statement = createChangeUserControlParamsStatement(con, configuration,
                     this.getTableName(configuration, this.getObjectType()), suspendRequest.getObjectIdentity(),
-                    password);
+                    configuration.getActiveUserStatus(), false);
             statement.executeUpdate();
-
             return response;
         } catch (SQLException se) {
             log.error(se.getMessage(), se);
