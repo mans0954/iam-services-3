@@ -36,7 +36,7 @@ public class AuthAttributeEntity extends AbstractKeyNameEntity {
     @Type(type = "yes_no")
     private boolean isRequired = false;
     
-    @Column(name="DEFAULT_VALUE", length = 4096)
+    @Column(name="DEFAULT_VALUE", length = 4000)
     private String defaultValue;
 
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})

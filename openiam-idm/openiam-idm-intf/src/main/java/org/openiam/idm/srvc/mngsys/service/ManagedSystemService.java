@@ -68,7 +68,7 @@ public interface ManagedSystemService {
 
     void deleteAttributesMapList(List<String> ids) throws Exception;
 
-    void saveManagedSystemObjectMatch(ManagedSystemObjectMatch objectMatch);
+    String saveManagedSystemObjectMatch(ManagedSystemObjectMatch objectMatch);
 
     void updateManagedSystemObjectMatch(ManagedSystemObjectMatch objectMatch);
 
