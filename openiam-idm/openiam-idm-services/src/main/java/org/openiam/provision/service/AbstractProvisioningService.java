@@ -91,10 +91,7 @@ import org.openiam.idm.srvc.user.dto.UserToOrganizationMembershipXref;
 import org.openiam.idm.srvc.user.dto.UserToResourceMembershipXref;
 import org.openiam.idm.srvc.user.dto.UserToRoleMembershipXref;
 import org.openiam.idm.srvc.user.service.UserDataService;
-import org.openiam.provision.dto.PasswordSync;
-import org.openiam.provision.dto.ProvisionActionEvent;
-import org.openiam.provision.dto.ProvisionActionTypeEnum;
-import org.openiam.provision.dto.ProvisionUser;
+import org.openiam.provision.dto.*;
 import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
@@ -221,6 +218,10 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     protected ManagedSysDozerConverter managedSysDozerConverter;
     @Autowired
     protected ProvisionConnectorConverter provisionConnectorConverter;
+
+    @Autowired
+    protected BuildUserPolicyMapHelper buildPolicyMapHelper;
+
     @Value("${openiam.service_base}")
     protected String serviceHost;
     @Value("${openiam.idm.ws.path}")
@@ -1764,7 +1765,10 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         request.setRequestID(requestId);
         request.setTargetID(mLg.getManagedSysId());
         request.setHostLoginId(mSys.getUserId());
-        request.setExtensibleObject(new ExtensibleUser());
+
+        ExtensibleUser extensibleUser = buildPolicyMapHelper.buildMngSysAttributes(mLg, ProvOperationEnum.DELETE.name());
+        request.setExtensibleObject(extensibleUser);
+
         String passwordDecoded = managedSysDataService.getDecryptedPassword(mSys);
 
         request.setHostLoginPassword(passwordDecoded);

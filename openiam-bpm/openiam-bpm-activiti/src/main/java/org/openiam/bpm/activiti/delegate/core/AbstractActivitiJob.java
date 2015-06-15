@@ -1,10 +1,6 @@
 package org.openiam.bpm.activiti.delegate.core;
 
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import org.activiti.engine.delegate.DelegateExecution;
 import org.activiti.engine.delegate.DelegateTask;
@@ -188,15 +184,27 @@ public abstract class AbstractActivitiJob implements JavaDelegate, TaskListener 
 		final Object obj = execution.getVariable(key.getName());
 		return (obj instanceof ActivitiJSONStringWrapper) ? ((ActivitiJSONStringWrapper)obj).getObject(key.getName(), customJacksonMapper, clazz) : null;
 	}
-	
-	public String getStringVariable(final DelegateExecution execution, final ActivitiConstants key) {
-		try {
-			return (String)execution.getVariable(key.getName());
-		} catch(Throwable e) {
-			LOG.warn(String.format("Can't get variable '%s", key), e);
-			return null;
-		}
-	}
+
+    public String getStringVariable(final DelegateExecution execution, final ActivitiConstants key) {
+        try {
+            if (execution.hasVariable(key.getName())) {
+                Object var = execution.getVariable(key.getName());
+                if (var instanceof String) {
+                    return (String)var;
+                } else if (var instanceof Collection) {
+                    Collection<String> col = (Collection<String>)var;
+                    Iterator<String> it = col.iterator();
+                    if (it.hasNext()) {
+                        return (String)it.next();
+                    }
+                }
+            }
+            return null;
+        } catch(Throwable e) {
+            LOG.warn(String.format("Can't get variable '%s", key), e);
+            return null;
+        }
+    }
 	
 	protected boolean isProvisioningEnabled(final DelegateExecution execution) {
 		boolean retVal = true;

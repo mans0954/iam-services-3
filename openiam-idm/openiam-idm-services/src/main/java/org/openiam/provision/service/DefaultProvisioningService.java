@@ -120,9 +120,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     @Qualifier("transactionManager")
     private PlatformTransactionManager platformTransactionManager;
 
-    @Autowired
-    private BuildUserPolicyMapHelper buildPolicyMapHelper;
-
     @Value("${org.openiam.debug.hidden.attributes}")
     private String hiddenAttributes;
 
@@ -413,7 +410,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     private ProvisionUserResponse deleteUserWithSkipManagedSysList(String managedSystemId, String principal, UserStatusEnum status,
             String requestorId, List<String> skipManagedSysList, IdmAuditLog auditLog) {
     	log.debug("----deleteUser called.------");
-
+        if (StringUtils.isEmpty(requestorId)) {
+            requestorId = systemUserId;
+        }
     	ProvisionUserResponse response = new ProvisionUserResponse(ResponseStatus.SUCCESS);
     	Map<String, Object> bindingMap = new HashMap<String, Object>();
 
