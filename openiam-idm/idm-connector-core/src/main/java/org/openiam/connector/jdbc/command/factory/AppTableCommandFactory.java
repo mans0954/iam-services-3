@@ -54,6 +54,7 @@ public class AppTableCommandFactory extends AbstractCommandFactory {
                 return deleteUserAppTableCommand;
             case RESUME:
                 return resumeAppTableCommand;
+            case RESET_PASSWORD:
             case SET_PASSWORD:
                 return setPasswordAppTableCommand;
             case SUSPEND:
