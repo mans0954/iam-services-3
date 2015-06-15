@@ -15,9 +15,7 @@ public class AppTableCommandFactory extends AbstractCommandFactory {
     @Autowired
     @Qualifier("addUserAppTableCommand")
     private ConnectorCommand addUserAppTableCommand;
-    @Autowired
-    @Qualifier("addGroupAppTableCommand")
-    private ConnectorCommand addGroupAppTableCommand;
+
     @Autowired
     @Qualifier("deleteUserAppTableCommand")
     private ConnectorCommand deleteUserAppTableCommand;
@@ -42,6 +40,21 @@ public class AppTableCommandFactory extends AbstractCommandFactory {
     @Autowired
     @Qualifier("testUserAppTableCommand")
     private ConnectorCommand testUserAppTableCommand;
+    @Autowired
+    @Qualifier("addGroupAppTableCommand")
+    private ConnectorCommand addGroupAppTableCommand;
+    @Autowired
+    @Qualifier("deleteGroupAppTableCommand")
+    private ConnectorCommand deleteGroupAppTableCommand;
+    @Autowired
+    @Qualifier("lookupGroupAppTableCommand")
+    private ConnectorCommand lookupGroupAppTableCommand;
+    @Autowired
+    @Qualifier("modifyGroupAppTableCommand")
+    private ConnectorCommand modifyGroupAppTableCommand;
+    @Autowired
+    @Qualifier("searchGroupAppTableCommand")
+    private ConnectorCommand searchGroupAppTableCommand;
 
     public ConnectorCommand getConnectorCommand(CommandType commandType, ExtensibleObjectType extensibleObjectType)
             throws ConnectorDataException {
@@ -71,7 +84,20 @@ public class AppTableCommandFactory extends AbstractCommandFactory {
                 throw new ConnectorDataException(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION, error);
             }
         } else if (ExtensibleObjectType.GROUP == extensibleObjectType) {
-            throw new ConnectorDataException(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION, error);
+            switch (commandType) {
+                case ADD:
+                    return addGroupAppTableCommand;
+                case DELETE:
+                    return deleteGroupAppTableCommand;
+                case LOOKUP:
+                    return lookupGroupAppTableCommand;
+                case SEARCH:
+                    return searchGroupAppTableCommand;
+                case MODIFY:
+                    return modifyGroupAppTableCommand;
+                default:
+                    throw new ConnectorDataException(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION, error);
+            }
         } else {
             throw new ConnectorDataException(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION, error);
         }
