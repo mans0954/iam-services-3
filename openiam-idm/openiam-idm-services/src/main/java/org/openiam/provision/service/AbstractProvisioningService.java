@@ -1783,7 +1783,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
 
     protected ResponseType resetPassword(String requestId, Login login,
                                          String password, ManagedSysDto mSys,
-                                         ManagedSystemObjectMatch matchObj, ExtensibleUser extensibleUser) {
+                                         ManagedSystemObjectMatch matchObj, ExtensibleUser extensibleUser, String operation) {
 
         PasswordRequest req = new PasswordRequest();
         req.setObjectIdentity(login.getLogin());
@@ -1798,40 +1798,13 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         if (matchObj != null) {
             req.setBaseDN(matchObj.getBaseDn());
         }
-        req.setOperation("RESET_PASSWORD");
+        req.setOperation(operation);
         req.setPassword(password);
 
         req.setScriptHandler(mSys.getPasswordHandler());
 
         log.debug("Reset password request will be sent for user login " + login.getLogin());
         return connectorAdapter.resetPasswordRequest(mSys, req);
-    }
-
-    protected ResponseType setPassword(String requestId, Login login, String prevDecPassword,
-                                       String newDecPasswordSync,
-                                       ManagedSysDto mSys,
-                                       ManagedSystemObjectMatch matchObj,
-                                       ExtensibleUser extensibleUser) {
-
-        PasswordRequest req = new PasswordRequest();
-        req.setObjectIdentity(login.getLogin());
-        req.setRequestID(requestId);
-        req.setTargetID(login.getManagedSysId());
-        req.setHostLoginId(mSys.getUserId());
-        req.setExtensibleObject(extensibleUser);
-        String passwordDecoded = managedSysDataService.getDecryptedPassword(mSys);
-
-        req.setHostLoginPassword(passwordDecoded);
-        req.setHostUrl(mSys.getHostUrl());
-        req.setBaseDN((matchObj != null) ? matchObj.getBaseDn() : null);
-        req.setOperation("SET_PASSWORD");
-        req.setPassword(newDecPasswordSync);
-        req.setScriptHandler(mSys.getPasswordHandler());
-        req.setCurrentPassword(prevDecPassword);
-        ResponseType respType = connectorAdapter.setPasswordRequest(mSys, req);
-
-        return respType;
-
     }
 
     protected ProvisionUserResponse validatePassword(Login primaryLogin, ProvisionUser user, String requestId) {

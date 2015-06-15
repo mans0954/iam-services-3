@@ -1558,7 +1558,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                             ResponseType resp = resetPassword(requestId,
                                     login, password, managedSysDto,
                                     objectMatchDozerConverter.convertToDTO(matchObj, false),
-                                    buildMngSysAttributes(login, "RESET_PASSWORD"));
+                                    buildMngSysAttributes(login, "RESET_PASSWORD"), "RESET_PASSWORD");
                             log.info("============== Connector Reset Password get : " + new Date());
                             if (resp != null && resp.getStatus() == StatusCodeType.SUCCESS) {
                                 if (enableOnPassReset(res)) {
@@ -1971,7 +1971,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                     passwordSync.getPassword(),
                                     managedSysDozerConverter.convertToDTO(mSys, false),
                                     objectMatchDozerConverter.convertToDTO(matchObj, false),
-                                    buildMngSysAttributes(login, "SET_PASSWORD"));
+                                    buildMngSysAttributes(login, "SET_PASSWORD"), "SET_PASSWORD");
 
                             boolean connectorSuccess = false;
                             log.info("============== Connector Set Password get : " + new Date());
@@ -2348,7 +2348,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         ResponseType resp = resetPassword(requestId, loginDTO,
                                 passwordSync.getPassword(), managedSysDozerConverter.convertToDTO(mSys, false),
                                 objectMatchDozerConverter.convertToDTO(matchObj, false),
-                                buildMngSysAttributes(loginDTO, "SYNC_PASSWORD"));
+                                buildMngSysAttributes(loginDTO, "SYNC_PASSWORD"), "SET_PASSWORD");
                         if (resp.getStatus() == StatusCodeType.SUCCESS) {
                             auditLog.succeed();
                             auditLog.setAuditDescription("Set password for resource: " + res.getName() + " for user: " + targetLoginEntity.getLogin());
