@@ -55,6 +55,9 @@ public class AppTableCommandFactory extends AbstractCommandFactory {
     @Autowired
     @Qualifier("searchGroupAppTableCommand")
     private ConnectorCommand searchGroupAppTableCommand;
+    @Autowired
+    @Qualifier("lookupAttributeNamesCommand")
+    private ConnectorCommand lookupAttributeNamesCommand;
 
     public ConnectorCommand getConnectorCommand(CommandType commandType, ExtensibleObjectType extensibleObjectType)
             throws ConnectorDataException {
@@ -80,6 +83,8 @@ public class AppTableCommandFactory extends AbstractCommandFactory {
                 return testUserAppTableCommand;
             case SEARCH:
                 return searchUserAppTableCommand;
+            case LOOKUP_ATTRIBUTE_NAME:
+                return lookupAttributeNamesCommand;
             default:
                 throw new ConnectorDataException(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION, error);
             }

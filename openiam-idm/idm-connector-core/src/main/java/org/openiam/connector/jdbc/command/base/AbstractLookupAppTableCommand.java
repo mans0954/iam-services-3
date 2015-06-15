@@ -27,7 +27,7 @@ public abstract class AbstractLookupAppTableCommand<ExtObject extends Extensible
         final List<AttributeMapEntity> attrMap = attributeMaps(configuration.getResourceId());
         try {
             // lookup users
-            objectValue = createUserSelectStatement(con, this.getTableName(configuration, "USER"), principalName,
+            objectValue = createUserSelectStatement(con, this.getTableName(configuration, this.getObjectType()), principalName,
                     configuration, attrMap, null);
             // Get linked objects
             if (objectValue != null)

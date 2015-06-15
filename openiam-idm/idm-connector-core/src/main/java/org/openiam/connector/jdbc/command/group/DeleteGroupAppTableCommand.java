@@ -15,7 +15,7 @@ public class DeleteGroupAppTableCommand extends AbstractDeleteAppTableCommand<Ex
     @Override
     protected AttributeMapEntity getAttribute(List<AttributeMapEntity> attrMap) throws ConnectorDataException {
         for (final AttributeMapEntity atr : attrMap) {
-            if (StringUtils.equalsIgnoreCase(atr.getMapForObjectType(), "principal")) {
+            if (StringUtils.equalsIgnoreCase(atr.getMapForObjectType(), "GROUP_PRINCIPAL")) {
                 return atr;
             }
         }

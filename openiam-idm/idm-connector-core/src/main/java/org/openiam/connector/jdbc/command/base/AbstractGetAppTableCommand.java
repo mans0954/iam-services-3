@@ -114,7 +114,9 @@ public abstract class AbstractGetAppTableCommand<ExtObject extends ExtensibleObj
             List<String> columnList = new ArrayList<String>();
             String objectNameId = "";
             for (AttributeMapEntity a : attrMap) {
-                if (a.getMapForObjectType().equalsIgnoreCase("GROUP_PRINCIPAL")) {
+                if (PolicyMapDataTypeOptions.MEMBER_OF.equals(a.getDataType())) {
+                    continue;
+                } else if (a.getMapForObjectType().equalsIgnoreCase("GROUP_PRINCIPAL")) {
                     objectNameId = a.getAttributeName();
                     columnList.add(objectNameId);
                 } else if (a.getMapForObjectType().equalsIgnoreCase(targetObjectType)) {
@@ -124,51 +126,62 @@ public abstract class AbstractGetAppTableCommand<ExtObject extends ExtensibleObj
             if (StringUtils.isEmpty(objectNameId))
                 return ea;
 
+            String membershipTable = null;
+            String membershipTableUserId = null;
+            String membershipTableGroupId = null;
+
             // get groups from membership table
             if ("GROUP".equalsIgnoreCase(targetObjectType) && "USER".equalsIgnoreCase(sourceObjectType)) {
-                String membershipTable = configuration.getUserGroupTableName();
-                String membershipTableUserId = configuration.getUserGroupTableNameUserId();
-                String membershipTableGroupId = configuration.getUserGroupTableNameGroupId();
-                if (CollectionUtils.isEmpty(attrMap)
-                        || StringUtils.isEmpty(membershipTable) || StringUtils.isEmpty(membershipTableGroupId)
-                        || StringUtils.isEmpty(membershipTableUserId))
-                    throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, "Attribute Map is null");
-
-
-                StringBuilder columnsForSQL = new StringBuilder();
-                for (int i = 0; i < columnList.size(); i++) {
-                    columnsForSQL.append("g." + columnList.get(i).trim());
-                    if (i < columnList.size() - 1) {
-                        columnsForSQL.append(',');
-                    }
-                }
-                PreparedStatement statement = null;
-                String SQL_SELECT_JOIN = "SELECT %s from %s as g LEFT JOIN %s as m on g.%s = m.%s WHERE m.%s = ?";
-                SQL_SELECT_JOIN = String.format(SQL_SELECT_JOIN, columnsForSQL, configuration.getGroupTableName(),
-                        membershipTable, objectNameId, membershipTableGroupId, membershipTableUserId);
-                statement = con.prepareStatement(SQL_SELECT_JOIN);
-                setStatement(statement, 1, parentIdDataType, parentIdValue);
-
-                ResultSet rs = statement.executeQuery();
-                ea = new ExtensibleAttribute();
-                ea.setName(targetObjectType);
-                ea.setValue(targetObjectType);
-                ea.setObjectType(targetObjectType);
-                BaseAttributeContainer bac = new BaseAttributeContainer();
-                bac.setAttributeList(new ArrayList<BaseAttribute>());
-                while (rs.next()) {
-                    BaseAttribute ba = new BaseAttribute(objectNameId, rs.getString(objectNameId));
-                    ba.setProperties(new ArrayList<BaseProperty>());
-                    for (String col : columnList) {
-                        BaseProperty bp = new BaseProperty();
-                        bp.setName(col);
-                        bp.setValue(rs.getString("g." + col));
-                        ba.getProperties().add(bp);
-                    }
-                    bac.getAttributeList().add(ba);
-                }
-                ea.setAttributeContainer(bac);
+                membershipTable = configuration.getUserGroupTableName();
+                membershipTableUserId = configuration.getUserGroupTableNameUserId();
+                membershipTableGroupId = configuration.getUserGroupTableNameGroupId();
             }
+            // get groups from membership table
+            if ("GROUP".equalsIgnoreCase(targetObjectType) && "GROUP".equalsIgnoreCase(sourceObjectType)) {
+                membershipTable = configuration.getGroupGroupTableName();
+                membershipTableUserId = configuration.getGroupGroupTableNameGroupId();
+                membershipTableGroupId = configuration.getGroupGroupTableNameGroupChildId();
+            }
+
+            if (CollectionUtils.isEmpty(attrMap)
+                    || StringUtils.isEmpty(membershipTable) || StringUtils.isEmpty(membershipTableGroupId)
+                    || StringUtils.isEmpty(membershipTableUserId))
+                throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, "Attribute Map is null");
+
+
+            StringBuilder columnsForSQL = new StringBuilder();
+            for (int i = 0; i < columnList.size(); i++) {
+                columnsForSQL.append("g." + columnList.get(i).trim());
+                if (i < columnList.size() - 1) {
+                    columnsForSQL.append(',');
+                }
+            }
+            PreparedStatement statement = null;
+            String SQL_SELECT_JOIN = "SELECT %s from %s as g LEFT JOIN %s as m on g.%s = m.%s WHERE m.%s = ?";
+            SQL_SELECT_JOIN = String.format(SQL_SELECT_JOIN, columnsForSQL, configuration.getGroupTableName(),
+                    membershipTable, objectNameId, membershipTableGroupId, membershipTableUserId);
+            statement = con.prepareStatement(SQL_SELECT_JOIN);
+            setStatement(statement, 1, parentIdDataType, parentIdValue);
+
+            ResultSet rs = statement.executeQuery();
+            ea = new ExtensibleAttribute();
+            ea.setName(targetObjectType);
+            ea.setValue(targetObjectType);
+            ea.setObjectType(targetObjectType);
+            BaseAttributeContainer bac = new BaseAttributeContainer();
+            bac.setAttributeList(new ArrayList<BaseAttribute>());
+            while (rs.next()) {
+                BaseAttribute ba = new BaseAttribute(objectNameId, rs.getString(objectNameId));
+                ba.setProperties(new ArrayList<BaseProperty>());
+                for (String col : columnList) {
+                    BaseProperty bp = new BaseProperty();
+                    bp.setName(col);
+                    bp.setValue(rs.getString("g." + col));
+                    ba.getProperties().add(bp);
+                }
+                bac.getAttributeList().add(ba);
+            }
+            ea.setAttributeContainer(bac);
         }
 
         return ea;
