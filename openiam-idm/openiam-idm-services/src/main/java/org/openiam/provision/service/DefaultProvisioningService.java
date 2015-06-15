@@ -21,27 +21,20 @@
  */
 package org.openiam.provision.service;
 
-import groovy.lang.MissingPropertyException;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.AttributeOperationEnum;
-import org.openiam.base.BaseAttributeContainer;
 import org.openiam.base.BaseObject;
 import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.request.LookupRequest;
-import org.openiam.connector.type.request.SuspendResumeRequest;
 import org.openiam.connector.type.response.*;
-import org.openiam.exception.EsbErrorToken;
 import org.openiam.exception.ObjectNotFoundException;
-import org.openiam.exception.ScriptEngineException;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.searchbeans.RoleSearchBean;
@@ -57,7 +50,6 @@ import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
-import org.openiam.idm.srvc.mngsys.domain.ProvisionConnectorEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.org.dto.Organization;
@@ -105,7 +97,6 @@ import javax.jws.WebParam;
 import javax.jws.WebService;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -128,6 +119,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     @Autowired
     @Qualifier("transactionManager")
     private PlatformTransactionManager platformTransactionManager;
+
+    @Autowired
+    private BuildUserPolicyMapHelper buildPolicyMapHelper;
 
     @Value("${org.openiam.debug.hidden.attributes}")
     private String hiddenAttributes;
@@ -852,7 +846,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     final ManagedSysDto managedSys = managedSysService.getManagedSys(managedSysId);
                     final Login login = loginDozerConverter.convertToDTO(userLogin, false);
                     boolean isSuspend = AccountLockEnum.LOCKED.equals(operation) || AccountLockEnum.LOCKED_ADMIN.equals(operation);
-                    ResponseType responsetype = suspend(requestorId, login, managedSys, buildMngSysAttributes(login, isSuspend ? "SUSPEND" : "RESUME"), isSuspend);
+                    ResponseType responsetype = suspend(requestorId, login, managedSys, buildPolicyMapHelper.buildMngSysAttributes(login, isSuspend ? "SUSPEND" : "RESUME"), isSuspend);
                     if (responsetype == null) {
                         log.info("Response object from set password is null");
                         response.setStatus(ResponseStatus.FAILURE);
@@ -887,7 +881,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         if (managedSys != null) {
                             boolean isSuspend = AccountLockEnum.LOCKED.equals(operation) || AccountLockEnum.LOCKED_ADMIN.equals(operation);
                             ResponseType responsetype = suspend(requestorId, primLogin, managedSys,
-                                    buildMngSysAttributes(primLogin, isSuspend ? "SUSPEND" : "RESUME"), isSuspend);
+                                    buildPolicyMapHelper.buildMngSysAttributes(primLogin, isSuspend ? "SUSPEND" : "RESUME"), isSuspend);
                             if (responsetype.getStatus() == null) {
                                 log.info("Response status is null");
                                 response.setStatus(ResponseStatus.FAILURE);
@@ -1558,7 +1552,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                             ResponseType resp = resetPassword(requestId,
                                     login, password, managedSysDto,
                                     objectMatchDozerConverter.convertToDTO(matchObj, false),
-                                    buildMngSysAttributes(login, "RESET_PASSWORD"), "RESET_PASSWORD");
+                                    buildPolicyMapHelper.buildMngSysAttributes(login, "RESET_PASSWORD"), "RESET_PASSWORD");
                             log.info("============== Connector Reset Password get : " + new Date());
                             if (resp != null && resp.getStatus() == StatusCodeType.SUCCESS) {
                                 if (enableOnPassReset(res)) {
@@ -1568,7 +1562,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                     lg.setPasswordChangeCount(0);
                                     lg.setStatus(LoginStatusEnum.ACTIVE);
 
-                                    resp = suspend(requestId, login, managedSysDto, buildMngSysAttributes(login, "RESUME"), false);
+                                    resp = suspend(requestId, login, managedSysDto, buildPolicyMapHelper.buildMngSysAttributes(login, "RESUME"), false);
 
                                     if (StatusCodeType.SUCCESS.equals(resp.getStatus())) {
                                         lg.setProvStatus(ProvLoginStatusEnum.ENABLED);
@@ -1664,36 +1658,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         }
         return response;
 
-    }
-
-    private ExtensibleUser buildMngSysAttributes(Login login, String operation) {
-        String userId = login.getUserId();
-        String managedSysId = login.getManagedSysId();
-
-        User usr = userDozerConverter.convertToDTO(userMgr.getUser(userId), true);
-        if (usr == null) {
-            return null;
-        }
-
-        List<AttributeMapEntity> attrMapEntities = managedSystemService.getAttributeMapsByManagedSysId(managedSysId);
-        List<ExtensibleAttribute> requestedExtensibleAttributes = new ArrayList<ExtensibleAttribute>();
-        for (AttributeMapEntity ame : attrMapEntities) {
-            if ("USER".equalsIgnoreCase(ame.getMapForObjectType()) && "ACTIVE".equalsIgnoreCase(ame.getStatus())) {
-                requestedExtensibleAttributes.add(new ExtensibleAttribute(ame.getAttributeName(), null));
-            }
-        }
-
-        List<ExtensibleAttribute> mngSysAttrs = new ArrayList<ExtensibleAttribute>();
-        LookupUserResponse lookupUserResponse = getTargetSystemUser(login.getLogin(), managedSysId, requestedExtensibleAttributes);
-        boolean targetSystemUserExists = false;
-        if (ResponseStatus.SUCCESS.equals(lookupUserResponse.getStatus())) {
-            targetSystemUserExists = true;
-            mngSysAttrs = lookupUserResponse.getAttrList();
-        }
-
-        ProvisionUser pUser = new ProvisionUser(usr);
-
-        return buildMngSysAttributesForIDMUser(pUser, targetSystemUserExists, mngSysAttrs, managedSysId, operation);
     }
 
     @Override
@@ -1971,7 +1935,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                     passwordSync.getPassword(),
                                     managedSysDozerConverter.convertToDTO(mSys, false),
                                     objectMatchDozerConverter.convertToDTO(matchObj, false),
-                                    buildMngSysAttributes(login, "SET_PASSWORD"), "SET_PASSWORD");
+                                    buildPolicyMapHelper.buildMngSysAttributes(login, "SET_PASSWORD"), "SET_PASSWORD");
 
                             boolean connectorSuccess = false;
                             log.info("============== Connector Set Password get : " + new Date());
@@ -2348,7 +2312,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         ResponseType resp = resetPassword(requestId, loginDTO,
                                 passwordSync.getPassword(), managedSysDozerConverter.convertToDTO(mSys, false),
                                 objectMatchDozerConverter.convertToDTO(matchObj, false),
-                                buildMngSysAttributes(loginDTO, "SYNC_PASSWORD"), "SET_PASSWORD");
+                                buildPolicyMapHelper.buildMngSysAttributes(loginDTO, "SYNC_PASSWORD"), "SET_PASSWORD");
                         if (resp.getStatus() == StatusCodeType.SUCCESS) {
                             auditLog.succeed();
                             auditLog.setAuditDescription("Set password for resource: " + res.getName() + " for user: " + targetLoginEntity.getLogin());
@@ -3130,7 +3094,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                             // suspend
                             log.debug("preparing suspendRequest object");
 
-                            resp = suspend(requestId, login, mSys, buildMngSysAttributes(login, "SUSPEND"), operation);
+                            resp = suspend(requestId, login, mSys, buildPolicyMapHelper.buildMngSysAttributes(login, "SUSPEND"), operation);
 
                             if (StatusCodeType.SUCCESS.equals(resp.getStatus())) {
                                 lg.setProvStatus(ProvLoginStatusEnum.DISABLED);
@@ -3155,7 +3119,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                             lg.setPasswordChangeCount(0);
                             lg.setStatus(LoginStatusEnum.ACTIVE);
 
-                            resp = suspend(requestId, login, mSys, buildMngSysAttributes(login, "RESUME"), operation);
+                            resp = suspend(requestId, login, mSys, buildPolicyMapHelper.buildMngSysAttributes(login, "RESUME"), operation);
 
                             if (StatusCodeType.SUCCESS.equals(resp.getStatus())) {
                                 lg.setProvStatus(ProvLoginStatusEnum.ENABLED);
