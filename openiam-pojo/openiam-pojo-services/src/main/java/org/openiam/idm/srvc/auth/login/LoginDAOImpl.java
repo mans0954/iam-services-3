@@ -182,7 +182,7 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements Lo
         String userQry = " UPDATE org.openiam.idm.srvc.user.domain.UserEntity u  "
                 + " SET u.secondaryStatus = null "
                 + " where u.secondaryStatus = 'LOCKED' and "
-                + "       u.userId in ("
+                + "       u.id in ("
                 + " 	select l.userId from org.openiam.idm.srvc.auth.domain.LoginEntity as l  "
                 + "       where l.isLocked = :status and "
                 + "             l.lastAuthAttempt <= :policyTime" + "   )";

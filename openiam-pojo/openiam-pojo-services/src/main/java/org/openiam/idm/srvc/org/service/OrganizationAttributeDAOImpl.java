@@ -40,4 +40,12 @@ public class OrganizationAttributeDAOImpl extends BaseDaoImpl<OrganizationAttrib
 		query.setParameter("organizationId", organizationId);
 		query.executeUpdate();
 	}
+
+    @Override
+    public List<OrganizationAttributeEntity> findOrgAttributes(String organizationId) {
+        Criteria criteria = getCriteria();
+        criteria.createAlias("organization", "organization")
+                .add(Restrictions.eq("organization.id", organizationId));
+        return (List<OrganizationAttributeEntity>) criteria.list();
+    }
 }

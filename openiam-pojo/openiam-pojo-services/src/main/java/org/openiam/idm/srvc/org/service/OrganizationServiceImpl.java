@@ -34,6 +34,7 @@ import org.openiam.idm.srvc.org.domain.OrgToOrgMembershipXrefEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
+import org.openiam.idm.srvc.org.dto.OrganizationAttribute;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
@@ -745,7 +746,6 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
             }
 
             Map<String, Object> bindingMap = new HashMap<String, Object>();
-
             if (!skipPrePostProcessors) {
                 OrganizationServicePrePostProcessor preProcessor = getPreProcessScript();
                 if (preProcessor != null &&  preProcessor.delete(orgId, bindingMap, idmAuditLog) != OrganizationServicePrePostProcessor.SUCCESS) {
@@ -1266,5 +1266,4 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
 			orgDao.update(organization);
 		}
 	}
-
 }
