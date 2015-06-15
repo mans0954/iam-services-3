@@ -95,7 +95,7 @@ public class MetadataElementEntity extends AbstractKeyNameEntity {
     @Internationalized
     private Set<MetadataValidValueEntity> validValues;
     
-    @Column(name="STATIC_DEFAULT_VALUE", length=4096)
+    @Column(name="STATIC_DEFAULT_VALUE", length=4000)
     private String staticDefaultValue;
     
     //@OneToMany(cascade={}, fetch = FetchType.LAZY)

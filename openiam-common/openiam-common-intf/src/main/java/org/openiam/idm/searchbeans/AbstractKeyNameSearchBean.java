@@ -13,7 +13,7 @@ import org.openiam.base.KeyNameDTO;
         "name"
 })
 public abstract class AbstractKeyNameSearchBean<T extends KeyNameDTO, KeyType extends Serializable> extends AbstractSearchBean<T,KeyType> {
-	private String name;
+	protected String name;
 	
 	public String getName() {
 		return name;

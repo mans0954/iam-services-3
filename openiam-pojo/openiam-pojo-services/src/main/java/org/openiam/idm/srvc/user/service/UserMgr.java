@@ -266,10 +266,7 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
         if (emailSet == null || emailSet.isEmpty())
             return;
 
-        Iterator<EmailAddressEntity> it = emailSet.iterator();
-
-        while (it.hasNext()) {
-            EmailAddressEntity emailAdr = it.next();
+        for (EmailAddressEntity emailAdr : emailSet) {
             if (emailAdr.getParent() == null) {
                 emailAdr.setParent(userDao.findById(user.getId()));
             }
@@ -711,83 +708,25 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
                 entityList.add(entity);
             }
         } else {
-            List<UserEntity> finalizedIdList = userDao.findByIds(getUserIds(searchBean), searchBean);
-            sortUsersByOrg(finalizedIdList, searchBean.getSortBy());
-            if (from > -1 && size > -1) {
-                if (finalizedIdList != null && finalizedIdList.size() >= from) {
-                    int to = from + size;
-                    if (to > finalizedIdList.size()) {
-                        to = finalizedIdList.size();
-                    }
-                    finalizedIdList = new ArrayList<UserEntity>(finalizedIdList.subList(from, to));
-                }
-            }
-            entityList = finalizedIdList;
+            entityList = userDao.findByIds(getUserIds(searchBean), searchBean, from, size);
         }
 
-        if(searchBean.getInitDefaulLoginFlag()){
-            for(UserEntity usr: entityList){
-                usr.setDefaultLogin(sysConfiguration.getDefaultManagedSysId());
-            }
+        if(CollectionUtils.isNotEmpty(entityList)
+                && searchBean.getInitDefaulLoginFlag()){
+            setDefaultLogin(entityList);
         }
 
         return entityList;
     }
 
-    private void sortUsersByOrg(List<UserEntity> userList, List<SortParam> sortParamList) {
-        if(CollectionUtils.isNotEmpty(userList) && CollectionUtils.isNotEmpty(sortParamList)) {
-            for (SortParam sort : sortParamList) {
-                final OrderConstants orderDir = (sort.getOrderBy() == null) ? OrderConstants.ASC : sort.getOrderBy();
-
-                if ("organization".equals(sort.getSortBy())
-                        || "department".equals(sort.getSortBy())) {
-
-                    final String typeId = ("organization".equals(sort.getSortBy()))?
-                    		getString("org.openiam.organization.type.id")	: 
-                    		getString("org.openiam.department.type.id");
-                    Collections.sort(userList, new Comparator<UserEntity>() {
-                        @Override
-                        public int compare(UserEntity u1, UserEntity u2) {
-                            int result = 0;
-                            OrganizationEntity org1 = this.getUserOrg(u1, typeId);
-                            OrganizationEntity org2 = this.getUserOrg(u2, typeId);
-                            if(org1==null && org2!=null)
-                                result = -1;
-                            else if(org1!=null && org2==null)
-                                result = 1;
-                            else if(org1==null && org2==null)
-                                result = 0;
-                            else
-                                result = org1.getName().compareTo(org2.getName());
-
-                            return orderDir == OrderConstants.ASC ? result: result*(-1);
-                        }
-
-                        private OrganizationEntity getUserOrg(UserEntity u, String orgTypeId){
-                            OrganizationEntity org = null;
-                            if(CollectionUtils.isNotEmpty(u.getAffiliations())){
-                                List<OrganizationEntity>  userOrgs = new ArrayList<OrganizationEntity>();
-                                for(UserToOrganizationMembershipXrefEntity xref : u.getAffiliations()){
-                                    if(xref.getEntity().getOrganizationType().getId().equals(orgTypeId)){
-                                        userOrgs.add(xref.getEntity());
-                                    }
-                                }
-                                if(CollectionUtils.isNotEmpty(userOrgs)) {
-                                    Collections.sort(userOrgs, new Comparator<OrganizationEntity>() {
-                                        @Override
-                                        public int compare(OrganizationEntity o1, OrganizationEntity o2) {
-                                            return o1.getName().compareTo(o2.getName());
-                                        }
-                                    });
-                                    org = userOrgs.get(0);
-                                }
-                            }
-                            return org;
-                        }
-                    });
-
-                    break;
-                }
+    private void setDefaultLogin(List<UserEntity> entityList) {
+        List<String> userIds = new ArrayList<>();
+        userIds.add(null);
+        for(UserEntity usr: entityList){
+            userIds.set(0, usr.getId());
+            List<LoginEntity> entities = loginDao.findByUserIds(userIds, sysConfiguration.getDefaultManagedSysId());
+            if (CollectionUtils.isNotEmpty(entities)) {
+                usr.setDefaultLogin(entities.get(0).getLogin());
             }
         }
     }
@@ -795,7 +734,7 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
     @Override
     @Transactional(readOnly = true)
     public int count(UserSearchBean searchBean) throws BasicDataServiceException {
-        return userDao.findByIds(getUserIds(searchBean)).size();
+        return userDao.countByIds(getUserIds(searchBean));
     }
 
     @Override

@@ -26,6 +26,7 @@ import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.springframework.beans.factory.annotation.Value;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.springframework.stereotype.Repository;
 
 @Repository("loginDAO")
@@ -182,7 +183,7 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements Lo
         String userQry = " UPDATE org.openiam.idm.srvc.user.domain.UserEntity u  "
                 + " SET u.secondaryStatus = null "
                 + " where u.secondaryStatus = 'LOCKED' and "
-                + "       u.userId in ("
+                + "       u.id in ("
                 + " 	select l.userId from org.openiam.idm.srvc.auth.domain.LoginEntity as l  "
                 + "       where l.isLocked = :status and "
                 + "             l.lastAuthAttempt <= :policyTime" + "   )";

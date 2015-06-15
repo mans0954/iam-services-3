@@ -93,4 +93,8 @@ public interface UserDAO extends BaseDao<UserEntity, String> {
     public  List<UserEntity> findByIds(List<String> idCollection, UserSearchBean searchBean);
     
     public List<UserEntity> getUsersForMSys(final String mSysId);
+
+    public  List<UserEntity> findByIds(List<String> idCollection, UserSearchBean searchBean, int from, int size);
+
+    public  int countByIds(List<String> idCollection);
 }

@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.openiam.connector.jdbc.command.base.AbstractAppTableCommand;
 import org.openiam.connector.jdbc.command.data.AppTableConfiguration;
 import org.openiam.connector.type.ConnectorDataException;
@@ -31,32 +32,26 @@ public class ResumeUserAppTableCommand extends AbstractAppTableCommand<SuspendRe
 
         AppTableConfiguration configuration = this.getConfiguration(resumeRequest.getTargetID());
 
-        final String principalName = resumeRequest.getObjectIdentity();
+        if (StringUtils.isBlank(configuration.getUserStatus()) ||
+                StringUtils.isBlank(configuration.getActiveUserStatus())
+                || StringUtils.isBlank(configuration.getInactiveUserStatus())) {
+            String message = "Status synchronization is turned off! Need to add attributes: 'INCLUDE_IN_STATUS_SYNC' = 'Y' " +
+                    "USER_STATUS_FIELD, USER_STATUS_ACTIVE,USER_STATUS_INACTIVE ";
+            log.warn(message);
+            return response;
+        }
+
         Connection con = this.getConnection(configuration.getManagedSys());
         /* targetID - */
-        final String targetID = resumeRequest.getTargetID();
-
-        List<LoginEntity> loginList = loginManager.getLoginDetailsByManagedSys(principalName, targetID);
-        if (CollectionUtils.isEmpty(loginList))
-            throw new ConnectorDataException(ErrorCode.INVALID_IDENTIFIER, "Principal not found");
-
         PreparedStatement statement = null;
         try {
-            final LoginEntity login = loginList.get(0);
-            final String encPassword = login.getPassword();
-            final String decPassword = loginManager.decryptPassword(login.getUserId(), encPassword);
-            statement = createSetPasswordStatement(con, configuration.getResourceId(),
-                    this.getTableName(configuration, this.getObjectType()), principalName, decPassword);
-
+            statement = createChangeUserControlParamsStatement(con, configuration,
+                    this.getTableName(configuration, this.getObjectType()), resumeRequest.getObjectIdentity(), configuration.getActiveUserStatus(), false);
             statement.executeUpdate();
-
             return response;
         } catch (SQLException se) {
             log.error(se.getMessage(), se);
             throw new ConnectorDataException(ErrorCode.SQL_ERROR, se.getMessage());
-        } catch (EncryptionException ee) {
-            log.error(ee.getMessage(), ee);
-            throw new ConnectorDataException(ErrorCode.OTHER_ERROR, ee.getMessage());
         } catch (Throwable e) {
             log.error(e.getMessage(), e);
             throw new ConnectorDataException(ErrorCode.OTHER_ERROR, e.getMessage());

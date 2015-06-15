@@ -30,92 +30,74 @@ import org.springframework.transaction.annotation.Transactional;
 @Service("provisionConnectorWebService")
 @WebService(endpointInterface = "org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService", targetNamespace = "urn:idm.openiam.org/srvc/mngsys/ws", portName = "ConnectorWebServicePort", serviceName = "ConnectorWebService")
 public class ProvisionConnectorWebServiceImpl implements
-		ProvisionConnectorWebService {
+        ProvisionConnectorWebService {
 
-	@Autowired
-	private ProvisionConnectorService connectorService;
-	@Autowired
-	private ProvisionConnectorConverter provisionConnectorConverter;
-	@Autowired
-	private MetaDataTypeDozerConverter metaDataTypeDozerConverter;
-	@Autowired
-	private ProvisionConnectorSearchBeanConverter provisionConnectorSearchBeanConverter;
+    @Autowired
+    private ProvisionConnectorService connectorService;
 
-	private static final Log log = LogFactory
-                                     .getLog(ProvisionConnectorWebServiceImpl.class);   
-	@Override
-	public List<ProvisionConnectorDto> getProvisionConnectors(
-			@WebParam(name = "searchBean", targetNamespace = "") ProvisionConnectorSearchBean searchBean,
-			@WebParam(name = "size", targetNamespace = "") Integer size,
-			@WebParam(name = "from", targetNamespace = "") Integer from) {
-		List<ProvisionConnectorDto> provisionConnectors = new LinkedList<ProvisionConnectorDto>();
-		ProvisionConnectorEntity connectorEntity = provisionConnectorSearchBeanConverter
-				.convert(searchBean);
-		List<ProvisionConnectorEntity> connectors = connectorService
-				.getProvisionConnectorsByExample(connectorEntity, size, from);
-		if (connectors != null) {
-			provisionConnectors = provisionConnectorConverter.convertToDTOList(
-					connectors, false);
-		}
-		return provisionConnectors;
-	}
+    @Autowired
+    private MetaDataTypeDozerConverter metaDataTypeDozerConverter;
 
-	@Override
-	public Integer getProvisionConnectorsCount(
-			@WebParam(name = "searchBean", targetNamespace = "") ProvisionConnectorSearchBean searchBean) {
-		ProvisionConnectorEntity connectorEntity = provisionConnectorSearchBeanConverter
-				.convert(searchBean);
-		return connectorService
-				.getProvisionConnectorsCountByExample(connectorEntity);
-	}
-
-	@Override
-	@SuppressWarnings(value = "unchecked")
-	public List<MetadataType> getProvisionConnectorsTypes() {
-		List<MetadataTypeEntity> metadataTypes = connectorService
-				.getProvisionConnectorsMetadataTypes();
-		return metadataTypes != null ? metaDataTypeDozerConverter
-				.convertToDTOList(metadataTypes, false)
-				: Collections.EMPTY_LIST;
-	}
-
-	@Override
-	public void addProvisionConnector(
-			@WebParam(name = "con", targetNamespace = "") ProvisionConnectorDto con) {
-		ProvisionConnectorEntity connectorEntity = provisionConnectorConverter
-				.convertToEntity(con, true);
-		connectorService.addProvisionConnector(connectorEntity);
-	}
-
-	@Override
-	public void updateProvisionConnector(
-			@WebParam(name = "con", targetNamespace = "") ProvisionConnectorDto con) {
-		ProvisionConnectorEntity connectorEntity = provisionConnectorConverter
-				.convertToEntity(con, true);
-		connectorService.updateProvisionConnector(connectorEntity);
-	}
-
-	@Override
-	public Response removeProvisionConnector(
-			@WebParam(name = "conId", targetNamespace = "") String conId) {
-		final org.openiam.base.ws.Response response = new Response(ResponseStatus.SUCCESS);
-		try{
-			connectorService.removeProvisionConnectorById(conId);
-			
-		} catch (Throwable e) {
-			log.error("Cannot delete connector, please delete dependencies first.", e);
-			response.setErrorText(e.getMessage());
-			response.setStatus(ResponseStatus.FAILURE);
-		}
-    	return response;
+    private static final Log log = LogFactory
+            .getLog(ProvisionConnectorWebServiceImpl.class);
+    @Override
+    public List<ProvisionConnectorDto> getProvisionConnectors(
+            @WebParam(name = "searchBean", targetNamespace = "") ProvisionConnectorSearchBean searchBean,
+            @WebParam(name = "size", targetNamespace = "") Integer size,
+            @WebParam(name = "from", targetNamespace = "") Integer from) {
+        return connectorService
+                .getProvisionConnectorsByExample(searchBean, size, from);
     }
 
-	@Override
+    @Override
+    public Integer getProvisionConnectorsCount(
+            @WebParam(name = "searchBean", targetNamespace = "") ProvisionConnectorSearchBean searchBean) {
+        return connectorService
+                .getProvisionConnectorsCountByExample(searchBean);
+    }
+
+    @Override
+    @SuppressWarnings(value = "unchecked")
+    public List<MetadataType> getProvisionConnectorsTypes() {
+        List<MetadataTypeEntity> metadataTypes = connectorService
+                .getProvisionConnectorsMetadataTypes();
+        return metadataTypes != null ? metaDataTypeDozerConverter
+                .convertToDTOList(metadataTypes, false)
+                : Collections.EMPTY_LIST;
+    }
+
+    @Override
+    public void addProvisionConnector(
+            @WebParam(name = "con", targetNamespace = "") ProvisionConnectorDto con) {
+        connectorService.addProvisionConnector(con);
+    }
+
+    @Override
+    public void updateProvisionConnector(
+            @WebParam(name = "con", targetNamespace = "") ProvisionConnectorDto con) {
+        connectorService.updateProvisionConnector(con);
+    }
+
+    @Override
+    public Response removeProvisionConnector(
+            @WebParam(name = "conId", targetNamespace = "") String conId) {
+        final org.openiam.base.ws.Response response = new Response(ResponseStatus.SUCCESS);
+        try{
+            connectorService.removeProvisionConnectorById(conId);
+
+        } catch (Throwable e) {
+            log.error("Cannot delete connector, please delete dependencies first.", e);
+            response.setErrorText(e.getMessage());
+            response.setStatus(ResponseStatus.FAILURE);
+        }
+        return response;
+    }
+
+    @Override
     @Transactional(readOnly = true)
-	public ProvisionConnectorDto getProvisionConnector(
-			@WebParam(name = "conId", targetNamespace = "") String conId) {
-		ProvisionConnectorEntity connectorEntity = connectorService
-				.getProvisionConnectorsById(conId);
-		return provisionConnectorConverter.convertToDTO(connectorEntity, true);
-	}
+    public ProvisionConnectorDto getProvisionConnector(
+            @WebParam(name = "conId", targetNamespace = "") String conId) {
+        return connectorService
+                .getProvisionConnectorsById(conId);
+    }
 }
