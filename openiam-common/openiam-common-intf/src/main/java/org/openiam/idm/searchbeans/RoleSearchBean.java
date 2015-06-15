@@ -18,6 +18,7 @@ import java.util.Set;
 @XmlType(name = "RoleSearchBean", propOrder = {
         "keySet",
         "isRootsOnly",
+        "description",
         "managedSysId",
         "attributes",
         "type",
@@ -32,6 +33,15 @@ public class RoleSearchBean extends EntitlementsSearchBean<Role, String> impleme
     private String type;
     private List<Tuple<String,String>> attributes;
 	private String adminResourceId;
+    private String description;
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
 	public boolean getIsRootsOnly() {
 		return isRootsOnly;

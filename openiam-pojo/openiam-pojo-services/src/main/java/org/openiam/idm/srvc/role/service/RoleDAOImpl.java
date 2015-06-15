@@ -166,6 +166,28 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
 				if(entity.getAdminResource() != null && StringUtils.isNotBlank(entity.getAdminResource().getId())) {
 					criteria.add(Restrictions.eq("adminResource.id", entity.getAdminResource().getId()));
 				}
+
+                if (StringUtils.isNotEmpty(entity.getDescription())) {
+                    String description = entity.getDescription();
+                    MatchMode descMatchMode = null;
+                    if (StringUtils.indexOf(description, "*") == 0) {
+                        descMatchMode = MatchMode.END;
+                        description = description.substring(1);
+                    }
+                    if (StringUtils.isNotBlank(description) && StringUtils.indexOf(description, "*") == description.length() - 1) {
+                        description = description.substring(0, description.length() - 1);
+                        descMatchMode = (descMatchMode == MatchMode.END) ? MatchMode.ANYWHERE : MatchMode.START;
+                    }
+
+                    if (StringUtils.isNotBlank(description)) {
+                        if (descMatchMode != null) {
+                            criteria.add(Restrictions.ilike("description", description, descMatchMode));
+                        } else {
+                            criteria.add(Restrictions.eq("description", description));
+                        }
+                    }
+                }
+
 			}
 		}
 		return criteria;
