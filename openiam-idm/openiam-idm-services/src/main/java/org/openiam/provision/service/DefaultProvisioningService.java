@@ -747,7 +747,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     			}
     		} else {
     			pUser.setStatus(status);
-    			pUser.setSecondaryStatus(UserStatusEnum.INACTIVE);
+    			pUser.setSecondaryStatus(null);
     			pUser.setLastUpdatedBy(requestorId);
     			pUser.setLastUpdate(new Date());
     			pUser.setNotProvisioninResourcesIds(processedResources);
@@ -2335,9 +2335,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 passwordSync.isPreventChangeCountIncrement());
 
                         // update the target system
-
-                        final ProvisionConnectorEntity connector = connectorService.getProvisionConnectorsById(mSys
-                                .getConnectorId());
 
                         ManagedSystemObjectMatchEntity matchObj = null;
                         final List<ManagedSystemObjectMatchEntity> matcheList = managedSystemService.managedSysObjectParam(
