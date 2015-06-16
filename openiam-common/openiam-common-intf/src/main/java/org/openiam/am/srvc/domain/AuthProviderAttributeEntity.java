@@ -23,7 +23,7 @@ public class AuthProviderAttributeEntity implements Serializable {
     private String providerId;
     @Column(name="AUTH_ATTRIBUTE_ID", length = 100, nullable = false)
     private String attributeId;
-    @Column(name="VALUE", length = 4096, nullable = false)
+    @Column(name="VALUE", length = 4000, nullable = false)
     private String value;
     @Column(name="DATA_TYPE")
     @Enumerated(EnumType.STRING)

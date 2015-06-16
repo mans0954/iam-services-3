@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import java.util.Map;
 
 public abstract class AbstractBaseService {
+
     @Autowired
     protected AuditLogService auditLogService;
 

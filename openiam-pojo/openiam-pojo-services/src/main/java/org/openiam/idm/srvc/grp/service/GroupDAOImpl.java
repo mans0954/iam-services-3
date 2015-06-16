@@ -20,10 +20,7 @@ import org.openiam.idm.srvc.searchbean.converter.GroupSearchBeanConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static org.hibernate.criterion.Projections.rowCount;
 
@@ -47,7 +44,22 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
             criteria = this.getExampleCriteria(exampleEnity);
 
             if(groupSearchBean.hasMultipleKeys()) {
-                criteria.add(Restrictions.in(getPKfieldName(), groupSearchBean.getKeys()));
+                List<String> keys = new LinkedList<>(groupSearchBean.getKeys());
+                final int maxListSize = 1000;
+                if(keys.size() > maxListSize) {
+                    Disjunction disjunction = Restrictions.disjunction();
+                    int count = 0;
+                    while(count <= keys.size()) {
+                        // Forced to generate sqlRestriction, because most DBs support only limited amount of parameters
+                        int upperRange = Math.min(count+maxListSize, keys.size()) - 1;
+                        final String sql = criteria.getAlias() + "_.GRP_ID in ('" + StringUtils.join(keys.subList(count, upperRange), "','") + "')";
+                        disjunction.add(Restrictions.sqlRestriction(sql));
+                        count += maxListSize;
+                    }
+                    criteria.add(disjunction);
+                } else {
+                    criteria.add(Restrictions.in(getPKfieldName(), groupSearchBean.getKeys()));
+                }
             }else if(StringUtils.isNotBlank(groupSearchBean.getKey())) {
                 criteria.add(Restrictions.eq(getPKfieldName(), groupSearchBean.getKey()));
             }
@@ -95,6 +107,9 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
 
             if(StringUtils.isNotBlank(groupSearchBean.getType())){
                 criteria.add(Restrictions.eq("type.id", groupSearchBean.getType()));
+            }
+            if(StringUtils.isNotBlank(groupSearchBean.getRisk())){
+                criteria.add(Restrictions.eq("risk.id", groupSearchBean.getRisk()));
             }
 			if(StringUtils.isNotBlank(groupSearchBean.getAdminResourceId())) {
 				criteria.add(Restrictions.eq("adminResource.id", groupSearchBean.getAdminResourceId()));

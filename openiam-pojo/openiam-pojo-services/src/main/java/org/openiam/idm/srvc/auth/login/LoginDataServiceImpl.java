@@ -217,7 +217,7 @@ public class LoginDataServiceImpl implements LoginDataService {
         	if(searchBean.isUseLucene()) {
         		retVal = loginSearchDAO.find(from, size, null, searchBean);
         	} else {
-        		retVal = loginDao.getByExample(searchBean, from, size);
+        		retVal = loginDao.getByExampleNoLocalize(searchBean, from, size);
         	}
         }
         return retVal;

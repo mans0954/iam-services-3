@@ -32,6 +32,7 @@ import org.openiam.idm.srvc.org.domain.Org2OrgXrefEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
+import org.openiam.idm.srvc.org.dto.OrganizationAttribute;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.idm.srvc.searchbean.converter.LocationSearchBeanConverter;
@@ -756,7 +757,6 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
             }
 
             Map<String, Object> bindingMap = new HashMap<String, Object>();
-
             if (!skipPrePostProcessors) {
                 OrganizationServicePrePostProcessor preProcessor = getPreProcessScript();
                 if (preProcessor != null &&  preProcessor.delete(orgId, bindingMap, idmAuditLog) != OrganizationServicePrePostProcessor.SUCCESS) {
@@ -1213,6 +1213,29 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
 
     public List<LocationEntity> getLocationListByOrganizationId(Set<String> orgsId) {
         return locationDao.findByOrganizationList(orgsId);
+    }
+
+    @Transactional(readOnly = true)
+    public Map<String, OrganizationAttribute> getOrgAttributesDto(String orgId) {
+        Map<String, OrganizationAttribute> attributeMap = new HashMap<String, OrganizationAttribute>();
+        if (StringUtils.isNotEmpty(orgId)) {
+            List<OrganizationAttribute> orgAttributes = getOrgAttributesDtoList(orgId);
+            if(CollectionUtils.isNotEmpty(orgAttributes)) {
+                for(OrganizationAttribute attr : orgAttributes) {
+                    attributeMap.put(attr.getName(), attr);
+                }
+            }
+        }
+        return attributeMap;
+    }
+
+    @Transactional(readOnly = true)
+    public List<OrganizationAttribute> getOrgAttributesDtoList(String orgId) {
+        if (StringUtils.isNotEmpty(orgId)) {
+            List<OrganizationAttributeEntity> attributeEntities = orgAttrDao.findOrgAttributes(orgId);
+            return organizationAttributeDozerConverter.convertToDTOList(attributeEntities, false);
+        }
+        return null;
     }
 
 }

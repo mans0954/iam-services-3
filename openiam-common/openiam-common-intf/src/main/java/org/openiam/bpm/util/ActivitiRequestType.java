@@ -22,6 +22,7 @@ public enum ActivitiRequestType {
 	
 	ADD_SUPERIOR("addSuperior", "Add Superior", true),
 	REMOVE_SUPERIOR("removeSuperior", "Remove Superior", true),
+    REPLACE_SUPERIOR("replaceSuperior", "Replace Superior", true),
 	
 	SAVE_LOGIN("saveLogin", "Save Login", false),
 	DELETE_LOGIN("deleteLogin", "Delete Login", false),

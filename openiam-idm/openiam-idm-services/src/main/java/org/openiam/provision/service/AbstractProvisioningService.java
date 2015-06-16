@@ -85,10 +85,7 @@ import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.user.service.UserDataService;
-import org.openiam.provision.dto.PasswordSync;
-import org.openiam.provision.dto.ProvisionActionEvent;
-import org.openiam.provision.dto.ProvisionActionTypeEnum;
-import org.openiam.provision.dto.ProvisionUser;
+import org.openiam.provision.dto.*;
 import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
@@ -115,7 +112,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
 
     public static final String NEW_USER_EMAIL_SUPERVISOR_NOTIFICATION = "NEW_USER_EMAIL_SUPERVISOR";
     public static final String NEW_USER_EMAIL_NOTIFICATION = "NEW_USER_EMAIL";
-    public static final String NEW_USER_ACTIVATION_NOTIFICATION="NEW_USER_ACTIVATION_NOTIFICATION";
+    public static final String NEW_USER_ACTIVATION_NOTIFICATION = "NEW_USER_ACTIVATION_NOTIFICATION";
     public static final String PASSWORD_EMAIL_NOTIFICATION = "USER_PASSWORD_EMAIL";
 
     public static final String MATCH_PARAM = "matchParam";
@@ -244,6 +241,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     protected AttributeMapDozerConverter attributeMapDozerConverter;
     @Autowired
     protected ProvisionQueueService provQueueService;
+    @Autowired
+    private BuildUserPolicyMapHelper buildPolicyMapHelper;
 
     @Autowired
     protected AuditLogService auditLogService;
@@ -327,7 +326,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         }
 
     }
-    protected void sendActivationLink(User user, Login login){
+
+    protected void sendActivationLink(User user, Login login) {
         try {
 
             final PasswordResetTokenRequest tokenRequest = new PasswordResetTokenRequest(login.getLogin(), login.getManagedSysId());
@@ -1404,7 +1404,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     userEntity.getGroups().add(groupEntity);
                     // Audit Log ---------------------------------------------------
                     IdmAuditLog auditLog = new IdmAuditLog();
-                    auditLog.setAction(AuditAction.ADD_GROUP.value());
+                    auditLog.setAction(AuditAction.ADD_USER_TO_GROUP.value());
                     Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
                     String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
                     auditLog.setTargetUser(pUser.getId(), loginStr);
@@ -1421,7 +1421,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     deleteGroupSet.add(dg);
                     // Audit Log ---------------------------------------------------
                     IdmAuditLog auditLog = new IdmAuditLog();
-                    auditLog.setAction(AuditAction.DELETE_GROUP.value());
+                    auditLog.setAction(AuditAction.REMOVE_USER_FROM_GROUP.value());
                     Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
                     String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
                     auditLog.setTargetUser(pUser.getId(), loginStr);
@@ -1462,7 +1462,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     userEntity.getRoles().add(roleEntity);
                     // Audit Log ---------------------------------------------------
                     IdmAuditLog auditLog = new IdmAuditLog();
-                    auditLog.setAction(AuditAction.ADD_ROLE.value());
+                    auditLog.setAction(AuditAction.ADD_USER_TO_ROLE.value());
                     Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
                     String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
                     auditLog.setTargetUser(pUser.getId(), loginStr);
@@ -1478,7 +1478,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     deleteRoleSet.add(dr);
                     // Audit Log ---------------------------------------------------
                     IdmAuditLog auditLog = new IdmAuditLog();
-                    auditLog.setAction(AuditAction.DELETE_ROLE.value());
+                    auditLog.setAction(AuditAction.REMOVE_USER_FROM_ROLE.value());
                     Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
                     String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
                     auditLog.setTargetUser(pUser.getId(), loginStr);
@@ -1776,7 +1776,9 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         request.setRequestID(requestId);
         request.setTargetID(mLg.getManagedSysId());
         request.setHostLoginId(mSys.getUserId());
-        request.setExtensibleObject(new ExtensibleUser());
+
+        ExtensibleUser extensibleUser = buildPolicyMapHelper.buildMngSysAttributes(mLg, ProvOperationEnum.DELETE.name());
+        request.setExtensibleObject(extensibleUser);
         String passwordDecoded = managedSysDataService.getDecryptedPassword(mSys);
 
         request.setHostLoginPassword(passwordDecoded);
@@ -1795,7 +1797,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
 
     protected ResponseType resetPassword(String requestId, Login login,
                                          String password, ManagedSysDto mSys,
-                                         ManagedSystemObjectMatch matchObj, ExtensibleUser extensibleUser) {
+                                         ManagedSystemObjectMatch matchObj, ExtensibleUser extensibleUser, String operation) {
 
         PasswordRequest req = new PasswordRequest();
         req.setObjectIdentity(login.getLogin());
@@ -1810,7 +1812,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         if (matchObj != null) {
             req.setBaseDN(matchObj.getBaseDn());
         }
-        req.setOperation("RESET_PASSWORD");
+//        "RESET_PASSWORD"
+        req.setOperation(operation);
         req.setPassword(password);
 
         req.setScriptHandler(mSys.getPasswordHandler());
@@ -1820,32 +1823,32 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
 
     }
 
-    protected ResponseType setPassword(String requestId, Login login, String prevDecPassword,
-                                       String newDecPasswordSync,
-                                       ManagedSysDto mSys,
-                                       ManagedSystemObjectMatch matchObj,
-                                       ExtensibleUser extensibleUser) {
-
-        PasswordRequest req = new PasswordRequest();
-        req.setObjectIdentity(login.getLogin());
-        req.setRequestID(requestId);
-        req.setTargetID(login.getManagedSysId());
-        req.setHostLoginId(mSys.getUserId());
-        req.setExtensibleObject(extensibleUser);
-        String passwordDecoded = managedSysDataService.getDecryptedPassword(mSys);
-
-        req.setHostLoginPassword(passwordDecoded);
-        req.setHostUrl(mSys.getHostUrl());
-        req.setBaseDN((matchObj != null) ? matchObj.getBaseDn() : null);
-        req.setOperation("SET_PASSWORD");
-        req.setPassword(newDecPasswordSync);
-        req.setScriptHandler(mSys.getPasswordHandler());
-        req.setCurrentPassword(prevDecPassword);
-        ResponseType respType = connectorAdapter.setPasswordRequest(mSys, req, MuleContextProvider.getCtx());
-
-        return respType;
-
-    }
+//    protected ResponseType setPassword(String requestId, Login login, String prevDecPassword,
+//                                       String newDecPasswordSync,
+//                                       ManagedSysDto mSys,
+//                                       ManagedSystemObjectMatch matchObj,
+//                                       ExtensibleUser extensibleUser) {
+//
+//        PasswordRequest req = new PasswordRequest();
+//        req.setObjectIdentity(login.getLogin());
+//        req.setRequestID(requestId);
+//        req.setTargetID(login.getManagedSysId());
+//        req.setHostLoginId(mSys.getUserId());
+//        req.setExtensibleObject(extensibleUser);
+//        String passwordDecoded = managedSysDataService.getDecryptedPassword(mSys);
+//
+//        req.setHostLoginPassword(passwordDecoded);
+//        req.setHostUrl(mSys.getHostUrl());
+//        req.setBaseDN((matchObj != null) ? matchObj.getBaseDn() : null);
+//        req.setOperation("SET_PASSWORD");
+//        req.setPassword(newDecPasswordSync);
+//        req.setScriptHandler(mSys.getPasswordHandler());
+//        req.setCurrentPassword(prevDecPassword);
+//        ResponseType respType = connectorAdapter.setPasswordRequest(mSys, req, MuleContextProvider.getCtx());
+//
+//        return respType;
+//
+//    }
 
     protected ProvisionUserResponse validatePassword(Login primaryLogin, ProvisionUser user, String requestId) {
 

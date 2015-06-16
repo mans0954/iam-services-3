@@ -4,6 +4,7 @@ import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.StopWatch;
 import org.apache.log4j.Logger;
 import org.hibernate.proxy.HibernateProxyHelper;
 import org.openiam.base.BaseIdentity;
@@ -28,6 +29,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class InternationalizationProvider {
@@ -36,6 +38,155 @@ public class InternationalizationProvider {
 	private LanguageMappingDAO languageDAO;
 	
 	private static Logger LOG = Logger.getLogger(InternationalizationProvider.class);
+	
+	private class ClassAnnotationKey {
+		
+		private Class<?> clazz;
+		private Class<?> annotation;
+		
+		ClassAnnotationKey(final Class<?> clazz, final Class<?> annotation) {
+			this.clazz = clazz;
+			this.annotation = annotation;
+		}
+
+		public Class<?> getClazz() {
+			return clazz;
+		}
+
+		public Class<?> getAnnotation() {
+			return annotation;
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result
+					+ ((annotation == null) ? 0 : annotation.hashCode());
+			result = prime * result + ((clazz == null) ? 0 : clazz.hashCode());
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			ClassAnnotationKey other = (ClassAnnotationKey) obj;
+			if (annotation == null) {
+				if (other.annotation != null)
+					return false;
+			} else if (!annotation.equals(other.annotation))
+				return false;
+			if (clazz == null) {
+				if (other.clazz != null)
+					return false;
+			} else if (!clazz.equals(other.clazz))
+				return false;
+			return true;
+		}
+
+		@Override
+		public String toString() {
+			return "FieldAnnotationKey [clazz=" + clazz + ", annotation="
+					+ annotation + "]";
+		}		
+		
+		
+ 	}
+	
+	private class FieldAnnotationKey {
+		
+		private Field field;
+		private Class<?> annotation;
+		
+		FieldAnnotationKey(final Field field, final Class<?> annotation) {
+			this.field = field;
+			this.annotation = annotation;
+		}
+
+		public Field getField() {
+			return field;
+		}
+
+		public Class<?> getAnnotation() {
+			return annotation;
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result
+					+ ((annotation == null) ? 0 : annotation.hashCode());
+			result = prime * result + ((field == null) ? 0 : field.hashCode());
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			FieldAnnotationKey other = (FieldAnnotationKey) obj;
+			if (annotation == null) {
+				if (other.annotation != null)
+					return false;
+			} else if (!annotation.equals(other.annotation))
+				return false;
+			if (field == null) {
+				if (other.field != null)
+					return false;
+			} else if (!field.equals(other.field))
+				return false;
+			return true;
+		}
+
+		@Override
+		public String toString() {
+			return "FieldAnnotationKey [field=" + field + ", annotation="
+					+ annotation + "]";
+		}		
+		
+		
+ 	}
+	
+	private Map<ClassAnnotationKey, Boolean> classAnnotationCache = 
+			new HashMap<InternationalizationProvider.ClassAnnotationKey, Boolean>();
+	private Map<FieldAnnotationKey, Boolean> fieldAnnotationCache = 
+			new HashMap<InternationalizationProvider.FieldAnnotationKey, Boolean>();
+	
+	private boolean isAnnotationPresent(final Class<?> clazz, final Class<? extends Annotation> annotation) {
+		final ClassAnnotationKey key = new ClassAnnotationKey(clazz, annotation);
+		if(!classAnnotationCache.containsKey(key)) {
+			final Boolean result = new Boolean(clazz.isAnnotationPresent(annotation));
+			synchronized(this) {
+				classAnnotationCache.put(key, result);
+			}
+			return result;
+		} else {
+			return classAnnotationCache.get(key);
+		}
+	}
+	
+	private boolean isAnnotationPresent(final Field field, final Class<? extends Annotation> annotation) {
+		final FieldAnnotationKey key = new FieldAnnotationKey(field, annotation);
+		if(!fieldAnnotationCache.containsKey(key)) {
+			final Boolean result = new Boolean(field.isAnnotationPresent(annotation));
+			synchronized(this) {
+				fieldAnnotationCache.put(key, result);
+			}
+			return result;
+		} else {
+			return fieldAnnotationCache.get(key);
+		}
+	}
 	
 	
 	@PostConstruct
@@ -87,7 +238,7 @@ public class InternationalizationProvider {
 			for(final TargetInternationalizedField target : fieldList) {
 				final Field field = target.getField();
 				//field.setAccessible(true);
-				final InternationalizedCollection metadata = field.getAnnotation(InternationalizedCollection.class);
+				//final InternationalizedCollection metadata = field.getAnnotation(InternationalizedCollection.class);
 				final List<LanguageMappingEntity> dbList = languageDAO.getByReferenceIdAndType(target.getEntity().getId(), getReferenceType(target.getEntity(), field));
 				final Map<String, LanguageMappingEntity> dbMap = new HashMap<>();
 				if(CollectionUtils.isNotEmpty(dbList)) {
@@ -126,7 +277,7 @@ public class InternationalizationProvider {
 			for(final TargetInternationalizedField target : fieldList) {
 				final Field field = target.getField();
 				//field.setAccessible(true);
-				final InternationalizedCollection metadata = field.getAnnotation(InternationalizedCollection.class);
+				//final InternationalizedCollection metadata = field.getAnnotation(InternationalizedCollection.class);
 				StringBuilder sb = new StringBuilder();
 				sb.append("ThreadId=").append(Thread.currentThread().getId());
 				sb.append("; REFERENCE_ID=").append(target.getEntity().getId());
@@ -230,18 +381,18 @@ public class InternationalizationProvider {
 		 */
 		final Class<?> clazz = HibernateProxyHelper.getClassWithoutInitializingProxy(entity);
 		
-		if(clazz.isAnnotationPresent(Internationalized.class)) {
+		if(isAnnotationPresent(clazz, Internationalized.class)) {
 			final List<Field> resultList = getDeclaredFields(clazz);
 			if(resultList != null) {
 				for(final Field field : resultList) {
 					final VisitedField visitedField = new VisitedField(clazz, field, entity);
 					if(!visitedSet.contains(visitedField)) {
 						visitedSet.add(visitedField);
-						if(field.isAnnotationPresent(InternationalizedCollection.class)) {
+						if(isAnnotationPresent(field, InternationalizedCollection.class)) {
 							if(StringUtils.isNotBlank(entity.getId())) {
 								retVal.add(new TargetInternationalizedField(field, entity));
 							}
-						} else if(field.isAnnotationPresent(Internationalized.class)) {
+						} else if(isAnnotationPresent(field, Internationalized.class)) {
 							
 							//If this is a delete operation, but there is no delete cascade, ignore the field
 							if(isDelete && !isCascadeDeletePresent(field)) {
@@ -282,7 +433,7 @@ public class InternationalizationProvider {
 	private void doCRUDLogicOnField(final Field field, final KeyEntity object) {
 		//field.setAccessible(true);
 
-		final InternationalizedCollection metadata = field.getAnnotation(InternationalizedCollection.class);
+		//final InternationalizedCollection metadata = field.getAnnotation(InternationalizedCollection.class);
 		if(StringUtils.isNotBlank(object.getId())) {
 			Collection<LanguageMappingEntity> toDelete = new LinkedList<>();
 			Collection<LanguageMappingEntity> toUpdate = new LinkedList<>();

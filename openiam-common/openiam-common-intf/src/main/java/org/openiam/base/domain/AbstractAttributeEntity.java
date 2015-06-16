@@ -15,7 +15,7 @@ import org.openiam.internationalization.Internationalized;
 @MappedSuperclass
 @AttributeOverrides(value={
 	@AttributeOverride(name = "name", column = @Column(name="NAME", length=100)),
-	@AttributeOverride(name = "value", column = @Column(name="ATTR_VALUE", length=4096))
+	@AttributeOverride(name = "value", column = @Column(name="ATTR_VALUE", length=4000))
 })
 public abstract class AbstractAttributeEntity extends AbstractKeyNameValueEntity {
 

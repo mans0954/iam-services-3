@@ -36,13 +36,30 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class LdapV3 implements Directory {
 
-	@Autowired
-	private PasswordGenerator passwordGenerator;
+    @Autowired
+    private PasswordGenerator passwordGenerator;
 
     final static String PASSWORD_ATTRIBUTE = "userPassword";
+    // let it be for future
+//    final static String PASSWORD_LAST_SET = "pwdLastSet";
 
     Map<String, Object> objectMap = new HashMap<String, Object>();
     private static final Log log = LogFactory.getLog(LdapV3.class);
+
+    // Should be any way to split set password and reset password
+    public ModificationItem[] resetPassword(PasswordRequest reqType) throws UnsupportedEncodingException {
+
+        ModificationItem[] mods = new ModificationItem[1];
+        String userPassword = getUserPassword(reqType.getExtensibleObject());
+        if (StringUtils.isEmpty(userPassword)) {
+            userPassword = reqType.getPassword();
+        }
+        mods[0] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute(PASSWORD_ATTRIBUTE, userPassword));
+        //skip for now for LDAP
+//        mods[1] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute(PASSWORD_LAST_SET, "0"));
+
+        return mods;
+    }
 
     public ModificationItem[] setPassword(PasswordRequest reqType) throws UnsupportedEncodingException {
 
@@ -56,7 +73,7 @@ public class LdapV3 implements Directory {
         return mods;
     }
 
-    public ModificationItem[] suspend(SuspendResumeRequest request)  {
+    public ModificationItem[] suspend(SuspendResumeRequest request) {
 
         String scrambledPswd = getScrambledPswd(request.getExtensibleObject());
 
@@ -68,10 +85,10 @@ public class LdapV3 implements Directory {
 
     public ModificationItem[] resume(SuspendResumeRequest request) {
 
-        String ldapName = (String)objectMap.get("LDAP_NAME");
-        LoginDataService loginManager = (LoginDataService)objectMap.get("LOGIN_MANAGER");
-        SysConfiguration sysConfiguration = (SysConfiguration)objectMap.get("CONFIGURATION");
-        String targetID = (String)objectMap.get("TARGET_ID");
+        String ldapName = (String) objectMap.get("LDAP_NAME");
+        LoginDataService loginManager = (LoginDataService) objectMap.get("LOGIN_MANAGER");
+        SysConfiguration sysConfiguration = (SysConfiguration) objectMap.get("CONFIGURATION");
+        String targetID = (String) objectMap.get("TARGET_ID");
 
         try {
 
@@ -80,25 +97,25 @@ public class LdapV3 implements Directory {
                 // get the current password for the user.
                 LoginEntity login = loginManager.getLoginByManagedSys(ldapName, targetID);
                 String encPassword = login.getPassword();
-                decPassword = loginManager.decryptPassword(login.getUserId(),encPassword);
+                decPassword = loginManager.decryptPassword(login.getUserId(), encPassword);
             }
 
             ModificationItem[] mods = new ModificationItem[1];
             mods[0] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute(PASSWORD_ATTRIBUTE, decPassword));
             return mods;
-        } catch(Exception e) {
+        } catch (Exception e) {
             log.error(e.toString());
             return null;
         }
     }
 
-    public void delete(CrudRequest reqType, LdapContext ldapctx, String ldapName, String onDelete) throws NamingException{
+    public void delete(CrudRequest reqType, LdapContext ldapctx, String ldapName, String onDelete) throws NamingException {
 
         if ("DELETE".equalsIgnoreCase(onDelete)) {
 
             ldapctx.destroySubcontext(ldapName);
 
-        } else if ( "DISABLE".equalsIgnoreCase(onDelete)) {
+        } else if ("DISABLE".equalsIgnoreCase(onDelete)) {
 
             String scrambledPswd = getScrambledPswd(reqType.getExtensibleObject());
 
@@ -111,7 +128,7 @@ public class LdapV3 implements Directory {
 
     /* Group membership functions */
 
-    public void removeAccountMemberships(ManagedSysEntity managedSys, String identity, String identityDN, ManagedSystemObjectMatch matchObj, LdapContext ldapctx ) {
+    public void removeAccountMemberships(ManagedSysEntity managedSys, String identity, String identityDN, ManagedSystemObjectMatch matchObj, LdapContext ldapctx) {
 
         List<String> currentMembershipList = userMembershipList(managedSys, identityDN, matchObj, ldapctx);
 
@@ -123,14 +140,14 @@ public class LdapV3 implements Directory {
                     ModificationItem mods[] = new ModificationItem[1];
                     mods[0] = new ModificationItem(DirContext.REMOVE_ATTRIBUTE, new BasicAttribute("uniqueMember", identityDN));
                     ldapctx.modifyAttributes(s, mods);
-                } catch (NamingException ne ) {
+                } catch (NamingException ne) {
                     log.error(ne);
                 }
             }
         }
     }
 
-    public void removeSupervisorMemberships(ManagedSysEntity managedSys, String identity, String identityDN, ManagedSystemObjectMatch matchObj, LdapContext ldapctx ) {
+    public void removeSupervisorMemberships(ManagedSysEntity managedSys, String identity, String identityDN, ManagedSystemObjectMatch matchObj, LdapContext ldapctx) {
 
         List<String> currentSupervisorMembershipList = userSupervisorMembershipList(managedSys, identity, matchObj, ldapctx);
 
@@ -143,7 +160,7 @@ public class LdapV3 implements Directory {
                     ModificationItem mods[] = new ModificationItem[1];
                     mods[0] = new ModificationItem(DirContext.REMOVE_ATTRIBUTE, new BasicAttribute("manager", s));
                     ldapctx.modifyAttributes(identityDN, mods);
-                } catch (NamingException ne ) {
+                } catch (NamingException ne) {
                     log.error(ne);
                 }
             }
@@ -151,7 +168,7 @@ public class LdapV3 implements Directory {
     }
 
     public void updateAccountMembership(ManagedSysEntity managedSys, List<BaseAttribute> targetMembershipList, String identity, String identityDN,
-                                        ManagedSystemObjectMatch matchObj,  LdapContext ldapctx,
+                                        ManagedSystemObjectMatch matchObj, LdapContext ldapctx,
                                         ExtensibleObject obj) {
 
         List<String> currentMembershipList = userMembershipList(managedSys, identityDN, matchObj, ldapctx);
@@ -165,7 +182,7 @@ public class LdapV3 implements Directory {
                     ModificationItem mods[] = new ModificationItem[1];
                     mods[0] = new ModificationItem(DirContext.REMOVE_ATTRIBUTE, new BasicAttribute("uniqueMember", identityDN));
                     ldapctx.modifyAttributes(s, mods);
-                } catch (NamingException ne ) {
+                } catch (NamingException ne) {
                     log.error(ne);
                 }
             }
@@ -174,7 +191,7 @@ public class LdapV3 implements Directory {
         if (targetMembershipList != null) {
             for (BaseAttribute ba : targetMembershipList) {
 
-                String groupName =  ba.getName();
+                String groupName = ba.getName();
                 boolean exists = isMemberOf(currentMembershipList, groupName);
 
                 if (ba.getOperationEnum() == AttributeOperationEnum.DELETE) {
@@ -185,7 +202,7 @@ public class LdapV3 implements Directory {
                             ModificationItem mods[] = new ModificationItem[1];
                             mods[0] = new ModificationItem(DirContext.REMOVE_ATTRIBUTE, new BasicAttribute("uniqueMember", identityDN));
                             ldapctx.modifyAttributes(groupName, mods);
-                        }catch (NamingException ne ) {
+                        } catch (NamingException ne) {
                             log.error(ne);
                         }
                     }
@@ -198,7 +215,7 @@ public class LdapV3 implements Directory {
                             ModificationItem mods[] = new ModificationItem[1];
                             mods[0] = new ModificationItem(DirContext.ADD_ATTRIBUTE, new BasicAttribute("uniqueMember", identityDN));
                             ldapctx.modifyAttributes(groupName, mods);
-                        } catch (NamingException ne ) {
+                        } catch (NamingException ne) {
                             log.error(ne);
                         }
                     }
@@ -222,7 +239,7 @@ public class LdapV3 implements Directory {
                     ModificationItem mods[] = new ModificationItem[1];
                     mods[0] = new ModificationItem(DirContext.REMOVE_ATTRIBUTE, new BasicAttribute("manager", s));
                     ldapctx.modifyAttributes(identityDN, mods);
-                } catch (NamingException ne ) {
+                } catch (NamingException ne) {
                     log.error(ne);
                 }
             }
@@ -231,7 +248,7 @@ public class LdapV3 implements Directory {
 
             for (BaseAttribute ba : supervisorMembershipList) {
 
-                String supervisorName =  ba.getName();
+                String supervisorName = ba.getName();
                 boolean exists = isMemberOf(currentSupervisorMembershipList, supervisorName);
 
                 if (ba.getOperationEnum() == AttributeOperationEnum.DELETE) {
@@ -241,7 +258,7 @@ public class LdapV3 implements Directory {
                             ModificationItem mods[] = new ModificationItem[1];
                             mods[0] = new ModificationItem(DirContext.REMOVE_ATTRIBUTE, new BasicAttribute("manager", supervisorName));
                             ldapctx.modifyAttributes(identityDN, mods);
-                        } catch (NamingException ne ) {
+                        } catch (NamingException ne) {
                             log.error(ne);
                         }
                     }
@@ -254,7 +271,7 @@ public class LdapV3 implements Directory {
                             ModificationItem mods[] = new ModificationItem[1];
                             mods[0] = new ModificationItem(DirContext.ADD_ATTRIBUTE, new BasicAttribute("manager", supervisorName));
                             ldapctx.modifyAttributes(identityDN, mods);
-                        } catch (NamingException ne ) {
+                        } catch (NamingException ne) {
                             log.error(ne);
                         }
                     }
@@ -264,10 +281,10 @@ public class LdapV3 implements Directory {
     }
 
     public void setAttributes(String name, Object obj) {
-        objectMap.put(name,obj);
+        objectMap.put(name, obj);
     }
 
-    protected boolean isMemberOf(List<String> membershipList, String objectName)  {
+    protected boolean isMemberOf(List<String> membershipList, String objectName) {
 
         if (membershipList == null || membershipList.isEmpty()) {
             return false;
@@ -295,7 +312,7 @@ public class LdapV3 implements Directory {
 
             SearchControls ctls = new SearchControls();
 
-            String userReturnedAtts[]={"uniqueMember"};
+            String userReturnedAtts[] = {"uniqueMember"};
             ctls.setReturningAttributes(userReturnedAtts);
             ctls.setSearchScope(managedSys.getSearchScope().getValue());
 
@@ -303,7 +320,7 @@ public class LdapV3 implements Directory {
 
             //Loop through the search results
             while (answer.hasMoreElements()) {
-                SearchResult sr = (SearchResult)answer.next();
+                SearchResult sr = (SearchResult) answer.next();
 
                 String objectName = sr.getNameInNamespace();
                 log.debug("Adding to current membership list " + objectName);
@@ -311,7 +328,7 @@ public class LdapV3 implements Directory {
             }
 
         } catch (Exception e) {
-        	log.error("userMembershipList", e);
+            log.error("userMembershipList", e);
         }
 
         if (currentMembershipList.isEmpty()) {
@@ -341,7 +358,7 @@ public class LdapV3 implements Directory {
 
             SearchControls ctls = new SearchControls();
 
-            String userReturnedAtts[]={"manager"};
+            String userReturnedAtts[] = {"manager"};
             ctls.setReturningAttributes(userReturnedAtts);
             ctls.setSearchScope(managedSys.getSearchScope().getValue());
 
@@ -349,28 +366,27 @@ public class LdapV3 implements Directory {
 
             //Loop through the search results
             while (answer.hasMoreElements()) {
-                SearchResult sr = (SearchResult)answer.next();
+                SearchResult sr = (SearchResult) answer.next();
 
                 Attributes attrs = sr.getAttributes();
                 if (attrs != null) {
 
                     try {
-                        for (NamingEnumeration ae = attrs.getAll();ae.hasMore();) {
-                            Attribute attr = (Attribute)ae.next();
+                        for (NamingEnumeration ae = attrs.getAll(); ae.hasMore(); ) {
+                            Attribute attr = (Attribute) ae.next();
 
-                            for (NamingEnumeration e = attr.getAll();e.hasMore();) {
-                                currentSupervisorMembershipList.add ((String)e.next());
+                            for (NamingEnumeration e = attr.getAll(); e.hasMore(); ) {
+                                currentSupervisorMembershipList.add((String) e.next());
                             }
                         }
-                    }
-                    catch (NamingException e)	{
+                    } catch (NamingException e) {
                         log.error("Problem listing membership: " + e.toString());
                     }
                 }
             }
 
         } catch (Exception e) {
-        	log.error("userSupervisorMembershipList", e);
+            log.error("userSupervisorMembershipList", e);
         }
 
         if (currentSupervisorMembershipList.isEmpty()) {
@@ -384,7 +400,7 @@ public class LdapV3 implements Directory {
     protected String getScrambledPswd(ExtensibleObject extObject) {
         String scrambledPswd = getUserPassword(extObject);
         if (StringUtils.isEmpty(scrambledPswd)) {
-            scrambledPswd =	passwordGenerator.generatePassword(10);
+            scrambledPswd = passwordGenerator.generatePassword(10);
         }
         return scrambledPswd;
     }
@@ -392,7 +408,7 @@ public class LdapV3 implements Directory {
     private String getUserPassword(ExtensibleObject extObject) {
         String scrambledPswd = null;
         if (extObject != null && CollectionUtils.isNotEmpty(extObject.getAttributes())) {
-            for(final ExtensibleAttribute attr : extObject.getAttributes()) {
+            for (final ExtensibleAttribute attr : extObject.getAttributes()) {
                 if (attr.getName().equalsIgnoreCase(PASSWORD_ATTRIBUTE)) {
                     scrambledPswd = attr.getValue();
                     break;

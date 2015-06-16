@@ -18,6 +18,7 @@ import java.util.Set;
 @XmlType(name = "RoleSearchBean", propOrder = {
         "keySet",
         "name",
+        "description",
         "isRootsOnly",
         "managedSysId",
         "attributes",
@@ -29,6 +30,7 @@ public class RoleSearchBean extends EntitlementsSearchBean<Role, String> impleme
 	private static final long serialVersionUID = 1L;
     private Set<String> keySet;
 	private String name;
+    private String description;
     private String managedSysId;
 	private Boolean isRootsOnly;
     private String type;
@@ -43,7 +45,15 @@ public class RoleSearchBean extends EntitlementsSearchBean<Role, String> impleme
 		this.name = name;
 	}
 
-	public boolean getIsRootsOnly() {
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public boolean getIsRootsOnly() {
 		return isRootsOnly;
 	}
 
@@ -100,6 +110,7 @@ public class RoleSearchBean extends EntitlementsSearchBean<Role, String> impleme
 		result = prime * result
 				+ ((isRootsOnly == null) ? 0 : isRootsOnly.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
+        result = prime * result + ((description == null) ? 0 : description.hashCode());
         result = prime * result + ((managedSysId == null) ? 0 : managedSysId.hashCode());
 		return result;
 	}
@@ -123,6 +134,11 @@ public class RoleSearchBean extends EntitlementsSearchBean<Role, String> impleme
 				return false;
 		} else if (!name.equals(other.name))
 			return false;
+        if (description == null) {
+            if (other.description != null)
+                return false;
+        } else if (!description.equals(other.description))
+            return false;
         if (managedSysId == null) {
             if (other.managedSysId != null)
                 return false;
@@ -174,6 +190,7 @@ public class RoleSearchBean extends EntitlementsSearchBean<Role, String> impleme
     public String getCacheUniqueBeanKey() {
         return new StringBuilder()
                 .append(name != null ? name : "")
+                .append(description != null ? description : "")
                 .append(managedSysId != null ? managedSysId : "")
                 .append(isRootsOnly)
                 .append(adminResourceId != null ? adminResourceId : "")

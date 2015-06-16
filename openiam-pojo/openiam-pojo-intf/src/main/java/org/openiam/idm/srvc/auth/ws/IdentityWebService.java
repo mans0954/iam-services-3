@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.auth.ws;
 
 
 import org.openiam.base.ws.Response;
+import org.openiam.idm.searchbeans.IdentitySearchBean;
 import org.openiam.idm.srvc.auth.dto.IdentityDto;
 
 import javax.jws.WebMethod;
@@ -32,4 +33,11 @@ public interface IdentityWebService {
 
     @WebMethod
     void updateIdentity(@WebParam(name = "identity", targetNamespace = "") IdentityDto identityDto);
+
+    @WebMethod
+    List<IdentityDto> findByExample(@WebParam(name = "searchBean", targetNamespace = "") IdentitySearchBean searchBean, @WebParam(name = "requesterId", targetNamespace = "") String requesterId, @WebParam(name = "from", targetNamespace = "") Integer from, @WebParam(name = "size", targetNamespace = "") Integer size);
+
+    @WebMethod
+    Integer countBeans(@WebParam(name = "searchBean", targetNamespace = "") IdentitySearchBean searchBean, @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+
 }
