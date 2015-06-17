@@ -24,6 +24,8 @@ public class ReplaceSuperiorNotifierDelegate extends AbstractEntitlementsDelegat
             }
             execution.setVariable(ActivitiConstants.CARDINALITY_OBJECT.getName(), superior);
             super.execute(execution);
+        } else {
+            throw new IllegalArgumentException("CurrentSuperiorID and NewSuperiorID must be defined");
         }
     }
 }
