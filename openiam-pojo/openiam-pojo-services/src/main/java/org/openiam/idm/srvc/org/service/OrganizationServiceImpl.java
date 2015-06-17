@@ -112,6 +112,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     private GroupDAO groupDAO;
 
     private Map<String, Set<String>> organizationTree;
+    private Map<String, String> organizationInvertedTree;
 
     @Value("${org.openiam.organization.type.id}")
     private String organizationTypeId;
@@ -141,7 +142,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     @Transactional(readOnly = true)
     @LocalizedServiceGet
     public OrganizationEntity getOrganizationLocalized(String orgId, String requesterId, final LanguageEntity langauge) {
-        if (DelegationFilterHelper.isAllowed(orgId, getDelegationFilter(requesterId, null))) {
+        if (DelegationFilterHelper.isAllowed(orgId, getDelegationFilter(requesterId))) {
             return orgDao.findById(orgId);
         }
         return null;
@@ -160,21 +161,22 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     @Override
     @Transactional(readOnly = true)
     public int getNumOfOrganizationsForUser(final String userId, final String requesterId) {
-    	return orgDao.getNumOfOrganizationsForUser(userId, getDelegationFilter(requesterId, null));
+    	return orgDao.getNumOfOrganizationsForUser(userId, getDelegationFilter(requesterId));
     }
 
     @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
     public List<OrganizationEntity> getOrganizationsForUser(String userId, String requesterId, final int from, final int size, final LanguageEntity langauge) {
-    	return orgDao.getOrganizationsForUser(userId, getDelegationFilter(requesterId, null), from, size);
+    	return orgDao.getOrganizationsForUser(userId, getDelegationFilter(requesterId), from, size);
     }
 
     @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
     public List<OrganizationEntity> findBeans(final OrganizationSearchBean searchBean, String requesterId, int from, int size, final LanguageEntity langauge) {
-        Set<String> filter = getDelegationFilter(requesterId, null);
+        final boolean isUncoverParents = Boolean.TRUE.equals(searchBean.getUncoverParents());
+        Set<String> filter = getDelegationFilter(requesterId, isUncoverParents);
         if (StringUtils.isBlank(searchBean.getKey()))
             searchBean.setKeys(filter);
         else if (!DelegationFilterHelper.isAllowed(searchBean.getKey(), filter)) {
@@ -187,20 +189,21 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     @LocalizedServiceGet
     @Transactional(readOnly = true)
     public List<OrganizationEntity> getParentOrganizations(String orgId, String requesterId, int from, int size, final LanguageEntity langauge) {
-        return orgDao.getParentOrganizations(orgId, getDelegationFilter(requesterId, null), from, size);
+        return orgDao.getParentOrganizations(orgId, getDelegationFilter(requesterId), from, size);
     }
 
     @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
     public List<OrganizationEntity> getChildOrganizations(String orgId, String requesterId, int from, int size, final LanguageEntity langauge) {
-        return orgDao.getChildOrganizations(orgId, getDelegationFilter(requesterId, null), from, size);
+        return orgDao.getChildOrganizations(orgId, getDelegationFilter(requesterId), from, size);
     }
 
     @Override
     @Transactional(readOnly = true)
     public int count(final OrganizationSearchBean searchBean, String requesterId) {
-        Set<String> filter = getDelegationFilter(requesterId, searchBean.getOrganizationTypeId());
+        final boolean isUncoverParents = Boolean.TRUE.equals(searchBean.getUncoverParents());
+        Set<String> filter = getDelegationFilter(requesterId, isUncoverParents);
         if (StringUtils.isBlank(searchBean.getKey()))
             searchBean.setKeys(filter);
         else if (!DelegationFilterHelper.isAllowed(searchBean.getKey(), filter)) {
@@ -213,13 +216,13 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     @Override
     @Transactional(readOnly = true)
     public int getNumOfParentOrganizations(String orgId, String requesterId) {
-        return orgDao.getNumOfParentOrganizations(orgId, getDelegationFilter(requesterId, null));
+        return orgDao.getNumOfParentOrganizations(orgId, getDelegationFilter(requesterId));
     }
 
     @Override
     @Transactional(readOnly = true)
     public int getNumOfChildOrganizations(String orgId, String requesterId) {
-        return orgDao.getNumOfChildOrganizations(orgId, getDelegationFilter(requesterId, null));
+        return orgDao.getNumOfChildOrganizations(orgId, getDelegationFilter(requesterId));
     }
 
     @Override
@@ -799,27 +802,34 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
 
     @Override
     @Transactional(readOnly = true)
-    public Set<String> getDelegationFilter(String requesterId, String organizationTypeId) {
-        Set<String> filterData = null;
-        if (StringUtils.isNotBlank(requesterId)) {
-            Map<String, UserAttribute> requesterAttributes = userDataService.getUserAttributesDto(requesterId);
-            filterData = getDelegationFilter(requesterAttributes, organizationTypeId);
-
-        }
-
-        return filterData;
+    public Set<String> getDelegationFilter(String requesterId) {
+        return getDelegationFilter(requesterId, false);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Set<String> getDelegationFilter(Map<String, UserAttribute> attrMap, String organizationTypeId) {
+    public Set<String> getDelegationFilter(Map<String, UserAttribute> attrMap) {
+        return getDelegationFilter(attrMap, false);
+    }
+
+    private Set<String> getDelegationFilter(String requesterId, boolean isUncoverParents) {
+        Set<String> filterData = null;
+        if (StringUtils.isNotBlank(requesterId)) {
+            Map<String, UserAttribute> requesterAttributes = userDataService.getUserAttributesDto(requesterId);
+            filterData = getDelegationFilter(requesterAttributes, isUncoverParents);
+
+        }
+        return filterData;
+    }
+
+    private Set<String> getDelegationFilter(Map<String, UserAttribute> attrMap, boolean isUncoverParents) {
         Set<String> filterData = new HashSet<String>();
         if(attrMap!=null && !attrMap.isEmpty()){
             boolean isUseOrgInhFlag = DelegationFilterHelper.isUseOrgInhFilterSet(attrMap);
 
-            filterData.addAll(this.getOrgTreeFlatList(DelegationFilterHelper.getOrgIdFilterFromString(attrMap), isUseOrgInhFlag));
-            filterData.addAll(this.getOrgTreeFlatList(DelegationFilterHelper.getDeptFilterFromString(attrMap), isUseOrgInhFlag));
-            filterData.addAll(this.getOrgTreeFlatList(DelegationFilterHelper.getDivisionFilterFromString(attrMap), isUseOrgInhFlag));
+            filterData.addAll(this.getOrgTreeFlatList(DelegationFilterHelper.getOrgIdFilterFromString(attrMap), isUseOrgInhFlag, false));
+            filterData.addAll(this.getOrgTreeFlatList(DelegationFilterHelper.getDeptFilterFromString(attrMap), isUseOrgInhFlag, isUncoverParents));
+            filterData.addAll(this.getOrgTreeFlatList(DelegationFilterHelper.getDivisionFilterFromString(attrMap), isUseOrgInhFlag, isUncoverParents));
         }
         return filterData;
     }
@@ -833,7 +843,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
         Map<String, UserAttribute> requesterAttributes = null;
         if (StringUtils.isNotBlank(requesterId)) {
             requesterAttributes = userDataService.getUserAttributesDto(requesterId);
-            filterData = getDelegationFilter(requesterAttributes, organizationTypeId);
+            filterData = getDelegationFilter(requesterAttributes, false);
         }
         allowedOrgTypes = organizationTypeService.getAllowedParentsIds(orgTypeId, requesterAttributes);
 //        allowedOrgTypes.retainAll(allowedParentTypesIds);
@@ -842,9 +852,9 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     }
 
     private Set<String> getFullOrgFilterList(Map<String, UserAttribute> attrMap, boolean isUseOrgInhFlag){
-        Set<String> filterData = this.getOrgTreeFlatList(DelegationFilterHelper.getOrgIdFilterFromString(attrMap), isUseOrgInhFlag);
-        filterData.addAll(this.getOrgTreeFlatList(DelegationFilterHelper.getDeptFilterFromString(attrMap), isUseOrgInhFlag));
-        filterData.addAll(this.getOrgTreeFlatList(DelegationFilterHelper.getDivisionFilterFromString(attrMap), isUseOrgInhFlag));
+        Set<String> filterData = this.getOrgTreeFlatList(DelegationFilterHelper.getOrgIdFilterFromString(attrMap), isUseOrgInhFlag, false);
+        filterData.addAll(this.getOrgTreeFlatList(DelegationFilterHelper.getDeptFilterFromString(attrMap), isUseOrgInhFlag, false));
+        filterData.addAll(this.getOrgTreeFlatList(DelegationFilterHelper.getDivisionFilterFromString(attrMap), isUseOrgInhFlag, false));
         return filterData;
     }
 
@@ -923,9 +933,10 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
             parentOrg2ChildOrgMap.get(orgId).add(memberOrgId);
         }
         organizationTree = parentOrg2ChildOrgMap;
+        organizationInvertedTree = child2ParentOrgMap;
     }
 
-    private Set<String> getOrgTreeFlatList(List<String> rootElementsIdList, boolean isUseOrgInhFlag){
+    private Set<String> getOrgTreeFlatList(final List<String> rootElementsIdList, boolean isUseOrgInhFlag, boolean isUncoverParents){
         List<String> result = new ArrayList<String>();
         if(isUseOrgInhFlag){
             if(CollectionUtils.isNotEmpty(rootElementsIdList)){
@@ -934,7 +945,12 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
                 }
             }
         } else {
-            result = rootElementsIdList;
+            result = new ArrayList<>(rootElementsIdList);
+        }
+        if (isUncoverParents) {
+            for (String elementId : rootElementsIdList){
+                result.addAll(getParentsFlatList(elementId));
+            }
         }
         return new HashSet<String>(result);
     }
@@ -949,6 +965,16 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
                     result.addAll(this.organizationTree.get(curElem));
                 }
             }
+        }
+        return result;
+    }
+
+    private List<String> getParentsFlatList(String childId) {
+        List<String> result = new ArrayList<String>();
+        String elementId = this.organizationInvertedTree.get(childId);
+        while(StringUtils.isNotBlank(elementId)){
+            result.add(elementId);
+            elementId = this.organizationInvertedTree.get(elementId);
         }
         return result;
     }
