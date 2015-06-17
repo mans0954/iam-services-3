@@ -534,7 +534,7 @@ public class UserMgr implements UserDataService {
 
             validateSearchBean(searchBean,  requesterAttributes);
 
-            Set<String> orgDelFilter = organizationService.getDelegationFilter(requesterAttributes, null);
+            Set<String> orgDelFilter = organizationService.getDelegationFilter(requesterAttributes);
 
             isOrgFilterSet = CollectionUtils.isNotEmpty(orgDelFilter);//DelegationFilterHelper.isOrgFilterSet(requesterAttributes);
             isGroupFilterSet = DelegationFilterHelper.isGroupFilterSet(requesterAttributes);
@@ -2224,7 +2224,7 @@ public class UserMgr implements UserDataService {
         if (StringUtils.isNotBlank(requestorId)) {
             Map<String, UserAttribute> requestorAttributes = this.getUserAttributesDto(requestorId);
 
-            Set<String> orgDelFilter = organizationService.getDelegationFilter(requestorAttributes, null);
+            Set<String> orgDelFilter = organizationService.getDelegationFilter(requestorAttributes);
             if (CollectionUtils.isNotEmpty(orgDelFilter)) {
                 filter.setOrganizationIdSet(orgDelFilter);
             }
@@ -2369,7 +2369,7 @@ public class UserMgr implements UserDataService {
     public boolean validateSearchBean(UserSearchBean searchBean, Map<String, UserAttribute> requesterAttributes) throws BasicDataServiceException {
         if (requesterAttributes!=null && CollectionUtils.isNotEmpty(requesterAttributes.keySet())) {
 
-            Set<String> orgDelFilter = organizationService.getDelegationFilter(requesterAttributes, null);
+            Set<String> orgDelFilter = organizationService.getDelegationFilter(requesterAttributes);
 
             boolean isOrgFilterSet = CollectionUtils.isNotEmpty(orgDelFilter);// DelegationFilterHelper.isOrgFilterSet(requesterAttributes);
             boolean isGroupFilterSet = DelegationFilterHelper.isGroupFilterSet(requesterAttributes);
