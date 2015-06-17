@@ -263,7 +263,7 @@ public class AbstractSocialLoginModule<Profile extends AbstractSocialProfile> ex
 
             List<RoleEntity> roleList = roleDao.getByExample(roleSearchBean);
             if(CollectionUtils.isNotEmpty(roleList)){
-                userEntity.addRole(roleList.get(0));
+            	userEntity.addRole(roleList.get(0), null);
             }
         }
     }

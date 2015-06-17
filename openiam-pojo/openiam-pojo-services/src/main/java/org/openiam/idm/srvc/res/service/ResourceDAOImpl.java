@@ -156,133 +156,11 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 		return (ResourceEntity) criteria.uniqueResult();
 	}
 	
-    @Override
-    @LocalizedDatabaseGet
-	public List<ResourceEntity> getResourcesByType(String id) {
-		Criteria criteria = getCriteria().createAlias("resourceType", "rt")
-				.add(Restrictions.eq("rt.id", id))
-				.addOrder(Order.asc("displayOrder"));
-		return (List<ResourceEntity>) criteria.list();
-	}
-    
-    @Override
-    @LocalizedDatabaseGet
-	public List<ResourceEntity> getResourcesForRole(final String roleId,
-			final int from, final int size, final ResourceSearchBean searchBean) {
-		final Criteria criteria = getCriteria()
-				.createAlias("roles", "rr")
-				.add(Restrictions.eq("rr.id", roleId))
-				.addOrder(Order.asc("name"));
-		addSearchBeanCriteria(criteria, searchBean);
-		
-		if (from > -1) {
-			criteria.setFirstResult(from);
-		}
-
-		if (size > -1) {
-			criteria.setMaxResults(size);
-		}
-
-		final List<ResourceEntity> retVal = (List<ResourceEntity>) criteria
-				.list();
-		return retVal;
-	}
-
-	@Override
-	@Deprecated
-	public int getNumOfResourcesForRole(String roleId, final ResourceSearchBean searchBean) {
-		final Criteria criteria = getCriteria()
-				.createAlias("roles", "rr")
-				.add(Restrictions.eq("rr.id", roleId))
-				.setProjection(rowCount());
-		addSearchBeanCriteria(criteria, searchBean);
-		
-		return ((Number) criteria.uniqueResult()).intValue();
-	}
-
 	@Override
 	protected String getPKfieldName() {
 		return "id";
 	}
 
-	@Override
-	@LocalizedDatabaseGet
-	@Deprecated
-	public List<ResourceEntity> getResourcesForGroup(final String groupId,
-			final int from, final int size, final ResourceSearchBean searchBean) {
-		final Criteria criteria = getCriteria()
-				.createAlias("groups", "rg")
-				.add(Restrictions.eq("rg.id", groupId))
-				.addOrder(Order.asc("name"));
-		addSearchBeanCriteria(criteria, searchBean);
-		
-		if (from > -1) {
-			criteria.setFirstResult(from);
-		}
-
-		if (size > -1) {
-			criteria.setMaxResults(size);
-		}
-
-		final List<ResourceEntity> retVal = (List<ResourceEntity>) criteria
-				.list();
-		return retVal;
-	}
-
-	@Override
-	@Deprecated
-	public int getNumOfResourcesForGroup(final String groupId, final ResourceSearchBean searchBean) {
-		final Criteria criteria = getCriteria()
-				.createAlias("groups", "rg")
-				.add(Restrictions.eq("rg.id", groupId))
-				.setProjection(rowCount());
-		addSearchBeanCriteria(criteria, searchBean);
-		
-		return ((Number) criteria.uniqueResult()).intValue();
-	}
-
-	private Criteria getResourceForUserCriteria(final String userId) {
-		final Criteria criteria = getCriteria().createAlias("users", "ru").add(Restrictions.eq("ru.id", userId));
-		return criteria;
-	}
-
-	@Override
-	@LocalizedDatabaseGet
-	@Deprecated
-	public List<ResourceEntity> getResourcesForUser(final String userId,
-			final int from, final int size, final ResourceSearchBean searchBean) {
-		final Criteria criteria = getResourceForUserCriteria(userId);
-		addSearchBeanCriteria(criteria, searchBean);
-		
-		if (from > -1) {
-			criteria.setFirstResult(from);
-		}
-
-		if (size > -1) {
-			criteria.setMaxResults(size);
-		}
-
-		return criteria.list();
-	}
-	
-    @Override
-    @LocalizedDatabaseGet
-    @Deprecated
-    public List<ResourceEntity> getResourcesForUserByType(final String userId, String resourceTypeId, final ResourceSearchBean searchBean){
-        final Criteria criteria = getResourceForUserCriteria(userId);
-        addSearchBeanCriteria(criteria, searchBean);
-        criteria.createAlias("resourceType", "rt").add(Restrictions.eq("rt.id", resourceTypeId));
-        return criteria.list();
-    }
-    
-	@Override
-	@Deprecated
-	public int getNumOfResourcesForUser(String userId, final ResourceSearchBean searchBean) {
-		final Criteria criteria = getResourceForUserCriteria(userId).setProjection(rowCount());
-		addSearchBeanCriteria(criteria, searchBean);
-		return ((Number) criteria.uniqueResult()).intValue();
-	}
-	
 	private void addSearchBeanCriteria(final Criteria criteria, final ResourceSearchBean searchBean) {
 		if(searchBean != null && criteria != null) {
 			if(Boolean.TRUE.equals(searchBean.getRootsOnly())) {
@@ -313,10 +191,23 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
             if(StringUtils.isNotBlank(searchBean.getMetadataType())){
                 criteria.add(Restrictions.eq("type.id", searchBean.getMetadataType()));
             }
+            
+            if(CollectionUtils.isNotEmpty(searchBean.getResourceIdSet())){    
+                criteria.createAlias("resources", "resourceXrefs")
+						.createAlias("resourceXrefs.entity", "resource").add(
+						Restrictions.in("resource.id", searchBean.getResourceIdSet()));
+            }
+            
+            if(CollectionUtils.isNotEmpty(searchBean.getRoleIdSet())){    
+                criteria.createAlias("roles", "roleXrefs")
+						.createAlias("roleXrefs.entity", "role").add(
+						Restrictions.in("role.id", searchBean.getRoleIdSet()));
+            }
 
-            if(CollectionUtils.isNotEmpty(searchBean.getGroupIdSet())){
-                criteria.createAlias("groups", "gr");
-                criteria.add(Restrictions.in("gr.id", searchBean.getGroupIdSet()));
+            if(CollectionUtils.isNotEmpty(searchBean.getGroupIdSet())){    
+                criteria.createAlias("groups", "groupXrefs")
+						.createAlias("groupXrefs.entity", "group").add(
+						Restrictions.in("group.id", searchBean.getGroupIdSet()));
             }
             
             if(CollectionUtils.isNotEmpty(searchBean.getChildIdSet())) {
@@ -330,15 +221,19 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 						.createAlias("parentXrefs.entity", "parent").add(
 						Restrictions.in("parent.id", searchBean.getParentIdSet()));
 			}
+			
+			if(CollectionUtils.isNotEmpty(searchBean.getOrganizationIdSet())){    
+                criteria.createAlias("organizations", "organizationXrefs")
+						.createAlias("organizationXrefs.entity", "organization").add(
+						Restrictions.in("organization.id", searchBean.getOrganizationIdSet()));
+            }
 
-            if(CollectionUtils.isNotEmpty(searchBean.getRoleIdSet())){
-                criteria.createAlias("roles", "r");
-                criteria.add(Restrictions.in("r.id", searchBean.getRoleIdSet()));
+            if(CollectionUtils.isNotEmpty(searchBean.getUserIdSet())){    
+                criteria.createAlias("users", "userXrefs")
+						.createAlias("userXrefs.memberEntity", "user").add(
+						Restrictions.in("user.id", searchBean.getUserIdSet()));
             }
-            if(CollectionUtils.isNotEmpty(searchBean.getUserIdSet())){
-                criteria.createAlias("users", "usr");
-                criteria.add(Restrictions.in("usr.id", searchBean.getUserIdSet()));
-            }
+            
 			if(StringUtils.isNotBlank(searchBean.getAdminResourceId())){
 				criteria.add(Restrictions.eq("adminResource.id", searchBean.getAdminResourceId()));
 			}

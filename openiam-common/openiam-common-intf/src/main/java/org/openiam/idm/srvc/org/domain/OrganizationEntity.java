@@ -1,9 +1,11 @@
 package org.openiam.idm.srvc.org.domain;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.persistence.AttributeOverride;
@@ -23,6 +25,7 @@ import javax.validation.constraints.Size;
 import org.openiam.base.domain.AbstractMetdataTypeEntity;
 import org.openiam.base.domain.KeyEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.access.domain.AccessRightEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.loc.domain.LocationEntity;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
@@ -34,7 +37,11 @@ import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.Where;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.role.domain.RoleEntity;
+import org.openiam.idm.srvc.role.domain.RoleToRoleMembershipXrefEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.idm.srvc.user.domain.UserToGroupMembershipXrefEntity;
+import org.openiam.idm.srvc.user.domain.UserToOrganizationMembershipXrefEntity;
 import org.openiam.internationalization.Internationalized;
 
 @Entity
@@ -102,23 +109,17 @@ public class OrganizationEntity extends AbstractMetdataTypeEntity {
     @Size(max = 10, message = "organization.symbol.too.long")
     private String symbol;
     
-	@ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
-    @JoinTable(name="COMPANY_TO_COMPANY_MEMBERSHIP",
-        joinColumns={@JoinColumn(name="MEMBER_COMPANY_ID")},
-        inverseJoinColumns={@JoinColumn(name="COMPANY_ID")})
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="memberEntity", orphanRemoval=true)
     @Fetch(FetchMode.SUBSELECT)
-    private Set<OrganizationEntity> parentOrganizations;
-    
-	@ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
-    @JoinTable(name="COMPANY_TO_COMPANY_MEMBERSHIP",
-        joinColumns={@JoinColumn(name="COMPANY_ID")},
-        inverseJoinColumns={@JoinColumn(name="MEMBER_COMPANY_ID")})
-    @Fetch(FetchMode.SUBSELECT)
-    private Set<OrganizationEntity> childOrganizations;
+    private Set<OrgToOrgMembershipXrefEntity> parentOrganizations = new HashSet<OrgToOrgMembershipXrefEntity>(0);
 
-	@ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
-    @JoinTable(name = "USER_AFFILIATION", joinColumns = { @JoinColumn(name = "COMPANY_ID") }, inverseJoinColumns = { @JoinColumn(name = "USER_ID") })
-	private Set<UserEntity> users;
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="entity", orphanRemoval=true)
+    @Fetch(FetchMode.SUBSELECT)
+    private Set<OrgToOrgMembershipXrefEntity> childOrganizations = new HashSet<OrgToOrgMembershipXrefEntity>(0);
+
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="entity", orphanRemoval=true)
+    @Fetch(FetchMode.SUBSELECT)
+	private Set<UserToOrganizationMembershipXrefEntity> users;
 	
 	@ManyToOne(fetch = FetchType.EAGER,cascade={CascadeType.ALL})
     @JoinColumn(name="ADMIN_RESOURCE_ID", referencedColumnName = "RESOURCE_ID", insertable = true, updatable = true, nullable=true)
@@ -138,11 +139,17 @@ public class OrganizationEntity extends AbstractMetdataTypeEntity {
     @Internationalized
     private Set<LocationEntity> locations;
 
-	@ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
-	@JoinTable(name = "GROUP_ORGANIZATION", joinColumns = { @JoinColumn(name = "COMPANY_ID") }, inverseJoinColumns = { @JoinColumn(name = "GRP_ID") })
-	@Fetch(FetchMode.SUBSELECT)
-	private Set<GroupEntity> groups;
+	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="entity", orphanRemoval=true)
+    @Fetch(FetchMode.SUBSELECT)
+	private Set<GroupToOrgMembershipXrefEntity> groups;
+	
+	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="entity", orphanRemoval=true)
+    @Fetch(FetchMode.SUBSELECT)
+	private Set<RoleToOrgMembershipXrefEntity> roles;
 
+	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="entity", orphanRemoval=true)
+    @Fetch(FetchMode.SUBSELECT)
+	private Set<ResourceToOrgMembershipXrefEntity> resources;
 
     public OrganizationEntity() {
     }
@@ -267,65 +274,122 @@ public class OrganizationEntity extends AbstractMetdataTypeEntity {
         this.symbol = symbol;
     }
 
-	public Set<OrganizationEntity> getParentOrganizations() {
+	public Set<OrgToOrgMembershipXrefEntity> getParentOrganizations() {
 		return parentOrganizations;
 	}
 
-	public void setParentOrganizations(Set<OrganizationEntity> parentOrganizations) {
+	public void setParentOrganizations(Set<OrgToOrgMembershipXrefEntity> parentOrganizations) {
 		this.parentOrganizations = parentOrganizations;
 	}
 
-	public Set<OrganizationEntity> getChildOrganizations() {
+	public Set<OrgToOrgMembershipXrefEntity> getChildOrganizations() {
 		return childOrganizations;
 	}
 
-	public void setChildOrganizations(Set<OrganizationEntity> childOrganizations) {
+	public void setChildOrganizations(Set<OrgToOrgMembershipXrefEntity> childOrganizations) {
 		this.childOrganizations = childOrganizations;
 	}
 	
-	public void addChildOrganization(final OrganizationEntity entity) {
+	public ResourceToOrgMembershipXrefEntity getResource(final String resourceId) {
+		final Optional<ResourceToOrgMembershipXrefEntity> xref = 
+    			this.getResources()
+    				.stream()
+    				.filter(e -> resourceId.equals(e.getMemberEntity().getId()))
+    				.findFirst();
+    	return xref.isPresent() ? xref.get() : null;
+	}
+	
+	public RoleToOrgMembershipXrefEntity getRole(final String roleId) {
+		final Optional<RoleToOrgMembershipXrefEntity> xref = 
+    			this.getRoles()
+    				.stream()
+    				.filter(e -> roleId.equals(e.getMemberEntity().getId()))
+    				.findFirst();
+    	return xref.isPresent() ? xref.get() : null;
+	}
+	
+	public GroupToOrgMembershipXrefEntity getGroup(final String groupId) {
+		final Optional<GroupToOrgMembershipXrefEntity> xref = 
+    			this.getGroups()
+    				.stream()
+    				.filter(e -> groupId.equals(e.getMemberEntity().getId()))
+    				.findFirst();
+    	return xref.isPresent() ? xref.get() : null;
+	}
+	
+	public OrgToOrgMembershipXrefEntity getChild(final String childId) {
+		final Optional<OrgToOrgMembershipXrefEntity> xref = 
+    			this.getChildOrganizations()
+    				.stream()
+    				.filter(e -> childId.equals(e.getMemberEntity().getId()))
+    				.findFirst();
+    	return xref.isPresent() ? xref.get() : null;
+	}
+	
+	public OrgToOrgMembershipXrefEntity getParent(final String parentId) {
+    	final Optional<OrgToOrgMembershipXrefEntity> xref = 
+    			this.getParentOrganizations()
+    				.stream()
+    				.filter(e -> parentId.equals(e.getEntity().getId()))
+    				.findFirst();
+    	return xref.isPresent() ? xref.get() : null;
+    }
+
+	public void addChild(final OrganizationEntity entity, final Collection<AccessRightEntity> rights) {
 		if(entity != null) {
-			if(childOrganizations == null) {
-				childOrganizations = new LinkedHashSet<OrganizationEntity>();
+			if(this.childOrganizations == null) {
+				this.childOrganizations = new LinkedHashSet<OrgToOrgMembershipXrefEntity>();
 			}
-			childOrganizations.add(entity);
+			OrgToOrgMembershipXrefEntity theXref = null;
+			for(final OrgToOrgMembershipXrefEntity xref : this.childOrganizations) {
+				if(xref.getEntity().getId().equals(getId()) && xref.getMemberEntity().getId().equals(entity.getId())) {
+					theXref = xref;
+					break;
+				}
+			}
+			
+			if(theXref == null) {
+				theXref = new OrgToOrgMembershipXrefEntity();
+				theXref.setEntity(this);
+				theXref.setMemberEntity(entity);
+			}
+			if(rights != null) {
+				theXref.setRights(new HashSet<AccessRightEntity>(rights));
+			}
+			this.childOrganizations.add(theXref);
 		}
 	}
 	
-	public void removeChildOrganization(final String organizationId) {
-		if(organizationId != null) {
-			if(childOrganizations != null) {
-				for(final Iterator<OrganizationEntity> it = childOrganizations.iterator(); it.hasNext();) {
-					final OrganizationEntity entity = it.next();
-					if(entity.getId().equals(organizationId)) {
-						it.remove();
-						break;
-					}
-				}
+	public boolean hasChild(final OrganizationEntity entity) {
+		boolean contains = false;
+		if(childOrganizations != null) {
+			contains = (childOrganizations.stream().map(e -> e.getMemberEntity()).filter(e -> e.getId().equals(entity.getId())).count() > 0);
+		}
+		return contains;
+	}
+	
+	public void removeChild(final OrganizationEntity entity) {
+		if(entity != null) {
+			if(this.childOrganizations != null) {
+				this.childOrganizations.removeIf(e -> e.getMemberEntity().getId().equals(entity.getId()));
 			}
 		}
 	}
 	
-	public boolean hasChildOrganization(final String organizationId) {
-		boolean retval = false;
-		if(organizationId != null) {
-			if(childOrganizations != null) {
-				for(final OrganizationEntity entity : childOrganizations) {
-					if(entity.getId().equals(organizationId)) {
-						retval = true;
-						break;
-					}
-				}
-			}
-		}
-		return retval;
+	public UserToOrganizationMembershipXrefEntity getUser(final String userId) {
+		final Optional<UserToOrganizationMembershipXrefEntity> xref = 
+    			this.getUsers()
+    				.stream()
+    				.filter(e -> userId.equals(e.getMemberEntity().getId()))
+    				.findFirst();
+    	return xref.isPresent() ? xref.get() : null;
 	}
 
-    public Set<UserEntity> getUsers() {
+    public Set<UserToOrganizationMembershipXrefEntity> getUsers() {
         return users;
     }
 
-    public void setUsers(Set<UserEntity> users) {
+    public void setUsers(Set<UserToOrganizationMembershipXrefEntity> users) {
         this.users = users;
     }
 
@@ -372,15 +436,130 @@ public class OrganizationEntity extends AbstractMetdataTypeEntity {
         this.locations = locations;
     }
 
-	public Set<GroupEntity> getGroups() {
+	public Set<GroupToOrgMembershipXrefEntity> getGroups() {
 		return groups;
 	}
 
-	public void setGroups(Set<GroupEntity> groups) {
+	public void setGroups(Set<GroupToOrgMembershipXrefEntity> groups) {
 		this.groups = groups;
 	}
+	
+	public void addGroup(final GroupEntity entity, final Collection<AccessRightEntity> rights) {
+		if(entity != null) {
+			if(this.groups == null) {
+				this.groups = new LinkedHashSet<GroupToOrgMembershipXrefEntity>();
+			}
+			GroupToOrgMembershipXrefEntity theXref = null;
+			for(final GroupToOrgMembershipXrefEntity xref : this.groups) {
+				if(xref.getEntity().getId().equals(getId()) && xref.getMemberEntity().getId().equals(entity.getId())) {
+					theXref = xref;
+					break;
+				}
+			}
+			
+			if(theXref == null) {
+				theXref = new GroupToOrgMembershipXrefEntity();
+				theXref.setEntity(this);
+				theXref.setMemberEntity(entity);
+			}
+			if(rights != null) {
+				theXref.setRights(new HashSet<AccessRightEntity>(rights));
+			}
+			this.groups.add(theXref);
+		}
+	}
+	
+	public void removeGroup(final GroupEntity entity) {
+		if(entity != null) {
+			if(this.groups != null) {
+				this.groups.removeIf(e -> e.getMemberEntity().getId().equals(entity.getId()));
+			}
+		}
+	}
 
-    @Override
+    public Set<RoleToOrgMembershipXrefEntity> getRoles() {
+		return roles;
+	}
+
+	public void setRoles(Set<RoleToOrgMembershipXrefEntity> roles) {
+		this.roles = roles;
+	}
+	
+	public void addRole(final RoleEntity entity, final Collection<AccessRightEntity> rights) {
+		if(entity != null) {
+			if(this.roles == null) {
+				this.roles = new LinkedHashSet<RoleToOrgMembershipXrefEntity>();
+			}
+			RoleToOrgMembershipXrefEntity theXref = null;
+			for(final RoleToOrgMembershipXrefEntity xref : this.roles) {
+				if(xref.getEntity().getId().equals(getId()) && xref.getMemberEntity().getId().equals(entity.getId())) {
+					theXref = xref;
+					break;
+				}
+			}
+			
+			if(theXref == null) {
+				theXref = new RoleToOrgMembershipXrefEntity();
+				theXref.setEntity(this);
+				theXref.setMemberEntity(entity);
+			}
+			if(rights != null) {
+				theXref.setRights(new HashSet<AccessRightEntity>(rights));
+			}
+			this.roles.add(theXref);
+		}
+	}
+	
+	public void removeRole(final RoleEntity entity) {
+		if(entity != null) {
+			if(this.roles != null) {
+				this.roles.removeIf(e -> e.getMemberEntity().getId().equals(entity.getId()));
+			}
+		}
+	}
+
+	public Set<ResourceToOrgMembershipXrefEntity> getResources() {
+		return resources;
+	}
+
+	public void setResources(Set<ResourceToOrgMembershipXrefEntity> resources) {
+		this.resources = resources;
+	}
+	
+	public void addResource(final ResourceEntity entity, final Collection<AccessRightEntity> rights) {
+		if(entity != null) {
+			if(this.resources == null) {
+				this.resources = new LinkedHashSet<ResourceToOrgMembershipXrefEntity>();
+			}
+			ResourceToOrgMembershipXrefEntity theXref = null;
+			for(final ResourceToOrgMembershipXrefEntity xref : this.resources) {
+				if(xref.getEntity().getId().equals(getId()) && xref.getMemberEntity().getId().equals(entity.getId())) {
+					theXref = xref;
+					break;
+				}
+			}
+			
+			if(theXref == null) {
+				theXref = new ResourceToOrgMembershipXrefEntity();
+				theXref.setEntity(this);
+				theXref.setMemberEntity(entity);
+			}
+			if(rights != null) {
+				theXref.setRights(new HashSet<AccessRightEntity>(rights));
+			}
+			this.resources.add(theXref);
+		}
+	}
+	
+	public void removeResource(final ResourceEntity entity) {
+		if(entity != null) {
+			if(this.resources != null) {
+				this.resources.removeIf(e -> e.getMemberEntity().getId().equals(entity.getId()));
+			}
+		}
+	}
+
+	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();

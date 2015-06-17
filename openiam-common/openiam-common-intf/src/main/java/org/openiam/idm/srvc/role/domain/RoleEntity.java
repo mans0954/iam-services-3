@@ -33,12 +33,17 @@ import org.openiam.base.domain.AbstractMetdataTypeEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.access.domain.AccessRightEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
+import org.openiam.idm.srvc.grp.domain.GroupToResourceMembershipXrefEntity;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
+import org.openiam.idm.srvc.org.domain.GroupToOrgMembershipXrefEntity;
+import org.openiam.idm.srvc.org.domain.RoleToOrgMembershipXrefEntity;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourceToResourceMembershipXrefEntity;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.idm.srvc.user.domain.UserToGroupMembershipXrefEntity;
+import org.openiam.idm.srvc.user.domain.UserToRoleMembershipXrefEntity;
 import org.openiam.internationalization.Internationalized;
 
 @Entity
@@ -64,12 +69,9 @@ public class RoleEntity extends AbstractMetdataTypeEntity {
     @JoinColumn(name = "MANAGED_SYS_ID", referencedColumnName = "MANAGED_SYS_ID", insertable = true, updatable = true, nullable=true)
     private ManagedSysEntity managedSystem;
 
-    @ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
-    @JoinTable(name="GRP_ROLE",
-	    joinColumns={@JoinColumn(name="ROLE_ID")},
-	    inverseJoinColumns={@JoinColumn(name="GRP_ID")})
-	@Fetch(FetchMode.SUBSELECT)
-    private Set<GroupEntity> groups;
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="entity", orphanRemoval=true)
+    @Fetch(FetchMode.SUBSELECT)
+	private Set<RoleToGroupMembershipXrefEntity> groups;
 	
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="role", orphanRemoval=true)
     @OrderBy("name asc")
@@ -87,14 +89,14 @@ public class RoleEntity extends AbstractMetdataTypeEntity {
     @Fetch(FetchMode.SUBSELECT)
     private Set<RoleToRoleMembershipXrefEntity> childRoles = new HashSet<RoleToRoleMembershipXrefEntity>(0);
 
-    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    @JoinTable(name = "RESOURCE_ROLE", joinColumns = { @JoinColumn(name = "ROLE_ID") }, inverseJoinColumns = { @JoinColumn(name = "RESOURCE_ID") })
-    private Set<ResourceEntity> resources;
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="entity", orphanRemoval=true)
+    @Fetch(FetchMode.SUBSELECT)
+	private Set<RoleToResourceMembershipXrefEntity> resources;
 
-    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    @JoinTable(name = "USER_ROLE", joinColumns = { @JoinColumn(name = "ROLE_ID") }, inverseJoinColumns = { @JoinColumn(name = "USER_ID") })
-    private Set<UserEntity> users = new HashSet<UserEntity>(0);
-
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="entity", orphanRemoval=true)
+    @Fetch(FetchMode.SUBSELECT)
+    private Set<UserToRoleMembershipXrefEntity> users = new HashSet<UserToRoleMembershipXrefEntity>(0);
+    
     @Column(name="CREATE_DATE",length=19)
 	private Date createDate;
     
@@ -108,6 +110,10 @@ public class RoleEntity extends AbstractMetdataTypeEntity {
 	@OneToMany(cascade = {CascadeType.ALL}, fetch = FetchType.LAZY, mappedBy="associationEntityId", orphanRemoval=true)
 	@Where(clause="ASSOCIATION_TYPE='ROLE'")
 	private Set<ApproverAssociationEntity> approverAssociations;
+	
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="memberEntity", orphanRemoval=true)
+    @Fetch(FetchMode.SUBSELECT)
+    private Set<RoleToOrgMembershipXrefEntity> organizations = new HashSet<RoleToOrgMembershipXrefEntity>(0);
 
 	@ManyToMany(cascade = {CascadeType.ALL})
 	@JoinTable(name = "OAUTH_CODE_SCOPES", joinColumns = { @JoinColumn(name = "ROLE_ID") }, inverseJoinColumns = { @JoinColumn(name = "OAUTH_CODE_ID") })
@@ -140,51 +146,7 @@ public class RoleEntity extends AbstractMetdataTypeEntity {
 	public void setStatus(String status) {
 		this.status = status;
 	}
-
-	public boolean hasGroup(final String groupId) {
-		boolean retVal = false;
-		if(groups != null) {
-			for(final GroupEntity entity : groups) {
-				if(entity.getId().equals(groupId)) {
-					retVal = true;
-					break;
-				}
-			}
-		}
-		return retVal;
-	}
-
-	public Set<GroupEntity> getGroups() {
-		return groups;
-	}
-
-	public void setGroups(Set<GroupEntity> groups) {
-		this.groups = groups;
-	}
 	
-	public void addGroup(final GroupEntity group) {
-		if(group != null) {
-			if(this.groups == null) {
-				this.groups = new LinkedHashSet<GroupEntity>();
-			}
-			this.groups.add(group);
-		}
-	}
-	
-	public void removeGroup(final String groupId) {
-		if(groupId != null) {
-			if(groups != null) {
-				for(final Iterator<GroupEntity> it = groups.iterator(); it.hasNext();) {
-					final GroupEntity entity = it.next();
-					if(entity.getId().equals(groupId)) {
-						it.remove();
-						break;
-					}
-				}
-			}
-		}
-	}
-
 	public Set<RoleAttributeEntity> getRoleAttributes() {
 		return roleAttributes;
 	}
@@ -207,6 +169,24 @@ public class RoleEntity extends AbstractMetdataTypeEntity {
 	
 	public void setChildRoles(Set<RoleToRoleMembershipXrefEntity> childRoles) {
 		this.childRoles = childRoles;
+	}
+	
+	public RoleToOrgMembershipXrefEntity getOrganization(final String organizationId) {
+    	final Optional<RoleToOrgMembershipXrefEntity> xref = 
+    			this.getOrganizations()
+				.stream()
+				.filter(e -> organizationId.equals(e.getEntity().getId()))
+				.findFirst();
+    	return xref.isPresent() ? xref.get() : null;
+    }
+	
+	public RoleToRoleMembershipXrefEntity getChild(final String childId) {
+		final Optional<RoleToRoleMembershipXrefEntity> xref = 
+    			this.getChildRoles()
+    				.stream()
+    				.filter(e -> childId.equals(e.getMemberEntity().getId()))
+    				.findFirst();
+    	return xref.isPresent() ? xref.get() : null;
 	}
 	
 	public RoleToRoleMembershipXrefEntity getParent(final String parentId) {
@@ -275,19 +255,121 @@ public class RoleEntity extends AbstractMetdataTypeEntity {
 		this.createdBy = createdBy;
 	}
 
-    public Set<ResourceEntity> getResources() {
+    public Set<RoleToResourceMembershipXrefEntity> getResources() {
         return resources;
     }
 
-    public void setResources(Set<ResourceEntity> resources) {
+    public void setResources(Set<RoleToResourceMembershipXrefEntity> resources) {
         this.resources = resources;
     }
+    
+    public RoleToGroupMembershipXrefEntity getGroup(final String groupId) {
+		final Optional<RoleToGroupMembershipXrefEntity> xref = 
+    			this.getGroups()
+    				.stream()
+    				.filter(e -> groupId.equals(e.getMemberEntity().getId()))
+    				.findFirst();
+    	return xref.isPresent() ? xref.get() : null;
+	}
+    
+	public RoleToResourceMembershipXrefEntity getResource(final String resourceId) {
+		final Optional<RoleToResourceMembershipXrefEntity> xref = 
+    			this.getResources()
+    				.stream()
+    				.filter(e -> resourceId.equals(e.getMemberEntity().getId()))
+    				.findFirst();
+    	return xref.isPresent() ? xref.get() : null;
+	}
+	
+	public void addResource(final ResourceEntity entity, final Collection<AccessRightEntity> rights) {
+		if(entity != null) {
+			if(this.resources == null) {
+				this.resources = new LinkedHashSet<RoleToResourceMembershipXrefEntity>();
+			}
+			RoleToResourceMembershipXrefEntity theXref = null;
+			for(final RoleToResourceMembershipXrefEntity xref : this.resources) {
+				if(xref.getEntity().getId().equals(getId()) && xref.getMemberEntity().getId().equals(entity.getId())) {
+					theXref = xref;
+					break;
+				}
+			}
+			
+			if(theXref == null) {
+				theXref = new RoleToResourceMembershipXrefEntity();
+				theXref.setEntity(this);
+				theXref.setMemberEntity(entity);
+			}
+			if(rights != null) {
+				theXref.setRights(new HashSet<AccessRightEntity>(rights));
+			}
+			this.resources.add(theXref);
+		}
+	}
+	
+	public void removeResource(final ResourceEntity entity) {
+		if(entity != null) {
+			if(this.resources != null) {
+				this.resources.removeIf(e -> e.getMemberEntity().getId().equals(entity.getId()));
+			}
+		}
+	}
+	
+	public void addGroup(final GroupEntity entity, final Collection<AccessRightEntity> rights) {
+		if(entity != null) {
+			if(this.groups == null) {
+				this.groups = new LinkedHashSet<RoleToGroupMembershipXrefEntity>();
+			}
+			RoleToGroupMembershipXrefEntity theXref = null;
+			for(final RoleToGroupMembershipXrefEntity xref : this.groups) {
+				if(xref.getEntity().getId().equals(getId()) && xref.getMemberEntity().getId().equals(entity.getId())) {
+					theXref = xref;
+					break;
+				}
+			}
+			
+			if(theXref == null) {
+				theXref = new RoleToGroupMembershipXrefEntity();
+				theXref.setEntity(this);
+				theXref.setMemberEntity(entity);
+			}
+			if(rights != null) {
+				theXref.setRights(new HashSet<AccessRightEntity>(rights));
+			}
+			this.groups.add(theXref);
+		}
+	}
+	
+	public void removeGroup(final GroupEntity entity) {
+		if(entity != null) {
+			if(this.groups != null) {
+				this.groups.removeIf(e -> e.getMemberEntity().getId().equals(entity.getId()));
+			}
+		}
+	}
 
-    public Set<UserEntity> getUsers() {
+    public Set<RoleToGroupMembershipXrefEntity> getGroups() {
+		return groups;
+	}
+
+	public void setGroups(Set<RoleToGroupMembershipXrefEntity> groups) {
+		this.groups = groups;
+	}
+	
+	public UserToRoleMembershipXrefEntity getUser(final String userId) {
+		final Optional<UserToRoleMembershipXrefEntity> xref = 
+    			this.getUsers()
+    				.stream()
+    				.filter(e -> userId.equals(e.getMemberEntity().getId()))
+    				.findFirst();
+    	return xref.isPresent() ? xref.get() : null;
+	}
+
+
+	public Set<UserToRoleMembershipXrefEntity> getUsers() {
         return users;
     }
 
-    public void setUsers(Set<UserEntity> users) {
+    public void setUsers(Set<UserToRoleMembershipXrefEntity> users) {
         this.users = users;
     }
     
@@ -325,10 +407,17 @@ public class RoleEntity extends AbstractMetdataTypeEntity {
 		}
 	}
 
+	public Set<RoleToOrgMembershipXrefEntity> getOrganizations() {
+		return organizations;
+	}
+
+	public void setOrganizations(Set<RoleToOrgMembershipXrefEntity> organizations) {
+		this.organizations = organizations;
+    }
+ 
 	public Set<OAuthCodeEntity> getoAuthCodeSet() {
 		return oAuthCodeSet;
 	}
-
 	public void setoAuthCodeSet(Set<OAuthCodeEntity> oAuthCodeSet) {
 		this.oAuthCodeSet = oAuthCodeSet;
 	}

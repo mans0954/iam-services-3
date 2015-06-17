@@ -20,6 +20,7 @@ import org.openiam.core.dao.UserKeyDao;
 import org.openiam.dozer.converter.*;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.*;
+import org.openiam.idm.srvc.access.service.AccessRightDAO;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.auth.login.AuthStateDAO;
@@ -168,6 +169,9 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
     private RoleDataService roleDataService;
     @Autowired
     private ApproverAssociationDAO approverAssociationDAO;
+    
+    @Autowired
+    private AccessRightDAO accessRightDAO;
 
     @Value("${org.openiam.user.search.max.results}")
     private int MAX_USER_SEARCH_RESULTS;
@@ -262,10 +266,7 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
         if (emailSet == null || emailSet.isEmpty())
             return;
 
-        Iterator<EmailAddressEntity> it = emailSet.iterator();
-
-        while (it.hasNext()) {
-            EmailAddressEntity emailAdr = it.next();
+        for (EmailAddressEntity emailAdr : emailSet) {
             if (emailAdr.getParent() == null) {
                 emailAdr.setParent(userDao.findById(user.getId()));
             }
@@ -707,83 +708,25 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
                 entityList.add(entity);
             }
         } else {
-            List<UserEntity> finalizedIdList = userDao.findByIds(getUserIds(searchBean), searchBean);
-            sortUsersByOrg(finalizedIdList, searchBean.getSortBy());
-            if (from > -1 && size > -1) {
-                if (finalizedIdList != null && finalizedIdList.size() >= from) {
-                    int to = from + size;
-                    if (to > finalizedIdList.size()) {
-                        to = finalizedIdList.size();
-                    }
-                    finalizedIdList = new ArrayList<UserEntity>(finalizedIdList.subList(from, to));
-                }
-            }
-            entityList = finalizedIdList;
+            entityList = userDao.findByIds(getUserIds(searchBean), searchBean, from, size);
         }
 
-        if(searchBean.getInitDefaulLoginFlag()){
-            for(UserEntity usr: entityList){
-                usr.setDefaultLogin(sysConfiguration.getDefaultManagedSysId());
-            }
+        if(CollectionUtils.isNotEmpty(entityList)
+                && searchBean.getInitDefaulLoginFlag()){
+            setDefaultLogin(entityList);
         }
 
         return entityList;
     }
 
-    private void sortUsersByOrg(List<UserEntity> userList, List<SortParam> sortParamList) {
-        if(CollectionUtils.isNotEmpty(userList) && CollectionUtils.isNotEmpty(sortParamList)) {
-            for (SortParam sort : sortParamList) {
-                final OrderConstants orderDir = (sort.getOrderBy() == null) ? OrderConstants.ASC : sort.getOrderBy();
-
-                if ("organization".equals(sort.getSortBy())
-                        || "department".equals(sort.getSortBy())) {
-
-                    final String typeId = ("organization".equals(sort.getSortBy()))?
-                    		getString("org.openiam.organization.type.id")	: 
-                    		getString("org.openiam.department.type.id");
-                    Collections.sort(userList, new Comparator<UserEntity>() {
-                        @Override
-                        public int compare(UserEntity u1, UserEntity u2) {
-                            int result = 0;
-                            OrganizationEntity org1 = this.getUserOrg(u1, typeId);
-                            OrganizationEntity org2 = this.getUserOrg(u2, typeId);
-                            if(org1==null && org2!=null)
-                                result = -1;
-                            else if(org1!=null && org2==null)
-                                result = 1;
-                            else if(org1==null && org2==null)
-                                result = 0;
-                            else
-                                result = org1.getName().compareTo(org2.getName());
-
-                            return orderDir == OrderConstants.ASC ? result: result*(-1);
-                        }
-
-                        private OrganizationEntity getUserOrg(UserEntity u, String orgTypeId){
-                            OrganizationEntity org = null;
-                            if(CollectionUtils.isNotEmpty(u.getAffiliations())){
-                                List<OrganizationEntity>  userOrgs = new ArrayList<OrganizationEntity>();
-                                for(OrganizationEntity o: u.getAffiliations()){
-                                    if(o.getOrganizationType().getId().equals(orgTypeId)){
-                                        userOrgs.add(o);
-                                    }
-                                }
-                                if(CollectionUtils.isNotEmpty(userOrgs)) {
-                                    Collections.sort(userOrgs, new Comparator<OrganizationEntity>() {
-                                        @Override
-                                        public int compare(OrganizationEntity o1, OrganizationEntity o2) {
-                                            return o1.getName().compareTo(o2.getName());
-                                        }
-                                    });
-                                    org = userOrgs.get(0);
-                                }
-                            }
-                            return org;
-                        }
-                    });
-
-                    break;
-                }
+    private void setDefaultLogin(List<UserEntity> entityList) {
+        List<String> userIds = new ArrayList<>();
+        userIds.add(null);
+        for(UserEntity usr: entityList){
+            userIds.set(0, usr.getId());
+            List<LoginEntity> entities = loginDao.findByUserIds(userIds, sysConfiguration.getDefaultManagedSysId());
+            if (CollectionUtils.isNotEmpty(entities)) {
+                usr.setDefaultLogin(entities.get(0).getLogin());
             }
         }
     }
@@ -791,7 +734,7 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
     @Override
     @Transactional(readOnly = true)
     public int count(UserSearchBean searchBean) throws BasicDataServiceException {
-        return userDao.findByIds(getUserIds(searchBean)).size();
+        return userDao.countByIds(getUserIds(searchBean));
     }
 
     @Override
@@ -1667,83 +1610,6 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
     }
 
     @Override
-    @Transactional(readOnly = true)
-    @Deprecated
-    public List<UserEntity> getUsersForResource(String resourceId, String requesterId, int from, int size) {
-//        DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch(requesterId);
-//        return userDao.getUsersForResource(resourceId, delegationFilter, from, size);
-        UserSearchBean userSearchBean = new UserSearchBean();
-        userSearchBean.setRequesterId(requesterId);
-        userSearchBean.addResourceId(resourceId);
-
-        List<SortParam> sortParamList = new ArrayList<>();
-        sortParamList.add( new SortParam(OrderConstants.ASC, "name"));
-        userSearchBean.setSortBy(sortParamList);
-
-
-        return getUsersForResource(userSearchBean, from,size);
-    }
-    @Override
-    @Transactional(readOnly = true)
-    public List<UserEntity> getUsersForResource(UserSearchBean userSearchBean, int from, int size){
-        DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch(userSearchBean.getRequesterId());
-
-        String resourceId = userSearchBean.getResourceIdSet().iterator().next();
-
-        return userDao.getUsersForResource(resourceId, delegationFilter, userSearchBean.getSortBy(), from, size);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public int getNumOfUsersForResource(String resourceId, String requesterId) {
-        DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch(requesterId);
-        return userDao.getNumOfUsersForResource(resourceId, delegationFilter);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<UserEntity> getUsersForGroup(String groupId, String requesterId, int from, int size) {
-        DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch(requesterId);
-        if (DelegationFilterHelper.isAllowed(groupId, delegationFilter.getGroupIdSet())) {
-            return userDao.getUsersForGroup(groupId, delegationFilter, from, size);
-        }
-        return new ArrayList<UserEntity>(0);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    @Deprecated
-    public int getNumOfUsersForGroup(String groupId, String requesterId) {
-        DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch(requesterId);
-        if (DelegationFilterHelper.isAllowed(groupId, delegationFilter.getGroupIdSet())) {
-            return userDao.getNumOfUsersForGroup(groupId, delegationFilter);
-        }
-        return 0;
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    @Deprecated
-    public List<UserEntity> getUsersForRole(String roleId, String requesterId, int from, int size) {
-        DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch(requesterId);
-        if (DelegationFilterHelper.isAllowed(roleId, delegationFilter.getRoleIdSet())) {
-            return userDao.getUsersForRole(roleId, delegationFilter, from, size);
-        }
-        return new ArrayList<UserEntity>(0);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    @Deprecated
-    public int getNumOfUsersForRole(String roleId, String requesterId) {
-        DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch(requesterId);
-        if (DelegationFilterHelper.isAllowed(roleId, delegationFilter.getRoleIdSet())) {
-            return userDao.getNumOfUsersForRole(roleId, delegationFilter);
-        }
-        return 0;
-    }
-
-    @Override
     @Transactional
     public String saveUserInfo(UserEntity newUserEntity, String supervisorId) throws Exception {
         String userId = newUserEntity.getId();
@@ -1926,19 +1792,6 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
         user.setSecondaryStatus(null);
         userDao.update(user);
 		userIdentityAnswerDAO.deleteByUser(userId);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public boolean isRoleInUser(String userId, String roleId) {
-        boolean isExists = false;
-        UserEntity userEntity = userDao.findById(userId);
-        for (RoleEntity r : userEntity.getRoles()) {
-            if (r.getId().equals(roleId)) {
-                return true;
-            }
-        }
-        return isExists;
     }
 
     @Transactional(readOnly = true)
@@ -2391,18 +2244,22 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
 
     @Override
     @Transactional
-    public void addUserToGroup(String userId, String groupId) {
-        final GroupEntity groupEntity = groupDAO.findById(groupId);
-        final UserEntity userEntity = userDao.findById(userId);
-        userEntity.addGroup(groupEntity);
+    public void addUserToGroup(final String userId, final String groupId, final Set<String> rightIds) {
+        final GroupEntity group = groupDAO.findById(groupId);
+        final UserEntity user = userDao.findById(userId);
+        if(group != null && user != null) {
+        	user.addGroup(group, accessRightDAO.findByIds(rightIds));
+        }
     }
 
     @Override
     @Transactional
     public void removeUserFromGroup(String userId, String groupId) {
-    	final GroupEntity groupEntity = groupDAO.findById(groupId);
-    	final UserEntity userEntity = userDao.findById(userId);
-    	userEntity.removeGroup(groupEntity);
+    	final GroupEntity group = groupDAO.findById(groupId);
+    	final UserEntity user = userDao.findById(userId);
+    	if(group != null && user != null) {
+    		user.removeGroup(group);
+    	}
     }
 
     @Override
@@ -2441,17 +2298,27 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
     @Override
     @Transactional
     public void removeUserFromResource(String userId, String resourceId) {
-    	 final ResourceEntity resourceEntity = resourceDAO.findById(resourceId);
-    	 final UserEntity userEntity = userDao.findById(userId);
-    	 userEntity.removeResource(resourceEntity);
+    	 final ResourceEntity resource = resourceDAO.findById(resourceId);
+    	 final UserEntity user = userDao.findById(userId);
+    	 if(resource != null && user != null) {
+    		 resource.removeUser(user);
+    		 resourceDAO.update(resource);
+    		 //user.removeResource(resource);
+    		 //userDao.update(user); 
+    	 }
     }
 
     @Override
     @Transactional
-    public void addUserToResource(String userId, String resourceId) {
-    	final ResourceEntity resourceEntity = resourceDAO.findById(resourceId);
-    	final UserEntity userEntity = userDao.findById(userId);
-    	userEntity.addResource(resourceEntity);
+    public void addUserToResource(final String userId, final String resourceId, final Set<String> rightIds) {
+    	final ResourceEntity resource = resourceDAO.findById(resourceId);
+    	final UserEntity user = userDao.findById(userId);
+    	if(resource != null && user != null) {
+    		resource.addUser(user, accessRightDAO.findByIds(rightIds));
+    		resourceDAO.update(resource);
+    		//user.addResource(resource, accessRightDAO.findByIds(rightIds));
+    		//userDao.update(user);
+    	}
     }
 
 

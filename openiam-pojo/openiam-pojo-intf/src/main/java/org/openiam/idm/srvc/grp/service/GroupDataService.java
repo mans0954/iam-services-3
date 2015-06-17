@@ -25,72 +25,38 @@ import java.util.Set;
 
 public interface GroupDataService {
 	@Deprecated
-    GroupEntity getGroup(final String id);
+    public GroupEntity getGroup(final String id);
 	
 	@Deprecated
-    GroupEntity getGroup(final String id, final String requesterId);
-    GroupEntity getGroupByName(final String groupName, final String requesterId);
-    List<Group> getCompiledGroupsForUser(final String userId);
+    public GroupEntity getGroup(final String id, final String requesterId);
+    public GroupEntity getGroupByName(final String groupName, final String requesterId);
+    public List<Group> getCompiledGroupsForUser(final String userId);
 
-    GroupEntity getGroupLocalize(final String id, final LanguageEntity language);
-    GroupEntity getGroupLocalize(final String id, final String requesterId, final LanguageEntity language);
-    GroupEntity getGroupByNameLocalize(final String groupName, final String requesterId, final LanguageEntity language);
-    List<Group> getCompiledGroupsForUserLocalize(final String userId, final LanguageEntity language);
+    public GroupEntity getGroupLocalize(final String id, final LanguageEntity language);
+    public GroupEntity getGroupLocalize(final String id, final String requesterId, final LanguageEntity language);
+    public GroupEntity getGroupByNameLocalize(final String groupName, final String requesterId, final LanguageEntity language);
+    public List<Group> getCompiledGroupsForUserLocalize(final String userId, final LanguageEntity language);
     /**
      * Returns a list of Group objects that satisfy the search criteria defined through the GroupSearch parameter.
      *
      * @param searchBean
      * @return
      */
-    List<GroupEntity> findBeans(final GroupSearchBean searchBean, String requesterId, final int from, final int size);
-    List<GroupEntity> getChildGroups(final String groupId, final String requesterId, final int from, final int size);
-    List<GroupEntity> getParentGroups(final String groupId, final String requesterId, final int from, final int size);
-    List<GroupEntity> getGroupsForResource(final String resourceId, final String requesterId, final int from, final int size);
+    public List<GroupEntity> findBeans(final GroupSearchBean searchBean, String requesterId, final int from, final int size);
 
-    List<Group> getGroupsDtoForUser(final String userId, String requesterId, final int from, final int size);
+    public List<Group> getGroupsDtoForUser(final String userId, String requesterId, final int from, final int size);
 
-    List<GroupEntity> getGroupsForUser(final String userId, String requesterId, final int from, final int size);
-    List<GroupEntity> getGroupsForRole(final String roleId, String requesterId, final int from, final int size);
+    public List<GroupEntity> findBeansLocalize(final GroupSearchBean searchBean, String requesterId, final int from, final int size, final LanguageEntity language);
+    
+    public Set<String> getGroupIdList();
 
-    List<GroupEntity> findBeansLocalize(final GroupSearchBean searchBean, String requesterId, final int from, final int size, final LanguageEntity language);
-    
-    @Deprecated
-    List<GroupEntity> getChildGroupsLocalize(final String groupId, final String requesterId, final int from, final int size, final LanguageEntity language);
-    
-    @Deprecated
-    List<GroupEntity> getParentGroupsLocalize(final String groupId, final String requesterId, final int from, final int size, final LanguageEntity language);
-    
-    @Deprecated
-    List<GroupEntity> getGroupsForResourceLocalize(final String resourceId, final String requesterId, final int from, final int size, final LanguageEntity language);
-    
-    @Deprecated
-    List<GroupEntity> getGroupsForUserLocalize(final String userId, String requesterId, final int from, final int size, final LanguageEntity language);
-    
-    @Deprecated
-    List<GroupEntity> getGroupsForRoleLocalize(final String roleId, String requesterId, final int from, final int size, final LanguageEntity language);
-
-    Set<String> getGroupIdList();
-
-    @Deprecated
-    int getNumOfGroupsForRole(final String roleId, final String requesterId);
-    
-    @Deprecated
-    int getNumOfGroupsForUser(final String userId, final String requesterId);
-    @Deprecated
-    int getNumOfGroupsForResource(final String resourceId, final String requesterId);
-    
-    @Deprecated
-    int getNumOfChildGroups(final String groupId, final String requesterId);
-    
-    @Deprecated
-    int getNumOfParentGroups(final String groupId, final String requesterId);
-    int countBeans(final GroupSearchBean searchBean, final String requesterId);
+    public int countBeans(final GroupSearchBean searchBean, final String requesterId);
 
 
-	void saveGroup(final GroupEntity group, final String requestorId) throws BasicDataServiceException;
-    void saveGroup(final GroupEntity group, final GroupOwner groupOwner, final String requestorId) throws BasicDataServiceException;
-    void addRequiredAttributes(GroupEntity group);
-	void deleteGroup(final String groupId);
+	public void saveGroup(final GroupEntity group, final String requestorId) throws BasicDataServiceException;
+    public void saveGroup(final GroupEntity group, final GroupOwner groupOwner, final String requestorId) throws BasicDataServiceException;
+    public void addRequiredAttributes(GroupEntity group);
+	public void deleteGroup(final String groupId);
 
     /**
      * Returns true or false depending on whether a user belongs to a particular
@@ -102,35 +68,35 @@ public interface GroupDataService {
      * @param userId
      * @return
      */
-    boolean isUserInCompiledGroupList(String groupId, String userId);
+    public boolean isUserInCompiledGroupList(String groupId, String userId);
 
     /**
      * Adds an attribute to the Group object.
      *
      * @param attribute
      */
-    void saveAttribute(GroupAttributeEntity attribute);
+    public void saveAttribute(GroupAttributeEntity attribute);
 
     /**
      * Removes a GroupAttribute specified by the attribute.
      *
      * @param attributeId
      */
-    void removeAttribute(final String attributeId);
+    public void removeAttribute(final String attributeId);
 
-    void addChildGroup(final String groupId, final String childGroupId, final Set<String> rights);
-    void removeChildGroup(final String groupId, final String childGroupId);
+    public void addChildGroup(final String groupId, final String childGroupId, final Set<String> rights);
+    public void removeChildGroup(final String groupId, final String childGroupId);
     
-    void validateGroup2GroupAddition(final String parentId, final String memberId, final Set<String> rights) throws BasicDataServiceException;
+    public void validateGroup2GroupAddition(final String parentId, final String memberId, final Set<String> rights) throws BasicDataServiceException;
     
-    Group getGroupDTO(final String groupId);
-    List<GroupEntity> findGroupsByAttributeValue(String attrName, String attrValue);
+    public Group getGroupDTO(final String groupId);
+    public List<GroupEntity> findGroupsByAttributeValue(String attrName, String attrValue);
 
-    Group getGroupDTOLocalize(final String groupId, LanguageEntity language);
-    List<GroupEntity> findGroupsByAttributeValueLocalize(String attrName, String attrValue, LanguageEntity language);
+    public Group getGroupDTOLocalize(final String groupId, LanguageEntity language);
+    public List<GroupEntity> findGroupsByAttributeValueLocalize(String attrName, String attrValue, LanguageEntity language);
 
-    int countGroupsForOwner(GroupSearchBean searchBean, String requesterId, String ownerId);
-    List<GroupEntity> findGroupsForOwner(GroupSearchBean searchBean, String requesterId, String ownerId, int from, int size, LanguageEntity languageEntity);
+    public int countGroupsForOwner(GroupSearchBean searchBean, String requesterId, String ownerId);
+    public List<GroupEntity> findGroupsForOwner(GroupSearchBean searchBean, String requesterId, String ownerId, int from, int size, LanguageEntity languageEntity);
     
-    boolean hasAttachedEntities(String groupId);
+    public boolean hasAttachedEntities(String groupId);
 }

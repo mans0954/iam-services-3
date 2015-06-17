@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.*;
@@ -43,17 +44,17 @@ public interface UserDataService {
      * @param managedSysId
      * @return
      */
-    UserEntity getUserByPrincipal(String principal, String managedSysId, boolean dependants);
+    public UserEntity getUserByPrincipal(String principal, String managedSysId, boolean dependants);
 
-    void addUser(UserEntity user) throws Exception;
+    public void addUser(UserEntity user) throws Exception;
 
-    void addRequiredAttributes(UserEntity user);
+    public void addRequiredAttributes(UserEntity user);
 
-    void updateUser(UserEntity user);
+    public void updateUser(UserEntity user);
 
-    void updateUserWithDependent(UserEntity user, boolean dependency);
+    public void updateUserWithDependent(UserEntity user, boolean dependency);
 
-    void updateUserFromDto(User user);
+    public void updateUserFromDto(User user);
 
     /**
      * Deletes a user from the system. The developer is responsible for deleting
@@ -63,113 +64,113 @@ public interface UserDataService {
      * 
      * @param id
      */
-    void removeUser(String id) throws Exception;
+    public void removeUser(String id) throws Exception;
 
-    List<UserEntity> findUserByOrganization(String orgId) throws BasicDataServiceException;
+    public List<UserEntity> findUserByOrganization(String orgId) throws BasicDataServiceException;
 
-    List<UserEntity> searchByDelegationProperties(DelegationFilterSearch search);
+    public List<UserEntity> searchByDelegationProperties(DelegationFilterSearch search);
 
-    List<UserEntity> findBeans(UserSearchBean searchBean) throws BasicDataServiceException;
+    public List<UserEntity> findBeans(UserSearchBean searchBean) throws BasicDataServiceException;
 
-    List<UserEntity> findBeans(UserSearchBean searchBean, int from, int size) throws BasicDataServiceException;
+    public List<UserEntity> findBeans(UserSearchBean searchBean, int from, int size) throws BasicDataServiceException;
 
     int count(UserSearchBean searchBean) throws BasicDataServiceException;
 
-    void addAttribute(UserAttributeEntity attribute);
+    public void addAttribute(UserAttributeEntity attribute);
 
-    void updateAttribute(UserAttributeEntity attribute);
+    public void updateAttribute(UserAttributeEntity attribute);
 
-    UserAttributeEntity getAttribute(String attrId);
+    public UserAttributeEntity getAttribute(String attrId);
 
-    void removeAttribute(String userAttributeId);
+    public void removeAttribute(String userAttributeId);
 
-    void removeAllAttributes(String userId);
+    public void removeAllAttributes(String userId);
 
-    void addNote(UserNoteEntity note);
+    public void addNote(UserNoteEntity note);
 
-    void updateNote(UserNoteEntity note);
+    public void updateNote(UserNoteEntity note);
 
-    List<UserNoteEntity> getAllNotes(String userId);
+    public List<UserNoteEntity> getAllNotes(String userId);
 
-    UserNoteEntity getNote(java.lang.String noteId);
+    public UserNoteEntity getNote(java.lang.String noteId);
 
-    void removeNote(String userNodeId);
+    public void removeNote(String userNodeId);
 
-    void removeAllNotes(String userId);
+    public void removeAllNotes(String userId);
 
-    void addAddress(AddressEntity val);
+    public void addAddress(AddressEntity val);
 
-    void addAddressSet(Collection<AddressEntity> adrList);
+    public void addAddressSet(Collection<AddressEntity> adrList);
 
-    void updateAddress(AddressEntity val);
+    public void updateAddress(AddressEntity val);
 
-    void removeAddress(String addressId);
+    public void removeAddress(String addressId);
 
-    void removeAllAddresses(String userId);
+    public void removeAllAddresses(String userId);
 
-    AddressEntity getAddressById(String addressId);
+    public AddressEntity getAddressById(String addressId);
 
-    List<AddressEntity> getAddressList(String userId);
+    public List<AddressEntity> getAddressList(String userId);
 
-    List<Address> getAddressDtoList(String userId, boolean isDeep);
+    public List<Address> getAddressDtoList(String userId, boolean isDeep);
 
-    List<AddressEntity> getAddressList(String userId, Integer size, Integer from);
+    public List<AddressEntity> getAddressList(String userId, Integer size, Integer from);
 
-    List<AddressEntity> getAddressList(AddressSearchBean searchBean, Integer size, Integer from);
+    public List<AddressEntity> getAddressList(AddressSearchBean searchBean, Integer size, Integer from);
 
-    void addTOPTTokenToPhone(String phoneId, String secret);
+    public void addTOPTTokenToPhone(String phoneId, String secret);
     
-    void addPhone(PhoneEntity val);
+    public void addPhone(PhoneEntity val);
 
-    void addPhoneSet(Collection<PhoneEntity> phoneList);
+    public void addPhoneSet(Collection<PhoneEntity> phoneList);
 
-    void updatePhone(PhoneEntity val);
+    public void updatePhone(PhoneEntity val);
 
-    void removePhone(String phoneId);
+    public void removePhone(String phoneId);
 
-    void removeAllPhones(String userId);
+    public void removeAllPhones(String userId);
 
-    PhoneEntity getPhoneById(String addressId);
+    public PhoneEntity getPhoneById(String addressId);
 
-    List<PhoneEntity> getPhoneList(String userId);
+    public List<PhoneEntity> getPhoneList(String userId);
 
-    List<Phone> getPhoneDtoList(String userId, boolean isDeep);
+    public List<Phone> getPhoneDtoList(String userId, boolean isDeep);
 
-    List<PhoneEntity> getPhoneList(String userId, Integer size, Integer from);
+    public List<PhoneEntity> getPhoneList(String userId, Integer size, Integer from);
 
-    List<PhoneEntity> getPhoneList(PhoneSearchBean searchBean, Integer size, Integer from);
+    public List<PhoneEntity> getPhoneList(PhoneSearchBean searchBean, Integer size, Integer from);
 
-    void addEmailAddress(EmailAddressEntity val);
+    public void addEmailAddress(EmailAddressEntity val);
 
-    void addEmailAddressSet(Collection<EmailAddressEntity> adrList);
+    public void addEmailAddressSet(Collection<EmailAddressEntity> adrList);
 
-    void updateEmailAddress(EmailAddressEntity val);
+    public void updateEmailAddress(EmailAddressEntity val);
 
-    void removeEmailAddress(String emailAddressId);
+    public void removeEmailAddress(String emailAddressId);
 
-    void removeAllEmailAddresses(String userId);
+    public void removeAllEmailAddresses(String userId);
 
-    EmailAddressEntity getEmailAddressById(String addressId);
+    public EmailAddressEntity getEmailAddressById(String addressId);
 
-    List<EmailAddressEntity> getEmailAddressList(String userId);
+    public List<EmailAddressEntity> getEmailAddressList(String userId);
 
-    List<EmailAddress> getEmailAddressDtoList(String userId, boolean isDeep);
+    public List<EmailAddress> getEmailAddressDtoList(String userId, boolean isDeep);
 
-    List<EmailAddressEntity> getEmailAddressList(String userId, Integer size, Integer from);
+    public List<EmailAddressEntity> getEmailAddressList(String userId, Integer size, Integer from);
 
-    List<EmailAddressEntity> getEmailAddressList(EmailSearchBean searchBean, Integer size, Integer from);
+    public List<EmailAddressEntity> getEmailAddressList(EmailSearchBean searchBean, Integer size, Integer from);
 
-    void addSupervisor(SupervisorEntity supervisor);
+    public void addSupervisor(SupervisorEntity supervisor);
 
-    void addSuperior(String supervisorId, String subordinateId);
+    public void addSuperior(String supervisorId, String subordinateId);
 
     // public void updateSupervisor(SupervisorEntity supervisor);
 
-    void removeSupervisor(String supervisorId, final String employeeId);
+    public void removeSupervisor(String supervisorId, final String employeeId);
 
     // public SupervisorEntity getSupervisor(String supervisorObjId);
 
-    void evict(Object object);
+    public void evict(Object object);
 
     /**
      * Returns a List of supervisor objects that represents the supervisors for
@@ -180,23 +181,23 @@ public interface UserDataService {
      */
     // public List<UserEntity> getSupervisors(String employeeId);
 
-    SupervisorEntity findSupervisor(String superiorId, String subordinateId);
+    public SupervisorEntity findSupervisor(String superiorId, String subordinateId);
 
-    List<UserEntity> getSuperiors(String userId, Integer from, Integer size);
+    public List<UserEntity> getSuperiors(String userId, Integer from, Integer size);
 
-    int getSuperiorsCount(String userId);
+    public int getSuperiorsCount(String userId);
 
-    List<UserEntity> getAllSuperiors(Integer from, Integer size);
+    public List<UserEntity> getAllSuperiors(Integer from, Integer size);
 
-    int getAllSuperiorsCount();
+    public int getAllSuperiorsCount();
 
-    List<UserEntity> getSubordinates(String userId, Integer from, Integer size);
+    public List<UserEntity> getSubordinates(String userId, Integer from, Integer size);
 
-    int getSubordinatesCount(String userId);
+    public int getSubordinatesCount(String userId);
 
-    List<UserEntity> findPotentialSupSubs(PotentialSupSubSearchBean searchBean, Integer from, Integer size) throws BasicDataServiceException;
+    public List<UserEntity> findPotentialSupSubs(PotentialSupSubSearchBean searchBean, Integer from, Integer size) throws BasicDataServiceException;
 
-    int findPotentialSupSubsCount(PotentialSupSubSearchBean searchBean)  throws BasicDataServiceException;
+    public int findPotentialSupSubsCount(PotentialSupSubSearchBean searchBean)  throws BasicDataServiceException;
 
     /**
      * Returns a list of Supervisor objects that represents the employees or
@@ -214,68 +215,49 @@ public interface UserDataService {
      * @param employeeId
      * @return
      */
-    UserEntity getPrimarySupervisor(String employeeId);
+    public UserEntity getPrimarySupervisor(String employeeId);
 
-    UserEntity getUser(String id);
+    public UserEntity getUser(String id);
 
-    User getUserDto(String id);
+    public User getUserDto(String id);
 
-    UserEntity getUser(String id, String requestorId);
+    public UserEntity getUser(String id, String requestorId);
 
-    Map<String, UserAttributeEntity> getAllAttributes(String userId);
+    public Map<String, UserAttributeEntity> getAllAttributes(String userId);
 
-    @Deprecated
-    List<UserEntity> getUsersForResource(final String resourceId, String requesterId, final int from, final int size);
-    List<UserEntity> getUsersForResource(UserSearchBean userSearchBean, int from, int size);
+    public String saveUserInfo(UserEntity userEntity, String supervisorId) throws Exception;
 
-    int getNumOfUsersForResource(final String resourceId, String requesterId);
+    public void deleteUser(String userId);
 
-    List<UserEntity> getUsersForGroup(final String groupId, String requesterId, final int from, final int size);
+    public void setSecondaryStatus(String userId, UserStatusEnum secondaryStatus);
 
-    @Deprecated
-    int getNumOfUsersForGroup(final String groupId, String requesterId);
+    public void activateUser(String userId);
 
-    @Deprecated
-    List<UserEntity> getUsersForRole(final String roleId, String requesterId, final int from, final int size);
+    public void resetUser(String userId);
 
-    @Deprecated
-    int getNumOfUsersForRole(final String roleId, String requesterId);
+    public int getNumOfEmailsForUser(String userId);
 
-    String saveUserInfo(UserEntity userEntity, String supervisorId) throws Exception;
+    public int getNumOfAddressesForUser(String userId);
 
-    void deleteUser(String userId);
+    public int getNumOfPhonesForUser(String userId);
 
-    void setSecondaryStatus(String userId, UserStatusEnum secondaryStatus);
+    public void mergeUserFields(UserEntity origUserEntity, UserEntity newUserEntity);
 
-    void activateUser(String userId);
-
-    void resetUser(String userId);
-
-    int getNumOfEmailsForUser(String userId);
-
-    int getNumOfAddressesForUser(String userId);
-
-    int getNumOfPhonesForUser(String userId);
-
-    void mergeUserFields(UserEntity origUserEntity, UserEntity newUserEntity);
-
-    Map<String, UserAttribute> getUserAttributesDto(String userId);
+    public Map<String, UserAttribute> getUserAttributesDto(String userId);
     
-    List<UserAttributeEntity> getUserAttributeList(String userId, final LanguageEntity language);
+    public List<UserAttributeEntity> getUserAttributeList(String userId, final LanguageEntity language);
 
-    List<UserAttribute> getUserAttributesDtoList(String userId);
+    public List<UserAttribute> getUserAttributesDtoList(String userId);
 
-    Map<String, UserAttributeEntity> getUserAttributes(String userId);
+    public Map<String, UserAttributeEntity> getUserAttributes(String userId);
 
     List<UserEntity> getByExample(UserSearchBean searchBean, int start, int size);
-
-    boolean isRoleInUser(String userId, String roleId);
 
     List<String> getUserIdsInRole(String roleId, String requestrId);
 
     List<String> getUserIdsInGroup(String groupId, String requestrId);
 
-    void addUserToGroup(String userId, String groupId);
+    void addUserToGroup(String userId, String groupId, Set<String> rightIds);
 
     void removeUserFromGroup(String userId, String groupId);
 
@@ -283,7 +265,7 @@ public interface UserDataService {
 
     void removeUserFromResource(String userId, String resourceId);
     
-    void addUserToResource(String userId, String resourceId);
+    void addUserToResource(String userId, String resourceId, Set<String> rightIds);
 
     boolean isHasResource(String userId, String resourceId);
 
@@ -291,7 +273,7 @@ public interface UserDataService {
 
     boolean validateSearchBean(UserSearchBean seachBean) throws BasicDataServiceException;
 
-    boolean validateSearchBean(UserSearchBean searchBean, Map<String, UserAttribute> requesterAttributes) throws BasicDataServiceException;
+    public boolean validateSearchBean(UserSearchBean searchBean, Map<String, UserAttribute> requesterAttributes) throws BasicDataServiceException;
 
     List<UserEntity> getUserByLastDate(Date lastDate);
 

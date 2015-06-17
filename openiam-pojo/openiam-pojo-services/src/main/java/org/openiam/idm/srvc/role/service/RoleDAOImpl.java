@@ -87,11 +87,17 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
                 criteria.add(Restrictions.eq("type.id", roleSearchBean.getType()));
             }
 
-
-            if(CollectionUtils.isNotEmpty(roleSearchBean.getGroupIdSet())){
-                criteria.createAlias("groups", "gr");
-                criteria.add(Restrictions.in("gr.id", roleSearchBean.getGroupIdSet()));
-            }
+            if(CollectionUtils.isNotEmpty(roleSearchBean.getGroupIdSet())) {
+            	criteria.createAlias("groups", "groupXrefs")
+						.createAlias("groupXrefs.memberEntity", "group").add(
+						Restrictions.in("group.id", roleSearchBean.getGroupIdSet()));
+			}
+            
+            if(CollectionUtils.isNotEmpty(roleSearchBean.getResourceIdSet())) {
+            	criteria.createAlias("resources", "resourceXrefs")
+						.createAlias("resourceXrefs.memberEntity", "resource").add(
+						Restrictions.in("resource.id", roleSearchBean.getResourceIdSet()));
+			}
             
             if(CollectionUtils.isNotEmpty(roleSearchBean.getChildIdSet())) {
             	criteria.createAlias("childRoles", "childXrefs")
@@ -104,15 +110,19 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
 						.createAlias("parentXrefs.entity", "parent").add(
 						Restrictions.in("parent.id", roleSearchBean.getParentIdSet()));
 			}
+			
+			if(CollectionUtils.isNotEmpty(roleSearchBean.getOrganizationIdSet())){    
+                criteria.createAlias("organizations", "organizationXrefs")
+						.createAlias("organizationXrefs.entity", "organization").add(
+						Restrictions.in("organization.id", roleSearchBean.getOrganizationIdSet()));
+            }
 
-            if(CollectionUtils.isNotEmpty(roleSearchBean.getResourceIdSet())){
-                criteria.createAlias("resources", "res");
-                criteria.add(Restrictions.in("res.id", roleSearchBean.getResourceIdSet()));
+			if(CollectionUtils.isNotEmpty(roleSearchBean.getUserIdSet())){
+            	criteria.createAlias("users", "userXrefs")
+						.createAlias("userXrefs.memberEntity", "user").add(
+								Restrictions.in("user.id", roleSearchBean.getUserIdSet()));
             }
-            if(CollectionUtils.isNotEmpty(roleSearchBean.getUserIdSet())){
-                criteria.createAlias("users", "usr");
-                criteria.add(Restrictions.in("usr.id", roleSearchBean.getUserIdSet()));
-            }
+            
 			if(StringUtils.isNotBlank(roleSearchBean.getAdminResourceId())) {
 				criteria.add(Restrictions.eq("adminResource.id", roleSearchBean.getAdminResourceId()));
 			}
@@ -156,19 +166,28 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
 				if(entity.getAdminResource() != null && StringUtils.isNotBlank(entity.getAdminResource().getId())) {
 					criteria.add(Restrictions.eq("adminResource.id", entity.getAdminResource().getId()));
 				}
-				
-				if(CollectionUtils.isNotEmpty(entity.getResources())) {
-					final Set<String> resourceIds = new HashSet<String>();
-	            	for(final ResourceEntity resourceRole : entity.getResources()) {
-	            		if(resourceRole != null && StringUtils.isNotBlank(resourceRole.getId())) {
-	            			resourceIds.add(resourceRole.getId());
-	            		}
-	            	}
-	            	
-	            	if(CollectionUtils.isNotEmpty(resourceIds)) {
-	            		criteria.createAlias("resources", "rr").add( Restrictions.in("rr.id", resourceIds));
-	            	}
-				}
+
+                if (StringUtils.isNotEmpty(entity.getDescription())) {
+                    String description = entity.getDescription();
+                    MatchMode descMatchMode = null;
+                    if (StringUtils.indexOf(description, "*") == 0) {
+                        descMatchMode = MatchMode.END;
+                        description = description.substring(1);
+                    }
+                    if (StringUtils.isNotBlank(description) && StringUtils.indexOf(description, "*") == description.length() - 1) {
+                        description = description.substring(0, description.length() - 1);
+                        descMatchMode = (descMatchMode == MatchMode.END) ? MatchMode.ANYWHERE : MatchMode.START;
+                    }
+
+                    if (StringUtils.isNotBlank(description)) {
+                        if (descMatchMode != null) {
+                            criteria.add(Restrictions.ilike("description", description, descMatchMode));
+                        } else {
+                            criteria.add(Restrictions.eq("description", description));
+                        }
+                    }
+                }
+
 			}
 		}
 		return criteria;
@@ -197,120 +216,6 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
         }
 
         return (List<RoleEntity>) criteria.list();
-    }
-
-	@Override
-	@Deprecated
-	public List<RoleEntity> getRolesForGroup(final String groupId, final Set<String> filter, final int from, final int size) {
-		final Criteria criteria = getEntitlementRolesCriteria(null, groupId, null, filter);
-        return getList(criteria, from, size);
-	}
-
-	@Override
-	@Deprecated
-	public int getNumOfRolesForGroup(String groupId, final Set<String> filter) {
-		final Criteria criteria = getEntitlementRolesCriteria(null, groupId, null, filter).setProjection(rowCount());
-		return ((Number)criteria.uniqueResult()).intValue();
-	}
-
-	@Override
-	@Deprecated
-	public int getNumOfRolesForResource(final String resourceId, final Set<String> filter) {
-        final Criteria criteria = getEntitlementRolesCriteria(null, null, resourceId, filter).setProjection(rowCount());
-        return ((Number)criteria.uniqueResult()).intValue();
-	}
-
-	@Override
-	@Deprecated
-	public List<RoleEntity> getRolesForResource(final String resourceId, final Set<String> filter, final int from, final int size) {
-        final Criteria criteria = getEntitlementRolesCriteria(null, null, resourceId, filter);
-        return getList(criteria, from, size);
-	}
-
-    @Override
-    public List<RoleEntity> getRolesForUser(String userId, final Set<String> filter, int from, int size) {
-        final Criteria criteria = getEntitlementRolesCriteria(userId, null, null, filter);
-        return getList(criteria, from, size);
-    }
-
-    @Override
-    @Deprecated
-    public int getNumOfRolesForUser(String userId, final Set<String> filter) {
-        final Criteria criteria = getEntitlementRolesCriteria(userId, null, null, filter).setProjection(rowCount());
-        return ((Number)criteria.uniqueResult()).intValue();
-    }
-
-
-    private Criteria getEntitlementRolesCriteria(String userId, String groupId, String resourceId, final Set<String> filter){
-        final Criteria criteria = super.getCriteria();
-
-        if(StringUtils.isNotBlank(userId)){
-            criteria.createAlias("users", "u")
-                    .add(Restrictions.eq("u.id", userId));
-        }
-
-        if(StringUtils.isNotBlank(groupId)){
-            criteria.createAlias("groups", "groups").add( Restrictions.eq("groups.id", groupId));
-        }
-
-        if(StringUtils.isNotBlank(resourceId)){
-            criteria.createAlias("resources", "resources").add( Restrictions.eq("resources.id", resourceId));
-        }
-
-        if(filter!=null && !filter.isEmpty()){
-            criteria.add( Restrictions.in(getPKfieldName(), filter));
-        }
-
-        return criteria;
-    }
-
-	@Override
-	@Deprecated
-	public List<RoleEntity> getChildRoles(final String roleId, final Set<String> filter, int from, int size) {
-		final RoleSearchBean sb = new RoleSearchBean();
-		sb.addParentId(roleId);
-		return getByExample(sb);
-	}
-	
-	@Override
-	@Deprecated
-	public List<RoleEntity> getParentRoles(final String roleId, final Set<String> filter, int from, int size) {
-		final RoleSearchBean sb = new RoleSearchBean();
-		sb.addChildId(roleId);
-		return getByExample(sb);
-	}
-
-	@Override
-	@Deprecated
-	public int getNumOfChildRoles(final String roleId, final Set<String> filter) {
-		final RoleSearchBean sb = new RoleSearchBean();
-		sb.addParentId(roleId);
-		return count(sb);
-	}
-
-	@Override
-	@Deprecated
-	public int getNumOfParentRoles(final String roleId, final Set<String> filter) {
-		final RoleSearchBean sb = new RoleSearchBean();
-		sb.addChildId(roleId);
-		return count(sb);
-	}
-
-	private Criteria getRolesForUserCriteria(final String userId, final Set<String> filter) {
-		return getCriteria()
-	               .createAlias("users", "u")
-	               .add(Restrictions.eq("u.id", userId));
-	}
-
-    private List<RoleEntity> getList(Criteria criteria, int from, int size){
-        if(from > -1) {
-            criteria.setFirstResult(from);
-        }
-
-        if(size > -1) {
-            criteria.setMaxResults(size);
-        }
-        return criteria.list();
     }
 
     @Override

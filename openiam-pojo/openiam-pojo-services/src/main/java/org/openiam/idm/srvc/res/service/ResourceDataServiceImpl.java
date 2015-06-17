@@ -390,10 +390,11 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
         return response;
     }
 
+    //DO NOT PUT TRANSACTIONAL HERE!!  The underlying collections that get modified won't persist.
     @Override
-    @Transactional
+    //@Transactional
     @CacheEvict(value = "resources", allEntries=true)
-    public Response addUserToResource(final String resourceId, final String userId, final String requesterId) {
+    public Response addUserToResource(final String resourceId, final String userId, final String requesterId, final Set<String> rightIds) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLog idmAuditLog = new IdmAuditLog ();
         idmAuditLog.setRequestorUserId(requesterId);
@@ -410,7 +411,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "ResourceId or UserId is not set");
             }
 
-            userDataService.addUserToResource(userId, resourceId);
+            userDataService.addUserToResource(userId, resourceId, rightIds);
             idmAuditLog.succeed();
         } catch (BasicDataServiceException e) {
             response.setErrorCode(e.getCode());
@@ -502,26 +503,38 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 
     @Override
     @LocalizedServiceGet
+    @Deprecated
     public List<Resource> getChildResources(final String resourceId, Boolean deepFlag, final int from, final int size, final Language language) {
-        final List<ResourceEntity> resultList = resourceService.getChildResources(resourceId, from, size);
-        return resourceConverter.convertToDTOList(resultList, false);
+        final ResourceSearchBean sb = new ResourceSearchBean();
+        sb.addParentId(resourceId);
+        sb.setDeepCopy(deepFlag);
+        return findBeans(sb, from, size, language);
     }
 
     @Override
+    @Deprecated
     public int getNumOfChildResources(final String resourceId) {
-        return resourceService.getNumOfChildResources(resourceId);
+    	 final ResourceSearchBean sb = new ResourceSearchBean();
+         sb.addParentId(resourceId);
+         return count(sb);
     }
 
     @Override
     @LocalizedServiceGet
+    @Deprecated
     public List<Resource> getParentResources(final String resourceId, final int from, final int size, final Language language) {
-        final List<ResourceEntity> resultList = resourceService.getParentResources(resourceId, from, size);
-        return resourceConverter.convertToDTOList(resultList, false);
+    	final ResourceSearchBean sb = new ResourceSearchBean();
+        sb.addChildId(resourceId);
+        sb.setDeepCopy(false);
+        return findBeans(sb, from, size, language);
     }
 
     @Override
+    @Deprecated
     public int getNumOfParentResources(final String resourceId) {
-        return resourceService.getNumOfParentResources(resourceId);
+    	final ResourceSearchBean sb = new ResourceSearchBean();
+        sb.addChildId(resourceId);
+        return count(sb);
     }
 
     @Override
@@ -604,7 +617,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 
     @Override
     @CacheEvict(value = "resources", allEntries=true)
-    public Response addGroupToResource(final String resourceId, final String groupId, final String requesterId) {
+    public Response addGroupToResource(final String resourceId, final String groupId, final String requesterId, final Set<String> rightIds) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLog idmAuditLog = new IdmAuditLog ();
         idmAuditLog.setRequestorUserId(requesterId);
@@ -620,7 +633,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "GroupId or ResourceId is null");
             }
 
-            resourceService.addResourceGroup(resourceId, groupId);
+            resourceService.addResourceGroup(resourceId, groupId, rightIds);
             idmAuditLog.succeed();
         } catch (BasicDataServiceException e) {
             response.setErrorCode(e.getCode());
@@ -685,7 +698,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 
     @Override
     @CacheEvict(value = "resources", allEntries=true)
-    public Response addRoleToResource(final String resourceId, final String roleId, final String requesterId) {
+    public Response addRoleToResource(final String resourceId, final String roleId, final String requesterId, final Set<String> rightIds) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLog idmAuditLog = new IdmAuditLog ();
         idmAuditLog.setRequestorUserId(requesterId);
@@ -697,7 +710,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "RoleId or ResourceId is null");
             }
             
-            final RoleEntity roleEntity = roleService.getRole(roleId);
+            final RoleEntity roleEntity = roleService.getRoleLocalized(roleId, requesterId, null);
             if(roleEntity == null) {
             	throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
             }
@@ -709,7 +722,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
             }
             idmAuditLog.setTargetResource(resourceId, resourceEntity.getName());
 
-            resourceService.addResourceToRole(resourceId, roleId);
+            resourceService.addResourceToRole(resourceId, roleId, rightIds);
             idmAuditLog.succeed();
         } catch (BasicDataServiceException e) {
             response.setErrorCode(e.getCode());
@@ -768,42 +781,55 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     @Override
     @Deprecated
     public int getNumOfResourcesForRole(final String roleId, final ResourceSearchBean searchBean) {
-       return resourceService.getNumOfResourcesForRole(roleId, searchBean);
+    	final ResourceSearchBean sb = new ResourceSearchBean();
+    	sb.addRoleId(roleId);
+    	return count(sb);
     }
 
     @Override
+    @Deprecated
     @LocalizedServiceGet
     public List<Resource> getResourcesForRole(final String roleId, final int from, final int size, final ResourceSearchBean searchBean, final Language language) {
-        final List<ResourceEntity> entityList = resourceService.getResourcesForRole(roleId, from, size, searchBean);
-        return resourceConverter.convertToDTOList(entityList, false);
+    	final ResourceSearchBean sb = new ResourceSearchBean();
+    	sb.addRoleId(roleId);
+    	sb.setDeepCopy(false);
+    	return findBeans(sb, from, size, language);
     }
 
     @Override
     @Deprecated
     public int getNumOfResourceForGroup(final String groupId, final ResourceSearchBean searchBean) {
-       return resourceService.getNumOfResourceForGroup(groupId, searchBean);
+    	final ResourceSearchBean sb = new ResourceSearchBean();
+    	sb.addGroupId(groupId);
+    	return count(sb);
     }
 
     @Override
     @LocalizedServiceGet
     @Deprecated
     public List<Resource> getResourcesForGroup(final String groupId, final int from, final int size, final ResourceSearchBean searchBean, final Language language) {
-        final List<ResourceEntity> entityList = resourceService.getResourcesForGroup(groupId, from, size, searchBean);
-        return resourceConverter.convertToDTOList(entityList, false);
+    	final ResourceSearchBean sb = new ResourceSearchBean();
+    	sb.addGroupId(groupId);
+    	sb.setDeepCopy(false);
+    	return findBeans(sb, from, size, language);
     }
 
     @Override
     @Deprecated
     public int getNumOfResourceForUser(final String userId, final ResourceSearchBean searchBean) {
-        return resourceService.getNumOfResourceForUser(userId, searchBean);
+    	final ResourceSearchBean sb = new ResourceSearchBean();
+    	sb.addUserId(userId);
+    	return count(sb);
     }
 
     @Override
     @LocalizedServiceGet
     @Deprecated
     public List<Resource> getResourcesForUser(final String userId, final int from, final int size, final ResourceSearchBean searchBean, final Language language) {
-        final List<ResourceEntity> entityList = resourceService.getResourcesForUser(userId, from, size, searchBean);
-        return resourceConverter.convertToDTOList(entityList, false);
+    	final ResourceSearchBean sb = new ResourceSearchBean();
+    	sb.addUserId(userId);
+    	sb.setDeepCopy(false);
+    	return findBeans(sb, from, size, language);
     }
 
     @Override
@@ -811,8 +837,11 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     @Transactional(readOnly=true)
     @Deprecated
     public List<Resource> getResourcesForUserByType(final String userId, final String resourceTypeId, final ResourceSearchBean searchBean, final Language language) {
-      final List<ResourceEntity> entityList = resourceService.getResourcesForUserByType(userId, resourceTypeId, searchBean);
-      return resourceConverter.convertToDTOList(entityList, true);
+    	final ResourceSearchBean sb = new ResourceSearchBean();
+    	sb.addUserId(userId);
+    	sb.setDeepCopy(false);
+    	sb.setResourceTypeId(resourceTypeId);
+    	return findBeans(sb, 0, Integer.MAX_VALUE, language);
     }
 
     @Override

@@ -1,10 +1,6 @@
 package org.openiam.bpm.activiti.delegate.core;
 
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import org.activiti.engine.delegate.DelegateExecution;
 import org.activiti.engine.delegate.DelegateTask;
@@ -155,14 +151,14 @@ public abstract class AbstractActivitiJob implements JavaDelegate, TaskListener 
         return resourceDataService.getResourcesByIds(resourceIds, null);
     }
     
-    protected void addUsersToProtectingResource(final DelegateTask task, final Collection<String> userIds) {
+    protected void addUsersToProtectingResource(final DelegateTask task, final Collection<String> userIds, final Set<String> rightIds) {
     	if(CollectionUtils.isNotEmpty(userIds)) {
 	    	final String resourceId = getStringVariable(task.getExecution(), ActivitiConstants.WORKFLOW_RESOURCE_ID);
 	    	if(StringUtils.isNotBlank(resourceId)) { /* won't be here prior to 4.0 */
 	    		final Resource resource = getResource(resourceId);
 	    		if(resource != null) {
 	    			userIds.forEach(userId -> {
-	    				resourceDataService.addUserToResource(resourceId, userId, "WORKFLOW");
+	    				resourceDataService.addUserToResource(resourceId, userId, "WORKFLOW", rightIds);
 	    			});
 	    		} else { /* fail silently, but log it! */
 	    			LOG.error(String.format("Can't find resource with id '%s'.  This resource should protect this workflow", resourceId));
@@ -188,15 +184,27 @@ public abstract class AbstractActivitiJob implements JavaDelegate, TaskListener 
 		final Object obj = execution.getVariable(key.getName());
 		return (obj instanceof ActivitiJSONStringWrapper) ? ((ActivitiJSONStringWrapper)obj).getObject(key.getName(), customJacksonMapper, clazz) : null;
 	}
-	
-	public String getStringVariable(final DelegateExecution execution, final ActivitiConstants key) {
-		try {
-			return (String)execution.getVariable(key.getName());
-		} catch(Throwable e) {
-			LOG.warn(String.format("Can't get variable '%s", key), e);
-			return null;
-		}
-	}
+
+    public String getStringVariable(final DelegateExecution execution, final ActivitiConstants key) {
+        try {
+            if (execution.hasVariable(key.getName())) {
+                Object var = execution.getVariable(key.getName());
+                if (var instanceof String) {
+                    return (String)var;
+                } else if (var instanceof Collection) {
+                    Collection<String> col = (Collection<String>)var;
+                    Iterator<String> it = col.iterator();
+                    if (it.hasNext()) {
+                        return (String)it.next();
+                    }
+                }
+            }
+            return null;
+        } catch(Throwable e) {
+            LOG.warn(String.format("Can't get variable '%s", key), e);
+            return null;
+        }
+    }
 	
 	protected boolean isProvisioningEnabled(final DelegateExecution execution) {
 		boolean retVal = true;

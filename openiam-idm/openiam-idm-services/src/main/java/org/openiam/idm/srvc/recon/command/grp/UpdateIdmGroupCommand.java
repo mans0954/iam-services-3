@@ -51,7 +51,7 @@ public class UpdateIdmGroupCommand extends BaseReconciliationGroupCommand {
 			String groupId = (String) grpResp.getResponseValue();
 			for (Resource res : resources) {
 				if (res.getOperation() == AttributeOperationEnum.ADD) {
-					resourceDataService.addGroupToResource(res.getId(), groupId, DEFAULT_REQUESTER_ID);
+					resourceDataService.addGroupToResource(res.getId(), groupId, DEFAULT_REQUESTER_ID, null);
 				} else if (res.getOperation() == AttributeOperationEnum.DELETE) {
 					resourceDataService.removeGroupToResource(res.getId(), groupId, DEFAULT_REQUESTER_ID);
 				}

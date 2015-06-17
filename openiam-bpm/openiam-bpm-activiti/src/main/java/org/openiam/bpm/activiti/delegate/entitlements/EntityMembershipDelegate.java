@@ -72,7 +72,7 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
 						break;
 					case ADD_ROLE_TO_GROUP:
 						action = AuditAction.ADD_ROLE_TO_GROUP;
-						response = roleDataService.addGroupToRole(memberAssociationId, associationId, systemUserId);
+						response = roleDataService.addGroupToRole(memberAssociationId, associationId, systemUserId, rights);
 						break;
 					case REMOVE_ROLE_FROM_GROUP:
 						action = AuditAction.REMOVE_ROLE_FROM_GROUP;
@@ -80,7 +80,7 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
 						break;
 					case ENTITLE_RESOURCE_TO_GROUP:
 						action = AuditAction.ADD_GROUP_TO_RESOURCE;
-						response = resourceDataService.addGroupToResource(associationId, memberAssociationId, systemUserId);
+						response = resourceDataService.addGroupToResource(associationId, memberAssociationId, systemUserId, rights);
 						break;
 					case DISENTITLE_RESOURCE_FROM_GROUP:
 						action = AuditAction.REMOVE_GROUP_FROM_RESOURCE;
@@ -96,7 +96,7 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
 						break;
 					case ENTITLE_RESOURCE_TO_ROLE:
 						action = AuditAction.ADD_ROLE_TO_RESOURCE;
-						response = resourceDataService.addRoleToResource(associationId, memberAssociationId, systemUserId);
+						response = resourceDataService.addRoleToResource(associationId, memberAssociationId, systemUserId, rights);
 						break;
 					case DISENTITLE_RESOURCE_FROM_ROLE:
 						action = AuditAction.REMOVE_ROLE_FROM_RESOURCE;
@@ -118,11 +118,11 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
 							if(resource != null && user != null) {
 								final ProvisionUser pUser = new ProvisionUser(user);
 								resource.setOperation(AttributeOperationEnum.ADD);
-								pUser.addResource(resource);
+								pUser.addResource(resource, rights);
 								response = provisionService.modifyUser(pUser);
 							}
 						} else {
-							response = resourceDataService.addUserToResource(associationId, memberAssociationId, systemUserId);
+							response = resourceDataService.addUserToResource(associationId, memberAssociationId, systemUserId, rights);
 						}
 						break;
 					case RESOURCE_CERTIFICATION:
@@ -170,16 +170,16 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
                                 if(provisioningEnabled) {
                                     if(resource != null && user != null) {
                                         final ProvisionUser pUser = new ProvisionUser(user);
-                                        pUser.markResourceAsDeleted(resource.getId());
+                                        pUser.removeResource(resource);
 
                                         if(CollectionUtils.isNotEmpty(resourceToDelete)){
                                             for(String id: resourceToDelete){
-                                                pUser.markResourceAsDeleted(id);
+                                                pUser.removeResource(resource);
                                             }
                                         }
                                         if(CollectionUtils.isNotEmpty(groupToDelete)){
                                             for(String id: groupToDelete){
-                                                pUser.markGroupAsDeleted(id);
+                                            	pUser.removeGroup(id);
                                             }
                                         }
                                         if(CollectionUtils.isNotEmpty(roleToDelete)){
@@ -211,7 +211,7 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
                                 if(provisioningEnabled) {
                                     if(resource != null && user != null) {
                                         final ProvisionUser pUser = new ProvisionUser(user);
-                                        pUser.markResourceAsDeleted(resource.getId());
+                                        pUser.removeResource(resource);
                                         response = provisionService.modifyUser(pUser);
                                     }
                                 } else {
@@ -228,11 +228,11 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
 							if(group != null && user != null) {
 								group.setOperation(AttributeOperationEnum.ADD);
 								final ProvisionUser pUser = new ProvisionUser(user);
-								pUser.addGroup(group);
+								pUser.addGroup(group, rights);
 								response = provisionService.modifyUser(pUser);
 							}
 						} else {
-							response = groupDataService.addUserToGroup(associationId, memberAssociationId, systemUserId);
+							response = groupDataService.addUserToGroup(associationId, memberAssociationId, systemUserId, rights);
 						}
 						break;
 					case REMOVE_USER_FROM_GROUP:
@@ -243,7 +243,7 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
 							user = getUser(memberAssociationId);
 							if(group != null && user != null) {
 								final ProvisionUser pUser = new ProvisionUser(user);
-								pUser.markGroupAsDeleted(group.getId());
+								pUser.removeGroup(group);
 								response = provisionService.modifyUser(pUser);
 							}
 						} else {	
@@ -257,12 +257,11 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
 							user = getUser(memberAssociationId);
 							if(role != null && user != null) {
 								final ProvisionUser pUser = new ProvisionUser(user);
-								role.setOperation(AttributeOperationEnum.ADD);
-					            pUser.addRole(role);
+								pUser.addRole(role, rights);
 					            response = provisionService.modifyUser(pUser);
 							}
 						} else {	
-							response = roleDataService.addUserToRole(associationId, memberAssociationId, systemUserId);
+							response = roleDataService.addUserToRole(associationId, memberAssociationId, systemUserId, rights);
 						}
 						break;
 					case REMOVE_USER_FROM_ROLE:
@@ -273,7 +272,7 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
 							user = getUser(memberAssociationId);
 							if(role != null && user != null) {
 								final ProvisionUser pUser = new ProvisionUser(user);
-								pUser.markRoleAsDeleted(role.getId());
+								pUser.removeRole(role.getId());
 								response = provisionService.modifyUser(pUser);
 							}
 						} else {	
@@ -288,11 +287,11 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
 							if(organization != null && user != null) {
 								organization.setOperation(AttributeOperationEnum.ADD);
 								final ProvisionUser pUser = new ProvisionUser(user);
-								pUser.addAffiliation(organization);
+								pUser.addAffiliation(organization, rights);
 								response = provisionService.modifyUser(pUser);
 							}
 						} else {	
-							response = organizationDataService.addUserToOrg(associationId, memberAssociationId);
+							response = organizationDataService.addUserToOrg(associationId, memberAssociationId, rights);
 						}
 						break;
 					case REMOVE_USER_FROM_ORG:
@@ -302,7 +301,7 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
 							user = getUser(memberAssociationId);
 							if(organization != null && user != null) {
 								final ProvisionUser pUser = new ProvisionUser(user);
-								pUser.markAffiliateAsDeleted(organization.getId());
+								pUser.removeAffiliation(organization.getId());
 								response = provisionService.modifyUser(pUser);
 							}
 						} else {	

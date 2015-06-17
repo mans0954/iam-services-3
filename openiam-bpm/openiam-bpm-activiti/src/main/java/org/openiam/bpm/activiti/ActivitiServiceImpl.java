@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.jws.WebMethod;
 import javax.jws.WebService;
@@ -66,6 +67,7 @@ import org.openiam.bpm.response.TaskListWrapper;
 import org.openiam.bpm.response.TaskWrapper;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.bpm.util.ActivitiRequestType;
+import org.openiam.idm.srvc.access.service.AccessRightDAO;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
 import org.openiam.idm.srvc.audit.constant.AuditSource;
@@ -188,6 +190,9 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
     @Autowired
     private ResourceService resourceService;
     
+    @Autowired
+    private AccessRightDAO accessRightDAO;
+    
     @Value("${org.openiam.workflow.resource.type}")
     private String workflowResourceType;
     
@@ -205,7 +210,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 		resource.setResourceType(resourceTypeDAO.findById(workflowResourceType));
 		resource.setName(String.format("%s_%s", name, System.currentTimeMillis()));
 		resource.setCoorelatedName(String.format("Resource protecting workflow '%s'", name));
-		resource.addUser(user);
+		resource.addUser(user, accessRightDAO.findAll());
 		resource.addChildResource(workflowMasterResource, null);
 		
 		resourceService.save(resource, requestor);

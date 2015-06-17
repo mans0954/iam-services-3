@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.provision;
 
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
@@ -31,6 +32,7 @@ import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
+import org.openiam.idm.srvc.user.dto.UserToGroupMembershipXref;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.ProvisionUser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -109,46 +111,37 @@ public class NewUserModelToProvisionConverter {
 			}
 			
 			if(CollectionUtils.isNotEmpty(request.getRoleIds())) {
-                final Set<Role> userRoles = new HashSet<Role>();
 				for(final String roleId : request.getRoleIds()) {
 					final RoleEntity entity = roleDataService.getRoleLocalized(roleId, null, null);
 					if(entity != null) {
 						final Role role = roleDozerConverter.convertToDTO(entity, false);
-                        role.setOperation(AttributeOperationEnum.ADD);
-						userRoles.add(role);
+						user.addRole(role, null);
 					}
 					/*
 					final UserRole userRole = new UserRole(null, roleId);
 					userRoles.add(userRole);
 					*/
 				}
-                user.setRoles(userRoles);
 			}
 
 			if(CollectionUtils.isNotEmpty(request.getGroupIds())) {
-                final Set<Group> userGroups = new HashSet<Group>();
 				for(final String groupId : request.getGroupIds()) {
 					final GroupEntity entity = groupDataService.getGroupLocalize(groupId, null);
 					if(entity != null) {
 						final Group group = groupDozerConverter.convertToDTO(entity, false);
-                        group.setOperation(AttributeOperationEnum.ADD);
-						userGroups.add(group);
+                        user.addGroup(group, null);
 					}
 				}
-                user.setGroups(userGroups);
 			}
 
 			if(CollectionUtils.isNotEmpty(request.getOrganizationIds())) {
-                final Set<Organization> userOrganizations = new HashSet<Organization>();
 				for(final String organizationId : request.getOrganizationIds()) {
 					final OrganizationEntity entity = organizationDataService.getOrganizationLocalized(organizationId, null, null);
 					if(entity != null) {
 						final Organization organization = organizationDozerConverter.convertToDTO(entity, false);
-                        organization.setOperation(AttributeOperationEnum.ADD);
-						userOrganizations.add(organization);
+						user.addAffiliation(organization, null);
 					}
 				}
-                user.setAffiliations(userOrganizations);
 			}
 
 			if(CollectionUtils.isNotEmpty(request.getSupervisorIds())) {

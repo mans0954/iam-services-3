@@ -91,7 +91,7 @@ public class ProvisionGroup extends org.openiam.idm.srvc.grp.dto.Group {
         this.createDate = group.getCreateDate();
         this.createdBy = group.getCreatedBy();
 
-        this.organizations = group.getOrganizations();
+        setOrganizations(group.getOrganizations());
         this.owner = group.getOwner();
 
         this.description = group.getDescription();
@@ -128,8 +128,8 @@ public class ProvisionGroup extends org.openiam.idm.srvc.grp.dto.Group {
         //this.parentGroups = group.getParentGroups();
         //this.childGroups = group.getChildGroups();
 
-        this.resources = group.getResources();
-        this.roles = group.getRoles();
+        //this.setResources(group.getResources());
+        //this.roles = group.getRoles();
         this.attributes = group.getAttributes();
     }
 
@@ -236,9 +236,10 @@ public class ProvisionGroup extends org.openiam.idm.srvc.grp.dto.Group {
         this.identityList = identityList;
     }
 
+    @Deprecated
     public Resource findResource(String resourceId) {
-        if (resources != null) {
-            for(Resource res : resources) {
+        if (getResources() != null) {
+            for(Resource res : getResources()) {
                 if (res.getId() != null && res.getId().equals(resourceId)) {
                     return res;
                 }

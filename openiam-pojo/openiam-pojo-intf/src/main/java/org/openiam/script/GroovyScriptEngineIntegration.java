@@ -18,32 +18,30 @@
 
 package org.openiam.script;
 
-import groovy.lang.*;
+import groovy.lang.Binding;
 import groovy.text.GStringTemplateEngine;
 import groovy.util.GroovyScriptEngine;
 import groovy.util.ResourceException;
 import groovy.util.ScriptException;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.codehaus.groovy.runtime.InvokerHelper;
-import org.openiam.exception.ScriptEngineException;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.stereotype.Component;
-
 import javax.annotation.PostConstruct;
 import javax.transaction.Transactional;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.runtime.InvokerHelper;
+import org.openiam.exception.ScriptEngineException;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.stereotype.Component;
 
 /* 
  * Spring bean created through XML. Not using annotations, as the actual implementation of the 
@@ -183,5 +181,4 @@ public class GroovyScriptEngineIntegration implements ScriptIntegration, Applica
     public void setServiceHost(String host) {
         GroovyScriptEngineIntegration.SERVICE_HOST = host;
     }
-
 }

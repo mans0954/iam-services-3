@@ -9,22 +9,29 @@ import org.openiam.base.AbstractMetadataTypeDTO;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseConstants;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.access.domain.AccessRightEntity;
+import org.openiam.idm.srvc.access.dto.AccessRight;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
+import org.openiam.idm.srvc.grp.domain.GroupToResourceMembershipXrefEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.idm.srvc.user.domain.UserToGroupMembershipXrefEntity;
+import org.openiam.idm.srvc.user.domain.UserToOrganizationMembershipXrefEntity;
 import org.openiam.internationalization.Internationalized;
 
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * User domain object.  This object is used to transfer data between the service layer
@@ -90,7 +97,8 @@ import java.util.*;
         "affiliations",
         "supervisors",
         "subordinates",
-        "isFromActivitiCreation"
+        "isFromActivitiCreation",
+        "accessRightIds"
 })
 @XmlSeeAlso({
         Login.class,
@@ -220,13 +228,13 @@ public class User extends AbstractMetadataTypeDTO {
 
     protected Set<EmailAddress> emailAddresses = new HashSet<EmailAddress>(0);
 
-    protected Set<Role> roles = new HashSet<Role>(0);
+    protected Set<UserToRoleMembershipXref> roles = new HashSet<UserToRoleMembershipXref>(0);
 
-    protected Set<Organization> affiliations = new HashSet<Organization>(0);
+    protected Set<UserToOrganizationMembershipXref> affiliations = new HashSet<UserToOrganizationMembershipXref>(0);
 
-    protected Set<Group> groups = new HashSet<Group>(0);
+    protected Set<UserToGroupMembershipXref> groups = new HashSet<UserToGroupMembershipXref>(0);
 
-    protected Set<Resource> resources = new HashSet<Resource>(0);
+    protected Set<UserToResourceMembershipXref> resources = new HashSet<UserToResourceMembershipXref>(0);
 
     // these fields are used only when userWS is used directly without provision
     private String login;
@@ -239,6 +247,8 @@ public class User extends AbstractMetadataTypeDTO {
 
     private boolean isFromActivitiCreation = false;
     // Constructors
+    
+    private Set<String> accessRightIds;
 
     /**
      * default constructor
@@ -297,35 +307,72 @@ public class User extends AbstractMetadataTypeDTO {
         this.middleInit = middleInit;
     }
 
-    public Set<Organization> getAffiliations() {
+    public Set<UserToOrganizationMembershipXref> getAffiliations() {
         return affiliations;
     }
 
+    @Deprecated
     public void addAffiliation(final Organization org) {
-        if (org != null) {
-            if (affiliations == null) {
-                affiliations = new HashSet<Organization>();
-            }
-            org.setOperation(AttributeOperationEnum.ADD);
-            affiliations.add(org);
-        }
+        addAffiliation(org, null);
     }
 
+    @Deprecated
     public void markAffiliateAsDeleted(final String id) {
-        if (id != null) {
-            if (affiliations != null) {
-                for (final Organization organization : affiliations) {
-                    if (StringUtils.equals(organization.getId(), id)) {
-                        organization.setOperation(AttributeOperationEnum.DELETE);
-                        break;
-                    }
-                }
-            }
-        }
+        removeAffiliation(id);
     }
 
-    public void setAffiliations(Set<Organization> affiliations) {
+    public void setAffiliations(Set<UserToOrganizationMembershipXref> affiliations) {
         this.affiliations = affiliations;
+    }
+    
+    public void removeAffiliation(final String organizationId) {
+    	if(organizationId != null) {
+    		UserToOrganizationMembershipXref theXref = null;
+    		if(affiliations != null) {
+    			for(final UserToOrganizationMembershipXref xref : affiliations) {
+    				if(xref.getEntityId().equals(organizationId)) {
+    					theXref = xref;
+    					break;
+    				}
+    			}
+    		}
+    		
+    		if(theXref != null) {
+    			theXref.setOperation(AttributeOperationEnum.DELETE);
+    		}
+    	}
+    }
+
+    public void addAffiliation(final Organization organization, final Set<String> rights) {
+    	addAffiliationWithRights(organization, toAccessRightSet(rights));
+    }
+    
+    public void addAffiliationWithRights(final Organization organization, final Set<AccessRight> rights) {
+    	if (organization != null) {
+            if (affiliations == null) {
+            	affiliations = new HashSet<UserToOrganizationMembershipXref>();
+            }
+            
+            UserToOrganizationMembershipXref theXref = null;
+			for(final UserToOrganizationMembershipXref xref : this.affiliations) {
+				if(xref.getMemberEntityId().equals(getId()) && xref.getEntityId().equals(organization.getId())) {
+					theXref = xref;
+					break;
+				}
+			}
+            
+            //resource.setOperation(AttributeOperationEnum.ADD);
+			if(theXref == null) {
+				theXref = new UserToOrganizationMembershipXref();
+				theXref.setEntityId(organization.getId());
+				theXref.setMemberEntityId(getId());
+			}
+			theXref.setOperation(AttributeOperationEnum.ADD);
+			if(rights != null) {
+				theXref.setRights(rights);
+			}
+			this.affiliations.add(theXref);
+        }
     }
 
     public String getTitle() {
@@ -700,96 +747,239 @@ public class User extends AbstractMetadataTypeDTO {
         this.mailCode = mailCode;
     }
 
-    public Set<Role> getRoles() {
+    public Set<UserToRoleMembershipXref> getRoles() {
         return roles;
     }
 
+    @Deprecated
     public void markRoleAsDeleted(final String id) {
-        if (id != null) {
-            if (roles != null) {
-                for (final Role role : roles) {
-                    if (StringUtils.equals(role.getId(), id)) {
-                        role.setOperation(AttributeOperationEnum.DELETE);
-                        break;
-                    }
-                }
-            }
-        }
+    	removeRole(id);
+    }
+    
+    public void removeRole(final String roleId) {
+    	if(roleId != null) {
+    		UserToRoleMembershipXref theXref = null;
+    		if(roles != null) {
+    			for(final UserToRoleMembershipXref xref : roles) {
+    				if(xref.getEntityId().equals(roleId)) {
+    					theXref = xref;
+    					break;
+    				}
+    			}
+    		}
+    		
+    		if(theXref != null) {
+    			theXref.setOperation(AttributeOperationEnum.DELETE);
+    		}
+    	}
     }
 
-    public void addRole(final Role role) {
-        if (role != null) {
+    public void addRole(final Role role, final Set<String> rights) {
+    	addRoleWithRights(role, toAccessRightSet(rights));
+    }
+    
+    public void addRoleWithRights(final Role role, final Set<AccessRight> rights) {
+    	if (role != null) {
             if (roles == null) {
-                roles = new HashSet<Role>();
+            	roles = new HashSet<UserToRoleMembershipXref>();
             }
-            role.setOperation(AttributeOperationEnum.ADD);
-            roles.add(role);
+            
+            UserToRoleMembershipXref theXref = null;
+			for(final UserToRoleMembershipXref xref : this.roles) {
+				if(xref.getMemberEntityId().equals(getId()) && xref.getEntityId().equals(role.getId())) {
+					theXref = xref;
+					break;
+				}
+			}
+            
+            //resource.setOperation(AttributeOperationEnum.ADD);
+			if(theXref == null) {
+				theXref = new UserToRoleMembershipXref();
+				theXref.setEntityId(role.getId());
+				theXref.setMemberEntityId(getId());
+			}
+			theXref.setOperation(AttributeOperationEnum.ADD);
+			if(rights != null) {
+				theXref.setRights(rights);
+			}
+			this.roles.add(theXref);
         }
     }
+    
+    @Deprecated
+    public void addRole(final Role role) {
+    	addRole(role, null);
+    }
 
-    public void setRoles(Set<Role> roles) {
+    public void setRoles(Set<UserToRoleMembershipXref> roles) {
         this.roles = roles;
     }
 
-    public Set<Group> getGroups() {
+    public Set<UserToGroupMembershipXref> getGroups() {
         return groups;
     }
-
-    public void addGroup(final Group group) {
-        if (group != null) {
-            if (groups == null) {
-                groups = new HashSet<Group>();
-            }
-            group.setOperation(AttributeOperationEnum.ADD);
-            groups.add(group);
-        }
+    
+    public void removeGroup(final String groupId) {
+    	if(groupId != null) {
+    		UserToGroupMembershipXref theXref = null;
+    		if(groups != null) {
+    			for(final UserToGroupMembershipXref xref : groups) {
+    				if(xref.getEntityId().equals(groupId)) {
+    					theXref = xref;
+    					break;
+    				}
+    			}
+    		}
+    		
+    		if(theXref != null) {
+    			theXref.setOperation(AttributeOperationEnum.DELETE);
+    		}
+    	}
     }
-
+    
+    public void removeGroup(final Group group) {
+    	if(group != null) {
+    		removeGroup(group.getId());
+    	}
+    }
+    
+    @Deprecated
     public void markGroupAsDeleted(final String groupId) {
-        if (groupId != null) {
-            if (groups != null) {
-                for (final Group group : groups) {
-                    if (StringUtils.equals(group.getId(), groupId)) {
-                        group.setOperation(AttributeOperationEnum.DELETE);
-                        break;
-                    }
-                }
-            }
-        }
+    	removeGroup(groupId);
     }
 
-    public void setGroups(Set<Group> groups) {
+    public void setGroups(Set<UserToGroupMembershipXref> groups) {
         this.groups = groups;
     }
 
-    public Set<Resource> getResources() {
+    public Set<UserToResourceMembershipXref> getResources() {
         return resources;
     }
 
+    /**
+     * Do not use
+     * @param resourceId
+     */
+    @Deprecated
     public void markResourceAsDeleted(final String resourceId) {
-        if (resourceId != null) {
-            if (resources != null) {
-                for (final Resource resource : resources) {
-                    if (StringUtils.equals(resource.getId(), resourceId)) {
-                        resource.setOperation(AttributeOperationEnum.DELETE);
-                        break;
-                    }
-                }
+        removeResource(resourceId);
+    }
+    
+    /**
+     * Use addGroupWithRights
+     * @param group
+     */
+    @Deprecated
+    public void addGroup(final Group group) {
+    	addGroup(group, null);
+    }
+    
+    public void addGroup(final Group group, final Set<String> rights) {
+    	addGroupWithRights(group, toAccessRightSet(rights));
+    }
+    
+    public void addGroupWithRights(final Group group, final Set<AccessRight> rights) {
+    	if (group != null) {
+            if (groups == null) {
+            	groups = new HashSet<UserToGroupMembershipXref>();
             }
+            
+            UserToGroupMembershipXref theXref = null;
+			for(final UserToGroupMembershipXref xref : this.groups) {
+				if(xref.getMemberEntityId().equals(getId()) && xref.getEntityId().equals(group.getId())) {
+					theXref = xref;
+					break;
+				}
+			}
+            
+            //resource.setOperation(AttributeOperationEnum.ADD);
+			if(theXref == null) {
+				theXref = new UserToGroupMembershipXref();
+				theXref.setEntityId(group.getId());
+				theXref.setMemberEntityId(getId());
+			}
+			theXref.setOperation(AttributeOperationEnum.ADD);
+			if(rights != null) {
+				theXref.setRights(rights);
+			}
+			this.groups.add(theXref);
         }
     }
 
+    /**
+     * Use addResourceWithRights
+     * @param resource
+     */
+    @Deprecated
     public void addResource(final Resource resource) {
-        if (resource != null) {
+    	addResource(resource, null);
+    }
+    
+    public void addResourceWithRights(final Resource resource, final Set<AccessRight> rights) {
+    	if (resource != null) {
             if (resources == null) {
-                resources = new HashSet<Resource>();
+                resources = new HashSet<UserToResourceMembershipXref>();
             }
-            resource.setOperation(AttributeOperationEnum.ADD);
-            resources.add(resource);
+            
+            UserToResourceMembershipXref theXref = null;
+			for(final UserToResourceMembershipXref xref : this.resources) {
+				if(xref.getMemberEntityId().equals(getId()) && xref.getEntityId().equals(resource.getId())) {
+					theXref = xref;
+					break;
+				}
+			}
+            
+            //resource.setOperation(AttributeOperationEnum.ADD);
+			if(theXref == null) {
+				theXref = new UserToResourceMembershipXref();
+				theXref.setEntityId(resource.getId());
+				theXref.setMemberEntityId(getId());
+			}
+			theXref.setOperation(AttributeOperationEnum.ADD);
+			if(rights != null) {
+				theXref.setRights(rights);
+			}
+			this.resources.add(theXref);
         }
     }
+    
+    public void removeResource(final String resourceId) {
+    	if(resourceId != null) {
+    		UserToResourceMembershipXref theXref = null;
+    		if(resources != null) {
+    			for(final UserToResourceMembershipXref xref : resources) {
+    				if(xref.getEntityId().equals(resourceId)) {
+    					theXref = xref;
+    					break;
+    				}
+    			}
+    		}
+    		
+    		if(theXref != null) {
+    			theXref.setOperation(AttributeOperationEnum.DELETE);
+    		}
+    	}
+    }
+    
+    public void removeResource(final Resource resource) {
+    	if(resource != null) {
+    		removeResource(resource.getId());
+    	}
+    }
+    
+    public void addResource(final Resource resource, final Set<String> rights) {
+    	addResourceWithRights(resource, toAccessRightSet(rights));
+    }
+    
+    private Set<AccessRight> toAccessRightSet(final Set<String> rights) {
+    	return (rights != null) ? rights.stream().map(e -> {
+			final AccessRight right = new AccessRight();
+			right.setId(e);
+			return right;
+		}).collect(Collectors.toSet()) : null;
+    }
 
-    public void setResources(Set<Resource> resources) {
+    public void setResources(Set<UserToResourceMembershipXref> resources) {
         this.resources = resources;
     }
 
@@ -1294,6 +1484,15 @@ public class User extends AbstractMetadataTypeDTO {
         this.subordinates = subordinatesSet;
     }
 
+    public Set<String> getAccessRightIds() {
+		return accessRightIds;
+	}
+
+	public void setAccessRightIds(Collection<String> accessRightIds) {
+		if(accessRightIds != null) {
+			this.accessRightIds = new HashSet<String>(accessRightIds);
+		}
+	}
 
     @Override
     public boolean equals(Object o) {

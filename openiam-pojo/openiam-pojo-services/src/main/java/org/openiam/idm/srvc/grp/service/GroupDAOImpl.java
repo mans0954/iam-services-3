@@ -52,6 +52,12 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
                 criteria.add(Restrictions.eq(getPKfieldName(), groupSearchBean.getKey()));
             }
             
+            if(CollectionUtils.isNotEmpty(groupSearchBean.getRoleIdSet())){    
+                criteria.createAlias("roles", "roleXrefs")
+						.createAlias("roleXrefs.entity", "role").add(
+						Restrictions.in("role.id", groupSearchBean.getRoleIdSet()));
+            }
+            
             if(CollectionUtils.isNotEmpty(groupSearchBean.getChildIdSet())) {
             	criteria.createAlias("childGroups", "childXrefs")
 						.createAlias("childXrefs.memberEntity", "child").add(
@@ -64,21 +70,20 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
 						Restrictions.in("parent.id", groupSearchBean.getParentIdSet()));
 			}
 
-            if(CollectionUtils.isNotEmpty(groupSearchBean.getRoleIdSet())){
-                criteria.createAlias("roles", "r");
-                criteria.add(Restrictions.in("r.id", groupSearchBean.getRoleIdSet()));
+            if(CollectionUtils.isNotEmpty(groupSearchBean.getOrganizationIdSet())){    
+                criteria.createAlias("organizations", "organizationXrefs")
+						.createAlias("organizationXrefs.entity", "organization").add(
+						Restrictions.in("organization.id", groupSearchBean.getOrganizationIdSet()));
             }
-            if(CollectionUtils.isNotEmpty(groupSearchBean.getOrganizationIdSet())){
-                criteria.createAlias("organizationSet", "org");
-                criteria.add(Restrictions.in("org.id", groupSearchBean.getOrganizationIdSet()));
-            }
-            if(CollectionUtils.isNotEmpty(groupSearchBean.getResourceIdSet())){
-                criteria.createAlias("resources", "res");
-                criteria.add(Restrictions.in("res.id", groupSearchBean.getResourceIdSet()));
-            }
+            if(CollectionUtils.isNotEmpty(groupSearchBean.getResourceIdSet())) {
+            	criteria.createAlias("resources", "resourceXrefs")
+						.createAlias("resourceXrefs.memberEntity", "resource").add(
+						Restrictions.in("resource.id", groupSearchBean.getResourceIdSet()));
+			}
             if(CollectionUtils.isNotEmpty(groupSearchBean.getUserIdSet())){
-                criteria.createAlias("users", "usr");
-                criteria.add(Restrictions.in("usr.id", groupSearchBean.getUserIdSet()));
+            	criteria.createAlias("users", "userXrefs")
+						.createAlias("userXrefs.memberEntity", "user").add(
+								Restrictions.in("user.id", groupSearchBean.getUserIdSet()));
             }
 
             if(CollectionUtils.isNotEmpty(groupSearchBean.getAttributes())) {
@@ -153,30 +158,6 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
 //			if(group.getCompany() != null && StringUtils.isNotBlank(group.getCompany().getId())) {
 //				criteria.add(Restrictions.eq("company.id", group.getCompany().getId()));
 //			}
-
-            if(CollectionUtils.isNotEmpty(group.getOrganizationSet())) {
-                final Set<String> orgIds = new HashSet<String>();
-                for(final OrganizationEntity org : group.getOrganizationSet()) {
-                    if(org != null && StringUtils.isNotBlank(org.getId())) {
-                        orgIds.add(org.getId());
-                    }
-                }
-                criteria.createAlias("organizationSet", "orgs");
-                criteria.add(Restrictions.in("orgs.id", orgIds));
-            }
-
-            if(CollectionUtils.isNotEmpty(group.getResources())) {
-            	final Set<String> resourceIds = new HashSet<String>();
-            	for(final ResourceEntity resourceEntity : group.getResources()) {
-            		if(resourceEntity != null && StringUtils.isNotBlank(resourceEntity.getId())) {
-            			resourceIds.add(resourceEntity.getId());
-            		}
-            	}
-            	
-            	if(CollectionUtils.isNotEmpty(resourceIds)) {
-            		criteria.createAlias("resources", "resources").add( Restrictions.in("resources.id", resourceIds));
-            	}
-            }
 		}
 		return criteria;
 	}
@@ -208,93 +189,6 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
 		return (List<GroupEntity>)criteria.list();
 	}
 	
-	@Deprecated
-	public List<GroupEntity> getGroupsForUser(final String userId, Set<String> filter, final int from, final int size) {
-		final Criteria criteria = getEntitlementGroupsCriteria(userId, null, null, filter);
-        return getList(criteria, from, size);
-	}
-
-
-	@Override
-	@Deprecated
-	public List<GroupEntity> getGroupsForRole(final String roleId, Set<String> filter, int from, int size) {
-		final Criteria criteria = getEntitlementGroupsCriteria(null, roleId, null, filter);
-        return getList(criteria, from, size);
-	}
-
-
-    @Override
-    @Deprecated
-    public List<GroupEntity> getGroupsForResource(final String resourceId, Set<String> filter, int from, int size){
-        final Criteria criteria = getEntitlementGroupsCriteria(null, null, resourceId, filter);
-        return getList(criteria, from, size);
-    }
-
-
-    @Override
-    @Deprecated
-    public int getNumOfGroupsForUser(final String userId, Set<String> filter) {
-        final Criteria criteria = getEntitlementGroupsCriteria(userId, null, null, filter).setProjection(rowCount());
-        return ((Number)criteria.uniqueResult()).intValue();
-    }
-
-    @Override
-    @Deprecated
-    public int getNumOfGroupsForRole(final String roleId, Set<String> filter) {
-        final Criteria criteria = getEntitlementGroupsCriteria(null, roleId, null, filter);
-        criteria.setProjection(rowCount());
-        return ((Number)criteria.uniqueResult()).intValue();
-    }
-
-    @Override
-    @Deprecated
-    public int getNumOfGroupsForResource(final String resourceId, Set<String> filter){
-        final Criteria criteria = getEntitlementGroupsCriteria(null, null, resourceId, filter);
-        criteria.setProjection(rowCount());
-        return ((Number)criteria.uniqueResult()).intValue();
-    }
-
-    private Criteria getEntitlementGroupsCriteria(String userId, String roleId, String resourceId, Set<String> filter){
-        final Criteria criteria = super.getCriteria();
-
-            if(StringUtils.isNotBlank(userId)){
-            criteria.createAlias("users", "u")
-                    .add(Restrictions.eq("u.id", userId));
-        }
-
-        if(StringUtils.isNotBlank(roleId)){
-            criteria.createAlias("roles", "roles").add( Restrictions.eq("roles.id", roleId));
-        }
-
-        if(StringUtils.isNotBlank(resourceId)){
-            criteria.createAlias("resources", "resources").add( Restrictions.eq("resources.id", resourceId));
-        }
-
-        if(filter!=null && !filter.isEmpty()){
-            criteria.add( Restrictions.in(getPKfieldName(), filter));
-        }
-
-        return criteria;
-    }
-
-    @Deprecated
-    private Criteria getParentGroupsCriteria(final String groupId, Set<String> filter) {
-        final Criteria criteria = getCriteria().createAlias("childGroups", "group").add( Restrictions.eq("group.id", groupId));
-        if(filter!=null && !filter.isEmpty()){
-            criteria.add( Restrictions.in(getPKfieldName(), filter));
-        }
-        return criteria;
-    }
-
-    @Deprecated
-    private Criteria getChildGroupsCriteria(final String groupId, Set<String> filter) {
-        final Criteria criteria = getCriteria().createAlias("parentGroups", "group").add( Restrictions.eq("group.id", groupId));
-        if(filter!=null && !filter.isEmpty()){
-            criteria.add( Restrictions.in(getPKfieldName(), filter));
-        }
-        return criteria;
-    }
-
     private List<GroupEntity> getList(Criteria criteria, int from, int size){
         if(from > -1) {
             criteria.setFirstResult(from);

@@ -21,27 +21,21 @@
  */
 package org.openiam.provision.service;
 
-import groovy.lang.MissingPropertyException;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.AttributeOperationEnum;
-import org.openiam.base.BaseAttributeContainer;
 import org.openiam.base.BaseObject;
 import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.request.LookupRequest;
-import org.openiam.connector.type.request.SuspendResumeRequest;
 import org.openiam.connector.type.response.*;
-import org.openiam.exception.EsbErrorToken;
 import org.openiam.exception.ObjectNotFoundException;
-import org.openiam.exception.ScriptEngineException;
+import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.searchbeans.RoleSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
@@ -56,7 +50,6 @@ import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
-import org.openiam.idm.srvc.mngsys.domain.ProvisionConnectorEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.org.dto.Organization;
@@ -75,6 +68,10 @@ import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
+import org.openiam.idm.srvc.user.dto.UserToGroupMembershipXref;
+import org.openiam.idm.srvc.user.dto.UserToOrganizationMembershipXref;
+import org.openiam.idm.srvc.user.dto.UserToResourceMembershipXref;
+import org.openiam.idm.srvc.user.dto.UserToRoleMembershipXref;
 import org.openiam.provision.dto.AccountLockEnum;
 import org.openiam.provision.dto.PasswordSync;
 import org.openiam.provision.dto.ProvisionUser;
@@ -98,9 +95,10 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.jws.WebParam;
 import javax.jws.WebService;
+
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * DefaultProvisioningService is responsible for receiving and processing
@@ -170,10 +168,11 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         for (String roleId : roles) {
             ResourceSearchBean rsb = new ResourceSearchBean();
             rsb.setDeepCopy(false);
+            rsb.addRoleId(roleId);
             // TODO This method shouldn't use Internationalization Aspect
 			// --Comment by Lev Bornovalov on merging 3.2.5 into 4.0
             // --Internationalized objects in 4.0 are cached, hence, should have negligable performance impact
-            List<org.openiam.idm.srvc.res.dto.Resource> resources = resourceDataService.getResourcesForRole(roleId, -1, -1, rsb, null);
+            List<org.openiam.idm.srvc.res.dto.Resource> resources = resourceDataService.findBeans(rsb, 0, Integer.MAX_VALUE, null);
             for (Resource res : resources) {
                 resourceIds.add(res.getId());
             }
@@ -185,9 +184,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     public ProvisionUserResponse deProvisionUsersToResourceByGroup(@WebParam(name = "usersIds", targetNamespace = "") List<String> users, @WebParam(name = "requestorUserId", targetNamespace = "") String requestorUserId, @WebParam(name = "groupsIds", targetNamespace = "") List<String> groups) {
         Set<String> resourceIds = new HashSet<String>();
         for (String groupId : groups) {
-            ResourceSearchBean rsb = new ResourceSearchBean();
+            final ResourceSearchBean rsb = new ResourceSearchBean();
             rsb.setDeepCopy(false);
-            List<org.openiam.idm.srvc.res.dto.Resource> resources = resourceDataService.getResourcesForGroup(groupId, -1, -1, rsb, null);
+            rsb.addGroupId(groupId);
+            List<org.openiam.idm.srvc.res.dto.Resource> resources = resourceDataService.findBeans(rsb, 0, Integer.MAX_VALUE, null);
             for (Resource res : resources) {
                 resourceIds.add(res.getId());
             }
@@ -199,11 +199,12 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     public ProvisionUserResponse provisionUsersToResourceByRole(final List<String> usersIds, final String requestorUserId, final List<String> roleList) {
         Set<String> resourceIds = new HashSet<String>();
         for (String roleId : roleList) {
-            ResourceSearchBean rsb = new ResourceSearchBean();
+            final ResourceSearchBean rsb = new ResourceSearchBean();
             rsb.setDeepCopy(false);
             rsb.setResourceTypeId(ResourceSearchBean.TYPE_MANAGED_SYS);
+            rsb.addRoleId(roleId);
             // TODO This method shouldn't use Internationalization Aspect
-            List<org.openiam.idm.srvc.res.dto.Resource> resources = resourceDataService.getResourcesForRole(roleId, -1, -1, rsb, null);
+            List<org.openiam.idm.srvc.res.dto.Resource> resources = resourceDataService.findBeans(rsb, 0, Integer.MAX_VALUE, null);
             for (Resource res : resources) {
                 resourceIds.add(res.getId());
             }
@@ -215,9 +216,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     public ProvisionUserResponse provisionUsersToResourceByGroup(final List<String> usersIds, final String requestorUserId, final List<String> groupList) {
         Set<String> resourceIds = new HashSet<String>();
         for (String groupId : groupList) {
-            ResourceSearchBean rsb = new ResourceSearchBean();
+            final ResourceSearchBean rsb = new ResourceSearchBean();
             rsb.setDeepCopy(false);
-            List<org.openiam.idm.srvc.res.dto.Resource> resources = resourceDataService.getResourcesForGroup(groupId, -1, -1, rsb, null);
+            rsb.addGroupId(groupId);
+            List<org.openiam.idm.srvc.res.dto.Resource> resources = resourceDataService.findBeans(rsb, 0, Integer.MAX_VALUE, null);
             for (Resource res : resources) {
                 resourceIds.add(res.getId());
             }
@@ -408,7 +410,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     private ProvisionUserResponse deleteUserWithSkipManagedSysList(String managedSystemId, String principal, UserStatusEnum status,
             String requestorId, List<String> skipManagedSysList, IdmAuditLog auditLog) {
     	log.debug("----deleteUser called.------");
-
+        if (StringUtils.isEmpty(requestorId)) {
+            requestorId = systemUserId;
+        }
     	ProvisionUserResponse response = new ProvisionUserResponse(ResponseStatus.SUCCESS);
     	Map<String, Object> bindingMap = new HashMap<String, Object>();
 
@@ -736,7 +740,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     			}
     		} else {
     			pUser.setStatus(status);
-    			pUser.setSecondaryStatus(UserStatusEnum.INACTIVE);
+    			pUser.setSecondaryStatus(null);
     			pUser.setLastUpdatedBy(requestorId);
     			pUser.setLastUpdate(new Date());
     			pUser.setNotProvisioninResourcesIds(processedResources);
@@ -841,7 +845,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     final ManagedSysDto managedSys = managedSysService.getManagedSys(managedSysId);
                     final Login login = loginDozerConverter.convertToDTO(userLogin, false);
                     boolean isSuspend = AccountLockEnum.LOCKED.equals(operation) || AccountLockEnum.LOCKED_ADMIN.equals(operation);
-                    ResponseType responsetype = suspend(requestorId, login, managedSys, buildMngSysAttributes(login, isSuspend ? "SUSPEND" : "RESUME"), isSuspend);
+                    ResponseType responsetype = suspend(requestorId, login, managedSys, buildPolicyMapHelper.buildMngSysAttributes(login, isSuspend ? "SUSPEND" : "RESUME"), isSuspend);
                     if (responsetype == null) {
                         log.info("Response object from set password is null");
                         response.setStatus(ResponseStatus.FAILURE);
@@ -860,18 +864,23 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 }
             }
         }
-        final List<RoleEntity> roleList = roleDataService.getUserRoles(user.getId(), null, 0, Integer.MAX_VALUE);
+        final RoleSearchBean roleSearchBean = new RoleSearchBean();
+        roleSearchBean.addUserId(user.getId());
+        final List<RoleEntity> roleList = roleDataService.findBeans(roleSearchBean, null, 0, Integer.MAX_VALUE);
         final Login primLogin = loginDozerConverter.convertToDTO(lg, false);
         if (CollectionUtils.isNotEmpty(roleList)) {
             for (final RoleEntity role : roleList) {
-                final List<Resource> resourceList = resourceDataService.getResourcesForRole(role.getId(), 0, Integer.MAX_VALUE, new ResourceSearchBean(), null);
+            	final ResourceSearchBean sb = new ResourceSearchBean();
+            	sb.addRoleId(role.getId());
+            	sb.setDeepCopy(false);
+                final List<Resource> resourceList = resourceDataService.findBeans(sb, 0, Integer.MAX_VALUE, null);
                 if (CollectionUtils.isNotEmpty(resourceList)) {
                     for (final Resource resource : resourceList) {
                         ManagedSysDto managedSys = managedSysService.getManagedSysByResource(resource.getId());
                         if (managedSys != null) {
                             boolean isSuspend = AccountLockEnum.LOCKED.equals(operation) || AccountLockEnum.LOCKED_ADMIN.equals(operation);
                             ResponseType responsetype = suspend(requestorId, primLogin, managedSys,
-                                    buildMngSysAttributes(primLogin, isSuspend ? "SUSPEND" : "RESUME"), isSuspend);
+                                    buildPolicyMapHelper.buildMngSysAttributes(primLogin, isSuspend ? "SUSPEND" : "RESUME"), isSuspend);
                             if (responsetype.getStatus() == null) {
                                 log.info("Response status is null");
                                 response.setStatus(ResponseStatus.FAILURE);
@@ -932,7 +941,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         // bind the objects to the scripting engine
         Map<String, Object> bindingMap = new HashMap<String, Object>();
         bindingMap.put("sysId", sysConfiguration.getDefaultManagedSysId());
-        bindingMap.put("org", pUser.getPrimaryOrganization());
+        bindingMap.put("org", organizationService.getOrganizationDTO(pUser.getPrimaryOrganizationId(), null));
         bindingMap.put("operation", isAdd ? "ADD" : "MODIFY");
         bindingMap.put(USER, pUser);
         bindingMap.put("sendActivationLink", sendActivationLink);
@@ -1113,12 +1122,17 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         resourceSet.addAll(getResourcesForRoles(roleSet));
         resourceSet.addAll(getResourcesForGroups(groupSet));
 
-        List<Organization> orgs = orgManager.getOrganizationsForUser(pUser.getId(), null, 0, 100);
-        for (Organization org : orgs) {
-            Resource res = resourceDataService.getResource(org.getAdminResourceId(), null);
-            if (res != null) {
-                resourceSet.add(res);
-            }
+        final OrganizationSearchBean sb = new OrganizationSearchBean();
+        sb.setDeepCopy(false);
+        sb.addUserId(pUser.getId());
+        final List<Organization> orgs = orgManager.findBeans(sb, null, 0, Integer.MAX_VALUE);
+        if(CollectionUtils.isNotEmpty(orgs)) {
+	        for (Organization org : orgs) {
+	            Resource res = resourceDataService.getResource(org.getAdminResourceId(), null);
+	            if (res != null) {
+	                resourceSet.add(res);
+	            }
+	        }
         }
 
 
@@ -1537,7 +1551,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                             ResponseType resp = resetPassword(requestId,
                                     login, password, managedSysDto,
                                     objectMatchDozerConverter.convertToDTO(matchObj, false),
-                                    buildMngSysAttributes(login, "RESET_PASSWORD"));
+                                    buildPolicyMapHelper.buildMngSysAttributes(login, "RESET_PASSWORD"), "RESET_PASSWORD");
                             log.info("============== Connector Reset Password get : " + new Date());
                             if (resp != null && resp.getStatus() == StatusCodeType.SUCCESS) {
                                 if (enableOnPassReset(res)) {
@@ -1547,7 +1561,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                     lg.setPasswordChangeCount(0);
                                     lg.setStatus(LoginStatusEnum.ACTIVE);
 
-                                    resp = suspend(requestId, login, managedSysDto, buildMngSysAttributes(login, "RESUME"), false);
+                                    resp = suspend(requestId, login, managedSysDto, buildPolicyMapHelper.buildMngSysAttributes(login, "RESUME"), false);
 
                                     if (StatusCodeType.SUCCESS.equals(resp.getStatus())) {
                                         lg.setProvStatus(ProvLoginStatusEnum.ENABLED);
@@ -1643,36 +1657,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         }
         return response;
 
-    }
-
-    private ExtensibleUser buildMngSysAttributes(Login login, String operation) {
-        String userId = login.getUserId();
-        String managedSysId = login.getManagedSysId();
-
-        User usr = userDozerConverter.convertToDTO(userMgr.getUser(userId), true);
-        if (usr == null) {
-            return null;
-        }
-
-        List<AttributeMapEntity> attrMapEntities = managedSystemService.getAttributeMapsByManagedSysId(managedSysId);
-        List<ExtensibleAttribute> requestedExtensibleAttributes = new ArrayList<ExtensibleAttribute>();
-        for (AttributeMapEntity ame : attrMapEntities) {
-            if ("USER".equalsIgnoreCase(ame.getMapForObjectType()) && "ACTIVE".equalsIgnoreCase(ame.getStatus())) {
-                requestedExtensibleAttributes.add(new ExtensibleAttribute(ame.getAttributeName(), null));
-            }
-        }
-
-        List<ExtensibleAttribute> mngSysAttrs = new ArrayList<ExtensibleAttribute>();
-        LookupUserResponse lookupUserResponse = getTargetSystemUser(login.getLogin(), managedSysId, requestedExtensibleAttributes);
-        boolean targetSystemUserExists = false;
-        if (ResponseStatus.SUCCESS.equals(lookupUserResponse.getStatus())) {
-            targetSystemUserExists = true;
-            mngSysAttrs = lookupUserResponse.getAttrList();
-        }
-
-        ProvisionUser pUser = new ProvisionUser(usr);
-
-        return buildMngSysAttributesForIDMUser(pUser, targetSystemUserExists, mngSysAttrs, managedSysId, operation);
     }
 
     @Override
@@ -1950,7 +1934,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                     passwordSync.getPassword(),
                                     managedSysDozerConverter.convertToDTO(mSys, false),
                                     objectMatchDozerConverter.convertToDTO(matchObj, false),
-                                    buildMngSysAttributes(login, "SET_PASSWORD"));
+                                    buildPolicyMapHelper.buildMngSysAttributes(login, "SET_PASSWORD"), "SET_PASSWORD");
 
                             boolean connectorSuccess = false;
                             log.info("============== Connector Set Password get : " + new Date());
@@ -2063,10 +2047,11 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         if (CollectionUtils.isNotEmpty(roleSet)) {
             for (Role rl : roleSet) {
                 if (rl.getId() != null) {
-                    ResourceSearchBean resourceSearchBean = new ResourceSearchBean();
+                    final ResourceSearchBean resourceSearchBean = new ResourceSearchBean();
                     resourceSearchBean.setDeepCopy(false);
                     resourceSearchBean.setResourceTypeId(ResourceSearchBean.TYPE_MANAGED_SYS);
-                    List<Resource> resources = resourceDataService.getResourcesForRole(rl.getId(), 0, Integer.MAX_VALUE, resourceSearchBean, null);
+                    resourceSearchBean.addRoleId(rl.getId());
+                    List<Resource> resources = resourceDataService.findBeans(resourceSearchBean, 0, Integer.MAX_VALUE, null);
                     if (CollectionUtils.isNotEmpty(resources)) {
                         for (Resource r : resources) {
                             r.setOperation(rl.getOperation()); // get operation value from role
@@ -2314,9 +2299,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
                         // update the target system
 
-                        final ProvisionConnectorEntity connector = connectorService.getProvisionConnectorsById(mSys
-                                .getConnectorId());
-
                         ManagedSystemObjectMatchEntity matchObj = null;
                         final List<ManagedSystemObjectMatchEntity> matcheList = managedSystemService.managedSysObjectParam(
                                 managedSysId, "USER");
@@ -2329,7 +2311,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         ResponseType resp = resetPassword(requestId, loginDTO,
                                 passwordSync.getPassword(), managedSysDozerConverter.convertToDTO(mSys, false),
                                 objectMatchDozerConverter.convertToDTO(matchObj, false),
-                                buildMngSysAttributes(loginDTO, "SYNC_PASSWORD"));
+                                buildPolicyMapHelper.buildMngSysAttributes(loginDTO, "SYNC_PASSWORD"), "SET_PASSWORD");
                         if (resp.getStatus() == StatusCodeType.SUCCESS) {
                             auditLog.succeed();
                             auditLog.setAuditDescription("Set password for resource: " + res.getName() + " for user: " + targetLoginEntity.getLogin());
@@ -2377,36 +2359,41 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
             final IdmAuditLog idmAuditLog = new IdmAuditLog();
             idmAuditLog.setAction(AuditAction.BULK_OPERATION.value());
-            String requestorId = bulkRequest.getRequesterId();
-            LoginEntity lRequestor = loginManager.getPrimaryIdentity(requestorId);
+            final String requestorId = bulkRequest.getRequesterId();
+            final LoginEntity lRequestor = loginManager.getPrimaryIdentity(requestorId);
             idmAuditLog.setRequestorUserId(requestorId);
             idmAuditLog.setRequestorPrincipal(lRequestor.getLogin());
 
-            List<String> failedUserIds = new ArrayList<String>();
+            final List<String> failedUserIds = new ArrayList<String>();
             try {
 
-                for (String userId : bulkRequest.getUserIds()) {
-                    User user = userMgr.getUserDto(userId);
+                for (final String userId : bulkRequest.getUserIds()) {
+                	final User user = userMgr.getUserDto(userId);
 
                     if (user != null) {
 
-                        ProvisionUser pUser = new ProvisionUser(user);
+                        final ProvisionUser pUser = new ProvisionUser(user);
                         pUser.setRequestorUserId(requestorId);
                         pUser.setRequestorLogin(lRequestor.getLogin());
 
                         boolean isEntitlementModified = false;
 
-                        Set<Group> existingGroups = pUser.getGroups();
-                        pUser.setGroups(new HashSet<Group>());
+                        final Set<String> existingGroupIds = (pUser.getGroups() != null) ?
+                        		pUser.getGroups().stream().map(e -> e.getEntityId()).collect(Collectors.toSet()) : null;
+                        pUser.setGroups(new HashSet<UserToGroupMembershipXref>());
 
-                        Set<Role> existingRoles = pUser.getRoles();
-                        pUser.setRoles(new HashSet<Role>());
+                        final Set<String> existingRolesIds = (pUser.getRoles() != null) ?
+                        		pUser.getRoles().stream().map(e -> e.getEntityId()).collect(Collectors.toSet()) : null;
+                        pUser.setRoles(new HashSet<UserToRoleMembershipXref>());
 
-                        Set<Organization> existingOrganizations = pUser.getAffiliations();
-                        pUser.setAffiliations(new HashSet<Organization>());
+                        final Set<String> existingOrganizationIds = (pUser.getAffiliations() != null) ?
+                        		pUser.getAffiliations().stream().map(e -> e.getEntityId()).collect(Collectors.toSet()) : null;
+                        pUser.setAffiliations(new HashSet<UserToOrganizationMembershipXref>());
 
-                        Set<Resource> existingResources = pUser.getResources();
-                        pUser.setResources(new HashSet<Resource>());
+                        final Set<String> existingResourceIds = (pUser.getResources() != null) ?
+                        		pUser.getResources().stream().map(e -> e.getEntityId()).collect(Collectors.toSet()) : 
+                        		new HashSet<String>();
+                        pUser.setResources(new HashSet<UserToResourceMembershipXref>());
 
                         Response res = new Response(ResponseStatus.FAILURE);
                         for (OperationBean ob : bulkRequest.getOperations()) {
@@ -2516,21 +2503,21 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                     boolean isModifiedGroup = false;
                                     Group group = groupDozerConverter.convertToDTO(
                                             groupManager.getGroup(ob.getObjectId(), requestorId), false);
-                                    if (existingGroups.contains(group)) {
+                                    if (existingGroupIds.contains(group.getId())) {
                                         if (BulkOperationEnum.DELETE_ENTITLEMENT.equals(ob.getOperation())) {
-                                            existingGroups.remove(group);
+                                        	existingGroupIds.remove(group.getId());
                                             group.setOperation(AttributeOperationEnum.DELETE);
                                             isModifiedGroup = true;
                                         }
                                     } else {
                                         if (BulkOperationEnum.ADD_ENTITLEMENT.equals(ob.getOperation())) {
-                                            existingGroups.add(group);
+                                        	existingGroupIds.add(group.getId());
                                             group.setOperation(AttributeOperationEnum.ADD);
                                             isModifiedGroup = true;
                                         }
                                     }
                                     if (isModifiedGroup) {
-                                        pUser.getGroups().add(group);
+                                    	pUser.addGroup(group, ob.getRightIds());
                                         isEntitlementModified = true;
                                     }
                                     break;
@@ -2538,63 +2525,62 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                     boolean isModifiedRole = false;
                                     Role role = roleDozerConverter.convertToDTO(
                                             roleDataService.getRole(ob.getObjectId(), requestorId), false);
-                                    if (existingRoles.contains(role)) {
+                                    if (existingRolesIds.contains(role.getId())) {
                                         if (BulkOperationEnum.DELETE_ENTITLEMENT.equals(ob.getOperation())) {
-                                            existingRoles.remove(role);
+                                        	existingRolesIds.remove(role.getId());
                                             role.setOperation(AttributeOperationEnum.DELETE);
                                             isModifiedRole = true;
                                         }
                                     } else {
                                         if (BulkOperationEnum.ADD_ENTITLEMENT.equals(ob.getOperation())) {
-                                            existingRoles.add(role);
+                                        	existingRolesIds.add(role.getId());
                                             role.setOperation(AttributeOperationEnum.ADD);
                                             isModifiedRole = true;
                                         }
                                     }
                                     if (isModifiedRole) {
-                                        pUser.getRoles().add(role);
+                                    	pUser.addRole(role, ob.getRightIds());
                                         isEntitlementModified = true;
                                     }
                                     break;
                                 case RESOURCE:
                                     boolean isModifiedResource = false;
                                     Resource resource = resourceService.getResourceDTO(ob.getObjectId());
-                                    if (existingResources.contains(resource)) {
+                                    if (existingResourceIds.contains(resource.getId())) {
                                         if (BulkOperationEnum.DELETE_ENTITLEMENT.equals(ob.getOperation())) {
-                                            existingResources.remove(resource);
+                                        	existingResourceIds.remove(resource.getId());
                                             resource.setOperation(AttributeOperationEnum.DELETE);
                                             isModifiedResource = true;
                                         }
                                     } else {
                                         if (BulkOperationEnum.ADD_ENTITLEMENT.equals(ob.getOperation())) {
-                                            existingResources.add(resource);
+                                        	existingResourceIds.add(resource.getId());
                                             resource.setOperation(AttributeOperationEnum.ADD);
                                             isModifiedResource = true;
                                         }
                                     }
                                     if (isModifiedResource) {
-                                        pUser.getResources().add(resource);
+                                        pUser.addResource(resource, ob.getRightIds());
                                         isEntitlementModified = true;
                                     }
                                     break;
                                 case ORGANIZATION:
                                     boolean isModifiedOrg = false;
-                                    Organization organization = organizationService.getOrganizationDTO(ob.getObjectId(), null);
-                                    if (existingOrganizations.contains(organization)) {
+                                    final Organization organization = organizationService.getOrganizationDTO(ob.getObjectId(), null);
+                                    if (existingOrganizationIds.contains(organization.getId())) {
                                         if (BulkOperationEnum.DELETE_ENTITLEMENT.equals(ob.getOperation())) {
-                                            existingOrganizations.remove(organization);
-                                            organization.setOperation(AttributeOperationEnum.DELETE);
+                                        	existingOrganizationIds.remove(organization.getId());
+                                        	pUser.removeAffiliation(organization.getId());
                                             isModifiedOrg = true;
                                         }
                                     } else {
                                         if (BulkOperationEnum.ADD_ENTITLEMENT.equals(ob.getOperation())) {
-                                            existingOrganizations.add(organization);
-                                            organization.setOperation(AttributeOperationEnum.ADD);
+                                        	existingOrganizationIds.add(organization.getId());
+                                        	pUser.addAffiliation(organization, ob.getRightIds());
                                             isModifiedOrg = true;
                                         }
                                     }
                                     if (isModifiedOrg) {
-                                        pUser.getAffiliations().add(organization);
                                         isEntitlementModified = true;
                                     }
                                     break;
@@ -2734,7 +2720,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
         Map<String, Object> bindingMap = new HashMap<>();
         bindingMap.put("sysId", sysConfiguration.getDefaultManagedSysId());
-        bindingMap.put("org", pUser.getPrimaryOrganization());
+        bindingMap.put("org", organizationService.getOrganizationDTO(pUser.getPrimaryOrganizationId(), null));
         bindingMap.put("operation", operation);
         bindingMap.put(AbstractProvisioningService.USER, pUser);
         bindingMap.put(AbstractProvisioningService.USER_ATTRIBUTES, userMgr.getUserAttributesDto(pUser.getId()));
@@ -2982,7 +2968,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
         Map<String, Object> bindingMap = new HashMap<String, Object>();
         bindingMap.put("sysId", sysConfiguration.getDefaultManagedSysId());
-        bindingMap.put("org", user.getPrimaryOrganization());
+        bindingMap.put("org", organizationService.getOrganizationDTO(user.getPrimaryOrganizationId(), null));
         bindingMap.put("operation", operation);
         bindingMap.put(USER, user);
         bindingMap.put(USER_ATTRIBUTES, userMgr.getUserAttributesDto(user.getId()));
@@ -3107,7 +3093,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                             // suspend
                             log.debug("preparing suspendRequest object");
 
-                            resp = suspend(requestId, login, mSys, buildMngSysAttributes(login, "SUSPEND"), operation);
+                            resp = suspend(requestId, login, mSys, buildPolicyMapHelper.buildMngSysAttributes(login, "SUSPEND"), operation);
 
                             if (StatusCodeType.SUCCESS.equals(resp.getStatus())) {
                                 lg.setProvStatus(ProvLoginStatusEnum.DISABLED);
@@ -3132,7 +3118,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                             lg.setPasswordChangeCount(0);
                             lg.setStatus(LoginStatusEnum.ACTIVE);
 
-                            resp = suspend(requestId, login, mSys, buildMngSysAttributes(login, "RESUME"), operation);
+                            resp = suspend(requestId, login, mSys, buildPolicyMapHelper.buildMngSysAttributes(login, "RESUME"), operation);
 
                             if (StatusCodeType.SUCCESS.equals(resp.getStatus())) {
                                 lg.setProvStatus(ProvLoginStatusEnum.ENABLED);

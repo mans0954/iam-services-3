@@ -1,5 +1,7 @@
 package org.openiam.idm.srvc.synch.dto;
 
+import java.util.Set;
+
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 
 /**
@@ -22,6 +24,8 @@ public class BulkMigrationConfig {
     String operation;
     String targetRole;
     String targetResource;
+    
+    Set<String> rightIds;
 
     public BulkMigrationConfig() {
 
@@ -123,4 +127,14 @@ public class BulkMigrationConfig {
     public void setUserStatus(String userStatus) {
         this.userStatus = userStatus;
     }
+
+	public Set<String> getRightIds() {
+		return rightIds;
+	}
+
+	public void setRightIds(Set<String> rightIds) {
+		this.rightIds = rightIds;
+	}
+    
+    
 }

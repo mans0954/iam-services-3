@@ -82,6 +82,7 @@ public class Role extends AbstractEntitlementsDTO implements Comparable<Role> {
     protected String createdBy;
     protected String description;
     //@XmlJavaTypeAdapter(GroupSetAdapter.class)
+    @Deprecated
     protected Set<Group> groups = new HashSet<Group>(0);
     @XmlJavaTypeAdapter(RoleAttributeSetAdapter.class)
     protected Set<RoleAttribute> roleAttributes = new HashSet<RoleAttribute>(0);
@@ -97,6 +98,7 @@ public class Role extends AbstractEntitlementsDTO implements Comparable<Role> {
     private String managedSysId;
     private String managedSysName;
     
+    @Deprecated
     private Set<Resource> resources;
 
 
@@ -132,10 +134,12 @@ public class Role extends AbstractEntitlementsDTO implements Comparable<Role> {
         this.description = value;
     }
 
+    @Deprecated
     public Set<Group> getGroups() {
         return groups;
     }
 
+    @Deprecated
     public void setGroups(Set<Group> value) {
         this.groups = value;
     }
@@ -246,10 +250,12 @@ public class Role extends AbstractEntitlementsDTO implements Comparable<Role> {
         return getName().compareTo(o.getName());
     }
 
+    @Deprecated
     public Set<Resource> getResources() {
         return resources;
     }
 
+    @Deprecated
     public void setResources(Set<Resource> resources) {
         this.resources = resources;
     }

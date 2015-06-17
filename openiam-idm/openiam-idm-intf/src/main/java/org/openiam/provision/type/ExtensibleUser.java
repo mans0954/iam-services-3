@@ -22,12 +22,15 @@
 package org.openiam.provision.type;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
+
+import org.openiam.idm.srvc.user.dto.UserToGroupMembershipXref;
 
 /**
  * User object that is passed to the connector service when provisioning a user.
@@ -48,23 +51,33 @@ public class ExtensibleUser extends ExtensibleObject {
 	protected List<ExtensibleAddress> address = new ArrayList<ExtensibleAddress>();
 	protected List<ExtensiblePhone> phone = new ArrayList<ExtensiblePhone>();
 	protected List<ExtensibleEmailAddress> email = new ArrayList<ExtensibleEmailAddress>();
+	
+	/* no alternative to these.  Should use xref object, if necessary.  See User class for example */
+	@Deprecated
 	protected List<ExtensibleGroup> group = new ArrayList<ExtensibleGroup>();
+	@Deprecated
 	protected List<ExtensibleRole> role = new ArrayList<ExtensibleRole>();
 
     public ExtensibleUser(){
         super(ExtensibleObjectType.USER);
     }
-	
 
+    @Deprecated
 	public List<ExtensibleGroup> getGroup() {
 		return group;
 	}
+    
+    @Deprecated
 	public void setGroup(List<ExtensibleGroup> group) {
 		this.group = group;
 	}
+    
+    @Deprecated
 	public List<ExtensibleRole> getRole() {
 		return role;
 	}
+    
+    @Deprecated
 	public void setRole(List<ExtensibleRole> role) {
 		this.role = role;
 	}

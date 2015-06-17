@@ -25,7 +25,7 @@ public class GroupAttributeEntity extends AbstractAttributeEntity {
 
     @ElementCollection
     @CollectionTable(name="GROUP_ATTRIBUTE_VALUES", joinColumns=@JoinColumn(name="GROUP_ATTRIBUTE_ID", referencedColumnName="ID"))
-    @Column(name="VALUE", length = 4096)
+    @Column(name="VALUE", length = 4000)
     private List<String> values = new ArrayList<String>();
 
     @Column(name = "IS_MULTIVALUED", nullable = false)

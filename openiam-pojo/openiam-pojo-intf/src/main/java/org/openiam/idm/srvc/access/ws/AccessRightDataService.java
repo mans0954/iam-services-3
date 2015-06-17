@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.access.ws;
 
+import java.util.Collection;
 import java.util.List;
 
 import javax.jws.WebService;
@@ -17,5 +18,6 @@ public interface AccessRightDataService {
 	Response delete(String id);
 	AccessRight get(String id);
 	List<AccessRight> findBeans(final AccessRightSearchBean searchBean, final int from, final int size, final Language language);
-	int count(final AccessRightSearchBean searchBean);
+	public int count(final AccessRightSearchBean searchBean);
+	List<AccessRight> getByIds(final Collection<String> ids);
 }

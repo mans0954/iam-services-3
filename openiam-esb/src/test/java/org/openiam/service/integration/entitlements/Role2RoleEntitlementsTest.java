@@ -17,7 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.testng.annotations.Test;
 
-public class Role2RoleEntitlementsTest extends AbstractEntitlementsTest<Role, Role> {
+public class Role2RoleEntitlementsTest extends AbstractCircularEntitlementTest<Role> {
 
 	@Override
 	protected Role createParent() {
@@ -53,11 +53,17 @@ public class Role2RoleEntitlementsTest extends AbstractEntitlementsTest<Role, Ro
 	protected boolean isChildInParent(Role parent, Role child, final Set<String> rights) {
 		final RoleSearchBean searchBean = new RoleSearchBean();
 		searchBean.addChildId(child.getId());
-		//searchBean.setIncludeAccessRights(true);
+		searchBean.setIncludeAccessRights(true);
 		final List<Role> dtos = roleServiceClient.findBeans(searchBean, "3000", 0, 1000);
 		if(CollectionUtils.isNotEmpty(dtos)) {
 			final Optional<Role> optional = dtos.stream().filter(e -> e.getId().equals(parent.getId())).findAny();
 			Assert.assertTrue(String.format("Can't find child role"), optional.isPresent());
+			final Role role = optional.get();
+			if(CollectionUtils.isEmpty(rights)) {
+				Assert.assertTrue(CollectionUtils.isEmpty(role.getAccessRightIds()));
+			} else {
+				Assert.assertEquals(role.getAccessRightIds(), rights);
+			}
 			return true;
 		} else {
 			return false;
@@ -87,4 +93,14 @@ public class Role2RoleEntitlementsTest extends AbstractEntitlementsTest<Role, Ro
 	
 	@Test
 	public void foo(){}
+
+	@Override
+	protected Role getParentById(Role parent) {
+		return roleServiceClient.getRoleLocalized(parent.getId(), "3000", getDefaultLanguage());
+	}
+
+	@Override
+	protected Role getChildById(Role child) {
+		return roleServiceClient.getRoleLocalized(child.getId(), "3000", getDefaultLanguage());
+	}
 }

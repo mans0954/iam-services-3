@@ -45,24 +45,20 @@
 			<a>childResources</a>
 			<b>childResources</b>
 		</field-exclude>
-		<field
-			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
-			custom-converter-param="dto2entityShallowDozerMapper">
+		<field-exclude>
 			<a>roles</a>
 			<b>roles</b>
-		</field>
+		</field-exclude>
 		<field
 			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
 			custom-converter-param="dto2entityShallowDozerMapper">
 			<a>resourceProps</a>
 			<b>resourceProps</b>
 		</field>
-		<field
-			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
-			custom-converter-param="dto2entityShallowDozerMapper">
+		<field-exclude>
 			<a>groups</a>
 			<b>groups</b>
-		</field>
+		</field-exclude>
 		<field-exclude>
 			<a>users</a>
 			<b>users</b>
@@ -226,12 +222,6 @@
         	<a>adminResource.coorelatedName</a>
         	<b>adminResourceCoorelatedName</b>
         </field>
-        <field
-                custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
-                custom-converter-param="dto2entityShallowDozerMapper">
-            <a>organizationSet</a>
-            <b>organizations</b>
-        </field>
 		<field-exclude>
 			<a>parentGroups</a>
 			<b>parentGroups</b>
@@ -246,18 +236,14 @@
 			<a>attributes</a>
 			<b>attributes</b>
 		</field>
-		<field
-			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
-			custom-converter-param="dto2entityShallowDozerMapper">
+		<field-exclude>
 			<a>resources</a>
 			<b>resources</b>
-		</field>
-		<field
-			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
-			custom-converter-param="dto2entityShallowDozerMapper">
+		</field-exclude>
+		<field-exclude>
 			<a>roles</a>
 			<b>roles</b>
-		</field>
+		</field-exclude>
 		<field>
 			<a>managedSystem.id</a>
 			<b>managedSysId</b>
@@ -310,6 +296,12 @@
             <a>risk.displayName</a>
             <b>riskName</b>
         </field>
+        <field
+			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
+			custom-converter-param="dto2entityShallowDozerMapper">
+        	<a>organizations</a>
+        	<b>organizations</b>
+        </field>
 	</mapping>
 
 	<mapping>
@@ -335,12 +327,10 @@
         	<a>adminResource.coorelatedName</a>
         	<b>adminResourceCoorelatedName</b>
         </field>
-		<field
-			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
-			custom-converter-param="dto2entityShallowDozerMapper">
+		<field-exclude>
 			<a>groups</a>
 			<b>groups</b>
-		</field>
+		</field-exclude>
 		<field
 			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
 			custom-converter-param="dto2entityShallowDozerMapper">
@@ -355,12 +345,10 @@
 			<a>parentRoles</a>
 			<b>parentRoles</b>
 		</field-exclude>
-		<field
-			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
-			custom-converter-param="dto2entityShallowDozerMapper">
+		<field-exclude>
 			<a>resources</a>
 			<b>resources</b>
-		</field>
+		</field-exclude>
 		<field>
 			<a>managedSystem.id</a>
 			<b>managedSysId</b>
@@ -376,6 +364,10 @@
 		<field-exclude>
 			<a>users</a>
 			<b>users</b>
+		</field-exclude>
+		<field-exclude>
+			<a>organizations</a>
+			<b>organizations</b>
 		</field-exclude>
 	</mapping>
 	<mapping>
@@ -692,6 +684,14 @@
 		<field-exclude>
 			<a>approverAssociations</a>
 			<b>approverAssociations</b>
+		</field-exclude>
+		<field-exclude>
+			<a>groups</a>
+			<b>groups</b>
+		</field-exclude>
+		<field-exclude>
+			<a>roles</a>
+			<b>roles</b>
 		</field-exclude>
 	</mapping>
 	<mapping>

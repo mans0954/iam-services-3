@@ -6,12 +6,18 @@ import org.openiam.base.domain.AbstractMetdataTypeEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.access.domain.AccessRightEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
+import org.openiam.idm.srvc.grp.domain.GroupToGroupMembershipXrefEntity;
+import org.openiam.idm.srvc.grp.domain.GroupToResourceMembershipXrefEntity;
 import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
+import org.openiam.idm.srvc.org.domain.GroupToOrgMembershipXrefEntity;
+import org.openiam.idm.srvc.org.domain.ResourceToOrgMembershipXrefEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceRisk;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
+import org.openiam.idm.srvc.role.domain.RoleToResourceMembershipXrefEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.idm.srvc.user.domain.UserToResourceMembershipXrefEntity;
 import org.openiam.internationalization.Internationalized;
 import org.openiam.internationalization.InternationalizedCollection;
 
@@ -80,19 +86,13 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<ResourcePropEntity> resourceProps = new HashSet<ResourcePropEntity>(0); // defined as a Set in Hibernate map
 
-    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    @JoinTable(name = "RESOURCE_USER", joinColumns = { @JoinColumn(name = "RESOURCE_ID") }, inverseJoinColumns = { @JoinColumn(name = "USER_ID") })
-    private Set<UserEntity> users;
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="entity", orphanRemoval=true)
+    @Fetch(FetchMode.SUBSELECT)
+    private Set<UserToResourceMembershipXrefEntity> users = new HashSet<UserToResourceMembershipXrefEntity>(0);
 
-    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    @JoinTable(name = "RESOURCE_GROUP",
-            joinColumns = { @JoinColumn(name = "RESOURCE_ID") },
-            inverseJoinColumns = { @JoinColumn(name = "GRP_ID") })
-    private Set<GroupEntity> groups;
-
-    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    @JoinTable(name = "RESOURCE_ROLE", joinColumns = { @JoinColumn(name = "RESOURCE_ID") }, inverseJoinColumns = { @JoinColumn(name = "ROLE_ID") })
-    private Set<RoleEntity> roles;
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="memberEntity", orphanRemoval=true)
+    @Fetch(FetchMode.SUBSELECT)
+    private Set<RoleToResourceMembershipXrefEntity> roles = new HashSet<RoleToResourceMembershipXrefEntity>(0);
 
     @Column(name = "MIN_AUTH_LEVEL")
     private String minAuthLevel;
@@ -122,7 +122,15 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
     
     @Column(name="REFERENCE_ID")
     private String referenceId;
+    
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="memberEntity", orphanRemoval=true)
+    @Fetch(FetchMode.SUBSELECT)
+    private Set<ResourceToOrgMembershipXrefEntity> organizations = new HashSet<ResourceToOrgMembershipXrefEntity>(0);
 
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="memberEntity", orphanRemoval=true)
+    @Fetch(FetchMode.SUBSELECT)
+    private Set<GroupToResourceMembershipXrefEntity> groups = new HashSet<GroupToResourceMembershipXrefEntity>(0);
+    
     public ResourceRisk getRisk() {
         return risk;
     }
@@ -138,15 +146,6 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
     	this.id = id;
     }
     
-    public void addRole(final RoleEntity entity) {
-    	if(entity != null) {
-    		if(this.roles == null) {
-    			this.roles = new HashSet<RoleEntity>();
-    		}
-    		this.roles.add(entity);
-    	}
-    }
-    
     public void remove(final RoleEntity entity) {
     	if(entity != null) {
     		if(this.roles != null) {
@@ -155,15 +154,15 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
     	}
     }
   
-    public Set<RoleEntity> getRoles() {
-        return roles;
-    }
+    public Set<RoleToResourceMembershipXrefEntity> getRoles() {
+		return roles;
+	}
 
-    public void setRoles(Set<RoleEntity> roles) {
-        this.roles = roles;
-    }
+	public void setRoles(Set<RoleToResourceMembershipXrefEntity> roles) {
+		this.roles = roles;
+	}
 
-    public ResourceTypeEntity getResourceType() {
+	public ResourceTypeEntity getResourceType() {
         return resourceType;
     }
 
@@ -203,6 +202,16 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
         this.URL = URL;
     }
     
+	public ResourceToResourceMembershipXrefEntity getChild(final String childId) {
+		final Optional<ResourceToResourceMembershipXrefEntity> xref = 
+    			this.getChildResources()
+    				.stream()
+    				.filter(e -> childId.equals(e.getMemberEntity().getId()))
+    				.findFirst();
+    	return xref.isPresent() ? xref.get() : null;
+	}
+    
+    
     public ResourceToResourceMembershipXrefEntity getParent(final String parentId) {
     	final Optional<ResourceToResourceMembershipXrefEntity> xref = 
     			this.getParentResources()
@@ -236,30 +245,38 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
         this.resourceProps = resourceProps;
     }
     
-    public void addGroup(final GroupEntity entity) {
-    	if(entity != null) {
-    		if(this.groups == null) {
-    			this.groups = new HashSet<GroupEntity>();
-    		}
-    		this.groups.add(entity);
-    	}
-    }
-    
-    public void remove(final GroupEntity entity) {
-    	if(entity != null) {
-    		if(this.groups != null) {
-    			this.groups.remove(entity);
-    		}
-    	}
-    }
-
-    public Set<GroupEntity> getGroups() {
+    public Set<GroupToResourceMembershipXrefEntity> getGroups() {
         return groups;
     }
 
-    public void setGroups(Set<GroupEntity> groups) {
+    public void setGroups(Set<GroupToResourceMembershipXrefEntity> groups) {
         this.groups = groups;
-   }
+    }
+    
+    public void addGroup(final GroupEntity entity, final Collection<AccessRightEntity> rights) {
+		if(entity != null) {
+			if(this.groups == null) {
+				this.groups = new LinkedHashSet<GroupToResourceMembershipXrefEntity>();
+			}
+			GroupToResourceMembershipXrefEntity theXref = null;
+			for(final GroupToResourceMembershipXrefEntity xref : this.groups) {
+				if(xref.getEntity().getId().equals(getId()) && xref.getMemberEntity().getId().equals(entity.getId())) {
+					theXref = xref;
+					break;
+				}
+			}
+			
+			if(theXref == null) {
+				theXref = new GroupToResourceMembershipXrefEntity();
+				theXref.setEntity(entity);
+				theXref.setMemberEntity(this);
+			}
+			if(rights != null) {
+				theXref.setRights(new HashSet<AccessRightEntity>(rights));
+			}
+			this.groups.add(theXref);
+		}
+	}
 
     public String getMinAuthLevel() {
         return minAuthLevel;
@@ -285,22 +302,55 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
 		this.adminResource = adminResource;
 	}
 
-	public Set<UserEntity> getUsers() {
+	public Set<UserToResourceMembershipXrefEntity> getUsers() {
         return users;
     }
 
-    public void setUsers(Set<UserEntity> users) {
+    public void setUsers(Set<UserToResourceMembershipXrefEntity> users) {
         this.users = users;
     }
     
-    public void addUser(final UserEntity user) {
-    	if(user != null) {
-    		if(this.users == null) {
-    			this.users = new HashSet<UserEntity>();
-    		}
-    		this.users.add(user);
-    	}
+    public void removeUser(final UserEntity entity) {
+    	if(entity != null) {
+			if(this.users != null) {
+				this.users.removeIf(e -> e.getMemberEntity().getId().equals(entity.getId()));
+			}
+		}
     }
+    
+    public void addUser(final UserEntity entity, final Collection<AccessRightEntity> rights) {
+    	if(entity != null) {
+			if(this.users == null) {
+				this.users = new LinkedHashSet<UserToResourceMembershipXrefEntity>();
+			}
+			UserToResourceMembershipXrefEntity theXref = null;
+			for(final UserToResourceMembershipXrefEntity xref : this.users) {
+				if(xref.getEntity().getId().equals(getId()) && xref.getMemberEntity().getId().equals(entity.getId())) {
+					theXref = xref;
+					break;
+				}
+			}
+			
+			if(theXref == null) {
+				theXref = new UserToResourceMembershipXrefEntity();
+				theXref.setEntity(this);
+				theXref.setMemberEntity(entity);
+			}
+			if(rights != null) {
+				theXref.setRights(new HashSet<AccessRightEntity>(rights));
+			}
+			this.users.add(theXref);
+		}
+    }
+    
+    public UserToResourceMembershipXrefEntity getUser(final String userId) {
+		final Optional<UserToResourceMembershipXrefEntity> xref = 
+    			this.getUsers()
+    				.stream()
+    				.filter(e -> userId.equals(e.getMemberEntity().getId()))
+    				.findFirst();
+    	return xref.isPresent() ? xref.get() : null;
+	}
 
     
 	public void addChildResource(final ResourceEntity resource, final Collection<AccessRightEntity> rights) {
@@ -413,7 +463,43 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
 		this.referenceId = referenceId;
 	}
 
-    @Override
+    public Set<ResourceToOrgMembershipXrefEntity> getOrganizations() {
+		return organizations;
+	}
+
+	public void setOrganizations(
+			Set<ResourceToOrgMembershipXrefEntity> organizations) {
+		this.organizations = organizations;
+	}
+	
+	public ResourceToOrgMembershipXrefEntity getOrganization(final String organizationId) {
+    	final Optional<ResourceToOrgMembershipXrefEntity> xref = 
+    			this.getOrganizations()
+				.stream()
+				.filter(e -> organizationId.equals(e.getEntity().getId()))
+				.findFirst();
+    	return xref.isPresent() ? xref.get() : null;
+    }
+	
+	public GroupToResourceMembershipXrefEntity getGroup(final String groupId) {
+		final Optional<GroupToResourceMembershipXrefEntity> xref = 
+    			this.getGroups()
+    				.stream()
+    				.filter(e -> groupId.equals(e.getEntity().getId()))
+    				.findFirst();
+    	return xref.isPresent() ? xref.get() : null;
+	}
+	
+	public RoleToResourceMembershipXrefEntity getRole(final String groupId) {
+		final Optional<RoleToResourceMembershipXrefEntity> xref = 
+    			this.getRoles()
+    				.stream()
+    				.filter(e -> groupId.equals(e.getEntity().getId()))
+    				.findFirst();
+    	return xref.isPresent() ? xref.get() : null;
+	}
+
+	@Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof ResourceEntity)) return false;

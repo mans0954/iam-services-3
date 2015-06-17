@@ -1,5 +1,17 @@
 package org.openiam.idm.srvc.grp.service;
 
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
@@ -7,14 +19,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.authmanager.common.SetStringResponse;
 import org.openiam.authmanager.service.AuthorizationManagerAdminService;
-import org.openiam.authmanager.service.AuthorizationManagerService;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.dozer.converter.GroupDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
-import org.openiam.idm.searchbeans.RoleSearchBean;
+import org.openiam.idm.srvc.access.domain.AccessRightEntity;
 import org.openiam.idm.srvc.access.service.AccessRightDAO;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
@@ -37,31 +48,23 @@ import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
-import org.openiam.idm.srvc.org.domain.OrganizationEntity;
-import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.service.OrganizationDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
-import org.openiam.idm.srvc.res.domain.ResourceToResourceMembershipXrefEntity;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.idm.srvc.role.service.RoleDAO;
-import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
 import org.openiam.internationalization.LocalizedServiceGet;
 import org.openiam.util.AttributeUtil;
-import org.openiam.util.ws.collection.StringUtil;
 import org.openiam.validator.EntityValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * <code>GroupDataServiceImpl</code> provides a service to manage groups as
@@ -192,36 +195,6 @@ public class GroupDataServiceImpl implements GroupDataService {
     }
 
     @Override
-    public List<GroupEntity> getChildGroups(final String groupId, final String requesterId, final int from, final int size) {
-        return getChildGroupsLocalize(groupId, requesterId, from, size, getDefaultLanguage());
-    }
-
-    @Override
-    @LocalizedServiceGet
-    @Deprecated
-    public List<GroupEntity> getChildGroupsLocalize(final String groupId, final String requesterId, final int from, final int size, final LanguageEntity language) {
-    	final GroupSearchBean sb = new GroupSearchBean();
-    	sb.addParentId(groupId);
-        return findBeansLocalize(sb, requesterId, from, size, language);
-    }
-
-    @Override
-    @Deprecated
-    public List<GroupEntity> getParentGroups(final String groupId, final String requesterId, final int from, final int size) {
-        return getParentGroupsLocalize(groupId, requesterId, from, size, getDefaultLanguage());
-    }
-
-    @Override
-    @LocalizedServiceGet
-    @Deprecated
-    public List<GroupEntity> getParentGroupsLocalize(final String groupId, final String requesterId, final int from, final int size, final LanguageEntity language) {
-    	final GroupSearchBean sb = new GroupSearchBean();
-    	sb.addChildId(groupId);
-        return findBeansLocalize(sb, requesterId, from, size, language);
-    }
-
-
-    @Override
     @Deprecated
     public List<GroupEntity> findBeans(final GroupSearchBean searchBean, final  String requesterId, int from, int size) {
         return getGroupEntities(searchBean, requesterId,  from,  size);
@@ -264,67 +237,10 @@ public class GroupDataServiceImpl implements GroupDataService {
     @Override
     @Transactional(readOnly = true)
     public List<Group> getGroupsDtoForUser(String userId, String requesterId, int from, int size) {
-        List<GroupEntity> groupEntities = groupDao.getGroupsForUser(userId, getDelegationFilter(requesterId), from, size);
+    	final GroupSearchBean sb = new GroupSearchBean();
+    	sb.addUserId(userId);
+        final List<GroupEntity> groupEntities = findBeansLocalize(sb, requesterId, from, size, null);
         return groupDozerConverter.convertToDTOList(groupEntities, false);
-    }
-
-    @Override
-    /**
-     * without localization, for internal use only
-     */
-    public List<GroupEntity> getGroupsForUser(final String userId, final String requesterId, int from, int size) {
-        return getGroupsForUserLocalize(userId, requesterId, from, size, getDefaultLanguage());
-    }
-
-    @Override
-    @LocalizedServiceGet
-    @Deprecated
-    public List<GroupEntity> getGroupsForUserLocalize(final String userId, final String requesterId, int from, int size, LanguageEntity language) {
-        return groupDao.getGroupsForUser(userId, getDelegationFilter(requesterId), from, size);
-    }
-
-    @Override
-    @Deprecated
-    public List<GroupEntity> getGroupsForResource(final String resourceId, final String requesterId, final int from, final int size) {
-        return getGroupsForResourceLocalize(resourceId, requesterId, from, size, getDefaultLanguage());
-    }
-
-    @Override
-    @LocalizedServiceGet
-    @Deprecated
-    public List<GroupEntity> getGroupsForResourceLocalize(final String resourceId, final String requesterId, final int from, final int size, LanguageEntity language) {
-        return groupDao.getGroupsForResource(resourceId, getDelegationFilter(requesterId), from, size);
-    }
-
-    @Override
-    @Deprecated
-    public List<GroupEntity> getGroupsForRole(final String roleId, final String requesterId, int from, int size) {
-        return getGroupsForRoleLocalize(roleId, requesterId, from, size, getDefaultLanguage());
-    }
-
-    @Override
-    @LocalizedServiceGet
-    @Deprecated
-    public List<GroupEntity> getGroupsForRoleLocalize(final String roleId, final String requesterId, int from, int size, LanguageEntity language) {
-        return groupDao.getGroupsForRole(roleId, getDelegationFilter(requesterId), from, size);
-    }
-
-    @Override
-    @Deprecated
-    public int getNumOfGroupsForRole(final String roleId, final String requesterId) {
-        return groupDao.getNumOfGroupsForRole(roleId, getDelegationFilter(requesterId));
-    }
-
-    @Override
-    @Deprecated
-    public int getNumOfGroupsForResource(final String resourceId, final String requesterId) {
-        return groupDao.getNumOfGroupsForResource(resourceId, getDelegationFilter(requesterId));
-    }
-
-    @Override
-    @Deprecated
-    public int getNumOfGroupsForUser(final String userId, final String requesterId) {
-        return groupDao.getNumOfGroupsForUser(userId, getDelegationFilter(requesterId));
     }
 
     @Override
@@ -374,22 +290,6 @@ public class GroupDataServiceImpl implements GroupDataService {
 
     @Override
     @Deprecated
-    public int getNumOfChildGroups(final String groupId, final String requesterId) {
-    	final GroupSearchBean sb = new GroupSearchBean();
-    	sb.addParentId(groupId);
-        return countBeans(sb, requesterId);
-    }
-
-    @Override
-    @Deprecated
-    public int getNumOfParentGroups(final String groupId, final String requesterId) {
-    	final GroupSearchBean sb = new GroupSearchBean();
-    	sb.addChildId(groupId);
-        return countBeans(sb, requesterId);
-    }
-
-    @Override
-    @Deprecated
     public List<Group> getCompiledGroupsForUser(final String userId) {
         return getCompiledGroupsForUserLocalize(userId, getDefaultLanguage());
     }
@@ -398,7 +298,9 @@ public class GroupDataServiceImpl implements GroupDataService {
     @LocalizedServiceGet
     @Transactional(readOnly = true)
     public List<Group> getCompiledGroupsForUserLocalize(final String userId, final LanguageEntity language) {
-        final List<GroupEntity> groupList = this.getGroupsForUser(userId, null, 0, Integer.MAX_VALUE);
+    	final GroupSearchBean sb = new GroupSearchBean();
+    	sb.addUserId(userId);
+        final List<GroupEntity> groupList = findBeansLocalize(sb, null, 0, Integer.MAX_VALUE, null);
         final Set<GroupEntity> visitedSet = new HashSet<GroupEntity>();
         if(CollectionUtils.isNotEmpty(groupList)) {
             for(final GroupEntity group : groupList) {
@@ -431,28 +333,29 @@ public class GroupDataServiceImpl implements GroupDataService {
     public void saveGroup(final GroupEntity group, final GroupOwner groupOwner, final String requestorId) throws BasicDataServiceException{
         if(group != null && entityValidator.isValid(group)) {
 
-            if(group.getManagedSystem() != null && group.getManagedSystem().getId() != null) {
+            if(group.getManagedSystem() != null && StringUtils.isNotBlank(group.getManagedSystem().getId())) {
                 final ManagedSysEntity mngSys = managedSysDAO.findById(group.getManagedSystem().getId());
-                group.setManagedSystem(managedSysDAO.findById(group.getManagedSystem().getId()));
-                if(mngSys.getResource() != null){
-                    group.addResource(mngSys.getResource());
+                if(mngSys != null) {
+                	group.setManagedSystem(managedSysDAO.findById(group.getManagedSystem().getId()));
+                	if(mngSys.getResource() != null){
+                		group.addResource(mngSys.getResource(), accessRightDAO.findAll());
+                	}
                 }
 
             } else {
                 group.setManagedSystem(null);
             }
 
-            if(CollectionUtils.isNotEmpty(group.getOrganizationSet())) {
-                Set<String> ids = new HashSet<>();
-                for(OrganizationEntity org: group.getOrganizationSet()){
-                    if(StringUtils.isNotBlank(org.getId()))
-                        ids.add(org.getId());
-                }
-                if(CollectionUtils.isNotEmpty(ids)){
-                    group.setOrganizationSet(new HashSet<>(organizationDAO.findByIds(ids)));
-                }
+            if(CollectionUtils.isNotEmpty(group.getOrganizations())) {
+            	group.getOrganizations().forEach(xref -> {
+            		xref.setMemberEntity(group);
+            		xref.setEntity(organizationDAO.findById(xref.getEntity().getId()));
+            		final Set<String> rightIds = (xref.getRights() != null) ? xref.getRights().stream().map(e -> e.getId()).collect(Collectors.toSet()) : null;
+            		final List<AccessRightEntity> accessRightList = accessRightDAO.findByIds(rightIds);
+            		xref.setRights((accessRightList != null) ? new HashSet<AccessRightEntity>(accessRightList) : null);
+            	});
             } else {
-                group.setOrganizationSet(null);
+                group.setOrganizations(null);
             }
 
             if(group.getType() != null && StringUtils.isNotBlank(group.getType().getId())) {
@@ -485,6 +388,7 @@ public class GroupDataServiceImpl implements GroupDataService {
             if(StringUtils.isNotBlank(group.getId())) {
                 final GroupEntity dbGroup = groupDao.findById(group.getId());
                 if(dbGroup != null) {
+                	
                     group.setApproverAssociations(dbGroup.getApproverAssociations());
 
                     mergeAttribute(group, dbGroup, requestorId);
@@ -500,14 +404,37 @@ public class GroupDataServiceImpl implements GroupDataService {
                         group.setAdminResource(getNewAdminResource(group, groupOwner, requestorId));
                     }
                     group.getAdminResource().setCoorelatedName(group.getName());
+                    
+                    /* hibernate fails you just null out the PersistentSet.  As of Hibernate 4 */
+                    if(CollectionUtils.isEmpty(group.getOrganizations())) {
+                    	dbGroup.getOrganizations().clear();
+                    } else {
+                    	/* basically, we need to remove entries from the DB perstent set tha we don't need */
+                    	final Set<String> incomingOrganizationIds = (group.getOrganizations() != null) ? 
+                    			group.getOrganizations().stream().map(e -> e.getEntity().getId()).collect(Collectors.toSet()) : null;
+                    	group.getOrganizations().forEach(xref -> {
+                    		dbGroup.getOrganizations().removeIf(e -> {
+                    			return !incomingOrganizationIds.contains(xref.getEntity().getId());
+                    		});
+                    		dbGroup.addOrganization(xref.getEntity(), xref.getRights());
+                    	});
+                    }
+                    
+                    /* now set the persistent set  on the transient object */
+                    group.setOrganizations(dbGroup.getOrganizations());
+                    group.getOrganizations().forEach(xref -> {
+                    	xref.setMemberEntity(group);
+                    	xref.setEntity(organizationDAO.findById(xref.getEntity().getId()));
+                    });
                 } else {
                     return;
                 }
                 groupDao.merge(group);
 
             } else {
+            	/*
                 if(CollectionUtils.isNotEmpty(group.getParentGroups())) {
-                    final Set<String> ids = group.getParentGroups().stream().map(e -> e.getId()).filter(e -> StringUtils.isNotBlank(e)).collect(Collectors.toSet());
+                    final Set<String> ids = group.getParentGroups().stream().map(e -> e.getMemberEntity().getId()).filter(e -> StringUtils.isNotBlank(e)).collect(Collectors.toSet());
                     if(CollectionUtils.isNotEmpty(ids)){
                         group.setParentGroups(
 	                        groupDao.findByIds(ids).stream().map(e -> {
@@ -521,6 +448,7 @@ public class GroupDataServiceImpl implements GroupDataService {
                 } else {
                     group.setParentGroups(null);
                 }
+                */
                 group.setAdminResource(getNewAdminResource(group, groupOwner, requestorId));
                 group.setCreatedBy(requestorId);
                 group.setCreateDate(Calendar.getInstance().getTime());
@@ -575,14 +503,14 @@ public class GroupDataServiceImpl implements GroupDataService {
 
         if(groupOwner!=null && StringUtils.isNotBlank(groupOwner.getId())){
             if("user".equals(groupOwner.getType())){
-                adminResource.addUser(userDAO.findById(groupOwner.getId()));
+                adminResource.addUser(userDAO.findById(groupOwner.getId()), accessRightDAO.findAll());
             } else if("group".equals(groupOwner.getType())){
-                adminResource.addGroup(groupDao.findById(groupOwner.getId()));
+                adminResource.addGroup(groupDao.findById(groupOwner.getId()), accessRightDAO.findAll());
             } else {
-                adminResource.addUser(userDAO.findById(requestorId));
+                adminResource.addUser(userDAO.findById(requestorId), accessRightDAO.findAll());
             }
         } else {
-            adminResource.addUser(userDAO.findById(requestorId));
+            adminResource.addUser(userDAO.findById(requestorId), accessRightDAO.findAll());
         }
 
 

@@ -216,7 +216,9 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     @Override
     @Deprecated
     public int getNumOfChildGroups(final String groupId, final String requesterId) {
-        return  groupManager.getNumOfChildGroups(groupId, requesterId);
+    	final GroupSearchBean sb = new GroupSearchBean();
+    	sb.addParentId(groupId);
+        return countBeans(sb, requesterId);
     }
 
     @Override
@@ -231,14 +233,18 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     @Deprecated
     public List<Group> getChildGroupsLocalize(final String groupId, final String requesterId, final Boolean deepFlag,
                                       final int from, final int size, final Language language) {
-        final List<GroupEntity> groupEntityList = groupManager.getChildGroupsLocalize(groupId, requesterId, from, size, languageConverter.convertToEntity(language, false));
-        return groupDozerConverter.convertToDTOList(groupEntityList, false);
+        final GroupSearchBean sb = new GroupSearchBean();
+        sb.addParentId(groupId);
+        sb.setDeepCopy(deepFlag);
+        return findBeansLocalize(sb, requesterId, from, size, language);
     }
 
     @Override
     @Deprecated
     public int getNumOfParentGroups(final String groupId, final String requesterId) {
-        return groupManager.getNumOfParentGroups(groupId, requesterId);
+    	final GroupSearchBean sb = new GroupSearchBean();
+    	sb.addChildId(groupId);
+    	return countBeans(sb, requesterId);
     }
 
     @Override
@@ -251,8 +257,9 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     @LocalizedServiceGet
     @Deprecated
     public List<Group> getParentGroupsLocalize(final String groupId, final String requesterId, final int from, final int size, final Language language) {
-        final List<GroupEntity> groupEntityList = groupManager.getParentGroupsLocalize(groupId, requesterId, from, size, languageConverter.convertToEntity(language, false));
-        return groupDozerConverter.convertToDTOList(groupEntityList, false);
+    	final GroupSearchBean sb = new GroupSearchBean();
+        sb.addChildId(groupId);
+        return findBeansLocalize(sb, requesterId, from, size, language);
     }
 
     @Override
@@ -276,7 +283,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     }
 
     @Override
-    public Response addUserToGroup(final String groupId, final String userId, final String requesterId) {
+    public Response addUserToGroup(final String groupId, final String userId, final String requesterId, final Set<String> rightIds) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLog auditLog = new IdmAuditLog();
         auditLog.setAction(AuditAction.ADD_USER_TO_GROUP.value());
@@ -292,7 +299,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Group Id is null or empty");
             }
 
-            userManager.addUserToGroup(userId, groupId);
+            userManager.addUserToGroup(userId, groupId, rightIds);
             auditLog.succeed();
         } catch (BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);
@@ -433,7 +440,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     public List<Group> findBeansLocalize(final GroupSearchBean searchBean, final String requesterId, final int from, final int size,
                                          final Language language) {
         final List<GroupEntity> entityList = groupManager.findBeansLocalize(searchBean, requesterId, from, size, languageConverter.convertToEntity(language, false));
-        final List<Group> dtoList = groupDozerConverter.convertToDTOList(entityList, false);
+        final List<Group> dtoList = groupDozerConverter.convertToDTOList(entityList, searchBean.isDeepCopy());
         accessRightProcessor.process(searchBean, dtoList, entityList);
         return dtoList;
     }
@@ -471,21 +478,25 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     @Deprecated
     public List<Group> getGroupsForUserLocalize(final String userId, final String requesterId, Boolean deepFlag,
                                         final int from, final int size, final Language language) {
-        final List<GroupEntity> groupEntityList = groupManager.getGroupsForUserLocalize(userId, requesterId, from, size, languageConverter.convertToEntity(language, false));
-        return groupDozerConverter.convertToDTOList(groupEntityList, false);
+    	final GroupSearchBean sb = new GroupSearchBean();
+    	sb.addUserId(userId);
+    	sb.setDeepCopy(deepFlag);
+    	return findBeansLocalize(sb, requesterId, from, size, language);
     }
 
     @Override
     @Deprecated
     public int getNumOfGroupsForUser(final String userId, final String requesterId) {
-        return groupManager.getNumOfGroupsForUser(userId, requesterId);
+        final GroupSearchBean sb = new GroupSearchBean();
+    	sb.addUserId(userId);
+    	return countBeans(sb, requesterId);
     }
 
     @Override
     @Deprecated
     public List<Group> getGroupsForResource(final String resourceId, final String requesterId, final boolean deepFlag,
         final int from, final int size) {
-        return getGroupsForResourceLocalize(resourceId, requesterId, deepFlag, from, size, getDefaultLanguage());
+        return getGroupsForResourceLocalize(resourceId, requesterId, deepFlag, from, size, null);
     }
 
     @Override
@@ -493,14 +504,18 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     @Deprecated
     public List<Group> getGroupsForResourceLocalize(final String resourceId, final String requesterId, final boolean deepFlag,
                                             final int from, final int size, final Language language) {
-        final List<GroupEntity> groupEntityList = groupManager.getGroupsForResourceLocalize(resourceId, requesterId, from, size, languageConverter.convertToEntity(language, false));
-        return groupDozerConverter.convertToDTOList(groupEntityList, false);
+    	final GroupSearchBean sb = new GroupSearchBean();
+        sb.addResourceId(resourceId);
+        sb.setDeepCopy(deepFlag);
+        return findBeansLocalize(sb, requesterId, from, size, language);
     }
 
     @Override
     @Deprecated
     public int getNumOfGroupsforResource(final String resourceId, final String requesterId) {
-        return groupManager.getNumOfGroupsForResource(resourceId, requesterId);
+        final GroupSearchBean sb = new GroupSearchBean();
+    	sb.addResourceId(resourceId);
+    	return countBeans(sb, requesterId);
     }
 
     @Override
@@ -516,14 +531,18 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     @Deprecated
     public List<Group> getGroupsForRoleLocalize(final String roleId, final String requesterId, final int from, final int size,
                                         boolean deepFlag, final Language language) {
-        final List<GroupEntity> groupEntityList = groupManager.getGroupsForRoleLocalize(roleId, requesterId, from, size, languageConverter.convertToEntity(language, false));
-        return groupDozerConverter.convertToDTOList(groupEntityList, deepFlag);
+        final GroupSearchBean sb = new GroupSearchBean();
+        sb.addRoleId(roleId);
+        sb.setDeepCopy(deepFlag);
+        return findBeans(sb, requesterId, from, size);
     }
 
     @Override
     @Deprecated
     public int getNumOfGroupsForRole(final String roleId, final String requesterId) {
-        return groupManager.getNumOfGroupsForRole(roleId, requesterId);
+        final GroupSearchBean sb = new GroupSearchBean();
+    	sb.addRoleId(roleId);
+    	return countBeans(sb, requesterId);
     }
 
     @Override

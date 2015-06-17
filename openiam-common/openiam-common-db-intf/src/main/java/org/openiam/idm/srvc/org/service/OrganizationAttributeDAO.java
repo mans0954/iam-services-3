@@ -7,5 +7,8 @@ import java.util.List;
 
 public interface OrganizationAttributeDAO extends BaseDao<OrganizationAttributeEntity, String> {
 
-	void deleteByOrganizationId(final String organizationId);
+	public void deleteByOrganizationId(final String organizationId);
+
+    public List<OrganizationAttributeEntity> findOrgAttributes(final String organizationId);
+
 }

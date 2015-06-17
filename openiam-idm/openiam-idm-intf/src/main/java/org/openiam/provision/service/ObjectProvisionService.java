@@ -36,6 +36,19 @@ public interface ObjectProvisionService<T> {
     Response add(
             @WebParam(name = "object", targetNamespace = "") T object)
             throws Exception;
+    
+    /**
+     * This is a temporary method - not meant to be used externally.
+     * It is a temporary solution that was created in order to remove the 'resources' collection
+     * from the Group object
+     *
+     * @param object - provision object for modify
+     * @return Response
+     */
+    @WebMethod
+    public Response addResourceToGroup (
+            @WebParam(name = "pGroup", targetNamespace = "") T pGroup,
+            @WebParam(name= "resourceId", targetNamespace = "") String resourceId);
 
     /**
      * The modify operation enables the requester to modify an existing group

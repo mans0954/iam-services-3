@@ -1,3 +1,4 @@
+
 package org.openiam.connector.jdbc.command.group;
 
 import org.apache.commons.lang.StringUtils;
@@ -10,7 +11,7 @@ public class SearchAppTableCommand extends AbstractSearchAppTableCommand<Extensi
 
     @Override
     protected boolean compareObjectTypeWithId(String objectType) {
-        return StringUtils.equalsIgnoreCase(objectType, "principal");
+        return StringUtils.equalsIgnoreCase(objectType, "GROUP_PRINCIPAL");
     }
 
     @Override

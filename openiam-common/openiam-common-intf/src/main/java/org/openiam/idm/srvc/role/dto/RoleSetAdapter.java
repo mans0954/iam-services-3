@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Set;
 
 
+@Deprecated
 public class RoleSetAdapter extends XmlAdapter<RoleSet, Set<Role>> {
 
     @Override

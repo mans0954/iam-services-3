@@ -51,7 +51,7 @@ public class CSVTouchTest extends AbstractServiceTest {
         // TODO - Move to use groovy script based on
         // attribute policies so that this is dynamic.
         try {
-            extUser = UserAttributeHelper.newUser(pu);
+            //extUser = UserAttributeHelper.newUser(pu);
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -1,19 +1,58 @@
 package org.openiam.idm.srvc.user.domain;
 
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.Set;
+
+import javax.persistence.AttributeOverride;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MapKeyColumn;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import javax.persistence.Transient;
+import javax.validation.constraints.Size;
+
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.*;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.ParamDef;
 import org.openiam.base.BaseConstants;
 import org.openiam.base.domain.KeyEntity;
 import org.openiam.core.dao.lucene.LuceneLastUpdate;
 import org.openiam.core.domain.UserKey;
 import org.openiam.dozer.DozerDTOCorrespondence;
-import org.openiam.elasticsearch.annotation.*;
+import org.openiam.elasticsearch.annotation.ElasticsearchField;
+import org.openiam.elasticsearch.annotation.ElasticsearchFieldBridge;
+import org.openiam.elasticsearch.annotation.ElasticsearchFields;
+import org.openiam.elasticsearch.annotation.ElasticsearchIndex;
+import org.openiam.elasticsearch.annotation.ElasticsearchMapping;
 import org.openiam.elasticsearch.bridge.MetadataTypeBridge;
 import org.openiam.elasticsearch.constants.ESIndexName;
 import org.openiam.elasticsearch.constants.ESIndexType;
 import org.openiam.elasticsearch.constants.ElasticsearchStore;
 import org.openiam.elasticsearch.constants.Index;
+import org.openiam.idm.srvc.access.domain.AccessRightEntity;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
@@ -26,15 +65,6 @@ import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.internationalization.Internationalized;
-
-import javax.persistence.CascadeType;
-import javax.persistence.*;
-import javax.persistence.Entity;
-import javax.persistence.MapKey;
-import javax.persistence.Table;
-import javax.validation.constraints.Size;
-import java.util.*;
-import java.util.Map.Entry;
 
 //import org.hibernate.search.annotations.*;
 //import org.hibernate.search.annotations.Index;
@@ -245,25 +275,21 @@ public class UserEntity extends KeyEntity {
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "user", fetch = FetchType.LAZY)
     protected Set<UserKey> userKeys = new HashSet<UserKey>(0);
 
-    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
-    @JoinTable(name = "USER_GRP", joinColumns = { @JoinColumn(name = "USER_ID") }, inverseJoinColumns = { @JoinColumn(name = "GRP_ID") })
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="memberEntity", orphanRemoval=true)
     @Fetch(FetchMode.SUBSELECT)
-    private Set<GroupEntity> groups = new HashSet<GroupEntity>(0);
-
-    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch=FetchType.LAZY)
-    @JoinTable(name = "USER_ROLE", joinColumns = { @JoinColumn(name = "USER_ID") }, inverseJoinColumns = { @JoinColumn(name = "ROLE_ID") })
-    @Fetch(FetchMode.SUBSELECT)
-    private Set<RoleEntity> roles = new HashSet<RoleEntity>(0);
+    private Set<UserToRoleMembershipXrefEntity> roles = new HashSet<UserToRoleMembershipXrefEntity>(0);
     
-    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
-    @JoinTable(name = "USER_AFFILIATION", joinColumns = { @JoinColumn(name = "USER_ID") }, inverseJoinColumns = { @JoinColumn(name = "COMPANY_ID") })
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="memberEntity", orphanRemoval=true)
     @Fetch(FetchMode.SUBSELECT)
-	private Set<OrganizationEntity> affiliations = new HashSet<OrganizationEntity>(0);
+	private Set<UserToOrganizationMembershipXrefEntity> affiliations = new HashSet<UserToOrganizationMembershipXrefEntity>(0);
 
-    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
-    @JoinTable(name = "RESOURCE_USER", joinColumns = { @JoinColumn(name = "USER_ID") }, inverseJoinColumns = { @JoinColumn(name = "RESOURCE_ID") })
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="memberEntity", orphanRemoval=true)
     @Fetch(FetchMode.SUBSELECT)
-    private Set<ResourceEntity> resources = new HashSet<ResourceEntity>(0);
+    private Set<UserToResourceMembershipXrefEntity> resources = new HashSet<UserToResourceMembershipXrefEntity>(0);
+    
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="memberEntity", orphanRemoval=true)
+    @Fetch(FetchMode.SUBSELECT)
+    private Set<UserToGroupMembershipXrefEntity> groups = new HashSet<UserToGroupMembershipXrefEntity>(0);
 
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "employee", fetch = FetchType.LAZY)
     // @Fetch(FetchMode.SUBSELECT)
@@ -580,6 +606,7 @@ public class UserEntity extends KeyEntity {
     public String getDefaultLogin() {
         return defaultLogin;
     }
+
     public void setDefaultLogin(String managedSys) {
         if(this.principalList!=null && !this.principalList.isEmpty()){
             for (LoginEntity principal: this.principalList){
@@ -747,80 +774,206 @@ public class UserEntity extends KeyEntity {
     		}
     	}
     }
-    
-    public void addGroup(final GroupEntity group) {
-    	if(group != null) {
-    		if(this.groups == null) {
-    			this.groups = new HashSet<>();
-    		}
-    		this.groups.add(group);
-    	}
-    }
-    
-    public void removeGroup(final GroupEntity group) {
-    	if(group != null) {
-    		if(this.groups != null) {
-    			this.groups.remove(group);
-    		}
-    	}
-    }
 
-    public Set<GroupEntity> getGroups() {
+    public Set<UserToGroupMembershipXrefEntity> getGroups() {
         return groups;
     }
 
-    public void setGroups(Set<GroupEntity> groups) {
+    public void setGroups(Set<UserToGroupMembershipXrefEntity> groups) {
         this.groups = groups;
     }
+    
+    public UserToGroupMembershipXrefEntity getGroup(final String groupId) {
+		final Optional<UserToGroupMembershipXrefEntity> xref = 
+    			this.getGroups()
+    				.stream()
+    				.filter(e -> groupId.equals(e.getEntity().getId()))
+    				.findFirst();
+    	return xref.isPresent() ? xref.get() : null;
+	}
+    
+    public void removeGroup(final GroupEntity entity) {
+    	if(entity != null) {
+			if(this.groups != null) {
+				this.groups.removeIf(e -> e.getEntity().getId().equals(entity.getId()));
+			}
+		}
+    }
+    
+    public void addGroup(final GroupEntity entity, final Collection<AccessRightEntity> rights) {
+		if(entity != null) {
+			if(this.groups == null) {
+				this.groups = new LinkedHashSet<UserToGroupMembershipXrefEntity>();
+			}
+			UserToGroupMembershipXrefEntity theXref = null;
+			for(final UserToGroupMembershipXrefEntity xref : this.groups) {
+				if(xref.getEntity().getId().equals(entity.getId()) && xref.getMemberEntity().getId().equals(getId())) {
+					theXref = xref;
+					break;
+				}
+			}
+			
+			if(theXref == null) {
+				theXref = new UserToGroupMembershipXrefEntity();
+				theXref.setEntity(entity);
+				theXref.setMemberEntity(this);
+			}
+			if(rights != null) {
+				theXref.setRights(new HashSet<AccessRightEntity>(rights));
+			}
+			this.groups.add(theXref);
+		}
+	}
 
-    public Set<RoleEntity> getRoles() {
+    public Set<UserToRoleMembershipXrefEntity> getRoles() {
         return roles;
     }
 
-    public void setRoles(Set<RoleEntity> roles) {
+    public void setRoles(Set<UserToRoleMembershipXrefEntity> roles) {
         this.roles = roles;
     }
+    
+    public UserToRoleMembershipXrefEntity getRole(final String roleId) {
+		final Optional<UserToRoleMembershipXrefEntity> xref = 
+    			this.getRoles()
+    				.stream()
+    				.filter(e -> roleId.equals(e.getEntity().getId()))
+    				.findFirst();
+    	return xref.isPresent() ? xref.get() : null;
+	}
+    
+    public void removeRole(final RoleEntity entity) {
+    	if(entity != null) {
+			if(this.roles != null) {
+				this.roles.removeIf(e -> e.getEntity().getId().equals(entity.getId()));
+			}
+		}
+    }
+    
+    public void addRole(final RoleEntity entity, final Collection<AccessRightEntity> rights) {
+		if(entity != null) {
+			if(this.roles == null) {
+				this.roles = new LinkedHashSet<UserToRoleMembershipXrefEntity>();
+			}
+			UserToRoleMembershipXrefEntity theXref = null;
+			for(final UserToRoleMembershipXrefEntity xref : this.roles) {
+				if(xref.getEntity().getId().equals(entity.getId()) && xref.getMemberEntity().getId().equals(getId())) {
+					theXref = xref;
+					break;
+				}
+			}
+			
+			if(theXref == null) {
+				theXref = new UserToRoleMembershipXrefEntity();
+				theXref.setEntity(entity);
+				theXref.setMemberEntity(this);
+			}
+			if(rights != null) {
+				theXref.setRights(new HashSet<AccessRightEntity>(rights));
+			}
+			this.roles.add(theXref);
+		}
+	}
 
-    public Set<OrganizationEntity> getAffiliations() {
+    public Set<UserToOrganizationMembershipXrefEntity> getAffiliations() {
         return affiliations;
     }
 
-    public void setAffiliations(Set<OrganizationEntity> affiliations) {
+    public void setAffiliations(Set<UserToOrganizationMembershipXrefEntity> affiliations) {
         this.affiliations = affiliations;
     }
+    
+    public UserToOrganizationMembershipXrefEntity getAffiliation(final String organizationId) {
+		final Optional<UserToOrganizationMembershipXrefEntity> xref = 
+    			this.getAffiliations()
+    				.stream()
+    				.filter(e -> organizationId.equals(e.getEntity().getId()))
+    				.findFirst();
+    	return xref.isPresent() ? xref.get() : null;
+	}
+    
+    public void removeAffiliation(final OrganizationEntity entity) {
+    	if(entity != null) {
+			if(this.affiliations != null) {
+				this.affiliations.removeIf(e -> e.getEntity().getId().equals(entity.getId()));
+			}
+		}
+    }
+    
+    public void addAffiliation(final OrganizationEntity entity, final Collection<AccessRightEntity> rights) {
+		if(entity != null) {
+			if(this.affiliations == null) {
+				this.affiliations = new LinkedHashSet<UserToOrganizationMembershipXrefEntity>();
+			}
+			UserToOrganizationMembershipXrefEntity theXref = null;
+			for(final UserToOrganizationMembershipXrefEntity xref : this.affiliations) {
+				if(xref.getEntity().getId().equals(entity.getId()) && xref.getMemberEntity().getId().equals(getId())) {
+					theXref = xref;
+					break;
+				}
+			}
+			
+			if(theXref == null) {
+				theXref = new UserToOrganizationMembershipXrefEntity();
+				theXref.setEntity(entity);
+				theXref.setMemberEntity(this);
+			}
+			if(rights != null) {
+				theXref.setRights(new HashSet<AccessRightEntity>(rights));
+			}
+			this.affiliations.add(theXref);
+		}
+	}
 
-    public Set<ResourceEntity> getResources() {
+    public Set<UserToResourceMembershipXrefEntity> getResources() {
         return resources;
     }
 
-    public void setResources(Set<ResourceEntity> resources) {
+    public void setResources(Set<UserToResourceMembershipXrefEntity> resources) {
         this.resources = resources;
     }
-
-    public void addResource(final ResourceEntity entity) {
-    	if(entity != null) {
-    		if(this.resources == null) {
-    			this.resources = new HashSet<>();
-    		}
-    		this.resources.add(entity);
-    	}
-    }
-    public void addRole(final RoleEntity entity) {
-        if(entity != null) {
-            if(this.roles == null) {
-                this.roles = new HashSet<>();
-            }
-            this.roles.add(entity);
-        }
-    }
-
+    
+    public UserToResourceMembershipXrefEntity getResource(final String resourceId) {
+		final Optional<UserToResourceMembershipXrefEntity> xref = 
+    			this.getResources()
+    				.stream()
+    				.filter(e -> resourceId.equals(e.getEntity().getId()))
+    				.findFirst();
+    	return xref.isPresent() ? xref.get() : null;
+	}
+    
     public void removeResource(final ResourceEntity entity) {
     	if(entity != null) {
-    		if(this.resources != null) {
-    			this.resources.remove(entity);
-    		}
-    	}
+			if(this.resources != null) {
+				this.resources.removeIf(e -> e.getEntity().getId().equals(entity.getId()));
+			}
+		}
     }
+    
+    public void addResource(final ResourceEntity entity, final Collection<AccessRightEntity> rights) {
+		if(entity != null) {
+			if(this.resources == null) {
+				this.resources = new LinkedHashSet<UserToResourceMembershipXrefEntity>();
+			}
+			UserToResourceMembershipXrefEntity theXref = null;
+			for(final UserToResourceMembershipXrefEntity xref : this.resources) {
+				if(xref.getEntity().getId().equals(entity.getId()) && xref.getMemberEntity().getId().equals(getId())) {
+					theXref = xref;
+					break;
+				}
+			}
+			
+			if(theXref == null) {
+				theXref = new UserToResourceMembershipXrefEntity();
+				theXref.setEntity(entity);
+				theXref.setMemberEntity(this);
+			}
+			if(rights != null) {
+				theXref.setRights(new HashSet<AccessRightEntity>(rights));
+			}
+			this.resources.add(theXref);
+		}
+	}
 
     public void updateUser(UserEntity newUser) {
 	    if (newUser.getBirthdate() != null) {

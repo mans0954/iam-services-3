@@ -15,6 +15,7 @@ import org.openiam.connector.type.response.SearchResponse;
 import org.openiam.exception.ScriptEngineException;
 import org.openiam.idm.parser.csv.UserCSVParser;
 import org.openiam.idm.parser.csv.UserSearchBeanCSVParser;
+import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.searchbeans.LoginSearchBean;
 import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
@@ -603,8 +604,12 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
             }
 
             // get all groups for user
-            List<org.openiam.idm.srvc.grp.dto.Group> curGroupList =groupDataWebService.getGroupsForUser(
-					user.getId(), null, false, -1, -1);
+            final GroupSearchBean sb = new GroupSearchBean();
+            sb.addUserId(user.getId());
+            sb.setDeepCopy(false);
+            
+            
+            final List<org.openiam.idm.srvc.grp.dto.Group> curGroupList =groupDataWebService.findBeansLocalize(sb, null, -1, -1, null);
 
             String decPassword;
 			if (StringUtils.isEmpty(identity.getUserId())) {

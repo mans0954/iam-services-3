@@ -9,11 +9,11 @@ import org.springframework.stereotype.Service;
 public class LookupGroupAppTableCommand extends AbstractLookupAppTableCommand<ExtensibleUser> {
     @Override
     protected boolean compareObjectTypeWithId(String objectType) {
-        return StringUtils.equalsIgnoreCase(objectType, "principal");
+        return StringUtils.equalsIgnoreCase(objectType, "GROUP_PRINCIPAL");
     }
 
     @Override
     protected String getObjectType() {
-        return "GROUP";
+        return GROUP;
     }
 }

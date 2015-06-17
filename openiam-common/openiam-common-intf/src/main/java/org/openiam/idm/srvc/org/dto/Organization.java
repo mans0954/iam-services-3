@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.http.MethodNotSupportedException;
 import org.openiam.base.AdminResourceDTO;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.KeyNameDTO;
@@ -11,12 +12,14 @@ import org.openiam.dozer.DozerDTOCorrespondence;
 
 import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.openiam.idm.srvc.entitlements.AbstractEntitlementsDTO;
 import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.user.dto.User;
@@ -55,7 +58,7 @@ import org.openiam.idm.srvc.user.dto.User;
         "selectable"
 })
 @DozerDTOCorrespondence(OrganizationEntity.class)
-public class Organization extends AdminResourceDTO implements Serializable, Comparable<Organization> {
+public class Organization extends AbstractEntitlementsDTO implements Serializable, Comparable<Organization> {
 
     private static final long serialVersionUID = -6297113958697455428L;
 
@@ -365,8 +368,9 @@ public class Organization extends AdminResourceDTO implements Serializable, Comp
 		this.organizationTypeId = organizationTypeId;
 	}
 
+	@Deprecated
 	public boolean isOrganization() {
-		return StringUtils.equalsIgnoreCase("organization", organizationTypeId);
+		return false;
 	}
 
 	public String getOrganizationTypeName() {

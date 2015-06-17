@@ -18,6 +18,7 @@ import org.openiam.authmanager.service.AuthorizationManagerAdminService;
 import org.openiam.authmanager.service.AuthorizationManagerMenuService;
 import org.openiam.authmanager.service.AuthorizationManagerService;
 import org.openiam.authmanager.ws.request.MenuEntitlementsRequest;
+import org.openiam.idm.srvc.access.service.AccessRightDAO;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
@@ -99,6 +100,9 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
 	 @Autowired
 	 @Qualifier("transactionTemplate")
 	 private TransactionTemplate transactionTemplate;
+	 
+	 @Autowired
+	 private AccessRightDAO accessRightDAO;
 
 	/*
 	private boolean forceThreadShutdown = false;
@@ -558,9 +562,7 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
             if(CollectionUtils.isNotEmpty(menuEntitlementsRequest.getDisentitled())) {
                 List<ResourceEntity> resourceEntities = resourceDAOHibernate.findByIds(menuEntitlementsRequest.getDisentitled());
                 for(ResourceEntity resourceEntity : resourceEntities) {
-                    if(userEntity.getResources().contains(resourceEntity)) {
-                        userEntity.getResources().remove(resourceEntity);
-                    }
+                	resourceEntity.removeUser(userEntity);
                 }
 
             }
@@ -568,7 +570,7 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
             if(CollectionUtils.isNotEmpty(menuEntitlementsRequest.getNewlyEntitled())) {
                 List<ResourceEntity> resourceEntities = resourceDAOHibernate.findByIds(menuEntitlementsRequest.getNewlyEntitled());
                 for(ResourceEntity resourceEntity : resourceEntities) {
-                       userEntity.getResources().add(resourceEntity);
+                	resourceEntity.addUser(userEntity, accessRightDAO.findAll());
                 }
 
             }
@@ -578,16 +580,14 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
             if(CollectionUtils.isNotEmpty(menuEntitlementsRequest.getDisentitled())) {
                 List<ResourceEntity> resourceEntities = resourceDAOHibernate.findByIds(menuEntitlementsRequest.getDisentitled());
                 for(ResourceEntity resourceEntity : resourceEntities) {
-                    if(groupEntity.getResources().contains(resourceEntity)) {
-                        groupEntity.getResources().remove(resourceEntity);
-                    }
+                	groupEntity.removeResource(resourceEntity);
                 }
             }
 
             if(CollectionUtils.isNotEmpty(menuEntitlementsRequest.getNewlyEntitled())) {
                 List<ResourceEntity> resourceEntities = resourceDAOHibernate.findByIds(menuEntitlementsRequest.getNewlyEntitled());
                 for(final ResourceEntity resource : resourceEntities) {
-                    groupEntity.getResources().add(resource);
+                    groupEntity.addResource(resource, accessRightDAO.findAll());
                 }
 
             }
@@ -607,7 +607,7 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
             if(CollectionUtils.isNotEmpty(menuEntitlementsRequest.getNewlyEntitled())) {
                 List<ResourceEntity> resourceEntities = resourceDAOHibernate.findByIds(menuEntitlementsRequest.getNewlyEntitled());
                 for(final ResourceEntity resource : resourceEntities) {
-                    role.getResources().add(resource);
+                	role.addResource(resource, accessRightDAO.findAll());
                 }
             }
         }

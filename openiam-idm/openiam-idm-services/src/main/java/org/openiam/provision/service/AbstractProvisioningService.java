@@ -21,6 +21,7 @@ import org.openiam.connector.type.response.ResponseType;
 import org.openiam.connector.type.response.SearchResponse;
 import org.openiam.dozer.converter.*;
 import org.openiam.exception.ObjectNotFoundException;
+import org.openiam.idm.srvc.access.service.AccessRightDAO;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
@@ -80,13 +81,17 @@ import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.idm.srvc.user.domain.UserToGroupMembershipXrefEntity;
+import org.openiam.idm.srvc.user.domain.UserToOrganizationMembershipXrefEntity;
+import org.openiam.idm.srvc.user.domain.UserToRoleMembershipXrefEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
+import org.openiam.idm.srvc.user.dto.UserToGroupMembershipXref;
+import org.openiam.idm.srvc.user.dto.UserToOrganizationMembershipXref;
+import org.openiam.idm.srvc.user.dto.UserToResourceMembershipXref;
+import org.openiam.idm.srvc.user.dto.UserToRoleMembershipXref;
 import org.openiam.idm.srvc.user.service.UserDataService;
-import org.openiam.provision.dto.PasswordSync;
-import org.openiam.provision.dto.ProvisionActionEvent;
-import org.openiam.provision.dto.ProvisionActionTypeEnum;
-import org.openiam.provision.dto.ProvisionUser;
+import org.openiam.provision.dto.*;
 import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
@@ -100,8 +105,10 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 
 import javax.annotation.PostConstruct;
+
 import java.util.*;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 /**
  * Base class for the provisioning service
@@ -211,6 +218,10 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     protected ManagedSysDozerConverter managedSysDozerConverter;
     @Autowired
     protected ProvisionConnectorConverter provisionConnectorConverter;
+
+    @Autowired
+    protected BuildUserPolicyMapHelper buildPolicyMapHelper;
+
     @Value("${openiam.service_base}")
     protected String serviceHost;
     @Value("${openiam.idm.ws.path}")
@@ -247,6 +258,9 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     protected AuditLogService auditLogService;
     @Autowired
     protected MetadataTypeDAO metadataTypeDAO;
+    
+    @Autowired
+    private AccessRightDAO accessRightDAO;
 
     @Autowired
     private ManagedSystemObjectMatchDozerConverter managedSystemObjectMatchDozerConverter;
@@ -1372,36 +1386,36 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     public void updateGroups(final UserEntity userEntity, final ProvisionUser pUser,
                              final Set<Group> groupSet, final Set<Group> deleteGroupSet, final IdmAuditLog parentLog) {
         if (CollectionUtils.isNotEmpty(pUser.getGroups())) {
-            for (Group g : pUser.getGroups()) {
-                AttributeOperationEnum operation = g.getOperation();
+            for (final UserToGroupMembershipXref xref : pUser.getGroups()) {
+            	final AttributeOperationEnum operation = xref.getOperation();
                 if (operation == AttributeOperationEnum.ADD) {
-                    GroupEntity groupEntity = groupManager.getGroup(g.getId());
-                    userEntity.getGroups().add(groupEntity);
+                	final GroupEntity groupEntity = groupManager.getGroupLocalize(xref.getEntityId(), null);
+                	userEntity.addGroup(groupEntity, accessRightDAO.findByIds(xref.getAccessRightIds()));
                     // Audit Log ---------------------------------------------------
-                    IdmAuditLog auditLog = new IdmAuditLog();
+                    final IdmAuditLog auditLog = new IdmAuditLog();
                     auditLog.setAction(AuditAction.ADD_GROUP.value());
-                    Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
-                    String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
+                    final Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
+                    final String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
                     auditLog.setTargetUser(pUser.getId(), loginStr);
-                    auditLog.setTargetGroup(g.getId(), g.getName());
-                    auditLog.addCustomRecord("GROUP", g.getName());
+                    auditLog.setTargetGroup(groupEntity.getId(), groupEntity.getName());
+                    auditLog.addCustomRecord("GROUP", groupEntity.getName());
                     parentLog.addChild(auditLog);
                     //--------------------------------------------------------------
 
                 } else if (operation == AttributeOperationEnum.DELETE) {
-                    GroupEntity ge = groupManager.getGroup(g.getId());
-                    userEntity.getGroups().remove(ge);
-                    Group dg = groupDozerConverter.convertToDTO(ge, false);
+                	final GroupEntity ge = groupManager.getGroupLocalize(xref.getEntityId(), null);
+                	userEntity.removeGroup(ge);
+                    final Group dg = groupDozerConverter.convertToDTO(ge, false);
                     dg.setOperation(operation);
                     deleteGroupSet.add(dg);
                     // Audit Log ---------------------------------------------------
-                    IdmAuditLog auditLog = new IdmAuditLog();
+                    final IdmAuditLog auditLog = new IdmAuditLog();
                     auditLog.setAction(AuditAction.DELETE_GROUP.value());
-                    Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
-                    String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
+                    final Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
+                    final String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
                     auditLog.setTargetUser(pUser.getId(), loginStr);
-                    auditLog.setTargetGroup(g.getId(), g.getName());
-                    auditLog.addCustomRecord("GROUP", g.getName());
+                    auditLog.setTargetGroup(ge.getId(), ge.getName());
+                    auditLog.addCustomRecord("GROUP", ge.getName());
                     parentLog.addChild(auditLog);
                     //--------------------------------------------------------------
 
@@ -1411,14 +1425,20 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
             }
         }
         if (CollectionUtils.isNotEmpty(userEntity.getGroups())) {
-            for (GroupEntity gre : userEntity.getGroups()) {
-                Group gr = groupDozerConverter.convertToDTO(gre, false);
+            for (final UserToGroupMembershipXrefEntity xrefEntity : userEntity.getGroups()) {
+            	//comment by Lev Bornovalov - why would you do this?  Makes no sense.
+                final Group gr = groupDozerConverter.convertToDTO(xrefEntity.getEntity(), false);
+                pUser.getGroups().stream().filter(e -> e.getEntityId().equals(xrefEntity.getEntity().getId())).forEach(e -> {
+                	gr.setOperation(e.getOperation());
+                });
+                /*
                 for (Group g : pUser.getGroups()) {
                     if (StringUtils.equals(g.getId(), gr.getId())) {
                         gr.setOperation(g.getOperation()); // get operation value from pUser
                         break;
                     }
                 }
+                */
                 groupSet.add(gr);
             }
         }
@@ -1427,28 +1447,25 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     public void updateRoles(final UserEntity userEntity, final ProvisionUser pUser,
                             final Set<Role> roleSet, final Set<Role> deleteRoleSet, final IdmAuditLog parentLog) {
         if (CollectionUtils.isNotEmpty(pUser.getRoles())) {
-            for (Role r : pUser.getRoles()) {
-                AttributeOperationEnum operation = r.getOperation();
+            for (final UserToRoleMembershipXref xref : pUser.getRoles()) {
+                final AttributeOperationEnum operation = xref.getOperation();
                 if (operation == AttributeOperationEnum.ADD) {
-                    RoleEntity roleEntity = roleDataService.getRole(r.getId());
-                    if (userEntity.getRoles().contains(roleEntity)) {
-                        throw new IllegalArgumentException("Role with this name already exists");
-                    }
-                    userEntity.getRoles().add(roleEntity);
+                    final RoleEntity roleEntity = roleDataService.getRoleLocalized(xref.getEntityId(), null, null);
+                    userEntity.addRole(roleEntity, accessRightDAO.findByIds(xref.getAccessRightIds()));
                     // Audit Log ---------------------------------------------------
-                    IdmAuditLog auditLog = new IdmAuditLog();
+                    final IdmAuditLog auditLog = new IdmAuditLog();
                     auditLog.setAction(AuditAction.ADD_ROLE.value());
-                    Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
-                    String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
+                    final Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
+                    final String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
                     auditLog.setTargetUser(pUser.getId(), loginStr);
-                    auditLog.setTargetRole(r.getId(), r.getName());
-                    auditLog.addCustomRecord("ROLE", r.getName());
+                    auditLog.setTargetRole(roleEntity.getId(), roleEntity.getName());
+                    auditLog.addCustomRecord("ROLE", roleEntity.getName());
                     parentLog.addChild(auditLog);
                     //--------------------------------------------------------------
                 } else if (operation == AttributeOperationEnum.DELETE) {
-                    RoleEntity re = roleDataService.getRole(r.getId());
-                    userEntity.getRoles().remove(re);
-                    Role dr = roleDozerConverter.convertToDTO(re, false);
+                    final RoleEntity re = roleDataService.getRoleLocalized(xref.getEntityId(), null, null);
+                    userEntity.removeRole(re);
+                    final Role dr = roleDozerConverter.convertToDTO(re, false);
                     dr.setOperation(operation);
                     deleteRoleSet.add(dr);
                     // Audit Log ---------------------------------------------------
@@ -1457,8 +1474,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
                     String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
                     auditLog.setTargetUser(pUser.getId(), loginStr);
-                    auditLog.setTargetRole(r.getId(), r.getName());
-                    auditLog.addCustomRecord("ROLE", r.getName());
+                    auditLog.setTargetRole(dr.getId(), dr.getName());
+                    auditLog.addCustomRecord("ROLE", dr.getName());
                     parentLog.addChild(auditLog);
                     //-----------------------------------------------------------------
                 } else if (operation == AttributeOperationEnum.REPLACE) {
@@ -1467,14 +1484,12 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
             }
         }
         if (CollectionUtils.isNotEmpty(userEntity.getRoles())) {
-            for (RoleEntity ure : userEntity.getRoles()) {
-                Role ar = roleDozerConverter.convertToDTO(ure, false);
-                for (Role r : pUser.getRoles()) {
-                    if (StringUtils.equals(r.getId(), ar.getId())) {
-                        ar.setOperation(r.getOperation()); // get operation value from pUser
-                        break;
-                    }
-                }
+            for (final UserToRoleMembershipXrefEntity xrefEntity : userEntity.getRoles()) {
+            	//comment by Lev Bornovalov - why would you do this?  Makes no sense.
+                final Role ar = roleDozerConverter.convertToDTO(xrefEntity.getEntity(), false);
+                pUser.getRoles().stream().filter(e -> e.getEntityId().equals(xrefEntity.getEntity().getId())).forEach(e -> {
+                	ar.setOperation(e.getOperation());
+                });
                 roleSet.add(ar);
             }
         }
@@ -1484,40 +1499,33 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
 
     public void updateAffiliations(final UserEntity userEntity, final ProvisionUser pUser, final IdmAuditLog parentLog) {
         if (CollectionUtils.isNotEmpty(pUser.getAffiliations())) {
-            for (Organization o : pUser.getAffiliations()) {
-                AttributeOperationEnum operation = o.getOperation();
+            for (final UserToOrganizationMembershipXref xref : pUser.getAffiliations()) {
+                final AttributeOperationEnum operation = xref.getOperation();
+                final OrganizationEntity org = organizationService.getOrganizationLocalized(xref.getEntityId(), null);
                 if (operation == AttributeOperationEnum.ADD) {
-                    OrganizationEntity org = organizationService.getOrganizationLocalized(o.getId(), null);
-                    userEntity.getAffiliations().add(org);
+                    userEntity.addAffiliation(org, accessRightDAO.findByIds(xref.getAccessRightIds()));
                     // Audit Log ---------------------------------------------------
-                    IdmAuditLog auditLog = new IdmAuditLog();
+                    final IdmAuditLog auditLog = new IdmAuditLog();
                     auditLog.setAction(AuditAction.ADD_USER_TO_ORG.value());
-                    Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
-                    String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
+                    final Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
+                    final String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
                     auditLog.setTargetUser(pUser.getId(), loginStr);
                     auditLog.setTargetOrg(org.getId(), org.getName());
                     auditLog.addCustomRecord("ORG", org.getName());
                     parentLog.addChild(auditLog);
                     // --------------------------------------------------------------
                 } else if (operation == AttributeOperationEnum.DELETE) {
-                    Set<OrganizationEntity> affiliations = userEntity.getAffiliations();
-                    for (OrganizationEntity a : affiliations) {
-                        if (StringUtils.equals(o.getId(), a.getId())) {
-                            userEntity.getAffiliations().remove(a);
-                            // Audit Log ---------------------------------------------------
-                            IdmAuditLog auditLog = new IdmAuditLog();
-                            auditLog.setAction(AuditAction.REMOVE_USER_FROM_ORG.value());
-                            Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
-                            String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
-                            auditLog.setTargetUser(pUser.getId(), loginStr);
-                            auditLog.setTargetOrg(o.getId(), o.getName());
-                            auditLog.addCustomRecord("ORG", o.getName());
-                            parentLog.addChild(auditLog);
-                            // -------------------------------------------------------------
-                            break;
-                        }
-                    }
-
+                	userEntity.removeAffiliation(org);
+                    // Audit Log ---------------------------------------------------
+                	final IdmAuditLog auditLog = new IdmAuditLog();
+                	auditLog.setAction(AuditAction.REMOVE_USER_FROM_ORG.value());
+                	final Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
+                	final String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
+                	auditLog.setTargetUser(pUser.getId(), loginStr);
+                	auditLog.setTargetOrg(org.getId(), org.getName());
+                	auditLog.addCustomRecord("ORG", org.getName());
+                	parentLog.addChild(auditLog);
+                	break;
                 } else if (operation == AttributeOperationEnum.REPLACE) {
                     throw new UnsupportedOperationException("Operation 'REPLACE' is not supported for affiliations");
                 }
@@ -1526,22 +1534,26 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     }
 
     public void updateResources(final UserEntity userEntity, final ProvisionUser pUser, final Set<Resource> resourceSet, final Set<Resource> deleteResourceSet, final IdmAuditLog parentLog) {
-
-        Set<Resource> ar = resourceDozerConverter.convertToDTOSet(userEntity.getResources(), false);
+    	final Set<ResourceEntity> userEntityResources = (userEntity.getResources() != null) ? 
+    			userEntity.getResources().stream().map(e -> e.getEntity()).collect(Collectors.toSet()) : null;
+        final Set<Resource> ar = resourceDozerConverter.convertToDTOSet(userEntityResources, false);
         resourceSet.addAll(ar);
 
         if (CollectionUtils.isNotEmpty(pUser.getResources())) {
             Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
-            for (Resource r : pUser.getResources()) {
-                AttributeOperationEnum operation = r.getOperation();
+            for (final UserToResourceMembershipXref xref : pUser.getResources()) {
+                final AttributeOperationEnum operation = xref.getOperation();
+                final String resourceId = xref.getEntityId();
+                final Resource r = resourceDataService.getResource(resourceId, null);
                 if (operation == null) {
                     continue;
                 } else if (operation == AttributeOperationEnum.ADD) {
-                    ResourceEntity resEntity = resourceService.findResourceById(r.getId());
-                    userEntity.getResources().add(resEntity);
+                    final ResourceEntity resEntity = resourceService.findResourceById(resourceId);
+                    //resEntity.addUser(userEntity, accessRightDAO.findByIds(xref.getAccessRightIds()));
+                    userEntity.addResource(resEntity, accessRightDAO.findByIds(xref.getAccessRightIds()));
                     resourceSet.add(r);
                     // Audit Log ---------------------------------------------------
-                    IdmAuditLog auditLog = new IdmAuditLog();
+                    final IdmAuditLog auditLog = new IdmAuditLog();
                     auditLog.setAction(AuditAction.ADD_USER_TO_RESOURCE.value());
 
                     String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
@@ -1551,14 +1563,15 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     parentLog.addChild(auditLog);
                     // --------------------------------------------------------------
                 } else if (operation == AttributeOperationEnum.DELETE) {
-                    ResourceEntity re = resourceService.findResourceById(r.getId());
-                    userEntity.getResources().remove(re);
+                	final ResourceEntity re = resourceService.findResourceById(resourceId);
+                    userEntity.removeResource(re);
+                	//re.removeUser(userEntity);
                     resourceSet.remove(r);
                     deleteResourceSet.add(r);
                     // Audit Log ---------------------------------------------------
-                    IdmAuditLog auditLog = new IdmAuditLog();
+                    final IdmAuditLog auditLog = new IdmAuditLog();
                     auditLog.setAction(AuditAction.REMOVE_USER_FROM_RESOURCE.value());
-                    String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
+                    final String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
                     auditLog.setTargetUser(pUser.getId(), loginStr);
                     auditLog.setTargetResource(re.getId(), re.getName());
                     auditLog.addCustomRecord("RESOURCE", re.getName());
@@ -1752,7 +1765,10 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         request.setRequestID(requestId);
         request.setTargetID(mLg.getManagedSysId());
         request.setHostLoginId(mSys.getUserId());
-        request.setExtensibleObject(new ExtensibleUser());
+
+        ExtensibleUser extensibleUser = buildPolicyMapHelper.buildMngSysAttributes(mLg, ProvOperationEnum.DELETE.name());
+        request.setExtensibleObject(extensibleUser);
+
         String passwordDecoded = managedSysDataService.getDecryptedPassword(mSys);
 
         request.setHostLoginPassword(passwordDecoded);
@@ -1771,7 +1787,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
 
     protected ResponseType resetPassword(String requestId, Login login,
                                          String password, ManagedSysDto mSys,
-                                         ManagedSystemObjectMatch matchObj, ExtensibleUser extensibleUser) {
+                                         ManagedSystemObjectMatch matchObj, ExtensibleUser extensibleUser, String operation) {
 
         PasswordRequest req = new PasswordRequest();
         req.setObjectIdentity(login.getLogin());
@@ -1786,40 +1802,13 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         if (matchObj != null) {
             req.setBaseDN(matchObj.getBaseDn());
         }
-        req.setOperation("RESET_PASSWORD");
+        req.setOperation(operation);
         req.setPassword(password);
 
         req.setScriptHandler(mSys.getPasswordHandler());
 
         log.debug("Reset password request will be sent for user login " + login.getLogin());
         return connectorAdapter.resetPasswordRequest(mSys, req);
-    }
-
-    protected ResponseType setPassword(String requestId, Login login, String prevDecPassword,
-                                       String newDecPasswordSync,
-                                       ManagedSysDto mSys,
-                                       ManagedSystemObjectMatch matchObj,
-                                       ExtensibleUser extensibleUser) {
-
-        PasswordRequest req = new PasswordRequest();
-        req.setObjectIdentity(login.getLogin());
-        req.setRequestID(requestId);
-        req.setTargetID(login.getManagedSysId());
-        req.setHostLoginId(mSys.getUserId());
-        req.setExtensibleObject(extensibleUser);
-        String passwordDecoded = managedSysDataService.getDecryptedPassword(mSys);
-
-        req.setHostLoginPassword(passwordDecoded);
-        req.setHostUrl(mSys.getHostUrl());
-        req.setBaseDN((matchObj != null) ? matchObj.getBaseDn() : null);
-        req.setOperation("SET_PASSWORD");
-        req.setPassword(newDecPasswordSync);
-        req.setScriptHandler(mSys.getPasswordHandler());
-        req.setCurrentPassword(prevDecPassword);
-        ResponseType respType = connectorAdapter.setPasswordRequest(mSys, req);
-
-        return respType;
-
     }
 
     protected ProvisionUserResponse validatePassword(Login primaryLogin, ProvisionUser user, String requestId) {

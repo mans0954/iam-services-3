@@ -56,6 +56,7 @@ import org.openiam.idm.srvc.synch.dto.*;
 import org.openiam.idm.srvc.synch.srcadapter.AdapterFactory;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.dto.User;
+import org.openiam.idm.srvc.user.dto.UserToResourceMembershipXref;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.service.AsynchUserProvisionService;
@@ -374,12 +375,12 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
     }
 
     @Transactional
-    public Response bulkUserMigration(BulkMigrationConfig config) {
+    public Response bulkUserMigration(final BulkMigrationConfig config) {
 
         Response resp = new Response(ResponseStatus.SUCCESS);
         try {
             // select the user that we need to move
-            UserSearchBean search = buildSearch(config);
+            final UserSearchBean search = buildSearch(config);
             /*
             if (search.isEmpty()) {
                 resp.setStatus(ResponseStatus.FAILURE);
@@ -393,7 +394,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 
 
             // all the provisioning service
-            for ( User user :  searchResult) {
+            for (final  User user :  searchResult) {
 
                 log.debug("Migrating user: " + user.getId() + " " + user.getLastName());
 
@@ -401,41 +402,33 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 
                 if (config.getTargetRole() != null && !config.getTargetRole().isEmpty() ) {
 
-                    Role r = parseRole(config.getTargetRole());
-                    if ( pUser.getRoles() == null ) {
-                        Set<Role> roleSet = new HashSet<Role>();
-                        pUser.setRoles(roleSet);
-                    }
-
+                    final Role r = parseRole(config.getTargetRole());
                     if ("ADD".equalsIgnoreCase(config.getOperation())) {
                         // add to role
-                        r.setOperation(AttributeOperationEnum.ADD);
-                        pUser.getRoles().add(r);
+                    	pUser.addRole(r, config.getRightIds());
                     } else {
-                        // remove from role
-                        r.setOperation(AttributeOperationEnum.DELETE);
-                        pUser.getRoles().add(r);
+                    	pUser.removeRole(r.getId());
                     }
 
                 } else if (config.getTargetResource() != null && !config.getTargetResource().isEmpty()) {
 
-                    Set<Resource> resourceSet = new HashSet<Resource>();
+                    final Set<UserToResourceMembershipXref> xrefSet = new HashSet<UserToResourceMembershipXref>();
 
-                    Resource resource = new Resource();
-                    resource.setId(config.getTargetResource());
+                    final UserToResourceMembershipXref xref = new UserToResourceMembershipXref();
+                    xref.setEntityId(config.getTargetResource());
 
                     if ("ADD".equalsIgnoreCase(config.getOperation())) {
                         // add to resourceList
-                        resource.setOperation(AttributeOperationEnum.ADD);
-                        resourceSet.add(resource);
-                        pUser.setResources(resourceSet);
+                    	xref.setOperation(AttributeOperationEnum.ADD);
+                        xrefSet.add(xref);
+                        pUser.setResources(xrefSet);
 
                     } else {
                         // remove from resource List
 
-                        resource.setOperation(AttributeOperationEnum.DELETE);
-                        resourceSet.add(resource);
-                        pUser.setResources(resourceSet);
+                    	xref.setOperation(AttributeOperationEnum.DELETE);
+                    	xrefSet.add(xref);
+                        pUser.setResources(xrefSet);
 
                     }
                 }
@@ -522,15 +515,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 
                 ProvisionUser pUser = new ProvisionUser(user);
 
-                if (pUser.getRoles() == null ) {
-                    Set<Role> roles = new HashSet<Role>();
-                    roles.add(rl);
-                    pUser.setRoles(roles);
-
-                }  else {
-                    pUser.getRoles().add(rl);
-                }
-
+                pUser.addRole(rl, null);
                 provisionService.modifyUser(pUser);
 
             }

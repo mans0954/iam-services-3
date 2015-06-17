@@ -8,7 +8,9 @@ import org.openiam.idm.srvc.org.dto.Organization;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -108,7 +110,7 @@ public class OrganizationSearchBean extends EntitlementsSearchBean<Organization,
         return (keySet != null && keySet.size() > 1);
     }
 
-    public void setKeys(final List<String> keySet) {
+    public void setKeys(final Collection<String> keySet) {
         if (keySet != null) {
             setKeys(new HashSet<String>(keySet));
         }

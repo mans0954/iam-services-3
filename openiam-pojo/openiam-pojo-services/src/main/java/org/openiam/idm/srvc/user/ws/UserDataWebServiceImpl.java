@@ -40,6 +40,7 @@ import org.openiam.idm.searchbeans.EmailSearchBean;
 import org.openiam.idm.searchbeans.PhoneSearchBean;
 import org.openiam.idm.searchbeans.PotentialSupSubSearchBean;
 import org.openiam.idm.searchbeans.UserSearchBean;
+import org.openiam.idm.srvc.access.service.AccessRightProcessor;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
@@ -125,6 +126,10 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 
     @Autowired
     private UserProfileService userProfileService;
+    
+
+    @Autowired
+    private AccessRightProcessor accessRightProcessor;
 
     @Override
     public Response addAddress(final Address val) {
@@ -737,15 +742,16 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<User> findBeans(UserSearchBean userSearchBean, int from, int size) {
-        List<User> resultList = Collections.EMPTY_LIST;
+    public List<User> findBeans(UserSearchBean searchBean, int from, int size) {
+        List<User> dtoList = Collections.EMPTY_LIST;
         try {
-            List<UserEntity> userList = userManager.findBeans(userSearchBean, from, size);
-            resultList = userDozerConverter.convertToDTOList(userList, userSearchBean.isDeepCopy());
+            final List<UserEntity> entityList = userManager.findBeans(searchBean, from, size);
+            dtoList = userDozerConverter.convertToDTOList(entityList, searchBean.isDeepCopy());
+            accessRightProcessor.process(searchBean, dtoList, entityList);
         } catch (BasicDataServiceException e) {
             log.error(e.getMessage(), e);
         }
-        return resultList;
+        return dtoList;
     }
 
     @Override
@@ -895,50 +901,64 @@ public class UserDataWebServiceImpl implements UserDataWebService {
     @Transactional(readOnly = true)
     @Deprecated
     public List<User> getUsersForResource(final String resourceId, String requesterId, final int from, final int size) {
-        final List<UserEntity> entityList = userManager.getUsersForResource(resourceId, requesterId, from, size);
-        return userDozerConverter.convertToDTOList(entityList, false);
+    	final UserSearchBean sb = new UserSearchBean();
+    	sb.addResourceId(resourceId);
+    	sb.setDeepCopy(false);
+    	return findBeans(sb, from, size);
     }
 
     @Override
     @Transactional(readOnly = true)
+    @Deprecated
     public List<User> getUsersForResourceWithSorting(final UserSearchBean userSearchBean,  final int from, final int size) {
-        final List<UserEntity> entityList = userManager.getUsersForResource(userSearchBean, from, size);
-        return userDozerConverter.convertToDTOList(entityList, userSearchBean.isDeepCopy());
+        return findBeans(userSearchBean, from, size);
     }
 
-
-
     @Override
+    @Deprecated
     public int getNumOfUsersForResource(final String resourceId, String requesterId) {
-        return userManager.getNumOfUsersForResource(resourceId, requesterId);
+    	final UserSearchBean sb = new UserSearchBean();
+    	sb.addResourceId(resourceId);
+    	sb.setDeepCopy(false);
+    	return count(sb);
     }
 
     @Override
     @Transactional(readOnly = true)
     @Deprecated
     public List<User> getUsersForGroup(final String groupId, String requesterId, final int from, final int size) {
-        final List<UserEntity> entityList = userManager.getUsersForGroup(groupId, requesterId, from, size);
-        return userDozerConverter.convertToDTOList(entityList, false);
+    	final UserSearchBean sb = new UserSearchBean();
+    	sb.setDeepCopy(false);
+    	sb.addGroupId(groupId);
+    	return findBeans(sb, from, size);
     }
 
     @Override
     @Deprecated
     public int getNumOfUsersForGroup(final String groupId, String requesterId) {
-        return userManager.getNumOfUsersForGroup(groupId, requesterId);
+    	final UserSearchBean sb = new UserSearchBean();
+    	sb.setDeepCopy(false);
+    	sb.addGroupId(groupId);
+    	return count(sb);
     }
 
     @Override
     @Transactional(readOnly = true)
     @Deprecated
     public List<User> getUsersForRole(final String roleId, String requesterId, final int from, final int size) {
-        final List<UserEntity> entityList = userManager.getUsersForRole(roleId, requesterId, from, size);
-        return userDozerConverter.convertToDTOList(entityList, false);
+    	final UserSearchBean sb = new UserSearchBean();
+    	sb.setDeepCopy(false);
+    	sb.addRoleId(roleId);
+        return findBeans(sb, from, size);
     }
 
     @Override
     @Deprecated
     public int getNumOfUsersForRole(final String roleId, String requesterId) {
-        return userManager.getNumOfUsersForRole(roleId, requesterId);
+    	final UserSearchBean sb = new UserSearchBean();
+    	sb.setDeepCopy(false);
+    	sb.addRoleId(roleId);
+    	return count(sb);
     }
 
     @Override

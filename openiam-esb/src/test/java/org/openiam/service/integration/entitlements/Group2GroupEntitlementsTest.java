@@ -14,7 +14,7 @@ import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.service.integration.AbstractEntitlementsTest;
 import org.testng.annotations.Test;
 
-public class Group2GroupEntitlementsTest extends AbstractEntitlementsTest<Group, Group> {
+public class Group2GroupEntitlementsTest extends AbstractCircularEntitlementTest<Group> {
 	
 	@Override
 	protected Group createParent() {
@@ -50,17 +50,17 @@ public class Group2GroupEntitlementsTest extends AbstractEntitlementsTest<Group,
 	protected boolean isChildInParent(Group parent, Group child, final Set<String> rights) {
 		GroupSearchBean searchBean = new GroupSearchBean();
 		searchBean.addChildId(child.getId());
-		//searchBean.setIncludeAccessRights(true);
+		searchBean.setIncludeAccessRights(true);
 		final List<Group> groups = groupServiceClient.findBeansLocalize(searchBean, "3000", 0, 100, getDefaultLanguage());
 		if(CollectionUtils.isNotEmpty(groups)) {
 			final Optional<Group> optional = groups.stream().filter(e -> e.getId().equals(parent.getId())).findAny();
 			Assert.assertTrue(String.format("Can't find child resource"), optional.isPresent());
-			//final Group grp = optional.get();
-			//if(CollectionUtils.isEmpty(rights)) {
-			//	Assert.assertTrue(CollectionUtils.isEmpty(grp.getAccessRightIds()));
-			//} else {
-			//	Assert.assertEquals(grp.getAccessRightIds(), rights);
-			//}
+			final Group grp = optional.get();
+			if(CollectionUtils.isEmpty(rights)) {
+				Assert.assertTrue(CollectionUtils.isEmpty(grp.getAccessRightIds()));
+			} else {
+				Assert.assertEquals(grp.getAccessRightIds(), rights);
+			}
 			return true;
 		} else {
 			return false;
@@ -87,5 +87,17 @@ public class Group2GroupEntitlementsTest extends AbstractEntitlementsTest<Group,
 			return false;
 		}
 	}
+	
+	@Test
+	public void foo() {}
 
+	@Override
+	protected Group getParentById(Group parent) {
+		return groupServiceClient.getGroupLocalize(parent.getId(), "3000", getDefaultLanguage());
+	}
+
+	@Override
+	protected Group getChildById(Group child) {
+		return groupServiceClient.getGroupLocalize(child.getId(), "3000", getDefaultLanguage());
+	}
 }

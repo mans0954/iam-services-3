@@ -2,6 +2,7 @@ package org.openiam.provision.service;
 
 
 import groovy.lang.MissingPropertyException;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -23,7 +24,9 @@ import org.openiam.connector.type.response.SearchResponse;
 import org.openiam.dozer.converter.AttributeMapDozerConverter;
 import org.openiam.dozer.converter.ManagedSystemObjectMatchDozerConverter;
 import org.openiam.dozer.converter.UserDozerConverter;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.exception.ScriptEngineException;
+import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.auth.dto.IdentityDto;
@@ -47,6 +50,7 @@ import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.idm.srvc.user.domain.UserToResourceMembershipXrefEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDataService;
@@ -71,6 +75,7 @@ import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.jws.WebService;
+
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -230,6 +235,11 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
             return response;
         }
 
+        /*
+         * Lev Bornovalov - this logic was removed in order to remove an deprecate the 
+         * 'resources' collection from the Group object
+         * A new metohd - addResourceToGroup was added to simulate this functionality
+         * 
         Set<Resource> resources = pGroup.getResources();
         if (resources != null) {
             for(Resource res : resources) {
@@ -274,6 +284,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
                 }
             }
         }
+        */
         // SET POST ATTRIBUTES FOR DEFAULT SYS SCRIPT
 
         int callPostProcessorResult = callPostProcessor(isAdd ? "ADD" : "MODIFY", pGroup, bindingMap);
@@ -461,19 +472,12 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
 
     private boolean isMemberAvailableInResource(final UserEntity member, final String resourceId) {
         boolean result = false;
-        for(ResourceEntity res : member.getResources()) {
-            if(res.getId().equalsIgnoreCase(resourceId)) {
+        for(final UserToResourceMembershipXrefEntity xref : member.getResources()) {
+            if(xref.getEntity().getId().equalsIgnoreCase(resourceId)) {
                 return true;
             }
         }
-        for(RoleEntity re : member.getRoles()) {
-           for(ResourceEntity res : re.getResources()) {
-               if(res.getId().equalsIgnoreCase(resourceId)) {
-                   return true;
-               }
-           }
-        }
-        return result;
+        return (member.getRoles().stream().map(e -> e.getEntity()).filter(e -> e.getResource(resourceId) != null).count() > 0);
     }
 
     protected int callPreProcessor(String operation, ProvisionGroup pGroup, Map<String, Object> bindingMap ) {
@@ -1204,5 +1208,59 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
     public Response deprovisionSelectedResources(String groupId, String requesterId, List<String> resourceList) {
         throw new UnsupportedOperationException("Not implemented yet");
     }
+
+	@Override
+	public Response addResourceToGroup(final ProvisionGroup pGroup, String resourceId) {
+		final Resource res = resourceDataService.getResource(resourceId, null);
+		res.setOperation(AttributeOperationEnum.ADD);
+		final Response response = new Response();
+		try {
+			if(res != null) {
+	            if (!pGroup.getNotProvisioninResourcesIds().contains(res.getId())) {
+	            	final ManagedSysDto managedSys = managedSystemService.getManagedSysByResource(res.getId());
+		            if (managedSys != null) {
+		                if (!managedSys.getSkipGroupProvision()) {
+			                final String managedSysId = managedSys.getId();
+			                // do check if provisioning user has source resource
+			                // => we should skip it from double provisioning
+			                // reconciliation case
+			                if(!StringUtils.equals(managedSysId, pGroup.getSrcSystemId())) {
+				                final IdentityDto groupTargetIdentity = identityService.getIdentityByManagedSys(pGroup.getId(), managedSysId);
+				                if (groupTargetIdentity != null && res.getOperation() == AttributeOperationEnum.ADD
+				                        && groupTargetIdentity.getStatus() == LoginStatusEnum.INACTIVE) {
+				                    groupTargetIdentity.setStatus(LoginStatusEnum.ACTIVE);
+				                }
+				                final Response provIdentityResponse = provisioningIdentity(groupTargetIdentity, pGroup, managedSys, res, true);
+				                if (!provIdentityResponse.isSuccess()) {
+				                    return provIdentityResponse;
+				                }
+				                //Provisioning Members
+				                if (pGroup.getUpdateManagedSystemMembers().contains(managedSysId)) {
+				                	final UserSearchBean sb = new UserSearchBean();
+				                	sb.addGroupId(pGroup.getId());
+				                    List<UserEntity> members = userDataService.findBeans(sb, 0, Integer.MAX_VALUE);
+				                    for (UserEntity member : members) {
+				                        if (!isMemberAvailableInResource(member, res.getId())) {
+				                            User user = userDozerConverter.convertToDTO(member, true);
+				                            provisionService.modifyUser(new ProvisionUser(user));
+				                        }
+				                    }
+				                }
+				
+				            }  else {
+				                // TODO WARNING
+				            }
+		                }
+		            }
+		        }
+			}
+		} catch(BasicDataServiceException e) {
+			response.fail();
+			response.setErrorCode(e.getCode());
+			log.error("Can't perform operation", e);
+		}
+		response.succeed();
+		return response;
+	}
 
 }

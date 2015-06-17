@@ -45,23 +45,32 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         return "id";
     }
 
+    @Value("${org.openiam.organization.type.id}")
+    private String organizationTypeId;
+    @Value("${org.openiam.department.type.id}")
+    private String departmentTypeId;
+
     @Override
     public UserEntity findByIdDelFlt(String userId, DelegationFilterSearchBean delegationFilter) {
         Criteria criteria = getCriteria();
 
         if (delegationFilter != null) {
-            if (CollectionUtils.isNotEmpty(delegationFilter.getOrganizationIdSet())) {
-                criteria.createAlias("affiliations", "aff").add(Restrictions.in("aff.id", delegationFilter.getOrganizationIdSet()));
+            if(CollectionUtils.isNotEmpty(delegationFilter.getOrganizationIdSet())){    
+                criteria.createAlias("affiliations", "affiliationXrefs")
+						.createAlias("affiliationXrefs.entity", "affiliation").add(
+						Restrictions.in("affiliation.id", delegationFilter.getOrganizationIdSet()));
             }
-
-            if (CollectionUtils.isNotEmpty(delegationFilter.getGroupIdSet())) {
-                criteria.createAlias("groups", "g");
-                criteria.add(Restrictions.in("g.id", delegationFilter.getGroupIdSet()));
+            
+            if(CollectionUtils.isNotEmpty(delegationFilter.getRoleIdSet())){    
+                criteria.createAlias("roles", "roleXrefs")
+						.createAlias("roleXrefs.entity", "role").add(
+						Restrictions.in("role.id", delegationFilter.getRoleIdSet()));
             }
-
-            if (CollectionUtils.isNotEmpty(delegationFilter.getRoleIdSet())) {
-                criteria.createAlias("roles", "r");
-                criteria.add(Restrictions.in("r.id", delegationFilter.getRoleIdSet()));
+            
+            if(CollectionUtils.isNotEmpty(delegationFilter.getGroupIdSet())){    
+                criteria.createAlias("groups", "groupXrefs")
+						.createAlias("groupXrefs.entity", "group").add(
+						Restrictions.in("group.id", delegationFilter.getGroupIdSet()));
             }
         }
 
@@ -74,8 +83,9 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         final Criteria criteria = getCriteria();
 
         if (StringUtils.isNotEmpty(search.getRole())) {
-            criteria.createAlias("roles", "r");
-            criteria.add(Restrictions.eq("r.id", search.getRole()));
+            criteria.createAlias("roles", "roleXrefs")
+					.createAlias("roleXrefs.entity", "role").add(
+							Restrictions.eq("role.id", search.getRole()));
         }
 
         if (search.isDelAdmin()) {
@@ -197,9 +207,6 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
             if (StringUtils.isNotEmpty(searchBean.getZipCode())) {
                 criteria.add(Restrictions.eq("postalCd", searchBean.getZipCode()));
             }
-            if (CollectionUtils.isNotEmpty(searchBean.getOrganizationIdSet())) {
-                criteria.createAlias("affiliations", "aff").add(Restrictions.in("aff.id", searchBean.getOrganizationIdSet()));
-            }
             if (StringUtils.isNotEmpty(searchBean.getPhoneAreaCd()) || StringUtils.isNotEmpty(searchBean.getPhoneNbr())) {
                 if (StringUtils.isNotEmpty(searchBean.getPhoneAreaCd())) {
                     criteria.add(Restrictions.eq("p.areaCd", searchBean.getPhoneAreaCd()));
@@ -216,10 +223,6 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
                                 .add(getStringCriterion("email", searchBean.getEmailAddressMatchToken().getValue(), ORACLE_INSENSITIVE));
                 criteria.add(disjunction);
             }
-            if (CollectionUtils.isNotEmpty(searchBean.getGroupIdSet())) {
-                criteria.createAlias("groups", "g");
-                criteria.add(Restrictions.in("g.id", searchBean.getGroupIdSet()));
-            }
             
             SearchParam searchParam = searchBean.getEmployeeIdMatchToken();
             if(searchParam != null && searchParam.isValid()) {
@@ -234,12 +237,23 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
     					break;
             	}
             }
-            //if (StringUtils.isNotEmpty(searchBean.getEmployeeId())) {
-            //    criteria.add(Restrictions.eq("employeeId", searchBean.getEmployeeId()));
-            //}
-            if (CollectionUtils.isNotEmpty(searchBean.getRoleIdSet())) {
-                criteria.createAlias("roles", "r");
-                criteria.add(Restrictions.in("r.id", searchBean.getRoleIdSet()));
+            
+            if(CollectionUtils.isNotEmpty(searchBean.getOrganizationIdSet())){    
+                criteria.createAlias("affiliations", "affiliationXrefs")
+						.createAlias("affiliationXrefs.entity", "affiliation").add(
+						Restrictions.in("affiliation.id", searchBean.getOrganizationIdSet()));
+            }
+            
+            if(CollectionUtils.isNotEmpty(searchBean.getRoleIdSet())){    
+                criteria.createAlias("roles", "roleXrefs")
+						.createAlias("roleXrefs.entity", "role").add(
+						Restrictions.in("role.id", searchBean.getRoleIdSet()));
+            }
+            
+            if(CollectionUtils.isNotEmpty(searchBean.getGroupIdSet())){    
+                criteria.createAlias("groups", "groupXrefs")
+						.createAlias("groupXrefs.entity", "group").add(
+						Restrictions.in("group.id", searchBean.getGroupIdSet()));
             }
 
             if (StringUtils.isNotEmpty(searchBean.getAttributeElementId())
@@ -390,31 +404,40 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
 
     private Criteria getUsersEntitlementCriteria(final String groupId, final String roleId, final String resourceId,
                                                  DelegationFilterSearchBean delegationFilter) {
-        Criteria criteria = getCriteria();
-
-        if (StringUtils.isNotEmpty(groupId)) {
-            criteria.createAlias("groups", "g");
-            criteria.add(Restrictions.eq("g.id", groupId));
-        } else if (delegationFilter != null && CollectionUtils.isNotEmpty(delegationFilter.getGroupIdSet())) {
-            criteria.createAlias("groups", "g");
-            criteria.add(Restrictions.in("g.id", delegationFilter.getGroupIdSet()));
-        }
+        final Criteria criteria = getCriteria();
 
         if (StringUtils.isNotEmpty(roleId)) {
-            criteria.createAlias("roles", "r");
-            criteria.add(Restrictions.eq("r.id", roleId));
-        } else if (delegationFilter != null && CollectionUtils.isNotEmpty(delegationFilter.getRoleIdSet())) {
-            criteria.createAlias("roles", "r");
-            criteria.add(Restrictions.in("r.id", delegationFilter.getRoleIdSet()));
+        	criteria.createAlias("roles", "roleXrefs")
+					.createAlias("roleXrefs.entity", "role").add(
+							Restrictions.eq("role.id", roleId));
+        } else if (delegationFilter != null && CollectionUtils.isNotEmpty(delegationFilter.getRoleIdSet())) {    
+            criteria.createAlias("roles", "roleXrefs")
+					.createAlias("roleXrefs.entity", "role").add(
+					Restrictions.in("role.id", delegationFilter.getRoleIdSet()));
         }
+        
+        if (StringUtils.isNotEmpty(groupId)) {
+        	criteria.createAlias("groups", "groupXrefs")
+					.createAlias("groupXrefs.entity", "group").add(
+							Restrictions.eq("group.id", groupId));
+        } else if (delegationFilter != null && CollectionUtils.isNotEmpty(delegationFilter.getGroupIdSet())) {    
+            criteria.createAlias("groups", "groupXrefs")
+					.createAlias("groupXrefs.entity", "group").add(
+					Restrictions.in("group.id", delegationFilter.getGroupIdSet()));
+        }
+        
 
         if (StringUtils.isNotEmpty(resourceId)) {
-            criteria.createAlias("resources", "res").add(Restrictions.eq("res.id", resourceId));
+        	criteria.createAlias("resources", "resourceXrefs")
+					.createAlias("resourceXrefs.entity", "resource").add(
+							Restrictions.eq("resource.id", resourceId));
         }
 
         if (delegationFilter != null) {
-            if (CollectionUtils.isNotEmpty(delegationFilter.getOrganizationIdSet())) {
-                criteria.createAlias("affiliations", "aff").add(Restrictions.in("aff.id", delegationFilter.getOrganizationIdSet()));
+            if(CollectionUtils.isNotEmpty(delegationFilter.getOrganizationIdSet())){    
+                criteria.createAlias("affiliations", "affiliationXrefs")
+						.createAlias("affiliationXrefs.entity", "affiliation").add(
+						Restrictions.in("affiliation.id", delegationFilter.getOrganizationIdSet()));
             }
         }
         criteria.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
@@ -580,8 +603,11 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
     public List<String> getUserIdsForRoles(final Set<String> roleIds, final int from, final int size) {
         List<String> retVal = null;
         if (CollectionUtils.isNotEmpty(roleIds)) {
-            final Criteria criteria = getCriteria().createAlias("roles", "role").add(Restrictions.in("role.id", roleIds))
-                            .setProjection(Projections.property("id"));
+            final Criteria criteria = getCriteria().createAlias("roles", "roleXrefs")
+					   							   .createAlias("roleXrefs.entity", "role")
+					   							   .add(Restrictions.in("role.id", roleIds))
+					   							   .setProjection(Projections.property("id"));
+            
             if (from > -1) {
                 criteria.setFirstResult(from);
             }
@@ -593,13 +619,15 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         }
         return (retVal != null) ? retVal : Collections.EMPTY_LIST;
     }
-
+    
     @Override
     public List<String> getUserIdsForGroups(final Set<String> groupIds, final int from, final int size) {
         List<String> retVal = null;
         if (CollectionUtils.isNotEmpty(groupIds)) {
-            final Criteria criteria = getCriteria().createAlias("groups", "group").add(Restrictions.in("group.id", groupIds))
-                            .setProjection(Projections.property("id"));
+            final Criteria criteria = getCriteria().createAlias("groups", "groupXrefs")
+												   .createAlias("groupXrefs.entity", "group")
+												   .add(Restrictions.in("group.id", groupIds))
+												   .setProjection(Projections.property("id"));
             if (from > -1) {
                 criteria.setFirstResult(from);
             }
@@ -616,8 +644,10 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
     public List<String> getUserIdsForOrganizations(final Set<String> organizationIds, final int from, final int size) {
         List<String> retVal = null;
         if (CollectionUtils.isNotEmpty(organizationIds)) {
-            final Criteria criteria = getCriteria().createAlias("affiliations", "af").add(Restrictions.in("af.id", organizationIds))
-                            .setProjection(Projections.property("id"));
+            final Criteria criteria = getCriteria().createAlias("affiliations", "affiliationXrefs")
+												   .createAlias("affiliationXrefs.entity", "affiliation").add(
+												Restrictions.in("affiliation.id", organizationIds))
+													.setProjection(Projections.property("id"));
             if (from > -1) {
                 criteria.setFirstResult(from);
             }
@@ -634,7 +664,9 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
     public List<String> getUserIdsForResources(final Set<String> resourceIds, final int from, final int size) {
         List<String> retVal = null;
         if (CollectionUtils.isNotEmpty(resourceIds)) {
-            final Criteria criteria = getCriteria().createAlias("resources", "resource").add(Restrictions.in("resource.id", resourceIds))
+            final Criteria criteria = getCriteria().createAlias("resources", "resourceXrefs")
+												   .createAlias("resourceXrefs.entity", "resource")
+												   .add(Restrictions.in("resource.id", resourceIds))
                             .setProjection(Projections.property("id"));
             if (from > -1) {
                 criteria.setFirstResult(from);
@@ -727,7 +759,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
 
     private void addSorting(Criteria criteria, List<SortParam> sortParam) {
         for (SortParam sort: sortParam){
-            OrderConstants orderDir = (sort.getOrderBy()==null)?OrderConstants.ASC:sort.getOrderBy();
+            OrderConstants orderDir = (sort.getOrderBy() == null)?OrderConstants.ASC:sort.getOrderBy();
 
             if("name".equals(sort.getSortBy())){
                 criteria.addOrder(createOrder("firstName",orderDir));
@@ -747,21 +779,66 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
                 criteria.addOrder(createOrder("secondaryStatus",orderDir));
             }else if("principal".equals(sort.getSortBy())){
                 criteria.createAlias("principalList", "l", Criteria.LEFT_JOIN, Restrictions.eq("l.managedSysId", sysConfiguration.getDefaultManagedSysId()));
-
                 criteria.addOrder(createOrder("l.login", orderDir));
-            }else if("organization".equals(sort.getSortBy())
-                     || "department".equals(sort.getSortBy())){
-
-//                String typeId = ("organization".equals(sort.getSortBy()))?organizationTypeId: departmentTypeId;
-
-                criteria.createAlias("affiliations", "org", Criteria.LEFT_JOIN); //, Restrictions.eq("org.organizationType.id", typeId)
-//                criteria.add(Restrictions.or(Restrictions.eq("org.organizationTypeId", typeId), Restrictions.isNull("org.organizationTypeId")));
-//                criteria.createAlias("org.organizationType", "tp", Criteria.LEFT_JOIN, Restrictions.eq("tp.id", typeId));
-//                criteria.addOrder(createOrder("tp.name", orderDir));
-//                criteria.addOrder(createOrder("org.name", orderDir));
+            }else if("organization".equals(sort.getSortBy())){
+                criteria.createAlias("affiliations", "org", Criteria.LEFT_JOIN).add(
+                        Restrictions.or(Restrictions.isNull("org.organizationType.id"), Restrictions.eq("org.organizationType.id", organizationTypeId)));
+                criteria.addOrder(createOrder("org.name", orderDir));
+            }else if("department".equals(sort.getSortBy())) {
+                criteria.createAlias("affiliations", "dep", Criteria.LEFT_JOIN).add(
+                        Restrictions.or(Restrictions.isNull("dep.organizationType.id"), Restrictions.eq("dep.organizationType.id", departmentTypeId)));
+                criteria.addOrder(createOrder("dep.name", orderDir));
             } else {
                 criteria.addOrder(createOrder(sort.getSortBy(),orderDir));
             }
         }
     }
+
+    public  List<UserEntity> findByIds(List<String> idCollection, UserSearchBean searchBean, int from, int size){
+        if(CollectionUtils.isNotEmpty(idCollection)){
+            final Criteria criteria = super.getCriteria();
+            criteria.add(createInClauseForIds(criteria, idCollection));
+            criteria.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
+            if(CollectionUtils.isNotEmpty(searchBean.getSortBy())){
+                addSorting(criteria, searchBean.getSortBy());
+            }
+            if (from > -1 && size > -1) {
+                criteria.setFirstResult(from);
+                criteria.setMaxResults(size);
+            }
+            return criteria.list();
+        }
+        return Collections.EMPTY_LIST;
+    }
+
+    public int countByIds(List<String> idCollection) {
+        if (CollectionUtils.isNotEmpty(idCollection)) {
+            final Criteria criteria = super.getCriteria();
+            criteria.add(createInClauseForIds(criteria, idCollection));
+            return ((Number) criteria.setProjection(rowCount())
+                    .uniqueResult()).intValue();
+        }
+        return 0;
+    }
+
+    private Criterion createInClauseForIds(Criteria criteria, List<String> idCollection) {
+        if (idCollection.size() <= MAX_IN_CLAUSE) {
+            return Restrictions.in(getPKfieldName(), idCollection);
+        } else {
+            Disjunction orClause = Restrictions.disjunction();
+            int start = 0;
+            int end;
+            while (start < idCollection.size()) {
+                end = start + MAX_IN_CLAUSE;
+                if (end > idCollection.size()) {
+                    end = idCollection.size();
+                }
+                final String sql = criteria.getAlias() + "_.USER_ID in ('" + StringUtils.join(idCollection.subList(start, end), "','") + "')";
+                orClause.add(Restrictions.sqlRestriction(sql));
+                start = end;
+            }
+            return orClause;
+        }
+    }
+
 }

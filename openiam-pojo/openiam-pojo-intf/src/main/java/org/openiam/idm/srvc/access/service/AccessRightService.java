@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.access.service;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.openiam.idm.searchbeans.AccessRightSearchBean;
@@ -13,4 +14,5 @@ public interface AccessRightService {
 	AccessRightEntity get(String id);
 	List<AccessRightEntity> findBeans(final AccessRightSearchBean searchBean, final int from, final int size);
 	int count(AccessRightSearchBean searchBean);
+	List<AccessRightEntity> findByIds(Collection<String> ids);
 }
