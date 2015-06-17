@@ -35,6 +35,10 @@ public class AuthProviderTypeEntity extends KeyEntity {
     @Type(type = "yes_no")
     private boolean hasPrivateKey;
     
+    @Column(name="IS_CHAINABLE")
+    @Type(type = "yes_no")
+    private boolean chainable;
+    
     @OneToMany(mappedBy = "type", cascade = CascadeType.ALL,fetch = FetchType.LAZY)
     private Set<AuthAttributeEntity> attributeSet;
     
@@ -89,6 +93,14 @@ public class AuthProviderTypeEntity extends KeyEntity {
 		this.hasPrivateKey = hasPrivateKey;
 	}
 
+	public boolean isChainable() {
+		return chainable;
+	}
+
+	public void setChainable(boolean chainable) {
+		this.chainable = chainable;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -97,6 +109,7 @@ public class AuthProviderTypeEntity extends KeyEntity {
 				+ ((description == null) ? 0 : description.hashCode());
 		result = prime * result + (hasPrivateKey ? 1231 : 1237);
 		result = prime * result + (hasPublicKey ? 1231 : 1237);
+		result = prime * result + (chainable ? 1231 : 1237);
 		result = prime * result + (isActive ? 1231 : 1237);
 		return result;
 	}
@@ -118,6 +131,8 @@ public class AuthProviderTypeEntity extends KeyEntity {
 		if (hasPrivateKey != other.hasPrivateKey)
 			return false;
 		if (hasPublicKey != other.hasPublicKey)
+			return false;
+		if (chainable != other.chainable)
 			return false;
 		if (isActive != other.isActive)
 			return false;

@@ -1,5 +1,6 @@
 package org.openiam.am.srvc.ws;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.openiam.am.srvc.domain.AuthAttributeEntity;
@@ -27,6 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.jws.WebService;
+
 import java.util.*;
 
 @Service("authProviderWS")
@@ -257,7 +259,20 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
             		}
             	}
             }
-
+            /* new in 3.3.3 */
+            if(provider.isChained()) {
+            	if(StringUtils.isBlank(provider.getNextAuthProviderId())) {
+            		throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_CHAIN_REQUIRED);
+            	} else {
+            		final AuthProviderSearchBean sb = new AuthProviderSearchBean();
+            		sb.setKey(provider.getNextAuthProviderId());
+            		if(CollectionUtils.isEmpty(findAuthProviderBeans(sb, 1, 0))) {
+            			throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_CHAIN_REQUIRED);
+            		}
+            	}
+            }
+            /* end new in 3.3.3 */
+            	
             validateAndSyncProviderAttributes(provider);
 
             final AuthProviderEntity entity = authProviderDozerConverter.convertToEntity(provider, true);
@@ -331,6 +346,20 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
             		}
             	}
             }
+            
+            /* new in 3.3.3 */
+            if(provider.isChained()) {
+            	if(StringUtils.isBlank(provider.getNextAuthProviderId())) {
+            		throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_CHAIN_REQUIRED);
+            	} else {
+            		final AuthProviderSearchBean sb = new AuthProviderSearchBean();
+            		sb.setKey(provider.getNextAuthProviderId());
+            		if(CollectionUtils.isEmpty(findAuthProviderBeans(sb, 1, 0))) {
+            			throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_CHAIN_REQUIRED);
+            		}
+            	}
+            }
+            /* end new in 3.3.3 */
 
             validateAndSyncProviderAttributes(provider);
 
@@ -355,6 +384,12 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
         try {
             if(providerId==null || providerId.trim().isEmpty())
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+            
+            final AuthProviderSearchBean sb = new AuthProviderSearchBean();
+            sb.setNextAuthProviderId(providerId);
+            if(CollectionUtils.isNotEmpty(findAuthProviderBeans(sb, 1, 0))) {
+            	throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_CHAIN_REFERENCED);
+            }
 
             authProviderService.deleteAuthProvider(providerId);
         } catch(BasicDataServiceException e) {

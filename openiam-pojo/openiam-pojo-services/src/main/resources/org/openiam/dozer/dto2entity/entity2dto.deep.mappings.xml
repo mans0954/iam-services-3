@@ -1008,6 +1008,10 @@
             <a>resourceAttributeMap</a>
             <b>resourceAttributeMap</b>
         </field>
+        <field>
+        	<a>nextAuthProvider.providerId</a>
+        	<b>nextAuthProviderId</b>
+        </field>
     </mapping>
 
     <mapping>
