@@ -286,10 +286,7 @@ public abstract class AbstractPeoplesoftCommand<Request extends RequestType, Res
         statement.setString(3, email);
         statement.setString(4, "Y");
         int result = statement.executeUpdate();
-        if (result == 0) {
-            return false;
-        }
-        return true;
+        return result != 0;
 
     }
 
@@ -305,10 +302,7 @@ public abstract class AbstractPeoplesoftCommand<Request extends RequestType, Res
         statement.setString(5, BLANK_SPACE_STRING);
         statement.setString(6, BLANK_SPACE_STRING);
         int result = statement.executeUpdate();
-        if (result == 0) {
-            return false;
-        }
-        return true;
+        return result != 0;
 
     }
 
@@ -330,10 +324,7 @@ public abstract class AbstractPeoplesoftCommand<Request extends RequestType, Res
         statement.setString(10, BLANK_SPACE_STRING);
         statement.setString(11, BLANK_SPACE_STRING);
         int result = statement.executeUpdate();
-        if (result == 0) {
-            return false;
-        }
-        return true;
+        return result != 0;
 
     }
 
@@ -487,10 +478,7 @@ public abstract class AbstractPeoplesoftCommand<Request extends RequestType, Res
         statement.setString(5, BLANK_SPACE_STRING);
 
         int result = statement.executeUpdate();
-        if (result == 0) {
-            return false;
-        }
-        return true;
+        return result != 0;
 
     }
 
@@ -501,10 +489,7 @@ public abstract class AbstractPeoplesoftCommand<Request extends RequestType, Res
         PreparedStatement statement = connection.prepareStatement(sql);
         statement.setString(1, principalName);
         int result = statement.executeUpdate();
-        if (result == 0) {
-            return false;
-        }
-        return true;
+        return result != 0;
 
     }
 
@@ -516,10 +501,7 @@ public abstract class AbstractPeoplesoftCommand<Request extends RequestType, Res
         statement.setString(1, principalName);
         statement.setString(2, "PT_SC_PGT_MAIN_MENU");
         int result = statement.executeUpdate();
-        if (result == 0) {
-            return false;
-        }
-        return true;
+        return result != 0;
 
     }
 

@@ -14,7 +14,7 @@ public class UserNoteSetAdapter extends XmlAdapter<UserNoteSet, Set<UserNote>> {
         if (b == null) return v;
 
         for (Iterator<UserNote> iterator = b.iterator(); iterator.hasNext(); ) {
-            UserNote userNote = (UserNote) iterator.next();
+            UserNote userNote = iterator.next();
             UserNoteSet.UserNoteItem item = new UserNoteSet.UserNoteItem();
             item.setUserNote(userNote);
             v.getUserNoteItem().add(item);
@@ -29,7 +29,7 @@ public class UserNoteSetAdapter extends XmlAdapter<UserNoteSet, Set<UserNote>> {
 
         List<UserNoteSet.UserNoteItem> l = v.getUserNoteItem();
         for (Iterator<UserNoteSet.UserNoteItem> iterator = l.iterator(); iterator.hasNext(); ) {
-            UserNoteSet.UserNoteItem item = (UserNoteSet.UserNoteItem) iterator.next();
+            UserNoteSet.UserNoteItem item = iterator.next();
             b.add(item.getUserNote());
         }
         return b;

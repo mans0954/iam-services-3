@@ -28,7 +28,7 @@ public class SuspendUserAppTableCommand extends AbstractAppTableCommand<SuspendR
         AppTableConfiguration configuration = this.getConfiguration(suspendRequest.getTargetID());
         Connection con = this.getConnection(configuration.getManagedSys());
 
-        final String password = passwordGenerator.generatePassword(10);
+        final String password = PasswordGenerator.generatePassword(10);
 
         PreparedStatement statement = null;
         try {

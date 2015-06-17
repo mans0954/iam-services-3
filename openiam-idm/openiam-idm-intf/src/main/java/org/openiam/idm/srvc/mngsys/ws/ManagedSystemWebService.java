@@ -26,7 +26,7 @@ public interface ManagedSystemWebService {
      * @return
      */
     @WebMethod
-    public Integer getManagedSystemsCount(
+    Integer getManagedSystemsCount(
             @WebParam(name = "searchBean", targetNamespace = "") ManagedSysSearchBean searchBean);
 
     /**
@@ -109,16 +109,16 @@ public interface ManagedSystemWebService {
      * @return the managed system object match[]
      */
     @WebMethod
-    public ManagedSystemObjectMatch[] managedSysObjectParam(
+    ManagedSystemObjectMatch[] managedSysObjectParam(
             @WebParam(name = "managedSystemId", targetNamespace = "") String managedSystemId,
             @WebParam(name = "objectType", targetNamespace = "") String objectType);
 
     @WebMethod
-    public Response saveManagedSystemObjectMatch(
+    Response saveManagedSystemObjectMatch(
             @WebParam(name = "obj", targetNamespace = "") ManagedSystemObjectMatch obj);
 
     @WebMethod
-    public void removeManagedSystemObjectMatch(
+    void removeManagedSystemObjectMatch(
             @WebParam(name = "obj", targetNamespace = "") ManagedSystemObjectMatch obj);
 
     /**
@@ -199,7 +199,7 @@ public interface ManagedSystemWebService {
     List<AttributeMap> getAttributeMapsByManagedSysId(String managedSysId);
 
     @WebMethod
-    public List<AttributeMap> findResourceAttributeMaps(
+    List<AttributeMap> findResourceAttributeMaps(
             @WebParam(name = "searchBean", targetNamespace = "") AttributeMapSearchBean searchBean);
 
     /**
@@ -214,14 +214,14 @@ public interface ManagedSystemWebService {
     List<DefaultReconciliationAttributeMap> getAllDefaultReconcileMap();
 
     @WebMethod
-    public Response saveApproverAssociations(final List<ApproverAssociation> approverAssociationList, final AssociationType type, final String entityId);
+    Response saveApproverAssociations(final List<ApproverAssociation> approverAssociationList, final AssociationType type, final String entityId);
     
     @WebMethod
-    public Response saveApproverAssociation(
+    Response saveApproverAssociation(
             final @WebParam(name = "approverAssociation", targetNamespace = "") ApproverAssociation approverAssociation);
 
     @WebMethod
-    public List<ApproverAssociation> getApproverAssociations(
+    List<ApproverAssociation> getApproverAssociations(
             final @WebParam(name = "approverAssociation", targetNamespace = "") ApproverAssocationSearchBean searchBean,
             final @WebParam(name = "from", targetNamespace = "") int from,
             final @WebParam(name = "size", targetNamespace = "") int size);

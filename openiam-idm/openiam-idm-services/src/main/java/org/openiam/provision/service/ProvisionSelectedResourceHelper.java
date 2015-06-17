@@ -371,7 +371,7 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
                                 // attribute is not in the list
 
                                 newAttr = new ExtensibleAttribute(attr.getAttributeName(),
-                                        ((Integer) output).toString(), -1, attr.getDataType().getValue());
+                                        output.toString(), -1, attr.getDataType().getValue());
                                 newAttr.setObjectType(objectType);
                                 extUser.getAttributes().add(newAttr);
 

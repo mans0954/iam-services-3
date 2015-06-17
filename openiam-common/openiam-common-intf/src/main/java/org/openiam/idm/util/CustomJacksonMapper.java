@@ -30,7 +30,7 @@ public class CustomJacksonMapper extends ObjectMapper {
 	
 	private class StringDeserializer extends JsonDeserializer<String> {
         @Override
-        public String deserialize(JsonParser parser, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+        public String deserialize(JsonParser parser, DeserializationContext ctxt) throws IOException {
             String str = StringUtils.trimToNull(parser.getText());
             return str;
         }

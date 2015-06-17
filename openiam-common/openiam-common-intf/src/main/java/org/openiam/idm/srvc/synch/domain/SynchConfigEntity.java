@@ -546,9 +546,8 @@ public class SynchConfigEntity implements Serializable {
         if (!postSyncScript.equals(that.postSyncScript)) return false;
         if (!validationRule.equals(that.validationRule)) return false;
         if (wsScript != null ? !wsScript.equals(that.wsScript) : that.wsScript != null) return false;
-        if (wsUrl != null ? !wsUrl.equals(that.wsUrl) : that.wsUrl != null) return false;
+        return !(wsUrl != null ? !wsUrl.equals(that.wsUrl) : that.wsUrl != null);
 
-        return true;
     }
 
     @Override

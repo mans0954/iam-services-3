@@ -434,8 +434,7 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
         if (minAuthLevel != null ? !minAuthLevel.equals(that.minAuthLevel) : that.minAuthLevel != null) return false;
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
         if (resourceType != null ? !resourceType.equals(that.resourceType) : that.resourceType != null) return false;
-        if (risk != that.risk) return false;
-        return true;
+        return risk == that.risk;
     }
 
     @Override

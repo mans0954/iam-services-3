@@ -16,7 +16,7 @@ public class RoleSetAdapter extends XmlAdapter<RoleSet, Set<Role>> {
         if (b == null) return v;
 
         for (Iterator<Role> iterator = b.iterator(); iterator.hasNext(); ) {
-            Role role = (Role) iterator.next();
+            Role role = iterator.next();
             RoleSet.RoleObj obj = new RoleSet.RoleObj();
             obj.setRole(role);
             v.getRoleObj().add(obj);
@@ -31,7 +31,7 @@ public class RoleSetAdapter extends XmlAdapter<RoleSet, Set<Role>> {
 
         List<RoleSet.RoleObj> l = v.getRoleObj();
         for (Iterator<RoleSet.RoleObj> iterator = l.iterator(); iterator.hasNext(); ) {
-            RoleSet.RoleObj obj = (RoleSet.RoleObj) iterator.next();
+            RoleSet.RoleObj obj = iterator.next();
             b.add(obj.getRole());
         }
         return b;

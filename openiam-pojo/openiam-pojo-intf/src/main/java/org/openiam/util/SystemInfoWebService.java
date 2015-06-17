@@ -9,31 +9,31 @@ import javax.servlet.ServletContext;
 public interface SystemInfoWebService {
 
     @WebMethod
-    public Boolean isDevelopmentMode();
+    Boolean isDevelopmentMode();
 
     @WebMethod
-    public String getWarManifestInfo(@WebParam(name = "attrName", targetNamespace = "") String attrName);
+    String getWarManifestInfo(@WebParam(name = "attrName", targetNamespace = "") String attrName);
 
     @WebMethod
-    public String getJarManifestInfo(@WebParam(name = "resName", targetNamespace = "") String resName,
-                                  @WebParam(name = "attrName", targetNamespace = "") String attrName);
+    String getJarManifestInfo(@WebParam(name = "resName", targetNamespace = "") String resName,
+                              @WebParam(name = "attrName", targetNamespace = "") String attrName);
 
     @WebMethod
-    public String getOsInfo(@WebParam(name = "param", targetNamespace = "") String param);
+    String getOsInfo(@WebParam(name = "param", targetNamespace = "") String param);
 
     @WebMethod
-    public String getJavaInfo(@WebParam(name = "param", targetNamespace = "") String param);
+    String getJavaInfo(@WebParam(name = "param", targetNamespace = "") String param);
 
     @WebMethod
-    public String getMemInfo(@WebParam(name = "param", targetNamespace = "") String param);
+    String getMemInfo(@WebParam(name = "param", targetNamespace = "") String param);
 
     @WebMethod
-    public Boolean isWindows();
+    Boolean isWindows();
 
     @WebMethod
-    public Boolean isLinux();
+    Boolean isLinux();
     
     @WebMethod
-    public String getProjectVersion();
+    String getProjectVersion();
 
 }

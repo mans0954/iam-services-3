@@ -32,6 +32,6 @@ public interface CategoryDAO extends BaseDao<CategoryEntity, String> {
      * @param catIdList
      * @return
      */
-    public int removeGroupList(String catIdList);
+    int removeGroupList(String catIdList);
 
 }

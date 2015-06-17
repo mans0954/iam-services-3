@@ -73,10 +73,7 @@ public class DelegationFilterSearch implements Serializable {
     }
 
     public boolean isEmpty() {
-        if (role.isEmpty() && orgFilter == null) {
-            return true;
-        }
-        return false;
+        return role.isEmpty() && orgFilter == null;
     }
 
 }

@@ -172,10 +172,9 @@ public class ProvisionConnectorDto implements java.io.Serializable {
         if (serviceUrl != null ? !serviceUrl.equals(that.serviceUrl) : that.serviceUrl != null) return false;
         if (stdComplianceLevel != null ? !stdComplianceLevel.equals(that.stdComplianceLevel) : that.stdComplianceLevel != null)
             return false;
-        if (wsdlUrl != null ? !wsdlUrl.equals(that.wsdlUrl) : that.wsdlUrl != null) return false;
+		return !(wsdlUrl != null ? !wsdlUrl.equals(that.wsdlUrl) : that.wsdlUrl != null);
 
-        return true;
-    }
+	}
 
     @Override
     public int hashCode() {

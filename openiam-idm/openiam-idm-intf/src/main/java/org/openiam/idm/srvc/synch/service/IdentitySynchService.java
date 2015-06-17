@@ -74,6 +74,6 @@ public interface IdentitySynchService {
 
     List<AttributeMapEntity> getSynchConfigAttributeMaps(AttributeMapSearchBean searchBean);
 
-    public void deleteAttributesMapList(List<AttributeMapEntity> attrMap);
+    void deleteAttributesMapList(List<AttributeMapEntity> attrMap);
 
 }

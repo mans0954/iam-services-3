@@ -18,5 +18,5 @@ public enum ExtensibleObjectType {
     @XmlEnumValue("PHONE")
     PHONE,
     @XmlEnumValue("GROUP")
-    GROUP;
+    GROUP
 }

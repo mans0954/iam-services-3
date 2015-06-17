@@ -112,8 +112,7 @@ public class GroupAttributeEntity extends AbstractAttributeEntity {
 				return false;
 		} else if (!value.equals(other.value))
 			return false;
-        if (isMultivalued != other.isMultivalued) return false;
-		return true;
+		return isMultivalued == other.isMultivalued;
 	}
 
 	@Override

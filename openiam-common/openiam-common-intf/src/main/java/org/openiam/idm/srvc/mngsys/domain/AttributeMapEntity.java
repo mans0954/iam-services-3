@@ -279,10 +279,8 @@ public class AttributeMapEntity implements java.io.Serializable {
         if (mapForObjectType != null ? !mapForObjectType.equals(entity.mapForObjectType) : entity.mapForObjectType != null)
             return false;
         if (resourceId != null ? !resourceId.equals(entity.resourceId) : entity.resourceId != null) return false;
-        if (targetAttributeName != null ? !targetAttributeName.equals(entity.targetAttributeName) : entity.targetAttributeName != null)
-            return false;
+        return !(targetAttributeName != null ? !targetAttributeName.equals(entity.targetAttributeName) : entity.targetAttributeName != null);
 
-        return true;
     }
 
     @Override

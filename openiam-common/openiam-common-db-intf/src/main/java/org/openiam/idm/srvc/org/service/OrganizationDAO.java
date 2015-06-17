@@ -23,12 +23,12 @@ public interface OrganizationDAO extends BaseDao<OrganizationEntity, String> {
     int getNumOfParentOrganizations(String orgId, Set<String> filter);
     List<OrganizationEntity> getParentOrganizations(String orgId, Set<String> filter, final int from, final int size);
     
-    public List<OrganizationEntity> getOrganizationsForUser(final String userId, final Set<String> filter, final int from, final int size);
-    public int getNumOfOrganizationsForUser(final String userId, final Set<String> filter);
+    List<OrganizationEntity> getOrganizationsForUser(final String userId, final Set<String> filter, final int from, final int size);
+    int getNumOfOrganizationsForUser(final String userId, final Set<String> filter);
 
-    public List<Org2OrgXrefEntity> getOrgToOrgXrefList();
+    List<Org2OrgXrefEntity> getOrgToOrgXrefList();
 
-    public List<OrganizationEntity> findAllByTypesAndIds(Set<String> allowedOrgTypes, Set<String> filterData);
+    List<OrganizationEntity> findAllByTypesAndIds(Set<String> allowedOrgTypes, Set<String> filterData);
 
 
 }

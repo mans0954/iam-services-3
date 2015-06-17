@@ -10,5 +10,5 @@ import org.openiam.exception.BasicDataServiceException;
  * To change this template use File | Settings | File Templates.
  */
 public interface EntityValidator {
-    public <T> boolean isValid(T entity) throws BasicDataServiceException;
+    <T> boolean isValid(T entity) throws BasicDataServiceException;
 }

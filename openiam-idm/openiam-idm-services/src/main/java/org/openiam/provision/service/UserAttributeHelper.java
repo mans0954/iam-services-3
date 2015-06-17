@@ -111,7 +111,7 @@ public class UserAttributeHelper {
         }
 
         // get the user attributes
-        Map<String, UserAttribute> userAttr = (Map<String, UserAttribute>) pUser
+        Map<String, UserAttribute> userAttr = pUser
                 .getUserAttributes();
         Collection<UserAttribute> attrCol = userAttr.values();
         for (UserAttribute attr : attrCol) {
@@ -261,7 +261,7 @@ public class UserAttributeHelper {
         determineUserChanges(extUser, user, origUser2);
 
         // get the user attributes
-        Map<String, UserAttribute> userAttr = (Map<String, UserAttribute>) pUser
+        Map<String, UserAttribute> userAttr = pUser
                 .getUserAttributes();
         Collection<UserAttribute> attrCol = userAttr.values();
         for (UserAttribute attr : attrCol) {
@@ -303,7 +303,7 @@ public class UserAttributeHelper {
             extUser.getAttributes().add(extAttr);
         }
         // check if we have attributes in the original that we dont have here
-        Map<String, UserAttribute> origUserAttr = (Map<String, UserAttribute>) origUser2
+        Map<String, UserAttribute> origUserAttr = origUser2
                 .getUserAttributes();
         Collection<UserAttribute> origUserAttrCol = origUserAttr.values();
         User newUser = pUser.getUser();
@@ -918,7 +918,7 @@ public class UserAttributeHelper {
     }
 
     public void setLoginManager(LoginDataService loginManager) {
-        this.loginManager = loginManager;
+        UserAttributeHelper.loginManager = loginManager;
     }
 
 }

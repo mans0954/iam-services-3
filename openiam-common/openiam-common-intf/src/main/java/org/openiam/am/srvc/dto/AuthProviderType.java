@@ -212,9 +212,7 @@ public class AuthProviderType extends KeyNameDTO {
 			return false;
 		if (hasAuthnPolicy != other.hasAuthnPolicy)
 			return false;
-		if (authnPolicyRequired != other.authnPolicyRequired)
-			return false;
-		return true;
+		return authnPolicyRequired == other.authnPolicyRequired;
 	}
 
 	

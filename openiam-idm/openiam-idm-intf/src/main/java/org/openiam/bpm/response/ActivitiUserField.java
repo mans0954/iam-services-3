@@ -10,6 +10,6 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Target({METHOD, FIELD})
 @Retention(RUNTIME)
 public @interface ActivitiUserField {
-	public String value();
-	public boolean exposeDetails();
+	String value();
+	boolean exposeDetails();
 }

@@ -1077,9 +1077,8 @@ public class UserEntity extends KeyEntity {
         if (createdBy != null ? !createdBy.equals(that.createdBy) : that.createdBy != null) return false;
         if (employeeId != null ? !employeeId.equals(that.employeeId) : that.employeeId != null) return false;
         if (nickname != null ? !nickname.equals(that.nickname) : that.nickname != null) return false;
-        if (id != null ? !id.equals(that.id) : that.id != null) return false;
+        return !(id != null ? !id.equals(that.id) : that.id != null);
 
-        return true;
     }
 
     @Override

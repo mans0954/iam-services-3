@@ -111,9 +111,8 @@ public class ManagedSystemObjectMatchEntity implements Serializable {
         if (managedSys != null ? !managedSys.equals(that.managedSys) : that.managedSys != null) return false;
         if (objectSearchId != null ? !objectSearchId.equals(that.objectSearchId) : that.objectSearchId != null)
             return false;
-        if (objectType != null ? !objectType.equals(that.objectType) : that.objectType != null) return false;
+        return !(objectType != null ? !objectType.equals(that.objectType) : that.objectType != null);
 
-        return true;
     }
 
     @Override

@@ -5,5 +5,5 @@ import org.openiam.idm.srvc.ui.theme.domain.UIThemeEntity;
 
 public interface UIThemeDAO extends BaseDao<UIThemeEntity, String> {
 
-	public UIThemeEntity getByName(final String name);
+	UIThemeEntity getByName(final String name);
 }

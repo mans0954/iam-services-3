@@ -41,7 +41,7 @@ public interface AsynchUserProvisionService {
 	 * The addUser operation enables a requestor to create a new user on the target systems
 	 */
 	@WebMethod
-	public void addUser(
+    void addUser(
             @WebParam(name = "user", targetNamespace = "")
             ProvisionUser user);
 	
@@ -49,12 +49,12 @@ public interface AsynchUserProvisionService {
 	 * The modifyUser operation enables the requestor to modify an existing user in appropriate target systems
 	 */
 	@WebMethod
-	public void modifyUser(
+    void modifyUser(
             @WebParam(name = "user", targetNamespace = "")
             ProvisionUser user);
 
     @WebMethod
-    public void startBulkOperation(
+    void startBulkOperation(
             @WebParam(name = "bulkRequest", targetNamespace = "")
             BulkOperationRequest bulkRequest);
 }

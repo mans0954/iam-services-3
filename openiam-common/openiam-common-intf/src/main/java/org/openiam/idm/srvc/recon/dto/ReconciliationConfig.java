@@ -369,10 +369,8 @@ public class ReconciliationConfig implements MatchConfig, java.io.Serializable {
         if (searchFilter != null ? !searchFilter.equals(that.searchFilter) : that.searchFilter != null) return false;
         if (targetSystemMatchScript != null ? !targetSystemMatchScript.equals(that.targetSystemMatchScript) : that.targetSystemMatchScript != null)
             return false;
-        if (targetSystemSearchFilter != null ? !targetSystemSearchFilter.equals(that.targetSystemSearchFilter) : that.targetSystemSearchFilter != null)
-            return false;
+        return !(targetSystemSearchFilter != null ? !targetSystemSearchFilter.equals(that.targetSystemSearchFilter) : that.targetSystemSearchFilter != null);
 
-        return true;
     }
 
     @Override

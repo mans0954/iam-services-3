@@ -809,7 +809,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
                                 // attribute is not in the list
 
                                 newAttr = new ExtensibleAttribute(attr.getAttributeName(),
-                                        ((Integer) output).toString(), -1, attr.getDataType().getValue());
+                                        output.toString(), -1, attr.getDataType().getValue());
                                 newAttr.setObjectType(objectType);
                                 extensibleObject.getAttributes().add(newAttr);
 

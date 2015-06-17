@@ -309,7 +309,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
             user.setId(val.getParentId());
             entity.setParent(user);
             userManager.addPhone(entity);
-            response.setResponseValue((String)entity.getId());
+            response.setResponseValue(entity.getId());
         } catch (BasicDataServiceException e) {
             response.setErrorCode(e.getCode());
             response.setStatus(ResponseStatus.FAILURE);

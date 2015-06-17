@@ -22,24 +22,24 @@ import java.util.Set;
 public interface RoleDataService {
 
 	@Deprecated
-    public RoleEntity getRole(String roleId);
+    RoleEntity getRole(String roleId);
 	
 	@Deprecated
-    public RoleEntity getRole(String roleId, String requesterId);
+    RoleEntity getRole(String roleId, String requesterId);
 	
 	@Deprecated
-    public RoleEntity getRoleByName(final String roleName, String requesterId);
+    RoleEntity getRoleByName(final String roleName, String requesterId);
     
 
-    public Role getRoleDtoByName(final String roleName, String requesterId);
+    Role getRoleDtoByName(final String roleName, String requesterId);
 
-    public RoleEntity getRoleLocalized(final String roleId, final String requestorId, final LanguageEntity language);
+    RoleEntity getRoleLocalized(final String roleId, final String requestorId, final LanguageEntity language);
     
-    public void saveRole(final RoleEntity role, final String requestorId) throws BasicDataServiceException;
+    void saveRole(final RoleEntity role, final String requestorId) throws BasicDataServiceException;
 
-    public void addRequiredAttributes(RoleEntity role);
+    void addRequiredAttributes(RoleEntity role);
     
-    public void removeRole(String roleId);
+    void removeRole(String roleId);
 
 
     /** * Attribute Methods ****** */
@@ -68,10 +68,10 @@ public interface RoleDataService {
      * @return
      */
     @Deprecated
-     public List<RoleEntity> getRolesInGroup(String groupId, String requesterId, final int from, final int size);
+    List<RoleEntity> getRolesInGroup(String groupId, String requesterId, final int from, final int size);
     
     @Deprecated
-     public int getNumOfRolesForGroup(final String groupId, String requesterId);
+    int getNumOfRolesForGroup(final String groupId, String requesterId);
 
 
     /**
@@ -85,9 +85,9 @@ public interface RoleDataService {
      * @param groupId  The group for which the roleId is to be added .
      * @param roleId The roleId which is to be added to the group.
      */
-    public void addGroupToRole(String roleId, String groupId);
+    void addGroupToRole(String roleId, String groupId);
     
-    public void validateGroup2RoleAddition(String roleId, String groupId) throws BasicDataServiceException;
+    void validateGroup2RoleAddition(String roleId, String groupId) throws BasicDataServiceException;
 
     /**
      * Removes the association between a single group and role.
@@ -95,17 +95,17 @@ public interface RoleDataService {
      * @param roleId
      * @param groupId
      */
-    public void removeGroupFromRole(String roleId, String groupId);
+    void removeGroupFromRole(String roleId, String groupId);
 
 
     @Deprecated
-    public List<RoleEntity> getRolesForUser(final String userId, String requesterId, final int from, final int size);
+    List<RoleEntity> getRolesForUser(final String userId, String requesterId, final int from, final int size);
 
-    public List<Role> getRolesDtoForUser(final String userId, String requesterId, final int from, final int size);
+    List<Role> getRolesDtoForUser(final String userId, String requesterId, final int from, final int size);
 
     
     @Deprecated
-    public int getNumOfRolesForUser(final String userId, String requesterId);
+    int getNumOfRolesForUser(final String userId, String requesterId);
 
     /**
      * Adds a user to a role using the UserRole object. Similar to addUserToRole, but allows you to update attributes likes start and end date.
@@ -123,7 +123,7 @@ public interface RoleDataService {
      * @param roleId   The roleId to which the user will be associated.
      * @param userId   The userId to which the roleId is to be added .
      */
-    public void addUserToRole(String roleId, String userId);
+    void addUserToRole(String roleId, String userId);
 
     /**
      * This method removes a particular user directly to a role.
@@ -131,7 +131,7 @@ public interface RoleDataService {
      * @param roleId
      * @param userId
      */
-    public void removeUserFromRole(String roleId, String userId);
+    void removeUserFromRole(String roleId, String userId);
 
 //    /**
 //     * Return an array of users that are in a particular role
@@ -148,7 +148,7 @@ public interface RoleDataService {
      * @param userId
      * @return
      */
-    public List<RoleEntity> getUserRoles(final String userId, String requesterId, final int from, final int size);
+    List<RoleEntity> getUserRoles(final String userId, String requesterId, final int from, final int size);
 
     /**
      * Returns a list of roles that a user belongs to. Roles can be hierarchical and this operation traverses the tree to roles that are in the
@@ -157,46 +157,46 @@ public interface RoleDataService {
      * @param userId
      * @return
      */
-    public List<Role> getUserRolesAsFlatList(final String userId);
+    List<Role> getUserRolesAsFlatList(final String userId);
     
-    public List<RoleEntity> findBeans(final RoleSearchBean searchBean, final String requesterId, final int from, final int size);
+    List<RoleEntity> findBeans(final RoleSearchBean searchBean, final String requesterId, final int from, final int size);
     
-    public int countBeans(final RoleSearchBean searchBean, final String requesterId);
+    int countBeans(final RoleSearchBean searchBean, final String requesterId);
 
-    public List<RoleEntity> findRolesByAttributeValue(String attrName, String attrValue);
+    List<RoleEntity> findRolesByAttributeValue(String attrName, String attrValue);
     
     @Deprecated
-    public List<RoleEntity> getRolesForResource(final String resourceId, final String requesterId, final int from, final int size);
+    List<RoleEntity> getRolesForResource(final String resourceId, final String requesterId, final int from, final int size);
     
     @Deprecated
-    public int getNumOfRolesForResource(final String resourceId, final String requesterId);
+    int getNumOfRolesForResource(final String resourceId, final String requesterId);
     
     @Deprecated
-    public List<RoleEntity> getChildRoles(final String roleId, final String requesterId, final int from, final int size);
+    List<RoleEntity> getChildRoles(final String roleId, final String requesterId, final int from, final int size);
     @Deprecated
-    public int getNumOfChildRoles(final String roleId, final String requesterId);
-    public void addChildRole(final String roleId, final String childRoleId, final Set<String> rights);
-    public void removeChildRole(final String roleId, final String childRoleId);
+    int getNumOfChildRoles(final String roleId, final String requesterId);
+    void addChildRole(final String roleId, final String childRoleId, final Set<String> rights);
+    void removeChildRole(final String roleId, final String childRoleId);
     
     @Deprecated
-    public List<RoleEntity> getParentRoles(final String roleId, final String requesterId, final int from, final int size);
+    List<RoleEntity> getParentRoles(final String roleId, final String requesterId, final int from, final int size);
     
     @Deprecated
-    public int getNumOfParentRoles(final String roleId, final String requesterId);
+    int getNumOfParentRoles(final String roleId, final String requesterId);
 
-    public void validateRole2RoleAddition(final String parentId, final String memberId, final Set<String> rights) throws BasicDataServiceException;
+    void validateRole2RoleAddition(final String parentId, final String memberId, final Set<String> rights) throws BasicDataServiceException;
     
-    public Role getRoleDTO(final String roleId);
+    Role getRoleDTO(final String roleId);
 
-    public List<RoleAttribute> getRoleAttributes(final String roleId);
+    List<RoleAttribute> getRoleAttributes(final String roleId);
 
-    public void addAttribute(RoleAttributeEntity attribute);
-    public void updateAttribute(RoleAttributeEntity attribute);
+    void addAttribute(RoleAttributeEntity attribute);
+    void updateAttribute(RoleAttributeEntity attribute);
 
 
     List<TreeObjectId> getRolesWithSubRolesIds(List<String> roleIds, final String requesterId);
 
     void rebuildRoleHierarchyCache();
     
-    public boolean hasChildEntities(String roleId);
+    boolean hasChildEntities(String roleId);
 }

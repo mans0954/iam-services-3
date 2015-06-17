@@ -12,14 +12,14 @@ public interface AuthorizationManagerHessianService {
 	 * @param resourceId - ID of the Resource
 	 * @return true if the User has access to this Resource, false otherwise
 	 */
-	public boolean isUserWithIdEntitledToResourceWithId(final String userId, final String resourceId);
+	boolean isUserWithIdEntitledToResourceWithId(final String userId, final String resourceId);
 	
 	/**
 	 * @param userId - ID of the User
 	 * @param resourceName - Name of the Resource
 	 * @return true if the user has access to this Resource, false otherwise
 	 */
-	public boolean isUserWithIdEntitledToResourceWithName(final String userId, final String resourceName);
+	boolean isUserWithIdEntitledToResourceWithName(final String userId, final String resourceName);
 	
 	/**
 	 * @param login - login used by the user
@@ -27,7 +27,7 @@ public interface AuthorizationManagerHessianService {
 	 * @param resourceId - ID of the Resource
 	 * @return true if the user has access to this Resource, false otherwise
 	 */
-	public boolean isUserWithLoginEntitledToResourceWithId(final String login, final String managedSysId, final String resourceId);
+	boolean isUserWithLoginEntitledToResourceWithId(final String login, final String managedSysId, final String resourceId);
 	
 	/**
 	 * @param login - login used by the user
@@ -35,21 +35,21 @@ public interface AuthorizationManagerHessianService {
 	 * @param resourceName - Name of the Resource
 	 * @return true if the user has access to this Resource, false otherwise
 	 */
-	public boolean isUserWithLoginEntitledToResourceWithName(final String login, final String managedSysId, final String resourceName);
+	boolean isUserWithLoginEntitledToResourceWithName(final String login, final String managedSysId, final String resourceName);
 	
 	/**
 	 * @param userId - ID of the User
 	 * @param groupId - ID of the Group
 	 * @return true if the User is part of the Group, false otherwise
 	 */
-	public boolean isUserWithIdMemberOfGroupWithId(final String userId, final String groupId);
+	boolean isUserWithIdMemberOfGroupWithId(final String userId, final String groupId);
 	
 	/**
 	 * @param userId - ID of the User
 	 * @param groupName - Name of the Group
 	 * @return true if the User is part of the Group, false otherwise
 	 */
-	public boolean isUserWithIdMemberOfGroupWithName(final String userId, final String groupName);
+	boolean isUserWithIdMemberOfGroupWithName(final String userId, final String groupName);
 	
 	/**
 	 * @param login - login used by the user
@@ -57,7 +57,7 @@ public interface AuthorizationManagerHessianService {
 	 * @param groupId - ID of the group
 	 * @return true if the User is part of the Group, false otherwise
 	 */
-	public boolean isUserWithLoginMemberOfGroupWithId(final String login, final String managedSysId, final String groupId);
+	boolean isUserWithLoginMemberOfGroupWithId(final String login, final String managedSysId, final String groupId);
 	
 	/**
 	 * @param login - login used by the user
@@ -65,21 +65,21 @@ public interface AuthorizationManagerHessianService {
 	 * @param groupName - Name of the group
 	 * @return true if the User is part of the Group, false otherwise
 	 */
-	public boolean isUserWithLoginMemberOfGroupWithName(final String login, final String managedSysId, final String groupName);
+	boolean isUserWithLoginMemberOfGroupWithName(final String login, final String managedSysId, final String groupName);
 	
 	/**
 	 * @param userId - ID of the User
 	 * @param roleId - ID of the Role
 	 * @return true if the User is part of the Role, false otherwise
 	 */
-	public boolean isUserWithIdMemberOfRoleWithId(final String userId, final String roleId);
+	boolean isUserWithIdMemberOfRoleWithId(final String userId, final String roleId);
 	
 	/**
 	 * @param userId - ID of the User
 	 * @param roleName - Name of the Role
 	 * @return true if the User is part of the Role, false otherwise
 	 */
-	public boolean isUserWithIdMemberOfRoleWithName(final String userId, final String roleName);
+	boolean isUserWithIdMemberOfRoleWithName(final String userId, final String roleName);
 	
 	/**
 	 * @param login - login used by the user
@@ -87,7 +87,7 @@ public interface AuthorizationManagerHessianService {
 	 * @param roleId - ID of the Role
 	 * @return true if the User is part of the Role, false otherwise
 	 */
-	public boolean isUserWithLoginMemberOfRoleWithId(final String login, final String managedSysId, final String roleId);
+	boolean isUserWithLoginMemberOfRoleWithId(final String login, final String managedSysId, final String roleId);
 	
 	/**
 	 * @param login - login used by the user
@@ -95,83 +95,83 @@ public interface AuthorizationManagerHessianService {
 	 * @param roleName - Name of the Role
 	 * @return true if the User is part of the Role, false otherwise 
 	 */
-	public boolean isUserWithLoginMemberOfRoleWithName(final String login, final String managedSysId, final String roleName);
+	boolean isUserWithLoginMemberOfRoleWithName(final String login, final String managedSysId, final String roleName);
 	
 	/**
 	 * @param userId - ID of the User
 	 * @return the Resource IDs that this User is entitled to
 	 */
-	public String[] getResourceIdsForUserWithId(final String userId);
+	String[] getResourceIdsForUserWithId(final String userId);
 	
 	/**
 	 * @param login - login used by the user
 	 * @param managedSysId - managedSysId of this login
 	 * @return the Resource IDs that this User is entitled to
 	 */
-	public String[] getResourceIdsForUserWithLogin(final String login, final String managedSysId);
+	String[] getResourceIdsForUserWithLogin(final String login, final String managedSysId);
 	
 	/**
 	 * @param userId - ID of the User
 	 * @return the Resource Names that this User is entitled to
 	 */
-	public String[] getResourceNamesForUserWithId(final String userId);
+	String[] getResourceNamesForUserWithId(final String userId);
 	
 	/**
 	 * @param login - login used by the user
 	 * @param managedSysId - managedSysId of this login
 	 * @return the Resource Names that this User is entitled to
 	 */
-	public String[] getResourceNamesForUserWithLogin(final String login, final String managedSysId);
+	String[] getResourceNamesForUserWithLogin(final String login, final String managedSysId);
 	
 	/**
 	 * @param userId - ID of the User
 	 * @return the Group IDs that this User is a member of
 	 */
-	public String[] getGroupIdsForUserWithId(final String userId);
+	String[] getGroupIdsForUserWithId(final String userId);
 	
 	/**
 	 * @param login - login used by the user
 	 * @param managedSysId - managedSysId of this login
 	 * @return the Group IDs that this User is a member of
 	 */
-	public String[] getGroupIdsForUserWithLogin(final String login, final String managedSysId);
+	String[] getGroupIdsForUserWithLogin(final String login, final String managedSysId);
 	
 	/**
 	 * @param userId - ID of the User
 	 * @return the Group Names that this User is a member of
 	 */
-	public String[] getGroupNamesForUserWithId(final String userId);
+	String[] getGroupNamesForUserWithId(final String userId);
 	
 	/**
 	 * @param login - login used by the user
 	 * @param managedSysId - managedSysId of this login
 	 * @return the Group Names that this User is a member of
 	 */
-	public String[] getGroupNamesForUserWithLogin(final String login, final String managedSysId);
+	String[] getGroupNamesForUserWithLogin(final String login, final String managedSysId);
 	
 	/**
 	 * @param userId - ID of the User
 	 * @return the Role IDs that this User is a member of
 	 */
-	public String[] getRoleIdsForUserWithId(final String userId);
+	String[] getRoleIdsForUserWithId(final String userId);
 	
 	/**
 	 * @param login - login used by the user
 	 * @param managedSysId - managedSysId of this login
 	 * @return the Role IDs that this User is a member of
 	 */
-	public String[] getRoleIdsForUserWithLogin(final String login, final String managedSysId);
+	String[] getRoleIdsForUserWithLogin(final String login, final String managedSysId);
 	
 	/**
 	 * @param userId - ID of the User
 	 * @return the Role Names that this User is a member of
 	 */
-	public String[] getRoleNamesForUserWithId(final String userId);
+	String[] getRoleNamesForUserWithId(final String userId);
 	
 	/**
 	 * @param login - login used by the user
 	 * @param managedSysId - managedSysId of this login
 	 * @return the Role Names that this User is a member of
 	 */
-	public String[] getRoleNamesForUserWithLogin(final String login, final String managedSysId);
+	String[] getRoleNamesForUserWithLogin(final String login, final String managedSysId);
 }

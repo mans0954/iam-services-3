@@ -42,7 +42,7 @@ public class JDBCResoruceDAOImpl extends AbstractJDBCDao implements ResourceDAO 
 		if(log.isDebugEnabled()) {
 			log.debug(String.format("Query: %s", GET_ALL_MENUS));
 		}
-		return getJdbcTemplate().query(GET_ALL_MENUS, menuMapper, new Object[] {AuthorizationConstants.MENU_ITEM_RESOURCE_TYPE});
+		return getJdbcTemplate().query(GET_ALL_MENUS, menuMapper, AuthorizationConstants.MENU_ITEM_RESOURCE_TYPE);
 	}
 	
 	private static class MenuMapper implements RowMapper<AuthorizationMenu> {

@@ -627,8 +627,8 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
 
     private void mergeOrgProperties(final OrganizationEntity curEntity, final OrganizationEntity newEntity) {
         BeanUtils.copyProperties(newEntity, curEntity,
-                new String[] {"attributes", "parentOrganizations", "childOrganizations", "users", "approverAssociations",
-                "adminResource", "groups", "locations", "organizationType", "type", "lstUpdate", "lstUpdatedBy", "createDate", "createdBy"});
+                "attributes", "parentOrganizations", "childOrganizations", "users", "approverAssociations",
+                "adminResource", "groups", "locations", "organizationType", "type", "lstUpdate", "lstUpdatedBy", "createDate", "createdBy");
     }
 
     private void mergeAttributes(final OrganizationEntity curEntity, final OrganizationEntity newEntity) {

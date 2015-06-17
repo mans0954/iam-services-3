@@ -280,10 +280,9 @@ public class IdmAuditLogEntity implements Serializable {
         if (sessionID != null ? !sessionID.equals(that.sessionID) : that.sessionID != null) return false;
         if (source != null ? !source.equals(that.source) : that.source != null) return false;
         if (timestamp != null ? !timestamp.equals(that.timestamp) : that.timestamp != null) return false;
-        if (userId != null ? !userId.equals(that.userId) : that.userId != null) return false;
+		return !(userId != null ? !userId.equals(that.userId) : that.userId != null);
 
-        return true;
-    }
+	}
 
     @Override
     public int hashCode() {

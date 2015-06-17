@@ -60,9 +60,8 @@ public class SynchReviewRecordValue implements Serializable {
             return false;
         if (synchReviewRecordValueId != null ? !synchReviewRecordValueId.equals(that.synchReviewRecordValueId) : that.synchReviewRecordValueId != null)
             return false;
-        if (value != null ? !value.equals(that.value) : that.value != null) return false;
+        return !(value != null ? !value.equals(that.value) : that.value != null);
 
-        return true;
     }
 
     @Override

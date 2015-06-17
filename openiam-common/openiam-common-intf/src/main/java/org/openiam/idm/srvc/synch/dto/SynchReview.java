@@ -143,10 +143,8 @@ public class SynchReview implements Serializable {
         if (modifyTime != null ? !modifyTime.equals(that.modifyTime) : that.modifyTime != null) return false;
         if (synchConfigId != null ? !synchConfigId.equals(that.synchConfigId) : that.synchConfigId != null)
             return false;
-        if (synchReviewId != null ? !synchReviewId.equals(that.synchReviewId) : that.synchReviewId != null)
-            return false;
+        return !(synchReviewId != null ? !synchReviewId.equals(that.synchReviewId) : that.synchReviewId != null);
 
-        return true;
     }
 
     @Override

@@ -50,7 +50,7 @@ public interface CategoryWebService {
      * @param cat
      */
     @WebMethod
-    public void addCategory(
+    void addCategory(
             @WebParam(name = "cat", targetNamespace = "") Category cat);
 
     /**
@@ -59,7 +59,7 @@ public interface CategoryWebService {
      * @param cat
      */
     @WebMethod
-    public void updateCategory(
+    void updateCategory(
             @WebParam(name = "cat", targetNamespace = "") Category cat);
 
     /**
@@ -70,7 +70,7 @@ public interface CategoryWebService {
      * @return Returns the number of records that have been deleted.
      */
     @WebMethod
-    public int removeCategory(String categoryId, boolean nested);
+    int removeCategory(String categoryId, boolean nested);
 
     /**
      * Returns a category defined by CategoryId. Returns null if no category is found.
@@ -79,7 +79,7 @@ public interface CategoryWebService {
      * @return
      */
     @WebMethod
-    public Category getCategory(
+    Category getCategory(
             @WebParam(name = "categoryId", targetNamespace = "") String categoryId);
 
     /**
@@ -88,7 +88,7 @@ public interface CategoryWebService {
      * @return
      */
     @WebMethod
-    public List<Category> getAllCategories(
+    List<Category> getAllCategories(
             @WebParam(name = "nested", targetNamespace = "") boolean nested);
 
     /**
@@ -99,7 +99,7 @@ public interface CategoryWebService {
      * @return
      */
     @WebMethod
-    public List<Category> getChildCategories(
+    List<Category> getChildCategories(
             @WebParam(name = "categoryId", targetNamespace = "") String categoryId,
             @WebParam(name = "nested", targetNamespace = "") boolean nested);
 }

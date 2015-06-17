@@ -16,16 +16,16 @@ import org.openiam.idm.srvc.user.dto.UserProfileRequestModel;
 
 public interface MetadataElementTemplateService {
 
-	public List<MetadataElementPageTemplateEntity> findBeans(final MetadataElementPageTemplateSearchBean searchBean, final int from, final int size);
-	public int count(final MetadataElementPageTemplateSearchBean searchBean);
-	public void save(final MetadataElementPageTemplateEntity template);
-	public void delete(final String id);
-	public PageTemplateAttributeToken getAttributesFromTemplate(final UserProfileRequestModel request);
-	public PageTempate getTemplate(final TemplateRequest request);
-	public void saveTemplate(final UserProfileRequestModel request) throws PageTemplateException;
-	public void validate(final UserProfileRequestModel request) throws PageTemplateException;
-	public MetadataTemplateTypeEntity getTemplateType(final String id);
-	public List<MetadataTemplateTypeEntity> findTemplateTypes(final MetadataTemplateTypeEntity entity, final int from, final int size);
-	public List<MetadataTemplateTypeFieldEntity> findUIFields(final MetadataTemplateTypeFieldSearchBean searchBean, final int from, final int size);
-    public Integer countUIFields(final MetadataTemplateTypeFieldSearchBean searchBean);
+	List<MetadataElementPageTemplateEntity> findBeans(final MetadataElementPageTemplateSearchBean searchBean, final int from, final int size);
+	int count(final MetadataElementPageTemplateSearchBean searchBean);
+	void save(final MetadataElementPageTemplateEntity template);
+	void delete(final String id);
+	PageTemplateAttributeToken getAttributesFromTemplate(final UserProfileRequestModel request);
+	PageTempate getTemplate(final TemplateRequest request);
+	void saveTemplate(final UserProfileRequestModel request) throws PageTemplateException;
+	void validate(final UserProfileRequestModel request) throws PageTemplateException;
+	MetadataTemplateTypeEntity getTemplateType(final String id);
+	List<MetadataTemplateTypeEntity> findTemplateTypes(final MetadataTemplateTypeEntity entity, final int from, final int size);
+	List<MetadataTemplateTypeFieldEntity> findUIFields(final MetadataTemplateTypeFieldSearchBean searchBean, final int from, final int size);
+    Integer countUIFields(final MetadataTemplateTypeFieldSearchBean searchBean);
 }

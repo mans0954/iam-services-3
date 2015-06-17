@@ -1319,9 +1319,8 @@ public class User extends AbstractMetadataTypeDTO {
         if (startDate != null ? !startDate.equals(user.startDate) : user.startDate != null) return false;
         if (title != null ? !title.equals(user.title) : user.title != null) return false;
         if (id != null ? !id.equals(user.id) : user.id != null) return false;
-        if (userOwnerId != null ? !userOwnerId.equals(user.userOwnerId) : user.userOwnerId != null) return false;
+        return !(userOwnerId != null ? !userOwnerId.equals(user.userOwnerId) : user.userOwnerId != null);
 
-        return true;
     }
 
     @Override

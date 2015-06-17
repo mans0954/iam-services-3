@@ -19,20 +19,20 @@ public interface MailTemplateService {
      * @param transientInstance
      * @return
      */
-    public void save(MailTemplateEntity entity);
+    void save(MailTemplateEntity entity);
 
     /**
      * method for deleting template.
      * @param id
      */
-    public void delete(String id);
+    void delete(String id);
 
     /**
      * method for retriving template by id .
      * @param id
      * @return
      */
-    public MailTemplateEntity get(String id);
+    MailTemplateEntity get(String id);
     
-    public List<MailTemplateEntity> findBeans(final MailTemplateSearchBean searchBean, final int from, final int size);
+    List<MailTemplateEntity> findBeans(final MailTemplateSearchBean searchBean, final int from, final int size);
 }

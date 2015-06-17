@@ -271,9 +271,8 @@ public class ExtensibleAttribute extends Attribute implements Serializable {
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
         if (objectType != null ? !objectType.equals(that.objectType) : that.objectType != null) return false;
         if (value != null ? !value.equals(that.value) : that.value != null) return false;
-        if (valueList != null ? !valueList.equals(that.valueList) : that.valueList != null) return false;
+        return !(valueList != null ? !valueList.equals(that.valueList) : that.valueList != null);
 
-        return true;
     }
 
     @Override

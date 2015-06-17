@@ -65,7 +65,7 @@ public class SetPasswordRestCommand extends
 			String msg = createMessage(bindingMap, scriptName);
 			connection.setRequestProperty("X-HTTP-Method-Override", "PATCH");
 			connection.setRequestProperty("If-Match", principalName);
-			super.makeCall(connection, msg);
+			makeCall(connection, msg);
 
 			return response;
 		} catch (Throwable e) {

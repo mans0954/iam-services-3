@@ -7,7 +7,7 @@ import org.openiam.property.domain.PropertyValueEntity;
 
 public interface PropertyValueService {
 
-	public void save(final List<PropertyValueEntity> entityList);
-	public List<PropertyValueEntity>  getAll();
-	public PropertyValueEntity get(final String id);
+	void save(final List<PropertyValueEntity> entityList);
+	List<PropertyValueEntity>  getAll();
+	PropertyValueEntity get(final String id);
 }

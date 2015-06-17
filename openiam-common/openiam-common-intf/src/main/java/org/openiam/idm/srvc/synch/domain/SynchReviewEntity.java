@@ -162,10 +162,8 @@ public class SynchReviewEntity implements Serializable {
         if (execTime != null ? !execTime.equals(that.execTime) : that.execTime != null) return false;
         if (modifyTime != null ? !modifyTime.equals(that.modifyTime) : that.modifyTime != null) return false;
         if (synchConfig != null ? !synchConfig.equals(that.synchConfig) : that.synchConfig != null) return false;
-        if (synchReviewId != null ? !synchReviewId.equals(that.synchReviewId) : that.synchReviewId != null)
-            return false;
+        return !(synchReviewId != null ? !synchReviewId.equals(that.synchReviewId) : that.synchReviewId != null);
 
-        return true;
     }
 
     @Override

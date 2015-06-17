@@ -5,5 +5,5 @@ package org.openiam.sso.constant;
  * Date: 20.09.12
  */
 public enum SSOPropertiesKey {
-    certificateFileName,spServiceUrl,originalSAMLRequestId, errorCode, idpLogoutUrl, requestId, spEntityId, statusCode, ssoToken, inResponseTo;
+    certificateFileName,spServiceUrl,originalSAMLRequestId, errorCode, idpLogoutUrl, requestId, spEntityId, statusCode, ssoToken, inResponseTo
 }

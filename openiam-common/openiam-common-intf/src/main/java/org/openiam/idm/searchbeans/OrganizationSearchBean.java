@@ -186,10 +186,8 @@ public class OrganizationSearchBean extends EntitlementsSearchBean<Organization,
 
         if (internalOrgId != null ? !internalOrgId.equals(that.internalOrgId) : that.internalOrgId != null)
             return false;
-        if (validParentTypeId != null ? !validParentTypeId.equals(that.validParentTypeId) : that.validParentTypeId != null)
-            return false;
+        return !(validParentTypeId != null ? !validParentTypeId.equals(that.validParentTypeId) : that.validParentTypeId != null);
 
-        return true;
     }
 
     @Override

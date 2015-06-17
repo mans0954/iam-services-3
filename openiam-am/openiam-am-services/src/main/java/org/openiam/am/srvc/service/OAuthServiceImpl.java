@@ -9,6 +9,8 @@ import org.openiam.am.srvc.domain.OAuthCodeEntity;
 import org.openiam.am.srvc.domain.OAuthTokenEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
+import org.openiam.idm.srvc.role.domain.RoleEntity;
+import org.openiam.idm.srvc.role.service.RoleDAO;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -32,7 +34,7 @@ public class OAuthServiceImpl implements OAuthService {
     @Autowired
     private UserDAO userDAO;
     @Autowired
-    private MetadataTypeDAO metadataTypeDAO;
+    private RoleDAO roleDAO;
 
     @Override
     @Transactional(readOnly = true)
@@ -62,9 +64,9 @@ public class OAuthServiceImpl implements OAuthService {
             }
 
             if(CollectionUtils.isNotEmpty(oAuthCodeEntity.getScopeSet())){
-                Set<MetadataTypeEntity> newScopeSet = new HashSet<>();
-                for (MetadataTypeEntity scope: oAuthCodeEntity.getScopeSet()){
-                    newScopeSet.add(metadataTypeDAO.findById(scope.getId()));
+                Set<RoleEntity> newScopeSet = new HashSet<>();
+                for (RoleEntity scope: oAuthCodeEntity.getScopeSet()){
+                    newScopeSet.add(roleDAO.findById(scope.getId()));
                 }
                 oAuthCodeEntity.setScopeSet(newScopeSet);
             }
@@ -107,9 +109,9 @@ public class OAuthServiceImpl implements OAuthService {
             }
 
             if(CollectionUtils.isNotEmpty(oAuthTokenEntity.getScopeSet())){
-                Set<MetadataTypeEntity> newScopeSet = new HashSet<>();
-                for (MetadataTypeEntity scope: oAuthTokenEntity.getScopeSet()){
-                    newScopeSet.add(metadataTypeDAO.findById(scope.getId()));
+                Set<RoleEntity> newScopeSet = new HashSet<>();
+                for (RoleEntity scope: oAuthTokenEntity.getScopeSet()){
+                    newScopeSet.add(roleDAO.findById(scope.getId()));
                 }
                 oAuthTokenEntity.setScopeSet(newScopeSet);
             }

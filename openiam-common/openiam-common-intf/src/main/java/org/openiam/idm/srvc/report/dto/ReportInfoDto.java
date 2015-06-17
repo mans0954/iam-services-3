@@ -110,9 +110,8 @@ public class ReportInfoDto {
         if (reportName != null ? !reportName.equals(reportDto.reportName) : reportDto.reportName != null) return false;
         if (reportUrl != null ? !reportUrl.equals(reportDto.reportUrl) : reportDto.reportUrl != null) return false;
         if (isBuiltIn != reportDto.isBuiltIn) return false;
-		if (resourceId != null ? !resourceId.equals(reportDto.resourceId) : reportDto.resourceId != null) return false;
+        return !(resourceId != null ? !resourceId.equals(reportDto.resourceId) : reportDto.resourceId != null);
 
-        return true;
     }
 
     @Override

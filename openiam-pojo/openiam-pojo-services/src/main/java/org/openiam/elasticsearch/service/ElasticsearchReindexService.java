@@ -7,5 +7,5 @@ import org.openiam.elasticsearch.model.ElasticsearchReindexRequest;
  * Date: 9/19/14.
  */
 public interface ElasticsearchReindexService  {
-    public void reindex(ElasticsearchReindexRequest reindexRequest) throws Exception;
+    void reindex(ElasticsearchReindexRequest reindexRequest) throws Exception;
 }

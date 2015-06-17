@@ -16,6 +16,6 @@ import java.util.Map;
  * @author Suneet Shah
  */
 public interface PhoneDAO extends BaseDao<PhoneEntity, String> {
-	public void removeByUserId(final String userId);
+	void removeByUserId(final String userId);
 
 }

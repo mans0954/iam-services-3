@@ -102,7 +102,7 @@ public interface ReportWebService {
 			@WebParam(name = "subCriteriaParamReport", targetNamespace = "") final ReportSubCriteriaParamDto subCriteriaParamReport);
 
 	@WebMethod
-	public List<ReportCriteriaParamDto> getAllReportCriteriaParam();
+	List<ReportCriteriaParamDto> getAllReportCriteriaParam();
 
 	@WebMethod
 	Response runSubscription(@WebParam(name = "reportId", targetNamespace = "") String reportId);

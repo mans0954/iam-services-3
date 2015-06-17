@@ -116,9 +116,8 @@ public class UserNoteEntity {
         if (description != null ? !description.equals(that.description) : that.description != null) return false;
         if (noteType != null ? !noteType.equals(that.noteType) : that.noteType != null) return false;
         if (userId != null ? !userId.equals(that.userId) : that.userId != null) return false;
-        if (userNoteId != null ? !userNoteId.equals(that.userNoteId) : that.userNoteId != null) return false;
+        return !(userNoteId != null ? !userNoteId.equals(that.userNoteId) : that.userNoteId != null);
 
-        return true;
     }
 
     @Override

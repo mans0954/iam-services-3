@@ -25,6 +25,6 @@ import org.openiam.core.dao.BaseDao;
 import org.openiam.idm.srvc.pswd.domain.UserIdentityAnswerEntity;
 
 public interface UserIdentityAnswerDAO extends BaseDao<UserIdentityAnswerEntity, String> {
-   public void deleteAnswersByQuestionId(final String questionId);
-   public void deleteByUser(String userId);
+   void deleteAnswersByQuestionId(final String questionId);
+   void deleteByUser(String userId);
 }

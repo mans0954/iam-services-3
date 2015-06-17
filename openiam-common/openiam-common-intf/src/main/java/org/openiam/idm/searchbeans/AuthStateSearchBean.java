@@ -47,9 +47,7 @@ public class AuthStateSearchBean extends AbstractSearchBean<AuthStateEntity, Aut
 		if (getClass() != obj.getClass())
 			return false;
 		AuthStateSearchBean other = (AuthStateSearchBean) obj;
-		if (onlyActive != other.onlyActive)
-			return false;
-		return true;
+		return onlyActive == other.onlyActive;
 	}
 
 	@Override

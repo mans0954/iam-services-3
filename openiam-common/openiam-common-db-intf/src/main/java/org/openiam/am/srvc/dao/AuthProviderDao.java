@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface AuthProviderDao extends BaseDao<AuthProviderEntity, String>{
 
-    public List<AuthProviderEntity> getByResourceId(final String resourceId);
+    List<AuthProviderEntity> getByResourceId(final String resourceId);
 
-    public List<AuthProviderEntity> getByManagedSysId(final String managedSysId);
+    List<AuthProviderEntity> getByManagedSysId(final String managedSysId);
 }

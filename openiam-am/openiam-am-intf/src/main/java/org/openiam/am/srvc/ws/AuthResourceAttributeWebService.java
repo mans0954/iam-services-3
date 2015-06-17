@@ -18,19 +18,19 @@ public interface AuthResourceAttributeWebService {
     *===================================================
     */
     @WebMethod
-    public List<AuthResourceAMAttribute> getAmAttributeList();
+    List<AuthResourceAMAttribute> getAmAttributeList();
     /*
     *==================================================
     * AuthResourceAttributeMap section
     *===================================================
     */
     @WebMethod
-    public AuthResourceAttributeMap getAttribute(@WebParam(name = "attributeMapId", targetNamespace = "")String attributeMapId);
+    AuthResourceAttributeMap getAttribute(@WebParam(name = "attributeMapId", targetNamespace = "") String attributeMapId);
     @WebMethod
-    public Response saveAttributeMap(@WebParam(name = "attributeMap", targetNamespace = "")AuthResourceAttributeMap attributeMap);
+    Response saveAttributeMap(@WebParam(name = "attributeMap", targetNamespace = "") AuthResourceAttributeMap attributeMap);
     @WebMethod
-    public Response removeAttributeMap(@WebParam(name = "attributeMapId", targetNamespace = "")String attributeMapId);
+    Response removeAttributeMap(@WebParam(name = "attributeMapId", targetNamespace = "") String attributeMapId);
     @WebMethod
-    public List<SSOAttribute> getSSOAttributes(@WebParam(name = "providerId", targetNamespace = "") String providerId,
-                                               @WebParam(name = "userId", targetNamespace = "") String userId);
+    List<SSOAttribute> getSSOAttributes(@WebParam(name = "providerId", targetNamespace = "") String providerId,
+                                        @WebParam(name = "userId", targetNamespace = "") String userId);
 }

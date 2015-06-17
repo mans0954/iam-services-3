@@ -21,76 +21,76 @@ import java.util.Set;
  */
 public interface UserDAO extends BaseDao<UserEntity, String> {
 
-    public UserEntity findByIdDelFlt(String userId, DelegationFilterSearchBean delegationFilter);
+    UserEntity findByIdDelFlt(String userId, DelegationFilterSearchBean delegationFilter);
 
-    public List<UserEntity> findByDelegationProperties(DelegationFilterSearch search);
+    List<UserEntity> findByDelegationProperties(DelegationFilterSearch search);
 
-    public List<String> getUserIdList(int startPos, int count);
+    List<String> getUserIdList(int startPos, int count);
 
-    public Long getUserCount();
+    Long getUserCount();
 
-    public List<UserEntity> getByExample(UserSearchBean searchBean, int startAt, int size);
+    List<UserEntity> getByExample(UserSearchBean searchBean, int startAt, int size);
 
-    public Long getUserCount(UserSearchBean searchBean);
+    Long getUserCount(UserSearchBean searchBean);
 
-    public List<UserEntity> getUsersForResource(final String resourceId, DelegationFilterSearchBean delegationFilter, List<SortParam> sortParamList, final int from, final int size);
+    List<UserEntity> getUsersForResource(final String resourceId, DelegationFilterSearchBean delegationFilter, List<SortParam> sortParamList, final int from, final int size);
 
-    public int getNumOfUsersForResource(final String resourceId, DelegationFilterSearchBean delegationFilter);
+    int getNumOfUsersForResource(final String resourceId, DelegationFilterSearchBean delegationFilter);
 
-    public List<UserEntity> getUsersForGroup(final String groupId, DelegationFilterSearchBean delegationFilter, final int from, final int size);
-
-    @Deprecated
-    public int getNumOfUsersForGroup(final String groupId, DelegationFilterSearchBean delegationFilter);
-
-    public List<UserEntity> getUsersForRole(final String roleId, DelegationFilterSearchBean delegationFilter, final int from, final int size);
+    List<UserEntity> getUsersForGroup(final String groupId, DelegationFilterSearchBean delegationFilter, final int from, final int size);
 
     @Deprecated
-    public int getNumOfUsersForRole(final String roleId, DelegationFilterSearchBean delegationFilter);
+    int getNumOfUsersForGroup(final String groupId, DelegationFilterSearchBean delegationFilter);
 
-    public List<UserEntity> getSuperiors(String userId, final int from, final int size);
+    List<UserEntity> getUsersForRole(final String roleId, DelegationFilterSearchBean delegationFilter, final int from, final int size);
 
-    public int getSuperiorsCount(String userId);
+    @Deprecated
+    int getNumOfUsersForRole(final String roleId, DelegationFilterSearchBean delegationFilter);
 
-    public List<UserEntity> getAllSuperiors(final int from, final int size);
+    List<UserEntity> getSuperiors(String userId, final int from, final int size);
 
-    public int getAllSuperiorsCount();
+    int getSuperiorsCount(String userId);
 
-    public List<UserEntity> getSubordinates(String userId, final int from, final int size);
+    List<UserEntity> getAllSuperiors(final int from, final int size);
 
-    public int getSubordinatesCount(String userId);
+    int getAllSuperiorsCount();
 
-    public List<String> getSubordinatesIds(String userId);
+    List<UserEntity> getSubordinates(String userId, final int from, final int size);
 
-    public List<String> getAllAttachedSupSubIds(List<String> userIds);
+    int getSubordinatesCount(String userId);
 
-    public List<UserEntity> getUsersForOrganization(final String organizationId, DelegationFilterSearchBean delegationFilter, final int from,
-                                                    final int size);
+    List<String> getSubordinatesIds(String userId);
 
-    public List<String> getUserIdsForRoles(final Set<String> roleIds, final int from, final int size);
+    List<String> getAllAttachedSupSubIds(List<String> userIds);
 
-    public List<String> getUserIdsForGroups(final Set<String> groupIds, final int from, final int size);
+    List<UserEntity> getUsersForOrganization(final String organizationId, DelegationFilterSearchBean delegationFilter, final int from,
+                                             final int size);
 
-    public List<String> getUserIdsForOrganizations(final Set<String> organizationIds, final int from, final int size);
+    List<String> getUserIdsForRoles(final Set<String> roleIds, final int from, final int size);
 
-    public List<String> getUserIdsForResources(final Set<String> resourceIds, final int from, final int size);
+    List<String> getUserIdsForGroups(final Set<String> groupIds, final int from, final int size);
 
-    public List<String> getUserIdsForAttributes(final List<SearchAttribute> searchAttributeSet, final int from, final int size);
+    List<String> getUserIdsForOrganizations(final Set<String> organizationIds, final int from, final int size);
 
-    public boolean isUserInGroup(final String userId, final String groupId);
+    List<String> getUserIdsForResources(final Set<String> resourceIds, final int from, final int size);
 
-    public boolean isUserInRole(final String userId, final String roleId);
+    List<String> getUserIdsForAttributes(final List<SearchAttribute> searchAttributeSet, final int from, final int size);
 
-    public boolean isUserInOrg(final String userId, final String orgId);
+    boolean isUserInGroup(final String userId, final String groupId);
 
-    public boolean isUserEntitledToResoruce(final String userId, final String resourceId);
+    boolean isUserInRole(final String userId, final String roleId);
 
-    public UserEntity findPrimarySupervisor(String employeeId);
+    boolean isUserInOrg(final String userId, final String orgId);
 
-    public List<UserEntity> getUserByLastDate(Date lastDate);
+    boolean isUserEntitledToResoruce(final String userId, final String resourceId);
 
-    public List<UserEntity> getByEmail(String email);
+    UserEntity findPrimarySupervisor(String employeeId);
 
-    public  List<UserEntity> findByIds(List<String> idCollection, UserSearchBean searchBean);
+    List<UserEntity> getUserByLastDate(Date lastDate);
+
+    List<UserEntity> getByEmail(String email);
+
+    List<UserEntity> findByIds(List<String> idCollection, UserSearchBean searchBean);
     
-    public List<UserEntity> getUsersForMSys(final String mSysId);
+    List<UserEntity> getUsersForMSys(final String mSysId);
 }

@@ -123,9 +123,7 @@ public class PropertyValue extends KeyDTO {
 			return false;
 		if (type != other.type)
 			return false;
-		if (category != other.category)
-			return false;
-		return true;
+		return category == other.category;
 	}
 	@Override
 	public String toString() {

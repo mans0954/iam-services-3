@@ -23,7 +23,7 @@ import javax.jws.WebService;
 public interface ConnectorService {
 
     @WebMethod
-    public ResponseType reconcileResource(@WebParam(name = "config", targetNamespace = "") ReconciliationConfig config);
+    ResponseType reconcileResource(@WebParam(name = "config", targetNamespace = "") ReconciliationConfig config);
 
     /**
      * The add operation enables a requestor to create a new object on a target

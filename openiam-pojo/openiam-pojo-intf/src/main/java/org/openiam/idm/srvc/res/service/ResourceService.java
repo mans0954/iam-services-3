@@ -16,70 +16,70 @@ import org.openiam.idm.srvc.res.dto.ResourceType;
 
 public interface ResourceService {
 
-	public void deleteResource(final String resourceId);
-	public void save(final ResourceEntity resource, final String requestorId);
-    public void addRequiredAttributes(ResourceEntity resource);
-    public String getResourcePropValueByName(final String resourceId, final String propName);
-	public ResourceEntity findResourceById(final String resourceId);
-	public List<ResourceEntity> findResourcesByIds(final Collection<String> resourceIdCollection);
-	public ResourceEntity findResourceByName(final String name);
-	public int count(final ResourceSearchBean searchBean);
-	public List<ResourceEntity> findBeans(final ResourceSearchBean searchBean, final int from, final int size, final LanguageEntity language);
+	void deleteResource(final String resourceId);
+	void save(final ResourceEntity resource, final String requestorId);
+    void addRequiredAttributes(ResourceEntity resource);
+    String getResourcePropValueByName(final String resourceId, final String propName);
+	ResourceEntity findResourceById(final String resourceId);
+	List<ResourceEntity> findResourcesByIds(final Collection<String> resourceIdCollection);
+	ResourceEntity findResourceByName(final String name);
+	int count(final ResourceSearchBean searchBean);
+	List<ResourceEntity> findBeans(final ResourceSearchBean searchBean, final int from, final int size, final LanguageEntity language);
 	
 	@Deprecated
-	public int getNumOfChildResources(final String resourceId);
+	int getNumOfChildResources(final String resourceId);
 	@Deprecated
-	public List<ResourceEntity> getParentResources(final  String resourceId, final int from, final int size);
-	public int getNumOfParentResources(final String resourceId);
-	public List<ResourceEntity> getResourcesForRole(final String roleId, final int from, final int size, final ResourceSearchBean searchBean);
+	List<ResourceEntity> getParentResources(final String resourceId, final int from, final int size);
+	int getNumOfParentResources(final String resourceId);
+	List<ResourceEntity> getResourcesForRole(final String roleId, final int from, final int size, final ResourceSearchBean searchBean);
 	
 	@Deprecated
-	public int getNumOfResourceForGroup(final String groupId, final ResourceSearchBean searchBean);
+	int getNumOfResourceForGroup(final String groupId, final ResourceSearchBean searchBean);
 	
 	@Deprecated
-	public List<ResourceEntity> getResourcesForGroup(final String groupId, final int from, final int size, final ResourceSearchBean searchBean);
+	List<ResourceEntity> getResourcesForGroup(final String groupId, final int from, final int size, final ResourceSearchBean searchBean);
 	
 	@Deprecated
-	public int getNumOfResourceForUser(final String userId, final ResourceSearchBean searchBean);
+	int getNumOfResourceForUser(final String userId, final ResourceSearchBean searchBean);
 	
 	@Deprecated
-	public List<ResourceEntity> getResourcesForUser(final String userId, final int from, final int size, final ResourceSearchBean searchBean);
+	List<ResourceEntity> getResourcesForUser(final String userId, final int from, final int size, final ResourceSearchBean searchBean);
 	
 	@Deprecated
-    public List<ResourceEntity> getResourcesForUserByType(String userId, String resourceTypeId, final ResourceSearchBean searchBean);
+	List<ResourceEntity> getResourcesForUserByType(String userId, String resourceTypeId, final ResourceSearchBean searchBean);
 
-	public void save(final ResourceTypeEntity entity);
-	public ResourceTypeEntity findResourceTypeById(final String id);
-	public List<ResourceTypeEntity> getAllResourceTypes();
+	void save(final ResourceTypeEntity entity);
+	ResourceTypeEntity findResourceTypeById(final String id);
+	List<ResourceTypeEntity> getAllResourceTypes();
 
-    public void save(final ResourcePropEntity entity);
-    public ResourcePropEntity findResourcePropById(final String id);
-	public void deleteResourceProp(final String id);
+    void save(final ResourcePropEntity entity);
+    ResourcePropEntity findResourcePropById(final String id);
+	void deleteResourceProp(final String id);
 
 	@Deprecated
-	public List<ResourceEntity> getChildResources(final String resourceId, final int from, final int size);
+	List<ResourceEntity> getChildResources(final String resourceId, final int from, final int size);
 	
-	public void addChildResource(final String parentResourceId, final String childResourceId, final Set<String> rights);
-	public void deleteChildResource(final String resourceId, final String childResourceId);
+	void addChildResource(final String parentResourceId, final String childResourceId, final Set<String> rights);
+	void deleteChildResource(final String resourceId, final String childResourceId);
 
-	public void addResourceGroup(final String resourceId, final String groupId);
-	public void deleteResourceGroup(final String resourceId, final String groupId);
+	void addResourceGroup(final String resourceId, final String groupId);
+	void deleteResourceGroup(final String resourceId, final String groupId);
 
-	public void deleteResourceRole(final String resourceId, final String roleId);
+	void deleteResourceRole(final String resourceId, final String roleId);
 	
 	@Deprecated
-	public int getNumOfResourcesForRole(final String roleId, final ResourceSearchBean searchBean);
-    public void addResourceToRole(final String resourceId, final String roleId);
+	int getNumOfResourcesForRole(final String roleId, final ResourceSearchBean searchBean);
+    void addResourceToRole(final String resourceId, final String roleId);
     
-    public void validateResource2ResourceAddition(final String parentId, final String memberId, final Set<String> rights) throws BasicDataServiceException;
+    void validateResource2ResourceAddition(final String parentId, final String memberId, final Set<String> rights) throws BasicDataServiceException;
     
-    public boolean isMemberOfAnyEntity(final String resourceId);
+    boolean isMemberOfAnyEntity(final String resourceId);
     
-    public Resource getResourceDTO(final String resourceId);
+    Resource getResourceDTO(final String resourceId);
     
-    public void validateResourceDeletion(final String resourceId) throws BasicDataServiceException;
+    void validateResourceDeletion(final String resourceId) throws BasicDataServiceException;
     
-    public List<ResourceTypeEntity> findResourceTypes(ResourceTypeSearchBean searchBean, int from, int size);
+    List<ResourceTypeEntity> findResourceTypes(ResourceTypeSearchBean searchBean, int from, int size);
 
     int countResourceTypes(ResourceTypeSearchBean searchBean);
     void deleteResourceType(String resourceTypeId);

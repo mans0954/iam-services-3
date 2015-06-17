@@ -16,27 +16,27 @@ public interface AuthProviderService {
     * AuthProviderType section
     *===================================================
     */
-    public AuthProviderTypeEntity getAuthProviderType(String providerType);
-    public List<AuthProviderTypeEntity> getAuthProviderTypeList();
-    public List<AuthProviderTypeEntity> getSocialAuthProviderTypeList();
+    AuthProviderTypeEntity getAuthProviderType(String providerType);
+    List<AuthProviderTypeEntity> getAuthProviderTypeList();
+    List<AuthProviderTypeEntity> getSocialAuthProviderTypeList();
     /*
     *==================================================
     * AuthAttributeEntity section
     *===================================================
     */
 
-    public List<AuthAttributeEntity> findAuthAttributeBeans(AuthAttributeEntity searchBean, Integer size, Integer from);
+    List<AuthAttributeEntity> findAuthAttributeBeans(AuthAttributeEntity searchBean, Integer size, Integer from);
 
     /*
     *==================================================
     *  AuthProviderEntity section
     *===================================================
     */
-    public int countAuthProviderBeans(final AuthProviderSearchBean entity);
-    public AuthProviderEntity getAuthProvider(final String id);
-    public List<AuthProviderEntity> findAuthProviderBeans(final AuthProviderSearchBean searchBean, int from, int size);
-    public void saveAuthProvider(AuthProviderEntity attribute, final String requestorId) throws BasicDataServiceException;
-    public void deleteAuthProvider(String providerId) throws BasicDataServiceException;
+    int countAuthProviderBeans(final AuthProviderSearchBean entity);
+    AuthProviderEntity getAuthProvider(final String id);
+    List<AuthProviderEntity> findAuthProviderBeans(final AuthProviderSearchBean searchBean, int from, int size);
+    void saveAuthProvider(AuthProviderEntity attribute, final String requestorId) throws BasicDataServiceException;
+    void deleteAuthProvider(String providerId) throws BasicDataServiceException;
 
 
 }

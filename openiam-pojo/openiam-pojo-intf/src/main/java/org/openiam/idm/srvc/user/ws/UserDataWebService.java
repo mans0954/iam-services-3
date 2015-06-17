@@ -47,9 +47,9 @@ public interface UserDataWebService {
      * @return - a User object, or null if not found
      */
     @WebMethod
-    public User getUserWithDependent(@WebParam(name = "id", targetNamespace = "") String id,
-                                     @WebParam(name = "requestorId", targetNamespace = "") String requestorId,
-                                     @WebParam(name = "dependants", targetNamespace = "") boolean dependants);
+    User getUserWithDependent(@WebParam(name = "id", targetNamespace = "") String id,
+                              @WebParam(name = "requestorId", targetNamespace = "") String requestorId,
+                              @WebParam(name = "dependants", targetNamespace = "") boolean dependants);
 
     /**
      * Find a User based on his principal, security domain, and the managed
@@ -66,9 +66,9 @@ public interface UserDataWebService {
      * @return - a User object, or null if not found
      */
     @WebMethod
-    public User getUserByPrincipal(@WebParam(name = "principal", targetNamespace = "") String principal,
-                                   @WebParam(name = "managedSysId", targetNamespace = "") String managedSysId,
-                                   @WebParam(name = "dependants", targetNamespace = "") boolean dependants);
+    User getUserByPrincipal(@WebParam(name = "principal", targetNamespace = "") String principal,
+                            @WebParam(name = "managedSysId", targetNamespace = "") String managedSysId,
+                            @WebParam(name = "dependants", targetNamespace = "") boolean dependants);
 
     /**
      * Delete a User from the Openiam database
@@ -78,10 +78,10 @@ public interface UserDataWebService {
      * @return a Response Object, containing the result of this operation
      */
     @WebMethod
-    public Response removeUser(@WebParam(name = "id", targetNamespace = "") String id);
+    Response removeUser(@WebParam(name = "id", targetNamespace = "") String id);
 
     @WebMethod
-    public List<User> findUserByOrganization(@WebParam(name = "orgId", targetNamespace = "") String orgId);
+    List<User> findUserByOrganization(@WebParam(name = "orgId", targetNamespace = "") String orgId);
 
     /**
      * Call to find users by various criteria
@@ -105,7 +105,7 @@ public interface UserDataWebService {
      * @return a Response Object, containing the result of this operation
      */
     @WebMethod
-    public Response addAttribute(@WebParam(name = "attribute", targetNamespace = "") UserAttribute attribute);
+    Response addAttribute(@WebParam(name = "attribute", targetNamespace = "") UserAttribute attribute);
 
     /**
      * Update a UserAttribute to this User
@@ -115,7 +115,7 @@ public interface UserDataWebService {
      * @return a Response Object, containing the result of this operation
      */
     @WebMethod
-    public Response updateAttribute(@WebParam(name = "attribute", targetNamespace = "") UserAttribute attribute);
+    Response updateAttribute(@WebParam(name = "attribute", targetNamespace = "") UserAttribute attribute);
 
     /**
      * Get a UserAttribute by the id
@@ -125,7 +125,7 @@ public interface UserDataWebService {
      * @return a UserAttribute object, or null if not found
      */
     @WebMethod
-    public UserAttribute getAttribute(@WebParam(name = "id", targetNamespace = "") String attrId);
+    UserAttribute getAttribute(@WebParam(name = "id", targetNamespace = "") String attrId);
 
     /**
      * Removes a UserAttribute with the specified ID
@@ -135,7 +135,7 @@ public interface UserDataWebService {
      * @return a Response Object, containing the result of this operation
      */
     @WebMethod
-    public Response removeAttribute(@WebParam(name = "attr", targetNamespace = "") String attrId);
+    Response removeAttribute(@WebParam(name = "attr", targetNamespace = "") String attrId);
 
     /**
      * gets all UserAttributes associated with this User
@@ -145,11 +145,11 @@ public interface UserDataWebService {
      * @return a List of UserAttributes associated with this user
      */
     @WebMethod
-    public List<UserAttribute> getUserAttributes(@WebParam(name = "userId", targetNamespace = "") String userId);
+    List<UserAttribute> getUserAttributes(@WebParam(name = "userId", targetNamespace = "") String userId);
     
     @WebMethod
-    public List<UserAttribute> getUserAttributesInternationalized(final @WebParam(name = "userId", targetNamespace = "") String userId,
-    															  final @WebParam(name = "language", targetNamespace = "") Language language);
+    List<UserAttribute> getUserAttributesInternationalized(final @WebParam(name = "userId", targetNamespace = "") String userId,
+                                                           final @WebParam(name = "language", targetNamespace = "") Language language);
 
     /*
      * @WebMethod public Response addNote(@WebParam(name = "note",
@@ -179,7 +179,7 @@ public interface UserDataWebService {
      * @return a Response Object, containing the result of this operation
      */
     @WebMethod
-    public Response addAddress(@WebParam(name = "address", targetNamespace = "") Address address);
+    Response addAddress(@WebParam(name = "address", targetNamespace = "") Address address);
 
     /**
      * Updates an Address for a User
@@ -189,7 +189,7 @@ public interface UserDataWebService {
      * @return a Response Object, containing the result of this operation
      */
     @WebMethod
-    public Response updateAddress(@WebParam(name = "address", targetNamespace = "") Address address);
+    Response updateAddress(@WebParam(name = "address", targetNamespace = "") Address address);
 
     /**
      * Remove an Address specified by the parameter
@@ -199,7 +199,7 @@ public interface UserDataWebService {
      * @return a Response Object, containing the result of this operation
      */
     @WebMethod
-    public Response removeAddress(@WebParam(name = "address", targetNamespace = "") String addressId);
+    Response removeAddress(@WebParam(name = "address", targetNamespace = "") String addressId);
 
     /**
      * find an Address record by the given id
@@ -209,7 +209,7 @@ public interface UserDataWebService {
      * @return an Address record
      */
     @WebMethod
-    public Address getAddressById(@WebParam(name = "addressId", targetNamespace = "") String addressId);
+    Address getAddressById(@WebParam(name = "addressId", targetNamespace = "") String addressId);
 
     /**
      * Gets all Address objects associated with the given userId
@@ -219,7 +219,7 @@ public interface UserDataWebService {
      * @return the Address objects associated with this user
      */
     @WebMethod
-    public List<Address> getAddressList(@WebParam(name = "userId", targetNamespace = "") String userId);
+    List<Address> getAddressList(@WebParam(name = "userId", targetNamespace = "") String userId);
 
     /**
      * returns to Address Objects associated with this user, based on the size
@@ -234,9 +234,9 @@ public interface UserDataWebService {
      * @return the Address objects associated with this user
      */
     @WebMethod
-    public List<Address> getAddressListByPage(@WebParam(name = "userId", targetNamespace = "") String userId,
-                                              @WebParam(name = "size", targetNamespace = "") Integer size,
-                                              @WebParam(name = "from", targetNamespace = "") Integer from);
+    List<Address> getAddressListByPage(@WebParam(name = "userId", targetNamespace = "") String userId,
+                                       @WebParam(name = "size", targetNamespace = "") Integer size,
+                                       @WebParam(name = "from", targetNamespace = "") Integer from);
 
     /**
      * Add a Phone to this User
@@ -246,11 +246,11 @@ public interface UserDataWebService {
      * @return a Response Object, containing the result of this operation
      */
     @WebMethod
-    public Response addPhone(@WebParam(name = "phone", targetNamespace = "") Phone phone);
+    Response addPhone(@WebParam(name = "phone", targetNamespace = "") Phone phone);
     
     @WebMethod
-    public Response addTOPTTokenToPhone(@WebParam(name = "phoneId", targetNamespace = "") String phoneId,
-    									@WebParam(name = "secret", targetNamespace = "") String secret);
+    Response addTOPTTokenToPhone(@WebParam(name = "phoneId", targetNamespace = "") String phoneId,
+                                 @WebParam(name = "secret", targetNamespace = "") String secret);
 
     /**
      * Updates the Phone record
@@ -260,7 +260,7 @@ public interface UserDataWebService {
      * @return a Response Object, containing the result of this operation
      */
     @WebMethod
-    public Response updatePhone(@WebParam(name = "phone", targetNamespace = "") Phone phone);
+    Response updatePhone(@WebParam(name = "phone", targetNamespace = "") Phone phone);
 
     /**
      * Deletes a phone record
@@ -270,7 +270,7 @@ public interface UserDataWebService {
      * @return a Response Object, containing the result of this operation
      */
     @WebMethod
-    public Response removePhone(@WebParam(name = "phone", targetNamespace = "") String phoneId);
+    Response removePhone(@WebParam(name = "phone", targetNamespace = "") String phoneId);
 
     /**
      * Get a Phone record by it's ID
@@ -280,7 +280,7 @@ public interface UserDataWebService {
      * @return the Phone record, or null if not found
      */
     @WebMethod
-    public Phone getPhoneById(@WebParam(name = "phoneId", targetNamespace = "") String phoneId);
+    Phone getPhoneById(@WebParam(name = "phoneId", targetNamespace = "") String phoneId);
 
     /**
      * Gets all Phones belonging to a user
@@ -290,7 +290,7 @@ public interface UserDataWebService {
      * @return a List of Phone records belonging to this user
      */
     @WebMethod
-    public List<Phone> getPhoneList(@WebParam(name = "userId", targetNamespace = "") String userId);
+    List<Phone> getPhoneList(@WebParam(name = "userId", targetNamespace = "") String userId);
 
     /**
      * Gets a paged List of Phones belonging to a User
@@ -304,9 +304,9 @@ public interface UserDataWebService {
      * @return a paged List of Phone records belonging to this user
      */
     @WebMethod
-    public List<Phone> getPhoneListByPage(@WebParam(name = "userId", targetNamespace = "") String userId,
-                                          @WebParam(name = "size", targetNamespace = "") Integer size,
-                                          @WebParam(name = "from", targetNamespace = "") Integer from);
+    List<Phone> getPhoneListByPage(@WebParam(name = "userId", targetNamespace = "") String userId,
+                                   @WebParam(name = "size", targetNamespace = "") Integer size,
+                                   @WebParam(name = "from", targetNamespace = "") Integer from);
 
     /**
      * Adds an Email Address
@@ -316,7 +316,7 @@ public interface UserDataWebService {
      * @return a Response Object, containing the result of this operation
      */
     @WebMethod
-    public Response addEmailAddress(@WebParam(name = "email", targetNamespace = "") EmailAddress email);
+    Response addEmailAddress(@WebParam(name = "email", targetNamespace = "") EmailAddress email);
 
     /**
      * Updates an Email Address
@@ -326,7 +326,7 @@ public interface UserDataWebService {
      * @return a Response Object, containing the result of this operation
      */
     @WebMethod
-    public Response updateEmailAddress(@WebParam(name = "email", targetNamespace = "") EmailAddress email);
+    Response updateEmailAddress(@WebParam(name = "email", targetNamespace = "") EmailAddress email);
 
     /**
      * Remove an Email Address
@@ -336,7 +336,7 @@ public interface UserDataWebService {
      * @return a Response Object, containing the result of this operation
      */
     @WebMethod
-    public Response removeEmailAddress(@WebParam(name = "email", targetNamespace = "") String emailId);
+    Response removeEmailAddress(@WebParam(name = "email", targetNamespace = "") String emailId);
 
     /**
      * get an Email Address by ID
@@ -346,7 +346,7 @@ public interface UserDataWebService {
      * @return an EmailAddress Object, or null if not found
      */
     @WebMethod
-    public EmailAddress getEmailAddressById(@WebParam(name = "addressId", targetNamespace = "") String addressId);
+    EmailAddress getEmailAddressById(@WebParam(name = "addressId", targetNamespace = "") String addressId);
 
     /**
      * Get all EmailAddress records associated with a User
@@ -356,7 +356,7 @@ public interface UserDataWebService {
      * @return a List of EmailAddress records belonging to this User
      */
     @WebMethod
-    public List<EmailAddress> getEmailAddressList(@WebParam(name = "userId", targetNamespace = "") String userId);
+    List<EmailAddress> getEmailAddressList(@WebParam(name = "userId", targetNamespace = "") String userId);
 
     /**
      * Gets a paged List of EmailAddress records associated with a User
@@ -370,14 +370,14 @@ public interface UserDataWebService {
      * @return a paged List of EmailAddress records associated with a User
      */
     @WebMethod
-    public List<EmailAddress> getEmailAddressListByPage(@WebParam(name = "userId", targetNamespace = "") String userId,
-                                                        @WebParam(name = "size", targetNamespace = "") Integer size,
-                                                        @WebParam(name = "from", targetNamespace = "") Integer from);
+    List<EmailAddress> getEmailAddressListByPage(@WebParam(name = "userId", targetNamespace = "") String userId,
+                                                 @WebParam(name = "size", targetNamespace = "") Integer size,
+                                                 @WebParam(name = "from", targetNamespace = "") Integer from);
 
     @WebMethod
-    public List<EmailAddress> findEmailBeans(final @WebParam(name="searchBean") EmailSearchBean searchBean,
-    										 final @WebParam(name = "size", targetNamespace = "") int size,
-    										 final @WebParam(name = "from", targetNamespace = "") int from);
+    List<EmailAddress> findEmailBeans(final @WebParam(name = "searchBean") EmailSearchBean searchBean,
+                                      final @WebParam(name = "size", targetNamespace = "") int size,
+                                      final @WebParam(name = "from", targetNamespace = "") int from);
     
     /**
      * Add a Supervisor record
@@ -387,7 +387,7 @@ public interface UserDataWebService {
      * @return a Response Object, containing the result of this operation
      */
     @WebMethod
-    public Response addSupervisor(@WebParam(name = "supervisor", targetNamespace = "") Supervisor supervisor);
+    Response addSupervisor(@WebParam(name = "supervisor", targetNamespace = "") Supervisor supervisor);
 
     /**
      * Update an Supervisor record
@@ -410,8 +410,8 @@ public interface UserDataWebService {
      * @return a Response Object, containing the result of this operation
      */
     @WebMethod
-    public Response removeSupervisor(@WebParam(name = "supervisor", targetNamespace = "") String supervisorId,
-                                     @WebParam(name = "employeeId", targetNamespace = "") String employeeId);
+    Response removeSupervisor(@WebParam(name = "supervisor", targetNamespace = "") String supervisorId,
+                              @WebParam(name = "employeeId", targetNamespace = "") String employeeId);
 
     /**
      * Get a Supervisor Object by ID
@@ -445,8 +445,8 @@ public interface UserDataWebService {
      * @return - the Supervisor object
      */
     @WebMethod
-    public Supervisor findSupervisor(@WebParam(name = "superiorId", targetNamespace = "") String superiorId,
-                                     @WebParam(name = "subordinateId", targetNamespace = "") String subordinateId);
+    Supervisor findSupervisor(@WebParam(name = "superiorId", targetNamespace = "") String superiorId,
+                              @WebParam(name = "subordinateId", targetNamespace = "") String subordinateId);
 
     /**
      * Returns a list of Supervisor objects that represents the employees or
@@ -467,7 +467,7 @@ public interface UserDataWebService {
      * @return
      */
     @WebMethod
-    public User getPrimarySupervisor(@WebParam(name = "employeeId", targetNamespace = "") String employeeId);
+    User getPrimarySupervisor(@WebParam(name = "employeeId", targetNamespace = "") String employeeId);
 
     /**
      * returns a paged List of Supervisors for this User
@@ -481,9 +481,9 @@ public interface UserDataWebService {
      * @return a paged List of Supervisors for this User
      */
     @WebMethod
-    public List<User> getSuperiors(@WebParam(name = "userId", targetNamespace = "") String userId,
-                                   @WebParam(name = "from", targetNamespace = "") Integer from,
-                                   @WebParam(name = "size", targetNamespace = "") Integer size);
+    List<User> getSuperiors(@WebParam(name = "userId", targetNamespace = "") String userId,
+                            @WebParam(name = "from", targetNamespace = "") Integer from,
+                            @WebParam(name = "size", targetNamespace = "") Integer size);
 
     /**
      * Get the Number of supervisors for this user
@@ -493,7 +493,7 @@ public interface UserDataWebService {
      * @return the Number of supervisors for this user
      */
     @WebMethod
-    public int getSuperiorsCount(@WebParam(name = "userId", targetNamespace = "") String userId);
+    int getSuperiorsCount(@WebParam(name = "userId", targetNamespace = "") String userId);
 
     /**
      * Gets a Paged List of User Objects, representing the subordinates of this
@@ -509,9 +509,9 @@ public interface UserDataWebService {
      *         this userId
      */
     @WebMethod
-    public List<User> getSubordinates(@WebParam(name = "userId", targetNamespace = "") String userId,
-                                      @WebParam(name = "from", targetNamespace = "") Integer from,
-                                      @WebParam(name = "size", targetNamespace = "") Integer size);
+    List<User> getSubordinates(@WebParam(name = "userId", targetNamespace = "") String userId,
+                               @WebParam(name = "from", targetNamespace = "") Integer from,
+                               @WebParam(name = "size", targetNamespace = "") Integer size);
 
     /**
      * Gets the number of subordinates for this User
@@ -521,15 +521,15 @@ public interface UserDataWebService {
      * @return the number of subordinates for this User
      */
     @WebMethod
-    public int getSubordinatesCount(@WebParam(name = "userId", targetNamespace = "") String userId);
+    int getSubordinatesCount(@WebParam(name = "userId", targetNamespace = "") String userId);
 
     @WebMethod
-    public List<User> findPotentialSupSubs(@WebParam(name = "searchBean", targetNamespace = "") PotentialSupSubSearchBean userSearchBean,
-                                           @WebParam(name = "from", targetNamespace = "") Integer from,
-                                           @WebParam(name = "size", targetNamespace = "") Integer size);
+    List<User> findPotentialSupSubs(@WebParam(name = "searchBean", targetNamespace = "") PotentialSupSubSearchBean userSearchBean,
+                                    @WebParam(name = "from", targetNamespace = "") Integer from,
+                                    @WebParam(name = "size", targetNamespace = "") Integer size);
 
     @WebMethod
-    public int findPotentialSupSubsCount(@WebParam(name = "searchBean", targetNamespace = "") PotentialSupSubSearchBean userSearchBean);
+    int findPotentialSupSubsCount(@WebParam(name = "searchBean", targetNamespace = "") PotentialSupSubSearchBean userSearchBean);
 
     /**
      * Makes the User specified by superiorId a Superior of the User specified
@@ -544,9 +544,9 @@ public interface UserDataWebService {
      * @return a Response Object, containing the result of this operation
      */
     @WebMethod
-    public Response addSuperior(@WebParam(name = "superiorId", targetNamespace = "") String superiorId,
-                                @WebParam(name = "suborinateId", targetNamespace = "") String suborinateId,
-                                @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+    Response addSuperior(@WebParam(name = "superiorId", targetNamespace = "") String superiorId,
+                         @WebParam(name = "suborinateId", targetNamespace = "") String suborinateId,
+                         @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     /**
      * Removes the User specified by superiorId from being a Superior of the
@@ -559,8 +559,8 @@ public interface UserDataWebService {
      * @return a Response Object, containing the result of this operation
      */
     @WebMethod
-    public Response removeSuperior(@WebParam(name = "superiorId", targetNamespace = "") String superiorId,
-                                   @WebParam(name = "suborinateId", targetNamespace = "") String suborinateId);
+    Response removeSuperior(@WebParam(name = "superiorId", targetNamespace = "") String superiorId,
+                            @WebParam(name = "suborinateId", targetNamespace = "") String suborinateId);
 
     /**
      * Gets a paged List of Users directly entitled to the Resource specified by
@@ -579,10 +579,10 @@ public interface UserDataWebService {
      */
     @WebMethod
     @Deprecated
-    public List<User> getUsersForResource(@WebParam(name = "resourceId", targetNamespace = "") final String resourceId,
-                                          @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
-                                          @WebParam(name = "from", targetNamespace = "") final int from,
-                                          @WebParam(name = "size", targetNamespace = "") final int size);
+    List<User> getUsersForResource(@WebParam(name = "resourceId", targetNamespace = "") final String resourceId,
+                                   @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
+                                   @WebParam(name = "from", targetNamespace = "") final int from,
+                                   @WebParam(name = "size", targetNamespace = "") final int size);
 
     /**
      * Gets a paged List of Users directly entitled to the Resource specified by
@@ -598,9 +598,9 @@ public interface UserDataWebService {
      *         by the resourceId
      */
     @WebMethod
-    public List<User> getUsersForResourceWithSorting(@WebParam(name = "userSearchBean", targetNamespace = "") final UserSearchBean userSearchBean,
-                                                     @WebParam(name = "from", targetNamespace = "")  final int from,
-                                                     @WebParam(name = "size", targetNamespace = "") final int size);
+    List<User> getUsersForResourceWithSorting(@WebParam(name = "userSearchBean", targetNamespace = "") final UserSearchBean userSearchBean,
+                                              @WebParam(name = "from", targetNamespace = "") final int from,
+                                              @WebParam(name = "size", targetNamespace = "") final int size);
     /**
      * Gets the number of Users directly entitled to this Resource
      * 
@@ -611,8 +611,8 @@ public interface UserDataWebService {
      * @return the number of Users directly entitled to this Resource
      */
     @WebMethod
-    public int getNumOfUsersForResource(@WebParam(name = "resourceId", targetNamespace = "") final String resourceId,
-                                        @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+    int getNumOfUsersForResource(@WebParam(name = "resourceId", targetNamespace = "") final String resourceId,
+                                 @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     /**
      * Gets a paged List of Users that are direct members of this Group
@@ -629,10 +629,10 @@ public interface UserDataWebService {
      */
     @WebMethod
     @Deprecated
-    public List<User> getUsersForGroup(@WebParam(name = "groupId", targetNamespace = "") final String groupId,
-                                       @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
-                                       @WebParam(name = "from", targetNamespace = "") final int from,
-                                       @WebParam(name = "size", targetNamespace = "") final int size);
+    List<User> getUsersForGroup(@WebParam(name = "groupId", targetNamespace = "") final String groupId,
+                                @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
+                                @WebParam(name = "from", targetNamespace = "") final int from,
+                                @WebParam(name = "size", targetNamespace = "") final int size);
 
     /**
      * Gets the number of Users that are direct members of this Group
@@ -645,8 +645,8 @@ public interface UserDataWebService {
      */
     @WebMethod
     @Deprecated
-    public int getNumOfUsersForGroup(@WebParam(name = "groupId", targetNamespace = "") final String groupId,
-                                     @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+    int getNumOfUsersForGroup(@WebParam(name = "groupId", targetNamespace = "") final String groupId,
+                              @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     /**
      * Gets a Paged List of Users that are direct members of this Role
@@ -663,10 +663,10 @@ public interface UserDataWebService {
      */
     @WebMethod
     @Deprecated
-    public List<User> getUsersForRole(@WebParam(name = "roleId", targetNamespace = "") final String roleId,
-                                      @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
-                                      @WebParam(name = "from", targetNamespace = "") final int from,
-                                      @WebParam(name = "size", targetNamespace = "") final int size);
+    List<User> getUsersForRole(@WebParam(name = "roleId", targetNamespace = "") final String roleId,
+                               @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
+                               @WebParam(name = "from", targetNamespace = "") final int from,
+                               @WebParam(name = "size", targetNamespace = "") final int size);
 
     /**
      * Gets the number of Users that are direct members of this Role
@@ -679,8 +679,8 @@ public interface UserDataWebService {
      */
     @WebMethod
     @Deprecated
-    public int getNumOfUsersForRole(@WebParam(name = "roleId", targetNamespace = "") final String roleId,
-                                    @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+    int getNumOfUsersForRole(@WebParam(name = "roleId", targetNamespace = "") final String roleId,
+                             @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     /**
      * Saves a User Object, with an optional Supervisor
@@ -692,8 +692,8 @@ public interface UserDataWebService {
      * @return - a UserResponse Object, containing the User object saved
      */
     @WebMethod
-    public UserResponse saveUserInfo(@WebParam(name = "user", targetNamespace = "") final User user,
-                                     @WebParam(name = "supervisorId", targetNamespace = "") final String supervisorId);
+    UserResponse saveUserInfo(@WebParam(name = "user", targetNamespace = "") final User user,
+                              @WebParam(name = "supervisorId", targetNamespace = "") final String supervisorId);
 
     /**
      * Deletes a User from the databse
@@ -703,7 +703,7 @@ public interface UserDataWebService {
      * @return a Response Object, containing the result of this operation
      */
     @WebMethod
-    public Response deleteUser(@WebParam(name = "userId", targetNamespace = "") final String userId);
+    Response deleteUser(@WebParam(name = "userId", targetNamespace = "") final String userId);
 
     /**
      * Sets the Secondary Status of the User
@@ -715,8 +715,8 @@ public interface UserDataWebService {
      * @return a Response Object, containing the result of this operation
      */
     @WebMethod
-    public Response setSecondaryStatus(@WebParam(name = "userId", targetNamespace = "") final String userId,
-                                       @WebParam(name = "secondaryStatus", targetNamespace = "") final UserStatusEnum secondaryStatus);
+    Response setSecondaryStatus(@WebParam(name = "userId", targetNamespace = "") final String userId,
+                                @WebParam(name = "secondaryStatus", targetNamespace = "") final UserStatusEnum secondaryStatus);
 
     /**
      * Activates a User
@@ -726,7 +726,7 @@ public interface UserDataWebService {
      * @return a Response Object, containing the result of this operation
      */
     @WebMethod
-    public Response activateUser(@WebParam(name = "userId", targetNamespace = "") final String userId);
+    Response activateUser(@WebParam(name = "userId", targetNamespace = "") final String userId);
 
     /**
      * Resets User's account
@@ -736,7 +736,7 @@ public interface UserDataWebService {
      * @return a Response Object, containing the result of this operation
      */
     @WebMethod
-    public Response resetUser(@WebParam(name = "userId", targetNamespace = "") final String userId);
+    Response resetUser(@WebParam(name = "userId", targetNamespace = "") final String userId);
 
     /**
      * Gets the number of Emails for this user
@@ -746,7 +746,7 @@ public interface UserDataWebService {
      * @return the number of Emails for this user
      */
     @WebMethod
-    public int getNumOfEmailsForUser(@WebParam(name = "userId", targetNamespace = "") String userId);
+    int getNumOfEmailsForUser(@WebParam(name = "userId", targetNamespace = "") String userId);
 
     /**
      * Gets the number of Addresses for this user
@@ -756,7 +756,7 @@ public interface UserDataWebService {
      * @return the number of Addresses for this user
      */
     @WebMethod
-    public int getNumOfAddressesForUser(@WebParam(name = "userId", targetNamespace = "") String userId);
+    int getNumOfAddressesForUser(@WebParam(name = "userId", targetNamespace = "") String userId);
 
     /**
      * Gets the number of Phones for this User
@@ -766,7 +766,7 @@ public interface UserDataWebService {
      * @return the number of Phones for this User
      */
     @WebMethod
-    public int getNumOfPhonesForUser(@WebParam(name = "userId", targetNamespace = "") String userId);
+    int getNumOfPhonesForUser(@WebParam(name = "userId", targetNamespace = "") String userId);
 
     /**
      * Saves a User Profile
@@ -777,7 +777,7 @@ public interface UserDataWebService {
      *         operation
      */
     @WebMethod
-    public SaveTemplateProfileResponse saveUserProfile(@WebParam(name = "request", targetNamespace = "") final UserProfileRequestModel request);
+    SaveTemplateProfileResponse saveUserProfile(@WebParam(name = "request", targetNamespace = "") final UserProfileRequestModel request);
 
     /**
      * Returns Profile picture by it's ID
@@ -841,7 +841,7 @@ public interface UserDataWebService {
      * @return a Response Object, containing the result of this operation
      */
     @WebMethod
-    public Response acceptITPolicy(@WebParam(name = "userId", targetNamespace = "") final String userId);
+    Response acceptITPolicy(@WebParam(name = "userId", targetNamespace = "") final String userId);
 
     /**
      * Validate user search request according to  Delegation filter.
@@ -849,10 +849,10 @@ public interface UserDataWebService {
      * @return a Response Object, containing the result of this operation
      */
     @WebMethod
-    public Response validateUserSearchRequest(@WebParam(name = "userSearchBean", targetNamespace = "") final UserSearchBean userSearchBean);
+    Response validateUserSearchRequest(@WebParam(name = "userSearchBean", targetNamespace = "") final UserSearchBean userSearchBean);
 
     @WebMethod
-    public List<User> getUserByLastDate(
+    List<User> getUserByLastDate(
             @WebParam(name = "lastDate", targetNamespace = "") final Date lastDate);
 
     /**
@@ -865,8 +865,8 @@ public interface UserDataWebService {
      * @return a paged List of all Supervisors in the system
      */
     @WebMethod
-    public List<User> getAllSuperiors(@WebParam(name = "from", targetNamespace = "") Integer from,
-                                      @WebParam(name = "size", targetNamespace = "") Integer size);
+    List<User> getAllSuperiors(@WebParam(name = "from", targetNamespace = "") Integer from,
+                               @WebParam(name = "size", targetNamespace = "") Integer size);
 
     /**
      * Get the Number of all supervisors in the system
@@ -874,7 +874,7 @@ public interface UserDataWebService {
      * @return the Number of all supervisors in the system
      */
     @WebMethod
-    public int getAllSuperiorsCount();
+    int getAllSuperiorsCount();
 
 //    @WebMethod
 //    public Map<String, UserAttribute> getUserAttributesAsMap(@WebParam(name = "userId", targetNamespace = "") String userId);

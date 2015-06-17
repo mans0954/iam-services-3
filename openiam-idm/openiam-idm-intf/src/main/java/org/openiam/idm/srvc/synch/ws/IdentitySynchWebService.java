@@ -78,22 +78,22 @@ public interface IdentitySynchWebService {
             SynchReviewRequest synchReviewRequest);
 
     @WebMethod
-    public Integer getSynchConfigCount(
+    Integer getSynchConfigCount(
             @WebParam(name = "searchBean", targetNamespace = "")
             SynchConfigSearchBean searchBean);
 
     @WebMethod
-    public List<SynchConfig> getSynchConfigs(
+    List<SynchConfig> getSynchConfigs(
             @WebParam(name = "searchBean", targetNamespace = "") SynchConfigSearchBean searchBean,
             @WebParam(name = "size", targetNamespace = "") Integer size,
             @WebParam(name = "from", targetNamespace = "") Integer from);
 
     @WebMethod
-    public List<AttributeMap> getSynchConfigAttributeMaps(
+    List<AttributeMap> getSynchConfigAttributeMaps(
             @WebParam(name = "synchConfigId", targetNamespace = "") String synchConfigId);
 
     @WebMethod
-    public List<AttributeMap> findSynchConfigAttributeMaps(
+    List<AttributeMap> findSynchConfigAttributeMaps(
             @WebParam(name = "searchBean", targetNamespace = "") AttributeMapSearchBean searchBean);
 
 }

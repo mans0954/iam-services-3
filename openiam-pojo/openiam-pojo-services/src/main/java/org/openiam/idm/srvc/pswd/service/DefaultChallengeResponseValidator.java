@@ -95,10 +95,7 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
     public boolean isResponseValid(String userId, List<UserIdentityAnswerEntity> newAnswerList, int requiredCorrectAns)
             throws Exception {
         final int correctAns = getNumOfCorrectAnswers(userId, newAnswerList);
-        if (correctAns >= requiredCorrectAns && requiredCorrectAns > 0) {
-            return true;
-        }
-        return false;
+        return correctAns >= requiredCorrectAns && requiredCorrectAns > 0;
     }
 
     @Override

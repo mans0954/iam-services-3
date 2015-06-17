@@ -14,7 +14,7 @@ public enum ITPolicyApproveType {
 
     private String value;
 
-    private ITPolicyApproveType(String value) {
+    ITPolicyApproveType(String value) {
         this.value = value;
     }
 

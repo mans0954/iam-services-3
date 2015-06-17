@@ -464,7 +464,7 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 	public void purgeUser(final String userId) {
 		final List<Object> keysToRemove = new LinkedList<Object>();
 		for(final Object key : userCache.getKeys()) {
-			keysToRemove.add((String)loginCache.get(key).getValue());
+			keysToRemove.add(loginCache.get(key).getValue());
 		}
 		for(final Object key : keysToRemove) {
 			loginCache.remove(key);

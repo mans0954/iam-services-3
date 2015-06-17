@@ -13,25 +13,25 @@ import java.util.List;
  */
 public interface ReconciliationConfigService {
 
-    public ReconciliationConfig addConfig(ReconciliationConfig config);
+    ReconciliationConfig addConfig(ReconciliationConfig config);
 
-    public void updateConfig(ReconciliationConfig config);
+    void updateConfig(ReconciliationConfig config);
 
-	public ReconExecStatusOptions getExecStatus(String configId);
+	ReconExecStatusOptions getExecStatus(String configId);
 
-	public void updateExecStatus(String configId, ReconExecStatusOptions status);
+	void updateExecStatus(String configId, ReconExecStatusOptions status);
 
-	public void removeConfig(String configId);
+	void removeConfig(String configId);
 
-    public ReconciliationConfig getConfigByResourceByType(final String resourceId, final String type);
+    ReconciliationConfig getConfigByResourceByType(final String resourceId, final String type);
 
-    public ReconciliationConfig getConfigById(String configId);
+    ReconciliationConfig getConfigById(String configId);
 
-    public List<ReconciliationConfig> getConfigsByResource(String resourceId);
+    List<ReconciliationConfig> getConfigsByResource(String resourceId);
 
     List<ReconciliationConfig> findReconConfig(ReconConfigSearchBean searchBean, int from, int size);
 
     int countReconConfig(final ReconConfigSearchBean searchBean);
 
-    public void clearSession();
+    void clearSession();
 }

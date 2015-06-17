@@ -15,5 +15,4 @@ public enum PropertyType {
 	ManagedSystem,
 	RegularExpression,
 	Organization
-	;
 }

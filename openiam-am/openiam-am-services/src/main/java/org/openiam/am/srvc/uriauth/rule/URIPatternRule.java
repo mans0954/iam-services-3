@@ -19,12 +19,12 @@ import org.openiam.am.srvc.uriauth.dto.URIPatternRuleToken;
  */
 public interface URIPatternRule {
 
-	public URIPatternRuleToken process(final String userId, 
-									   final URI uri, 
-									   final URIPatternMetaType metaType, 
-									   final Set<AbstractPatternMetaValue> valueSet,
-									   final URIPattern pattern,
-									   final URIPatternMethod method,
-									   final ContentProvider contentProvider,
-									   final AbstractMeta meta) throws Exception;
+	URIPatternRuleToken process(final String userId,
+								final URI uri,
+								final URIPatternMetaType metaType,
+								final Set<AbstractPatternMetaValue> valueSet,
+								final URIPattern pattern,
+								final URIPatternMethod method,
+								final ContentProvider contentProvider,
+								final AbstractMeta meta) throws Exception;
 }

@@ -48,10 +48,8 @@ public class Org2OrgXref implements Serializable {
 
         if (memberOrganizationId != null ? !memberOrganizationId.equals(that.memberOrganizationId) : that.memberOrganizationId != null)
             return false;
-        if (organizationId != null ? !organizationId.equals(that.organizationId) : that.organizationId != null)
-            return false;
+        return !(organizationId != null ? !organizationId.equals(that.organizationId) : that.organizationId != null);
 
-        return true;
     }
 
     @Override

@@ -43,9 +43,8 @@ public class CategoryTypeEmbeddableId implements Serializable {
         CategoryTypeEmbeddableId that = (CategoryTypeEmbeddableId) o;
 
         if (categoryId != null ? !categoryId.equals(that.categoryId) : that.categoryId != null) return false;
-        if (typeId != null ? !typeId.equals(that.typeId) : that.typeId != null) return false;
+        return !(typeId != null ? !typeId.equals(that.typeId) : that.typeId != null);
 
-        return true;
     }
 
     public int hashCode() {

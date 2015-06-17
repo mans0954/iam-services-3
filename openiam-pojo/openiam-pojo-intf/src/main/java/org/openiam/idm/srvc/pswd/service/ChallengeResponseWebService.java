@@ -45,51 +45,51 @@ import java.util.List;
 public interface ChallengeResponseWebService {
     
 	@WebMethod
-	public Integer getNumOfRequiredQuestions(@WebParam(name = "userId", targetNamespace = "") final String userId);
+	Integer getNumOfRequiredQuestions(@WebParam(name = "userId", targetNamespace = "") final String userId);
 
     @WebMethod
-    public Integer getNumOfCorrectAnswers(@WebParam(name = "userId", targetNamespace = "") final String userId);
+	Integer getNumOfCorrectAnswers(@WebParam(name = "userId", targetNamespace = "") final String userId);
 
 	@WebMethod
-	public Integer count(@WebParam(name = "searchBean", targetNamespace = "") final IdentityQuestionSearchBean searchBean);
+	Integer count(@WebParam(name = "searchBean", targetNamespace = "") final IdentityQuestionSearchBean searchBean);
 
 	@WebMethod
-	public List<IdentityQuestion> findQuestionBeans(@WebParam(name = "searchBean", targetNamespace = "") final IdentityQuestionSearchBean searchBean, 
-									  				@WebParam(name = "from", targetNamespace = "") int from, 
-									  				@WebParam(name = "size", targetNamespace = "") int size,
-									  				@WebParam(name = "language", targetNamespace = "") final Language language);
+	List<IdentityQuestion> findQuestionBeans(@WebParam(name = "searchBean", targetNamespace = "") final IdentityQuestionSearchBean searchBean,
+											 @WebParam(name = "from", targetNamespace = "") int from,
+											 @WebParam(name = "size", targetNamespace = "") int size,
+											 @WebParam(name = "language", targetNamespace = "") final Language language);
 	
 	@WebMethod
-	public Response saveQuestion(@WebParam(name = "question", targetNamespace = "") final IdentityQuestion question);
+	Response saveQuestion(@WebParam(name = "question", targetNamespace = "") final IdentityQuestion question);
 	
 	@WebMethod
-	public Response deleteQuestion(@WebParam(name = "questionId", targetNamespace = "") final String questionId);
+	Response deleteQuestion(@WebParam(name = "questionId", targetNamespace = "") final String questionId);
 	
 	@WebMethod
-	public IdentityQuestion getQuestion(
+	IdentityQuestion getQuestion(
 			@WebParam(name = "questionId", targetNamespace = "") final String questionId,
 			@WebParam(name = "language", targetNamespace = "") final Language language);
 	
 	@WebMethod
-	public List<UserIdentityAnswer> findAnswerBeans(@WebParam(name = "searchBean", targetNamespace = "") final IdentityAnswerSearchBean searchBean,
-                                                    @WebParam(name = "requesterId", targetNamespace = "") final  String requesterId,
-													@WebParam(name = "from", targetNamespace = "") int from, 
-													@WebParam(name = "size", targetNamespace = "") int size) throws Exception;
+	List<UserIdentityAnswer> findAnswerBeans(@WebParam(name = "searchBean", targetNamespace = "") final IdentityAnswerSearchBean searchBean,
+											 @WebParam(name = "requesterId", targetNamespace = "") final String requesterId,
+											 @WebParam(name = "from", targetNamespace = "") int from,
+											 @WebParam(name = "size", targetNamespace = "") int size) throws Exception;
 	
 	@WebMethod
-	public Response resetQuestionsForUser(final @WebParam(name = "userId", targetNamespace = "") String userId);
+	Response resetQuestionsForUser(final @WebParam(name = "userId", targetNamespace = "") String userId);
 	
 	@WebMethod
-	public Response saveAnswer(@WebParam(name = "answer", targetNamespace = "") final UserIdentityAnswer answer);
+	Response saveAnswer(@WebParam(name = "answer", targetNamespace = "") final UserIdentityAnswer answer);
 	
 	@WebMethod
-	public Response deleteAnswer(@WebParam(name = "answerId", targetNamespace = "") final String answerId);
+	Response deleteAnswer(@WebParam(name = "answerId", targetNamespace = "") final String answerId);
 	
 	@WebMethod
-	public Response saveAnswers(@WebParam(name = "answerList", targetNamespace = "") final List<UserIdentityAnswer> answerList);
+	Response saveAnswers(@WebParam(name = "answerList", targetNamespace = "") final List<UserIdentityAnswer> answerList);
 
     @WebMethod
-    public Response validateAnswers(@WebParam(name = "answerList", targetNamespace = "") final List<UserIdentityAnswer> answerList);
+	Response validateAnswers(@WebParam(name = "answerList", targetNamespace = "") final List<UserIdentityAnswer> answerList);
 
     /**
      * Determines is the answers that are provided by the user are the same as those stored in
@@ -104,6 +104,6 @@ public interface ChallengeResponseWebService {
     boolean isResponseValid(String userId, List<UserIdentityAnswer> answerList) throws Exception;
     
 	@WebMethod
-    public boolean isUserAnsweredSecurityQuestions(final String userId) throws Exception;
+	boolean isUserAnsweredSecurityQuestions(final String userId) throws Exception;
 
 }

@@ -78,10 +78,8 @@ public class SynchReviewRecord implements Serializable {
         if (header != that.header) return false;
         if (synchReviewId != null ? !synchReviewId.equals(that.synchReviewId) : that.synchReviewId != null)
             return false;
-        if (synchReviewRecordId != null ? !synchReviewRecordId.equals(that.synchReviewRecordId) : that.synchReviewRecordId != null)
-            return false;
+        return !(synchReviewRecordId != null ? !synchReviewRecordId.equals(that.synchReviewRecordId) : that.synchReviewRecordId != null);
 
-        return true;
     }
 
     @Override

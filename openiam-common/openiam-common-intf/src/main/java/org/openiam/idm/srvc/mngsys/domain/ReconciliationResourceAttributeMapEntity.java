@@ -84,10 +84,8 @@ public class ReconciliationResourceAttributeMapEntity implements
             return false;
         if (defaultAttributePolicy != null ? !defaultAttributePolicy.equals(that.defaultAttributePolicy) : that.defaultAttributePolicy != null)
             return false;
-        if (reconciliationResourceAttributeMapId != null ? !reconciliationResourceAttributeMapId.equals(that.reconciliationResourceAttributeMapId) : that.reconciliationResourceAttributeMapId != null)
-            return false;
+        return !(reconciliationResourceAttributeMapId != null ? !reconciliationResourceAttributeMapId.equals(that.reconciliationResourceAttributeMapId) : that.reconciliationResourceAttributeMapId != null);
 
-        return true;
     }
 
     @Override

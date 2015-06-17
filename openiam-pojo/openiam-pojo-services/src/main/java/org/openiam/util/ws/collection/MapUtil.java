@@ -23,7 +23,7 @@ public class MapUtil {
 		
 		int size = items.length;
 		for (int i = 0; i < size; i++) {
-			MapItem item = (MapItem) items[i];
+			MapItem item = items[i];
 			if (item.getKey().equals(key))
 				return item.getItem();
 		}
@@ -37,7 +37,7 @@ public class MapUtil {
 		int j = 0;
 		int size = items.length;
 		for (int i = 0; i < size; i++) {
-			MapItem item = (MapItem) items[i];
+			MapItem item = items[i];
 			if (item.getKey().equals(key))
 				newItems[j++] = items[i];
 		}
@@ -58,7 +58,7 @@ public class MapUtil {
 		Map m = new HashMap();
 		int size = items.length;
 		for (int i = 0; i < size; i++) {
-			MapItem item = (MapItem) items[i];
+			MapItem item = items[i];
 			m.put(item.getKey(), item.getItem());
 		}
 		return m;		
@@ -79,7 +79,7 @@ public class MapUtil {
 		
 		int size = itemAry.length;
 		for (int i = 0; i < size; i++) {
-			MapItem mItem = (MapItem) itemAry[i];
+			MapItem mItem = itemAry[i];
 			if (mItem.getKey().equals(item.getKey())) {
 				itemAry[i] = item;
 			}

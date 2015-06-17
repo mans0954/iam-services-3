@@ -16,11 +16,11 @@ import java.util.List;
 public interface ReconciliationConfigDAO extends
         BaseDao<ReconciliationConfigEntity, String> {
 
-    public ReconciliationConfigEntity findByResourceIdByType(
+    ReconciliationConfigEntity findByResourceIdByType(
             java.lang.String resourceId, String type);
 
-    public ReconciliationConfigEntity get(String id);
+    ReconciliationConfigEntity get(String id);
 
-    public List<ReconciliationConfigEntity> findByResourceId(
+    List<ReconciliationConfigEntity> findByResourceId(
             java.lang.String resourceId);
 }

@@ -296,10 +296,7 @@ private Subject buildSubject(String userId, String principal, String issuer) {
 			if (curTime.isBefore(cond.getNotBefore().getMillis())) {
 				return false;
 			}
-			if (curTime.isAfter(cond.getNotOnOrAfter().getMillis())) {
-				return false;
-			}
-			return true;
+			return !curTime.isAfter(cond.getNotOnOrAfter().getMillis());
 		}catch(Exception e) {
 			log.error("Error during token validation: " + e);
 			return false;

@@ -11,10 +11,10 @@ import org.openiam.exception.EncryptionException;
  */
 public interface Cryptor {
 
-	public abstract String encrypt(byte[] key,String input)  throws EncryptionException;
+	String encrypt(byte[] key, String input)  throws EncryptionException;
 
-	public abstract byte[] encryptTobyte(byte[] key, String input) throws EncryptionException;
+	byte[] encryptTobyte(byte[] key, String input) throws EncryptionException;
 
-	public abstract String decrypt(byte[] key,String input)  throws EncryptionException;
+	String decrypt(byte[] key, String input)  throws EncryptionException;
 
 }

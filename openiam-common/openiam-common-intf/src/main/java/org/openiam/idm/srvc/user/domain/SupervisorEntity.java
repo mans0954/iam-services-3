@@ -69,9 +69,8 @@ public class SupervisorEntity {
         if (isPrimarySuper != that.isPrimarySuper) return false;
         if (employee != null ? !employee.equals(that.employee) : that.employee != null) return false;
         if (id != null ? !id.equals(that.id) : that.id != null) return false;
-        if (supervisor != null ? !supervisor.equals(that.supervisor) : that.supervisor != null) return false;
+        return !(supervisor != null ? !supervisor.equals(that.supervisor) : that.supervisor != null);
 
-        return true;
     }
 
     @Override

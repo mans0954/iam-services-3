@@ -13,37 +13,37 @@ import java.util.List;
 @WebService(targetNamespace = "urn:idm.openiam.org/srvc/org/service", name = "OrganizationTypeDataService")
 public interface OrganizationTypeDataService {
 
-	public OrganizationType findByIdLocalized(final @WebParam(name = "id", targetNamespace = "") String id,
-											  final @WebParam(name = "language", targetNamespace = "") Language language);
+	OrganizationType findByIdLocalized(final @WebParam(name = "id", targetNamespace = "") String id,
+									   final @WebParam(name = "language", targetNamespace = "") Language language);
 	
-	public List<OrganizationType> findAllowedChildrenByDelegationFilterLocalized(final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
-																				 final @WebParam(name = "language", targetNamespace = "") Language language);
-	
-	@WebMethod
-	public List<OrganizationType> findBeans(final @WebParam(name = "searchBean", targetNamespace = "") OrganizationTypeSearchBean searchBean,
-											final @WebParam(name = "from", targetNamespace = "") int from,
-											final @WebParam(name = "size", targetNamespace = "") int size,
-											final @WebParam(name = "language", targetNamespace = "") Language language);
+	List<OrganizationType> findAllowedChildrenByDelegationFilterLocalized(final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
+																		  final @WebParam(name = "language", targetNamespace = "") Language language);
 	
 	@WebMethod
-	public int count(final @WebParam(name = "searchBean", targetNamespace = "") OrganizationTypeSearchBean searchBean);
+	List<OrganizationType> findBeans(final @WebParam(name = "searchBean", targetNamespace = "") OrganizationTypeSearchBean searchBean,
+									 final @WebParam(name = "from", targetNamespace = "") int from,
+									 final @WebParam(name = "size", targetNamespace = "") int size,
+									 final @WebParam(name = "language", targetNamespace = "") Language language);
 	
 	@WebMethod
-	public Response save(final @WebParam(name = "entity", targetNamespace = "") OrganizationType type);
+	int count(final @WebParam(name = "searchBean", targetNamespace = "") OrganizationTypeSearchBean searchBean);
 	
 	@WebMethod
-	public Response delete(final @WebParam(name = "id", targetNamespace = "") String id);
+	Response save(final @WebParam(name = "entity", targetNamespace = "") OrganizationType type);
 	
 	@WebMethod
-	public Response addChild(final @WebParam(name = "id", targetNamespace = "") String id,
-							 final @WebParam(name = "childId", targetNamespace = "") String childId);
+	Response delete(final @WebParam(name = "id", targetNamespace = "") String id);
 	
 	@WebMethod
-	public Response removeChild(final @WebParam(name = "id", targetNamespace = "") String id,
-							 	final @WebParam(name = "childId", targetNamespace = "") String childId);
+	Response addChild(final @WebParam(name = "id", targetNamespace = "") String id,
+					  final @WebParam(name = "childId", targetNamespace = "") String childId);
+	
+	@WebMethod
+	Response removeChild(final @WebParam(name = "id", targetNamespace = "") String id,
+						 final @WebParam(name = "childId", targetNamespace = "") String childId);
 
     @WebMethod
-    public List<OrganizationType> getAllowedParents(final @WebParam(name = "organizationTypeId", targetNamespace = "") String organizationTypeId,
-                                                          final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
-                                                          final @WebParam(name = "language", targetNamespace = "") Language language);
+	List<OrganizationType> getAllowedParents(final @WebParam(name = "organizationTypeId", targetNamespace = "") String organizationTypeId,
+											 final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
+											 final @WebParam(name = "language", targetNamespace = "") Language language);
 }

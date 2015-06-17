@@ -1067,6 +1067,14 @@
 			<a>uriPatterns</a>
 			<b>uriPatterns</b>
 		</field-exclude>
+		<field-exclude>
+			<a>oAuthCodes</a>
+			<b>oAuthCodes</b>
+		</field-exclude>
+		<field-exclude>
+			<a>oAuthTokens</a>
+			<b>oAuthTokens</b>
+		</field-exclude>
 	</mapping>
 
 	<mapping>

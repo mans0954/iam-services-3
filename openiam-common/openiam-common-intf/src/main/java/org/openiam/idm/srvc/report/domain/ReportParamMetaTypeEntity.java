@@ -64,9 +64,8 @@ public class ReportParamMetaTypeEntity {
 
         if (id != null ? !id.equals(that.id) : that.id != null) return false;
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
-        if (isMultiple != that.isMultiple) return false;
+        return isMultiple == that.isMultiple;
 
-        return true;
     }
 
     @Override

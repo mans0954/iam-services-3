@@ -17,5 +17,5 @@ public interface AccessRightDataService {
 	Response delete(String id);
 	AccessRight get(String id);
 	List<AccessRight> findBeans(final AccessRightSearchBean searchBean, final int from, final int size, final Language language);
-	public int count(final AccessRightSearchBean searchBean);
+	int count(final AccessRightSearchBean searchBean);
 }

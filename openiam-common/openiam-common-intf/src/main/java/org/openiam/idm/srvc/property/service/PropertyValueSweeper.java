@@ -4,9 +4,9 @@ import org.openiam.idm.srvc.lang.dto.Language;
 
 public interface PropertyValueSweeper {
 
-	public String getValue(final String key, final Language language);
+	String getValue(final String key, final Language language);
 	
-	public String getString(final String key);
-	public boolean getBoolean(final String key);
-	public int getInt(final String key);
+	String getString(final String key);
+	boolean getBoolean(final String key);
+	int getInt(final String key);
 }

@@ -27,6 +27,8 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.Where;
+import org.openiam.am.srvc.domain.OAuthCodeEntity;
+import org.openiam.am.srvc.domain.OAuthTokenEntity;
 import org.openiam.base.domain.AbstractMetdataTypeEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.access.domain.AccessRightEntity;
@@ -106,6 +108,14 @@ public class RoleEntity extends AbstractMetdataTypeEntity {
 	@OneToMany(cascade = {CascadeType.ALL}, fetch = FetchType.LAZY, mappedBy="associationEntityId", orphanRemoval=true)
 	@Where(clause="ASSOCIATION_TYPE='ROLE'")
 	private Set<ApproverAssociationEntity> approverAssociations;
+
+	@ManyToMany(cascade = {CascadeType.ALL})
+	@JoinTable(name = "OAUTH_CODE_SCOPES", joinColumns = { @JoinColumn(name = "ROLE_ID") }, inverseJoinColumns = { @JoinColumn(name = "OAUTH_CODE_ID") })
+	private Set<OAuthCodeEntity> oAuthCodeSet = new HashSet<OAuthCodeEntity>(0);
+
+	@ManyToMany(cascade = {CascadeType.ALL})
+	@JoinTable(name = "OAUTH_TOKEN_SCOPES", joinColumns = { @JoinColumn(name = "ROLE_ID") }, inverseJoinColumns = { @JoinColumn(name = "OAUTH_TOKEN_ID") })
+	private Set<OAuthTokenEntity> oAuthTokeSet = new HashSet<OAuthTokenEntity>(0);
 
 	public String getName() {
 		return name;
@@ -313,6 +323,22 @@ public class RoleEntity extends AbstractMetdataTypeEntity {
 			}
 			this.approverAssociations.add(entity);
 		}
+	}
+
+	public Set<OAuthCodeEntity> getoAuthCodeSet() {
+		return oAuthCodeSet;
+	}
+
+	public void setoAuthCodeSet(Set<OAuthCodeEntity> oAuthCodeSet) {
+		this.oAuthCodeSet = oAuthCodeSet;
+	}
+
+	public Set<OAuthTokenEntity> getoAuthTokeSet() {
+		return oAuthTokeSet;
+	}
+
+	public void setoAuthTokeSet(Set<OAuthTokenEntity> oAuthTokeSet) {
+		this.oAuthTokeSet = oAuthTokeSet;
 	}
 
 	@Override

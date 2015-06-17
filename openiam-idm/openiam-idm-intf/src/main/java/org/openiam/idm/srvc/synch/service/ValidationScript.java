@@ -29,10 +29,10 @@ import org.openiam.idm.srvc.synch.dto.LineObject;
  *
  */
 public interface ValidationScript {
-	static int VALID 		= 1;
-	static int NOT_VALID 	= 2;
-	static int SKIP 		= 3;
-    static int SKIP_TO_REVIEW = 4;
+	int VALID 		= 1;
+	int NOT_VALID 	= 2;
+	int SKIP 		= 3;
+    int SKIP_TO_REVIEW = 4;
 	
 	int isValid(LineObject rowObj);
 }

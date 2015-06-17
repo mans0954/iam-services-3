@@ -43,9 +43,7 @@ public abstract class AbstractMatchModeEntity extends KeyEntity {
 		if (getClass() != obj.getClass())
 			return false;
 		AbstractMatchModeEntity other = (AbstractMatchModeEntity) obj;
-		if (matchMode != other.matchMode)
-			return false;
-		return true;
+		return matchMode == other.matchMode;
 	}
 
 	@Override

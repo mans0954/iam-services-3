@@ -20,69 +20,69 @@ public interface Property extends java.io.Serializable {
      *
      * @return java.lang.String
      */
-    public String getId();
+    String getId();
 
     /**
      * Gets the name of this object.
      *
      * @return java.lang.String
      */
-    public String getName();
+    String getName();
 
     /**
      * Gets the key object of the parent or owning object, such as User, Company,
      * Product.
      */
-    public Object getParentKey();
+    Object getParentKey();
 
     /**
      * Gets the value of this component.
      */
-    public Object getValue();
+    Object getValue();
 
     /**
      * Returns the value of the property as a string. This method is useful when
      * the value is an <code>Object</code>.
      */
-    public String getValueAsString();
+    String getValueAsString();
 
     /**
      * Sets the unique id for this component.
      *
      * @return java.lang.String
      */
-    public void setId(String id);
+    void setId(String id);
 
     /**
      * Gets the name of this object.
      *
      * @return java.lang.String
      */
-    public void setName(String name);
+    void setName(String name);
 
     /**
      * Sets the Id of the parent or owning object, such as User, Company,
      * Product.
      */
-    public void setParentKey(Object id);
+    void setParentKey(Object id);
 
     /**
      * Sets the value of this component.
      */
-    public void setValue(Object value);
+    void setValue(Object value);
 
     /**
      * Indicates if the values in this property were changed since the last time they were
      * saved in the database.
      */
-    public boolean isModified();
+    boolean isModified();
 
     /**
      * Returns the MetaData Associated with this object.
      */
-    public String getMetaDataId();
+    String getMetaDataId();
 
-    public void setMetaDataId(String val);
+    void setMetaDataId(String val);
 
     /**
      * <p/>
@@ -91,5 +91,5 @@ public interface Property extends java.io.Serializable {
      * </font><p>
      */
 
-    public boolean isMultivalued();
+    boolean isMultivalued();
 }

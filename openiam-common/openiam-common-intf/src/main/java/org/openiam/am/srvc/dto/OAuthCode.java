@@ -4,6 +4,7 @@ import org.openiam.am.srvc.domain.OAuthCodeEntity;
 import org.openiam.base.KeyDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
+import org.openiam.idm.srvc.role.dto.Role;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -28,7 +29,7 @@ public class OAuthCode extends KeyDTO {
     private Long expiredOn;
     private String clientId;
     private String userId;
-    private Set<MetadataType> scopeSet = new HashSet<MetadataType>(0);
+    private Set<Role> scopeSet = new HashSet<Role>(0);
 
     public String getCode() {
         return code;
@@ -62,16 +63,16 @@ public class OAuthCode extends KeyDTO {
         this.userId = userId;
     }
 
-    public Set<MetadataType> getScopeSet() {
+    public Set<Role> getScopeSet() {
         return scopeSet;
     }
 
-    public void setScopeSet(Set<MetadataType> scopeSet) {
+    public void setScopeSet(Set<Role> scopeSet) {
         this.scopeSet = scopeSet;
     }
-    public void addScope(MetadataType scope) {
+    public void addScope(Role scope) {
         if(this.scopeSet==null)
-            this.scopeSet=new HashSet<MetadataType>(0);
+            this.scopeSet=new HashSet<Role>(0);
         this.scopeSet.add(scope);
     }
 

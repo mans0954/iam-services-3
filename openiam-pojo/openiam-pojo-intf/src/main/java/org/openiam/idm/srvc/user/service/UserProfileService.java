@@ -8,18 +8,18 @@ import org.openiam.idm.srvc.user.dto.UserProfileRequestModel;
 
 public interface UserProfileService {
 
-	public void saveUserProfile(final UserProfileRequestModel request) throws Exception;
+	void saveUserProfile(final UserProfileRequestModel request) throws Exception;
 	//public CreateUserToken createNewUserProfile(final NewUserProfileRequestModel request) throws Exception;
-	public void validate(final NewUserProfileRequestModel request) throws Exception;
+    void validate(final NewUserProfileRequestModel request) throws Exception;
 
-    public ProfilePicture getProfilePictureById(String picId);
+    ProfilePicture getProfilePictureById(String picId);
 
-    public ProfilePictureEntity getProfilePictureByUserId(String userId);
+    ProfilePictureEntity getProfilePictureByUserId(String userId);
 
-    public void saveProfilePicture(ProfilePictureEntity pic) throws Exception;
+    void saveProfilePicture(ProfilePictureEntity pic) throws Exception;
 
-    public void deleteProfilePictureById(String picId) throws Exception;
+    void deleteProfilePictureById(String picId) throws Exception;
 
-    public void deleteProfilePictureByUserId(String userId) throws Exception;
+    void deleteProfilePictureByUserId(String userId) throws Exception;
 
 }

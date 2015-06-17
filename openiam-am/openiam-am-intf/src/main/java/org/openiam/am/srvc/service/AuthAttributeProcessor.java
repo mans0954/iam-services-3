@@ -8,6 +8,6 @@ import org.openiam.idm.srvc.user.domain.UserEntity;
 
 public interface AuthAttributeProcessor {
 
-	public String process(final String reflectionKey, final EnumMap<AmAttributes, Object> objectMap) throws Exception;
-	public String process(final String reflectionKey, final String userId, final String managedSysId) throws Exception;
+	String process(final String reflectionKey, final EnumMap<AmAttributes, Object> objectMap) throws Exception;
+	String process(final String reflectionKey, final String userId, final String managedSysId) throws Exception;
 }

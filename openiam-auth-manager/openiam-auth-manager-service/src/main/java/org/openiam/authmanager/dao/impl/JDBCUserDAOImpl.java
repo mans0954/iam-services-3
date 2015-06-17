@@ -175,7 +175,7 @@ public class JDBCUserDAOImpl extends AbstractJDBCDao implements UserDAO {
 
 		@Override
 		public InternalAuthroizationUser extractData(final ResultSet rs) throws SQLException, DataAccessException {
-			final InternalAuthroizationUser user = new InternalAuthroizationUser();;
+			final InternalAuthroizationUser user = new InternalAuthroizationUser();
 			while(rs.next()) {
 				final String userId = rs.getString("L_USER_ID");
 				final String login = rs.getString("L_LOGIN");

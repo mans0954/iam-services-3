@@ -111,9 +111,7 @@ public class GroupSearchBean extends EntitlementsSearchBean<Group, String> imple
 		if (getClass() != obj.getClass())
 			return false;
 		GroupSearchBean other = (GroupSearchBean) obj;
-		if (isRootsOnly != other.isRootsOnly)
-			return false;
-		return true;
+		return isRootsOnly == other.isRootsOnly;
 	}
 
 	@Override

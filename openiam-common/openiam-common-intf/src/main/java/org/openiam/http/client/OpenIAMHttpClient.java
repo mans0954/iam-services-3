@@ -56,7 +56,7 @@ public final class OpenIAMHttpClient {
 				.build();
 	}
 	
-	public String doPost(final URL url, final Map<String, String> headers, final Map<String, String> params) throws ClientProtocolException, IOException {
+	public String doPost(final URL url, final Map<String, String> headers, final Map<String, String> params) throws IOException {
 		final RequestConfig config = RequestConfig.custom()
 				.setConnectionRequestTimeout(timeout)
 				.setSocketTimeout(timeout)
@@ -92,7 +92,7 @@ public final class OpenIAMHttpClient {
 		return content;
 	}
 	
-	public InputStream getInputStream(final URL url) throws ClientProtocolException, IOException {
+	public InputStream getInputStream(final URL url) throws IOException {
 		final RequestConfig config = RequestConfig.custom()
 													.setConnectionRequestTimeout(timeout)
 													.setSocketTimeout(timeout)

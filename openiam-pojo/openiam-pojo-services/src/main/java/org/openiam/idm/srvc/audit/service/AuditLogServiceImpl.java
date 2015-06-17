@@ -193,9 +193,7 @@ public class AuditLogServiceImpl implements AuditLogService {
         return false;
     }
     private boolean logTargetsEquals(Set<AuditLogTargetEntity> target, Set<AuditLogTargetEntity> source) {
-        if(CollectionUtils.isNotEmpty(target) ? !target.equals(source) : CollectionUtils.isNotEmpty(source))
-            return false;
-        return true;
+        return !(CollectionUtils.isNotEmpty(target) ? !target.equals(source) : CollectionUtils.isNotEmpty(source));
     }
 
     @Override

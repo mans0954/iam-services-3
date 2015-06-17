@@ -28,5 +28,5 @@ package org.openiam.provision.cmd;
  */
 public interface ProvisioningCommand {
 
-	public boolean execute();
+	boolean execute();
 }

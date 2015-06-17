@@ -84,9 +84,8 @@ public class RoleAttributeEntity extends AbstractAttributeEntity {
 
         if (isMultivalued != that.isMultivalued) return false;
         if (role != null ? !role.equals(that.role) : that.role != null) return false;
-        if (values != null ? !values.equals(that.values) : that.values != null) return false;
+        return !(values != null ? !values.equals(that.values) : that.values != null);
 
-        return true;
     }
 
     @Override

@@ -87,9 +87,8 @@ public class AuditLogTargetEntity implements Serializable {
         if (objectPrincipal != null ? !objectPrincipal.equals(that.objectPrincipal) : that.objectPrincipal != null)
             return false;
         if (targetId != null ? !targetId.equals(that.targetId) : that.targetId != null) return false;
-        if (targetType != null ? !targetType.equals(that.targetType) : that.targetType != null) return false;
+        return !(targetType != null ? !targetType.equals(that.targetType) : that.targetType != null);
 
-        return true;
     }
     // WARNING!  We can't match this object by ID. This object can be equals with different IDs !!!
     @Override

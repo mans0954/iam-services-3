@@ -6,6 +6,7 @@ import org.openiam.am.srvc.dto.OAuthToken;
 import org.openiam.base.domain.KeyEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
+import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 
 import javax.persistence.*;
@@ -32,7 +33,7 @@ public class OAuthTokenEntity extends KeyEntity {
     private Long expiredOn;
 
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch= FetchType.LAZY)
-    @JoinColumn(name = "CLIENT_ID", referencedColumnName = "PROVIDER_ID", insertable = true, updatable = true, nullable=true)
+    @JoinColumn(name = "PROVIDER_ID", referencedColumnName = "PROVIDER_ID", insertable = true, updatable = true, nullable=true)
     private AuthProviderEntity client;
 
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch= FetchType.LAZY)
@@ -40,8 +41,8 @@ public class OAuthTokenEntity extends KeyEntity {
     private UserEntity user;
 
     @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    @JoinTable(name = "OAUTH_TOKEN_SCOPES", joinColumns = { @JoinColumn(name = "OAUTH_TOKEN_ID") }, inverseJoinColumns = { @JoinColumn(name = "TYPE_ID") })
-    private Set<MetadataTypeEntity> scopeSet = new HashSet<MetadataTypeEntity>(0);
+    @JoinTable(name = "OAUTH_TOKEN_SCOPES", joinColumns = { @JoinColumn(name = "OAUTH_TOKEN_ID") }, inverseJoinColumns = { @JoinColumn(name = "ROLE_ID") })
+    private Set<RoleEntity> scopeSet = new HashSet<RoleEntity>(0);
 
     public String getToken() {
         return token;
@@ -83,16 +84,16 @@ public class OAuthTokenEntity extends KeyEntity {
         this.user = user;
     }
 
-    public Set<MetadataTypeEntity> getScopeSet() {
+    public Set<RoleEntity> getScopeSet() {
         return scopeSet;
     }
 
-    public void setScopeSet(Set<MetadataTypeEntity> scopeSet) {
+    public void setScopeSet(Set<RoleEntity> scopeSet) {
         this.scopeSet = scopeSet;
     }
-    public void addScope(MetadataTypeEntity scope) {
+    public void addScope(RoleEntity scope) {
         if(this.scopeSet==null)
-            this.scopeSet=new HashSet<MetadataTypeEntity>(0);
+            this.scopeSet=new HashSet<RoleEntity>(0);
         this.scopeSet.add(scope);
     }
 

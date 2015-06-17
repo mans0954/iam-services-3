@@ -9,30 +9,30 @@ import org.openiam.idm.srvc.user.domain.UserEntity;
  * Date: 09.10.12
  */
 public interface KeyManagementService {
-    public  byte[] getUserKey(String userId, String keyName) throws EncryptionException;
-    public  byte[] getSystemUserKey(String keyName) throws EncryptionException;
+    byte[] getUserKey(String userId, String keyName) throws EncryptionException;
+    byte[] getSystemUserKey(String keyName) throws EncryptionException;
 
-    public Long generateUserKeys(String userId)throws Exception;
+    Long generateUserKeys(String userId)throws Exception;
 
-    public Long generateUserKeys(UserEntity user) throws Exception;
+    Long generateUserKeys(UserEntity user) throws Exception;
 
-    public byte[] getCookieKey()throws Exception;
-    public byte[] generateCookieKey()throws Exception;
-    public byte[] getCommonKey() throws Exception;
-    public byte[] generateCommonKey()throws Exception;
+    byte[] getCookieKey()throws Exception;
+    byte[] generateCookieKey()throws Exception;
+    byte[] getCommonKey() throws Exception;
+    byte[] generateCommonKey()throws Exception;
 
-    public void generateMasterKey() throws Exception;
-    public void initKeyManagement() throws Exception;
-    public void migrateData(String oldSecretKey)throws Exception;
+    void generateMasterKey() throws Exception;
+    void initKeyManagement() throws Exception;
+    void migrateData(String oldSecretKey)throws Exception;
 
-    public String encryptData(String data)throws Exception;
-    public String decryptData(String encryptedData)throws Exception;
-    public String encryptData(String userId, String data)throws Exception;
-    public String decryptData(String userId, String encryptedData)throws Exception;
+    String encryptData(String data)throws Exception;
+    String decryptData(String encryptedData)throws Exception;
+    String encryptData(String userId, String data)throws Exception;
+    String decryptData(String userId, String encryptedData)throws Exception;
 
-    public String encrypt(String userId, KeyName keyName, String data)throws Exception;
-    public String encrypt(byte[] key, String data)throws Exception;
-    public String decrypt(String userId, KeyName keyName, String encryptedData)throws Exception;
-    public String decrypt(byte[] key, String encryptedData)throws Exception;
+    String encrypt(String userId, KeyName keyName, String data)throws Exception;
+    String encrypt(byte[] key, String data)throws Exception;
+    String decrypt(String userId, KeyName keyName, String encryptedData)throws Exception;
+    String decrypt(byte[] key, String encryptedData)throws Exception;
 
 }

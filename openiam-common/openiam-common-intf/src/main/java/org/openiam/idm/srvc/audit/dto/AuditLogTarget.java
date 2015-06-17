@@ -71,10 +71,9 @@ public class AuditLogTarget implements Serializable {
         if (objectPrincipal != null ? !objectPrincipal.equals(logTarget.objectPrincipal) : logTarget.objectPrincipal != null)
             return false;
         if (targetId != null ? !targetId.equals(logTarget.targetId) : logTarget.targetId != null) return false;
-        if (targetType != null ? !targetType.equals(logTarget.targetType) : logTarget.targetType != null) return false;
+		return !(targetType != null ? !targetType.equals(logTarget.targetType) : logTarget.targetType != null);
 
-        return true;
-    }
+	}
 
     // WARNING!  We can't match this object by ID. This object can be equals with different IDs !!!
     @Override

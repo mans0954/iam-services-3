@@ -212,7 +212,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 	        AuthenticationModule loginModule = null;
 	        if(StringUtils.isNotBlank(springBeanName)) {
 	        	try {
-	        		loginModule = (AuthenticationModule)ctx.getBean(springBeanName, AuthenticationModule.class);
+	        		loginModule = ctx.getBean(springBeanName, AuthenticationModule.class);
 	        	} catch(Throwable e) {
 	        		log.error(String.format("Error while getting spring bean: %s", springBeanName), e);
 	        	}
@@ -316,7 +316,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 	        AuthenticationModule loginModule = null;
 	        if(StringUtils.isNotBlank(springBeanName)) {
 	        	try {
-	        		loginModule = (AuthenticationModule)ctx.getBean(springBeanName, AuthenticationModule.class);
+	        		loginModule = ctx.getBean(springBeanName, AuthenticationModule.class);
 	        	} catch(Throwable e) {
 	        		log.error(String.format("Error while getting spring bean: %s", springBeanName), e);
 	        	}

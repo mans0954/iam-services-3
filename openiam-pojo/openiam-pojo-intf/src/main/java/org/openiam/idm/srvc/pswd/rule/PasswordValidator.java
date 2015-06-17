@@ -42,14 +42,14 @@ public interface PasswordValidator {
      * @param password
      * @return
      */
-    public void validate(Policy policy, Password password) throws ObjectNotFoundException, IOException, PasswordRuleException;
+    void validate(Policy policy, Password password) throws ObjectNotFoundException, IOException, PasswordRuleException;
     /**
      * Validates the password against the password policy that is passed in for the given user and login
      *
      * @param password
      * @return
      */
-    public void validateForUser(Policy policy, Password password, UserEntity usr, LoginEntity lg) throws ObjectNotFoundException, IOException, PasswordRuleException;
-    public List<PasswordRule> getPasswordRules(Policy policy, Password password, UserEntity usr, LoginEntity lg) throws ObjectNotFoundException, IOException;
-    public List<PasswordRule> getPasswordRules(Policy policy, Password password) throws ObjectNotFoundException, IOException;
+    void validateForUser(Policy policy, Password password, UserEntity usr, LoginEntity lg) throws ObjectNotFoundException, IOException, PasswordRuleException;
+    List<PasswordRule> getPasswordRules(Policy policy, Password password, UserEntity usr, LoginEntity lg) throws ObjectNotFoundException, IOException;
+    List<PasswordRule> getPasswordRules(Policy policy, Password password) throws ObjectNotFoundException, IOException;
 }

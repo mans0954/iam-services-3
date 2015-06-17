@@ -7,5 +7,5 @@ import org.openiam.elasticsearch.model.ElasticsearchReindexRequest;
  * Date: 10/3/14.
  */
 public interface ElasticsearchReindexProcessor  extends Runnable {
-    public void pushToQueue(ElasticsearchReindexRequest reindexRequest);
+    void pushToQueue(ElasticsearchReindexRequest reindexRequest);
 }

@@ -75,9 +75,7 @@ public class AuthLevel {
 				return false;
 		} else if (!name.equals(other.name))
 			return false;
-		if (requiresAuthentication != other.requiresAuthentication)
-			return false;
-		return true;
+		return requiresAuthentication == other.requiresAuthentication;
 	}
 
 	@Override

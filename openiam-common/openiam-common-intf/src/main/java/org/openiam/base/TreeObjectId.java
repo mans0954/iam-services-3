@@ -54,9 +54,8 @@ public class TreeObjectId implements Serializable {
 
         TreeObjectId that = (TreeObjectId) o;
 
-        if (value != null ? !value.equals(that.value) : that.value != null) return false;
+        return !(value != null ? !value.equals(that.value) : that.value != null);
 
-        return true;
     }
 
     @Override

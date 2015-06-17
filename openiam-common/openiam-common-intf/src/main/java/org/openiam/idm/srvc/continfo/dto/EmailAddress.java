@@ -81,7 +81,7 @@ public class EmailAddress extends AbstractMetadataTypeDTO {
         this.isActive = emailAdr.getIsActive();
         this.isDefault = emailAdr.getIsDefault();
         this.setName(emailAdr.getName());
-        this.setMdTypeId(emailAdr.getMdTypeId());;
+        this.setMdTypeId(emailAdr.getMdTypeId());
     }
 
     public String getParentId() {

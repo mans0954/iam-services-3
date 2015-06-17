@@ -201,7 +201,7 @@ public class GroupDataServiceImpl implements GroupDataService {
     @Deprecated
     public List<GroupEntity> getChildGroupsLocalize(final String groupId, final String requesterId, final int from, final int size, final LanguageEntity language) {
     	final GroupSearchBean sb = new GroupSearchBean();
-    	sb.addParentId(groupId);;
+    	sb.addParentId(groupId);
         return findBeansLocalize(sb, requesterId, from, size, language);
     }
 
@@ -216,7 +216,7 @@ public class GroupDataServiceImpl implements GroupDataService {
     @Deprecated
     public List<GroupEntity> getParentGroupsLocalize(final String groupId, final String requesterId, final int from, final int size, final LanguageEntity language) {
     	final GroupSearchBean sb = new GroupSearchBean();
-    	sb.addChildId(groupId);;
+    	sb.addChildId(groupId);
         return findBeansLocalize(sb, requesterId, from, size, language);
     }
 
@@ -376,7 +376,7 @@ public class GroupDataServiceImpl implements GroupDataService {
     @Deprecated
     public int getNumOfChildGroups(final String groupId, final String requesterId) {
     	final GroupSearchBean sb = new GroupSearchBean();
-    	sb.addParentId(groupId);;
+    	sb.addParentId(groupId);
         return countBeans(sb, requesterId);
     }
 
@@ -384,7 +384,7 @@ public class GroupDataServiceImpl implements GroupDataService {
     @Deprecated
     public int getNumOfParentGroups(final String groupId, final String requesterId) {
     	final GroupSearchBean sb = new GroupSearchBean();
-    	sb.addChildId(groupId);;
+    	sb.addChildId(groupId);
         return countBeans(sb, requesterId);
     }
 

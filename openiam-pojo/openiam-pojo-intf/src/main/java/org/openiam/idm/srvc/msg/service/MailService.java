@@ -53,8 +53,8 @@ public interface MailService {
      * @param isHtmlFormat
      * @param executionDateTime - execution time
      */
-    public void sendEmailByDateTime(String from, String to, String cc, String subject,
-                          String msg ,String attachment ,boolean isHtmlFormat, Date executionDateTime);
+    void sendEmailByDateTime(String from, String to, String cc, String subject,
+                             String msg, String attachment, boolean isHtmlFormat, Date executionDateTime);
 
     
     /**
@@ -67,8 +67,8 @@ public interface MailService {
      * @param attachment
      * @param isHtmlFormat 
      */
-    public void sendEmail(String from, String to, String cc, String subject,
-            String msg ,String attachment ,boolean isHtmlFormat);  
+    void sendEmail(String from, String to, String cc, String subject,
+                   String msg, String attachment, boolean isHtmlFormat);
     
     /**
      * 
@@ -82,7 +82,7 @@ public interface MailService {
      * @param isHtmlFormat
      * @param attachmentPath
      */
-    public void sendEmails(String from, String[] to, String[] cc, String[] bcc, String subject, String msg, boolean isHtmlFormat, String[] attachmentPath);
+    void sendEmails(String from, String[] to, String[] cc, String[] bcc, String subject, String msg, boolean isHtmlFormat, String[] attachmentPath);
 
     /**
      * sending a email from one user to multiple user,cc and bcc having multiple attachement at a time.
@@ -97,18 +97,18 @@ public interface MailService {
      * @param attachmentPath
      * @param executionDateTime - execution time
      */
-    public void sendEmailsByDateTime(String from, String[] to, String[] cc, String[] bcc, String subject, String msg, boolean isHtmlFormat, String[] attachmentPath, Date executionDateTime);
+    void sendEmailsByDateTime(String from, String[] to, String[] cc, String[] bcc, String subject, String msg, boolean isHtmlFormat, String[] attachmentPath, Date executionDateTime);
 
     /**
      *  sending out direct private message to authorized user on twitter.
      * @param userid
      * @param msg
      */
-    public void tweetPrivateMessage(String userid, String msg);
+    void tweetPrivateMessage(String userid, String msg);
     
     /**
      * mmethod used to update status over twitter.
      * @param status
      */
-    public void tweetMessage(String status);
+    void tweetMessage(String status);
 }

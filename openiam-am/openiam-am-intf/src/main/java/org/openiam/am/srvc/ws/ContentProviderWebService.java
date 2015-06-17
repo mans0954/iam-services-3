@@ -14,31 +14,31 @@ import java.util.List;
 public interface ContentProviderWebService {
    
 	@WebMethod
-	public AuthLevelAttribute getAuthLevelAttribute(final String id);
+    AuthLevelAttribute getAuthLevelAttribute(final String id);
 	
 	@WebMethod
-	public Response saveAuthLevelAttribute(final AuthLevelAttribute attribute);
+    Response saveAuthLevelAttribute(final AuthLevelAttribute attribute);
 	
 	@WebMethod
-	public Response deleteAuthLevelAttribute(final String id);
+    Response deleteAuthLevelAttribute(final String id);
 	
 	@WebMethod
-	public Response saveAuthLevelGrouping(final AuthLevelGrouping grouping);
+    Response saveAuthLevelGrouping(final AuthLevelGrouping grouping);
 	
 	@WebMethod
-	public Response deleteAuthLevelGrouping(final String id);
+    Response deleteAuthLevelGrouping(final String id);
 	
 	@WebMethod
-	public AuthLevelGrouping getAuthLevelGrouping(final String id);
+    AuthLevelGrouping getAuthLevelGrouping(final String id);
 	
 	@WebMethod
-	public List<AuthLevel> getAuthLevelList();
+    List<AuthLevel> getAuthLevelList();
 	
     @WebMethod
     List<AuthLevelGrouping> getAuthLevelGroupingList();
     
     @WebMethod
-    public Response createDefaultURIPatterns(@WebParam(name = "providerId", targetNamespace = "") String providerId);
+    Response createDefaultURIPatterns(@WebParam(name = "providerId", targetNamespace = "") String providerId);
 
     /**
      * Add or update ContentProvider object.
@@ -46,7 +46,7 @@ public interface ContentProviderWebService {
      * @return
      */
     @WebMethod
-    public Response saveContentProvider(@WebParam(name = "provider", targetNamespace = "") ContentProvider provider);
+    Response saveContentProvider(@WebParam(name = "provider", targetNamespace = "") ContentProvider provider);
 
     /**
      * Returns ContentProvider object by its' identity
@@ -54,7 +54,7 @@ public interface ContentProviderWebService {
      * @return
      */
     @WebMethod
-    public ContentProvider getContentProvider(@WebParam(name = "providerId", targetNamespace = "") String providerId);
+    ContentProvider getContentProvider(@WebParam(name = "providerId", targetNamespace = "") String providerId);
 
     /**
      * Searches and returns list of ContentProvider objects, using different search criteria
@@ -64,9 +64,9 @@ public interface ContentProviderWebService {
      * @return
      */
     @WebMethod
-    public List<ContentProvider> findBeans(@WebParam(name = "searchBean", targetNamespace = "") ContentProviderSearchBean searchBean,
-                                           @WebParam(name = "from", targetNamespace = "") int from,
-                                           @WebParam(name = "size", targetNamespace = "") int size);
+    List<ContentProvider> findBeans(@WebParam(name = "searchBean", targetNamespace = "") ContentProviderSearchBean searchBean,
+                                    @WebParam(name = "from", targetNamespace = "") int from,
+                                    @WebParam(name = "size", targetNamespace = "") int size);
 
     /**
      * Returns number of ContentProviders objects which are suitable for passed search criteria
@@ -74,36 +74,36 @@ public interface ContentProviderWebService {
      * @return
      */
     @WebMethod
-    public int getNumOfContentProviders(@WebParam(name = "searchBean", targetNamespace = "") ContentProviderSearchBean searchBean);
+    int getNumOfContentProviders(@WebParam(name = "searchBean", targetNamespace = "") ContentProviderSearchBean searchBean);
 
     @WebMethod
-    public Response deleteContentProvider(@WebParam(name = "providerId", targetNamespace = "") String providerId);
-
-    @WebMethod
-    @Deprecated
-    public  List<URIPattern> getUriPatternsForProvider(@WebParam(name = "providerId", targetNamespace = "") String providerId,
-                                                       @WebParam(name = "from", targetNamespace = "") Integer from,
-                                                       @WebParam(name = "size", targetNamespace = "") Integer size);
+    Response deleteContentProvider(@WebParam(name = "providerId", targetNamespace = "") String providerId);
 
     @WebMethod
     @Deprecated
-    public  Integer getNumOfUriPatternsForProvider(@WebParam(name = "providerId", targetNamespace = "") String providerId);
-    @WebMethod
-    public List<URIPattern> findUriPatterns(@WebParam(name = "searchBean", targetNamespace = "") URIPatternSearchBean searchBean,
-                                            @WebParam(name = "from", targetNamespace = "") int from,
-                                            @WebParam(name = "size", targetNamespace = "") int size);
-    @WebMethod
-    public int getNumOfUriPatterns(@WebParam(name = "searchBean", targetNamespace = "") URIPatternSearchBean searchBean);
+    List<URIPattern> getUriPatternsForProvider(@WebParam(name = "providerId", targetNamespace = "") String providerId,
+                                               @WebParam(name = "from", targetNamespace = "") Integer from,
+                                               @WebParam(name = "size", targetNamespace = "") Integer size);
 
     @WebMethod
-    public URIPattern getURIPattern(@WebParam(name = "patternId", targetNamespace = "") String patternId);
+    @Deprecated
+    Integer getNumOfUriPatternsForProvider(@WebParam(name = "providerId", targetNamespace = "") String providerId);
+    @WebMethod
+    List<URIPattern> findUriPatterns(@WebParam(name = "searchBean", targetNamespace = "") URIPatternSearchBean searchBean,
+                                     @WebParam(name = "from", targetNamespace = "") int from,
+                                     @WebParam(name = "size", targetNamespace = "") int size);
+    @WebMethod
+    int getNumOfUriPatterns(@WebParam(name = "searchBean", targetNamespace = "") URIPatternSearchBean searchBean);
 
     @WebMethod
-    public Response saveURIPattern(@WebParam(name = "pattern", targetNamespace = "") URIPattern pattern);
+    URIPattern getURIPattern(@WebParam(name = "patternId", targetNamespace = "") String patternId);
 
     @WebMethod
-    public Response deleteProviderPattern(@WebParam(name = "providerId", targetNamespace = "") String providerId);
+    Response saveURIPattern(@WebParam(name = "pattern", targetNamespace = "") URIPattern pattern);
 
     @WebMethod
-    public List<URIPatternMetaType> getAllMetaType();
+    Response deleteProviderPattern(@WebParam(name = "providerId", targetNamespace = "") String providerId);
+
+    @WebMethod
+    List<URIPatternMetaType> getAllMetaType();
 }

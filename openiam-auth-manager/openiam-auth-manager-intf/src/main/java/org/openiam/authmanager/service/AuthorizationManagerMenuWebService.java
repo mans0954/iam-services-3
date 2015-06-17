@@ -15,22 +15,22 @@ import org.openiam.idm.srvc.lang.dto.Language;
 public interface AuthorizationManagerMenuWebService {
 
 	@WebMethod
-	public boolean isUserAuthenticatedToMenuWithURL(
-			@WebParam(name = "userId", targetNamespace = "") final String userId, 
+	boolean isUserAuthenticatedToMenuWithURL(
+			@WebParam(name = "userId", targetNamespace = "") final String userId,
 			@WebParam(name = "url", targetNamespace = "") final String url,
 			@WebParam(name = "menuId", targetNamespace = "") final String menuId,
 			@WebParam(name = "defaultResult", targetNamespace = "") final boolean defaultResult);
 	
 	@WebMethod
-	public AuthorizationMenu getMenuTreeForUserId(
+	AuthorizationMenu getMenuTreeForUserId(
 			final @WebParam(name = "request", targetNamespace = "") MenuRequest request,
-			final @WebParam(name="language", targetNamespace = "") Language language
+			final @WebParam(name = "language", targetNamespace = "") Language language
 	);
 	
 	@WebMethod
-	public AuthorizationMenu getMenuTree(
+	AuthorizationMenu getMenuTree(
 			@WebParam(name = "menuId", targetNamespace = "") final String menuId,
-			final @WebParam(name="language", targetNamespace = "") Language language
+			final @WebParam(name = "language", targetNamespace = "") Language language
 	);
 	
 	/**
@@ -39,10 +39,10 @@ public interface AuthorizationManagerMenuWebService {
 	 * @return
 	 */
 	@WebMethod
-	public MenuSaveResponse saveMenuTree(@WebParam(name = "menu", targetNamespace = "") final AuthorizationMenu root);
+	MenuSaveResponse saveMenuTree(@WebParam(name = "menu", targetNamespace = "") final AuthorizationMenu root);
 	
 	@WebMethod
-	public MenuSaveResponse deleteMenuTree(@WebParam(name = "rootId", targetNamespace = "") final String rootId);
+	MenuSaveResponse deleteMenuTree(@WebParam(name = "rootId", targetNamespace = "") final String rootId);
 	
 	/**
 	 * This method gets a non-cached version of a user's, group's, role's, or resource's entitlements to a particular tree.
@@ -56,11 +56,11 @@ public interface AuthorizationManagerMenuWebService {
 	 * or of the principal of the type can't be found.
 	 */
 	@WebMethod
-	public AuthorizationMenu getNonCachedMenuTree(final @WebParam(name="menuId", targetNamespace = "") String menuId,
-												  final @WebParam(name="principalId", targetNamespace = "") String principalId,
-												  final @WebParam(name="principalType", targetNamespace = "") String principalType,
-												  final @WebParam(name="language", targetNamespace = "") Language language);
+	AuthorizationMenu getNonCachedMenuTree(final @WebParam(name = "menuId", targetNamespace = "") String menuId,
+										   final @WebParam(name = "principalId", targetNamespace = "") String principalId,
+										   final @WebParam(name = "principalType", targetNamespace = "") String principalType,
+										   final @WebParam(name = "language", targetNamespace = "") Language language);
 	
 	@WebMethod
-	public Response entitle(final @WebParam(name="menuEntitlementsRequest", targetNamespace = "") MenuEntitlementsRequest menuEntitlementsRequest);
+	Response entitle(final @WebParam(name = "menuEntitlementsRequest", targetNamespace = "") MenuEntitlementsRequest menuEntitlementsRequest);
 }

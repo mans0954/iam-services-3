@@ -214,7 +214,7 @@ public class ElasticsearchProvider implements InitializingBean, DisposableBean {
 
 
                     } else {
-                        mapFieldAnnotation(field, (ElasticsearchField)getFieldAnnotation(field, ElasticsearchField.class),result);
+                        mapFieldAnnotation(field, getFieldAnnotation(field, ElasticsearchField.class),result);
 //                        annotation =  getFieldAnnotation(field, ElasticsearchField.class);
 //                        if(annotation!=null){
 //                            ElasticsearchField esAnnotation = (ElasticsearchField)annotation;

@@ -89,9 +89,8 @@ public class OperationBean implements Serializable {
 
         if (objectId != null ? !objectId.equals(that.objectId) : that.objectId != null) return false;
         if (objectName != null ? !objectName.equals(that.objectName) : that.objectName != null) return false;
-        if (objectType != null ? !objectType.equals(that.objectType) : that.objectType != null) return false;
+        return !(objectType != null ? !objectType.equals(that.objectType) : that.objectType != null);
 
-        return true;
     }
 
     @Override
