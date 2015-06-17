@@ -44,7 +44,7 @@ public abstract class AbstractCSVParser<T, E extends Enum<E>> {
         ReconciliationObject<T> csvObject = new ReconciliationObject<T>();
         T obj = clazz.newInstance();
         for (AttributeMapEntity a : attrMap) {
-            String objValue = object.get(a.getAttributeName());
+            String objValue = object.get(a.getName());
             if (StringUtils.hasText(objValue)) {
                 String name = AttributeMapUtil.getAttributeIDMFieldName(a);
                 if (name != null) {
@@ -150,8 +150,8 @@ public abstract class AbstractCSVParser<T, E extends Enum<E>> {
             return "";
         StringBuilder sb = new StringBuilder();
         for (AttributeMapEntity a : attrMap) {
-            if (StringUtils.hasText(a.getAttributeName())) {
-                sb.append(a.getAttributeName());
+            if (StringUtils.hasText(a.getName())) {
+                sb.append(a.getName());
                 sb.append(SEPARATOR);
             }
         }
@@ -211,7 +211,7 @@ public abstract class AbstractCSVParser<T, E extends Enum<E>> {
             String[] headerFields, Class<E> clazz) {
         String header = mergeValues(headerFields).toLowerCase();
         for (AttributeMapEntity am : attrMap) {
-            if (!header.contains(am.getAttributeName().toLowerCase())) {
+            if (!header.contains(am.getName().toLowerCase())) {
                 return false;
             }
         }
@@ -282,8 +282,8 @@ public abstract class AbstractCSVParser<T, E extends Enum<E>> {
         if (!StringUtils.hasText(field) && attrMap == null)
             return null;
         for (AttributeMapEntity am : attrMap) {
-            if (am.getAttributeName() != null
-                    && am.getAttributeName().equalsIgnoreCase(field)) {
+            if (am.getName() != null
+                    && am.getName().equalsIgnoreCase(field)) {
                 return am;
             }
         }
@@ -364,7 +364,7 @@ public abstract class AbstractCSVParser<T, E extends Enum<E>> {
         ReconciliationObject<T> object = new ReconciliationObject<T>();
         object.setObject(pu);
         for (AttributeMapEntity a : attrMap) {
-            String name = a.getAttributeName();
+            String name = a.getName();
             if (name != null) {
                 if (PolicyMapObjectTypeOptions.PRINCIPAL.name().equals(a.getMapForObjectType())) {
                     E fieldValue;

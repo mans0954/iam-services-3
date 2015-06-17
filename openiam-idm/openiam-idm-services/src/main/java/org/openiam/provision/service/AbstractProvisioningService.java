@@ -439,9 +439,9 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     String objectType = attr.getMapForObjectType();
                     if (objectType != null) {
                         if (PolicyMapObjectTypeOptions.PRINCIPAL.name().equalsIgnoreCase(objectType)) {
-                            if (attr.getAttributeName().equalsIgnoreCase("PRINCIPAL")) {
+                            if (attr.getName().equalsIgnoreCase("PRINCIPAL")) {
                                 primaryIdentityRule = attr;
-                            } else if (attr.getAttributeName().equalsIgnoreCase("PASSWORD")) {
+                            } else if (attr.getName().equalsIgnoreCase("PASSWORD")) {
                                 primaryPasswordRule = attr;
                             }
                         }
@@ -482,8 +482,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
             String objectType = attr.getMapForObjectType();
             if (objectType != null) {
                 if (PolicyMapObjectTypeOptions.PRINCIPAL.name().equalsIgnoreCase(objectType)) {
-                    if (attr.getAttributeName().equalsIgnoreCase("PRINCIPAL")) {
-                        principalAttributeName = attr.getAttributeName();
+                    if (attr.getName().equalsIgnoreCase("PRINCIPAL")) {
+                        principalAttributeName = attr.getName();
                         break;
                     }
                 }
@@ -513,7 +513,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     String objectType = attr.getMapForObjectType();
                     if (objectType != null) {
                         if (PolicyMapObjectTypeOptions.PRINCIPAL.name().equalsIgnoreCase(objectType)) {
-                            if ("PASSWORD".equalsIgnoreCase(attr.getAttributeName())) {
+                            if ("PASSWORD".equalsIgnoreCase(attr.getName())) {
                                 primaryIdentity.setPassword(output);
                             }
                         }
@@ -1691,7 +1691,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         List<AttributeMap> attrMap = attributeMapDozerConverter.convertToDTOList(attrMapEntities, false);     //need to check if  attr.getDataType().getValue() works
         for (AttributeMap attr : attrMap) {
             if (PolicyMapObjectTypeOptions.PRINCIPAL.name().equalsIgnoreCase(attr.getMapForObjectType())) {
-                extUser.setPrincipalFieldName(attr.getAttributeName());
+                extUser.setPrincipalFieldName(attr.getName());
                 extUser.setPrincipalFieldDataType(attr.getDataType().getValue());
                 break;
             }

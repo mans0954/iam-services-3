@@ -494,7 +494,7 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
 
         for (AttributeMap ame : attrMap) {
             if (PolicyMapObjectTypeOptions.USER.name().equalsIgnoreCase(ame.getMapForObjectType()) && "ACTIVE".equalsIgnoreCase(ame.getStatus())) {
-                requestedExtensibleAttributes.add(new ExtensibleAttribute(ame.getAttributeName(), null));
+                requestedExtensibleAttributes.add(new ExtensibleAttribute(ame.getName(), null));
             }
         }
 
@@ -629,11 +629,11 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
             bindingMap.put("currentGroupList", curGroupList);
             for (AttributeMap attr : attrMap) {
                 fromIDM.getAttributes().add(
-                        new ExtensibleAttribute(attr.getAttributeName(), (String) ProvisionServiceUtil
+                        new ExtensibleAttribute(attr.getName(), (String) ProvisionServiceUtil
                                 .getOutputFromAttrMap(attr, bindingMap, scriptRunner)));
                 if (PolicyMapObjectTypeOptions.PRINCIPAL.name().equalsIgnoreCase(attr.getMapForObjectType())
                         && !"INACTIVE".equalsIgnoreCase(attr.getStatus())) {
-                    fromIDM.setPrincipalFieldName(attr.getAttributeName());
+                    fromIDM.setPrincipalFieldName(attr.getName());
                 }
             }
 

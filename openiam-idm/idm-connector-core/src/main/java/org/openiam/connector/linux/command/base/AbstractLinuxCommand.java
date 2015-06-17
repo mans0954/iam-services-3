@@ -56,7 +56,7 @@ public abstract class AbstractLinuxCommand<Request extends RequestType, Response
         for (AttributeMapEntity attrMap : attrMapList) {
             if (PolicyMapObjectTypeOptions.PRINCIPAL.name().equalsIgnoreCase(
                     attrMap.getMapForObjectType())) {
-                key = attrMap.getAttributeName();
+                key = attrMap.getName();
             }
         }
         return key;

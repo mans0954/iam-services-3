@@ -7,6 +7,7 @@ import javax.persistence.*;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
+import org.openiam.base.domain.AbstractKeyNameEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.mngsys.dto.PolicyMapDataTypeOptions;
@@ -18,17 +19,15 @@ import org.openiam.idm.srvc.mngsys.dto.PolicyMapDataTypeOptions;
 @Table(name = "ATTRIBUTE_MAP")
 @DozerDTOCorrespondence(AttributeMap.class)
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class AttributeMapEntity implements java.io.Serializable {
+@AttributeOverrides(value= {
+        @AttributeOverride(name = "id", column = @Column(name = "ATTRIBUTE_MAP_ID")),
+        @AttributeOverride(name = "name", column = @Column(name = "ATTRIBUTE_NAME", length=50, nullable = false)),
+})
+public class AttributeMapEntity extends AbstractKeyNameEntity {
     /**
 	 * 
 	 */
     private static final long serialVersionUID = 1L;
-
-    @Id
-    @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name = "system-uuid", strategy = "uuid")
-    @Column(name = "ATTRIBUTE_MAP_ID", length = 32, nullable = false)
-    private String attributeMapId;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "MANAGED_SYS_ID", nullable = false)
@@ -43,11 +42,10 @@ public class AttributeMapEntity implements java.io.Serializable {
     @Column(name = "MAP_FOR_OBJECT_TYPE", length = 20)
     private String mapForObjectType;
 
-    @Column(name = "ATTRIBUTE_NAME", length = 50)
-    private String attributeName;
+
 
     @Column(name = "TARGET_ATTRIBUTE_NAME", length = 50)
-    private String targetAttributeName;
+    private String targetname;
 
     @Column(name = "AUTHORITATIVE_SRC", length = 11)
     private Integer authoritativeSrc;
@@ -86,36 +84,28 @@ public class AttributeMapEntity implements java.io.Serializable {
     public AttributeMapEntity() {
     }
 
-    public AttributeMapEntity(String attributeMapId, ManagedSysEntity managedSystem) {
-        this.attributeMapId = attributeMapId;
+    public AttributeMapEntity(String id, ManagedSysEntity managedSystem) {
+        this.id = id;
         this.managedSystem = managedSystem;
     }
 
-    public AttributeMapEntity(String attributeMapId, ManagedSysEntity managedSystem,
-            String resourceId, String synchConfigId, String mapForObjectType, String attributeName,
-            String targetAttributeName, Integer authoritativeSrc, String rule,
+    public AttributeMapEntity(String id, ManagedSysEntity managedSystem,
+            String resourceId, String synchConfigId, String mapForObjectType, String name,
+            String targetname, Integer authoritativeSrc, String rule,
             String status, Date startDate, Date endDate, Integer storeInIamdb) {
-        this.attributeMapId = attributeMapId;
+        this.id = id;
         this.managedSystem = managedSystem;
         this.resourceId = resourceId;
         this.synchConfigId = synchConfigId;
         this.mapForObjectType = mapForObjectType;
-        this.attributeName = attributeName;
-        this.targetAttributeName = targetAttributeName;
+        this.name = name;
+        this.targetname = targetname;
         this.authoritativeSrc = authoritativeSrc;
         this.rule = rule;
         this.status = status;
         this.startDate = startDate;
         this.endDate = endDate;
         this.storeInIamdb = storeInIamdb;
-    }
-
-    public String getAttributeMapId() {
-        return this.attributeMapId;
-    }
-
-    public void setAttributeMapId(String attributeMapId) {
-        this.attributeMapId = attributeMapId;
     }
 
     public String getResourceId() {
@@ -142,20 +132,12 @@ public class AttributeMapEntity implements java.io.Serializable {
         this.mapForObjectType = mapForObjectType;
     }
 
-    public String getAttributeName() {
-        return this.attributeName;
+    public String getTargetname() {
+        return this.targetname;
     }
 
-    public void setAttributeName(String attributeName) {
-        this.attributeName = attributeName;
-    }
-
-    public String getTargetAttributeName() {
-        return this.targetAttributeName;
-    }
-
-    public void setTargetAttributeName(String targetAttributeName) {
-        this.targetAttributeName = targetAttributeName;
+    public void setTargetname(String targetname) {
+        this.targetname = targetname;
     }
 
     public Integer getAuthoritativeSrc() {
@@ -249,12 +231,12 @@ public class AttributeMapEntity implements java.io.Serializable {
 
     @Override
     public String toString() {
-        return "AttributeMap{" + "attributeMapId='" + attributeMapId + '\''
+        return "AttributeMap{" + "id='" + id + '\''
                 + ", managedSys='" + managedSystem + '\'' + ", resourceId='"
                 + resourceId + '\''  + ", synchConfigId='"
                 + synchConfigId + '\'' + ", mapForObjectType='" + mapForObjectType
-                + '\'' + ", attributeName='" + attributeName + '\''
-                + ", targetAttributeName='" + targetAttributeName + '\''
+                + '\'' + ", name='" + name + '\''
+                + ", targetname='" + targetname + '\''
                 + ", authoritativeSrc=" + authoritativeSrc
                 + ", reconResAttribute=" + reconResAttribute + ", rule='"
                 + rule + '\'' + ", status='" + status + '\'' + ", startDate="
@@ -270,16 +252,16 @@ public class AttributeMapEntity implements java.io.Serializable {
         if (o == null || getClass() != o.getClass()) return false;
 
         AttributeMapEntity entity = (AttributeMapEntity) o;
-        if (attributeMapId != null ? !attributeMapId.equals(entity.attributeMapId) : entity.attributeMapId != null)
+        if (id != null ? !id.equals(entity.id) : entity.id != null)
             return false;
-        if (attributeName != null ? !attributeName.equals(entity.attributeName) : entity.attributeName != null)
+        if (name != null ? !name.equals(entity.name) : entity.name != null)
             return false;
         if (managedSystem != null ? !managedSystem.equals(entity.managedSystem) : entity.managedSystem != null)
             return false;
         if (mapForObjectType != null ? !mapForObjectType.equals(entity.mapForObjectType) : entity.mapForObjectType != null)
             return false;
         if (resourceId != null ? !resourceId.equals(entity.resourceId) : entity.resourceId != null) return false;
-        if (targetAttributeName != null ? !targetAttributeName.equals(entity.targetAttributeName) : entity.targetAttributeName != null)
+        if (targetname != null ? !targetname.equals(entity.targetname) : entity.targetname != null)
             return false;
 
         return true;
@@ -287,12 +269,12 @@ public class AttributeMapEntity implements java.io.Serializable {
 
     @Override
     public int hashCode() {
-        int result = attributeMapId != null ? attributeMapId.hashCode() : 0;
+        int result = id != null ? id.hashCode() : 0;
         result = 31 * result + (managedSystem != null ? managedSystem.hashCode() : 0);
         result = 31 * result + (resourceId != null ? resourceId.hashCode() : 0);
         result = 31 * result + (mapForObjectType != null ? mapForObjectType.hashCode() : 0);
-        result = 31 * result + (attributeName != null ? attributeName.hashCode() : 0);
-        result = 31 * result + (targetAttributeName != null ? targetAttributeName.hashCode() : 0);
+        result = 31 * result + (name != null ? name.hashCode() : 0);
+        result = 31 * result + (targetname != null ? targetname.hashCode() : 0);
         return result;
     }
 }

@@ -42,17 +42,17 @@ public abstract class AbstractGetAppTableCommand<ExtObject extends ExtensibleObj
             for (AttributeMapEntity atr : attrMap) {
                 final String objectType = atr.getMapForObjectType();
                 if (compareObjectTypeWithId(objectType)) {
-                    principalFieldName = atr.getAttributeName();
+                    principalFieldName = atr.getName();
                     principalFieldDataType = atr.getDataType().getValue();
                 } else if (compareObjectTypeWithObject(objectType)) {
                     if (PolicyMapDataTypeOptions.MEMBER_OF.equals(atr.getDataType())) {
-                        linkedObject.add(atr.getAttributeName());
+                        linkedObject.add(atr.getName());
                         continue;
                     }
                     if (colCount > 0) {
                         columnList.append(",");
                     }
-                    columnList.append(atr.getAttributeName());
+                    columnList.append(atr.getName());
                     colCount++;
                 }
             }
@@ -117,10 +117,10 @@ public abstract class AbstractGetAppTableCommand<ExtObject extends ExtensibleObj
                 if (PolicyMapDataTypeOptions.MEMBER_OF.equals(a.getDataType())) {
                     continue;
                 } else if (a.getMapForObjectType().equalsIgnoreCase("GROUP_PRINCIPAL")) {
-                    objectNameId = a.getAttributeName();
+                    objectNameId = a.getName();
                     columnList.add(objectNameId);
                 } else if (a.getMapForObjectType().equalsIgnoreCase(targetObjectType)) {
-                    columnList.add(a.getAttributeName());
+                    columnList.add(a.getName());
                 }
             }
             if (StringUtils.isEmpty(objectNameId))

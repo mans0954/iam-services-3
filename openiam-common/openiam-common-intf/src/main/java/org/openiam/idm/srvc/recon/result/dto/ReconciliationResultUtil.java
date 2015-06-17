@@ -19,7 +19,7 @@ public class ReconciliationResultUtil {
         List<ReconciliationResultField> fieldSet = new ArrayList<ReconciliationResultField>();
         for (AttributeMap head : attrMapList) {
             ReconciliationResultField field = new ReconciliationResultField();
-            field.setValues(Arrays.asList(head.getAttributeName(),
+            field.setValues(Arrays.asList(head.getName(),
                     AttributeMapUtil.getAttributeIDMFieldName(head)));
             fieldSet.add(field);
             if (PolicyMapObjectTypeOptions.PRINCIPAL.name().equalsIgnoreCase(head.getMapForObjectType()))

@@ -136,7 +136,7 @@ public abstract class AbstractLdapCommand<Request extends RequestType, Response 
             return null;
         }
         for (AttributeMapEntity a : attrMap) {
-            strList.add(a.getAttributeName());
+            strList.add(a.getName());
         }
 
         return strList;

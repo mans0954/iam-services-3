@@ -109,7 +109,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author suneet
- *
  */
 
 @Service("authenticate")
@@ -118,146 +117,146 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class AuthenticationServiceImpl extends AbstractBaseService implements AuthenticationService, ApplicationContextAware, BeanFactoryAware {
 
-	@Autowired
+    @Autowired
     private AuthStateDAO authStateDao;
-	
-	@Autowired
-	private URIPatternDao uriPatternDAO;
-	
+
+    @Autowired
+    private URIPatternDao uriPatternDAO;
+
     @Autowired
     private LoginDataService loginManager;
-    
+
     @Autowired
     private UserDataService userManager;
-    
+
     @Autowired
     private AuthProviderDao authProviderDAO;
-    
+
     @Autowired
     @Qualifier("cryptor")
     private Cryptor cryptor;
-    
+
     @Autowired
     private SysConfiguration sysConfiguration;
 
     @Autowired
     protected KeyManagementService keyManagementService;
-    
+
     @Autowired
     @Qualifier("configurableGroovyScriptEngine")
     private ScriptIntegration scriptRunner;
 
     private ApplicationContext ctx;
     private BeanFactory beanFactory;
-    
+
     @Autowired
     private CustomJacksonMapper jacksonMapper;
 
     private static final Log log = LogFactory.getLog(AuthenticationServiceImpl.class);
-    
+
     private AuthProviderEntity getAuthProvider(final String patternId, final IdmAuditLog event) throws BasicDataServiceException {
-    	AuthProviderEntity authProvider = null;
-        if(StringUtils.isNotBlank(patternId)) {
-        	final URIPatternEntity uriPattern = uriPatternDAO.findById(patternId);
-        	if(uriPattern == null) {
-        		event.addWarning(String.format("Content provider with ID %s not found", patternId));
-        	} else {
-        		authProvider = uriPattern.getAuthProvider();
-        		if(authProvider == null) {
-        			event.addWarning(String.format("URI Pattern '%s' does not have an authenticaitno pattern.  Using the content provider's pattern", patternId));
-        			authProvider = uriPattern.getContentProvider().getAuthProvider();
-        		}
-        	}
+        AuthProviderEntity authProvider = null;
+        if (StringUtils.isNotBlank(patternId)) {
+            final URIPatternEntity uriPattern = uriPatternDAO.findById(patternId);
+            if (uriPattern == null) {
+                event.addWarning(String.format("Content provider with ID %s not found", patternId));
+            } else {
+                authProvider = uriPattern.getAuthProvider();
+                if (authProvider == null) {
+                    event.addWarning(String.format("URI Pattern '%s' does not have an authenticaitno pattern.  Using the content provider's pattern", patternId));
+                    authProvider = uriPattern.getContentProvider().getAuthProvider();
+                }
+            }
         }
-        
-        if(authProvider == null) {
-        	final String warning = String.format("No Content Provider of URI Pattern information provided, or could not resolve.  Using default AUth Provider: %s", sysConfiguration.getDefaultAuthProviderId());
-        	event.addWarning(warning);
-        	log.warn(warning);
-        	authProvider = authProviderDAO.findById(sysConfiguration.getDefaultAuthProviderId());
+
+        if (authProvider == null) {
+            final String warning = String.format("No Content Provider of URI Pattern information provided, or could not resolve.  Using default AUth Provider: %s", sysConfiguration.getDefaultAuthProviderId());
+            event.addWarning(warning);
+            log.warn(warning);
+            authProvider = authProviderDAO.findById(sysConfiguration.getDefaultAuthProviderId());
         }
-        
-        if(authProvider == null) {
-        	final String error = String.format("Could not find Authentication Provider with ID: %s.  Failing...", sysConfiguration.getDefaultAuthProviderId());
-        	event.setFailureReason(error);
-        	event.addWarning(error);
-    		log.error(error);
-    		throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_FOUND);
-    	}
+
+        if (authProvider == null) {
+            final String error = String.format("Could not find Authentication Provider with ID: %s.  Failing...", sysConfiguration.getDefaultAuthProviderId());
+            event.setFailureReason(error);
+            event.addWarning(error);
+            log.error(error);
+            throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_FOUND);
+        }
         return authProvider;
     }
-    
+
     @Override
     @Transactional
     @ManagedAttribute
     //@Transactional
-	public Response globalLogoutRequest(final LogoutRequest request) {
-    	final String userId = request.getUserId();
-    	final String patternId = request.getPatternId();
-    	final IdmAuditLog newLogoutEvent = new IdmAuditLog();
+    public Response globalLogoutRequest(final LogoutRequest request) {
+        final String userId = request.getUserId();
+        final String patternId = request.getPatternId();
+        final IdmAuditLog newLogoutEvent = new IdmAuditLog();
         newLogoutEvent.setUserId(userId);
         newLogoutEvent.setAction(AuditAction.LOGOUT.value());
         final Response authResp = new Response(ResponseStatus.SUCCESS);
 
-        try{
+        try {
             if (userId == null) {
                 newLogoutEvent.fail();
                 newLogoutEvent.setFailureReason("Target User object not passed");
                 throw new NullPointerException("UserId is null");
             }
-            
+
             final AuthProviderEntity authProvider = getAuthProvider(patternId, newLogoutEvent);
             final String springBeanName = authProvider.getSpringBeanName();
-	        final String groovyScript = authProvider.getGroovyScriptURL();
-	        AuthenticationModule loginModule = null;
-	        if(StringUtils.isNotBlank(springBeanName)) {
-	        	try {
-	        		loginModule = (AuthenticationModule)ctx.getBean(springBeanName, AuthenticationModule.class);
-	        	} catch(Throwable e) {
-	        		log.error(String.format("Error while getting spring bean: %s", springBeanName), e);
-	        	}
-	        	
-	        } else if(StringUtils.isNotBlank(groovyScript)) {
-	        	loginModule = (AbstractScriptableLoginModule)scriptRunner.instantiateClass(null, groovyScript);
-	        }
-	        
-	        if(loginModule == null) {
-	        	loginModule = ctx.getBean(sysConfiguration.getDefaultLoginModule(), AuthenticationModule.class);
-	        }
-	        
-	        loginModule.logout(request, newLogoutEvent);
-        	
+            final String groovyScript = authProvider.getGroovyScriptURL();
+            AuthenticationModule loginModule = null;
+            if (StringUtils.isNotBlank(springBeanName)) {
+                try {
+                    loginModule = (AuthenticationModule) ctx.getBean(springBeanName, AuthenticationModule.class);
+                } catch (Throwable e) {
+                    log.error(String.format("Error while getting spring bean: %s", springBeanName), e);
+                }
+
+            } else if (StringUtils.isNotBlank(groovyScript)) {
+                loginModule = (AbstractScriptableLoginModule) scriptRunner.instantiateClass(null, groovyScript);
+            }
+
+            if (loginModule == null) {
+                loginModule = ctx.getBean(sysConfiguration.getDefaultLoginModule(), AuthenticationModule.class);
+            }
+
+            loginModule.logout(request, newLogoutEvent);
+
             final UserEntity userEntity = userManager.getUser(userId);
             final LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), userEntity.getPrincipalList());
             newLogoutEvent.addTarget(userId, AuditTarget.USER.value(), primaryIdentity.getLogin());
-        	            
+
             final AuthStateEntity example = new AuthStateEntity();
             final AuthStateId id = new AuthStateId();
             id.setUserId(userId);
             example.setId(id);
-            
+
             final List<AuthStateEntity> authStateList = authStateDao.getByExample(example);
 
             if (CollectionUtils.isEmpty(authStateList)) {
-            	final String errorMessage = String.format("Cannot find AuthState object for User: %s", userId);
+                final String errorMessage = String.format("Cannot find AuthState object for User: %s", userId);
                 newLogoutEvent.fail();
                 newLogoutEvent.setFailureReason(errorMessage);
                 log.error(errorMessage);
                 throw new LogoutException(errorMessage);
             }
-            
-            for(final AuthStateEntity authSt : authStateList) {
-            	authSt.setAuthState(new BigDecimal(0));
-            	authSt.setToken("LOGOUT");
-            	authStateDao.saveAuthState(authSt);
+
+            for (final AuthStateEntity authSt : authStateList) {
+                authSt.setAuthState(new BigDecimal(0));
+                authSt.setToken("LOGOUT");
+                authStateDao.saveAuthState(authSt);
             }
             newLogoutEvent.succeed();
         } catch (BasicDataServiceException e) {
-    		authResp.fail();
-    		authResp.setErrorCode(e.getCode());
-    		authResp.setErrorTokenList(e.getErrorTokenList());
-    		newLogoutEvent.fail();
-    		newLogoutEvent.setFailureReason(e.getMessage());
+            authResp.fail();
+            authResp.setErrorCode(e.getCode());
+            authResp.setErrorTokenList(e.getErrorTokenList());
+            newLogoutEvent.fail();
+            newLogoutEvent.setFailureReason(e.getMessage());
             newLogoutEvent.setException(e);
             newLogoutEvent.setFailureReason(e.getCode());
         } catch (Throwable e) {
@@ -267,19 +266,19 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
             newLogoutEvent.fail();
             newLogoutEvent.setFailureReason(e.getMessage());
             newLogoutEvent.setException(e);
-    	} finally {
+        } finally {
             auditLogService.enqueue(newLogoutEvent);
         }
         return authResp;
-	}
+    }
 
     @Override
     @ManagedAttribute
     @Deprecated
     public void globalLogout(String userId) throws Throwable {
-    	final LogoutRequest request = new LogoutRequest();
-    	request.setUserId(userId);
-    	globalLogoutRequest(request);
+        final LogoutRequest request = new LogoutRequest();
+        request.setUserId(userId);
+        globalLogoutRequest(request);
     }
 
     @Override
@@ -289,51 +288,51 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
         newLoginEvent.setUserId(null);
         newLoginEvent.setAction(AuditAction.LOGIN.value());
 
-    	final AuthenticationResponse authResp = new AuthenticationResponse(ResponseStatus.FAILURE);
-    	try {
-	        if (request == null) {
-	            throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-	        }
-	        
-	        if(StringUtils.isBlank(request.getLanguageId())) {
-	        	throw new BasicDataServiceException(ResponseCode.LANGUAGE_REQUIRED);
-	        }
-	        
-	        final AuthProviderEntity authProvider = getAuthProvider(request.getPatternId(), newLoginEvent);
-	        
-	        final AuthenticationContext authenticationContext = new AuthenticationContext(request);
-	        authenticationContext.setAuthProviderId(authProvider.getId());
-	        authenticationContext.setEvent(newLoginEvent);
-	        
-	        final String principal = request.getPrincipal();
-	        final String clientIP = request.getClientIP();
+        final AuthenticationResponse authResp = new AuthenticationResponse(ResponseStatus.FAILURE);
+        try {
+            if (request == null) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+            }
+
+            if (StringUtils.isBlank(request.getLanguageId())) {
+                throw new BasicDataServiceException(ResponseCode.LANGUAGE_REQUIRED);
+            }
+
+            final AuthProviderEntity authProvider = getAuthProvider(request.getPatternId(), newLoginEvent);
+
+            final AuthenticationContext authenticationContext = new AuthenticationContext(request);
+            authenticationContext.setAuthProviderId(authProvider.getId());
+            authenticationContext.setEvent(newLoginEvent);
+
+            final String principal = request.getPrincipal();
+            final String clientIP = request.getClientIP();
 
             newLoginEvent.setClientIP(clientIP);
             newLoginEvent.setRequestorPrincipal(principal);
-	                
-	        final String springBeanName = authProvider.getSpringBeanName();
-	        final String groovyScript = authProvider.getGroovyScriptURL();
-	        AuthenticationModule loginModule = null;
-	        if(StringUtils.isNotBlank(springBeanName)) {
-	        	try {
-	        		loginModule = (AuthenticationModule)ctx.getBean(springBeanName, AuthenticationModule.class);
-	        	} catch(Throwable e) {
-	        		log.error(String.format("Error while getting spring bean: %s", springBeanName), e);
-	        	}
-	        } else if(StringUtils.isNotBlank(groovyScript)) {
-	        	loginModule = (AbstractScriptableLoginModule)scriptRunner.instantiateClass(null, groovyScript);
-	        }
-	        
-	        if(loginModule == null) {
-	        	loginModule = ctx.getBean(sysConfiguration.getDefaultLoginModule(), AuthenticationModule.class);
-	        }
 
-	        final Subject sub = loginModule.login(authenticationContext);
-	        updateAuthState(sub);
-	        newLoginEvent.succeed();
-	        authResp.setSubject(sub);
-	        authResp.succeed();
-	    /*
+            final String springBeanName = authProvider.getSpringBeanName();
+            final String groovyScript = authProvider.getGroovyScriptURL();
+            AuthenticationModule loginModule = null;
+            if (StringUtils.isNotBlank(springBeanName)) {
+                try {
+                    loginModule = (AuthenticationModule) ctx.getBean(springBeanName, AuthenticationModule.class);
+                } catch (Throwable e) {
+                    log.error(String.format("Error while getting spring bean: %s", springBeanName), e);
+                }
+            } else if (StringUtils.isNotBlank(groovyScript)) {
+                loginModule = (AbstractScriptableLoginModule) scriptRunner.instantiateClass(null, groovyScript);
+            }
+
+            if (loginModule == null) {
+                loginModule = ctx.getBean(sysConfiguration.getDefaultLoginModule(), AuthenticationModule.class);
+            }
+
+            final Subject sub = loginModule.login(authenticationContext);
+            updateAuthState(sub);
+            newLoginEvent.succeed();
+            authResp.setSubject(sub);
+            authResp.succeed();
+        /*
         } catch (AuthenticationException ae) {
         	final String erroCodeAsString = Integer.valueOf(ae.getErrorCode()).toString();
             newLoginEvent.fail();
@@ -379,13 +378,13 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
                     break;
             }
 		*/
-    	} catch (BasicDataServiceException e) {
-    		log.warn("Can't log in", e);
-    		authResp.fail();
-    		authResp.setErrorCode(e.getCode());
-    		authResp.setErrorTokenList(e.getErrorTokenList());
-    		//authResp.setErrorCode(AuthenticationConstants.INTERNAL_ERROR);
-    		newLoginEvent.fail();
+        } catch (BasicDataServiceException e) {
+            log.warn("Can't log in", e);
+            authResp.fail();
+            authResp.setErrorCode(e.getCode());
+            authResp.setErrorTokenList(e.getErrorTokenList());
+            //authResp.setErrorCode(AuthenticationConstants.INTERNAL_ERROR);
+            newLoginEvent.fail();
             newLoginEvent.setFailureReason(e.getMessage());
             newLoginEvent.setException(e);
             newLoginEvent.setFailureReason(e.getCode());
@@ -397,41 +396,41 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
             newLoginEvent.fail();
             newLoginEvent.setFailureReason(e.getMessage());
             newLoginEvent.setException(e);
-    	} finally {
-    		auditLogService.enqueue(newLoginEvent);
-    	}
+        } finally {
+            auditLogService.enqueue(newLoginEvent);
+        }
         return authResp;
     }
 
     @Override
     @Transactional
     public Response renewToken(final String principal, final String token, final String tokenType, final String patternId) {
-    	log.info(String.format("renewToken.patternId=%s", patternId));
+        log.info(String.format("renewToken.patternId=%s", patternId));
         final Response resp = new Response(ResponseStatus.SUCCESS);
         PolicyEntity policy = null;
         ManagedSysEntity managedSystem = null;
-        if(StringUtils.isNotBlank(patternId)) {
-        	final URIPatternEntity uriPattern = uriPatternDAO.findById(patternId);
-        	if(uriPattern != null) {
-        		final ContentProviderEntity contentProvider = uriPattern.getContentProvider();
-        		if(contentProvider != null) {
-	        		final AuthProviderEntity authProvider = contentProvider.getAuthProvider();
-	        		if(authProvider != null) {
-	        			policy = authProvider.getPasswordPolicy();
-	        			managedSystem = authProvider.getManagedSystem();
-	        		}
-        		}
-        	}
+        if (StringUtils.isNotBlank(patternId)) {
+            final URIPatternEntity uriPattern = uriPatternDAO.findById(patternId);
+            if (uriPattern != null) {
+                final ContentProviderEntity contentProvider = uriPattern.getContentProvider();
+                if (contentProvider != null) {
+                    final AuthProviderEntity authProvider = contentProvider.getAuthProvider();
+                    if (authProvider != null) {
+                        policy = authProvider.getPasswordPolicy();
+                        managedSystem = authProvider.getManagedSystem();
+                    }
+                }
+            }
         }
-        if(policy == null || managedSystem == null) {
-        	final AuthProviderEntity authProvider = authProviderDAO.findById(sysConfiguration.getDefaultAuthProviderId());
-        	policy = authProvider.getPasswordPolicy();
-        	managedSystem = authProvider.getManagedSystem();
+        if (policy == null || managedSystem == null) {
+            final AuthProviderEntity authProvider = authProviderDAO.findById(sysConfiguration.getDefaultAuthProviderId());
+            policy = authProvider.getPasswordPolicy();
+            managedSystem = authProvider.getManagedSystem();
         }
-        String tokenLife = getPolicyAttribute(policy,  "TOKEN_LIFE");
+        String tokenLife = getPolicyAttribute(policy, "TOKEN_LIFE");
         final String tokenIssuer = getPolicyAttribute(policy, "TOKEN_ISSUER");
-        if(StringUtils.isBlank(tokenLife)) {
-        	tokenLife = "30"; //default;
+        if (StringUtils.isBlank(tokenLife)) {
+            tokenLife = "30"; //default;
         }
 
         // get the userId of this token
@@ -458,7 +457,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
             return resp;
 
         }
-        
+
         final AuthStateId id = new AuthStateId();
         id.setUserId(lg.getUserId());
         id.setTokenType("OPENIAM");
@@ -468,7 +467,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 
             if (authSt.getToken() == null
                     || "LOGOUT".equalsIgnoreCase(authSt.getToken())) {
-            	resp.fail();
+                resp.fail();
                 return resp;
             }
 
@@ -482,14 +481,14 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 
         try {
             if (!tkModule.isTokenValid(lg.getUserId(), principal, token)) {
-            	resp.fail();
+                resp.fail();
                 return resp;
             }
 
             final SSOToken ssoToken = tkModule.createToken(tokenParam);
             resp.setResponseValue(ssoToken);
         } catch (Throwable e) {
-        	resp.fail();
+            resp.fail();
             resp.setErrorText(e.getMessage());
         }
         return resp;
@@ -532,37 +531,37 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
     }
 
     private void updateAuthState(Subject sub) {
-    	log.info(String.format("Subject=%s", sub));
-    	log.info(String.format("Subject.ssoToken=%s", sub.getSsoToken()));
-    	final AuthStateEntity state = new AuthStateEntity(null, new BigDecimal(1), 
-    									sub.getSsoToken().getExpirationTime().getTime(), 
-    									sub.getSsoToken().getToken(), sub.getUserId(), 
-    									"OPENIAM");
+        log.info(String.format("Subject=%s", sub));
+        log.info(String.format("Subject.ssoToken=%s", sub.getSsoToken()));
+        final AuthStateEntity state = new AuthStateEntity(null, new BigDecimal(1),
+                sub.getSsoToken().getExpirationTime().getTime(),
+                sub.getSsoToken().getToken(), sub.getUserId(),
+                "OPENIAM");
 
         authStateDao.saveAuthState(state);
     }
 
-	@Override
-	public void setApplicationContext(ApplicationContext ctx)
-			throws BeansException {
-		this.ctx = ctx;
-	}
+    @Override
+    public void setApplicationContext(ApplicationContext ctx)
+            throws BeansException {
+        this.ctx = ctx;
+    }
 
-	@Override
-	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
-		this.beanFactory = beanFactory;
-	}
+    @Override
+    public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+        this.beanFactory = beanFactory;
+    }
 
-	@Override
-	public List<AuthStateEntity> findBeans(AuthStateSearchBean searchBean,
-			int from, int size) {
-		return authStateDao.getByExample(searchBean, from, size);
-	}
+    @Override
+    public List<AuthStateEntity> findBeans(AuthStateSearchBean searchBean,
+                                           int from, int size) {
+        return authStateDao.getByExample(searchBean, from, size);
+    }
 
-	@Override
-	@Transactional
-	public Response save(final AuthStateEntity entity) {
-		final Response response = new Response(ResponseStatus.SUCCESS);
+    @Override
+    @Transactional
+    public Response save(final AuthStateEntity entity) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
         try {
             authStateDao.saveAuthState(entity);
         } catch (Throwable e) {
@@ -571,112 +570,113 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
             response.setStatus(ResponseStatus.FAILURE);
         }
         return response;
-	}
-	
-	private LoginEntity getLogin(final String userId, final String managedSysId) {
-		final List<LoginEntity> principals = loginManager.getLoginByUser(userId);
+    }
+
+    private LoginEntity getLogin(final String userId, final String managedSysId) {
+        final List<LoginEntity> principals = loginManager.getLoginByUser(userId);
         LoginEntity login = null;
-        if(CollectionUtils.isNotEmpty(principals)) {
-        	for(final LoginEntity principal : principals) {
-        		if(StringUtils.equals(principal.getManagedSysId(), managedSysId)) {
-        			login = principal;
-        			break;
-        		}
-        	}
+        if (CollectionUtils.isNotEmpty(principals)) {
+            for (final LoginEntity principal : principals) {
+                if (StringUtils.equals(principal.getManagedSysId(), managedSysId)) {
+                    login = principal;
+                    break;
+                }
+            }
         }
         return login;
-	}
-	
-	
-	@Override
-	@Transactional
-	public Response getOTPSecretKey(OTPServiceRequest request) {
-		final IdmAuditLog event = new IdmAuditLog();
-		event.setUserId(null);
-		event.setAction(AuditAction.GET_QR_CODE.value());
-		event.addAttribute(AuditAttributeName.URI_PATTERN_ID, request.getPatternId());
-		event.addAttributeAsJson(AuditAttributeName.PHONE, request.getPhone(), jacksonMapper);
-		event.setUserId(request.getUserId());
-		
-		final String userId = request.getUserId();
-		final Phone phone = request.getPhone();
-		final Response response = new Response();
-		try {
-			final AuthProviderEntity authProvider = getAuthProvider(request.getPatternId(), event);
+    }
+
+
+    @Override
+    @Transactional
+    public Response getOTPSecretKey(OTPServiceRequest request) {
+        final IdmAuditLog event = new IdmAuditLog();
+        event.setUserId(null);
+        event.setAction(AuditAction.GET_QR_CODE.value());
+        event.addAttribute(AuditAttributeName.URI_PATTERN_ID, request.getPatternId());
+        event.addAttributeAsJson(AuditAttributeName.PHONE, request.getPhone(), jacksonMapper);
+        event.setUserId(request.getUserId());
+
+        final String userId = request.getUserId();
+        final Phone phone = request.getPhone();
+        final Response response = new Response();
+        try {
+            final AuthProviderEntity authProvider = getAuthProvider(request.getPatternId(), event);
             final ManagedSysEntity managedSystem = (authProvider != null) ? authProvider.getManagedSystem() : null;
-            if(authProvider == null) {
-            	throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_FOUND_FOR_CONTENT_PROVIDER);
+            if (authProvider == null) {
+                throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_FOUND_FOR_CONTENT_PROVIDER);
             }
             final LoginEntity login = getLogin(userId, managedSystem.getId());
-            
-            if(login == null) {
-            	throw new BasicDataServiceException(ResponseCode.PRINCIPAL_NOT_FOUND);
+
+            if (login == null) {
+                throw new BasicDataServiceException(ResponseCode.PRINCIPAL_NOT_FOUND);
             }
-            
-            if(request.getRequestType() == null) {
-            	throw new BasicDataServiceException(ResponseCode.OTP_TYPE_MISSING);
+
+            if (request.getRequestType() == null) {
+                throw new BasicDataServiceException(ResponseCode.OTP_TYPE_MISSING);
             }
-            
+
             final AbstractTOTPModule module = new GoogleAuthTOTPModule();
             final String secretKey = module.generateSecret(phone, login);
             response.setResponseValue(secretKey);
             response.succeed();
-		} catch(BasicDataServiceException e) {
-	        log.warn(e.getMessage(), e);
-	        event.fail();
-	        event.setFailureReason(e.getCode());
-	        event.setFailureReason(e.getMessage());
-	        response.fail();
-	        response.setErrorCode(e.getCode());
-		} catch(Throwable e) {
-			 log.error(e.getMessage(), e);
-			 event.fail();
-			 event.setFailureReason(e.getMessage());
-			 response.fail();
-			 response.setErrorText(e.getMessage());
-		} finally {
-			auditLogService.enqueue(event);
-		}
-		return response;
-	}
+        } catch (BasicDataServiceException e) {
+            log.warn(e.getMessage(), e);
+            event.fail();
+            event.setFailureReason(e.getCode());
+            event.setFailureReason(e.getMessage());
+            response.fail();
+            response.setErrorCode(e.getCode());
+        } catch (Throwable e) {
+            log.error(e.getMessage(), e);
+            event.fail();
+            event.setFailureReason(e.getMessage());
+            response.fail();
+            response.setErrorText(e.getMessage());
+        } finally {
+            auditLogService.enqueue(event);
+        }
+        return response;
+    }
 
-	@Override
-	@Transactional
-	public Response sendOTPToken(final OTPServiceRequest request) {
-		final IdmAuditLog event = new IdmAuditLog();
-		event.setUserId(null);
-		event.setAction(AuditAction.SEND_SMS_OTP_TOKEN.value());
-		event.addAttribute(AuditAttributeName.URI_PATTERN_ID, request.getPatternId());
-		event.addAttributeAsJson(AuditAttributeName.PHONE, request.getPhone(), jacksonMapper);
-		event.setUserId(request.getUserId());
-		
-		final Response response = new Response();
-		final Phone phone = request.getPhone();
-		final String userId = request.getUserId();
-		try {
+    @Override
+    @Transactional
+    public Response sendOTPToken(final OTPServiceRequest request) {
+        final IdmAuditLog event = new IdmAuditLog();
+        event.setUserId(null);
+        event.setAction(AuditAction.SEND_SMS_OTP_TOKEN.value());
+        event.addAttribute(AuditAttributeName.URI_PATTERN_ID, request.getPatternId());
+        event.addAttributeAsJson(AuditAttributeName.PHONE, request.getPhone(), jacksonMapper);
+        event.setUserId(request.getUserId());
+
+        final Response response = new Response();
+        final Phone phone = request.getPhone();
+        final String userId = request.getUserId();
+        try {
             final AuthProviderEntity authProvider = getAuthProvider(request.getPatternId(), event);
             final ManagedSysEntity managedSystem = (authProvider != null) ? authProvider.getManagedSystem() : null;
-            if(authProvider == null) {
-            	throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_FOUND_FOR_CONTENT_PROVIDER);
+            if (authProvider == null) {
+                throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_FOUND_FOR_CONTENT_PROVIDER);
             }
-            
-            if(request.getRequestType() == null) {
-            	throw new BasicDataServiceException(ResponseCode.OTP_TYPE_MISSING);
+
+            if (request.getRequestType() == null) {
+                throw new BasicDataServiceException(ResponseCode.OTP_TYPE_MISSING);
             }
-            
+
             final PolicyEntity policy = authProvider.getPasswordPolicy();
             final PolicyAttributeEntity attribute = policy.getAttribute("OTP_SMS_LIFETIME");
             int numOfMinutesOfSMSValidity = 30;
-            if(attribute != null) {
-            	try {
-            		numOfMinutesOfSMSValidity = Integer.valueOf(attribute.getValue1());
-            	} catch(Throwable e) {}
+            if (attribute != null) {
+                try {
+                    numOfMinutesOfSMSValidity = Integer.valueOf(attribute.getValue1());
+                } catch (Throwable e) {
+                }
             }
-            
-            final AbstractSMSOTPModule module = (AbstractSMSOTPModule)scriptRunner.instantiateClass(null, authProvider.getSmsOTPGroovyScript());
+
+            final AbstractSMSOTPModule module = (AbstractSMSOTPModule) scriptRunner.instantiateClass(null, authProvider.getSmsOTPGroovyScript());
             final LoginEntity login = getLogin(userId, managedSystem.getId());
-            if(login == null) {
-            	throw new BasicDataServiceException(ResponseCode.PRINCIPAL_NOT_FOUND);
+            if (login == null) {
+                throw new BasicDataServiceException(ResponseCode.PRINCIPAL_NOT_FOUND);
             }
             final Calendar calendar = Calendar.getInstance();
             calendar.setTime(new Date());
@@ -685,217 +685,217 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
             //login.setSmsCodeExpiration(calendar.getTime());
             login.setSmsCodeExpiration(new Timestamp(calendar.getTime().getTime()));
             loginManager.updateLogin(login);
-            
+
             final String token = module.generateSMSToken(phone, login);
             event.addAttribute(AuditAttributeName.SMS_TOKEN, token);
-            
-			response.succeed();
-			event.succeed();
-		} catch(BasicDataServiceException e) {
-	        log.warn(e.getMessage(), e);
-	        event.fail();
-	        event.setFailureReason(e.getCode());
-	        event.setFailureReason(e.getMessage());
-	        response.fail();
-	        response.setErrorCode(e.getCode());
-		} catch(Throwable e) {
-			 log.error(e.getMessage(), e);
-			 event.fail();
-			 event.setFailureReason(e.getMessage());
-			 response.fail();
-			 response.setErrorText(e.getMessage());
-		} finally {
-			auditLogService.enqueue(event);
-		}
-		return response;
-	}
-	
-	private String decryptTOTP(final Phone phone, final String userId) {
-		final String secret = phone.getTotpSecret();
-		String retVal = null;
-		if(secret != null) {
-			try {
-				retVal = keyManagementService.decrypt(userId, KeyName.token, secret);
-			} catch (Throwable e) {
-				log.error("Can't decrypt secret", e);
-			}
-		}
-		return retVal;
-	}
 
-	@Override
-	public Response confirmOTPToken(final OTPServiceRequest request) {
-		final IdmAuditLog event = new IdmAuditLog();
-		event.setUserId(null);
-		event.setAction(AuditAction.CONFIRM_SMS_OTP_TOKEN.value());
-		event.addAttribute(AuditAttributeName.URI_PATTERN_ID, request.getPatternId());
-		event.addAttributeAsJson(AuditAttributeName.PHONE, request.getPhone(), jacksonMapper);
-		event.setUserId(request.getUserId());
-		
-		final Response response = new Response();
-		final String userId = request.getUserId();
-		try {
+            response.succeed();
+            event.succeed();
+        } catch (BasicDataServiceException e) {
+            log.warn(e.getMessage(), e);
+            event.fail();
+            event.setFailureReason(e.getCode());
+            event.setFailureReason(e.getMessage());
+            response.fail();
+            response.setErrorCode(e.getCode());
+        } catch (Throwable e) {
+            log.error(e.getMessage(), e);
+            event.fail();
+            event.setFailureReason(e.getMessage());
+            response.fail();
+            response.setErrorText(e.getMessage());
+        } finally {
+            auditLogService.enqueue(event);
+        }
+        return response;
+    }
+
+    private String decryptTOTP(final Phone phone, final String userId) {
+        final String secret = phone.getTotpSecret();
+        String retVal = null;
+        if (secret != null) {
+            try {
+                retVal = keyManagementService.decrypt(userId, KeyName.token, secret);
+            } catch (Throwable e) {
+                log.error("Can't decrypt secret", e);
+            }
+        }
+        return retVal;
+    }
+
+    @Override
+    public Response confirmOTPToken(final OTPServiceRequest request) {
+        final IdmAuditLog event = new IdmAuditLog();
+        event.setUserId(null);
+        event.setAction(AuditAction.CONFIRM_SMS_OTP_TOKEN.value());
+        event.addAttribute(AuditAttributeName.URI_PATTERN_ID, request.getPatternId());
+        event.addAttributeAsJson(AuditAttributeName.PHONE, request.getPhone(), jacksonMapper);
+        event.setUserId(request.getUserId());
+
+        final Response response = new Response();
+        final String userId = request.getUserId();
+        try {
             final AuthProviderEntity authProvider = getAuthProvider(request.getPatternId(), event);
             final ManagedSysEntity managedSystem = (authProvider != null) ? authProvider.getManagedSystem() : null;
-            if(authProvider == null) {
-            	throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_FOUND_FOR_CONTENT_PROVIDER);
+            if (authProvider == null) {
+                throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_FOUND_FOR_CONTENT_PROVIDER);
             }
             final LoginEntity login = getLogin(userId, managedSystem.getId());
-            
-            if(login == null) {
-            	throw new BasicDataServiceException(ResponseCode.PRINCIPAL_NOT_FOUND);
+
+            if (login == null) {
+                throw new BasicDataServiceException(ResponseCode.PRINCIPAL_NOT_FOUND);
             }
-            
-            if(request.getRequestType() == null) {
-            	throw new BasicDataServiceException(ResponseCode.OTP_TYPE_MISSING);
+
+            if (request.getRequestType() == null) {
+                throw new BasicDataServiceException(ResponseCode.OTP_TYPE_MISSING);
             }
-            
-            if(OTPRequestType.SMS.equals(request.getRequestType())) {
-            	final AbstractSMSOTPModule module = (AbstractSMSOTPModule)scriptRunner.instantiateClass(null, authProvider.getSmsOTPGroovyScript());
-	            final String smsCode = module.generateRFC4226Token(login);
-	            
-	            if(!StringUtils.equals(request.getOtpCode(), smsCode)) {
-	            	throw new BasicDataServiceException(ResponseCode.SMS_CODES_NOT_EQUAL);
-	            }
-	            
-	            if(login.getSmsCodeExpiration() != null) {
-	            	if(new Date().after(login.getSmsCodeExpiration())) {
-	            		throw new BasicDataServiceException(ResponseCode.SMS_CODE_EXPIRED);
-	            	}
-	            }
-	            
-	            login.setSmsActive(true);
+
+            if (OTPRequestType.SMS.equals(request.getRequestType())) {
+                final AbstractSMSOTPModule module = (AbstractSMSOTPModule) scriptRunner.instantiateClass(null, authProvider.getSmsOTPGroovyScript());
+                final String smsCode = module.generateRFC4226Token(login);
+
+                if (!StringUtils.equals(request.getOtpCode(), smsCode)) {
+                    throw new BasicDataServiceException(ResponseCode.SMS_CODES_NOT_EQUAL);
+                }
+
+                if (login.getSmsCodeExpiration() != null) {
+                    if (new Date().after(login.getSmsCodeExpiration())) {
+                        throw new BasicDataServiceException(ResponseCode.SMS_CODE_EXPIRED);
+                    }
+                }
+
+                login.setSmsActive(true);
             } else {
-            	final AbstractTOTPModule module = new GoogleAuthTOTPModule();
-            	final String secret = (StringUtils.isNotBlank(request.getSecret())) ? request.getSecret() : decryptTOTP(request.getPhone(), userId);
-            	try {
-            		if(!module.validateToken(secret, Integer.valueOf(request.getOtpCode()).intValue())) {
-            			throw new BasicDataServiceException(ResponseCode.TOPT_CODE_INVALID);
-            		}
-            		login.setToptActive(true);
-            	} catch(NumberFormatException e) {
-            		throw new BasicDataServiceException(ResponseCode.TOPT_CODE_INVALID);
-            	}
+                final AbstractTOTPModule module = new GoogleAuthTOTPModule();
+                final String secret = (StringUtils.isNotBlank(request.getSecret())) ? request.getSecret() : decryptTOTP(request.getPhone(), userId);
+                try {
+                    if (!module.validateToken(secret, Integer.valueOf(request.getOtpCode()).intValue())) {
+                        throw new BasicDataServiceException(ResponseCode.TOPT_CODE_INVALID);
+                    }
+                    login.setToptActive(true);
+                } catch (NumberFormatException e) {
+                    throw new BasicDataServiceException(ResponseCode.TOPT_CODE_INVALID);
+                }
             }
             login.setSmsCodeExpiration(null);
             loginManager.updateLogin(login);
-			response.succeed();
-			event.succeed();
-		} catch(BasicDataServiceException e) {
-	        log.warn(e.getMessage(), e);
-	        event.fail();
-	        event.setFailureReason(e.getCode());
-	        event.setFailureReason(e.getMessage());
-	        response.fail();
-	        response.setErrorCode(e.getCode());
-		} catch(Throwable e) {
-			 log.error(e.getMessage(), e);
-			 event.fail();
-			 event.setFailureReason(e.getMessage());
-			 response.fail();
-			 response.setErrorText(e.getMessage());
-		} finally {
-			auditLogService.enqueue(event);
-		}
-		return response;
-	}
+            response.succeed();
+            event.succeed();
+        } catch (BasicDataServiceException e) {
+            log.warn(e.getMessage(), e);
+            event.fail();
+            event.setFailureReason(e.getCode());
+            event.setFailureReason(e.getMessage());
+            response.fail();
+            response.setErrorCode(e.getCode());
+        } catch (Throwable e) {
+            log.error(e.getMessage(), e);
+            event.fail();
+            event.setFailureReason(e.getMessage());
+            response.fail();
+            response.setErrorText(e.getMessage());
+        } finally {
+            auditLogService.enqueue(event);
+        }
+        return response;
+    }
 
-	@Override
-	@Transactional
-	public Response clearOTPActiveStatus(final OTPServiceRequest request) {
-		final IdmAuditLog event = new IdmAuditLog();
-		event.setUserId(null);
-		event.setAction(AuditAction.CLEAR_SMS_OTP_STATUS.value());
-		event.addAttribute(AuditAttributeName.URI_PATTERN_ID, request.getPatternId());
-		event.setUserId(request.getUserId());
-		
-		final Response response = new Response();
-		try {
+    @Override
+    @Transactional
+    public Response clearOTPActiveStatus(final OTPServiceRequest request) {
+        final IdmAuditLog event = new IdmAuditLog();
+        event.setUserId(null);
+        event.setAction(AuditAction.CLEAR_SMS_OTP_STATUS.value());
+        event.addAttribute(AuditAttributeName.URI_PATTERN_ID, request.getPatternId());
+        event.setUserId(request.getUserId());
+
+        final Response response = new Response();
+        try {
             final AuthProviderEntity authProvider = getAuthProvider(request.getPatternId(), event);
             final ManagedSysEntity managedSystem = (authProvider != null) ? authProvider.getManagedSystem() : null;
-            if(authProvider == null) {
-            	throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_FOUND_FOR_CONTENT_PROVIDER);
+            if (authProvider == null) {
+                throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_FOUND_FOR_CONTENT_PROVIDER);
             }
-            
+
             final LoginEntity login = getLogin(request.getUserId(), managedSystem.getId());
-            
-            if(login == null) {
-            	throw new BasicDataServiceException(ResponseCode.PRINCIPAL_NOT_FOUND);
+
+            if (login == null) {
+                throw new BasicDataServiceException(ResponseCode.PRINCIPAL_NOT_FOUND);
             }
-            
+
             login.setSmsActive(false);
             login.setToptActive(false);
             loginManager.updateLogin(login);
-            
+
             response.succeed();
             event.succeed();
-		} catch(BasicDataServiceException e) {
-	        log.warn(e.getMessage(), e);
-	        event.fail();
-	        event.setFailureReason(e.getCode());
-	        event.setFailureReason(e.getMessage());
-	        response.fail();
-	        response.setErrorCode(e.getCode());
-		} catch(Throwable e) {
-			 log.error(e.getMessage(), e);
-			 event.fail();
-			 event.setFailureReason(e.getMessage());
-			 response.fail();
-			 response.setErrorText(e.getMessage());
-		} finally {
-			//auditLogService.enqueue(event);
-		}
-		return response;
-	}
+        } catch (BasicDataServiceException e) {
+            log.warn(e.getMessage(), e);
+            event.fail();
+            event.setFailureReason(e.getCode());
+            event.setFailureReason(e.getMessage());
+            response.fail();
+            response.setErrorCode(e.getCode());
+        } catch (Throwable e) {
+            log.error(e.getMessage(), e);
+            event.fail();
+            event.setFailureReason(e.getMessage());
+            response.fail();
+            response.setErrorText(e.getMessage());
+        } finally {
+            //auditLogService.enqueue(event);
+        }
+        return response;
+    }
 
-	@Override
-	public boolean isOTPActive(final OTPServiceRequest request) {
-		final IdmAuditLog event = new IdmAuditLog();
-		event.setUserId(null);
-		event.setAction(AuditAction.GET_SMS_OTP_STATUS.value());
-		event.addAttribute(AuditAttributeName.URI_PATTERN_ID, request.getPatternId());
-		event.setUserId(request.getUserId());
-		
-		boolean retVal = false;
-		try {
+    @Override
+    public boolean isOTPActive(final OTPServiceRequest request) {
+        final IdmAuditLog event = new IdmAuditLog();
+        event.setUserId(null);
+        event.setAction(AuditAction.GET_SMS_OTP_STATUS.value());
+        event.addAttribute(AuditAttributeName.URI_PATTERN_ID, request.getPatternId());
+        event.setUserId(request.getUserId());
+
+        boolean retVal = false;
+        try {
             final AuthProviderEntity authProvider = getAuthProvider(request.getPatternId(), event);
             final ManagedSysEntity managedSystem = (authProvider != null) ? authProvider.getManagedSystem() : null;
-            if(authProvider == null) {
-            	throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_FOUND_FOR_CONTENT_PROVIDER);
+            if (authProvider == null) {
+                throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_FOUND_FOR_CONTENT_PROVIDER);
             }
-            
-            if(request.getRequestType() == null) {
-            	throw new BasicDataServiceException(ResponseCode.OTP_TYPE_MISSING);
+
+            if (request.getRequestType() == null) {
+                throw new BasicDataServiceException(ResponseCode.OTP_TYPE_MISSING);
             }
-            
+
             final LoginEntity login = getLogin(request.getUserId(), managedSystem.getId());
-            
-            if(login == null) {
-            	throw new BasicDataServiceException(ResponseCode.PRINCIPAL_NOT_FOUND);
+
+            if (login == null) {
+                throw new BasicDataServiceException(ResponseCode.PRINCIPAL_NOT_FOUND);
             }
-            
-            switch(request.getRequestType()) {
-             	case SMS:
-             		retVal = login.isSmsActive();
-             		break;
-             	case TOPT:
-             		retVal = login.isToptActive();
-             		break;
+
+            switch (request.getRequestType()) {
+                case SMS:
+                    retVal = login.isSmsActive();
+                    break;
+                case TOPT:
+                    retVal = login.isToptActive();
+                    break;
             }
-            
+
             event.succeed();
-		} catch(BasicDataServiceException e) {
-	        log.warn(e.getMessage(), e);
-	        event.fail();
-	        event.setFailureReason(e.getCode());
-	        event.setFailureReason(e.getMessage());
-		} catch(Throwable e) {
-			 log.error(e.getMessage(), e);
-			 event.fail();
-			 event.setFailureReason(e.getMessage());
-		} finally {
-			//auditLogService.enqueue(event);
-		}
-		return retVal;
-	}
+        } catch (BasicDataServiceException e) {
+            log.warn(e.getMessage(), e);
+            event.fail();
+            event.setFailureReason(e.getCode());
+            event.setFailureReason(e.getMessage());
+        } catch (Throwable e) {
+            log.error(e.getMessage(), e);
+            event.fail();
+            event.setFailureReason(e.getMessage());
+        } finally {
+            //auditLogService.enqueue(event);
+        }
+        return retVal;
+    }
 }
