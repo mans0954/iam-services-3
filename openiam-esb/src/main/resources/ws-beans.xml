@@ -100,4 +100,6 @@
 
 
 
+    <jaxws:endpoint id="ldapConnectorServiceEndpoint" implementor="#genericLdapConnector" address="/LDAPConnectorService"/>
+
 </beans>

@@ -59,8 +59,6 @@ import java.util.*;
 @Component("defaultLoginModule")
 public class DefaultLoginModule extends AbstractLoginModule {
 
-    private static final String DEFAULT_TOKEN_LIFE = "30";
-
     private static final Log log = LogFactory.getLog(DefaultLoginModule.class);
 
     public DefaultLoginModule() {
@@ -72,46 +70,6 @@ public class DefaultLoginModule extends AbstractLoginModule {
     	super.logout(request, auditLog);
     }
     */
-
-    @Override
-    protected void validate(final AuthenticationContext context) throws Exception {
-        final String principal = context.getPrincipal();
-        final String password = context.getPassword();
-        final IdmAuditLog newLoginEvent = context.getEvent();
-
-        if (StringUtils.isBlank(principal)) {
-            newLoginEvent.setFailureReason("Invalid Principlal");
-            throw new BasicDataServiceException(ResponseCode.INVALID_PRINCIPAL);
-        }
-
-        if (StringUtils.isBlank(password)) {
-            newLoginEvent.setFailureReason("Invalid Password");
-            throw new BasicDataServiceException(ResponseCode.INVALID_PASSWORD);
-        }
-    }
-
-    @Override
-    protected LoginEntity getLogin(final AuthenticationContext context) throws Exception {
-        final IdmAuditLog newLoginEvent = context.getEvent();
-        final String principal = context.getPrincipal();
-        final ManagedSysEntity managedSystem = getManagedSystem(context);
-        final LoginEntity lg = loginManager.getLoginByManagedSys(principal, managedSystem.getId());
-        if (lg == null) {
-            newLoginEvent.setFailureReason(String.format("Cannot find login for principal '%s' and managedSystem '%s'", principal, managedSystem.getId()));
-            throw new BasicDataServiceException(ResponseCode.INVALID_LOGIN);
-        }
-        return lg;
-    }
-
-    @Override
-    protected UserEntity getUser(final AuthenticationContext context, final LoginEntity login) throws Exception {
-        final IdmAuditLog newLoginEvent = context.getEvent();
-        final String userId = login.getUserId();
-        newLoginEvent.setRequestorUserId(userId);
-        newLoginEvent.setTargetUser(userId, login.getLogin());
-        final UserEntity user = userDAO.findById(userId);
-        return user;
-    }
 
     @Override
     @Transactional
@@ -287,76 +245,4 @@ public class DefaultLoginModule extends AbstractLoginModule {
         return sub;
     }
 
-    /**
-     * If the password has expired, but its before the grace period then its a good login
-     * If the password has expired and after the grace period, then its an exception.
-     * You should also set the days to expiration
-     * @param lg
-     * @return
-     */
-    private ResponseCode passwordExpired(final LoginEntity lg, final Date curDate, final PolicyEntity policy) {
-        log.debug("passwordExpired Called.");
-        log.debug("- Password Exp =" + lg.getPwdExp());
-        log.debug("- Password Grace Period =" + lg.getGracePeriod());
-
-        if (lg.getGracePeriod() == null) {
-            // set an early date
-            Date gracePeriodDate = getGracePeriodDate(lg, curDate, policy);
-            log.debug("Calculated the gracePeriod Date to be: "
-                    + gracePeriodDate);
-
-            if (gracePeriodDate == null) {
-                lg.setGracePeriod(new Date(0));
-            } else {
-                lg.setGracePeriod(gracePeriodDate);
-            }
-        }
-        if (lg.getPwdExp() != null) {
-            if (curDate.after(lg.getPwdExp())
-                    && curDate.after(lg.getGracePeriod())) {
-                // check for password expiration, but successful login
-                return ResponseCode.RESULT_PASSWORD_EXPIRED;
-            }
-            if ((curDate.after(lg.getPwdExp()) && curDate.before(lg
-                    .getGracePeriod()))) {
-                // check for password expiration, but successful login
-                return ResponseCode.RESULT_SUCCESS_PASSWORD_EXP;
-            }
-        }
-        return ResponseCode.RESULT_SUCCESS_PASSWORD_EXP;
-    }
-
-    private Date getGracePeriodDate(LoginEntity lg, Date curDate, final PolicyEntity policy) {
-
-        final Date pwdExpDate = lg.getPwdExp();
-
-        if (pwdExpDate == null) {
-            return null;
-        }
-
-        final String gracePeriod = getPolicyAttribute(policy, "PWD_EXP_GRACE");
-        final Calendar cal = Calendar.getInstance();
-        cal.setTime(pwdExpDate);
-        if(StringUtils.isNotEmpty(gracePeriod)) {
-            cal.add(Calendar.DATE, Integer.parseInt(gracePeriod));
-            log.debug(String.format("Calculated grace period date=%s",cal.getTime()));
-            return cal.getTime();
-        }
-        return null;
-
-    }
-
-    private SSOToken token(final String userId, final String tokenType, final String tokenLife, final Map tokenParam) throws Exception {
-
-        log.debug("Generating Security Token");
-
-        tokenParam.put("USER_ID", userId);
-
-        SSOTokenModule tkModule = SSOTokenFactory.createModule(tokenType);
-        tkModule.setCryptor(cryptor);
-        tkModule.setKeyManagementService(keyManagementService);
-        tkModule.setTokenLife(Integer.parseInt(tokenLife));
-
-        return tkModule.createToken(tokenParam);
-    }
 }
