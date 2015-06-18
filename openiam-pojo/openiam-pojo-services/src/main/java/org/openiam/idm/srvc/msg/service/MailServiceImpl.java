@@ -92,7 +92,7 @@ public class MailServiceImpl extends AbstractBaseService implements MailService,
         log.debug("To:" + to + ", From:" + from + ", Subject:" + subject + ", Cc:" + cc + ", Attachement:" + attachment
                 + ", Format:" + isHtmlFormat);
 
-        Message message = fillMessage(from, to, cc, null, subject, msg, isHtmlFormat, attachment, null);
+        Message message = fillMessage(from, to, cc, optionalBccAddress, subject, msg, isHtmlFormat, attachment, null);
         try {
             mailSender.send(message);
         } catch (Throwable e) {
@@ -105,7 +105,7 @@ public class MailServiceImpl extends AbstractBaseService implements MailService,
         log.debug("To:" + to + ", From:" + from + ", Subject:" + subject + ", Cc:" + cc + ", Attachement:" + attachment
                 + ", Format:" + isHtmlFormat);
 
-        Message message = fillMessage(from, to, cc, null, subject, msg, isHtmlFormat, attachment, executionDateTime);
+        Message message = fillMessage(from, to, cc, optionalBccAddress, subject, msg, isHtmlFormat, attachment, executionDateTime);
         try {
             mailSender.send(message);
         } catch (Throwable e) {

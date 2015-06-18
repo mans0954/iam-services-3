@@ -14,7 +14,6 @@ import java.util.Date;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "IdentitySearchBean", propOrder = {
         "identity",
-        "managedSysId",
         "referredObjectId",
         "managedSysId",
         "status",

@@ -47,7 +47,8 @@ import java.util.List;
         "attributeList",
         "preventChangeCountIncrement",
         "userActivateFlag",
-	    "contentProviderId"
+	    "contentProviderId",
+        "resyncMode"
 })
 public class PasswordSync extends BaseObject {
 
@@ -67,6 +68,7 @@ public class PasswordSync extends BaseObject {
     private boolean preventChangeCountIncrement;
     private boolean userActivateFlag;
 	private String contentProviderId;
+    private boolean resyncMode;
 
     public PasswordSync() {
 
@@ -157,7 +159,13 @@ public class PasswordSync extends BaseObject {
 	public void setContentProviderId(String contentProviderId) {
 		this.contentProviderId = contentProviderId;
 	}
-	
-	
+
+    public boolean getResyncMode() {
+        return resyncMode;
+    }
+
+    public void setResyncMode(boolean resyncMode) {
+        this.resyncMode = resyncMode;
+    }
 }
 

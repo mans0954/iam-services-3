@@ -91,10 +91,7 @@ import org.openiam.idm.srvc.user.dto.UserToOrganizationMembershipXref;
 import org.openiam.idm.srvc.user.dto.UserToResourceMembershipXref;
 import org.openiam.idm.srvc.user.dto.UserToRoleMembershipXref;
 import org.openiam.idm.srvc.user.service.UserDataService;
-import org.openiam.provision.dto.PasswordSync;
-import org.openiam.provision.dto.ProvisionActionEvent;
-import org.openiam.provision.dto.ProvisionActionTypeEnum;
-import org.openiam.provision.dto.ProvisionUser;
+import org.openiam.provision.dto.*;
 import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
@@ -221,6 +218,10 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     protected ManagedSysDozerConverter managedSysDozerConverter;
     @Autowired
     protected ProvisionConnectorConverter provisionConnectorConverter;
+
+    @Autowired
+    protected BuildUserPolicyMapHelper buildPolicyMapHelper;
+
     @Value("${openiam.service_base}")
     protected String serviceHost;
     @Value("${openiam.idm.ws.path}")
@@ -438,9 +439,9 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     String objectType = attr.getMapForObjectType();
                     if (objectType != null) {
                         if (PolicyMapObjectTypeOptions.PRINCIPAL.name().equalsIgnoreCase(objectType)) {
-                            if (attr.getAttributeName().equalsIgnoreCase("PRINCIPAL")) {
+                            if (attr.getName().equalsIgnoreCase("PRINCIPAL")) {
                                 primaryIdentityRule = attr;
-                            } else if (attr.getAttributeName().equalsIgnoreCase("PASSWORD")) {
+                            } else if (attr.getName().equalsIgnoreCase("PASSWORD")) {
                                 primaryPasswordRule = attr;
                             }
                         }
@@ -481,8 +482,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
             String objectType = attr.getMapForObjectType();
             if (objectType != null) {
                 if (PolicyMapObjectTypeOptions.PRINCIPAL.name().equalsIgnoreCase(objectType)) {
-                    if (attr.getAttributeName().equalsIgnoreCase("PRINCIPAL")) {
-                        principalAttributeName = attr.getAttributeName();
+                    if (attr.getName().equalsIgnoreCase("PRINCIPAL")) {
+                        principalAttributeName = attr.getName();
                         break;
                     }
                 }
@@ -512,7 +513,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     String objectType = attr.getMapForObjectType();
                     if (objectType != null) {
                         if (PolicyMapObjectTypeOptions.PRINCIPAL.name().equalsIgnoreCase(objectType)) {
-                            if ("PASSWORD".equalsIgnoreCase(attr.getAttributeName())) {
+                            if ("PASSWORD".equalsIgnoreCase(attr.getName())) {
                                 primaryIdentity.setPassword(output);
                             }
                         }
@@ -1690,7 +1691,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         List<AttributeMap> attrMap = attributeMapDozerConverter.convertToDTOList(attrMapEntities, false);     //need to check if  attr.getDataType().getValue() works
         for (AttributeMap attr : attrMap) {
             if (PolicyMapObjectTypeOptions.PRINCIPAL.name().equalsIgnoreCase(attr.getMapForObjectType())) {
-                extUser.setPrincipalFieldName(attr.getAttributeName());
+                extUser.setPrincipalFieldName(attr.getName());
                 extUser.setPrincipalFieldDataType(attr.getDataType().getValue());
                 break;
             }
@@ -1764,7 +1765,10 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         request.setRequestID(requestId);
         request.setTargetID(mLg.getManagedSysId());
         request.setHostLoginId(mSys.getUserId());
-        request.setExtensibleObject(new ExtensibleUser());
+
+        ExtensibleUser extensibleUser = buildPolicyMapHelper.buildMngSysAttributes(mLg, ProvOperationEnum.DELETE.name());
+        request.setExtensibleObject(extensibleUser);
+
         String passwordDecoded = managedSysDataService.getDecryptedPassword(mSys);
 
         request.setHostLoginPassword(passwordDecoded);
@@ -1783,7 +1787,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
 
     protected ResponseType resetPassword(String requestId, Login login,
                                          String password, ManagedSysDto mSys,
-                                         ManagedSystemObjectMatch matchObj, ExtensibleUser extensibleUser) {
+                                         ManagedSystemObjectMatch matchObj, ExtensibleUser extensibleUser, String operation) {
 
         PasswordRequest req = new PasswordRequest();
         req.setObjectIdentity(login.getLogin());
@@ -1798,40 +1802,13 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         if (matchObj != null) {
             req.setBaseDN(matchObj.getBaseDn());
         }
-        req.setOperation("RESET_PASSWORD");
+        req.setOperation(operation);
         req.setPassword(password);
 
         req.setScriptHandler(mSys.getPasswordHandler());
 
         log.debug("Reset password request will be sent for user login " + login.getLogin());
         return connectorAdapter.resetPasswordRequest(mSys, req);
-    }
-
-    protected ResponseType setPassword(String requestId, Login login, String prevDecPassword,
-                                       String newDecPasswordSync,
-                                       ManagedSysDto mSys,
-                                       ManagedSystemObjectMatch matchObj,
-                                       ExtensibleUser extensibleUser) {
-
-        PasswordRequest req = new PasswordRequest();
-        req.setObjectIdentity(login.getLogin());
-        req.setRequestID(requestId);
-        req.setTargetID(login.getManagedSysId());
-        req.setHostLoginId(mSys.getUserId());
-        req.setExtensibleObject(extensibleUser);
-        String passwordDecoded = managedSysDataService.getDecryptedPassword(mSys);
-
-        req.setHostLoginPassword(passwordDecoded);
-        req.setHostUrl(mSys.getHostUrl());
-        req.setBaseDN((matchObj != null) ? matchObj.getBaseDn() : null);
-        req.setOperation("SET_PASSWORD");
-        req.setPassword(newDecPasswordSync);
-        req.setScriptHandler(mSys.getPasswordHandler());
-        req.setCurrentPassword(prevDecPassword);
-        ResponseType respType = connectorAdapter.setPasswordRequest(mSys, req);
-
-        return respType;
-
     }
 
     protected ProvisionUserResponse validatePassword(Login primaryLogin, ProvisionUser user, String requestId) {

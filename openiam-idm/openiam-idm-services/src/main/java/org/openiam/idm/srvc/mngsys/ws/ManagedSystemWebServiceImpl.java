@@ -270,6 +270,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     @Cacheable(value="managedSysObjectParam", key="{ #managedSystemId, #objectType}")
     public ManagedSystemObjectMatch[] managedSysObjectParam(
             String managedSystemId, String objectType) {
+
         if (managedSystemId == null) {
             throw new NullPointerException("managedSystemId is null");
         }
@@ -482,9 +483,11 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
             }
 
             if(StringUtils.isNotBlank(obj.getObjectSearchId())) {
-            	managedSystemService.updateManagedSystemObjectMatch(obj);
+                managedSystemService.updateManagedSystemObjectMatch(obj);
+                response.setResponseValue(obj.getObjectSearchId());
             } else {
-            	managedSystemService.saveManagedSystemObjectMatch(obj);
+                String objId = managedSystemService.saveManagedSystemObjectMatch(obj);
+                response.setResponseValue(objId);
             }
         } catch (BasicDataServiceException e) {
             response.setErrorCode(e.getCode());
@@ -504,13 +507,13 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value="resourceAttributeMaps", key="{ #attributeMapId}")
-    public AttributeMap getAttributeMap(String attributeMapId) {
-        if (attributeMapId == null) {
+    @Cacheable(value="resourceAttributeMaps", key="{#id}")
+    public AttributeMap getAttributeMap(String id) {
+        if (id == null) {
             throw new IllegalArgumentException("attributeMapId is null");
         }
         AttributeMapEntity obj = managedSystemService
-                .getAttributeMap(attributeMapId);
+                .getAttributeMap(id);
         return obj == null ? null : attributeMapDozerConverter.convertToDTO(
                 obj, true);
     }

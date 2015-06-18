@@ -8,6 +8,8 @@ import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 
 import org.apache.commons.lang.StringUtils;
+import org.openiam.base.KeyDTO;
+import org.openiam.base.KeyNameDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.policy.dto.Policy;
@@ -17,24 +19,23 @@ import org.openiam.idm.srvc.policy.dto.Policy;
  * and an attribute policy.
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "AttributeMap", propOrder = { "attributeMapId", "managedSysId",
-        "resourceId", "synchConfigId", "mapForObjectType", "attributeName",
+@XmlType(name = "AttributeMap", propOrder = {"managedSysId","name",
+        "resourceId", "synchConfigId", "mapForObjectType",
         "targetAttributeName", "authoritativeSrc", "reconResAttribute", "rule",
         "status", "startDate", "endDate", "storeInIamdb", "selected",
-        "dataType", "defaultValue" })
+        "dataType", "defaultValue"})
 @DozerDTOCorrespondence(AttributeMapEntity.class)
-public class AttributeMap implements java.io.Serializable {
+public class AttributeMap extends KeyDTO {
 
     /**
-	 * 
-	 */
+     *
+     */
     private static final long serialVersionUID = -4584242607384442243L;
-    private String attributeMapId;
+    private String name;
     private String managedSysId;
     private String resourceId;
     private String synchConfigId;
     private String mapForObjectType;
-    private String attributeName;
     private String targetAttributeName;
     private Integer authoritativeSrc;
     private ReconciliationResourceAttributeMap reconResAttribute;
@@ -54,20 +55,20 @@ public class AttributeMap implements java.io.Serializable {
     }
 
     public AttributeMap(String attributeMapId, String managedSysId) {
-        this.attributeMapId = attributeMapId;
+        this.id = attributeMapId;
         this.managedSysId = managedSysId;
     }
 
     public AttributeMap(String attributeMapId, String managedSysId,
-            String resourceId, String synchConfigId, String mapForObjectType, String attributeName,
-            String targetAttributeName, Integer authoritativeSrc, String rule,
-            String status, Date startDate, Date endDate, Integer storeInIamdb) {
-        this.attributeMapId = attributeMapId;
+                        String resourceId, String synchConfigId, String mapForObjectType, String attributeName,
+                        String targetAttributeName, Integer authoritativeSrc, String rule,
+                        String status, Date startDate, Date endDate, Integer storeInIamdb) {
+        this.id = attributeMapId;
         this.managedSysId = managedSysId;
         this.resourceId = resourceId;
         this.synchConfigId = synchConfigId;
         this.mapForObjectType = mapForObjectType;
-        this.attributeName = attributeName;
+        this.name = attributeName;
         this.targetAttributeName = targetAttributeName;
         this.authoritativeSrc = authoritativeSrc;
         this.rule = rule;
@@ -75,14 +76,6 @@ public class AttributeMap implements java.io.Serializable {
         this.startDate = startDate;
         this.endDate = endDate;
         this.storeInIamdb = storeInIamdb;
-    }
-
-    public String getAttributeMapId() {
-        return this.attributeMapId;
-    }
-
-    public void setAttributeMapId(String attributeMapId) {
-        this.attributeMapId = attributeMapId;
     }
 
     public String getManagedSysId() {
@@ -115,14 +108,6 @@ public class AttributeMap implements java.io.Serializable {
 
     public void setMapForObjectType(String mapForObjectType) {
         this.mapForObjectType = mapForObjectType;
-    }
-
-    public String getAttributeName() {
-        return this.attributeName;
-    }
-
-    public void setAttributeName(String attributeName) {
-        this.attributeName = attributeName;
     }
 
     public String getTargetAttributeName() {
@@ -214,13 +199,21 @@ public class AttributeMap implements java.io.Serializable {
         this.reconResAttribute = reconResAttribute;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
     @Override
     public String toString() {
-        return "AttributeMap{" + "attributeMapId='" + attributeMapId + '\''
+        return "AttributeMap{" + "attributeMapId='" + id + '\''
                 + ", managedSysId='" + managedSysId + '\'' + ", resourceId='"
                 + resourceId + ", synchConfigId='" + synchConfigId + '\'' +
                 ", mapForObjectType='" + mapForObjectType
-                + '\'' + ", attributeName='" + attributeName + '\''
+                + '\'' + ", attributeName='" + name + '\''
                 + ", targetAttributeName='" + targetAttributeName + '\''
                 + ", authoritativeSrc=" + authoritativeSrc
                 + ", attributePolicy=" + reconResAttribute + ", rule='" + rule

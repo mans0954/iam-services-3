@@ -606,6 +606,7 @@ public class UserEntity extends KeyEntity {
     public String getDefaultLogin() {
         return defaultLogin;
     }
+
     public void setDefaultLogin(String managedSys) {
         if(this.principalList!=null && !this.principalList.isEmpty()){
             for (LoginEntity principal: this.principalList){

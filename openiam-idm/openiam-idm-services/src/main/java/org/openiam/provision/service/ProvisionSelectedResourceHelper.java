@@ -344,9 +344,9 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
                             continue;
                         }
 
-                        log.debug("buildFromRules: OBJECTTYPE="+objectType+", ATTRIBUTE=" + attr.getAttributeName() +
+                        log.debug("buildFromRules: OBJECTTYPE="+objectType+", ATTRIBUTE=" + attr.getName() +
                                 ", SCRIPT OUTPUT=" +
-                                (hiddenAttributesList.contains(attr.getAttributeName().toLowerCase())
+                                (hiddenAttributesList.contains(attr.getName().toLowerCase())
                                         ? "******" : output));
 
                         if (output != null) {
@@ -358,7 +358,7 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
                                 // the connectors can detect a delete if an
                                 // attribute is not in the list
 
-                                newAttr = new ExtensibleAttribute(attr.getAttributeName(), (String) output, -1, attr
+                                newAttr = new ExtensibleAttribute(attr.getName(), (String) output, -1, attr
                                         .getDataType().getValue());
                                 newAttr.setObjectType(objectType);
                                 extUser.getAttributes().add(newAttr);
@@ -370,7 +370,7 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
                                 // the connectors can detect a delete if an
                                 // attribute is not in the list
 
-                                newAttr = new ExtensibleAttribute(attr.getAttributeName(),
+                                newAttr = new ExtensibleAttribute(attr.getName(),
                                         ((Integer) output).toString(), -1, attr.getDataType().getValue());
                                 newAttr.setObjectType(objectType);
                                 extUser.getAttributes().add(newAttr);
@@ -381,20 +381,20 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
                                 String DATE_FORMAT = "MM/dd/yyyy";
                                 SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT);
 
-                                newAttr = new ExtensibleAttribute(attr.getAttributeName(), sdf.format(d), -1, attr
+                                newAttr = new ExtensibleAttribute(attr.getName(), sdf.format(d), -1, attr
                                         .getDataType().getValue());
                                 newAttr.setObjectType(objectType);
 
                                 extUser.getAttributes().add(newAttr);
                             } else if (output instanceof byte[]) {
                                 extUser.getAttributes().add(
-                                        new ExtensibleAttribute(attr.getAttributeName(), (byte[]) output, -1, attr
+                                        new ExtensibleAttribute(attr.getName(), (byte[]) output, -1, attr
                                                 .getDataType().getValue()));
 
                             } else if (output instanceof BaseAttributeContainer) {
                                 // process a complex object which can be passed
                                 // to the connector
-                                newAttr = new ExtensibleAttribute(attr.getAttributeName(),
+                                newAttr = new ExtensibleAttribute(attr.getName(),
                                         (BaseAttributeContainer) output, -1, attr.getDataType().getValue());
                                 newAttr.setObjectType(objectType);
                                 extUser.getAttributes().add(newAttr);
@@ -406,17 +406,17 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
                             } else if (output instanceof List) {
                                 // process a list - multi-valued object
                                 if (CollectionUtils.isNotEmpty((List)output)) {
-                                    newAttr = new ExtensibleAttribute(attr.getAttributeName(), (List) output, -1, attr
+                                    newAttr = new ExtensibleAttribute(attr.getName(), (List) output, -1, attr
                                             .getDataType().getValue());
                                     newAttr.setObjectType(objectType);
                                     extUser.getAttributes().add(newAttr);
-                                    log.debug("buildFromRules: added attribute to extUser:" + attr.getAttributeName());
+                                    log.debug("buildFromRules: added attribute to extUser:" + attr.getName());
                                 }
                             }
                         }
                     } else if (PolicyMapObjectTypeOptions.PRINCIPAL.name().equalsIgnoreCase(objectType)) {
 
-                        extUser.setPrincipalFieldName(attr.getAttributeName());
+                        extUser.setPrincipalFieldName(attr.getName());
                         extUser.setPrincipalFieldDataType(attr.getDataType().getValue());
 
                     }
@@ -445,12 +445,12 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
                 String objectType = attr.getMapForObjectType();
                 if (objectType != null) {
                     if (PolicyMapObjectTypeOptions.USER.name().equalsIgnoreCase(objectType)) {
-                        ExtensibleAttribute newAttr = new ExtensibleAttribute(attr.getAttributeName(), null);
+                        ExtensibleAttribute newAttr = new ExtensibleAttribute(attr.getName(), null);
                         newAttr.setObjectType(objectType);
                         extUser.getAttributes().add(newAttr);
 
                     } else if (PolicyMapObjectTypeOptions.PRINCIPAL.name().equalsIgnoreCase(objectType)) {
-                        extUser.setPrincipalFieldName(attr.getAttributeName());
+                        extUser.setPrincipalFieldName(attr.getName());
                         extUser.setPrincipalFieldDataType(attr.getDataType().getValue());
                     }
                 }

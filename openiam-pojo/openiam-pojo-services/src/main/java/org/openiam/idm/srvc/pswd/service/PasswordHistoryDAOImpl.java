@@ -24,7 +24,7 @@ public class PasswordHistoryDAOImpl extends BaseDaoImpl<PasswordHistoryEntity, S
 	public List<PasswordHistoryEntity> getPasswordHistoryByLoginId(final String loginId, final int from, final int size) {
 		final Criteria criteria = getCriteria();
 		criteria.add(Restrictions.eq("login.id", loginId));
-		criteria.addOrder(Order.asc("dateCreated"));
+		criteria.addOrder(Order.desc("dateCreated"));
 		if(from > -1) {
 			criteria.setFirstResult(from);
 		}

@@ -27,15 +27,16 @@ public abstract class AbstractDeleteAppTableCommand<ExtObject extends Extensible
         Connection con = this.getConnection(configuration.getManagedSys());
 
         try {
-            final PreparedStatement statement = createDeleteStatement(con, configuration.getResourceId(),
-                    this.getTableName(configuration, this.getObjectType()), principalName);
-            statement.executeUpdate();
             try {
                 this.deleteMemberShip(con, configuration, principalName, this.getObjectType());
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
                 throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, e.getMessage());
             }
+            final PreparedStatement statement = createDeleteStatement(con, configuration.getResourceId(),
+                    this.getTableName(configuration, this.getObjectType()), principalName);
+            statement.executeUpdate();
+
             this.closeStatement(statement);
             return response;
         } catch (ConnectorDataException e) {
@@ -51,7 +52,7 @@ public abstract class AbstractDeleteAppTableCommand<ExtObject extends Extensible
     }
 
     public PreparedStatement createDeleteStatement(final Connection con, final String resourceId,
-            final String tableName, final String principalName) throws ConnectorDataException {
+                                                   final String tableName, final String principalName) throws ConnectorDataException {
         PreparedStatement statement = null;
         try {
             final List<AttributeMapEntity> attrMap = attributeMaps(resourceId);
@@ -63,7 +64,7 @@ public abstract class AbstractDeleteAppTableCommand<ExtObject extends Extensible
             }
 
             AttributeMapEntity atr = getAttribute(attrMap);
-            String principalFieldName = atr.getAttributeName();
+            String principalFieldName = atr.getName();
             String principalFieldDataType = atr.getDataType().getValue();
 
             final String sql = String.format(DELETE_SQL, tableName, principalFieldName);

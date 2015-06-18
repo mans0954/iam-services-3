@@ -12,6 +12,7 @@ import org.openiam.base.ws.SortParam;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.searchbeans.DelegationFilterSearchBean;
 import org.openiam.idm.searchbeans.UserSearchBean;
+import org.openiam.idm.srvc.property.service.PropertyValueSweeper;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.DelegationFilterSearch;
@@ -44,6 +45,9 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
     protected String getPKfieldName() {
         return "id";
     }
+
+    @Autowired
+    protected PropertyValueSweeper propertyValueSweeper;
 
     @Override
     public UserEntity findByIdDelFlt(String userId, DelegationFilterSearchBean delegationFilter) {
@@ -754,7 +758,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
 
     private void addSorting(Criteria criteria, List<SortParam> sortParam) {
         for (SortParam sort: sortParam){
-            OrderConstants orderDir = (sort.getOrderBy()==null)?OrderConstants.ASC:sort.getOrderBy();
+            OrderConstants orderDir = (sort.getOrderBy() == null)?OrderConstants.ASC:sort.getOrderBy();
 
             if("name".equals(sort.getSortBy())){
                 criteria.addOrder(createOrder("firstName",orderDir));
@@ -774,24 +778,66 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
                 criteria.addOrder(createOrder("secondaryStatus",orderDir));
             }else if("principal".equals(sort.getSortBy())){
                 criteria.createAlias("principalList", "l", Criteria.LEFT_JOIN, Restrictions.eq("l.managedSysId", sysConfiguration.getDefaultManagedSysId()));
-
                 criteria.addOrder(createOrder("l.login", orderDir));
-            }else if("organization".equals(sort.getSortBy())
-                     || "department".equals(sort.getSortBy())){
-
-//                String typeId = ("organization".equals(sort.getSortBy()))?organizationTypeId: departmentTypeId;
-
-            	criteria.createAlias("affiliations", "affiliationXrefs")
-						.createAlias("affiliationXrefs.entity", "org", Criteria.LEFT_JOIN);
-            	
-                //criteria.createAlias("affiliations", "org", Criteria.LEFT_JOIN); //, Restrictions.eq("org.organizationType.id", typeId)
-//                criteria.add(Restrictions.or(Restrictions.eq("org.organizationTypeId", typeId), Restrictions.isNull("org.organizationTypeId")));
-//                criteria.createAlias("org.organizationType", "tp", Criteria.LEFT_JOIN, Restrictions.eq("tp.id", typeId));
-//                criteria.addOrder(createOrder("tp.name", orderDir));
-//                criteria.addOrder(createOrder("org.name", orderDir));
+            }else if("organization".equals(sort.getSortBy())){
+                criteria.createAlias("affiliations", "org", Criteria.LEFT_JOIN).add(
+                        Restrictions.or(Restrictions.isNull("org.organizationType.id"), Restrictions.eq("org.organizationType.id", propertyValueSweeper.getString("org.openiam.organization.type.id"))));
+                criteria.addOrder(createOrder("org.name", orderDir));
+            }else if("department".equals(sort.getSortBy())) {
+                criteria.createAlias("affiliations", "dep", Criteria.LEFT_JOIN).add(
+                        Restrictions.or(Restrictions.isNull("dep.organizationType.id"), Restrictions.eq("dep.organizationType.id", propertyValueSweeper.getString("org.openiam.department.type.id"))));
+                criteria.addOrder(createOrder("dep.name", orderDir));
             } else {
                 criteria.addOrder(createOrder(sort.getSortBy(),orderDir));
             }
         }
     }
+
+    public  List<UserEntity> findByIds(List<String> idCollection, UserSearchBean searchBean, int from, int size){
+        if(CollectionUtils.isNotEmpty(idCollection)){
+            final Criteria criteria = super.getCriteria();
+            criteria.add(createInClauseForIds(criteria, idCollection));
+            criteria.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
+            if(CollectionUtils.isNotEmpty(searchBean.getSortBy())){
+                addSorting(criteria, searchBean.getSortBy());
+            }
+            if (from > -1 && size > -1) {
+                criteria.setFirstResult(from);
+                criteria.setMaxResults(size);
+            }
+            return criteria.list();
+        }
+        return Collections.EMPTY_LIST;
+    }
+
+    public int countByIds(List<String> idCollection) {
+        if (CollectionUtils.isNotEmpty(idCollection)) {
+            final Criteria criteria = super.getCriteria();
+            criteria.add(createInClauseForIds(criteria, idCollection));
+            return ((Number) criteria.setProjection(rowCount())
+                    .uniqueResult()).intValue();
+        }
+        return 0;
+    }
+
+    private Criterion createInClauseForIds(Criteria criteria, List<String> idCollection) {
+        if (idCollection.size() <= MAX_IN_CLAUSE) {
+            return Restrictions.in(getPKfieldName(), idCollection);
+        } else {
+            Disjunction orClause = Restrictions.disjunction();
+            int start = 0;
+            int end;
+            while (start < idCollection.size()) {
+                end = start + MAX_IN_CLAUSE;
+                if (end > idCollection.size()) {
+                    end = idCollection.size();
+                }
+                final String sql = criteria.getAlias() + "_.USER_ID in ('" + StringUtils.join(idCollection.subList(start, end), "','") + "')";
+                orClause.add(Restrictions.sqlRestriction(sql));
+                start = end;
+            }
+            return orClause;
+        }
+    }
+
 }

@@ -786,9 +786,9 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
                             continue;
                         }
 
-                        log.debug("buildFromRules: OBJECTTYPE="+objectType+", ATTRIBUTE=" + attr.getAttributeName() +
+                        log.debug("buildFromRules: OBJECTTYPE="+objectType+", ATTRIBUTE=" + attr.getName() +
                                 ", SCRIPT OUTPUT=" +
-                                (hiddenAttributes.toLowerCase().contains(","+attr.getAttributeName().toLowerCase()+",")
+                                (hiddenAttributes.toLowerCase().contains(","+attr.getName().toLowerCase()+",")
                                         ? "******" : output));
 
                         if (output != null) {
@@ -800,7 +800,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
                                 // the connectors can detect a delete if an
                                 // attribute is not in the list
 
-                                newAttr = new ExtensibleAttribute(attr.getAttributeName(), (String) output, -1, attr
+                                newAttr = new ExtensibleAttribute(attr.getName(), (String) output, -1, attr
                                         .getDataType().getValue());
                                 newAttr.setObjectType(objectType);
                                 extensibleObject.getAttributes().add(newAttr);
@@ -812,7 +812,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
                                 // the connectors can detect a delete if an
                                 // attribute is not in the list
 
-                                newAttr = new ExtensibleAttribute(attr.getAttributeName(),
+                                newAttr = new ExtensibleAttribute(attr.getName(),
                                         ((Integer) output).toString(), -1, attr.getDataType().getValue());
                                 newAttr.setObjectType(objectType);
                                 extensibleObject.getAttributes().add(newAttr);
@@ -823,20 +823,20 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
                                 String DATE_FORMAT = "MM/dd/yyyy";
                                 SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT);
 
-                                newAttr = new ExtensibleAttribute(attr.getAttributeName(), sdf.format(d), -1, attr
+                                newAttr = new ExtensibleAttribute(attr.getName(), sdf.format(d), -1, attr
                                         .getDataType().getValue());
                                 newAttr.setObjectType(objectType);
 
                                 extensibleObject.getAttributes().add(newAttr);
                             } else if (output instanceof byte[]) {
                                 extensibleObject.getAttributes().add(
-                                        new ExtensibleAttribute(attr.getAttributeName(), (byte[]) output, -1, attr
+                                        new ExtensibleAttribute(attr.getName(), (byte[]) output, -1, attr
                                                 .getDataType().getValue()));
 
                             } else if (output instanceof BaseAttributeContainer) {
                                 // process a complex object which can be passed
                                 // to the connector
-                                newAttr = new ExtensibleAttribute(attr.getAttributeName(),
+                                newAttr = new ExtensibleAttribute(attr.getName(),
                                         (BaseAttributeContainer) output, -1, attr.getDataType().getValue());
                                 newAttr.setObjectType(objectType);
                                 extensibleObject.getAttributes().add(newAttr);
@@ -844,18 +844,18 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
                             } else {
                                 // process a list - multi-valued object
 
-                                newAttr = new ExtensibleAttribute(attr.getAttributeName(), (List) output, -1, attr
+                                newAttr = new ExtensibleAttribute(attr.getName(), (List) output, -1, attr
                                         .getDataType().getValue());
                                 newAttr.setObjectType(objectType);
 
                                 extensibleObject.getAttributes().add(newAttr);
 
-                                log.debug("buildFromRules: added attribute to extGroup:" + attr.getAttributeName());
+                                log.debug("buildFromRules: added attribute to extGroup:" + attr.getName());
                             }
                         }
                     } else if (PolicyMapObjectTypeOptions.GROUP_PRINCIPAL.name().equalsIgnoreCase(objectType)) {
 
-                        extensibleObject.setPrincipalFieldName(attr.getAttributeName());
+                        extensibleObject.setPrincipalFieldName(attr.getName());
                         extensibleObject.setPrincipalFieldDataType(attr.getDataType().getValue());
 
                     }
@@ -1182,8 +1182,8 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
             String objectType = attr.getMapForObjectType();
             if (objectType != null) {
                 if (PolicyMapObjectTypeOptions.GROUP_PRINCIPAL.name().equalsIgnoreCase(objectType)) {
-                    if (attr.getAttributeName().equalsIgnoreCase("GROUP_PRINCIPAL")) {
-                        principalAttributeName = attr.getAttributeName();
+                    if (attr.getName().equalsIgnoreCase("GROUP_PRINCIPAL")) {
+                        principalAttributeName = attr.getName();
                         break;
                     }
                 }

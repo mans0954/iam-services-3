@@ -1,6 +1,7 @@
 package org.openiam.idm.srvc.auth.ws;
 
 import org.openiam.base.ws.Response;
+import org.openiam.idm.searchbeans.IdentitySearchBean;
 import org.openiam.idm.srvc.auth.dto.IdentityDto;
 import org.openiam.idm.srvc.auth.login.IdentityService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,4 +58,13 @@ public class IdentityWebServiceImpl implements IdentityWebService {
         return identityService.isValidIdentity(identityDto);
     }
 
+    @Override
+    public List<IdentityDto> findByExample(IdentitySearchBean searchBean, String requesterId, Integer from, Integer size) {
+        return identityService.findByExample(searchBean, requesterId, from, size);
+    }
+
+    @Override
+    public Integer countBeans(IdentitySearchBean searchBean, String requesterId) {
+        return identityService.countBeans(searchBean, requesterId);
+    }
 }

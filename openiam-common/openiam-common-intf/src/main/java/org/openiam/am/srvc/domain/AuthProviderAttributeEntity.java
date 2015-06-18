@@ -19,7 +19,7 @@ import java.io.Serializable;
 @AttributeOverride(name = "id", column = @Column(name = "PROVIDER_ATTRIBUTE_ID"))
 public class AuthProviderAttributeEntity extends KeyEntity {
 
-    @Column(name="VALUE", length = 4096, nullable = false)
+    @Column(name="VALUE", length = 4000, nullable = false)
     private String value;
     
     @Column(name="DATA_TYPE")

@@ -45,6 +45,9 @@ public class ScriptCommandFactory extends AbstractCommandFactory {
     @Autowired
     @Qualifier("searchScriptCommand")
     private ConnectorCommand searchScriptCommand;
+    @Autowired
+    @Qualifier("resetPasswordScriptCommand")
+    private ConnectorCommand resetPasswordScriptCommand;
 
     public ConnectorCommand getConnectorCommand(CommandType commandType, ExtensibleObjectType extensibleObjectType)
             throws ConnectorDataException {

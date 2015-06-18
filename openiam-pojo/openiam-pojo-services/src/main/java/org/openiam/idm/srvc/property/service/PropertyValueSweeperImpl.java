@@ -35,10 +35,10 @@ public class PropertyValueSweeperImpl implements Sweepable, PropertyValueSweeper
     private PlatformTransactionManager platformTransactionManager;
     
     @Autowired
-	 private PropertyValueService propertyValueService;
+	private PropertyValueService propertyValueService;
     
     @Autowired
-	 private PropertyValueConverter converter;
+	private PropertyValueConverter converter;
     
     private Map<String, PropertyValue> valueCache;
 	
