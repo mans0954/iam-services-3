@@ -12,6 +12,7 @@ import org.openiam.base.ws.SortParam;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.searchbeans.DelegationFilterSearchBean;
 import org.openiam.idm.searchbeans.UserSearchBean;
+import org.openiam.idm.srvc.property.service.PropertyValueSweeper;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.DelegationFilterSearch;
@@ -45,10 +46,8 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         return "id";
     }
 
-    @Value("${org.openiam.organization.type.id}")
-    private String organizationTypeId;
-    @Value("${org.openiam.department.type.id}")
-    private String departmentTypeId;
+    @Autowired
+    protected PropertyValueSweeper propertyValueSweeper;
 
     @Override
     public UserEntity findByIdDelFlt(String userId, DelegationFilterSearchBean delegationFilter) {
@@ -782,11 +781,11 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
                 criteria.addOrder(createOrder("l.login", orderDir));
             }else if("organization".equals(sort.getSortBy())){
                 criteria.createAlias("affiliations", "org", Criteria.LEFT_JOIN).add(
-                        Restrictions.or(Restrictions.isNull("org.organizationType.id"), Restrictions.eq("org.organizationType.id", organizationTypeId)));
+                        Restrictions.or(Restrictions.isNull("org.organizationType.id"), Restrictions.eq("org.organizationType.id", propertyValueSweeper.getString("org.openiam.organization.type.id"))));
                 criteria.addOrder(createOrder("org.name", orderDir));
             }else if("department".equals(sort.getSortBy())) {
                 criteria.createAlias("affiliations", "dep", Criteria.LEFT_JOIN).add(
-                        Restrictions.or(Restrictions.isNull("dep.organizationType.id"), Restrictions.eq("dep.organizationType.id", departmentTypeId)));
+                        Restrictions.or(Restrictions.isNull("dep.organizationType.id"), Restrictions.eq("dep.organizationType.id", propertyValueSweeper.getString("org.openiam.department.type.id"))));
                 criteria.addOrder(createOrder("dep.name", orderDir));
             } else {
                 criteria.addOrder(createOrder(sort.getSortBy(),orderDir));
