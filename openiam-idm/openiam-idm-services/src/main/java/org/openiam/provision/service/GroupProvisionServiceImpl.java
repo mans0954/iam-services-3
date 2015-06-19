@@ -44,11 +44,9 @@ import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.mngsys.dto.PolicyMapObjectTypeOptions;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
-import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
-import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.domain.UserToResourceMembershipXrefEntity;
 import org.openiam.idm.srvc.user.dto.User;
@@ -61,7 +59,6 @@ import org.openiam.provision.resp.LookupObjectResponse;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleGroup;
 import org.openiam.provision.type.ExtensibleObject;
-import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.util.SpringContextProvider;
 import org.openiam.util.encrypt.Cryptor;
@@ -160,7 +157,8 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
 
     @Autowired
     protected ProvisionQueueService provQueueService;
-
+    @Autowired
+    ProvisionServiceUtil provisionServiceUtil;
     @Override
     public Response add(final ProvisionGroup group) throws Exception {
         return provisioning(group, true);
@@ -325,7 +323,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
             }
             try {
                 log.debug(" - Building principal Name for: " + managedSys.getId());
-                String newIdentity = ProvisionServiceUtil.buildGroupPrincipalName(attrMap, scriptRunner, bindingMap);
+                String newIdentity = provisionServiceUtil.buildGroupPrincipalName(attrMap, scriptRunner, bindingMap);
 
                 if (StringUtils.isBlank(newIdentity)) {
                     log.debug("Primary identity not found...");
@@ -342,7 +340,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
                 groupTargetIdentity.setReferredObjectId(pGroup.getId());
                 groupTargetIdentity.setStatus(LoginStatusEnum.ACTIVE);
 
-            } catch (ScriptEngineException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
                 response.setStatus(ResponseStatus.FAILURE);
                 response.setErrorCode(ResponseCode.INTERNAL_ERROR);
@@ -777,11 +775,11 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
                     if (objectType.equalsIgnoreCase("GROUP")) {
                         Object output = "";
                         try {
-                            output = ProvisionServiceUtil.getOutputFromAttrMap(attr, bindingMap, scriptRunner);
+                            output = provisionServiceUtil.getOutputFromAttrMap(attr, bindingMap, scriptRunner);
                         } catch (ScriptEngineException see) {
                             log.error("Error in script = '", see);
                             continue;
-                        } catch (MissingPropertyException mpe) {
+                        } catch (Exception mpe) {
                             log.error("Error in script = '", mpe);
                             continue;
                         }
