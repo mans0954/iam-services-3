@@ -5,6 +5,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.openiam.am.srvc.constants.SearchScopeType;
+import org.openiam.base.domain.AbstractKeyNameEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
 
@@ -16,15 +17,14 @@ import java.util.List;
 @Table(name = "SYNCH_CONFIG")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(SynchConfig.class)
-public class SynchConfigEntity implements Serializable {
+@AttributeOverrides(value= {
+        @AttributeOverride(name = "id", column = @Column(name = "SYNCH_CONFIG_ID")),
+        @AttributeOverride(name = "name", column = @Column(name = "NAME", length=60, nullable = false)),
+})
+public class SynchConfigEntity extends AbstractKeyNameEntity {
+
     private static final long serialVersionUID = -748384789293890253L;
-    @Id
-    @GeneratedValue(generator="system-uuid")
-    @GenericGenerator(name="system-uuid", strategy = "uuid")
-    @Column(name="SYNCH_CONFIG_ID", length=32, nullable = false)
-    private String synchConfigId;
-    @Column(name="NAME",length=60)
-    private String name;
+
     @Column(name="STATUS",length=20)
     private String status;
     @Column(name="SYNCH_SRC",length=20)
@@ -113,25 +113,8 @@ public class SynchConfigEntity implements Serializable {
 
     public SynchConfigEntity() {
     }
-
-    public SynchConfigEntity(String synchConfigId) {
-        this.synchConfigId = synchConfigId;
-    }
-
-    public String getSynchConfigId() {
-        return this.synchConfigId;
-    }
-
-    public void setSynchConfigId(String synchConfigId) {
-        this.synchConfigId = synchConfigId;
-    }
-
-    public String getName() {
-        return this.name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
+    public SynchConfigEntity(String id) {
+        this.id = id;
     }
 
     public String getStatus() {
@@ -449,7 +432,7 @@ public class SynchConfigEntity implements Serializable {
     @Override
     public String toString() {
         return "SynchConfig{" +
-                "synchConfigId='" + synchConfigId + '\'' +
+                "synchConfigId='" + id + '\'' +
                 ", name='" + name + '\'' +
                 ", status='" + status + '\'' +
                 ", synchAdapter='" + synchAdapter + '\'' +

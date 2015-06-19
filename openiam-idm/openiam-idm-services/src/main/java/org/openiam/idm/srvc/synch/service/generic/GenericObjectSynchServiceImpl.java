@@ -58,14 +58,14 @@ public class GenericObjectSynchServiceImpl implements GenericObjectSynchService 
 
             if (resp.getLastRecordTime() == null) {
 
-                synchConfigDao.updateExecTime(config.getSynchConfigId(), new Timestamp( newLastExecTime ));
+                synchConfigDao.updateExecTime(config.getId(), new Timestamp( newLastExecTime ));
             }else {
-                synchConfigDao.updateExecTime(config.getSynchConfigId(), new Timestamp( resp.getLastRecordTime().getTime() ));
+                synchConfigDao.updateExecTime(config.getId(), new Timestamp( resp.getLastRecordTime().getTime() ));
             }
 
             if (resp.getLastRecProcessed() != null) {
 
-                synchConfigDao.updateLastRecProcessed(config.getSynchConfigId(),resp.getLastRecProcessed() );
+                synchConfigDao.updateLastRecProcessed(config.getId(),resp.getLastRecProcessed() );
             }
 
 

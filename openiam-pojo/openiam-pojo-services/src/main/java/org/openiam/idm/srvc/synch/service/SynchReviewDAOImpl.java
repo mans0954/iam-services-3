@@ -47,7 +47,7 @@ public class SynchReviewDAOImpl extends BaseDaoImpl<SynchReviewEntity, String> i
         if(searchBean != null && (searchBean instanceof SynchReviewSearchBean)) {
             final SynchReviewSearchBean sb = (SynchReviewSearchBean)searchBean;
             if (StringUtils.isNotBlank(sb.getSynchConfigId())) {
-                criteria.add(Restrictions.eq("synchConfig.synchConfigId", sb.getSynchConfigId()));
+                criteria.add(Restrictions.eq("synchConfig.id", sb.getSynchConfigId()));
             }
             if (sb.getKey() != null) {
                 criteria.add(Restrictions.eq(getPKfieldName(), sb.getKey()));

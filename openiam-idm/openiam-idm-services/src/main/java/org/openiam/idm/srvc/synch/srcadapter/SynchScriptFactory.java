@@ -66,7 +66,7 @@ public class SynchScriptFactory {
 
         Map<String, Object> bindingMap = new HashMap<String, Object>();
         bindingMap.put("config", config);
-        bindingMap.put("synchConfigId", config.getSynchConfigId());
+        bindingMap.put("synchConfigId", config.getId());
 
         if (review != null) {
             bindingMap.put("review", review);
@@ -79,7 +79,7 @@ public class SynchScriptFactory {
                     (AttributeMapDozerConverter)SpringContextProvider.getBean("attributeMapDozerConverter");
             IdentitySynchService synchService = (IdentitySynchService)SpringContextProvider.getBean("synchService");
             List<AttributeMapEntity> attrMapEntity =
-                    synchService.getSynchConfigAttributeMaps(config.getSynchConfigId());
+                    synchService.getSynchConfigAttributeMaps(config.getId());
             List<AttributeMap> attrMap = attributeMapDozerConverter.convertToDTOList(attrMapEntity, true);
 
             TransformScript transformScript = new PolicyMapTransformScript(attrMap);

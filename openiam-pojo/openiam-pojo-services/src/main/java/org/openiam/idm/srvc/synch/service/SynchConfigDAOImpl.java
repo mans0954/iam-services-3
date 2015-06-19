@@ -89,7 +89,7 @@ public class SynchConfigDAOImpl extends BaseDaoImpl<SynchConfigEntity, String> i
 
 		Query qry = getSession().createQuery("UPDATE org.openiam.idm.srvc.synch.domain.SynchConfigEntity sc " +
                 " 					SET  sc.lastExecTime = :execTime  " +
-                " 					WHERE  sc.synchConfigId = :configId	");
+                " 					WHERE  sc.id = :configId	");
 		
 		qry.setTimestamp("execTime", execTime);
 		qry.setString("configId", configId);
@@ -102,7 +102,7 @@ public class SynchConfigDAOImpl extends BaseDaoImpl<SynchConfigEntity, String> i
 
 		Query qry = getSession().createQuery(" UPDATE org.openiam.idm.srvc.synch.domain.SynchConfigEntity sc " +
                 " 					SET  sc.lastRecProcessed = :processTime  " +
-                " 					WHERE  sc.synchConfigId = :configId	");
+                " 					WHERE  sc.id = :configId	");
 
 		qry.setString("processTime",processTime);
 		qry.setString("configId", configId);
@@ -112,7 +112,7 @@ public class SynchConfigDAOImpl extends BaseDaoImpl<SynchConfigEntity, String> i
 
     @Override
     protected String getPKfieldName() {
-        return "synchConfigId";
+        return "id";
     }
 
     @Override

@@ -1118,7 +1118,7 @@
         <class-a>org.openiam.idm.srvc.synch.domain.SynchReviewEntity</class-a>
         <class-b>org.openiam.idm.srvc.synch.dto.SynchReview</class-b>
         <field>
-            <a>synchConfig.synchConfigId</a>
+            <a>synchConfig.id</a>
             <b>synchConfigId</b>
         </field>
         <field-exclude>
