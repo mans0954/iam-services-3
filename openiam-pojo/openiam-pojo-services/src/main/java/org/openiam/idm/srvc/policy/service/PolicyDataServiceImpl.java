@@ -273,7 +273,7 @@ public class PolicyDataServiceImpl implements PolicyDataService {
             }
 
             final ITPolicy found = findITPolicy();
-            if (found != null && !found.getPolicyId().equals(itPolicy.getPolicyId())) {
+            if (found != null && !found.getId().equals(itPolicy.getId())) {
                 throw new BasicDataServiceException(ResponseCode.IT_POLICY_EXISTS);
             }
             if (found != null) {
@@ -281,7 +281,7 @@ public class PolicyDataServiceImpl implements PolicyDataService {
                 itPolicy.setCreatedBy(found.getCreatedBy());
             }
             policyService.saveITPolicy(itPolicy);
-            response.setResponseValue(itPolicy.getPolicyId());
+            response.setResponseValue(itPolicy.getId());
 
         } catch (BasicDataServiceException e) {
             response.setErrorCode(e.getCode());

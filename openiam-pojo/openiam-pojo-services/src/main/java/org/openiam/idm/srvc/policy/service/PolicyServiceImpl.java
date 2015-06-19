@@ -185,6 +185,6 @@ public class PolicyServiceImpl implements PolicyService {
     public void saveITPolicy(ITPolicy itPolicy) {
         ITPolicyEntity pe = itPolicyDozerConverter.convertToEntity(itPolicy, true);
         itPolicyDao.save(pe);
-        itPolicy.setPolicyId(pe.getPolicyId());
+        itPolicy.setId(pe.getId());
     }
 }
