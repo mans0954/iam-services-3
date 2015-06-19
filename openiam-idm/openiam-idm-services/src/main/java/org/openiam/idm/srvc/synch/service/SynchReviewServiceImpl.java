@@ -147,12 +147,12 @@ public class SynchReviewServiceImpl implements SynchReviewService {
     private void updateRecordsValues(SynchReviewEntity entity, List<SynchReviewRecord> records) {
         if (CollectionUtils.isNotEmpty(records)) {
             for (SynchReviewRecord rec : records) {
-                String synchReviewRecordId = rec.getSynchReviewRecordId();
+                String synchReviewRecordId = rec.getId();
                 if (StringUtils.isNotEmpty(synchReviewRecordId)) {
                     SynchReviewRecordEntity recordEntity = null;
                     if (entity != null && CollectionUtils.isNotEmpty(entity.getReviewRecords())) {
                         for (SynchReviewRecordEntity r : entity.getReviewRecords()) {
-                            if (StringUtils.equals(r.getSynchReviewRecordId(), synchReviewRecordId)) {
+                            if (StringUtils.equals(r.getId(), synchReviewRecordId)) {
                                 recordEntity = r;
                                 break;
                             }
@@ -163,8 +163,8 @@ public class SynchReviewServiceImpl implements SynchReviewService {
                             for (SynchReviewRecordValueEntity val: recordEntity.getReviewValues()) {
                                 if (CollectionUtils.isNotEmpty(rec.getReviewValues())) {
                                     for (SynchReviewRecordValue newVal : rec.getReviewValues()) {
-                                        if (StringUtils.equals(newVal.getSynchReviewRecordValueId(),
-                                                val.getSynchReviewRecordValueId())) {
+                                        if (StringUtils.equals(newVal.getId(),
+                                                val.getId())) {
                                             if (!StringUtils.equals(val.getValue(), newVal.getValue())) {
                                                 val.setValue(newVal.getValue());
                                             }
