@@ -4,6 +4,7 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
+import org.openiam.base.domain.KeyEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.synch.dto.SynchReview;
 
@@ -18,15 +19,12 @@ import java.util.List;
 @Cacheable
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(SynchReview.class)
-public class SynchReviewEntity implements Serializable {
+@AttributeOverrides(value= {
+        @AttributeOverride(name = "id", column = @Column(name = "SYNCH_REVIEW_ID")),
+})
+public class SynchReviewEntity extends KeyEntity {
 
     private static final long serialVersionUID = -3470837715890623537L;
-
-    @Id
-    @GeneratedValue(generator="system-uuid")
-    @GenericGenerator(name="system-uuid", strategy="uuid")
-    @Column(name="SYNCH_REVIEW_ID", length=32, nullable=false)
-    private String synchReviewId;
 
     @ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name="SYNCH_CONFIG_ID", referencedColumnName="SYNCH_CONFIG_ID", insertable=true, updatable=false, nullable=false)
@@ -64,14 +62,6 @@ public class SynchReviewEntity implements Serializable {
     public SynchReviewEntity(SynchConfigEntity synchConfig, Date createTime) {
         this.synchConfig = synchConfig;
         this.createTime = createTime;
-    }
-
-    public String getSynchReviewId() {
-        return synchReviewId;
-    }
-
-    public void setSynchReviewId(String synchReviewId) {
-        this.synchReviewId = synchReviewId;
     }
 
     public SynchConfigEntity getSynchConfig() {
@@ -162,7 +152,7 @@ public class SynchReviewEntity implements Serializable {
         if (execTime != null ? !execTime.equals(that.execTime) : that.execTime != null) return false;
         if (modifyTime != null ? !modifyTime.equals(that.modifyTime) : that.modifyTime != null) return false;
         if (synchConfig != null ? !synchConfig.equals(that.synchConfig) : that.synchConfig != null) return false;
-        if (synchReviewId != null ? !synchReviewId.equals(that.synchReviewId) : that.synchReviewId != null)
+        if (id != null ? !id.equals(that.id) : that.id != null)
             return false;
 
         return true;
@@ -170,7 +160,7 @@ public class SynchReviewEntity implements Serializable {
 
     @Override
     public int hashCode() {
-        int result = synchReviewId != null ? synchReviewId.hashCode() : 0;
+        int result = id != null ? id.hashCode() : 0;
         result = 31 * result + (synchConfig != null ? synchConfig.hashCode() : 0);
         result = 31 * result + (createTime != null ? createTime.hashCode() : 0);
         result = 31 * result + (execTime != null ? execTime.hashCode() : 0);

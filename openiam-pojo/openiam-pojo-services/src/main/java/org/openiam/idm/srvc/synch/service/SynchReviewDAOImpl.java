@@ -29,7 +29,7 @@ public class SynchReviewDAOImpl extends BaseDaoImpl<SynchReviewEntity, String> i
 
     @Override
     protected String getPKfieldName() {
-        return "synchReviewId";
+        return "id";
     }
 
     @Override

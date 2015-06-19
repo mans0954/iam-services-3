@@ -1130,7 +1130,7 @@
         <class-a>org.openiam.idm.srvc.synch.domain.SynchReviewRecordEntity</class-a>
         <class-b>org.openiam.idm.srvc.synch.dto.SynchReviewRecord</class-b>
         <field>
-            <a>synchReview.synchReviewId</a>
+            <a>synchReview.id</a>
             <b>synchReviewId</b>
         </field>
         <field-exclude>
