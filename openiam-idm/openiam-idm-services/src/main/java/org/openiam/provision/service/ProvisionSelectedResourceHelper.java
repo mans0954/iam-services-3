@@ -28,6 +28,7 @@ import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.util.UserUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
@@ -38,6 +39,8 @@ import java.util.*;
 
 @Component
 public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
+    @Autowired
+    ProvisionServiceUtil provisionServiceUtil;
 
     public ProvisionUserResponse provisionSelectedResources(final List<String> userIds, final String requestorUserId, final Collection<String> resourceList) {
         final List<ProvisionDataContainer> dataList = new LinkedList<>();
@@ -169,7 +172,7 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
             bindingMap.put(AbstractProvisioningService.TARGET_SYS_RES_ID, res.getId());
             bindingMap.put(AbstractProvisioningService.TARGET_SYS_MANAGED_SYS_ID, managedSysId);
             bindingMap.put(AbstractProvisioningService.USER, targetSysProvUser);
-            bindingMap.put(AbstractProvisioningService.USER_ATTRIBUTES,userMgr.getUserAttributesDto(pUser.getId()));
+            bindingMap.put(AbstractProvisioningService.USER_ATTRIBUTES, userMgr.getUserAttributesDto(pUser.getId()));
 
             List<AttributeMap> attrMap = managedSysService.getResourceAttributeMaps(res.getId());
 
@@ -182,7 +185,7 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
             }
 
             String onDeleteProp = resourceDataService.getResourcePropValueByName(res.getId(), "ON_DELETE");
-            if(StringUtils.isEmpty(onDeleteProp)) {
+            if (StringUtils.isEmpty(onDeleteProp)) {
                 onDeleteProp = "DELETE";
             }
             ProvLoginStatusEnum provLoginStatus;
@@ -218,7 +221,7 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
                 try {
                     log.debug(" - Building principal Name for: " + managedSysId);
                     bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_ATTRIBUTES, new HashMap<>());
-                    String newPrincipalName = ProvisionServiceUtil
+                    String newPrincipalName = provisionServiceUtil
                             .buildUserPrincipalName(attrMap, scriptRunner, bindingMap);
                     if (StringUtils.isBlank(newPrincipalName)) {
                         log.debug("Principal name for managed sys " + managedSysId + " is blank.");
@@ -245,7 +248,7 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
                     // to user
                     // principals
 
-                } catch (ScriptEngineException e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
@@ -335,18 +338,18 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
                     if (objectType.equalsIgnoreCase(PolicyMapObjectTypeOptions.USER.name())) {
                         Object output = "";
                         try {
-                            output = ProvisionServiceUtil.getOutputFromAttrMap(attr, bindingMap, scriptRunner);
+                            output = provisionServiceUtil.getOutputFromAttrMap(attr, bindingMap, scriptRunner);
                         } catch (ScriptEngineException see) {
                             log.error("Error in script = '", see);
                             continue;
-                        } catch (MissingPropertyException mpe) {
+                        } catch (Exception mpe) {
                             log.error("Error in script = '", mpe);
                             continue;
                         }
 
-                        log.debug("buildFromRules: OBJECTTYPE="+objectType+", ATTRIBUTE=" + attr.getAttributeName() +
+                        log.debug("buildFromRules: OBJECTTYPE=" + objectType + ", ATTRIBUTE=" + attr.getName() +
                                 ", SCRIPT OUTPUT=" +
-                                (hiddenAttributesList.contains(attr.getAttributeName().toLowerCase())
+                                (hiddenAttributesList.contains(attr.getName().toLowerCase())
                                         ? "******" : output));
 
                         if (output != null) {
@@ -358,7 +361,7 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
                                 // the connectors can detect a delete if an
                                 // attribute is not in the list
 
-                                newAttr = new ExtensibleAttribute(attr.getAttributeName(), (String) output, -1, attr
+                                newAttr = new ExtensibleAttribute(attr.getName(), (String) output, -1, attr
                                         .getDataType().getValue());
                                 newAttr.setObjectType(objectType);
                                 extUser.getAttributes().add(newAttr);
@@ -370,8 +373,8 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
                                 // the connectors can detect a delete if an
                                 // attribute is not in the list
 
-                                newAttr = new ExtensibleAttribute(attr.getAttributeName(),
-                                        output.toString(), -1, attr.getDataType().getValue());
+                                newAttr = new ExtensibleAttribute(attr.getName(),
+                                        ((Integer) output).toString(), -1, attr.getDataType().getValue());
                                 newAttr.setObjectType(objectType);
                                 extUser.getAttributes().add(newAttr);
 
@@ -381,42 +384,42 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
                                 String DATE_FORMAT = "MM/dd/yyyy";
                                 SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT);
 
-                                newAttr = new ExtensibleAttribute(attr.getAttributeName(), sdf.format(d), -1, attr
+                                newAttr = new ExtensibleAttribute(attr.getName(), sdf.format(d), -1, attr
                                         .getDataType().getValue());
                                 newAttr.setObjectType(objectType);
 
                                 extUser.getAttributes().add(newAttr);
                             } else if (output instanceof byte[]) {
                                 extUser.getAttributes().add(
-                                        new ExtensibleAttribute(attr.getAttributeName(), (byte[]) output, -1, attr
+                                        new ExtensibleAttribute(attr.getName(), (byte[]) output, -1, attr
                                                 .getDataType().getValue()));
 
                             } else if (output instanceof BaseAttributeContainer) {
                                 // process a complex object which can be passed
                                 // to the connector
-                                newAttr = new ExtensibleAttribute(attr.getAttributeName(),
+                                newAttr = new ExtensibleAttribute(attr.getName(),
                                         (BaseAttributeContainer) output, -1, attr.getDataType().getValue());
                                 newAttr.setObjectType(objectType);
                                 extUser.getAttributes().add(newAttr);
 
                             } else if (output instanceof ExtensibleAttribute) {
-                                newAttr = (ExtensibleAttribute)output;
+                                newAttr = (ExtensibleAttribute) output;
                                 extUser.getAttributes().add(newAttr);
 
                             } else if (output instanceof List) {
                                 // process a list - multi-valued object
-                                if (CollectionUtils.isNotEmpty((List)output)) {
-                                    newAttr = new ExtensibleAttribute(attr.getAttributeName(), (List) output, -1, attr
+                                if (CollectionUtils.isNotEmpty((List) output)) {
+                                    newAttr = new ExtensibleAttribute(attr.getName(), (List) output, -1, attr
                                             .getDataType().getValue());
                                     newAttr.setObjectType(objectType);
                                     extUser.getAttributes().add(newAttr);
-                                    log.debug("buildFromRules: added attribute to extUser:" + attr.getAttributeName());
+                                    log.debug("buildFromRules: added attribute to extUser:" + attr.getName());
                                 }
                             }
                         }
                     } else if (PolicyMapObjectTypeOptions.PRINCIPAL.name().equalsIgnoreCase(objectType)) {
 
-                        extUser.setPrincipalFieldName(attr.getAttributeName());
+                        extUser.setPrincipalFieldName(attr.getName());
                         extUser.setPrincipalFieldDataType(attr.getDataType().getValue());
 
                     }
@@ -445,12 +448,12 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
                 String objectType = attr.getMapForObjectType();
                 if (objectType != null) {
                     if (PolicyMapObjectTypeOptions.USER.name().equalsIgnoreCase(objectType)) {
-                        ExtensibleAttribute newAttr = new ExtensibleAttribute(attr.getAttributeName(), null);
+                        ExtensibleAttribute newAttr = new ExtensibleAttribute(attr.getName(), null);
                         newAttr.setObjectType(objectType);
                         extUser.getAttributes().add(newAttr);
 
                     } else if (PolicyMapObjectTypeOptions.PRINCIPAL.name().equalsIgnoreCase(objectType)) {
-                        extUser.setPrincipalFieldName(attr.getAttributeName());
+                        extUser.setPrincipalFieldName(attr.getName());
                         extUser.setPrincipalFieldDataType(attr.getDataType().getValue());
                     }
                 }

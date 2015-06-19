@@ -2653,7 +2653,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         List<ExtensibleAttribute> requestedExtensibleAttributes = new ArrayList<ExtensibleAttribute>();
         for (AttributeMapEntity ame : attrMapEntities) {
             if ("USER".equalsIgnoreCase(ame.getMapForObjectType()) && "ACTIVE".equalsIgnoreCase(ame.getStatus())) {
-                requestedExtensibleAttributes.add(new ExtensibleAttribute(ame.getAttributeName(), null));
+                requestedExtensibleAttributes.add(new ExtensibleAttribute(ame.getName(), null));
             }
         }
 
@@ -2867,7 +2867,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         List<ExtensibleAttribute> requestedExtensibleAttributes = new ArrayList<ExtensibleAttribute>();
         for (AttributeMapEntity ame : attrMapEntities) {
             if ("USER".equalsIgnoreCase(ame.getMapForObjectType()) && "ACTIVE".equalsIgnoreCase(ame.getStatus())) {
-                requestedExtensibleAttributes.add(new ExtensibleAttribute(ame.getAttributeName(), null));
+                requestedExtensibleAttributes.add(new ExtensibleAttribute(ame.getName(), null));
             }
         }
 

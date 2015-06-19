@@ -9,7 +9,6 @@ import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.connector.type.constant.ErrorCode;
 import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.request.CrudRequest;
@@ -40,7 +39,6 @@ import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
-import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
@@ -60,7 +58,6 @@ import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.idm.srvc.msg.service.MailService;
 import org.openiam.idm.srvc.msg.service.MailTemplateParameters;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
-import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.service.OrganizationDataService;
 import org.openiam.idm.srvc.org.service.OrganizationService;
 import org.openiam.idm.srvc.policy.dto.PasswordPolicyAssocSearchBean;
@@ -82,7 +79,6 @@ import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.domain.UserToGroupMembershipXrefEntity;
-import org.openiam.idm.srvc.user.domain.UserToOrganizationMembershipXrefEntity;
 import org.openiam.idm.srvc.user.domain.UserToRoleMembershipXrefEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
@@ -94,7 +90,6 @@ import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.*;
 import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.provision.type.ExtensibleAttribute;
-import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.util.SpringContextProvider;
@@ -221,7 +216,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
 
     @Autowired
     protected BuildUserPolicyMapHelper buildPolicyMapHelper;
-
+    @Autowired
+    ProvisionServiceUtil provisionServiceUtil;
     @Value("${openiam.service_base}")
     protected String serviceHost;
     @Value("${openiam.idm.ws.path}")
@@ -439,9 +435,9 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     String objectType = attr.getMapForObjectType();
                     if (objectType != null) {
                         if (PolicyMapObjectTypeOptions.PRINCIPAL.name().equalsIgnoreCase(objectType)) {
-                            if (attr.getAttributeName().equalsIgnoreCase("PRINCIPAL")) {
+                            if (attr.getName().equalsIgnoreCase("PRINCIPAL")) {
                                 primaryIdentityRule = attr;
-                            } else if (attr.getAttributeName().equalsIgnoreCase("PASSWORD")) {
+                            } else if (attr.getName().equalsIgnoreCase("PASSWORD")) {
                                 primaryPasswordRule = attr;
                             }
                         }
@@ -451,12 +447,12 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                 // all other scripts like as Password will be processed.
                 // Primary identity must be generated first and must be put into BindingMap first.
                 if (primaryIdentityRule != null && primaryPasswordRule != null) {
-                    String identityOutput = (String) ProvisionServiceUtil.getOutputFromAttrMap(
+                    String identityOutput = (String) provisionServiceUtil.getOutputFromAttrMap(
                             primaryIdentityRule, bindingMap, se);
                     primaryIdentity.setLogin(identityOutput);
                     bindingMap.put(TARGET_SYSTEM_IDENTITY, identityOutput);
 
-                    String passwordOutput = (String) ProvisionServiceUtil.getOutputFromAttrMap(
+                    String passwordOutput = (String) provisionServiceUtil.getOutputFromAttrMap(
                             primaryPasswordRule, bindingMap, se);
                     primaryIdentity.setPassword(passwordOutput);
 
@@ -482,8 +478,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
             String objectType = attr.getMapForObjectType();
             if (objectType != null) {
                 if (PolicyMapObjectTypeOptions.PRINCIPAL.name().equalsIgnoreCase(objectType)) {
-                    if (attr.getAttributeName().equalsIgnoreCase("PRINCIPAL")) {
-                        principalAttributeName = attr.getAttributeName();
+                    if (attr.getName().equalsIgnoreCase("PRINCIPAL")) {
+                        principalAttributeName = attr.getName();
                         break;
                     }
                 }
@@ -509,11 +505,11 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
             log.debug("- policyAttrMap IS NOT null");
             try {
                 for (AttributeMap attr : policyAttrMap) {
-                    String output = (String) ProvisionServiceUtil.getOutputFromAttrMap(attr, bindingMap, se);
+                    String output = (String) provisionServiceUtil.getOutputFromAttrMap(attr, bindingMap, se);
                     String objectType = attr.getMapForObjectType();
                     if (objectType != null) {
                         if (PolicyMapObjectTypeOptions.PRINCIPAL.name().equalsIgnoreCase(objectType)) {
-                            if ("PASSWORD".equalsIgnoreCase(attr.getAttributeName())) {
+                            if ("PASSWORD".equalsIgnoreCase(attr.getName())) {
                                 primaryIdentity.setPassword(output);
                             }
                         }
@@ -1691,7 +1687,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         List<AttributeMap> attrMap = attributeMapDozerConverter.convertToDTOList(attrMapEntities, false);     //need to check if  attr.getDataType().getValue() works
         for (AttributeMap attr : attrMap) {
             if (PolicyMapObjectTypeOptions.PRINCIPAL.name().equalsIgnoreCase(attr.getMapForObjectType())) {
-                extUser.setPrincipalFieldName(attr.getAttributeName());
+                extUser.setPrincipalFieldName(attr.getName());
                 extUser.setPrincipalFieldDataType(attr.getDataType().getValue());
                 break;
             }

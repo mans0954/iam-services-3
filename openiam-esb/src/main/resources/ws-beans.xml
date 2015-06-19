@@ -95,5 +95,11 @@
     <jaxws:endpoint id="propertyValueServiceEndpoint" implementor="#propertyValueWS" address="/PropertyValueWebService"/>
     
     <jaxws:endpoint id="accessRightServiceEndpoint" implementor="#accessRightWS" address="/AccessRightDataService"/>
+<!--let it it for now-->
+    <jaxws:endpoint id="genericScriptConnectorEndpoint" implementor="#genericScriptConnector" address="/ScriptConnectorService"/>
+
+
+
+    <jaxws:endpoint id="ldapConnectorServiceEndpoint" implementor="#genericLdapConnector" address="/LDAPConnectorService"/>
 
 </beans>

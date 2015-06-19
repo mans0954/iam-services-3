@@ -82,7 +82,7 @@ public class PolicyMapTransformScript extends AbstractTransformScript {
                     continue;
                 }
 
-                Attribute attribute = columnMap.get(am.getAttributeName());
+                Attribute attribute = columnMap.get(am.getName());
                 try {
                     Map<String, Object> bindingMap = new HashMap<String, Object>();
                     Policy policy = (am.getReconResAttribute() != null) ?
@@ -92,7 +92,7 @@ public class PolicyMapTransformScript extends AbstractTransformScript {
                         bindingMap.put("objectType", am.getMapForObjectType());
                         bindingMap.put("policy", policy);
                         bindingMap.put("rowObj", rowObj);
-                        bindingMap.put("attributeName", am.getAttributeName());
+                        bindingMap.put("attributeName", am.getName());
                         bindingMap.put("attribute", attribute);
                         bindingMap.put("pUser", pUser);
                         bindingMap.put("user", user);

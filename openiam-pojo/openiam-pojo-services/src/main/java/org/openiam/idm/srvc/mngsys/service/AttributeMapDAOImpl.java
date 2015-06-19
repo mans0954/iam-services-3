@@ -67,7 +67,7 @@ public class AttributeMapDAOImpl extends
 
     public void removeResourceAttributeMaps(String resourceId) {
         AttributeMapEntity ame = (AttributeMapEntity)getCriteria()
-                .add(Restrictions.eq("attributeMapId", resourceId)).uniqueResult();
+                .add(Restrictions.eq("id", resourceId)).uniqueResult();
         getSession().delete(ame);
     }
 
@@ -95,7 +95,7 @@ public class AttributeMapDAOImpl extends
     public void delete(List<String> ids) {
         if (!CollectionUtils.isEmpty(ids)) {
             List attrMap = getCriteria()
-                    .add(Restrictions.in("attributeMapId", ids)).list();
+                    .add(Restrictions.in("id", ids)).list();
             deleteAttributesMapList(attrMap);
         }
     }
@@ -111,7 +111,7 @@ public class AttributeMapDAOImpl extends
 
     @Override
     protected String getPKfieldName() {
-        return "attributeMapId";
+        return "id";
     }
 
 }

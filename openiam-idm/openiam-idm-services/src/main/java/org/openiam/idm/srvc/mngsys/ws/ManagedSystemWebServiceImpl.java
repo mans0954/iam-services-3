@@ -270,6 +270,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     @Cacheable(value="managedSysObjectParam", key="{ #managedSystemId, #objectType}")
     public ManagedSystemObjectMatch[] managedSysObjectParam(
             String managedSystemId, String objectType) {
+
         if (managedSystemId == null) {
             throw new NullPointerException("managedSystemId is null");
         }
@@ -506,13 +507,13 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value="resourceAttributeMaps", key="{ #attributeMapId}")
-    public AttributeMap getAttributeMap(String attributeMapId) {
-        if (attributeMapId == null) {
+    @Cacheable(value="resourceAttributeMaps", key="{#id}")
+    public AttributeMap getAttributeMap(String id) {
+        if (id == null) {
             throw new IllegalArgumentException("attributeMapId is null");
         }
         AttributeMapEntity obj = managedSystemService
-                .getAttributeMap(attributeMapId);
+                .getAttributeMap(id);
         return obj == null ? null : attributeMapDozerConverter.convertToDTO(
                 obj, true);
     }

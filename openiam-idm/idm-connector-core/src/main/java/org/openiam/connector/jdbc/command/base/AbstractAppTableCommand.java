@@ -322,13 +322,13 @@ public abstract class AbstractAppTableCommand<Request extends RequestType, Respo
                 atr.setDataType(PolicyMapDataTypeOptions.STRING);
             }
 
-            if (StringUtils.equalsIgnoreCase(atr.getAttributeName(), controlParam)) {
-                colName = atr.getAttributeName();
+            if (StringUtils.equalsIgnoreCase(atr.getName(), controlParam)) {
+                colName = atr.getName();
                 colDataType = atr.getDataType().getValue();
             }
 
             if (StringUtils.equalsIgnoreCase(atr.getMapForObjectType(), "principal")) {
-                principalFieldName = atr.getAttributeName();
+                principalFieldName = atr.getName();
                 principalFieldDataType = atr.getDataType().getValue();
 
             }

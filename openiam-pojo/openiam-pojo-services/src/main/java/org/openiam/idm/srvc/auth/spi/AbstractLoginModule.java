@@ -20,6 +20,7 @@
  */
 package org.openiam.idm.srvc.auth.spi;
 
+import com.sun.jndi.ldap.LdapCtxFactory;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -46,16 +47,19 @@ import org.openiam.idm.srvc.auth.domain.AuthStateId;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.AuthenticationRequest;
 import org.openiam.idm.srvc.auth.dto.LogoutRequest;
+import org.openiam.idm.srvc.auth.dto.SSOToken;
 import org.openiam.idm.srvc.auth.dto.Subject;
 import org.openiam.idm.srvc.auth.login.AuthStateDAO;
 import org.openiam.idm.srvc.auth.login.LoginDAO;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
 import org.openiam.idm.srvc.auth.service.AuthenticationModule;
+import org.openiam.idm.srvc.auth.sso.SSOTokenFactory;
 import org.openiam.idm.srvc.auth.sso.SSOTokenModule;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
 import org.openiam.idm.srvc.policy.domain.PolicyAttributeEntity;
 import org.openiam.idm.srvc.policy.domain.PolicyEntity;
@@ -71,13 +75,17 @@ import org.openiam.util.UserUtils;
 import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
+import javax.naming.CommunicationException;
+import javax.naming.Context;
+import javax.naming.NamingException;
+import javax.naming.ldap.LdapContext;
 import javax.resource.spi.IllegalStateException;
 
 /**
@@ -85,6 +93,14 @@ import javax.resource.spi.IllegalStateException;
  *
  */
 public abstract class AbstractLoginModule implements AuthenticationModule {
+
+    protected static final String DEFAULT_TOKEN_LIFE = "30";
+
+    @Value("${KEYSTORE}")
+    protected String keystore;
+
+    @Value("${KEYSTORE_PSWD}")
+    protected String keystorePasswd;
 
     @Autowired
     protected ManagedSysDAO managedSysDAO;
@@ -177,11 +193,52 @@ public abstract class AbstractLoginModule implements AuthenticationModule {
         return doLogin(context, user, login);
     }
 
-    protected abstract void validate(final AuthenticationContext context) throws Exception;
+    protected void validate(final AuthenticationContext context) throws Exception {
 
-    protected abstract LoginEntity getLogin(final AuthenticationContext context) throws Exception;
+        final String principal = context.getPrincipal();
+        final String password = context.getPassword();
+        final IdmAuditLog newLoginEvent = context.getEvent();
 
-    protected abstract UserEntity getUser(final AuthenticationContext context, final LoginEntity login) throws Exception;
+        if (StringUtils.isBlank(principal)) {
+            newLoginEvent.setFailureReason("Invalid Principal");
+            throw new BasicDataServiceException(ResponseCode.INVALID_PRINCIPAL);
+        }
+
+        if (StringUtils.isBlank(password)) {
+            newLoginEvent.setFailureReason("Invalid Password");
+            throw new BasicDataServiceException(ResponseCode.INVALID_PASSWORD);
+        }
+
+        if (StringUtils.isBlank(context.getAuthProviderId())) {
+            throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_SET);
+        }
+
+        final AuthProviderEntity authProvider = getAuthProvider(context);
+        if (authProvider == null) {
+            throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_FOUND);
+        }
+    }
+
+    protected LoginEntity getLogin(final AuthenticationContext context) throws Exception {
+        final IdmAuditLog newLoginEvent = context.getEvent();
+        final String principal = context.getPrincipal();
+        final ManagedSysEntity managedSystem = getManagedSystem(context);
+        final LoginEntity lg = loginManager.getLoginByManagedSys(principal, managedSystem.getId());
+        if (lg == null) {
+            newLoginEvent.setFailureReason(String.format("Cannot find login for principal '%s' and managedSystem '%s'", principal, managedSystem.getId()));
+            throw new BasicDataServiceException(ResponseCode.INVALID_LOGIN);
+        }
+        return lg;
+    }
+
+    protected UserEntity getUser(final AuthenticationContext context, final LoginEntity login) throws Exception {
+        final IdmAuditLog newLoginEvent = context.getEvent();
+        final String userId = login.getUserId();
+        newLoginEvent.setRequestorUserId(userId);
+        newLoginEvent.setTargetUser(userId, login.getLogin());
+        final UserEntity user = userDAO.findById(userId);
+        return user;
+    }
 
     protected abstract Subject doLogin(final AuthenticationContext context, final UserEntity user, final LoginEntity login) throws Exception;
 
@@ -239,15 +296,7 @@ public abstract class AbstractLoginModule implements AuthenticationModule {
     }
 
     protected PolicyEntity getPolicy(final AuthenticationContext context) throws BasicDataServiceException {
-        if (StringUtils.isBlank(context.getAuthProviderId())) {
-            throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_SET);
-        }
-
         final AuthProviderEntity authProvider = getAuthProvider(context);
-        if (authProvider == null) {
-            throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_FOUND);
-        }
-
         final PolicyEntity policy = authProvider.getPasswordPolicy();
         final AuthProviderTypeEntity authProviderType = authProvider.getType();
         if (authProviderType.isPasswordPolicyRequired()) {
@@ -257,19 +306,12 @@ public abstract class AbstractLoginModule implements AuthenticationModule {
         }
         return policy;
     }
+
     protected PolicyEntity getAuthPolicy(final AuthenticationContext context) throws BasicDataServiceException {
-        if (StringUtils.isBlank(context.getAuthProviderId())) {
-            throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_SET);
-        }
-
         final AuthProviderEntity authProvider = getAuthProvider(context);
-        if (authProvider == null) {
-            throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_FOUND);
-        }
-
         final PolicyEntity policy = authProvider.getAuthenticationPolicy();
         final AuthProviderTypeEntity authProviderType = authProvider.getType();
-        if (authProviderType.isPasswordPolicyRequired()) {
+        if (authProviderType.isAuthnPolicyRequired()) {
             if (policy == null) {
                 throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_SET);
             }
@@ -392,5 +434,134 @@ public abstract class AbstractLoginModule implements AuthenticationModule {
 
         return (int) diffInDays;
 
+    }
+
+    public LdapContext connect(String userName, String password, ManagedSysEntity managedSys) throws NamingException {
+
+        if (keystore != null && !keystore.isEmpty())  {
+            System.setProperty("javax.net.ssl.trustStore", keystore);
+            System.setProperty("javax.net.ssl.keyStorePassword", keystorePasswd);
+        }
+
+        if (managedSys == null) {
+            log.debug("ManagedSys is null");
+            return null;
+        }
+
+        String hostUrl = managedSys.getHostUrl();
+        if (managedSys.getPort() > 0 ) {
+            hostUrl = hostUrl + ":" + String.valueOf(managedSys.getPort());
+        }
+
+        log.debug("connect: Connecting to target system: " + managedSys.getId() );
+        log.debug("connect: Managed System object : " + managedSys);
+
+        log.info(" directory login = " + managedSys.getUserId() );
+        log.info(" directory login passwrd= *****" );
+        log.info(" javax.net.ssl.trustStore= " + System.getProperty("javax.net.ssl.trustStore"));
+        log.info(" javax.net.ssl.keyStorePassword= " + System.getProperty("javax.net.ssl.keyStorePassword"));
+
+        Hashtable<String, String> envDC = new Hashtable();
+        envDC.put(Context.PROVIDER_URL, hostUrl);
+        envDC.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
+        envDC.put(Context.SECURITY_AUTHENTICATION, "simple" ); // simple
+        envDC.put(Context.SECURITY_PRINCIPAL, userName);
+        envDC.put(Context.SECURITY_CREDENTIALS, password);
+
+        // Connections Pool configuration
+        envDC.put("com.sun.jndi.ldap.connect.pool", "true");
+        // Here is an example of a command line that sets the maximum pool size to 20, the preferred pool size to 10, and the idle timeout to 5 minutes for pooled connections.
+        envDC.put("com.sun.jndi.ldap.connect.pool.prefsize", "10");
+        envDC.put("com.sun.jndi.ldap.connect.pool.maxsize", "20");
+        envDC.put("com.sun.jndi.ldap.connect.pool.timeout", "300000");
+
+        LdapContext ldapContext = null;
+        try {
+            ldapContext = (LdapContext) new LdapCtxFactory().getInitialContext((Hashtable) envDC);
+
+        } catch (CommunicationException ce) {
+            log.error("Throw communication exception.", ce);
+
+        } catch(NamingException ne) {
+            log.error(ne.toString(), ne);
+
+        } catch (Throwable e) {
+            log.error(e.toString(), e);
+        }
+
+        return ldapContext;
+    }
+
+    /**
+     * If the password has expired, but its before the grace period then its a good login
+     * If the password has expired and after the grace period, then its an exception.
+     * You should also set the days to expiration
+     * @param lg
+     * @return
+     */
+    protected ResponseCode passwordExpired(final LoginEntity lg, final Date curDate, final PolicyEntity policy) {
+        log.debug("passwordExpired Called.");
+        log.debug("- Password Exp =" + lg.getPwdExp());
+        log.debug("- Password Grace Period =" + lg.getGracePeriod());
+
+        if (lg.getGracePeriod() == null) {
+            // set an early date
+            Date gracePeriodDate = getGracePeriodDate(lg, curDate, policy);
+            log.debug("Calculated the gracePeriod Date to be: "
+                    + gracePeriodDate);
+
+            if (gracePeriodDate == null) {
+                lg.setGracePeriod(new Date(0));
+            } else {
+                lg.setGracePeriod(gracePeriodDate);
+            }
+        }
+        if (lg.getPwdExp() != null) {
+            if (curDate.after(lg.getPwdExp())
+                    && curDate.after(lg.getGracePeriod())) {
+                // check for password expiration, but successful login
+                return ResponseCode.RESULT_PASSWORD_EXPIRED;
+            }
+            if ((curDate.after(lg.getPwdExp()) && curDate.before(lg
+                    .getGracePeriod()))) {
+                // check for password expiration, but successful login
+                return ResponseCode.RESULT_SUCCESS_PASSWORD_EXP;
+            }
+        }
+        return ResponseCode.RESULT_SUCCESS_PASSWORD_EXP;
+    }
+
+    protected Date getGracePeriodDate(LoginEntity lg, Date curDate, final PolicyEntity policy) {
+
+        final Date pwdExpDate = lg.getPwdExp();
+
+        if (pwdExpDate == null) {
+            return null;
+        }
+
+        final String gracePeriod = getPolicyAttribute(policy, "PWD_EXP_GRACE");
+        final Calendar cal = Calendar.getInstance();
+        cal.setTime(pwdExpDate);
+        if(StringUtils.isNotEmpty(gracePeriod)) {
+            cal.add(Calendar.DATE, Integer.parseInt(gracePeriod));
+            log.debug(String.format("Calculated grace period date=%s",cal.getTime()));
+            return cal.getTime();
+        }
+        return null;
+
+    }
+
+    protected SSOToken token(final String userId, final String tokenType, final String tokenLife, final Map tokenParam) throws Exception {
+
+        log.debug("Generating Security Token");
+
+        tokenParam.put("USER_ID", userId);
+
+        SSOTokenModule tkModule = SSOTokenFactory.createModule(tokenType);
+        tkModule.setCryptor(cryptor);
+        tkModule.setKeyManagementService(keyManagementService);
+        tkModule.setTokenLife(Integer.parseInt(tokenLife));
+
+        return tkModule.createToken(tokenParam);
     }
 }

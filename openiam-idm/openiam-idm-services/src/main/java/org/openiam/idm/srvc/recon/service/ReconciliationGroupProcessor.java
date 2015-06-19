@@ -342,7 +342,7 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
         for (AttributeMap ame : attrMap) {
             if ((PolicyMapObjectTypeOptions.GROUP_PRINCIPAL.name().equalsIgnoreCase(ame.getMapForObjectType()) || PolicyMapObjectTypeOptions.GROUP.name().equalsIgnoreCase(ame.getMapForObjectType()))
                     && "ACTIVE".equalsIgnoreCase(ame.getStatus())) {
-                requestedExtensibleAttributes.add(new ExtensibleAttribute(ame.getAttributeName(), null));
+                requestedExtensibleAttributes.add(new ExtensibleAttribute(ame.getName(), null));
             }
         }
 
