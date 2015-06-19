@@ -68,6 +68,6 @@ public class SynchConfigDataMappingDAOImpl extends BaseDaoImpl<SynchConfigDataMa
 
     @Override
     protected String getPKfieldName() {
-        return "mappingId";
+        return "id";
     }
 }

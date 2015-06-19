@@ -1,18 +1,19 @@
 package org.openiam.idm.srvc.synch.dto;
 
+import org.openiam.base.KeyDTO;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "SynchConfigDataMapping", 
-		propOrder = { "mappingId",
+		propOrder = {
 		"synchConfigId",
 		"idmFieldName", 
 		"srcFieldName"})
-public class SynchConfigDataMapping implements java.io.Serializable {
+public class SynchConfigDataMapping extends KeyDTO {
 
-	private String mappingId;
 	private String synchConfigId;
 	private String idmFieldName;
 	private String srcFieldName;
@@ -20,24 +21,16 @@ public class SynchConfigDataMapping implements java.io.Serializable {
 	public SynchConfigDataMapping() {
 	}
 
-	public SynchConfigDataMapping(String mappingId) {
-		this.mappingId = mappingId;
+	public SynchConfigDataMapping(String id) {
+		this.id = id;
 	}
 
-	public SynchConfigDataMapping(String mappingId, String synchConfigId,
+	public SynchConfigDataMapping(String id, String synchConfigId,
 			String idmFieldName, String srcFieldName) {
-		this.mappingId = mappingId;
+		this.id = id;
 		this.synchConfigId = synchConfigId;
 		this.idmFieldName = idmFieldName;
 		this.srcFieldName = srcFieldName;
-	}
-
-	public String getMappingId() {
-		return this.mappingId;
-	}
-
-	public void setMappingId(String mappingId) {
-		this.mappingId = mappingId;
 	}
 
 	public String getSynchConfigId() {
@@ -67,7 +60,7 @@ public class SynchConfigDataMapping implements java.io.Serializable {
     @Override
     public String toString() {
         return "SynchConfigDataMapping{" +
-                "mappingId='" + mappingId + '\'' +
+                "mappingId='" + id + '\'' +
                 ", synchConfigId='" + synchConfigId + '\'' +
                 ", idmFieldName='" + idmFieldName + '\'' +
                 ", srcFieldName='" + srcFieldName + '\'' +
