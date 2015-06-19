@@ -125,11 +125,11 @@ public class UserReconciliationADRemoteTest extends AbstractTestNGSpringContextT
             Assert.assertNotNull(provisionConnectorDtoList);
             Assert.assertEquals(provisionConnectorDtoList.size(), 1);
             connectorDto = provisionConnectorDtoList.get(0);
-            deleteConnectorIdsList.add(connectorDto.getConnectorId());
+            deleteConnectorIdsList.add(connectorDto.getId());
 
             managedSysDto.setName("TEST-USER-POWERSHELL-AD");
             managedSysDto.setPswd("=tdWk2eqV8P");
-            managedSysDto.setConnectorId(connectorDto.getConnectorId());
+            managedSysDto.setConnectorId(connectorDto.getId());
             managedSysDto.setHostUrl("win02.ad.openiamdemo.info");
             managedSysDto.setStatus("ACTIVE");
             managedSysDto.setUserId("AD\\Administrator");

@@ -82,7 +82,7 @@ public class ConnectorAdapter {
 
             ProvisionConnectorDto connector = connectorService
                     .getProvisionConnector(managedSys.getConnectorId());
-            log.info("Connector found for " + connector.getConnectorId());
+            log.info("Connector found for " + connector.getId());
             if (connector != null
                     && (connector.getServiceUrl() != null && connector
                             .getServiceUrl().length() > 0)) {
@@ -124,7 +124,7 @@ public class ConnectorAdapter {
 
             ProvisionConnectorDto connector = connectorService
                     .getProvisionConnector(managedSys.getConnectorId());
-            log.info("Connector found for " + connector.getConnectorId());
+            log.info("Connector found for " + connector.getId());
             if ((connector.getServiceUrl() != null && connector
                     .getServiceUrl().length() > 0)) {
 
@@ -164,7 +164,7 @@ public class ConnectorAdapter {
         try {
             ProvisionConnectorDto connector = connectorService
                     .getProvisionConnector(managedSys.getConnectorId());
-            log.info("Connector found for " + connector.getConnectorId());
+            log.info("Connector found for " + connector.getId());
             if ((connector.getServiceUrl() != null && connector
                     .getServiceUrl().length() > 0)) {
                 JaxWsProxyFactoryBean factory = new JaxWsProxyFactoryBean();
@@ -246,7 +246,7 @@ public class ConnectorAdapter {
             ProvisionConnectorDto connector = connectorService
                     .getProvisionConnector(managedSys.getConnectorId());
 
-            log.debug("Connector found for " + connector.getConnectorId());
+            log.debug("Connector found for " + connector.getId());
 
             if (connector != null
                     && (connector.getServiceUrl() != null && connector
@@ -287,7 +287,7 @@ public class ConnectorAdapter {
             ProvisionConnectorDto connector = connectorService
                     .getProvisionConnector(connectorId);
 
-            log.debug("Connector found for " + connector.getConnectorId());
+            log.debug("Connector found for " + connector.getId());
 
             if ((connector.getServiceUrl() != null && connector
                     .getServiceUrl().length() > 0)) {
@@ -328,7 +328,7 @@ public class ConnectorAdapter {
 
             ProvisionConnectorDto connector = connectorService
                     .getProvisionConnector(managedSys.getConnectorId());
-            log.info("Connector found for " + connector.getConnectorId());
+            log.info("Connector found for " + connector.getId());
             if ((connector.getServiceUrl() != null && connector
                     .getServiceUrl().length() > 0)) {
                 JaxWsProxyFactoryBean factory = new JaxWsProxyFactoryBean();
@@ -368,7 +368,7 @@ public class ConnectorAdapter {
 
             ProvisionConnectorDto connector = connectorService
                     .getProvisionConnector(managedSys.getConnectorId());
-            log.info("Connector found for " + connector.getConnectorId());
+            log.info("Connector found for " + connector.getId());
             if ((connector.getServiceUrl() != null && connector
                     .getServiceUrl().length() > 0)) {
                 JaxWsProxyFactoryBean factory = new JaxWsProxyFactoryBean();
@@ -410,7 +410,7 @@ public class ConnectorAdapter {
         try {
             ProvisionConnectorDto connector = connectorService
                     .getProvisionConnector(managedSys.getConnectorId());
-            log.debug("Connector found for " + connector.getConnectorId());
+            log.debug("Connector found for " + connector.getId());
             if ((connector.getServiceUrl() != null && connector
                     .getServiceUrl().length() > 0)) {
                 JaxWsProxyFactoryBean factory = new JaxWsProxyFactoryBean();
@@ -451,7 +451,7 @@ public class ConnectorAdapter {
         try {
             ProvisionConnectorDto connector = connectorService
                     .getProvisionConnector(managedSys.getConnectorId());
-            log.debug("Connector found for " + connector.getConnectorId());
+            log.debug("Connector found for " + connector.getId());
 
             if ((connector.getServiceUrl() != null && connector
                     .getServiceUrl().length() > 0)) {
@@ -491,7 +491,7 @@ public class ConnectorAdapter {
         try {
             ProvisionConnectorDto connector = connectorService
                     .getProvisionConnector(managedSys.getConnectorId());
-            log.debug("Connector found for " + connector.getConnectorId());
+            log.debug("Connector found for " + connector.getId());
 
             if ((connector.getServiceUrl() != null && connector
                     .getServiceUrl().length() > 0)) {
@@ -532,7 +532,7 @@ public class ConnectorAdapter {
             ProvisionConnectorDto connector = connectorService
                     .getProvisionConnector(managedSys.getConnectorId());
 
-            log.debug("Connector found for " + connector.getConnectorId());
+            log.debug("Connector found for " + connector.getId());
 
             if ((connector.getServiceUrl() != null && connector
                     .getServiceUrl().length() > 0)) {
