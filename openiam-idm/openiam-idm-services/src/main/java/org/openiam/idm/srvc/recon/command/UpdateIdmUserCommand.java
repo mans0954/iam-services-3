@@ -39,21 +39,16 @@ public class UpdateIdmUserCommand extends BaseReconciliationUserCommand {
 	public boolean execute(ReconciliationSituation config, String principal, String mSysID, User user, List<ExtensibleAttribute> attributes) {
 		log.debug("Entering UpdateIdmUserCommand");
 		log.debug("Update user: " + user.getId());
-        LookupUserResponse lookupResp =  provisionService.getTargetSystemUser(principal, mSysID, attributes);
-        if(lookupResp.getStatus() == ResponseStatus.FAILURE){
-            log.debug("Can't update IDM user from non-existent resource...");
-        } else {
-			try {
-				ProvisionUser pUser = new ProvisionUser(user);
-				setCurrentSuperiors(pUser);
-				pUser.setSrcSystemId(mSysID);
-				executeScript(config.getScript(), attributes, pUser);
-				ProvisionUserResponse response = provisionService.modifyUser(pUser);
-				return response.isSuccess();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-        }
+		try {
+			ProvisionUser pUser = new ProvisionUser(user);
+			setCurrentSuperiors(pUser);
+			pUser.setSrcSystemId(mSysID);
+			executeScript(config.getScript(), attributes, pUser);
+			ProvisionUserResponse response = provisionService.modifyUser(pUser);
+			return response.isSuccess();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
         return false;
     }
 
