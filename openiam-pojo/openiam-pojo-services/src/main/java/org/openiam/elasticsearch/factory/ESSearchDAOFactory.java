@@ -1,8 +1,18 @@
 package org.openiam.elasticsearch.factory;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.log4j.Logger;
+import org.openiam.core.dao.lucene.AbstractHibernateSearchDao;
 import org.openiam.core.dao.lucene.HibernateSearchDao;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
 
 /**
@@ -10,31 +20,27 @@ import org.springframework.stereotype.Component;
  * Date: 9/22/14.
  */
 @Component
-public class ESSearchDAOFactory {
-    @Autowired
-    @Qualifier("userSearchDAO")
-    private HibernateSearchDao userSearchDAO;
-    @Autowired
-    @Qualifier("loginSearchDAO")
-    private HibernateSearchDao loginSearchDAO;
-    @Autowired
-    @Qualifier("emailSearchDAO")
-    private HibernateSearchDao emailSearchDAO;
-    @Autowired
-    @Qualifier("phoneSearchDAO")
-    private HibernateSearchDao phoneSearchDAO;
-
-
+public class ESSearchDAOFactory implements ApplicationContextAware {
+	
+	protected static Logger logger = Logger.getLogger(ESSearchDAOFactory.class);
+	
+	private Map<String, HibernateSearchDao> searchDAOMap = new HashMap<String, HibernateSearchDao>();
+	
     public HibernateSearchDao getSearchDAO(String className){
-        if(userSearchDAO.getSearchEntityClass().getName().equals(className)){
-            return userSearchDAO;
-        } else if(loginSearchDAO.getSearchEntityClass().getName().equals(className)){
-            return loginSearchDAO;
-        }  else if(emailSearchDAO.getSearchEntityClass().getName().equals(className)){
-            return emailSearchDAO;
-        } else if(phoneSearchDAO.getSearchEntityClass().getName().equals(className)){
-            return phoneSearchDAO;
-        }
-        return null;
+    	final HibernateSearchDao dao = searchDAOMap.get(className);
+    	if(dao == null) {
+    		throw new IllegalStateException(String.format("No search bean representing '%s'", className));
+    	}
+    	return dao;
     }
+
+
+	@Override
+	public void setApplicationContext(ApplicationContext arg0)
+			throws BeansException {
+		arg0.getBeansOfType(HibernateSearchDao.class).forEach((k, dao) ->  {
+			logger.info(String.format("Adding %s:%s", dao.getSearchEntityClass(), dao));
+			searchDAOMap.put(dao.getSearchEntityClass().getName(), dao);
+		});
+	}
 }

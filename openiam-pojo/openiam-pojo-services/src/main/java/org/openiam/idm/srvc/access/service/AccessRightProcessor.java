@@ -61,14 +61,14 @@ public class AccessRightProcessor {
 		return dtoList.stream().collect(Collectors.toMap(T::getId, Function.identity()));
 	}
 	
-	private <T extends AbstractEntitlementsDTO> void setRights(final Map<String, T> dtoMap, final AbstractMembershipXrefEntity xref, final KeyEntity entity) {
+	private <T extends AbstractEntitlementsDTO> void setRights(final Map<String, T> dtoMap, final AbstractMembershipXrefEntity<?, ?> xref, final KeyEntity entity) {
 		if(xref != null && xref.getRights() != null) {
 			final List<String> rightIds = xref.getRights().stream().map(e -> e.getId()).collect(Collectors.toList());
 			dtoMap.get(entity.getId()).setAccessRightIds(rightIds);
 		}
 	}
 	
-	private void setRightsForUser(final Map<String, User> dtoMap, final AbstractMembershipXrefEntity xref, final KeyEntity entity) {
+	private void setRightsForUser(final Map<String, User> dtoMap, final AbstractMembershipXrefEntity<?, ?> xref, final KeyEntity entity) {
 		if(xref != null && xref.getRights() != null) {
 			final List<String> rightIds = xref.getRights().stream().map(e -> e.getId()).collect(Collectors.toList());
 			dtoMap.get(entity.getId()).setAccessRightIds(rightIds);
