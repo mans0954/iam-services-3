@@ -101,7 +101,7 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
 
         log.debug("SynchReview startSynch CALLED.^^^^^^^^");
         final SynchReviewService synchReviewService = (SynchReviewService)SpringContextProvider.getBean("synchReviewService");
-        final LineObject rowHeader = genHeaderFromRecord(synchReviewService.getHeaderReviewRecord(sourceReview.getSynchReviewId()));
+        final LineObject rowHeader = genHeaderFromRecord(synchReviewService.getHeaderReviewRecord(sourceReview.getId()));
         try {
             for (SynchReviewRecordEntity record : sourceReview.getReviewRecords()) {
                 if (!record.isHeader()) {

@@ -28,14 +28,11 @@ import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.auth.ws.LoginDataWebService;
 import org.openiam.idm.srvc.auth.ws.LoginResponse;
 import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
-import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.mngsys.dto.*;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
-import org.openiam.idm.srvc.msg.service.MailService;
 import org.openiam.idm.srvc.recon.command.BaseReconciliationCommand;
 import org.openiam.idm.srvc.recon.command.ReconciliationCommandFactory;
-import org.openiam.idm.srvc.recon.domain.ReconciliationConfigEntity;
 import org.openiam.idm.srvc.recon.dto.ReconExecStatusOptions;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.idm.srvc.recon.dto.ReconciliationResponse;
@@ -55,14 +52,10 @@ import org.openiam.idm.srvc.user.util.UserUtils;
 import org.openiam.idm.srvc.user.ws.UserDataWebService;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.resp.LookupUserResponse;
-import org.openiam.provision.service.AbstractProvisioningService;
-import org.openiam.provision.service.ConnectorAdapter;
-import org.openiam.provision.service.ProvisionService;
-import org.openiam.provision.service.ProvisionServiceUtil;
+import org.openiam.provision.service.*;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.script.ScriptIntegration;
-import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -119,6 +112,8 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
 	@Autowired
 	ReconciliationConfigService reconConfigService;
 
+    @Autowired
+    ProvisionServiceUtil provisionServiceUtil;
     private static final int BATCH_STOPPING_STEP = 10;
     private static final int CLEAR_SESSION_STEP = 20;
 
@@ -629,7 +624,7 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
             bindingMap.put("currentGroupList", curGroupList);
             for (AttributeMap attr : attrMap) {
                 fromIDM.getAttributes().add(
-                        new ExtensibleAttribute(attr.getName(), (String) ProvisionServiceUtil
+                        new ExtensibleAttribute(attr.getName(), (String) provisionServiceUtil
                                 .getOutputFromAttrMap(attr, bindingMap, scriptRunner)));
                 if (PolicyMapObjectTypeOptions.PRINCIPAL.name().equalsIgnoreCase(attr.getMapForObjectType())
                         && !"INACTIVE".equalsIgnoreCase(attr.getStatus())) {

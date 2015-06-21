@@ -1,21 +1,31 @@
 package org.openiam.provision.service;
 
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.openiam.am.srvc.constants.AmAttributes;
 import org.openiam.exception.ScriptEngineException;
+import org.openiam.idm.srvc.auth.service.AuthAttributeProcessor;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.mngsys.dto.PolicyMapObjectTypeOptions;
 import org.openiam.idm.srvc.policy.domain.PolicyEntity;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.script.ScriptIntegration;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-public class ProvisionServiceUtil {
-    public static Object getOutputFromAttrMap(AttributeMap attr,
-                                              Map<String, Object> tmpMap, ScriptIntegration se)
-            throws ScriptEngineException {
+@Service("provisionServiceUtil")
+public class ProvisionServiceUtilImpl implements ProvisionServiceUtil {
+    @Autowired
+    private AuthAttributeProcessor authAttributeProcessor;
+
+    @Override
+    public Object getOutputFromAttrMap(AttributeMap attr,
+                                       Map<String, Object> tmpMap, ScriptIntegration se)
+            throws Exception {
         Object output = "";
         Map<String, Object> bindingMap = new HashMap<String, Object>(tmpMap);
         bindingMap.put(AbstractProvisioningService.ATTRIBUTE_MAP, attr);
@@ -28,30 +38,13 @@ public class ProvisionServiceUtil {
                 output = se.execute(bindingMap, url);
             }
         } else if (attr.getReconResAttribute().getDefaultAttributePolicy() != null) {
-            output = attr.getReconResAttribute().getDefaultAttributePolicy()
-                    .getDefaultAttributeMapId();
-        }
-        return output;
-    }
-
-    public static Object getOutputFromAttrMap(AttributeMapEntity attr,
-                                              Map<String, Object> tmpMap, ScriptIntegration se)
-            throws ScriptEngineException {
-        Object output = "";
-        Map<String, Object> bindingMap = new HashMap(tmpMap);
-        bindingMap.put(AbstractProvisioningService.ATTRIBUTE_MAP, attr);
-        bindingMap.put(AbstractProvisioningService.ATTRIBUTE_DEFAULT_VALUE, attr.getDefaultValue());
-
-        if (attr.getReconResAttribute().getAttributePolicy() != null) {
-            PolicyEntity policy = attr.getReconResAttribute()
-                    .getAttributePolicy();
-            String url = policy.getRuleSrcUrl();
-            if (url != null) {
-                output = se.execute(bindingMap, url);
-            }
-        } else if (attr.getReconResAttribute().getDefaultAttributePolicy() != null) {
-            output = attr.getReconResAttribute().getDefaultAttributePolicy()
-                    .getDefaultAttributeMapId();
+            EnumMap<AmAttributes, Object> objectMap = new EnumMap<AmAttributes, Object>(AmAttributes.class);
+            if (tmpMap.get("lg") != null)
+                objectMap.put(AmAttributes.Login, tmpMap.get("lg"));
+            if (tmpMap.get("user") != null)
+                objectMap.put(AmAttributes.User, tmpMap.get("user"));
+            output = authAttributeProcessor.process(attr.getReconResAttribute().getDefaultAttributePolicy()
+                    .getDefaultAttributeMapId(), objectMap);
         }
         return output;
     }
@@ -62,13 +55,14 @@ public class ProvisionServiceUtil {
      * @return
      * @throws ScriptEngineException
      */
-    public static String buildUserPrincipalName(List<AttributeMap> attrMap,
-                                                ScriptIntegration se, Map<String, Object> bindingMap)
-            throws ScriptEngineException {
+    @Override
+    public String buildUserPrincipalName(List<AttributeMap> attrMap,
+                                         ScriptIntegration se, Map<String, Object> bindingMap)
+            throws Exception {
         for (AttributeMap attr : attrMap) {
             if (PolicyMapObjectTypeOptions.PRINCIPAL.name().equalsIgnoreCase(attr.getMapForObjectType())
                     && !"INACTIVE".equalsIgnoreCase(attr.getStatus())) {
-                return (String) ProvisionServiceUtil.getOutputFromAttrMap(attr,
+                return (String) this.getOutputFromAttrMap(attr,
                         bindingMap, se);
             }
         }
@@ -81,13 +75,14 @@ public class ProvisionServiceUtil {
      * @return
      * @throws ScriptEngineException
      */
-    public static String buildGroupPrincipalName(List<AttributeMap> attrMap,
-                                                ScriptIntegration se, Map<String, Object> bindingMap)
-            throws ScriptEngineException {
+    @Override
+    public String buildGroupPrincipalName(List<AttributeMap> attrMap,
+                                          ScriptIntegration se, Map<String, Object> bindingMap)
+            throws Exception {
         for (AttributeMap attr : attrMap) {
             if (PolicyMapObjectTypeOptions.GROUP_PRINCIPAL.name().equalsIgnoreCase(attr.getMapForObjectType())
                     && !"INACTIVE".equalsIgnoreCase(attr.getStatus())) {
-                return (String) ProvisionServiceUtil.getOutputFromAttrMap(attr,
+                return (String) this.getOutputFromAttrMap(attr,
                         bindingMap, se);
             }
         }

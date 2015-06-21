@@ -1,6 +1,7 @@
 package org.openiam.idm.srvc.synch.dto;
 
 import org.openiam.am.srvc.constants.SearchScopeType;
+import org.openiam.base.KeyNameDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.recon.dto.MatchConfig;
 import org.openiam.idm.srvc.synch.domain.SynchConfigEntity;
@@ -10,8 +11,7 @@ import java.util.List;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "SynchConfig", 
-		propOrder = { "synchConfigId",
-		"name",
+		propOrder = {
 		"status", 
 		"synchAdapter",
         "useSystemPath",
@@ -57,10 +57,8 @@ import java.util.List;
  * Object containing the configuration for a synchronization task
  */
 @DozerDTOCorrespondence(SynchConfigEntity.class)
-public class SynchConfig implements MatchConfig, java.io.Serializable {
+public class SynchConfig extends KeyNameDTO implements MatchConfig {
 
-	private String synchConfigId;
-	private String name;
 	private String status;
 	private String synchAdapter;
     private Boolean useSystemPath;
@@ -104,28 +102,7 @@ public class SynchConfig implements MatchConfig, java.io.Serializable {
     private List<SynchReview> synchReviews;
     private String parentAuditLogId;
 
-	public SynchConfig() {
-	}
-
-	public SynchConfig(String synchConfigId) {
-		this.synchConfigId = synchConfigId;
-	}
-
-	public String getSynchConfigId() {
-		return this.synchConfigId;
-	}
-
-	public void setSynchConfigId(String synchConfigId) {
-		this.synchConfigId = synchConfigId;
-	}
-
-	public String getName() {
-		return this.name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
+	public SynchConfig() {}
 
 	public String getStatus() {
 		return this.status;
@@ -452,8 +429,8 @@ public class SynchConfig implements MatchConfig, java.io.Serializable {
     @Override
     public String toString() {
         return "SynchConfig{" +
-                "synchConfigId='" + synchConfigId + '\'' +
-                ", name='" + name + '\'' +
+                "id='" + id + '\'' +
+                ", name='" + name_ + '\'' +
                 ", status='" + status + '\'' +
                 ", synchAdapter='" + synchAdapter + '\'' +
                 ", useSystemPath='" + useSystemPath.toString() + '\'' +

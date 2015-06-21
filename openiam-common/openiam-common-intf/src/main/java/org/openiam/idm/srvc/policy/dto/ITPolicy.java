@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.policy.dto;
 
+import org.openiam.base.KeyDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.policy.domain.ITPolicyEntity;
 
@@ -10,14 +11,11 @@ import javax.xml.bind.annotation.XmlType;
 import java.util.Date;
 
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "ITPolicy", propOrder = { "policyId", "approveType", "active", "createDate", "createdBy",
+@XmlType(name = "ITPolicy", propOrder = { "approveType", "active", "createDate", "createdBy",
         "updateDate", "updatedBy", "policyContent", "confirmation" })
 @DozerDTOCorrespondence(ITPolicyEntity.class)
-public class ITPolicy implements java.io.Serializable {
+public class ITPolicy extends KeyDTO {
 
-    private static final long serialVersionUID = 1L;
-
-    private String policyId;
     private ITPolicyApproveType approveType;
     private boolean active;
     @XmlSchemaType(name = "dateTime")
@@ -29,13 +27,6 @@ public class ITPolicy implements java.io.Serializable {
     private String policyContent;
     private String confirmation;
 
-    public String getPolicyId() {
-        return policyId;
-    }
-
-    public void setPolicyId(String policyId) {
-        this.policyId = policyId;
-    }
 
     public ITPolicyApproveType getApproveType() {
         return approveType;

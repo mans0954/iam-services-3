@@ -11,7 +11,7 @@ public class SynchConfigSearchBeanConverter implements SearchBeanConverter<Synch
     @Override
     public SynchConfigEntity convert(SynchConfigSearchBean searchBean) {
         SynchConfigEntity entity = new SynchConfigEntity();
-        entity.setSynchConfigId(searchBean.getKey());
+        entity.setId(searchBean.getKey());
         entity.setName(searchBean.getName());
         entity.setSynchType(searchBean.getSynchType());
         return entity;

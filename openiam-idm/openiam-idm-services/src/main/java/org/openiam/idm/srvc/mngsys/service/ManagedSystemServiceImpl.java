@@ -363,6 +363,7 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
                 AttributeMapEntity attrMapEntity = curAttrMapsMap.get(ame.getId());
                 BeanUtils.copyProperties(ame, attrMapEntity, new String[]{"reconResAttribute"});
                 attrMapEntity.getReconResAttribute().setAttributePolicy(ame.getReconResAttribute().getAttributePolicy());
+                attrMapEntity.getReconResAttribute().setDefaultAttributePolicy(ame.getReconResAttribute().getDefaultAttributePolicy());
             } else {
                 this.addAttributeMap(ame);
             }

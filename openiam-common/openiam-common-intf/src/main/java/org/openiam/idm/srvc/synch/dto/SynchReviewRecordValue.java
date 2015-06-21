@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.synch.dto;
 
+import org.openiam.base.KeyDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.synch.domain.SynchReviewRecordValueEntity;
 
@@ -12,26 +13,16 @@ import java.io.Serializable;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "SynchReviewRecordValue",
         propOrder = {
-                "synchReviewRecordValueId",
                 "synchReviewRecordId",
                 "value"
         })
 @DozerDTOCorrespondence(SynchReviewRecordValueEntity.class)
-public class SynchReviewRecordValue implements Serializable {
+public class SynchReviewRecordValue extends KeyDTO {
 
     private static final long serialVersionUID = -7099022108176721011L;
 
-    private String synchReviewRecordValueId;
     private String synchReviewRecordId;
     private String value;
-
-    public String getSynchReviewRecordValueId() {
-        return synchReviewRecordValueId;
-    }
-
-    public void setSynchReviewRecordValueId(String synchReviewRecordValueId) {
-        this.synchReviewRecordValueId = synchReviewRecordValueId;
-    }
 
     public String getSynchReviewRecordId() {
         return synchReviewRecordId;
@@ -58,7 +49,7 @@ public class SynchReviewRecordValue implements Serializable {
 
         if (synchReviewRecordId != null ? !synchReviewRecordId.equals(that.synchReviewRecordId) : that.synchReviewRecordId != null)
             return false;
-        if (synchReviewRecordValueId != null ? !synchReviewRecordValueId.equals(that.synchReviewRecordValueId) : that.synchReviewRecordValueId != null)
+        if (id != null ? !id.equals(that.id) : that.id != null)
             return false;
         if (value != null ? !value.equals(that.value) : that.value != null) return false;
 
@@ -67,7 +58,7 @@ public class SynchReviewRecordValue implements Serializable {
 
     @Override
     public int hashCode() {
-        int result = synchReviewRecordValueId != null ? synchReviewRecordValueId.hashCode() : 0;
+        int result = id != null ? id.hashCode() : 0;
         result = 31 * result + (synchReviewRecordId != null ? synchReviewRecordId.hashCode() : 0);
         result = 31 * result + (value != null ? value.hashCode() : 0);
         return result;
