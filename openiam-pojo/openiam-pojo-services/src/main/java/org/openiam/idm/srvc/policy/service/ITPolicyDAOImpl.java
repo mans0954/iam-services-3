@@ -20,6 +20,6 @@ public class ITPolicyDAOImpl extends BaseDaoImpl<ITPolicyEntity, String> impleme
 
     @Override
     protected String getPKfieldName() {
-        return "policyId";
+        return "id";
     }
 }

@@ -22,7 +22,7 @@ public class SynchReviewRecordDAOImpl extends BaseDaoImpl<SynchReviewRecordEntit
 
     @Override
     protected String getPKfieldName() {
-        return "synchReviewRecordId";
+        return "id";
     }
 
     @Override
@@ -44,7 +44,7 @@ public class SynchReviewRecordDAOImpl extends BaseDaoImpl<SynchReviewRecordEntit
         try {
             SynchReviewRecordEntity instance = (SynchReviewRecordEntity)getCriteria()
                     .add(Restrictions.eq("header", true))
-                    .add(Restrictions.eq("synchReview.synchReviewId", synchReviewId)).uniqueResult();
+                    .add(Restrictions.eq("synchReview.id", synchReviewId)).uniqueResult();
             return instance;
 
         } catch (RuntimeException re) {
@@ -58,7 +58,7 @@ public class SynchReviewRecordDAOImpl extends BaseDaoImpl<SynchReviewRecordEntit
         log.debug("getting SynchReviewRecordEntities for SynchReviewEntity with id: " + synchReviewId);
         try {
             Criteria criteria = getCriteria()
-                    .add(Restrictions.eq("synchReview.synchReviewId", synchReviewId))
+                    .add(Restrictions.eq("synchReview.id", synchReviewId))
                     .add(Restrictions.eq("header", false));
             if (from > -1) {
                 criteria.setFirstResult(from);
@@ -78,7 +78,7 @@ public class SynchReviewRecordDAOImpl extends BaseDaoImpl<SynchReviewRecordEntit
         log.debug("getting SynchReviewRecordEntities count for SynchReviewEntity with id: " + synchReviewId);
         try {
             return ((Number)getCriteria()
-                    .add(Restrictions.eq("synchReview.synchReviewId", synchReviewId))
+                    .add(Restrictions.eq("synchReview.id", synchReviewId))
                     .add(Restrictions.eq("header", false))
                     .setProjection(rowCount())
                     .uniqueResult()).intValue();

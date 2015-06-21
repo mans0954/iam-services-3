@@ -12,7 +12,7 @@ public class ProvisionConnectorSearchBeanConverter implements SearchBeanConverte
     public ProvisionConnectorEntity convert(ProvisionConnectorSearchBean searchBean) {
         ProvisionConnectorEntity connectorEntity = new ProvisionConnectorEntity();
         connectorEntity.setName(searchBean.getConnectorName());
-        connectorEntity.setConnectorId(searchBean.getKey());
+        connectorEntity.setId(searchBean.getKey());
         connectorEntity.setMetadataTypeId(searchBean.getConnectorTypeId());
         return connectorEntity;
     }

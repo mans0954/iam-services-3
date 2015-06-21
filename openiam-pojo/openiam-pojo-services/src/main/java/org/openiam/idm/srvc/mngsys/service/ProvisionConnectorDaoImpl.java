@@ -15,7 +15,7 @@ public class ProvisionConnectorDaoImpl extends BaseDaoImpl<ProvisionConnectorEnt
 
     @Override
     protected String getPKfieldName() {
-        return "connectorId";
+        return "id";
     }
 
     @Override

@@ -3,6 +3,7 @@ package org.openiam.idm.srvc.mngsys.domain;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
+import org.openiam.base.domain.AbstractKeyNameEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
 
@@ -13,15 +14,11 @@ import java.io.Serializable;
 @Table(name = "PROVISION_CONNECTOR")
 @DozerDTOCorrespondence(ProvisionConnectorDto.class)
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class ProvisionConnectorEntity implements Serializable {
-    @Id
-    @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name = "system-uuid", strategy = "uuid")
-    @Column(name = "CONNECTOR_ID")
-    private String connectorId;
-
-    @Column(name = "NAME")
-    private String name;
+@AttributeOverrides(value= {
+        @AttributeOverride(name = "id", column = @Column(name = "CONNECTOR_ID")),
+        @AttributeOverride(name = "name", column = @Column(name = "NAME", length=40, nullable = false)),
+})
+public class ProvisionConnectorEntity extends AbstractKeyNameEntity {
 
     @Column(name = "METADATA_TYPE_ID")
     private String metadataTypeId;
@@ -49,14 +46,6 @@ public class ProvisionConnectorEntity implements Serializable {
 
     @Column(name = "CONNECTOR_INTERFACE")
     private String connectorInterface;
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
 
     public String getMetadataTypeId() {
         return metadataTypeId;
@@ -130,14 +119,6 @@ public class ProvisionConnectorEntity implements Serializable {
         this.connectorInterface = connectorInterface;
     }
 
-    public String getConnectorId() {
-        return connectorId;
-    }
-
-    public void setConnectorId(String connectorId) {
-        this.connectorId = connectorId;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -148,7 +129,6 @@ public class ProvisionConnectorEntity implements Serializable {
         if (className != null ? !className.equals(that.className) : that.className != null) return false;
         if (clientCommProtocol != null ? !clientCommProtocol.equals(that.clientCommProtocol) : that.clientCommProtocol != null)
             return false;
-        if (connectorId != null ? !connectorId.equals(that.connectorId) : that.connectorId != null) return false;
         if (connectorInterface != null ? !connectorInterface.equals(that.connectorInterface) : that.connectorInterface != null)
             return false;
         if (metadataTypeId != null ? !metadataTypeId.equals(that.metadataTypeId) : that.metadataTypeId != null)
@@ -166,7 +146,7 @@ public class ProvisionConnectorEntity implements Serializable {
 
     @Override
     public int hashCode() {
-        int result = connectorId != null ? connectorId.hashCode() : 0;
+        int result = id != null ? id.hashCode() : 0;
         result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (metadataTypeId != null ? metadataTypeId.hashCode() : 0);
         result = 31 * result + (stdComplianceLevel != null ? stdComplianceLevel.hashCode() : 0);
@@ -183,7 +163,7 @@ public class ProvisionConnectorEntity implements Serializable {
     @Override
     public String toString() {
         return "ProvisionConnectorEntity{" +
-                "connectorId='" + connectorId + '\'' +
+                "connectorId='" + id + '\'' +
                 ", name='" + name + '\'' +
                 ", metadataTypeId='" + metadataTypeId + '\'' +
                 ", serviceUrl='" + serviceUrl + '\'' +

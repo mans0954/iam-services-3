@@ -4,6 +4,8 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
+import org.openiam.base.domain.AbstractKeyNameEntity;
+import org.openiam.base.domain.KeyEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.policy.dto.ITPolicy;
 import org.openiam.idm.srvc.policy.dto.ITPolicyApproveType;
@@ -15,15 +17,11 @@ import java.util.Date;
 @Table(name = "IT_POLICY")
 @DozerDTOCorrespondence(ITPolicy.class)
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class ITPolicyEntity implements java.io.Serializable {
+@AttributeOverrides(value= {
+        @AttributeOverride(name = "id", column = @Column(name = "IT_POLICY_ID")),
+})
+public class ITPolicyEntity extends KeyEntity {
 
-    private static final long serialVersionUID = 1L;
-
-    @Id
-    @GeneratedValue(generator="system-uuid")
-    @GenericGenerator(name="system-uuid", strategy = "uuid")
-    @Column(name="IT_POLICY_ID", length=32)
-    private String policyId;
     @Enumerated(EnumType.STRING)
     @Column(name="APPROVE_TYPE", length=64)
     private ITPolicyApproveType approveType;
@@ -45,14 +43,6 @@ public class ITPolicyEntity implements java.io.Serializable {
     private String policyContent;
     @Column(name="CONFIRMATION",length=255,nullable=true)
     private String confirmation;
-
-    public String getPolicyId() {
-        return policyId;
-    }
-
-    public void setPolicyId(String policyId) {
-        this.policyId = policyId;
-    }
 
     public ITPolicyApproveType getApproveType() {
         return approveType;

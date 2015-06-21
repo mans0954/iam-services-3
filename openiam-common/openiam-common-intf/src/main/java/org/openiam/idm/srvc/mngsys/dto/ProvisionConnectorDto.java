@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.mngsys.dto;
 
+import org.openiam.base.KeyNameDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.mngsys.domain.ProvisionConnectorEntity;
 
@@ -13,8 +14,6 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ProvisionConnectorDto", propOrder = {
-    "connectorId",
-    "name",
     "metadataTypeId",
     "stdComplianceLevel",
     "clientCommProtocol",
@@ -26,12 +25,10 @@ import javax.xml.bind.annotation.XmlType;
     "connectorInterface"
 })
 @DozerDTOCorrespondence(ProvisionConnectorEntity.class)
-public class ProvisionConnectorDto implements java.io.Serializable {
+public class ProvisionConnectorDto extends KeyNameDTO {
 
 
 	private static final long serialVersionUID = -6981651498633257018L;
-	protected String connectorId;
-	protected String name;
 	protected String metadataTypeId;
 	protected String stdComplianceLevel;
 	protected String clientCommProtocol;
@@ -46,36 +43,20 @@ public class ProvisionConnectorDto implements java.io.Serializable {
 	public ProvisionConnectorDto() {
 	}
 
-	public ProvisionConnectorDto(String connectorId) {
-		this.connectorId = connectorId;
+	public ProvisionConnectorDto(String id) {
+		this.id = id;
 	}
 
-	public ProvisionConnectorDto(String connectorId, String name,
+	public ProvisionConnectorDto(String id, String name,
                                  String metdataTypeId, String stdComplianceLevel,
                                  String clientCommProtocol, String serviceUrl, String className) {
-		this.connectorId = connectorId;
-		this.name = name;
+		this.id = id;
+		this.name_ = name;
 		this.metadataTypeId = metdataTypeId;
 		this.stdComplianceLevel = stdComplianceLevel;
 		this.clientCommProtocol = clientCommProtocol;
 		this.serviceUrl = serviceUrl;
 		this.className = className;
-	}
-
-	public String getConnectorId() {
-		return this.connectorId;
-	}
-
-	public void setConnectorId(String connectorId) {
-		this.connectorId = connectorId;
-	}
-
-	public String getName() {
-		return this.name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
 	}
 
 	public String getMetadataTypeId() {
@@ -160,12 +141,12 @@ public class ProvisionConnectorDto implements java.io.Serializable {
         if (className != null ? !className.equals(that.className) : that.className != null) return false;
         if (clientCommProtocol != null ? !clientCommProtocol.equals(that.clientCommProtocol) : that.clientCommProtocol != null)
             return false;
-        if (connectorId != null ? !connectorId.equals(that.connectorId) : that.connectorId != null) return false;
+        if (id != null ? !id.equals(that.id) : that.id != null) return false;
         if (connectorInterface != null ? !connectorInterface.equals(that.connectorInterface) : that.connectorInterface != null)
             return false;
         if (metadataTypeId != null ? !metadataTypeId.equals(that.metadataTypeId) : that.metadataTypeId != null)
             return false;
-        if (name != null ? !name.equals(that.name) : that.name != null) return false;
+        if (name_ != null ? !name_.equals(that.name_) : that.name_ != null) return false;
         if (serviceNameSpace != null ? !serviceNameSpace.equals(that.serviceNameSpace) : that.serviceNameSpace != null)
             return false;
         if (servicePort != null ? !servicePort.equals(that.servicePort) : that.servicePort != null) return false;
@@ -178,8 +159,8 @@ public class ProvisionConnectorDto implements java.io.Serializable {
 
     @Override
     public int hashCode() {
-        int result = connectorId != null ? connectorId.hashCode() : 0;
-        result = 31 * result + (name != null ? name.hashCode() : 0);
+        int result = id != null ? id.hashCode() : 0;
+        result = 31 * result + (name_ != null ? name_.hashCode() : 0);
         result = 31 * result + (metadataTypeId != null ? metadataTypeId.hashCode() : 0);
         result = 31 * result + (stdComplianceLevel != null ? stdComplianceLevel.hashCode() : 0);
         result = 31 * result + (clientCommProtocol != null ? clientCommProtocol.hashCode() : 0);

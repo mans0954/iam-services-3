@@ -89,7 +89,7 @@ public class IdentitySynchWebServiceImpl implements IdentitySynchWebService {
 	public SynchConfigResponse addConfig(SynchConfig synchConfig) {
 		SynchConfigResponse resp = new SynchConfigResponse(ResponseStatus.SUCCESS);
 		SynchConfigEntity config = synchService.addConfig(synchConfigDozerConverter.convertToEntity(synchConfig, false));
-		if (config == null || config.getSynchConfigId()==null) {
+		if (config == null || config.getId()==null) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
 			resp.setConfig(synchConfigDozerConverter.convertToDTO(config, false));
@@ -117,7 +117,7 @@ public class IdentitySynchWebServiceImpl implements IdentitySynchWebService {
 	public SynchConfigResponse findById(String id) {
 		SynchConfigResponse resp = new SynchConfigResponse(ResponseStatus.SUCCESS);
 		SynchConfigEntity config = synchService.findById(id);
-		if (config == null || config.getSynchConfigId()==null) {
+		if (config == null || config.getId()==null) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
 			resp.setConfig(synchConfigDozerConverter.convertToDTO(config, false));
@@ -137,7 +137,7 @@ public class IdentitySynchWebServiceImpl implements IdentitySynchWebService {
 	public SynchConfigResponse mergeConfig(SynchConfig synchConfig) {
 		SynchConfigResponse resp = new SynchConfigResponse(ResponseStatus.SUCCESS);
 		SynchConfigEntity config = synchService.mergeConfig(synchConfigDozerConverter.convertToEntity(synchConfig, false));
-		if (config == null || config.getSynchConfigId()==null) {
+		if (config == null || config.getId()==null) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
 			resp.setConfig(synchConfigDozerConverter.convertToDTO(config, false));

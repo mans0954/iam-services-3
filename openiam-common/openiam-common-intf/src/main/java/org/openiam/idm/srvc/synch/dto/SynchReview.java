@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.synch.dto;
 
+import org.openiam.base.KeyDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.synch.domain.SynchReviewEntity;
 
@@ -10,7 +11,6 @@ import java.util.*;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "SynchReview",
         propOrder = {
-                "synchReviewId",
                 "synchConfigId",
                 "createTime",
                 "execTime",
@@ -21,11 +21,10 @@ import java.util.*;
                 "reviewRecords"
         })
 @DozerDTOCorrespondence(SynchReviewEntity.class)
-public class SynchReview implements Serializable {
+public class SynchReview extends KeyDTO {
 
     private static final long serialVersionUID = 4894570727605523853L;
 
-    private String synchReviewId;
     private String synchConfigId;
     @XmlSchemaType(name = "dateTime")
     private Date createTime;
@@ -47,14 +46,6 @@ public class SynchReview implements Serializable {
 
     public SynchReview(boolean sourceRejected) {
         this.sourceRejected = sourceRejected;
-    }
-
-    public String getSynchReviewId() {
-        return synchReviewId;
-    }
-
-    public void setSynchReviewId(String synchReviewId) {
-        this.synchReviewId = synchReviewId;
     }
 
     public String getSynchConfigId() {
@@ -143,13 +134,15 @@ public class SynchReview implements Serializable {
         if (modifyTime != null ? !modifyTime.equals(that.modifyTime) : that.modifyTime != null) return false;
         if (synchConfigId != null ? !synchConfigId.equals(that.synchConfigId) : that.synchConfigId != null)
             return false;
-        return !(synchReviewId != null ? !synchReviewId.equals(that.synchReviewId) : that.synchReviewId != null);
+        if (id != null ? !id.equals(that.id) : that.id != null)
+            return false;
 
+        return true;
     }
 
     @Override
     public int hashCode() {
-        int result = synchReviewId != null ? synchReviewId.hashCode() : 0;
+        int result = id != null ? id.hashCode() : 0;
         result = 31 * result + (synchConfigId != null ? synchConfigId.hashCode() : 0);
         result = 31 * result + (createTime != null ? createTime.hashCode() : 0);
         result = 31 * result + (execTime != null ? execTime.hashCode() : 0);

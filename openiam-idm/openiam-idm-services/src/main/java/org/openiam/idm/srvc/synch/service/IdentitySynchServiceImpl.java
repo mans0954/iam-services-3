@@ -163,7 +163,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 			throw new IllegalArgumentException("synchConfig parameter is null");
 		}
         if (synchConfig.getSynchReviews() == null) { // Explicitly add synch reviews to the entity
-            synchConfig.setSynchReviews(getAllSynchReviewsBySynchConfigId(synchConfig.getSynchConfigId()));
+            synchConfig.setSynchReviews(getAllSynchReviewsBySynchConfigId(synchConfig.getId()));
         }
 		return synchConfigDao.merge(synchConfig);
 				
@@ -198,7 +198,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
         idmAuditLog.setRequestorUserId(systemUserId);
         idmAuditLog.setRequestorPrincipal("sysadmin");
         idmAuditLog.setAction(AuditAction.SYNCHRONIZATION.value());
-        idmAuditLog.setSource(config.getSynchConfigId());
+        idmAuditLog.setSource(config.getId());
 
         if ("INACTIVE".equalsIgnoreCase(config.getStatus())) {
             idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "WARNING: Synchronization config is in 'INACTIVE' status");
@@ -208,7 +208,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
             return resp;
         }
 
-        SyncResponse processCheckResponse = addTask(config.getSynchConfigId());
+        SyncResponse processCheckResponse = addTask(config.getId());
         if (processCheckResponse.getStatus() == ResponseStatus.FAILURE &&
                 processCheckResponse.getErrorCode() == ResponseCode.FAIL_PROCESS_ALREADY_RUNNING) {
             idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "WARNING: Previous synchronization run is not finished yet");
@@ -267,14 +267,14 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
             idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "SyncReponse updateTime value=" + newLastExecTime);
 
             if (syncResponse.getLastRecordTime() == null) {
-				synchConfigDao.updateExecTime(config.getSynchConfigId(), new Timestamp( newLastExecTime ));
+				synchConfigDao.updateExecTime(config.getId(), new Timestamp( newLastExecTime ));
 			} else {
-				synchConfigDao.updateExecTime(config.getSynchConfigId(), new Timestamp( syncResponse.getLastRecordTime().getTime() ));
+				synchConfigDao.updateExecTime(config.getId(), new Timestamp( syncResponse.getLastRecordTime().getTime() ));
 			}
 
             if (syncResponse.getLastRecProcessed() != null) {
 
-				synchConfigDao.updateLastRecProcessed(config.getSynchConfigId(),syncResponse.getLastRecProcessed() );
+				synchConfigDao.updateLastRecProcessed(config.getId(),syncResponse.getLastRecProcessed() );
 			}
 
 		    log.debug("-startSynchronization COMPLETE.^^^^^^^^");
@@ -314,7 +314,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
             syncResponse.setErrorText(e.getMessage());
             idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "ERROR: "+e.getMessage());
         } finally {
-            endTask(config.getSynchConfigId());
+            endTask(config.getId());
             if (resultReview.isSourceRejected() || CollectionUtils.isNotEmpty(resultReview.getReviewRecords())) {
                 synchReviewDAO.save(resultReview);
             }
