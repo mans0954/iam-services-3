@@ -63,15 +63,7 @@ public class SynchReviewEntity extends KeyEntity {
         this.synchConfig = synchConfig;
         this.createTime = createTime;
     }
-
-    public String getSynchReviewId() {
-        return synchReviewId;
-    }
-
-    public void setSynchReviewId(String synchReviewId) {
-        this.synchReviewId = synchReviewId;
-    }
-
+    
     public SynchConfigEntity getSynchConfig() {
         return synchConfig;
     }
