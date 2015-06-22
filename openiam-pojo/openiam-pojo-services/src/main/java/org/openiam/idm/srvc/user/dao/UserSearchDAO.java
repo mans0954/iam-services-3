@@ -44,7 +44,7 @@ public class UserSearchDAO extends AbstractHibernateSearchDao<UserEntity, UserSe
 					clause = buildExactClause("lastNameUntokenized", param.getValue());
 					break;
 				case STARTS_WITH:
-					clause = buildTokenizedClause("lastName", param.getValue());
+					clause = buildTokenizedClauseMUST("lastName", param.getValue());
 					break;
 				default:
 					break;

@@ -26,7 +26,7 @@ public class LoginSearchDAO extends AbstractHibernateSearchDao<LoginEntity, Logi
 					clause = buildExactClause("loginUntokenized", param.getValue());
 					break;
 				case STARTS_WITH:
-					clause = buildTokenizedClause("login", param.getValue());
+					clause = buildTokenizedClauseMUST("login", param.getValue());
 					break;
 				default:
 					break;
