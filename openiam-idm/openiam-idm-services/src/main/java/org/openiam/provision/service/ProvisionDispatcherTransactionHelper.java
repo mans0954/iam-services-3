@@ -250,7 +250,8 @@ public class ProvisionDispatcherTransactionHelper {
                 ResourceEntity resEntity = resourceService.findResourceById(data.getResourceId());
                 Resource res = resourceDozerConverter.convertToDTO(resEntity, true);
                 ManagedSysDto mSys = managedSystemWebService.getManagedSysByResource(res.getId());
-                String managedSysId = (mSys != null) ? mSys.getId() : null;
+                String managedSysId = mSys.getId();
+                idmAuditLog.setTargetManagedSys(mSys.getId(), mSys.getName());
 
                 Login targetSysLogin = data.getIdentity();
 
@@ -281,15 +282,18 @@ public class ProvisionDispatcherTransactionHelper {
                     } else {
                         idmAuditLog.fail();
                         idmAuditLog.setFailureReason(resp.getErrorMsgAsStr());
+                        idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "DISABLE IDENTITY = FAILURE, details:" + resp.getErrorMsgAsStr());
                         loginChanges.setProvStatus(ProvLoginStatusEnum.FAIL_DISABLE);
                     }
                 } catch (Throwable th) {
                     idmAuditLog.fail();
                     idmAuditLog.setFailureReason(th.getMessage());
-                    idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "DISABLE IDENTITY=" + identity
-                            + " from MANAGED_SYS_ID=" + identity.getManagedSysId() + " status="
-                            + ProvLoginStatusEnum.FAIL_DISABLE + " details=" + th.getMessage());
+                    idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "DISABLE IDENTITY = FAILURE, details:" + th.getMessage());
                     loginChanges.setProvStatus(ProvLoginStatusEnum.FAIL_DISABLE);
+                } finally {
+                    if (!"FAILURE".equals(idmAuditLog.getResult())) {
+                        idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "DISABLE IDENTITY = SUCCESS");
+                    }
                 }
 
             } else if (data.getOperation() == ProvOperationEnum.ENABLE) {
@@ -298,7 +302,8 @@ public class ProvisionDispatcherTransactionHelper {
                 ResourceEntity resEntity = resourceService.findResourceById(data.getResourceId());
                 Resource res = resourceDozerConverter.convertToDTO(resEntity, true);
                 ManagedSysDto mSys = managedSystemWebService.getManagedSysByResource(res.getId());
-                String managedSysId = (mSys != null) ? mSys.getId() : null;
+                String managedSysId = mSys.getId();
+                idmAuditLog.setTargetManagedSys(mSys.getId(), mSys.getName());
 
                 Login targetSysLogin = data.getIdentity();
 
@@ -329,15 +334,18 @@ public class ProvisionDispatcherTransactionHelper {
                     } else {
                         idmAuditLog.fail();
                         idmAuditLog.setFailureReason(resp.getErrorMsgAsStr());
+                        idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "ENABLE IDENTITY = FAILURE, details:" + resp.getErrorMsgAsStr());
                         loginChanges.setProvStatus(ProvLoginStatusEnum.FAIL_ENABLE);
                     }
                 } catch (Throwable th) {
                     idmAuditLog.fail();
                     idmAuditLog.setFailureReason(th.getMessage());
-                    idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "ENABLE IDENTITY=" + identity
-                            + " from MANAGED_SYS_ID=" + identity.getManagedSysId() + " status="
-                            + ProvLoginStatusEnum.FAIL_ENABLE + " details=" + th.getMessage());
+                    idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "ENABLE IDENTITY = FAILURE, details:" + th.getMessage());
                     loginChanges.setProvStatus(ProvLoginStatusEnum.FAIL_ENABLE);
+                } finally {
+                    if (!"FAILURE".equals(idmAuditLog.getResult())) {
+                        idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "ENABLE IDENTITY = SUCCESS");
+                    }
                 }
             }
 
