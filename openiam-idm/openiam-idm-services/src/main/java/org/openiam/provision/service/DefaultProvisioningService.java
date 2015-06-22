@@ -1623,7 +1623,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 }
             }
 
-            if (passwordSync.getSendPasswordToUser()) {
+            if (passwordSync.getSendPasswordToUser() && sysConfiguration.getDefaultManagedSysId().equals(identity.getManagedSysId())) {
                 sendResetPasswordToUser(identity, password);
             }
 
