@@ -210,7 +210,10 @@ public class PolicyServiceImpl implements PolicyService {
     @Transactional
     public String saveITPolicy(ITPolicy itPolicy) {
         ITPolicyEntity pe = itPolicyDozerConverter.convertToEntity(itPolicy, true);
-        itPolicyDao.save(pe);
+        if (itPolicy.getPolicyId() != null) {
+            itPolicyDao.merge(pe);
+        } else itPolicyDao.save(pe);
+
         return pe.getPolicyId();
     }
 }
