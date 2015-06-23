@@ -70,8 +70,8 @@ public interface OrganizationService {
 	public void validateOrg2OrgAddition(String parentId, String memberId) throws BasicDataServiceException;
     public void validate(final Organization organization) throws BasicDataServiceException;
 
-    public Set<String> getDelegationFilter(String requesterId, String organizationTypeId);
-    public Set<String> getDelegationFilter(Map<String, UserAttribute> attrMap, String organizationTypeId);
+    public Set<String> getDelegationFilter(String requesterId);
+    public Set<String> getDelegationFilter(Map<String, UserAttribute> attrMap);
 
     public void addLocation(LocationEntity val);
     public void updateLocation(LocationEntity val);

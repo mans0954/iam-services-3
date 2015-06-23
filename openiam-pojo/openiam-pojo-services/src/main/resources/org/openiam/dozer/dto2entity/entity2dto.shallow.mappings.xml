@@ -871,6 +871,10 @@
 			<a>resource</a>
 			<b>resource</b>
 		</field>
+		<field>
+        	<a>nextAuthProvider.providerId</a>
+        	<b>nextAuthProviderId</b>
+        </field>
     </mapping>
 
     <mapping>
