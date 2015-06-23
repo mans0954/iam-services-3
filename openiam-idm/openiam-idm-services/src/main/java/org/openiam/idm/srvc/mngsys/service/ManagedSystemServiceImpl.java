@@ -23,14 +23,7 @@ import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
-import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
-import org.openiam.idm.srvc.mngsys.domain.AssociationType;
-import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
-import org.openiam.idm.srvc.mngsys.domain.DefaultReconciliationAttributeMapEntity;
-import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
-import org.openiam.idm.srvc.mngsys.domain.ManagedSysRuleEntity;
-import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
-import org.openiam.idm.srvc.mngsys.domain.ReconciliationResourceAttributeMapEntity;
+import org.openiam.idm.srvc.mngsys.domain.*;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysSearchBean;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
@@ -49,8 +42,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -60,6 +51,10 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
             .getLog(ManagedSystemServiceImpl.class);
     @Autowired
     private ManagedSysDAO managedSysDAO;
+
+    @Autowired
+    private MngSysPolicyDAO mngSysPolicyDAO;
+
     @Autowired
     private ManagedSystemSearchBeanConverter managedSystemSearchBeanConverter;
     @Autowired
@@ -137,6 +132,12 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     @Transactional(readOnly = true)
     public ManagedSysEntity getManagedSysById(String id) {
         return managedSysDAO.findById(id);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public MngSysPolicyEntity getManagedSysPolicyById(String id) {
+        return mngSysPolicyDAO.findById(id);
     }
 
     @Override
@@ -331,16 +332,16 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     @Override
     @Transactional
     public List<AttributeMapEntity> saveAttributesMap(
-            List<AttributeMapEntity> attrMap, String mSysId, String resId,
+            List<AttributeMapEntity> attrMap, String mSysPolicyId, String resId,
             String synchConfigId) throws Exception {
 
         if (attrMap == null) {
             return null;
         }
 
-        ManagedSysEntity mngSys = getManagedSysById(mSysId);
+        MngSysPolicyEntity mngSysPolicy = getManagedSysPolicyById(mSysPolicyId);
         Map<String, AttributeMapEntity> curAttrMapsMap = new HashMap<String, AttributeMapEntity>();
-        List<AttributeMapEntity> curAttrMaps =  this.getAttributeMapsByManagedSysId(mSysId);
+        List<AttributeMapEntity> curAttrMaps =  this.getAttributeMapsByManagedSysId(mSysPolicyId);
         for (AttributeMapEntity ame : curAttrMaps) {
             curAttrMapsMap.put(ame.getId(), ame);
         }
@@ -356,7 +357,7 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
                 throw new BasicDataServiceException(ResponseCode.VALUE_REQUIRED);
             }
             ame.setReconResAttribute(rram);
-            ame.setManagedSystem(mngSys);
+            ame.setMngSysPolicy(mngSysPolicy);
             ame.setResourceId(resId);
             ame.setSynchConfigId(synchConfigId);
             if (StringUtils.isNotBlank(ame.getId())) {

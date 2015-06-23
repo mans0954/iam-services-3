@@ -19,6 +19,8 @@ public interface ManagedSystemService {
 
     ManagedSysEntity getManagedSysById(String id);
 
+    MngSysPolicyEntity getManagedSysPolicyById(String id);
+
     List<ManagedSysEntity> getManagedSysByConnectorId(String connectorId);
 
     String getDecryptedPassword(ManagedSysDto managedSys);

@@ -72,7 +72,7 @@ public class AttributeMapDAOImpl extends
     }
 
     public AttributeMapEntity add(AttributeMapEntity entity) {
-        if ((entity.getManagedSystem() == null)
+        if ((entity.getMngSysPolicy() == null)
                 && StringUtils.isEmpty(entity.getSynchConfigId())) {
             String reason = "managedSys or synchConfigId must be specified";
             throw new DataException(reason, new Exception(
@@ -82,7 +82,7 @@ public class AttributeMapDAOImpl extends
     }
 
     public void update(AttributeMapEntity entity) {
-        if ((entity.getManagedSystem() == null)
+        if ((entity.getMngSysPolicy() == null)
                 && StringUtils.isEmpty(entity.getSynchConfigId())) {
             String reason = "managedSys or synchConfigId must be specified";
             throw new DataException(reason, new Exception(

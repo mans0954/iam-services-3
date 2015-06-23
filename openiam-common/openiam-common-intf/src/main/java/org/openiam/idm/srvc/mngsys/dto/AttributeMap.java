@@ -19,7 +19,9 @@ import org.openiam.idm.srvc.policy.dto.Policy;
  * and an attribute policy.
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "AttributeMap", propOrder = {"managedSysId","name",
+@XmlType(name = "AttributeMap", propOrder = {
+        "mngSysPolicyId",
+        "name",
         "resourceId", "synchConfigId", "mapForObjectType",
         "targetAttributeName", "authoritativeSrc", "reconResAttribute", "rule",
         "status", "startDate", "endDate", "storeInIamdb", "selected",
@@ -32,7 +34,7 @@ public class AttributeMap extends KeyDTO {
      */
     private static final long serialVersionUID = -4584242607384442243L;
     private String name;
-    private String managedSysId;
+    private String mngSysPolicyId;
     private String resourceId;
     private String synchConfigId;
     private String mapForObjectType;
@@ -54,17 +56,17 @@ public class AttributeMap extends KeyDTO {
     public AttributeMap() {
     }
 
-    public AttributeMap(String attributeMapId, String managedSysId) {
+    public AttributeMap(String attributeMapId, String mngSysPolicyId) {
         this.id = attributeMapId;
-        this.managedSysId = managedSysId;
+        this.mngSysPolicyId = mngSysPolicyId;
     }
 
-    public AttributeMap(String attributeMapId, String managedSysId,
+    public AttributeMap(String attributeMapId, String mngSysPolicyId,
                         String resourceId, String synchConfigId, String mapForObjectType, String attributeName,
                         String targetAttributeName, Integer authoritativeSrc, String rule,
                         String status, Date startDate, Date endDate, Integer storeInIamdb) {
         this.id = attributeMapId;
-        this.managedSysId = managedSysId;
+        this.mngSysPolicyId = mngSysPolicyId;
         this.resourceId = resourceId;
         this.synchConfigId = synchConfigId;
         this.mapForObjectType = mapForObjectType;
@@ -78,12 +80,12 @@ public class AttributeMap extends KeyDTO {
         this.storeInIamdb = storeInIamdb;
     }
 
-    public String getManagedSysId() {
-        return this.managedSysId;
+    public String getMngSysPolicyId() {
+        return mngSysPolicyId;
     }
 
-    public void setManagedSysId(String managedSysId) {
-        this.managedSysId = managedSysId;
+    public void setMngSysPolicyId(String mngSysPolicyId) {
+        this.mngSysPolicyId = mngSysPolicyId;
     }
 
     public String getResourceId() {
@@ -210,7 +212,7 @@ public class AttributeMap extends KeyDTO {
     @Override
     public String toString() {
         return "AttributeMap{" + "attributeMapId='" + id + '\''
-                + ", managedSysId='" + managedSysId + '\'' + ", resourceId='"
+                + ", mngSysPolicyId='" + mngSysPolicyId + '\'' + ", resourceId='"
                 + resourceId + ", synchConfigId='" + synchConfigId + '\'' +
                 ", mapForObjectType='" + mapForObjectType
                 + '\'' + ", attributeName='" + name + '\''

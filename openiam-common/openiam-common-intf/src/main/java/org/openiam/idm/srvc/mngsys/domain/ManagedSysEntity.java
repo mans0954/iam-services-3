@@ -111,7 +111,7 @@ public class ManagedSysEntity extends AbstractKeyNameEntity {
     private List<ManagedSysRuleEntity> rules = new ArrayList<ManagedSysRuleEntity>(0);
 
     @OneToMany(fetch = FetchType.LAZY, orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "managedSystem")
-    private Set<AttributeMapEntity> attributeMaps = new HashSet<AttributeMapEntity>(0);
+    private Set<MngSysPolicyEntity> mngSysPolicies = new HashSet<MngSysPolicyEntity>(0);
 
     @OneToMany(orphanRemoval = false, cascade = {CascadeType.DETACH, CascadeType.REFRESH}, mappedBy = "managedSystem", fetch = FetchType.LAZY)
     private Set<GroupEntity> groups;
@@ -411,15 +411,15 @@ public class ManagedSysEntity extends AbstractKeyNameEntity {
         this.changedByEndUser = changedByEndUser;
     }
 
-    public Set<AttributeMapEntity> getAttributeMaps() {
-        return attributeMaps;
+    public Set<MngSysPolicyEntity> getMngSysPolicies() {
+        return mngSysPolicies;
     }
 
-    public void setAttributeMaps(Set<AttributeMapEntity> attributeMaps) {
-        this.attributeMaps = attributeMaps;
+    public void setMngSysPolicies(Set<MngSysPolicyEntity> mngSysPolicies) {
+        this.mngSysPolicies = mngSysPolicies;
     }
 
-	@Override
+    @Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();

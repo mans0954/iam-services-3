@@ -30,8 +30,8 @@ public class AttributeMapEntity extends AbstractKeyNameEntity {
     private static final long serialVersionUID = 1L;
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "MANAGED_SYS_ID", nullable = false)
-    private ManagedSysEntity managedSystem;
+    @JoinColumn(name = "MNG_SYS_POLICY_ID", nullable = false)
+    private MngSysPolicyEntity mngSysPolicy;
 
     @Column(name = "RESOURCE_ID", length = 32)
     private String resourceId;
@@ -41,8 +41,6 @@ public class AttributeMapEntity extends AbstractKeyNameEntity {
 
     @Column(name = "MAP_FOR_OBJECT_TYPE", length = 20)
     private String mapForObjectType;
-
-
 
     @Column(name = "TARGET_ATTRIBUTE_NAME", length = 50)
     private String targetname;
@@ -84,17 +82,17 @@ public class AttributeMapEntity extends AbstractKeyNameEntity {
     public AttributeMapEntity() {
     }
 
-    public AttributeMapEntity(String id, ManagedSysEntity managedSystem) {
+    public AttributeMapEntity(String id, MngSysPolicyEntity mngSysPolicy) {
         this.id = id;
-        this.managedSystem = managedSystem;
+        this.mngSysPolicy = mngSysPolicy;
     }
 
-    public AttributeMapEntity(String id, ManagedSysEntity managedSystem,
+    public AttributeMapEntity(String id, MngSysPolicyEntity mngSysPolicy,
             String resourceId, String synchConfigId, String mapForObjectType, String name,
             String targetname, Integer authoritativeSrc, String rule,
             String status, Date startDate, Date endDate, Integer storeInIamdb) {
         this.id = id;
-        this.managedSystem = managedSystem;
+        this.mngSysPolicy = mngSysPolicy;
         this.resourceId = resourceId;
         this.synchConfigId = synchConfigId;
         this.mapForObjectType = mapForObjectType;
@@ -221,18 +219,19 @@ public class AttributeMapEntity extends AbstractKeyNameEntity {
         return defaultValue;
     }
 
-    public ManagedSysEntity getManagedSystem() {
-        return managedSystem;
+
+    public MngSysPolicyEntity getMngSysPolicy() {
+        return mngSysPolicy;
     }
 
-    public void setManagedSystem(ManagedSysEntity managedSystem) {
-        this.managedSystem = managedSystem;
+    public void setMngSysPolicy(MngSysPolicyEntity mngSysPolicy) {
+        this.mngSysPolicy = mngSysPolicy;
     }
 
     @Override
     public String toString() {
         return "AttributeMap{" + "id='" + id + '\''
-                + ", managedSys='" + managedSystem + '\'' + ", resourceId='"
+                + ", mngSysPolicy='" + mngSysPolicy + '\'' + ", resourceId='"
                 + resourceId + '\''  + ", synchConfigId='"
                 + synchConfigId + '\'' + ", mapForObjectType='" + mapForObjectType
                 + '\'' + ", name='" + name + '\''
@@ -256,7 +255,7 @@ public class AttributeMapEntity extends AbstractKeyNameEntity {
             return false;
         if (name != null ? !name.equals(entity.name) : entity.name != null)
             return false;
-        if (managedSystem != null ? !managedSystem.equals(entity.managedSystem) : entity.managedSystem != null)
+        if (mngSysPolicy != null ? !mngSysPolicy.equals(entity.mngSysPolicy) : entity.mngSysPolicy != null)
             return false;
         if (mapForObjectType != null ? !mapForObjectType.equals(entity.mapForObjectType) : entity.mapForObjectType != null)
             return false;
@@ -270,7 +269,7 @@ public class AttributeMapEntity extends AbstractKeyNameEntity {
     @Override
     public int hashCode() {
         int result = id != null ? id.hashCode() : 0;
-        result = 31 * result + (managedSystem != null ? managedSystem.hashCode() : 0);
+        result = 31 * result + (mngSysPolicy != null ? mngSysPolicy.hashCode() : 0);
         result = 31 * result + (resourceId != null ? resourceId.hashCode() : 0);
         result = 31 * result + (mapForObjectType != null ? mapForObjectType.hashCode() : 0);
         result = 31 * result + (name != null ? name.hashCode() : 0);
