@@ -1400,12 +1400,17 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     @Transactional
     public PasswordResponse resetPassword(PasswordSync passwordSync, IdmAuditLog auditLog) {
         log.debug("----resetPassword called.------");
+
+        passwordSync.setPassword(passwordSync.getPassword().trim());
+
         final IdmAuditLog idmAuditLog = new IdmAuditLog();
         List<LoginEntity> loginEntityList = loginManager.getLoginByUser(passwordSync.getRequestorId());
         LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(this.sysConfiguration.getDefaultManagedSysId(), loginEntityList);
         idmAuditLog.setRequestorPrincipal(primaryIdentity.getLogin());
         idmAuditLog.setRequestorUserId(passwordSync.getRequestorId());
         idmAuditLog.setAction(AuditAction.USER_RESETPASSWORD.value());
+
+
 
         if (auditLog != null) {
             auditLog.addChild(idmAuditLog);
@@ -1747,6 +1752,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     @Transactional
     public PasswordValidationResponse setPassword(PasswordSync passwordSync) {
         log.debug("----setPassword called.------");
+
+        passwordSync.setPassword(passwordSync.getPassword().trim());
+
         final IdmAuditLog idmAuditLog = new IdmAuditLog();
         List<LoginEntity> loginEntityList = loginManager.getLoginByUser(passwordSync.getRequestorId());
         LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(this.sysConfiguration.getDefaultManagedSysId(), loginEntityList);
@@ -1758,6 +1766,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 //        final IdmAuditLog auditLog = new IdmAuditLog();
 //        auditLog.setBaseObject(passwordSync);
 //        auditLog.setAction(AuditAction.CHANGE_PASSWORD.value());
+
+
 
         boolean allSetOK = true;
         PasswordValidationResponse response = new PasswordValidationResponse(ResponseStatus.SUCCESS);
