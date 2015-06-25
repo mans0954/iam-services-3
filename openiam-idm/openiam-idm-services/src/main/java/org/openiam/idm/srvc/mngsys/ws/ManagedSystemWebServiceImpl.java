@@ -1,6 +1,5 @@
 package org.openiam.idm.srvc.mngsys.ws;
 
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -36,19 +35,11 @@ import org.openiam.idm.srvc.mngsys.domain.DefaultReconciliationAttributeMapEntit
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysRuleEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
-import org.openiam.idm.srvc.mngsys.dto.ApproverAssocationSearchBean;
-import org.openiam.idm.srvc.mngsys.dto.ApproverAssociation;
-import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
-import org.openiam.idm.srvc.mngsys.dto.DefaultReconciliationAttributeMap;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSysRuleDto;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSysSearchBean;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
+import org.openiam.idm.srvc.mngsys.dto.*;
 import org.openiam.idm.srvc.mngsys.searchbeans.converter.ApproverAssocationSearchBeanConverter;
 import org.openiam.idm.srvc.mngsys.searchbeans.converter.ManagedSystemSearchBeanConverter;
 import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
-import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.util.SSLCert;
 import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,8 +75,10 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
 
     @Autowired
     private ManagedSysRuleDozerConverter managedSysRuleDozerConverter;
+
     @Autowired
     private ManagedSysDozerConverter managedSysDozerConverter;
+
     @Autowired
     private AttributeMapDozerConverter attributeMapDozerConverter;
 
@@ -154,12 +147,6 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
         return response;
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public List<AttributeMap> getAttributeMapsByManagedSysId(final String managedSysId) {
-        List<AttributeMapEntity> attributeMaps = managedSystemService.getAttributeMapsByManagedSysId(managedSysId);
-        return attributeMapDozerConverter.convertToDTOList(attributeMaps, true);
-    }
 
     @Override
     @Transactional(readOnly = true)
@@ -656,4 +643,13 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
         managedSystemService.deleteRules(ruleId);
     }
 
+    @Override
+    public List<AttributeMap> getAttributeMapsByMngSysPolicyId(String mngSysPolicyId) {
+        return managedSystemService.getAttributeMapsByMngSysPolicyId(mngSysPolicyId);
+    }
+
+    @Override
+    public List<MngSysPolicyDto> getMngSysPoliciesByMngSysId(String mngSysId) {
+        return managedSystemService.getManagedSysPolicyByMngSysId(mngSysId);
+    }
 }

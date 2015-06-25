@@ -4,9 +4,7 @@ import org.openiam.am.srvc.domain.AuthProviderEntity;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.AttributeMapSearchBean;
 import org.openiam.idm.srvc.mngsys.domain.*;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSysSearchBean;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
+import org.openiam.idm.srvc.mngsys.dto.*;
 
 import java.util.List;
 
@@ -20,6 +18,10 @@ public interface ManagedSystemService {
     ManagedSysEntity getManagedSysById(String id);
 
     MngSysPolicyEntity getManagedSysPolicyById(String id);
+
+    List<MngSysPolicyDto> getManagedSysPolicyByMngSysId(String mngSysId);
+
+    MngSysPolicyDto getManagedSysPolicyByMngSysIdAndMetadataType(String mngSysId, String metadataTypeId);
 
     List<ManagedSysEntity> getManagedSysByConnectorId(String connectorId);
 
@@ -47,7 +49,7 @@ public interface ManagedSystemService {
 
     List<AttributeMapEntity> getResourceAttributeMaps(String resourceId);
 
-    List<AttributeMapEntity> getAttributeMapsByManagedSysId(String managedSysId);
+    List<AttributeMap> getAttributeMapsByMngSysPolicyId(String mngSysPolicyId);
 
     List<AttributeMapEntity> getResourceAttributeMaps(AttributeMapSearchBean searchBean);
 

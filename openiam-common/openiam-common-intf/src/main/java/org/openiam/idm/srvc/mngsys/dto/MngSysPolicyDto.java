@@ -1,22 +1,28 @@
 package org.openiam.idm.srvc.mngsys.dto;
 
 import org.openiam.base.AbstractMetadataTypeDTO;
+import org.openiam.base.BaseObject;
+import org.openiam.base.KeyDTO;
+import org.openiam.base.KeyNameDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlSchemaType;
-import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.*;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "MngSysPolicyDto", propOrder = {
         "name",
         "createDate",
-        "lastUpdate"
+        "lastUpdate",
+        "primary",
+        "managedSysId",
+        "attributeMaps"
 })
 @DozerDTOCorrespondence(ManagedSysEntity.class)
+@XmlSeeAlso({KeyDTO.class, KeyNameDTO.class, BaseObject.class, BaseObject.class, AttributeMap.class})
 public class MngSysPolicyDto extends AbstractMetadataTypeDTO {
 
     protected String name;
@@ -26,6 +32,12 @@ public class MngSysPolicyDto extends AbstractMetadataTypeDTO {
 
     @XmlSchemaType(name = "dateTime")
     private Date createDate;
+
+    private boolean primary = false;
+
+    private String managedSysId;
+
+    private Set<AttributeMap> attributeMaps = new HashSet<AttributeMap>(0);
 
     public String getName() {
         return name;
@@ -49,6 +61,30 @@ public class MngSysPolicyDto extends AbstractMetadataTypeDTO {
 
     public void setCreateDate(Date createDate) {
         this.createDate = createDate;
+    }
+
+    public boolean isPrimary() {
+        return primary;
+    }
+
+    public void setPrimary(boolean primary) {
+        this.primary = primary;
+    }
+
+    public String getManagedSysId() {
+        return managedSysId;
+    }
+
+    public void setManagedSysId(String managedSysId) {
+        this.managedSysId = managedSysId;
+    }
+
+    public Set<AttributeMap> getAttributeMaps() {
+        return attributeMaps;
+    }
+
+    public void setAttributeMaps(Set<AttributeMap> attributeMaps) {
+        this.attributeMaps = attributeMaps;
     }
 
     @Override

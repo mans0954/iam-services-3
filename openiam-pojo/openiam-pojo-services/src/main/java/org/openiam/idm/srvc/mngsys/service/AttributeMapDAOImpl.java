@@ -28,14 +28,14 @@ public class AttributeMapDAOImpl extends
         return (List<AttributeMapEntity>) this.getCriteria()
                 .add(Restrictions.eq("resourceId", resourceId))
                 .addOrder(Order.asc("mapForObjectType"))
-                .addOrder(Order.asc("managedSystem.id")).list();
+                .addOrder(Order.asc("mngSysPolicy.id")).list();
     }
 
-    public List<AttributeMapEntity> findByManagedSysId(String managedSysId) {
+    public List<AttributeMapEntity> findByMngSysPolicyId(String mngSysPolicyId) {
         return (List<AttributeMapEntity>) this.getCriteria()
-                .add(Restrictions.eq("managedSystem.id", managedSysId))
+                .add(Restrictions.eq("mngSysPolicy.id", mngSysPolicyId))
                 .addOrder(Order.asc("mapForObjectType"))
-                .addOrder(Order.asc("managedSystem.id")).list();
+                .addOrder(Order.asc("mngSysPolicy.id")).list();
     }
 
     public List<AttributeMapEntity> findBySynchConfigId(String synchConfigId) {

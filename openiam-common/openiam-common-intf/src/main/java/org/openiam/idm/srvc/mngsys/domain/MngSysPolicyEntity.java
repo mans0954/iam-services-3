@@ -4,6 +4,7 @@ import javax.persistence.*;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.Type;
 import org.openiam.base.domain.AbstractMetdataTypeEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.mngsys.dto.MngSysPolicyDto;
@@ -16,6 +17,10 @@ import java.util.Set;
 @Table(name = "MNG_SYS_POLICY")
 @DozerDTOCorrespondence(MngSysPolicyDto.class)
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@AttributeOverrides({
+        @AttributeOverride(name = "id", column = @Column(name = "MNG_SYS_POLICY_ID")),
+        @AttributeOverride(name = "name", column = @Column(name = "NAME", length = 100, nullable = true))
+})
 public class MngSysPolicyEntity extends AbstractMetdataTypeEntity {
 
     public MngSysPolicyEntity() {
@@ -37,6 +42,18 @@ public class MngSysPolicyEntity extends AbstractMetdataTypeEntity {
 
     @Column(name="CREATE_DATE",length=19)
     private Date createDate;
+
+    @Column(name = "IS_PRIMARY", nullable = false)
+    @Type(type = "yes_no")
+    private boolean primary = false;
+
+    public boolean isPrimary() {
+        return primary;
+    }
+
+    public void setPrimary(boolean primary) {
+        this.primary = primary;
+    }
 
     public Set<AttributeMapEntity> getAttributeMaps() {
         return attributeMaps;

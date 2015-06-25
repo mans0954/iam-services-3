@@ -50,8 +50,10 @@ import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
+import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
+import org.openiam.idm.srvc.mngsys.dto.MngSysPolicyDto;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.prov.request.dto.BulkOperationEnum;
 import org.openiam.idm.srvc.prov.request.dto.BulkOperationRequest;
@@ -2648,10 +2650,11 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     userId, managedSysId));
             return res;
         }
+        MngSysPolicyDto mngSysPolicy = managedSystemService.getManagedSysPolicyByMngSysIdAndMetadataType(managedSysId, "USER_OBJECT");
+        List<AttributeMap> attrMap = managedSystemService.getAttributeMapsByMngSysPolicyId(mngSysPolicy.getId());
 
-        List<AttributeMapEntity> attrMapEntities = managedSystemService.getAttributeMapsByManagedSysId(managedSysId);
         List<ExtensibleAttribute> requestedExtensibleAttributes = new ArrayList<ExtensibleAttribute>();
-        for (AttributeMapEntity ame : attrMapEntities) {
+        for (AttributeMap ame : attrMap) {
             if ("USER".equalsIgnoreCase(ame.getMapForObjectType()) && "ACTIVE".equalsIgnoreCase(ame.getStatus())) {
                 requestedExtensibleAttributes.add(new ExtensibleAttribute(ame.getName(), null));
             }
@@ -2862,10 +2865,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         if (usr == null) {
             return null;
         }
-
-        List<AttributeMapEntity> attrMapEntities = managedSystemService.getAttributeMapsByManagedSysId(managedSysId);
+        MngSysPolicyDto mngSysPolicy = managedSystemService.getManagedSysPolicyByMngSysIdAndMetadataType(managedSysId, "USER_OBJECT");
+        List<AttributeMap> attrMap = managedSystemService.getAttributeMapsByMngSysPolicyId(mngSysPolicy.getId());
         List<ExtensibleAttribute> requestedExtensibleAttributes = new ArrayList<ExtensibleAttribute>();
-        for (AttributeMapEntity ame : attrMapEntities) {
+        for (AttributeMap ame : attrMap) {
             if ("USER".equalsIgnoreCase(ame.getMapForObjectType()) && "ACTIVE".equalsIgnoreCase(ame.getStatus())) {
                 requestedExtensibleAttributes.add(new ExtensibleAttribute(ame.getName(), null));
             }

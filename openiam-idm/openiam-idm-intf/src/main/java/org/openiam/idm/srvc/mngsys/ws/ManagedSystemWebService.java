@@ -196,7 +196,8 @@ public interface ManagedSystemWebService {
     List<AttributeMap> getResourceAttributeMaps(
             @WebParam(name = "resourceId", targetNamespace = "") String resourceId);
 
-    List<AttributeMap> getAttributeMapsByManagedSysId(String managedSysId);
+    @WebMethod
+    List<AttributeMap> getAttributeMapsByMngSysPolicyId(@WebParam(name = "mngSysPolicyId", targetNamespace = "") String mngSysPolicyId);
 
     @WebMethod
     public List<AttributeMap> findResourceAttributeMaps(
@@ -212,6 +213,9 @@ public interface ManagedSystemWebService {
 
     @WebMethod
     List<DefaultReconciliationAttributeMap> getAllDefaultReconcileMap();
+
+    @WebMethod
+    List<MngSysPolicyDto> getMngSysPoliciesByMngSysId(@WebParam(name = "mngSysId", targetNamespace = "") String mngSysId);
 
     @WebMethod
     public Response saveApproverAssociations(final List<ApproverAssociation> approverAssociationList, final AssociationType type, final String entityId);

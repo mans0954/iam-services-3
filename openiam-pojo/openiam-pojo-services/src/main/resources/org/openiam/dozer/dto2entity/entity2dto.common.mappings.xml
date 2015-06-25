@@ -366,6 +366,17 @@
         </field>
 	</mapping>
 
+    <mapping>
+        <class-a>org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity
+        </class-a>
+        <class-b>org.openiam.idm.srvc.mngsys.dto.MngSysPolicyDto
+        </class-b>
+        <field>
+            <a>managedSys.id</a>
+            <b>managedSys</b>
+        </field>
+    </mapping>
+
 	<mapping>
 		<class-a>org.openiam.idm.srvc.lang.domain.LanguageMappingEntity
 		</class-a>

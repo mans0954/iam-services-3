@@ -13,8 +13,10 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.am.srvc.dao.AuthProviderDao;
 import org.openiam.am.srvc.domain.AuthProviderEntity;
 import org.openiam.base.ws.ResponseCode;
+import org.openiam.dozer.converter.AttributeMapDozerConverter;
 import org.openiam.dozer.converter.ManagedSysDozerConverter;
 import org.openiam.dozer.converter.ManagedSystemObjectMatchDozerConverter;
+import org.openiam.dozer.converter.MngSysPolicyDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.AttributeMapSearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
@@ -24,9 +26,7 @@ import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.mngsys.domain.*;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSysSearchBean;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
+import org.openiam.idm.srvc.mngsys.dto.*;
 import org.openiam.idm.srvc.mngsys.searchbeans.converter.ManagedSystemSearchBeanConverter;
 import org.openiam.idm.srvc.policy.domain.PolicyEntity;
 import org.openiam.idm.srvc.policy.service.PolicyDAO;
@@ -57,14 +57,25 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
 
     @Autowired
     private ManagedSystemSearchBeanConverter managedSystemSearchBeanConverter;
+
+    @Autowired
+    private MngSysPolicyDozerConverter mngSysPolicyDozerConverter;
+
     @Autowired
     protected AttributeMapDAO attributeMapDAO;
+
+    @Autowired
+    private AttributeMapDozerConverter attributeMapDozerConverter;
+
     @Autowired
     protected ReconciliationResourceAttributeMapDAO reconciliationResourceAttributeMapDAO;
+
     @Autowired
     protected DefaultReconciliationAttributeMapDAO defaultReconciliationAttributeMapDAO;
+
     @Autowired
     protected ManagedSysRuleDAO managedSysRuleDAO;
+
     @Autowired
     protected PolicyDAO policyDAO;
 
@@ -283,8 +294,9 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<AttributeMapEntity> getAttributeMapsByManagedSysId(String managedSysId) {
-        return attributeMapDAO.findByManagedSysId(managedSysId);
+    public List<AttributeMap> getAttributeMapsByMngSysPolicyId(String mngSysPolicyId) {
+        List<AttributeMapEntity> attributeMapEntities = attributeMapDAO.findByMngSysPolicyId(mngSysPolicyId);
+        return attributeMapDozerConverter.convertToDTOList(attributeMapEntities,false);
     }
 
     @Override
@@ -341,7 +353,7 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
 
         MngSysPolicyEntity mngSysPolicy = getManagedSysPolicyById(mSysPolicyId);
         Map<String, AttributeMapEntity> curAttrMapsMap = new HashMap<String, AttributeMapEntity>();
-        List<AttributeMapEntity> curAttrMaps =  this.getAttributeMapsByManagedSysId(mSysPolicyId);
+        List<AttributeMapEntity> curAttrMaps =  attributeMapDAO.findByMngSysPolicyId(mSysPolicyId);
         for (AttributeMapEntity ame : curAttrMaps) {
             curAttrMapsMap.put(ame.getId(), ame);
         }
@@ -417,6 +429,20 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
         return authProviderDao.getByManagedSysId(managedSysId);
     }
 
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<MngSysPolicyDto> getManagedSysPolicyByMngSysId(String mngSysId) {
+        List<MngSysPolicyEntity> policyDtos = mngSysPolicyDAO.findByMngSysId(mngSysId);
+        return mngSysPolicyDozerConverter.convertToDTOList(policyDtos, false);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public MngSysPolicyDto getManagedSysPolicyByMngSysIdAndMetadataType(String mngSysId, String metadataTypeId) {
+        MngSysPolicyEntity mngSysPolicyEntity = mngSysPolicyDAO.findPrimaryByMngSysIdAndType(mngSysId, metadataTypeId);
+        return mngSysPolicyDozerConverter.convertToDTO(mngSysPolicyEntity, true);
+    }
 
     public String getDecryptedPassword(ManagedSysDto managedSys) {
         String result = null;

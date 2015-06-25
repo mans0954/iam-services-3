@@ -45,10 +45,7 @@ import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
-import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
-import org.openiam.idm.srvc.mngsys.dto.PolicyMapObjectTypeOptions;
+import org.openiam.idm.srvc.mngsys.dto.*;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
 import org.openiam.idm.srvc.mngsys.service.ProvisionConnectorService;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
@@ -1682,9 +1679,9 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         ManagedSysDto mSys = managedSysDozerConverter.convertToDTO(
                 managedSystemService.getManagedSysById(managedSysId), true);
 
-        List<AttributeMapEntity> attrMapEntities = managedSystemService
-                .getAttributeMapsByManagedSysId(managedSysId);
-        List<AttributeMap> attrMap = attributeMapDozerConverter.convertToDTOList(attrMapEntities, false);     //need to check if  attr.getDataType().getValue() works
+        MngSysPolicyDto mngSysPolicy = managedSystemService.getManagedSysPolicyByMngSysIdAndMetadataType(managedSysId, "USER_OBJECT");
+        List<AttributeMap> attrMap = managedSystemService.getAttributeMapsByMngSysPolicyId(mngSysPolicy.getId());
+           //need to check if  attr.getDataType().getValue() works
         for (AttributeMap attr : attrMap) {
             if (PolicyMapObjectTypeOptions.PRINCIPAL.name().equalsIgnoreCase(attr.getMapForObjectType())) {
                 extUser.setPrincipalFieldName(attr.getName());
