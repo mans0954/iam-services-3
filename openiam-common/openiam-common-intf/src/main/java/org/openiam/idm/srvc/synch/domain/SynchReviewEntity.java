@@ -63,7 +63,7 @@ public class SynchReviewEntity extends KeyEntity {
         this.synchConfig = synchConfig;
         this.createTime = createTime;
     }
-    
+
     public SynchConfigEntity getSynchConfig() {
         return synchConfig;
     }
