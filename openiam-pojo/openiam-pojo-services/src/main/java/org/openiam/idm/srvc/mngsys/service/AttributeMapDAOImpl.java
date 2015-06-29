@@ -78,6 +78,7 @@ public class AttributeMapDAOImpl extends
             throw new DataException(reason, new Exception(
                     "managedSys and synchConfigId are null"));
         }
+
         return super.add(entity);
     }
 

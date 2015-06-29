@@ -340,7 +340,14 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
 
         ManagedSysEntity mngSys = getManagedSysById(mSysId);
         Map<String, AttributeMapEntity> curAttrMapsMap = new HashMap<String, AttributeMapEntity>();
-        List<AttributeMapEntity> curAttrMaps =  this.getAttributeMapsByManagedSysId(mSysId);
+        List<AttributeMapEntity> curAttrMaps = null;
+        if (StringUtils.isNotBlank(mSysId)) {
+            curAttrMaps = this.getAttributeMapsByManagedSysId(mSysId);
+        } else if (StringUtils.isNotBlank(synchConfigId)) {
+            AttributeMapSearchBean attributeMapSearchBean = new AttributeMapSearchBean();
+            attributeMapSearchBean.setSynchConfigId(synchConfigId);
+            curAttrMaps = this.getResourceAttributeMaps(attributeMapSearchBean);
+        }
         for (AttributeMapEntity ame : curAttrMaps) {
             curAttrMapsMap.put(ame.getId(), ame);
         }
