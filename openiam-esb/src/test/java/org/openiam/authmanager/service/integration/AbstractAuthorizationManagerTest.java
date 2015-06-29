@@ -165,7 +165,6 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 	@Test
 	public void testUser2RoleIndirectThroughOrganization() {
 		
-		
 	}
 	
 	@Test

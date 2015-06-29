@@ -24,6 +24,40 @@ public class AuthorizationManagerHessianClientTest extends AbstractAuthorization
 	protected void checkUserURLEntitlements(final String userId, final String url) {
 		
 	}
+
+	@Override
+	protected void checkUser2ResourceEntitlement(String userId,
+			String resourceId, Set<String> rightIds, boolean isAddition) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void checkUser2GroupMembership(String userId, String groupId,
+			Set<String> rightIds, boolean isAddition) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void checkUser2RoleMembership(String userId, String roleId,
+			Set<String> rightIds, boolean isAddition) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void checkUser2OrganizationMembership(String userId,
+			String organizationId, Set<String> rightIds, boolean isAddition) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected boolean loginAfterUserCreation() {
+		// TODO Auto-generated method stub
+		return false;
+	}
 	
 	
 }
