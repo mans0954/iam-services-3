@@ -11,14 +11,12 @@ import org.openiam.authmanager.common.model.AuthorizationManagerLoginId;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "UserRequest", propOrder = {
         "userId",
-        "loginId"
 })
 public class UserRequest implements Serializable {
 
 	private static final long serialVersionUID = -1L;
 	
 	private String userId;
-	private AuthorizationManagerLoginId loginId;
 	
 	public UserRequest() {
 		
@@ -32,19 +30,11 @@ public class UserRequest implements Serializable {
 		this.userId = userId;
 	}
 
-	public AuthorizationManagerLoginId getLoginId() {
-		return loginId;
-	}
-
-	public void setLoginId(AuthorizationManagerLoginId loginId) {
-		this.loginId = loginId;
-	}
-
 	@Override
 	public String toString() {
 		return String.format(
-				"AuthorizationManagerUserRequest [userId=%s, loginId=%s]",
-				userId, loginId);
+				"AuthorizationManagerUserRequest [userId=%s]",
+				userId);
 	}
 	
 	

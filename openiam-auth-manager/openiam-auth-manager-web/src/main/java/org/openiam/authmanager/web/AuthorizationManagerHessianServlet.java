@@ -1,7 +1,5 @@
 package org.openiam.authmanager.web;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Set;
 
 import javax.servlet.ServletConfig;
@@ -11,14 +9,12 @@ import org.apache.commons.lang.time.StopWatch;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.authmanager.common.model.AuthorizationGroup;
-import org.openiam.authmanager.common.model.AuthorizationManagerLoginId;
 import org.openiam.authmanager.common.model.AuthorizationResource;
 import org.openiam.authmanager.common.model.AuthorizationRole;
 import org.openiam.authmanager.service.AuthorizationManagerHessianService;
 import org.openiam.authmanager.service.AuthorizationManagerService;
 import org.openiam.util.SpringContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import com.caucho.hessian.server.HessianServlet;
 
@@ -37,15 +33,13 @@ public class AuthorizationManagerHessianServlet extends HessianServlet implement
 	}
 	
 	@Override
-	public boolean isUserWithIdEntitledToResourceWithId(final String userId, final String resourceId) {
+	public boolean isUserEntitledToResource(final String userId, final String resourceId) {
 		StopWatch sw = null;
 		if(log.isDebugEnabled()) {
 			sw = new StopWatch();
 			sw.start();
 		}
-		final AuthorizationResource resource = new AuthorizationResource();
-		resource.setId(resourceId);
-		final boolean retval = authManagerService.isEntitled(userId, resource);
+		final boolean retval = authManagerService.isEntitled(userId, resourceId);
 		if(log.isDebugEnabled()) {
 			sw.stop();
 			log.debug(String.format("isUserEntitledToResoruceWithId: userId: %s,  resourceId: %s, ThreadId: %s. Took %s ms", 
@@ -56,73 +50,13 @@ public class AuthorizationManagerHessianServlet extends HessianServlet implement
 	}
 
 	@Override
-	public boolean isUserWithIdEntitledToResourceWithName(final String userId, final String resourceName) {
+	public boolean isUserMemberOfGroup(final String userId, final String groupId) {
 		StopWatch sw = null;
 		if(log.isDebugEnabled()) {
 			sw = new StopWatch();
 			sw.start();
 		}
-		
-		final AuthorizationResource resource = new AuthorizationResource();
-		resource.setName(resourceName);
-		final boolean retval = authManagerService.isEntitled(userId, resource);
-		if(log.isDebugEnabled()) {
-			sw.stop();
-			log.debug(String.format("isUserEntitledToResourceWithName: userId: %s,  resourceName: %s, ThreadId: %s. Took %s ms", 
-					userId, resourceName, Thread.currentThread().getId(), sw.getTime()));
-		}
-		
-		return retval;
-	}
-
-	@Override
-	public boolean isUserWithLoginEntitledToResourceWithId(final String login, final String managedSysId, final String resourceId) {
-		StopWatch sw = null;
-		if(log.isDebugEnabled()) {
-			sw = new StopWatch();
-			sw.start();
-		}
-		final AuthorizationResource resource = new AuthorizationResource();
-		resource.setId(resourceId);
-		final boolean retval = authManagerService.isEntitled(new AuthorizationManagerLoginId(login, managedSysId), resource);
-		if(log.isDebugEnabled()) {
-			sw.stop();
-			log.debug(String.format("isUserEntitledToResourceWithId: login: %s, managedSysId: %s, resourceId: %s, ThreadId: %s. Took %s ms",
-					login, managedSysId, resourceId, Thread.currentThread().getId(), sw.getTime()));
-		}
-		
-		return retval;
-	}
-
-	@Override
-	public boolean isUserWithLoginEntitledToResourceWithName(final String login, final String managedSysId, final String resourceName) {
-		StopWatch sw = null;
-		if(log.isDebugEnabled()) {
-			sw = new StopWatch();
-			sw.start();
-		}
-		final AuthorizationResource resource = new AuthorizationResource();
-		resource.setName(resourceName);
-		final boolean retval = authManagerService.isEntitled(new AuthorizationManagerLoginId(login, managedSysId), resource);
-		if(log.isDebugEnabled()) {
-			sw.stop();
-			log.debug(String.format("isUserEntitledToResourceWithName: login: %s, managedSysId: %s, resourceName: %s, ThreadId: %s. Took %s ms",
-					login, managedSysId, resourceName, Thread.currentThread().getId(), sw.getTime()));
-		}
-		
-		return retval;
-	}
-
-	@Override
-	public boolean isUserWithIdMemberOfGroupWithId(final String userId, final String groupId) {
-		StopWatch sw = null;
-		if(log.isDebugEnabled()) {
-			sw = new StopWatch();
-			sw.start();
-		}
-		final AuthorizationGroup group = new AuthorizationGroup();
-		group.setId(groupId);
-		final boolean retval = authManagerService.isMemberOf(userId, group);
+		final boolean retval = authManagerService.isMemberOfGroup(userId, groupId);
 		if(log.isDebugEnabled()) {
 			sw.stop();
 			log.debug(String.format("isUserMemberOfGroupWithId: userId: %s, groupId: %s, ThreadId: %s. Took %s ms", 
@@ -132,71 +66,13 @@ public class AuthorizationManagerHessianServlet extends HessianServlet implement
 	}
 
 	@Override
-	public boolean isUserWithIdMemberOfGroupWithName(final String userId, final String groupName) {
+	public boolean isUserMemberOfRole(final String userId, final String roleId) {
 		StopWatch sw = null;
 		if(log.isDebugEnabled()) {
 			sw = new StopWatch();
 			sw.start();
 		}
-		final AuthorizationGroup group = new AuthorizationGroup();
-		group.setName(groupName);
-		final boolean retval = authManagerService.isMemberOf(userId, group);
-		if(log.isDebugEnabled()) {
-			sw.stop();
-			log.debug(String.format("isUserMemberOfGroupWithName: userId: %s, groupName: %s, ThreadId: %s. Took %s ms", 
-					userId, groupName, Thread.currentThread().getId(), sw.getTime()));
-		}
-		return retval;
-	}
-
-	@Override
-	public boolean isUserWithLoginMemberOfGroupWithId(final String login,
-			final String managedSysId, final String groupId) {
-		StopWatch sw = null;
-		if(log.isDebugEnabled()) {
-			sw = new StopWatch();
-			sw.start();
-		}
-		final AuthorizationGroup group = new AuthorizationGroup();
-		group.setId(groupId);
-		final boolean retval = authManagerService.isMemberOf(new AuthorizationManagerLoginId(login, managedSysId), group);
-		if(log.isDebugEnabled()) {
-			sw.stop();
-			log.debug(String.format("isUserMemberOfGroupWithId: login: %s, managedSysId: %s, groupId: %s, ThreadId: %s. Took %s ms",
-					login, managedSysId, groupId, Thread.currentThread().getId(), sw.getTime()));
-		}
-		return retval;
-	}
-
-	@Override
-	public boolean isUserWithLoginMemberOfGroupWithName(final String login,
-			final String managedSysId, final String groupName) {
-		StopWatch sw = null;
-		if(log.isDebugEnabled()) {
-			sw = new StopWatch();
-			sw.start();
-		}
-		final AuthorizationGroup group = new AuthorizationGroup();
-		group.setName(groupName);
-		final boolean retval = authManagerService.isMemberOf(new AuthorizationManagerLoginId(login, managedSysId), group);
-		if(log.isDebugEnabled()) {
-			sw.stop();
-			log.debug(String.format("isUserMemberOfGroupWithName: login: %s, managedSysId: %s, groupName: %s, ThreadId: %s. Took %s ms",
-					login, managedSysId, groupName, Thread.currentThread().getId(), sw.getTime()));
-		}
-		return retval;
-	}
-
-	@Override
-	public boolean isUserWithIdMemberOfRoleWithId(final String userId, final String roleId) {
-		StopWatch sw = null;
-		if(log.isDebugEnabled()) {
-			sw = new StopWatch();
-			sw.start();
-		}
-		final AuthorizationRole role = new AuthorizationRole();
-		role.setId(roleId);
-		final boolean retval = authManagerService.isMemberOf(userId, role);
+		final boolean retval = authManagerService.isMemberOfRole(userId, roleId);
 		if(log.isDebugEnabled()) {
 			sw.stop();
 			log.debug(String.format("isUserMemberOfRoleWithId: userId: %s, roleId: %s, ThreadId: %s. Took %s ms", 
@@ -205,61 +81,6 @@ public class AuthorizationManagerHessianServlet extends HessianServlet implement
 		return retval;
 	}
 
-	@Override
-	public boolean isUserWithIdMemberOfRoleWithName(final String userId, final String roleName) {
-		StopWatch sw = null;
-		if(log.isDebugEnabled()) {
-			sw = new StopWatch();
-			sw.start();
-		}
-		final AuthorizationRole role = new AuthorizationRole();
-		role.setName(roleName);
-		final boolean retval = authManagerService.isMemberOf(userId, role);
-		if(log.isDebugEnabled()) {
-			sw.stop();
-			log.debug(String.format("isUserMemberOfRoleWithName: userId: %s, roleName: %s, ThreadId: %s. Took %s ms", 
-					userId, roleName, Thread.currentThread().getId(), sw.getTime()));
-		}
-		return retval;
-	}
-
-	@Override
-	public boolean isUserWithLoginMemberOfRoleWithId(final String login,
-			final String managedSysId, final String roleId) {
-		StopWatch sw = null;
-		if(log.isDebugEnabled()) {
-			sw = new StopWatch();
-			sw.start();
-		}
-		final AuthorizationRole role = new AuthorizationRole();
-		role.setId(roleId);
-		final boolean retval = authManagerService.isMemberOf(new AuthorizationManagerLoginId(login, managedSysId), role);
-		if(log.isDebugEnabled()) {
-			sw.stop();
-			log.debug(String.format("isUserMemberOfRoleWithId: login: %s, managedSysId: %s, roleId: %s, ThreadId: %s. Took %s ms",
-					login, managedSysId, roleId, Thread.currentThread().getId(), sw.getTime()));
-		}
-		return retval;
-	}
-
-	@Override
-	public boolean isUserWithLoginMemberOfRoleWithName(final String login,
-			final String managedSysId, final String roleName) {
-		StopWatch sw = null;
-		if(log.isDebugEnabled()) {
-			sw = new StopWatch();
-			sw.start();
-		}
-		final AuthorizationRole role = new AuthorizationRole();
-		role.setName(roleName);
-		final boolean retval = authManagerService.isMemberOf(new AuthorizationManagerLoginId(login, managedSysId), role);
-		if(log.isDebugEnabled()) {
-			sw.stop();
-			log.debug(String.format("isUserMemberOfRoleWithName: login: %s, managedSysId: %s, roleName: %s, ThreadId: %s. Took %s ms",
-					login, managedSysId, roleName, Thread.currentThread().getId(), sw.getTime()));
-		}
-		return retval;
-	}
 
 	@Override
 	public String[] getResourceIdsForUserWithId(final String userId) {
@@ -268,7 +89,7 @@ public class AuthorizationManagerHessianServlet extends HessianServlet implement
 			sw = new StopWatch();
 			sw.start();
 		}
-		final Set<AuthorizationResource> resultSet = authManagerService.getResourcesFor(userId);
+		final Set<AuthorizationResource> resultSet = authManagerService.getResourcesForUser(userId);
 		final String[] retval = new String[resultSet.size()];
 		int i = 0;
 		for(final AuthorizationResource resource : resultSet) {
@@ -283,35 +104,13 @@ public class AuthorizationManagerHessianServlet extends HessianServlet implement
 	}
 
 	@Override
-	public String[] getResourceIdsForUserWithLogin(final String login,
-			final String managedSysId) {
-		StopWatch sw = null;
-		if(log.isDebugEnabled()) {
-			sw = new StopWatch();
-			sw.start();
-		}
-		final Set<AuthorizationResource> resultSet = authManagerService.getResourcesFor(new AuthorizationManagerLoginId(login, managedSysId));
-		final String[] retval = new String[resultSet.size()];
-		int i = 0;
-		for(final AuthorizationResource resource : resultSet) {
-			retval[i++] = resource.getId();
-		}
-		if(log.isDebugEnabled()) {
-			sw.stop();
-			log.debug(String.format("getResourceIdsForUser: login: %s, managedSysId: %s, ThreadId: %s. Took %s ms",
-					login, managedSysId, Thread.currentThread().getId(), sw.getTime()));
-		}
-		return retval;
-	}
-
-	@Override
 	public String[] getResourceNamesForUserWithId(final String userId) {
 		StopWatch sw = null;
 		if(log.isDebugEnabled()) {
 			sw = new StopWatch();
 			sw.start();
 		}
-		final Set<AuthorizationResource> resultSet = authManagerService.getResourcesFor(userId);
+		final Set<AuthorizationResource> resultSet = authManagerService.getResourcesForUser(userId);
 		final String[] retval = new String[resultSet.size()];
 		int i = 0;
 		for(final AuthorizationResource resource : resultSet) {
@@ -326,35 +125,13 @@ public class AuthorizationManagerHessianServlet extends HessianServlet implement
 	}
 
 	@Override
-	public String[] getResourceNamesForUserWithLogin(final String login,
-			String managedSysId) {
-		StopWatch sw = null;
-		if(log.isDebugEnabled()) {
-			sw = new StopWatch();
-			sw.start();
-		}
-		final Set<AuthorizationResource> resultSet = authManagerService.getResourcesFor(new AuthorizationManagerLoginId(login, managedSysId));
-		final String[] retval = new String[resultSet.size()];
-		int i = 0;
-		for(final AuthorizationResource resource : resultSet) {
-			retval[i++] = resource.getName();
-		}
-		if(log.isDebugEnabled()) {
-			sw.stop();
-			log.debug(String.format("getResourceNamesForUser: login: %s, managedSysId: %s, ThreadId: %s. Took %s ms",
-					login, managedSysId, Thread.currentThread().getId(), sw.getTime()));
-		}
-		return retval;
-	}
-
-	@Override
 	public String[] getGroupIdsForUserWithId(final String userId) {
 		StopWatch sw = null;
 		if(log.isDebugEnabled()) {
 			sw = new StopWatch();
 			sw.start();
 		}
-		final Set<AuthorizationGroup> resultSet = authManagerService.getGroupsFor(userId);
+		final Set<AuthorizationGroup> resultSet = authManagerService.getGroupsForUser(userId);
 		final String[] retval = new String[resultSet.size()];
 		int i = 0;
 		for(final AuthorizationGroup group : resultSet) {
@@ -369,35 +146,13 @@ public class AuthorizationManagerHessianServlet extends HessianServlet implement
 	}
 
 	@Override
-	public String[] getGroupIdsForUserWithLogin(final String login,
-			final String managedSysId) {
-		StopWatch sw = null;
-		if(log.isDebugEnabled()) {
-			sw = new StopWatch();
-			sw.start();
-		}
-		final Set<AuthorizationGroup> resultSet = authManagerService.getGroupsFor(new AuthorizationManagerLoginId(login, managedSysId));
-		final String[] retval = new String[resultSet.size()];
-		int i = 0;
-		for(final AuthorizationGroup group : resultSet) {
-			retval[i++] = group.getId();
-		}
-		if(log.isDebugEnabled()) {
-			sw.stop();
-			log.debug(String.format("getGroupIdsForUser: login: %s, managedSysId: %s, ThreadId: %s. Took %s ms",
-					login, managedSysId, Thread.currentThread().getId(), sw.getTime()));
-		}
-		return retval;
-	}
-
-	@Override
 	public String[] getGroupNamesForUserWithId(final String userId) {
 		StopWatch sw = null;
 		if(log.isDebugEnabled()) {
 			sw = new StopWatch();
 			sw.start();
 		}
-		final Set<AuthorizationGroup> resultSet = authManagerService.getGroupsFor(userId);
+		final Set<AuthorizationGroup> resultSet = authManagerService.getGroupsForUser(userId);
 		final String[] retval = new String[resultSet.size()];
 		int i = 0;
 		for(final AuthorizationGroup group : resultSet) {
@@ -412,35 +167,13 @@ public class AuthorizationManagerHessianServlet extends HessianServlet implement
 	}
 
 	@Override
-	public String[] getGroupNamesForUserWithLogin(final String login,
-			final String managedSysId) {
-		StopWatch sw = null;
-		if(log.isDebugEnabled()) {
-			sw = new StopWatch();
-			sw.start();
-		}
-		final Set<AuthorizationGroup> resultSet = authManagerService.getGroupsFor(new AuthorizationManagerLoginId(login, managedSysId));
-		final String[] retval = new String[resultSet.size()];
-		int i = 0;
-		for(final AuthorizationGroup group : resultSet) {
-			retval[i++] = group.getName();
-		}
-		if(log.isDebugEnabled()) {
-			sw.stop();
-			log.debug(String.format("getGroupIdsForUser: login: %s, managedSysId: %s, ThreadId: %s. Took %s ms",
-					login, managedSysId, Thread.currentThread().getId(), sw.getTime()));
-		}
-		return retval;
-	}
-
-	@Override
 	public String[] getRoleIdsForUserWithId(final String userId) {
 		StopWatch sw = null;
 		if(log.isDebugEnabled()) {
 			sw = new StopWatch();
 			sw.start();
 		}
-		final Set<AuthorizationRole> resultSet = authManagerService.getRolesFor(userId);
+		final Set<AuthorizationRole> resultSet = authManagerService.getRolesForUser(userId);
 		final String[] retval = new String[resultSet.size()];
 		int i = 0;
 		for(final AuthorizationRole role : resultSet) {
@@ -455,35 +188,13 @@ public class AuthorizationManagerHessianServlet extends HessianServlet implement
 	}
 
 	@Override
-	public String[] getRoleIdsForUserWithLogin(final String login,
-			final String managedSysId) {
-		StopWatch sw = null;
-		if(log.isDebugEnabled()) {
-			sw = new StopWatch();
-			sw.start();
-		}
-		final Set<AuthorizationRole> resultSet = authManagerService.getRolesFor(new AuthorizationManagerLoginId(login, managedSysId));
-		final String[] retval = new String[resultSet.size()];
-		int i = 0;
-		for(final AuthorizationRole role : resultSet) {
-			retval[i++] = role.getId();
-		}
-		if(log.isDebugEnabled()) {
-			sw.stop();
-			log.debug(String.format("getRoleIdsForUser: login: %s, managedSysId: %s, ThreadId: %s. Took %s ms",
-					login, managedSysId, Thread.currentThread().getId(), sw.getTime()));
-		}
-		return retval;
-	}
-
-	@Override
 	public String[] getRoleNamesForUserWithId(final String userId) {
 		StopWatch sw = null;
 		if(log.isDebugEnabled()) {
 			sw = new StopWatch();
 			sw.start();
 		}
-		final Set<AuthorizationRole> resultSet = authManagerService.getRolesFor(userId);
+		final Set<AuthorizationRole> resultSet = authManagerService.getRolesForUser(userId);
 		final String[] retval = new String[resultSet.size()];
 		int i = 0;
 		for(final AuthorizationRole role : resultSet) {
@@ -498,23 +209,82 @@ public class AuthorizationManagerHessianServlet extends HessianServlet implement
 	}
 
 	@Override
-	public String[] getRoleNamesForUserWithLogin(String login,
-			String managedSysId) {
+	public boolean isUserEntitledToResourceWithRight(final String userId, final String resourceId, final String rightId) {
 		StopWatch sw = null;
 		if(log.isDebugEnabled()) {
 			sw = new StopWatch();
 			sw.start();
 		}
-		final Set<AuthorizationRole> resultSet = authManagerService.getRolesFor(new AuthorizationManagerLoginId(login, managedSysId));
-		final String[] retval = new String[resultSet.size()];
-		int i = 0;
-		for(final AuthorizationRole role : resultSet) {
-			retval[i++] = role.getName();
-		}
+		final boolean retval = authManagerService.isEntitled(userId, resourceId, rightId);
 		if(log.isDebugEnabled()) {
 			sw.stop();
-			log.debug(String.format("getRoleNamesForUser: login: %s, managedSysId: %s, ThreadId: %s. Took %s ms",
-					login, managedSysId, Thread.currentThread().getId(), sw.getTime()));
+			log.debug(String.format("isUserEntitledToResoruceWithId: userId: %s,  resourceId: %s, rightId: %s, ThreadId: %s. Took %s ms", 
+					userId, resourceId, rightId, Thread.currentThread().getId(), sw.getTime()));
+		}
+		
+		return retval;
+	}
+
+	@Override
+	public boolean isUserMemberOfGroupWithRight(final String userId, final String groupId, final String rightId) {
+		StopWatch sw = null;
+		if(log.isDebugEnabled()) {
+			sw = new StopWatch();
+			sw.start();
+		}
+		final boolean retval = authManagerService.isMemberOfGroup(userId, groupId, rightId);
+		if(log.isDebugEnabled()) {
+			sw.stop();
+			log.debug(String.format("isUserMemberOfGroupWithId: userId: %s, groupId: %s, rightId: %s, ThreadId: %s. Took %s ms", 
+					userId, groupId, rightId, Thread.currentThread().getId(), sw.getTime()));
+		}
+		return retval;
+	}
+
+	@Override
+	public boolean isUserMemberOfRoleWithRight(final String userId, final String roleId, final String rightId) {
+		StopWatch sw = null;
+		if(log.isDebugEnabled()) {
+			sw = new StopWatch();
+			sw.start();
+		}
+		final boolean retval = authManagerService.isMemberOfRole(userId, roleId, rightId);
+		if(log.isDebugEnabled()) {
+			sw.stop();
+			log.debug(String.format("isUserMemberOfRoleWithId: userId: %s, roleId: %s, rightId: %s, ThreadId: %s. Took %s ms", 
+					userId, roleId, rightId, Thread.currentThread().getId(), sw.getTime()));
+		}
+		return retval;
+	}
+
+	@Override
+	public boolean isUserMemberOfOrganization(final String userId, final String organizationId) {
+		StopWatch sw = null;
+		if(log.isDebugEnabled()) {
+			sw = new StopWatch();
+			sw.start();
+		}
+		final boolean retval = authManagerService.isMemberOfOrganization(userId, organizationId);
+		if(log.isDebugEnabled()) {
+			sw.stop();
+			log.debug(String.format("isUserMemberOfOrganization: userId: %s, organizationId: %s, ThreadId: %s. Took %s ms", 
+					userId, organizationId, Thread.currentThread().getId(), sw.getTime()));
+		}
+		return retval;
+	}
+
+	@Override
+	public boolean isUserMemberOfOrganizationWithRight(final String userId, final String organizationId, final String rightId) {
+		StopWatch sw = null;
+		if(log.isDebugEnabled()) {
+			sw = new StopWatch();
+			sw.start();
+		}
+		final boolean retval = authManagerService.isMemberOfOrganization(userId, organizationId, rightId);
+		if(log.isDebugEnabled()) {
+			sw.stop();
+			log.debug(String.format("isUserMemberOfOrganization: userId: %s, organizationId: %s, rightId: %s, ThreadId: %s. Took %s ms", 
+					userId, organizationId, rightId, Thread.currentThread().getId(), sw.getTime()));
 		}
 		return retval;
 	}

@@ -1,12 +1,19 @@
 package org.openiam.authmanager.common.model;
 
+import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Set;
+
+import org.openiam.authmanager.common.xref.AbstractGroupXref;
+import org.openiam.authmanager.common.xref.AbstractResourceXref;
+import org.openiam.authmanager.common.xref.GroupGroupXref;
+import org.openiam.authmanager.common.xref.ResourceGroupXref;
+import org.openiam.idm.srvc.grp.domain.GroupEntity;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "AuthorizationGroup", propOrder = {
@@ -18,13 +25,10 @@ public class AuthorizationGroup extends AbstractAuthorizationEntity implements S
 	private String adminResourceId;
 	
 	@XmlTransient
-	private Set<AuthorizationGroup> parentGroups = null;
+	private Set<GroupGroupXref> parentGroups = null;
 	
 	@XmlTransient
-	private Set<AuthorizationRole> roles = null;
-	
-	@XmlTransient
-	private Set<AuthorizationResource> resources = null;
+	private Set<ResourceGroupXref> resources = null;
 //
 
 	/*
@@ -33,8 +37,17 @@ public class AuthorizationGroup extends AbstractAuthorizationEntity implements S
 	private BitSet linearResourceBitSet = new BitSet();
 	*/
 	
-	public AuthorizationGroup() {
+	private AuthorizationGroup() {
 		
+	}
+	
+	public AuthorizationGroup(final GroupEntity entity, final int bitIdx) {
+		super.setBitSetIdx(bitIdx);
+		super.setDescription(entity.getDescription());
+		super.setId(entity.getId());
+		super.setName(entity.getName());
+		super.setStatus(entity.getStatus());
+		this.adminResourceId = (entity.getAdminResource() != null) ? entity.getAdminResource().getId() : null;
 	}
 
 	public String getAdminResourceId() {
@@ -45,52 +58,28 @@ public class AuthorizationGroup extends AbstractAuthorizationEntity implements S
 		this.adminResourceId = adminResourceId;
 	}
 
-	public void addParentGroup(final AuthorizationGroup group) {
+	public void addParentGroup(final GroupGroupXref group) {
 		if(parentGroups == null) {
-			parentGroups = new HashSet<AuthorizationGroup>();
+			parentGroups = new HashSet<GroupGroupXref>();
 		}
 		parentGroups.add(group);
 	}
 	
-	public void addRole(final AuthorizationRole role) {
-		if(roles == null) {
-			roles = new HashSet<AuthorizationRole>();
-		}
-		roles.add(role);
-	}
-	
-	public void addResource(final AuthorizationResource resource) {
+	public void addResource(final ResourceGroupXref resource) {
 		if(resources == null) {
-			resources = new HashSet<AuthorizationResource>();
+			resources = new HashSet<ResourceGroupXref>();
 		}
 		resources.add(resource);
 	}
 	
-	public Set<AuthorizationResource> getResources() {
-		Set<AuthorizationResource> retVal = null;
+	public Set<AbstractResourceXref> getResources() {
+		Set<AbstractResourceXref> retVal = null;
 		if(resources != null) {
-			retVal = new HashSet<AuthorizationResource>(resources);
+			retVal = new HashSet<AbstractResourceXref>(resources);
 		}
 		return retVal;
 	}
 	
-	public Set<AuthorizationRole> getRoles() {
-		Set<AuthorizationRole> retVal = null;
-		if(roles != null) {
-			retVal = new HashSet<AuthorizationRole>(roles);
-		}
-		return retVal;
-	}
-	
-	public Set<AuthorizationGroup> getParentGroups() {
-		Set<AuthorizationGroup> retVal = null;
-		if(parentGroups != null) {
-			retVal = new HashSet<AuthorizationGroup>(parentGroups);
-		}
-		return retVal;
-	}
-
-
     /**
 	 * Compiles this Group against it's Role, Group, and Resource Membership
 	 */
@@ -113,60 +102,34 @@ public class AuthorizationGroup extends AbstractAuthorizationEntity implements S
 		*/
 	}
 	
-	public Set<AuthorizationGroup> visitGroups(final Set<AuthorizationGroup> visitedSet) {
-		final Set<AuthorizationGroup> compiledGroupSet = new HashSet<AuthorizationGroup>();
+	public Set<AbstractGroupXref> visitGroups(final Set<AuthorizationGroup> visitedSet) {
+		final Set<AbstractGroupXref> compiledGroupSet = new HashSet<AbstractGroupXref>();
 		if(!visitedSet.contains(this)) {
 			if(parentGroups != null) {
 				visitedSet.add(this);
-				for(final AuthorizationGroup group : parentGroups) {
-					compiledGroupSet.add(group);
-					compiledGroupSet.addAll(group.visitGroups(visitedSet));
+				for(final AbstractGroupXref xref : parentGroups) {
+					compiledGroupSet.add(xref);
+					compiledGroupSet.addAll(xref.getGroup().visitGroups(visitedSet));
 				}
 			}
 		}
 		return compiledGroupSet;
 	}
 	
-	public Set<AuthorizationRole> visitRoles(final Set<AuthorizationGroup> visitedSet) {
-		final Set<AuthorizationRole> compiledRoleSet = new HashSet<AuthorizationRole>();
+	public Set<AbstractResourceXref> visitResources(final Set<AuthorizationGroup> visitedSet) {
+		final Set<AbstractResourceXref> compiledResourceSet = new HashSet<AbstractResourceXref>();
 		if(!visitedSet.contains(this)) {
 			visitedSet.add(this);
 			if(parentGroups != null) {
-				for(final AuthorizationGroup group : parentGroups) {
-					compiledRoleSet.addAll(group.visitRoles(visitedSet));
-				}
-			}
-			
-			if(roles != null) {
-				for(final AuthorizationRole role : roles) {
-					compiledRoleSet.add(role);
-					compiledRoleSet.addAll(role.visitRoles(new HashSet<AuthorizationRole>()));
-				}
-			}
-		}
-		return compiledRoleSet;
-	}
-	
-	public Set<AuthorizationResource> visitResources(final Set<AuthorizationGroup> visitedSet) {
-		final Set<AuthorizationResource> compiledResourceSet = new HashSet<AuthorizationResource>();
-		if(!visitedSet.contains(this)) {
-			visitedSet.add(this);
-			if(parentGroups != null) {
-				for(final AuthorizationGroup group : parentGroups) {
-					compiledResourceSet.addAll(group.visitResources(visitedSet));
-				}
-			}
-			
-			if(roles != null) {
-				for(final AuthorizationRole role : roles) {
-					compiledResourceSet.addAll(role.visitResources(new HashSet<AuthorizationRole>()));
+				for(final AbstractGroupXref xref : parentGroups) {
+					compiledResourceSet.addAll(xref.getGroup().visitResources(visitedSet));
 				}
 			}
 			
 			if(resources != null) {
-				for(final AuthorizationResource resource : resources) {
-					compiledResourceSet.add(resource);
-					compiledResourceSet.addAll(resource.visitResources(new HashSet<AuthorizationResource>()));
+				for(final AbstractResourceXref xref : resources) {
+					compiledResourceSet.add(xref);
+					compiledResourceSet.addAll(xref.getResource().visitResources(new HashSet<AuthorizationResource>()));
 				}
 			}
 		}

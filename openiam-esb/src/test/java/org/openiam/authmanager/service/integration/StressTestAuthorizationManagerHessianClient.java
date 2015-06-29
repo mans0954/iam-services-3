@@ -68,7 +68,7 @@ public class StressTestAuthorizationManagerHessianClient extends AbstractTestNGS
 		
 		@Override
 		public void run() {
-			final boolean result = authClient.isUserWithIdMemberOfGroupWithId(userId, groupId);
+			final boolean result = authClient.isUserMemberOfGroup(userId, groupId);
 			Assert.assertEquals(result, hasAccess);
 			if(result != hasAccess) {
 				log.error(String.format("Failed:  userId: %s,  groupid: %s, result: %s", userId, groupId, result));
@@ -90,7 +90,7 @@ public class StressTestAuthorizationManagerHessianClient extends AbstractTestNGS
 		
 		@Override
 		public void run() {
-			final boolean result = authClient.isUserWithIdEntitledToResourceWithId(userId, resourceId);
+			final boolean result = authClient.isUserEntitledToResource(userId, resourceId);
 			Assert.assertEquals(result, hasAccess);
 			if(result != hasAccess) {
 				log.error(String.format("Failed:  userId: %s,  resourceId: %s, result: %s", userId, resourceId, result));
@@ -112,7 +112,7 @@ public class StressTestAuthorizationManagerHessianClient extends AbstractTestNGS
 		
 		@Override
 		public void run() {
-			final boolean result = authClient.isUserWithIdMemberOfRoleWithId(userId, id);
+			final boolean result = authClient.isUserMemberOfRole(userId, id);
 			Assert.assertEquals(result, hasAccess);
 			if(result != hasAccess) {
 				log.error(String.format("Failed:  userId: %s,  roleId: %s, result: %s", userId, id, result));

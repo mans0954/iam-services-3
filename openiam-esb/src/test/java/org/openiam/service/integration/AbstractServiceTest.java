@@ -1,6 +1,6 @@
 package org.openiam.service.integration;
 
-import java.util.Collection;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -17,18 +17,29 @@ import org.openiam.am.srvc.dto.ContentProviderServer;
 import org.openiam.am.srvc.ws.AuthProviderWebService;
 import org.openiam.am.srvc.ws.ContentProviderWebService;
 import org.openiam.authmanager.service.AuthorizationManagerWebService;
-import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.idm.searchbeans.LanguageSearchBean;
 import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
+import org.openiam.idm.searchbeans.ResourceTypeSearchBean;
+import org.openiam.idm.srvc.access.ws.AccessRightDataService;
+import org.openiam.idm.srvc.auth.dto.Login;
+import org.openiam.idm.srvc.grp.dto.Group;
+import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.lang.dto.LanguageMapping;
 import org.openiam.idm.srvc.lang.service.LanguageWebService;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.meta.ws.MetadataWebService;
+import org.openiam.idm.srvc.org.dto.Organization;
+import org.openiam.idm.srvc.org.service.OrganizationDataService;
+import org.openiam.idm.srvc.org.service.OrganizationTypeDataService;
 import org.openiam.idm.srvc.property.ws.PropertyValueWebService;
+import org.openiam.idm.srvc.res.dto.Resource;
+import org.openiam.idm.srvc.res.service.ResourceDataService;
+import org.openiam.idm.srvc.role.dto.Role;
+import org.openiam.idm.srvc.role.ws.RoleDataWebService;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.ws.UserDataWebService;
 import org.openiam.idm.srvc.user.ws.UserResponse;
@@ -70,6 +81,32 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 	@Autowired
 	@Qualifier("propertyValuerServiceClient")
 	protected PropertyValueWebService propertyValuerServiceClient;
+	
+
+	@Autowired
+	@Qualifier("groupServiceClient")
+	protected GroupDataWebService groupServiceClient;
+	
+	@Autowired
+	@Qualifier("roleServiceClient")
+	protected RoleDataWebService roleServiceClient;
+	
+
+	@Autowired
+	@Qualifier("resourceServiceClient")
+    protected ResourceDataService resourceDataService;
+	
+	@Autowired
+	@Qualifier("organizationServiceClient")
+	protected OrganizationDataService organizationServiceClient;
+	
+	@Autowired
+	@Qualifier("organizationTypeClient")
+	private OrganizationTypeDataService organizationTypeClient;
+	
+	@Autowired
+	@Qualifier("accessRightServiceClient")
+	protected AccessRightDataService accessRightServiceClient;
 	
 	protected String getString(final String key) {
 		return propertyValuerServiceClient.getCachedValue(key, getDefaultLanguage());
@@ -138,6 +175,12 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 		user.setLogin(getRandomName());
 		user.setPassword(getRandomName());
 		user.setNotifyUserViaEmail(false);
+		/*
+		final Login login = new Login();
+		login.setLogin(getRandomName());
+		user.setPrincipalList(Arrays.asList(new Login[] {login}));
+		*/
+		
 		final UserResponse userResponse = userServiceClient.saveUserInfo(user, null);
 		Assert.assertTrue(userResponse.isSuccess(), String.format("Could not save %s.  Reason: %s", user, userResponse));
 		return userServiceClient.getUserWithDependent(userResponse.getUser().getId(), null, true);
@@ -174,5 +217,50 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 	
 	protected void refreshAuthorizationManager() {
 		authorizationManagerServiceClient.refreshCache();
+	}
+	
+	
+	protected Group createGroup() {
+		Group group = new Group();
+		group.setName(getRandomName());
+		final Response wsResponse = groupServiceClient.saveGroup(group, null);
+		Assert.assertTrue(wsResponse.isSuccess(), String.format("Could not save %s.  Reason: %s", group, wsResponse));
+		group = groupServiceClient.getGroup((String)wsResponse.getResponseValue(), null);
+		return group;
+	}
+	
+	protected Organization createOrganization() {
+		Organization organization = new Organization();
+		organization.setOrganizationTypeId(organizationTypeClient.findBeans(null, 0, 1, null).get(0).getId());
+		organization.setName(getRandomName());
+		final Response wsResponse = organizationServiceClient.saveOrganization(organization, null);
+		Assert.assertTrue(wsResponse.isSuccess(), String.format("Could not save %s.  Reason: %s", organization, wsResponse));
+		organization = organizationServiceClient.getOrganizationLocalized((String)wsResponse.getResponseValue(), null, getDefaultLanguage());
+		return organization;
+	}
+	
+	protected Resource createResource() {
+		Resource resource = new Resource();
+		final ResourceTypeSearchBean resourceTypeSearchBean = new ResourceTypeSearchBean();
+		resourceTypeSearchBean.setSupportsHierarchy(true);
+		resource.setResourceType(resourceDataService.findResourceTypes(resourceTypeSearchBean, 0, 1, null).get(0));
+		resource.setName(getRandomName());
+		final Response wsResponse = resourceDataService.saveResource(resource, null);
+		Assert.assertTrue(wsResponse.isSuccess(), String.format("Could not save %s.  Reason: %s", resource, wsResponse));
+		resource = resourceDataService.getResource((String)wsResponse.getResponseValue(), getDefaultLanguage());
+		return resource;
+	}
+	
+	protected Role createRole() {
+		Role role = new Role();
+		role.setName(getRandomName());
+		final Response wsResponse = roleServiceClient.saveRole(role, null);
+		Assert.assertTrue(wsResponse.isSuccess(), String.format("Could not save %s.  Reason: %s", role, wsResponse));
+		role = roleServiceClient.getRoleLocalized((String)wsResponse.getResponseValue(), null, getDefaultLanguage());
+		return role;
+	}
+	
+	protected String getRequestorId() {
+		return "3000";
 	}
 }

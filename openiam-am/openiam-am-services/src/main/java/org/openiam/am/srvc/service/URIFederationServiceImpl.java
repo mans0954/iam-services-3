@@ -17,15 +17,10 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.StopWatch;
 import org.apache.log4j.Logger;
-import org.apache.lucene.queries.function.valuesource.MultiFunction.Values;
 import org.openiam.am.srvc.dao.AuthLevelGroupingDao;
 import org.openiam.am.srvc.dao.ContentProviderDao;
-import org.openiam.am.srvc.domain.AuthLevelEntity;
 import org.openiam.am.srvc.domain.AuthLevelGroupingEntity;
 import org.openiam.am.srvc.domain.ContentProviderEntity;
-import org.openiam.am.srvc.domain.URIPatternEntity;
-import org.openiam.am.srvc.domain.URIPatternMetaEntity;
-import org.openiam.am.srvc.domain.URIPatternMetaValueEntity;
 import org.openiam.am.srvc.dozer.converter.AuthLevelGroupingDozerConverter;
 import org.openiam.am.srvc.dozer.converter.ContentProviderDozerConverter;
 import org.openiam.am.srvc.dozer.converter.URIPatternDozerConverter;
@@ -44,10 +39,8 @@ import org.openiam.am.srvc.dto.URIPattern;
 import org.openiam.am.srvc.dto.URIPatternErrorMapping;
 import org.openiam.am.srvc.dto.URIPatternMeta;
 import org.openiam.am.srvc.dto.URIPatternMetaType;
-import org.openiam.am.srvc.dto.URIPatternMetaValue;
 import org.openiam.am.srvc.dto.URIPatternMethod;
 import org.openiam.am.srvc.dto.URIPatternMethodMeta;
-import org.openiam.am.srvc.dto.URIPatternMethodMetaValue;
 import org.openiam.am.srvc.dto.URIPatternMethodParameter;
 import org.openiam.am.srvc.dto.URIPatternParameter;
 import org.openiam.am.srvc.dto.URIPatternSubstitution;
@@ -63,10 +56,7 @@ import org.openiam.am.srvc.uriauth.dto.URISubstitutionToken;
 import org.openiam.am.srvc.uriauth.model.ContentProviderNode;
 import org.openiam.am.srvc.uriauth.model.ContentProviderTree;
 import org.openiam.am.srvc.uriauth.rule.URIPatternRule;
-import org.openiam.authmanager.common.model.AuthorizationResource;
 import org.openiam.authmanager.service.AuthorizationManagerService;
-import org.openiam.base.Tuple;
-import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.exception.BasicDataServiceException;
@@ -686,9 +676,7 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 	}
 	
 	private boolean isEntitled(final String userId, final String resourceId) {
-		final AuthorizationResource resource = new AuthorizationResource();
-		resource.setId(resourceId);
-		return authorizationManager.isEntitled(userId, resource);
+		return authorizationManager.isEntitled(userId, resourceId);
 	}
 
 	@Override

@@ -1,33 +1,24 @@
 package org.openiam.authmanager.common.xref;
 
-public class ResourceUserXref {
+import org.openiam.authmanager.common.model.AuthorizationUser;
+
+public class ResourceUserXref extends AbstractResourceXref {
 	
-	private String resourceId;
-	private String userId;
-	
-	public String getResourceId() {
-		return resourceId;
+	private AuthorizationUser user;
+
+	public AuthorizationUser getUser() {
+		return user;
 	}
-	
-	public void setResourceId(String resourceId) {
-		this.resourceId = resourceId;
-	}
-	
-	public String getUserId() {
-		return userId;
-	}
-	
-	public void setUserId(String userId) {
-		this.userId = userId;
+
+	public void setUser(AuthorizationUser user) {
+		this.user = user;
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = 1;
-		result = prime * result
-				+ ((resourceId == null) ? 0 : resourceId.hashCode());
-		result = prime * result + ((userId == null) ? 0 : userId.hashCode());
+		int result = super.hashCode();
+		result = prime * result + ((user == null) ? 0 : user.hashCode());
 		return result;
 	}
 
@@ -35,29 +26,18 @@ public class ResourceUserXref {
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (obj == null)
+		if (!super.equals(obj))
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
 		ResourceUserXref other = (ResourceUserXref) obj;
-		if (resourceId == null) {
-			if (other.resourceId != null)
+		if (user == null) {
+			if (other.user != null)
 				return false;
-		} else if (!resourceId.equals(other.resourceId))
-			return false;
-		if (userId == null) {
-			if (other.userId != null)
-				return false;
-		} else if (!userId.equals(other.userId))
+		} else if (!user.equals(other.user))
 			return false;
 		return true;
 	}
+	
 
-	@Override
-	public String toString() {
-		return String.format("ResourceUserXref [resourceId=%s, userId=%s]",
-				resourceId, userId);
-	}
-	
-	
 }

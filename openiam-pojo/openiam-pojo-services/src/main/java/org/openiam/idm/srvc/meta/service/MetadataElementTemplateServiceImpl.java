@@ -368,9 +368,7 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 	}
 
 	private boolean isEntitled(final String userId, final String resourceId) {
-		final AuthorizationResource authResource = new AuthorizationResource();
-		authResource.setId(resourceId);
-		return authorizationManagerService.isEntitled(userId, authResource);
+		return authorizationManagerService.isEntitled(userId, resourceId);
 	}
 	
 	private boolean isEntitled(final String userId, final ResourceEntity resource) {

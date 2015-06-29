@@ -97,4 +97,6 @@ public interface UserDAO extends BaseDao<UserEntity, String> {
     public  List<UserEntity> findByIds(List<String> idCollection, UserSearchBean searchBean, int from, int size);
 
     public  int countByIds(List<String> idCollection);
+    
+    public List<UserEntity> getAllUsersLoggedInAfter(final Date date);
 }
