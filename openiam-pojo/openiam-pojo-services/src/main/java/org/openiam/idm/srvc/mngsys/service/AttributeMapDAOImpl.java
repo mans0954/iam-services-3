@@ -3,11 +3,13 @@ package org.openiam.idm.srvc.mngsys.service;
 /**
  * @author zaporozhec
  */
+
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.*;
+import org.hibernate.sql.JoinType;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.exception.data.DataException;
 import org.openiam.idm.searchbeans.AttributeMapSearchBean;
@@ -40,7 +42,7 @@ public class AttributeMapDAOImpl extends
 
     public List<AttributeMapEntity> findBySynchConfigId(String synchConfigId) {
         return (List<AttributeMapEntity>) this.getCriteria()
-                .add(Restrictions.eq("synchConfigId", synchConfigId))
+                .add(Restrictions.eq("synchConfigId", synchConfigId)).createAlias("managedSystem","mSys", JoinType.LEFT_OUTER_JOIN)
                 .addOrder(Order.asc("mapForObjectType"))
                 .addOrder(Order.asc("synchConfigId")).list();
     }
@@ -49,11 +51,11 @@ public class AttributeMapDAOImpl extends
     protected Criteria getExampleCriteria(final SearchBean searchBean) {
         final Criteria criteria = getCriteria();
         if (searchBean instanceof AttributeMapSearchBean) {
-            AttributeMapSearchBean amsb = (AttributeMapSearchBean)searchBean;
-            if(StringUtils.isNotBlank(amsb.getResourceId())) {
+            AttributeMapSearchBean amsb = (AttributeMapSearchBean) searchBean;
+            if (StringUtils.isNotBlank(amsb.getResourceId())) {
                 criteria.add(Restrictions.eq("resourceId", amsb.getResourceId()));
             } else if (StringUtils.isNotBlank(amsb.getSynchConfigId())) {
-                criteria.add(Restrictions.eq("synchConfigId", amsb.getSynchConfigId()));
+                criteria.add(Restrictions.eq("synchConfigId", amsb.getSynchConfigId())).createAlias("managedSystem", "mSys", JoinType.LEFT_OUTER_JOIN);
             }
         }
         return criteria;
@@ -66,7 +68,7 @@ public class AttributeMapDAOImpl extends
     }
 
     public void removeResourceAttributeMaps(String resourceId) {
-        AttributeMapEntity ame = (AttributeMapEntity)getCriteria()
+        AttributeMapEntity ame = (AttributeMapEntity) getCriteria()
                 .add(Restrictions.eq("id", resourceId)).uniqueResult();
         getSession().delete(ame);
     }
