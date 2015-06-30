@@ -30,6 +30,7 @@ import java.util.List;
 import javax.jws.WebParam;
 import javax.jws.WebService;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.csv.CSVStrategy;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -225,6 +226,10 @@ public class IdentitySynchWebServiceImpl implements IdentitySynchWebService {
                     attributeMapList.add(attributeMap);
                 }
             }
+        }
+        if (CollectionUtils.isEmpty(attributeMapList)){
+            response.setErrorCode(ResponseCode.IMPORT_ATTR_MAP_NOTHING_IMPORT);
+            return response;
         }
         response.setAttributeMap(attributeMapList);
         response.setStatus(ResponseStatus.SUCCESS);

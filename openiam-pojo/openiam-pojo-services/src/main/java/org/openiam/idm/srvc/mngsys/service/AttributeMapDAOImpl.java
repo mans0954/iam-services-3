@@ -98,7 +98,7 @@ public class AttributeMapDAOImpl extends
     public void delete(List<String> ids) {
         if (!CollectionUtils.isEmpty(ids)) {
             List attrMap = getCriteria()
-                    .add(Restrictions.in("id", ids)).list();
+                    .add(Restrictions.in("id", ids)).createAlias("managedSystem", "mSys", JoinType.LEFT_OUTER_JOIN).list();
             deleteAttributesMapList(attrMap);
         }
     }
