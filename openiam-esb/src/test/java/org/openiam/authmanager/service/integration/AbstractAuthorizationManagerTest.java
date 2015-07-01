@@ -125,12 +125,11 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 	public void testUser2RoleDirect() {
 		doUser2RoleAddition(user.getId(), role.getId(), null);
 	}
-	/*
+
 	@Test
-	public void testUser2RoleDirectWithRihts() {
+	public void testUser2RoleDirectWithRights() {
 		doUser2RoleAddition(user.getId(), role.getId(), getRightIds());
 	}
-	*/
 	
 	private void doUser2RoleAddition(final String userId, final String roleId, final Set<String> rightIds) {
 		Response response = roleServiceClient.addUserToRole(roleId, userId, getRequestorId(), rightIds);
@@ -158,13 +157,149 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 	}
 	
 	@Test
-	public void testUser2RoleIndirect() {
+	public void testUser2GroupIndirect() {
+		final Set<Group> entitiesToDelete = new HashSet<Group>();
+		assertSuccess(groupServiceClient.addUserToGroup(group.getId(), user.getId(), getRequestorId(), null));
+		getAllRightIds().forEach(right -> {
+			final Group parent = super.createGroup();
+			Assert.assertNotNull(parent);
+			entitiesToDelete.add(parent);
+			doGroup2GroupAddition(parent, group, toArray(right));
+			refreshAuthorizationManager();
+			checkUser2GroupMembership(user.getId(), parent.getId(), toArray(right), true);
+			checkUser2GroupMembership(user.getId(), parent.getId(), null, true);
+		});
+		entitiesToDelete.forEach(e -> {
+			assertSuccess(groupServiceClient.deleteGroup(e.getId(), getRequestorId()));
+		});
+		refreshAuthorizationManager();
+		entitiesToDelete.forEach(e -> {
+			checkUser2GroupMembership(user.getId(), e.getId(), null, false);
+		});
+		assertSuccess(groupServiceClient.removeUserFromGroup(group.getId(), user.getId(), getRequestorId()));
+		refreshAuthorizationManager();
+		checkUser2GroupMembership(user.getId(), group.getId(), null, false);
+	}
+	
+	@Test
+	public void testUser2GroupIndirectThroughRole() {
+		assertSuccess(roleServiceClient.addUserToRole(role.getId(), user.getId(), getRequestorId(), null));
+		assertSuccess(roleServiceClient.addGroupToRole(role.getId(), group.getId(), getRequestorId(), getRightIds()));
+		refreshAuthorizationManager();
+		checkUser2RoleMembership(user.getId(), role.getId(), null, true);
+		checkUser2GroupMembership(user.getId(), group.getId(), null, true);
+		checkUser2GroupMembership(user.getId(), group.getId(), getRightIds(), true);
 		
+		
+		assertSuccess(roleServiceClient.removeGroupFromRole(role.getId(), group.getId(), getRequestorId()));
+		refreshAuthorizationManager();
+		checkUser2GroupMembership(user.getId(), group.getId(), null, false);
+		checkUser2RoleMembership(user.getId(), role.getId(), null, true);
+		
+		assertSuccess(roleServiceClient.removeUserFromRole(role.getId(), user.getId(), getRequestorId()));
+		refreshAuthorizationManager();
+		checkUser2RoleMembership(user.getId(), role.getId(), null, false);
+	}
+	
+	@Test
+	public void testUser2GroupIndirectThroughOrganization() {
+		assertSuccess(organizationServiceClient.addUserToOrg(organization.getId(), user.getId(), null));
+		assertSuccess(organizationServiceClient.addGroupToOrganization(organization.getId(), group.getId(), getRightIds()));
+		refreshAuthorizationManager();
+		checkUser2OrganizationMembership(user.getId(), organization.getId(), null, true);
+		checkUser2GroupMembership(user.getId(), group.getId(), null, true);
+		checkUser2GroupMembership(user.getId(), group.getId(), getRightIds(), true);
+		
+		assertSuccess(organizationServiceClient.removeGroupFromOrganization(organization.getId(), group.getId()));
+		refreshAuthorizationManager();
+		checkUser2GroupMembership(user.getId(), group.getId(), null, false);
+		checkUser2OrganizationMembership(user.getId(), organization.getId(), null, true);
+		
+		assertSuccess(organizationServiceClient.removeUserFromOrg(organization.getId(), user.getId()));
+		refreshAuthorizationManager();
+		checkUser2OrganizationMembership(user.getId(), organization.getId(), null, false);
+	}
+	
+	@Test
+	public void testUser2GroupIndirectThroughOrganizationAndRole() {
+		assertSuccess(organizationServiceClient.addUserToOrg(organization.getId(), user.getId(), null));
+		assertSuccess(organizationServiceClient.addRoleToOrganization(organization.getId(), role.getId(), null));
+		assertSuccess(roleServiceClient.addGroupToRole(role.getId(), group.getId(), getRequestorId(), getRightIds()));
+		refreshAuthorizationManager();
+		checkUser2GroupMembership(user.getId(), group.getId(), null, true);
+		checkUser2GroupMembership(user.getId(), group.getId(), getRightIds(), true);
+		
+		assertSuccess(organizationServiceClient.removeUserFromOrg(organization.getId(), user.getId()));
+		assertSuccess(organizationServiceClient.removeRoleFromOrganization(organization.getId(), role.getId()));
+		assertSuccess(roleServiceClient.removeGroupFromRole(role.getId(), group.getId(), getRequestorId()));
+		refreshAuthorizationManager();
+		checkUser2GroupMembership(user.getId(), group.getId(), null, false);
+	}
+	
+	@Test
+	public void testUser2RoleIndirect() {
+		final Set<Role> entitiesToDelete = new HashSet<Role>();
+		assertSuccess(roleServiceClient.addUserToRole(role.getId(), user.getId(), getRequestorId(), null));
+		getAllRightIds().forEach(right -> {
+			final Role parent = super.createRole();
+			Assert.assertNotNull(parent);
+			entitiesToDelete.add(parent);
+			doRole2RoleAddition(parent, role, toArray(right));
+			refreshAuthorizationManager();
+			checkUser2RoleMembership(user.getId(), parent.getId(), toArray(right), true);
+			checkUser2RoleMembership(user.getId(), parent.getId(), null, true);
+		});
+		entitiesToDelete.forEach(e -> {
+			assertSuccess(roleServiceClient.removeRole(e.getId(), getRequestorId()));
+		});
+		refreshAuthorizationManager();
+		entitiesToDelete.forEach(e -> {
+			checkUser2RoleMembership(user.getId(), e.getId(), null, false);
+		});
+		assertSuccess(roleServiceClient.removeUserFromRole(role.getId(), user.getId(), getRequestorId()));
+		refreshAuthorizationManager();
+		checkUser2RoleMembership(user.getId(), role.getId(), null, false);
+	}
+	
+	public void testUser2RoleIndirectCompiled() {
+		final Set<Role> entitiesToDelete = new HashSet<Role>();
+		getAllRightIds().forEach(right -> {
+			final Role child = super.createRole();
+			Assert.assertNotNull(child);
+			entitiesToDelete.add(child);
+			assertSuccess(roleServiceClient.addUserToRole(child.getId(), user.getId(), getRequestorId(), null));
+			doRole2RoleAddition(role, child, toArray(right));
+		});
+		refreshAuthorizationManager();
+		checkUser2RoleMembership(user.getId(), role.getId(), getAllRightIds(), true);
+		checkUser2RoleMembership(user.getId(), role.getId(), null, true);
+		
+		entitiesToDelete.forEach(e -> {
+			assertSuccess(roleServiceClient.removeUserFromRole(e.getId(), user.getId(), getRequestorId()));
+			assertSuccess(roleServiceClient.removeRole(e.getId(), getRequestorId()));
+		});
+		refreshAuthorizationManager();
+		entitiesToDelete.forEach(e -> {
+			checkUser2RoleMembership(user.getId(), e.getId(), null, false);
+		});
 	}
 	
 	@Test
 	public void testUser2RoleIndirectThroughOrganization() {
+		Response response = organizationServiceClient.addUserToOrg(organization.getId(), user.getId(), null);
+		assertSuccess(response);
+		response = organizationServiceClient.addRoleToOrganization(organization.getId(), role.getId(), getRightIds());
+		assertSuccess(response);
+		refreshAuthorizationManager();
+		checkUser2RoleMembership(user.getId(), role.getId(), getRightIds(), true);
 		
+		response = organizationServiceClient.removeUserFromOrg(organization.getId(), user.getId());
+		assertSuccess(response);
+		response = organizationServiceClient.removeRoleFromOrganization(organization.getId(), role.getId());
+		assertSuccess(response);
+		refreshAuthorizationManager();
+		checkUser2RoleMembership(user.getId(), role.getId(), null, false);
+		checkUser2OrganizationMembership(user.getId(), organization.getId(), null, false);
 	}
 	
 	@Test
@@ -175,7 +310,7 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 			final Organization parent = super.createOrganization();
 			Assert.assertNotNull(parent);
 			organizationsToDelete.add(parent);
-			doOrg2OrgAddition(parent.getId(), organization.getId(), toArray(right));
+			doOrg2OrgAddition(parent, organization, toArray(right));
 			refreshAuthorizationManager();
 			checkUser2OrganizationMembership(user.getId(), parent.getId(), toArray(right), true);
 			checkUser2OrganizationMembership(user.getId(), parent.getId(), null, true);
@@ -197,7 +332,7 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 			Assert.assertNotNull(child);
 			organizationsToDelete.add(child);
 			assertSuccess(organizationServiceClient.addUserToOrg(child.getId(), user.getId(), null));
-			doOrg2OrgAddition(organization.getId(), child.getId(), toArray(right));
+			doOrg2OrgAddition(organization, child, toArray(right));
 		});
 		refreshAuthorizationManager();
 		checkUser2OrganizationMembership(user.getId(), organization.getId(), getAllRightIds(), true);
@@ -224,8 +359,18 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 		checkUser2OrganizationMembership(userId, organizationId, rightIds, false);
 	}
 	
-	private void doOrg2OrgAddition(final String organizationId, final String childOrganizationId, final Set<String> rightIds) {
-		final Response response = organizationServiceClient.addChildOrganization(organizationId, childOrganizationId, rightIds);
+	private void doGroup2GroupAddition(final Group group, final Group child, final Set<String> rightIds) {
+		final Response response = groupServiceClient.addChildGroup(group.getId(), child.getId(), getRequestorId(), rightIds);
+		assertSuccess(response);
+	}
+	
+	private void doRole2RoleAddition(final Role role, final Role child, final Set<String> rightIds) {
+		final Response response = roleServiceClient.addChildRole(role.getId(), child.getId(), getRequestorId(), rightIds);
+		assertSuccess(response);
+	}
+	
+	private void doOrg2OrgAddition(final Organization organization, final Organization child, final Set<String> rightIds) {
+		final Response response = organizationServiceClient.addChildOrganization(organization.getId(), child.getId(), rightIds);
 		assertSuccess(response);
 	}
 	

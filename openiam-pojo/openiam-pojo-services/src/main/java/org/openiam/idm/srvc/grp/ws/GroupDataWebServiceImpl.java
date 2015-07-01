@@ -322,19 +322,22 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     @Override
     public Response removeUserFromGroup(final String groupId, final String userId, final String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLog auditLog = new IdmAuditLog();
-        GroupEntity groupEntity = groupManager.getGroup(groupId);
-        auditLog.setRequestorUserId(requesterId);
-        auditLog.setAction(AuditAction.REMOVE_USER_FROM_GROUP.value());
-        auditLog.setTargetUser(userId, null);
-        auditLog.setTargetGroup(groupId, groupEntity.getName());
-        auditLog.setAuditDescription(String.format("Remove user %s from group: %s", userId, groupId));
+        final IdmAuditLog auditLog = new IdmAuditLog();
         try {
             if (groupId == null || userId == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Group Id is null or empty");
             }
+            
+            final GroupEntity groupEntity = groupManager.getGroupLocalize(groupId, null);
+            if(groupEntity != null) {
+            	auditLog.setRequestorUserId(requesterId);
+            	auditLog.setAction(AuditAction.REMOVE_USER_FROM_GROUP.value());
+            	auditLog.setTargetUser(userId, null);
+            	auditLog.setTargetGroup(groupId, groupEntity.getName());
+            	auditLog.setAuditDescription(String.format("Remove user %s from group: %s", userId, groupId));
 
-            userManager.removeUserFromGroup(userId, groupId);
+            	userManager.removeUserFromGroup(userId, groupId);
+            }
             auditLog.succeed();
         } catch (BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);
