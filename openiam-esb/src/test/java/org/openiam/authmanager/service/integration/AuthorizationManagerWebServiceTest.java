@@ -130,8 +130,8 @@ public class AuthorizationManagerWebServiceTest extends AbstractAuthorizationMan
 	
 	
 	@Test
-	public void testUser2GroupIndirectThroughOrganizationAndRole() {
-		super.testUser2GroupIndirectThroughOrganizationAndRole();
+	public void testUser2ResourceIndirectThroughOrganizationAndRoleAndGroup() {
+		super.testUser2ResourceIndirectThroughOrganizationAndRoleAndGroup();
 	}
 
 	@Override

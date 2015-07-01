@@ -157,6 +157,142 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 	}
 	
 	@Test
+	public void testUser2ResourceIndirect() {
+		final Set<Resource> entitiesToDelete = new HashSet<Resource>();
+		assertSuccess(resourceDataService.addUserToResource(resource.getId(), user.getId(), getRequestorId(), null));
+		getAllRightIds().forEach(right -> {
+			final Resource parent = super.createResource();
+			Assert.assertNotNull(parent);
+			entitiesToDelete.add(parent);
+			doResource2ResourceAddition(parent, resource, toArray(right));
+			refreshAuthorizationManager();
+			checkUser2ResourceEntitlement(user.getId(), parent.getId(), toArray(right), true);
+			checkUser2ResourceEntitlement(user.getId(), parent.getId(), null, true);
+		});
+		entitiesToDelete.forEach(e -> {
+			assertSuccess(resourceDataService.deleteResource(e.getId(), getRequestorId()));
+		});
+		refreshAuthorizationManager();
+		entitiesToDelete.forEach(e -> {
+			checkUser2ResourceEntitlement(user.getId(), e.getId(), null, false);
+		});
+		assertSuccess(resourceDataService.removeUserFromResource(resource.getId(), user.getId(), getRequestorId()));
+		refreshAuthorizationManager();
+		checkUser2ResourceEntitlement(user.getId(), resource.getId(), null, false);
+	}
+	
+	@Test
+	public void testUser2ResourceIndirectThroughGroup() {
+		assertSuccess(groupServiceClient.addUserToGroup(group.getId(), user.getId(), getRequestorId(), null));
+		assertSuccess(resourceDataService.addGroupToResource(resource.getId(), group.getId(), getRequestorId(), getRightIds()));
+		refreshAuthorizationManager();
+		checkUser2ResourceEntitlement(user.getId(), resource.getId(), getRightIds(), true);
+		checkUser2ResourceEntitlement(user.getId(), resource.getId(), null, true);
+		
+		
+		assertSuccess(groupServiceClient.removeUserFromGroup(group.getId(), user.getId(), getRequestorId()));
+		assertSuccess(resourceDataService.removeGroupToResource(resource.getId(), group.getId(), getRequestorId()));
+		refreshAuthorizationManager();
+		checkUser2ResourceEntitlement(user.getId(), resource.getId(), null, false);
+	}
+	
+	@Test
+	public void testUser2ResourceIndirectThroughRole() {
+		assertSuccess(roleServiceClient.addUserToRole(role.getId(), user.getId(), getRequestorId(), null));
+		assertSuccess(resourceDataService.addRoleToResource(resource.getId(), role.getId(), getRequestorId(), getRightIds()));
+		refreshAuthorizationManager();
+		checkUser2ResourceEntitlement(user.getId(), resource.getId(), getRightIds(), true);
+		checkUser2ResourceEntitlement(user.getId(), resource.getId(), null, true);
+		
+		
+		assertSuccess(roleServiceClient.removeUserFromRole(role.getId(), user.getId(), getRequestorId()));
+		assertSuccess(resourceDataService.removeRoleToResource(resource.getId(), role.getId(), getRequestorId()));
+		refreshAuthorizationManager();
+		checkUser2ResourceEntitlement(user.getId(), resource.getId(), null, false);
+	}
+	
+	@Test
+	public void testUser2ResourceIndirectThroughRoleAndGroup() {
+		assertSuccess(roleServiceClient.addUserToRole(role.getId(), user.getId(), getRequestorId(), null));
+		assertSuccess(roleServiceClient.addGroupToRole(role.getId(), group.getId(), getRequestorId(), getRightIds()));
+		assertSuccess(resourceDataService.addGroupToResource(resource.getId(), group.getId(), getRequestorId(), getRightIds()));
+		refreshAuthorizationManager();
+		checkUser2ResourceEntitlement(user.getId(), resource.getId(), getRightIds(), true);
+		checkUser2ResourceEntitlement(user.getId(), resource.getId(), null, true);
+		
+		assertSuccess(roleServiceClient.removeUserFromRole(role.getId(), user.getId(), getRequestorId()));
+		assertSuccess(roleServiceClient.removeGroupFromRole(role.getId(), group.getId(), getRequestorId()));
+		assertSuccess(resourceDataService.removeGroupToResource(resource.getId(), group.getId(), getRequestorId()));
+		refreshAuthorizationManager();
+		checkUser2ResourceEntitlement(user.getId(), resource.getId(), null, false);
+	}
+	
+	@Test
+	public void testUser2ResourceIndirectThroughOrganization() {
+		assertSuccess(organizationServiceClient.addUserToOrg(organization.getId(), user.getId(), null));
+		assertSuccess(organizationServiceClient.addResourceToOrganization(organization.getId(), resource.getId(), getRightIds()));
+		refreshAuthorizationManager();
+		checkUser2ResourceEntitlement(user.getId(), resource.getId(), getRightIds(), true);
+		checkUser2ResourceEntitlement(user.getId(), resource.getId(), null, true);
+		
+		assertSuccess(organizationServiceClient.removeUserFromOrg(organization.getId(), user.getId()));
+		assertSuccess(organizationServiceClient.removeResourceFromOrganization(organization.getId(), resource.getId()));
+		refreshAuthorizationManager();
+		checkUser2ResourceEntitlement(user.getId(), resource.getId(), null, false);
+	}
+	
+	@Test
+	public void testUser2ResourceIndirectThroughOrganizationAndRole() {
+		assertSuccess(organizationServiceClient.addUserToOrg(organization.getId(), user.getId(), null));
+		assertSuccess(organizationServiceClient.addRoleToOrganization(organization.getId(), role.getId(), null));
+		assertSuccess(resourceDataService.addRoleToResource(resource.getId(), role.getId(), getRequestorId(), getRightIds()));
+		refreshAuthorizationManager();
+		checkUser2ResourceEntitlement(user.getId(), resource.getId(), getRightIds(), true);
+		checkUser2ResourceEntitlement(user.getId(), resource.getId(), null, true);
+		
+		assertSuccess(organizationServiceClient.removeUserFromOrg(organization.getId(), user.getId()));
+		assertSuccess(organizationServiceClient.removeRoleFromOrganization(organization.getId(), role.getId()));
+		assertSuccess(resourceDataService.removeRoleToResource(resource.getId(), role.getId(), getRequestorId()));
+		refreshAuthorizationManager();
+		checkUser2ResourceEntitlement(user.getId(), resource.getId(), null, false);
+		
+	}
+	
+	@Test
+	public void testUser2ResourceIndirectThroughOrganizationAndGroup() {
+		assertSuccess(organizationServiceClient.addUserToOrg(organization.getId(), user.getId(), null));
+		assertSuccess(organizationServiceClient.addGroupToOrganization(organization.getId(), group.getId(), null));
+		assertSuccess(resourceDataService.addGroupToResource(resource.getId(), group.getId(), getRequestorId(), getRightIds()));
+		refreshAuthorizationManager();
+		checkUser2ResourceEntitlement(user.getId(), resource.getId(), getRightIds(), true);
+		checkUser2ResourceEntitlement(user.getId(), resource.getId(), null, true);
+		
+		assertSuccess(organizationServiceClient.removeUserFromOrg(organization.getId(), user.getId()));
+		assertSuccess(organizationServiceClient.removeGroupFromOrganization(organization.getId(), group.getId()));
+		assertSuccess(resourceDataService.removeGroupToResource(resource.getId(), group.getId(), getRequestorId()));
+		refreshAuthorizationManager();
+		checkUser2ResourceEntitlement(user.getId(), resource.getId(), null, false);
+	}
+	
+	@Test
+	public void testUser2ResourceIndirectThroughOrganizationAndRoleAndGroup() {
+		assertSuccess(organizationServiceClient.addUserToOrg(organization.getId(), user.getId(), null));
+		assertSuccess(organizationServiceClient.addRoleToOrganization(organization.getId(), role.getId(), null));
+		assertSuccess(roleServiceClient.addGroupToRole(role.getId(), group.getId(), getRequestorId(), null));
+		assertSuccess(resourceDataService.addGroupToResource(resource.getId(), group.getId(), getRequestorId(), getRightIds()));
+		refreshAuthorizationManager();
+		checkUser2ResourceEntitlement(user.getId(), resource.getId(), getRightIds(), true);
+		checkUser2ResourceEntitlement(user.getId(), resource.getId(), null, true);
+		
+		assertSuccess(organizationServiceClient.removeUserFromOrg(organization.getId(), user.getId()));
+		assertSuccess(organizationServiceClient.removeRoleFromOrganization(organization.getId(), role.getId()));
+		assertSuccess(roleServiceClient.removeGroupFromRole(role.getId(), group.getId(), getRequestorId()));
+		assertSuccess(resourceDataService.removeGroupToResource(resource.getId(), group.getId(), getRequestorId()));
+		refreshAuthorizationManager();
+		checkUser2ResourceEntitlement(user.getId(), resource.getId(), null, false);
+	}
+	
+	@Test
 	public void testUser2GroupIndirect() {
 		final Set<Group> entitiesToDelete = new HashSet<Group>();
 		assertSuccess(groupServiceClient.addUserToGroup(group.getId(), user.getId(), getRequestorId(), null));
@@ -357,6 +493,11 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 		assertSuccess(response);
 		refreshAuthorizationManager();
 		checkUser2OrganizationMembership(userId, organizationId, rightIds, false);
+	}
+	
+	private void doResource2ResourceAddition(final Resource resource, final Resource child, final Set<String> rightIds) {
+		final Response response = resourceDataService.addChildResource(resource.getId(), child.getId(), getRequestorId(), rightIds);
+		assertSuccess(response);
 	}
 	
 	private void doGroup2GroupAddition(final Group group, final Group child, final Set<String> rightIds) {
