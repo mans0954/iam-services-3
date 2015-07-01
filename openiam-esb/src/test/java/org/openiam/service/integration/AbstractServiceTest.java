@@ -24,6 +24,8 @@ import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
 import org.openiam.idm.searchbeans.ResourceTypeSearchBean;
 import org.openiam.idm.srvc.access.ws.AccessRightDataService;
 import org.openiam.idm.srvc.auth.dto.Login;
+import org.openiam.idm.srvc.auth.service.AuthenticationService;
+import org.openiam.idm.srvc.auth.ws.LoginDataWebService;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
 import org.openiam.idm.srvc.lang.dto.Language;
@@ -107,6 +109,14 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 	@Autowired
 	@Qualifier("accessRightServiceClient")
 	protected AccessRightDataService accessRightServiceClient;
+
+	@Autowired
+	@Qualifier("loginServiceClient")
+	protected LoginDataWebService loginServiceClient;
+	
+	@Autowired
+	@Qualifier("authServiceClient")
+	protected AuthenticationService authServiceClient;
 	
 	protected String getString(final String key) {
 		return propertyValuerServiceClient.getCachedValue(key, getDefaultLanguage());
@@ -175,11 +185,11 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 		user.setLogin(getRandomName());
 		user.setPassword(getRandomName());
 		user.setNotifyUserViaEmail(false);
-		/*
+
 		final Login login = new Login();
 		login.setLogin(getRandomName());
+		login.setManagedSysId(getDefaultManagedSystemId());
 		user.setPrincipalList(Arrays.asList(new Login[] {login}));
-		*/
 		
 		final UserResponse userResponse = userServiceClient.saveUserInfo(user, null);
 		Assert.assertTrue(userResponse.isSuccess(), String.format("Could not save %s.  Reason: %s", user, userResponse));

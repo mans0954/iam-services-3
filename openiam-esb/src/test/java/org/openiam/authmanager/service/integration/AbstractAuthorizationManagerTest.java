@@ -1,5 +1,7 @@
 package org.openiam.authmanager.service.integration;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -8,9 +10,13 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.base.KeyDTO;
+import org.elasticsearch.common.lang3.StringUtils;
 import org.openiam.base.ws.Response;
+import org.openiam.base.ws.ResponseStatus;
 import org.openiam.idm.srvc.access.dto.AccessRight;
+import org.openiam.idm.srvc.auth.dto.AuthenticationRequest;
+import org.openiam.idm.srvc.auth.dto.Login;
+import org.openiam.idm.srvc.auth.ws.AuthenticationResponse;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.res.dto.Resource;
@@ -75,6 +81,23 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 		Assert.assertNotNull(resource);
 		
 		if(loginAfterUserCreation()) {
+			final Login login = loginServiceClient.getPrimaryIdentity(user.getId()).getPrincipal();
+			Assert.assertNotNull(login);
+			final String password = (String)loginServiceClient.decryptPassword(user.getId(), login.getPassword()).getResponseValue();
+			Assert.assertTrue(StringUtils.isNotBlank(password));
+			
+			final AuthenticationRequest authenticatedRequest = new AuthenticationRequest();
+			authenticatedRequest.setPassword(password);
+			authenticatedRequest.setPrincipal(login.getLogin());
+			authenticatedRequest.setLanguageId(getDefaultLanguage().getId());
+			try {
+				authenticatedRequest.setNodeIP(InetAddress.getLocalHost().getHostAddress());
+			} catch (UnknownHostException e) {
+				
+			}
+			final AuthenticationResponse authenticationResponse = authServiceClient.login(authenticatedRequest);
+			Assert.assertNotNull(authenticationResponse);
+			Assert.assertEquals(authenticationResponse.getStatus(), ResponseStatus.SUCCESS);
 			refreshAuthorizationManager();
 		}
 	}

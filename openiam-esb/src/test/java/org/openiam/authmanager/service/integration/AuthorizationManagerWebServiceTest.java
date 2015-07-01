@@ -1,7 +1,6 @@
 package org.openiam.authmanager.service.integration;
 
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
@@ -136,6 +135,6 @@ public class AuthorizationManagerWebServiceTest extends AbstractAuthorizationMan
 
 	@Override
 	protected boolean loginAfterUserCreation() {
-		return false;
+		return true;
 	}
 }
