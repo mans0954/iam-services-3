@@ -55,13 +55,15 @@ public class ProvisionDispatcher implements Sweepable {
                 synchronized (mutex) {
                     final List<ProvisionDataContainer> list = new ArrayList<ProvisionDataContainer>();
                     Enumeration e = browser.getEnumeration();
+                    int numMsg = 0;
                     while (e.hasMoreElements()) {
-                        list.add((ProvisionDataContainer) ((ObjectMessage) jmsTemplate.receive(queue)).getObject());
                         e.nextElement();
+                        numMsg++;
                     }
-
+                    for (int i = 0; i < numMsg; i++) {
+                        list.add((ProvisionDataContainer) ((ObjectMessage) jmsTemplate.receive(queue)).getObject());
+                    }
                     process(list);
-
                     return Boolean.TRUE;
                 }
             }
