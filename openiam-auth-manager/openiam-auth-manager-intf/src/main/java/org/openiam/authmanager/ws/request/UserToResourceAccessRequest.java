@@ -10,33 +10,23 @@ import org.openiam.authmanager.common.model.AuthorizationResource;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "UserToResourceAccessRequest", propOrder = {
-	"resource"
+	"resourceId"
 })
 public class UserToResourceAccessRequest extends UserRequest implements Serializable {
 
 	private static final long serialVersionUID = -1L;
 	
-	private AuthorizationResource resource;
-
-	public AuthorizationResource getResource() {
-		return resource;
-	}
-
-	public void setResource(AuthorizationResource resource) {
-		this.resource = resource;
-	}
+	public UserToResourceAccessRequest() {}
 	
-	public UserToResourceAccessRequest() {
-		
+	private String resourceId;
+
+	public String getResourceId() {
+		return resourceId;
 	}
 
-	@Override
-	public String toString() {
-		return String
-				.format("UserToResourceAccessRequest [resource=%s, getUserId()=%s, getLoginId()=%s]",
-						resource, getUserId(), getLoginId());
+	public void setResourceId(String resourceId) {
+		this.resourceId = resourceId;
 	}
 
-	
 	
 }

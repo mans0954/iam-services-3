@@ -49,6 +49,27 @@ public class AuthAttributeProcessorImpl implements AuthAttributeProcessor {
 
 
     @Override
+    public boolean process(String reflectionKey, Object object, Object setValue) throws Exception {
+        if (reflectionKey == null) {
+            throw new NullPointerException("AccessManagerAttributeName is null");
+        }
+
+        boolean result;
+        final String[] map = reflectionKey.split("\\.");
+
+        if (map != null && map.length > 1) {
+            try {
+                result = setAttributeValue(object, map, 1, setValue);
+            } catch (Exception ex) {
+                throw new Exception("Cannot set with key: " + reflectionKey);
+            }
+        } else {
+            throw new Exception("Cannot set with key:  " + reflectionKey);
+        }
+        return result;
+    }
+
+    @Override
     public String process(String reflectionKey, EnumMap<AmAttributes, Object> objectMap) throws Exception {
         if (reflectionKey == null) {
             throw new NullPointerException("AccessManagerAttributeName is null");
@@ -93,6 +114,45 @@ public class AuthAttributeProcessorImpl implements AuthAttributeProcessor {
             result = getAttributeValue(subField, map, nextMapIndex);
         }
         return result;
+    }
+
+
+    private boolean setAttributeValue(Object obj, String[] map, int currentMapIndex, Object value) throws Exception {
+        boolean isSuccess = false;
+        if (obj == null)
+            return isSuccess;
+        isSuccess = setFieldValue(obj, map[currentMapIndex], value);
+        return isSuccess;
+    }
+
+    private boolean setFieldValue(Object obj, String fieldName, Object value) throws Exception {
+        boolean isSuccess = false;
+        Class objClass = obj.getClass();
+        if (!StringUtils.hasText(fieldName))
+            throw new NoSuchFieldException("Field Name is null or empty");
+        Field f = null;
+        do {
+            try {
+                f = objClass.getDeclaredField(fieldName);
+            } catch (NoSuchFieldException e) {
+                log.debug(String.format("No such field %s in Class %s", fieldName, objClass.getCanonicalName()));
+            } finally {
+                objClass = objClass.getSuperclass();
+            }
+        } while (f == null && objClass.getCanonicalName().startsWith("org.openiam"));
+        if (f == null) {
+            throw new NoSuchFieldException(String.format("No such field %s in Class %s", fieldName, objClass.getCanonicalName()));
+        }
+        //try to find in super class
+        f.setAccessible(true);
+        try {
+            f.set(obj, value);
+            isSuccess = true;
+        } catch (IllegalArgumentException e) {
+            log.error(String.format("Can't put data type %s to field %s with dataType %s", value.getClass().getCanonicalName(),
+                    f.getName(), f.getType().getCanonicalName()));
+        }
+        return isSuccess;
     }
 
     private Object getFieldValue(Object obj, String fieldName) throws Exception {

@@ -6,10 +6,10 @@ import java.util.Set;
 public class InternalAuthroizationUser {
 
 	private String userId;
-	private Set<AuthorizationManagerLoginId> loginIds;
 	private Set<String> resourceIds;
 	private Set<String> roleIds;
 	private Set<String> groupIds;
+	private Set<String> organizationIds;
 	
 	public InternalAuthroizationUser() {
 		
@@ -23,8 +23,8 @@ public class InternalAuthroizationUser {
 		return userId;
 	}
 
-	public Set<AuthorizationManagerLoginId> getLoginIds() {
-		return loginIds;
+	public Set<String> getOrganizationIds() {
+		return organizationIds;
 	}
 
 	public Set<String> getResourceIds() {
@@ -37,14 +37,6 @@ public class InternalAuthroizationUser {
 
 	public Set<String> getGroupIds() {
 		return groupIds;
-	}
-	
-	public void addLoginId(final AuthorizationManagerLoginId loginId) {
-		if(loginIds == null) {
-			loginIds = new HashSet<AuthorizationManagerLoginId>();
-		}
-		if(loginId!=null)
-			loginIds.add(loginId);
 	}
 	
 	public void addResourceId(final String resourceId) {
@@ -70,6 +62,15 @@ public class InternalAuthroizationUser {
 		if(groupId!=null)
 			groupIds.add(groupId);
 	}
+	
+	public void addOrganizationId(final String organizationId) {
+		if(organizationIds == null) {
+			organizationIds = new HashSet<String>();
+		}
+		if(organizationId != null) {
+			organizationIds.add(organizationId);
+		}
+	}
 
 	@Override
 	public int hashCode() {
@@ -93,11 +94,6 @@ public class InternalAuthroizationUser {
 				return false;
 		} else if (!groupIds.equals(other.groupIds))
 			return false;
-		if (loginIds == null) {
-			if (other.loginIds != null)
-				return false;
-		} else if (!loginIds.equals(other.loginIds))
-			return false;
 		if (resourceIds == null) {
 			if (other.resourceIds != null)
 				return false;
@@ -119,8 +115,8 @@ public class InternalAuthroizationUser {
 	@Override
 	public String toString() {
 		return String
-				.format("InternalAuthroizationUser [userId=%s, loginIds=%s, resourceIds=%s, roleIds=%s, groupIds=%s]",
-						userId, loginIds, resourceIds, roleIds, groupIds);
+				.format("InternalAuthroizationUser [userId=%s, resourceIds=%s, roleIds=%s, groupIds=%s]",
+						userId, resourceIds, roleIds, groupIds);
 	}
 	
 	

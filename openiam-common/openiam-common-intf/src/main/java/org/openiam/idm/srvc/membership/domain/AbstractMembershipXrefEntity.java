@@ -24,7 +24,10 @@ import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 import org.openiam.internationalization.Internationalized;
 
 @MappedSuperclass
-public abstract class AbstractMembershipXrefEntity extends KeyEntity {
+public abstract class AbstractMembershipXrefEntity<Parent extends KeyEntity, Child extends KeyEntity> extends KeyEntity {
 	
 	public abstract Set<AccessRightEntity> getRights();
+	public abstract Parent getEntity();
+	public abstract Child getMemberEntity();
+	
 }

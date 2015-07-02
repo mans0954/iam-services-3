@@ -18,6 +18,16 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.elasticsearch.annotation.ElasticsearchField;
+import org.openiam.elasticsearch.annotation.ElasticsearchFieldBridge;
+import org.openiam.elasticsearch.annotation.ElasticsearchIndex;
+import org.openiam.elasticsearch.annotation.ElasticsearchMapping;
+import org.openiam.elasticsearch.bridge.OrganizationBridge;
+import org.openiam.elasticsearch.bridge.UserBrigde;
+import org.openiam.elasticsearch.constants.ESIndexName;
+import org.openiam.elasticsearch.constants.ESIndexType;
+import org.openiam.elasticsearch.constants.ElasticsearchStore;
+import org.openiam.elasticsearch.constants.Index;
 import org.openiam.idm.srvc.access.domain.AccessRightEntity;
 import org.openiam.idm.srvc.membership.domain.AbstractMembershipXrefEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
@@ -28,14 +38,18 @@ import org.openiam.idm.srvc.user.dto.UserToOrganizationMembershipXref;
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @AttributeOverride(name = "id", column = @Column(name = "MEMBERSHIP_ID"))
 @DozerDTOCorrespondence(UserToOrganizationMembershipXref.class)
-public class UserToOrganizationMembershipXrefEntity extends AbstractMembershipXrefEntity {
+@ElasticsearchIndex(indexName = ESIndexName.USER_TO_ORG_XREF)
+@ElasticsearchMapping(typeName = ESIndexType.USER_TO_ORG_XREF)
+public class UserToOrganizationMembershipXrefEntity extends AbstractMembershipXrefEntity<OrganizationEntity, UserEntity> {
 
 	@ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
 	@JoinColumn(name = "COMPANY_ID", referencedColumnName = "COMPANY_ID", insertable = true, updatable = false, nullable=false)
+	@ElasticsearchField(name = "entityId", bridge=@ElasticsearchFieldBridge(impl = OrganizationBridge.class), store = ElasticsearchStore.Yes, index = Index.Not_Analyzed)
 	private OrganizationEntity entity;
 	
 	@ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
 	@JoinColumn(name = "USER_ID", referencedColumnName = "USER_ID", insertable = true, updatable = false, nullable=false)
+	@ElasticsearchField(name = "memberEntityId", bridge=@ElasticsearchFieldBridge(impl = UserBrigde.class), store = ElasticsearchStore.Yes, index = Index.Not_Analyzed)
 	private UserEntity memberEntity;
 	    
 	/* this is eager.  If you're loading the XREF - it's to get the rights */

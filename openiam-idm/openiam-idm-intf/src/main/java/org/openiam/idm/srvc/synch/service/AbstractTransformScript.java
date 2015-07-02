@@ -10,42 +10,50 @@ import org.openiam.idm.srvc.synch.dto.SynchReview;
 import org.openiam.idm.srvc.user.dto.User;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 public abstract class AbstractTransformScript implements TransformScript {
 
-	protected User user;
-	protected List<Login> principalList;
-	protected List<Role> userRoleList;
-	protected boolean isNewUser = false;
+    protected User user;
+    protected List<Login> principalList;
+    protected List<Role> userRoleList;
+    protected boolean isNewUser = false;
     protected ApplicationContext context;
     protected String synchConfigId;
     protected SynchConfig config;
     protected SynchReview review;
 
-	public User getUser() {
-		return user;
-	}
-	public void setUser(User user) {
-		this.user = user;
-	}
-	public List<Login> getPrincipalList() {
-		return principalList;
-	}
-	public void setPrincipalList(List<Login> principalList) {
-		this.principalList = principalList;
-	}
-	public List<Role> getUserRoleList() {
-		return userRoleList;
-	}
-	public void setUserRoleList(List<Role> userRoleList) {
-		this.userRoleList = userRoleList;
-	}
-	public boolean isNewUser() {
-		return isNewUser;
-	}
-	public void setNewUser(boolean isNewUser) {
-		this.isNewUser = isNewUser;
-	}
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public List<Login> getPrincipalList() {
+        return principalList;
+    }
+
+    public void setPrincipalList(List<Login> principalList) {
+        this.principalList = principalList;
+    }
+
+    public List<Role> getUserRoleList() {
+        return userRoleList;
+    }
+
+    public void setUserRoleList(List<Role> userRoleList) {
+        this.userRoleList = userRoleList;
+    }
+
+    public boolean isNewUser() {
+        return isNewUser;
+    }
+
+    public void setNewUser(boolean isNewUser) {
+        this.isNewUser = isNewUser;
+    }
 
     public SynchConfig getConfig() {
         return config;
@@ -67,6 +75,7 @@ public abstract class AbstractTransformScript implements TransformScript {
     public void setSynchConfigId(String synchConfigId) {
         this.synchConfigId = synchConfigId;
     }
+
     @Override
     public void setApplicationContext(ApplicationContext context) throws BeansException {
         this.context = context;

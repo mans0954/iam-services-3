@@ -10,33 +10,21 @@ import org.openiam.authmanager.common.model.AuthorizationGroup;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "UserToGroupAccessRequest", propOrder = {
-	"group"
+	"groupId"
 })
 public class UserToGroupAccessRequest extends UserRequest implements Serializable {
 
 	private static final long serialVersionUID = -1L;
 	
-	private AuthorizationGroup group;
+	private String groupId;
 
-	public AuthorizationGroup getGroup() {
-		return group;
+	public String getGroupId() {
+		return groupId;
 	}
 
-	public void setGroup(AuthorizationGroup group) {
-		this.group = group;
-	}
-	
-	public UserToGroupAccessRequest() {
-		
+	public void setGroupId(String groupId) {
+		this.groupId = groupId;
 	}
 
-	@Override
-	public String toString() {
-		return String
-				.format("UserToGroupAccessRequest [group=%s, getUserId()=%s, getLoginId()=%s]",
-						group, getUserId(), getLoginId());
-	}
-
-	
 	
 }

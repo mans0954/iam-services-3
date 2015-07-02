@@ -42,196 +42,144 @@ public class AuthorizationManagerHessianClient implements AuthorizationManagerHe
 	}
 	
 	@Override
-	public boolean isUserWithIdEntitledToResourceWithId(final String userId, final String resourceId) {
+	public boolean isUserEntitledToResource(final String userId, final String resourceId) {
 		preflightCheck();
 		long start = 0L;
 		if(isTimingEnabled) {
 			start = System.currentTimeMillis();
 		}
-		boolean retval = client.isUserWithIdEntitledToResourceWithId(userId, resourceId);
+		boolean retval = client.isUserEntitledToResource(userId, resourceId);
 		if(isTimingEnabled) {
 			long time = System.currentTimeMillis() - start;
-			final String logMessage = String.format("isUserEntitledToResoruceWithId: userId: %s, resourceId: %s, time: %s ms", userId, resourceId, time);
+			final String logMessage = String.format("isUserEntitledToResource: userId: %s, resourceId: %s, time: %s ms", userId, resourceId, time);
+			log.debug(logMessage);
+		}
+		return retval;
+	}
+	
+
+	@Override
+	public boolean isUserEntitledToResourceWithRight(final String userId, final String resourceId, final String rightId) {
+		preflightCheck();
+		long start = 0L;
+		if(isTimingEnabled) {
+			start = System.currentTimeMillis();
+		}
+		boolean retval = client.isUserEntitledToResourceWithRight(userId, resourceId, rightId);
+		if(isTimingEnabled) {
+			long time = System.currentTimeMillis() - start;
+			final String logMessage = String.format("isUserEntitledToResourceWithRight: userId: %s, resourceId: %s, rightId: %s, time: %s ms", 
+					userId, resourceId, rightId, time);
+			log.debug(logMessage);
+		}
+		return retval;
+	}
+
+
+	@Override
+	public boolean isUserMemberOfGroup(final String userId, final String groupId) {
+		preflightCheck();
+		long start = 0L;
+		if(isTimingEnabled) {
+			start = System.currentTimeMillis();
+		}
+		boolean retval = client.isUserMemberOfGroup(userId, groupId);
+		if(isTimingEnabled) {
+			long time = System.currentTimeMillis() - start;
+			final String logMessage = String.format("isUserMemberOfGroup: userId: %s, groupId: %s, time: %s ms", userId, groupId, time);
+			log.debug(logMessage);
+		}
+		return retval;
+	}
+	
+
+	@Override
+	public boolean isUserMemberOfGroupWithRight(final String userId, final String groupId, final String rightId) {
+		preflightCheck();
+		long start = 0L;
+		if(isTimingEnabled) {
+			start = System.currentTimeMillis();
+		}
+		boolean retval = client.isUserMemberOfGroupWithRight(userId, groupId, rightId);
+		if(isTimingEnabled) {
+			long time = System.currentTimeMillis() - start;
+			final String logMessage = String.format("isUserMemberOfGroupWithRight: userId: %s, groupId: %s, rightId: %s, time: %s ms", 
+					userId, groupId, rightId, time);
+			log.debug(logMessage);
+		}
+		return retval;
+	}
+
+
+	@Override
+	public boolean isUserMemberOfRole(final String userId, final String roleId) {
+		preflightCheck();
+		long start = 0L;
+		if(isTimingEnabled) {
+			start = System.currentTimeMillis();
+		}
+		boolean retval = client.isUserMemberOfRole(userId, roleId);
+		if(isTimingEnabled) {
+			long time = System.currentTimeMillis() - start;
+			final String logMessage = String.format("isUserMemberOfRole: userId: %s, roleId: %s, time: %s ms", userId, roleId, time);
+			log.debug(logMessage);
+		}
+		return retval;
+	}
+	
+
+	@Override
+	public boolean isUserMemberOfRoleWithRight(final String userId, final String roleId, final String rightId) {
+		preflightCheck();
+		long start = 0L;
+		if(isTimingEnabled) {
+			start = System.currentTimeMillis();
+		}
+		boolean retval = client.isUserMemberOfRoleWithRight(userId, roleId, rightId);
+		if(isTimingEnabled) {
+			long time = System.currentTimeMillis() - start;
+			final String logMessage = String.format("isUserMemberOfRoleWithRight: userId: %s, roleId: %s, rightId: %s, time: %s ms", 
+					userId, roleId, rightId, time);
+			log.debug(logMessage);
+		}
+		return retval;
+	}
+	
+
+	@Override
+	public boolean isUserMemberOfOrganization(final String userId, final String organizationId) {
+		preflightCheck();
+		long start = 0L;
+		if(isTimingEnabled) {
+			start = System.currentTimeMillis();
+		}
+		boolean retval = client.isUserMemberOfOrganization(userId, organizationId);
+		if(isTimingEnabled) {
+			long time = System.currentTimeMillis() - start;
+			final String logMessage = String.format("isUserMemberOfOrganization: userId: %s, roleId: %s, time: %s ms", 
+					userId, organizationId, time);
 			log.debug(logMessage);
 		}
 		return retval;
 	}
 
 	@Override
-	public boolean isUserWithIdEntitledToResourceWithName(final String userId, final String resourceName) {
+	public boolean isUserMemberOfOrganizationWithRight(final String userId, final String organizationId, final String rightId) {
 		preflightCheck();
 		long start = 0L;
 		if(isTimingEnabled) {
 			start = System.currentTimeMillis();
 		}
-		boolean retval = client.isUserWithIdEntitledToResourceWithName(userId, resourceName);
+		boolean retval = client.isUserMemberOfOrganizationWithRight(userId, organizationId, rightId);
 		if(isTimingEnabled) {
 			long time = System.currentTimeMillis() - start;
-			final String logMessage = String.format("isUserEntitledToResourceWithName: userId: %s, resourceName: %s, time: %s ms", userId, resourceName, time);
+			final String logMessage = String.format("isUserMemberOfOrganizationWithRight: userId: %s, roleId: %s, rightId: %s, time: %s ms", 
+					userId, organizationId, rightId, time);
 			log.debug(logMessage);
 		}
 		return retval;
 	}
 
-	@Override
-	public boolean isUserWithLoginEntitledToResourceWithId(final String login, final String managedSysId, final String resourceId) {
-		preflightCheck();
-		long start = 0L;
-		if(isTimingEnabled) {
-			start = System.currentTimeMillis();
-		}
-		boolean retval = client.isUserWithLoginEntitledToResourceWithId(login, managedSysId, resourceId);
-		if(isTimingEnabled) {
-			long time = System.currentTimeMillis() - start;
-			final String logMessage = String.format("isUserEntitledToResourceWithId: login: %s, managedSysId: %s, resourceId: %s, time: %s ms", login, managedSysId, resourceId, time);
-			log.debug(logMessage);
-		}
-		return retval;
-	}
-
-	@Override
-	public boolean isUserWithLoginEntitledToResourceWithName(final String login, final String managedSysId, final String resourceName) {
-		preflightCheck();
-		long start = 0L;
-		if(isTimingEnabled) {
-			start = System.currentTimeMillis();
-		}
-		boolean retval = client.isUserWithLoginEntitledToResourceWithName(login, managedSysId, resourceName);
-		if(isTimingEnabled) {
-			long time = System.currentTimeMillis() - start;
-			final String logMessage = String.format("isUserEntitledToResourceWithName: login: %s, managedSysId: %s, resourceName: %s, time: %s ms", login, managedSysId, resourceName, time);
-			log.debug(logMessage);
-		}
-		return retval;
-	}
-
-	@Override
-	public boolean isUserWithIdMemberOfGroupWithId(final String userId, final String groupId) {
-		preflightCheck();
-		long start = 0L;
-		if(isTimingEnabled) {
-			start = System.currentTimeMillis();
-		}
-		boolean retval = client.isUserWithIdMemberOfGroupWithId(userId, groupId);
-		if(isTimingEnabled) {
-			long time = System.currentTimeMillis() - start;
-			final String logMessage = String.format("isUserMemberOfGroupWithId: userId: %s, groupId: %s, time: %s ms", userId, groupId, time);
-			log.debug(logMessage);
-		}
-		return retval;
-	}
-
-	@Override
-	public boolean isUserWithIdMemberOfGroupWithName(final String userId, final String groupName) {
-		preflightCheck();
-		long start = 0L;
-		if(isTimingEnabled) {
-			start = System.currentTimeMillis();
-		}
-		boolean retval = client.isUserWithIdMemberOfGroupWithName(userId, groupName);
-		if(isTimingEnabled) {
-			long time = System.currentTimeMillis() - start;
-			final String logMessage = String.format("isUserMemberOfGroupWithName: userId: %s, groupName: %s, time: %s ms", userId, groupName, time);
-			log.debug(logMessage);
-		}
-		return retval;
-	}
-
-	@Override
-	public boolean isUserWithLoginMemberOfGroupWithId(final String login, final String managedSysId, final String groupId) {
-		preflightCheck();
-		long start = 0L;
-		if(isTimingEnabled) {
-			start = System.currentTimeMillis();
-		}
-		boolean retval = client.isUserWithLoginMemberOfGroupWithId(login, managedSysId, groupId);
-		if(isTimingEnabled) {
-			long time = System.currentTimeMillis() - start;
-			final String logMessage = String.format("isUserMemberOfGroupWithId: login: %s, managedSysId: %s, groupId: %s, time: %s ms", login, managedSysId, groupId, time);
-			log.debug(logMessage);
-		}
-		return retval;
-	}
-
-	@Override
-	public boolean isUserWithLoginMemberOfGroupWithName(final String login, final String managedSysId, final String groupName) {
-		preflightCheck();
-		long start = 0L;
-		if(isTimingEnabled) {
-			start = System.currentTimeMillis();
-		}
-		boolean retval = client.isUserWithLoginMemberOfGroupWithName(login, managedSysId, groupName);
-		if(isTimingEnabled) {
-			long time = System.currentTimeMillis() - start;
-			final String logMessage = String.format("isUserMemberOfGroupWithName: login: %s, managedSysId: %s, groupName: %s, time: %s ms", login, managedSysId, groupName, time);
-			log.debug(logMessage);
-		}
-		return retval;
-	}
-
-	@Override
-	public boolean isUserWithIdMemberOfRoleWithId(final String userId, final String roleId) {
-		preflightCheck();
-		long start = 0L;
-		if(isTimingEnabled) {
-			start = System.currentTimeMillis();
-		}
-		boolean retval = client.isUserWithIdMemberOfRoleWithId(userId, roleId);
-		if(isTimingEnabled) {
-			long time = System.currentTimeMillis() - start;
-			final String logMessage = String.format("isUserMemberOfRoleWithId: userId: %s, roleId: %s, time: %s ms", userId, roleId, time);
-			log.debug(logMessage);
-		}
-		return retval;
-	}
-
-	@Override
-	public boolean isUserWithIdMemberOfRoleWithName(final String userId, final String roleName) {
-		preflightCheck();
-		long start = 0L;
-		if(isTimingEnabled) {
-			start = System.currentTimeMillis();
-		}
-		boolean retval = client.isUserWithIdMemberOfRoleWithName(userId, roleName);
-		if(isTimingEnabled) {
-			long time = System.currentTimeMillis() - start;
-			final String logMessage = String.format("isUserMemberOfRoleWithName: userId: %s, roleName: %s, time: %s ms", userId, roleName, time);
-			log.debug(logMessage);
-		}
-		return retval;
-	}
-
-	@Override
-	public boolean isUserWithLoginMemberOfRoleWithId(final String login, final String managedSysId, final String roleId) {
-		preflightCheck();
-		long start = 0L;
-		if(isTimingEnabled) {
-			start = System.currentTimeMillis();
-		}
-		boolean retval = client.isUserWithLoginMemberOfRoleWithId(login, managedSysId, roleId);
-		if(isTimingEnabled) {
-			long time = System.currentTimeMillis() - start;
-			final String logMessage = String.format("isUserMemberOfRoleWithId: login: %s, managedSysId: %s, roleId: %s, time: %s ms", login, managedSysId, roleId, time);
-			log.debug(logMessage);
-		}
-		return retval;
-	}
-
-	@Override
-	public boolean isUserWithLoginMemberOfRoleWithName(final String login, final String managedSysId, final String roleName) {
-		preflightCheck();
-		long start = 0L;
-		if(isTimingEnabled) {
-			start = System.currentTimeMillis();
-		}
-		boolean retval = client.isUserWithLoginMemberOfRoleWithName(login, managedSysId, roleName);
-		if(isTimingEnabled) {
-			long time = System.currentTimeMillis() - start;
-			final String logMessage = String.format("isUserMemberOfRoleWithName: login: %s, managedSysId: %s, roleName: %s, time: %s ms", login, managedSysId, roleName, time);
-			log.debug(logMessage);
-		}
-		return retval;
-	}
 
 	@Override
 	public String[] getResourceIdsForUserWithId(final String userId) {
@@ -244,22 +192,6 @@ public class AuthorizationManagerHessianClient implements AuthorizationManagerHe
 		if(isTimingEnabled) {
 			long time = System.currentTimeMillis() - start;
 			final String logMessage = String.format("getResourceIdsForUser: userId: %s, time: %s ms", userId, time);
-			log.debug(logMessage);
-		}
-		return retval;
-	}
-
-	@Override
-	public String[] getResourceIdsForUserWithLogin(final String login, final String managedSysId) {
-		preflightCheck();
-		long start = 0L;
-		if(isTimingEnabled) {
-			start = System.currentTimeMillis();
-		}
-		String[] retval = client.getResourceIdsForUserWithLogin(login, managedSysId);
-		if(isTimingEnabled) {
-			long time = System.currentTimeMillis() - start;
-			final String logMessage = String.format("getResourceIdsForUser: login: %s, managedSysId: %s, time: %s ms", login, managedSysId, time);
 			log.debug(logMessage);
 		}
 		return retval;
@@ -282,22 +214,6 @@ public class AuthorizationManagerHessianClient implements AuthorizationManagerHe
 	}
 
 	@Override
-	public String[] getResourceNamesForUserWithLogin(final String login, final String managedSysId) {
-		preflightCheck();
-		long start = 0L;
-		if(isTimingEnabled) {
-			start = System.currentTimeMillis();
-		}
-		String[] retval = client.getResourceNamesForUserWithLogin(login, managedSysId);
-		if(isTimingEnabled) {
-			long time = System.currentTimeMillis() - start;
-			final String logMessage = String.format("getResourceNamesForUser: login: %s, managedSysId: %s, time: %s ms", login, managedSysId, time);
-			log.debug(logMessage);
-		}
-		return retval;
-	}
-
-	@Override
 	public String[] getGroupIdsForUserWithId(final String userId) {
 		preflightCheck();
 		long start = 0L;
@@ -308,22 +224,6 @@ public class AuthorizationManagerHessianClient implements AuthorizationManagerHe
 		if(isTimingEnabled) {
 			long time = System.currentTimeMillis() - start;
 			final String logMessage = String.format("getGroupIdsForUser: userId: %s, time: %s ms", userId, time);
-			log.debug(logMessage);
-		}
-		return retval;
-	}
-
-	@Override
-	public String[] getGroupIdsForUserWithLogin(final String login, final String managedSysId) {
-		preflightCheck();
-		long start = 0L;
-		if(isTimingEnabled) {
-			start = System.currentTimeMillis();
-		}
-		String[] retval = client.getGroupIdsForUserWithLogin(login, managedSysId);
-		if(isTimingEnabled) {
-			long time = System.currentTimeMillis() - start;
-			final String logMessage = String.format("getGroupIdsForUser: login: %s, managedSysId: %s, time: %s ms", login, managedSysId, time);
 			log.debug(logMessage);
 		}
 		return retval;
@@ -346,22 +246,6 @@ public class AuthorizationManagerHessianClient implements AuthorizationManagerHe
 	}
 
 	@Override
-	public String[] getGroupNamesForUserWithLogin(final String login, final String managedSysId) {
-		preflightCheck();
-		long start = 0L;
-		if(isTimingEnabled) {
-			start = System.currentTimeMillis();
-		}
-		String[] retval = client.getGroupNamesForUserWithLogin(login, managedSysId);
-		if(isTimingEnabled) {
-			long time = System.currentTimeMillis() - start;
-			final String logMessage = String.format("getGroupNamesForUser: login: %s, managedSysId: %s, time: %s ms", login, managedSysId, time);
-			log.debug(logMessage);
-		}
-		return retval;
-	}
-
-	@Override
 	public String[] getRoleIdsForUserWithId(final String userId) {
 		preflightCheck();
 		long start = 0L;
@@ -378,22 +262,6 @@ public class AuthorizationManagerHessianClient implements AuthorizationManagerHe
 	}
 
 	@Override
-	public String[] getRoleIdsForUserWithLogin(final String login, final String managedSysId) {
-		preflightCheck();
-		long start = 0L;
-		if(isTimingEnabled) {
-			start = System.currentTimeMillis();
-		}
-		String[] retval = client.getRoleIdsForUserWithLogin(login, managedSysId);
-		if(isTimingEnabled) {
-			long time = System.currentTimeMillis() - start;
-			final String logMessage = String.format("getRoleIdsForUser: login: %s, managedSysId: %s, time: %s ms", login, managedSysId, time);
-			log.debug(logMessage);
-		}
-		return retval;
-	}
-
-	@Override
 	public String[] getRoleNamesForUserWithId(final String userId) {
 		preflightCheck();
 		long start = 0L;
@@ -404,22 +272,6 @@ public class AuthorizationManagerHessianClient implements AuthorizationManagerHe
 		if(isTimingEnabled) {
 			long time = System.currentTimeMillis() - start;
 			final String logMessage = String.format("getRoleNamesForUser: userId: %s, time: %s ms", userId, time);
-			log.debug(logMessage);
-		}
-		return retval;
-	}
-
-	@Override
-	public String[] getRoleNamesForUserWithLogin(final String login, final String managedSysId) {
-		preflightCheck();
-		long start = 0L;
-		if(isTimingEnabled) {
-			start = System.currentTimeMillis();
-		}
-		String[] retval = client.getRoleNamesForUserWithLogin(login, managedSysId);
-		if(isTimingEnabled) {
-			long time = System.currentTimeMillis() - start;
-			final String logMessage = String.format("getRoleNamesForUser: login: %s, managedSysId: %s, time: %s ms", login, managedSysId, time);
 			log.debug(logMessage);
 		}
 		return retval;

@@ -32,10 +32,6 @@ public class LoginServiceTest extends AbstractKeyServiceTest<Login, LoginSearchB
 	public void _destroy() {
 		userServiceClient.removeUser(user.getId());
 	}
-
-	@Autowired
-	@Qualifier("loginServiceClient")
-	private LoginDataWebService loginServiceClient;
 	
 	@Override
 	protected Login newInstance() {

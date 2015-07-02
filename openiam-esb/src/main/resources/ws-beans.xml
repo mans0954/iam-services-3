@@ -98,7 +98,7 @@
 <!--let it it for now-->
     <jaxws:endpoint id="genericScriptConnectorEndpoint" implementor="#genericScriptConnector" address="/ScriptConnectorService"/>
 
-
+    <jaxws:endpoint id="accessReviewWSEndpoint" implementor="#accessReviewWS" address="/AccessReviewWebService"/>
 
     <jaxws:endpoint id="ldapConnectorServiceEndpoint" implementor="#genericLdapConnector" address="/LDAPConnectorService"/>
 

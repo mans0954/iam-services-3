@@ -141,6 +141,25 @@
 				<ref bean="loginSearchDAO" />
 				<ref bean="emailSearchDAO" />
 				<ref bean="phoneSearchDAO" />
+				
+				<ref bean="userToRoleMembershipHiberanteDAO" />
+				<ref bean="userToGroupMembershipHiberanteDAO" />
+				<ref bean="userToResourceMembershipHiberanteDAO" />
+				<ref bean="userToOrgMembershipHiberanteDAO" />
+				
+				<ref bean="orgToRoleMembershipHibernateDAO" />
+				<ref bean="orgToGroupMembershipHibernateDAO" />
+				<ref bean="orgToOrgMembershipHibernateDAO" />
+				<ref bean="orgToResourceMembershipHibernateDAO" />
+				
+				<ref bean="roleToGroupMembershipHibernateDAO" />
+				<ref bean="roleToRoleMembershipHibernateDAO" />
+				<ref bean="roleToResourceMembershipHibernateDAO" />
+				
+				<ref bean="groupToGroupMembershipHibernateDAO" />
+				<ref bean="groupToResourceMembershipHibernateDAO" />
+				
+				<ref bean="resourceToResourceMembershipHibernateDAO" />
 			</list>
 		</property>
 	</bean>

@@ -11,6 +11,7 @@ import org.openiam.idm.srvc.synch.dto.SynchConfig;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -40,8 +41,11 @@ public class SynchConfigEntity extends AbstractKeyNameEntity {
     private Integer loadMatchOnly;
     @Column(name="UPDATE_ATTRIBUTE")
     private Integer updateAttribute;
-    @Column(name="SYNCH_FREQUENCY",length=20)
-    private String synchFrequency;
+    @Column(name = "RUN_ON", length=19)
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date runOn;
+    @Column(name = "CRON_EXPRESSION",length=100)
+    private String cronExpression;
     @Column(name = "COMPANY_ID", length = 32)
     private String companyId;
     @Column(name="SYNCH_TYPE",length=20)
@@ -165,12 +169,20 @@ public class SynchConfigEntity extends AbstractKeyNameEntity {
         this.updateAttribute = updateAttribute;
     }
 
-    public String getSynchFrequency() {
-        return this.synchFrequency;
+    public Date getRunOn() {
+        return runOn;
     }
 
-    public void setSynchFrequency(String synchFrequency) {
-        this.synchFrequency = synchFrequency;
+    public void setRunOn(Date runOn) {
+        this.runOn = runOn;
+    }
+
+    public String getCronExpression() {
+        return cronExpression;
+    }
+
+    public void setCronExpression(String cronExpression) {
+        this.cronExpression = cronExpression;
     }
 
     public String getCompanyId() {
@@ -441,7 +453,8 @@ public class SynchConfigEntity extends AbstractKeyNameEntity {
                 ", managedSysId='" + managedSysId + '\'' +
                 ", loadMatchOnly=" + loadMatchOnly +
                 ", updateAttribute=" + updateAttribute +
-                ", synchFrequency='" + synchFrequency + '\'' +
+                ", runOn=" + runOn +
+                ", cronExpression='" + cronExpression + '\'' +
                 ", companyId='" + companyId + '\'' +
                 ", synchType='" + synchType + '\'' +
                 ", processRule='" + processRule + '\'' +
@@ -515,8 +528,8 @@ public class SynchConfigEntity extends AbstractKeyNameEntity {
         if (srcPassword != null ? !srcPassword.equals(that.srcPassword) : that.srcPassword != null) return false;
         if (status != null ? !status.equals(that.status) : that.status != null) return false;
         if (!synchAdapter.equals(that.synchAdapter)) return false;
-        if (synchFrequency != null ? !synchFrequency.equals(that.synchFrequency) : that.synchFrequency != null)
-            return false;
+        if (cronExpression != null ? !cronExpression.equals(that.cronExpression) : that.cronExpression != null) return false;
+        if (runOn != null ? !runOn.equals(that.runOn) : that.runOn != null) return false;
         if (companyId != null ? !companyId.equals(that.companyId) : that.companyId != null) return false;
         if (synchType != null ? !synchType.equals(that.synchType) : that.synchType != null) return false;
         if (!transformationRule.equals(that.transformationRule)) return false;
@@ -543,7 +556,8 @@ public class SynchConfigEntity extends AbstractKeyNameEntity {
         result = 31 * result + (managedSysId != null ? managedSysId.hashCode() : 0);
         result = 31 * result + (loadMatchOnly != null ? loadMatchOnly.hashCode() : 0);
         result = 31 * result + (updateAttribute != null ? updateAttribute.hashCode() : 0);
-        result = 31 * result + (synchFrequency != null ? synchFrequency.hashCode() : 0);
+        result = 31 * result + (cronExpression != null ? cronExpression.hashCode() : 0);
+        result = 31 * result + (runOn != null ? runOn.hashCode() : 0);
         result = 31 * result + (companyId != null ? companyId.hashCode() : 0);
         result = 31 * result + (synchType != null ? synchType.hashCode() : 0);
         result = 31 * result + (processRule != null ? processRule.hashCode() : 0);

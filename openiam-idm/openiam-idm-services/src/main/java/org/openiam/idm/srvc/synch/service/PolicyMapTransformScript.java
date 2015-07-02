@@ -15,7 +15,14 @@ import org.openiam.idm.srvc.synch.dto.LineObject;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.service.AbstractProvisioningService;
+import org.openiam.provision.service.ProvisionServiceUtil;
 import org.openiam.script.ScriptIntegration;
+import org.openiam.util.SpringContextProvider;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import java.util.*;
 
@@ -25,12 +32,15 @@ public class PolicyMapTransformScript extends AbstractTransformScript {
 
     private List<AttributeMap> attrMap;
 
+    public PolicyMapTransformScript() {
+    }
+
     public PolicyMapTransformScript(List<AttributeMap> attrMap) {
         this.attrMap = attrMap;
     }
+
     @Override
     public int execute(LineObject rowObj, ProvisionUser pUser) {
-
         System.out.println("Is New User: " + isNewUser);
         if (!isNewUser) {
             System.out.println("User Object: " + user);
@@ -38,7 +48,7 @@ public class PolicyMapTransformScript extends AbstractTransformScript {
             System.out.println("User Roles: " + userRoleList);
         }
         System.out.println("---------------------------------");
-        System.out.println("Synching object with Policy Maps for: " + rowObj );
+        System.out.println("Synching object with Policy Maps for: " + rowObj);
 
         pUser.setStatus(UserStatusEnum.ACTIVE);
 
@@ -47,19 +57,19 @@ public class PolicyMapTransformScript extends AbstractTransformScript {
         pUser.setSkipPreprocessor(true);
 
         // Add default role
-        if(userRoleList == null) {
-            userRoleList = new LinkedList<Role>();
-        }
-        final RoleEntity role = ((RoleDataService)context.getBean("roleDataService")).getRoleByName("End User", null);
-        final RoleDozerConverter roleDozerConverter = ((RoleDozerConverter)context.getBean("roleDozerConverter"));
-        final Role r = roleDozerConverter.convertToDTO(role, false);
-        userRoleList.add(r);
-
-        if (userRoleList != null) {
-        	userRoleList.forEach(e -> {
-        		pUser.addRole(e, null);
-        	});
-        }
+//        if(userRoleList == null) {
+//            userRoleList = new LinkedList<Role>();
+//        }
+//        final RoleEntity role = ((RoleDataService)context.getBean("roleDataService")).getRoleByName("End User", null);
+//        final RoleDozerConverter roleDozerConverter = ((RoleDozerConverter)context.getBean("roleDozerConverter"));
+//        final Role r = roleDozerConverter.convertToDTO(role, false);
+//        userRoleList.add(r);
+//
+//        if (userRoleList != null) {
+//        	userRoleList.forEach(e -> {
+//        		pUser.addRole(e, null);
+//        	});
+//        }
 
         populateUser(rowObj, pUser);
 
@@ -73,24 +83,20 @@ public class PolicyMapTransformScript extends AbstractTransformScript {
         if (principalList == null) {
             principalList = new ArrayList<Login>();
         }
-        ScriptIntegration scriptRunner = (ScriptIntegration)context.getBean("configurableGroovyScriptEngine");
+
+        ScriptIntegration scriptRunner = SpringContextProvider.getBean("configurableGroovyScriptEngine", ScriptIntegration.class);
+        ProvisionServiceUtil provisionServiceUtil = SpringContextProvider.getBean("provisionServiceUtil", ProvisionServiceUtil.class);
         if (attrMap != null) {
-            Map<String,Attribute> columnMap =  rowObj.getColumnMap();
+            Map<String, Attribute> columnMap = rowObj.getColumnMap();
             for (AttributeMap am : attrMap) {
 
                 if ("INACTIVE".equalsIgnoreCase(am.getStatus())) {
                     continue;
                 }
-
                 Attribute attribute = columnMap.get(am.getName());
                 try {
                     Map<String, Object> bindingMap = new HashMap<String, Object>();
-                    Policy policy = (am.getReconResAttribute() != null) ?
-                            am.getReconResAttribute().getAttributePolicy() : null;
-
-                    if (policy != null) {
                         bindingMap.put("objectType", am.getMapForObjectType());
-                        bindingMap.put("policy", policy);
                         bindingMap.put("rowObj", rowObj);
                         bindingMap.put("attributeName", am.getName());
                         bindingMap.put("attribute", attribute);
@@ -101,12 +107,8 @@ public class PolicyMapTransformScript extends AbstractTransformScript {
                         bindingMap.put("isNewUser", isNewUser);
                         bindingMap.put(AbstractProvisioningService.ATTRIBUTE_MAP, am);
                         bindingMap.put(AbstractProvisioningService.ATTRIBUTE_DEFAULT_VALUE, am.getDefaultValue());
-
-                        SynchServiceUtil.setUserDataFromPolicy(policy, bindingMap, scriptRunner);
-
-                    }
-
-                } catch (ScriptEngineException e) {
+                        provisionServiceUtil.setValueFromAttrMap(am, bindingMap, scriptRunner);
+                } catch (Exception e) {
                     log.error(e);
                 }
             }
@@ -114,5 +116,11 @@ public class PolicyMapTransformScript extends AbstractTransformScript {
     }
 
     @Override
-    public void init() {}
+    public void init() {
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+
+    }
 }

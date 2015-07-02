@@ -17,6 +17,15 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
+import org.openiam.elasticsearch.annotation.ElasticsearchField;
+import org.openiam.elasticsearch.annotation.ElasticsearchFieldBridge;
+import org.openiam.elasticsearch.annotation.ElasticsearchIndex;
+import org.openiam.elasticsearch.annotation.ElasticsearchMapping;
+import org.openiam.elasticsearch.bridge.GroupBridge;
+import org.openiam.elasticsearch.constants.ESIndexName;
+import org.openiam.elasticsearch.constants.ESIndexType;
+import org.openiam.elasticsearch.constants.ElasticsearchStore;
+import org.openiam.elasticsearch.constants.Index;
 import org.openiam.idm.srvc.access.domain.AccessRightEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.membership.domain.AbstractMembershipXrefEntity;
@@ -26,7 +35,9 @@ import org.openiam.idm.srvc.res.domain.ResourceEntity;
 @Table(name = "GRP_ROLE")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @AttributeOverride(name = "id", column = @Column(name = "MEMBERSHIP_ID"))
-public class RoleToGroupMembershipXrefEntity extends AbstractMembershipXrefEntity {
+@ElasticsearchIndex(indexName = ESIndexName.ROLE_TO_GRP_XREF)
+@ElasticsearchMapping(typeName = ESIndexType.ROLE_TO_GRP_XREF)
+public class RoleToGroupMembershipXrefEntity extends AbstractMembershipXrefEntity<RoleEntity, GroupEntity> {
 
 	@ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
 	@JoinColumn(name = "ROLE_ID", referencedColumnName = "ROLE_ID", insertable = true, updatable = false, nullable=false)
@@ -34,6 +45,7 @@ public class RoleToGroupMembershipXrefEntity extends AbstractMembershipXrefEntit
 	    
 	@ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
 	@JoinColumn(name = "GRP_ID", referencedColumnName = "GRP_ID", insertable = true, updatable = false, nullable=false)
+	@ElasticsearchField(name = "memberEntityId", bridge=@ElasticsearchFieldBridge(impl = GroupBridge.class), store = ElasticsearchStore.Yes, index = Index.Not_Analyzed)
 	private GroupEntity memberEntity;
 	    
 	 /* this is eager.  If you're loading the XREF - it's to get the rights */

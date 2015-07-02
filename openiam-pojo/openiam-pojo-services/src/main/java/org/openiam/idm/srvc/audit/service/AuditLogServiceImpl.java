@@ -132,20 +132,22 @@ public class AuditLogServiceImpl implements AuditLogService {
     			for(final AuditLogTarget target : log.getTargets()) {
                     if(StringUtils.isNotEmpty(target.getTargetId()) && StringUtils.isEmpty(target.getObjectPrincipal())) {
                         if(AuditTarget.USER.value().equals(target.getTargetType())) {
-                            List<LoginEntity> principals = loginDAO.findUser(target.getTargetId());
-                            LoginEntity loginEntity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), principals);
-                            target.setObjectPrincipal(loginEntity.getLogin());
+                            final List<LoginEntity> principals = loginDAO.findUser(target.getTargetId());
+                            final LoginEntity loginEntity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), principals);
+                            if(loginEntity != null) {
+                            	target.setObjectPrincipal(loginEntity.getLogin());
+                            }
                         } else if(AuditTarget.ROLE.value().equals(target.getTargetType())) {
-                            RoleEntity role = roleDAO.findById(target.getTargetId());
+                        	final RoleEntity role = roleDAO.findById(target.getTargetId());
                             target.setObjectPrincipal(role.getName());
                         } else if(AuditTarget.GROUP.value().equals(target.getTargetType())) {
-                            GroupEntity role = groupDAO.findById(target.getTargetId());
+                        	final GroupEntity role = groupDAO.findById(target.getTargetId());
                             target.setObjectPrincipal(role.getName());
                         } else if(AuditTarget.ORG.value().equals(target.getTargetType())) {
-                            OrganizationEntity org = organizationDAO.findById(target.getTargetId());
+                        	final OrganizationEntity org = organizationDAO.findById(target.getTargetId());
                             target.setObjectPrincipal(org.getName());
                         } else if(AuditTarget.RESOURCE.value().equals(target.getTargetType())) {
-                            ResourceEntity res = resourceDAO.findById(target.getTargetId());
+                        	final ResourceEntity res = resourceDAO.findById(target.getTargetId());
                             target.setObjectPrincipal(res.getName());
                         }
                     }
