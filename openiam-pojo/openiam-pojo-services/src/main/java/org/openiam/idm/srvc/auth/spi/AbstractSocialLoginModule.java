@@ -210,7 +210,7 @@ public class AbstractSocialLoginModule<Profile extends AbstractSocialProfile> ex
         sub.setSsoToken(token(login.getUserId(), tokenType, tokenLife, tokenParam));
         setResultCode(login, sub, curDate, policy);
 
-        newLoginEvent.setSuccessReason("Succssfull authentication into Default Login Module");
+        newLoginEvent.setSuccessReason("Successful authentication into Default Login Module");
         return sub;
     }
 
