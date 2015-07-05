@@ -51,7 +51,6 @@ public class JDBCUserDAOImpl extends AbstractJDBCDao implements UserDAO {
     private String GET_ALL_USERS_LOGGED_IN_AFTER = GET_FULLY_POPULATED_USER_RS_LIST + "WHERE LAST_LOGIN >= ?";
 	private String GET_FULLY_POPULATED_USER_BY_ID = GET_FULLY_POPULATED_USER_RS_LIST + "WHERE l.USER_ID=?";
 	
-	private static final ResultSetExtractor<InternalAuthroizationUser> internalAuthorizationuserMapper = new InternalAuthroizationUserMapper();
 	private static final ResultSetExtractor<List<AuthorizationUser>> userMapper = new UserMapper();
     private static final RowMapper<String> userIdMapper = new UserIdMapper();
 	@Override
@@ -64,24 +63,6 @@ public class JDBCUserDAOImpl extends AbstractJDBCDao implements UserDAO {
         GET_ALL_USERS_IDS_FOR_ROLE = String.format(GET_ALL_USERS_IDS_FOR_ROLE, schemaName);
         GET_ALL_USERS_IDS_FOR_GROUP = String.format(GET_ALL_USERS_IDS_FOR_GROUP, schemaName);
         GET_ALL_USERS_IDS_FOR_RESOURCE = String.format(GET_ALL_USERS_IDS_FOR_RESOURCE, schemaName);
-	}
-	
-	@Override
-	public List<AuthorizationUser> getAllUsersLoggedInAfter(final Date date) {
-		if(log.isDebugEnabled()) {
-			log.debug(String.format("Query: %s", GET_ALL_USERS_LOGGED_IN_AFTER));
-			log.debug(String.format("Params: %s", date));
-		}
-		return getJdbcTemplate().query(GET_ALL_USERS_LOGGED_IN_AFTER, new Object[] {date}, userMapper);
-	}
-
-	@Override
-	public InternalAuthroizationUser getFullUser(String userId) {
-		if(log.isDebugEnabled()) {
-			log.debug(String.format("Query: %s", GET_FULLY_POPULATED_USER_BY_ID));
-			log.debug(String.format("Params: %s", userId));
-		}
-		return getJdbcTemplate().query(GET_FULLY_POPULATED_USER_BY_ID, new Object[] {userId}, internalAuthorizationuserMapper);
 	}
 
     @Override
@@ -143,45 +124,7 @@ public class JDBCUserDAOImpl extends AbstractJDBCDao implements UserDAO {
 		}	
 	}
 	
-	private static class InternalAuthroizationUserMapper implements ResultSetExtractor<InternalAuthroizationUser> {
-
-		@Override
-		public InternalAuthroizationUser extractData(final ResultSet rs) throws SQLException, DataAccessException {
-			final InternalAuthroizationUser user = new InternalAuthroizationUser();;
-			while(rs.next()) {
-				final String userId = rs.getString("L_USER_ID");
-				final String groupId = rs.getString("GM_GROUP_ID");
-				final String roleId = rs.getString("RM_ROLE_ID");
-				final String resourceId = rs.getString("RESM_RESOURCE_ID");
-				
-				user.setUserId(userId);
-				user.addGroupId(groupId);
-				user.addRoleId(roleId);
-				user.addResourceId(resourceId);
-			}
-			return (user.getUserId() != null) ? user : null;
-		}
-		
-	}
 	
-	
-	
-	private static class LoginIdMapper implements RowMapper<AuthorizationManagerLoginId> {
-		@Override
-		public AuthorizationManagerLoginId mapRow(ResultSet rs, int rowNum) throws SQLException {
-//			final String serviceId = rs.getString("SERVICE_ID");
-			final String login = rs.getString("LOGIN");
-			final String managedSysId = rs.getString("MANAGED_SYS_ID");
-			final String userId = rs.getString("USER_ID");
-			
-			final AuthorizationManagerLoginId loginId = new AuthorizationManagerLoginId();
-			loginId.setLogin(login);
-			loginId.setManagedSysId(managedSysId);
-			loginId.setUserId(userId);
-			return loginId;
-		}
-	}
-
     private static class UserIdMapper implements RowMapper<String> {
         @Override
         public String mapRow(ResultSet rs, int rowNum) throws SQLException {
