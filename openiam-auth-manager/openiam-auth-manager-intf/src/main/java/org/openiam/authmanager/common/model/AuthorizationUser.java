@@ -35,12 +35,16 @@ public class AuthorizationUser extends AbstractAuthorizationEntity implements Se
 	private BitSet linearResourceBitSet = new BitSet();
 	private BitSet linearOrganizationBitSet = new BitSet();
 	
-	private AuthorizationUser() {
+	public AuthorizationUser() {
 		
 	}
 	
-	public AuthorizationUser(final UserEntity entity) {
-		super.setId(entity.getId());
+	public AuthorizationUser(final AuthorizationUser entity) {
+		super(entity);
+	}
+	
+	public AuthorizationUser(final InternalAuthroizationUser entity) {
+		super.setId(entity.getUserId());
 	}
 	
 	public void addOrganization(final OrgUserXref organization) {

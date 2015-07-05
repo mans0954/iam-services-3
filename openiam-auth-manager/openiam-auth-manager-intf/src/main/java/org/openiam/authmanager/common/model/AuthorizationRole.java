@@ -15,6 +15,7 @@ import org.openiam.authmanager.common.xref.AbstractRoleXref;
 import org.openiam.authmanager.common.xref.ResourceRoleXref;
 import org.openiam.authmanager.common.xref.RoleGroupXref;
 import org.openiam.authmanager.common.xref.RoleRoleXref;
+import org.openiam.base.KeyDTO;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 
 
@@ -34,16 +35,13 @@ public class AuthorizationRole extends AbstractAuthorizationEntity implements Se
 	@XmlTransient
 	private Set<RoleGroupXref> groups = null;
 
-	private AuthorizationRole() {
+	public AuthorizationRole() {
 		
 	}
 	
-	public AuthorizationRole(final RoleEntity entity, final int bitIdx) {
+	public AuthorizationRole(final AuthorizationRole entity, final int bitIdx) {
+		super(entity);
 		super.setBitSetIdx(bitIdx);
-		super.setDescription(entity.getDescription());
-		super.setId(entity.getId());
-		super.setName(entity.getName());
-		super.setStatus(entity.getStatus());
 	}
 	
 	public void addParentRole(final RoleRoleXref role) {
@@ -82,24 +80,6 @@ public class AuthorizationRole extends AbstractAuthorizationEntity implements Se
 			resources = new HashSet<ResourceRoleXref>();
 		}
 		resources.add(resource);
-	}
-	
-	/**
-	 * Compiles this Role against it's Role and Resource Membership
-	 */
-	@Override
-	public void compile() {
-		/*
-		final Set<Role> compiledRoles = visitRoles(new HashSet<Role>());
-		for(final Role role : compiledRoles) {
-			linearRoleBitSet.set(new Integer(role.getBitSetIdx()));
-		}
-		
-		final Set<Resource> compiledResources = visitResources(new HashSet<Role>());
-		for(final Resource resource : compiledResources) {
-			linearResourceBitSet.set(resource.getBitSetIdx());
-		}
-		*/
 	}
 	
 	public Set<AbstractRoleXref> visitRoles(final Set<AuthorizationRole> visitedSet) {

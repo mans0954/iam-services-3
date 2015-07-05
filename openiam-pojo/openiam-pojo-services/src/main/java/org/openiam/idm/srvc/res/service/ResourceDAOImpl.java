@@ -1,13 +1,14 @@
 package org.openiam.idm.srvc.res.service;
 
+import java.util.List;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
-import org.hibernate.FetchMode;
 import org.hibernate.criterion.MatchMode;
-import org.hibernate.criterion.Order;
+import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.base.Tuple;
 import org.openiam.core.dao.BaseDaoImpl;
@@ -17,16 +18,8 @@ import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
 import org.openiam.idm.srvc.searchbean.converter.ResourceSearchBeanConverter;
 import org.openiam.internationalization.LocalizedDatabaseGet;
-import org.openiam.util.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
-
-import javax.annotation.Resource;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import static org.hibernate.criterion.Projections.rowCount;
 
 /**
  * DAO Implementation for Resources.
@@ -244,4 +237,5 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 			}
 		}
 	}
+
 }

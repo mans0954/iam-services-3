@@ -13,6 +13,7 @@ import org.openiam.authmanager.common.xref.AbstractGroupXref;
 import org.openiam.authmanager.common.xref.AbstractResourceXref;
 import org.openiam.authmanager.common.xref.GroupGroupXref;
 import org.openiam.authmanager.common.xref.ResourceGroupXref;
+import org.openiam.base.KeyDTO;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -21,8 +22,6 @@ import org.openiam.idm.srvc.grp.domain.GroupEntity;
 public class AuthorizationGroup extends AbstractAuthorizationEntity implements Serializable  {
 
 	private static final long serialVersionUID = 1L;
-
-	private String adminResourceId;
 	
 	@XmlTransient
 	private Set<GroupGroupXref> parentGroups = null;
@@ -37,25 +36,13 @@ public class AuthorizationGroup extends AbstractAuthorizationEntity implements S
 	private BitSet linearResourceBitSet = new BitSet();
 	*/
 	
-	private AuthorizationGroup() {
+	public AuthorizationGroup() {
 		
 	}
 	
-	public AuthorizationGroup(final GroupEntity entity, final int bitIdx) {
+	public AuthorizationGroup(final AuthorizationGroup dto, final int bitIdx) {
+		super(dto);
 		super.setBitSetIdx(bitIdx);
-		super.setDescription(entity.getDescription());
-		super.setId(entity.getId());
-		super.setName(entity.getName());
-		super.setStatus(entity.getStatus());
-		this.adminResourceId = (entity.getAdminResource() != null) ? entity.getAdminResource().getId() : null;
-	}
-
-	public String getAdminResourceId() {
-		return adminResourceId;
-	}
-
-	public void setAdminResourceId(String adminResourceId) {
-		this.adminResourceId = adminResourceId;
 	}
 
 	public void addParentGroup(final GroupGroupXref group) {
@@ -78,28 +65,6 @@ public class AuthorizationGroup extends AbstractAuthorizationEntity implements S
 			retVal = new HashSet<AbstractResourceXref>(resources);
 		}
 		return retVal;
-	}
-	
-    /**
-	 * Compiles this Group against it's Role, Group, and Resource Membership
-	 */
-	public void compile() {
-		/*
-		final Set<Group> compiledGroupSet = visitGroups(new HashSet<Group>());
-		for(final Group group : compiledGroupSet) {
-			linearGroupBitSet.set(group.getBitSetIdx());
-		}
-		
-		final Set<Role> compiledRoleSet = visitRoles(new HashSet<Group>());
-		for(final Role role : compiledRoleSet) {
-			linearRoleBitSet.set(role.getBitSetIdx());
-		}
-		
-		final Set<Resource> compiledResourceSet = visitResources(new HashSet<Group>());
-		for(final Resource resource : compiledResourceSet) {
-			linearResourceBitSet.set(resource.getBitSetIdx());
-		}
-		*/
 	}
 	
 	public Set<AbstractGroupXref> visitGroups(final Set<AuthorizationGroup> visitedSet) {

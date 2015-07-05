@@ -95,7 +95,9 @@ public class ElasticsearchProvider implements InitializingBean, DisposableBean {
                 }
             }
 
-            logger.warn(sb.toString());
+            if(logger.isTraceEnabled()) {
+            	logger.trace(sb.toString());
+            }
 
             BulkResponse bulkResponse = bulkRequest.execute().actionGet();
             if (bulkResponse.hasFailures()) {

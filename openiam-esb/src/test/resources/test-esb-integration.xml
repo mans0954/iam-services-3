@@ -30,8 +30,8 @@
         <property name="user" value="${openiam.username}" />
         <property name="password" value="${openiam.password}" />
 
-        <property name="minPoolSize" value="1" />
-        <property name="maxPoolSize" value="2" />
+        <property name="minPoolSize" value="5" />
+        <property name="maxPoolSize" value="20" />
         <property name="loginTimeout" value="300" />
     </bean>
 

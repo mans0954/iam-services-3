@@ -1,15 +1,17 @@
 package org.openiam.authmanager.common.model;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 public class InternalAuthroizationUser {
 
 	private String userId;
-	private Set<String> resourceIds;
-	private Set<String> roleIds;
-	private Set<String> groupIds;
-	private Set<String> organizationIds;
+	private Map<String, Set<String>> resources = new HashMap<String, Set<String>>();
+	private Map<String, Set<String>> roles = new HashMap<String, Set<String>>();
+	private Map<String, Set<String>> groups = new HashMap<String, Set<String>>();
+	private Map<String, Set<String>> organizations = new HashMap<String, Set<String>>();
 	
 	public InternalAuthroizationUser() {
 		
@@ -23,101 +25,62 @@ public class InternalAuthroizationUser {
 		return userId;
 	}
 
-	public Set<String> getOrganizationIds() {
-		return organizationIds;
+	public Map<String, Set<String>> getResources() {
+		return resources;
 	}
 
-	public Set<String> getResourceIds() {
-		return resourceIds;
+	public void setResources(Map<String, Set<String>> resources) {
+		this.resources = resources;
 	}
 
-	public Set<String> getRoleIds() {
-		return roleIds;
+	public Map<String, Set<String>> getRoles() {
+		return roles;
 	}
 
-	public Set<String> getGroupIds() {
-		return groupIds;
+	public void setRoles(Map<String, Set<String>> roles) {
+		this.roles = roles;
+	}
+
+	public Map<String, Set<String>> getGroups() {
+		return groups;
+	}
+
+	public void setGroups(Map<String, Set<String>> groups) {
+		this.groups = groups;
+	}
+
+	public Map<String, Set<String>> getOrganizations() {
+		return organizations;
+	}
+
+	public void setOrganizations(Map<String, Set<String>> organizations) {
+		this.organizations = organizations;
+	}
+
+	public void addResourceRight(final String entityId, final String rightId) {
+		add(resources, entityId, rightId);
 	}
 	
-	public void addResourceId(final String resourceId) {
-		if(resourceIds == null) {
-			resourceIds = new HashSet<String>();
+	public void addGroupRight(final String entityId, final String rightId) {
+		add(groups, entityId, rightId);
+	}
+	
+	public void addRoleRight(final String entityId, final String rightId) {
+		add(roles, entityId, rightId);
+	}
+	
+	public void addOrganizationRight(final String entityId, final String rightId) {
+		add(organizations, entityId, rightId);
+	}
+	
+	private void add(final Map<String, Set<String>> map, final String entityId, final String rightId) {
+		if(entityId != null) {
+			if(!map.containsKey(entityId)) {
+				map.put(entityId, new HashSet<String>());
+			}
+			if(rightId != null) {
+				map.get(entityId).add(rightId);
+			}
 		}
-		if(resourceId!=null)
-			resourceIds.add(resourceId);
 	}
-	
-	public void addRoleId(final String roleId) {
-		if(roleIds == null) {
-			roleIds = new HashSet<String>();
-		}
-		if(roleId!=null)
-			roleIds.add(roleId);
-	}
-	
-	public void addGroupId(final String groupId) {
-		if(groupIds == null) {
-			groupIds = new HashSet<String>();
-		}
-		if(groupId!=null)
-			groupIds.add(groupId);
-	}
-	
-	public void addOrganizationId(final String organizationId) {
-		if(organizationIds == null) {
-			organizationIds = new HashSet<String>();
-		}
-		if(organizationId != null) {
-			organizationIds.add(organizationId);
-		}
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((userId == null) ? 0 : userId.hashCode());
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		InternalAuthroizationUser other = (InternalAuthroizationUser) obj;
-		if (groupIds == null) {
-			if (other.groupIds != null)
-				return false;
-		} else if (!groupIds.equals(other.groupIds))
-			return false;
-		if (resourceIds == null) {
-			if (other.resourceIds != null)
-				return false;
-		} else if (!resourceIds.equals(other.resourceIds))
-			return false;
-		if (roleIds == null) {
-			if (other.roleIds != null)
-				return false;
-		} else if (!roleIds.equals(other.roleIds))
-			return false;
-		if (userId == null) {
-			if (other.userId != null)
-				return false;
-		} else if (!userId.equals(other.userId))
-			return false;
-		return true;
-	}
-
-	@Override
-	public String toString() {
-		return String
-				.format("InternalAuthroizationUser [userId=%s, resourceIds=%s, roleIds=%s, groupIds=%s]",
-						userId, resourceIds, roleIds, groupIds);
-	}
-	
-	
 }

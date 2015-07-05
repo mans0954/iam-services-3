@@ -18,9 +18,7 @@ import org.openiam.idm.srvc.res.domain.ResourceEntity;
         "resourceTypeId",
         "inheritFromParent",
         "isPublic",
-        "risk",
-        "adminResourceId",
-        "coorelatedName"
+        "risk"
 })
 public class AuthorizationResource extends AbstractAuthorizationEntity implements Serializable  {
 
@@ -37,14 +35,11 @@ public class AuthorizationResource extends AbstractAuthorizationEntity implement
 
     private String risk;
 
-    private String adminResourceId;
-
-    private String coorelatedName;
 	/*
 	private BitSet linearBitSet = new BitSet();
 	*/
 	
-	private AuthorizationResource() {
+	public AuthorizationResource() {
 		
 	}
 	
@@ -52,16 +47,16 @@ public class AuthorizationResource extends AbstractAuthorizationEntity implement
 		super.setId(menu.getId());
 	}
 	
-	public AuthorizationResource(final ResourceEntity entity, final int bitIdx) {
+	public AuthorizationResource(final ResourceEntity entity) {
+		super(entity);
+	}
+	
+	public AuthorizationResource(final AuthorizationResource entity, final int bitIdx) {
+		super(entity);
 		super.setBitSetIdx(bitIdx);
-		super.setDescription(entity.getDescription());
-		super.setId(entity.getId());
-		super.setName(entity.getName());
-		this.adminResourceId = (entity.getAdminResource() != null) ? entity.getAdminResource().getId() : null;
-		this.isPublic = entity.getIsPublic();
-		this.coorelatedName = entity.getCoorelatedName();
-		this.risk = (entity.getRisk() != null) ? entity.getRisk().name() : null;
-		this.resourceTypeId = (entity.getResourceType() != null) ? entity.getResourceType().getId() : null;
+		this.isPublic = entity.isPublic();
+		this.risk = entity.getRisk();
+		this.resourceTypeId = entity.getResourceTypeId();
 	}
 		
 	public boolean isInheritFromParent() {
@@ -99,35 +94,6 @@ public class AuthorizationResource extends AbstractAuthorizationEntity implement
         this.risk = risk;
     }
 
-    public String getAdminResourceId() {
-        return adminResourceId;
-    }
-
-    public void setAdminResourceId(String adminResourceId) {
-        this.adminResourceId = adminResourceId;
-    }
-
-    public String getCoorelatedName() {
-        return coorelatedName;
-    }
-
-    public void setCoorelatedName(String coorelatedName) {
-        this.coorelatedName = coorelatedName;
-    }
-
-    /**
-	 * Compiles this Resource against it's Resource Membership
-	 */
-	@Override
-	public void compile() {
-		/*
-		final Set<Resource> compiledSet = visitResources(new HashSet<Resource>());
-		for(final Resource resource : compiledSet) {
-			linearBitSet.set(new Integer(resource.getBitSetIdx()));
-		}
-		*/
-	}
-	
 	public Set<AbstractResourceXref> visitResources(final Set<AuthorizationResource> visitedSet) {
 		final Set<AbstractResourceXref> compiledResourceBitSet = new HashSet<AbstractResourceXref>();
 		if(!visitedSet.contains(this)) {

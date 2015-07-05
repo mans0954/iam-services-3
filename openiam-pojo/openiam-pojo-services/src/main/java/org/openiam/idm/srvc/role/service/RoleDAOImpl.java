@@ -2,31 +2,34 @@ package org.openiam.idm.srvc.role.service;
 
 // Generated Mar 4, 2008 1:12:08 AM by Hibernate Tools 3.2.0.b11
 
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
-import org.hibernate.criterion.*;
+import org.hibernate.criterion.DetachedCriteria;
+import org.hibernate.criterion.MatchMode;
+import org.hibernate.criterion.Projections;
+import org.hibernate.criterion.Restrictions;
+import org.hibernate.criterion.Subqueries;
+import org.openiam.base.TreeObjectId;
 import org.openiam.base.Tuple;
 import org.openiam.base.ws.SortParam;
 import org.openiam.core.dao.BaseDaoImpl;
-import org.openiam.base.TreeObjectId;
 import org.openiam.idm.searchbeans.AbstractSearchBean;
 import org.openiam.idm.searchbeans.RoleSearchBean;
 import org.openiam.idm.searchbeans.SearchBean;
-import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.role.domain.RoleAttributeEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.searchbean.converter.RoleSearchBeanConverter;
-import org.openiam.util.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
-
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-
-import static org.hibernate.criterion.Projections.rowCount;
 
 @Repository("roleDAO")
 public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements RoleDAO {
@@ -224,7 +227,7 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
         if(initialRoleIds != null) {
             for (String roleId : initialRoleIds) {
                 if(!rolesHierarchyIds.containsKey(roleId)) {
-                    rolesHierarchyIds.putIfAbsent(roleId, populateTreeObjectId(new TreeObjectId(roleId), filter));
+                    rolesHierarchyIds.putIfAbsent(roleId, populateTreeObjectId(new TreeObjectId(roleId), filter, new HashSet<String>()));
                 }
                 result.add(rolesHierarchyIds.get(roleId));
             }
@@ -238,7 +241,7 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
         List<String> allParentIds = findAllParentsIds();
         if(allParentIds != null) {
             for(String parentRoleId : allParentIds) {
-                TreeObjectId treeObjectId = populateTreeObjectId(new TreeObjectId(parentRoleId), null);
+                TreeObjectId treeObjectId = populateTreeObjectId(new TreeObjectId(parentRoleId), null, new HashSet<String>());
                 rolesHierarchyIds.putIfAbsent(parentRoleId, treeObjectId);
             }
         }
@@ -255,12 +258,15 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
         return criteria;
     }
 
-    private TreeObjectId populateTreeObjectId(final TreeObjectId root, final Set<String> filter){
+    private TreeObjectId populateTreeObjectId(final TreeObjectId root, final Set<String> filter, final Set<String> visitedSet){
         List<String> ids = (List<String>)getChildRolesCriteria(root.getValue(), filter).setProjection(Projections.id()).list();
         if(ids != null) {
-            for(String id : ids) {
-                TreeObjectId objectId = new TreeObjectId(id);
-                root.addChild(populateTreeObjectId(objectId, filter));
+            for(final String id : ids) {
+            	if(!visitedSet.contains(id)) {
+            		visitedSet.add(id);
+            		final TreeObjectId objectId = new TreeObjectId(id);
+            		root.addChild(populateTreeObjectId(objectId, filter, visitedSet));
+            	}
             }
         }
         return root;
@@ -270,4 +276,5 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
     public List<String> findAllParentsIds() {
         return getCriteria().add(Restrictions.isEmpty("parentRoles")).setProjection(Projections.id()).list();
     }
+    
 }

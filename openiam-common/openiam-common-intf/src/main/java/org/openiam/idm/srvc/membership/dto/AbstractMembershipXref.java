@@ -18,7 +18,7 @@ import org.openiam.idm.srvc.access.dto.AccessRight;
 	"rights",
 	"operation"
 })
-public abstract class AbstractMembershipXref extends KeyDTO {
+public class AbstractMembershipXref extends KeyDTO {
 
 	private String entityId;
 	private String memberEntityId;

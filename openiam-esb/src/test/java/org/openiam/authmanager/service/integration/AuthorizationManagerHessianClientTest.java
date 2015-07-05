@@ -7,6 +7,7 @@ import org.openiam.authmanager.AuthorizationManagerHessianClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.testng.Assert;
+import org.testng.annotations.Test;
 
 public class AuthorizationManagerHessianClientTest extends AbstractAuthorizationManagerTest {
 
@@ -121,5 +122,6 @@ public class AuthorizationManagerHessianClientTest extends AbstractAuthorization
 		return false;
 	}
 	
-	
+	@Test
+	public void foo() {}
 }
