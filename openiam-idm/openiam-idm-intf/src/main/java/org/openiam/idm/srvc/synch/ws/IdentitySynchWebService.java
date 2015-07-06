@@ -67,7 +67,9 @@ public interface IdentitySynchWebService {
             @WebParam(name = "roleId", targetNamespace = "")
             final String roleId);
 
-	@WebMethod
+    ImportSyncResponse importAttrMapFromCSV(String syncId);
+
+    @WebMethod
 	SyncResponse startSynchronization(
 			@WebParam(name = "config", targetNamespace = "")
 			SynchConfig config);

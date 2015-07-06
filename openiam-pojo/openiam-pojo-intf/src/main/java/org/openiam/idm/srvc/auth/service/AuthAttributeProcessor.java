@@ -12,6 +12,8 @@ import org.openiam.provision.dto.ProvisionUser;
 
 public interface AuthAttributeProcessor {
 
+    boolean process(String reflectionKey, Object object, Object setValue) throws Exception;
+
     public String process(final String reflectionKey, final EnumMap<AmAttributes, Object> objectMap) throws Exception;
 
     public String process(final String reflectionKey, final String userId, final String managedSysId) throws Exception;

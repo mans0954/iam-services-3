@@ -1,32 +1,24 @@
 package org.openiam.authmanager.common.xref;
 
-public class RoleGroupXref {
+import org.openiam.authmanager.common.model.AuthorizationRole;
+
+public class RoleGroupXref extends AbstractGroupXref  {
 	
-	private String roleId;
-	private String groupId;
-	
-	public String getRoleId() {
-		return roleId;
+	private AuthorizationRole role;
+
+	public AuthorizationRole getRole() {
+		return role;
 	}
-	
-	public void setRoleId(String roleId) {
-		this.roleId = roleId;
-	}
-	
-	public String getGroupId() {
-		return groupId;
-	}
-	
-	public void setGroupId(String groupId) {
-		this.groupId = groupId;
+
+	public void setRole(AuthorizationRole role) {
+		this.role = role;
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((groupId == null) ? 0 : groupId.hashCode());
-		result = prime * result + ((roleId == null) ? 0 : roleId.hashCode());
+		int result = super.hashCode();
+		result = prime * result + ((role == null) ? 0 : role.hashCode());
 		return result;
 	}
 
@@ -34,28 +26,17 @@ public class RoleGroupXref {
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (obj == null)
+		if (!super.equals(obj))
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
 		RoleGroupXref other = (RoleGroupXref) obj;
-		if (groupId == null) {
-			if (other.groupId != null)
+		if (role == null) {
+			if (other.role != null)
 				return false;
-		} else if (!groupId.equals(other.groupId))
-			return false;
-		if (roleId == null) {
-			if (other.roleId != null)
-				return false;
-		} else if (!roleId.equals(other.roleId))
+		} else if (!role.equals(other.role))
 			return false;
 		return true;
-	}
-
-	@Override
-	public String toString() {
-		return String.format("RoleGroupXref [roleId=%s, groupId=%s]", roleId,
-				groupId);
 	}
 	
 	

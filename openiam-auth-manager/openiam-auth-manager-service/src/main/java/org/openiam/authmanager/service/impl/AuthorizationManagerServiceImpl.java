@@ -1,15 +1,77 @@
 package org.openiam.authmanager.service.impl;
 
+import java.sql.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import javax.transaction.Transactional;
+
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
+
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.authmanager.common.model.*;
-import org.openiam.authmanager.common.xref.*;
-import org.openiam.authmanager.dao.*;
+import org.openiam.authmanager.common.model.AuthorizationAccessRight;
+import org.openiam.authmanager.common.model.AuthorizationGroup;
+import org.openiam.authmanager.common.model.AuthorizationManagerLoginId;
+import org.openiam.authmanager.common.model.AuthorizationOrganization;
+import org.openiam.authmanager.common.model.AuthorizationResource;
+import org.openiam.authmanager.common.model.AuthorizationRole;
+import org.openiam.authmanager.common.model.AuthorizationUser;
+import org.openiam.authmanager.common.model.InternalAuthroizationUser;
+import org.openiam.authmanager.common.xref.GroupGroupXref;
+import org.openiam.authmanager.common.xref.GroupUserXref;
+import org.openiam.authmanager.common.xref.OrgGroupXref;
+import org.openiam.authmanager.common.xref.OrgOrgXref;
+import org.openiam.authmanager.common.xref.OrgResourceXref;
+import org.openiam.authmanager.common.xref.OrgRoleXref;
+import org.openiam.authmanager.common.xref.OrgUserXref;
+import org.openiam.authmanager.common.xref.ResourceGroupXref;
+import org.openiam.authmanager.common.xref.ResourceResourceXref;
+import org.openiam.authmanager.common.xref.ResourceRoleXref;
+import org.openiam.authmanager.common.xref.ResourceUserXref;
+import org.openiam.authmanager.common.xref.RoleGroupXref;
+import org.openiam.authmanager.common.xref.RoleRoleXref;
+import org.openiam.authmanager.common.xref.RoleUserXref;
+import org.openiam.authmanager.dao.MembershipDAO;
+import org.openiam.authmanager.dao.UserDAO;
 import org.openiam.authmanager.service.AuthorizationManagerService;
+import org.openiam.base.KeyDTO;
+import org.openiam.idm.srvc.grp.domain.GroupEntity;
+import org.openiam.idm.srvc.grp.domain.GroupToGroupMembershipXrefEntity;
+import org.openiam.idm.srvc.grp.domain.GroupToResourceMembershipXrefEntity;
+import org.openiam.idm.srvc.grp.service.GroupDAO;
+import org.openiam.idm.srvc.membership.domain.AbstractMembershipXrefEntity;
+import org.openiam.idm.srvc.org.domain.GroupToOrgMembershipXrefEntity;
+import org.openiam.idm.srvc.org.domain.OrgToOrgMembershipXrefEntity;
+import org.openiam.idm.srvc.org.domain.OrganizationEntity;
+import org.openiam.idm.srvc.org.domain.ResourceToOrgMembershipXrefEntity;
+import org.openiam.idm.srvc.org.domain.RoleToOrgMembershipXrefEntity;
+import org.openiam.idm.srvc.org.service.OrganizationDAO;
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.res.domain.ResourceToResourceMembershipXrefEntity;
+import org.openiam.idm.srvc.res.service.ResourceDAO;
+import org.openiam.idm.srvc.role.domain.RoleEntity;
+import org.openiam.idm.srvc.role.domain.RoleToGroupMembershipXrefEntity;
+import org.openiam.idm.srvc.role.domain.RoleToResourceMembershipXrefEntity;
+import org.openiam.idm.srvc.role.domain.RoleToRoleMembershipXrefEntity;
+import org.openiam.idm.srvc.role.service.RoleDAO;
+import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.idm.srvc.user.domain.UserToGroupMembershipXrefEntity;
+import org.openiam.idm.srvc.user.domain.UserToOrganizationMembershipXrefEntity;
+import org.openiam.idm.srvc.user.domain.UserToResourceMembershipXrefEntity;
+import org.openiam.idm.srvc.user.domain.UserToRoleMembershipXrefEntity;
+import org.openiam.membership.MembershipDTO;
+import org.openiam.membership.MembershipRightDTO;
 import org.openiam.thread.Sweepable;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
@@ -21,10 +83,10 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.StopWatch;
-
-import java.sql.Date;
-import java.util.*;
 
 /**
  * @author Lev Bornovalov
@@ -48,9 +110,10 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 	@Qualifier("authManagerUserCache")
 	private Ehcache userCache;
 	
-	@Autowired
-	@Qualifier("userLoginCache")
-	private Ehcache loginCache;
+
+    @Autowired
+    @Qualifier("transactionTemplate")
+    private TransactionTemplate transactionTemplate;
 	
 	/*
 	private boolean forceThreadShutdown = false;
@@ -64,76 +127,74 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 	/* used to prevent reads when a cache refresh takes place */
 	//private ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
 	
-	private Set<AuthorizationResource> publicResources;
 	private Map<String, AuthorizationGroup> groupIdCache;
 	private Map<String, AuthorizationResource> resourceIdCache;
+	private Map<String, AuthorizationOrganization> organizationIdCache;
 	private Map<String, AuthorizationRole> roleIdCache;
-	private Map<String, AuthorizationGroup> groupNameCache;
-	private Map<String, AuthorizationResource> resourceNameCache;
-	private Map<String, AuthorizationRole> roleNameCache;
+	private Map<String, AuthorizationAccessRight> accessRightIdCache;
 	private Integer userBitSet;
+	private Integer accessRightBitSet;
 	
 	@Autowired
-	@Qualifier("jdbcGroupDAO")
-	private GroupDAO groupDAO;
+	private MembershipDAO membershipDAO;
 	
 	@Autowired
-	@Qualifier("jdbcResourceDAO")
-	private ResourceDAO resourceDAO;
+	private org.openiam.idm.srvc.org.service.OrganizationDAO hibernateOrgDAO;
 	
 	@Autowired
-	@Qualifier("jdbcRoleDAO")
-	private RoleDAO roleDAO;
+	private org.openiam.idm.srvc.role.service.RoleDAO hibernateRoleDAO;
 	
 	@Autowired
-	@Qualifier("jdbcUserDao")
-	private UserDAO userDAO;
+	private org.openiam.idm.srvc.grp.service.GroupDAO hibernateGroupDAO;
 	
 	@Autowired
-	@Qualifier("jdbcGroupGroupXrefDao")
-	private GroupGroupXrefDAO groupGroupXrefDAO;
+	private org.openiam.idm.srvc.res.service.ResourceDAO hibernateResourceDAO;
 	
 	@Autowired
-	@Qualifier("jdbcGroupUserXrefDao")
-	private GroupUserXrefDAO groupUserXrefDAO;
+	private org.openiam.idm.srvc.access.service.AccessRightDAO hibernateAccessRightDAO;
 	
 	@Autowired
-	@Qualifier("jdbcResourceGroupXrefDAO")
-	private ResourceGroupXrefDAO resourceGroupXrefDAO;
+	private org.openiam.idm.srvc.user.service.UserDAO hbmUserDAO;
 	
-	@Autowired
-	@Qualifier("jdbcResourceResourceXrefDAO")
-	private ResourceResourceXrefDAO resourceResourceXrefDAO;
+	private Set<AuthorizationAccessRight> getAccessRight(final AbstractMembershipXrefEntity<?, ?> xref, 
+														 final Map<String, AuthorizationAccessRight> rights) {
+		Set<AuthorizationAccessRight> retVal = null;
+		if(xref != null && CollectionUtils.isNotEmpty(xref.getRights())) {
+			retVal = xref.getRights().stream().map(e -> rights.get(e.getId())).collect(Collectors.toSet());
+		}
+		return retVal;
+	}
 	
-	@Autowired
-	@Qualifier("jdbcResourceRoleXrefDAO")
-	private ResourceRoleXrefDAO resourceRoleXrefDAO;
+	private Set<AuthorizationAccessRight> getAccessRight(final Set<String> rightIds, 
+			 final Map<String, AuthorizationAccessRight> rights) {
+		Set<AuthorizationAccessRight> retVal = null;
+		if(CollectionUtils.isNotEmpty(rightIds)) {
+			retVal = rightIds.stream().map(e -> rights.get(e)).collect(Collectors.toSet());
+		}
+		return retVal;
+	}
 	
-	@Autowired
-	@Qualifier("jdbcResourceUserXrefDAO")
-	private ResourceUserXrefDAO resourceUserXrefDAO;
+	private Map<String, Set<MembershipDTO>> getMembershipMapByEntityId(final List<MembershipDTO> list) {
+		return list.stream().collect(Collectors.groupingBy(MembershipDTO::getEntityId,
+				Collectors.mapping(Function.identity(), Collectors.toSet())));
+	}
 	
-	@Autowired
-	@Qualifier("jdbcRoleGroupXrefDAO")
-	private RoleGroupXrefDAO roleGroupXrefDAO;
+	private Map<String, Set<MembershipDTO>> getMembershipMapByMemberEntityId(final List<MembershipDTO> list) {
+		return list.stream().collect(Collectors.groupingBy(MembershipDTO::getMemberEntityId,
+				Collectors.mapping(Function.identity(), Collectors.toSet())));
+	}
 	
-	@Autowired
-	@Qualifier("jdbcRoleRoleXrefDAO")
-	private RoleRoleXrefDAO roleRoleXrefDAO;
-	
-	@Autowired
-	@Qualifier("jdbcRoleUserXrefDAO")
-	private RoleUserXrefDAO roleUserXrefDAO;
-	
-	@Autowired
-	@Qualifier("jdbcResourcePropDAO")
-	private ResourcePropDAO resourcePropDAO;
+	private Map<String, Set<String>> getRightMap(final List<MembershipRightDTO> list) {
+		return list.stream().collect(Collectors.groupingBy(MembershipRightDTO::getId,
+				Collectors.mapping(MembershipRightDTO::getRightId, Collectors.toSet())));
+	}
 	
 	/**
 	 * This function sweeps through the database, and compiles the new entitlement mappings
 	 */
 	@Override
     @ManagedOperation(description="sweep the Authorization Cache")
+	@Transactional
 	public void sweep() {
 		log.info(String.format("Starting Authorization Manager Refresh.  ThreadId: %s.  Spring Context: %s:%s", Thread.currentThread().getId(), ctx.getId(), ctx.getDisplayName()));
 		final StopWatch sw = new StopWatch();
@@ -142,10 +203,14 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 		//Lock writeLock = null;
 		try {
 			/* create temporary bitSets */
-			int tempGroupBitSet = 0;
-			int tempRoleBitSet = 0;
-			int tempResourceBitSet = 0;
-			int tempUserBitSet = 0;
+			
+			/* used AtomicInteger b/c of ability to declare it as final */
+			final AtomicInteger tempGroupBitSet = new AtomicInteger(0);
+			final AtomicInteger tempRoleBitSet = new AtomicInteger(0);
+			final AtomicInteger tempResourceBitSet = new AtomicInteger(0);
+			final AtomicInteger tempUserBitSet = new AtomicInteger(0);
+			final AtomicInteger tempOrgBitSet = new AtomicInteger(0);
+			final AtomicInteger tempAccessRightBitSet = new AtomicInteger(1);
 			
 			/* create lastLogin Date for user dao */
 			final long millisecLoginThreshold = new java.util.Date().getTime() - (numOfLoggedInHoursThreshold.longValue() * 60 * 60 * 1000);
@@ -153,191 +218,298 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 			
 			log.debug("Fetching main objects from the database");
 			log.debug(String.format("Login threashold date: %s.  Property was: %s", loginThreshold, numOfLoggedInHoursThreshold));
-			final List<AuthorizationManagerLoginId> tempLoginIdList = userDAO.getLoginIdsForUsersLoggedInAfter(loginThreshold);
-			final List<AuthorizationUser> tempUserList = userDAO.getAllUsersLoggedInAfter(loginThreshold);
-			final List<AuthorizationRole> tempRoleList = roleDAO.getList();
-			final List<AuthorizationResource> tempResourceList = resourceDAO.getList();
-			final List<AuthorizationGroup> tempGroupList = groupDAO.getList();
-			final Set<AuthorizationResource> tempPublicResources = new HashSet<AuthorizationResource>();
+			
+			/* resources */
+			final List<AuthorizationResource> hbmResourceList = membershipDAO.getResources();
+			final Map<String, Set<MembershipDTO>> resource2ResourceMap = getMembershipMapByEntityId(membershipDAO.getResource2ResourceMembership());
+			final Map<String, Set<String>> resource2ResourceRightMap = getRightMap(membershipDAO.getResource2ResourceRights());
+			
+			final Map<String, Set<MembershipDTO>> user2ResourceMap = getMembershipMapByMemberEntityId(membershipDAO.getUser2ResourceMembership());
+			final Map<String, Set<String>> user2ResourceRightMap = getRightMap(membershipDAO.getUser2ResourceRights());
+			
+			/* groups */
+			final List<AuthorizationGroup> hbmGroupList = membershipDAO.getGroups();
+			final Map<String, Set<MembershipDTO>> group2GroupMap = getMembershipMapByEntityId(membershipDAO.getGroup2GroupMembership());
+			final Map<String, Set<String>> group2GroupRightMap = getRightMap(membershipDAO.getGroup2GroupRights());
+			
+			final Map<String, Set<MembershipDTO>> group2UserMap = getMembershipMapByMemberEntityId(membershipDAO.getUser2GroupMembership());
+			final Map<String, Set<String>> group2UserRightMap = getRightMap(membershipDAO.getUser2GroupRights());
+			
+			
+			final Map<String, Set<MembershipDTO>> group2ResourceMap = getMembershipMapByEntityId(membershipDAO.getGroup2ResourceMembership());
+			final Map<String, Set<String>> group2ResourceRightMap = getRightMap(membershipDAO.getGroup2ResourceRights());
+			
+			final List<AuthorizationRole> hbmRoleList = membershipDAO.getRoles();
+			final Map<String, Set<MembershipDTO>> role2RoleMap = getMembershipMapByEntityId(membershipDAO.getRole2RoleMembership());
+			final Map<String, Set<String>> role2RoleRightMap = getRightMap(membershipDAO.getRole2RoleRights());
+			
+			final Map<String, Set<MembershipDTO>> role2GroupMap = getMembershipMapByEntityId(membershipDAO.getRole2GroupMembership());
+			final Map<String, Set<String>> role2GroupRightMap = getRightMap(membershipDAO.getRole2GroupRights());
+			
+			final Map<String, Set<MembershipDTO>> role2ResourceMap = getMembershipMapByEntityId(membershipDAO.getRole2ResourceMembership());
+			final Map<String, Set<String>> role2ResourceRightMap = getRightMap(membershipDAO.getRole2ResourceRights());
+			
+			final Map<String, Set<MembershipDTO>> user2RoleMap = getMembershipMapByMemberEntityId(membershipDAO.getUser2RoleMembership());
+			final Map<String, Set<String>> user2RoleRightMap = getRightMap(membershipDAO.getUser2RoleRights());
+			
+			final List<AuthorizationOrganization> hbmOrganizationList = membershipDAO.getOrganizations();
+			final Map<String, Set<MembershipDTO>> user2OrgMap = getMembershipMapByMemberEntityId(membershipDAO.getUser2OrgMembership());
+			final Map<String, Set<String>> user2OrgRightMap = getRightMap(membershipDAO.getUser2OrgRights());
+			
+			final Map<String, Set<MembershipDTO>> role2OrgMap = getMembershipMapByEntityId(membershipDAO.getOrg2RoleMembership());
+			final Map<String, Set<String>> role2OrgRightMap = getRightMap(membershipDAO.getOrg2RoleRights());
+			
+			final Map<String, Set<MembershipDTO>> group2OrgMap = getMembershipMapByEntityId(membershipDAO.getOrg2GroupMembership());
+			final Map<String, Set<String>> group2OrgRightMap = getRightMap(membershipDAO.getOrg2GroupRights());
+			
+			final Map<String, Set<MembershipDTO>> resource2OrgMap = getMembershipMapByEntityId(membershipDAO.getOrg2ResourceMembership());
+			final Map<String, Set<String>> resource2OrgRightMap = getRightMap(membershipDAO.getOrg2ResourceRights());
+			
+			final Map<String, Set<MembershipDTO>> org2Org2Map = getMembershipMapByEntityId(membershipDAO.getOrg2OrgMembership());
+			final Map<String, Set<String>> org2OrgRightMap = getRightMap(membershipDAO.getOrg2OrgRights());
+			
+			final List<AuthorizationUser> tempUserList = membershipDAO.getUsers(loginThreshold);
+			
+			
+			final Map<String, AuthorizationAccessRight> tempAccessRightMap = hibernateAccessRightDAO.findAll()
+					  .stream()
+					  .map(e -> new AuthorizationAccessRight(e, tempAccessRightBitSet.getAndIncrement()))
+					  .collect(Collectors.toMap(AuthorizationAccessRight::getId, Function.identity()));
+			
+			final Map<String, AuthorizationOrganization> tempOrganizationIdMap = hbmOrganizationList
+					.stream()
+					.map(e -> new AuthorizationOrganization(e, tempOrgBitSet.getAndIncrement()))
+					.collect(Collectors.toMap(AuthorizationOrganization::getId, Function.identity()));
+			
+			final Map<String, AuthorizationRole> tempRoleIdMap = hbmRoleList
+					.stream()
+					.map(e -> new AuthorizationRole(e, tempRoleBitSet.getAndIncrement()))
+					.collect(Collectors.toMap(AuthorizationRole::getId, Function.identity()));
+			
+			final Map<String, AuthorizationResource> tempResourceIdMap = hbmResourceList
+					.stream()
+					.map(e -> new AuthorizationResource(e, tempResourceBitSet.getAndIncrement()))
+					.collect(Collectors.toMap(AuthorizationResource::getId, Function.identity()));
+			
+			final Map<String, AuthorizationGroup> tempGroupIdMap = hbmGroupList
+					.stream()
+					.map(e -> new AuthorizationGroup(e, tempGroupBitSet.getAndIncrement()))
+					.collect(Collectors.toMap(AuthorizationGroup::getId, Function.identity()));
+			
+			final Map<String, AuthorizationUser> tempUserMap = tempUserList
+					.stream()
+					.map(e -> new AuthorizationUser(e))
+					.collect(Collectors.toMap(AuthorizationUser::getId, Function.identity()));
+			
 			log.debug("Done fetching main objects");
 			
-			/* create Maps of the above objects for fast access.  Id->Object
-			 * Set the bitSets of each object 
-			 */
-			final Map<String, AuthorizationUser> tempUserMap = new HashMap<String, AuthorizationUser>();
-			for(final AuthorizationUser user : tempUserList) {
-				tempUserMap.put(user.getId(), user);
-				user.setBitSetIdx(tempUserBitSet++);
-			}
-			
-			final Map<String, AuthorizationResource> tempResourceNameMap = new HashMap<String, AuthorizationResource>();
-			final Map<String, AuthorizationResource> tempResourceIdMap = new HashMap<String, AuthorizationResource>();
-			for(final AuthorizationResource resource : tempResourceList) {
-				tempResourceIdMap.put(resource.getId(), resource);
-				tempResourceNameMap.put(resource.getName(), resource);
-				resource.setBitSetIdx(tempResourceBitSet++);
-			}
-			
-			final Map<String, AuthorizationRole> tempRoleNameMap = new HashMap<String, AuthorizationRole>();
-			final Map<String, AuthorizationRole> tempRoleIdMap = new HashMap<String, AuthorizationRole>();
-			for(final AuthorizationRole role : tempRoleList) {
-				tempRoleNameMap.put(role.getName(), role);
-				tempRoleIdMap.put(role.getId(), role);
-				role.setBitSetIdx(tempRoleBitSet++);
-			}
-			
-			final Map<String, AuthorizationGroup> tempGroupNameMap = new HashMap<String, AuthorizationGroup>();
-			final Map<String, AuthorizationGroup> tempGroupIdMap = new HashMap<String, AuthorizationGroup>();
-			for(final AuthorizationGroup group : tempGroupList) {
-				tempGroupNameMap.put(group.getName(), group);
-				tempGroupIdMap.put(group.getId(), group);
-				group.setBitSetIdx(tempGroupBitSet++);
-			}
-			
-			/* NEW:  set public resources.  This makes sense in our model. */
-			/*
-			for(final AuthorizationResource resource : tempResourceList) {
-				if(resource.isPublic()) {
-					tempPublicResources.add(resource);
-					for(final AuthorizationUser user : tempUserList) {
-						user.addResource(resource);
+			tempUserList.forEach(entity -> {
+				final AuthorizationUser user = tempUserMap.get(entity.getId());
+				if(user != null) {
+					if(CollectionUtils.isNotEmpty(user2ResourceMap.get(entity.getId()))) {
+						user2ResourceMap.get(entity.getId()).forEach(e -> {
+							final AuthorizationResource resource = tempResourceIdMap.get(e.getEntityId());
+							if(resource != null) {
+								final ResourceUserXref xref = new ResourceUserXref();
+								xref.setUser(user);
+								xref.setResource(resource);
+								xref.setRights(getAccessRight(user2ResourceRightMap.get(e.getId()), tempAccessRightMap));
+								user.addResource(xref);
+							}
+						});
+					}
+					
+					if(CollectionUtils.isNotEmpty(group2UserMap.get(entity.getId()))) {
+						group2UserMap.get(entity.getId()).forEach(e -> {
+							final AuthorizationGroup group = tempGroupIdMap.get(e.getEntityId());
+							if(group != null) {
+								final GroupUserXref xref = new GroupUserXref();
+								xref.setUser(user);
+								xref.setGroup(group);
+								xref.setRights(getAccessRight(group2UserRightMap.get(e.getId()), tempAccessRightMap));
+								user.addGroup(xref);
+							}
+						});
+					}
+					
+					if(CollectionUtils.isNotEmpty(user2RoleMap.get(entity.getId()))) {
+						user2RoleMap.get(entity.getId()).forEach(e -> {
+							final AuthorizationRole role = tempRoleIdMap.get(e.getEntityId());
+							if(role != null) {
+								final RoleUserXref xref = new RoleUserXref();
+								xref.setUser(user);
+								xref.setRole(role);
+								xref.setRights(getAccessRight(user2RoleRightMap.get(e.getId()), tempAccessRightMap));
+								user.addRole(xref);
+							}
+						});
+					}
+					
+					if(CollectionUtils.isNotEmpty(user2OrgMap.get(entity.getId()))) {
+						user2OrgMap.get(entity.getId()).forEach(e -> {
+							final AuthorizationOrganization organization = tempOrganizationIdMap.get(e.getEntityId());
+							if(organization != null) {
+								final OrgUserXref xref = new OrgUserXref();
+								xref.setUser(user);
+								xref.setOrganization(organization);
+								xref.setRights(getAccessRight(user2OrgRightMap.get(e.getId()), tempAccessRightMap));
+								user.addOrganization(xref);
+							}
+						});
 					}
 				}
-			}
-			*/
+			});
 			
-			/* set direct roles for Users */
-			final List<RoleUserXref> tempRole2UserXrefList = roleUserXrefDAO.getList();
-			for(final RoleUserXref xref : tempRole2UserXrefList) {
-				final AuthorizationRole role = tempRoleIdMap.get(xref.getRoleId());
-				final AuthorizationUser user = tempUserMap.get(xref.getUserId());
-				if(user != null && role != null) {
-					user.addRole(role);
+			hbmOrganizationList.forEach(entity -> {
+				final AuthorizationOrganization organization = tempOrganizationIdMap.get(entity.getId());
+				if(organization != null) {
+					if(CollectionUtils.isNotEmpty(resource2OrgMap.get(entity.getId()))) {
+						resource2OrgMap.get(entity.getId()).forEach(e -> {
+							final AuthorizationResource resource = tempResourceIdMap.get(e.getMemberEntityId());
+							if(resource != null) {
+								final OrgResourceXref xref = new OrgResourceXref();
+								xref.setOrganization(organization);
+								xref.setResource(resource);
+								xref.setRights(getAccessRight(resource2OrgRightMap.get(e.getId()), tempAccessRightMap));
+								organization.addResource(xref);
+							}
+						});
+					}
+					
+					if(CollectionUtils.isNotEmpty(group2OrgMap.get(entity.getId()))) {
+						group2OrgMap.get(entity.getId()).forEach(e -> {
+							final AuthorizationGroup group = tempGroupIdMap.get(e.getMemberEntityId());
+							if(group != null) {
+								final OrgGroupXref xref = new OrgGroupXref();
+								xref.setOrganization(organization);
+								xref.setGroup(group);
+								xref.setRights(getAccessRight(group2OrgRightMap.get(e.getId()), tempAccessRightMap));
+								organization.addGroup(xref);
+							}
+						});
+					}
+					
+					if(CollectionUtils.isNotEmpty(role2OrgMap.get(entity.getId()))) {
+						role2OrgMap.get(entity.getId()).forEach(e -> {
+							final AuthorizationRole role = tempRoleIdMap.get(e.getMemberEntityId());
+							if(role != null) {
+								final OrgRoleXref xref = new OrgRoleXref();
+								xref.setOrganization(organization);
+								xref.setRole(role);
+								xref.setRights(getAccessRight(role2OrgRightMap.get(e.getId()), tempAccessRightMap));
+								organization.addRole(xref);
+							}
+						});
+					}
+					
+					if(CollectionUtils.isNotEmpty(org2Org2Map.get(entity.getId()))) {
+						org2Org2Map.get(entity.getId()).forEach(e -> {
+							final AuthorizationOrganization child = tempOrganizationIdMap.get(e.getMemberEntityId());
+							if(child != null) {
+								final OrgOrgXref xref = new OrgOrgXref();
+								xref.setOrganization(organization);
+								xref.setMemberOrganization(child);
+								xref.setRights(getAccessRight(org2OrgRightMap.get(e.getId()), tempAccessRightMap));
+								child.addParentOrganization(xref);
+							}
+						});
+					}
 				}
-			}
+			});
 			
-			/* set direct Role<->Role mappings */
-			final List<RoleRoleXref> tempRole2RoleXrefList = roleRoleXrefDAO.getList();
-			for(final RoleRoleXref xref : tempRole2RoleXrefList) {
-				final AuthorizationRole role = tempRoleIdMap.get(xref.getRoleId());
-				final AuthorizationRole memberRole = tempRoleIdMap.get(xref.getMemberRoleId());
-				if(role != null && memberRole != null) {
-					//role.addChildRole(memberRole);
-					memberRole.addParentRole(role);
+			hbmRoleList.forEach(entity -> {
+				final AuthorizationRole role = tempRoleIdMap.get(entity.getId());
+				if(role != null) {
+					if(CollectionUtils.isNotEmpty(role2GroupMap.get(entity.getId()))) {
+						role2GroupMap.get(entity.getId()).forEach(e -> {
+							final AuthorizationGroup group = tempGroupIdMap.get(e.getMemberEntityId());
+							if(group != null) {
+								final RoleGroupXref xref = new RoleGroupXref();
+								xref.setRole(role);
+								xref.setGroup(group);
+								xref.setRights(getAccessRight(role2GroupRightMap.get(e.getId()), tempAccessRightMap));
+								role.addGroup(xref);
+							}
+						});
+					}
+					
+					if(CollectionUtils.isNotEmpty(role2ResourceMap.get(entity.getId()))) {
+						role2ResourceMap.get(entity.getId()).forEach(e -> {
+							final AuthorizationResource resource = tempResourceIdMap.get(e.getMemberEntityId());
+							if(resource != null) {
+								final ResourceRoleXref xref = new ResourceRoleXref();
+								xref.setRole(role);
+								xref.setResource(resource);
+								xref.setRights(getAccessRight(role2ResourceRightMap.get(e.getId()), tempAccessRightMap));
+								role.addResource(xref);
+							}
+						});
+					}
+
+					if(CollectionUtils.isNotEmpty(role2RoleMap.get(entity.getId()))) {
+						role2RoleMap.get(entity.getId()).forEach(e -> {
+							final AuthorizationRole child = tempRoleIdMap.get(e.getMemberEntityId());
+							if(child != null) {
+								final RoleRoleXref xref = new RoleRoleXref();
+								xref.setRole(role);
+								xref.setMemberRole(child);
+								xref.setRights(getAccessRight(role2RoleRightMap.get(e.getId()), tempAccessRightMap));
+								child.addParentRole(xref);
+							}
+						});
+					}
 				}
-			}
+			});
 			
-			/* set direct group<->Role mappings */
-			final List<RoleGroupXref> tempRole2GroupXrefList = roleGroupXrefDAO.getList();
-			for(final RoleGroupXref xref : tempRole2GroupXrefList) {
-				final AuthorizationRole role = tempRoleIdMap.get(xref.getRoleId());
-				final AuthorizationGroup group = tempGroupIdMap.get(xref.getGroupId());
-				if(role != null && group != null) {
-					group.addRole(role);
+			hbmGroupList.forEach(entity -> {
+				final AuthorizationGroup group = tempGroupIdMap.get(entity.getId());
+				if(group != null) {
+					if(CollectionUtils.isNotEmpty(group2ResourceMap.get(entity.getId()))) {
+						group2ResourceMap.get(entity.getId()).forEach(e -> {
+							final AuthorizationResource resource = tempResourceIdMap.get(e.getMemberEntityId());
+							if(resource != null) {
+								final ResourceGroupXref xref = new ResourceGroupXref();
+								xref.setGroup(group);
+								xref.setResource(resource);
+								xref.setRights(getAccessRight(group2ResourceRightMap.get(e.getId()), tempAccessRightMap));
+								group.addResource(xref);
+							}
+						});
+					}
+					
+					if(CollectionUtils.isNotEmpty(group2GroupMap.get(entity.getId()))) {
+						group2GroupMap.get(entity.getId()).forEach(e -> {
+							final AuthorizationGroup child = tempGroupIdMap.get(e.getMemberEntityId());
+							if(child != null) {
+								final GroupGroupXref xref = new GroupGroupXref();
+								xref.setGroup(group);
+								xref.setMemberGroup(child);
+								xref.setRights(getAccessRight(group2GroupRightMap.get(e.getId()), tempAccessRightMap));
+								child.addParentGroup(xref);
+							}
+						});
+					}
 				}
-			}
+			});
 			
-			/* set direct Resource<->User mappings */
-			final List<ResourceUserXref> tempResource2UserXrefList = resourceUserXrefDAO.getList();
-			for(final ResourceUserXref xref : tempResource2UserXrefList) {
-				final AuthorizationResource resource = tempResourceIdMap.get(xref.getResourceId());
-				final AuthorizationUser user = tempUserMap.get(xref.getUserId());
-				if(resource != null && user != null) {
-					user.addResource(resource);
+			hbmResourceList.forEach(entity -> {
+				final AuthorizationResource resource = tempResourceIdMap.get(entity.getId());
+				if(resource != null) {
+					if(CollectionUtils.isNotEmpty(resource2ResourceMap.get(entity.getId()))) {
+						resource2ResourceMap.get(entity.getId()).forEach(e -> {
+							final AuthorizationResource child = tempResourceIdMap.get(e.getMemberEntityId());
+							if(child != null) {
+								final ResourceResourceXref xref = new ResourceResourceXref();
+								xref.setResource(resource);
+								xref.setMemberResource(child);
+								xref.setRights(getAccessRight(resource2ResourceRightMap.get(e.getId()), tempAccessRightMap));
+								child.addParentResoruce(xref);
+							}
+						});
+					}
 				}
-			}
-			
-			/* set direct Resource<->Role mappings */
-			final List<ResourceRoleXref> tempResource2RoleXrefList = resourceRoleXrefDAO.getList();
-			for(final ResourceRoleXref xref : tempResource2RoleXrefList) {
-				final AuthorizationResource resource = tempResourceIdMap.get(xref.getResourceId());
-				final AuthorizationRole role = tempRoleIdMap.get(xref.getRoleId());
-				if(resource != null && role != null) {
-					role.addResource(resource);
-				}
-			}
-			
-			/* set direct Resource<->Resource mappings */
-			final List<ResourceResourceXref> tempResource2ResourceXrefList = resourceResourceXrefDAO.getList();
-			for(final ResourceResourceXref xref : tempResource2ResourceXrefList) {
-				final AuthorizationResource resource = tempResourceIdMap.get(xref.getResourceId());
-				final AuthorizationResource memberResource = tempResourceIdMap.get(xref.getMemberResourceId());
-				if(resource != null && memberResource != null) {
-					//resource.addChildResource(memberResource);
-					memberResource.addParentResoruce(resource);
-				}
-			}
-			
-			/* set direct Resource<->Group mappings */
-			final List<ResourceGroupXref> tempResource2GroupXrefList = resourceGroupXrefDAO.getList();
-			for(final ResourceGroupXref xref : tempResource2GroupXrefList) {
-				final AuthorizationResource resource = tempResourceIdMap.get(xref.getResourceId());
-				final AuthorizationGroup group = tempGroupIdMap.get(xref.getGroupId());
-				if(resource != null && group != null) {
-					group.addResource(resource);
-				}
-			}
-			
-			/* set direct Group<->User mappings */
-			final List<GroupUserXref> tempGroup2UserXrefList = groupUserXrefDAO.getList();
-			for(final GroupUserXref xref : tempGroup2UserXrefList) {
-				final AuthorizationGroup group = tempGroupIdMap.get(xref.getGroupId());
-				final AuthorizationUser user = tempUserMap.get(xref.getUserId());
-				if(user != null && group != null) {
-					user.addGroup(group);
-				}
-			}
-			
-			/* set direct Group<->Group mappings */
-			final List<GroupGroupXref> tempGroup2GroupXrefList = groupGroupXrefDAO.getList();
-			for(final GroupGroupXref xref : tempGroup2GroupXrefList) {
-				final AuthorizationGroup group = tempGroupIdMap.get(xref.getGroupId());
-				final AuthorizationGroup memberGroup = tempGroupIdMap.get(xref.getMemberGroupId());
-				if(group != null && memberGroup != null) {
-					//group.addChildGroup(memberGroup);
-					memberGroup.addParentGroup(group);
-				}
-			}
-			
-			/* create a map of LoginId cache Key ->LoginId */
-			/* use case insensitive verions.  Log an error if case-insensitive duplicates occur */
-			log.debug("Creating Login cache");
-			final Set<String> duplicateLoginIdsCaseIgnore = new HashSet<String>();
-			final Map<String, AuthorizationManagerLoginId> tempLoginIdMap = new HashMap<String, AuthorizationManagerLoginId>();
-			for(final AuthorizationManagerLoginId loginId : tempLoginIdList) {
-				final String loginIdKey = createLoginIdKey(loginId);
-				if(!tempLoginIdMap.containsKey(loginIdKey)) {
-					tempLoginIdMap.put(loginIdKey, loginId);
-				} else {
-					log.error(String.format("LoginId: '%s' contains two versions in the database when matching case-insensitively, ignoring...", loginIdKey));
-					duplicateLoginIdsCaseIgnore.add(loginIdKey);
-				}
-			}
-			
-			/* remove duplicates */
-			for(final String badLoginId : duplicateLoginIdsCaseIgnore) {
-				tempLoginIdMap.remove(badLoginId);
-			}
-			log.debug("Done creating login cache");
-			
-			/* compile the entities */
-			log.debug("Compiling resources...");
-			for(final AuthorizationResource resource : tempResourceIdMap.values()) {
-				resource.compile();
-			}
-			log.debug("Done compiling resources...");
-			
-			log.info("Compiling roles");
-			for(final AuthorizationRole role : tempRoleIdMap.values()) {
-				role.compile();
-			}
-			log.debug("Done compiling roles");
-			
-			log.debug("Compiling groups");
-			for(final AuthorizationGroup group : tempGroupIdMap.values()) {
-				group.compile();
-			}
-			log.debug("Done compiling groups");
+			});
+					
 			
 			log.debug("Compiling users");
 			final StopWatch userCompilationSW = new StopWatch();
@@ -379,41 +551,13 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 				}
 				log.debug("Done refreshing user cache");
 				
-				/* find stale keys in Login Cache */
-				log.debug("Refreshing login cache");
-				final Set<String> loginIdKeysToRemove = new HashSet<String>();
-				final List<?> loginIdCacheKeys = loginCache.getKeys();
-				if(CollectionUtils.isNotEmpty(loginIdCacheKeys)) {
-					for(final Object key : loginIdCacheKeys) {
-						if(key instanceof String) {
-							final String loginIdKey = (String)key;
-							if(!tempLoginIdMap.containsKey(loginIdKey)) {
-								loginIdKeysToRemove.add(loginIdKey);
-							}
-						}
-					}
-				}
 				
-				/* remove stale keys from Login Cache */
-				for(final String loginIdKey : loginIdKeysToRemove) {
-					loginCache.remove(loginIdKey);
-				}
-				
-				/* put or override updated keys into Login Cache */
-				for(final String loginIdKey : tempLoginIdMap.keySet()) {
-					loginCache.put(new Element(loginIdKey, tempLoginIdMap.get(loginIdKey).getUserId()));
-				}
-				log.info("Done refreshing the login cache");
-				
-				
-				userBitSet = tempUserBitSet;
+				userBitSet = tempUserBitSet.get();
 				roleIdCache = tempRoleIdMap;
 				groupIdCache = tempGroupIdMap;
 				resourceIdCache = tempResourceIdMap;
-				groupNameCache = tempGroupNameMap;
-				roleNameCache = tempRoleNameMap;
-				resourceNameCache = tempResourceNameMap;
-				publicResources = tempPublicResources;
+				organizationIdCache = tempOrganizationIdMap;
+				accessRightIdCache = tempAccessRightMap;
 				
 				/* END CRITICAL SECTION */
 			}
@@ -462,13 +606,6 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 	
 	@ManagedOperation
 	public void purgeUser(final String userId) {
-		final List<Object> keysToRemove = new LinkedList<Object>();
-		for(final Object key : userCache.getKeys()) {
-			keysToRemove.add((String)loginCache.get(key).getValue());
-		}
-		for(final Object key : keysToRemove) {
-			loginCache.remove(key);
-		}
 		userCache.remove(userId);
 	}
 	
@@ -484,13 +621,6 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 		
 		sb.append(lineSeparator);
 		sb.append(lineSeparator);
-		sb.append("Login Cache:").append(lineSeparator);
-		for(final Object key : loginCache.getKeys()) {
-			sb.append(key).append("=>").append(loginCache.get(key).getValue()).append(lineSeparator);
-		}
-		
-		sb.append(lineSeparator);
-		sb.append(lineSeparator);
 		sb.append("Done...");
 		return sb.toString();
 	}
@@ -498,42 +628,65 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 	private AuthorizationUser fetchUser(final String userId) {
 		AuthorizationUser retVal = getCachedUser(userId);
 		if(retVal == null) {
-			final InternalAuthroizationUser internalUser = userDAO.getFullUser(userId);
-			retVal = process(internalUser);
+			final InternalAuthroizationUser user = membershipDAO.getUser(userId);
+			retVal = process(user);
 		}
 		return retVal;
 	}
 	
-	private AuthorizationUser fetchUser(final AuthorizationManagerLoginId loginId) {
-		AuthorizationUser retVal = getCachedUser(loginId);
-		if(retVal == null) {
-			final InternalAuthroizationUser internalUser = userDAO.getFullUser(loginId);
-			retVal = process(internalUser);
-		}
-		return retVal;
-	}
-	
-	private AuthorizationUser process(final InternalAuthroizationUser internalUser) {
-		AuthorizationUser retVal = null;
-		if(internalUser != null) {
-			retVal = new AuthorizationUser();
-			retVal.setId(internalUser.getUserId());
-			if(CollectionUtils.isNotEmpty(internalUser.getGroupIds())) {
-				for(final String groupId : internalUser.getGroupIds()) {
-					retVal.addGroup(groupIdCache.get(groupId));
-				}
+	private AuthorizationUser process(final InternalAuthroizationUser user) {
+		if(user != null) {
+			final AuthorizationUser retVal = new AuthorizationUser(user);
+			if(MapUtils.isNotEmpty(user.getGroups())) {
+				user.getGroups().forEach((entityId, rights) -> {
+					final AuthorizationGroup entity = groupIdCache.get(entityId);
+					if(entity != null) {
+						final GroupUserXref xref = new GroupUserXref();
+						xref.setGroup(entity);
+						xref.setUser(retVal);
+						xref.setRights(getAccessRight(rights, accessRightIdCache));
+						retVal.addGroup(xref);
+					}
+				});
 			}
 			
-			if(CollectionUtils.isNotEmpty(internalUser.getRoleIds())) {
-				for(final String roleId : internalUser.getRoleIds()) {
-					retVal.addRole(roleIdCache.get(roleId));
-				}
+			if(MapUtils.isNotEmpty(user.getRoles())) {
+				user.getRoles().forEach((entityId, rights) -> {
+					final AuthorizationRole entity = roleIdCache.get(entityId);
+					if(entity != null) {
+						final RoleUserXref xref = new RoleUserXref();
+						xref.setRole(entity);
+						xref.setUser(retVal);
+						xref.setRights(getAccessRight(rights, accessRightIdCache));
+						retVal.addRole(xref);
+					}
+				});
 			}
 			
-			if(CollectionUtils.isNotEmpty(internalUser.getResourceIds())) {
-				for(final String resourceId : internalUser.getResourceIds()) {
-					retVal.addResource(resourceIdCache.get(resourceId));
-				}
+			if(MapUtils.isNotEmpty(user.getResources())) {
+				user.getResources().forEach((entityId, rights) -> {
+					final AuthorizationResource entity = resourceIdCache.get(entityId);
+					if(entity != null) {
+						final ResourceUserXref xref = new ResourceUserXref();
+						xref.setResource(entity);
+						xref.setUser(retVal);
+						xref.setRights(getAccessRight(rights, accessRightIdCache));
+						retVal.addResource(xref);
+					}
+				});
+			}
+			
+			if(MapUtils.isNotEmpty(user.getOrganizations())) {
+				user.getOrganizations().forEach((entityId, rights) -> {
+					final AuthorizationOrganization entity = organizationIdCache.get(entityId);
+					if(entity != null) {
+						final OrgUserXref xref = new OrgUserXref();
+						xref.setOrganization(entity);
+						xref.setUser(retVal);
+						xref.setRights(getAccessRight(rights, accessRightIdCache));
+						retVal.addOrganization(xref);
+					}
+				});
 			}
 			
 			//NEW:  public resources are really public
@@ -548,25 +701,10 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 			retVal.compile();
 			retVal.setBitSetIdx(userBitSet++);
 			userCache.put(new Element(retVal.getId(), retVal));
-			
-			if(CollectionUtils.isNotEmpty(internalUser.getLoginIds())) {
-				final Set<String> duplicateLoginIds = new HashSet<String>();
-				for(final AuthorizationManagerLoginId loginId : internalUser.getLoginIds()) {
-					final String loginIdKey = createLoginIdKey(loginId);
-					if(loginCache.get(loginIdKey) == null) {
-						loginCache.put(new Element(createLoginIdKey(loginId), internalUser.getUserId()));
-					} else {
-						duplicateLoginIds.add(loginIdKey);
-						log.error(String.format("Login ID: '%s' has a case-insensitive duplicate, ignoring...", loginIdKey));
-					}
-				}
-				
-				for(final String loginIdKey : duplicateLoginIds) {
-					loginCache.remove(loginIdKey);
-				}
-			}
+			return retVal;
+		} else {
+			return null;
 		}
-		return retVal;
 	}
 	
 	private AuthorizationUser getCachedUser(final String userId) {
@@ -581,101 +719,59 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 		return retVal;
 	}
 	
-	private AuthorizationUser getCachedUser(final AuthorizationManagerLoginId loginId) {
-		AuthorizationUser retVal = null;
-		final Element cachedLoginId = loginCache.get(createLoginIdKey(loginId));
-		if(cachedLoginId != null) {
-			final Object cachedLoginValue = cachedLoginId.getValue();
-			if(cachedLoginValue != null) {
-				final String userId = (String)cachedLoginValue;
-				retVal = getCachedUser(userId);
-			}
-		}
-		return retVal;
-	}
-
 	@Override
-	public boolean isEntitled(final String userId, final AuthorizationResource resource) {
-		return isEntitled(fetchUser(userId), resource);
-	}
-
-	@Override
-	public boolean isEntitled(final AuthorizationManagerLoginId loginId, final AuthorizationResource resource) {
-		return isEntitled(fetchUser(loginId), resource);
-	}
-	
-	private boolean isEntitled(final AuthorizationUser user, final AuthorizationResource resource) {
-		boolean retVal = false;
-		if(user != null && resource != null) {
-			AuthorizationResource toCheck = null;
-			if(resource.getId() != null) {
-				toCheck = resourceIdCache.get(resource.getId());
-			} else if(resource.getName() != null) {
-				toCheck = resourceNameCache.get(resource.getName());
-			}
-			retVal = user.isEntitledTo(toCheck);
-		}
-		return retVal;
-	}
-
-	@Override
-	public boolean isMemberOf(final String userId, final AuthorizationGroup group) {
-		return isMemberOf(fetchUser(userId), group);
-	}
-
-	@Override
-	public boolean isMemberOf(final AuthorizationManagerLoginId loginId, final AuthorizationGroup group) {
-		return isMemberOf(fetchUser(loginId), group);
-	}
-	
-	private boolean isMemberOf(final AuthorizationUser user, final AuthorizationGroup group) {
-		boolean retVal = false;
+	public boolean isMemberOfGroup(final String userId, final String groupId) {
+		final AuthorizationUser user = fetchUser(userId);
+		final AuthorizationGroup group = groupIdCache.get(groupId);
 		if(user != null && group != null) {
-			AuthorizationGroup toCheck = null;
-			if(group.getId() != null) {
-				toCheck = groupIdCache.get(group.getId());
-			} else if(group.getName() != null) {
-				toCheck = groupNameCache.get(group.getName());
-			}
-			retVal = user.isMemberOf(toCheck);
+			return user.isMemberOf(group);
+		} else {
+			return false;
 		}
-		return retVal;
-	}
-
-	@Override
-	public boolean isMemberOf(final String userId, final AuthorizationRole role) {
-		return isMemberOf(fetchUser(userId), role);
-	}
-
-	@Override
-	public boolean isMemberOf(final AuthorizationManagerLoginId loginId, final AuthorizationRole role) {
-		return isMemberOf(fetchUser(loginId), role);
 	}
 	
-	private boolean isMemberOf(final AuthorizationUser user, final AuthorizationRole role) {
-		boolean retVal = false;
-		if(user != null && role != null) {
-			AuthorizationRole toCheck = null;
-			if(role.getId() != null) {
-				toCheck = roleIdCache.get(role.getId());
-			} else if(role.getName() != null) {
-				toCheck = roleNameCache.get(role.getName());
-			}
-			retVal = user.isMemberOf(toCheck);
+
+	@Override
+	public boolean isMemberOfGroup(String userId, String groupId, String rightId) {
+		final AuthorizationUser user = fetchUser(userId);
+		final AuthorizationGroup group = groupIdCache.get(groupId);
+		final AuthorizationAccessRight right = accessRightIdCache.get(rightId);
+		if(user != null && group != null && right != null) {
+			return user.isMemberOf(group, right);
+		} else {
+			return false;
 		}
-		return retVal;
 	}
 
 	@Override
-	public Set<AuthorizationResource> getResourcesFor(final String userId) {
+	public boolean isMemberOfRole(final String userId, final String roleId) {
+		final AuthorizationUser user = fetchUser(userId);
+		final AuthorizationRole role = roleIdCache.get(roleId);
+		if(user != null && role != null) {
+			return user.isMemberOf(role);
+		} else {
+			return false;
+		}
+	}
+	
+
+	@Override
+	public boolean isMemberOfRole(String userId, String roleId, String rightId) {
+		final AuthorizationUser user = fetchUser(userId);
+		final AuthorizationRole role = roleIdCache.get(roleId);
+		final AuthorizationAccessRight right = accessRightIdCache.get(rightId);
+		if(user != null && role != null && right != null) {
+			return user.isMemberOf(role, right);
+		} else {
+			return false;
+		}
+	}
+
+	@Override
+	public Set<AuthorizationResource> getResourcesForUser(final String userId) {
 		return getResorucesFor(fetchUser(userId));
 	}
 
-	@Override
-	public Set<AuthorizationResource> getResourcesFor(final AuthorizationManagerLoginId loginId) {
-		return getResorucesFor(fetchUser(loginId));
-	}
-	
 	private Set<AuthorizationResource> getResorucesFor(final AuthorizationUser user) {
 		Set<AuthorizationResource> retVal = new HashSet<AuthorizationResource>();
 		if(user != null) {
@@ -688,9 +784,7 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 			for(final Integer bit : bitSet) {
 				if(bitSet2RoleCache.containsKey(bit)) {
 					final AuthorizationResource resource = bitSet2RoleCache.get(bit);
-					final AuthorizationResource copy = new AuthorizationResource();
-					copy.setId(resource.getId());
-					copy.setName(resource.getName());
+					final AuthorizationResource copy = resource.shallowCopy();
 					retVal.add(copy);
 				}
 			}
@@ -699,13 +793,34 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 	}
 
 	@Override
-	public Set<AuthorizationGroup> getGroupsFor(final String userId) {
+	public Set<AuthorizationGroup> getGroupsForUser(final String userId) {
 		return getGroupsFor(fetchUser(userId));
 	}
+	
 
 	@Override
-	public Set<AuthorizationGroup> getGroupsFor(final AuthorizationManagerLoginId loginId) {
-		return getGroupsFor(fetchUser(loginId));
+	public Set<AuthorizationOrganization> getOrganizationsForUser(String userId) {
+		return getOrganizationsFor(fetchUser(userId));
+	}
+
+	private Set<AuthorizationOrganization> getOrganizationsFor(final AuthorizationUser user) {
+		Set<AuthorizationOrganization> retVal = new HashSet<AuthorizationOrganization>();
+		if(user != null) {
+			final Set<Integer> bitSet = user.getLinearOrganizations();
+			final Map<Integer, AuthorizationOrganization> bitSet2OrgCache = new HashMap<Integer, AuthorizationOrganization>();
+			for(final AuthorizationOrganization org : organizationIdCache.values()) {
+				bitSet2OrgCache.put(org.getBitSetIdx(), org);
+			}
+			
+			for(final Integer bit : bitSet) {
+				if(bitSet2OrgCache.containsKey(bit)) {
+					final AuthorizationOrganization org = bitSet2OrgCache.get(bit);
+					final AuthorizationOrganization copy = org.shallowCopy();
+					retVal.add(copy);
+				}
+			}
+		}
+		return retVal;
 	}
 	
 	private Set<AuthorizationGroup> getGroupsFor(final AuthorizationUser user) {
@@ -720,9 +835,7 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 			for(final Integer bit : bitSet) {
 				if(bitSet2RoleCache.containsKey(bit)) {
 					final AuthorizationGroup group = bitSet2RoleCache.get(bit);
-					final AuthorizationGroup copy = new AuthorizationGroup();
-					copy.setId(group.getId());
-					copy.setName(group.getName());
+					final AuthorizationGroup copy = group.shallowCopy();
 					retVal.add(copy);
 				}
 			}
@@ -731,18 +844,13 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 	}
 
 	@Override
-	public Set<AuthorizationRole> getRolesFor(final String userId) {
+	public Set<AuthorizationRole> getRolesForUser(final String userId) {
 		return getRolesFor(fetchUser(userId));
-	}
-
-	@Override
-	public Set<AuthorizationRole> getRolesFor(final AuthorizationManagerLoginId loginId) {
-		return getRolesFor(fetchUser(loginId));
 	}
 
     @Override
     public List<String> getUserIdsList(){
-        return userDAO.getUserIdsList();
+        return hbmUserDAO.getAllIds();
     }
 	
 	private Set<AuthorizationRole> getRolesFor(final AuthorizationUser user) {
@@ -757,9 +865,7 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 			for(final Integer bit : bitSet) {
 				if(bitSet2RoleCache.containsKey(bit)) {
 					final AuthorizationRole role = bitSet2RoleCache.get(bit);
-					final AuthorizationRole copy = new AuthorizationRole();
-					copy.setId(role.getId());
-					copy.setName(role.getName());
+					final AuthorizationRole copy = role.shallowCopy();
 					retVal.add(copy);
 				}
 			}
@@ -767,42 +873,62 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 		return retVal;
 	}
 	
-	/*
-	@PreDestroy
-	public void destroy() {
-		
-		forceThreadShutdown = true;
-	}
-	
-	@Override
-	public void run() {
-		while(true && !forceThreadShutdown) {
-			try {
-				sweep();
-				Thread.sleep(sweepInterval);
-			} catch(Throwable e) {
-				try {
-					Thread.sleep(sweepInterval);
-				} catch(Throwable e2) {
-					
-				}
-				log.error("Error while executing thread", e);
-			}
-		}
-	}
-	*/
-
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		sweep();
-		//service.submit(this);
+		transactionTemplate.execute(new TransactionCallback<Void>() {
+
+			@Override
+			public Void doInTransaction(TransactionStatus status) {
+				sweep();
+				return null;
+			}
+		});
 	}
 
 	@Override
 	public boolean isEntitled(String userId, String resourceId) {
-		final AuthorizationResource resource = new AuthorizationResource();
-		resource.setId(resourceId);
-		return isEntitled(userId, resource);
+		final AuthorizationResource resource = resourceIdCache.get(resourceId);
+		final AuthorizationUser user = fetchUser(userId);
+		if(user != null && resource != null) {
+			return user.isEntitledTo(resource);
+		} else {
+			return false;
+		}
+	}
+
+	@Override
+	public boolean isEntitled(String userId, String resourceId, String rightId) {
+		final AuthorizationResource resource = resourceIdCache.get(resourceId);
+		final AuthorizationUser user = fetchUser(userId);
+		final AuthorizationAccessRight right = accessRightIdCache.get(rightId);
+		if(user != null && resource != null && right != null) {
+			return user.isEntitledTo(resource, right);
+		} else {
+			return false;
+		}
+	}
+
+	@Override
+	public boolean isMemberOfOrganization(String userId, String organizationId) {
+		final AuthorizationUser user = fetchUser(userId);
+		final AuthorizationOrganization organization = organizationIdCache.get(organizationId);
+		if(user != null && organization != null) {
+			return user.isMemberOf(organization);
+		} else {
+			return false;
+		}
+	}
+
+	@Override
+	public boolean isMemberOfOrganization(String userId, String organizationId, String rightId) {
+		final AuthorizationUser user = fetchUser(userId);
+		final AuthorizationOrganization organization = organizationIdCache.get(organizationId);
+		final AuthorizationAccessRight right = accessRightIdCache.get(rightId);
+		if(user != null && organization != null && right != null) {
+			return user.isMemberOf(organization, right);
+		} else {
+			return false;
+		}
 	}
 
 	/*

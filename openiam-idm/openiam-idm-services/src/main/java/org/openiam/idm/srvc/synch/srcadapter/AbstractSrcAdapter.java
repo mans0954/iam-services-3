@@ -82,7 +82,7 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
 
     @Value("${openiam.service_base}")
     private String serviceHost;
-    
+
     @Value("${openiam.idm.ws.path}")
     private String serviceContext;
 
@@ -100,7 +100,7 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
             MatchObjectRule matchRule) {
 
         log.debug("SynchReview startSynch CALLED.^^^^^^^^");
-        final SynchReviewService synchReviewService = (SynchReviewService)SpringContextProvider.getBean("synchReviewService");
+        final SynchReviewService synchReviewService = (SynchReviewService) SpringContextProvider.getBean("synchReviewService");
         final LineObject rowHeader = genHeaderFromRecord(synchReviewService.getHeaderReviewRecord(sourceReview.getId()));
         try {
             for (SynchReviewRecordEntity record : sourceReview.getReviewRecords()) {
@@ -155,11 +155,11 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
      */
     protected void waitUntilWorkDone(List<Future> results) throws InterruptedException {
         int successCounter = 0;
-        while(successCounter != results.size()) {
+        while (successCounter != results.size()) {
             successCounter = 0;
-            for(Future future : results) {
-                if(future.isDone()) {
-                    successCounter ++;
+            for (Future future : results) {
+                if (future.isDone()) {
+                    successCounter++;
                 }
             }
             Thread.sleep(500);
@@ -175,7 +175,7 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
         }
     }
 
-     protected void processLineObject(
+    protected void processLineObject(
             LineObject rowObj,
             SynchConfig config,
             SynchReviewEntity resultReview,
@@ -185,67 +185,90 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
 
         if (validationScript != null) {
             synchronized (mutex) {
-                int retval = validationScript.isValid(rowObj);
-                if (retval == ValidationScript.NOT_VALID) {
-                    log.info(" - Validation failed...transformation will not be called.");
-                    return;
-                }
-                if (retval == ValidationScript.SKIP) {
-                    return;
-
-                } else if (retval == ValidationScript.SKIP_TO_REVIEW) {
-                    if (resultReview != null) {
-                        resultReview.addRecord(generateSynchReviewRecord(rowObj));
+                try {
+                    int retval = validationScript.isValid(rowObj);
+                    if (retval == ValidationScript.NOT_VALID) {
+                        log.info(" - Validation failed...transformation will not be called.");
+                        mutex.notifyAll();
+                        return;
                     }
-                    return;
+                    if (retval == ValidationScript.SKIP) {
+                        mutex.notifyAll();
+                        return;
+
+                    } else if (retval == ValidationScript.SKIP_TO_REVIEW) {
+                        if (resultReview != null) {
+                            resultReview.addRecord(generateSynchReviewRecord(rowObj));
+                        }
+                        mutex.notifyAll();
+                        return;
+                    }
+                } catch (Exception e) {
+                    log.error(e);
+                } finally {
+                    mutex.notifyAll();
                 }
+
             }
         }
 
         Map<String, Attribute> rowAttr = rowObj.getColumnMap();
         log.info(" - Row Attr..." + rowAttr);
-        User usr;
+        User usr = null;
         synchronized (mutex) {
-            usr = matchRule.lookup(config, rowAttr);
+            try {
+                usr = matchRule.lookup(config, rowAttr);
+            } catch (Exception e) {
+                log.error(e);
+            } finally {
+                mutex.notifyAll();
+            }
         }
 
         long startTime = System.currentTimeMillis();
 
         int retval = -1;
-        ProvisionUser pUser = (usr != null)? new ProvisionUser(usr) : new ProvisionUser();
+        ProvisionUser pUser = (usr != null) ? new ProvisionUser(usr) : new ProvisionUser();
         pUser.setRequestorUserId(systemUserId);
         pUser.setRequestorLogin("sysadmin");
         pUser.setParentAuditLogId(config.getParentAuditLogId());
         if (transformScripts != null && transformScripts.size() > 0) {
             for (TransformScript transformScript : transformScripts) {
                 synchronized (mutex) {
-                    transformScript.init();
-                    // initialize the transform script
-                    if (usr != null) {
-                        transformScript.setNewUser(false);
-                        setCurrentSuperiors(pUser);
-                        transformScript.setUser(usr);
-                        transformScript.setPrincipalList(loginDozerConverter.convertToDTOList(loginManager.getLoginByUser(usr.getId()), false));
-                        transformScript.setUserRoleList(roleDataService.getUserRolesAsFlatList(usr.getId()));
 
-                    } else {
-                        transformScript.setNewUser(true);
-                        transformScript.setUser(null);
-                        transformScript.setPrincipalList(null);
-                        transformScript.setUserRoleList(null);
+                    try {
+                        transformScript.init();
+                        // initialize the transform script
+                        if (usr != null) {
+                            transformScript.setNewUser(false);
+                            setCurrentSuperiors(pUser);
+                            transformScript.setUser(usr);
+                            transformScript.setPrincipalList(loginDozerConverter.convertToDTOList(loginManager.getLoginByUser(usr.getId()), false));
+                            transformScript.setUserRoleList(roleDataService.getUserRolesAsFlatList(usr.getId()));
+
+                        } else {
+                            transformScript.setNewUser(true);
+                            transformScript.setUser(null);
+                            transformScript.setPrincipalList(null);
+                            transformScript.setUserRoleList(null);
+                        }
+
+                        log.info(" - Execute transform script");
+
+                        //Disable PRE and POST processors/performance optimizations
+                        pUser.setSkipPreprocessor(true);
+                        pUser.setSkipPostProcessor(true);
+                        retval = transformScript.execute(rowObj, pUser);
+                        log.debug("Transform result=" + retval);
+                    } catch (Exception e) {
+                        log.error(e);
+                    } finally {
+                        mutex.notifyAll();
                     }
-
-                    log.info(" - Execute transform script");
-
-                    //Disable PRE and POST processors/performance optimizations
-                    pUser.setSkipPreprocessor(true);
-                    pUser.setSkipPostProcessor(true);
-                    retval = transformScript.execute(rowObj, pUser);
-                    log.debug("Transform result=" + retval);
                 }
                 log.info(" - Execute complete transform script");
             }
-            System.out.println("================ After Transformation => "+(System.currentTimeMillis()-startTime));
+            System.out.println("================ After Transformation => " + (System.currentTimeMillis() - startTime));
 
             if (retval != -1) {
                 if (retval == TransformScript.SKIP_TO_REVIEW) {
@@ -266,7 +289,7 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
 
                                 provService.modifyUser(pUser);
 
-                                System.out.println("================ After Modify => "+(System.currentTimeMillis()-startTime));
+                                System.out.println("================ After Modify => " + (System.currentTimeMillis() - startTime));
                             } catch (Throwable e) {
                                 log.error(e);
                             }
@@ -275,7 +298,7 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
                             pUser.setId(null);
                             try {
                                 provService.addUser(pUser);
-                                System.out.println("================ After Add => "+(System.currentTimeMillis()-startTime));
+                                System.out.println("================ After Add => " + (System.currentTimeMillis() - startTime));
                             } catch (Exception e) {
                                 log.error(e);
                             }
@@ -284,11 +307,11 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
                 }
             }
         }
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-            log.error("The thread was interrupted when sleep paused after row [" + rowObj + "] execution.", e);
-        }
+//        try {
+//            Thread.sleep(100);
+//        } catch (InterruptedException e) {
+//            log.error("The thread was interrupted when sleep paused after row [" + rowObj + "] execution.", e);
+//        }
     }
 
     protected SynchReviewRecordEntity generateSynchReviewRecord(LineObject rowObj) {
@@ -319,7 +342,7 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
 
     protected LineObject genHeaderFromRecord(SynchReviewRecord record) {
         LineObject lineObject = new LineObject();
-        int ctr =0;
+        int ctr = 0;
         if (record != null && CollectionUtils.isNotEmpty(record.getReviewValues())) {
             for (SynchReviewRecordValue v : record.getReviewValues()) {
                 Attribute a = new Attribute(v.getValue(), null);

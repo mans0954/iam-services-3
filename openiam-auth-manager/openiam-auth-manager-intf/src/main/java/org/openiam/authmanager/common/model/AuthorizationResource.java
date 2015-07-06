@@ -1,28 +1,31 @@
 package org.openiam.authmanager.common.model;
 
+import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Set;
+
+import org.openiam.authmanager.common.xref.AbstractResourceXref;
+import org.openiam.authmanager.common.xref.ResourceResourceXref;
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "AuthorizationResource", propOrder = {
         "resourceTypeId",
         "inheritFromParent",
         "isPublic",
-        "risk",
-        "adminResourceId",
-        "coorelatedName"
+        "risk"
 })
 public class AuthorizationResource extends AbstractAuthorizationEntity implements Serializable  {
 
 	private static final long serialVersionUID = 1L;
 	
 	@XmlTransient
-	private Set<AuthorizationResource> parentResources;
+	private Set<ResourceResourceXref> parentResources;
 
     private String resourceTypeId;
 
@@ -32,9 +35,6 @@ public class AuthorizationResource extends AbstractAuthorizationEntity implement
 
     private String risk;
 
-    private String adminResourceId;
-
-    private String coorelatedName;
 	/*
 	private BitSet linearBitSet = new BitSet();
 	*/
@@ -43,6 +43,22 @@ public class AuthorizationResource extends AbstractAuthorizationEntity implement
 		
 	}
 	
+	public AuthorizationResource(final AuthorizationMenu menu) {
+		super.setId(menu.getId());
+	}
+	
+	public AuthorizationResource(final ResourceEntity entity) {
+		super(entity);
+	}
+	
+	public AuthorizationResource(final AuthorizationResource entity, final int bitIdx) {
+		super(entity);
+		super.setBitSetIdx(bitIdx);
+		this.isPublic = entity.isPublic();
+		this.risk = entity.getRisk();
+		this.resourceTypeId = entity.getResourceTypeId();
+	}
+		
 	public boolean isInheritFromParent() {
 		return inheritFromParent;
 	}
@@ -55,11 +71,11 @@ public class AuthorizationResource extends AbstractAuthorizationEntity implement
 		this.isPublic = isPublic;
 	}
 
-	public void addParentResoruce(final AuthorizationResource resource) {
+	public void addParentResoruce(final ResourceResourceXref entity) {
 		if(parentResources == null) {
-			parentResources = new HashSet<AuthorizationResource>();
+			parentResources = new HashSet<ResourceResourceXref>();
 		}
-		parentResources.add(resource);
+		parentResources.add(entity);
 	}
 
     public String getResourceTypeId() {
@@ -70,10 +86,6 @@ public class AuthorizationResource extends AbstractAuthorizationEntity implement
         this.resourceTypeId = resourceTypeId;
     }
 
-    public Set<AuthorizationResource> getParentResources() {
-		return parentResources;
-	}
-
     public String getRisk() {
         return risk;
     }
@@ -82,44 +94,15 @@ public class AuthorizationResource extends AbstractAuthorizationEntity implement
         this.risk = risk;
     }
 
-    public String getAdminResourceId() {
-        return adminResourceId;
-    }
-
-    public void setAdminResourceId(String adminResourceId) {
-        this.adminResourceId = adminResourceId;
-    }
-
-    public String getCoorelatedName() {
-        return coorelatedName;
-    }
-
-    public void setCoorelatedName(String coorelatedName) {
-        this.coorelatedName = coorelatedName;
-    }
-
-    /**
-	 * Compiles this Resource against it's Resource Membership
-	 */
-	@Override
-	public void compile() {
-		/*
-		final Set<Resource> compiledSet = visitResources(new HashSet<Resource>());
-		for(final Resource resource : compiledSet) {
-			linearBitSet.set(new Integer(resource.getBitSetIdx()));
-		}
-		*/
-	}
-	
-	public Set<AuthorizationResource> visitResources(final Set<AuthorizationResource> visitedSet) {
-		final Set<AuthorizationResource> compiledResourceBitSet = new HashSet<AuthorizationResource>();
+	public Set<AbstractResourceXref> visitResources(final Set<AuthorizationResource> visitedSet) {
+		final Set<AbstractResourceXref> compiledResourceBitSet = new HashSet<AbstractResourceXref>();
 		if(!visitedSet.contains(this)) {
 			visitedSet.add(this);
 			if(inheritFromParent) {
 				if(parentResources != null) {
-					for(final AuthorizationResource parent : parentResources) {
-						compiledResourceBitSet.add(parent);
-						compiledResourceBitSet.addAll(parent.visitResources(visitedSet));
+					for(final ResourceResourceXref xref : parentResources) {
+						compiledResourceBitSet.add(xref);
+						compiledResourceBitSet.addAll(xref.getResource().visitResources(visitedSet));
 					}
 				}
 			}

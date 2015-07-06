@@ -25,7 +25,7 @@ import org.openiam.idm.srvc.mngsys.dto.PolicyMapDataTypeOptions;
 })
 public class AttributeMapEntity extends AbstractKeyNameEntity {
     /**
-	 * 
+	 *
 	 */
     private static final long serialVersionUID = 1L;
 

@@ -1,20 +1,14 @@
 package org.openiam.authmanager.service.integration;
 
+import java.util.Set;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.openiam.authmanager.AuthorizationManagerHessianClient;
-import org.openiam.authmanager.common.model.AuthorizationManagerLoginId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.test.context.ContextConfiguration;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-
-@Test(enabled=false)
-@ContextConfiguration(locations={"classpath:test-integration-environment.xml","classpath:test-esb-integration.xml"})
 public class AuthorizationManagerHessianClientTest extends AbstractAuthorizationManagerTest {
 
 	@Autowired
@@ -22,135 +16,112 @@ public class AuthorizationManagerHessianClientTest extends AbstractAuthorization
 	private AuthorizationManagerHessianClient authClient;
 	
 	@Override
-	protected void checkUserURLEntitlements(final String userId, final AuthorizationManagerLoginId loginId, final String url) {
+	protected void checkUserURLEntitlements(final String userId, final String url) {
 		
-	}
-	
-	@Override
-	protected void confirmUserRoles(String userId,
-			AuthorizationManagerLoginId loginId, Set<String> roleIds) {
-		final Set<String> result = new HashSet<String>();
-		if(userId != null) {
-			result.addAll(Arrays.asList(authClient.getRoleIdsForUserWithId(userId)));
-		} else {
-			result.addAll(Arrays.asList(authClient.getRoleIdsForUserWithLogin(loginId.getLogin(), loginId.getManagedSysId())));
-		}
-		
-		Assert.assertEquals(CollectionUtils.size(roleIds), CollectionUtils.size(result),String.format("The number of DB roles and roles returned from the WS are not equal for user '%s", (userId != null) ? userId : loginId));
-		
-		for(final String resourceId : roleIds) {
-			Assert.assertTrue(result.contains(resourceId), String.format("Roles returned from Hessian did not contain '%s'", resourceId));
-		}
-		
-		for(final String resourceId : result) {
-			Assert.assertTrue(roleIds.contains(resourceId),String.format("Roles returned from Hessian did not contain '%s'", resourceId));
-		}
-	}
-
-	@Override
-	protected void confirmUserGroups(String userId,
-			AuthorizationManagerLoginId loginId, Set<String> groupIds) {
-		final Set<String> result = new HashSet<String>();
-		if(userId != null) {
-			result.addAll(Arrays.asList(authClient.getGroupIdsForUserWithId(userId)));
-		} else {
-			result.addAll(Arrays.asList(authClient.getGroupIdsForUserWithLogin(loginId.getLogin(), loginId.getManagedSysId())));
-		}
-		
-		Assert.assertEquals(CollectionUtils.size(groupIds), CollectionUtils.size(result),String.format("The number of DB groups and groups returned from the WS are not equal for user '%s", (userId != null) ? userId : loginId));
-		
-		for(final String resourceId : groupIds) {
-			Assert.assertTrue(result.contains(resourceId), String.format("Groups returned from WS did not contain '%s'", resourceId));
-		}
-		
-		for(final String resourceId : result) {
-			Assert.assertTrue(groupIds.contains(resourceId),String.format("Groups returned from DB did not contain '%s'", resourceId));
-		}
-	}
-
-	@Override
-	protected void confirmUserResources(String userId,
-			AuthorizationManagerLoginId loginId, Set<String> resourceIds) {
-		final Set<String> result = new HashSet<String>();
-		if(userId != null) {
-			result.addAll(Arrays.asList(authClient.getResourceIdsForUserWithId(userId)));
-		} else {
-			result.addAll(Arrays.asList(authClient.getResourceIdsForUserWithLogin(loginId.getLogin(), loginId.getManagedSysId())));
-		}
-		
-		Assert.assertEquals(CollectionUtils.size(resourceIds), CollectionUtils.size(result), String.format("The number of DB resoruces and resources returned from the WS are not equal for user '%s", (userId != null) ? userId : loginId));
-		
-		for(final String resourceId : resourceIds) {
-			Assert.assertTrue(result.contains(resourceId),String.format("Resources returned from WS did not contain '%s'", resourceId));
-		}
-		
-		for(final String resourceId : result) {
-			Assert.assertTrue(resourceIds.contains(resourceId),String.format("Resources returned from DB did not contain '%s'", resourceId));
-		}
 	}
 
 	@Override
 	protected void checkUser2ResourceEntitlement(String userId,
-			AuthorizationManagerLoginId loginId, String resourceId,
-			String resourceName) {
-		boolean result = false;
-		if(resourceId != null) {
-			if(userId != null) {
-				result = authClient.isUserWithIdEntitledToResourceWithId(userId, resourceId);
+			String resourceId, Set<String> rightIds, boolean isAddition) {
+		if(isAddition) {
+			if(CollectionUtils.isNotEmpty(rightIds)) {
+				rightIds.forEach(rightId -> {
+					Assert.assertTrue(authClient.isUserEntitledToResourceWithRight(userId, resourceId, rightId), 
+							String.format("User %s should be entitled to resource %s with right %s", userId, resourceId, rightId));
+				});
+				
+				getRightIdsNotIn(rightIds).forEach(rightId -> {
+					Assert.assertFalse(authClient.isUserEntitledToResourceWithRight(userId, resourceId, rightId), 
+							String.format("User %s should NOT be entitled to resource %s with right %s", userId, resourceId, rightId));
+				});
 			} else {
-				result = authClient.isUserWithLoginEntitledToResourceWithId(loginId.getLogin(), loginId.getManagedSysId(), resourceId);
+				Assert.assertTrue(authClient.isUserEntitledToResource(userId, resourceId), 
+						String.format("User %s should have been entitled to resource %s", userId, resourceId));
 			}
 		} else {
-			if(userId != null) {
-				result = authClient.isUserWithIdEntitledToResourceWithName(userId, resourceName);
-			} else {
-				result = authClient.isUserWithLoginEntitledToResourceWithName(loginId.getLogin(), loginId.getManagedSysId(), resourceName);
-			}
+			Assert.assertFalse(authClient.isUserEntitledToResource(userId, resourceId), 
+					String.format("User %s should NOT have been entitled to resource %s", userId, resourceId));
 		}
-		String failMessage = String.format("User %s:%s is not entitled to resource.  %s", userId, loginId, resourceId);
-		Assert.assertTrue(result,failMessage);
 	}
 
 	@Override
-	protected void checkUser2GroupMembership(String userId,
-			AuthorizationManagerLoginId loginId, String groupId,
-			String groupName) {
-		boolean result = false;
-		if(groupId != null) {
-			if(userId != null) {
-				result = authClient.isUserWithIdMemberOfGroupWithId(userId, groupId);
+	protected void checkUser2GroupMembership(String userId, String groupId,
+			Set<String> rightIds, boolean isAddition) {
+		if(isAddition) {
+			if(CollectionUtils.isNotEmpty(rightIds)) {
+				rightIds.forEach(rightId -> {
+					Assert.assertTrue(authClient.isUserMemberOfGroupWithRight(userId, groupId, rightId), 
+							String.format("User %s should have been a member of group %s with right %s", userId, groupId, rightId));
+				});
+				
+				getRightIdsNotIn(rightIds).forEach(rightId -> {
+					Assert.assertFalse(authClient.isUserMemberOfGroupWithRight(userId, groupId, rightId), 
+							String.format("User %s should NOT have been a member of group %s with right %s", userId, groupId, rightId));
+				});
 			} else {
-				result = authClient.isUserWithLoginMemberOfGroupWithId(loginId.getLogin(), loginId.getManagedSysId(), groupId);
+				Assert.assertTrue(authClient.isUserMemberOfGroup(userId, groupId), 
+						String.format("User %s should have been a member of group %s", userId, groupId));
 			}
 		} else {
-			if(userId != null) {
-				result = authClient.isUserWithIdMemberOfGroupWithName(userId, groupName);
-			} else {
-				result = authClient.isUserWithLoginMemberOfGroupWithName(loginId.getLogin(), loginId.getManagedSysId(), groupName);
-			}
+			Assert.assertFalse(authClient.isUserMemberOfGroup(userId, groupId), 
+					String.format("User %s should NOT have been a member of group %s", userId, groupId));
 		}
-		String failMessage = String.format("User not member of group.  %s", groupId);
-		Assert.assertTrue(result,failMessage);
 	}
 
 	@Override
-	protected void checkUser2RoleMembership(String userId,
-			AuthorizationManagerLoginId loginId, String roleId, String roleName) {
-		boolean result = false;
-		if(roleId != null) {
-			if(userId != null) {
-				result = authClient.isUserWithIdMemberOfRoleWithId(userId, roleId);
+	protected void checkUser2RoleMembership(String userId, String roleId,
+			Set<String> rightIds, boolean isAddition) {
+		if(isAddition) {
+			if(CollectionUtils.isNotEmpty(rightIds)) {
+				rightIds.forEach(rightId -> {
+					Assert.assertTrue(authClient.isUserMemberOfRoleWithRight(userId, roleId, rightId), 
+							String.format("User %s should have been a member of role %s with right %s", userId, roleId, rightId));
+				});
+				
+				getRightIdsNotIn(rightIds).forEach(rightId -> {
+					Assert.assertFalse(authClient.isUserMemberOfRoleWithRight(userId, roleId, rightId), 
+							String.format("User %s should NOT have been a member of role %s with right %s", userId, roleId, rightId));
+				});
 			} else {
-				result = authClient.isUserWithLoginMemberOfRoleWithId(loginId.getLogin(), loginId.getManagedSysId(), roleId);
+				Assert.assertTrue(authClient.isUserMemberOfRole(userId, roleId), 
+						String.format("User %s should have been a member of role %s", userId, roleId));
 			}
 		} else {
-			if(userId != null) {
-				result = authClient.isUserWithIdMemberOfRoleWithName(userId, roleName);
-			} else {
-				result = authClient.isUserWithLoginMemberOfRoleWithName(loginId.getLogin(), loginId.getManagedSysId(), roleName);
-			}
+			Assert.assertFalse(authClient.isUserMemberOfRole(userId, roleId), 
+					String.format("User %s should NOT have been a member of role %s", userId, roleId));
 		}
-		String failMessage = String.format("User not member of role.  %s", roleName);
-		Assert.assertTrue(result, failMessage);
 	}
+
+	@Override
+	protected void checkUser2OrganizationMembership(String userId,
+			String organizationId, Set<String> rightIds, boolean isAddition) {
+		if(isAddition) {
+			if(CollectionUtils.isNotEmpty(rightIds)) {
+				rightIds.forEach(rightId -> {
+					Assert.assertTrue(authClient.isUserMemberOfOrganizationWithRight(userId, organizationId, rightId), 
+							String.format("User %s should have been a member of organization %s with right %s", userId, organizationId, rightId));
+				});
+				
+				getRightIdsNotIn(rightIds).forEach(rightId -> {
+					Assert.assertFalse(authClient.isUserMemberOfOrganizationWithRight(userId, organizationId, rightId), 
+							String.format("User %s should NOT have been a member of organization %s with right %s", userId, organizationId, rightId));
+				});
+			} else {
+				Assert.assertTrue(authClient.isUserMemberOfOrganization(userId, organizationId), 
+						String.format("User %s should have been a member of organization %s", userId, organizationId));
+			}
+		} else {
+			Assert.assertFalse(authClient.isUserMemberOfOrganization(userId, organizationId), 
+					String.format("User %s should NOT have been a member of organization %s", userId, organizationId));
+		}
+	}
+
+	@Override
+	protected boolean loginAfterUserCreation() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	
+	@Test
+	public void foo() {}
 }

@@ -1,32 +1,24 @@
 package org.openiam.authmanager.common.xref;
 
-public class GroupUserXref {
+import org.openiam.authmanager.common.model.AuthorizationUser;
 
-	private String groupId;
-	private String userId;
-	
-	public String getGroupId() {
-		return groupId;
+public class GroupUserXref extends AbstractGroupXref {
+
+	private AuthorizationUser user;
+
+	public AuthorizationUser getUser() {
+		return user;
 	}
-	
-	public void setGroupId(String groupId) {
-		this.groupId = groupId;
-	}
-	
-	public String getUserId() {
-		return userId;
-	}
-	
-	public void setUserId(String userId) {
-		this.userId = userId;
+
+	public void setUser(AuthorizationUser user) {
+		this.user = user;
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((groupId == null) ? 0 : groupId.hashCode());
-		result = prime * result + ((userId == null) ? 0 : userId.hashCode());
+		int result = super.hashCode();
+		result = prime * result + ((user == null) ? 0 : user.hashCode());
 		return result;
 	}
 
@@ -34,29 +26,18 @@ public class GroupUserXref {
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (obj == null)
+		if (!super.equals(obj))
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
 		GroupUserXref other = (GroupUserXref) obj;
-		if (groupId == null) {
-			if (other.groupId != null)
+		if (user == null) {
+			if (other.user != null)
 				return false;
-		} else if (!groupId.equals(other.groupId))
-			return false;
-		if (userId == null) {
-			if (other.userId != null)
-				return false;
-		} else if (!userId.equals(other.userId))
+		} else if (!user.equals(other.user))
 			return false;
 		return true;
 	}
+	
 
-	@Override
-	public String toString() {
-		return String.format("GroupUserXref [groupId=%s, userId=%s]", groupId,
-				userId);
-	}
-	
-	
 }

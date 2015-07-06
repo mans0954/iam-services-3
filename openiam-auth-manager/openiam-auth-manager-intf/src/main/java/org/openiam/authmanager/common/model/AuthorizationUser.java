@@ -3,17 +3,21 @@ package org.openiam.authmanager.common.model;
 import java.io.Serializable;
 import java.util.BitSet;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlType;
+import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.util.StopWatch;
+import org.openiam.authmanager.common.xref.AbstractGroupXref;
+import org.openiam.authmanager.common.xref.AbstractOrgXref;
+import org.openiam.authmanager.common.xref.AbstractResourceXref;
+import org.openiam.authmanager.common.xref.AbstractRoleXref;
+import org.openiam.authmanager.common.xref.GroupUserXref;
+import org.openiam.authmanager.common.xref.OrgUserXref;
+import org.openiam.authmanager.common.xref.ResourceUserXref;
+import org.openiam.authmanager.common.xref.RoleUserXref;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 
 public class AuthorizationUser extends AbstractAuthorizationEntity implements Serializable  {
 
@@ -21,210 +25,302 @@ public class AuthorizationUser extends AbstractAuthorizationEntity implements Se
 	
 	private static final long serialVersionUID = 1L;
 	
-	private Set<AuthorizationGroup> directParentGroups = null;
-	private Set<AuthorizationRole> directParentRoles = null;
-	private Set<AuthorizationResource> directResources = null;
+	private Set<GroupUserXref> directParentGroups = null;
+	private Set<RoleUserXref> directParentRoles = null;
+	private Set<ResourceUserXref> directResources = null;
+	private Set<OrgUserXref> directOrganizations = null;
 	
 	private BitSet linearGroupBitSet = new BitSet();
 	private BitSet linearRoleBitSet = new BitSet();
 	private BitSet linearResourceBitSet = new BitSet();
+	private BitSet linearOrganizationBitSet = new BitSet();
 	
 	public AuthorizationUser() {
+		
 	}
 	
-	public void addGroup(final AuthorizationGroup group) {
+	public AuthorizationUser(final AuthorizationUser entity) {
+		super(entity);
+	}
+	
+	public AuthorizationUser(final InternalAuthroizationUser entity) {
+		super.setId(entity.getUserId());
+	}
+	
+	public void addOrganization(final OrgUserXref organization) {
+		if(organization != null) {
+			if(directOrganizations == null) {
+				directOrganizations = new HashSet<OrgUserXref>();
+			}
+			directOrganizations.add(organization);
+		}
+	}
+	
+	public void addGroup(final GroupUserXref group) {
 		if(group != null) {
 			if(directParentGroups == null) {
-				directParentGroups = new HashSet<AuthorizationGroup>();
+				directParentGroups = new HashSet<GroupUserXref>();
 			}
 			directParentGroups.add(group);
 		}
 	}
 	
-	public void addRole(final AuthorizationRole role) {
+	public void addRole(final RoleUserXref role) {
 		if(role != null) {
 			if(directParentRoles == null) {
-				directParentRoles = new HashSet<AuthorizationRole>();
+				directParentRoles = new HashSet<RoleUserXref>();
 			}
 			directParentRoles.add(role);
 		}
 	}
 	
-	public void addResource(final AuthorizationResource resource) {
+	public void addResource(final ResourceUserXref resource) {
 		if(resource != null) {
 			if(directResources == null) {
-				directResources = new HashSet<AuthorizationResource>();
+				directResources = new HashSet<ResourceUserXref>();
 			}
 			directResources.add(resource);
 		}
+	}
+	
+	/* can't multiply by 0.  
+	 * Multiplying by 1 will give the role (org, group, resource)
+	 * Adding by 2 will give the correct place in the bitset 
+	 */
+	private int getRightBitIndex(final AuthorizationAccessRight right, final AbstractAuthorizationEntity entity) {
+		return (right.getBitIdx() + 1) * entity.getBitSetIdx();
 	}
 	
 	/**
 	 * Compiles this Group against it's Role, Group, and Resource Membership
 	 */
 	public void compile() {
-		//final StopWatch sw1 = new StopWatch();
-		//sw1.start();
-		final Set<AuthorizationGroup> compiledGroupSet = visitGroups();
-		for(final AuthorizationGroup group : compiledGroupSet) {
-			linearGroupBitSet.set(group.getBitSetIdx());
-		}
-		//sw1.stop();
-		//log.info(String.format("Group compilation: %s", sw1.getTotalTimeMillis()));
-		
-		//final StopWatch sw2 = new StopWatch();
-		//sw2.start();
-		final Set<AuthorizationRole> compiledRoleSet = visitRoles(compiledGroupSet);
-		for(final AuthorizationRole role : compiledRoleSet) {
-			linearRoleBitSet.set(role.getBitSetIdx());
-		}
-		//sw2.stop();
-		//log.info(String.format("Role compilation: %s", sw2.getTotalTimeMillis()));
-		
-		//final StopWatch sw3 = new StopWatch();
-		//sw3.start();
-		final Set<AuthorizationResource> compiledResourceSet = visitResources(compiledGroupSet, compiledRoleSet);
-		for(final AuthorizationResource resource : compiledResourceSet) {
-			linearResourceBitSet.set(resource.getBitSetIdx());
-		}
-		//sw3.stop();
-		//log.info(String.format("Resource compilation: %s", sw3.getTotalTimeMillis()));
-	}
-	
-	private Set<AuthorizationGroup> visitGroups() {
-		final Set<AuthorizationGroup> compiledGroupSet = new HashSet<AuthorizationGroup>();
-		if(directParentGroups != null) {
-			for(final AuthorizationGroup group : directParentGroups) {
-				compiledGroupSet.add(group);
-				compiledGroupSet.addAll(group.visitGroups(new HashSet<AuthorizationGroup>()));
+		final Set<AbstractOrgXref> compiledOrgSet = visitOrganization();
+		for(final AbstractOrgXref xref : compiledOrgSet) {
+			final int bitSet = xref.getOrganization().getBitSetIdx();
+			if(CollectionUtils.isNotEmpty(xref.getRights())) {
+				xref.getRights().forEach(right -> {
+					linearOrganizationBitSet.set(getRightBitIndex(right, xref.getOrganization()));
+				});
 			}
-		}
-		return compiledGroupSet;
-	}
-	
-	private Set<AuthorizationRole> visitRoles(final Set<AuthorizationGroup> compiledGroups) {
-		final Set<AuthorizationRole> tempCompiledRoleSet = new HashSet<AuthorizationRole>();
-		if(directParentRoles != null) {
-			tempCompiledRoleSet.addAll(directParentRoles);
+			linearOrganizationBitSet.set(bitSet);
 		}
 		
-		for(final AuthorizationGroup group : compiledGroups) {
-			final Set<AuthorizationRole> roles = group.getRoles();
-			if(roles != null) {
-				tempCompiledRoleSet.addAll(roles);
+		final Set<AbstractRoleXref> compiledRoleSet = visitRoles(compiledOrgSet);
+		for(final AbstractRoleXref xref : compiledRoleSet) {
+			final int bitSet = xref.getRole().getBitSetIdx();
+			if(CollectionUtils.isNotEmpty(xref.getRights())) {
+				xref.getRights().forEach(right -> {
+					linearRoleBitSet.set(getRightBitIndex(right, xref.getRole()));
+				});
+			}
+			linearRoleBitSet.set(bitSet);
+		}
+
+		final Set<AbstractGroupXref> compiledGroupSet = visitGroups(compiledOrgSet, compiledRoleSet);
+		for(final AbstractGroupXref xref : compiledGroupSet) {
+			final int bitSet = xref.getGroup().getBitSetIdx();
+			if(CollectionUtils.isNotEmpty(xref.getRights())) {
+				xref.getRights().forEach(right -> {
+					linearGroupBitSet.set(getRightBitIndex(right, xref.getGroup()));
+				});
+			}
+			linearGroupBitSet.set(bitSet);
+		}
+		
+		final Set<AbstractResourceXref> compiledResourceSet = visitResources(compiledOrgSet, compiledGroupSet, compiledRoleSet);
+		for(final AbstractResourceXref xref : compiledResourceSet) {
+			final int bitSet = xref.getResource().getBitSetIdx();
+			if(CollectionUtils.isNotEmpty(xref.getRights())) {
+				xref.getRights().forEach(right -> {
+					linearResourceBitSet.set(getRightBitIndex(right, xref.getResource()));
+				});
+			}
+			linearResourceBitSet.set(bitSet);
+		}
+	}
+	
+	private Set<AbstractOrgXref> visitOrganization() {
+		final Set<AbstractOrgXref> tempCompiledSet = new HashSet<AbstractOrgXref>();
+		if(directOrganizations != null) {
+			tempCompiledSet.addAll(directOrganizations);
+		}
+		
+		final Set<AbstractOrgXref> compiledSet = new HashSet<AbstractOrgXref>();
+		
+		final Set<AuthorizationOrganization> visitedSet = new HashSet<AuthorizationOrganization>();
+		for(final AbstractOrgXref xref : tempCompiledSet) {
+			final Set<AbstractOrgXref> justVisited = xref.getOrganization().visitOrganizations(visitedSet);
+			compiledSet.addAll(justVisited);
+			visitedSet.addAll(justVisited.stream().map(e -> e.getOrganization()).collect(Collectors.toSet()));
+		}
+		compiledSet.addAll(tempCompiledSet);
+		
+		return compiledSet;
+	}
+	
+	
+	private Set<AbstractRoleXref> visitRoles(final Set<AbstractOrgXref> compiledOrgs) {
+		final Set<AbstractRoleXref> tempCompiledSet = new HashSet<AbstractRoleXref>();
+		if(directParentRoles != null) {
+			tempCompiledSet.addAll(directParentRoles);
+		}
+		
+		if(CollectionUtils.isNotEmpty(compiledOrgs)) {
+			for(final AbstractOrgXref xref : compiledOrgs) {
+				final Set<AbstractRoleXref> orgEntities = xref.getOrganization().getRoles();
+				if(orgEntities != null) {
+					tempCompiledSet.addAll(orgEntities);
+				}
 			}
 		}
 		
 		final Set<AuthorizationRole> visitedSet = new HashSet<AuthorizationRole>();
-		final Set<AuthorizationRole> compiledRoleSet = new HashSet<AuthorizationRole>();
-		for(final AuthorizationRole role : tempCompiledRoleSet) {
-			compiledRoleSet.addAll(role.visitRoles(visitedSet));
-			visitedSet.addAll(compiledRoleSet);
+		final Set<AbstractRoleXref> compiledSet = new HashSet<AbstractRoleXref>();
+		for(final AbstractRoleXref xref : tempCompiledSet) {
+			final Set<AbstractRoleXref> justVisited = xref.getRole().visitRoles(visitedSet);
+			compiledSet.addAll(justVisited);
+			visitedSet.addAll(justVisited.stream().map(e -> e.getRole()).collect(Collectors.toSet()));
 		}
-		compiledRoleSet.addAll(tempCompiledRoleSet);
+		compiledSet.addAll(tempCompiledSet);
 		
-		return compiledRoleSet;
+		return compiledSet;
 	}
 	
-	private Set<AuthorizationResource> visitResources(final Set<AuthorizationGroup> compiledGroups, final Set<AuthorizationRole> compiledRoles) {
-		final Set<AuthorizationResource> tempCompiledResourceSet = new HashSet<AuthorizationResource>();
-		//final StopWatch sw1 = new StopWatch();
-		//sw1.start();
-		if(directResources != null) {
-			tempCompiledResourceSet.addAll(directResources);
-		}
-		//sw1.stop();
-		//log.debug(String.format("Got direct Resources.  Size: %s.  Time: %s", tempCompiledResourceSet.size(), sw1.getTotalTimeMillis()));
-		
-		//final StopWatch sw2 = new StopWatch();
-		//sw2.start();
-		if(CollectionUtils.isNotEmpty(compiledGroups)) {
-			for(final AuthorizationGroup group : compiledGroups) {
-				final Set<AuthorizationResource> resources = group.getResources();
-				if(resources != null) {
-					tempCompiledResourceSet.addAll(resources);
-				}
-			}
-		}
-		//sw2.stop();
-		//log.debug(String.format("Got Group Resources.  Size: %s.  Time: %s", tempCompiledResourceSet.size(), sw2.getTotalTimeMillis()));
-		
-		
-		//final StopWatch sw3 = new StopWatch();
-		//sw3.start();
-		if(CollectionUtils.isNotEmpty(compiledRoles)) {
-			for(final AuthorizationRole role : compiledRoles) {
-				final Set<AuthorizationResource> resources = role.getResources();
-				if(resources != null) {
-					tempCompiledResourceSet.addAll(resources);
-				}
-			}
-		}
-		//sw3.stop();
-		//log.debug(String.format("Got Role Resources.  Size: %s.  Time: %s", tempCompiledResourceSet.size(), sw3.getTotalTimeMillis()));
-
-		//final StopWatch sw4 = new StopWatch();
-		//sw4.start();
-		final Set<AuthorizationResource> compiledResourceSet = new HashSet<AuthorizationResource>();
-		final Set<AuthorizationResource> visitedSet = new HashSet<AuthorizationResource>();
-		for(final AuthorizationResource resource : tempCompiledResourceSet) {
-			compiledResourceSet.addAll(resource.visitResources(visitedSet));
-			visitedSet.addAll(compiledResourceSet);
-		}
-		compiledResourceSet.addAll(tempCompiledResourceSet);
-		//sw4.stop();
-		//log.debug(String.format("Got Resource Resources.  Size: %s.  Time: %s", tempCompiledResourceSet.size(), sw4.getTotalTimeMillis()));
-		return compiledResourceSet;
-	}
-	
-	/*
-	private Set<AuthorizationResource> visitResources() {
-		final StopWatch sw1 = new StopWatch();
-		sw1.start();
-		final Set<AuthorizationResource> compiledResourceSet = new HashSet<AuthorizationResource>();
+	private Set<AbstractGroupXref> visitGroups(final Set<AbstractOrgXref> compiledOrgs, final Set<AbstractRoleXref> compiledRoles) {
+		final Set<AbstractGroupXref> tempCompiledSet = new HashSet<AbstractGroupXref>();
 		if(directParentGroups != null) {
-			for(final AuthorizationGroup group : directParentGroups) {
-				compiledResourceSet.addAll(group.visitResources(new HashSet<AuthorizationGroup>()));
+			tempCompiledSet.addAll(directParentGroups);
+		}
+		
+		if(CollectionUtils.isNotEmpty(compiledOrgs)) {
+			for(final AbstractOrgXref xref : compiledOrgs) {
+				final Set<AbstractGroupXref> orgEntities = xref.getOrganization().getGroups();
+				if(orgEntities != null) {
+					tempCompiledSet.addAll(orgEntities);
+				}
 			}
 		}
-		sw1.stop();
-		log.info(String.format("Time to compile resources from groups: %s", sw1.getTotalTimeMillis()));
 		
-		final StopWatch sw2 = new StopWatch();
-		sw2.start();
-		if(directParentRoles != null) {
-			for(final AuthorizationRole role : directParentRoles) {
-				compiledResourceSet.addAll(role.visitResources(new HashSet<AuthorizationRole>()));
+		for(final AbstractRoleXref xref : compiledRoles) {
+			final Set<AbstractGroupXref> groups = xref.getRole().getGroups();
+			if(groups != null) {
+				tempCompiledSet.addAll(groups);
 			}
 		}
-		sw2.stop();
-		log.info(String.format("Time to compile resources from roles: %s", sw2.getTotalTimeMillis()));
 		
-		final StopWatch sw3 = new StopWatch();
-		sw3.start();
-		if(directResources != null) {
-			for(final AuthorizationResource resource : directResources) {
-				compiledResourceSet.add(resource);
-				compiledResourceSet.addAll(resource.visitResources(new HashSet<AuthorizationResource>()));
-			}
+		final Set<AuthorizationGroup> visitedSet = new HashSet<AuthorizationGroup>();
+		final Set<AbstractGroupXref> compiledSet = new HashSet<AbstractGroupXref>();
+		for(final AbstractGroupXref xref : tempCompiledSet) {
+			final Set<AbstractGroupXref> justVisited = xref.getGroup().visitGroups(visitedSet);
+			compiledSet.addAll(justVisited);
+			visitedSet.addAll(justVisited.stream().map(e -> e.getGroup()).collect(Collectors.toSet()));
 		}
-		sw3.stop();
-		log.info(String.format("Time to compile resources from resources: %s", sw3.getTotalTimeMillis()));
+		compiledSet.addAll(tempCompiledSet);
 		
-		return compiledResourceSet;
+		return compiledSet;
 	}
-	*/
+	
+	private Set<AbstractResourceXref> visitResources(final Set<AbstractOrgXref> compiledOrgs, final Set<AbstractGroupXref> compiledGroups, final Set<AbstractRoleXref> compiledRoles) {
+		final Set<AbstractResourceXref> tempCompiledSet = new HashSet<AbstractResourceXref>();
+		if(directResources != null) {
+			tempCompiledSet.addAll(directResources);
+		}
+
+		if(CollectionUtils.isNotEmpty(compiledGroups)) {
+			for(final AbstractGroupXref xref : compiledGroups) {
+				final Set<AbstractResourceXref> resources = xref.getGroup().getResources();
+				if(resources != null) {
+					tempCompiledSet.addAll(resources);
+				}
+			}
+		}
+
+		if(CollectionUtils.isNotEmpty(compiledRoles)) {
+			for(final AbstractRoleXref xref : compiledRoles) {
+				final Set<AbstractResourceXref> resources = xref.getRole().getResources();
+				if(resources != null) {
+					tempCompiledSet.addAll(resources);
+				}
+			}
+		}
+		
+		if(CollectionUtils.isNotEmpty(compiledOrgs)) {
+			for(final AbstractOrgXref xref : compiledOrgs) {
+				final Set<AbstractResourceXref> orgEntities = xref.getOrganization().getResources();
+				if(orgEntities != null) {
+					tempCompiledSet.addAll(orgEntities);
+				}
+			}
+		}
+
+		final Set<AbstractResourceXref> compiledSet = new HashSet<AbstractResourceXref>();
+		final Set<AuthorizationResource> visitedSet = new HashSet<AuthorizationResource>();
+		for(final AbstractResourceXref xref : tempCompiledSet) {
+			final Set<AbstractResourceXref> justVisited = xref.getResource().visitResources(visitedSet);
+			compiledSet.addAll(justVisited);
+			visitedSet.addAll(justVisited.stream().map(e -> e.getResource()).collect(Collectors.toSet()));
+		}
+		compiledSet.addAll(tempCompiledSet);
+		return compiledSet;
+	}
 
 	public boolean isEntitledTo(final AuthorizationResource resource) {
 		return (resource != null) ? linearResourceBitSet.get(resource.getBitSetIdx()) : false;
+	}
+	
+	public boolean isEntitledTo(final AuthorizationResource entity, final AuthorizationAccessRight right) {
+		if(right == null) {
+			return isEntitledTo(entity);
+		} else {
+			return linearResourceBitSet.get(getRightBitIndex(right, entity));
+		}
 	}
 	
 	public boolean isMemberOf(final AuthorizationGroup group) {
 		return (group != null) ? linearGroupBitSet.get(group.getBitSetIdx()) : false;
 	}
 	
+	public boolean isMemberOf(final AuthorizationGroup entity, final AuthorizationAccessRight right) {
+		if(right == null) {
+			return isMemberOf(entity);
+		} else {
+			return linearGroupBitSet.get(getRightBitIndex(right, entity));
+		}
+	}
+	
 	public boolean isMemberOf(final AuthorizationRole role) {
 		return (role != null) ? linearRoleBitSet.get(role.getBitSetIdx()) : false;
+	}
+	
+	public boolean isMemberOf(final AuthorizationRole entity, final AuthorizationAccessRight right) {
+		if(right == null) {
+			return isMemberOf(entity);
+		} else {
+			return linearRoleBitSet.get(getRightBitIndex(right, entity));
+		}
+	}
+	
+	public boolean isMemberOf(final AuthorizationOrganization organization) {
+		return (organization != null) ? linearOrganizationBitSet.get(organization.getBitSetIdx()) : false;
+	}
+	
+	public boolean isMemberOf(final AuthorizationOrganization entity, final AuthorizationAccessRight right) {
+		if(right == null) {
+			return isMemberOf(entity);
+		} else {
+			return linearOrganizationBitSet.get(getRightBitIndex(right, entity));
+		}
+	}
+	
+	public Set<Integer> getLnearOrganizationSet() {
+		final Set<Integer> linearBitSet = new HashSet<Integer>();
+		for(int i = 0; i < linearOrganizationBitSet.size(); i++) {
+			if(linearOrganizationBitSet.get(i)) {
+				linearBitSet.add(new Integer(i));
+			}
+		}
+		return linearBitSet;
 	}
 	
 	public Set<Integer> getLinearRoles() {
@@ -251,6 +347,16 @@ public class AuthorizationUser extends AbstractAuthorizationEntity implements Se
 		final Set<Integer> linearBitSet = new HashSet<Integer>();
 		for(int i = 0; i < linearResourceBitSet.size(); i++) {
 			if(linearResourceBitSet.get(i)) {
+				linearBitSet.add(new Integer(i));
+			}
+		}
+		return linearBitSet;
+	}
+	
+	public Set<Integer> getLinearOrganizations() {
+		final Set<Integer> linearBitSet = new HashSet<Integer>();
+		for(int i = 0; i < linearOrganizationBitSet.size(); i++) {
+			if(linearOrganizationBitSet.get(i)) {
 				linearBitSet.add(new Integer(i));
 			}
 		}

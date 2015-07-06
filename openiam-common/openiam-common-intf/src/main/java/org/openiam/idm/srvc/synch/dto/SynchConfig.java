@@ -7,6 +7,7 @@ import org.openiam.idm.srvc.recon.dto.MatchConfig;
 import org.openiam.idm.srvc.synch.domain.SynchConfigEntity;
 
 import javax.xml.bind.annotation.*;
+import java.util.Date;
 import java.util.List;
 
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -19,7 +20,8 @@ import java.util.List;
 		"managedSysId",
 		"loadMatchOnly",
 		"updateAttribute",
-		"synchFrequency",
+		"runOn",
+		"cronExpression",
         "companyId",
 		"synchType",
 		"processRule",
@@ -66,7 +68,8 @@ public class SynchConfig extends KeyNameDTO implements MatchConfig {
 	private String managedSysId;
 	private Integer loadMatchOnly;
 	private Integer updateAttribute;
-	private String synchFrequency;
+	private Date runOn;
+	private String cronExpression;
     private String companyId;
 	private String synchType;
 	//private String deleteRule;
@@ -160,15 +163,23 @@ public class SynchConfig extends KeyNameDTO implements MatchConfig {
 		this.updateAttribute = updateAttribute;
 	}
 
-	public String getSynchFrequency() {
-		return this.synchFrequency;
+	public Date getRunOn() {
+		return runOn;
 	}
 
-	public void setSynchFrequency(String synchFrequency) {
-		this.synchFrequency = synchFrequency;
+	public void setRunOn(Date runOn) {
+		this.runOn = runOn;
 	}
 
-    public String getCompanyId() {
+	public String getCronExpression() {
+		return cronExpression;
+	}
+
+	public void setCronExpression(String cronExpression) {
+		this.cronExpression = cronExpression;
+	}
+
+	public String getCompanyId() {
         return companyId;
     }
 
@@ -438,7 +449,8 @@ public class SynchConfig extends KeyNameDTO implements MatchConfig {
                 ", managedSysId='" + managedSysId + '\'' +
                 ", loadMatchOnly=" + loadMatchOnly +
                 ", updateAttribute=" + updateAttribute +
-                ", synchFrequency='" + synchFrequency + '\'' +
+				", runOn='" + runOn + '\'' +
+				", cronExpression='" + cronExpression + '\'' +
                 ", companyId='" + companyId + '\'' +
                 ", synchType='" + synchType + '\'' +
                 ", processRule='" + processRule + '\'' +

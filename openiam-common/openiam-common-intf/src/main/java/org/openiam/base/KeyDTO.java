@@ -10,7 +10,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "KeyDTO", propOrder = {
 	"id"
 })
-public abstract class KeyDTO extends BaseObject implements Serializable, BaseIdentity {
+public class KeyDTO extends BaseObject implements Serializable, BaseIdentity {
 
 
     private static final long serialVersionUID = 8295948542132480841L;

@@ -1,5 +1,15 @@
 package org.openiam.authmanager.service.impl;
 
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.StopWatch;
@@ -9,9 +19,7 @@ import org.openiam.authmanager.common.model.AuthorizationManagerLoginId;
 import org.openiam.authmanager.common.model.AuthorizationMenu;
 import org.openiam.authmanager.common.model.AuthorizationResource;
 import org.openiam.authmanager.common.xref.ResourceResourceXref;
-import org.openiam.authmanager.dao.ResourceDAO;
 import org.openiam.authmanager.dao.ResourcePropDAO;
-import org.openiam.authmanager.dao.ResourceResourceXrefDAO;
 import org.openiam.authmanager.model.MenuEntitlementType;
 import org.openiam.authmanager.model.ResourceEntitlementToken;
 import org.openiam.authmanager.service.AuthorizationManagerAdminService;
@@ -19,9 +27,6 @@ import org.openiam.authmanager.service.AuthorizationManagerMenuService;
 import org.openiam.authmanager.service.AuthorizationManagerService;
 import org.openiam.authmanager.ws.request.MenuEntitlementsRequest;
 import org.openiam.idm.srvc.access.service.AccessRightDAO;
-import org.openiam.idm.srvc.audit.constant.AuditAction;
-import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
@@ -29,6 +34,7 @@ import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
 import org.openiam.idm.srvc.lang.service.LanguageMappingDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
+import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.service.RoleDAO;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -47,8 +53,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import java.util.*;
-
 @Service("authorizationManagerMenuService")
 //@ManagedResource(objectName="org.openiam.authorization.manager:name=authorizationManagerMenuService")
 public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService implements AuthorizationManagerMenuService, InitializingBean, ApplicationContextAware, Sweepable/*, Runnable*/ {
@@ -65,16 +69,12 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
 	private Map<String, AuthorizationMenu> urlIdCache;
 	
 	@Autowired
-	@Qualifier("jdbcResourceResourceXrefDAO")
-	private ResourceResourceXrefDAO resourceResourceXrefDAO;
-	
-	@Autowired
 	@Qualifier("jdbcResourcePropDAO")
 	private ResourcePropDAO resourcePropDAO;
 	
 	@Autowired
 	@Qualifier("jdbcResourceDAO")
-	private ResourceDAO resourceDAO;
+	private org.openiam.authmanager.dao.ResourceDAO resourceDAO;
 
     @Autowired
     private UserDAO userDAOHibernate;
@@ -94,15 +94,14 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
 	@Autowired
 	private AuthorizationManagerAdminService authManagerAdminService;
 	
-	@Autowired
-	private org.openiam.idm.srvc.res.service.ResourceDAO hibernateResourceDAO;
-	
 	 @Autowired
 	 @Qualifier("transactionTemplate")
 	 private TransactionTemplate transactionTemplate;
 	 
 	 @Autowired
 	 private AccessRightDAO accessRightDAO;
+	 
+	 @Autowired
 
 	/*
 	private boolean forceThreadShutdown = false;
@@ -123,7 +122,7 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
 		final StringBuilder sb = new StringBuilder();
 		try {
 			if(rootName != null) {
-				final AuthorizationMenu root = getMenuTree(rootName, userId, null);
+				final AuthorizationMenu root = getMenuTree(rootName, userId);
 				if(root == null) {
 					sb.append(String.format("No menu with root '%s'", rootName));
 				} else {
@@ -273,20 +272,25 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
 	}
 	
 	private Map<String, AuthorizationMenu> createMenuTrees(final Map<String, AuthorizationMenu> menuMap) {
-		final List<ResourceResourceXref> xrefList = resourceResourceXrefDAO.getList();
+		
+		final List<ResourceEntity> resources = resourceDAOHibernate.findAll();
 		
 		final Map<String, String> childResource2ParentResourceMap = new HashMap<String, String>();
 		final Map<String, Set<String>> parentResource2ChildResourceMap = new HashMap<String, Set<String>>();
-		for(final ResourceResourceXref xref : xrefList) {
-			final String resourceId = xref.getResourceId();
-			final String memberResourceId = xref.getMemberResourceId();
-			
-			if(!parentResource2ChildResourceMap.containsKey(resourceId)) {
-				parentResource2ChildResourceMap.put(resourceId, new HashSet<String>());
+		resources.forEach(resource -> {
+			if(CollectionUtils.isNotEmpty(resource.getChildResources())) {
+				resource.getChildResources().forEach(xref -> {
+					final String resourceId = xref.getEntity().getId();
+					final String memberResourceId = xref.getMemberEntity().getId();
+				
+					if(!parentResource2ChildResourceMap.containsKey(resourceId)) {
+						parentResource2ChildResourceMap.put(resourceId, new HashSet<String>());
+					}
+					childResource2ParentResourceMap.put(memberResourceId, resourceId);
+					parentResource2ChildResourceMap.get(resourceId).add(memberResourceId);
+				});
 			}
-			childResource2ParentResourceMap.put(memberResourceId, resourceId);
-			parentResource2ChildResourceMap.get(resourceId).add(memberResourceId);
-		}
+		});
 		
 		/* create a HashMap structure that mimicks a tree */
 		final Map<AuthorizationMenu, TreeSet<AuthorizationMenu>> menu2ChildMap = new HashMap<AuthorizationMenu, TreeSet<AuthorizationMenu>>();
@@ -340,36 +344,26 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
 	
 	@Override
 	public AuthorizationMenu getMenuTree(final String menuRoot, final String userId) {
-		return getMenu(menuCache.get(menuRoot), userId, null, true);
+		return getMenu(menuCache.get(menuRoot), userId, true);
 	}
 
 	@Override
-	public AuthorizationMenu getMenuTree(final String menuRoot, final String login, final String managedSysId) {
-		return getMenu(menuCache.get(menuRoot), null, new AuthorizationManagerLoginId(login, managedSysId), true);
-	}
-	
-	@Override
     public AuthorizationMenu getMenuTreeByName(final String menuRoot, final String userId) {
-		return getMenu(menuNameCache.get(menuRoot), userId, null, true);
+		return getMenu(menuNameCache.get(menuRoot), userId, true);
 	}
 	
-	@Override
-    public AuthorizationMenu getMenuTreeByName(final String menuRoot, final String login, final String managedSysId) {
-		return getMenu(menuNameCache.get(menuRoot), null, new AuthorizationManagerLoginId(login, managedSysId), true);
-	}
-	
-	private AuthorizationMenu getMenu(final AuthorizationMenu menu, final String userId, final AuthorizationManagerLoginId loginId, final boolean isRoot) {
+	private AuthorizationMenu getMenu(final AuthorizationMenu menu, final String userId, final boolean isRoot) {
 		AuthorizationMenu retVal = null;
 		if(menu != null) {
 			//make copy
 			AuthorizationMenu parent = menu.copy();
-			final AuthorizationMenu child = getMenu(menu.getFirstChild(), userId, loginId, false);
+			final AuthorizationMenu child = getMenu(menu.getFirstChild(), userId, false);
 			if(child != null) {
 				parent.setFirstChild(child);
 				child.setParent(parent);
 			}
 			
-			final AuthorizationMenu next = getMenu(menu.getNextSibling(), userId, loginId, false);
+			final AuthorizationMenu next = getMenu(menu.getNextSibling(), userId, false);
 			if(next != null) {
 				parent.setNextSibling(next);
 			}
@@ -378,23 +372,23 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
 			//end copy
 			
 			if(isRoot) {
-				if(!hasAccess(retVal, userId, loginId)) {
+				if(!hasAccess(retVal, userId)) {
 					retVal = null;
 				} else {
-					removeUnauthorizedMenus(retVal, userId, loginId, true);
+					removeUnauthorizedMenus(retVal, userId, true);
 				}
 			}
 		}
 		return retVal;
 	}
 	
-	private List<AuthorizationMenu> getAuthorizedSiblings(final AuthorizationMenu menu, final String userId, final AuthorizationManagerLoginId loginId) {
+	private List<AuthorizationMenu> getAuthorizedSiblings(final AuthorizationMenu menu, final String userId) {
 		final List<AuthorizationMenu> nextMenus = new LinkedList<>();
 		if(menu != null) {
 			AuthorizationMenu nextSibling = menu.getNextSibling();
 			while(nextSibling != null) {
-				if(hasAccess(nextSibling, userId, loginId)) {
-					removeUnauthorizedMenus(nextSibling, userId, loginId, false);
+				if(hasAccess(nextSibling, userId)) {
+					removeUnauthorizedMenus(nextSibling, userId, false);
 					nextMenus.add(nextSibling);
 				}
 				nextSibling = nextSibling.getNextSibling();
@@ -403,12 +397,12 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
 		return nextMenus;
 	}
 	
-	private AuthorizationMenu getFirstAuthorizedChild(final AuthorizationMenu menu, final String userId, final AuthorizationManagerLoginId loginId) {
+	private AuthorizationMenu getFirstAuthorizedChild(final AuthorizationMenu menu, final String userId) {
 		AuthorizationMenu authorizedChild = null;
 		if(menu != null) {
 			AuthorizationMenu child = menu.getFirstChild();
 			while(child != null) {
-				if(hasAccess(child, userId, loginId)) {
+				if(hasAccess(child, userId)) {
 					authorizedChild = child;
 					break;
 				}
@@ -418,11 +412,11 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
 		return authorizedChild;
 	}
 	
-	private void removeUnauthorizedMenus(final AuthorizationMenu menu, final String userId, final AuthorizationManagerLoginId loginId, final boolean checkNext) {
-		final AuthorizationMenu child = getFirstAuthorizedChild(menu, userId, loginId);
+	private void removeUnauthorizedMenus(final AuthorizationMenu menu, final String userId, final boolean checkNext) {
+		final AuthorizationMenu child = getFirstAuthorizedChild(menu, userId);
 		if(child != null) {
 			menu.setFirstChild(child);
-			removeUnauthorizedMenus(menu.getFirstChild(), userId, loginId, true);
+			removeUnauthorizedMenus(menu.getFirstChild(), userId, true);
 		} else {
 			menu.setFirstChild(null);
 		}
@@ -437,7 +431,7 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
 		*/
 		
 		if(checkNext) {
-			final List<AuthorizationMenu> nextMenus = getAuthorizedSiblings(menu, userId, loginId);
+			final List<AuthorizationMenu> nextMenus = getAuthorizedSiblings(menu, userId);
 			
 			if(CollectionUtils.isNotEmpty(nextMenus)) {
 				AuthorizationMenu previous = null;
@@ -455,16 +449,14 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
 		}
 	}
 	
-	private boolean hasAccess(final AuthorizationMenu menu, final String userId, final AuthorizationManagerLoginId loginId) {
+	private boolean hasAccess(final AuthorizationMenu menu, final String userId) {
 		final StopWatch sw = new StopWatch();
 		sw.start();
-		final AuthorizationResource resource = new AuthorizationResource();
-		resource.setId(menu.getId());
 		boolean retVal = false;
 		if(menu.getIsPublic()) {
 			retVal = true;
 		} else {
-			retVal = (userId != null) ? (authManager.isEntitled(userId, resource)) : authManager.isEntitled(loginId, resource);
+			retVal = authManager.isEntitled(userId, menu.getId());
 		}
 		sw.stop();
 		if(log.isInfoEnabled()) {
@@ -537,16 +529,16 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
 	@Transactional
 	public void processTreeUpdate(List<ResourceEntity> toSave, List<ResourceEntity> toUpdate, List<ResourceEntity> toDelete) {
 		if(CollectionUtils.isNotEmpty(toSave)) {
-			hibernateResourceDAO.save(toSave);
+			resourceDAOHibernate.save(toSave);
 		}
 		
 		if(CollectionUtils.isNotEmpty(toUpdate)) {
-			hibernateResourceDAO.save(toUpdate);
+			resourceDAOHibernate.save(toUpdate);
 		}
 		
 		if(CollectionUtils.isNotEmpty(toDelete)) {
 			for(final ResourceEntity resource : toDelete) {
-				hibernateResourceDAO.delete(resource);
+				resourceDAOHibernate.delete(resource);
 			}
 		}
 	}
@@ -621,9 +613,7 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
             if (menu.getIsPublic()) {
                 retVal = true;
             } else {
-                final AuthorizationResource resource = new AuthorizationResource();
-                resource.setId(menu.getId());
-                retVal = authManager.isEntitled(userId, resource);
+                retVal = authManager.isEntitled(userId, menu.getId());
             }
         }
 

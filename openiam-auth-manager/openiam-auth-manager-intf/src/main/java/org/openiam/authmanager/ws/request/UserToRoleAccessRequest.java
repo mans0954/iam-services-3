@@ -11,29 +11,21 @@ import org.openiam.authmanager.common.model.AuthorizationRole;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "UserToRoleAccessRequest", propOrder = {
-	"role"
+	"roleId"
 })
 public class UserToRoleAccessRequest extends UserRequest implements Serializable {
 
 	private static final long serialVersionUID = -1L;
 	
-	private AuthorizationRole role;
+	private String roleId;
+
+	public String getRoleId() {
+		return roleId;
+	}
+
+	public void setRoleId(String roleId) {
+		this.roleId = roleId;
+	}
 	
-	public UserToRoleAccessRequest() {
-		
-	}
-
-	public AuthorizationRole getRole() {
-		return role;
-	}
-
-	public void setRole(AuthorizationRole role) {
-		this.role = role;
-	}
-
-	@Override
-	public String toString() {
-		return String.format(
-				"AuthorizationManagerUserToRoleAccessRequest [role=%s]", role);
-	}
+	
 }

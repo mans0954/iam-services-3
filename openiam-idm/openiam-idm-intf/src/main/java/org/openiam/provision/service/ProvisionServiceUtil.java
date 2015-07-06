@@ -14,6 +14,10 @@ public interface ProvisionServiceUtil {
                                 Map<String, Object> tmpMap, ScriptIntegration se)
             throws Exception;
 
+    void setValueFromAttrMap(AttributeMap attr,
+                             Map<String, Object> tmpMap, ScriptIntegration se)
+            throws Exception;
+
     String buildUserPrincipalName(List<AttributeMap> attrMap,
                                   ScriptIntegration se, Map<String, Object> bindingMap)
             throws Exception;
