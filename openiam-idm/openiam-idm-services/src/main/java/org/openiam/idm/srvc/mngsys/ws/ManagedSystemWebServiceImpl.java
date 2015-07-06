@@ -71,6 +71,9 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     @Value("${KEYSTORE_PSWD}")
     private String keystorePasswd;
 
+    @Value("${openiam.default_managed_sys}")
+    private String defaultManagedSystemId;
+
     @Autowired
     private ManagedSystemService managedSystemService;
 
@@ -178,12 +181,17 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     		if(StringUtils.isBlank(sys.getName())) {
     			throw new BasicDataServiceException(ResponseCode.NO_NAME);
     		}
-    		
-    		if(StringUtils.isBlank(sys.getConnectorId())) {
+
+            boolean isDefaultManagedSystem = sys.getId() != null && sys.getId().equals(defaultManagedSystemId);
+    		if(!isDefaultManagedSystem && StringUtils.isBlank(sys.getConnectorId())) {
     			throw new BasicDataServiceException(ResponseCode.CONNECTOR_REQUIRED);
     		}
-    		
-    		if (encrypt && sys.getPswd() != null) {
+
+            if(isDefaultManagedSystem && StringUtils.isNotBlank(sys.getConnectorId())) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+            }
+
+            if (encrypt && sys.getPswd() != null) {
     			sys.setPswd(cryptor.encrypt(keyManagementService.getUserKey(systemUserId, KeyName.password.name()), sys.getPswd()));
     		}
 
