@@ -1,8 +1,11 @@
 package org.openiam.idm.srvc.mngsys.service;
 
 import org.openiam.am.srvc.domain.AuthProviderEntity;
+import org.openiam.base.ws.Response;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.AttributeMapSearchBean;
+import org.openiam.idm.searchbeans.MngSysPolicySearchBean;
+import org.openiam.idm.srvc.mngsys.bean.MngSysPolicyBean;
 import org.openiam.idm.srvc.mngsys.domain.*;
 import org.openiam.idm.srvc.mngsys.dto.*;
 
@@ -22,6 +25,14 @@ public interface ManagedSystemService {
     List<MngSysPolicyDto> getManagedSysPolicyByMngSysId(String mngSysId);
 
     MngSysPolicyDto getManagedSysPolicyByMngSysIdAndMetadataType(String mngSysId, String metadataTypeId);
+
+    List<MngSysPolicyDto> findMngSysPolicies(MngSysPolicySearchBean searchBean, Integer from, Integer size);
+
+    List<MngSysPolicyBean> findMngSysPolicyBeans(MngSysPolicySearchBean searchBean, Integer from, Integer size);
+
+    String saveMngSysPolicyBean(MngSysPolicyBean mngSysPolicy) throws BasicDataServiceException;
+
+    int getMngSysPoliciesCount(MngSysPolicySearchBean searchBean);
 
     List<ManagedSysEntity> getManagedSysByConnectorId(String connectorId);
 
@@ -48,6 +59,8 @@ public interface ManagedSystemService {
     void removeResourceAttributeMaps(String resourceId);
 
     List<AttributeMapEntity> getResourceAttributeMaps(String resourceId);
+
+    void removeMngSysPolicy(String mngSysPolicyId) throws BasicDataServiceException ;
 
     List<AttributeMap> getAttributeMapsByMngSysPolicyId(String mngSysPolicyId);
 

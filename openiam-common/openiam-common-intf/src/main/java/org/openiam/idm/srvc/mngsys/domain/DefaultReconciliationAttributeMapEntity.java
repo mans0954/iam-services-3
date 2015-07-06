@@ -1,14 +1,14 @@
 package org.openiam.idm.srvc.mngsys.domain;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.mngsys.dto.DefaultReconciliationAttributeMap;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author zaporozhec
@@ -29,6 +29,9 @@ public class DefaultReconciliationAttributeMapEntity implements
     @Column(name = "DEF_ATTR_MAP_NAME", length = 100)
     private String defaultAttributeMapName;
 
+    @OneToMany(fetch = FetchType.LAZY, orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "defaultAttributePolicy")
+    private Set<ReconciliationResourceAttributeMapEntity> attributeMaps = new HashSet<ReconciliationResourceAttributeMapEntity>(0);
+
     public String getDefaultAttributeMapId() {
         return defaultAttributeMapId;
     }
@@ -43,6 +46,14 @@ public class DefaultReconciliationAttributeMapEntity implements
 
     public void setDefaultAttributeMapName(String defaultAttributeMapName) {
         this.defaultAttributeMapName = defaultAttributeMapName;
+    }
+
+    public Set<ReconciliationResourceAttributeMapEntity> getAttributeMaps() {
+        return attributeMaps;
+    }
+
+    public void setAttributeMaps(Set<ReconciliationResourceAttributeMapEntity> attributeMaps) {
+        this.attributeMaps = attributeMaps;
     }
 
     @Override

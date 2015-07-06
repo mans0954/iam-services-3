@@ -8,6 +8,9 @@ import javax.jws.WebService;
 
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.AttributeMapSearchBean;
+import org.openiam.idm.searchbeans.MngSysPolicySearchBean;
+import org.openiam.idm.srvc.mngsys.bean.ApproverAssocationSearchBean;
+import org.openiam.idm.srvc.mngsys.bean.MngSysPolicyBean;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.dto.*;
 
@@ -215,7 +218,26 @@ public interface ManagedSystemWebService {
     List<DefaultReconciliationAttributeMap> getAllDefaultReconcileMap();
 
     @WebMethod
+    MngSysPolicyDto getMngSysPolicyById(@WebParam(name = "mngSysPolicyId", targetNamespace = "") String mngSysPolicyId);
+
+    @WebMethod
+    MngSysPolicyBean getMngSysPolicyBeanById(@WebParam(name = "mngSysPolicyId", targetNamespace = "") String mngSysPolicyId);
+
+    @WebMethod
     List<MngSysPolicyDto> getMngSysPoliciesByMngSysId(@WebParam(name = "mngSysId", targetNamespace = "") String mngSysId);
+
+    @WebMethod
+    List<MngSysPolicyDto> findMngSysPolicies(@WebParam(name = "searchBean", targetNamespace = "") MngSysPolicySearchBean searchBean,
+                                             @WebParam(name = "from", targetNamespace = "") Integer from,
+                                             @WebParam(name = "size", targetNamespace = "") Integer size);
+
+    @WebMethod
+    List<MngSysPolicyBean> findMngSysPolicyBeans(@WebParam(name = "searchBean", targetNamespace = "") MngSysPolicySearchBean searchBean,
+                                                 @WebParam(name = "from", targetNamespace = "") Integer from,
+                                                 @WebParam(name = "size", targetNamespace = "") Integer size);
+
+    @WebMethod
+    int getMngSysPoliciesCount(@WebParam(name = "searchBean", targetNamespace = "") MngSysPolicySearchBean searchBean);
 
     @WebMethod
     public Response saveApproverAssociations(final List<ApproverAssociation> approverAssociationList, final AssociationType type, final String entityId);
@@ -239,6 +261,10 @@ public interface ManagedSystemWebService {
             final @WebParam(name = "entity", targetNamespace = "") ManagedSysRuleDto entity);
 
     @WebMethod
+    void removeMngSysPolicy(
+            final @WebParam(name = "mngSysPolicyId", targetNamespace = "") String mngSysPolicyId) throws Exception;
+
+    @WebMethod
     void deleteRules(
             final @WebParam(name = "ruleId", targetNamespace = "") String ruleId);
 
@@ -251,5 +277,9 @@ public interface ManagedSystemWebService {
             throws Exception;
 
     void deleteAttributesMapList(List<String> ids) throws Exception;
+
+    @WebMethod
+    Response saveMngSysPolicyBean(
+            final @WebParam(name = "mngSysPolicy", targetNamespace = "") MngSysPolicyBean mngSysPolicy);
 
 }

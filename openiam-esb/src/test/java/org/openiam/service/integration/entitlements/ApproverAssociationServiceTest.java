@@ -5,7 +5,7 @@ import java.util.List;
 import org.apache.commons.collections.CollectionUtils;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
-import org.openiam.idm.srvc.mngsys.dto.ApproverAssocationSearchBean;
+import org.openiam.idm.srvc.mngsys.bean.ApproverAssocationSearchBean;
 import org.openiam.idm.srvc.mngsys.dto.ApproverAssociation;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.service.integration.AbstractKeyServiceTest;

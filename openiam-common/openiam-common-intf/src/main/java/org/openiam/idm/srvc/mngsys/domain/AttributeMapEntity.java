@@ -29,8 +29,8 @@ public class AttributeMapEntity extends AbstractKeyNameEntity {
 	 */
     private static final long serialVersionUID = 1L;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "MNG_SYS_POLICY_ID", nullable = false)
+    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @JoinColumn(name = "MNG_SYS_POLICY_ID", referencedColumnName = "MNG_SYS_POLICY_ID", insertable=true, updatable=true, nullable=true)
     private MngSysPolicyEntity mngSysPolicy;
 
     @Column(name = "RESOURCE_ID", length = 32)

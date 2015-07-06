@@ -26,9 +26,8 @@ public class MngSysPolicyEntity extends AbstractMetdataTypeEntity {
     public MngSysPolicyEntity() {
     }
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JoinColumn(name = "ATTRIBUTE_MAP_ID", insertable = false, updatable = false)
-    private Set<AttributeMapEntity> attributeMaps = new HashSet<AttributeMapEntity>(0);
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="mngSysPolicy", orphanRemoval=true)
+    private Set<AttributeMapEntity> attributeMaps = new HashSet<>(0);
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "MANAGED_SYS_ID", nullable = false)

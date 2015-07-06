@@ -1,4 +1,4 @@
-package org.openiam.idm.srvc.mngsys.dto;
+package org.openiam.idm.srvc.mngsys.bean;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -6,6 +6,7 @@ import javax.xml.bind.annotation.XmlType;
 
 import org.openiam.idm.searchbeans.AbstractSearchBean;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
+import org.openiam.idm.srvc.mngsys.dto.ApproverAssociation;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ApproverAssocationSearchBean", propOrder = {
