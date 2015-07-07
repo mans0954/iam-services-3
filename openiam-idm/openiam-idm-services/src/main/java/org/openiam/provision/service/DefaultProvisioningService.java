@@ -1126,14 +1126,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         sb.setDeepCopy(false);
         sb.addUserId(pUser.getId());
         final List<Organization> orgs = orgManager.findBeans(sb, null, 0, Integer.MAX_VALUE);
-        if(CollectionUtils.isNotEmpty(orgs)) {
-	        for (Organization org : orgs) {
-	            Resource res = resourceDataService.getResource(org.getAdminResourceId(), null);
-	            if (res != null) {
-	                resourceSet.add(res);
-	            }
-	        }
-        }
 
 
         // Set of resources that are to be removed based on roles that are to be

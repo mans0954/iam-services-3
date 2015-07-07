@@ -1,7 +1,15 @@
 package org.openiam.idm.srvc.role.service;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -17,7 +25,6 @@ import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
-import org.openiam.idm.srvc.grp.domain.GroupToGroupMembershipXrefEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
@@ -26,7 +33,6 @@ import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
-import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.idm.srvc.role.domain.RoleAttributeEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
@@ -45,9 +51,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.*;
-import java.util.stream.Collectors;
 
 @Service("roleDataService")
 public class RoleDataServiceImpl implements RoleDataService {
@@ -84,9 +87,6 @@ public class RoleDataServiceImpl implements RoleDataService {
 	
     @Autowired
     private ManagedSysDAO managedSysDAO;
-    
-	@Value("${org.openiam.resource.admin.resource.type.id}")
-	private String adminResourceTypeId;
 	
     @Autowired
     private MetadataTypeDAO typeDAO;
@@ -96,6 +96,9 @@ public class RoleDataServiceImpl implements RoleDataService {
     
     @Autowired
     private AccessRightDAO accessRightDAO;
+
+	@Value("${org.openiam.ui.admin.right.id}")
+	private String adminRightId;
 
     /**
      * Cache for whole roles hierarchy
@@ -218,6 +221,10 @@ public class RoleDataServiceImpl implements RoleDataService {
 		}
 	}
 	
+	private void makeAdmin(final RoleEntity role, final String requestorId) {
+		
+	}
+	
 	@Override
     @Transactional
 	public void saveRole(final RoleEntity role, final String requestorId) throws BasicDataServiceException {
@@ -235,10 +242,9 @@ public class RoleDataServiceImpl implements RoleDataService {
             }
 
 			if(StringUtils.isBlank(role.getId())) {
-				role.setAdminResource(getNewAdminResource(role, requestorId));
 				roleDao.save(role);
 				role.addApproverAssociation(createDefaultApproverAssociations(role, requestorId));
-
+				role.addUser(userDAO.findById(requestorId), accessRightDAO.findById(adminRightId));
                 addRequiredAttributes(role);
 			} else {
 				final RoleEntity dbRole = roleDao.findById(role.getId());
@@ -250,11 +256,6 @@ public class RoleDataServiceImpl implements RoleDataService {
 					role.setParentRoles(dbRole.getParentRoles());
 					role.setResources(dbRole.getResources());
 					role.setUsers(dbRole.getUsers());
-					role.setAdminResource(dbRole.getAdminResource());
-					if(role.getAdminResource() == null) {
-						role.setAdminResource(getNewAdminResource(role, requestorId));
-					}
-					role.getAdminResource().setCoorelatedName(role.getName());
 				}
 			}
 			roleDao.merge(role);
@@ -365,15 +366,6 @@ public class RoleDataServiceImpl implements RoleDataService {
     		return null;
     	}
     }
-	
-	private ResourceEntity getNewAdminResource(final RoleEntity entity, final String requestorId) {
-		final ResourceEntity adminResource = new ResourceEntity();
-		adminResource.setName(String.format("ROLE_ADMIN_%s_%s", entity.getName(), RandomStringUtils.randomAlphanumeric(2)));
-		adminResource.setResourceType(resourceTypeDAO.findById(adminResourceTypeId));
-		adminResource.addUser(userDAO.findById(requestorId), accessRightDAO.findAll());
-		adminResource.setCoorelatedName(entity.getName());
-		return adminResource;
-	}
 	
 	private ApproverAssociationEntity createDefaultApproverAssociations(final RoleEntity entity, final String requestorId) {
 		final ApproverAssociationEntity association = new ApproverAssociationEntity();

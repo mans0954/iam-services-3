@@ -25,8 +25,8 @@
 			<class name="org.openiam.service.integration.entitlements.Role2OrganizationEntitlementsTest"/>
 			<class name="org.openiam.service.integration.entitlements.Resource2OrganizationEntitlementsTest"/>
 			
-			<class name="oorg.openiam.authmanager.service.integration.AuthorizationManagerWebServiceTest"/>
-			<class name="oorg.openiam.authmanager.service.integration.AuthorizationManagerHessianClientTest"/>
+			<class name="org.openiam.authmanager.service.integration.AuthorizationManagerWebServiceTest"/>
+			<class name="org.openiam.authmanager.service.integration.AuthorizationManagerHessianClientTest"/>
 		</classes>
 	</test>
 	

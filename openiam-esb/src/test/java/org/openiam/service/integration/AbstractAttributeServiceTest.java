@@ -1,13 +1,10 @@
 package org.openiam.service.integration;
 
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.openiam.base.AbstractAttributeDTO;
 import org.openiam.base.AbstractMetadataTypeDTO;
-import org.openiam.base.AdminResourceDTO;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.AbstractKeyNameSearchBean;
 import org.openiam.idm.srvc.access.ws.AccessRightDataService;

@@ -132,9 +132,6 @@ public class OrganizationDAOImpl extends
             if (organizationSearchBean.getIsSelectable() != null) {
                 criteria.add(Restrictions.eq("selectable", organizationSearchBean.getIsSelectable()));
             }
-            if (StringUtils.isNotBlank(organizationSearchBean.getAdminResourceId())) {
-                criteria.add(Restrictions.eq("adminResource.id", organizationSearchBean.getAdminResourceId()));
-            }
             if (StringUtils.isNotBlank(organizationSearchBean.getAbbreviation())) {
                 criteria.add(Restrictions.eq("abbreviation", organizationSearchBean.getAbbreviation()));
             }
@@ -187,10 +184,6 @@ public class OrganizationDAOImpl extends
 
             if (StringUtils.isNotBlank(organization.getInternalOrgId())) {
                 criteria.add(Restrictions.eq("internalOrgId", organization.getInternalOrgId()));
-            }
-
-            if (organization.getAdminResource() != null && StringUtils.isNotBlank(organization.getAdminResource().getId())) {
-                criteria.add(Restrictions.eq("adminResource.id", organization.getAdminResource().getId()));
             }
         }
 //		criteria.addOrder(Order.asc("name"));

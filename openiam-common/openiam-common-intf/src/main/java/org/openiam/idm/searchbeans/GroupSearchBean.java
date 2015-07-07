@@ -19,8 +19,7 @@ import java.util.*;
         "managedSysId",
         "attributes",
         "updatedSince",
-        "type",
-		"adminResourceId"
+        "type"
 })
 public class GroupSearchBean extends EntitlementsSearchBean<Group, String> implements SearchBean<Group, String>, Serializable {
 
@@ -30,7 +29,6 @@ public class GroupSearchBean extends EntitlementsSearchBean<Group, String> imple
     private String type;
 	private boolean isRootsOnly;
 	private List<Tuple<String, String>> attributes;
-	private String adminResourceId;
 
 
     @XmlSchemaType(name = "dateTime")
@@ -85,14 +83,6 @@ public class GroupSearchBean extends EntitlementsSearchBean<Group, String> imple
     public void setType(String type) {
         this.type = type;
     }
-
-	public String getAdminResourceId() {
-		return adminResourceId;
-	}
-
-	public void setAdminResourceId(String adminResourceId) {
-		this.adminResourceId = adminResourceId;
-	}
 
 	@Override
 	public int hashCode() {

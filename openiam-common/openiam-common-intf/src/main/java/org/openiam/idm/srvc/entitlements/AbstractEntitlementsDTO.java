@@ -8,13 +8,13 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
-import org.openiam.base.AdminResourceDTO;
+import org.openiam.base.AbstractMetadataTypeDTO;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "AbstractEntitlementsDTO", propOrder = {
         "accessRightIds"
 })
-public abstract class AbstractEntitlementsDTO extends AdminResourceDTO {
+public abstract class AbstractEntitlementsDTO extends AbstractMetadataTypeDTO {
 
 	private Set<String> accessRightIds;
 	
