@@ -13,7 +13,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -49,7 +48,6 @@ import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
 import org.openiam.idm.srvc.org.service.OrganizationDAO;
-import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.idm.srvc.role.service.RoleDAO;
@@ -109,9 +107,6 @@ public class GroupDataServiceImpl implements GroupDataService {
     
     @Autowired
     private ManagedSysDAO managedSysDAO;
-    
-	@Value("${org.openiam.resource.admin.resource.type.id}")
-	private String adminResourceTypeId;
 	
 	@Autowired
 	private ResourceTypeDAO resourceTypeDAO;
@@ -140,6 +135,9 @@ public class GroupDataServiceImpl implements GroupDataService {
     @Autowired
     @Qualifier("authorizationManagerAdminService")
     private AuthorizationManagerAdminService authorizationManagerAdminService;
+    
+	@Value("${org.openiam.ui.admin.right.id}")
+	private String adminRightId;
 
 	private static final Log log = LogFactory.getLog(GroupDataServiceImpl.class);
 
@@ -397,13 +395,8 @@ public class GroupDataServiceImpl implements GroupDataService {
                     group.setResources(dbGroup.getResources());
                     group.setRoles(dbGroup.getRoles());
                     group.setUsers(dbGroup.getUsers());
-                    group.setAdminResource(dbGroup.getAdminResource());
                     group.setLastUpdatedBy(requestorId);
                     group.setLastUpdate(Calendar.getInstance().getTime());
-                    if(group.getAdminResource() == null) {
-                        group.setAdminResource(getNewAdminResource(group, groupOwner, requestorId));
-                    }
-                    group.getAdminResource().setCoorelatedName(group.getName());
                     
                     /* hibernate fails you just null out the PersistentSet.  As of Hibernate 4 */
                     if(CollectionUtils.isEmpty(group.getOrganizations())) {
@@ -432,24 +425,15 @@ public class GroupDataServiceImpl implements GroupDataService {
                 groupDao.merge(group);
 
             } else {
-            	/*
-                if(CollectionUtils.isNotEmpty(group.getParentGroups())) {
-                    final Set<String> ids = group.getParentGroups().stream().map(e -> e.getMemberEntity().getId()).filter(e -> StringUtils.isNotBlank(e)).collect(Collectors.toSet());
-                    if(CollectionUtils.isNotEmpty(ids)){
-                        group.setParentGroups(
-	                        groupDao.findByIds(ids).stream().map(e -> {
-	        	    			final GroupToGroupMembershipXrefEntity xref = new GroupToGroupMembershipXrefEntity();
-	        	    			xref.setEntity(e);
-	        	    			xref.setMemberEntity(group);
-	        	    			return xref;
-	        	    		}).collect(Collectors.toSet())
-	        	    	);
-                    }
-                } else {
-                    group.setParentGroups(null);
-                }
-                */
-                group.setAdminResource(getNewAdminResource(group, groupOwner, requestorId));
+            	if(groupOwner != null) {
+            		if("user".equals(groupOwner.getType())){
+            			group.addUser(userDAO.findById(groupOwner.getId()), accessRightDAO.findById(adminRightId));
+            		} else if("group".equals(groupOwner.getType())){
+            			group.addChildGroup(groupDao.findById(groupOwner.getId()), accessRightDAO.findById(adminRightId));
+            		} else {
+            			group.addUser(userDAO.findById(requestorId), accessRightDAO.findById(adminRightId));
+            		}
+            	}
                 group.setCreatedBy(requestorId);
                 group.setCreateDate(Calendar.getInstance().getTime());
                 groupDao.save(group);
@@ -492,29 +476,6 @@ public class GroupDataServiceImpl implements GroupDataService {
 		association.setApproverEntityId(requestorId);
 		association.setApproverEntityType(AssociationType.USER);
 		return association;
-	}
-	
-	private ResourceEntity getNewAdminResource(final GroupEntity entity, final GroupOwner groupOwner, final String requestorId) {
-		final ResourceEntity adminResource = new ResourceEntity();
-		adminResource.setName(String.format("GRP_ADMIN_%s_%s", entity.getName(), RandomStringUtils.randomAlphanumeric(2)));
-		adminResource.setResourceType(resourceTypeDAO.findById(adminResourceTypeId));
-
-		adminResource.setCoorelatedName(entity.getName());
-
-        if(groupOwner!=null && StringUtils.isNotBlank(groupOwner.getId())){
-            if("user".equals(groupOwner.getType())){
-                adminResource.addUser(userDAO.findById(groupOwner.getId()), accessRightDAO.findAll());
-            } else if("group".equals(groupOwner.getType())){
-                adminResource.addGroup(groupDao.findById(groupOwner.getId()), accessRightDAO.findAll());
-            } else {
-                adminResource.addUser(userDAO.findById(requestorId), accessRightDAO.findAll());
-            }
-        } else {
-            adminResource.addUser(userDAO.findById(requestorId), accessRightDAO.findAll());
-        }
-
-
-		return adminResource;
 	}
 	
 	private void mergeAttribute(final GroupEntity bean, final GroupEntity dbObject, final String requesterId) {

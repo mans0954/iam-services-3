@@ -24,7 +24,6 @@ import java.util.Set;
         "URL",
         "metadataType",
         "coorelatedName",
-		"adminResourceId",
 		"referenceId",
 		"ownerId"
 })
@@ -41,7 +40,6 @@ public class ResourceSearchBean extends EntitlementsSearchBean<Resource, String>
     private String metadataType;
     private String URL;
 	private String coorelatedName;
-	private String adminResourceId;
 	private String referenceId;
 	private String ownerId;
 
@@ -128,16 +126,6 @@ public class ResourceSearchBean extends EntitlementsSearchBean<Resource, String>
         this.metadataType = metadataType;
     }
 
-	public String getAdminResourceId() {
-		return adminResourceId;
-	}
-
-	public void setAdminResourceId(String adminResourceId) {
-		this.adminResourceId = adminResourceId;
-	}
-	
-	
-	
 	public String getReferenceId() {
 		return referenceId;
 	}

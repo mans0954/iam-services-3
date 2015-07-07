@@ -78,8 +78,6 @@ public class ProvisionGroup extends org.openiam.idm.srvc.grp.dto.Group {
     }
 
     public ProvisionGroup(Group group) {
-        setAdminResourceId(group.getAdminResourceId());
-        setAdminResourceName(group.getAdminResourceName());
 
         this.setName(group.getName());
         this.id = group.getId();

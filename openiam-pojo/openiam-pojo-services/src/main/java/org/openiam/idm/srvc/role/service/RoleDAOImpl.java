@@ -125,10 +125,6 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
 						.createAlias("userXrefs.memberEntity", "user").add(
 								Restrictions.in("user.id", roleSearchBean.getUserIdSet()));
             }
-            
-			if(StringUtils.isNotBlank(roleSearchBean.getAdminResourceId())) {
-				criteria.add(Restrictions.eq("adminResource.id", roleSearchBean.getAdminResourceId()));
-			}
         }
         return criteria;
     }
@@ -165,10 +161,6 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
                 if(entity.getManagedSystem()!=null && StringUtils.isNotBlank(entity.getManagedSystem().getId())){
                     criteria.add(Restrictions.eq("managedSystem.id", entity.getManagedSystem().getId()));
                 }
-				
-				if(entity.getAdminResource() != null && StringUtils.isNotBlank(entity.getAdminResource().getId())) {
-					criteria.add(Restrictions.eq("adminResource.id", entity.getAdminResource().getId()));
-				}
 
                 if (StringUtils.isNotEmpty(entity.getDescription())) {
                     String description = entity.getDescription();

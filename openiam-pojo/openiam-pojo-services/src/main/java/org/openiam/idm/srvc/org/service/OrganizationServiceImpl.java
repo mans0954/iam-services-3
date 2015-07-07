@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.StopWatch;
 import org.apache.commons.logging.Log;
@@ -113,9 +112,6 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     
     @Autowired
     private MetadataElementDAO metadataElementDAO;
-    
-	@Value("${org.openiam.resource.admin.resource.type.id}")
-	private String adminResourceTypeId;
 	
 	@Autowired
     private ResourceTypeDAO resourceTypeDao;
@@ -151,6 +147,9 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     
     @Autowired
     private ResourceDAO resourceDAO;
+    
+	@Value("${org.openiam.ui.admin.right.id}")
+	private String adminRightId;
 
     @Override
     @LocalizedServiceGet
@@ -286,7 +285,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
             OrganizationEntity curEntity;
             if (StringUtils.isBlank(organization.getId())) {
                 curEntity = newEntity;
-                curEntity.setAdminResource(getNewAdminResource(curEntity, requestorId));
+                curEntity.addUser(userDAO.findById(requestorId), accessRightDAO.findById(adminRightId));
                 curEntity.setCreateDate(Calendar.getInstance().getTime());
                 curEntity.setCreatedBy(requestorId);
                 curEntity.addApproverAssociation(createDefaultApproverAssociations(curEntity, requestorId));
@@ -341,12 +340,6 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
                 //mergeGroups(curEntity, newEntity);
                 mergeLocations(curEntity, newEntity);
                 mergeApproverAssociations(curEntity, newEntity);
-
-                if(curEntity.getAdminResource() == null) {
-                    curEntity.setAdminResource(getNewAdminResource(curEntity, requestorId));
-                }
-
-                curEntity.getAdminResource().setCoorelatedName(curEntity.getName());
                 curEntity.setLstUpdate(Calendar.getInstance().getTime());
                 curEntity.setLstUpdatedBy(requestorId);
                 setOrganizationType(newEntity, curEntity);
@@ -394,15 +387,6 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
         }
     }
 
-    private ResourceEntity getNewAdminResource(final OrganizationEntity entity, final String requestorId) {
-		final ResourceEntity adminResource = new ResourceEntity();
-		adminResource.setName(String.format("ORG_ADMIN_%s_%s", entity.getName(), RandomStringUtils.randomAlphanumeric(2)));
-		adminResource.setResourceType(resourceTypeDao.findById(adminResourceTypeId));
-		adminResource.addUser(userDAO.findById(requestorId), accessRightDAO.findAll());
-		adminResource.setCoorelatedName(entity.getName());
-		return adminResource;
-	}
-    
     private ApproverAssociationEntity createDefaultApproverAssociations(final OrganizationEntity entity, final String requestorId) {
 		final ApproverAssociationEntity association = new ApproverAssociationEntity();
 		association.setAssociationEntityId(entity.getId());
@@ -654,7 +638,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     private void mergeOrgProperties(final OrganizationEntity curEntity, final OrganizationEntity newEntity) {
         BeanUtils.copyProperties(newEntity, curEntity,
                 new String[] {"attributes", "parentOrganizations", "childOrganizations", "users", "approverAssociations",
-                "adminResource", "groups", "locations", "organizationType", "type", "lstUpdate", "lstUpdatedBy", "createDate", "createdBy", "resources", "roles"});
+                "groups", "locations", "organizationType", "type", "lstUpdate", "lstUpdatedBy", "createDate", "createdBy", "resources", "roles"});
     }
 
     private void mergeAttributes(final OrganizationEntity curEntity, final OrganizationEntity newEntity) {

@@ -102,9 +102,6 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
             if(StringUtils.isNotBlank(groupSearchBean.getType())){
                 criteria.add(Restrictions.eq("type.id", groupSearchBean.getType()));
             }
-			if(StringUtils.isNotBlank(groupSearchBean.getAdminResourceId())) {
-				criteria.add(Restrictions.eq("adminResource.id", groupSearchBean.getAdminResourceId()));
-			}
 		}
         return criteria;
     }
@@ -143,10 +140,6 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
                     }
                 }
             }
-			
-			if(group.getAdminResource() != null && StringUtils.isNotBlank(group.getAdminResource().getId())) {
-				criteria.add(Restrictions.eq("adminResource.id", group.getAdminResource().getId()));
-			}
 			
 			if(group.getManagedSystem() != null && StringUtils.isNotBlank(group.getManagedSystem().getId())) {
 				criteria.add(Restrictions.eq("managedSystem.id", group.getManagedSystem().getId()));

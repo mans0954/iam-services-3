@@ -2,7 +2,16 @@ package org.openiam.idm.srvc.res.dto;
 
 // Generated Mar 8, 2009 12:54:32 PM by Hibernate Tools 3.2.2.GA
 
-import org.openiam.base.AdminResourceDTO;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlSeeAlso;
+import javax.xml.bind.annotation.XmlType;
+
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.entitlements.AbstractEntitlementsDTO;
@@ -13,17 +22,6 @@ import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.internationalization.Internationalized;
 import org.openiam.internationalization.InternationalizedCollection;
-
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlSeeAlso;
-import javax.xml.bind.annotation.XmlType;
-
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Resources are items that need to be managed or protected. These can be both logic and physical in nature.

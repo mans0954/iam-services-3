@@ -18,6 +18,7 @@ import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.domain.RoleToResourceMembershipXrefEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.domain.UserToResourceMembershipXrefEntity;
+import org.openiam.idm.srvc.user.domain.UserToRoleMembershipXrefEntity;
 import org.openiam.internationalization.Internationalized;
 import org.openiam.internationalization.InternationalizedCollection;
 
@@ -103,10 +104,6 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
     
     @Column(name = "COORELATED_NAME", length=250)
     private String coorelatedName;
-    
-	@ManyToOne(fetch = FetchType.EAGER,cascade={CascadeType.ALL})
-    @JoinColumn(name="ADMIN_RESOURCE_ID", referencedColumnName = "RESOURCE_ID", insertable = true, updatable = true, nullable=true)
-	private ResourceEntity adminResource;
 	
 	@OneToMany(cascade = {CascadeType.ALL}, fetch = FetchType.LAZY, mappedBy="associationEntityId", orphanRemoval=true)
 	@Where(clause="ASSOCIATION_TYPE='RESOURCE'")
@@ -245,6 +242,14 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
         this.resourceProps = resourceProps;
     }
     
+	public void addUser(final UserEntity entity, final AccessRightEntity right) {
+		if(entity != null && right != null) {
+			final Set<AccessRightEntity> rightSet = new HashSet<AccessRightEntity>();
+			rightSet.add(right);
+			addUser(entity, rightSet);
+		}
+	}
+	
     public Set<GroupToResourceMembershipXrefEntity> getGroups() {
         return groups;
     }
@@ -294,14 +299,6 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
         isPublic = aPublic;
     }
     
-    public ResourceEntity getAdminResource() {
-		return adminResource;
-	}
-
-	public void setAdminResource(ResourceEntity adminResource) {
-		this.adminResource = adminResource;
-	}
-
 	public Set<UserToResourceMembershipXrefEntity> getUsers() {
         return users;
     }
@@ -509,8 +506,6 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
 
         if (isPublic != that.isPublic) return false;
         if (URL != null ? !URL.equals(that.URL) : that.URL != null) return false;
-        if (adminResource != null ? !adminResource.equals(that.adminResource) : that.adminResource != null)
-            return false;
         if (coorelatedName != null ? !coorelatedName.equals(that.coorelatedName) : that.coorelatedName != null)
             return false;
         if (referenceId != null ? !referenceId.equals(that.referenceId) : that.referenceId != null) return false;
@@ -536,7 +531,6 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
         result = 31 * result + (minAuthLevel != null ? minAuthLevel.hashCode() : 0);
         result = 31 * result + (isPublic ? 1 : 0);
         result = 31 * result + (coorelatedName != null ? coorelatedName.hashCode() : 0);
-        result = 31 * result + (adminResource != null ? adminResource.hashCode() : 0);
         result = 31 * result + (displayName != null ? displayName.hashCode() : 0);
         result = 31 * result + (referenceId != null ? referenceId.hashCode() : 0);
         return result;
