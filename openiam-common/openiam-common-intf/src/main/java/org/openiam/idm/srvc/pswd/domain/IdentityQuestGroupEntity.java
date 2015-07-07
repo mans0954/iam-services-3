@@ -21,14 +21,7 @@ import org.openiam.base.domain.AbstractKeyNameEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.pswd.dto.IdentityQuestGroup;
 
-@Entity
-@Table(name = "IDENTITY_QUEST_GRP")
-@DozerDTOCorrespondence(IdentityQuestGroup.class)
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-@AttributeOverrides({
-	@AttributeOverride(name = "id", column = @Column(name = "IDENTITY_QUEST_GRP_ID", length = 32)),
-	@AttributeOverride(name = "name", column = @Column(name = "NAME", length = 60))
-})
+
 public class IdentityQuestGroupEntity extends AbstractKeyNameEntity {
 	
 	@Column(name = "STATUS", length = 20)
