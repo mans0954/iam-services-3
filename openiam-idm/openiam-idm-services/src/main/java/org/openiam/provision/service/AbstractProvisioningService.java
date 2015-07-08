@@ -113,6 +113,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     public static final String NEW_USER_EMAIL_SUPERVISOR_NOTIFICATION = "NEW_USER_EMAIL_SUPERVISOR";
     public static final String NEW_USER_EMAIL_NOTIFICATION = "NEW_USER_EMAIL";
     public static final String NEW_USER_ACTIVATION_NOTIFICATION = "NEW_USER_ACTIVATION_NOTIFICATION";
+    public static final String USER_RESET_PASSWORD_ACTIVATION_NOTIFICATION = "USER_RESET_PASSWORD_ACTIVATION_NOTIFICATION";
     public static final String PASSWORD_EMAIL_NOTIFICATION = "USER_PASSWORD_EMAIL";
 
     public static final String MATCH_PARAM = "matchParam";
@@ -327,7 +328,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
 
     }
 
-    protected void sendActivationLink(User user, Login login) {
+
+    private void sendActivationLink(User user, Login login, String notificationType) {
         try {
 
             final PasswordResetTokenRequest tokenRequest = new PasswordResetTokenRequest(login.getLogin(), login.getManagedSysId());
@@ -353,13 +355,21 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                 NotificationRequest notificationRequest = new NotificationRequest();
                 notificationRequest.setUserId(user.getId());
                 notificationRequest.setParamList(msgParams);
-                notificationRequest.setNotificationType(NEW_USER_ACTIVATION_NOTIFICATION);
+                notificationRequest.setNotificationType(notificationType);
                 client.sendAsync("vm://notifyUserByEmailMessage", notificationRequest, msgProp);
             }
 
         } catch (MuleException me) {
             log.error(me.toString());
         }
+    }
+
+    protected void sendActivationLink(User user, Login login) {
+        this.sendActivationLink(user, login, NEW_USER_ACTIVATION_NOTIFICATION);
+    }
+
+    protected void sendResetActivationLink(User user, Login login) {
+        this.sendActivationLink(user, login, USER_RESET_PASSWORD_ACTIVATION_NOTIFICATION);
     }
 
     protected void sendCredentialsToUser(User user, String identity, String password) {

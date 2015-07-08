@@ -1425,226 +1425,250 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         boolean allResetOK = true;
         final PasswordResponse response = new PasswordResponse(ResponseStatus.SUCCESS);
         try {
-            Map<String, Object> bindingMap = new HashMap<String, Object>();
-            if (callPreProcessor("RESET_PASSWORD", null, bindingMap, passwordSync) != ProvisioningConstants.SUCCESS) {
-                response.fail();
-                response.setErrorCode(ResponseCode.FAIL_PREPROCESSOR);
-                auditLog.fail();
-                auditLog.setFailureReason(ResponseCode.FAIL_PREPROCESSOR);
-                return response;
-            }
-            final String requestId = "R" + UUIDGen.getUUID();
-
-            // get the user object associated with this principal
-            List<LoginEntity> identities = loginManager.getLoginByUser(passwordSync.getUserId());
-
-            idmAuditLog.setUserId(passwordSync.getUserId());
-            LoginEntity identity = null;
-            if (StringUtils.isNotBlank(passwordSync.getManagedSystemId())) {
-                for (LoginEntity le : identities) {
-                    if (passwordSync.getManagedSystemId().equals(le.getManagedSysId())) {
-                        identity = le;
-                        break;
-                    }
+            if (this.sendActivationLink) {
+                User u = userMgr.getUserDto(passwordSync.getUserId());
+                if (u == null) {
+                    allResetOK = false;
+                    idmAuditLog.fail();
+                    idmAuditLog.setFailureReason(ResponseCode.USER_NOT_FOUND);
+                    response.setStatus(ResponseStatus.FAILURE);
+                    response.setErrorCode(ResponseCode.USER_NOT_FOUND);
                 }
+                List<LoginEntity> identities = loginManager.getLoginByUser(passwordSync.getUserId());
+                LoginEntity activetionPrimaryLogin = UserUtils.getUserManagedSysIdentityEntity(this.sysConfiguration.getDefaultManagedSysId(), identities);
+                if (activetionPrimaryLogin == null) {
+                    allResetOK = false;
+                    idmAuditLog.fail();
+                    idmAuditLog.setFailureReason(ResponseCode.PRINCIPAL_NOT_FOUND);
+                    response.setStatus(ResponseStatus.FAILURE);
+                    response.setErrorCode(ResponseCode.PRINCIPAL_NOT_FOUND);
+                }
+                Login activationLogin = new Login();
+                activationLogin.setLogin(activetionPrimaryLogin.getLogin());
+                activationLogin.setManagedSysId(activetionPrimaryLogin.getManagedSysId());
+                sendResetActivationLink(u, activationLogin);
             } else {
-                identity = loginManager.getPrimaryIdentity(passwordSync.getUserId());
-            }
+                Map<String, Object> bindingMap = new HashMap<String, Object>();
+                if (callPreProcessor("RESET_PASSWORD", null, bindingMap, passwordSync) != ProvisioningConstants.SUCCESS) {
+                    response.fail();
+                    response.setErrorCode(ResponseCode.FAIL_PREPROCESSOR);
+                    auditLog.fail();
+                    auditLog.setFailureReason(ResponseCode.FAIL_PREPROCESSOR);
+                    return response;
+                }
+                final String requestId = "R" + UUIDGen.getUUID();
 
-            if (identity != null) {
-                idmAuditLog.setTargetUser(identity.getUserId(), identity.getLogin());
+                // get the user object associated with this principal
+                List<LoginEntity> identities = loginManager.getLoginByUser(passwordSync.getUserId());
 
-            } else {
-                idmAuditLog.fail();
-                idmAuditLog.setFailureReason(ResponseCode.PRINCIPAL_NOT_FOUND);
-                response.setStatus(ResponseStatus.FAILURE);
-                response.setErrorCode(ResponseCode.PRINCIPAL_NOT_FOUND);
-                return response;
-            }
-
-            String password = passwordSync.getPassword();
-            if (StringUtils.isEmpty(password)) {
-                // autogenerate the password
-                password = String.valueOf(PasswordGenerator.generatePassword(8));
-            }
-            String encPassword = null;
-            try {
-                encPassword = loginManager.encryptPassword(identity.getUserId(), password);
-            } catch (Exception e) {
-                idmAuditLog.fail();
-                idmAuditLog.setFailureReason(ResponseCode.FAIL_ENCRYPTION);
-                response.setStatus(ResponseStatus.FAILURE);
-                response.setErrorCode(ResponseCode.FAIL_ENCRYPTION);
-                return response;
-            }
-
-            List<LoginEntity> principalList = new ArrayList<LoginEntity>();
-            if (StringUtils.isNotBlank(passwordSync.getManagedSystemId())) {
-                principalList.add(identity);
-            } else {
-                principalList.addAll(identities);
-            }
-
-            // reset passwords for all identities with the same password
-            for (final LoginEntity lg : principalList) {
-                final String managedSysId = lg.getManagedSysId();
-                final ManagedSysEntity mSys = managedSystemService.getManagedSysById(managedSysId);
-                if (mSys != null) {
-                    final ResourceEntity res = resourceService.findResourceById(mSys.getResourceId());
-                    log.debug(" - Managed System Id = " + managedSysId);
-                    log.debug(" - Resource Id = " + res.getId());
-
-                    final boolean retval = loginManager.resetPassword(lg.getLogin(), lg.getManagedSysId(), encPassword, passwordSync.getUserActivateFlag());
-
-                    if (retval) {
-                        log.debug(String.format("- Password changed for principal: %s, user: %s, managed sys: %s -",
-                                identity.getLogin(), identity.getUserId(), identity.getManagedSysId()));
-                        idmAuditLog.addCustomRecord("Password changed success for principal", "ManagedSysId='" + identity.getManagedSysId() + "'");
-                        idmAuditLog.succeed();
-
-                    } else {
-                        idmAuditLog.fail();
-                        idmAuditLog.setFailureReason(ResponseCode.PRINCIPAL_NOT_FOUND);
-                        response.setStatus(ResponseStatus.FAILURE);
-                        response.setErrorCode(ResponseCode.PRINCIPAL_NOT_FOUND);
-                        return response;
+                idmAuditLog.setUserId(passwordSync.getUserId());
+                LoginEntity identity = null;
+                if (StringUtils.isNotBlank(passwordSync.getManagedSystemId())) {
+                    for (LoginEntity le : identities) {
+                        if (passwordSync.getManagedSystemId().equals(le.getManagedSysId())) {
+                            identity = le;
+                            break;
+                        }
                     }
-                    final IdmAuditLog childAuditLog = new IdmAuditLog();
-                    if (!lg.getManagedSysId().equals(sysConfiguration.getDefaultManagedSysId())) {
-                        childAuditLog.setRequestorPrincipal(primaryIdentity.getLogin());
-                        childAuditLog.setRequestorUserId(passwordSync.getRequestorId());
-                        childAuditLog.setAction(AuditAction.PROVISIONING_RESETPASSWORD.value());
-                        childAuditLog.setTargetManagedSys(mSys.getId(), mSys.getName());
+                } else {
+                    identity = loginManager.getPrimaryIdentity(passwordSync.getUserId());
+                }
 
-                        log.debug("Sync allowed for managed sys = " + managedSysId);
+                if (identity != null) {
+                    idmAuditLog.setTargetUser(identity.getUserId(), identity.getLogin());
 
-                        bindingMap.put(TARGET_SYSTEM_IDENTITY, lg.getLogin());
-                        bindingMap.put(TARGET_SYS_MANAGED_SYS_ID, managedSysId);
-                        bindingMap.put(TARGET_SYS_RES, res);
-                        bindingMap.put("PASSWORD_SYNC", passwordSync);
+                } else {
+                    idmAuditLog.fail();
+                    idmAuditLog.setFailureReason(ResponseCode.PRINCIPAL_NOT_FOUND);
+                    response.setStatus(ResponseStatus.FAILURE);
+                    response.setErrorCode(ResponseCode.PRINCIPAL_NOT_FOUND);
+                    return response;
+                }
 
-                        // Pre processor script
-                        final String preProcessScript = getResourceProperty(res, "PRE_PROCESS");
-                        if (preProcessScript != null && !preProcessScript.isEmpty()) {
-                            final PreProcessor ppScript = createPreProcessScript(preProcessScript);
-                            if (ppScript != null) {
-                                if (executePreProcess(ppScript, bindingMap, null, passwordSync, null, "RESET_PASSWORD") == ProvisioningConstants.FAIL) {
-                                    continue;
-                                }
-                            }
-                        }
+                String password = passwordSync.getPassword();
+                if (StringUtils.isEmpty(password)) {
+                    // autogenerate the password
+                    password = String.valueOf(PasswordGenerator.generatePassword(8));
+                }
+                String encPassword = null;
+                try {
+                    encPassword = loginManager.encryptPassword(identity.getUserId(), password);
+                } catch (Exception e) {
+                    idmAuditLog.fail();
+                    idmAuditLog.setFailureReason(ResponseCode.FAIL_ENCRYPTION);
+                    response.setStatus(ResponseStatus.FAILURE);
+                    response.setErrorCode(ResponseCode.FAIL_ENCRYPTION);
+                    return response;
+                }
 
-                        ManagedSystemObjectMatchEntity matchObj = null;
-                        final List<ManagedSystemObjectMatchEntity> matchList = managedSystemService
-                                .managedSysObjectParam(managedSysId, "USER");
+                List<LoginEntity> principalList = new ArrayList<LoginEntity>();
+                if (StringUtils.isNotBlank(passwordSync.getManagedSystemId())) {
+                    principalList.add(identity);
+                } else {
+                    principalList.addAll(identities);
+                }
 
-                        if (CollectionUtils.isNotEmpty(matchList)) {
-                            matchObj = matchList.get(0);
-                        }
+                // reset passwords for all identities with the same password
+                for (final LoginEntity lg : principalList) {
+                    final String managedSysId = lg.getManagedSysId();
+                    final ManagedSysEntity mSys = managedSystemService.getManagedSysById(managedSysId);
+                    if (mSys != null) {
+                        final ResourceEntity res = resourceService.findResourceById(mSys.getResourceId());
+                        log.debug(" - Managed System Id = " + managedSysId);
+                        log.debug(" - Resource Id = " + res.getId());
 
-                        log.info("============== Connector Reset Password call: " + new Date());
-                        Login login = loginDozerConverter.convertToDTO(lg, false);
-                        ManagedSysDto managedSysDto = managedSysDozerConverter.convertToDTO(mSys, false);
-                        ResponseType resp = resetPassword(requestId,
-                                login, password, managedSysDto,
-                                objectMatchDozerConverter.convertToDTO(matchObj, false),
-                                buildPolicyMapHelper.buildMngSysAttributes(login, "RESET_PASSWORD"), "RESET_PASSWORD");
-                        log.info("============== Connector Reset Password get : " + new Date());
-                        if (resp != null && resp.getStatus() == StatusCodeType.SUCCESS) {
-                            if (enableOnPassReset(res)) {
-                                // reset flags that go with this identity
-                                lg.setAuthFailCount(0);
-                                lg.setIsLocked(0);
-                                lg.setPasswordChangeCount(0);
-                                lg.setStatus(LoginStatusEnum.ACTIVE);
+                        final boolean retval = loginManager.resetPassword(lg.getLogin(), lg.getManagedSysId(), encPassword, passwordSync.getUserActivateFlag());
 
-                                resp = suspend(requestId, login, managedSysDto, buildPolicyMapHelper.buildMngSysAttributes(login, "RESUME"), false);
-
-                                if (StatusCodeType.SUCCESS.equals(resp.getStatus())) {
-                                    lg.setProvStatus(ProvLoginStatusEnum.ENABLED);
-
-                                    childAuditLog.succeed();
-                                    childAuditLog.setAuditDescription("Enabling account after password reset for resource: " + res.getName() + " for user: " + lg.getLogin());
-                                    idmAuditLog.addChild(childAuditLog);
-
-                                } else {
-                                    lg.setProvStatus(ProvLoginStatusEnum.FAIL_ENABLE);
-
-                                    allResetOK = false;
-                                    String reason = "";
-                                    if (resp != null) {
-                                        if (StringUtils.isNotBlank(resp.getErrorMsgAsStr())) {
-                                            reason = resp.getErrorMsgAsStr();
-                                        } else if (resp.getError() != null) {
-                                            reason = resp.getError().value();
-                                        }
-                                        if (StringUtils.isNotBlank(passwordSync.getManagedSystemId())) {
-                                            // if single target system - let's return error reason
-                                            response.setErrorText(reason);
-                                        }
-                                    }
-
-                                    childAuditLog.fail();
-                                    childAuditLog.setFailureReason(String.format("Enabling account after password reset for resource %s user %s failed: %s", mSys.getName(), lg.getLogin(), reason));
-                                    idmAuditLog.addChild(childAuditLog);
-
-                                }
-                                loginManager.updateLogin(lg);
-
-                            } else {
-                                childAuditLog.succeed();
-                                childAuditLog.setAuditDescription("Reset password for resource: " + res.getName() + " for user: " + lg.getLogin());
-                                idmAuditLog.addChild(childAuditLog);
-                            }
+                        if (retval) {
+                            log.debug(String.format("- Password changed for principal: %s, user: %s, managed sys: %s -",
+                                    identity.getLogin(), identity.getUserId(), identity.getManagedSysId()));
+                            idmAuditLog.addCustomRecord("Password changed success for principal", "ManagedSysId='" + identity.getManagedSysId() + "'");
+                            idmAuditLog.succeed();
 
                         } else {
-                            allResetOK = false;
-                            String reason = "";
-                            if (resp != null) {
-                                if (StringUtils.isNotBlank(resp.getErrorMsgAsStr())) {
-                                    reason = resp.getErrorMsgAsStr();
-                                } else if (resp.getError() != null) {
-                                    reason = resp.getError().value();
-                                }
-                                if (StringUtils.isNotBlank(passwordSync.getManagedSystemId())) {
-                                    // if single target system - let's return error reason
-                                    response.setErrorText(reason);
+                            idmAuditLog.fail();
+                            idmAuditLog.setFailureReason(ResponseCode.PRINCIPAL_NOT_FOUND);
+                            response.setStatus(ResponseStatus.FAILURE);
+                            response.setErrorCode(ResponseCode.PRINCIPAL_NOT_FOUND);
+                            return response;
+                        }
+                        final IdmAuditLog childAuditLog = new IdmAuditLog();
+                        if (!lg.getManagedSysId().equals(sysConfiguration.getDefaultManagedSysId())) {
+                            childAuditLog.setRequestorPrincipal(primaryIdentity.getLogin());
+                            childAuditLog.setRequestorUserId(passwordSync.getRequestorId());
+                            childAuditLog.setAction(AuditAction.PROVISIONING_RESETPASSWORD.value());
+                            childAuditLog.setTargetManagedSys(mSys.getId(), mSys.getName());
+
+                            log.debug("Sync allowed for managed sys = " + managedSysId);
+
+                            bindingMap.put(TARGET_SYSTEM_IDENTITY, lg.getLogin());
+                            bindingMap.put(TARGET_SYS_MANAGED_SYS_ID, managedSysId);
+                            bindingMap.put(TARGET_SYS_RES, res);
+                            bindingMap.put("PASSWORD_SYNC", passwordSync);
+
+                            // Pre processor script
+                            final String preProcessScript = getResourceProperty(res, "PRE_PROCESS");
+                            if (preProcessScript != null && !preProcessScript.isEmpty()) {
+                                final PreProcessor ppScript = createPreProcessScript(preProcessScript);
+                                if (ppScript != null) {
+                                    if (executePreProcess(ppScript, bindingMap, null, passwordSync, null, "RESET_PASSWORD") == ProvisioningConstants.FAIL) {
+                                        continue;
+                                    }
                                 }
                             }
 
-                            childAuditLog.fail();
-                            childAuditLog.setFailureReason(String.format("Reset password for resource %s user %s failed: %s", mSys.getName(), lg.getLogin(), reason));
+                            ManagedSystemObjectMatchEntity matchObj = null;
+                            final List<ManagedSystemObjectMatchEntity> matchList = managedSystemService
+                                    .managedSysObjectParam(managedSysId, "USER");
+
+                            if (CollectionUtils.isNotEmpty(matchList)) {
+                                matchObj = matchList.get(0);
+                            }
+
+                            log.info("============== Connector Reset Password call: " + new Date());
+                            Login login = loginDozerConverter.convertToDTO(lg, false);
+                            ManagedSysDto managedSysDto = managedSysDozerConverter.convertToDTO(mSys, false);
+                            ResponseType resp = resetPassword(requestId,
+                                    login, password, managedSysDto,
+                                    objectMatchDozerConverter.convertToDTO(matchObj, false),
+                                    buildPolicyMapHelper.buildMngSysAttributes(login, "RESET_PASSWORD"), "RESET_PASSWORD");
+                            log.info("============== Connector Reset Password get : " + new Date());
+                            if (resp != null && resp.getStatus() == StatusCodeType.SUCCESS) {
+                                if (enableOnPassReset(res)) {
+                                    // reset flags that go with this identity
+                                    lg.setAuthFailCount(0);
+                                    lg.setIsLocked(0);
+                                    lg.setPasswordChangeCount(0);
+                                    lg.setStatus(LoginStatusEnum.ACTIVE);
+
+                                    resp = suspend(requestId, login, managedSysDto, buildPolicyMapHelper.buildMngSysAttributes(login, "RESUME"), false);
+
+                                    if (StatusCodeType.SUCCESS.equals(resp.getStatus())) {
+                                        lg.setProvStatus(ProvLoginStatusEnum.ENABLED);
+
+                                        childAuditLog.succeed();
+                                        childAuditLog.setAuditDescription("Enabling account after password reset for resource: " + res.getName() + " for user: " + lg.getLogin());
+                                        idmAuditLog.addChild(childAuditLog);
+
+                                    } else {
+                                        lg.setProvStatus(ProvLoginStatusEnum.FAIL_ENABLE);
+
+                                        allResetOK = false;
+                                        String reason = "";
+                                        if (resp != null) {
+                                            if (StringUtils.isNotBlank(resp.getErrorMsgAsStr())) {
+                                                reason = resp.getErrorMsgAsStr();
+                                            } else if (resp.getError() != null) {
+                                                reason = resp.getError().value();
+                                            }
+                                            if (StringUtils.isNotBlank(passwordSync.getManagedSystemId())) {
+                                                // if single target system - let's return error reason
+                                                response.setErrorText(reason);
+                                            }
+                                        }
+
+                                        childAuditLog.fail();
+                                        childAuditLog.setFailureReason(String.format("Enabling account after password reset for resource %s user %s failed: %s", mSys.getName(), lg.getLogin(), reason));
+                                        idmAuditLog.addChild(childAuditLog);
+
+                                    }
+                                    loginManager.updateLogin(lg);
+
+                                } else {
+                                    childAuditLog.succeed();
+                                    childAuditLog.setAuditDescription("Reset password for resource: " + res.getName() + " for user: " + lg.getLogin());
+                                    idmAuditLog.addChild(childAuditLog);
+                                }
+
+                            } else {
+                                allResetOK = false;
+                                String reason = "";
+                                if (resp != null) {
+                                    if (StringUtils.isNotBlank(resp.getErrorMsgAsStr())) {
+                                        reason = resp.getErrorMsgAsStr();
+                                    } else if (resp.getError() != null) {
+                                        reason = resp.getError().value();
+                                    }
+                                    if (StringUtils.isNotBlank(passwordSync.getManagedSystemId())) {
+                                        // if single target system - let's return error reason
+                                        response.setErrorText(reason);
+                                    }
+                                }
+
+                                childAuditLog.fail();
+                                childAuditLog.setFailureReason(String.format("Reset password for resource %s user %s failed: %s", mSys.getName(), lg.getLogin(), reason));
+                                idmAuditLog.addChild(childAuditLog);
+                            }
+                            // Post processor script
+                            final String postProcessScript = getResourceProperty(res, "POST_PROCESS");
+                            if (postProcessScript != null && !postProcessScript.isEmpty()) {
+                                final PostProcessor ppScript = createPostProcessScript(postProcessScript);
+                                if (ppScript != null) {
+                                    executePostProcess(ppScript, bindingMap, null, passwordSync, null, "RESET_PASSWORD", resp.getStatus() == StatusCodeType.SUCCESS);
+                                }
+                            }
+                        } else {
+                            // SIA - 20150702: Audit sync not allowed as child
+                            log.debug("Sync not allowed for sys=" + managedSysId);
+                            childAuditLog.succeed();
+                            childAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "Sync not allowed for resource: " + res.getName());
                             idmAuditLog.addChild(childAuditLog);
                         }
-                        // Post processor script
-                        final String postProcessScript = getResourceProperty(res, "POST_PROCESS");
-                        if (postProcessScript != null && !postProcessScript.isEmpty()) {
-                            final PostProcessor ppScript = createPostProcessScript(postProcessScript);
-                            if (ppScript != null) {
-                                executePostProcess(ppScript, bindingMap, null, passwordSync, null, "RESET_PASSWORD", resp.getStatus() == StatusCodeType.SUCCESS);
-                            }
-                        }
-                    } else {
-                        // SIA - 20150702: Audit sync not allowed as child
-                        log.debug("Sync not allowed for sys=" + managedSysId);
-                        childAuditLog.succeed();
-                        childAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "Sync not allowed for resource: " + res.getName());
-                        idmAuditLog.addChild(childAuditLog);
                     }
                 }
-            }
 
-            if (passwordSync.getSendPasswordToUser() && sysConfiguration.getDefaultManagedSysId().equals(identity.getManagedSysId())) {
-                sendResetPasswordToUser(identity, password);
-            }
+                if (passwordSync.getSendPasswordToUser() && sysConfiguration.getDefaultManagedSysId().equals(identity.getManagedSysId())) {
+                    sendResetPasswordToUser(identity, password);
+                }
 
-            // Provision post processor script
-            if (callPostProcessor("RESET_PASSWORD", null, bindingMap, passwordSync) != ProvisioningConstants.SUCCESS) {
-                response.fail();
-                response.setErrorCode(ResponseCode.FAIL_POSTPROCESSOR);
-                auditLog.fail();
-                auditLog.setFailureReason(ResponseCode.FAIL_POSTPROCESSOR);
-                return response;
+                // Provision post processor script
+                if (callPostProcessor("RESET_PASSWORD", null, bindingMap, passwordSync) != ProvisioningConstants.SUCCESS) {
+                    response.fail();
+                    response.setErrorCode(ResponseCode.FAIL_POSTPROCESSOR);
+                    auditLog.fail();
+                    auditLog.setFailureReason(ResponseCode.FAIL_POSTPROCESSOR);
+                    return response;
+                }
             }
         } finally {
             if (auditLog == null) {
