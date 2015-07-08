@@ -1319,7 +1319,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         }
                         // Protects other resources if one resource failed
                         ProvisionDataContainer data = provisionSelectedResourceHelper.provisionResource(res, userEntity, pUser, bindingMap,
-                                primaryIdentity, requestId, false);
+                                primaryIdentity, requestId);
                         auditLog.addAttribute(AuditAttributeName.DESCRIPTION,
                                 "Provisioning for resource: " + res.getName());
                         if (data != null) {
@@ -1331,7 +1331,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         String onDeleteProp = resourceDataService.getResourcePropValueByName(res.getId(), "ON_DELETE");
                         if (onDeleteProp != null && "DISABLE".equalsIgnoreCase(onDeleteProp)) {
                             ProvisionDataContainer enableData = provisionSelectedResourceHelper.provisionResource(res, userEntity, pUser, bindingMap,
-                                    primaryIdentity, requestId, true);
+                                    primaryIdentity, requestId);
                             if (enableData != null) {
                                 enableData.setParentAuditLogId(auditLog.getId());
                                 dataList.add(enableData);
