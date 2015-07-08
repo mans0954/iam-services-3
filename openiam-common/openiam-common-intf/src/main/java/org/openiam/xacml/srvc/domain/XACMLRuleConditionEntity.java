@@ -24,6 +24,9 @@ public class XACMLRuleConditionEntity extends KeyEntity {
     @Column(name = "MATCH_OP", length = 255)
     private String matchOperation;
 
+    @Column(name = "GROOVY_SCRIPT", length = 255)
+    private String groovyScript;
+
     @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "RULE_ID", referencedColumnName = "RULE_ID")
     private XACMLRuleEntity ruleEntity;
