@@ -8,6 +8,8 @@ import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.pswd.dto.IdentityQuestGroup;
 
 import javax.persistence.*;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Created by zaporozhec on 7/8/15.
@@ -22,10 +24,15 @@ import javax.persistence.*;
 })
 public class XACMLObligationsEntity extends AbstractKeyNameEntity {
 
-    @Column(name = "IS_ADVICE", length = 255)
+    @Column(name = "IS_ADVICE")
     @Type(type = "org.hibernate.type.NumericBooleanType")
     private Boolean isAdvice;
 
+    @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "obligationsEntity", fetch = FetchType.LAZY)
+    private Set<XACMLObligationEntity> obligationEntities = new HashSet<XACMLObligationEntity>(0);
+
+    @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "obligationsEntity", fetch = FetchType.LAZY)
+    private Set<XACMLRuleEntity> ruleEntities = new HashSet<XACMLRuleEntity>(0);
 
     public Boolean getIsAdvice() {
         return isAdvice;
@@ -33,5 +40,13 @@ public class XACMLObligationsEntity extends AbstractKeyNameEntity {
 
     public void setIsAdvice(Boolean isAdvice) {
         this.isAdvice = isAdvice;
+    }
+
+    public Set<XACMLObligationEntity> getObligationEntities() {
+        return obligationEntities;
+    }
+
+    public void setObligationEntities(Set<XACMLObligationEntity> obligationEntities) {
+        this.obligationEntities = obligationEntities;
     }
 }

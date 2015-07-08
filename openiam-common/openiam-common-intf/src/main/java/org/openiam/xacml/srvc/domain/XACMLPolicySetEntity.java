@@ -61,8 +61,8 @@ public class XACMLPolicySetEntity extends KeyEntity {
 
     @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
     @JoinTable(name = "XACML_XPOLICY_SET_XPOLICY",
-            joinColumns = {@JoinColumn(name = "POLICY_ID")},
-            inverseJoinColumns = {@JoinColumn(name = "POLICY__SET_ID")})
+            joinColumns = {@JoinColumn(name = "POLICY_SET_ID")},
+            inverseJoinColumns = {@JoinColumn(name = "POLICY_ID")})
     @Fetch(FetchMode.SUBSELECT)
     private Set<XACMLPolicyEntity> policies = new HashSet<XACMLPolicyEntity>();
 
