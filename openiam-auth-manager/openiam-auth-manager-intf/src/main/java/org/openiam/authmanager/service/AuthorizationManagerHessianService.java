@@ -68,40 +68,4 @@ public interface AuthorizationManagerHessianService {
 	 * @return true if the User is part of the Role, false otherwise
 	 */
 	public boolean isUserMemberOfOrganizationWithRight(final String userId, final String organizationId, final String rightId);
-	
-	/**
-	 * @param userId - ID of the User
-	 * @return the Resource IDs that this User is entitled to
-	 */
-	public String[] getResourceIdsForUserWithId(final String userId);
-	
-	/**
-	 * @param userId - ID of the User
-	 * @return the Resource Names that this User is entitled to
-	 */
-	public String[] getResourceNamesForUserWithId(final String userId);
-	
-	/**
-	 * @param userId - ID of the User
-	 * @return the Group IDs that this User is a member of
-	 */
-	public String[] getGroupIdsForUserWithId(final String userId);
-	
-	/**
-	 * @param userId - ID of the User
-	 * @return the Group Names that this User is a member of
-	 */
-	public String[] getGroupNamesForUserWithId(final String userId);
-	
-	/**
-	 * @param userId - ID of the User
-	 * @return the Role IDs that this User is a member of
-	 */
-	public String[] getRoleIdsForUserWithId(final String userId);
-	
-	/**
-	 * @param userId - ID of the User
-	 * @return the Role Names that this User is a member of
-	 */
-	public String[] getRoleNamesForUserWithId(final String userId);
 }

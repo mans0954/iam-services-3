@@ -2,11 +2,7 @@ package org.openiam.authmanager.common.model;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.IntStream;
 
-import javax.management.relation.RoleResult;
-
-import org.apache.commons.lang.RandomStringUtils;
 import org.openiam.authmanager.common.xref.GroupGroupXref;
 import org.openiam.authmanager.common.xref.GroupUserXref;
 import org.openiam.authmanager.common.xref.OrgGroupXref;
@@ -210,7 +206,7 @@ public class TestAuthorizationUser {
 		
 		final StopWatch sw = new StopWatch();
 		sw.start();
-		user.compile();
+		user.compile(3);
 		sw.stop();
 		System.out.println(sw.getTotalTimeMillis());
 	}

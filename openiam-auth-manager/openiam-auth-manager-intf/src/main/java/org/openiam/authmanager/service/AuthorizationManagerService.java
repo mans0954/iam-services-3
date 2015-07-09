@@ -1,14 +1,13 @@
 package org.openiam.authmanager.service;
 
 
-import org.openiam.authmanager.common.model.AuthorizationGroup;
-import org.openiam.authmanager.common.model.AuthorizationManagerLoginId;
-import org.openiam.authmanager.common.model.AuthorizationOrganization;
-import org.openiam.authmanager.common.model.AuthorizationResource;
-import org.openiam.authmanager.common.model.AuthorizationRole;
-
 import java.util.List;
 import java.util.Set;
+
+import org.openiam.authmanager.common.model.GroupAuthorizationRight;
+import org.openiam.authmanager.common.model.OrganizationAuthorizationRight;
+import org.openiam.authmanager.common.model.ResourceAuthorizationRight;
+import org.openiam.authmanager.common.model.RoleAuthorizationRight;
 
 public interface AuthorizationManagerService {
 
@@ -21,10 +20,10 @@ public interface AuthorizationManagerService {
 	
 	public boolean isMemberOfOrganization(final String userId, final String organizationId);
 	public boolean isMemberOfOrganization(final String userId, final String organizationId, final String rightId);
-	public Set<AuthorizationResource> getResourcesForUser(final String userId);
-	public Set<AuthorizationGroup> getGroupsForUser(final String userId);
-	public Set<AuthorizationRole> getRolesForUser(final String userId);
-	public Set<AuthorizationOrganization> getOrganizationsForUser(final String userId);
+	public Set<ResourceAuthorizationRight> getResourcesForUser(final String userId);
+	public Set<GroupAuthorizationRight> getGroupsForUser(final String userId);
+	public Set<RoleAuthorizationRight> getRolesForUser(final String userId);
+	public Set<OrganizationAuthorizationRight> getOrganizationsForUser(final String userId);
     public List<String> getUserIdsList();
 	
 	/*

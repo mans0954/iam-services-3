@@ -74,6 +74,7 @@ public abstract class AbstractAuthorizationEntity {
 	protected void makeCopy(final AbstractAuthorizationEntity entity) {
 		entity.setId(id);
 		entity.setName(name);
+		entity.setBitSetIdx(bitSetIdx);
 	}
 
 	@Override
