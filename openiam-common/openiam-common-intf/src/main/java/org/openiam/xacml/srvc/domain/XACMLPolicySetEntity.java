@@ -27,7 +27,7 @@ public class XACMLPolicySetEntity extends KeyEntity {
     @Column(name = "POLICY_SET_IDENTIFIER", length = 255)
     private String identifier;
     @Column(name = "POLICY_SET_VERSION", length = 20)
-    private String version;
+    private String version = "1.0";
 
     @Column(name = "POLICY_COMB_ALG", length = 255)
     private String combinationAlgorithm;

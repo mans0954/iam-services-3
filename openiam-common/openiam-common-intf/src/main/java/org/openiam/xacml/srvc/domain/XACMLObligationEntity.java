@@ -28,8 +28,30 @@ public class XACMLObligationEntity extends AbstractKeyNameEntity {
     private XACMLObligationsEntity obligationsEntity;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    @JoinColumn(name = "ATTRIB_DESIGNATOR_ID", referencedColumnName = "ATTRIB_DESIGNATOR_ID")
+    @JoinColumn(name = "ATTRIB_DESIGNATOR_ID", referencedColumnName = "ATTRIB_DESIGNATOR_ID", nullable = false)
     private XACMLAttributeDesignatorEntity attributeDesignatorEntity;
 
+    public String getFullFillOn() {
+        return fullFillOn;
+    }
 
+    public void setFullFillOn(String fullFillOn) {
+        this.fullFillOn = fullFillOn;
+    }
+
+    public XACMLObligationsEntity getObligationsEntity() {
+        return obligationsEntity;
+    }
+
+    public void setObligationsEntity(XACMLObligationsEntity obligationsEntity) {
+        this.obligationsEntity = obligationsEntity;
+    }
+
+    public XACMLAttributeDesignatorEntity getAttributeDesignatorEntity() {
+        return attributeDesignatorEntity;
+    }
+
+    public void setAttributeDesignatorEntity(XACMLAttributeDesignatorEntity attributeDesignatorEntity) {
+        this.attributeDesignatorEntity = attributeDesignatorEntity;
+    }
 }

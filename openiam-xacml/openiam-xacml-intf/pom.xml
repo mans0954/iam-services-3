@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <parent>
+        <artifactId>openiam-xacml</artifactId>
+        <groupId>org.openiam</groupId>
+        <version>4.0.0</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.openiam</groupId>
+    <artifactId>openiam-xacml-intf</artifactId>
+    <packaging>jar</packaging>
+    <name>openiam-xacml-intf</name>
+    <version>4.0.0</version>
+    <description>Interfaces and DTO for the XACML specific services</description>
+    <!--<ciManagement>-->
+        <!--<system>am</system>-->
+        <!--<url>http://build.openiam.org:8085/idm/</url>-->
+        <!--<notifiers>-->
+            <!--<notifier>-->
+                <!--<configuration>-->
+                    <!--<address>suneet_shah@openiam.com</address>-->
+                    <!--<address>arun_shah@openiam.com</address>-->
+                <!--</configuration>-->
+            <!--</notifier>-->
+        <!--</notifiers>-->
+    <!--</ciManagement>-->
+    <build>
+        <finalName>openiam-xacml-intf</finalName>
+        <pluginManagement>
+        	<plugins>
+        		<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+        		<plugin>
+        			<groupId>org.eclipse.m2e</groupId>
+        			<artifactId>lifecycle-mapping</artifactId>
+        			<version>1.0.0</version>
+        			<configuration>
+        				<lifecycleMappingMetadata>
+        					<pluginExecutions>
+        						<pluginExecution>
+        							<pluginExecutionFilter>
+        								<groupId>
+        									pl.project13.maven
+        								</groupId>
+        								<artifactId>
+        									git-commit-id-plugin
+        								</artifactId>
+        								<versionRange>
+        									[2.0.3,)
+        								</versionRange>
+        								<goals>
+        									<goal>revision</goal>
+        								</goals>
+        							</pluginExecutionFilter>
+        							<action>
+        								<ignore></ignore>
+        							</action>
+        						</pluginExecution>
+        					</pluginExecutions>
+        				</lifecycleMappingMetadata>
+        			</configuration>
+        		</plugin>
+        	</plugins>
+        </pluginManagement>
+    </build>
+
+    <dependencies>
+
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>aopalliance</groupId>
+            <artifactId>aopalliance</artifactId>
+        </dependency>
+
+        <!-- Testing -->
+        <dependency>
+		    <groupId>org.testng</groupId>
+			<artifactId>testng</artifactId>
+		</dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-tx</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.openiam</groupId>
+            <artifactId>openiam-pojo-intf</artifactId>
+        </dependency>
+
+  <!--      <dependency>
+            <groupId>org.apache.geronimo.specs</groupId>
+            <artifactId>geronimo-ws-metadata_2.0_spec</artifactId>
+            <optional>true</optional>
+        </dependency>-->
+
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>javax.xml.ws</groupId>
+            <artifactId>jaxws-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.openiam</groupId>
+            <artifactId>openiam-common-intf</artifactId>
+            <scope>compile</scope>
+        </dependency>
+
+    </dependencies>
+
+
+</project>
+

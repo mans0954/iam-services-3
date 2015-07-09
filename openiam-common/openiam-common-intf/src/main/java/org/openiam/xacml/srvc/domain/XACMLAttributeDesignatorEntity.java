@@ -48,10 +48,86 @@ public class XACMLAttributeDesignatorEntity extends KeyEntity {
     private Set<XACMLObligationEntity> obligationEntities = new HashSet<XACMLObligationEntity>(0);
 
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "attributeDesignatorEntity", fetch = FetchType.LAZY)
-    private Set<XACMLMatchAttributeEntity> matchAttributeEntities = new HashSet<XACMLMatchAttributeEntity>(0);
+    private Set<XACMLMatchAttributesEntity> matchAttributeEntities = new HashSet<XACMLMatchAttributesEntity>(0);
 
+    public String getCategory() {
+        return category;
+    }
 
-    //TODO CONDITION_ID
+    public void setCategory(String category) {
+        this.category = category;
+    }
 
+    public String getAttributeId() {
+        return attributeId;
+    }
+
+    public void setAttributeId(String attributeId) {
+        this.attributeId = attributeId;
+    }
+
+    public String getDataType() {
+        return dataType;
+    }
+
+    public void setDataType(String dataType) {
+        this.dataType = dataType;
+    }
+
+    public String getIssuer() {
+        return issuer;
+    }
+
+    public void setIssuer(String issuer) {
+        this.issuer = issuer;
+    }
+
+    public Boolean getMustBePresent() {
+        return mustBePresent;
+    }
+
+    public void setMustBePresent(Boolean mustBePresent) {
+        this.mustBePresent = mustBePresent;
+    }
+
+    public Boolean getIsSelector() {
+        return isSelector;
+    }
+
+    public void setIsSelector(Boolean isSelector) {
+        this.isSelector = isSelector;
+    }
+
+    public String getSelectorPath() {
+        return selectorPath;
+    }
+
+    public void setSelectorPath(String selectorPath) {
+        this.selectorPath = selectorPath;
+    }
+
+    public String getSelectorIdentifier() {
+        return selectorIdentifier;
+    }
+
+    public void setSelectorIdentifier(String selectorIdentifier) {
+        this.selectorIdentifier = selectorIdentifier;
+    }
+
+    public Set<XACMLObligationEntity> getObligationEntities() {
+        return obligationEntities;
+    }
+
+    public void setObligationEntities(Set<XACMLObligationEntity> obligationEntities) {
+        this.obligationEntities = obligationEntities;
+    }
+
+    public Set<XACMLMatchAttributesEntity> getMatchAttributeEntities() {
+        return matchAttributeEntities;
+    }
+
+    public void setMatchAttributeEntities(Set<XACMLMatchAttributesEntity> matchAttributeEntities) {
+        this.matchAttributeEntities = matchAttributeEntities;
+    }
 
 }

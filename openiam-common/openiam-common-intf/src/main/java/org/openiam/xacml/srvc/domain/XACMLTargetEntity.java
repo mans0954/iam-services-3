@@ -30,4 +30,19 @@ public class XACMLTargetEntity extends AbstractKeyNameEntity {
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "targetEntity", fetch = FetchType.LAZY)
     private Set<XACMLRuleEntity> ruleEntities = new HashSet<XACMLRuleEntity>(0);
 
+    public Set<XACMLAndMatchEntity> getAndMatchEntities() {
+        return andMatchEntities;
+    }
+
+    public void setAndMatchEntities(Set<XACMLAndMatchEntity> andMatchEntities) {
+        this.andMatchEntities = andMatchEntities;
+    }
+
+    public Set<XACMLRuleEntity> getRuleEntities() {
+        return ruleEntities;
+    }
+
+    public void setRuleEntities(Set<XACMLRuleEntity> ruleEntities) {
+        this.ruleEntities = ruleEntities;
+    }
 }

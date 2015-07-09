@@ -5,6 +5,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.openiam.base.domain.AbstractKeyNameEntity;
+import org.openiam.xacml.srvc.constants.XACMLEffect;
 
 import javax.persistence.*;
 import java.util.HashSet;
@@ -28,7 +29,8 @@ public class XACMLRuleEntity extends AbstractKeyNameEntity {
 
 
     @Column(name = "EFFECT", length = 32)
-    private String effect;
+    @Enumerated(EnumType.STRING)
+    private XACMLEffect effect = XACMLEffect.DENY;
 
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "ruleEntity", fetch = FetchType.LAZY)
     private Set<XACMLRuleConditionEntity> matchCategoryEntities = new HashSet<XACMLRuleConditionEntity>(0);
@@ -50,4 +52,51 @@ public class XACMLRuleEntity extends AbstractKeyNameEntity {
     private Set<XACMLPolicyEntity> policyEntities = new HashSet<XACMLPolicyEntity>();
 
 
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public XACMLEffect getEffect() {
+        return effect;
+    }
+
+    public void setEffect(XACMLEffect effect) {
+        this.effect = effect;
+    }
+
+    public Set<XACMLRuleConditionEntity> getMatchCategoryEntities() {
+        return matchCategoryEntities;
+    }
+
+    public void setMatchCategoryEntities(Set<XACMLRuleConditionEntity> matchCategoryEntities) {
+        this.matchCategoryEntities = matchCategoryEntities;
+    }
+
+    public XACMLObligationsEntity getObligationsEntity() {
+        return obligationsEntity;
+    }
+
+    public void setObligationsEntity(XACMLObligationsEntity obligationsEntity) {
+        this.obligationsEntity = obligationsEntity;
+    }
+
+    public XACMLTargetEntity getTargetEntity() {
+        return targetEntity;
+    }
+
+    public void setTargetEntity(XACMLTargetEntity targetEntity) {
+        this.targetEntity = targetEntity;
+    }
+
+    public Set<XACMLPolicyEntity> getPolicyEntities() {
+        return policyEntities;
+    }
+
+    public void setPolicyEntities(Set<XACMLPolicyEntity> policyEntities) {
+        this.policyEntities = policyEntities;
+    }
 }

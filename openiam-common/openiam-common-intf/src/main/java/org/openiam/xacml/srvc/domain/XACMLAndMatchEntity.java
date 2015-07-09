@@ -22,7 +22,7 @@ public class XACMLAndMatchEntity extends KeyEntity {
     private String description;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    @JoinColumn(name = "TARGET_ID", referencedColumnName = "TARGET_ID")
+    @JoinColumn(name = "TARGET_ID", referencedColumnName = "TARGET_ID", nullable = false)
     private XACMLTargetEntity targetEntity;
 
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "andMatchEntity", fetch = FetchType.LAZY)
@@ -52,23 +52,4 @@ public class XACMLAndMatchEntity extends KeyEntity {
         this.orMatchEntities = orMatchEntities;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof XACMLAndMatchEntity)) return false;
-        if (!super.equals(o)) return false;
-
-        XACMLAndMatchEntity that = (XACMLAndMatchEntity) o;
-
-        if (description != null ? !description.equals(that.description) : that.description != null) return false;
-
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = super.hashCode();
-        result = 31 * result + (description != null ? description.hashCode() : 0);
-        return result;
-    }
 }

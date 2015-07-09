@@ -22,11 +22,34 @@ public class XACMLMatchCategoryEntity extends KeyEntity {
     private String category;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    @JoinColumn(name = "OR_ID", referencedColumnName = "OR_ID")
+    @JoinColumn(name = "OR_ID", referencedColumnName = "OR_ID", nullable = false)
     private XACMLOrMatchEntity orMatchEntity;
 
 
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "matchCategoryEntity", fetch = FetchType.LAZY)
-    private Set<XACMLMatchAttributeEntity> matchAttributeEntities = new HashSet<XACMLMatchAttributeEntity>(0);
+    private Set<XACMLMatchAttributesEntity> matchAttributeEntities = new HashSet<XACMLMatchAttributesEntity>(0);
 
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public XACMLOrMatchEntity getOrMatchEntity() {
+        return orMatchEntity;
+    }
+
+    public void setOrMatchEntity(XACMLOrMatchEntity orMatchEntity) {
+        this.orMatchEntity = orMatchEntity;
+    }
+
+    public Set<XACMLMatchAttributesEntity> getMatchAttributeEntities() {
+        return matchAttributeEntities;
+    }
+
+    public void setMatchAttributeEntities(Set<XACMLMatchAttributesEntity> matchAttributeEntities) {
+        this.matchAttributeEntities = matchAttributeEntities;
+    }
 }
