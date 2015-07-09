@@ -5,6 +5,8 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.openiam.base.domain.KeyEntity;
+import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.xacml.srvc.dto.XACMLPolicyDTO;
 
 import javax.persistence.*;
 import java.util.HashSet;
@@ -17,7 +19,7 @@ import java.util.Set;
 @Entity
 @Table(name = "XACML_XPOLICY")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-//@DozerDTOCorrespondence(Organization.class)
+@DozerDTOCorrespondence(XACMLPolicyDTO.class)
 @AttributeOverride(name = "id", column = @Column(name = "POLICY_ID"))
 public class XACMLPolicyEntity extends KeyEntity {
 
@@ -92,6 +94,14 @@ public class XACMLPolicyEntity extends KeyEntity {
 
     public void setCombinationAlgorithm(String combinationAlgorithm) {
         this.combinationAlgorithm = combinationAlgorithm;
+    }
+
+    public Set<XACMLRuleEntity> getRuleEntities() {
+        return ruleEntities;
+    }
+
+    public void setRuleEntities(Set<XACMLRuleEntity> ruleEntities) {
+        this.ruleEntities = ruleEntities;
     }
 
     public Integer getMaxDelegationDepth() {

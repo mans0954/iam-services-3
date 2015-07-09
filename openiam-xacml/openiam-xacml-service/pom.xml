@@ -14,16 +14,16 @@
     <version>4.0.0</version>
     <description>OpenIAM XACNK Engine sepcific service</description>
     <!--<ciManagement>-->
-        <!--<system>idm</system>-->
-        <!--<url>http://build.openiam.org:8085/idm/</url>-->
-        <!--<notifiers>-->
-            <!--<notifier>-->
-                <!--<configuration>-->
-                    <!--<address>suneet_shah@openiam.com</address>-->
-                    <!--<address>arun_shah@openiam.com</address>-->
-                <!--</configuration>-->
-            <!--</notifier>-->
-        <!--</notifiers>-->
+    <!--<system>idm</system>-->
+    <!--<url>http://build.openiam.org:8085/idm/</url>-->
+    <!--<notifiers>-->
+    <!--<notifier>-->
+    <!--<configuration>-->
+    <!--<address>suneet_shah@openiam.com</address>-->
+    <!--<address>arun_shah@openiam.com</address>-->
+    <!--</configuration>-->
+    <!--</notifier>-->
+    <!--</notifiers>-->
     <!--</ciManagement>-->
     <build>
         <finalName>openiam-xacml-services</finalName>
@@ -92,6 +92,7 @@
         <dependency>
             <groupId>org.openiam</groupId>
             <artifactId>openiam-xacml-intf</artifactId>
+            <version>4.0.0</version>
         </dependency>
 
         <!-- Testing -->
