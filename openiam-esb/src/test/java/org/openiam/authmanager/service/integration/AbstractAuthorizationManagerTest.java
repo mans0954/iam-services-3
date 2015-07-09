@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.activiti.engine.impl.cmd.AddCommentCmd;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.elasticsearch.common.lang3.StringUtils;
@@ -167,12 +168,12 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 	
 	@Test
 	public void testUser2OrganizationDirect() {
-		doUser2OrganizationAddition(user.getId(), organization.getId(), null);
+		doUser2OrganizationAddition(user, organization, null);
 	}
 	
 	@Test
 	public void testUser2OrganizationDirectWithRights() {
-		doUser2OrganizationAddition(user.getId(), organization.getId(), getRightIds());
+		doUser2OrganizationAddition(user, organization, getRightIds());
 	}
 	
 	private Set<String> toArray(final String right) {
@@ -506,16 +507,92 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 		});
 	}
 	
+	@Test
+	public void testGetResourcesForUser() {
+		Resource entity = null;
+		try {
+			entity = super.createResource();
+			assertSuccess(resourceDataService.addChildResource(entity.getId(), resource.getId(), getRequestorId(), getRightIds()));
+			assertSuccess(resourceDataService.addUserToResource(resource.getId(), user.getId(), getRequestorId(), null));
+			refreshAuthorizationManager();
+			checkUser2ResourceCollection(user.getId(), resource.getId(), null, true);
+			checkUser2ResourceCollection(user.getId(), entity.getId(), getRightIds(), true);
+		} finally {
+			if(entity != null) {
+				assertSuccess(resourceDataService.deleteResource(entity.getId(), getRequestorId()));
+				assertSuccess(resourceDataService.removeUserFromResource(resource.getId(), user.getId(), getRequestorId()));
+				refreshAuthorizationManager();
+			}
+		}
+	}
 	
-	private void doUser2OrganizationAddition(final String userId, final String organizationId, final Set<String> rightIds) {
-		Response response = organizationServiceClient.addUserToOrg(organizationId, userId, rightIds);
+	@Test
+	public void testGetGroupsForUser() {
+		Group entity = null;
+		try {
+			entity = super.createGroup();
+			assertSuccess(groupServiceClient.addChildGroup(entity.getId(), group.getId(), getRequestorId(), getRightIds()));
+			assertSuccess(groupServiceClient.addUserToGroup(group.getId(), user.getId(), getRequestorId(), null));
+			refreshAuthorizationManager();
+			checkUser2GroupCollection(user.getId(), group.getId(), null, true);
+			checkUser2GroupCollection(user.getId(), entity.getId(), getRightIds(), true);
+		} finally {
+			if(entity != null) {
+				assertSuccess(groupServiceClient.deleteGroup(entity.getId(), getRequestorId()));
+				assertSuccess(groupServiceClient.removeUserFromGroup(group.getId(), user.getId(), getRequestorId()));
+				refreshAuthorizationManager();
+			}
+		}
+	}
+	
+	@Test
+	public void testGetRolesForUser() {
+		Role entity = null;
+		try {
+			entity = super.createRole();
+			assertSuccess(roleServiceClient.addChildRole(entity.getId(), role.getId(), getRequestorId(), getRightIds()));
+			assertSuccess(roleServiceClient.addUserToRole(role.getId(), user.getId(), getRequestorId(), null));
+			refreshAuthorizationManager();
+			checkUser2RoleCollection(user.getId(), role.getId(), null, true);
+			checkUser2RoleCollection(user.getId(), entity.getId(), getRightIds(), true);
+		} finally {
+			if(entity != null) {
+				assertSuccess(roleServiceClient.removeRole(entity.getId(), getRequestorId()));
+				assertSuccess(roleServiceClient.removeUserFromRole(role.getId(), user.getId(), getRequestorId()));
+				refreshAuthorizationManager();
+			}
+		}
+	}
+	
+	@Test
+	public void testGetOrgsForUser() {
+		Organization entity = null;
+		try {
+			entity = super.createOrganization();
+			assertSuccess(organizationServiceClient.addChildOrganization(entity.getId(), organization.getId(), getRightIds()));
+			assertSuccess(organizationServiceClient.addUserToOrg(organization.getId(), user.getId(), null));
+			refreshAuthorizationManager();
+			checkUser2OrgCollection(user.getId(), organization.getId(), null, true);
+			checkUser2OrgCollection(user.getId(), entity.getId(), getRightIds(), true);
+		} finally {
+			if(entity != null) {
+				assertSuccess(organizationServiceClient.deleteOrganization(entity.getId()));
+				assertSuccess(organizationServiceClient.removeUserFromOrg(organization.getId(), user.getId()));
+				refreshAuthorizationManager();
+			}
+		}
+	}
+	
+	
+	private void doUser2OrganizationAddition(final User user, final Organization organization, final Set<String> rightIds) {
+		Response response = organizationServiceClient.addUserToOrg(organization.getId(), user.getId(), rightIds);
 		assertSuccess(response);
 		refreshAuthorizationManager();
-		checkUser2OrganizationMembership(userId, organizationId, rightIds, true);
-		response = organizationServiceClient.removeUserFromOrg(organizationId, userId);
+		checkUser2OrganizationMembership(user.getId(), organization.getId(), rightIds, true);
+		response = organizationServiceClient.removeUserFromOrg(organization.getId(), user.getId());
 		assertSuccess(response);
 		refreshAuthorizationManager();
-		checkUser2OrganizationMembership(userId, organizationId, rightIds, false);
+		checkUser2OrganizationMembership(user.getId(), organization.getId(), rightIds, false);
 	}
 	
 	private void doResource2ResourceAddition(final Resource resource, final Resource child, final Set<String> rightIds) {
@@ -559,7 +636,10 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 		checkUser2GroupMembership(userId, groupId, rightIds, false);
 	}
 	
-	
+	protected abstract void checkUser2OrgCollection(final String userId, final String organizationId, final Set<String> rightIds, final boolean isAddition);
+	protected abstract void checkUser2RoleCollection(final String userId, final String roleId, final Set<String> rightIds, final boolean isAddition);
+	protected abstract void checkUser2GroupCollection(final String userId, final String groupId, final Set<String> rightIds, final boolean isAddition);
+	protected abstract void checkUser2ResourceCollection(final String userId, final String resourceId, final Set<String> rightIds, final boolean isAddition);
 	protected abstract void checkUser2ResourceEntitlement(final String userId, final String resourceId, final Set<String> rightIds, final boolean isAddition);
 	protected abstract void checkUser2GroupMembership(final String userId, final String groupId, final Set<String> rightIds, final boolean isAddition);
 	protected abstract void checkUser2RoleMembership(final String userId, final String roleId, final Set<String> rightIds, final boolean isAddition);

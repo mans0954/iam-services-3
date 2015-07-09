@@ -15,6 +15,10 @@ import org.openiam.authmanager.common.model.AuthorizationGroup;
 import org.openiam.authmanager.common.model.AuthorizationOrganization;
 import org.openiam.authmanager.common.model.AuthorizationResource;
 import org.openiam.authmanager.common.model.AuthorizationRole;
+import org.openiam.authmanager.common.model.GroupAuthorizationRight;
+import org.openiam.authmanager.common.model.OrganizationAuthorizationRight;
+import org.openiam.authmanager.common.model.ResourceAuthorizationRight;
+import org.openiam.authmanager.common.model.RoleAuthorizationRight;
 import org.openiam.authmanager.exception.AuthorizationManagerRuntimeException;
 import org.openiam.authmanager.service.AuthorizationManagerService;
 import org.openiam.authmanager.service.AuthorizationManagerWebService;
@@ -58,17 +62,17 @@ public class AuthorizationManagerWebServiceImpl implements AuthorizationManagerW
 	}
 
 	@Override
-	public Set<AuthorizationResource> getResourcesForUser(final String userId) {
+	public Set<ResourceAuthorizationRight> getResourcesForUser(final String userId) {
 		return authManagerService.getResourcesForUser(userId);
 	}
 
 	@Override
-	public Set<AuthorizationGroup> getGroupsForUser(final String userId) {
+	public Set<GroupAuthorizationRight> getGroupsForUser(final String userId) {
 		return authManagerService.getGroupsForUser(userId);
 	}
 
 	@Override
-	public Set<AuthorizationRole> getRolesForUser(final String userId) {
+	public Set<RoleAuthorizationRight> getRolesForUser(final String userId) {
 		return authManagerService.getRolesForUser(userId);
 	}
 	
@@ -108,7 +112,7 @@ public class AuthorizationManagerWebServiceImpl implements AuthorizationManagerW
 	}
 
 	@Override
-	public Set<AuthorizationOrganization> getOrganizationsForUser(String userId) {
+	public Set<OrganizationAuthorizationRight> getOrganizationsForUser(String userId) {
 		return authManagerService.getOrganizationsForUser(userId);
 	}
 }

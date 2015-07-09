@@ -1,9 +1,12 @@
 package org.openiam.authmanager.service.integration;
 
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.openiam.authmanager.AuthorizationManagerHessianClient;
+import org.openiam.authmanager.common.model.OrganizationAuthorizationRight;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.testng.Assert;
@@ -118,10 +121,36 @@ public class AuthorizationManagerHessianClientTest extends AbstractAuthorization
 
 	@Override
 	protected boolean loginAfterUserCreation() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 	
 	@Test
 	public void foo() {}
+
+	@Override
+	protected void checkUser2OrgCollection(String userId,
+			String organizationId, Set<String> rightIds, boolean isAddition) {
+		// TODO Auto-generated method stub
+	}
+
+	@Override
+	protected void checkUser2RoleCollection(String userId, String roleId,
+			Set<String> rightIds, boolean isAddition) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void checkUser2GroupCollection(String userId, String groupId,
+			Set<String> rightIds, boolean isAddition) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void checkUser2ResourceCollection(String userId,
+			String resourceId, Set<String> rightIds, boolean isAddition) {
+		// TODO Auto-generated method stub
+		
+	}
 }
