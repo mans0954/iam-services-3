@@ -133,13 +133,12 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
             throw new BasicDataServiceException(ResponseCode.NO_NAME);
         }
 
-        final GroupEntity found = groupManager.getGroupByName(group.getName(), null);
-        if (found != null) {
-            if (StringUtils.isBlank(group.getId()) && found != null) {
-                throw new BasicDataServiceException(ResponseCode.NAME_TAKEN, "Group name is already in use");
-            }
+        //final GroupEntity found = groupManager.getGroupByName(group.getName(), null);
+        log.debug("Validating group "+group.getName()+" of managed system "+group.getManagedSysId());
+        final GroupEntity found = groupManager.getGroupByName(group.getName(), group.getManagedSysId(), null);
 
-            if (StringUtils.isNotBlank(group.getId()) && !group.getId().equals(found.getId())) {
+        if (found != null) {
+            if ( ( !found.getId().equals(group.getId()))) {
                 throw new BasicDataServiceException(ResponseCode.NAME_TAKEN, "Group name is already in use");
             }
         }

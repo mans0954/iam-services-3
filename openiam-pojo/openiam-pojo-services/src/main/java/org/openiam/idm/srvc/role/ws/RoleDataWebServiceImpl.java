@@ -136,24 +136,26 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	}
 
 	private void validate(final Role role) throws BasicDataServiceException {
-		if(role == null) {
-			throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Role object is null");
+
+		if (role == null) {
+			throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 		}
-		
-		final RoleEntity entity = roleDozerConverter.convertToEntity(role, true);
-		if(StringUtils.isBlank(entity.getName())) {
-			throw new BasicDataServiceException(ResponseCode.NO_NAME, "Role Name is null or empty");
+
+		if (StringUtils.isBlank(role.getName())) {
+			throw new BasicDataServiceException(ResponseCode.NO_NAME);
 		}
-		
-		/* check if the name is taken by another entity */
-		final RoleEntity nameEntity = roleDataService.getRoleByName(role.getName(), null);
-		if(nameEntity != null) {
-			if(StringUtils.isBlank(entity.getId()) || !entity.getId().equals(nameEntity.getId())) {
-				throw new BasicDataServiceException(ResponseCode.NAME_TAKEN, "Role Name is already exists");
+
+		//final RoleEntity nameEntity = roleDataService.getRoleByName(role.getName(), null);
+		LOG.debug("Validating role "+role.getName()+" of managed system "+role.getManagedSysId());
+		final RoleEntity found = roleDataService.getRoleByName(role.getName(), role.getManagedSysId(), null);
+
+		if (found != null) {
+			if ( ( !found.getId().equals(role.getId()))) {
+				throw new BasicDataServiceException(ResponseCode.NAME_TAKEN, "Role name is already in use");
 			}
 		}
-		
-		entityValidator.isValid(entity);
+
+		entityValidator.isValid(roleDozerConverter.convertToEntity(role, true));
 	}
 	
 	public void validateDeleteInternal(final String roleId) throws BasicDataServiceException {

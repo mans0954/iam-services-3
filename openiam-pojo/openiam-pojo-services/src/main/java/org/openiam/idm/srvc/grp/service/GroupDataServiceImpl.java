@@ -176,6 +176,22 @@ public class GroupDataServiceImpl implements GroupDataService {
     }
 
     @Override
+    @Deprecated
+    public GroupEntity getGroupByName(final String groupName, final String managedSysId, final String requesterId) {
+        return getGroupByNameLocalize(groupName, managedSysId, requesterId, getDefaultLanguage());
+    }
+
+    @Override
+    @LocalizedServiceGet
+    public GroupEntity getGroupByNameLocalize(final String groupName, final String managedSysId, final String requesterId, final LanguageEntity language) {
+        final GroupSearchBean searchBean = new GroupSearchBean();
+        searchBean.setName(groupName);
+        searchBean.setManagedSysId(managedSysId);
+        final List<GroupEntity> foundList = this.findBeans(searchBean, requesterId, 0, 1);
+        return (CollectionUtils.isNotEmpty(foundList)) ? foundList.get(0) : null;
+    }
+
+    @Override
     @LocalizedServiceGet
     public GroupEntity getGroupByNameLocalize(final String groupName, final String requesterId, final LanguageEntity language) {
         final GroupSearchBean searchBean = new GroupSearchBean();
