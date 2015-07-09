@@ -415,8 +415,8 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
 
 
         Group newGroup = new Group();
-        group.setName(groupSameName);
-        group.setManagedSysId(ldapMngSysId);
+        newGroup.setName(groupSameName);
+        newGroup.setManagedSysId(ldapMngSysId);
         Response newRes = groupServiceClient.saveGroup(newGroup, REQUESTER_ID);
         Assert.assertNotNull(newRes);
         String newGroupId = (String)newRes.getResponseValue();

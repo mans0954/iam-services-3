@@ -75,8 +75,8 @@ public class RoleManagementServiceTest extends AbstractServiceTest {
 
 
         Role newRole = new Role();
-        role.setName(roleSameName);
-        role.setManagedSysId(ldapMngSysId);
+        newRole.setName(roleSameName);
+        newRole.setManagedSysId(ldapMngSysId);
         Response newRes = roleServiceClient.saveRole(newRole, REQUESTER_ID);
         Assert.assertNotNull(newRes);
         String newGroupId = (String)newRes.getResponseValue();
