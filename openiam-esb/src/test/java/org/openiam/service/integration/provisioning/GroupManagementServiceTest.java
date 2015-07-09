@@ -41,6 +41,10 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
     private static final String AD_RES_ID = "110";
     private static final String AD_MNGSYS_ID = "110";
 
+    private static final String adMngSysId = "110";
+    private static final String ldapMngSysId = "101";
+    private static final String groupSameName = "Group Unique Name";
+
     @Resource(name="groupServiceClient")
     private GroupDataWebService groupServiceClient;
 
@@ -59,10 +63,14 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
     private List<String> groupIds;
     private List<String> userIds;
 
+    private List<String> sameGroupIds;
+
     @BeforeClass(groups = {"groupProv"}, alwaysRun = true)
     public void initGroupProv() {
         groupIds = new ArrayList<String>();
         userIds = new ArrayList<String>();
+
+        sameGroupIds = new ArrayList<String>();
     }
 
     @AfterClass(groups = {"groupProv"}, alwaysRun = true)
@@ -81,6 +89,8 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
                 } catch (Exception e) {}
             }
         }
+
+        deleteGroupsWithSameName();
     }
 
     @Test
@@ -162,7 +172,7 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
         // check if user is a member
         Response response = groupServiceClient.isUserInGroup(id, userId);
         Assert.assertTrue(response.isSuccess(), "Response should be successful");
-        Assert.assertFalse((Boolean)response.getResponseValue());
+        Assert.assertFalse((Boolean) response.getResponseValue());
     }
 
     @Test(dependsOnMethods = {"removeUserFromGroup"})
@@ -214,7 +224,7 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
 
         IdentityDto identity = identityServiceClient.getIdentityByManagedSys(id, AD_RES_ID);
         List<ExtensibleAttribute> extAttrs = new ArrayList<ExtensibleAttribute>();
-        extAttrs.add(new ExtensibleAttribute("description",""));
+        extAttrs.add(new ExtensibleAttribute("description", ""));
 
         LookupObjectResponse lookupResp = null;
         for (int i=0; i<15; i++) {
@@ -388,5 +398,54 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
         Assert.assertNull(identity, "Group identity is not removed");
 
         groupIds.remove(id);
+    }
+
+    @Test
+    public void createGroupsWithSameName() throws Exception {
+        //create groups with same name for different mngSys
+
+        Group group = new Group();
+        group.setName(groupSameName);
+        group.setManagedSysId(adMngSysId);
+        Response res = groupServiceClient.saveGroup(group, REQUESTER_ID);
+        Assert.assertNotNull(res);
+        String groupId = (String)res.getResponseValue();
+        sameGroupIds.add(groupId);
+
+
+
+        Group newGroup = new Group();
+        group.setName(groupSameName);
+        group.setManagedSysId(ldapMngSysId);
+        Response newRes = groupServiceClient.saveGroup(newGroup, REQUESTER_ID);
+        Assert.assertNotNull(newRes);
+        String newGroupId = (String)newRes.getResponseValue();
+        sameGroupIds.add(newGroupId);
+
+        Assert.assertTrue(res.isSuccess());
+        Assert.assertNotNull(groupId);
+
+        Assert.assertTrue(newRes.isSuccess());
+        Assert.assertNotNull(newGroupId);
+
+    }
+
+    private void deleteGroupsWithSameName() {
+        if (sameGroupIds.get(0) != null) {
+            String firstGroupName = sameGroupIds.get(0);
+            Response resFirst = groupServiceClient.validateDelete(firstGroupName);
+            if (resFirst.isSuccess()) {
+                groupServiceClient.deleteGroup(firstGroupName, REQUESTER_ID);
+            }
+        }
+
+        if (sameGroupIds.get(1) != null) {
+            String secondGroupName = sameGroupIds.get(1);
+            Response resSecond = groupServiceClient.validateDelete(secondGroupName);
+            if (resSecond.isSuccess()) {
+                groupServiceClient.deleteGroup(secondGroupName, REQUESTER_ID);
+            }
+        }
+
     }
 }
