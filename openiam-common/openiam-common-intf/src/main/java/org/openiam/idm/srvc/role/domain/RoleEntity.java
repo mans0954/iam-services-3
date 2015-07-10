@@ -3,7 +3,6 @@ package org.openiam.idm.srvc.role.domain;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -27,22 +26,16 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.Where;
-import org.openiam.am.srvc.domain.OAuthCodeEntity;
-import org.openiam.am.srvc.domain.OAuthTokenEntity;
+import org.openiam.am.srvc.domain.OAuthUserClientXrefEntity;
 import org.openiam.base.domain.AbstractMetdataTypeEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.access.domain.AccessRightEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
-import org.openiam.idm.srvc.grp.domain.GroupToResourceMembershipXrefEntity;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
-import org.openiam.idm.srvc.org.domain.GroupToOrgMembershipXrefEntity;
 import org.openiam.idm.srvc.org.domain.RoleToOrgMembershipXrefEntity;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
-import org.openiam.idm.srvc.res.domain.ResourceToResourceMembershipXrefEntity;
 import org.openiam.idm.srvc.role.dto.Role;
-import org.openiam.idm.srvc.user.domain.UserEntity;
-import org.openiam.idm.srvc.user.domain.UserToGroupMembershipXrefEntity;
 import org.openiam.idm.srvc.user.domain.UserToRoleMembershipXrefEntity;
 import org.openiam.internationalization.Internationalized;
 
@@ -116,12 +109,9 @@ public class RoleEntity extends AbstractMetdataTypeEntity {
     private Set<RoleToOrgMembershipXrefEntity> organizations = new HashSet<RoleToOrgMembershipXrefEntity>(0);
 
 	@ManyToMany(cascade = {CascadeType.ALL})
-	@JoinTable(name = "OAUTH_CODE_SCOPES", joinColumns = { @JoinColumn(name = "ROLE_ID") }, inverseJoinColumns = { @JoinColumn(name = "OAUTH_CODE_ID") })
-	private Set<OAuthCodeEntity> oAuthCodeSet = new HashSet<OAuthCodeEntity>(0);
+	@JoinTable(name = "OAUTH_AUTHORIZED_SCOPE", joinColumns = { @JoinColumn(name = "ROLE_ID") }, inverseJoinColumns = { @JoinColumn(name = "OAUTH_AUTHORIZATION_ID") })
+	private Set<OAuthUserClientXrefEntity> oAuthAuthorizationSet = new HashSet<OAuthUserClientXrefEntity>(0);
 
-	@ManyToMany(cascade = {CascadeType.ALL})
-	@JoinTable(name = "OAUTH_TOKEN_SCOPES", joinColumns = { @JoinColumn(name = "ROLE_ID") }, inverseJoinColumns = { @JoinColumn(name = "OAUTH_TOKEN_ID") })
-	private Set<OAuthTokenEntity> oAuthTokeSet = new HashSet<OAuthTokenEntity>(0);
 
 	public String getName() {
 		return name;
@@ -414,20 +404,13 @@ public class RoleEntity extends AbstractMetdataTypeEntity {
 	public void setOrganizations(Set<RoleToOrgMembershipXrefEntity> organizations) {
 		this.organizations = organizations;
     }
- 
-	public Set<OAuthCodeEntity> getoAuthCodeSet() {
-		return oAuthCodeSet;
-	}
-	public void setoAuthCodeSet(Set<OAuthCodeEntity> oAuthCodeSet) {
-		this.oAuthCodeSet = oAuthCodeSet;
+
+	public Set<OAuthUserClientXrefEntity> getoAuthAuthorizationSet() {
+		return oAuthAuthorizationSet;
 	}
 
-	public Set<OAuthTokenEntity> getoAuthTokeSet() {
-		return oAuthTokeSet;
-	}
-
-	public void setoAuthTokeSet(Set<OAuthTokenEntity> oAuthTokeSet) {
-		this.oAuthTokeSet = oAuthTokeSet;
+	public void setoAuthAuthorizationSet(Set<OAuthUserClientXrefEntity> oAuthAuthorizationSet) {
+		this.oAuthAuthorizationSet = oAuthAuthorizationSet;
 	}
 
 	@Override

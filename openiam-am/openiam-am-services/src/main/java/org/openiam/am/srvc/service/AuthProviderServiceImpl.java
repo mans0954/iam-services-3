@@ -246,4 +246,14 @@ public class AuthProviderServiceImpl implements AuthProviderService {
 	public AuthProviderEntity getAuthProvider(String id) {
 		return authProviderDao.findById(id);
 	}
+
+    /*
+    *==================================================
+    *  OAuth2 section
+    *===================================================
+    */
+    @Override
+    public AuthProviderEntity getOAuthClient(final String clientId){
+        return authProviderDao.getOAuthClient(clientId);
+    }
 }

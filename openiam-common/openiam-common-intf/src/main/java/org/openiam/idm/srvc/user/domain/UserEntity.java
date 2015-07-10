@@ -37,6 +37,7 @@ import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.FilterDef;
 import org.hibernate.annotations.ParamDef;
+import org.openiam.am.srvc.domain.OAuthUserClientXrefEntity;
 import org.openiam.base.BaseConstants;
 import org.openiam.base.domain.KeyEntity;
 import org.openiam.core.dao.lucene.LuceneLastUpdate;
@@ -298,6 +299,10 @@ public class UserEntity extends KeyEntity {
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "supervisor", fetch = FetchType.LAZY)
     // @Fetch(FetchMode.SUBSELECT)
     private Set<SupervisorEntity> subordinates;
+
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="user", orphanRemoval=true)
+    @Fetch(FetchMode.SUBSELECT)
+    private Set<OAuthUserClientXrefEntity> authorizedOAuthClients = new HashSet<OAuthUserClientXrefEntity>(0);
 
     @Transient
     private String defaultLogin;
@@ -1215,6 +1220,14 @@ public class UserEntity extends KeyEntity {
         this.claimDate = claimDate;
     }
 
+
+    public Set<OAuthUserClientXrefEntity> getAuthorizedOAuthClients() {
+        return authorizedOAuthClients;
+    }
+
+    public void setAuthorizedOAuthClients(Set<OAuthUserClientXrefEntity> authorizedOAuthClients) {
+        this.authorizedOAuthClients = authorizedOAuthClients;
+    }
 
     @Override
     public boolean equals(Object o) {

@@ -22,7 +22,9 @@ import java.util.Set;
         "expiredOn",
         "clientId",
         "userId",
-        "scopeSet"
+        "code",
+        "codeExpiredOn",
+        "redirectUrl"
 })
 @DozerDTOCorrespondence(OAuthTokenEntity.class)
 public class OAuthToken extends KeyDTO {
@@ -31,7 +33,10 @@ public class OAuthToken extends KeyDTO {
     private Long expiredOn;
     private String clientId;
     private String userId;
-    private Set<Role> scopeSet = new HashSet<Role>(0);
+    private String code;
+    private Long codeExpiredOn;
+    private String redirectUrl;
+
 
     public String getToken() {
         return token;
@@ -73,19 +78,29 @@ public class OAuthToken extends KeyDTO {
         this.userId = userId;
     }
 
-    public Set<Role> getScopeSet() {
-        return scopeSet;
+    public String getCode() {
+        return code;
     }
 
-    public void setScopeSet(Set<Role> scopeSet) {
-        this.scopeSet = scopeSet;
-    }
-    public void addScope(Role scope) {
-        if(this.scopeSet==null)
-            this.scopeSet=new HashSet<Role>(0);
-        this.scopeSet.add(scope);
+    public void setCode(String code) {
+        this.code = code;
     }
 
+    public Long getCodeExpiredOn() {
+        return codeExpiredOn;
+    }
+
+    public void setCodeExpiredOn(Long codeExpiredOn) {
+        this.codeExpiredOn = codeExpiredOn;
+    }
+
+    public String getRedirectUrl() {
+        return redirectUrl;
+    }
+
+    public void setRedirectUrl(String redirectUrl) {
+        this.redirectUrl = redirectUrl;
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -100,7 +115,10 @@ public class OAuthToken extends KeyDTO {
         if (expiredOn != null ? !expiredOn.equals(that.expiredOn) : that.expiredOn != null) return false;
         if (clientId != null ? !clientId.equals(that.clientId) : that.clientId != null) return false;
         if (userId != null ? !userId.equals(that.userId) : that.userId != null) return false;
-        return !(scopeSet != null ? !scopeSet.equals(that.scopeSet) : that.scopeSet != null);
+        if (code != null ? !code.equals(that.code) : that.code != null) return false;
+        if (codeExpiredOn != null ? !codeExpiredOn.equals(that.codeExpiredOn) : that.codeExpiredOn != null) return false;
+        if (redirectUrl != null ? !redirectUrl.equals(that.redirectUrl) : that.redirectUrl != null) return false;
+        return true;
 
     }
 
@@ -112,7 +130,9 @@ public class OAuthToken extends KeyDTO {
         result = 31 * result + (expiredOn != null ? expiredOn.hashCode() : 0);
         result = 31 * result + (clientId != null ? clientId.hashCode() : 0);
         result = 31 * result + (userId != null ? userId.hashCode() : 0);
-        result = 31 * result + (scopeSet != null ? scopeSet.hashCode() : 0);
+        result = 31 * result + (code != null ? code.hashCode() : 0);
+        result = 31 * result + (codeExpiredOn != null ? codeExpiredOn.hashCode() : 0);
+        result = 31 * result + (redirectUrl != null ? redirectUrl.hashCode() : 0);
         return result;
     }
 
@@ -124,7 +144,9 @@ public class OAuthToken extends KeyDTO {
                 ", expiredOn=" + expiredOn +
                 ", clientId=" + clientId +
                 ", userId=" + userId +
-                ", scopeSet=" + scopeSet +
+                ", code=" + code +
+                ", codeExpiredOn=" + codeExpiredOn +
+                ", redirectUrl=" + redirectUrl +
                 '}';
     }
 }

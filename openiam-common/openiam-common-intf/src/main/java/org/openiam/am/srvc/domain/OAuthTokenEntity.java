@@ -32,6 +32,15 @@ public class OAuthTokenEntity extends KeyEntity {
     @Column(name = "EXPIRED_ON", nullable = false)
     private Long expiredOn;
 
+    @Column(name = "CODE", length = 100, nullable = false)
+    private String code;
+
+    @Column(name = "CODE_EXPIRED_ON", nullable = false)
+    private Long codeExpiredOn;
+
+    @Column(name = "REDIRECT_URL", length = 255, nullable = true)
+    private String redirectUrl;
+
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch= FetchType.LAZY)
     @JoinColumn(name = "PROVIDER_ID", referencedColumnName = "PROVIDER_ID", insertable = true, updatable = true, nullable=true)
     private AuthProviderEntity client;
@@ -39,10 +48,6 @@ public class OAuthTokenEntity extends KeyEntity {
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch= FetchType.LAZY)
     @JoinColumn(name = "USER_ID",  insertable = true, updatable = true, nullable=true)
     private UserEntity user;
-
-    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    @JoinTable(name = "OAUTH_TOKEN_SCOPES", joinColumns = { @JoinColumn(name = "OAUTH_TOKEN_ID") }, inverseJoinColumns = { @JoinColumn(name = "ROLE_ID") })
-    private Set<RoleEntity> scopeSet = new HashSet<RoleEntity>(0);
 
     public String getToken() {
         return token;
@@ -84,19 +89,29 @@ public class OAuthTokenEntity extends KeyEntity {
         this.user = user;
     }
 
-    public Set<RoleEntity> getScopeSet() {
-        return scopeSet;
+    public String getCode() {
+        return code;
     }
 
-    public void setScopeSet(Set<RoleEntity> scopeSet) {
-        this.scopeSet = scopeSet;
-    }
-    public void addScope(RoleEntity scope) {
-        if(this.scopeSet==null)
-            this.scopeSet=new HashSet<RoleEntity>(0);
-        this.scopeSet.add(scope);
+    public void setCode(String code) {
+        this.code = code;
     }
 
+    public Long getCodeExpiredOn() {
+        return codeExpiredOn;
+    }
+
+    public void setCodeExpiredOn(Long codeExpiredOn) {
+        this.codeExpiredOn = codeExpiredOn;
+    }
+
+    public String getRedirectUrl() {
+        return redirectUrl;
+    }
+
+    public void setRedirectUrl(String redirectUrl) {
+        this.redirectUrl = redirectUrl;
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -111,7 +126,10 @@ public class OAuthTokenEntity extends KeyEntity {
         if (expiredOn != null ? !expiredOn.equals(that.expiredOn) : that.expiredOn != null) return false;
         if (client != null ? !client.equals(that.client) : that.client != null) return false;
         if (user != null ? !user.equals(that.user) : that.user != null) return false;
-        return !(scopeSet != null ? !scopeSet.equals(that.scopeSet) : that.scopeSet != null);
+        if (code != null ? !code.equals(that.code) : that.code != null) return false;
+        if (codeExpiredOn != null ? !codeExpiredOn.equals(that.codeExpiredOn) : that.codeExpiredOn != null) return false;
+        if (redirectUrl != null ? !redirectUrl.equals(that.redirectUrl) : that.redirectUrl != null) return false;
+        return true;
 
     }
 
@@ -123,7 +141,9 @@ public class OAuthTokenEntity extends KeyEntity {
         result = 31 * result + (expiredOn != null ? expiredOn.hashCode() : 0);
         result = 31 * result + (client != null ? client.hashCode() : 0);
         result = 31 * result + (user != null ? user.hashCode() : 0);
-        result = 31 * result + (scopeSet != null ? scopeSet.hashCode() : 0);
+        result = 31 * result + (code != null ? code.hashCode() : 0);
+        result = 31 * result + (codeExpiredOn != null ? codeExpiredOn.hashCode() : 0);
+        result = 31 * result + (redirectUrl != null ? redirectUrl.hashCode() : 0);
         return result;
     }
 
@@ -135,7 +155,9 @@ public class OAuthTokenEntity extends KeyEntity {
                 ", expiredOn=" + expiredOn +
                 ", client=" + client +
                 ", user=" + user +
-                ", scopeSet=" + scopeSet +
+                ", code=" + code +
+                ", codeExpiredOn=" + codeExpiredOn +
+                ", redirectUrl=" + redirectUrl +
                 '}';
     }
 }

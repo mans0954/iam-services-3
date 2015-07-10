@@ -2,7 +2,6 @@ package org.openiam.am.srvc.dto;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.openiam.am.srvc.domain.AuthProviderEntity;
-import org.openiam.am.srvc.domain.OAuthCodeEntity;
 import org.openiam.base.KeyNameDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.res.dto.Resource;
@@ -11,7 +10,6 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import java.io.Serializable;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -38,7 +36,6 @@ import java.util.Set;
         "supportsSMSOTP",
         "smsOTPGroovyScript",
         "supportsTOTP",
-		"oAuthCodes",
 		"oAuthTokens"
 })
 @DozerDTOCorrespondence(AuthProviderEntity.class)
@@ -64,7 +61,6 @@ public class AuthProvider extends KeyNameDTO {
     private Map<String, AuthResourceAttributeMap> resourceAttributeMap=new HashMap<String, AuthResourceAttributeMap>(0);
     private Resource resource;
 
-	private Set<OAuthCode> oAuthCodes;
 	private Set<OAuthToken> oAuthTokens;
     @XmlTransient
     private Map<String, AuthProviderAttribute> attributeMap=null;
@@ -245,14 +241,6 @@ public class AuthProvider extends KeyNameDTO {
 
 	public void setAuthnPolicyId(String authnPolicyId) {
 		this.authnPolicyId = authnPolicyId;
-	}
-
-	public Set<OAuthCode> getoAuthCodes() {
-		return oAuthCodes;
-	}
-
-	public void setoAuthCodes(Set<OAuthCode> oAuthCodes) {
-		this.oAuthCodes = oAuthCodes;
 	}
 
 	public Set<OAuthToken> getoAuthTokens() {

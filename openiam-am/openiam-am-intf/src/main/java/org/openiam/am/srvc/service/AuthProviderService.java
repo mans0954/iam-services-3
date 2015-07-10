@@ -38,5 +38,12 @@ public interface AuthProviderService {
     void saveAuthProvider(AuthProviderEntity attribute, final String requestorId) throws BasicDataServiceException;
     void deleteAuthProvider(String providerId) throws BasicDataServiceException;
 
+    /*
+    *==================================================
+    *  OAuth2 section
+    *===================================================
+    */
+
+    AuthProviderEntity getOAuthClient(final String clientId);
 
 }

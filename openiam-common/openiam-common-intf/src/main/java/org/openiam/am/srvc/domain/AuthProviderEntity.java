@@ -9,6 +9,7 @@ import org.hibernate.annotations.Type;
 import org.openiam.am.srvc.dto.AuthProvider;
 import org.openiam.base.domain.AbstractKeyNameEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.grp.domain.GroupToGroupMembershipXrefEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.policy.domain.PolicyEntity;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
@@ -16,10 +17,7 @@ import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import javax.persistence.*;
 
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Entity
 @Table(name = "AUTH_PROVIDER")
@@ -97,11 +95,11 @@ public class AuthProviderEntity extends AbstractKeyNameEntity {
 
 	@OneToMany(fetch = FetchType.LAZY,cascade = { CascadeType.DETACH, CascadeType.REFRESH }, mappedBy = "client")
 	@Fetch(FetchMode.SUBSELECT)
-	private Set<OAuthCodeEntity> oAuthCodes;
-
-	@OneToMany(fetch = FetchType.LAZY,cascade = { CascadeType.DETACH, CascadeType.REFRESH }, mappedBy = "client")
-	@Fetch(FetchMode.SUBSELECT)
 	private Set<OAuthTokenEntity> oAuthTokens;
+
+	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="client", orphanRemoval=true)
+	@Fetch(FetchMode.SUBSELECT)
+	private Set<OAuthUserClientXrefEntity> authorizedUsers = new HashSet<OAuthUserClientXrefEntity>(0);
 
     @OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "provider")
     @MapKey(name = "name")
@@ -278,20 +276,20 @@ public class AuthProviderEntity extends AbstractKeyNameEntity {
 		this.authenticationPolicy = authenticationPolicy;
 	}
 
-	public Set<OAuthCodeEntity> getoAuthCodes() {
-		return oAuthCodes;
-	}
-
-	public void setoAuthCodes(Set<OAuthCodeEntity> oAuthCodes) {
-		this.oAuthCodes = oAuthCodes;
-	}
-
 	public Set<OAuthTokenEntity> getoAuthTokens() {
 		return oAuthTokens;
 	}
 
 	public void setoAuthTokens(Set<OAuthTokenEntity> oAuthTokens) {
 		this.oAuthTokens = oAuthTokens;
+	}
+
+	public Set<OAuthUserClientXrefEntity> getAuthorizedUsers() {
+		return authorizedUsers;
+	}
+
+	public void setAuthorizedUsers(Set<OAuthUserClientXrefEntity> authorizedUsers) {
+		this.authorizedUsers = authorizedUsers;
 	}
 
 	@Override
