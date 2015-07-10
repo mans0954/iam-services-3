@@ -12,14 +12,14 @@
     <name>openiam-esb</name>
     <packaging>war</packaging>
     <version>4.0.0</version>
-    <description>OpenIAM ESB Module </description>
-	<properties>
-    	<skipTests>true</skipTests>
-  	</properties>
+    <description>OpenIAM ESB Module</description>
+    <properties>
+        <skipTests>true</skipTests>
+    </properties>
 
     <dependencies>
         <!-- OpenIAM Dependencies -->
-         <dependency>
+        <dependency>
             <groupId>org.openiam</groupId>
             <artifactId>openiam-pojo-intf</artifactId>
         </dependency>
@@ -36,8 +36,8 @@
                     <artifactId>slf4j-jdk14</artifactId>
                 </exclusion>
                 <exclusion>
-                     <groupId>org.slf4j</groupId>
-                     <artifactId>log4j-over-slf4j</artifactId>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>log4j-over-slf4j</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -74,7 +74,7 @@
             </exclusions>
         </dependency>
 
-		<dependency>
+        <dependency>
             <groupId>org.openiam</groupId>
             <artifactId>openiam-am-intf</artifactId>
         </dependency>
@@ -92,7 +92,7 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        
+
         <dependency>
             <groupId>org.openiam</groupId>
             <artifactId>openiam-bpm-activiti</artifactId>
@@ -122,7 +122,7 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        
+
         <dependency>
             <groupId>org.openiam</groupId>
             <artifactId>openiam-auth-manager-web</artifactId>
@@ -137,7 +137,7 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        
+
         <dependency>
             <groupId>org.openiam</groupId>
             <artifactId>openiam-auth-manager-client</artifactId>
@@ -153,13 +153,36 @@
             </exclusions>
             <scope>test</scope>
         </dependency>
-        
+
+
+        <dependency>
+            <groupId>org.openiam</groupId>
+            <artifactId>openiam-xacml-intf</artifactId>
+            <version>4.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openiam</groupId>
+            <artifactId>openiam-xacml-services</artifactId>
+            <version>4.0.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-jdk14</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+
         <!-- Other Dependencies -->
         <dependency>
-			<groupId>javax</groupId>
-			<artifactId>javaee-web-api</artifactId>
-			<scope>provided</scope>
-		</dependency>
+            <groupId>javax</groupId>
+            <artifactId>javaee-web-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>org.apache.activemq</groupId>
             <artifactId>activemq-core</artifactId>
@@ -168,31 +191,31 @@
             <groupId>org.apache.xbean</groupId>
             <artifactId>xbean-spring</artifactId>
         </dependency>
-<!-- Testing -->
+        <!-- Testing -->
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
-		    <groupId>org.testng</groupId>
-			<artifactId>testng</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-		    <groupId>org.mockito</groupId>
-			<artifactId>mockito-all</artifactId>
-			<scope>test</scope>
-		</dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
-		    <groupId>org.springframework</groupId>
-			<artifactId>spring-test</artifactId>
-			<scope>test</scope>
-		</dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-all</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>hsqldb</groupId>
             <artifactId>hsqldb</artifactId>
-			<scope>test</scope>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>commons-lang</groupId>
@@ -206,25 +229,25 @@
         </dependency>
 
         <dependency>
-			<groupId>com.hazelcast</groupId>
-			<artifactId>hazelcast</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		
-		<dependency>
-			<groupId>com.hazelcast</groupId>
-			<artifactId>hazelcast-client</artifactId>
-		</dependency>
-		
-		<dependency>
-			<groupId>com.hazelcast</groupId>
-			<artifactId>hazelcast-spring</artifactId>
-		</dependency>
-		
-		<dependency>
-			<groupId>com.hazelcast</groupId>
-			<artifactId>hazelcast-hibernate4</artifactId>
-		</dependency>
+            <groupId>com.hazelcast</groupId>
+            <artifactId>hazelcast</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.hazelcast</groupId>
+            <artifactId>hazelcast-client</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.hazelcast</groupId>
+            <artifactId>hazelcast-spring</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.hazelcast</groupId>
+            <artifactId>hazelcast-hibernate4</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.quartz-scheduler</groupId>
@@ -236,14 +259,14 @@
             <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
-        
+
         <dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-simple</artifactId>
-			<version>${slf4j.simple.version}</version>
-			<scope>test</scope>
-		</dependency>
-        
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>${slf4j.simple.version}</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <developers>
@@ -265,55 +288,55 @@
     <build>
         <finalName>openiam-esb</finalName>
         <plugins>
-	      <plugin>
-	        <groupId>org.apache.maven.plugins</groupId>
-	        <artifactId>maven-surefire-plugin</artifactId>
-	        <version>2.4.2</version>
-	        <configuration>
-	          <additionalClasspathElements>
-	          	<additionalClasspathElement>${basedir}/src/test/resources</additionalClasspathElement>
-	          </additionalClasspathElements>
-	          <skipTests>${skipTests}</skipTests>
-	          <suiteXmlFiles>
-	            <suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile>
-	          </suiteXmlFiles>
-	        </configuration>
-	      </plugin>
-	    </plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.4.2</version>
+                <configuration>
+                    <additionalClasspathElements>
+                        <additionalClasspathElement>${basedir}/src/test/resources</additionalClasspathElement>
+                    </additionalClasspathElements>
+                    <skipTests>${skipTests}</skipTests>
+                    <suiteXmlFiles>
+                        <suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile>
+                    </suiteXmlFiles>
+                </configuration>
+            </plugin>
+        </plugins>
         <pluginManagement>
-        	<plugins>
-        		<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
-        		<plugin>
-        			<groupId>org.eclipse.m2e</groupId>
-        			<artifactId>lifecycle-mapping</artifactId>
-        			<version>1.0.0</version>
-        			<configuration>
-        				<lifecycleMappingMetadata>
-        					<pluginExecutions>
-        						<pluginExecution>
-        							<pluginExecutionFilter>
-        								<groupId>
-        									pl.project13.maven
-        								</groupId>
-        								<artifactId>
-        									git-commit-id-plugin
-        								</artifactId>
-        								<versionRange>
-        									[2.0.3,)
-        								</versionRange>
-        								<goals>
-        									<goal>revision</goal>
-        								</goals>
-        							</pluginExecutionFilter>
-        							<action>
-        								<ignore></ignore>
-        							</action>
-        						</pluginExecution>
-        					</pluginExecutions>
-        				</lifecycleMappingMetadata>
-        			</configuration>
-        		</plugin>
-        	</plugins>
+            <plugins>
+                <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+                <plugin>
+                    <groupId>org.eclipse.m2e</groupId>
+                    <artifactId>lifecycle-mapping</artifactId>
+                    <version>1.0.0</version>
+                    <configuration>
+                        <lifecycleMappingMetadata>
+                            <pluginExecutions>
+                                <pluginExecution>
+                                    <pluginExecutionFilter>
+                                        <groupId>
+                                            pl.project13.maven
+                                        </groupId>
+                                        <artifactId>
+                                            git-commit-id-plugin
+                                        </artifactId>
+                                        <versionRange>
+                                            [2.0.3,)
+                                        </versionRange>
+                                        <goals>
+                                            <goal>revision</goal>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action>
+                                        <ignore></ignore>
+                                    </action>
+                                </pluginExecution>
+                            </pluginExecutions>
+                        </lifecycleMappingMetadata>
+                    </configuration>
+                </plugin>
+            </plugins>
         </pluginManagement>
     </build>
 </project>

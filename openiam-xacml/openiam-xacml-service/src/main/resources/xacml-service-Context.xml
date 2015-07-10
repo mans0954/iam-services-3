@@ -17,23 +17,26 @@
        http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd">
 
     <context:component-scan
-            base-package="org.openiam.xacml.srvc.dao" />
+            base-package="org.openiam.xacml.srvc.searchbeans.converter,
+                          org.openiam.xacml.srvc.dozer,
+                          org.openiam.xacml.srvc.dao,
+    					  org.openiam.xacml.srvc.service,
+    					  org.openiam.xacml.srvc.rest"/>
 
     <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-	    <property name="locations">
-	    	<list>
-		        <value>classpath:securityconf.properties</value>
-		        <value>file:${confpath}/conf/datasource.properties</value>
-		        <value>file:${confpath}/conf/securityconf.properties</value>
-		        <value>file:${confpath}/conf/service-urls.properties</value>
-	        </list>
-	    </property>
-	    <property name="ignoreResourceNotFound" value="true" />
-	</bean>
+        <property name="locations">
+            <list>
+                <value>classpath:securityconf.properties</value>
+                <value>file:${confpath}/conf/datasource.properties</value>
+                <value>file:${confpath}/conf/securityconf.properties</value>
+            </list>
+        </property>
+        <property name="ignoreResourceNotFound" value="true"/>
+    </bean>
 
-	<bean id="defaultPatternResource" class="org.springframework.core.io.ClassPathResource">
-		<constructor-arg index="0" value="${org.openiam.uri.patterns.defaut.object.file}" />
-	</bean>
+    <bean id="defaultPatternResource" class="org.springframework.core.io.ClassPathResource">
+        <constructor-arg index="0" value="${org.openiam.uri.patterns.defaut.object.file}"/>
+    </bean>
 
 
 </beans>
