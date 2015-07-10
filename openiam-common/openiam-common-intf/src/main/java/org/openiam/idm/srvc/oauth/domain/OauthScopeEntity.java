@@ -19,7 +19,7 @@ import java.util.Set;
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(OauthScope.class)
 @AttributeOverrides({
-        @AttributeOverride(name = "id", column = @Column(name = "OAUTH_SCOPE_ID")),
+        @AttributeOverride(name = "id", column = @Column(name = "OAUTH_SCOPE_ID")),  //TODO
 })
 @Internationalized
 public class OauthScopeEntity extends AbstractKeyNameEntity {
