@@ -155,7 +155,7 @@ public class JdbcMembershipDAO extends AbstractJDBCDao implements MembershipDAO 
 		USER_ORG_XREFS = getMembershipSQL("USER_ID", "COMPANY_ID", "USER_AFFILIATION");
 		USER_RES_XREFS = getMembershipSQL("USER_ID", "RESOURCE_ID", "RESOURCE_USER");
 		
-		ORG_ORG_XREFS = getMembershipSQL("MEMBER_COMPANY_ID", "COMPANY_ID", "company_to_company_membership");
+		ORG_ORG_XREFS = getMembershipSQL("MEMBER_COMPANY_ID", "COMPANY_ID", "COMPANY_TO_COMPANY_MEMBERSHIP");
 		ORG_ROLE_XREFS = getMembershipSQL("ROLE_ID", "COMPANY_ID", "ROLE_ORG_MEMBERSHIP");
 		ORG_GRP_XREFS = getMembershipSQL("GRP_ID", "COMPANY_ID", "GROUP_ORGANIZATION");
 		ORG_RES_XREFS = getMembershipSQL("RESOURCE_ID", "COMPANY_ID", "RES_ORG_MEMBERSHIP");
