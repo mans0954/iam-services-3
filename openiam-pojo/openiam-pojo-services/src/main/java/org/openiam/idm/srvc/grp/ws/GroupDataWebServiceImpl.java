@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.grp.ws;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -134,8 +135,13 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
         }
 
         //final GroupEntity found = groupManager.getGroupByName(group.getName(), null);
-        log.debug("Validating group "+group.getName()+" of managed system "+group.getManagedSysId());
-        final GroupEntity found = groupManager.getGroupByName(group.getName(), group.getManagedSysId(), null);
+        log.debug("Validating group " + group.getName() + " of managed system " + group.getManagedSysId());
+        //final GroupEntity found = groupManager.getGroupByNameAndManagedSys(group.getName(), group.getManagedSysId(), null);
+        GroupSearchBean groupSearchBean = new GroupSearchBean();
+        groupSearchBean.setName(group.getName());
+        groupSearchBean.setManagedSysId(group.getManagedSysId());
+        final List <GroupEntity> foundList = groupManager.findBeans(groupSearchBean, null, 0, 1);
+        final GroupEntity found = (CollectionUtils.isNotEmpty(foundList)) ? foundList.get(0) : null;
 
         if (found != null) {
             if ( ( !found.getId().equals(group.getId()))) {

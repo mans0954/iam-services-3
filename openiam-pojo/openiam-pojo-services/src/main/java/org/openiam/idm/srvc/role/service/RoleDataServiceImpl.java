@@ -635,7 +635,7 @@ public class RoleDataServiceImpl implements RoleDataService {
 
 	@Override
 	@Deprecated
-	public RoleEntity getRoleByName(final String roleName, final String managedSysId, final String requesterId) {
+	public RoleEntity geRoleByNameAndManagedSys(final String roleName, final String managedSysId, final String requesterId) {
 		return getRoleByNameLocalize(roleName, managedSysId, requesterId, getDefaultLanguage());
 	}
 

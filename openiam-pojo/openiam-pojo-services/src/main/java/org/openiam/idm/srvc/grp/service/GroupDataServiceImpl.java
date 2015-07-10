@@ -177,7 +177,7 @@ public class GroupDataServiceImpl implements GroupDataService {
 
     @Override
     @Deprecated
-    public GroupEntity getGroupByName(final String groupName, final String managedSysId, final String requesterId) {
+    public GroupEntity getGroupByNameAndManagedSys(final String groupName, final String managedSysId, final String requesterId) {
         return getGroupByNameLocalize(groupName, managedSysId, requesterId, getDefaultLanguage());
     }
 

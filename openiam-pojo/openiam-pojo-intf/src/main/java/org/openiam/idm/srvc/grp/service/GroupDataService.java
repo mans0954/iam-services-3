@@ -29,7 +29,7 @@ public interface GroupDataService {
     public GroupEntity getGroupByName(final String groupName, final String requesterId);
     public List<Group> getCompiledGroupsForUser(final String userId);
 
-    public GroupEntity getGroupByName(final String groupName, final String managedSysId, final String requesterId);
+    public GroupEntity getGroupByNameAndManagedSys(final String groupName, final String managedSysId, final String requesterId);
     public GroupEntity getGroupByNameLocalize(final String groupName, final String managedSysId, final String requesterId, final LanguageEntity language);
 
     public GroupEntity getGroupLocalize(final String id, final LanguageEntity language);
