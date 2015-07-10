@@ -337,4 +337,8 @@
                   address="${openiam.service_host}${openiam.idm.ws.path}GroupDataWebService" />
 
 
+	 <jaxws:client id="authManagerAdminClient"
+                  serviceClass="org.openiam.authmanager.service.AuthorizationManagerAdminWebService"
+                  address="${openiam.service_host}${openiam.idm.ws.path}AuthorizationManagerAdminWebService" />
+
 </beans>

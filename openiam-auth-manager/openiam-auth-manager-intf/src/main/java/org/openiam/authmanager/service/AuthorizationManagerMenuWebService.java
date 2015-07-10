@@ -63,4 +63,7 @@ public interface AuthorizationManagerMenuWebService {
 	
 	@WebMethod
 	public Response entitle(final @WebParam(name="menuEntitlementsRequest", targetNamespace = "") MenuEntitlementsRequest menuEntitlementsRequest);
+	
+	@WebMethod
+	public void sweep();
 }
