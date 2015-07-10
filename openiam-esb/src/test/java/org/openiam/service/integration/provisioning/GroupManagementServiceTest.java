@@ -44,6 +44,8 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
     private static final String adMngSysId = "110";
     private static final String ldapMngSysId = "101";
     private static final String groupSameName = "Group Unique Name";
+    private static final String groupSameName1 = "Group Unique Name 1";
+    private static final String groupSameName2 = "Group Unique Name 2";
 
     @Resource(name="groupServiceClient")
     private GroupDataWebService groupServiceClient;
@@ -412,8 +414,6 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
         String groupId = (String)res.getResponseValue();
         sameGroupIds.add(groupId);
 
-
-
         Group newGroup = new Group();
         newGroup.setName(groupSameName);
         newGroup.setManagedSysId(ldapMngSysId);
@@ -430,7 +430,59 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
 
     }
 
+    @Test
+    public void createGroupsWithSameNameInSameMngSys() throws Exception {
+
+        Group group = new Group();
+        group.setName(groupSameName1);
+        group.setManagedSysId(adMngSysId);
+        Response res = groupServiceClient.saveGroup(group, REQUESTER_ID);
+        Assert.assertNotNull(res);
+        String groupId = (String)res.getResponseValue();
+        sameGroupIds.add(groupId);
+
+        Group newGroup = new Group();
+        newGroup.setName(groupSameName1);
+        newGroup.setManagedSysId(adMngSysId);
+        Response newRes = groupServiceClient.saveGroup(newGroup, REQUESTER_ID);
+        Assert.assertNotNull(newRes);
+        String newGroupId = (String)newRes.getResponseValue();
+        sameGroupIds.add(newGroupId);
+
+        Assert.assertTrue(res.isSuccess());
+        Assert.assertNotNull(groupId);
+
+        Assert.assertTrue(newRes.isFailure());
+        Assert.assertNull(newGroupId);
+    }
+
+    @Test
+    public void createGroupsWithoutMngSys () throws Exception {
+        Group group = new Group();
+        group.setName(groupSameName2);
+        group.setManagedSysId(null);
+        Response res = groupServiceClient.saveGroup(group, REQUESTER_ID);
+        Assert.assertNotNull(res);
+        String groupId = (String)res.getResponseValue();
+        sameGroupIds.add(groupId);
+
+        Group newGroup = new Group();
+        newGroup.setName(groupSameName2);
+        newGroup.setManagedSysId(null);
+        Response newRes = groupServiceClient.saveGroup(newGroup, REQUESTER_ID);
+        Assert.assertNotNull(newRes);
+        String newGroupId = (String)newRes.getResponseValue();
+        sameGroupIds.add(newGroupId);
+
+        Assert.assertTrue(res.isSuccess());
+        Assert.assertNotNull(groupId);
+
+        Assert.assertTrue(newRes.isFailure());
+        Assert.assertNull(newGroupId);
+    }
+
     private void deleteGroupsWithSameName() {
+        // for createGroupsWithSameName
         if (sameGroupIds.get(0) != null) {
             String firstGroupName = sameGroupIds.get(0);
             Response resFirst = groupServiceClient.validateDelete(firstGroupName);
@@ -441,6 +493,40 @@ public class GroupManagementServiceTest extends AbstractServiceTest {
 
         if (sameGroupIds.get(1) != null) {
             String secondGroupName = sameGroupIds.get(1);
+            Response resSecond = groupServiceClient.validateDelete(secondGroupName);
+            if (resSecond.isSuccess()) {
+                groupServiceClient.deleteGroup(secondGroupName, REQUESTER_ID);
+            }
+        }
+
+        //for createGroupsWithSameNameInSameMngSys
+        if (sameGroupIds.get(2) != null) {
+            String firstGroupName = sameGroupIds.get(2);
+            Response resFirst = groupServiceClient.validateDelete(firstGroupName);
+            if (resFirst.isSuccess()) {
+                groupServiceClient.deleteGroup(firstGroupName, REQUESTER_ID);
+            }
+        }
+
+        if (sameGroupIds.get(3) != null) {
+            String secondGroupName = sameGroupIds.get(3);
+            Response resSecond = groupServiceClient.validateDelete(secondGroupName);
+            if (resSecond.isSuccess()) {
+                groupServiceClient.deleteGroup(secondGroupName, REQUESTER_ID);
+            }
+        }
+
+        //for createGroupsWithoutMngSys
+        if (sameGroupIds.get(4) != null) {
+            String firstGroupName = sameGroupIds.get(4);
+            Response resFirst = groupServiceClient.validateDelete(firstGroupName);
+            if (resFirst.isSuccess()) {
+                groupServiceClient.deleteGroup(firstGroupName, REQUESTER_ID);
+            }
+        }
+
+        if (sameGroupIds.get(5) != null) {
+            String secondGroupName = sameGroupIds.get(5);
             Response resSecond = groupServiceClient.validateDelete(secondGroupName);
             if (resSecond.isSuccess()) {
                 groupServiceClient.deleteGroup(secondGroupName, REQUESTER_ID);
