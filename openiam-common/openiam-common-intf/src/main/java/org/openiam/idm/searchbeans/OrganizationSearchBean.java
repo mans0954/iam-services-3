@@ -32,7 +32,6 @@ import java.util.Set;
         "attributes",
         "metadataType",
         "isSelectable",
-        "adminResourceId",
         "abbreviation"
 })
 public class OrganizationSearchBean extends EntitlementsSearchBean<Organization, String> implements SearchBean<Organization, String>,
@@ -45,7 +44,6 @@ public class OrganizationSearchBean extends EntitlementsSearchBean<Organization,
     private String metadataType;
     private List<Tuple<String, String>> attributes;
     private Boolean isSelectable = null;
-    private String adminResourceId;
     private String abbreviation;
 
     public String getOrganizationTypeId() {
@@ -160,14 +158,6 @@ public class OrganizationSearchBean extends EntitlementsSearchBean<Organization,
 
     public void setAttributes(List<Tuple<String, String>> attributes) {
         this.attributes = attributes;
-    }
-
-    public String getAdminResourceId() {
-        return adminResourceId;
-    }
-
-    public void setAdminResourceId(String adminResourceId) {
-        this.adminResourceId = adminResourceId;
     }
 
     public String getAbbreviation() {

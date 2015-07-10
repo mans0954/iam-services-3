@@ -1,10 +1,9 @@
 package org.openiam.idm.srvc.grp.service;
 
+import java.util.List;
+
 import org.openiam.core.dao.BaseDao;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
-
-import java.util.List;
-import java.util.Set;
 
 
 /**
@@ -20,4 +19,5 @@ public interface GroupDAO extends BaseDao<GroupEntity, String> {
      * @return
      */
     List<GroupEntity> findRootGroups(final int from, final int size);
+    
 }

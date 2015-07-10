@@ -412,7 +412,7 @@ public abstract class EntitlementsStrategy {
     }
 
     public static  AccessViewBean createBean(AuthorizationResource entity){
-        return createBean(entity.getId(), (StringUtils.isNotBlank(entity.getCoorelatedName())) ? entity.getCoorelatedName() : entity.getName(), entity.getDescription(), entity.getStatus(), entity.getManagedSysId(),
+        return createBean(entity.getId(), entity.getName(), entity.getDescription(), entity.getStatus(), entity.getManagedSysId(),
                           AccessReviewConstant.RESOURCE_TYPE, entity.getRisk());
     }
 

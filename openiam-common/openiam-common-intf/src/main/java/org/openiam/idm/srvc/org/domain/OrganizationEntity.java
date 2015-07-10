@@ -42,6 +42,7 @@ import org.openiam.idm.srvc.role.domain.RoleToRoleMembershipXrefEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.domain.UserToGroupMembershipXrefEntity;
 import org.openiam.idm.srvc.user.domain.UserToOrganizationMembershipXrefEntity;
+import org.openiam.idm.srvc.user.domain.UserToRoleMembershipXrefEntity;
 import org.openiam.internationalization.Internationalized;
 
 @Entity
@@ -120,10 +121,6 @@ public class OrganizationEntity extends AbstractMetdataTypeEntity {
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="entity", orphanRemoval=true)
     @Fetch(FetchMode.SUBSELECT)
 	private Set<UserToOrganizationMembershipXrefEntity> users;
-	
-	@ManyToOne(fetch = FetchType.EAGER,cascade={CascadeType.ALL})
-    @JoinColumn(name="ADMIN_RESOURCE_ID", referencedColumnName = "RESOURCE_ID", insertable = true, updatable = true, nullable=true)
-	private ResourceEntity adminResource;
 	
 	@OneToMany(cascade = {CascadeType.ALL}, fetch = FetchType.LAZY, mappedBy="associationEntityId", orphanRemoval=true)
 	@Where(clause="ASSOCIATION_TYPE='ORGANIZATION'")
@@ -334,6 +331,39 @@ public class OrganizationEntity extends AbstractMetdataTypeEntity {
     				.findFirst();
     	return xref.isPresent() ? xref.get() : null;
     }
+	
+	public void addUser(final UserEntity entity, final AccessRightEntity right) {
+		if(entity != null && right != null) {
+			final Set<AccessRightEntity> rightSet = new HashSet<AccessRightEntity>();
+			rightSet.add(right);
+			addUser(entity, rightSet);
+		}
+	}
+	
+	public void addUser(final UserEntity entity, final Collection<AccessRightEntity> rights) {
+		if(entity != null) {
+			if(this.users == null) {
+				this.users = new LinkedHashSet<UserToOrganizationMembershipXrefEntity>();
+			}
+			UserToOrganizationMembershipXrefEntity theXref = null;
+			for(final UserToOrganizationMembershipXrefEntity xref : this.users) {
+				if(xref.getEntity().getId().equals(getId()) && xref.getMemberEntity().getId().equals(entity.getId())) {
+					theXref = xref;
+					break;
+				}
+			}
+			
+			if(theXref == null) {
+				theXref = new UserToOrganizationMembershipXrefEntity();
+				theXref.setEntity(this);
+				theXref.setMemberEntity(entity);
+			}
+			if(rights != null) {
+				theXref.setRights(new HashSet<AccessRightEntity>(rights));
+			}
+			this.users.add(theXref);
+		}
+	}
 
 	public void addChild(final OrganizationEntity entity, final Collection<AccessRightEntity> rights) {
 		if(entity != null) {
@@ -393,14 +423,6 @@ public class OrganizationEntity extends AbstractMetdataTypeEntity {
         this.users = users;
     }
 
-    public ResourceEntity getAdminResource() {
-		return adminResource;
-	}
-
-	public void setAdminResource(ResourceEntity adminResource) {
-		this.adminResource = adminResource;
-	}
-	
 	public Set<ApproverAssociationEntity> getApproverAssociations() {
 		return approverAssociations;
 	}
@@ -565,8 +587,6 @@ public class OrganizationEntity extends AbstractMetdataTypeEntity {
 		int result = super.hashCode();
 		result = prime * result
 				+ ((abbreviation == null) ? 0 : abbreviation.hashCode());
-		result = prime * result
-				+ ((adminResource == null) ? 0 : adminResource.hashCode());
 		result = prime * result + ((alias == null) ? 0 : alias.hashCode());
 		result = prime * result
 				+ ((createDate == null) ? 0 : createDate.hashCode());
@@ -606,11 +626,6 @@ public class OrganizationEntity extends AbstractMetdataTypeEntity {
 			if (other.abbreviation != null)
 				return false;
 		} else if (!abbreviation.equals(other.abbreviation))
-			return false;
-		if (adminResource == null) {
-			if (other.adminResource != null)
-				return false;
-		} else if (!adminResource.equals(other.adminResource))
 			return false;
 		if (alias == null) {
 			if (other.alias != null)

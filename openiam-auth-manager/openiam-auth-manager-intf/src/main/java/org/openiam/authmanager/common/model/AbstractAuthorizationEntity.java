@@ -5,6 +5,8 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
+import org.openiam.base.domain.KeyEntity;
+
 /**
  * @author Lev Bornovalov
  * This class serves two purposes:
@@ -24,9 +26,16 @@ public abstract class AbstractAuthorizationEntity {
 	
 	public AbstractAuthorizationEntity() {}
 	
+	public AbstractAuthorizationEntity(final KeyEntity entity) {
+		this.id = entity.getId();
+	}
+	
 	public AbstractAuthorizationEntity(final AbstractAuthorizationEntity entity) {
 		this.id = entity.id;
 		this.name = entity.name;
+		this.description = entity.description;
+		this.status = entity.status;
+		this.managedSysId = entity.managedSysId;
 	}
 
 	private String name;
@@ -65,9 +74,8 @@ public abstract class AbstractAuthorizationEntity {
 	protected void makeCopy(final AbstractAuthorizationEntity entity) {
 		entity.setId(id);
 		entity.setName(name);
+		entity.setBitSetIdx(bitSetIdx);
 	}
-	
-	public abstract void compile();
 
 	@Override
 	public int hashCode() {

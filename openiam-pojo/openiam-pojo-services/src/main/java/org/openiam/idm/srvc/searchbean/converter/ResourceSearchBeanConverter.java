@@ -23,11 +23,6 @@ public class ResourceSearchBeanConverter implements SearchBeanConverter<Resource
 			type.setId(searchBean.getResourceTypeId());
 			resource.setResourceType(type);
 		}
-		if(StringUtils.isNotBlank(searchBean.getAdminResourceId())) {
-			final ResourceEntity adminResource = new ResourceEntity();
-			adminResource.setId(searchBean.getAdminResourceId());
-			resource.setAdminResource(adminResource);
-		}
 		return resource;
 	}
 }

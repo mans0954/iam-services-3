@@ -1,13 +1,14 @@
 package org.openiam.idm.srvc.res.service;
 
+import java.util.List;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
-import org.hibernate.FetchMode;
 import org.hibernate.criterion.MatchMode;
-import org.hibernate.criterion.Order;
+import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.base.Tuple;
 import org.openiam.core.dao.BaseDaoImpl;
@@ -17,16 +18,9 @@ import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
 import org.openiam.idm.srvc.searchbean.converter.ResourceSearchBeanConverter;
 import org.openiam.internationalization.LocalizedDatabaseGet;
-import org.openiam.util.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
-
-import javax.annotation.Resource;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import static org.hibernate.criterion.Projections.rowCount;
 
 /**
  * DAO Implementation for Resources.
@@ -39,6 +33,9 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 	
 	@Autowired
     private ResourceSearchBeanConverter resourceSearchBeanConverter;
+
+	@Value("${org.openiam.ui.admin.right.id}")
+	private String adminRightId;
 
 	@Override
 	protected Criteria getExampleCriteria(SearchBean searchBean) {
@@ -107,22 +104,11 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
                     }
                 }
             }
-			
-			if(resource.getAdminResource() != null && StringUtils.isNotBlank(resource.getAdminResource().getId())) {
-				criteria.add(Restrictions.eq("adminResource.id", resource.getAdminResource().getId()));
-			}
 
 			if (resource.getResourceType() != null) {
 				final ResourceTypeEntity type = resource.getResourceType();
 				if (StringUtils.isNotBlank(type.getId())) {
 					criteria.add(Restrictions.eq("resourceType.id", type.getId()));
-				}
-			}
-
-			if(resource.getAdminResource() != null) {
-				final ResourceEntity adminResource = resource.getAdminResource();
-				if (StringUtils.isNotBlank(adminResource.getId())) {
-					criteria.add(Restrictions.eq("adminResource.id", adminResource.getId()));
 				}
 			}
 		}
@@ -233,15 +219,14 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 						.createAlias("userXrefs.memberEntity", "user").add(
 						Restrictions.in("user.id", searchBean.getUserIdSet()));
             }
-            
-			if(StringUtils.isNotBlank(searchBean.getAdminResourceId())){
-				criteria.add(Restrictions.eq("adminResource.id", searchBean.getAdminResourceId()));
-			}
+
 			if(StringUtils.isNotBlank(searchBean.getOwnerId())) {
-				criteria.createAlias("adminResource", "ar");
-				criteria.createAlias("ar.users", "aru");
-				criteria.add(Restrictions.eq("aru.id", searchBean.getOwnerId()));
+				criteria.createAlias("users", "aru");
+				criteria.createAlias("aru.rights", "aruRights");
+				criteria.add(Restrictions.eq("aru.memberEntity.id", searchBean.getOwnerId()));
+				criteria.add(Restrictions.eq("aruRights.id", adminRightId));
 			}
 		}
 	}
+
 }

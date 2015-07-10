@@ -1,24 +1,28 @@
 package org.openiam.authmanager.service.integration;
 
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.commons.lang3.time.StopWatch;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.authmanager.AuthorizationManagerHessianClient;
+import org.openiam.service.integration.AbstractServiceTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-@Test(enabled=false)
-@ContextConfiguration(locations={"classpath:test-integration-environment.xml","classpath:test-esb-integration.xml"})
-public class StressTestAuthorizationManagerHessianClient extends AbstractTestNGSpringContextTests {
+/**
+ * should be run with 4.0.0/util/1.create_test_data.sql
+ * @author lbornova
+ *
+ */
+public class StressTestAuthorizationManagerHessianClient extends AbstractServiceTest {
 
 	private static final Log log = LogFactory.getLog(StressTestAuthorizationManagerHessianClient.class);
 	
@@ -30,93 +34,48 @@ public class StressTestAuthorizationManagerHessianClient extends AbstractTestNGS
 	@Qualifier("jdbcTemplate")
 	protected JdbcTemplate jdbcTemplate;
 	
-	@Test
-	public void testResources() throws InterruptedException {
-		final List<Thread> threadList = new LinkedList<Thread>();
-		final List<Map<String, Object>> resourceMap = jdbcTemplate.queryForList("SELECT RESOURCE_ID, USER_ID FROM RESOURCE_USER LIMIT 10000");
-		for(final Map<String, Object> map : resourceMap) {
-			threadList.add(new ResourceThread((String)map.get("USER_ID"), (String)map.get("RESOURCE_ID"), true));
-		}
-		
-		final List<Map<String, Object>> groupMap = jdbcTemplate.queryForList("SELECT GRP_ID, USER_ID FROM USER_GRP LIMIT 10000");
-		for(final Map<String, Object> map : groupMap) {
-			threadList.add(new GroupThread((String)map.get("USER_ID"), (String)map.get("GRP_ID"), true));
-		}
-		
-		final List<Map<String, Object>> roleMap = jdbcTemplate.queryForList("SELECT ROLE_ID, USER_ID FROM USER_ROLE LIMIT 10000");
-		for(final Map<String, Object> map : roleMap) {
-			threadList.add(new RoleThread((String)map.get("USER_ID"), (String)map.get("ROLE_ID"), true));
-		}
-		
-		Collections.shuffle(threadList);
-		for(final Thread t : threadList) {
-			t.start();
-			Thread.sleep(250L);
-		}
+	private List<String> userIds;
+	private List<String> groupIds;
+	private List<String> roleIds;
+	private List<String> orgIds;
+	private List<String> resourceIds;
+	
+	private final AtomicInteger userInt = new AtomicInteger();
+	private final AtomicInteger groupInt = new AtomicInteger();
+	private final AtomicInteger roleInt = new AtomicInteger();
+	private final AtomicInteger orgInt = new AtomicInteger();
+	private final AtomicInteger resourceInt = new AtomicInteger();
+	
+	@BeforeClass
+	public void init() {
+		userIds = jdbcTemplate.queryForList("SELECT USER_ID FROM USERS", String.class);
+		groupIds = jdbcTemplate.queryForList("SELECT GRP_ID FROM GRP", String.class);
+		roleIds = jdbcTemplate.queryForList("SELECT ROLE_ID FROM ROLE", String.class);
+		orgIds = jdbcTemplate.queryForList("SELECT COMPANY_ID FROM COMPANY", String.class);
+		resourceIds = jdbcTemplate.queryForList("SELECT RESOURCE_ID FROM RES", String.class);
 	}
 	
-	private class GroupThread extends Thread {
-		private String userId;
-		private String groupId;
-		private boolean hasAccess;
+	@AfterClass
+	public void destroy() {
 		
-		public GroupThread(final String userId, final String groupId, boolean hasAccess) {
-			this.userId = userId;
-			this.groupId = groupId;
-			this.hasAccess = hasAccess;
-		}
-		
-		@Override
-		public void run() {
-			final boolean result = authClient.isUserMemberOfGroup(userId, groupId);
-			Assert.assertEquals(result, hasAccess);
-			if(result != hasAccess) {
-				log.error(String.format("Failed:  userId: %s,  groupid: %s, result: %s", userId, groupId, result));
-			}
-		}
 	}
 	
-	private class ResourceThread extends Thread {
+	@Test(threadPoolSize=50, invocationCount=1000)
+	public void stressTest() {
+		final String userId = userIds.get(userInt.incrementAndGet() % userIds.size());
+		final String groupId = groupIds.get(groupInt.incrementAndGet() % groupIds.size());
+		final String roleId = roleIds.get(roleInt.incrementAndGet() % roleIds.size());
+		final String orgId = orgIds.get(orgInt.incrementAndGet() % orgIds.size());
+		final String resourceId = resourceIds.get(resourceInt.incrementAndGet() % resourceIds.size());
 		
-		private String userId;
-		private String resourceId;
-		private boolean hasAccess;
+		final StopWatch sw = new StopWatch();
+		sw.start();
+		authClient.isUserEntitledToResource(userId, resourceId);
+		authClient.isUserMemberOfGroup(userId, groupId);
+		authClient.isUserMemberOfRole(userId, roleId);
+		authClient.isUserMemberOfOrganization(userId, orgId);
+		sw.stop();
 		
-		public ResourceThread(final String userId, final String resourceId, boolean hasAccess) {
-			this.userId = userId;
-			this.resourceId = resourceId;
-			this.hasAccess = hasAccess;
-		}
-		
-		@Override
-		public void run() {
-			final boolean result = authClient.isUserEntitledToResource(userId, resourceId);
-			Assert.assertEquals(result, hasAccess);
-			if(result != hasAccess) {
-				log.error(String.format("Failed:  userId: %s,  resourceId: %s, result: %s", userId, resourceId, result));
-			}
-		}
-	}
-	
-	private class RoleThread extends Thread {
-		
-		private String userId;
-		private String id;
-		private boolean hasAccess;
-		
-		public RoleThread(final String userId, final String id, boolean hasAccess) {
-			this.userId = userId;
-			this.id = id;
-			this.hasAccess = hasAccess;
-		}
-		
-		@Override
-		public void run() {
-			final boolean result = authClient.isUserMemberOfRole(userId, id);
-			Assert.assertEquals(result, hasAccess);
-			if(result != hasAccess) {
-				log.error(String.format("Failed:  userId: %s,  roleId: %s, result: %s", userId, id, result));
-			}
-		}
+		System.out.println(sw.getTime());
 	}
 }

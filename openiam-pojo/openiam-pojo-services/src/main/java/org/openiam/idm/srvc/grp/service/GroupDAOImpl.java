@@ -2,10 +2,16 @@ package org.openiam.idm.srvc.grp.service;
 
 // Generated Jun 12, 2007 10:46:15 PM by Hibernate Tools 3.2.0.beta8
 
+import java.util.List;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
-import org.hibernate.criterion.*;
+import org.hibernate.criterion.DetachedCriteria;
+import org.hibernate.criterion.MatchMode;
+import org.hibernate.criterion.Projections;
+import org.hibernate.criterion.Restrictions;
+import org.hibernate.criterion.Subqueries;
 import org.openiam.base.Tuple;
 import org.openiam.base.ws.SortParam;
 import org.openiam.core.dao.BaseDaoImpl;
@@ -14,18 +20,9 @@ import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
-import org.openiam.idm.srvc.org.domain.OrganizationEntity;
-import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.searchbean.converter.GroupSearchBeanConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import static org.hibernate.criterion.Projections.rowCount;
 
 @Repository("groupDAO")
 public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements GroupDAO {
@@ -105,9 +102,6 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
             if(StringUtils.isNotBlank(groupSearchBean.getType())){
                 criteria.add(Restrictions.eq("type.id", groupSearchBean.getType()));
             }
-			if(StringUtils.isNotBlank(groupSearchBean.getAdminResourceId())) {
-				criteria.add(Restrictions.eq("adminResource.id", groupSearchBean.getAdminResourceId()));
-			}
 		}
         return criteria;
     }
@@ -146,10 +140,6 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
                     }
                 }
             }
-			
-			if(group.getAdminResource() != null && StringUtils.isNotBlank(group.getAdminResource().getId())) {
-				criteria.add(Restrictions.eq("adminResource.id", group.getAdminResource().getId()));
-			}
 			
 			if(group.getManagedSystem() != null && StringUtils.isNotBlank(group.getManagedSystem().getId())) {
 				criteria.add(Restrictions.eq("managedSystem.id", group.getManagedSystem().getId()));
@@ -199,6 +189,7 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
         }
         return criteria.list();
     }
+    
 }
 
 

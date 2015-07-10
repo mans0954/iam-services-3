@@ -3,6 +3,8 @@ package org.openiam.authmanager.common.model;
 import java.io.Serializable;
 import java.util.BitSet;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -17,7 +19,6 @@ import org.openiam.authmanager.common.xref.GroupUserXref;
 import org.openiam.authmanager.common.xref.OrgUserXref;
 import org.openiam.authmanager.common.xref.ResourceUserXref;
 import org.openiam.authmanager.common.xref.RoleUserXref;
-import org.openiam.idm.srvc.user.domain.UserEntity;
 
 public class AuthorizationUser extends AbstractAuthorizationEntity implements Serializable  {
 
@@ -35,12 +36,16 @@ public class AuthorizationUser extends AbstractAuthorizationEntity implements Se
 	private BitSet linearResourceBitSet = new BitSet();
 	private BitSet linearOrganizationBitSet = new BitSet();
 	
-	private AuthorizationUser() {
+	public AuthorizationUser() {
 		
 	}
 	
-	public AuthorizationUser(final UserEntity entity) {
-		super.setId(entity.getId());
+	public AuthorizationUser(final AuthorizationUser entity) {
+		super(entity);
+	}
+	
+	public AuthorizationUser(final InternalAuthroizationUser entity) {
+		super.setId(entity.getUserId());
 	}
 	
 	public void addOrganization(final OrgUserXref organization) {
@@ -78,61 +83,80 @@ public class AuthorizationUser extends AbstractAuthorizationEntity implements Se
 			directResources.add(resource);
 		}
 	}
+
+	private int getBitIndex(final AuthorizationAccessRight right, final AbstractAuthorizationEntity entity, final int numOfRights) {
+		final int rightBit = (right != null) ? (right.getBitIdx()) : 0;
+		final int offset = (entity.getBitSetIdx() * numOfRights);
+		return rightBit + offset;
+	}
 	
-	/* can't multiply by 0.  
-	 * Multiplying by 1 will give the role (org, group, resource)
-	 * Adding by 2 will give the correct place in the bitset 
+	/**
+	 * Reverse engineers the algorithm for calculating a bitset, and return the bit for the 'right'
+	 * @param bit - bit from the internal bitset of the Collection
+	 * @param entity - Entity you're looking up
+	 * @param numOfRights - number of Authorization Rights
+	 * @return
 	 */
-	private int getRightBitIndex(final AuthorizationAccessRight right, final AbstractAuthorizationEntity entity) {
-		return (right.getBitIdx() + 1) * entity.getBitSetIdx();
+	public static int getRightBit(final int bit, final AbstractAuthorizationEntity entity, final int numOfRights) {
+		return bit - (entity.getBitSetIdx() * numOfRights);
+	}
+	
+	/**
+	 * * Reverse engineers the algorithm for calculating a bitset, and return the bit for the 'entity'
+	 * @param bit - bit from the internal bitset of the Collection
+	 * @param numOfRights - number of Authorization Rights
+	 * @return
+	 */
+	public static Integer getEntityBit(final int bit, final int numOfRights) {
+		/* 
+		 * right bit is 0, since you're not looking at rights
+		 * if mod is not 0, then it's a right big, return null in this case 
+		 */
+		return (bit % numOfRights == 0) ? (bit / numOfRights) : null;
 	}
 	
 	/**
 	 * Compiles this Group against it's Role, Group, and Resource Membership
 	 */
-	public void compile() {
+	public void compile(final int numOfRights) {
 		final Set<AbstractOrgXref> compiledOrgSet = visitOrganization();
 		for(final AbstractOrgXref xref : compiledOrgSet) {
-			final int bitSet = xref.getOrganization().getBitSetIdx();
 			if(CollectionUtils.isNotEmpty(xref.getRights())) {
 				xref.getRights().forEach(right -> {
-					linearOrganizationBitSet.set(getRightBitIndex(right, xref.getOrganization()));
+					linearOrganizationBitSet.set(getBitIndex(right, xref.getOrganization(), numOfRights));
 				});
 			}
-			linearOrganizationBitSet.set(bitSet);
+			linearOrganizationBitSet.set(getBitIndex(null, xref.getOrganization(), numOfRights));
 		}
 		
 		final Set<AbstractRoleXref> compiledRoleSet = visitRoles(compiledOrgSet);
 		for(final AbstractRoleXref xref : compiledRoleSet) {
-			final int bitSet = xref.getRole().getBitSetIdx();
 			if(CollectionUtils.isNotEmpty(xref.getRights())) {
 				xref.getRights().forEach(right -> {
-					linearRoleBitSet.set(getRightBitIndex(right, xref.getRole()));
+					linearRoleBitSet.set(getBitIndex(right, xref.getRole(), numOfRights));
 				});
 			}
-			linearRoleBitSet.set(bitSet);
+			linearRoleBitSet.set(getBitIndex(null, xref.getRole(), numOfRights));
 		}
 
 		final Set<AbstractGroupXref> compiledGroupSet = visitGroups(compiledOrgSet, compiledRoleSet);
 		for(final AbstractGroupXref xref : compiledGroupSet) {
-			final int bitSet = xref.getGroup().getBitSetIdx();
 			if(CollectionUtils.isNotEmpty(xref.getRights())) {
 				xref.getRights().forEach(right -> {
-					linearGroupBitSet.set(getRightBitIndex(right, xref.getGroup()));
+					linearGroupBitSet.set(getBitIndex(right, xref.getGroup(), numOfRights));
 				});
 			}
-			linearGroupBitSet.set(bitSet);
+			linearGroupBitSet.set(getBitIndex(null, xref.getGroup(), numOfRights));
 		}
 		
 		final Set<AbstractResourceXref> compiledResourceSet = visitResources(compiledOrgSet, compiledGroupSet, compiledRoleSet);
 		for(final AbstractResourceXref xref : compiledResourceSet) {
-			final int bitSet = xref.getResource().getBitSetIdx();
 			if(CollectionUtils.isNotEmpty(xref.getRights())) {
 				xref.getRights().forEach(right -> {
-					linearResourceBitSet.set(getRightBitIndex(right, xref.getResource()));
+					linearResourceBitSet.set(getBitIndex(right, xref.getResource(), numOfRights));
 				});
 			}
-			linearResourceBitSet.set(bitSet);
+			linearResourceBitSet.set(getBitIndex(null, xref.getResource(), numOfRights));
 		}
 	}
 	
@@ -261,55 +285,55 @@ public class AuthorizationUser extends AbstractAuthorizationEntity implements Se
 		return compiledSet;
 	}
 
-	public boolean isEntitledTo(final AuthorizationResource resource) {
-		return (resource != null) ? linearResourceBitSet.get(resource.getBitSetIdx()) : false;
+	public boolean isEntitledTo(final AuthorizationResource entity, final int numOfRights) {
+		return (entity != null) ? linearResourceBitSet.get(getBitIndex(null, entity, numOfRights)) : false;
 	}
 	
-	public boolean isEntitledTo(final AuthorizationResource entity, final AuthorizationAccessRight right) {
+	public boolean isEntitledTo(final AuthorizationResource entity, final AuthorizationAccessRight right, final int numOfRights) {
 		if(right == null) {
-			return isEntitledTo(entity);
+			return isEntitledTo(entity, numOfRights);
 		} else {
-			return linearResourceBitSet.get(getRightBitIndex(right, entity));
+			return linearResourceBitSet.get(getBitIndex(right, entity, numOfRights));
 		}
 	}
 	
-	public boolean isMemberOf(final AuthorizationGroup group) {
-		return (group != null) ? linearGroupBitSet.get(group.getBitSetIdx()) : false;
+	public boolean isMemberOf(final AuthorizationGroup entity, final int numOfRights) {
+		return (entity != null) ? linearGroupBitSet.get(getBitIndex(null, entity, numOfRights)) : false;
 	}
 	
-	public boolean isMemberOf(final AuthorizationGroup entity, final AuthorizationAccessRight right) {
+	public boolean isMemberOf(final AuthorizationGroup entity, final AuthorizationAccessRight right, final int numOfRights) {
 		if(right == null) {
-			return isMemberOf(entity);
+			return isMemberOf(entity, numOfRights);
 		} else {
-			return linearGroupBitSet.get(getRightBitIndex(right, entity));
+			return linearGroupBitSet.get(getBitIndex(right, entity, numOfRights));
 		}
 	}
 	
-	public boolean isMemberOf(final AuthorizationRole role) {
-		return (role != null) ? linearRoleBitSet.get(role.getBitSetIdx()) : false;
+	public boolean isMemberOf(final AuthorizationRole entity, final int numOfRights) {
+		return (entity != null) ? linearRoleBitSet.get(getBitIndex(null, entity, numOfRights)) : false;
 	}
 	
-	public boolean isMemberOf(final AuthorizationRole entity, final AuthorizationAccessRight right) {
+	public boolean isMemberOf(final AuthorizationRole entity, final AuthorizationAccessRight right, final int numOfRights) {
 		if(right == null) {
-			return isMemberOf(entity);
+			return isMemberOf(entity, numOfRights);
 		} else {
-			return linearRoleBitSet.get(getRightBitIndex(right, entity));
+			return linearRoleBitSet.get(getBitIndex(right, entity, numOfRights));
 		}
 	}
 	
-	public boolean isMemberOf(final AuthorizationOrganization organization) {
-		return (organization != null) ? linearOrganizationBitSet.get(organization.getBitSetIdx()) : false;
+	public boolean isMemberOf(final AuthorizationOrganization entity, final int numOfRights) {
+		return (entity != null) ? linearOrganizationBitSet.get(getBitIndex(null, entity, numOfRights)) : false;
 	}
 	
-	public boolean isMemberOf(final AuthorizationOrganization entity, final AuthorizationAccessRight right) {
+	public boolean isMemberOf(final AuthorizationOrganization entity, final AuthorizationAccessRight right, final int numOfRights) {
 		if(right == null) {
-			return isMemberOf(entity);
+			return isMemberOf(entity, numOfRights);
 		} else {
-			return linearOrganizationBitSet.get(getRightBitIndex(right, entity));
+			return linearOrganizationBitSet.get(getBitIndex(right, entity, numOfRights));
 		}
 	}
 	
-	public Set<Integer> getLnearOrganizationSet() {
+	public Set<Integer> getLinearOrganizationSet() {
 		final Set<Integer> linearBitSet = new HashSet<Integer>();
 		for(int i = 0; i < linearOrganizationBitSet.size(); i++) {
 			if(linearOrganizationBitSet.get(i)) {
@@ -319,8 +343,8 @@ public class AuthorizationUser extends AbstractAuthorizationEntity implements Se
 		return linearBitSet;
 	}
 	
-	public Set<Integer> getLinearRoles() {
-		final Set<Integer> linearBitSet = new HashSet<Integer>();
+	public List<Integer> getLinearRoles() {
+		final List<Integer> linearBitSet = new LinkedList<Integer>();
 		for(int i = 0; i < linearRoleBitSet.size(); i++) {
 			if(linearRoleBitSet.get(i)) {
 				linearBitSet.add(new Integer(i));
@@ -329,8 +353,8 @@ public class AuthorizationUser extends AbstractAuthorizationEntity implements Se
 		return linearBitSet;
 	}
 	
-	public Set<Integer> getLinearGroups() {
-		final Set<Integer> linearBitSet = new HashSet<Integer>();
+	public List<Integer> getLinearGroups() {
+		final List<Integer> linearBitSet = new LinkedList<Integer>();
 		for(int i = 0; i < linearGroupBitSet.size(); i++) {
 			if(linearGroupBitSet.get(i)) {
 				linearBitSet.add(new Integer(i));
@@ -339,8 +363,8 @@ public class AuthorizationUser extends AbstractAuthorizationEntity implements Se
 		return linearBitSet;
 	}
 	
-	public Set<Integer> getLinearResources() {
-		final Set<Integer> linearBitSet = new HashSet<Integer>();
+	public List<Integer> getLinearResources() {
+		final List<Integer> linearBitSet = new LinkedList<Integer>();
 		for(int i = 0; i < linearResourceBitSet.size(); i++) {
 			if(linearResourceBitSet.get(i)) {
 				linearBitSet.add(new Integer(i));
@@ -349,8 +373,8 @@ public class AuthorizationUser extends AbstractAuthorizationEntity implements Se
 		return linearBitSet;
 	}
 	
-	public Set<Integer> getLinearOrganizations() {
-		final Set<Integer> linearBitSet = new HashSet<Integer>();
+	public List<Integer> getLinearOrganizations() {
+		final List<Integer> linearBitSet = new LinkedList<Integer>();
 		for(int i = 0; i < linearOrganizationBitSet.size(); i++) {
 			if(linearOrganizationBitSet.get(i)) {
 				linearBitSet.add(new Integer(i));

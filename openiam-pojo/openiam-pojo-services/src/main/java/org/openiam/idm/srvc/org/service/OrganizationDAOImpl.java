@@ -1,9 +1,17 @@
 package org.openiam.idm.srvc.org.service;
 
+import java.util.List;
+import java.util.Set;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
-import org.hibernate.criterion.*;
+import org.hibernate.criterion.DetachedCriteria;
+import org.hibernate.criterion.MatchMode;
+import org.hibernate.criterion.Projections;
+import org.hibernate.criterion.Restrictions;
+import org.hibernate.criterion.Subqueries;
+import org.hibernate.transform.Transformers;
 import org.openiam.base.Tuple;
 import org.openiam.base.ws.SortParam;
 import org.openiam.core.dao.BaseDaoImpl;
@@ -17,12 +25,6 @@ import org.openiam.idm.srvc.searchbean.converter.OrganizationSearchBeanConverter
 import org.openiam.internationalization.LocalizedDatabaseGet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
-import static org.hibernate.criterion.Projections.rowCount;
 
 /**
  * Data access object implementation for OrganizationEntity.
@@ -130,9 +132,6 @@ public class OrganizationDAOImpl extends
             if (organizationSearchBean.getIsSelectable() != null) {
                 criteria.add(Restrictions.eq("selectable", organizationSearchBean.getIsSelectable()));
             }
-            if (StringUtils.isNotBlank(organizationSearchBean.getAdminResourceId())) {
-                criteria.add(Restrictions.eq("adminResource.id", organizationSearchBean.getAdminResourceId()));
-            }
             if (StringUtils.isNotBlank(organizationSearchBean.getAbbreviation())) {
                 criteria.add(Restrictions.eq("abbreviation", organizationSearchBean.getAbbreviation()));
             }
@@ -186,10 +185,6 @@ public class OrganizationDAOImpl extends
             if (StringUtils.isNotBlank(organization.getInternalOrgId())) {
                 criteria.add(Restrictions.eq("internalOrgId", organization.getInternalOrgId()));
             }
-
-            if (organization.getAdminResource() != null && StringUtils.isNotBlank(organization.getAdminResource().getId())) {
-                criteria.add(Restrictions.eq("adminResource.id", organization.getAdminResource().getId()));
-            }
         }
 //		criteria.addOrder(Order.asc("name"));
         return criteria;
@@ -213,12 +208,6 @@ public class OrganizationDAOImpl extends
     }
 
     @Override
-    public List<OrgToOrgMembershipXrefEntity> getOrgToOrgXrefList() {
-        List<OrgToOrgMembershipXrefEntity> orgTypeXrefEntities = this.getSession().createCriteria(OrgToOrgMembershipXrefEntity.class).list();
-        return orgTypeXrefEntities;
-    }
-
-    @Override
     @LocalizedDatabaseGet
     public List<OrganizationEntity> findAllByTypesAndIds(Set<String> allowedOrgTypes, Set<String> filterData) {
         Criteria criteria = getCriteria();
@@ -232,5 +221,11 @@ public class OrganizationDAOImpl extends
         }
         return criteria.list();
     }
+
+
+	@Override
+	public List<OrgToOrgMembershipXrefEntity> getOrg2OrgXrefs() {
+		return getSession().createCriteria(OrgToOrgMembershipXrefEntity.class).list();
+	}
 
 }

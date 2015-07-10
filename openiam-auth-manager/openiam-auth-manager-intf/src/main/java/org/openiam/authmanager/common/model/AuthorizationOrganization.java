@@ -17,6 +17,7 @@ import org.openiam.authmanager.common.xref.OrgGroupXref;
 import org.openiam.authmanager.common.xref.OrgOrgXref;
 import org.openiam.authmanager.common.xref.OrgResourceXref;
 import org.openiam.authmanager.common.xref.OrgRoleXref;
+import org.openiam.base.KeyDTO;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -24,7 +25,6 @@ import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 })
 public class AuthorizationOrganization extends AbstractAuthorizationEntity implements Serializable  {
 
-	private String adminResourceId;
 	
 	@XmlTransient
 	private Set<OrgOrgXref> parentOrganizations = null;
@@ -38,23 +38,11 @@ public class AuthorizationOrganization extends AbstractAuthorizationEntity imple
 	@XmlTransient
 	private Set<OrgGroupXref> groups = null;
 	
-	private AuthorizationOrganization() {}
+	public AuthorizationOrganization() {}
 	
-	public AuthorizationOrganization(final OrganizationEntity entity, final int bitIdx) {
+	public AuthorizationOrganization(final AuthorizationOrganization entity, final int bitIdx) {
+		super(entity);
 		super.setBitSetIdx(bitIdx);
-		super.setDescription(entity.getDescription());
-		super.setId(entity.getId());
-		super.setName(entity.getName());
-		super.setStatus(entity.getStatus());
-		this.adminResourceId = (entity.getAdminResource() != null) ? entity.getAdminResource().getId() : null;
-	}
-	
-	public String getAdminResourceId() {
-		return adminResourceId;
-	}
-
-	public void setAdminResourceId(String adminResourceId) {
-		this.adminResourceId = adminResourceId;
 	}
 	
 	public Set<AbstractResourceXref> getResources() {
@@ -107,11 +95,6 @@ public class AuthorizationOrganization extends AbstractAuthorizationEntity imple
 			resources = new HashSet<OrgResourceXref>();
 		}
 		resources.add(resource);
-	}
-	
-	@Override
-	public void compile() {
-		
 	}
 
 	public AuthorizationOrganization shallowCopy() {

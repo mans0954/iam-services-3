@@ -7,6 +7,8 @@ public class AuthorizationAccessRight {
 	private String id;
 	private int bitIdx = 0;
 	
+	public AuthorizationAccessRight() {}
+	
 	public AuthorizationAccessRight(final AccessRightEntity entity, final int bitIdx) {
 		this.id = entity.getId();
 		this.bitIdx = bitIdx;

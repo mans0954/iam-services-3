@@ -98,11 +98,6 @@ public class GroupEntity extends AbstractMetdataTypeEntity {
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="entity", orphanRemoval=true)
     @Fetch(FetchMode.SUBSELECT)
     private Set<UserToGroupMembershipXrefEntity> users = new HashSet<UserToGroupMembershipXrefEntity>(0);
-
-    
-	@ManyToOne(fetch = FetchType.EAGER,cascade={CascadeType.ALL})
-    @JoinColumn(name="ADMIN_RESOURCE_ID", referencedColumnName = "RESOURCE_ID", insertable = true, updatable = true, nullable=true)
-	private ResourceEntity adminResource;
 	
 	@OneToMany(cascade = {CascadeType.ALL}, fetch = FetchType.LAZY, mappedBy="associationEntityId", orphanRemoval=true)
 	@Where(clause="ASSOCIATION_TYPE='GROUP'")
@@ -207,6 +202,14 @@ public class GroupEntity extends AbstractMetdataTypeEntity {
         return parentGroups;
     }
 
+    public void addChildGroup(final GroupEntity entity, final AccessRightEntity right) {
+    	if(entity != null && right != null) {
+    		final Set<AccessRightEntity> rights = new HashSet<AccessRightEntity>();
+    		rights.add(right);
+    		addChildGroup(entity, rights);
+    	}
+    }
+    
     public void addChildGroup(final GroupEntity entity, final Collection<AccessRightEntity> rights) {
     	if(entity != null) {
 			if(this.childGroups == null) {
@@ -319,6 +322,39 @@ public class GroupEntity extends AbstractMetdataTypeEntity {
 	public void setRoles(Set<RoleToGroupMembershipXrefEntity> roles) {
 		this.roles = roles;
 	}
+	
+	public void addUser(final UserEntity entity, final AccessRightEntity right) {
+		if(entity != null && right != null) {
+			final Set<AccessRightEntity> rightSet = new HashSet<AccessRightEntity>();
+			rightSet.add(right);
+			addUser(entity, rightSet);
+		}
+	}
+	
+	public void addUser(final UserEntity entity, final Collection<AccessRightEntity> rights) {
+		if(entity != null) {
+			if(this.users == null) {
+				this.users = new LinkedHashSet<UserToGroupMembershipXrefEntity>();
+			}
+			UserToGroupMembershipXrefEntity theXref = null;
+			for(final UserToGroupMembershipXrefEntity xref : this.users) {
+				if(xref.getEntity().getId().equals(getId()) && xref.getMemberEntity().getId().equals(entity.getId())) {
+					theXref = xref;
+					break;
+				}
+			}
+			
+			if(theXref == null) {
+				theXref = new UserToGroupMembershipXrefEntity();
+				theXref.setEntity(this);
+				theXref.setMemberEntity(entity);
+			}
+			if(rights != null) {
+				theXref.setRights(new HashSet<AccessRightEntity>(rights));
+			}
+			this.users.add(theXref);
+		}
+	}
 
 	public GroupToResourceMembershipXrefEntity getResource(final String resourceId) {
 		final Optional<GroupToResourceMembershipXrefEntity> xref = 
@@ -385,14 +421,6 @@ public class GroupEntity extends AbstractMetdataTypeEntity {
 
 	public void setManagedSystem(ManagedSysEntity managedSystem) {
 		this.managedSystem = managedSystem;
-	}
-
-	public ResourceEntity getAdminResource() {
-		return adminResource;
-	}
-
-	public void setAdminResource(ResourceEntity adminResource) {
-		this.adminResource = adminResource;
 	}
 
 	public Set<ApproverAssociationEntity> getApproverAssociations() {

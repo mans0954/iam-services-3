@@ -1,10 +1,16 @@
 package org.openiam.authmanager.service.integration;
 
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.authmanager.common.model.GroupAuthorizationRight;
+import org.openiam.authmanager.common.model.OrganizationAuthorizationRight;
+import org.openiam.authmanager.common.model.ResourceAuthorizationRight;
+import org.openiam.authmanager.common.model.RoleAuthorizationRight;
 import org.openiam.authmanager.service.AuthorizationManagerWebService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -129,12 +135,132 @@ public class AuthorizationManagerWebServiceTest extends AbstractAuthorizationMan
 	
 	
 	@Test
-	public void testUser2ResourceIndirectThroughOrganizationAndRoleAndGroup() {
-		super.testUser2ResourceIndirectThroughOrganizationAndRoleAndGroup();
+	public void testUser2ResourceIndirectThroughOrganizationAndGroup() {
+		super.testUser2ResourceIndirectThroughOrganizationAndGroup();
 	}
 
 	@Override
 	protected boolean loginAfterUserCreation() {
 		return true;
+	}
+
+	@Override
+	protected void checkUser2OrgCollection(final String userId, final String organizationId, final Set<String> rightIds, final boolean isAddition) {
+		final Set<OrganizationAuthorizationRight> entities = authorizationManagerServiceClient.getOrganizationsForUser(userId);
+		if(isAddition) {
+			Assert.assertTrue(CollectionUtils.isNotEmpty(entities), String.format("No matching organizations found for user %s", userId));
+			final Optional<OrganizationAuthorizationRight> optional = entities.stream().filter(e -> e.getEntity().getId().equals(organizationId)).findFirst();
+			Assert.assertTrue(optional.isPresent(), String.format("Organization %s not found", organizationId));
+			final OrganizationAuthorizationRight right = optional.get();
+			if(CollectionUtils.isNotEmpty(rightIds)) {
+				Assert.assertTrue(CollectionUtils.isNotEmpty(right.getRights()));
+				rightIds.forEach(rightId -> {
+					final Set<String> ids = right.getRights().stream().map(e -> e.getId()).collect(Collectors.toSet());
+					Assert.assertTrue(ids.contains(rightId), 
+							String.format("User %s should have been a member of organization %s with right %s", userId, organizationId, rightId));
+				});
+				
+				getRightIdsNotIn(rightIds).forEach(rightId -> {
+					Assert.assertFalse(right.getRights().stream().filter(e -> e.getId().equals(right)).findFirst().isPresent(), 
+							String.format("User %s should NOT have been a member of organization %s with right %s", userId, organizationId, rightId));
+				});
+			} else {
+				Assert.assertTrue(CollectionUtils.isEmpty(right.getRights()), 
+						String.format("User %s should have been a member of organization %s with no rights", userId, organizationId));
+			}
+		} else {
+			Assert.assertTrue(CollectionUtils.isEmpty(entities) || !entities.stream().filter(e -> e.getEntity().getId().equals(organizationId)).findAny().isPresent(), 
+					String.format("User %s should NOT have been a member of organization %s", userId, organizationId));
+		}
+	}
+
+	@Override
+	protected void checkUser2RoleCollection(final String userId, final String roleId, final Set<String> rightIds, final boolean isAddition) {
+		final Set<RoleAuthorizationRight> entities = authorizationManagerServiceClient.getRolesForUser(userId);
+		if(isAddition) {
+			Assert.assertTrue(CollectionUtils.isNotEmpty(entities), String.format("No matching roles found for user %s", userId));
+			final Optional<RoleAuthorizationRight> optional = entities.stream().filter(e -> e.getEntity().getId().equals(roleId)).findFirst();
+			Assert.assertTrue(optional.isPresent(), String.format("Role %s not found", roleId));
+			final RoleAuthorizationRight right = optional.get();
+			if(CollectionUtils.isNotEmpty(rightIds)) {
+				Assert.assertTrue(CollectionUtils.isNotEmpty(right.getRights()));
+				rightIds.forEach(rightId -> {
+					final Set<String> ids = right.getRights().stream().map(e -> e.getId()).collect(Collectors.toSet());
+					Assert.assertTrue(ids.contains(rightId), 
+							String.format("User %s should have been a member of roles %s with right %s", userId, roleId, rightId));
+				});
+				
+				getRightIdsNotIn(rightIds).forEach(rightId -> {
+					Assert.assertFalse(right.getRights().stream().filter(e -> e.getId().equals(right)).findFirst().isPresent(), 
+							String.format("User %s should NOT have been a member of roles %s with right %s", userId, roleId, rightId));
+				});
+			} else {
+				Assert.assertTrue(CollectionUtils.isEmpty(right.getRights()), 
+						String.format("User %s should have been a member of roles %s with no rights", userId, roleId));
+			}
+		} else {
+			Assert.assertTrue(CollectionUtils.isEmpty(entities) || !entities.stream().filter(e -> e.getEntity().getId().equals(roleId)).findAny().isPresent(), 
+					String.format("User %s should NOT have been a member of roles %s", userId, roleId));
+		}
+	}
+
+	@Override
+	protected void checkUser2GroupCollection(final String userId, final String groupId, final Set<String> rightIds, final boolean isAddition) {
+		final Set<GroupAuthorizationRight> entities = authorizationManagerServiceClient.getGroupsForUser(userId);
+		if(isAddition) {
+			Assert.assertTrue(CollectionUtils.isNotEmpty(entities), String.format("No matching groups found for user %s", userId));
+			final Optional<GroupAuthorizationRight> optional = entities.stream().filter(e -> e.getEntity().getId().equals(groupId)).findFirst();
+			Assert.assertTrue(optional.isPresent(), String.format("Group %s not found", groupId));
+			final GroupAuthorizationRight right = optional.get();
+			if(CollectionUtils.isNotEmpty(rightIds)) {
+				Assert.assertTrue(CollectionUtils.isNotEmpty(right.getRights()));
+				rightIds.forEach(rightId -> {
+					final Set<String> ids = right.getRights().stream().map(e -> e.getId()).collect(Collectors.toSet());
+					Assert.assertTrue(ids.contains(rightId), 
+							String.format("User %s should have been a member of groups %s with right %s", userId, groupId, rightId));
+				});
+				
+				getRightIdsNotIn(rightIds).forEach(rightId -> {
+					Assert.assertFalse(right.getRights().stream().filter(e -> e.getId().equals(right)).findFirst().isPresent(), 
+							String.format("User %s should NOT have been a member of groups %s with right %s", userId, groupId, rightId));
+				});
+			} else {
+				Assert.assertTrue(CollectionUtils.isEmpty(right.getRights()), 
+						String.format("User %s should have been a member of groups %s with no rights", userId, groupId));
+			}
+		} else {
+			Assert.assertTrue(CollectionUtils.isEmpty(entities) || !entities.stream().filter(e -> e.getEntity().getId().equals(groupId)).findAny().isPresent(), 
+					String.format("User %s should NOT have been a member of groups %s", userId, groupId));
+		}
+	}
+
+	@Override
+	protected void checkUser2ResourceCollection(final String userId, final String resourceId, final Set<String> rightIds, final boolean isAddition) {
+		final Set<ResourceAuthorizationRight> entities = authorizationManagerServiceClient.getResourcesForUser(userId);
+		if(isAddition) {
+			Assert.assertTrue(CollectionUtils.isNotEmpty(entities), String.format("No matching resources found for user %s", userId));
+			final Optional<ResourceAuthorizationRight> optional = entities.stream().filter(e -> e.getEntity().getId().equals(resourceId)).findFirst();
+			Assert.assertTrue(optional.isPresent(), String.format("Resource %s not found", resourceId));
+			final ResourceAuthorizationRight right = optional.get();
+			if(CollectionUtils.isNotEmpty(rightIds)) {
+				Assert.assertTrue(CollectionUtils.isNotEmpty(right.getRights()));
+				rightIds.forEach(rightId -> {
+					final Set<String> ids = right.getRights().stream().map(e -> e.getId()).collect(Collectors.toSet());
+					Assert.assertTrue(ids.contains(rightId), 
+							String.format("User %s should have been entitled to resource %s with right %s", userId, resourceId, rightId));
+				});
+				
+				getRightIdsNotIn(rightIds).forEach(rightId -> {
+					Assert.assertFalse(right.getRights().stream().filter(e -> e.getId().equals(right)).findFirst().isPresent(), 
+							String.format("User %s should NOT have been entitled to resource %s with right %s", userId, resourceId, rightId));
+				});
+			} else {
+				Assert.assertTrue(CollectionUtils.isEmpty(right.getRights()), 
+						String.format("User %s should have been entitled to resource %s with no rights", userId, resourceId));
+			}
+		} else {
+			Assert.assertTrue(CollectionUtils.isEmpty(entities) || !entities.stream().filter(e -> e.getEntity().getId().equals(resourceId)).findAny().isPresent(), 
+					String.format("User %s should NOT have been entitled to resource %s", userId, resourceId));
+		}
 	}
 }

@@ -16,6 +16,7 @@ import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.searchbeans.ResourceTypeSearchBean;
+import org.openiam.idm.srvc.access.domain.AccessRightEntity;
 import org.openiam.idm.srvc.access.service.AccessRightDAO;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
@@ -100,9 +101,9 @@ public class ResourceServiceImpl implements ResourceService {
     @Autowired
     private AccessRightDAO accessRightDAO;
 
-    @Value("${org.openiam.resource.admin.resource.type.id}")
-    private String adminResourceTypeId;
-
+	@Value("${org.openiam.ui.admin.right.id}")
+	private String adminRightId;
+	
     @Override
     @Transactional(readOnly = true)
     public String getResourcePropValueByName(final String resourceId, final String propName) {
@@ -138,9 +139,6 @@ public class ResourceServiceImpl implements ResourceService {
             entity.setResourceType(resourceTypeDao.findById(entity.getResourceType().getId()));
         }
 
-        /* admin resource can't have an admin resource - do this check here */
-        boolean isAdminResource = StringUtils.equals(entity.getResourceType().getId(), adminResourceTypeId);
-        
         if(entity.getType() != null && StringUtils.isNotBlank(entity.getType().getId())) {
         	entity.setType(typeDAO.findById(entity.getType().getId()));
         } else {
@@ -149,21 +147,14 @@ public class ResourceServiceImpl implements ResourceService {
 
         if (StringUtils.isNotBlank(entity.getId())) {
             final ResourceEntity dbObject = resourceDao.findById(entity.getId());
-            entity.setAdminResource(dbObject.getAdminResource());
             entity.setApproverAssociations(dbObject.getApproverAssociations());
             if(dbObject.getReferenceId() != null) {
             	entity.setReferenceId(dbObject.getReferenceId());
             }
-
-            if (isAdminResource) {
-                entity.setAdminResource(null);
-            } else if (entity.getAdminResource() == null) {
-                final ResourceEntity adminResource = getNewAdminResource(entity, requestorId);
-                entity.setAdminResource(adminResource);
-                if (CollectionUtils.isEmpty(dbObject.getApproverAssociations())) {
-                    entity.addApproverAssociation(createDefaultApproverAssociations(entity, requestorId));
-                }
+            if (CollectionUtils.isEmpty(dbObject.getApproverAssociations())) {
+                entity.addApproverAssociation(createDefaultApproverAssociations(entity, requestorId));
             }
+            
             entity.setChildResources(dbObject.getChildResources());
             entity.setParentResources(dbObject.getParentResources());
             entity.setUsers(dbObject.getUsers());
@@ -174,18 +165,10 @@ public class ResourceServiceImpl implements ResourceService {
             mergeAttribute(entity, dbObject);
 
         } else {
-            boolean addApproverAssociation = false;
-            if (isAdminResource) {
-                entity.setAdminResource(null);
-            } else {
-                entity.setAdminResource(getNewAdminResource(entity, requestorId));
-                addApproverAssociation = true;
-            }
+            entity.addUser(userDAO.findById(requestorId), accessRightDAO.findById(adminRightId));
             resourceDao.save(entity);
 
-            if (addApproverAssociation) {
-                entity.addApproverAssociation(createDefaultApproverAssociations(entity, requestorId));
-            }
+            entity.addApproverAssociation(createDefaultApproverAssociations(entity, requestorId));
 
             addRequiredAttributes(entity);
         }
@@ -220,15 +203,6 @@ public class ResourceServiceImpl implements ResourceService {
         association.setApproverEntityId(requestorId);
         association.setApproverEntityType(AssociationType.USER);
         return association;
-    }
-
-    private ResourceEntity getNewAdminResource(final ResourceEntity entity, final String requestorId) {
-        final ResourceEntity adminResource = new ResourceEntity();
-        adminResource.setName(String.format("RES_ADMIN_%s_%s", entity.getName(),
-                RandomStringUtils.randomAlphanumeric(2)));
-        adminResource.setResourceType(resourceTypeDao.findById(adminResourceTypeId));
-        adminResource.addUser(userDAO.findById(requestorId), accessRightDAO.findAll());
-        return adminResource;
     }
 
     private void mergeAttribute(final ResourceEntity bean, final ResourceEntity dbObject) {
@@ -518,38 +492,6 @@ public class ResourceServiceImpl implements ResourceService {
             final List<MetadataElementPageTemplateEntity> pageTemplates = templateDAO.getByResourceId(resourceId);
             if (CollectionUtils.isNotEmpty(pageTemplates)) {
                 throw new BasicDataServiceException(ResponseCode.LINKED_TO_PAGE_TEMPLATE, pageTemplates.get(0)
-                        .getName());
-            }
-
-            final ResourceEntity searchBean = new ResourceEntity();
-            searchBean.setAdminResource(new ResourceEntity(resourceId));
-            final List<ResourceEntity> adminOfResources = resourceDao.getByExample(searchBean);
-            if (CollectionUtils.isNotEmpty(adminOfResources)) {
-                throw new BasicDataServiceException(ResponseCode.RESOURCE_IS_AN_ADMIN_OF_RESOURCE, adminOfResources
-                        .get(0).getName());
-            }
-
-            final RoleEntity roleSearchBean = new RoleEntity();
-            roleSearchBean.setAdminResource(new ResourceEntity(resourceId));
-            final List<RoleEntity> adminOfRoles = roleDao.getByExample(roleSearchBean);
-            if (CollectionUtils.isNotEmpty(adminOfRoles)) {
-                throw new BasicDataServiceException(ResponseCode.RESOURCE_IS_AN_ADMIN_OF_ROLE, adminOfRoles.get(0)
-                        .getName());
-            }
-
-            final GroupEntity groupSearchBean = new GroupEntity();
-            groupSearchBean.setAdminResource(new ResourceEntity(resourceId));
-            final List<GroupEntity> adminOfGroups = groupDao.getByExample(groupSearchBean);
-            if (CollectionUtils.isNotEmpty(adminOfGroups)) {
-                throw new BasicDataServiceException(ResponseCode.RESOURCE_IS_AN_ADMIN_OF_GROUP, adminOfGroups.get(0)
-                        .getName());
-            }
-
-            final OrganizationEntity orgSearchBean = new OrganizationEntity();
-            orgSearchBean.setAdminResource(new ResourceEntity(resourceId));
-            final List<OrganizationEntity> adminOfOrgs = orgDAO.getByExample(orgSearchBean);
-            if (CollectionUtils.isNotEmpty(adminOfOrgs)) {
-                throw new BasicDataServiceException(ResponseCode.RESOURCE_IS_AN_ADMIN_OF_ORG, adminOfOrgs.get(0)
                         .getName());
             }
         }

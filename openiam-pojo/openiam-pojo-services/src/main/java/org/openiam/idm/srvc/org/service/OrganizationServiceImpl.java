@@ -1,7 +1,15 @@
 package org.openiam.idm.srvc.org.service;
 
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.StopWatch;
 import org.apache.commons.logging.Log;
@@ -34,12 +42,10 @@ import org.openiam.idm.srvc.org.domain.OrgToOrgMembershipXrefEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
-import org.openiam.idm.srvc.org.dto.OrganizationAttribute;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
-import org.openiam.idm.srvc.role.domain.RoleToRoleMembershipXrefEntity;
 import org.openiam.idm.srvc.role.service.RoleDAO;
 import org.openiam.idm.srvc.searchbean.converter.LocationSearchBeanConverter;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -48,8 +54,8 @@ import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
 import org.openiam.internationalization.LocalizedServiceGet;
-import org.openiam.thread.Sweepable;
 import org.openiam.script.ScriptIntegration;
+import org.openiam.thread.Sweepable;
 import org.openiam.util.AttributeUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.InitializingBean;
@@ -61,9 +67,6 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
-
-import java.util.*;
-import java.util.stream.Collectors;
 
 @Service("organizationService")
 @Transactional
@@ -109,9 +112,6 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     
     @Autowired
     private MetadataElementDAO metadataElementDAO;
-    
-	@Value("${org.openiam.resource.admin.resource.type.id}")
-	private String adminResourceTypeId;
 	
 	@Autowired
     private ResourceTypeDAO resourceTypeDao;
@@ -147,6 +147,9 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     
     @Autowired
     private ResourceDAO resourceDAO;
+    
+	@Value("${org.openiam.ui.admin.right.id}")
+	private String adminRightId;
 
     @Override
     @LocalizedServiceGet
@@ -282,7 +285,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
             OrganizationEntity curEntity;
             if (StringUtils.isBlank(organization.getId())) {
                 curEntity = newEntity;
-                curEntity.setAdminResource(getNewAdminResource(curEntity, requestorId));
+                curEntity.addUser(userDAO.findById(requestorId), accessRightDAO.findById(adminRightId));
                 curEntity.setCreateDate(Calendar.getInstance().getTime());
                 curEntity.setCreatedBy(requestorId);
                 curEntity.addApproverAssociation(createDefaultApproverAssociations(curEntity, requestorId));
@@ -337,12 +340,6 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
                 //mergeGroups(curEntity, newEntity);
                 mergeLocations(curEntity, newEntity);
                 mergeApproverAssociations(curEntity, newEntity);
-
-                if(curEntity.getAdminResource() == null) {
-                    curEntity.setAdminResource(getNewAdminResource(curEntity, requestorId));
-                }
-
-                curEntity.getAdminResource().setCoorelatedName(curEntity.getName());
                 curEntity.setLstUpdate(Calendar.getInstance().getTime());
                 curEntity.setLstUpdatedBy(requestorId);
                 setOrganizationType(newEntity, curEntity);
@@ -390,15 +387,6 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
         }
     }
 
-    private ResourceEntity getNewAdminResource(final OrganizationEntity entity, final String requestorId) {
-		final ResourceEntity adminResource = new ResourceEntity();
-		adminResource.setName(String.format("ORG_ADMIN_%s_%s", entity.getName(), RandomStringUtils.randomAlphanumeric(2)));
-		adminResource.setResourceType(resourceTypeDao.findById(adminResourceTypeId));
-		adminResource.addUser(userDAO.findById(requestorId), accessRightDAO.findAll());
-		adminResource.setCoorelatedName(entity.getName());
-		return adminResource;
-	}
-    
     private ApproverAssociationEntity createDefaultApproverAssociations(final OrganizationEntity entity, final String requestorId) {
 		final ApproverAssociationEntity association = new ApproverAssociationEntity();
 		association.setAssociationEntityId(entity.getId());
@@ -650,7 +638,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     private void mergeOrgProperties(final OrganizationEntity curEntity, final OrganizationEntity newEntity) {
         BeanUtils.copyProperties(newEntity, curEntity,
                 new String[] {"attributes", "parentOrganizations", "childOrganizations", "users", "approverAssociations",
-                "adminResource", "groups", "locations", "organizationType", "type", "lstUpdate", "lstUpdatedBy", "createDate", "createdBy", "resources", "roles"});
+                "groups", "locations", "organizationType", "type", "lstUpdate", "lstUpdatedBy", "createDate", "createdBy", "resources", "roles"});
     }
 
     private void mergeAttributes(final OrganizationEntity curEntity, final OrganizationEntity newEntity) {
@@ -936,7 +924,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
 
     @Transactional(readOnly = true)
     public void fireUpdateOrgMap() {
-        List<OrgToOrgMembershipXrefEntity> xrefList = orgDao.getOrgToOrgXrefList();
+        List<OrgToOrgMembershipXrefEntity> xrefList = orgDao.getOrg2OrgXrefs();
 
         final Map<String, Set<String>> parentOrg2ChildOrgMap = new HashMap<String, Set<String>>();
         final Map<String, String> child2ParentOrgMap = new HashMap<String, String>();

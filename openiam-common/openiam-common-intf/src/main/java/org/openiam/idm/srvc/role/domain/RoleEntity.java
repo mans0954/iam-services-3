@@ -7,18 +7,16 @@ import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.util.Set;
 
+import javax.persistence.AttributeOverride;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
-import javax.persistence.AttributeOverride;
 import javax.validation.constraints.Size;
 
 import org.hibernate.annotations.Cache;
@@ -36,6 +34,7 @@ import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.org.domain.RoleToOrgMembershipXrefEntity;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.role.dto.Role;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.domain.UserToRoleMembershipXrefEntity;
 import org.openiam.internationalization.Internationalized;
 
@@ -95,10 +94,6 @@ public class RoleEntity extends AbstractMetdataTypeEntity {
     
     @Column(name="CREATED_BY",length=20)
 	private String createdBy;
-    
-	@ManyToOne(fetch = FetchType.EAGER,cascade={CascadeType.ALL})
-    @JoinColumn(name="ADMIN_RESOURCE_ID", referencedColumnName = "RESOURCE_ID", insertable = true, updatable = true, nullable=true)
-	private ResourceEntity adminResource;
 	
 	@OneToMany(cascade = {CascadeType.ALL}, fetch = FetchType.LAZY, mappedBy="associationEntityId", orphanRemoval=true)
 	@Where(clause="ASSOCIATION_TYPE='ROLE'")
@@ -271,6 +266,39 @@ public class RoleEntity extends AbstractMetdataTypeEntity {
     	return xref.isPresent() ? xref.get() : null;
 	}
 	
+	public void addUser(final UserEntity entity, final AccessRightEntity right) {
+		if(entity != null && right != null) {
+			final Set<AccessRightEntity> rightSet = new HashSet<AccessRightEntity>();
+			rightSet.add(right);
+			addUser(entity, rightSet);
+		}
+	}
+	
+	public void addUser(final UserEntity entity, final Collection<AccessRightEntity> rights) {
+		if(entity != null) {
+			if(this.users == null) {
+				this.users = new LinkedHashSet<UserToRoleMembershipXrefEntity>();
+			}
+			UserToRoleMembershipXrefEntity theXref = null;
+			for(final UserToRoleMembershipXrefEntity xref : this.users) {
+				if(xref.getEntity().getId().equals(getId()) && xref.getMemberEntity().getId().equals(entity.getId())) {
+					theXref = xref;
+					break;
+				}
+			}
+			
+			if(theXref == null) {
+				theXref = new UserToRoleMembershipXrefEntity();
+				theXref.setEntity(this);
+				theXref.setMemberEntity(entity);
+			}
+			if(rights != null) {
+				theXref.setRights(new HashSet<AccessRightEntity>(rights));
+			}
+			this.users.add(theXref);
+		}
+	}
+	
 	public void addResource(final ResourceEntity entity, final Collection<AccessRightEntity> rights) {
 		if(entity != null) {
 			if(this.resources == null) {
@@ -371,14 +399,6 @@ public class RoleEntity extends AbstractMetdataTypeEntity {
 		this.managedSystem = managedSystem;
 	}
 
-	public ResourceEntity getAdminResource() {
-		return adminResource;
-	}
-
-	public void setAdminResource(ResourceEntity adminResource) {
-		this.adminResource = adminResource;
-	}
-	
 	public Set<ApproverAssociationEntity> getApproverAssociations() {
 		return approverAssociations;
 	}

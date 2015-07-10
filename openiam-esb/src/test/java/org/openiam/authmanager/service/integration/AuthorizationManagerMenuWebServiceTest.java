@@ -39,4 +39,5 @@ public class AuthorizationManagerMenuWebServiceTest extends AbstractTestNGSpring
 			Assert.assertNotNull(menu.getFirstChild());
 		}
 	}
+	
 }

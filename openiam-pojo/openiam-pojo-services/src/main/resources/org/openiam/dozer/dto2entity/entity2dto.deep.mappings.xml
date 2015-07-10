@@ -25,18 +25,6 @@
 			<a>type.displayName</a>
 			<b>metadataTypeName</b>
 		</field>
-		<field>
-			<a>adminResource.id</a>
-			<b>adminResourceId</b>
-		</field>
-		<field>
-        	<a>adminResource.name</a>
-        	<b>adminResourceName</b>
-        </field>
-        <field>
-        	<a>adminResource.coorelatedName</a>
-        	<b>adminResourceCoorelatedName</b>
-        </field>
 		<field-exclude>
 			<a>parentResources</a>
 			<b>parentResources</b>
@@ -210,18 +198,6 @@
             <a>type.displayName</a>
             <b>metadataTypeName</b>
         </field>
-		<field>
-			<a>adminResource.id</a>
-			<b>adminResourceId</b>
-		</field>
-		<field>
-			<a>adminResource.name</a>
-			<b>adminResourceName</b>
-		</field>
-		<field>
-        	<a>adminResource.coorelatedName</a>
-        	<b>adminResourceCoorelatedName</b>
-        </field>
 		<field-exclude>
 			<a>parentGroups</a>
 			<b>parentGroups</b>
@@ -314,18 +290,6 @@
         <field>
             <a>type.displayName</a>
             <b>metadataTypeName</b>
-        </field>
-		<field>
-			<a>adminResource.id</a>
-			<b>adminResourceId</b>
-		</field>
-		<field>
-			<a>adminResource.name</a>
-			<b>adminResourceName</b>
-		</field>
-		<field>
-        	<a>adminResource.coorelatedName</a>
-        	<b>adminResourceCoorelatedName</b>
         </field>
 		<field-exclude>
 			<a>groups</a>
@@ -642,18 +606,6 @@
         <field>
             <a>type.displayName</a>
             <b>metadataTypeName</b>
-        </field>
-		<field>
-			<a>adminResource.id</a>
-			<b>adminResourceId</b>
-		</field>
-		<field>
-			<a>adminResource.name</a>
-			<b>adminResourceName</b>
-		</field>
-		<field>
-        	<a>adminResource.coorelatedName</a>
-        	<b>adminResourceCoorelatedName</b>
         </field>
 		<field
 			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"

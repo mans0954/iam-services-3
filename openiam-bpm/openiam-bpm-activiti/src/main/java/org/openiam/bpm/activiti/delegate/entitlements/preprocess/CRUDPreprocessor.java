@@ -15,6 +15,7 @@ import org.openiam.idm.srvc.res.service.ResourceService;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 public class CRUDPreprocessor extends AbstractEntitlementsDelegate {
 	
@@ -32,6 +33,9 @@ public class CRUDPreprocessor extends AbstractEntitlementsDelegate {
 	
 	@Autowired
 	private AuthorizationManagerService authManagerService;
+	
+	@Value("${org.openiam.ui.admin.right.id}")
+	private String adminRightId;
 
 	public CRUDPreprocessor() {
 		super();
@@ -48,26 +52,26 @@ public class CRUDPreprocessor extends AbstractEntitlementsDelegate {
 			switch(type) {
 				case RESOURCE:
 					final ResourceEntity resource = resourceService.findResourceById(associationId);
-					if(resource != null && resource.getAdminResource() != null) {
-						isAdmin = authManagerService.isEntitled(requestorId, resource.getAdminResource().getId());
+					if(resource != null) {
+						isAdmin = authManagerService.isEntitled(requestorId, resource.getId(), adminRightId);
 					}
 					break;
 				case GROUP:
 					final GroupEntity group = groupService.getGroup(associationId);
-					if(group != null && group.getAdminResource() != null) {
-						isAdmin = authManagerService.isEntitled(requestorId, group.getAdminResource().getId());
+					if(group != null) {
+						isAdmin = authManagerService.isMemberOfGroup(requestorId, group.getId(), adminRightId);
 					}
 					break;
 				case ROLE:
 					final RoleEntity role = roleService.getRole(associationId);
-					if(role != null && role.getAdminResource() != null) {
-						isAdmin = authManagerService.isEntitled(requestorId, role.getAdminResource().getId());
+					if(role != null) {
+						isAdmin = authManagerService.isMemberOfRole(requestorId, role.getId(), adminRightId);
 					}
 					break;
 				case ORGANIZATION:
 					final OrganizationEntity organization = organizationService.getOrganization(associationId, null);
-					if(organization != null && organization.getAdminResource() != null) {
-						isAdmin = authManagerService.isEntitled(requestorId, organization.getAdminResource().getId());
+					if(organization != null) {
+						isAdmin = authManagerService.isMemberOfOrganization(requestorId, organization.getId(), adminRightId);
 					}
 					break;
 				default:

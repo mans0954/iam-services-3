@@ -48,13 +48,6 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
 
     @Autowired
     protected PropertyValueSweeper propertyValueSweeper;
-    
-    @Override
-    public List<UserEntity> getAllUsersLoggedInAfter(final Date date) {
-    	final Criteria criteria = getCriteria();
-    	criteria.createAlias("principalList", "lg").add(Restrictions.ge("lg.lastLogin", date));
-    	return criteria.list();
-    }
 
     @Override
     public UserEntity findByIdDelFlt(String userId, DelegationFilterSearchBean delegationFilter) {

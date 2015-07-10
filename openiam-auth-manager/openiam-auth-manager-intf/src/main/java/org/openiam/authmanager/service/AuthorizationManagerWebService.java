@@ -11,6 +11,10 @@ import org.openiam.authmanager.common.model.AuthorizationGroup;
 import org.openiam.authmanager.common.model.AuthorizationOrganization;
 import org.openiam.authmanager.common.model.AuthorizationResource;
 import org.openiam.authmanager.common.model.AuthorizationRole;
+import org.openiam.authmanager.common.model.GroupAuthorizationRight;
+import org.openiam.authmanager.common.model.OrganizationAuthorizationRight;
+import org.openiam.authmanager.common.model.ResourceAuthorizationRight;
+import org.openiam.authmanager.common.model.RoleAuthorizationRight;
 
 @WebService(targetNamespace = "urn:idm.openiam.org/srvc/authorizationmanager/service", name = "AuthorizationManagerWebService")
 public interface AuthorizationManagerWebService {
@@ -116,7 +120,7 @@ public interface AuthorizationManagerWebService {
 	 * @return all resources for the requested user.  No distinction is made between direct or hierarchial membership
 	 */
 	@WebMethod
-	public Set<AuthorizationResource> getResourcesForUser(
+	public Set<ResourceAuthorizationRight> getResourcesForUser(
 			@WebParam(name = "userId", targetNamespace = "") final String userId
 			);
 	
@@ -125,7 +129,7 @@ public interface AuthorizationManagerWebService {
 	 * @return all groups for the requested user.  No distinction is made between direct or hierarchial membership
 	 */
 	@WebMethod
-	public Set<AuthorizationGroup> getGroupsForUser(
+	public Set<GroupAuthorizationRight> getGroupsForUser(
 			@WebParam(name = "userId", targetNamespace = "") final String userId
 			);
 	
@@ -134,7 +138,7 @@ public interface AuthorizationManagerWebService {
 	 * @return all roles for the requested user.  No distinction is made between direct or hierarchial membership
 	 */
 	@WebMethod
-	public Set<AuthorizationRole> getRolesForUser(
+	public Set<RoleAuthorizationRight> getRolesForUser(
 			@WebParam(name = "userId", targetNamespace = "") final String userId
 			);
 	
@@ -143,7 +147,7 @@ public interface AuthorizationManagerWebService {
 	 * @return all organizations for the requested user.  No distinction is made between direct or hierarchial membership
 	 */
 	@WebMethod
-	public Set<AuthorizationOrganization> getOrganizationsForUser(
+	public Set<OrganizationAuthorizationRight> getOrganizationsForUser(
 			@WebParam(name = "userId", targetNamespace = "") final String userId
 			);
 	

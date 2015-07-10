@@ -264,14 +264,14 @@ public class AuthorizationManagerAdminServiceImpl implements AuthorizationManage
 				if(CollectionUtils.isNotEmpty(user.getResources())) {
 					user.getResources().forEach(xref -> {
 						//compiledResourceSet.add(xref);
-						retVal.addDirectResource(new AuthorizationResource(xref.getEntity(), 0));
+						retVal.addDirectResource(new AuthorizationResource(xref.getEntity()));
 						compiledResourceSet.addAll(visitResources(xref.getEntity(), visitedResourceSet));
 					});
 				}
 				
 				
 				compiledResourceSet.forEach(xref -> {
-					retVal.addIndirectResource(new AuthorizationResource((ResourceEntity)xref.getMemberEntity(), 0));
+					retVal.addIndirectResource(new AuthorizationResource((ResourceEntity)xref.getMemberEntity()));
 				});
 			}
 		}
@@ -301,13 +301,13 @@ public class AuthorizationManagerAdminServiceImpl implements AuthorizationManage
 				if(CollectionUtils.isNotEmpty(group.getResources())) {
 					group.getResources().forEach(xref -> {
 						compiledResourceSet.add(xref);
-						retVal.addDirectResource(new AuthorizationResource(xref.getMemberEntity(), 0));
+						retVal.addDirectResource(new AuthorizationResource(xref.getMemberEntity()));
 						compiledResourceSet.addAll(visitResources(xref.getMemberEntity(), visitedResourceSet));
 					});
 				}
 				
 				compiledResourceSet.forEach(xref -> {
-					retVal.addIndirectResource(new AuthorizationResource((ResourceEntity)xref.getMemberEntity(), 0));
+					retVal.addIndirectResource(new AuthorizationResource((ResourceEntity)xref.getMemberEntity()));
 				});
 			}
 		}

@@ -8,10 +8,6 @@
 		<class-a>org.openiam.idm.srvc.org.domain.OrganizationEntity</class-a>
 		<class-b>org.openiam.idm.srvc.org.domain.OrganizationEntity</class-b>
 		<field-exclude>
-			<a>adminResource</a>
-			<b>adminResource</b>
-		</field-exclude>
-		<field-exclude>
 			<a>attributes</a>
 			<b>attributes</b>
 		</field-exclude>
@@ -150,10 +146,6 @@
 		<class-a>org.openiam.idm.srvc.grp.domain.GroupEntity</class-a>
 		<class-b>org.openiam.idm.srvc.grp.domain.GroupEntity</class-b>
 		<field-exclude>
-			<a>adminResource</a>
-			<b>adminResource</b>
-		</field-exclude>
-		<field-exclude>
 			<a>attributes</a>
 			<b>attributes</b>
 		</field-exclude>
@@ -190,10 +182,6 @@
 	<mapping>
 		<class-a>org.openiam.idm.srvc.role.domain.RoleEntity</class-a>
 		<class-b>org.openiam.idm.srvc.role.domain.RoleEntity</class-b>
-		<field-exclude>
-			<a>adminResource</a>
-			<b>adminResource</b>
-		</field-exclude>
 		<field-exclude>
 			<a>groups</a>
 			<b>groups</b>

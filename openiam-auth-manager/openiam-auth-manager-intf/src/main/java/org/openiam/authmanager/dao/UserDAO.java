@@ -8,17 +8,7 @@ import org.openiam.authmanager.common.model.AuthorizationUser;
 import org.openiam.authmanager.common.model.InternalAuthroizationUser;
 
 public interface UserDAO extends AbstractDAO<AuthorizationUser> {
-	/**
-	 * @param date - the earliest last login timestamp
-	 * @return all users who have logged in after <p>date</p>
-	 */
-	public List<AuthorizationUser> getAllUsersLoggedInAfter(final Date date);
-	
-	/**
-	 * @param userId - userId
-	 * @return the fully populated User
-	 */
-	public InternalAuthroizationUser getFullUser(final String userId);
+
 
     public List<String> getUserIdsList();
 
