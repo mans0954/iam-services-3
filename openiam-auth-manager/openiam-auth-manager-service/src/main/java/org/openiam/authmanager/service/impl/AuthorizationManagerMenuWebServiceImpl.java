@@ -478,4 +478,9 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 	public boolean isUserAuthenticatedToMenuWithURL(final String userId, final String url, final String menuId, final boolean defaultResult) {
 		return menuService.isUserAuthenticatedToMenuWithURL(userId, url, menuId, defaultResult);
 	}
+
+	@Override
+	public void sweep() {
+		menuService.sweep();
+	}
 }

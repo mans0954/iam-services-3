@@ -15,10 +15,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.StopWatch;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.authmanager.common.model.AuthorizationManagerLoginId;
 import org.openiam.authmanager.common.model.AuthorizationMenu;
-import org.openiam.authmanager.common.model.AuthorizationResource;
-import org.openiam.authmanager.common.xref.ResourceResourceXref;
 import org.openiam.authmanager.dao.ResourcePropDAO;
 import org.openiam.authmanager.model.MenuEntitlementType;
 import org.openiam.authmanager.model.ResourceEntitlementToken;
@@ -34,7 +31,6 @@ import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
 import org.openiam.idm.srvc.lang.service.LanguageMappingDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
-import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.service.RoleDAO;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -55,7 +51,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 @Service("authorizationManagerMenuService")
 //@ManagedResource(objectName="org.openiam.authorization.manager:name=authorizationManagerMenuService")
-public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService implements AuthorizationManagerMenuService, InitializingBean, ApplicationContextAware, Sweepable/*, Runnable*/ {
+public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService implements AuthorizationManagerMenuService, InitializingBean, ApplicationContextAware/*, Runnable*/ {
 
 	private ApplicationContext ctx;
 	

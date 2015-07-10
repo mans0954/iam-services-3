@@ -5,8 +5,9 @@ import java.util.List;
 import org.openiam.authmanager.common.model.AuthorizationMenu;
 import org.openiam.authmanager.ws.request.MenuEntitlementsRequest;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.thread.Sweepable;
 
-public interface AuthorizationManagerMenuService {
+public interface AuthorizationManagerMenuService extends Sweepable {
 
 	public AuthorizationMenu getMenuTree(final String menuRoot, final String userId);
 	
