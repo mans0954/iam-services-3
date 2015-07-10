@@ -1,13 +1,12 @@
-package org.openiam.idm.srvc.oauth.domain;
+package org.openiam.am.srvc.domain;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
+import org.openiam.am.srvc.dto.OauthScope;
 import org.openiam.base.domain.AbstractKeyNameEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
-import org.openiam.idm.srvc.oauth.dto.OauthScope;
-import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.internationalization.Internationalized;
 
 import javax.persistence.*;
@@ -19,7 +18,7 @@ import java.util.Set;
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(OauthScope.class)
 @AttributeOverrides({
-        @AttributeOverride(name = "id", column = @Column(name = "OAUTH_SCOPE_ID")),  //TODO
+        @AttributeOverride(name = "id", column = @Column(name = "OAUTH_SCOPE_ID")),
 })
 @Internationalized
 public class OauthScopeEntity extends AbstractKeyNameEntity {
@@ -35,11 +34,11 @@ public class OauthScopeEntity extends AbstractKeyNameEntity {
 
 
     @ManyToMany(cascade = {}, fetch = FetchType.LAZY)
-    @JoinTable(name = "RES",
-            joinColumns = {@JoinColumn(name = "RESOURCE_ID")},  //?
-            inverseJoinColumns = {@JoinColumn(name = "RESOURCE_TYPE_ID")})  //?
+    @JoinTable(name = "OAUTH_TO_RES",
+            joinColumns = {@JoinColumn(name = "OAUTH_SCOPE_ID")},
+            inverseJoinColumns = {@JoinColumn(name = "RESOURCE_ID")})
     @Fetch(FetchMode.SUBSELECT)
-    private Set<Resource> resources;
+    private Set<String> resourceId;
 
 
     @Override
@@ -60,13 +59,11 @@ public class OauthScopeEntity extends AbstractKeyNameEntity {
         this.description = description;
     }
 
-    public Set<Resource> getResources() {
-        return resources;
+    public Set<String> getResourceId() {
+        return resourceId;
     }
 
-    public void setResources(Set<Resource> resources) {
-        this.resources = resources;
+    public void setResourceId(Set<String> resourceId) {
+        this.resourceId = resourceId;
     }
-
-
 }

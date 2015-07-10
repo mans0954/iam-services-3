@@ -1,5 +1,7 @@
-package org.openiam.idm.searchbeans;
+package org.openiam.am.srvc.searchbeans;
 
+import org.openiam.idm.searchbeans.EntitlementsSearchBean;
+import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.role.dto.Role;
 
 import javax.xml.bind.annotation.XmlAccessType;

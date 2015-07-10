@@ -1,8 +1,8 @@
-package org.openiam.idm.srvc.oauth.dto;
+package org.openiam.am.srvc.dto;
 
 import org.openiam.base.KeyNameDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
-import org.openiam.idm.srvc.oauth.domain.OauthScopeEntity;
+import org.openiam.am.srvc.domain.OauthScopeEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.internationalization.Internationalized;
 
@@ -16,7 +16,7 @@ import java.util.Set;
 @XmlType(name = "OauthScope", propOrder = {
         "name",
         "description",
-        "resources"
+        "resourceId"
 })
 @XmlSeeAlso({
         Resource.class,
@@ -27,7 +27,7 @@ public class OauthScope extends KeyNameDTO {
 
     private String name;
     private String description;
-    private Set<Resource> resources;
+    private Set<String> resourceId;
 
     @Override
     public String getName() {
@@ -47,21 +47,12 @@ public class OauthScope extends KeyNameDTO {
         this.description = description;
     }
 
-    public Set<Resource> getResources() {
-        return resources;
+    public Set<String> getResourceId() {
+        return resourceId;
     }
 
-    public void setResources(Set<Resource> resources) {
-        this.resources = resources;
-    }
-
-    @Override
-    public String toString() {
-        return "OauthScope{" +
-                "name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", resources=" + resources +
-                '}';
+    public void setResourceId(Set<String> resourceId) {
+        this.resourceId = resourceId;
     }
 
     @Override
@@ -72,18 +63,19 @@ public class OauthScope extends KeyNameDTO {
 
         OauthScope that = (OauthScope) o;
 
-        if (!getName().equals(that.getName())) return false;
-        if (!getDescription().equals(that.getDescription())) return false;
-        return getResources().equals(that.getResources());
+        if (getName() != null ? !getName().equals(that.getName()) : that.getName() != null) return false;
+        if (getDescription() != null ? !getDescription().equals(that.getDescription()) : that.getDescription() != null)
+            return false;
+        return !(getResourceId() != null ? !getResourceId().equals(that.getResourceId()) : that.getResourceId() != null);
 
     }
 
     @Override
     public int hashCode() {
         int result = super.hashCode();
-        result = 31 * result + getName().hashCode();
-        result = 31 * result + getDescription().hashCode();
-        result = 31 * result + getResources().hashCode();
+        result = 31 * result + (getName() != null ? getName().hashCode() : 0);
+        result = 31 * result + (getDescription() != null ? getDescription().hashCode() : 0);
+        result = 31 * result + (getResourceId() != null ? getResourceId().hashCode() : 0);
         return result;
     }
 }

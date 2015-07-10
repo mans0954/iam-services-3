@@ -1,4 +1,4 @@
-package org.openiam.idm.srvc.oauth.service;
+package org.openiam.am.srvc.dao;
 
 import org.openiam.core.dao.BaseDao;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
