@@ -12,6 +12,7 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -28,6 +29,7 @@ import org.openiam.elasticsearch.constants.ElasticsearchStore;
 import org.openiam.elasticsearch.constants.Index;
 import org.openiam.idm.srvc.access.domain.AccessRightEntity;
 import org.openiam.idm.srvc.membership.domain.AbstractMembershipXrefEntity;
+import org.openiam.idm.srvc.membership.domain.RoleAwareMembershipXref;
 
 @Entity
 @Table(name = "role_to_role_membership")
@@ -35,7 +37,7 @@ import org.openiam.idm.srvc.membership.domain.AbstractMembershipXrefEntity;
 @AttributeOverride(name = "id", column = @Column(name = "MEMBERSHIP_ID"))
 @ElasticsearchIndex(indexName = ESIndexName.ROLE_TO_ROLE_XREF)
 @ElasticsearchMapping(typeName = ESIndexType.ROLE_TO_ROLE_XREF)
-public class RoleToRoleMembershipXrefEntity extends AbstractMembershipXrefEntity<RoleEntity, RoleEntity> {
+public class RoleToRoleMembershipXrefEntity extends AbstractMembershipXrefEntity<RoleEntity, RoleEntity> implements RoleAwareMembershipXref {
 
 	@ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "ROLE_ID", referencedColumnName = "ROLE_ID", insertable = true, updatable = false, nullable=false)
@@ -55,7 +57,11 @@ public class RoleToRoleMembershipXrefEntity extends AbstractMembershipXrefEntity
     @Fetch(FetchMode.SUBSELECT)
     private Set<AccessRightEntity> rights;
     
-    
+	@Override
+	@Transient
+	public RoleEntity getRole() {
+		return entity;
+	}
     
     public RoleEntity getEntity() {
 		return entity;

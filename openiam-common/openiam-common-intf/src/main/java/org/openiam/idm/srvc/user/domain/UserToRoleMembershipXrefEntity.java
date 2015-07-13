@@ -12,6 +12,7 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -30,6 +31,7 @@ import org.openiam.elasticsearch.constants.ElasticsearchStore;
 import org.openiam.elasticsearch.constants.Index;
 import org.openiam.idm.srvc.access.domain.AccessRightEntity;
 import org.openiam.idm.srvc.membership.domain.AbstractMembershipXrefEntity;
+import org.openiam.idm.srvc.membership.domain.RoleAwareMembershipXref;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.user.dto.UserToRoleMembershipXref;
 
@@ -40,7 +42,7 @@ import org.openiam.idm.srvc.user.dto.UserToRoleMembershipXref;
 @DozerDTOCorrespondence(UserToRoleMembershipXref.class)
 @ElasticsearchIndex(indexName = ESIndexName.USER_TO_ROLE_XREF)
 @ElasticsearchMapping(typeName = ESIndexType.USER_TO_ROLE_XREF)
-public class UserToRoleMembershipXrefEntity extends AbstractMembershipXrefEntity<RoleEntity, UserEntity> {
+public class UserToRoleMembershipXrefEntity extends AbstractMembershipXrefEntity<RoleEntity, UserEntity> implements RoleAwareMembershipXref {
 
 	@ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
 	@JoinColumn(name = "ROLE_ID", referencedColumnName = "ROLE_ID", insertable = true, updatable = false, nullable=false)
@@ -83,6 +85,12 @@ public class UserToRoleMembershipXrefEntity extends AbstractMembershipXrefEntity
 	public void setRights(Set<AccessRightEntity> rights) {
 		this.rights = rights;
 	}
+	
+	@Override
+	@Transient
+	public RoleEntity getRole() {
+		return entity;
+	}
 
 	@Override
 	public int hashCode() {
@@ -120,7 +128,5 @@ public class UserToRoleMembershipXrefEntity extends AbstractMembershipXrefEntity
 		} else if (!rights.equals(other.rights))
 			return false;
 		return true;
-	}
-	
-	
+	}	
 }

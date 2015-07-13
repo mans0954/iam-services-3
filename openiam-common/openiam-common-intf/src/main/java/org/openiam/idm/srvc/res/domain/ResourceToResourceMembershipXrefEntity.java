@@ -13,6 +13,7 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -31,6 +32,7 @@ import org.openiam.elasticsearch.constants.ElasticsearchStore;
 import org.openiam.elasticsearch.constants.Index;
 import org.openiam.idm.srvc.access.domain.AccessRightEntity;
 import org.openiam.idm.srvc.membership.domain.AbstractMembershipXrefEntity;
+import org.openiam.idm.srvc.membership.domain.ResourceAwareMembershipXref;
 import org.openiam.idm.srvc.res.dto.Resource;
 
 @Entity
@@ -39,7 +41,7 @@ import org.openiam.idm.srvc.res.dto.Resource;
 @AttributeOverride(name = "id", column = @Column(name = "MEMBERSHIP_ID"))
 @ElasticsearchIndex(indexName = ESIndexName.RES_TO_RES_XREF)
 @ElasticsearchMapping(typeName = ESIndexType.RES_TO_RES_XREF)
-public class ResourceToResourceMembershipXrefEntity extends AbstractMembershipXrefEntity<ResourceEntity, ResourceEntity> {
+public class ResourceToResourceMembershipXrefEntity extends AbstractMembershipXrefEntity<ResourceEntity, ResourceEntity> implements ResourceAwareMembershipXref {
 
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "RESOURCE_ID", referencedColumnName = "RESOURCE_ID", insertable = true, updatable = false, nullable=false)
@@ -84,6 +86,12 @@ public class ResourceToResourceMembershipXrefEntity extends AbstractMembershipXr
 	}
 
 	@Override
+	@Transient
+	public ResourceEntity getResource() {
+		return entity;
+	}
+
+	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
@@ -120,6 +128,4 @@ public class ResourceToResourceMembershipXrefEntity extends AbstractMembershipXr
 			return false;
 		return true;
 	}
-
-
 }
