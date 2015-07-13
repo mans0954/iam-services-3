@@ -12,6 +12,7 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -30,6 +31,8 @@ import org.openiam.elasticsearch.constants.Index;
 import org.openiam.idm.srvc.access.domain.AccessRightEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.membership.domain.AbstractMembershipXrefEntity;
+import org.openiam.idm.srvc.membership.domain.ResourceAwareMembershipXref;
+import org.openiam.idm.srvc.membership.domain.RoleAwareMembershipXref;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 
 @Entity
@@ -38,7 +41,7 @@ import org.openiam.idm.srvc.res.domain.ResourceEntity;
 @AttributeOverride(name = "id", column = @Column(name = "MEMBERSHIP_ID"))
 @ElasticsearchIndex(indexName = ESIndexName.ROLE_TO_RES_XREF)
 @ElasticsearchMapping(typeName = ESIndexType.ROLE_TO_RES_XREF)
-public class RoleToResourceMembershipXrefEntity extends AbstractMembershipXrefEntity<RoleEntity, ResourceEntity> {
+public class RoleToResourceMembershipXrefEntity extends AbstractMembershipXrefEntity<RoleEntity, ResourceEntity> implements RoleAwareMembershipXref, ResourceAwareMembershipXref {
 
 	@ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
 	 @JoinColumn(name = "ROLE_ID", referencedColumnName = "ROLE_ID", insertable = true, updatable = false, nullable=false)
@@ -73,6 +76,20 @@ public class RoleToResourceMembershipXrefEntity extends AbstractMembershipXrefEn
 	public void setMemberEntity(ResourceEntity memberEntity) {
 		this.memberEntity = memberEntity;
 	}
+	
+	@Override
+	@Transient
+	public ResourceEntity getResource() {
+		return memberEntity;
+	}
+
+	@Override
+	@Transient
+	public RoleEntity getRole() {
+		return entity;
+	}
+	 
+	 
 
 	public Set<AccessRightEntity> getRights() {
 		return rights;
@@ -119,6 +136,4 @@ public class RoleToResourceMembershipXrefEntity extends AbstractMembershipXrefEn
 			return false;
 		return true;
 	}
-	 
-	 
 }

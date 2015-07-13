@@ -13,6 +13,7 @@ public interface AuthorizationManagerAdminService {
 	public ResourceEntitlementToken getNonCachedEntitlementsForUser(final String userId);
 	public ResourceEntitlementToken getNonCachedEntitlementsForGroup(final String groupId);
 	public ResourceEntitlementToken getNonCachedEntitlementsForRole(final String roleId);
+	public ResourceEntitlementToken getNonCachedEntitlementsForOrganization(final String organizationId);
 	public UserEntitlementsMatrix getUserEntitlementsMatrix(final String entityId);
 
     public Set<String> getOwnerIdsForResource(String resourceId);

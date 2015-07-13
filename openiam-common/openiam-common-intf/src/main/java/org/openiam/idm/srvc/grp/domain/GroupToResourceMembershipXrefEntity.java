@@ -12,6 +12,7 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -29,6 +30,8 @@ import org.openiam.elasticsearch.constants.ElasticsearchStore;
 import org.openiam.elasticsearch.constants.Index;
 import org.openiam.idm.srvc.access.domain.AccessRightEntity;
 import org.openiam.idm.srvc.membership.domain.AbstractMembershipXrefEntity;
+import org.openiam.idm.srvc.membership.domain.GroupAwareMembershipXref;
+import org.openiam.idm.srvc.membership.domain.ResourceAwareMembershipXref;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 
 @Entity
@@ -37,7 +40,7 @@ import org.openiam.idm.srvc.res.domain.ResourceEntity;
 @AttributeOverride(name = "id", column = @Column(name = "MEMBERSHIP_ID"))
 @ElasticsearchIndex(indexName = ESIndexName.GRP_TO_RES_XREF)
 @ElasticsearchMapping(typeName = ESIndexType.GRP_TO_RES_XREF)
-public class GroupToResourceMembershipXrefEntity extends AbstractMembershipXrefEntity<GroupEntity, ResourceEntity> {
+public class GroupToResourceMembershipXrefEntity extends AbstractMembershipXrefEntity<GroupEntity, ResourceEntity> implements GroupAwareMembershipXref, ResourceAwareMembershipXref {
 
 	 @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
 	 @JoinColumn(name = "GRP_ID", referencedColumnName = "GRP_ID", insertable = true, updatable = false, nullable=false)
@@ -64,6 +67,18 @@ public class GroupToResourceMembershipXrefEntity extends AbstractMembershipXrefE
 	public void setEntity(GroupEntity entity) {
 		this.entity = entity;
 	}
+	
+	@Override
+	@Transient
+	public GroupEntity getGroup() {
+		return entity;
+	}
+	
+	@Override
+	@Transient
+	public ResourceEntity getResource() {
+		return memberEntity;
+	}	
 
 	public ResourceEntity getMemberEntity() {
 		return memberEntity;
@@ -118,6 +133,4 @@ public class GroupToResourceMembershipXrefEntity extends AbstractMembershipXrefE
 			return false;
 		return true;
 	}
-	 
-	
 }

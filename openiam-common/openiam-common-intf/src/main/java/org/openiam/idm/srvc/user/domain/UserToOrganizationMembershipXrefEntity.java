@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.user.domain;
 
+import java.beans.Transient;
 import java.util.Set;
 
 import javax.persistence.AttributeOverride;
@@ -30,6 +31,7 @@ import org.openiam.elasticsearch.constants.ElasticsearchStore;
 import org.openiam.elasticsearch.constants.Index;
 import org.openiam.idm.srvc.access.domain.AccessRightEntity;
 import org.openiam.idm.srvc.membership.domain.AbstractMembershipXrefEntity;
+import org.openiam.idm.srvc.membership.domain.OrganizationAwareMembershipXref;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.user.dto.UserToOrganizationMembershipXref;
 
@@ -40,7 +42,7 @@ import org.openiam.idm.srvc.user.dto.UserToOrganizationMembershipXref;
 @DozerDTOCorrespondence(UserToOrganizationMembershipXref.class)
 @ElasticsearchIndex(indexName = ESIndexName.USER_TO_ORG_XREF)
 @ElasticsearchMapping(typeName = ESIndexType.USER_TO_ORG_XREF)
-public class UserToOrganizationMembershipXrefEntity extends AbstractMembershipXrefEntity<OrganizationEntity, UserEntity> {
+public class UserToOrganizationMembershipXrefEntity extends AbstractMembershipXrefEntity<OrganizationEntity, UserEntity> implements OrganizationAwareMembershipXref {
 
 	@ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
 	@JoinColumn(name = "COMPANY_ID", referencedColumnName = "COMPANY_ID", insertable = true, updatable = false, nullable=false)
@@ -83,6 +85,13 @@ public class UserToOrganizationMembershipXrefEntity extends AbstractMembershipXr
 	public void setRights(Set<AccessRightEntity> rights) {
 		this.rights = rights;
 	}
+	
+
+	@Override
+	@Transient
+	public OrganizationEntity getOrganization() {
+		return entity;
+	}
 
 	@Override
 	public int hashCode() {
@@ -121,6 +130,4 @@ public class UserToOrganizationMembershipXrefEntity extends AbstractMembershipXr
 			return false;
 		return true;
 	}
-	
-	
 }

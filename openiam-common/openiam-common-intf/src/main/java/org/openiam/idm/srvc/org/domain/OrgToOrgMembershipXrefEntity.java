@@ -12,6 +12,7 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -28,6 +29,7 @@ import org.openiam.elasticsearch.constants.ElasticsearchStore;
 import org.openiam.elasticsearch.constants.Index;
 import org.openiam.idm.srvc.access.domain.AccessRightEntity;
 import org.openiam.idm.srvc.membership.domain.AbstractMembershipXrefEntity;
+import org.openiam.idm.srvc.membership.domain.OrganizationAwareMembershipXref;
 
 @Entity
 @Table(name = "COMPANY_TO_COMPANY_MEMBERSHIP")
@@ -35,7 +37,7 @@ import org.openiam.idm.srvc.membership.domain.AbstractMembershipXrefEntity;
 @AttributeOverride(name = "id", column = @Column(name = "MEMBERSHIP_ID"))
 @ElasticsearchIndex(indexName = ESIndexName.ORG_TO_ORG_XREF)
 @ElasticsearchMapping(typeName = ESIndexType.ORG_TO_ORG_XREF)
-public class OrgToOrgMembershipXrefEntity extends AbstractMembershipXrefEntity<OrganizationEntity, OrganizationEntity> {
+public class OrgToOrgMembershipXrefEntity extends AbstractMembershipXrefEntity<OrganizationEntity, OrganizationEntity> implements OrganizationAwareMembershipXref {
     
 	@ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "COMPANY_ID", referencedColumnName = "COMPANY_ID", insertable = true, updatable = false, nullable=false)
@@ -80,6 +82,12 @@ public class OrgToOrgMembershipXrefEntity extends AbstractMembershipXrefEntity<O
 	}
 
 	@Override
+	@Transient
+	public OrganizationEntity getOrganization() {
+		return entity;
+	}
+
+	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
@@ -115,7 +123,5 @@ public class OrgToOrgMembershipXrefEntity extends AbstractMembershipXrefEntity<O
 		} else if (!rights.equals(other.rights))
 			return false;
 		return true;
-	}
-    
-    
+	}    
 }

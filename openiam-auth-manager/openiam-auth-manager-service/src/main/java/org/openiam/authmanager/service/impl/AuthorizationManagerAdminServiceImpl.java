@@ -3,26 +3,12 @@ package org.openiam.authmanager.service.impl;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.authmanager.common.SetStringResponse;
-import org.openiam.authmanager.common.model.AuthorizationGroup;
-import org.openiam.authmanager.common.model.AuthorizationOrganization;
 import org.openiam.authmanager.common.model.AuthorizationResource;
-import org.openiam.authmanager.common.model.AuthorizationRole;
-import org.openiam.authmanager.common.model.InternalAuthroizationUser;
-import org.openiam.authmanager.common.xref.GroupGroupXref;
-import org.openiam.authmanager.common.xref.ResourceGroupXref;
-import org.openiam.authmanager.common.xref.ResourceResourceXref;
-import org.openiam.authmanager.common.xref.ResourceRoleXref;
-import org.openiam.authmanager.common.xref.RoleGroupXref;
-import org.openiam.authmanager.common.xref.RoleRoleXref;
 import org.openiam.authmanager.model.ResourceEntitlementToken;
 import org.openiam.authmanager.model.UserEntitlementsMatrix;
 import org.openiam.authmanager.service.AuthorizationManagerAdminService;
@@ -42,7 +28,10 @@ import org.openiam.idm.srvc.membership.UserToGroupMembershipHiberanteDAO;
 import org.openiam.idm.srvc.membership.UserToOrgMembershipHiberanteDAO;
 import org.openiam.idm.srvc.membership.UserToResourceMembershipHiberanteDAO;
 import org.openiam.idm.srvc.membership.UserToRoleMembershipHiberanteDAO;
-import org.openiam.idm.srvc.membership.domain.AbstractMembershipXrefEntity;
+import org.openiam.idm.srvc.membership.domain.GroupAwareMembershipXref;
+import org.openiam.idm.srvc.membership.domain.OrganizationAwareMembershipXref;
+import org.openiam.idm.srvc.membership.domain.ResourceAwareMembershipXref;
+import org.openiam.idm.srvc.membership.domain.RoleAwareMembershipXref;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.service.OrganizationDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
@@ -50,8 +39,6 @@ import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.service.RoleDAO;
 import org.openiam.idm.srvc.user.domain.UserEntity;
-import org.openiam.idm.srvc.user.domain.UserToGroupMembershipXrefEntity;
-import org.openiam.idm.srvc.user.domain.UserToOrganizationMembershipXrefEntity;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -116,8 +103,8 @@ public class AuthorizationManagerAdminServiceImpl implements AuthorizationManage
 	@Autowired
 	private UserToRoleMembershipHiberanteDAO user2RoleMembershipHibernateDAO;
 	
-	private Set<AbstractMembershipXrefEntity> visitOrganizations(final OrganizationEntity entity, final Set<OrganizationEntity> visitedSet) {
-		final Set<AbstractMembershipXrefEntity> retVal = new HashSet<AbstractMembershipXrefEntity>();
+	private Set<OrganizationAwareMembershipXref> visitOrganizations(final OrganizationEntity entity, final Set<OrganizationEntity> visitedSet) {
+		final Set<OrganizationAwareMembershipXref> retVal = new HashSet<OrganizationAwareMembershipXref>();
 		if(!visitedSet.contains(entity)) {
 			visitedSet.add(entity);
 			if(CollectionUtils.isNotEmpty(entity.getParentOrganizations())) {
@@ -130,8 +117,8 @@ public class AuthorizationManagerAdminServiceImpl implements AuthorizationManage
 		return retVal;
 	}
 	
-	private Set<AbstractMembershipXrefEntity> visitRoles(final RoleEntity entity, final Set<RoleEntity> visitedSet) {
-		final Set<AbstractMembershipXrefEntity> retVal = new HashSet<AbstractMembershipXrefEntity>();
+	private Set<RoleAwareMembershipXref> visitRoles(final RoleEntity entity, final Set<RoleEntity> visitedSet) {
+		final Set<RoleAwareMembershipXref> retVal = new HashSet<RoleAwareMembershipXref>();
 		if(!visitedSet.contains(entity)) {
 			visitedSet.add(entity);
 			if(CollectionUtils.isNotEmpty(entity.getParentRoles())) {
@@ -144,8 +131,8 @@ public class AuthorizationManagerAdminServiceImpl implements AuthorizationManage
 		return retVal;
 	}
 	
-	private Set<AbstractMembershipXrefEntity> visitGroups(final GroupEntity entity, final Set<GroupEntity> visitedSet) {
-		final Set<AbstractMembershipXrefEntity> retVal = new HashSet<AbstractMembershipXrefEntity>();
+	private Set<GroupAwareMembershipXref> visitGroups(final GroupEntity entity, final Set<GroupEntity> visitedSet) {
+		final Set<GroupAwareMembershipXref> retVal = new HashSet<GroupAwareMembershipXref>();
 		if(!visitedSet.contains(entity)) {
 			visitedSet.add(entity);
 			if(CollectionUtils.isNotEmpty(entity.getParentGroups())) {
@@ -158,8 +145,8 @@ public class AuthorizationManagerAdminServiceImpl implements AuthorizationManage
 		return retVal;
 	}
 	
-	private Set<AbstractMembershipXrefEntity> visitResources(final ResourceEntity entity, final Set<ResourceEntity> visitedSet) {
-		final Set<AbstractMembershipXrefEntity> retVal = new HashSet<AbstractMembershipXrefEntity>();
+	private Set<ResourceAwareMembershipXref> visitResources(final ResourceEntity entity, final Set<ResourceEntity> visitedSet) {
+		final Set<ResourceAwareMembershipXref> retVal = new HashSet<ResourceAwareMembershipXref>();
 		if(!visitedSet.contains(entity)) {
 			visitedSet.add(entity);
 			if(CollectionUtils.isNotEmpty(entity.getParentResources())) {
@@ -181,7 +168,7 @@ public class AuthorizationManagerAdminServiceImpl implements AuthorizationManage
 				/* compile organizations */
 				
 				final Set<OrganizationEntity> visitedOrganizationSet = new HashSet<OrganizationEntity>();
-				final Set<AbstractMembershipXrefEntity> compiledOrganizationSet = new HashSet<AbstractMembershipXrefEntity>();
+				final Set<OrganizationAwareMembershipXref> compiledOrganizationSet = new HashSet<OrganizationAwareMembershipXref>();
 				if(CollectionUtils.isNotEmpty(user.getAffiliations())) {
 					user.getAffiliations().forEach(xref -> {
 						compiledOrganizationSet.add(xref);
@@ -191,10 +178,10 @@ public class AuthorizationManagerAdminServiceImpl implements AuthorizationManage
 				
 				/* compile roles */
 				final Set<RoleEntity> visitedRoleSet = new HashSet<RoleEntity>();
-				final Set<AbstractMembershipXrefEntity> compiledRoleSet = new HashSet<AbstractMembershipXrefEntity>();
+				final Set<RoleAwareMembershipXref> compiledRoleSet = new HashSet<RoleAwareMembershipXref>();
 				compiledOrganizationSet.forEach(xref -> {
-					if(CollectionUtils.isNotEmpty(((OrganizationEntity)xref.getEntity()).getRoles())) {
-						((OrganizationEntity)xref.getEntity()).getRoles().forEach(roleXref -> {
+					if(CollectionUtils.isNotEmpty(xref.getOrganization().getRoles())) {
+						xref.getOrganization().getRoles().forEach(roleXref -> {
 							compiledRoleSet.add(roleXref);
 							compiledRoleSet.addAll(visitRoles(roleXref.getMemberEntity(), visitedRoleSet));
 						});
@@ -210,18 +197,18 @@ public class AuthorizationManagerAdminServiceImpl implements AuthorizationManage
 				
 				/* compile groups */
 				final Set<GroupEntity> visitedGroupSet = new HashSet<GroupEntity>();
-				final Set<AbstractMembershipXrefEntity> compiledGroupSet = new HashSet<AbstractMembershipXrefEntity>();
+				final Set<GroupAwareMembershipXref> compiledGroupSet = new HashSet<GroupAwareMembershipXref>();
 				compiledOrganizationSet.forEach(xref -> {
-					if(CollectionUtils.isNotEmpty(((OrganizationEntity)xref.getEntity()).getRoles())) {
-						((OrganizationEntity)xref.getEntity()).getGroups().forEach(eXref -> {
+					if(CollectionUtils.isNotEmpty(xref.getOrganization().getRoles())) {
+						xref.getOrganization().getGroups().forEach(eXref -> {
 							compiledGroupSet.add(eXref);
 							compiledGroupSet.addAll(visitGroups(eXref.getMemberEntity(), visitedGroupSet));
 						});
 					}
 				});
 				compiledRoleSet.forEach(xref -> {
-					if(CollectionUtils.isNotEmpty(((RoleEntity)xref.getEntity()).getGroups())) {
-						((RoleEntity)xref.getEntity()).getGroups().forEach(eXref -> {
+					if(CollectionUtils.isNotEmpty(xref.getRole().getGroups())) {
+						xref.getRole().getGroups().forEach(eXref -> {
 							compiledGroupSet.add(eXref);
 							compiledGroupSet.addAll(visitGroups(eXref.getMemberEntity(), visitedGroupSet));
 						});
@@ -236,26 +223,26 @@ public class AuthorizationManagerAdminServiceImpl implements AuthorizationManage
 				
 				/* compile resources */
 				final Set<ResourceEntity> visitedResourceSet = new HashSet<ResourceEntity>();
-				final Set<AbstractMembershipXrefEntity> compiledResourceSet = new HashSet<AbstractMembershipXrefEntity>();
+				final Set<ResourceAwareMembershipXref> compiledResourceSet = new HashSet<ResourceAwareMembershipXref>();
 				compiledOrganizationSet.forEach(xref -> {
-					if(CollectionUtils.isNotEmpty(((OrganizationEntity)xref.getEntity()).getResources())) {
-						((OrganizationEntity)xref.getEntity()).getResources().forEach(eXref -> {
+					if(CollectionUtils.isNotEmpty(xref.getOrganization().getResources())) {
+						xref.getOrganization().getResources().forEach(eXref -> {
 							compiledResourceSet.add(eXref);
 							compiledResourceSet.addAll(visitResources(eXref.getMemberEntity(), visitedResourceSet));
 						});
 					}
 				});
 				compiledRoleSet.forEach(xref -> {
-					if(CollectionUtils.isNotEmpty(((RoleEntity)xref.getEntity()).getResources())) {
-						((RoleEntity)xref.getEntity()).getResources().forEach(eXref -> {
+					if(CollectionUtils.isNotEmpty(xref.getRole().getResources())) {
+						xref.getRole().getResources().forEach(eXref -> {
 							compiledResourceSet.add(eXref);
 							compiledResourceSet.addAll(visitResources(eXref.getMemberEntity(), visitedResourceSet));
 						});
 					}
 				});
 				compiledGroupSet.forEach(xref -> {
-					if(CollectionUtils.isNotEmpty(((GroupEntity)xref.getEntity()).getResources())) {
-						((GroupEntity)xref.getEntity()).getResources().forEach(eXref -> {
+					if(CollectionUtils.isNotEmpty(xref.getGroup().getResources())) {
+						xref.getGroup().getResources().forEach(eXref -> {
 							compiledResourceSet.add(eXref);
 							compiledResourceSet.addAll(visitResources(eXref.getMemberEntity(), visitedResourceSet));
 						});
@@ -271,7 +258,7 @@ public class AuthorizationManagerAdminServiceImpl implements AuthorizationManage
 				
 				
 				compiledResourceSet.forEach(xref -> {
-					retVal.addIndirectResource(new AuthorizationResource((ResourceEntity)xref.getMemberEntity()));
+					retVal.addIndirectResource(new AuthorizationResource(xref.getResource()));
 				});
 			}
 		}
@@ -285,14 +272,14 @@ public class AuthorizationManagerAdminServiceImpl implements AuthorizationManage
 			final GroupEntity group = groupDAO.findById(groupId);
 			
 			if(group != null) {
-				final Set<AbstractMembershipXrefEntity> compiledGroupSet = new HashSet<AbstractMembershipXrefEntity>();
+				final Set<GroupAwareMembershipXref> compiledGroupSet = new HashSet<GroupAwareMembershipXref>();
 				final Set<GroupEntity> vistitedGroupSet = new HashSet<GroupEntity>();
 				compiledGroupSet.addAll(visitGroups(group, vistitedGroupSet));
 				
-				final Set<AbstractMembershipXrefEntity> compiledResourceSet = new HashSet<AbstractMembershipXrefEntity>();
+				final Set<ResourceAwareMembershipXref> compiledResourceSet = new HashSet<ResourceAwareMembershipXref>();
 				final Set<ResourceEntity> visitedResourceSet = new HashSet<ResourceEntity>();
 				compiledGroupSet.forEach(xref -> {
-					((GroupEntity)xref.getEntity()).getResources().forEach(eXref -> {
+					xref.getGroup().getResources().forEach(eXref -> {
 						compiledResourceSet.add(eXref);
 						compiledResourceSet.addAll(visitResources(eXref.getMemberEntity(), visitedResourceSet));
 					});
@@ -307,7 +294,7 @@ public class AuthorizationManagerAdminServiceImpl implements AuthorizationManage
 				}
 				
 				compiledResourceSet.forEach(xref -> {
-					retVal.addIndirectResource(new AuthorizationResource((ResourceEntity)xref.getMemberEntity()));
+					retVal.addIndirectResource(new AuthorizationResource(xref.getResource()));
 				});
 			}
 		}
@@ -316,36 +303,163 @@ public class AuthorizationManagerAdminServiceImpl implements AuthorizationManage
 
 	@Override
 	public ResourceEntitlementToken getNonCachedEntitlementsForRole(final String roleId) {
-		ResourceEntitlementToken retVal = null;
-		/*
+		final ResourceEntitlementToken retVal = new ResourceEntitlementToken();
 		if(roleId != null) {
-			final Map<String, AuthorizationRole> roleMap = getRoleMap();
-			
-			if(roleMap.containsKey(roleId)) {
-				retVal = new ResourceEntitlementToken();
-				final Map<String, AuthorizationResource> resourceMap = getResourceMap();
-				final Map<String, Set<AuthorizationRole>> role2RoleMap = getRole2RoleMap(roleMap, true);
-				final Map<String, Set<AuthorizationResource>> resource2ResourceMap = getResource2ResourceMap(resourceMap, true);
-				final Map<String, Set<AuthorizationResource>> role2ResourceMap = getRole2ResourceMap(resourceMap);
+			final RoleEntity role = roleDAO.findById(roleId);
+			if(role != null) {
+				final Set<RoleAwareMembershipXref> compiledRoleSet = new HashSet<RoleAwareMembershipXref>();
+				final Set<RoleEntity> visitedRoleSet = new HashSet<RoleEntity>();
+				compiledRoleSet.addAll(visitRoles(role, visitedRoleSet));
 				
-				final Set<AuthorizationRole> compiledRoles = compileRoles(roleMap.get(roleId), role2RoleMap, new HashSet<AuthorizationRole>());
-				
-				final Set<AuthorizationResource> resourcesForCompiledRoles = getResourcesForRoles(compiledRoles, role2ResourceMap);
-				
-				final Set<AuthorizationResource> compiledResources = getCompiledResources(resourcesForCompiledRoles, resource2ResourceMap);
-				compiledResources.addAll(resourcesForCompiledRoles);
-				
-				if(role2ResourceMap.containsKey(roleId)) {
-					final Set<AuthorizationResource> directResources = role2ResourceMap.get(roleId);
-					retVal.addDirectResources(directResources);
-					final Set<AuthorizationResource> compilesResourcesFromResources = getCompiledResources(directResources, resource2ResourceMap);
-					compiledResources.addAll(compilesResourcesFromResources);
+				final Set<GroupEntity> visitedGroupSet = new HashSet<GroupEntity>();
+				final Set<GroupAwareMembershipXref> compiledGroupSet = new HashSet<GroupAwareMembershipXref>();
+				if(CollectionUtils.isNotEmpty(role.getGroups())) {
+					role.getGroups().forEach(xref -> {
+						compiledGroupSet.add(xref);
+						compiledGroupSet.addAll(visitGroups(xref.getGroup(), visitedGroupSet));
+					});
 				}
 				
-				retVal.addIndirectResource(compiledResources);
+				compiledRoleSet.forEach(xref -> {
+					if(CollectionUtils.isNotEmpty(xref.getRole().getGroups())) {
+						xref.getRole().getGroups().forEach(eXref -> {
+							compiledGroupSet.add(eXref);
+							compiledGroupSet.addAll(visitGroups(eXref.getGroup(), visitedGroupSet));
+						});
+					}
+				});
+				
+				final Set<ResourceEntity> visitedResourceSet = new HashSet<ResourceEntity>();
+				final Set<ResourceAwareMembershipXref> compiledResourceSet = new HashSet<ResourceAwareMembershipXref>();
+				compiledRoleSet.forEach(xref -> {
+					if(CollectionUtils.isNotEmpty(xref.getRole().getResources())) {
+						xref.getRole().getResources().forEach(eXref -> {
+							compiledResourceSet.add(eXref);
+							compiledResourceSet.addAll(visitResources(eXref.getResource(), visitedResourceSet));
+						});
+					}
+				});
+				
+				compiledGroupSet.forEach(xref -> {
+					if(CollectionUtils.isNotEmpty(xref.getGroup().getResources())) {
+						xref.getGroup().getResources().forEach(eXref -> {
+							compiledResourceSet.add(eXref);
+							compiledResourceSet.addAll(visitResources(eXref.getResource(), visitedResourceSet));
+						});
+					}
+				});
+				
+				if(CollectionUtils.isNotEmpty(role.getResources())) {
+					role.getResources().forEach(xref -> {
+						retVal.addDirectResource(new AuthorizationResource(xref.getResource()));
+						compiledResourceSet.addAll(visitResources(xref.getResource(), visitedResourceSet));
+					});
+				}
+				
+				compiledResourceSet.forEach(xref -> {
+					retVal.addIndirectResource(new AuthorizationResource(xref.getResource()));
+				});
 			}
 		}
-		*/
+		return retVal;
+	}
+	
+	@Override
+	public ResourceEntitlementToken getNonCachedEntitlementsForOrganization(final String organizationId) {
+		final ResourceEntitlementToken retVal = new ResourceEntitlementToken();
+		if(organizationId != null) {
+			final OrganizationEntity organization = organizationDAO.findById(organizationId);
+			
+			final Set<OrganizationAwareMembershipXref> compiledOrganizationSet = new HashSet<OrganizationAwareMembershipXref>();
+			final Set<OrganizationEntity> visitedOrganizationSet = new HashSet<OrganizationEntity>();
+			compiledOrganizationSet.addAll(visitOrganizations(organization, visitedOrganizationSet));
+			
+			
+			final Set<RoleAwareMembershipXref> compiledRoleSet = new HashSet<RoleAwareMembershipXref>();
+			final Set<RoleEntity> visitedRoleSet = new HashSet<RoleEntity>();
+			if(CollectionUtils.isNotEmpty(organization.getRoles())) {
+				organization.getRoles().forEach(xref -> {
+					compiledRoleSet.add(xref);
+					compiledRoleSet.addAll(visitRoles(xref.getRole(), visitedRoleSet));
+				});
+			}
+			
+			compiledOrganizationSet.forEach(xref -> {
+				if(CollectionUtils.isNotEmpty(xref.getOrganization().getRoles())) {
+					xref.getOrganization().getRoles().forEach(eXref -> {
+						compiledRoleSet.add(eXref);
+						compiledRoleSet.addAll(visitRoles(eXref.getRole(), visitedRoleSet));
+					});
+				}
+			});
+			
+			final Set<GroupAwareMembershipXref> compiledGroupSet = new HashSet<GroupAwareMembershipXref>();
+			final Set<GroupEntity> visitedGroupSet = new HashSet<GroupEntity>();
+			if(CollectionUtils.isNotEmpty(organization.getGroups())) {
+				organization.getGroups().forEach(xref -> {
+					compiledGroupSet.add(xref);
+					compiledGroupSet.addAll(visitGroups(xref.getGroup(), visitedGroupSet));
+				});
+			}
+			
+			compiledOrganizationSet.forEach(xref -> {
+				if(CollectionUtils.isNotEmpty(xref.getOrganization().getGroups())) {
+					xref.getOrganization().getGroups().forEach(eXref -> {
+						compiledGroupSet.add(eXref);
+						compiledGroupSet.addAll(visitGroups(eXref.getGroup(), visitedGroupSet));
+					});
+				}
+			});
+			
+			compiledRoleSet.forEach(xref -> {
+				if(CollectionUtils.isNotEmpty(xref.getRole().getGroups())) {
+					xref.getRole().getGroups().forEach(eXref -> {
+						compiledGroupSet.add(eXref);
+						compiledGroupSet.addAll(visitGroups(eXref.getGroup(), visitedGroupSet));
+					});
+				}
+			});
+			
+			final Set<ResourceAwareMembershipXref> compiledResourceSet = new HashSet<ResourceAwareMembershipXref>();
+			final Set<ResourceEntity> visitedResourceSet = new HashSet<ResourceEntity>();
+			compiledOrganizationSet.forEach(xref -> {
+				if(CollectionUtils.isNotEmpty(xref.getOrganization().getResources())) {
+					xref.getOrganization().getResources().forEach(eXref -> {
+						compiledResourceSet.add(eXref);
+						compiledResourceSet.addAll(visitResources(eXref.getResource(), visitedResourceSet));
+					});
+				}
+			});
+			
+			compiledRoleSet.forEach(xref -> {
+				if(CollectionUtils.isNotEmpty(xref.getRole().getResources())) {
+					xref.getRole().getResources().forEach(eXref -> {
+						compiledResourceSet.add(eXref);
+						compiledResourceSet.addAll(visitResources(eXref.getResource(), visitedResourceSet));
+					});
+				}
+			});
+			
+			compiledGroupSet.forEach(xref -> {
+				if(CollectionUtils.isNotEmpty(xref.getGroup().getResources())) {
+					xref.getGroup().getResources().forEach(eXref -> {
+						compiledResourceSet.add(eXref);
+						compiledResourceSet.addAll(visitResources(eXref.getResource(), visitedResourceSet));
+					});
+				}
+			});
+			
+			if(CollectionUtils.isNotEmpty(organization.getResources())) {
+				organization.getResources().forEach(xref -> {
+					retVal.addDirectResource(new AuthorizationResource(xref.getResource()));
+					compiledResourceSet.addAll(visitResources(xref.getResource(), visitedResourceSet));
+				});
+			}
+			
+			compiledResourceSet.forEach(xref -> {
+				retVal.addIndirectResource(new AuthorizationResource(xref.getResource()));
+			});
+		}
 		return retVal;
 	}
 	
@@ -601,22 +715,61 @@ public class AuthorizationManagerAdminServiceImpl implements AuthorizationManage
 				group2GroupMap, role2RoleMap, group2RoleMap);
 	}
 
-	private Set<String> getEntitledUserIds(String resourceId,
-										   Map<String, AuthorizationResource> resourceMap,
-										   Map<String, Set<AuthorizationRole>> resource2RoleMap,
-										   Map<String, Set<AuthorizationGroup>> resource2GroupMap,
-										   Map<String, Set<AuthorizationGroup>> group2GroupMap,
-										   Map<String, Set<AuthorizationRole>> role2RoleMap,
-										   Map<String, Set<AuthorizationRole>> group2RoleMap){
-		Set<String> userIds = new HashSet<>();
+	private Set<String> getEntitledUserIds(final String resourceId,
+										   final String rightId,
+										   final Map<String, AuthorizationResource> resourceMap,
+										   final Map<String, AuthorizationGroup> groupMap,
+										   final Map<String, AuthorizationRole> roleMap,
+										   final Map<String, AuthorizationOrganization> orgMap,
+										   final Map<String, AuthorizationAccessRight> accessRightMap,
+										   
+										   final Map<String, Map<String, Set<String>>> resource2ResourceMap,
+										   final Map<String, Map<String, Set<String>>> resource2GroupMap,
+										   final Map<String, Map<String, Set<String>>> resource2RoleMap,
+										   final Map<String, Map<String, Set<String>>> resource2OrgMap,
+										   
+										   final Map<String, Map<String, Set<String>>> group2GroupMap,
+										   final Map<String, Map<String, Set<String>>> group2RoleMap,
+										   final Map<String, Map<String, Set<String>>> group2OrgMap,
+										   
+										   final Map<String, Map<String, Set<String>>> role2RoleMap,
+										   final Map<String, Map<String, Set<String>>> role2OrgMap,
+										   
+										   final Map<String, Map<String, Set<String>>> org2OrgMap){
+		final Set<String> userIds = new HashSet<>();
 
-		AuthorizationResource adminResource = null;
+		AuthorizationResource resource = null;
 		if(StringUtils.isNotBlank(resourceId)) {
-			adminResource = resourceMap.get(resourceId);
-			if (adminResource != null) {
-
-				Set<AuthorizationRole> roleSet = resource2RoleMap.get(adminResource.getId());
-				Set<AuthorizationGroup> groupSet = resource2GroupMap.get(adminResource.getId());
+			resource = resourceMap.get(resourceId);
+			if (resource != null) {
+				final Set<AuthorizationOrganization> orgSet = new HashSet<AuthorizationOrganization>();
+				final Set<AuthorizationRole> roleSet = new HashSet<AuthorizationRole>();
+				final Set<AuthorizationGroup> groupSet = new HashSet<AuthorizationGroup>();
+				final Set<AuthorizationResource> resourceSet = new HashSet<AuthorizationResource>();
+				
+				resource2ResourceMap.get(resourceId).forEach((entityId, rights) -> {
+					if(CollectionUtils.isNotEmpty(rights) && rights.contains(rightId)) {
+						resourceSet.add(resourceMap.get(entityId));
+					}
+				});
+				
+				resource2RoleMap.get(resourceId).forEach((entityId, rights) -> {
+					if(CollectionUtils.isNotEmpty(rights) && rights.contains(rightId)) {
+						roleSet.add(roleMap.get(entityId));
+					}
+				});
+				
+				resource2OrgMap.get(resourceId).forEach((entityId, rights) -> {
+					if(CollectionUtils.isNotEmpty(rights) && rights.contains(rightId)) {
+						orgSet.add(orgMap.get(entityId));
+					}
+				});
+				
+				resource2GroupMap.get(resourceId).forEach((entityId, rights) -> {
+					if(CollectionUtils.isNotEmpty(rights) && rights.contains(rightId)) {
+						groupSet.add(groupMap.get(entityId));
+					}
+				});
 
 				final Set<AuthorizationGroup> compiledGroups = new HashSet<AuthorizationGroup>();
 				if (CollectionUtils.isNotEmpty(groupSet)) {

@@ -12,6 +12,7 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -29,6 +30,8 @@ import org.openiam.elasticsearch.constants.ElasticsearchStore;
 import org.openiam.elasticsearch.constants.Index;
 import org.openiam.idm.srvc.access.domain.AccessRightEntity;
 import org.openiam.idm.srvc.membership.domain.AbstractMembershipXrefEntity;
+import org.openiam.idm.srvc.membership.domain.OrganizationAwareMembershipXref;
+import org.openiam.idm.srvc.membership.domain.ResourceAwareMembershipXref;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 
 @Entity
@@ -37,7 +40,7 @@ import org.openiam.idm.srvc.res.domain.ResourceEntity;
 @AttributeOverride(name = "id", column = @Column(name = "MEMBERSHIP_ID"))
 @ElasticsearchIndex(indexName = ESIndexName.RES_TO_ORG_XREF)
 @ElasticsearchMapping(typeName = ESIndexType.RES_TO_ORG_XREF)
-public class ResourceToOrgMembershipXrefEntity extends AbstractMembershipXrefEntity<OrganizationEntity, ResourceEntity> {
+public class ResourceToOrgMembershipXrefEntity extends AbstractMembershipXrefEntity<OrganizationEntity, ResourceEntity> implements OrganizationAwareMembershipXref, ResourceAwareMembershipXref {
 
 	@ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "COMPANY_ID", referencedColumnName = "COMPANY_ID", insertable = true, updatable = false, nullable=false)
@@ -56,6 +59,18 @@ public class ResourceToOrgMembershipXrefEntity extends AbstractMembershipXrefEnt
             inverseJoinColumns = {@JoinColumn(name = "ACCESS_RIGHT_ID")})
     @Fetch(FetchMode.SUBSELECT)
     private Set<AccessRightEntity> rights;
+
+	@Override
+	@Transient
+	public ResourceEntity getResource() {
+		return memberEntity;
+	}
+
+	@Override
+	@Transient
+	public OrganizationEntity getOrganization() {
+		return entity;
+	}
 
 	public OrganizationEntity getEntity() {
 		return entity;
@@ -86,6 +101,4 @@ public class ResourceToOrgMembershipXrefEntity extends AbstractMembershipXrefEnt
 		return "ResourceToOrgMembershipXrefEntity [entity=" + entity
 				+ ", memberEntity=" + memberEntity + ", rights=" + rights + "]";
 	}
-    
-    
 }

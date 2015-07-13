@@ -12,6 +12,7 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -28,6 +29,7 @@ import org.openiam.elasticsearch.constants.ElasticsearchStore;
 import org.openiam.elasticsearch.constants.Index;
 import org.openiam.idm.srvc.access.domain.AccessRightEntity;
 import org.openiam.idm.srvc.membership.domain.AbstractMembershipXrefEntity;
+import org.openiam.idm.srvc.membership.domain.GroupAwareMembershipXref;
 
 @Entity
 @Table(name = "grp_to_grp_membership")
@@ -35,7 +37,7 @@ import org.openiam.idm.srvc.membership.domain.AbstractMembershipXrefEntity;
 @AttributeOverride(name = "id", column = @Column(name = "MEMBERSHIP_ID"))
 @ElasticsearchIndex(indexName = ESIndexName.GRP_TO_GRP_XREF)
 @ElasticsearchMapping(typeName = ESIndexType.GRP_TO_GRP_XREF)
-public class GroupToGroupMembershipXrefEntity extends AbstractMembershipXrefEntity<GroupEntity, GroupEntity> {
+public class GroupToGroupMembershipXrefEntity extends AbstractMembershipXrefEntity<GroupEntity, GroupEntity> implements GroupAwareMembershipXref {
 
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "GROUP_ID", referencedColumnName = "GRP_ID", insertable = true, updatable = false, nullable=false)
@@ -78,6 +80,12 @@ public class GroupToGroupMembershipXrefEntity extends AbstractMembershipXrefEnti
 	public void setRights(Set<AccessRightEntity> rights) {
 		this.rights = rights;
 	}
+	
+	@Override
+	@Transient
+	public GroupEntity getGroup() {
+		return entity;
+	}
 
 	@Override
 	public int hashCode() {
@@ -115,7 +123,5 @@ public class GroupToGroupMembershipXrefEntity extends AbstractMembershipXrefEnti
 		} else if (!rights.equals(other.rights))
 			return false;
 		return true;
-	}
-    
-    
+	}    
 }
