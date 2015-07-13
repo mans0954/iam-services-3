@@ -167,6 +167,7 @@
 	<task:annotation-driven executor="myExecutor" scheduler="myScheduler"/>
 	<task:executor id="myExecutor" pool-size="${org.openiam.spring.taskscheduler.executor.size}"/>
 	<task:scheduler id="myScheduler" pool-size="${org.openiam.spring.taskscheduler.scheduler.size}"/>
+	<task:executor id="authManagerCompilationPool" pool-size="10" />
 
 	<!-- Thread Scheduling - not using annotations since the interval must be 
 		configurable -->

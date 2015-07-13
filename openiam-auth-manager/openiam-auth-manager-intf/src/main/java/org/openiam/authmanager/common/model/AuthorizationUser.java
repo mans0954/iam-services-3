@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.time.StopWatch;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.authmanager.common.xref.AbstractGroupXref;
@@ -118,7 +119,14 @@ public class AuthorizationUser extends AbstractAuthorizationEntity implements Se
 	/**
 	 * Compiles this Group against it's Role, Group, and Resource Membership
 	 */
-	public void compile(final int numOfRights) {
+	public void compile(final int numOfRights, final int executionIndex) {
+		final StopWatch sw = new StopWatch();
+		sw.start();
+		final StringBuilder sb = (log.isDebugEnabled()) ? new StringBuilder(String.format("User ID: %s", getId())) : null;
+		
+		final StopWatch innerSW = new StopWatch();
+		innerSW.start();
+		
 		final Set<AbstractOrgXref> compiledOrgSet = visitOrganization();
 		for(final AbstractOrgXref xref : compiledOrgSet) {
 			if(CollectionUtils.isNotEmpty(xref.getRights())) {
@@ -128,6 +136,12 @@ public class AuthorizationUser extends AbstractAuthorizationEntity implements Se
 			}
 			linearOrganizationBitSet.set(getBitIndex(null, xref.getOrganization(), numOfRights));
 		}
+		innerSW.stop();
+		if(log.isDebugEnabled()) {
+			sb.append(String.format("Compiled Orgs: %s.  ", innerSW.getTime()));
+		}
+		innerSW.reset();
+		innerSW.start();
 		
 		final Set<AbstractRoleXref> compiledRoleSet = visitRoles(compiledOrgSet);
 		for(final AbstractRoleXref xref : compiledRoleSet) {
@@ -138,6 +152,12 @@ public class AuthorizationUser extends AbstractAuthorizationEntity implements Se
 			}
 			linearRoleBitSet.set(getBitIndex(null, xref.getRole(), numOfRights));
 		}
+		innerSW.stop();
+		if(log.isDebugEnabled()) {
+			sb.append(String.format("Compiled Roles: %s.  ", innerSW.getTime()));
+		}
+		innerSW.reset();
+		innerSW.start();
 
 		final Set<AbstractGroupXref> compiledGroupSet = visitGroups(compiledOrgSet, compiledRoleSet);
 		for(final AbstractGroupXref xref : compiledGroupSet) {
@@ -148,6 +168,12 @@ public class AuthorizationUser extends AbstractAuthorizationEntity implements Se
 			}
 			linearGroupBitSet.set(getBitIndex(null, xref.getGroup(), numOfRights));
 		}
+		innerSW.stop();
+		if(log.isDebugEnabled()) {
+			sb.append(String.format("Compiled Groups: %s.  ", innerSW.getTime()));
+		}
+		innerSW.reset();
+		innerSW.start();
 		
 		final Set<AbstractResourceXref> compiledResourceSet = visitResources(compiledOrgSet, compiledGroupSet, compiledRoleSet);
 		for(final AbstractResourceXref xref : compiledResourceSet) {
@@ -157,6 +183,15 @@ public class AuthorizationUser extends AbstractAuthorizationEntity implements Se
 				});
 			}
 			linearResourceBitSet.set(getBitIndex(null, xref.getResource(), numOfRights));
+		}
+		innerSW.stop();
+		if(log.isDebugEnabled()) {
+			sb.append(String.format("Compiled Resources: %s.  ", innerSW.getTime()));
+		}
+		sw.stop();
+		if(log.isDebugEnabled()) {
+			sb.append(String.format("Compiled User: %s.  Execution Index: %s", sw.getTime(), executionIndex));
+			log.debug(sb.toString());
 		}
 	}
 	
@@ -187,12 +222,13 @@ public class AuthorizationUser extends AbstractAuthorizationEntity implements Se
 		}
 		
 		if(CollectionUtils.isNotEmpty(compiledOrgs)) {
-			for(final AbstractOrgXref xref : compiledOrgs) {
+			compiledOrgs.forEach(xref -> {
+			//for(final AbstractOrgXref xref : compiledOrgs) {
 				final Set<AbstractRoleXref> orgEntities = xref.getOrganization().getRoles();
 				if(orgEntities != null) {
 					tempCompiledSet.addAll(orgEntities);
 				}
-			}
+			});
 		}
 		
 		final Set<AuthorizationRole> visitedSet = new HashSet<AuthorizationRole>();

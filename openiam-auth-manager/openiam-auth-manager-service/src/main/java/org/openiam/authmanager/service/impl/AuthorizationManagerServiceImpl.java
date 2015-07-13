@@ -1,11 +1,16 @@
 package org.openiam.authmanager.service.impl;
 
 import java.sql.Date;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -18,8 +23,10 @@ import net.sf.ehcache.Element;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.StopWatch;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.authmanager.common.model.AbstractAuthorizationEntity;
 import org.openiam.authmanager.common.model.AuthorizationAccessRight;
 import org.openiam.authmanager.common.model.AuthorizationGroup;
 import org.openiam.authmanager.common.model.AuthorizationManagerLoginId;
@@ -61,11 +68,11 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.jmx.export.annotation.ManagedResource;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.springframework.util.StopWatch;
 
 /**
  * @author Lev Bornovalov
@@ -89,10 +96,13 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 	@Qualifier("authManagerUserCache")
 	private Ehcache userCache;
 	
-
     @Autowired
     @Qualifier("transactionTemplate")
     private TransactionTemplate transactionTemplate;
+    
+    @Autowired
+    @Qualifier("authManagerCompilationPool")
+    private ThreadPoolTaskExecutor authManagerCompilationPool;
 	
 	/*
 	private boolean forceThreadShutdown = false;
@@ -176,7 +186,9 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
     @ManagedOperation(description="sweep the Authorization Cache")
 	@Transactional
 	public void sweep() {
-		log.info(String.format("Starting Authorization Manager Refresh.  ThreadId: %s.  Spring Context: %s:%s", Thread.currentThread().getId(), ctx.getId(), ctx.getDisplayName()));
+		if(log.isDebugEnabled()) {
+			log.debug(String.format("Starting Authorization Manager Refresh.  ThreadId: %s.  Spring Context: %s:%s", Thread.currentThread().getId(), ctx.getId(), ctx.getDisplayName()));
+		}
 		final StopWatch sw = new StopWatch();
 		sw.start();
 		
@@ -195,9 +207,14 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 			/* create lastLogin Date for user dao */
 			final long millisecLoginThreshold = new java.util.Date().getTime() - (numOfLoggedInHoursThreshold.longValue() * 60 * 60 * 1000);
 			final Date loginThreshold = new Date(millisecLoginThreshold);
+		
+			if(log.isDebugEnabled()) {
+				log.debug("Fetching main objects from the database");
+				log.debug(String.format("Login threashold date: %s.  Property was: %s", loginThreshold, numOfLoggedInHoursThreshold));
+			}
 			
-			log.debug("Fetching main objects from the database");
-			log.debug(String.format("Login threashold date: %s.  Property was: %s", loginThreshold, numOfLoggedInHoursThreshold));
+			final StopWatch swDB = new StopWatch();
+			swDB.start();
 			
 			/* resources */
 			final List<AuthorizationResource> hbmResourceList = membershipDAO.getResources();
@@ -248,14 +265,26 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 			final Map<String, Set<MembershipDTO>> org2Org2Map = getMembershipMapByEntityId(membershipDAO.getOrg2OrgMembership());
 			final Map<String, Set<String>> org2OrgRightMap = getRightMap(membershipDAO.getOrg2OrgRights());
 			
-			final List<AuthorizationUser> tempUserList = membershipDAO.getUsers(loginThreshold);
+			swDB.stop();
+			if(log.isDebugEnabled()) {
+				log.debug(String.format("Time to fetch relationships from the database: %s ms", swDB.getTime()));
+			}
+			swDB.reset();
 			
+			swDB.start();
+			final List<AuthorizationUser> tempUserList = membershipDAO.getUsers(loginThreshold);
+			swDB.stop();
+			if(log.isDebugEnabled()) {
+				log.info(String.format("Time to fetch users from teh database: %s ms", swDB.getTime()));
+			}
+			swDB.reset();
 			
 			final Map<String, AuthorizationAccessRight> tempAccessRightMap = hibernateAccessRightDAO.findAll()
 					  .stream()
 					  .map(e -> new AuthorizationAccessRight(e, tempAccessRightBitSet.getAndIncrement()))
 					  .collect(Collectors.toMap(AuthorizationAccessRight::getId, Function.identity()));
 			
+			swDB.start();
 			final Map<Integer, AuthorizationAccessRight> tempAccessRightBitMap = new HashMap<Integer, AuthorizationAccessRight>();
 			tempAccessRightMap.forEach((key, value) -> {
 				tempAccessRightBitMap.put(Integer.valueOf(value.getBitIdx()), value);
@@ -494,25 +523,37 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 					}
 				}
 			});
-					
-			
-			log.debug("Compiling users");
-			final StopWatch userCompilationSW = new StopWatch();
-			userCompilationSW.start();
+			swDB.stop();
+			if(log.isDebugEnabled()) {
+				log.debug(String.format("Time to create xref objects: %s ms", swDB.getTime()));
+			}
+			swDB.reset();
 			
 			final int numOfRights = tempAccessRightMap.size();
-			for(final AuthorizationUser user : tempUserMap.values()) {
-				user.compile(numOfRights);
+			swDB.start();
+			if(log.isDebugEnabled()) {
+				log.debug("Compiling users");
 			}
-			userCompilationSW.stop();
-			log.debug(String.format("Done compiling users.  Done in: %s ms", userCompilationSW.getTotalTimeMillis()));
+			
+			final int numOfCompilationTasks = tempUserMap.size();
+			final CountDownLatch latch = new CountDownLatch(numOfCompilationTasks);
+			for(final AuthorizationUser user : tempUserMap.values()) {
+				authManagerCompilationPool.submit(new CompilationTask(user, latch, numOfRights));
+			}
+			latch.await();
+			swDB.stop();
+			if(log.isDebugEnabled()) {
+				log.debug(String.format("Done compiling users.  Done in: %s ms", swDB.getTime()));
+			}
 			
 			synchronized (this) {
 				/* CRITICAL SECTION - don't allow reads during write operation */
 				//writeLock = readWriteLock.writeLock();
 				
 				/* find stale keys in User Cache */
-				log.debug("In critical section - refreshing user cache");
+				if(log.isDebugEnabled()) {
+					log.debug("In critical section - refreshing user cache");
+				}
 				final Set<String> userKeysToRemove = new HashSet<String>();
 				final List<?> userCacheKeys = userCache.getKeys();
 				if(CollectionUtils.isNotEmpty(userCacheKeys)) {
@@ -536,7 +577,9 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 				for(final String userId : tempUserMap.keySet()) {
 					userCache.put(new Element(userId, tempUserMap.get(userId)));
 				}
-				log.debug("Done refreshing user cache");
+				if(log.isDebugEnabled()) {
+					log.debug("Done refreshing user cache");
+				}
 				
 				
 				userBitSet = tempUserBitSet.get();
@@ -549,7 +592,9 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 				
 				/* END CRITICAL SECTION */
 			}
-			log.info("Succeeded in refreshing the authorization manager");
+			if(log.isDebugEnabled()) {
+				log.debug("Succeeded in refreshing the authorization manager");
+			}
 		} catch(Throwable e) {
 			log.error("Error refreshing Authorization Manager", e);
 		} finally {
@@ -563,7 +608,9 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 			}
 			*/
 			sw.stop();
-			log.info(String.format("Refresh (or fail) took %s ms", sw.getTotalTimeMillis()));
+			if(log.isDebugEnabled()) {
+				log.debug(String.format("Refresh (or fail) took %s ms", sw.getTime()));
+			}
 		}
 	}
 	
@@ -687,7 +734,7 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 			*/
 			
 			final int numOfRights = accessRightIdCache.size();
-			retVal.compile(numOfRights);
+			retVal.compile(numOfRights, -1);
 			retVal.setBitSetIdx(userBitSet++);
 			userCache.put(new Element(retVal.getId(), retVal));
 			return retVal;
@@ -970,6 +1017,30 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 		} else {
 			return false;
 		}
+	}
+	
+	private class CompilationTask implements Callable<Void> {
+		
+		private AuthorizationUser entity;
+		private CountDownLatch latch;
+		private int numOfRights;
+		
+		private CompilationTask() {}
+		
+		
+		CompilationTask(final AuthorizationUser entity, final CountDownLatch latch, final int numOfRights) {
+			this.entity = entity;
+			this.latch = latch;
+			this.numOfRights = numOfRights;
+		}
+
+		@Override
+		public Void call() throws Exception {
+			this.entity.compile(numOfRights, (int)latch.getCount());
+			this.latch.countDown();
+			return null;
+		}
+		
 	}
 
 	/*
