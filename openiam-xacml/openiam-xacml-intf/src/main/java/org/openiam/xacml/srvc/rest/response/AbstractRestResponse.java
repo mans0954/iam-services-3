@@ -10,7 +10,7 @@ public abstract class AbstractRestResponse<ReturnObject> {
     private ReturnObject object;
     private String errorText;
     private ResponseStatus status;
-    private String resposeCode;
+    private Integer resposeCode;
 
     public ReturnObject getObject() {
         return object;
@@ -36,11 +36,11 @@ public abstract class AbstractRestResponse<ReturnObject> {
         this.status = status;
     }
 
-    public String getResposeCode() {
+    public Integer getResposeCode() {
         return resposeCode;
     }
 
-    public void setResposeCode(String resposeCode) {
+    public void setResposeCode(Integer resposeCode) {
         this.resposeCode = resposeCode;
     }
 }

@@ -21,7 +21,8 @@
                           org.openiam.xacml.srvc.dozer,
                           org.openiam.xacml.srvc.dao,
     					  org.openiam.xacml.srvc.rest.service,
-    					  org.openiam.xacml.srvc.rest"/>
+    					  org.openiam.xacml.srvc.rest,
+    					  org.openiam.xacml.srvc.service"/>
 
     <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
         <property name="locations">

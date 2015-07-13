@@ -16,7 +16,7 @@ import java.util.*;
  * Created by zaporozhec on 7/10/15.
  */
 @Service("xacmlPolicyService")
-public class XACMLPolicyServiceImpl extends XACMLPolicyService {
+public class XACMLPolicyServiceImpl implements XACMLPolicyService {
 
     @Autowired
     private XACMLPolicyDAO xacmlPolicyDao;

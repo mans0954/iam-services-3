@@ -14,8 +14,6 @@ public interface AbstractRestService<Request extends AbstractRestRequest, Respon
 
     public Response update(Request policyEntity) throws Exception;
 
-    public Response findAll() throws Exception;
-
     public Response findById(String id) throws Exception;
 
     public Response delete(String id) throws Exception;

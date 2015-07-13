@@ -13,4 +13,16 @@ public class XACMLException extends Exception {
         super(message);
         this.error = error;
     }
+
+    public XACMLError getError() {
+        return error;
+    }
+
+    public void setError(XACMLError error) {
+        this.error = error;
+    }
+
+    public String getReport() {
+        return error.value() + ":" + this.getMessage();
+    }
 }

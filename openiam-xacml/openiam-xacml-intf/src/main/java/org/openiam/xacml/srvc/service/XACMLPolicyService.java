@@ -8,16 +8,16 @@ import java.util.List;
 /**
  * Created by zaporozhec on 7/14/15.
  */
-public abstract class XACMLPolicyService {
-    public abstract XACMLPolicyEntity add(XACMLPolicyEntity policyEntity) throws Exception;
+public interface XACMLPolicyService {
+    public XACMLPolicyEntity add(XACMLPolicyEntity policyEntity) throws Exception;
 
-    public abstract XACMLPolicyEntity update(XACMLPolicyEntity policyEntity) throws Exception;
+    public XACMLPolicyEntity update(XACMLPolicyEntity policyEntity) throws Exception;
 
-    public abstract List<XACMLPolicyEntity> findAll() throws Exception;
+    public List<XACMLPolicyEntity> findAll() throws Exception;
 
-    public abstract XACMLPolicyEntity findById(String id) throws Exception;
+    public XACMLPolicyEntity findById(String id) throws Exception;
 
-    public abstract void delete(String id) throws Exception;
+    public void delete(String id) throws Exception;
 
-    public abstract List<XACMLPolicyEntity> findBeans(XACMLPolicySearchBean policySearchBean, int from, int size) throws Exception;
+    public List<XACMLPolicyEntity> findBeans(XACMLPolicySearchBean policySearchBean, int from, int size) throws Exception;
 }
