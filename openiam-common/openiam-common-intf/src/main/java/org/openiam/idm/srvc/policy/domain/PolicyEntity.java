@@ -19,7 +19,7 @@ import org.openiam.idm.srvc.policy.dto.Policy;
 import org.hibernate.annotations.Cache;
 
 @Entity
-@Table(name = "POLICY")
+@Table(name = "XACML_POLICY")
 @DozerDTOCorrespondence(Policy.class)
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @AttributeOverrides({

@@ -37,7 +37,7 @@ public class PolicyConstants {
     static final public int STATUS_ACTIVE = 1;
     static final public int STATUS_INACTIVE = 0;
 
-    /* POLICY ASSOCIATION LEVEL */
+    /* XACML_POLICY ASSOCIATION LEVEL */
     static final public String LEVEL_USER_CLASSIFICATION = "CLASSIFICATION";
     static final public String LEVEL_USER_TYPE = "TYPE";
     static final public String LEVEL_RESOURCE = "RESOURCE";

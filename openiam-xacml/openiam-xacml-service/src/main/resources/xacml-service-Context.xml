@@ -20,7 +20,7 @@
             base-package="org.openiam.xacml.srvc.searchbeans.converter,
                           org.openiam.xacml.srvc.dozer,
                           org.openiam.xacml.srvc.dao,
-    					  org.openiam.xacml.srvc.service,
+    					  org.openiam.xacml.srvc.rest.service,
     					  org.openiam.xacml.srvc.rest"/>
 
     <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">

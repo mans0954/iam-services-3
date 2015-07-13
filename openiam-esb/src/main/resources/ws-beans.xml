@@ -1,52 +1,30 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:jaxrs="http://cxf.apache.org/jaxrs"
        xmlns:jaxws="http://cxf.apache.org/jaxws"
        xsi:schemaLocation="
-http://www.springframework.org/schema/beans
-http://www.springframework.org/schema/beans/spring-beans.xsd
-http://cxf.apache.org/jaxrs
-http://cxf.apache.org/schemas/jaxrs.xsd
-http://cxf.apache.org/jaxws
-http://cxf.apache.org/schemas/jaxws.xsd">
-
-    <import resource="classpath:META-INF/cxf/cxf.xml"/>
-    <import resource="classpath:META-INF/cxf/cxf-extension-jaxrs-binding.xml"/>
-    <import resource="classpath:META-INF/cxf/cxf-servlet.xml"/>
-
-    <jaxrs:server id="xacml" address="/rest/">
-        <jaxrs:serviceBeans>
-            <ref bean="xacmlPolicy"/>
-        </jaxrs:serviceBeans>
-    </jaxrs:server>
-
-    <bean id="xacmlPolicy" class="org.openiam.xacml.srvc.rest.XACMLPolicyRestServiceImpl"/>
+         http://www.springframework.org/schema/beans
+         http://www.springframework.org/schema/beans/spring-beans.xsd
+         http://cxf.apache.org/jaxws
+         http://cxf.apache.org/schemas/jaxws.xsd">
 
 
-    <jaxws:endpoint id="uriFederationWebServiceEndpoint" implementor="#uriFederationWebServiceComponent"
-                    address="/URIFederationWebService"/>
+    <jaxws:endpoint id="uriFederationWebServiceEndpoint" implementor="#uriFederationWebServiceComponent" address="/URIFederationWebService"/>
 
     <jaxws:endpoint id="languageWebServiceEndpoint" implementor="#languageWebService" address="/LanguageWebService"/>
 
     <jaxws:endpoint id="authenticationServiceEndpoint" implementor="#authenticate" address="/AuthenticationService"/>
 
-    <jaxws:endpoint id="authorizationManagerMenuWebServiceEndpoint" implementor="#authorizationManagerMenuWebService"
-                    address="/AuthorizationManagerMenuWebService"/>
+    <jaxws:endpoint id="authorizationManagerMenuWebServiceEndpoint" implementor="#authorizationManagerMenuWebService" address="/AuthorizationManagerMenuWebService"/>
 
     <jaxws:endpoint id="userDataServiceEndpoint" implementor="#userWS" address="/UserDataService"/>
 
-    <jaxws:endpoint id="resourceDataWebServiceEndpoint" implementor="#resourceDataService"
-                    address="/ResourceDataWebService"/>
+    <jaxws:endpoint id="resourceDataWebServiceEndpoint" implementor="#resourceDataService" address="/ResourceDataWebService"/>
 
-    <jaxws:endpoint id="categoryDataWebServiceEndpoint" implementor="#categorydataService"
-                    address="/CategoryDataWebService"/>
+    <jaxws:endpoint id="categoryDataWebServiceEndpoint" implementor="#categorydataService" address="/CategoryDataWebService"/>
 
-    <jaxws:endpoint id="managedSystemWebServiceEndpoint" implementor="#managedSysService"
-                    address="/ManagedSystemWebService"/>
+    <jaxws:endpoint id="managedSystemWebServiceEndpoint" implementor="#managedSysService" address="/ManagedSystemWebService"/>
 
-    <jaxws:endpoint id="authorizationManagerWebServiceEndpoint" implementor="#authorizationManagerWebService"
-                    address="/AuthorizationManagerWebService"/>
+    <jaxws:endpoint id="authorizationManagerWebServiceEndpoint" implementor="#authorizationManagerWebService" address="/AuthorizationManagerWebService"/>
 
     <jaxws:endpoint id="groupDataWebServiceEndpoint" implementor="#groupWS" address="/GroupDataWebService"/>
 
@@ -60,67 +38,53 @@ http://cxf.apache.org/schemas/jaxws.xsd">
 
     <jaxws:endpoint id="provisioningServiceEndpoint" implementor="#defaultProvision" address="/ProvisioningService"/>
 
-    <jaxws:endpoint id="asynchUserProvisionServiceEndpoint" implementor="#asynchProvisonWS"
-                    address="/AsynchUserProvisionService"/>
+    <jaxws:endpoint id="asynchUserProvisionServiceEndpoint" implementor="#asynchProvisonWS" address="/AsynchUserProvisionService"/>
 
     <jaxws:endpoint id="GroupProvisionServiceEndpoint" implementor="#groupProvision" address="/GroupProvisionService"/>
 
-    <jaxws:endpoint id="connectorWebServiceEndpoint" implementor="#provisionConnectorWebService"
-                    address="/ConnectorWebService"/>
+    <jaxws:endpoint id="connectorWebServiceEndpoint" implementor="#provisionConnectorWebService" address="/ConnectorWebService"/>
 
-    <jaxws:endpoint id="identitySynchWebServiceEndpoint" implementor="#synchServiceWS"
-                    address="/IdentitySynchWebService"/>
+    <jaxws:endpoint id="identitySynchWebServiceEndpoint" implementor="#synchServiceWS" address="/IdentitySynchWebService"/>
 
-    <jaxws:endpoint id="asynchSynchronizatonServiceEndpoint" implementor="#asynchSynchServiceWS"
-                    address="/Asynch-SynchronizatonService"/>
+    <jaxws:endpoint id="asynchSynchronizatonServiceEndpoint" implementor="#asynchSynchServiceWS" address="/Asynch-SynchronizatonService"/>
 
-    <jaxws:endpoint id="synchReviewWebServiceEndpoint" implementor="#synchReviewWebService"
-                    address="/SynchReviewWebService"/>
+    <jaxws:endpoint id="synchReviewWebServiceEndpoint" implementor="#synchReviewWebService" address="/SynchReviewWebService"/>
 
     <jaxws:endpoint id="passwordWebServiceEndpoint" implementor="#passwordWS" address="/PasswordWebService"/>
 
     <jaxws:endpoint id="loginDataWebServiceEndpoint" implementor="#loginWS" address="/LoginDataWebService"/>
 
-    <jaxws:endpoint id="authResourceAttributeWebServiceEndpoint" implementor="#authResourceAttributeWS"
-                    address="/AuthResourceAttributeWebService"/>
+    <jaxws:endpoint id="authResourceAttributeWebServiceEndpoint" implementor="#authResourceAttributeWS" address="/AuthResourceAttributeWebService"/>
 
-    <jaxws:endpoint id="authProviderWebServiceEndpoint" implementor="#authProviderWS"
-                    address="/AuthProviderWebService"/>
+    <jaxws:endpoint id="authProviderWebServiceEndpoint" implementor="#authProviderWS" address="/AuthProviderWebService"/>
 
     <jaxws:endpoint id="keyManagementWSEndpoint" implementor="#keyManagementWS" address="/KeyManagementWS"/>
 
     <jaxws:endpoint id="systemInfoWebServiceEndpoint" implementor="#systemInfoWS" address="/SystemInfoWebService"/>
 
-    <jaxws:endpoint id="contentProviderWebServiceEndpoint" implementor="#contentProviderWS"
-                    address="/ContentProviderWebService"/>
+    <jaxws:endpoint id="contentProviderWebServiceEndpoint" implementor="#contentProviderWS" address="/ContentProviderWebService"/>
 
     <jaxws:endpoint id="auditServiceEndpoint" implementor="#auditWS" address="/AuditService"/>
 
-    <jaxws:endpoint id="challengeResponseWebServiceEndpoint" implementor="#challengeResponse"
-                    address="/ChallengeResponseWebService"/>
+    <jaxws:endpoint id="challengeResponseWebServiceEndpoint" implementor="#challengeResponse" address="/ChallengeResponseWebService"/>
 
     <jaxws:endpoint id="reportWebServiceEndpoint" implementor="#reportWS" address="/ReportWebService"/>
 
     <jaxws:endpoint id="emailWebServiceEndpoint" implementor="#mailService" address="/EmailWebService"/>
 
-    <jaxws:endpoint id="metadataElementTemplateWebServiceEndpoint" implementor="#metadataElementTemplateWebService"
-                    address="/MetadataElementTemplateWebService"/>
+    <jaxws:endpoint id="metadataElementTemplateWebServiceEndpoint" implementor="#metadataElementTemplateWebService" address="/MetadataElementTemplateWebService"/>
 
     <jaxws:endpoint id="policyWebServiceEndpoint" implementor="#policyDataService" address="/PolicyWebService"/>
 
-    <jaxws:endpoint id="reconciliationWebServiceEndpoint" implementor="#reconServiceWS"
-                    address="/ReconciliationWebService"/>
+    <jaxws:endpoint id="reconciliationWebServiceEndpoint" implementor="#reconServiceWS" address="/ReconciliationWebService"/>
 
     <jaxws:endpoint id="fileWebServiceEndpoint" implementor="#fileWebService" address="/FileWebService"/>
 
-    <jaxws:endpoint id="authorizationManagerAdminWebServiceEndpoint" implementor="#authorizationManagerAdminWebService"
-                    address="/AuthorizationManagerAdminWebService"/>
+    <jaxws:endpoint id="authorizationManagerAdminWebServiceEndpoint" implementor="#authorizationManagerAdminWebService" address="/AuthorizationManagerAdminWebService"/>
 
-    <jaxws:endpoint id="organizationTypeDataServiceEndpoint" implementor="#organizationTypeDataService"
-                    address="/OrganizationTypeDataService"/>
+    <jaxws:endpoint id="organizationTypeDataServiceEndpoint" implementor="#organizationTypeDataService" address="/OrganizationTypeDataService"/>
 
-    <jaxws:endpoint id="asynchReconciliationWebServiceEndpoint" implementor="#asyncReconciliationServiceWS"
-                    address="/AsynchReconciliationWebService"/>
+    <jaxws:endpoint id="asynchReconciliationWebServiceEndpoint" implementor="#asyncReconciliationServiceWS" address="/AsynchReconciliationWebService"/>
 
     <jaxws:endpoint id="batchDataWebServiceEndpoint" implementor="#batchDataService" address="/BatchDataWebService"/>
 
@@ -128,17 +92,14 @@ http://cxf.apache.org/schemas/jaxws.xsd">
 
     <jaxws:endpoint id="activitiServiceEndpoint" implementor="#activitiBPMService" address="/ActivitiService"/>
 
-    <jaxws:endpoint id="propertyValueServiceEndpoint" implementor="#propertyValueWS"
-                    address="/PropertyValueWebService"/>
+    <jaxws:endpoint id="propertyValueServiceEndpoint" implementor="#propertyValueWS" address="/PropertyValueWebService"/>
 
     <jaxws:endpoint id="accessRightServiceEndpoint" implementor="#accessRightWS" address="/AccessRightDataService"/>
     <!--let it it for now-->
-    <jaxws:endpoint id="genericScriptConnectorEndpoint" implementor="#genericScriptConnector"
-                    address="/ScriptConnectorService"/>
+    <jaxws:endpoint id="genericScriptConnectorEndpoint" implementor="#genericScriptConnector" address="/ScriptConnectorService"/>
 
     <jaxws:endpoint id="accessReviewWSEndpoint" implementor="#accessReviewWS" address="/AccessReviewWebService"/>
 
-    <jaxws:endpoint id="ldapConnectorServiceEndpoint" implementor="#genericLdapConnector"
-                    address="/LDAPConnectorService"/>
+    <jaxws:endpoint id="ldapConnectorServiceEndpoint" implementor="#genericLdapConnector" address="/LDAPConnectorService"/>
 
 </beans>

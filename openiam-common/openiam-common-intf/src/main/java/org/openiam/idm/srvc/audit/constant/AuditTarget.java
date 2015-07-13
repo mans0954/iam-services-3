@@ -6,7 +6,7 @@ public enum AuditTarget {
     ROLE("ROLE"),
     RESOURCE("RESOURCE"),
     MANAGED_SYS("MANAGED_SYS"),
-    POLICY("POLICY"),
+    POLICY("XACML_POLICY"),
     ORG("ORG"),
     TASK("TASK"),
     USER_ATTRIBUTE("USER_ATTRIBUTE"),
