@@ -1,14 +1,16 @@
 package org.openiam.am.srvc.domain;
 
+import org.hibernate.annotations.*;
 import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
 import org.openiam.base.domain.KeyEntity;
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 
 import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import java.util.Set;
 
 /**
@@ -20,6 +22,9 @@ import java.util.Set;
 @AttributeOverride(name = "id", column = @Column(name = "OAUTH_AUTHORIZATION_ID"))
 public class OAuthUserClientXrefEntity extends KeyEntity {
 
+    @Column(name="IS_ALLOWED")
+    @Type(type = "yes_no")
+    private boolean isAllowed;
 
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "PROVIDER_ID", referencedColumnName = "PROVIDER_ID", insertable = true, updatable = false, nullable=false)
@@ -29,12 +34,9 @@ public class OAuthUserClientXrefEntity extends KeyEntity {
     @JoinColumn(name = "USER_ID", referencedColumnName = "USER_ID", insertable = true, updatable = false, nullable=false)
     private UserEntity user;
 
-    @ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.EAGER)
-    @JoinTable(name = "OAUTH_AUTHORIZED_SCOPE",
-            joinColumns = {@JoinColumn(name = "OAUTH_AUTHORIZATION_ID")},
-            inverseJoinColumns = {@JoinColumn(name = "ROLE_ID")})
-    @Fetch(FetchMode.SUBSELECT)
-    private Set<RoleEntity> scopes;
+    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.EAGER)
+    @JoinColumn(name="RESOURCE_ID", referencedColumnName = "RESOURCE_ID", insertable = true, updatable = true, nullable=false)
+    private ResourceEntity scope;
 
     public AuthProviderEntity getClient() {
         return client;
@@ -52,11 +54,38 @@ public class OAuthUserClientXrefEntity extends KeyEntity {
         this.user = user;
     }
 
-    public Set<RoleEntity> getScopes() {
-        return scopes;
+    public ResourceEntity getScope() {
+        return scope;
     }
 
-    public void setScopes(Set<RoleEntity> scopes) {
-        this.scopes = scopes;
+    public void setScope(ResourceEntity scope) {
+        this.scope = scope;
+    }
+
+    public boolean getIsAllowed() {
+        return isAllowed;
+    }
+
+    public void setIsAllowed(boolean isAllowed) {
+        this.isAllowed = isAllowed;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+
+        OAuthUserClientXrefEntity that = (OAuthUserClientXrefEntity) o;
+
+        return isAllowed == that.isAllowed;
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + (isAllowed ? 1 : 0);
+        return result;
     }
 }

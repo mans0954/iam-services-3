@@ -1,5 +1,6 @@
 package org.openiam.idm.searchbeans;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.base.Tuple;
 import org.openiam.idm.srvc.res.dto.Resource;
@@ -16,6 +17,7 @@ import java.util.Set;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ResourceSearchBean", propOrder = {
+		"keySet",
         "resourceTypeId",
         "rootsOnly",
         "attributes",
@@ -31,7 +33,7 @@ public class ResourceSearchBean extends EntitlementsSearchBean<Resource, String>
 
 	private static final long serialVersionUID = 1L;
     public static final String TYPE_MANAGED_SYS = "MANAGED_SYS";
-
+	private Set<String> keySet;
 	private String resourceTypeId;
 	private Boolean rootsOnly;
 	private List<Tuple<String, String>> attributes;
@@ -140,6 +142,39 @@ public class ResourceSearchBean extends EntitlementsSearchBean<Resource, String>
 
 	public void setOwnerId(String ownerId) {
 		this.ownerId = ownerId;
+	}
+
+
+	@Override
+	public String getKey() {
+		return (CollectionUtils.isNotEmpty(keySet)) ? keySet.iterator().next() : null;
+	}
+
+	@Override
+	public void setKey(final String key) {
+		if(keySet == null) {
+			keySet = new HashSet<String>();
+		}
+		keySet.add(key);
+	}
+
+	public Set<String> getKeys() {
+		return keySet;
+	}
+
+	public void addKey(final String key) {
+		if(this.keySet == null) {
+			this.keySet = new HashSet<String>();
+		}
+		this.keySet.add(key);
+	}
+
+	public boolean hasMultipleKeys() {
+		return (keySet != null && keySet.size() > 1);
+	}
+
+	public void setKeys(final Set<String> keySet) {
+		this.keySet = keySet;
 	}
 
 	@Override

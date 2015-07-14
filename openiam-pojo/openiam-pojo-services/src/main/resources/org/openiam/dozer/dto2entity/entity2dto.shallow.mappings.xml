@@ -905,12 +905,12 @@
 			<b>uriPatterns</b>
 		</field-exclude>
 		 <field-exclude>
-			 <a>oAuthCodes</a>
-			 <b>oAuthCodes</b>
-		 </field-exclude>
-		 <field-exclude>
 			 <a>oAuthTokens</a>
 			 <b>oAuthTokens</b>
+		 </field-exclude>
+		 <field-exclude>
+			 <a>authorizedUsers</a>
+			 <b>authorizedUsers</b>
 		 </field-exclude>
     </mapping>
 

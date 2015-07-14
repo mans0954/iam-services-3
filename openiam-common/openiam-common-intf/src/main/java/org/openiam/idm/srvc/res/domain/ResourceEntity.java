@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.res.domain;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.*;
+import org.openiam.am.srvc.domain.OAuthUserClientXrefEntity;
 import org.openiam.base.domain.AbstractMetdataTypeEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.access.domain.AccessRightEntity;
@@ -12,6 +13,7 @@ import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.org.domain.GroupToOrgMembershipXrefEntity;
 import org.openiam.idm.srvc.org.domain.ResourceToOrgMembershipXrefEntity;
+import org.openiam.idm.srvc.org.domain.RoleToOrgMembershipXrefEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceRisk;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
@@ -127,8 +129,13 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="memberEntity", orphanRemoval=true)
     @Fetch(FetchMode.SUBSELECT)
     private Set<GroupToResourceMembershipXrefEntity> groups = new HashSet<GroupToResourceMembershipXrefEntity>(0);
-    
-    public ResourceRisk getRisk() {
+
+	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="scope", orphanRemoval=true)
+	@Fetch(FetchMode.SUBSELECT)
+	private Set<OAuthUserClientXrefEntity> oAuthClientAuthorizations = new HashSet<OAuthUserClientXrefEntity>(0);
+
+
+	public ResourceRisk getRisk() {
         return risk;
     }
 
@@ -462,6 +469,14 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
 
     public Set<ResourceToOrgMembershipXrefEntity> getOrganizations() {
 		return organizations;
+	}
+
+	public Set<OAuthUserClientXrefEntity> getoAuthClientAuthorizations() {
+		return oAuthClientAuthorizations;
+	}
+
+	public void setoAuthClientAuthorizations(Set<OAuthUserClientXrefEntity> oAuthClientAuthorizations) {
+		this.oAuthClientAuthorizations = oAuthClientAuthorizations;
 	}
 
 	public void setOrganizations(

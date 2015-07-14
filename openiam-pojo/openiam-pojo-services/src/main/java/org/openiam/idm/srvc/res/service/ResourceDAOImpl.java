@@ -42,7 +42,9 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 		Criteria criteria = getCriteria();
 		if(searchBean != null && searchBean instanceof ResourceSearchBean) {
 			final ResourceSearchBean resourceSearchBean = (ResourceSearchBean)searchBean;
-			criteria = getExampleCriteria(resourceSearchBeanConverter.convert(resourceSearchBean));
+			ResourceEntity example = resourceSearchBeanConverter.convert(resourceSearchBean);
+			example.setId(null);
+			criteria = getExampleCriteria(example);
 			addSearchBeanCriteria(criteria, resourceSearchBean);
 		}
 		return criteria;
@@ -149,6 +151,13 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 
 	private void addSearchBeanCriteria(final Criteria criteria, final ResourceSearchBean searchBean) {
 		if(searchBean != null && criteria != null) {
+
+			if(searchBean.hasMultipleKeys()) {
+				criteria.add(Restrictions.in(getPKfieldName(), searchBean.getKeys()));
+			}else if(StringUtils.isNotBlank(searchBean.getKey())) {
+				criteria.add(Restrictions.eq(getPKfieldName(), searchBean.getKey()));
+			}
+
 			if(Boolean.TRUE.equals(searchBean.getRootsOnly())) {
 				criteria.add(Restrictions.isEmpty("parentResources"));
 			}

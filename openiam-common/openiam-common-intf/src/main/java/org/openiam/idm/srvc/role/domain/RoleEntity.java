@@ -103,11 +103,6 @@ public class RoleEntity extends AbstractMetdataTypeEntity {
     @Fetch(FetchMode.SUBSELECT)
     private Set<RoleToOrgMembershipXrefEntity> organizations = new HashSet<RoleToOrgMembershipXrefEntity>(0);
 
-	@ManyToMany(cascade = {CascadeType.ALL})
-	@JoinTable(name = "OAUTH_AUTHORIZED_SCOPE", joinColumns = { @JoinColumn(name = "ROLE_ID") }, inverseJoinColumns = { @JoinColumn(name = "OAUTH_AUTHORIZATION_ID") })
-	private Set<OAuthUserClientXrefEntity> oAuthAuthorizationSet = new HashSet<OAuthUserClientXrefEntity>(0);
-
-
 	public String getName() {
 		return name;
 	}
@@ -424,14 +419,6 @@ public class RoleEntity extends AbstractMetdataTypeEntity {
 	public void setOrganizations(Set<RoleToOrgMembershipXrefEntity> organizations) {
 		this.organizations = organizations;
     }
-
-	public Set<OAuthUserClientXrefEntity> getoAuthAuthorizationSet() {
-		return oAuthAuthorizationSet;
-	}
-
-	public void setoAuthAuthorizationSet(Set<OAuthUserClientXrefEntity> oAuthAuthorizationSet) {
-		this.oAuthAuthorizationSet = oAuthAuthorizationSet;
-	}
 
 	@Override
 	public int hashCode() {

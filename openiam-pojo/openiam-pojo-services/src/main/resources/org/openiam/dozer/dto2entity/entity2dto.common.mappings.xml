@@ -840,4 +840,32 @@
 			<b>redirectUrl</b>
 		</field>
 	</mapping>
+	<mapping>
+		<class-a>org.openiam.am.srvc.domain.OAuthUserClientXrefEntity</class-a>
+		<class-b>org.openiam.am.srvc.dto.OAuthUserClientXref</class-b>
+		<field>
+			<a>id</a>
+			<b>id</b>
+		</field>
+		<field>
+			<a>isAllowed</a>
+			<b>isAllowed</b>
+		</field>
+		<field>
+			<a>client.id</a>
+			<b>clientId</b>
+		</field>
+		<field>
+			<a>user.id</a>
+			<b>userId</b>
+		</field>
+		<field>
+			<a>scope.id</a>
+			<b>scopeId</b>
+		</field>
+		<field>
+			<a>scope.name</a>
+			<b>scopeName</b>
+		</field>
+	</mapping>
 </mappings>
