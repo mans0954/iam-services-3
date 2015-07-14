@@ -2,6 +2,7 @@ package org.openiam.authmanager.dao;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import org.openiam.authmanager.common.model.AuthorizationGroup;
 import org.openiam.authmanager.common.model.AuthorizationOrganization;
@@ -59,4 +60,7 @@ public interface MembershipDAO {
 	public List<AuthorizationResource> getResources();
 	public List<AuthorizationUser> getUsers(final Date date);
 	public InternalAuthroizationUser getUser(final String id);
+	
+	public List<String> getUsersForResource(final String resourceId);
+	public List<String> getUsersForResource(final String resourceId, final String rightId);
 }

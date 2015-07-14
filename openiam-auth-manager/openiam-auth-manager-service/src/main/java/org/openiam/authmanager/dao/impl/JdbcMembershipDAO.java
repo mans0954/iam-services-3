@@ -4,6 +4,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.Table;
 
@@ -84,7 +85,8 @@ public class JdbcMembershipDAO extends AbstractJDBCDao implements MembershipDAO 
 													  "		ON orgm.MEMBERSHIP_ID=orgmr.MEMBERSHIP_ID " + 
 													  "	WHERE l.USER_ID=?;";
 
-	
+	private String GET_USER_IDS_FOR_RESOURCE_WITH_RIGHT = "SELECT r.USER_ID FROM %s.RESOURCE_USER r JOIN %s.USER_RES_MEMBERSHIP_RIGHTS rm ON r.MEMBERSHIP_ID=rm.MEMBERSHIP_ID WHERE r.RESOURCE_ID=? AND rm.ACCESS_RIGHT_ID=?;";
+	private String GET_USER_IDS_FOR_RESOURCE = "SELECT USER_ID FROM %s.RESOURCE_USER WHERE RESOURCE_ID=?";
 	private String GET_USERS = "SELECT USER_ID AS ID FROM %s.LOGIN WHERE LAST_LOGIN >= ?";
 	private String GET_RESOURCES = "SELECT RESOURCE_ID AS ID, NAME AS NAME, DESCRIPTION AS DESCRIPTION, RESOURCE_TYPE_ID AS RESOURCE_TYPE_ID FROM %s.RES";
 	private String GET_GROUPS;
@@ -145,6 +147,8 @@ public class JdbcMembershipDAO extends AbstractJDBCDao implements MembershipDAO 
 	protected void initSqlStatements() {
 		GET_FULLY_POPULATED_USER_RS_LIST = String.format(GET_FULLY_POPULATED_USER_RS_LIST, getSchemaName(), getSchemaName(), getSchemaName(), getSchemaName(), getSchemaName(), getSchemaName(), getSchemaName(), getSchemaName(), getSchemaName());
 		GET_USERS = String.format(GET_USERS, getSchemaName());
+		GET_USER_IDS_FOR_RESOURCE_WITH_RIGHT = String.format(GET_USER_IDS_FOR_RESOURCE_WITH_RIGHT, getSchemaName(), getSchemaName());
+		GET_USER_IDS_FOR_RESOURCE = String.format(GET_USER_IDS_FOR_RESOURCE, getSchemaName());
 		GET_RESOURCES = String.format(GET_RESOURCES, getSchemaName());
 		GET_ORGS = getEntitySQL("COMPANY_ID", "COMPANY_NAME", "DESCRIPTION", "STATUS", "COMPANY");
 		GET_ROLES = getEntitySQL("ROLE_ID", "ROLE_NAME", "DESCRIPTION", "STATUS", "ROLE");
@@ -487,5 +491,15 @@ public class JdbcMembershipDAO extends AbstractJDBCDao implements MembershipDAO 
 			dto.setMemberEntityId(rs.getString("MEMBER_ENTITY_ID"));
 			return dto;
 		}
+	}
+
+	@Override
+	public List<String> getUsersForResource(String resourceId) {
+		return getJdbcTemplate().queryForList(GET_USER_IDS_FOR_RESOURCE, new Object[] {resourceId}, String.class);
+	}
+
+	@Override
+	public List<String> getUsersForResource(String resourceId, String rightId) {
+		return getJdbcTemplate().queryForList(GET_USER_IDS_FOR_RESOURCE_WITH_RIGHT, new Object[] {resourceId, rightId}, String.class);
 	}
 }

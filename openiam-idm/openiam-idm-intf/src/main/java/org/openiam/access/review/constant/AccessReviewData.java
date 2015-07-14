@@ -148,6 +148,7 @@ public class AccessReviewData {
     }
 
     private Map<String, Set<String>> getChild2ParentMap(String className){
+    	/*
         if(this.roleClass.equals(className)){
             return this.matrix.getChildRoleToParentRoleMap();
         } else if(this.groupClass.equals(className)){
@@ -157,6 +158,7 @@ public class AccessReviewData {
         }else{
             return null;
         }
+        */ return null;
     }
 
     public boolean isFilterSet(){
