@@ -1,7 +1,7 @@
 package org.openiam.xacml.srvc.service;
 
 import org.openiam.xacml.srvc.domain.XACMLPolicyEntity;
-import org.openiam.xacml.srvc.searchbeans.XACMLPolicySearchBean;
+import org.openiam.idm.searchbeans.xacml.XACMLPolicySearchBean;
 
 import java.util.List;
 

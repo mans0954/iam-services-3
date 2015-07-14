@@ -1,5 +1,8 @@
 package org.openiam.xacml.srvc.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonRootName;
+import com.fasterxml.jackson.annotation.JsonValue;
 import org.openiam.base.KeyDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.xacml.srvc.domain.XACMLPolicyEntity;
@@ -11,20 +14,10 @@ import javax.xml.bind.annotation.XmlType;
 /**
  * Created by zaporozhec on 7/10/15.
  */
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "XACMLPolicyDTO", propOrder = {
-        "identifier",
-        "version",
-        "combinationAlgorithm",
-        "maxDelegationDepth",
-        "description",
-        "issuer",
-        "policyIdReferences",
-        "policyDefaults"
-
-})
+@JsonRootName(value = "Policy")
 @DozerDTOCorrespondence(XACMLPolicyEntity.class)
 public class XACMLPolicyDTO extends KeyDTO {
+
 
     private String identifier;
     private String version;
@@ -34,6 +27,7 @@ public class XACMLPolicyDTO extends KeyDTO {
     private String issuer;
     private String policyIdReferences;
     private String policyDefaults;
+    private XACMLTargetDTO target;
 
     public String getIdentifier() {
         return identifier;
@@ -97,5 +91,13 @@ public class XACMLPolicyDTO extends KeyDTO {
 
     public void setPolicyDefaults(String policyDefaults) {
         this.policyDefaults = policyDefaults;
+    }
+
+    public XACMLTargetDTO getTarget() {
+        return target;
+    }
+
+    public void setTarget(XACMLTargetDTO target) {
+        this.target = target;
     }
 }

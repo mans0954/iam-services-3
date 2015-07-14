@@ -1,6 +1,6 @@
-package org.openiam.xacml.srvc.rest.request;
+package org.openiam.rest.request;
 
-import org.openiam.xacml.srvc.searchbeans.XACMLPolicySearchBean;
+import org.openiam.idm.searchbeans.xacml.XACMLPolicySearchBean;
 
 /**
  * Created by zaporozhec on 7/14/15.

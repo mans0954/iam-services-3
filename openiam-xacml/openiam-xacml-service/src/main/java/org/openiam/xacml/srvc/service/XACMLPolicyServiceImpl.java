@@ -2,11 +2,11 @@ package org.openiam.xacml.srvc.service;
 
 import org.openiam.xacml.srvc.constants.XACMLError;
 import org.openiam.xacml.srvc.dao.XACMLPolicyDAO;
+import org.openiam.xacml.srvc.dao.XACMLTargetDAO;
 import org.openiam.xacml.srvc.domain.XACMLPolicyEntity;
 import org.openiam.xacml.srvc.exception.XACMLException;
-import org.openiam.xacml.srvc.searchbeans.XACMLPolicySearchBean;
+import org.openiam.idm.searchbeans.xacml.XACMLPolicySearchBean;
 import org.openiam.xacml.srvc.searchbeans.converter.XACMLPolicySearchBeanConverter;
-import org.openiam.xacml.srvc.service.XACMLPolicyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,12 +21,14 @@ public class XACMLPolicyServiceImpl implements XACMLPolicyService {
     @Autowired
     private XACMLPolicyDAO xacmlPolicyDao;
     @Autowired
+    private XACMLTargetDAO xacmlTargetDAO;
+    @Autowired
     private XACMLPolicySearchBeanConverter xacmlPolicySearchBeanConverter;
 
     @Override
     public XACMLPolicyEntity add(XACMLPolicyEntity policyEntity) throws Exception {
         if (policyEntity.getId() == null) {
-            policyEntity.setId(xacmlPolicyDao.add(policyEntity).getId());
+            xacmlPolicyDao.save(policyEntity);
         } else {
             throw new XACMLException(XACMLError.CAN_NOT_ADD_POLICY, "Policy ID has already existed");
         }
@@ -38,7 +40,7 @@ public class XACMLPolicyServiceImpl implements XACMLPolicyService {
         if (policyEntity.getId() == null) {
             throw new XACMLException(XACMLError.CAN_NOT_UPDATE_POLICY, "Policy ID is undefined! Can't update");
         } else {
-            xacmlPolicyDao.merge(policyEntity);
+            xacmlPolicyDao.update(policyEntity);
         }
         return policyEntity;
     }

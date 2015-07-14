@@ -1,5 +1,7 @@
 package org.openiam.base.ws;
 
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
@@ -24,4 +26,8 @@ public enum ResponseStatus {
         value = val;
     }
 
+    @JsonValue
+    public String getValue() {
+        return value;
+    }
 }

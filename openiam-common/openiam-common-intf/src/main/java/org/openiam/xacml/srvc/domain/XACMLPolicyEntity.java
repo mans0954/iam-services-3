@@ -48,7 +48,7 @@ public class XACMLPolicyEntity extends KeyEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "TARGET_ID", referencedColumnName = "TARGET_ID")
-    private XACMLTargetEntity targetEntity;
+    private XACMLTargetEntity target;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "OBLIGATIONS_ID", referencedColumnName = "OBLIGATIONS_ID")
@@ -144,12 +144,12 @@ public class XACMLPolicyEntity extends KeyEntity {
         this.policyDefaults = policyDefaults;
     }
 
-    public XACMLTargetEntity getTargetEntity() {
-        return targetEntity;
+    public XACMLTargetEntity getTarget() {
+        return target;
     }
 
-    public void setTargetEntity(XACMLTargetEntity targetEntity) {
-        this.targetEntity = targetEntity;
+    public void setTarget(XACMLTargetEntity target) {
+        this.target = target;
     }
 
     public XACMLObligationsEntity getObligationsEntity() {

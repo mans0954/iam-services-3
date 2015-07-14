@@ -1,9 +1,9 @@
-package org.openiam.xacml.srvc.rest.constant;
+package org.openiam.rest.constant;
 
 /**
  * Created by zaporozhec on 7/10/15.
  */
 public class XACMLServicePath {
     public final static String POLICY = "policy/";
-
+    public final static String TARGET = "target/";
 }

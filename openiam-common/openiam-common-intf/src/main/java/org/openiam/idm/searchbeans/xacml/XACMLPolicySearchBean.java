@@ -1,4 +1,4 @@
-package org.openiam.xacml.srvc.searchbeans;
+package org.openiam.idm.searchbeans.xacml;
 
 import org.openiam.idm.searchbeans.AbstractSearchBean;
 import org.openiam.xacml.srvc.dto.XACMLPolicyDTO;
@@ -9,7 +9,6 @@ import javax.xml.bind.annotation.XmlAccessorType;
 /**
  * Created by zaporozhec on 7/10/15.
  */
-@XmlAccessorType(XmlAccessType.FIELD)
 public class XACMLPolicySearchBean extends AbstractSearchBean<XACMLPolicyDTO, String> {
     String identifier;
 

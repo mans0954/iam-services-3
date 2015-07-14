@@ -1,10 +1,12 @@
-package org.openiam.xacml.srvc.rest.request;
+package org.openiam.rest.request;
 
-import org.openiam.xacml.srvc.rest.request.constant.RestRequestType;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import org.openiam.rest.request.constant.RestRequestType;
 
 /**
  * Created by zaporozhec on 7/14/15.
  */
+@JsonIgnoreProperties({"type"})
 public abstract class AbstractRestRequest {
 
     private RestRequestType type;

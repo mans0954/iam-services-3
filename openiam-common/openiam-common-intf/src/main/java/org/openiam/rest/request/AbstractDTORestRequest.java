@@ -1,7 +1,7 @@
-package org.openiam.xacml.srvc.rest.request;
+package org.openiam.rest.request;
 
 import org.openiam.base.KeyDTO;
-import org.openiam.xacml.srvc.rest.request.constant.RestRequestType;
+import org.openiam.rest.request.constant.RestRequestType;
 
 /**
  * Created by zaporozhec on 7/14/15.
