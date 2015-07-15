@@ -772,9 +772,17 @@ public class AuthorizationManagerAdminServiceImpl implements AuthorizationManage
 	   
     	final Map<String, Map<String, Set<String>>> org2OrgMap = getOrg2OrgMap();
     	
+		if(rightId != null) {
+			userIds.addAll(membershipDAO.getUsersForGroup(groupId, rightId));
+		} else {
+			userIds.addAll(membershipDAO.getUsersForGroup(groupId));
+		}
+    	
     	if(StringUtils.isNotBlank(groupId)) {
     		final Set<String> groupVisitedSet = new HashSet<String>();
     		final Set<String> groupIds = new HashSet<String>();
+    		groupIds.add(groupId);
+    		
     		group2GroupMap.forEach((childId, parentTuple) -> {
     			if(parentTuple != null && parentTuple.containsKey(groupId)) {
     				if(rightId != null) {
@@ -792,11 +800,18 @@ public class AuthorizationManagerAdminServiceImpl implements AuthorizationManage
     		final Set<String> visitedRoleSet = new HashSet<String>();
     		final Set<String> roleIds = new HashSet<String>();
 			
-    		groupIds.forEach(g -> {
-    			if(group2RoleMap.containsKey(g)) {
-    				roleIds.addAll(group2RoleMap.get(g).keySet());
-    				group2RoleMap.get(g).keySet().forEach(entityId -> {
-    					roleIds.addAll(visitParents(entityId, rightId, role2RoleMap, visitedRoleSet));
+    		groupIds.forEach(childId -> {
+    			if(group2RoleMap.containsKey(childId)) {
+    				group2RoleMap.get(childId).forEach((parentId, rights) -> {
+    					if(rightId != null) {
+    						if(rights.contains(rightId)) {
+    							roleIds.add(parentId);
+    							roleIds.addAll(visitParents(parentId, null, role2RoleMap, visitedRoleSet));
+    						}
+    					} else {
+	   						  roleIds.add(parentId);
+	   						  roleIds.addAll(visitParents(parentId, null, role2RoleMap, visitedRoleSet));
+    					}
     				});
     			}
     		});
@@ -804,13 +819,20 @@ public class AuthorizationManagerAdminServiceImpl implements AuthorizationManage
     		final Set<String> visitedOrgSet = new HashSet<String>();
     		final Set<String> orgIds = new HashSet<String>();
 			
-    		groupIds.forEach(r -> {
-    			if(group2OrgMap.containsKey(r)) {
-    				orgIds.addAll(group2OrgMap.get(r).keySet());
-    				group2OrgMap.get(r).keySet().forEach(entityId -> {
-    					orgIds.addAll(visitParents(entityId, rightId, org2OrgMap, visitedOrgSet));
-	   				});
-	   			}
+    		groupIds.forEach(childId -> {
+    			if(group2OrgMap.containsKey(childId)) {
+    				group2OrgMap.get(childId).forEach((parentId, rights) -> {
+    					if(rightId != null) {
+    						if(rights.contains(rightId)) {
+    							orgIds.add(parentId);
+	   							orgIds.addAll(visitParents(parentId, null, org2OrgMap, visitedOrgSet));	
+	   						}
+    					} else {
+	   						orgIds.add(parentId);
+	   						orgIds.addAll(visitParents(parentId, null, org2OrgMap, visitedOrgSet));
+    					}
+    				});
+    			}
 	   		});
 			
    		  	roleIds.forEach(r -> {
@@ -822,6 +844,7 @@ public class AuthorizationManagerAdminServiceImpl implements AuthorizationManage
    		  		}
    		  	});
 		
+   		  	groupIds.remove(groupId); /* already did the check for direct entitlements */
    		  	userIds.addAll(userDAO.getUserIdsForGroups(groupIds, 0, Integer.MAX_VALUE));
    		  	userIds.addAll(userDAO.getUserIdsForRoles(roleIds, 0, Integer.MAX_VALUE));
    		  	userIds.addAll(userDAO.getUserIdsForOrganizations(orgIds, 0, Integer.MAX_VALUE));

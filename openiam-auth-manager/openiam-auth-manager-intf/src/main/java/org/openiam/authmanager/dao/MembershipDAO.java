@@ -63,4 +63,7 @@ public interface MembershipDAO {
 	
 	public List<String> getUsersForResource(final String resourceId);
 	public List<String> getUsersForResource(final String resourceId, final String rightId);
+	
+	public List<String> getUsersForGroup(final String groupId);
+	public List<String> getUsersForGroup(final String groupId, final String rightId);
 }
