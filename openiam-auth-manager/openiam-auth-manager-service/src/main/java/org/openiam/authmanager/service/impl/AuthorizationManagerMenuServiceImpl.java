@@ -591,7 +591,7 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
             if(CollectionUtils.isNotEmpty(menuEntitlementsRequest.getDisentitled())) {
             	final List<ResourceEntity> resourceEntities = resourceDAOHibernate.findByIds(menuEntitlementsRequest.getDisentitled());
                 for(final ResourceEntity resourceEntity : resourceEntities) {
-                	role.addResource(resourceEntity, null);
+                	role.removeResource(resourceEntity);
                 }
 
             }
