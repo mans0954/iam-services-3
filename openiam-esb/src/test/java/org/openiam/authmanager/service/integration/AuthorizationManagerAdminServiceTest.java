@@ -239,4 +239,248 @@ public class AuthorizationManagerAdminServiceTest extends AbstractServiceTest {
 			}
 		}
 	}
+	
+	@Test
+	public void testGetOwnerIdsForResourceIndirectViaRole() {
+		User user = null;
+		Organization organization = null;
+		Role role = null;
+		Group group = null;
+		Resource resource = null;
+		try {
+			user = super.createUser();
+			organization = super.createOrganization();
+			role = super.createRole();
+			group = super.createGroup();
+			resource = super.createResource();
+			
+			final Set<String> rightIds = new HashSet<String>(Arrays.asList(new String[] {"ADMIN"}));
+			final String userId = user.getId();
+			final String organizationId = organization.getId();
+			final String roleId = role.getId();
+			final String groupId = group.getId();
+			final String resourceId = resource.getId();
+			final String requesterId = null;
+			
+			assertSuccess(resourceDataService.addRoleToResource(resourceId, roleId, requesterId, rightIds));
+			assertSuccess(roleServiceClient.addUserToRole(roleId, userId, requesterId, null));
+			
+			final Set<String> userIds = authMangerAdminClient.getOwnerIdsForResource(resourceId);
+			Assert.assertTrue(CollectionUtils.isNotEmpty(userIds));
+			Assert.assertTrue(userIds.contains(userId));
+		} finally {
+			if(user != null) {
+				assertSuccess(userServiceClient.removeUser(user.getId()));
+			}
+			if(organization != null) {
+				assertSuccess(organizationServiceClient.deleteOrganization(organization.getId()));
+			}
+			if(role != null) {
+				assertSuccess(roleServiceClient.removeRole(role.getId(), null));
+			}
+			if(group != null) {
+				assertSuccess(groupServiceClient.deleteGroup(group.getId(), null));
+			}
+			if(resource != null) {
+				assertSuccess(resourceDataService.deleteResource(resource.getId(), null));
+			}
+		}
+	}
+	
+	@Test
+	public void testGetOwnerIdsForResourceIndirectViaOrg() {
+		User user = null;
+		Organization organization = null;
+		Role role = null;
+		Group group = null;
+		Resource resource = null;
+		try {
+			user = super.createUser();
+			organization = super.createOrganization();
+			role = super.createRole();
+			group = super.createGroup();
+			resource = super.createResource();
+			
+			final Set<String> rightIds = new HashSet<String>(Arrays.asList(new String[] {"ADMIN"}));
+			final String userId = user.getId();
+			final String organizationId = organization.getId();
+			final String roleId = role.getId();
+			final String groupId = group.getId();
+			final String resourceId = resource.getId();
+			final String requesterId = null;
+			
+			assertSuccess(organizationServiceClient.addResourceToOrganization(organizationId, resourceId, rightIds));
+			assertSuccess(organizationServiceClient.addUserToOrg(organizationId, userId, null));
+			
+			final Set<String> userIds = authMangerAdminClient.getOwnerIdsForResource(resourceId);
+			Assert.assertTrue(CollectionUtils.isNotEmpty(userIds));
+			Assert.assertTrue(userIds.contains(userId));
+		} finally {
+			if(user != null) {
+				assertSuccess(userServiceClient.removeUser(user.getId()));
+			}
+			if(organization != null) {
+				assertSuccess(organizationServiceClient.deleteOrganization(organization.getId()));
+			}
+			if(role != null) {
+				assertSuccess(roleServiceClient.removeRole(role.getId(), null));
+			}
+			if(group != null) {
+				assertSuccess(groupServiceClient.deleteGroup(group.getId(), null));
+			}
+			if(resource != null) {
+				assertSuccess(resourceDataService.deleteResource(resource.getId(), null));
+			}
+		}
+	}
+	
+	@Test
+	public void testGetOwnerIdsForResourceIndirectViaParentResource() {
+		User user = null;
+		Resource resource = null;
+		Resource child = null;
+		try {
+			user = super.createUser();
+			child = super.createResource();
+			resource = super.createResource();
+			
+			final Set<String> rightIds = new HashSet<String>(Arrays.asList(new String[] {"ADMIN"}));
+			final String userId = user.getId();
+			final String requesterId = null;
+			
+			assertSuccess(resourceDataService.addChildResource(resource.getId(), child.getId(), requesterId, rightIds));
+			assertSuccess(resourceDataService.addUserToResource(child.getId(), userId, requesterId, null));
+			
+			final Set<String> userIds = authMangerAdminClient.getOwnerIdsForResource(resource.getId());
+			Assert.assertTrue(CollectionUtils.isNotEmpty(userIds));
+			Assert.assertTrue(userIds.contains(userId));
+		} finally {
+			if(user != null) {
+				assertSuccess(userServiceClient.removeUser(user.getId()));
+			}
+			if(child != null) {
+				assertSuccess(resourceDataService.deleteResource(child.getId(), null));
+			}
+			if(resource != null) {
+				assertSuccess(resourceDataService.deleteResource(resource.getId(), null));
+			}
+		}
+	}
+	
+	@Test
+	public void testGetOwnerIdsForResourceIndirectViaParentGroup() {
+		User user = null;
+		Resource resource = null;
+		Group child = null;
+		Group parent = null;
+		try {
+			user = super.createUser();
+			child = super.createGroup();
+			parent = super.createGroup();
+			resource = super.createResource();
+			
+			final Set<String> rightIds = new HashSet<String>(Arrays.asList(new String[] {"ADMIN"}));
+			final String userId = user.getId();
+			final String requesterId = null;
+			
+			assertSuccess(resourceDataService.addGroupToResource(resource.getId(), parent.getId(), requesterId, rightIds));
+			assertSuccess(groupServiceClient.addChildGroup(parent.getId(), child.getId(), requesterId, null));
+			assertSuccess(groupServiceClient.addUserToGroup(child.getId(), userId, requesterId, null));
+			
+			final Set<String> userIds = authMangerAdminClient.getOwnerIdsForResource(resource.getId());
+			Assert.assertTrue(CollectionUtils.isNotEmpty(userIds));
+			Assert.assertTrue(userIds.contains(userId));
+		} finally {
+			if(user != null) {
+				assertSuccess(userServiceClient.removeUser(user.getId()));
+			}
+			if(child != null) {
+				assertSuccess(groupServiceClient.deleteGroup(child.getId(), null));
+			}
+			if(parent != null) {
+				assertSuccess(groupServiceClient.deleteGroup(parent.getId(), null));
+			}
+			if(resource != null) {
+				assertSuccess(resourceDataService.deleteResource(resource.getId(), null));
+			}
+		}
+	}
+	
+	@Test
+	public void testGetOwnerIdsForResourceIndirectViaParentRole() {
+		User user = null;
+		Resource resource = null;
+		Role child = null;
+		Role parent = null;
+		try {
+			user = super.createUser();
+			child = super.createRole();
+			parent = super.createRole();
+			resource = super.createResource();
+			
+			final Set<String> rightIds = new HashSet<String>(Arrays.asList(new String[] {"ADMIN"}));
+			final String userId = user.getId();
+			final String requesterId = null;
+			
+			assertSuccess(resourceDataService.addRoleToResource(resource.getId(), parent.getId(), requesterId, rightIds));
+			assertSuccess(roleServiceClient.addChildRole(parent.getId(), child.getId(), requesterId, null));
+			assertSuccess(roleServiceClient.addUserToRole(child.getId(), userId, requesterId, null));
+			
+			final Set<String> userIds = authMangerAdminClient.getOwnerIdsForResource(resource.getId());
+			Assert.assertTrue(CollectionUtils.isNotEmpty(userIds));
+			Assert.assertTrue(userIds.contains(userId));
+		} finally {
+			if(user != null) {
+				assertSuccess(userServiceClient.removeUser(user.getId()));
+			}
+			if(child != null) {
+				assertSuccess(roleServiceClient.removeRole(child.getId(), null));
+			}
+			if(parent != null) {
+				assertSuccess(roleServiceClient.removeRole(parent.getId(), null));
+			}
+			if(resource != null) {
+				assertSuccess(resourceDataService.deleteResource(resource.getId(), null));
+			}
+		}
+	}
+	
+	@Test
+	public void testGetOwnerIdsForResourceIndirectViaParentOrg() {
+		User user = null;
+		Resource resource = null;
+		Organization child = null;
+		Organization parent = null;
+		try {
+			user = super.createUser();
+			child = super.createOrganization();
+			parent = super.createOrganization();
+			resource = super.createResource();
+			
+			final Set<String> rightIds = new HashSet<String>(Arrays.asList(new String[] {"ADMIN"}));
+			final String userId = user.getId();
+			final String requesterId = null;
+			
+			assertSuccess(organizationServiceClient.addResourceToOrganization(parent.getId(), resource.getId(), rightIds));
+			assertSuccess(organizationServiceClient.addChildOrganization(parent.getId(), child.getId(), null));
+			assertSuccess(organizationServiceClient.addUserToOrg(child.getId(), userId, null));
+			
+			final Set<String> userIds = authMangerAdminClient.getOwnerIdsForResource(resource.getId());
+			Assert.assertTrue(CollectionUtils.isNotEmpty(userIds));
+			Assert.assertTrue(userIds.contains(userId));
+		} finally {
+			if(user != null) {
+				assertSuccess(userServiceClient.removeUser(user.getId()));
+			}
+			if(child != null) {
+				assertSuccess(organizationServiceClient.deleteOrganization(child.getId()));
+			}
+			if(parent != null) {
+				assertSuccess(organizationServiceClient.deleteOrganization(parent.getId()));
+			}
+			if(resource != null) {
+				assertSuccess(resourceDataService.deleteResource(resource.getId(), null));
+			}
+		}
+	}
 }

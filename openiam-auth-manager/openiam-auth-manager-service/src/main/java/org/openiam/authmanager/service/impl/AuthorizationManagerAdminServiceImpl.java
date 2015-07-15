@@ -854,6 +854,7 @@ public class AuthorizationManagerAdminServiceImpl implements AuthorizationManage
 	   	  if(StringUtils.isNotBlank(resourceId)) {
 	   		  final Set<String> resourceVisitedSet = new HashSet<String>();
 	   		  final Set<String> resourceIds = new HashSet<String>();
+	   		  resourceIds.add(resourceId);
 	   		  resource2ResourceMap.forEach((childId, parentTuple) -> {
 	   			  if(parentTuple != null && parentTuple.containsKey(resourceId)) {
 	   				  if(rightId != null) {
@@ -875,12 +876,12 @@ public class AuthorizationManagerAdminServiceImpl implements AuthorizationManage
 	   				  resource2GroupMap.get(childId).forEach((parentId, rights) -> {
 	   					  if(rightId != null) {
 	   						  if(rights.contains(rightId)) {
-	   							  groupIds.add(childId);
-	   							  groupIds.addAll(visitParents(childId, null, group2GroupMap, visitedGroupSet));
+	   							  groupIds.add(parentId);
+	   							  groupIds.addAll(visitParents(parentId, null, group2GroupMap, visitedGroupSet));
 	   						  }
 	   					  } else {
-	   						  groupIds.add(childId);
-	   						  groupIds.addAll(visitParents(childId, null, group2GroupMap, visitedGroupSet));
+	   						  groupIds.add(parentId);
+	   						  groupIds.addAll(visitParents(parentId, null, group2GroupMap, visitedGroupSet));
 	   					  }
 	   				  });
 	   			  }
@@ -893,12 +894,12 @@ public class AuthorizationManagerAdminServiceImpl implements AuthorizationManage
 	   				resource2RoleMap.get(childId).forEach((parentId, rights) -> {
 	   					if(rightId != null) {
 	   						if(rights.contains(rightId)) {
-	   							roleIds.add(childId);
-	   							roleIds.addAll(visitParents(childId, null, role2RoleMap, visitedRoleSet));
+	   							roleIds.add(parentId);
+	   							roleIds.addAll(visitParents(parentId, null, role2RoleMap, visitedRoleSet));
 	   						}
 	   					} else {
-	   						roleIds.add(childId);
-	   						roleIds.addAll(visitParents(childId, null, role2RoleMap, visitedRoleSet));
+	   						roleIds.add(parentId);
+	   						roleIds.addAll(visitParents(parentId, null, role2RoleMap, visitedRoleSet));
 	   					  }
 	   				  });
 	   			  }
@@ -920,12 +921,12 @@ public class AuthorizationManagerAdminServiceImpl implements AuthorizationManage
 	   				resource2OrgMap.get(childId).forEach((parentId, rights) -> {
 	   					if(rightId != null) {
 	   						if(rights.contains(rightId)) {
-	   							roleIds.add(childId);
-	   							roleIds.addAll(visitParents(childId, null, org2OrgMap, visitedOrgSet));
+	   							orgIds.add(parentId);
+	   							orgIds.addAll(visitParents(parentId, null, org2OrgMap, visitedOrgSet));
 	   						}
 	   					} else {
-	   						roleIds.add(childId);
-	   						roleIds.addAll(visitParents(childId, null, org2OrgMap, visitedOrgSet));
+	   						orgIds.add(parentId);
+	   						orgIds.addAll(visitParents(parentId, null, org2OrgMap, visitedOrgSet));
 	   					  }
 	   				  });
 	   			  }
@@ -949,6 +950,7 @@ public class AuthorizationManagerAdminServiceImpl implements AuthorizationManage
 	   			  }
 	   		  });
 			
+	   		  resourceIds.remove(resourceId); /* already did the check for direct entitlements */
 	   		  userIds.addAll(userDAO.getUserIdsForGroups(groupIds, 0, Integer.MAX_VALUE));
 	   		  userIds.addAll(userDAO.getUserIdsForRoles(roleIds, 0, Integer.MAX_VALUE));
 	   		  userIds.addAll(userDAO.getUserIdsForResources(resourceIds, 0, Integer.MAX_VALUE));
