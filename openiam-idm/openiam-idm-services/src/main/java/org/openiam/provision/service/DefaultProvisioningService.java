@@ -81,6 +81,7 @@ import org.openiam.util.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
@@ -279,10 +280,12 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
      * .provision.dto.ProvisionUser)
      */
     @Override
+    @CacheEvict(value = "resources", allEntries=true)
     public ProvisionUserResponse modifyUser(final ProvisionUser pUser) {
         return modifyUser(pUser, null);
     }
 
+    @CacheEvict(value = "resources", allEntries=true)
     private ProvisionUserResponse modifyUser(final ProvisionUser pUser, final IdmAuditLog auditLog) {
         final List<ProvisionDataContainer> dataList = new LinkedList<ProvisionDataContainer>();
         TransactionTemplate transactionTemplate = new TransactionTemplate(platformTransactionManager);
@@ -890,6 +893,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     public void updateResources(UserEntity userEntity, ProvisionUser pUser, Set<Resource> resourceSet, Set<Resource> deleteResourceSet, IdmAuditLog parentLog) {
         super.updateResources(userEntity, pUser, resourceSet, deleteResourceSet, parentLog);    //To change body of overridden methods use File | Settings | File Templates.
     }
+
 
     private ProvisionUserResponse addModifyUser(ProvisionUser pUser, boolean isAdd,
                                                 List<ProvisionDataContainer> dataList, final IdmAuditLog auditLog) {
