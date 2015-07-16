@@ -5,6 +5,8 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.openiam.base.domain.KeyEntity;
+import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.xacml.srvc.dto.XACMLPolicySetDTO;
 
 import javax.persistence.*;
 import java.util.Set;
@@ -16,7 +18,7 @@ import java.util.Set;
 @Entity
 @Table(name = "XACML_XPOLICY_SET")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-//@DozerDTOCorrespondence(Organization.class)
+@DozerDTOCorrespondence(XACMLPolicySetDTO.class)
 @AttributeOverride(name = "id", column = @Column(name = "POLICY_SET_ID"))
 public class XACMLPolicySetEntity extends KeyEntity {
 

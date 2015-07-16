@@ -3,6 +3,8 @@ package org.openiam.xacml.srvc.domain;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.openiam.base.domain.AbstractKeyNameEntity;
+import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.xacml.srvc.dto.XACMLTargetDTO;
 
 import javax.persistence.*;
 import java.util.HashSet;
@@ -13,7 +15,7 @@ import java.util.Set;
  */
 @Entity
 @Table(name = "XACML_TARGET")
-//@DozerDTOCorrespondence(IdentityQuestGroup.class)
+@DozerDTOCorrespondence(XACMLTargetDTO.class)
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @AttributeOverrides({
         @AttributeOverride(name = "id", column = @Column(name = "TARGET_ID", length = 32)),

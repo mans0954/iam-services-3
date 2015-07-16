@@ -44,14 +44,6 @@ public class XACMLRuleEntity extends AbstractKeyNameEntity {
     @JoinColumn(name = "TARGET_ID", referencedColumnName = "TARGET_ID")
     private XACMLTargetEntity targetEntity;
 
-    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
-    @JoinTable(name = "XACML_XPOLICY_RULE",
-            joinColumns = {@JoinColumn(name = "RULE_ID")},
-            inverseJoinColumns = {@JoinColumn(name = "POLICY_ID")})
-    @Fetch(FetchMode.SUBSELECT)
-    private Set<XACMLPolicyEntity> policyEntities = new HashSet<XACMLPolicyEntity>();
-
-
     public String getDescription() {
         return description;
     }
@@ -92,11 +84,4 @@ public class XACMLRuleEntity extends AbstractKeyNameEntity {
         this.targetEntity = targetEntity;
     }
 
-    public Set<XACMLPolicyEntity> getPolicyEntities() {
-        return policyEntities;
-    }
-
-    public void setPolicyEntities(Set<XACMLPolicyEntity> policyEntities) {
-        this.policyEntities = policyEntities;
-    }
 }
