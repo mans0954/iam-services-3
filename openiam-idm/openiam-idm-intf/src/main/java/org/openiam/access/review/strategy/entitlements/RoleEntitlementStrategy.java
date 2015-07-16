@@ -18,15 +18,18 @@ public class RoleEntitlementStrategy extends EntitlementsStrategy {
 
     @Override
     public Set<AccessViewBean> getRoles(AccessViewBean parent) {
+    	/*
         if(parent==null){
             return getRoleBeans(accessReviewData.getMatrix().getRoleIds());
         }
         return getRoleBeans(accessReviewData.getMatrix().getRoleToRoleMap().get(parent.getId()));
+        */ return null;
     }
 
     @Override
     public Set<AccessViewBean> getGroups(AccessViewBean parent) {
-        return getGroupBeans(accessReviewData.getMatrix().getRoleToGroupMap().get(parent.getId()));
+        //return getGroupBeans(accessReviewData.getMatrix().getRoleToGroupMap().get(parent.getId()));
+    	return null;
     }
 
 
@@ -38,8 +41,10 @@ public class RoleEntitlementStrategy extends EntitlementsStrategy {
 
     @Override
     public boolean isDirectEntitled(AbstractAuthorizationEntity entity){
+    	/*
         if(CollectionUtils.isNotEmpty(this.accessReviewData.getMatrix().getRoleIds()))
             return this.accessReviewData.getMatrix().getRoleIds().contains(entity.getId());
+        */
         return false;
     }
 }

@@ -32,6 +32,7 @@ public class RoleViewStrategy extends AccessReviewStrategy {
     }
 
     public List<TreeNode<AccessViewBean>> getExceptionsList(){
+    	/*
         try{
             accessReviewData.setTargetResourceIds(accessReviewData.getMatrix().getResourceIds());
             return getResourceBeanList(getResourceEntitlementStrategy().getResources(null), false, false);
@@ -39,5 +40,6 @@ public class RoleViewStrategy extends AccessReviewStrategy {
             log.error(ex.getLocalizedMessage(), ex);
             return Collections.EMPTY_LIST;
         }
+        */ return null;
     }
 }

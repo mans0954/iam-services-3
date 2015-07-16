@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang.RandomStringUtils;
 import org.junit.runner.RunWith;
@@ -22,6 +23,7 @@ import org.openiam.base.ws.ResponseCode;
 import org.openiam.idm.searchbeans.LanguageSearchBean;
 import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
 import org.openiam.idm.searchbeans.ResourceTypeSearchBean;
+import org.openiam.idm.srvc.access.dto.AccessRight;
 import org.openiam.idm.srvc.access.ws.AccessRightDataService;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.service.AuthenticationService;
@@ -118,6 +120,28 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 	@Qualifier("authServiceClient")
 	protected AuthenticationService authServiceClient;
 	
+	
+	protected Set<String> getRightIdsNotIn(final Set<String> rightIds) {
+		return accessRightServiceClient.findBeans(null, 0, Integer.MAX_VALUE, getDefaultLanguage())
+									   .stream()
+									   .map(e -> e.getId())
+									   .filter(e -> !rightIds.contains(e))
+									   .collect(Collectors.toSet());
+	}
+
+	protected Set<String> getRightIds() {
+		final List<AccessRight> rights = accessRightServiceClient.findBeans(null, 0, Integer.MAX_VALUE, getDefaultLanguage());
+		final Set<String> rightIds = rights.subList(0, rights.size() / 2).stream().map(e -> e.getId()).collect(Collectors.toSet());
+		return rightIds;
+	}
+	
+	protected Set<String> getAllRightIds() {
+		final List<AccessRight> rights = accessRightServiceClient.findBeans(null, 0, Integer.MAX_VALUE, getDefaultLanguage());
+		final Set<String> rightIds = rights.stream().map(e -> e.getId()).collect(Collectors.toSet());
+		return rightIds;
+	}
+
+	
 	protected String getString(final String key) {
 		return propertyValuerServiceClient.getCachedValue(key, getDefaultLanguage());
 	}
@@ -129,6 +153,10 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 	protected interface CollectionOperation<T, S> {
 		public Set<S> get(T t);
 		public void set(T t, Set<S> set);
+	}
+	
+	protected void assertSuccess(final Response response) {
+		Assert.assertTrue(response.isSuccess());
 	}
 	
 	protected List<MetadataType> getMetadataTypesByGrouping(final MetadataTypeGrouping grouping) {
