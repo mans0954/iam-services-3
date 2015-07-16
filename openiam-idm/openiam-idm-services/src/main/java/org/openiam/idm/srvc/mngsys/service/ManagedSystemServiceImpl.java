@@ -1,7 +1,5 @@
 package org.openiam.idm.srvc.mngsys.service;
 
-import java.util.*;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -15,14 +13,7 @@ import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
-import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
-import org.openiam.idm.srvc.mngsys.domain.AssociationType;
-import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
-import org.openiam.idm.srvc.mngsys.domain.DefaultReconciliationAttributeMapEntity;
-import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
-import org.openiam.idm.srvc.mngsys.domain.ManagedSysRuleEntity;
-import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
-import org.openiam.idm.srvc.mngsys.domain.ReconciliationResourceAttributeMapEntity;
+import org.openiam.idm.srvc.mngsys.domain.*;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.policy.domain.PolicyEntity;
@@ -43,6 +34,8 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.*;
+
 @Service
 public class ManagedSystemServiceImpl implements ManagedSystemService {
     private static final Log log = LogFactory
@@ -56,8 +49,8 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     protected ReconciliationResourceAttributeMapDAO reconciliationResourceAttributeMapDAO;
     @Autowired
     protected DefaultReconciliationAttributeMapDAO defaultReconciliationAttributeMapDAO;
-    @Autowired
-    protected ManagedSysRuleDAO managedSysRuleDAO;
+//    @Autowired
+//    protected ManagedSysRuleDAO managedSysRuleDAO;
     @Autowired
     protected PolicyDAO policyDAO;
 
@@ -153,9 +146,9 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
                 .getMngSysObjectMatchs()) {
             matchDAO.delete(matchEntity);
         }
-        for (ManagedSysRuleEntity ruleEntity : sysEntity.getRules()) {
-            managedSysRuleDAO.delete(ruleEntity);
-        }
+//        for (ManagedSysRuleEntity ruleEntity : sysEntity.getRules()) {
+//            managedSysRuleDAO.delete(ruleEntity);
+//        }
         if(CollectionUtils.isNotEmpty(sysEntity.getGroups())) {
         	for(final GroupEntity group : sysEntity.getGroups()) {
         		group.setManagedSystem(null);
@@ -398,29 +391,29 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
         attributeMapDAO.delete(ids);
     }
 
-    @Override
-    public List<ManagedSysRuleEntity> getRulesByManagedSysId(String managedSysId) {
-        return managedSysRuleDAO.findbyManagedSystemId(managedSysId);
-    }
-
-    @Override
-    @Transactional
-    public ManagedSysRuleEntity addRules(ManagedSysRuleEntity entity) {
-        if (entity.getManagedSysRuleId() != null) {
-            return entity;
-        }
-        entity.setManagedSysRuleId(managedSysRuleDAO.add(entity)
-                .getManagedSysRuleId());
-        return entity;
-    }
-
-    @Override
-    public void deleteRules(String ruleId) {
-        ManagedSysRuleEntity entity = managedSysRuleDAO.findById(ruleId);
-        if (entity == null)
-            return;
-        managedSysRuleDAO.delete(entity);
-    }
+//    @Override
+//    public List<ManagedSysRuleEntity> getRulesByManagedSysId(String managedSysId) {
+//        return managedSysRuleDAO.findbyManagedSystemId(managedSysId);
+//    }
+//
+//    @Override
+//    @Transactional
+//    public ManagedSysRuleEntity addRules(ManagedSysRuleEntity entity) {
+//        if (entity.getManagedSysRuleId() != null) {
+//            return entity;
+//        }
+//        entity.setManagedSysRuleId(managedSysRuleDAO.add(entity)
+//                .getManagedSysRuleId());
+//        return entity;
+//    }
+//
+//    @Override
+//    public void deleteRules(String ruleId) {
+//        ManagedSysRuleEntity entity = managedSysRuleDAO.findById(ruleId);
+//        if (entity == null)
+//            return;
+//        managedSysRuleDAO.delete(entity);
+//    }
 
     @Override
     @Transactional(readOnly = true)
