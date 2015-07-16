@@ -5,5 +5,6 @@ package org.openiam.rest.constant;
  */
 public class XACMLServicePath {
     public final static String POLICY = "policy/";
+    public final static String POLICY_SET = "policy-set/";
     public final static String TARGET = "target/";
 }

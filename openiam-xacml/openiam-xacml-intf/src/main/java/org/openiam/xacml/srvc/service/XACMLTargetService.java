@@ -1,6 +1,5 @@
 package org.openiam.xacml.srvc.service;
 
-import org.openiam.idm.searchbeans.xacml.XACMLPolicySearchBean;
 import org.openiam.idm.searchbeans.xacml.XACMLTargetSearchBean;
 import org.openiam.xacml.srvc.domain.XACMLTargetEntity;
 

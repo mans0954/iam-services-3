@@ -5,12 +5,8 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.openiam.base.domain.KeyEntity;
-import org.openiam.dozer.DozerDTOCorrespondence;
-import org.openiam.idm.srvc.org.dto.Organization;
-import org.openiam.internationalization.Internationalized;
 
 import javax.persistence.*;
-import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -49,22 +45,22 @@ public class XACMLPolicySetEntity extends KeyEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "TARGET_ID", referencedColumnName = "TARGET_ID")
-    private XACMLTargetEntity targetEntity;
+    private XACMLTargetEntity target;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "OBLIGATIONS_ID", referencedColumnName = "OBLIGATIONS_ID")
-    private XACMLObligationsEntity obligationsEntity;
+    private XACMLObligationsEntity obligations;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "COMBINER_PARAMS_ID", referencedColumnName = "COMBINER_PARAMS_ID")
-    private XACMLCombainerParamsEntity combainerParamsEntity;
+    private XACMLCombainerParamsEntity combainerParams;
 
     @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
     @JoinTable(name = "XACML_XPOLICY_SET_XPOLICY",
             joinColumns = {@JoinColumn(name = "POLICY_SET_ID")},
             inverseJoinColumns = {@JoinColumn(name = "POLICY_ID")})
     @Fetch(FetchMode.SUBSELECT)
-    private Set<XACMLPolicyEntity> policies = new HashSet<XACMLPolicyEntity>();
+    private Set<XACMLPolicyEntity> policies;
 
     public String getIdentifier() {
         return identifier;
@@ -130,28 +126,28 @@ public class XACMLPolicySetEntity extends KeyEntity {
         this.policySetDefaults = policySetDefaults;
     }
 
-    public XACMLTargetEntity getTargetEntity() {
-        return targetEntity;
+    public XACMLTargetEntity getTarget() {
+        return target;
     }
 
-    public void setTargetEntity(XACMLTargetEntity targetEntity) {
-        this.targetEntity = targetEntity;
+    public void setTarget(XACMLTargetEntity target) {
+        this.target = target;
     }
 
-    public XACMLObligationsEntity getObligationsEntity() {
-        return obligationsEntity;
+    public XACMLObligationsEntity getObligations() {
+        return obligations;
     }
 
-    public void setObligationsEntity(XACMLObligationsEntity obligationsEntity) {
-        this.obligationsEntity = obligationsEntity;
+    public void setObligations(XACMLObligationsEntity obligations) {
+        this.obligations = obligations;
     }
 
-    public XACMLCombainerParamsEntity getCombainerParamsEntity() {
-        return combainerParamsEntity;
+    public XACMLCombainerParamsEntity getCombainerParams() {
+        return combainerParams;
     }
 
-    public void setCombainerParamsEntity(XACMLCombainerParamsEntity combainerParamsEntity) {
-        this.combainerParamsEntity = combainerParamsEntity;
+    public void setCombainerParams(XACMLCombainerParamsEntity combainerParams) {
+        this.combainerParams = combainerParams;
     }
 
     public Set<XACMLPolicyEntity> getPolicies() {

@@ -1123,4 +1123,16 @@
             <b>target</b>
         </field-exclude>
     </mapping>
+    <mapping>
+        <class-a>org.openiam.xacml.srvc.domain.XACMLPolicySetEntity</class-a>
+        <class-b>org.openiam.xacml.srvc.dto.XACMLPolicySetDTO</class-b>
+        <field-exclude>
+            <a>target</a>
+            <b>target</b>
+        </field-exclude>
+        <field-exclude>
+            <a>policies</a>
+            <b>policies</b>
+        </field-exclude>
+    </mapping>
 </mappings>

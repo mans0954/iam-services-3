@@ -12,7 +12,7 @@ public abstract class AbstractRestService<Request extends AbstractRestRequest, R
 
     public abstract Response update(Request policyEntity) throws Exception;
 
-    public abstract Response findById(String id) throws Exception;
+    public abstract Response findById(String id, boolean deepCopy) throws Exception;
 
     public abstract Response delete(String id) throws Exception;
 

@@ -1,14 +1,10 @@
 package org.openiam.xacml.srvc.service;
 
-import org.openiam.idm.searchbeans.xacml.XACMLPolicySearchBean;
 import org.openiam.idm.searchbeans.xacml.XACMLTargetSearchBean;
 import org.openiam.xacml.srvc.constants.XACMLError;
-import org.openiam.xacml.srvc.dao.XACMLPolicyDAO;
 import org.openiam.xacml.srvc.dao.XACMLTargetDAO;
 import org.openiam.xacml.srvc.domain.XACMLTargetEntity;
-import org.openiam.xacml.srvc.dozer.converter.XACMLTargetDozerConverter;
 import org.openiam.xacml.srvc.exception.XACMLException;
-import org.openiam.xacml.srvc.searchbeans.converter.XACMLPolicySearchBeanConverter;
 import org.openiam.xacml.srvc.searchbeans.converter.XACMLTargetSearchBeanConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

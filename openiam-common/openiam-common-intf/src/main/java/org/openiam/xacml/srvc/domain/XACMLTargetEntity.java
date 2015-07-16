@@ -3,9 +3,6 @@ package org.openiam.xacml.srvc.domain;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.openiam.base.domain.AbstractKeyNameEntity;
-import org.openiam.dozer.DozerDTOCorrespondence;
-import org.openiam.idm.srvc.org.dto.Organization;
-import org.openiam.idm.srvc.pswd.dto.IdentityQuestGroup;
 
 import javax.persistence.*;
 import java.util.HashSet;

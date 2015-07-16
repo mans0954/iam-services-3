@@ -1,8 +1,8 @@
 package org.openiam.xacml.srvc.searchbeans.converter;
 
+import org.openiam.idm.searchbeans.xacml.XACMLPolicySearchBean;
 import org.openiam.idm.srvc.searchbean.converter.SearchBeanConverter;
 import org.openiam.xacml.srvc.domain.XACMLPolicyEntity;
-import org.openiam.idm.searchbeans.xacml.XACMLPolicySearchBean;
 import org.springframework.stereotype.Component;
 
 @Component("xacmlPolicySearchBeanConverter")

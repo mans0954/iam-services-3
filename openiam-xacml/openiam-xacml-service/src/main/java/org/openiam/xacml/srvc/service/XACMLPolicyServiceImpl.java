@@ -1,16 +1,16 @@
 package org.openiam.xacml.srvc.service;
 
+import org.openiam.idm.searchbeans.xacml.XACMLPolicySearchBean;
 import org.openiam.xacml.srvc.constants.XACMLError;
 import org.openiam.xacml.srvc.dao.XACMLPolicyDAO;
 import org.openiam.xacml.srvc.dao.XACMLTargetDAO;
 import org.openiam.xacml.srvc.domain.XACMLPolicyEntity;
 import org.openiam.xacml.srvc.exception.XACMLException;
-import org.openiam.idm.searchbeans.xacml.XACMLPolicySearchBean;
 import org.openiam.xacml.srvc.searchbeans.converter.XACMLPolicySearchBeanConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.List;
 
 /**
  * Created by zaporozhec on 7/10/15.
@@ -20,8 +20,6 @@ public class XACMLPolicyServiceImpl implements XACMLPolicyService {
 
     @Autowired
     private XACMLPolicyDAO xacmlPolicyDao;
-    @Autowired
-    private XACMLTargetDAO xacmlTargetDAO;
     @Autowired
     private XACMLPolicySearchBeanConverter xacmlPolicySearchBeanConverter;
 

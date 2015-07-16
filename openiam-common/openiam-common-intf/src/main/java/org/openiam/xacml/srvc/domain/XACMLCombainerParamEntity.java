@@ -2,9 +2,7 @@ package org.openiam.xacml.srvc.domain;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.openiam.base.domain.AbstractKeyNameEntity;
 import org.openiam.base.domain.AbstractKeyNameValueEntity;
-import org.openiam.base.domain.KeyEntity;
 
 import javax.persistence.*;
 

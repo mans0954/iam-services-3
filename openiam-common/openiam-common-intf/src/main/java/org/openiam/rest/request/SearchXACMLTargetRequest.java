@@ -1,6 +1,5 @@
 package org.openiam.rest.request;
 
-import org.openiam.idm.searchbeans.xacml.XACMLPolicySearchBean;
 import org.openiam.idm.searchbeans.xacml.XACMLTargetSearchBean;
 
 /**

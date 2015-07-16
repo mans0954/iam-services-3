@@ -1,6 +1,5 @@
 package org.openiam.rest.request;
 
-import org.openiam.rest.request.AbstractDTORestRequest;
 import org.openiam.xacml.srvc.dto.XACMLPolicyDTO;
 
 /**

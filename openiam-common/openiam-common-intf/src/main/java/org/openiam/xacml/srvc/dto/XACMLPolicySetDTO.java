@@ -3,25 +3,30 @@ package org.openiam.xacml.srvc.dto;
 import com.fasterxml.jackson.annotation.JsonRootName;
 import org.openiam.base.KeyDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
-import org.openiam.xacml.srvc.domain.XACMLPolicyEntity;
+import org.openiam.xacml.srvc.domain.XACMLPolicySetEntity;
+
+import java.util.Set;
 
 /**
  * Created by zaporozhec on 7/10/15.
  */
-@JsonRootName(value = "Policy")
-@DozerDTOCorrespondence(XACMLPolicyEntity.class)
-public class XACMLPolicyDTO extends KeyDTO {
-
+@JsonRootName(value = "PolicySet")
+@DozerDTOCorrespondence(XACMLPolicySetEntity.class)
+public class XACMLPolicySetDTO extends KeyDTO {
 
     private String identifier;
-    private String version;
+    private String version = "1.0";
     private String combinationAlgorithm;
     private Integer maxDelegationDepth;
     private String description;
     private String issuer;
-    private String policyIdReferences;
-    private String policyDefaults;
+    private String policySetIdReferences;
+    private String policySetDefaults;
     private XACMLTargetDTO target;
+    //    private XACMLObligationsEntity obligations;
+//    private XACMLCombainerParamsEntity combainerParams;
+    private Set<XACMLPolicyDTO> policies;
+
 
     public String getIdentifier() {
         return identifier;
@@ -71,20 +76,20 @@ public class XACMLPolicyDTO extends KeyDTO {
         this.issuer = issuer;
     }
 
-    public String getPolicyIdReferences() {
-        return policyIdReferences;
+    public String getPolicySetIdReferences() {
+        return policySetIdReferences;
     }
 
-    public void setPolicyIdReferences(String policyIdReferences) {
-        this.policyIdReferences = policyIdReferences;
+    public void setPolicySetIdReferences(String policySetIdReferences) {
+        this.policySetIdReferences = policySetIdReferences;
     }
 
-    public String getPolicyDefaults() {
-        return policyDefaults;
+    public String getPolicySetDefaults() {
+        return policySetDefaults;
     }
 
-    public void setPolicyDefaults(String policyDefaults) {
-        this.policyDefaults = policyDefaults;
+    public void setPolicySetDefaults(String policySetDefaults) {
+        this.policySetDefaults = policySetDefaults;
     }
 
     public XACMLTargetDTO getTarget() {
@@ -93,5 +98,13 @@ public class XACMLPolicyDTO extends KeyDTO {
 
     public void setTarget(XACMLTargetDTO target) {
         this.target = target;
+    }
+
+    public Set<XACMLPolicyDTO> getPolicies() {
+        return policies;
+    }
+
+    public void setPolicies(Set<XACMLPolicyDTO> policies) {
+        this.policies = policies;
     }
 }

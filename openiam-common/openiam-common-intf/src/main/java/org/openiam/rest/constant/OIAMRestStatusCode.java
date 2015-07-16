@@ -15,5 +15,11 @@ final public class OIAMRestStatusCode {
     public final static int ERROR_DURING_TARGET_ADD = 8;
     public final static int ERROR_DURING_TARGET_MODIFY = 9;
     public final static int NO_TARGET_WITH_SUCH_ID = 10;
-    public final static int ERROR_DURING_TARGET_GET = 2;
+    public final static int ERROR_DURING_TARGET_GET = 11;
+
+
+    public final static int ERROR_DURING_POLICY_SET_GET = 12;
+    public final static int ERROR_DURING_POLICY_SET_ADD = 13;
+    public final static int ERROR_DURING_POLICY_SET_MODIFY = 14;
+    public final static int NO_POLICY_SET_WITH_SUCH_ID = 15;
 }

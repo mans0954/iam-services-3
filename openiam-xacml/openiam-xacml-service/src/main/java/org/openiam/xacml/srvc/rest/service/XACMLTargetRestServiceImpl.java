@@ -11,10 +11,8 @@ import org.openiam.rest.request.SearchXACMLTargetRequest;
 import org.openiam.rest.response.XACMLTargetRestResponse;
 import org.openiam.xacml.srvc.domain.XACMLTargetEntity;
 import org.openiam.xacml.srvc.dozer.converter.XACMLTargetDozerConverter;
-import org.openiam.xacml.srvc.dozer.converter.XACMLTargetDozerConverter;
 import org.openiam.xacml.srvc.dto.XACMLTargetDTO;
 import org.openiam.xacml.srvc.exception.XACMLException;
-import org.openiam.xacml.srvc.service.XACMLTargetService;
 import org.openiam.xacml.srvc.service.XACMLTargetService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -114,7 +112,7 @@ public class XACMLTargetRestServiceImpl extends XACMLTargetRestService {
     @Override
     @Transactional
     @RequestMapping(value = MethodPath.GET, method = RequestMethod.GET)
-    public XACMLTargetRestResponse findById(@PathVariable String id) throws Exception {
+    public XACMLTargetRestResponse findById(@PathVariable String id, final @RequestParam(required = false, value = "deepCopy") boolean deepCopy) throws Exception {
         XACMLTargetRestResponse response = new XACMLTargetRestResponse();
         try {
             XACMLTargetEntity targetEntity = xacmlTargetService.findById(id);
@@ -124,7 +122,7 @@ public class XACMLTargetRestServiceImpl extends XACMLTargetRestService {
                 response.setErrorText("No Target with such Id");
                 return response;
             }
-            XACMLTargetDTO xacmlTargetDTO = xacmlTargetDozerConverter.convertToDTO(targetEntity, true);
+            XACMLTargetDTO xacmlTargetDTO = xacmlTargetDozerConverter.convertToDTO(targetEntity, deepCopy);
             response.setStatus(ResponseStatus.SUCCESS);
             response.setObject(xacmlTargetDTO);
             response.setResponseCode(OIAMRestStatusCode.OK);
@@ -141,7 +139,7 @@ public class XACMLTargetRestServiceImpl extends XACMLTargetRestService {
     }
 
     @Override
-    @RequestMapping(value = MethodPath.DELETE, method = RequestMethod.DELETE)
+    @RequestMapping(value = MethodPath.DELETE, method = RequestMethod.GET)
     public XACMLTargetRestResponse delete(@PathVariable String id) throws Exception {
         XACMLTargetRestResponse response = new XACMLTargetRestResponse();
         response.setStatus(ResponseStatus.FAILURE);

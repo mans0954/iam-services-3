@@ -2,9 +2,7 @@ package org.openiam.xacml.srvc.dto;
 
 import com.fasterxml.jackson.annotation.JsonRootName;
 import org.openiam.base.KeyDTO;
-import org.openiam.base.KeyNameDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
-import org.openiam.xacml.srvc.domain.XACMLPolicyEntity;
 import org.openiam.xacml.srvc.domain.XACMLTargetEntity;
 
 /**

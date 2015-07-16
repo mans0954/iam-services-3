@@ -1,7 +1,5 @@
 package org.openiam.rest.response;
 
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import org.openiam.rest.response.AbstractRestResponse;
 import org.openiam.xacml.srvc.dto.XACMLPolicyDTO;
 
 /**

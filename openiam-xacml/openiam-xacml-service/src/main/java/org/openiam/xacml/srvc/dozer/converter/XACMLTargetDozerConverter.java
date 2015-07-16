@@ -2,8 +2,6 @@ package org.openiam.xacml.srvc.dozer.converter;
 
 import org.openiam.dozer.converter.AbstractDozerEntityConverter;
 import org.openiam.xacml.srvc.domain.XACMLTargetEntity;
-import org.openiam.xacml.srvc.domain.XACMLTargetEntity;
-import org.openiam.xacml.srvc.dto.XACMLTargetDTO;
 import org.openiam.xacml.srvc.dto.XACMLTargetDTO;
 import org.springframework.stereotype.Component;
 
