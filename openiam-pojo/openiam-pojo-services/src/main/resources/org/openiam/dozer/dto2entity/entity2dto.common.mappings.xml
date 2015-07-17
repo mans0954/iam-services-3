@@ -547,6 +547,24 @@
             <b>synchReviewRecordId</b>
         </field>
     </mapping>
+
+    <mapping>
+        <class-a>org.openiam.idm.srvc.org.domain.OrganizationUserEntity</class-a>
+        <class-b>org.openiam.idm.srvc.org.dto.OrganizationUserDTO</class-b>
+        <field>
+            <a>metadataTypeEntity</a>
+            <b>mdType</b>
+        </field>
+        <field>
+            <a>primaryKey.organization</a>
+            <b>organization</b>
+        </field>
+        <field>
+            <a>primaryKey.user</a>
+            <b>user</b>
+        </field>
+    </mapping>
+
     <mapping>
         <class-a>org.openiam.idm.srvc.policy.domain.PolicyAttributeEntity</class-a>
         <class-b>org.openiam.idm.srvc.policy.dto.PolicyAttribute</class-b>
