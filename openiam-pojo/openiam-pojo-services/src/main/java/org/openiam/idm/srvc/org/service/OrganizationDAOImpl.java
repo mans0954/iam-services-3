@@ -65,7 +65,7 @@ public class OrganizationDAOImpl extends
                                                      final Set<String> filter) {
         final Criteria criteria = getCriteria();
         if (StringUtils.isNotBlank(userId)) {
-            criteria.createAlias("users", "u").add(
+            criteria.createAlias("organizationUser.primaryKey.user", "u").add(
                     Restrictions.eq("u.id", userId));
         }
 
@@ -79,7 +79,7 @@ public class OrganizationDAOImpl extends
                                                           final Set<String> filter) {
         final Criteria criteria = getCriteria();
         if (StringUtils.isNotBlank(userId)) {
-            criteria.createAlias("users", "u").add(
+            criteria.createAlias("organizationUser.primaryKey.user", "u").add(
                     Restrictions.eq("u.id", userId));
         }
 
@@ -114,7 +114,7 @@ public class OrganizationDAOImpl extends
             }
 
             if (CollectionUtils.isNotEmpty(organizationSearchBean.getUserIdSet())) {
-                criteria.createAlias("users", "usr");
+                criteria.createAlias("organizationUser.primaryKey.user", "usr");
                 criteria.add(Restrictions.in("usr.id", organizationSearchBean.getUserIdSet()));
             }
 

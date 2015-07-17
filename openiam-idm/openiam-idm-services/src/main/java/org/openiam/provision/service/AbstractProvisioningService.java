@@ -61,7 +61,9 @@ import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.idm.srvc.msg.service.MailService;
 import org.openiam.idm.srvc.msg.service.MailTemplateParameters;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
+import org.openiam.idm.srvc.org.domain.OrganizationUserEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
+import org.openiam.idm.srvc.org.dto.OrganizationUserDTO;
 import org.openiam.idm.srvc.org.service.OrganizationDataService;
 import org.openiam.idm.srvc.org.service.OrganizationService;
 import org.openiam.idm.srvc.policy.dto.PasswordPolicyAssocSearchBean;
@@ -1518,12 +1520,13 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     /* User Org Affiliation */
 
     public void updateAffiliations(final UserEntity userEntity, final ProvisionUser pUser, final IdmAuditLog parentLog) {
-        if (CollectionUtils.isNotEmpty(pUser.getAffiliations())) {
-            for (Organization o : pUser.getAffiliations()) {
+        if (CollectionUtils.isNotEmpty(pUser.getOrganizationUserDTOs())) {
+            for (OrganizationUserDTO o : pUser.getOrganizationUserDTOs()) {
+                Organization organ = organizationService.getOrganizationDTO(o.getOrganization().getId(), null);
                 AttributeOperationEnum operation = o.getOperation();
                 if (operation == AttributeOperationEnum.ADD) {
-                    OrganizationEntity org = organizationService.getOrganizationLocalized(o.getId(), null);
-                    userEntity.getAffiliations().add(org);
+                    OrganizationEntity org = organizationService.getOrganizationLocalized(o.getOrganization().getId(), null);
+                    userEntity.getOrganizationUser().add(new OrganizationUserEntity(pUser.getId(), o.getOrganization().getId()));
                     // Audit Log ---------------------------------------------------
                     IdmAuditLog auditLog = new IdmAuditLog();
                     auditLog.setAction(AuditAction.ADD_USER_TO_ORG.value());
@@ -1535,18 +1538,18 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     parentLog.addChild(auditLog);
                     // --------------------------------------------------------------
                 } else if (operation == AttributeOperationEnum.DELETE) {
-                    Set<OrganizationEntity> affiliations = userEntity.getAffiliations();
-                    for (OrganizationEntity a : affiliations) {
-                        if (StringUtils.equals(o.getId(), a.getId())) {
-                            userEntity.getAffiliations().remove(a);
+                    Set<OrganizationUserEntity> affiliations = userEntity.getOrganizationUser();
+                    for (OrganizationUserEntity a : affiliations) {
+                        if (a.getOrganization() != null && StringUtils.equals(o.getOrganization().getId(), a.getOrganization().getId())) {
+                            userEntity.getOrganizationUser().remove(a);
                             // Audit Log ---------------------------------------------------
                             IdmAuditLog auditLog = new IdmAuditLog();
                             auditLog.setAction(AuditAction.REMOVE_USER_FROM_ORG.value());
                             Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
                             String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
                             auditLog.setTargetUser(pUser.getId(), loginStr);
-                            auditLog.setTargetOrg(o.getId(), o.getName());
-                            auditLog.addCustomRecord("ORG", o.getName());
+                            auditLog.setTargetOrg(organ.getId(), organ.getName());
+                            auditLog.addCustomRecord("ORG", organ.getName());
                             parentLog.addChild(auditLog);
                             // -------------------------------------------------------------
                             break;
