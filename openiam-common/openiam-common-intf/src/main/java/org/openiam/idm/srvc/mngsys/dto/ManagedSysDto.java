@@ -13,12 +13,9 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
-
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -33,7 +30,8 @@ import java.util.Set;
         "mngSysObjectMatchs", "driverUrl", "connectionString", "addHandler", "modifyHandler", "deleteHandler",
         "passwordHandler", "suspendHandler", "resumeHandler", "searchHandler", "lookupHandler",
         "testConnectionHandler", "reconcileResourceHandler", "attributeNamesHandler", "handler5", "skipGroupProvision",
-        "rules", "groups", "roles", "changedByEndUser"})
+//        "rules",
+        "groups", "roles", "changedByEndUser"})
 @DozerDTOCorrespondence(ManagedSysEntity.class)
 public class ManagedSysDto implements java.io.Serializable {
 
@@ -77,7 +75,7 @@ public class ManagedSysDto implements java.io.Serializable {
     private Boolean skipGroupProvision;
     private boolean changedByEndUser = true;
 
-    private List<ManagedSysRuleDto> rules = new ArrayList<ManagedSysRuleDto>(0);
+//    private List<ManagedSysRuleDto> rules = new ArrayList<ManagedSysRuleDto>(0);
 
     // private Set<ApproverAssociation> resourceApprovers = new
     // HashSet<ApproverAssociation>(0);
@@ -454,14 +452,6 @@ public class ManagedSysDto implements java.io.Serializable {
                 + reconcileResourceHandler + ", attributeNamesHandler='" + attributeNamesHandler + '\''
                 + ", handler5='" + handler5 + '\'' + ", skipGroupProvision='" + skipGroupProvision + '\''
                 + ", mngSysObjectMatchs=" + mngSysObjectMatchs + '}';
-    }
-
-    public List<ManagedSysRuleDto> getRules() {
-        return rules;
-    }
-
-    public void setRules(List<ManagedSysRuleDto> rules) {
-        this.rules = rules;
     }
 
     public Set<Group> getGroups() {
