@@ -16,6 +16,7 @@ import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
+import org.openiam.idm.srvc.org.domain.OrganizationUserEntity;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.user.dto.User;
@@ -59,10 +60,10 @@ public class UserEntity {
     private String createdBy;
 
     @Column(name = "EMPLOYEE_ID", length = 32)
-    @Fields ({
-        @Field(index = Index.TOKENIZED),
-        @Field(name = "employeeId", index = Index.TOKENIZED, store = Store.YES),
-        @Field(name = "employeeIdUntokenized", index = Index.UN_TOKENIZED, store = Store.YES)
+    @Fields({
+            @Field(index = Index.TOKENIZED),
+            @Field(name = "employeeId", index = Index.TOKENIZED, store = Store.YES),
+            @Field(name = "employeeIdUntokenized", index = Index.UN_TOKENIZED, store = Store.YES)
     })
     @Size(max = 32, message = "validator.user.employee.id.toolong")
     private String employeeId;
@@ -72,17 +73,17 @@ public class UserEntity {
 //    @Field(index=Index.UN_TOKENIZED, name="employeeType", store=Store.YES)
 //    private String employeeType;
 
-    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch= FetchType.LAZY)
-    @JoinColumn(name = "EMPLOYEE_TYPE", insertable = true, updatable = true, nullable=true)
+    @ManyToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "EMPLOYEE_TYPE", insertable = true, updatable = true, nullable = true)
     @Internationalized
     @IndexedEmbedded
     private MetadataTypeEntity employeeType;
 
     @Column(name = "FIRST_NAME", length = 50)
-    @Fields ({
-        @Field(index = Index.TOKENIZED),
-        @Field(name = "firstName", index = Index.TOKENIZED, store = Store.YES),
-        @Field(name = "firstNameUntokenized", index = Index.UN_TOKENIZED, store = Store.YES)
+    @Fields({
+            @Field(index = Index.TOKENIZED),
+            @Field(name = "firstName", index = Index.TOKENIZED, store = Store.YES),
+            @Field(name = "firstNameUntokenized", index = Index.UN_TOKENIZED, store = Store.YES)
     })
     @Size(max = 50, message = "validator.user.first.name.toolong")
     private String firstName;
@@ -91,17 +92,17 @@ public class UserEntity {
 //    @Size(max = 50, message = "validator.user.job.code.toolong")
 //    private String jobCode;
 
-    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch= FetchType.LAZY)
-    @JoinColumn(name = "JOB_CODE", insertable = true, updatable = true, nullable=true)
+    @ManyToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "JOB_CODE", insertable = true, updatable = true, nullable = true)
     @Internationalized
     @IndexedEmbedded
     private MetadataTypeEntity jobCode;
 
     @Column(name = "LAST_NAME", length = 50)
-    @Fields ({
-        @Field(index = Index.TOKENIZED),
-        @Field(name = "lastName", index = Index.TOKENIZED, store = Store.YES),
-        @Field(name = "lastNameUntokenized", index = Index.UN_TOKENIZED, store = Store.YES)
+    @Fields({
+            @Field(index = Index.TOKENIZED),
+            @Field(name = "lastName", index = Index.TOKENIZED, store = Store.YES),
+            @Field(name = "lastNameUntokenized", index = Index.UN_TOKENIZED, store = Store.YES)
     })
     @Size(max = 50, message = "validator.user.last.name.toolong")
     private String lastName;
@@ -121,8 +122,8 @@ public class UserEntity {
     @Size(max = 100, message = "validator.user.location.name.toolong")
     private String locationName;
 
-    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch= FetchType.LAZY)
-    @JoinColumn(name = "TYPE_ID", insertable = true, updatable = true, nullable=true)
+    @ManyToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "TYPE_ID", insertable = true, updatable = true, nullable = true)
     @Internationalized
     @IndexedEmbedded
     protected MetadataTypeEntity type;
@@ -145,12 +146,12 @@ public class UserEntity {
 
     @Column(name = "STATUS", length = 40)
     @Enumerated(EnumType.STRING)
-    @Field(index=Index.UN_TOKENIZED, name="userStatus", store=Store.YES)
+    @Field(index = Index.UN_TOKENIZED, name = "userStatus", store = Store.YES)
     private UserStatusEnum status;
 
     @Column(name = "SECONDARY_STATUS", length = 40)
     @Enumerated(EnumType.STRING)
-    @Field(index=Index.UN_TOKENIZED ,name="accountStatus", store=Store.YES)
+    @Field(index = Index.UN_TOKENIZED, name = "accountStatus", store = Store.YES)
     private UserStatusEnum secondaryStatus;
 
     @Column(name = "SUFFIX", length = 20)
@@ -188,10 +189,10 @@ public class UserEntity {
 
     @Column(name = "MAIDEN_NAME", length = 40)
     @Size(max = 40, message = "validator.user.maiden.name.toolong")
-    @Fields ({
-        @Field(index = Index.TOKENIZED),
-        @Field(name = "maidenName", index = Index.TOKENIZED, store = Store.YES),
-        @Field(name = "maidenNameUntokenized", index = Index.UN_TOKENIZED, store = Store.YES)
+    @Fields({
+            @Field(index = Index.TOKENIZED),
+            @Field(name = "maidenName", index = Index.TOKENIZED, store = Store.YES),
+            @Field(name = "maidenNameUntokenized", index = Index.UN_TOKENIZED, store = Store.YES)
     })
     private String maidenName;
 
@@ -222,7 +223,7 @@ public class UserEntity {
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @MapKeyColumn(name = "name")
-    @JoinColumn(name="USER_ID")
+    @JoinColumn(name = "USER_ID")
     @Fetch(FetchMode.SUBSELECT)
     private Map<String, UserAttributeEntity> userAttributes = new HashMap<String, UserAttributeEntity>(0);
 
@@ -235,35 +236,40 @@ public class UserEntity {
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "parent", fetch = FetchType.LAZY)
     private Set<EmailAddressEntity> emailAddresses = new HashSet<EmailAddressEntity>(0);
 
-    @Column(name = "SYSTEM_FLAG",length = 1)
+    @Column(name = "SYSTEM_FLAG", length = 1)
     private String systemFlag;
 
     //@IndexedEmbedded(prefix="principal.", depth=1)
-    @OneToMany(orphanRemoval = true, cascade=CascadeType.ALL,fetch=FetchType.LAZY)
-    @JoinColumn(name="USER_ID", referencedColumnName="USER_ID")
+    @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "USER_ID", referencedColumnName = "USER_ID")
     @Fetch(FetchMode.SUBSELECT)
     private List<LoginEntity> principalList = new LinkedList<LoginEntity>();
 
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "user", fetch = FetchType.LAZY)
     protected Set<UserKey> userKeys = new HashSet<UserKey>(0);
 
-    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
-    @JoinTable(name = "USER_GRP", joinColumns = { @JoinColumn(name = "USER_ID") }, inverseJoinColumns = { @JoinColumn(name = "GRP_ID") })
+    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
+    @JoinTable(name = "USER_GRP", joinColumns = {@JoinColumn(name = "USER_ID")}, inverseJoinColumns = {@JoinColumn(name = "GRP_ID")})
     @Fetch(FetchMode.SUBSELECT)
     private Set<GroupEntity> groups = new HashSet<GroupEntity>(0);
 
-    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch=FetchType.LAZY)
-    @JoinTable(name = "USER_ROLE", joinColumns = { @JoinColumn(name = "USER_ID") }, inverseJoinColumns = { @JoinColumn(name = "ROLE_ID") })
+    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
+    @JoinTable(name = "USER_ROLE", joinColumns = {@JoinColumn(name = "USER_ID")}, inverseJoinColumns = {@JoinColumn(name = "ROLE_ID")})
     @Fetch(FetchMode.SUBSELECT)
     private Set<RoleEntity> roles = new HashSet<RoleEntity>(0);
-    
-    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
-    @JoinTable(name = "USER_AFFILIATION", joinColumns = { @JoinColumn(name = "USER_ID") }, inverseJoinColumns = { @JoinColumn(name = "COMPANY_ID") })
-    @Fetch(FetchMode.SUBSELECT)
-	private Set<OrganizationEntity> affiliations = new HashSet<OrganizationEntity>(0);
 
-    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
-    @JoinTable(name = "RESOURCE_USER", joinColumns = { @JoinColumn(name = "USER_ID") }, inverseJoinColumns = { @JoinColumn(name = "RESOURCE_ID") })
+//    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
+//    @JoinTable(name = "USER_AFFILIATION", joinColumns = { @JoinColumn(name = "USER_ID") }, inverseJoinColumns = { @JoinColumn(name = "COMPANY_ID") })
+//    @Fetch(FetchMode.SUBSELECT)
+//	private Set<OrganizationEntity> affiliations = new HashSet<OrganizationEntity>(0);
+
+
+    @OneToMany(mappedBy = "primaryKey.user",
+            cascade = CascadeType.ALL)
+    public Set<OrganizationUserEntity> organizationUser;
+
+    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
+    @JoinTable(name = "RESOURCE_USER", joinColumns = {@JoinColumn(name = "USER_ID")}, inverseJoinColumns = {@JoinColumn(name = "RESOURCE_ID")})
     @Fetch(FetchMode.SUBSELECT)
     private Set<ResourceEntity> resources = new HashSet<ResourceEntity>(0);
 
@@ -528,46 +534,46 @@ public class UserEntity {
     public void setPasswordTheme(String passwordTheme) {
         this.passwordTheme = passwordTheme;
     }
-    
+
     public String getDisplayName() {
-    	String displayName = null;
-    	if(StringUtils.isNotBlank(firstName) && StringUtils.isNotBlank(lastName)) {
-    		displayName = String.format("%s %s", firstName, lastName);
-    	} else if(StringUtils.isNotBlank(firstName)) {
-    		displayName = firstName;
-    	} else if(StringUtils.isNotBlank(lastName)) {
-    		displayName = lastName;
-    	}
-    	return displayName;
+        String displayName = null;
+        if (StringUtils.isNotBlank(firstName) && StringUtils.isNotBlank(lastName)) {
+            displayName = String.format("%s %s", firstName, lastName);
+        } else if (StringUtils.isNotBlank(firstName)) {
+            displayName = firstName;
+        } else if (StringUtils.isNotBlank(lastName)) {
+            displayName = lastName;
+        }
+        return displayName;
     }
 
     @Deprecated
     public String getEmail() {
         String defaultEmail = null;
-        if(this.emailAddresses!=null && !this.emailAddresses.isEmpty()){
-            for (EmailAddressEntity email: this.emailAddresses){
-                   if(email.getIsDefault()){
-                       defaultEmail = email.getEmailAddress();
-                       break;
-                   }
+        if (this.emailAddresses != null && !this.emailAddresses.isEmpty()) {
+            for (EmailAddressEntity email : this.emailAddresses) {
+                if (email.getIsDefault()) {
+                    defaultEmail = email.getEmailAddress();
+                    break;
+                }
             }
         }
-        if(defaultEmail == null) {
-        	if(this.emailAddresses!=null && !this.emailAddresses.isEmpty()){
-        		final EmailAddressEntity entity = this.emailAddresses.iterator().next();
-        		if(entity != null) {
-        			defaultEmail = entity.getEmailAddress();
-        		}
-        	}
+        if (defaultEmail == null) {
+            if (this.emailAddresses != null && !this.emailAddresses.isEmpty()) {
+                final EmailAddressEntity entity = this.emailAddresses.iterator().next();
+                if (entity != null) {
+                    defaultEmail = entity.getEmailAddress();
+                }
+            }
         }
         return defaultEmail;
     }
 
     public PhoneEntity getDefaultPhone() {
         PhoneEntity defaultPhone = null;
-        if(this.phones!=null && !this.phones.isEmpty()){
-            for (PhoneEntity phoneEntity: this.phones){
-                if(phoneEntity.getIsDefault()){
+        if (this.phones != null && !this.phones.isEmpty()) {
+            for (PhoneEntity phoneEntity : this.phones) {
+                if (phoneEntity.getIsDefault()) {
                     defaultPhone = phoneEntity;
                     break;
                 }
@@ -575,11 +581,12 @@ public class UserEntity {
         }
         return defaultPhone;
     }
+
     public AddressEntity getDefaultAddress() {
         AddressEntity defaultAddress = null;
-        if(this.addresses!=null && !this.addresses.isEmpty()){
-            for (AddressEntity addressEntity: this.addresses){
-                if(addressEntity.getIsDefault()){
+        if (this.addresses != null && !this.addresses.isEmpty()) {
+            for (AddressEntity addressEntity : this.addresses) {
+                if (addressEntity.getIsDefault()) {
                     defaultAddress = addressEntity;
                     break;
                 }
@@ -587,9 +594,11 @@ public class UserEntity {
         }
         return defaultAddress;
     }
+
     public String getDefaultLogin() {
         return defaultLogin;
     }
+
     public void setDefaultLogin(String defaultLogin) {
         this.defaultLogin = defaultLogin;
     }
@@ -693,14 +702,14 @@ public class UserEntity {
     public List<LoginEntity> getPrincipalList() {
         return principalList;
     }
-    
+
     public void addLogin(final LoginEntity loginEntity) {
-    	if(loginEntity != null) {
-    		if(this.principalList == null) {
-    			this.principalList = new LinkedList<LoginEntity>();
-    		}
-    		this.principalList.add(loginEntity);
-    	}
+        if (loginEntity != null) {
+            if (this.principalList == null) {
+                this.principalList = new LinkedList<LoginEntity>();
+            }
+            this.principalList.add(loginEntity);
+        }
     }
 
     public void setPrincipalList(List<LoginEntity> principalList) {
@@ -716,56 +725,56 @@ public class UserEntity {
     }
 
     public void addUserAttribute(final UserAttributeEntity entity) {
-    	if(entity != null) {
-    		if(this.userAttributes == null) {
-    			this.userAttributes = new HashMap<String, UserAttributeEntity>();
-    		}
-    		entity.setUserId(this.getId());
-    		this.userAttributes.put(entity.getName(), entity);
-    	}
+        if (entity != null) {
+            if (this.userAttributes == null) {
+                this.userAttributes = new HashMap<String, UserAttributeEntity>();
+            }
+            entity.setUserId(this.getId());
+            this.userAttributes.put(entity.getName(), entity);
+        }
     }
-    
+
     public void removeUserAttribute(final String id) {
-    	if(id != null && this.userAttributes != null) {
-    		final Set<Entry<String, UserAttributeEntity>> entrySet = this.userAttributes.entrySet();
-    		if(entrySet != null) {
-    			for(final Iterator<Entry<String, UserAttributeEntity>> it = entrySet.iterator(); it.hasNext();) {
-    				final Entry<String, UserAttributeEntity> entry = it.next();
-    				final UserAttributeEntity value = entry.getValue();
-    				if(value != null && StringUtils.equals(value.getId(), id)) {
-    					it.remove();
-    					break;
-    				}
-    			}
-    		}
-    	}
+        if (id != null && this.userAttributes != null) {
+            final Set<Entry<String, UserAttributeEntity>> entrySet = this.userAttributes.entrySet();
+            if (entrySet != null) {
+                for (final Iterator<Entry<String, UserAttributeEntity>> it = entrySet.iterator(); it.hasNext(); ) {
+                    final Entry<String, UserAttributeEntity> entry = it.next();
+                    final UserAttributeEntity value = entry.getValue();
+                    if (value != null && StringUtils.equals(value.getId(), id)) {
+                        it.remove();
+                        break;
+                    }
+                }
+            }
+        }
     }
-    
+
     public void updateUserAttribute(final UserAttributeEntity entity) {
-    	if(entity != null && this.userAttributes != null) {
-    		final UserAttributeEntity attribute = this.userAttributes.get(entity.getName());
-    		if(attribute != null) {
-    			attribute.setElement(entity.getElement());
-    			attribute.setValue(entity.getValue());
-    		}
-    	}
+        if (entity != null && this.userAttributes != null) {
+            final UserAttributeEntity attribute = this.userAttributes.get(entity.getName());
+            if (attribute != null) {
+                attribute.setElement(entity.getElement());
+                attribute.setValue(entity.getValue());
+            }
+        }
     }
-    
+
     public void addGroup(final GroupEntity group) {
-    	if(group != null) {
-    		if(this.groups == null) {
-    			this.groups = new HashSet<>();
-    		}
-    		this.groups.add(group);
-    	}
+        if (group != null) {
+            if (this.groups == null) {
+                this.groups = new HashSet<>();
+            }
+            this.groups.add(group);
+        }
     }
-    
+
     public void removeGroup(final GroupEntity group) {
-    	if(group != null) {
-    		if(this.groups != null) {
-    			this.groups.remove(group);
-    		}
-    	}
+        if (group != null) {
+            if (this.groups != null) {
+                this.groups.remove(group);
+            }
+        }
     }
 
     public Set<GroupEntity> getGroups() {
@@ -784,12 +793,12 @@ public class UserEntity {
         this.roles = roles;
     }
 
-    public Set<OrganizationEntity> getAffiliations() {
-        return affiliations;
+    public Set<OrganizationUserEntity> getOrganizationUser() {
+        return organizationUser;
     }
 
-    public void setAffiliations(Set<OrganizationEntity> affiliations) {
-        this.affiliations = affiliations;
+    public void setOrganizationUser(Set<OrganizationUserEntity> organizationUser) {
+        this.organizationUser = organizationUser;
     }
 
     public Set<ResourceEntity> getResources() {
@@ -799,86 +808,86 @@ public class UserEntity {
     public void setResources(Set<ResourceEntity> resources) {
         this.resources = resources;
     }
-    
+
     public void addResource(final ResourceEntity entity) {
-    	if(entity != null) {
-    		if(this.resources == null) {
-    			this.resources = new HashSet<>();
-    		}
-    		this.resources.add(entity);
-    	}
+        if (entity != null) {
+            if (this.resources == null) {
+                this.resources = new HashSet<>();
+            }
+            this.resources.add(entity);
+        }
     }
-    
+
     public void removeResource(final ResourceEntity entity) {
-    	if(entity != null) {
-    		if(this.resources != null) {
-    			this.resources.remove(entity);
-    		}
-    	}
+        if (entity != null) {
+            if (this.resources != null) {
+                this.resources.remove(entity);
+            }
+        }
     }
 
     public void updateUser(UserEntity newUser) {
-	    if (newUser.getBirthdate() != null) {
-	        if (newUser.getBirthdate().equals(BaseConstants.NULL_DATE)) {
-	            this.birthdate = null;
-	        } else {
-	            this.birthdate = newUser.getBirthdate();
-	        }
-	    }
-	    if (newUser.getClassification() != null) {
-	        if (newUser.getClassification().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-	            this.classification = null;
-	        } else {
-	            this.classification = newUser.getClassification();
-	        }
-	    }
-	    if (newUser.getCostCenter() != null) {
-	        if (newUser.getCostCenter().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-	            this.costCenter = null;
-	        } else {
-	            this.costCenter = newUser.getCostCenter();
-	        }
-	    }
-	   
-	    if (newUser.getEmployeeId() != null) {
-	        if (newUser.getEmployeeId().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-	            this.employeeId = null;
-	        } else {
-	            this.employeeId = newUser.getEmployeeId();
-	        }
-	    }
-	    if (newUser.getEmployeeType() != null) {
-	       this.employeeType = newUser.getEmployeeType();
-	    } else {
-            employeeType=null;
+        if (newUser.getBirthdate() != null) {
+            if (newUser.getBirthdate().equals(BaseConstants.NULL_DATE)) {
+                this.birthdate = null;
+            } else {
+                this.birthdate = newUser.getBirthdate();
+            }
+        }
+        if (newUser.getClassification() != null) {
+            if (newUser.getClassification().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                this.classification = null;
+            } else {
+                this.classification = newUser.getClassification();
+            }
+        }
+        if (newUser.getCostCenter() != null) {
+            if (newUser.getCostCenter().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                this.costCenter = null;
+            } else {
+                this.costCenter = newUser.getCostCenter();
+            }
         }
 
-	    if (newUser.getFirstName() != null) {
-	        if (newUser.getFirstName().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-	            this.firstName = null;
-	        } else {
-	            this.firstName = newUser.getFirstName();
-	        }
-	    }
-	    if (newUser.getJobCode() != null) {
-	        this.jobCode = newUser.getJobCode();
-	    } else {
+        if (newUser.getEmployeeId() != null) {
+            if (newUser.getEmployeeId().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                this.employeeId = null;
+            } else {
+                this.employeeId = newUser.getEmployeeId();
+            }
+        }
+        if (newUser.getEmployeeType() != null) {
+            this.employeeType = newUser.getEmployeeType();
+        } else {
+            employeeType = null;
+        }
+
+        if (newUser.getFirstName() != null) {
+            if (newUser.getFirstName().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                this.firstName = null;
+            } else {
+                this.firstName = newUser.getFirstName();
+            }
+        }
+        if (newUser.getJobCode() != null) {
+            this.jobCode = newUser.getJobCode();
+        } else {
             this.jobCode = null;
         }
-	    if (newUser.getLastName() != null) {
-	        if (newUser.getLastName().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-	            this.lastName = null;
-	        } else {
-	            this.lastName = newUser.getLastName();
-	        }
-	    }
-	    if (newUser.getLastDate() != null) {
-	        if (newUser.getLastDate().equals(BaseConstants.NULL_DATE)) {
-	            this.lastDate = null;
-	        } else {
-	            this.lastDate = newUser.getLastDate();
-	        }
-	    }
+        if (newUser.getLastName() != null) {
+            if (newUser.getLastName().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                this.lastName = null;
+            } else {
+                this.lastName = newUser.getLastName();
+            }
+        }
+        if (newUser.getLastDate() != null) {
+            if (newUser.getLastDate().equals(BaseConstants.NULL_DATE)) {
+                this.lastDate = null;
+            } else {
+                this.lastDate = newUser.getLastDate();
+            }
+        }
         if (newUser.getClaimDate() != null) {
             if (newUser.getClaimDate().equals(BaseConstants.NULL_DATE)) {
                 this.claimDate = null;
@@ -886,143 +895,143 @@ public class UserEntity {
                 this.claimDate = newUser.getClaimDate();
             }
         }
-	    if (newUser.getLocationCd() != null) {
-	        if (newUser.getLocationCd().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-	            this.locationCd = null;
-	        } else {
-	            this.locationCd = newUser.getLocationCd();
-	        }
-	    }
-	    if (newUser.getLocationName() != null) {
-	        if (newUser.getLocationName().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-	            this.locationName = null;
-	        } else {
-	            this.locationName = newUser.getLocationName();
-	        }
-	    }
-	    if (newUser.getMaidenName() != null) {
-	        if (newUser.getMaidenName().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-	            this.maidenName = null;
-	        } else {
-	            this.maidenName = newUser.getMaidenName();
-	        }
-	    }
-	    if (newUser.getMailCode() != null) {
-	        if (newUser.getMailCode().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-	            this.mailCode = null;
-	        } else {
-	            this.mailCode = newUser.getMailCode();
-	        }
-	    }
-	    if (newUser.getType() != null) {
+        if (newUser.getLocationCd() != null) {
+            if (newUser.getLocationCd().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                this.locationCd = null;
+            } else {
+                this.locationCd = newUser.getLocationCd();
+            }
+        }
+        if (newUser.getLocationName() != null) {
+            if (newUser.getLocationName().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                this.locationName = null;
+            } else {
+                this.locationName = newUser.getLocationName();
+            }
+        }
+        if (newUser.getMaidenName() != null) {
+            if (newUser.getMaidenName().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                this.maidenName = null;
+            } else {
+                this.maidenName = newUser.getMaidenName();
+            }
+        }
+        if (newUser.getMailCode() != null) {
+            if (newUser.getMailCode().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                this.mailCode = null;
+            } else {
+                this.mailCode = newUser.getMailCode();
+            }
+        }
+        if (newUser.getType() != null) {
             this.setType(newUser.getType());
-	    }
-	    if (newUser.getMiddleInit() != null) {
-	        if (newUser.getMiddleInit().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-	            this.middleInit = null;
-	        } else {
-	            this.middleInit = newUser.getMiddleInit();
-	        }
-	    }
-	    if (newUser.getNickname() != null) {
-	        if (newUser.getNickname().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-	            this.nickname = null;
-	        } else {
-	            this.nickname = newUser.getNickname();
-	        }
-	    }
-	    if (newUser.getPasswordTheme() != null) {
-	        if (newUser.getPasswordTheme().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-	            this.passwordTheme = null;
-	        } else {
-	            this.passwordTheme = newUser.getPasswordTheme();
-	        }
-	    }
-	    if (newUser.getPrefix() != null) {
-	        if (newUser.getPrefix().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-	            this.prefix = null;
-	        } else {
-	            this.prefix = newUser.getPrefix();
-	        }
-	    }
-	    if (newUser.getSecondaryStatus() != null) {
-	        this.secondaryStatus = newUser.getSecondaryStatus();
-	    }
-	    if (newUser.getSex() != null) {
-	        if (newUser.getSex().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-	            this.sex = null;
-	        } else {
-	            this.sex = newUser.getSex();
-	        }
-	    }
-	    if (newUser.getStartDate() != null) {
-	        if (newUser.getStartDate().equals(BaseConstants.NULL_DATE)) {
-	            this.startDate = null;
-	        } else {
-	            this.startDate = newUser.getStartDate();
-	        }
-	    }
-	
-	    if (newUser.getStatus() != null) {
-	        this.status = newUser.getStatus();
-	    }
-	    if (newUser.getSuffix() != null) {
-	        if (newUser.getSuffix().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-	            this.suffix = null;
-	        } else {
-	            this.suffix = newUser.getSuffix();
-	        }
-	    }
-	    if (newUser.getShowInSearch() != null) {
-	        if (newUser.getShowInSearch().equals(BaseConstants.NULL_INTEGER)) {
-	            this.showInSearch = 0;
-	        } else {
-	            this.showInSearch = newUser.getShowInSearch();
-	        }
-	    }
-	    if (newUser.getTitle() != null) {
-	        if (newUser.getTitle().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-	            this.title = null;
-	        } else {
-	            this.title = newUser.getTitle();
-	        }
-	    }
-	    if (newUser.getUserTypeInd() != null) {
-	        if (newUser.getUserTypeInd().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-	            this.userTypeInd = null;
-	        } else {
-	            this.userTypeInd = newUser.getUserTypeInd();
-	        }
-	    }
-	    if (newUser.getAlternateContactId() != null) {
-	        if (newUser.getAlternateContactId().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-	            this.alternateContactId = null;
-	        } else {
-	            this.alternateContactId = newUser.getAlternateContactId();
-	        }
-	    }
-	
-	    if (newUser.getUserOwnerId() != null) {
-	        if (newUser.getUserOwnerId().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-	            this.userOwnerId = null;
-	        } else {
-	            this.userOwnerId = newUser.getUserOwnerId();
-	        }
-	    }
-	    if (newUser.getDateChallengeRespChanged() != null) {
-	        if (newUser.getDateChallengeRespChanged().equals(BaseConstants.NULL_DATE)) {
-	            this.dateChallengeRespChanged = null;
-	        } else {
-	            this.dateChallengeRespChanged = newUser.getDateChallengeRespChanged();
-	        }
-	    }
-	    if (newUser.getDatePasswordChanged() != null) {
-	        if (newUser.getDatePasswordChanged().equals(BaseConstants.NULL_DATE)) {
-	            this.datePasswordChanged = null;
-	        } else {
-	            this.datePasswordChanged = newUser.getDatePasswordChanged();
-	        }
-	    }
+        }
+        if (newUser.getMiddleInit() != null) {
+            if (newUser.getMiddleInit().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                this.middleInit = null;
+            } else {
+                this.middleInit = newUser.getMiddleInit();
+            }
+        }
+        if (newUser.getNickname() != null) {
+            if (newUser.getNickname().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                this.nickname = null;
+            } else {
+                this.nickname = newUser.getNickname();
+            }
+        }
+        if (newUser.getPasswordTheme() != null) {
+            if (newUser.getPasswordTheme().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                this.passwordTheme = null;
+            } else {
+                this.passwordTheme = newUser.getPasswordTheme();
+            }
+        }
+        if (newUser.getPrefix() != null) {
+            if (newUser.getPrefix().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                this.prefix = null;
+            } else {
+                this.prefix = newUser.getPrefix();
+            }
+        }
+        if (newUser.getSecondaryStatus() != null) {
+            this.secondaryStatus = newUser.getSecondaryStatus();
+        }
+        if (newUser.getSex() != null) {
+            if (newUser.getSex().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                this.sex = null;
+            } else {
+                this.sex = newUser.getSex();
+            }
+        }
+        if (newUser.getStartDate() != null) {
+            if (newUser.getStartDate().equals(BaseConstants.NULL_DATE)) {
+                this.startDate = null;
+            } else {
+                this.startDate = newUser.getStartDate();
+            }
+        }
+
+        if (newUser.getStatus() != null) {
+            this.status = newUser.getStatus();
+        }
+        if (newUser.getSuffix() != null) {
+            if (newUser.getSuffix().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                this.suffix = null;
+            } else {
+                this.suffix = newUser.getSuffix();
+            }
+        }
+        if (newUser.getShowInSearch() != null) {
+            if (newUser.getShowInSearch().equals(BaseConstants.NULL_INTEGER)) {
+                this.showInSearch = 0;
+            } else {
+                this.showInSearch = newUser.getShowInSearch();
+            }
+        }
+        if (newUser.getTitle() != null) {
+            if (newUser.getTitle().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                this.title = null;
+            } else {
+                this.title = newUser.getTitle();
+            }
+        }
+        if (newUser.getUserTypeInd() != null) {
+            if (newUser.getUserTypeInd().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                this.userTypeInd = null;
+            } else {
+                this.userTypeInd = newUser.getUserTypeInd();
+            }
+        }
+        if (newUser.getAlternateContactId() != null) {
+            if (newUser.getAlternateContactId().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                this.alternateContactId = null;
+            } else {
+                this.alternateContactId = newUser.getAlternateContactId();
+            }
+        }
+
+        if (newUser.getUserOwnerId() != null) {
+            if (newUser.getUserOwnerId().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                this.userOwnerId = null;
+            } else {
+                this.userOwnerId = newUser.getUserOwnerId();
+            }
+        }
+        if (newUser.getDateChallengeRespChanged() != null) {
+            if (newUser.getDateChallengeRespChanged().equals(BaseConstants.NULL_DATE)) {
+                this.dateChallengeRespChanged = null;
+            } else {
+                this.dateChallengeRespChanged = newUser.getDateChallengeRespChanged();
+            }
+        }
+        if (newUser.getDatePasswordChanged() != null) {
+            if (newUser.getDatePasswordChanged().equals(BaseConstants.NULL_DATE)) {
+                this.datePasswordChanged = null;
+            } else {
+                this.datePasswordChanged = newUser.getDatePasswordChanged();
+            }
+        }
         if (newUser.getDateITPolicyApproved() != null) {
             if (newUser.getDateITPolicyApproved().equals(BaseConstants.NULL_DATE)) {
                 this.dateITPolicyApproved = null;

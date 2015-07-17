@@ -17,6 +17,7 @@ import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.org.dto.Organization;
+import org.openiam.idm.srvc.org.dto.OrganizationUserDTO;
 import org.openiam.idm.srvc.org.service.OrganizationDataService;
 import org.openiam.idm.srvc.pswd.dto.UserIdentityAnswer;
 import org.openiam.idm.srvc.pswd.service.ChallengeResponseWebService;
@@ -65,13 +66,12 @@ public class UserManagmentServiceTest2 extends AbstractUserManagementServiceTest
     protected LoginDataWebService loginServiceClient;
 
 
-    protected String ROLE_ID="1";
-    protected String COMPANY_ID="100";
-    protected String SUPERVISOR_ID="3000";
+    protected String ROLE_ID = "1";
+    protected String COMPANY_ID = "100";
+    protected String SUPERVISOR_ID = "3000";
 
 
-
-    @Test(groups ={"CHANGE_STATUS"})
+    @Test(groups = {"CHANGE_STATUS"})
     public void changeStatus() throws Exception {
         User user = doCreate();
         User foundUser = getAndAssert(user.getId());
@@ -118,7 +118,7 @@ public class UserManagmentServiceTest2 extends AbstractUserManagementServiceTest
     // ********************************IDMAPPS-2908************************************************
     // Create a user with a predefined role
     // ********************************************************************************************
-    @Test(groups ={"NEW_USER_WITH_ROLE"})
+    @Test(groups = {"NEW_USER_WITH_ROLE"})
     public void newUserWithRole() throws Exception {
         Role role = roleServiceClient.getRoleLocalized(ROLE_ID, REQUESTER_ID, getDefaultLanguage());
         role.setOperation(AttributeOperationEnum.ADD);
@@ -130,7 +130,7 @@ public class UserManagmentServiceTest2 extends AbstractUserManagementServiceTest
         user.setNotifyUserViaEmail(false);
         user.getRoles().add(role);
 
-        user = ((ProvisionUserResponse)saveAndAssert(user)).getUser();
+        user = ((ProvisionUserResponse) saveAndAssert(user)).getUser();
         pushUserId(user.getId());
 
         Thread.sleep(5000);
@@ -142,7 +142,7 @@ public class UserManagmentServiceTest2 extends AbstractUserManagementServiceTest
         Assert.assertNotNull(foundUser.getRoles());
         if (foundUser.getRoles() != null) {
             for (Role rl : foundUser.getRoles())
-            Assert.assertEquals(rl.getId(), role.getId());
+                Assert.assertEquals(rl.getId(), role.getId());
         }
     }
 
@@ -150,7 +150,7 @@ public class UserManagmentServiceTest2 extends AbstractUserManagementServiceTest
     // ********************************IDMAPPS-2907************************************************
     // Create a user with a predefined identity
     // ********************************************************************************************
-    @Test(groups ={"NEW_USER_WITH_IDENTITY"})
+    @Test(groups = {"NEW_USER_WITH_IDENTITY"})
     public void newUserWithIdentity() throws Exception {
         Login login = new Login();
         login.setLogin(getRandomName());
@@ -163,7 +163,7 @@ public class UserManagmentServiceTest2 extends AbstractUserManagementServiceTest
         user.setNotifyUserViaEmail(false);
         user.addPrincipal(login);
 
-        user = ((ProvisionUserResponse)saveAndAssert(user)).getUser();
+        user = ((ProvisionUserResponse) saveAndAssert(user)).getUser();
         pushUserId(user.getId());
 
         Thread.sleep(5000);
@@ -185,7 +185,7 @@ public class UserManagmentServiceTest2 extends AbstractUserManagementServiceTest
     // ********************************IDMAPPS-2904************************************************
     // Create a user with a predefine password
     // ********************************************************************************************
-    @Test(groups ={"NEW_USER_WITH_PASSWORD"})
+    @Test(groups = {"NEW_USER_WITH_PASSWORD"})
     public void newUserWithPassword() throws Exception {
         Login login = new Login();
         login.setLogin(getRandomName());
@@ -200,7 +200,7 @@ public class UserManagmentServiceTest2 extends AbstractUserManagementServiceTest
         user.setNotifyUserViaEmail(false);
         user.addPrincipal(login);
 
-        user = ((ProvisionUserResponse)saveAndAssert(user)).getUser();
+        user = ((ProvisionUserResponse) saveAndAssert(user)).getUser();
         pushUserId(user.getId());
 
         Thread.sleep(5000);
@@ -223,7 +223,7 @@ public class UserManagmentServiceTest2 extends AbstractUserManagementServiceTest
     // ********************************IDMAPPS-2929************************************************
     // Reset the challenge questions for the user
     // ********************************************************************************************
-    @Test(groups ={"RESET_CHALLENGE_QUESTIONS"})
+    @Test(groups = {"RESET_CHALLENGE_QUESTIONS"})
     public void resetChallengeQuestions() throws Exception {
         User user = doCreate();
         User foundUser = getAndAssert(user.getId());
@@ -279,7 +279,7 @@ public class UserManagmentServiceTest2 extends AbstractUserManagementServiceTest
     //**********************************************************************************************
     // User in Company
     ///IDMAPPS-2933,2934,2935
-    @Test(groups ={"USER_IN_COMPANY"})
+    @Test(groups = {"USER_IN_COMPANY"})
     public void userInCompany() throws Exception {
         Organization org = organizationServiceClient.getOrganizationLocalized(COMPANY_ID, REQUESTER_ID, getDefaultLanguage());
         Assert.assertNotNull(org, "Cann't find default ORGANIZATION");
@@ -287,17 +287,16 @@ public class UserManagmentServiceTest2 extends AbstractUserManagementServiceTest
         User user = doCreate();
         User foundUser = getAndAssert(user.getId());
 
-        org.setOperation(AttributeOperationEnum.ADD);
-        user.getAffiliations().add(org);
+        user.getOrganizationUserDTOs().add(new OrganizationUserDTO(user.getId(), org.getId(), AttributeOperationEnum.ADD));
 
         saveAndAssert(user);
 
         Thread.sleep(3000);
         foundUser = getAndAssert(user.getId());
-        Assert.assertNotNull(foundUser.getAffiliations());
-        if (foundUser.getAffiliations() != null) {
-            for (Organization foundOrg: foundUser.getAffiliations()) {
-                Assert.assertEquals(org.getId(), foundOrg.getId());
+        Assert.assertNotNull(foundUser.getOrganizationUserDTOs());
+        if (foundUser.getOrganizationUserDTOs() != null) {
+            for (OrganizationUserDTO foundOrg : foundUser.getOrganizationUserDTOs()) {
+                Assert.assertEquals(org.getId(), foundOrg.getOrganization().getId());
             }
         }
 
@@ -311,11 +310,17 @@ public class UserManagmentServiceTest2 extends AbstractUserManagementServiceTest
         if (results != null) {
             Assert.assertEquals(org.getId(), results.get(0).getId());
         }
+        OrganizationUserDTO organizationUserDTO = null;
+        for (OrganizationUserDTO userDTO : user.getOrganizationUserDTOs()) {
+            if (userDTO.getOrganization().getId().equals(org.getId())) {
+                organizationUserDTO = userDTO;
+                break;
+            }
+        }
 
-
-        user.getAffiliations().remove(org);
-        org.setOperation(AttributeOperationEnum.DELETE);
-        user.getAffiliations().add(org);
+        user.getOrganizationUserDTOs().remove(organizationUserDTO);
+        organizationUserDTO.setOperation(AttributeOperationEnum.DELETE);
+        user.getOrganizationUserDTOs().add(organizationUserDTO);
         saveAndAssert(user);
         Thread.sleep(3000);
 
@@ -327,11 +332,10 @@ public class UserManagmentServiceTest2 extends AbstractUserManagementServiceTest
     }
 
 
-
     //**********************************************************************************************
     // Supervisors
     //////IDMAPPS-2930, 2931, 2932
-    @Test(groups ={"SUPERVISOR"})
+    @Test(groups = {"SUPERVISOR"})
     public void supervisorForUser() throws Exception {
 
         User user = doCreate();
@@ -377,7 +381,7 @@ public class UserManagmentServiceTest2 extends AbstractUserManagementServiceTest
     //**********************************************************************************************
     // USER CONTACT ADDRESS
     //IDMAPPS-2942, 2939, 2937
-    @Test(groups ={"CONTACT_ADDRESS"})
+    @Test(groups = {"CONTACT_ADDRESS"})
     public void userContactAddress() throws Exception {
         User user = doCreate();
         User foundUser = getAndAssert(user.getId());
@@ -391,7 +395,7 @@ public class UserManagmentServiceTest2 extends AbstractUserManagementServiceTest
         ProvisionUser pUser = new ProvisionUser(user);
         pUser.setRequestorUserId(REQUESTER_ID);
         pUser.getAddresses().add(adr);
-        User userResult = ((ProvisionUserResponse)saveAndAssert(pUser)).getUser();
+        User userResult = ((ProvisionUserResponse) saveAndAssert(pUser)).getUser();
 
 
         String adrId = null;
@@ -406,7 +410,6 @@ public class UserManagmentServiceTest2 extends AbstractUserManagementServiceTest
         Assert.assertTrue(count == 1);
 
 
-
         User userDel = userServiceClient.getUserWithDependent(userResult.getId(), REQUESTER_ID, true);
         ProvisionUser pUserDel = new ProvisionUser(userDel);
         pUserDel.setRequestorUserId(REQUESTER_ID);
@@ -417,7 +420,7 @@ public class UserManagmentServiceTest2 extends AbstractUserManagementServiceTest
             }
         }
 
-        userResult = ((ProvisionUserResponse)saveAndAssert(pUserDel)).getUser();
+        userResult = ((ProvisionUserResponse) saveAndAssert(pUserDel)).getUser();
 
         addressList = userServiceClient.getAddressListByPage(userResult.getId(), 1, 0);
         count = userServiceClient.getNumOfAddressesForUser(userResult.getId());
@@ -429,7 +432,7 @@ public class UserManagmentServiceTest2 extends AbstractUserManagementServiceTest
     //**********************************************************************************************
     // USER CONTACT PHONE
     //IDMAPPS-2938, 2941, 2944
-    @Test(groups ={"CONTACT_PHONE"})
+    @Test(groups = {"CONTACT_PHONE"})
     public void userContactPhone() throws Exception {
 
         User user = doCreate();
@@ -446,8 +449,7 @@ public class UserManagmentServiceTest2 extends AbstractUserManagementServiceTest
         ProvisionUser pUser = new ProvisionUser(user);
         pUser.setRequestorUserId(REQUESTER_ID);
         pUser.getPhones().add(ph);
-        User userResult = ((ProvisionUserResponse)saveAndAssert(pUser)).getUser();
-
+        User userResult = ((ProvisionUserResponse) saveAndAssert(pUser)).getUser();
 
 
         String phId = null;
@@ -474,7 +476,7 @@ public class UserManagmentServiceTest2 extends AbstractUserManagementServiceTest
             }
         }
 
-        userResult = ((ProvisionUserResponse)saveAndAssert(pUserDel)).getUser();
+        userResult = ((ProvisionUserResponse) saveAndAssert(pUserDel)).getUser();
 
         phoneList = userServiceClient.getPhoneListByPage(userResult.getId(), 1, 0);
         count = userServiceClient.getNumOfPhonesForUser(userResult.getId());
@@ -483,11 +485,10 @@ public class UserManagmentServiceTest2 extends AbstractUserManagementServiceTest
     }
 
 
-
     //**********************************************************************************************
     // USER CONTACT EMAIL
     //IDMAPPS-2936, 2940, 2943
-    @Test(groups ={"CONTACT_EMAIL"})
+    @Test(groups = {"CONTACT_EMAIL"})
     public void userContactEmail() throws Exception {
 
         User user = doCreate();
@@ -503,8 +504,7 @@ public class UserManagmentServiceTest2 extends AbstractUserManagementServiceTest
         ProvisionUser pUser = new ProvisionUser(user);
         pUser.setRequestorUserId(REQUESTER_ID);
         pUser.getEmailAddresses().add(em);
-        User userResult = ((ProvisionUserResponse)saveAndAssert(pUser)).getUser();
-
+        User userResult = ((ProvisionUserResponse) saveAndAssert(pUser)).getUser();
 
 
         String emailId = null;
@@ -530,7 +530,7 @@ public class UserManagmentServiceTest2 extends AbstractUserManagementServiceTest
             }
         }
 
-        userResult = ((ProvisionUserResponse)saveAndAssert(pUserDel)).getUser();
+        userResult = ((ProvisionUserResponse) saveAndAssert(pUserDel)).getUser();
 
         emailList = userServiceClient.getEmailAddressListByPage(userResult.getId(), 1, 0);
         count = userServiceClient.getNumOfEmailsForUser(userResult.getId());
