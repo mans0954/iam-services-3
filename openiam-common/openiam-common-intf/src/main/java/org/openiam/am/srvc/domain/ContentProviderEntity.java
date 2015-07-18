@@ -95,6 +95,17 @@ public class ContentProviderEntity extends AbstractKeyNameEntity {
 	@OrderBy("order ASC")
 	private Set<AuthLevelGroupingContentProviderXrefEntity> groupingXrefs;
 	
+	@Column(name = "IS_UNAVAILABLE")
+	@Type(type = "yes_no")
+	private boolean unavailable;
+	
+	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @JoinColumn(name="IS_UNAVAILABLE_RESOURCE", referencedColumnName = "RESOURCE_ID", insertable = true, updatable = true, nullable=false)
+	private ResourceEntity unavailableResource;
+	
+	@Column(name = "IS_UNAVAILABLE_URL", length = 300, nullable = true)
+	private String unavailableURL;
+	
 	public boolean getIsPublic() {
 		return isPublic;
 	}
@@ -143,28 +154,6 @@ public class ContentProviderEntity extends AbstractKeyNameEntity {
 		this.patternSet = patternSet;
 	}
 	
-	
-
-	/*
-    public String getResourceId() {
-        return resourceId;
-    }
-
-    public void setResourceId(String resourceId) {
-        this.resourceId = resourceId;
-    }
-    */
-
-    /*
-    public String getContextPath() {
-        return contextPath;
-    }
-
-    public void setContextPath(String contextPath) {
-        this.contextPath = contextPath;
-    }
-    */
-
     public UIThemeEntity getUiTheme() {
 		return uiTheme;
 	}
@@ -172,16 +161,6 @@ public class ContentProviderEntity extends AbstractKeyNameEntity {
 	public void setUiTheme(UIThemeEntity uiTheme) {
 		this.uiTheme = uiTheme;
 	}
-
-	/*
-	public ManagedSysEntity getManagedSystem() {
-		return managedSystem;
-	}
-
-	public void setManagedSystem(ManagedSysEntity managedSystem) {
-		this.managedSystem = managedSystem;
-	}
-	*/
 
 	public Set<AuthLevelGroupingContentProviderXrefEntity> getGroupingXrefs() {
 		return groupingXrefs;
@@ -241,31 +220,48 @@ public class ContentProviderEntity extends AbstractKeyNameEntity {
 		this.authProvider = authProvider;
 	}
 
+	public boolean isUnavailable() {
+		return unavailable;
+	}
+
+	public void setUnavailable(boolean unavailable) {
+		this.unavailable = unavailable;
+	}
+
+	public ResourceEntity getUnavailableResource() {
+		return unavailableResource;
+	}
+
+	public void setUnavailableResource(ResourceEntity unavailableResource) {
+		this.unavailableResource = unavailableResource;
+	}
+
+	public String getUnavailableURL() {
+		return unavailableURL;
+	}
+
+	public void setUnavailableURL(String unavailableURL) {
+		this.unavailableURL = unavailableURL;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
-		result = prime
-				* result
-				+ ((authCookieDomain == null) ? 0 : authCookieDomain.hashCode());
-		result = prime * result
-				+ ((authCookieName == null) ? 0 : authCookieName.hashCode());
-		result = prime * result
-				+ ((authProvider == null) ? 0 : authProvider.hashCode());
-		result = prime * result
-				+ ((domainPattern == null) ? 0 : domainPattern.hashCode());
+		result = prime * result + ((authCookieDomain == null) ? 0 : authCookieDomain.hashCode());
+		result = prime * result + ((authCookieName == null) ? 0 : authCookieName.hashCode());
+		result = prime * result + ((authProvider == null) ? 0 : authProvider.hashCode());
+		result = prime * result + ((domainPattern == null) ? 0 : domainPattern.hashCode());
 		result = prime * result + (isPublic ? 1231 : 1237);
 		result = prime * result + ((isSSL == null) ? 0 : isSSL.hashCode());
-		result = prime * result
-				+ ((loginURL == null) ? 0 : loginURL.hashCode());
-		result = prime
-				* result
-				+ ((postbackURLParamName == null) ? 0 : postbackURLParamName
-						.hashCode());
-		result = prime * result
-				+ ((resource == null) ? 0 : resource.hashCode());
+		result = prime * result + ((loginURL == null) ? 0 : loginURL.hashCode());
+		result = prime * result + ((postbackURLParamName == null) ? 0 : postbackURLParamName.hashCode());
+		result = prime * result + ((resource == null) ? 0 : resource.hashCode());
 		result = prime * result + (showOnApplicationPage ? 1231 : 1237);
 		result = prime * result + ((uiTheme == null) ? 0 : uiTheme.hashCode());
+		result = prime * result + (unavailable ? 1231 : 1237);
+		result = prime * result + ((unavailableResource == null) ? 0 : unavailableResource.hashCode());
+		result = prime * result + ((unavailableURL == null) ? 0 : unavailableURL.hashCode());
 		return result;
 	}
 
@@ -326,6 +322,19 @@ public class ContentProviderEntity extends AbstractKeyNameEntity {
 			if (other.uiTheme != null)
 				return false;
 		} else if (!uiTheme.equals(other.uiTheme))
+			return false;
+		
+		if (unavailable != other.unavailable)
+			return false;
+		if (unavailableResource == null) {
+			if (other.unavailableResource != null)
+				return false;
+		} else if (!unavailableResource.equals(other.unavailableResource))
+			return false;
+		if (unavailableURL == null) {
+			if (other.unavailableURL != null)
+				return false;
+		} else if (!unavailableURL.equals(other.unavailableURL))
 			return false;
 		return true;
 	}

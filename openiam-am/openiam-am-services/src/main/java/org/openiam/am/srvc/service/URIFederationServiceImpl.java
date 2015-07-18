@@ -605,6 +605,13 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 				}
 			}
 			
+
+			if(cp.isUnavailable()) {
+				if(!isEntitled(userId, cp.getUnavailableResourceId())) {
+					response.setRedirectTo(StringUtils.trimToNull(cp.getUnavailableURL()));
+				}
+			}
+			
 			response.setStatus(ResponseStatus.SUCCESS);
 		} catch(BasicDataServiceException e) {
 			response.setErrorCode(e.getCode());

@@ -42,7 +42,12 @@ import java.util.concurrent.atomic.AtomicInteger;
         "postbackURLParamName",
         "authProviderId",
         "authCookieName",
-        "authCookieDomain"
+        "authCookieDomain",
+        "unavailable",
+        "unavailableURL",
+        "unavailableResourceId",
+        "unavailableResourceName",
+        "unavailableResourceCoorelatedName"
 })
 @DozerDTOCorrespondence(ContentProviderEntity.class)
 public class ContentProvider extends KeyNameDTO {
@@ -66,6 +71,11 @@ public class ContentProvider extends KeyNameDTO {
 	private String authCookieDomain;
 	private String loginURL;
 	private String postbackURLParamName;
+	private boolean unavailable;
+	private String unavailableURL;
+	private String unavailableResourceId;
+	private String unavailableResourceName;
+	private String unavailableResourceCoorelatedName;
 	
 	/*
 	 * federation variables.  Internal use only
@@ -246,6 +256,41 @@ public class ContentProvider extends KeyNameDTO {
 	}
 	public void setPostbackURLParamName(String postbackURLParamName) {
 		this.postbackURLParamName = postbackURLParamName;
+	}
+	
+	
+	
+	public boolean isUnavailable() {
+		return unavailable;
+	}
+	public void setUnavailable(boolean unavailable) {
+		this.unavailable = unavailable;
+	}
+	public String getUnavailableResourceId() {
+		return unavailableResourceId;
+	}
+	public void setUnavailableResourceId(String unavailableResourceId) {
+		this.unavailableResourceId = unavailableResourceId;
+	}
+	public String getUnavailableResourceName() {
+		return unavailableResourceName;
+	}
+	public void setUnavailableResourceName(String unavailableResourceName) {
+		this.unavailableResourceName = unavailableResourceName;
+	}
+	public String getUnavailableResourceCoorelatedName() {
+		return unavailableResourceCoorelatedName;
+	}
+	public void setUnavailableResourceCoorelatedName(
+			String unavailableResourceCoorelatedName) {
+		this.unavailableResourceCoorelatedName = unavailableResourceCoorelatedName;
+	}
+	
+	public String getUnavailableURL() {
+		return unavailableURL;
+	}
+	public void setUnavailableURL(String unavailableURL) {
+		this.unavailableURL = unavailableURL;
 	}
 	@Override
 	public int hashCode() {

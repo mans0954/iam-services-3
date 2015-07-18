@@ -175,6 +175,7 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 		cp.setAuthCookieDomain(cp.getDomainPattern());
 		cp.setUrl(getRandomName());
 		cp.setAuthProviderId(authProviderServiceClient.findAuthProviderBeans(null, 0, 1).get(0).getId());
+		cp.setUnavailable(false);
 		
 		final ContentProviderServer server = new ContentProviderServer();
 		server.setServerURL(getRandomName());
