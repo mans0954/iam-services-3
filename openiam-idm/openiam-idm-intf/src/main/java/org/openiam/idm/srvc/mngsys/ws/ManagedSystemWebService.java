@@ -1,15 +1,14 @@
 package org.openiam.idm.srvc.mngsys.ws;
 
-import java.util.List;
-
-import javax.jws.WebMethod;
-import javax.jws.WebParam;
-import javax.jws.WebService;
-
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.AttributeMapSearchBean;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.dto.*;
+
+import javax.jws.WebMethod;
+import javax.jws.WebParam;
+import javax.jws.WebService;
+import java.util.List;
 
 /**
  * Interface for <code>ManagedSystemWebService</code>
@@ -226,17 +225,17 @@ public interface ManagedSystemWebService {
             final @WebParam(name = "from", targetNamespace = "") int from,
             final @WebParam(name = "size", targetNamespace = "") int size);
 
-    @WebMethod
-    List<ManagedSysRuleDto> getRulesByManagedSysId(
-            final @WebParam(name = "managedSysId", targetNamespace = "") String managedSysId);
-
-    @WebMethod
-    ManagedSysRuleDto addRules(
-            final @WebParam(name = "entity", targetNamespace = "") ManagedSysRuleDto entity);
-
-    @WebMethod
-    void deleteRules(
-            final @WebParam(name = "ruleId", targetNamespace = "") String ruleId);
+//    @WebMethod
+//    List<ManagedSysRuleDto> getRulesByManagedSysId(
+//            final @WebParam(name = "managedSysId", targetNamespace = "") String managedSysId);
+//
+//    @WebMethod
+//    ManagedSysRuleDto addRules(
+//            final @WebParam(name = "entity", targetNamespace = "") ManagedSysRuleDto entity);
+//
+//    @WebMethod
+//    void deleteRules(
+//            final @WebParam(name = "ruleId", targetNamespace = "") String ruleId);
 
     @WebMethod
     List<AttributeMap> saveAttributesMap(
