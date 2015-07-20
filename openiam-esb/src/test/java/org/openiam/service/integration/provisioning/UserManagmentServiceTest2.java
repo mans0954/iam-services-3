@@ -287,7 +287,7 @@ public class UserManagmentServiceTest2 extends AbstractUserManagementServiceTest
         User user = doCreate();
         User foundUser = getAndAssert(user.getId());
 
-        user.getOrganizationUserDTOs().add(new OrganizationUserDTO(user.getId(), org.getId(), AttributeOperationEnum.ADD));
+        user.getOrganizationUserDTOs().add(new OrganizationUserDTO(user.getId(), org.getId(), "DEFAULT_AFFILIATION", AttributeOperationEnum.ADD));
 
         saveAndAssert(user);
 

@@ -572,30 +572,4 @@
             <b>grouping</b>
         </field>
     </mapping>
-    <mapping>
-        <class-a>org.openiam.idm.srvc.org.domain.OrganizationUserEntity</class-a>
-        <class-b>org.openiam.idm.srvc.org.dto.OrganizationUserDTO</class-b>
-        <field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentObjectConverter"
-               custom-converter-param="dto2entityShallowDozerMapper">
-            <a>metadataTypeEntity</a>
-            <b>mdType</b>
-        </field>
-        <!--<field>-->
-        <field
-                custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentObjectConverter"
-                custom-converter-param="dto2entityShallowDozerMapper">
-            <a>primaryKey.organization</a>
-            <b>primaryKey.organization</b>
-        </field>
-        <!--<field>-->
-        <field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentObjectConverter"
-               custom-converter-param="dto2entityShallowDozerMapper">
-            <a>primaryKey.user</a>
-            <b>primaryKey.user</b>
-        </field>
-        <field>
-            <a>operation</a>
-            <b>operation</b>
-        </field>
-    </mapping>
 </mappings>
