@@ -9,27 +9,27 @@ import org.openiam.idm.srvc.user.dto.User;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+import java.io.Serializable;
 
 /**
  * Created by zaporozhec on 7/17/15.
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "organizationUser", propOrder = {
-        "user",
-        "organization",
+        "primaryKey",
         "mdType", "operation"
 })
 @DozerDTOCorrespondence(OrganizationUserEntity.class)
-public class OrganizationUserDTO {
-    private User user;
-    private Organization organization;
+public class OrganizationUserDTO implements Serializable {
+    private OrganizationUserIdDto primaryKey = new OrganizationUserIdDto();
     private MetadataType mdType;
     protected AttributeOperationEnum operation = AttributeOperationEnum.NO_CHANGE;
 
     public OrganizationUserDTO(String userId, String organizationId, AttributeOperationEnum operation) {
-        this.user = new User(userId);
-        this.organization = new Organization();
-        this.organization.setId(organizationId);
+        this.primaryKey = new OrganizationUserIdDto();
+        this.primaryKey.setUser(new User(userId));
+        this.primaryKey.setOrganization(new Organization());
+        this.primaryKey.getOrganization().setId(organizationId);
         this.operation = operation;
 
     }
@@ -37,20 +37,28 @@ public class OrganizationUserDTO {
     public OrganizationUserDTO() {
     }
 
+    public OrganizationUserIdDto getPrimaryKey() {
+        return primaryKey;
+    }
+
+    public void setPrimaryKey(OrganizationUserIdDto primaryKey) {
+        this.primaryKey = primaryKey;
+    }
+
     public User getUser() {
-        return user;
+        return primaryKey.getUser();
     }
 
     public void setUser(User user) {
-        this.user = user;
+        this.primaryKey.setUser(user);
     }
 
     public Organization getOrganization() {
-        return organization;
+        return primaryKey.getOrganization();
     }
 
     public void setOrganization(Organization organization) {
-        this.organization = organization;
+        this.primaryKey.setOrganization(organization);
     }
 
     public MetadataType getMdType() {

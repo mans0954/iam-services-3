@@ -13,6 +13,7 @@ import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.org.domain.Org2OrgXrefEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
+import org.openiam.idm.srvc.org.domain.OrganizationUserEntity;
 import org.openiam.idm.srvc.searchbean.converter.OrganizationSearchBeanConverter;
 import org.openiam.internationalization.LocalizedDatabaseGet;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,10 +64,12 @@ public class OrganizationDAOImpl extends
 
     private Criteria getOrganizationsForUserCriteria(final String userId,
                                                      final Set<String> filter) {
-        final Criteria criteria = getCriteria();
+        final Criteria criteria = getSession().createCriteria(OrganizationEntity.class, "o");
         if (StringUtils.isNotBlank(userId)) {
-            criteria.createAlias("organizationUser.primaryKey.user", "u").add(
-                    Restrictions.eq("u.id", userId));
+            criteria.createCriteria("organizationUser", "ou", Criteria.LEFT_JOIN).
+                    createCriteria("primaryKey", "pk", Criteria.LEFT_JOIN).
+                    createCriteria("user", "u", Criteria.LEFT_JOIN).
+                    add(Restrictions.eq("id", userId));
         }
 
         if (filter != null && !filter.isEmpty()) {

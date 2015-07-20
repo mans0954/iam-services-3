@@ -35,7 +35,7 @@ public class OrganizationEntity extends AbstractMetdataTypeEntity {
 
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "organization", fetch = FetchType.LAZY)
     @OrderBy("name asc")
-    @Fetch(FetchMode.SUBSELECT)
+    @Fetch(FetchMode.JOIN)
     @Internationalized
     private Set<OrganizationAttributeEntity> attributes;
 
@@ -99,12 +99,12 @@ public class OrganizationEntity extends AbstractMetdataTypeEntity {
     @Fetch(FetchMode.SUBSELECT)
     private Set<OrganizationEntity> childOrganizations;
 
-//    	@ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
+    //    	@ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
 //    @JoinTable(name = "USER_AFFILIATION", joinColumns = { @JoinColumn(name = "COMPANY_ID") }, inverseJoinColumns = { @JoinColumn(name = "USER_ID") })
 //	private Set<UserEntity> users;
 //
-    @OneToMany(mappedBy = "primaryKey.organization",
-            cascade = CascadeType.ALL)
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "primaryKey.organization", cascade =
+            {CascadeType.PERSIST, CascadeType.MERGE})
     public Set<OrganizationUserEntity> organizationUser;
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = {CascadeType.ALL})
