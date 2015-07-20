@@ -268,9 +268,7 @@ public class UserEntity {
 //    @Fetch(FetchMode.SUBSELECT)
 //	private Set<OrganizationEntity> affiliations = new HashSet<OrganizationEntity>(0);
 
-
-    @OneToMany(mappedBy = "primaryKey.user",
-            cascade = CascadeType.ALL)
+    @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "primaryKey.user", fetch = FetchType.LAZY)
     public Set<OrganizationUserEntity> organizationUser;
 
     @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)

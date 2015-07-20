@@ -143,11 +143,9 @@
             <a>resources</a>
             <b>resources</b>
         </field>
-        <field
-                custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
-                custom-converter-param="dto2entityShallowDozerMapper">
-            <a>affiliations</a>
-            <b>affiliations</b>
+        <field>
+            <a>organizationUser</a>
+            <b>organizationUserDTOs</b>
         </field>
         <field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
                custom-converter-param="dto2entityShallowDozerMapper">
@@ -793,10 +791,10 @@
             <b>mngSysObjectMatchs</b>
         </field>
         <!--<field-->
-                <!--custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentListConverter"-->
-                <!--custom-converter-param="dto2entityShallowDozerMapper">-->
-            <!--<a>rules</a>-->
-            <!--<b>rules</b>-->
+        <!--custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentListConverter"-->
+        <!--custom-converter-param="dto2entityShallowDozerMapper">-->
+        <!--<a>rules</a>-->
+        <!--<b>rules</b>-->
         <!--</field>-->
         <field-exclude>
             <a>groups</a>
@@ -1009,8 +1007,8 @@
             <b>resourceAttributeMap</b>
         </field>
         <field>
-        	<a>nextAuthProvider.providerId</a>
-        	<b>nextAuthProviderId</b>
+            <a>nextAuthProvider.providerId</a>
+            <b>nextAuthProviderId</b>
         </field>
     </mapping>
 
