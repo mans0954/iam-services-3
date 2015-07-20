@@ -7,6 +7,7 @@ import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.internationalization.Internationalized;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -16,11 +17,11 @@ import java.util.Date;
 @Table(name = "USER_AFFILIATION")
 @AssociationOverrides({
         @AssociationOverride(name = "primaryKey.user",
-                joinColumns = @JoinColumn(name = "USER_ID")),
+                joinColumns = @JoinColumn(name = "USER_ID", referencedColumnName = "USER_ID")),
         @AssociationOverride(name = "primaryKey.organization",
-                joinColumns = @JoinColumn(name = "COMPANY_ID"))})
+                joinColumns = @JoinColumn(name = "COMPANY_ID", referencedColumnName = "COMPANY_ID"))})
 @DozerDTOCorrespondence(OrganizationUserDTO.class)
-public class OrganizationUserEntity {
+public class OrganizationUserEntity implements Serializable {
 
     public OrganizationUserEntity(String userId, String organizationId) {
         this.primaryKey = new OrganizationUserIdEntity();
@@ -36,9 +37,11 @@ public class OrganizationUserEntity {
     @EmbeddedId
     private OrganizationUserIdEntity primaryKey = new OrganizationUserIdEntity();
 
-    @ManyToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "METADATA_TYPE_ID", referencedColumnName = "TYPE_ID", insertable = true, updatable = true)
     private MetadataTypeEntity metadataTypeEntity;
+
 
     public OrganizationUserIdEntity getPrimaryKey() {
         return primaryKey;
