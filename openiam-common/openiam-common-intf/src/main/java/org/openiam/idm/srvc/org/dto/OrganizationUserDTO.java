@@ -16,57 +16,50 @@ import java.io.Serializable;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "organizationUser", propOrder = {
-        "primaryKey",
-        "mdType", "operation"
+        "organization", "user",
+        "mdTypeId", "operation"
 })
 @DozerDTOCorrespondence(OrganizationUserEntity.class)
 public class OrganizationUserDTO implements Serializable {
-    private OrganizationUserIdDto primaryKey = new OrganizationUserIdDto();
-    private MetadataType mdType;
+    private Organization organization;
+    private User user;
+    private String mdTypeId;
     protected AttributeOperationEnum operation = AttributeOperationEnum.NO_CHANGE;
 
-    public OrganizationUserDTO(String userId, String organizationId, AttributeOperationEnum operation) {
-        this.primaryKey = new OrganizationUserIdDto();
-        this.primaryKey.setUser(new User(userId));
-        this.primaryKey.setOrganization(new Organization());
-        this.primaryKey.getOrganization().setId(organizationId);
+    public OrganizationUserDTO(String userId, String organizationId, String mdTypeId, AttributeOperationEnum operation) {
+        user = new User(userId);
+        organization = new Organization();
+        organization.setId(organizationId);
         this.operation = operation;
+        this.mdTypeId = mdTypeId;
 
     }
 
     public OrganizationUserDTO() {
     }
 
-    public OrganizationUserIdDto getPrimaryKey() {
-        return primaryKey;
-    }
-
-    public void setPrimaryKey(OrganizationUserIdDto primaryKey) {
-        this.primaryKey = primaryKey;
-    }
-
     public User getUser() {
-        return primaryKey.getUser();
+        return this.user;
     }
 
     public void setUser(User user) {
-        this.primaryKey.setUser(user);
+        this.user = user;
     }
 
     public Organization getOrganization() {
-        return primaryKey.getOrganization();
+        return this.organization;
     }
 
     public void setOrganization(Organization organization) {
-        this.primaryKey.setOrganization(organization);
+        this.organization = organization;
     }
 
-    public MetadataType getMdType() {
-        return mdType;
+    public String getMdTypeId() {
+        return mdTypeId;
     }
 
-    public void setMdType(MetadataType mdType) {
-        this.mdType = mdType;
+    public void setMdTypeId(String mdTypeId) {
+        this.mdTypeId = mdTypeId;
     }
 
     public AttributeOperationEnum getOperation() {

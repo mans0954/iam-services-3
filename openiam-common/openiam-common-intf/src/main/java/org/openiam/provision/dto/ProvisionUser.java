@@ -382,7 +382,7 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
                         retVal = organizationUserDTO.getOrganization();
                     }
                 }
-                if (organizationUserDTO.getMdType() != null && "PRIMARY_AFFILIATION".equals(organizationUserDTO.getMdType().getId())) {
+                if ("PRIMARY_AFFILIATION".equals(organizationUserDTO.getMdTypeId())) {
                     break;
                 }
             }

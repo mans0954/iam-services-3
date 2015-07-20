@@ -139,12 +139,4 @@ public interface OrganizationService {
     public List<LocationEntity> getLocationListByOrganizationId(Set<String> orgsId, Integer from, Integer size);
 
     public List<LocationEntity> getLocationListByOrganizationId(Set<String> orgsId);
-
-    public List<OrganizationUserEntity> findOrganizationUserEntitiesByOrganizationId(String organizationId);
-
-    public List<OrganizationUserEntity> findOrganizationUserEntitiesByUserId(String userId);
-
-    public OrganizationUserEntity findOrganizationUserEntitiesByUserIdOrgId(String userId, String organizationId);
-
-    public OrganizationUserDTO findOrganizationUser(String userId, String organizationId);
 }
