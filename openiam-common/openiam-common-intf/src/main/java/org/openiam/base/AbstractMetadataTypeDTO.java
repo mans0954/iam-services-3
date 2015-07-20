@@ -11,8 +11,8 @@ import javax.xml.bind.annotation.XmlType;
 })
 public abstract class AbstractMetadataTypeDTO extends KeyNameDTO {
 
-	private String mdTypeId;
-	private String metadataTypeName;
+	protected String mdTypeId;
+    protected String metadataTypeName;
 
     public String getMdTypeId() {
         return mdTypeId;

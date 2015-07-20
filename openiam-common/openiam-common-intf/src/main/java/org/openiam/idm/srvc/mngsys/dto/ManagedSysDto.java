@@ -86,12 +86,6 @@ public class ManagedSysDto extends KeyNameDTO {
 
     private List<ManagedSysRuleDto> rules = new ArrayList<ManagedSysRuleDto>(0);
 
-    // private Set<ApproverAssociation> resourceApprovers = new
-    // HashSet<ApproverAssociation>(0);
-    /*
-     * private Set<AttributeMap> systemAttributeMap = new
-     * HashSet<AttributeMap>(0);
-     */
     private Set<ManagedSystemObjectMatch> mngSysObjectMatchs = new HashSet<ManagedSystemObjectMatch>(0);
 
     private Set<Group> groups;

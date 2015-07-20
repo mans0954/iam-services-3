@@ -20,6 +20,8 @@ import org.openiam.connector.type.request.RequestType;
 import org.openiam.connector.type.response.ResponseType;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
+import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
+import org.openiam.idm.srvc.mngsys.dto.MngSysPolicyDto;
 import org.openiam.idm.srvc.mngsys.dto.PolicyMapObjectTypeOptions;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
@@ -50,10 +52,11 @@ public abstract class AbstractLinuxCommand<Request extends RequestType, Response
     }
 
     protected String getKeyField(String mSysId) {
-        List<AttributeMapEntity> attrMapList = managedSysService
-                .getAttributeMapsByManagedSysId(mSysId);
+        MngSysPolicyDto mngSysPolicy = managedSysService.getManagedSysPolicyByMngSysIdAndMetadataType(mSysId, "USER_OBJECT");
+        List<AttributeMap> attrMapList = managedSysService.getAttributeMapsByMngSysPolicyId(mngSysPolicy.getId());
+
         String key = "";
-        for (AttributeMapEntity attrMap : attrMapList) {
+        for (AttributeMap attrMap : attrMapList) {
             if (PolicyMapObjectTypeOptions.PRINCIPAL.name().equalsIgnoreCase(
                     attrMap.getMapForObjectType())) {
                 key = attrMap.getName();

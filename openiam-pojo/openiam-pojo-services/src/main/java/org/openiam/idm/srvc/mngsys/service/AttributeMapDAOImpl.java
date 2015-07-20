@@ -30,19 +30,19 @@ public class AttributeMapDAOImpl extends
         return (List<AttributeMapEntity>) this.getCriteria()
                 .add(Restrictions.eq("resourceId", resourceId))
                 .addOrder(Order.asc("mapForObjectType"))
-                .addOrder(Order.asc("managedSystem.id")).list();
+                .addOrder(Order.asc("mngSysPolicy.id")).list();
     }
 
-    public List<AttributeMapEntity> findByManagedSysId(String managedSysId) {
+    public List<AttributeMapEntity> findByMngSysPolicyId(String mngSysPolicyId) {
         return (List<AttributeMapEntity>) this.getCriteria()
-                .add(Restrictions.eq("managedSystem.id", managedSysId))
+                .add(Restrictions.eq("mngSysPolicy.id", mngSysPolicyId))
                 .addOrder(Order.asc("mapForObjectType"))
-                .addOrder(Order.asc("managedSystem.id")).list();
+                .addOrder(Order.asc("mngSysPolicy.id")).list();
     }
 
     public List<AttributeMapEntity> findBySynchConfigId(String synchConfigId) {
         return (List<AttributeMapEntity>) this.getCriteria()
-                .add(Restrictions.eq("synchConfigId", synchConfigId)).createAlias("managedSystem","mSys", JoinType.LEFT_OUTER_JOIN)
+                .add(Restrictions.eq("synchConfigId", synchConfigId))
                 .addOrder(Order.asc("mapForObjectType"))
                 .addOrder(Order.asc("synchConfigId")).list();
     }
@@ -55,14 +55,13 @@ public class AttributeMapDAOImpl extends
             if (StringUtils.isNotBlank(amsb.getResourceId())) {
                 criteria.add(Restrictions.eq("resourceId", amsb.getResourceId()));
             } else if (StringUtils.isNotBlank(amsb.getSynchConfigId())) {
-                criteria.add(Restrictions.eq("synchConfigId", amsb.getSynchConfigId())).createAlias("managedSystem", "mSys", JoinType.LEFT_OUTER_JOIN);
+                criteria.add(Restrictions.eq("synchConfigId", amsb.getSynchConfigId()));
             }
         }
         return criteria;
     }
 
     public List<AttributeMapEntity> findAllAttributeMaps() {
-
         return (List<AttributeMapEntity>) this.getCriteria()
                 .addOrder(Order.asc("resourceId")).list();
     }
@@ -74,22 +73,22 @@ public class AttributeMapDAOImpl extends
     }
 
     public AttributeMapEntity add(AttributeMapEntity entity) {
-        if ((entity.getManagedSystem() == null)
+        if ((entity.getMngSysPolicy() == null)
                 && StringUtils.isEmpty(entity.getSynchConfigId())) {
-            String reason = "managedSys or synchConfigId must be specified";
+            String reason = "managedSys policy or synchConfigId must be specified";
             throw new DataException(reason, new Exception(
-                    "managedSys and synchConfigId are null"));
+                    "managedSys policy and synchConfigId are null"));
         }
 
         return super.add(entity);
     }
 
     public void update(AttributeMapEntity entity) {
-        if ((entity.getManagedSystem() == null)
+        if ((entity.getMngSysPolicy() == null)
                 && StringUtils.isEmpty(entity.getSynchConfigId())) {
-            String reason = "managedSys or synchConfigId must be specified";
+            String reason = "managedSys policy or synchConfigId must be specified";
             throw new DataException(reason, new Exception(
-                    "managedSys and synchConfigId are null"));
+                    "managedSys policy and synchConfigId are null"));
         }
         super.update(entity);
     }
@@ -98,7 +97,7 @@ public class AttributeMapDAOImpl extends
     public void delete(List<String> ids) {
         if (!CollectionUtils.isEmpty(ids)) {
             List attrMap = getCriteria()
-                    .add(Restrictions.in("id", ids)).createAlias("managedSystem", "mSys", JoinType.LEFT_OUTER_JOIN).list();
+                    .add(Restrictions.in("id", ids)).list();
             deleteAttributesMapList(attrMap);
         }
     }

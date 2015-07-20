@@ -39,10 +39,8 @@ import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
-import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
-import org.openiam.idm.srvc.mngsys.dto.PolicyMapObjectTypeOptions;
+import org.openiam.idm.srvc.mngsys.dto.*;
+import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
@@ -83,7 +81,7 @@ import java.util.*;
         serviceName = "GroupProvisionService")
 public class GroupProvisionServiceImpl extends AbstractBaseService implements ObjectProvisionService<ProvisionGroup> {
     @Autowired
-    protected ManagedSystemWebService managedSysService;
+    protected ManagedSystemService managedSysService;
 
     @Autowired
     protected ValidateConnectionConfig validateConnectionConfig;
@@ -182,7 +180,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
                 public Response doInTransaction(TransactionStatus status) {
                     Group group = groupDataWebService.getGroup(identityDto.getReferredObjectId(), systemUserId);
                     ProvisionGroup pGroup = new ProvisionGroup(group);
-                    ManagedSysDto managedSys = managedSysService.getManagedSys(identityDto.getManagedSysId());
+                    ManagedSysDto managedSys = managedSystemService.getManagedSys(identityDto.getManagedSysId());
                     Resource res = resourceDataService.getResource(managedSys.getResourceId(), null);
                     return provisioningIdentity(identityDto, pGroup, managedSys, res, false);
                 }
@@ -307,7 +305,8 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
 
         if(groupTargetIdentity == null) {
             // Generate new identity
-            List<AttributeMap> attrMap = managedSysService.getResourceAttributeMaps(managedSys.getResourceId());
+            MngSysPolicyDto mngSysPolicy = managedSysService.getManagedSysPolicyByMngSysIdAndMetadataType(managedSys.getId(), "GROUP_OBJECT");
+            List<AttributeMap> attrMap = managedSysService.getAttributeMapsByMngSysPolicyId(mngSysPolicy.getId());
             bindingMap.put("sysId", sysConfiguration.getDefaultManagedSysId());
             bindingMap.put("operation", isAdd ? "ADD" : "MODIFY");
             bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_IDENTITY_STATUS, null);
@@ -371,8 +370,8 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
         bindingMap.put("identity", groupTargetIdentity);
         bindingMap.put("requesterId", systemUserId);
 
-        List<AttributeMap> attrMapEntities = managedSystemService
-                .getAttributeMapsByManagedSysId(managedSys.getId());
+        MngSysPolicyDto mngSysPolicy = managedSysService.getManagedSysPolicyByMngSysIdAndMetadataType(managedSys.getId(), "GROUP_OBJECT");
+        List<AttributeMap> attrMap = managedSysService.getAttributeMapsByMngSysPolicyId(mngSysPolicy.getId());
 
         ManagedSystemObjectMatch matchObj = null;
         ManagedSystemObjectMatch[] objList = managedSystemService.managedSysObjectParam(managedSys.getId(),
@@ -381,7 +380,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
             matchObj = objList[0];
         }
 
-        ExtensibleObject extObj = buildFromRules(attrMapEntities, bindingMap);
+        ExtensibleObject extObj = buildFromRules(attrMap, bindingMap);
 
         // get the attributes at the target system
         // this lookup only for getting attributes from the
@@ -1107,7 +1106,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
             response.setPrincipalName(principalName);
             // get the connector for the managedSystem
 
-            ManagedSysDto mSys = managedSysService.getManagedSys(managedSysId);
+            ManagedSysDto mSys = managedSystemService.getManagedSys(managedSysId);
             ManagedSystemObjectMatch matchObj = null;
             ManagedSystemObjectMatch[] objList = managedSystemService.managedSysObjectParam(managedSysId,
                     ManagedSystemObjectMatch.GROUP);
