@@ -287,7 +287,7 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
                             if (organization != null && user != null) {
                                 organization.setOperation(AttributeOperationEnum.ADD);
                                 final ProvisionUser pUser = new ProvisionUser(user);
-                                pUser.getOrganizationUserDTOs().add(new OrganizationUserDTO(pUser.getId(), organization.getId(), AttributeOperationEnum.ADD));
+                                pUser.getOrganizationUserDTOs().add(new OrganizationUserDTO(pUser.getId(), organization.getId(), "DEFAULT_AFFILIATION", AttributeOperationEnum.ADD));
                                 response = provisionService.modifyUser(pUser);
                             }
                         } else {

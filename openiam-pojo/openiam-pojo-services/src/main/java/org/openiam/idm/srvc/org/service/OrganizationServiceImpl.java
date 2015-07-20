@@ -81,8 +81,6 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
 
     @Autowired
     private OrganizationDAO orgDao;
-    @Autowired
-    private OrganizationUserDAO organizationUserDAO;
 
     @Autowired
     private UserDAO userDAO;
@@ -172,32 +170,6 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     @Transactional(readOnly = true)
     public int getNumOfOrganizationsForUser(final String userId, final String requesterId) {
         return orgDao.getNumOfOrganizationsForUser(userId, getDelegationFilter(requesterId));
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<OrganizationUserEntity> findOrganizationUserEntitiesByOrganizationId(String organizationId) {
-        return organizationUserDAO.findByOrganizationId(organizationId);
-    }
-
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<OrganizationUserEntity> findOrganizationUserEntitiesByUserId(String userId) {
-        return organizationUserDAO.findByUserId(userId);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public OrganizationUserEntity findOrganizationUserEntitiesByUserIdOrgId(String userId, String organizationId) {
-        return organizationUserDAO.find(userId, organizationId);
-    }
-
-
-    @Override
-    @Transactional(readOnly = true)
-    public OrganizationUserDTO findOrganizationUser(String userId, String organizationId) {
-        return organizationUserDozerConverter.convertToDTO(this.findOrganizationUserEntitiesByUserIdOrgId(userId, organizationId), true);
     }
 
     @Override

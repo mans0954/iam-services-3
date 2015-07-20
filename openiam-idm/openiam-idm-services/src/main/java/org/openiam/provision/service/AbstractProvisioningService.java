@@ -1526,7 +1526,9 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                 AttributeOperationEnum operation = o.getOperation();
                 if (operation == AttributeOperationEnum.ADD) {
                     OrganizationEntity org = organizationService.getOrganizationLocalized(o.getOrganization().getId(), null);
-                    userEntity.getOrganizationUser().add(new OrganizationUserEntity(pUser.getId(), o.getOrganization().getId()));
+                    if (userEntity.getOrganizationUser() == null)
+                        userEntity.setOrganizationUser(new HashSet<OrganizationUserEntity>());
+                    userEntity.getOrganizationUser().add(new OrganizationUserEntity(pUser.getId(), o.getOrganization().getId(), o.getMdTypeId()));
                     // Audit Log ---------------------------------------------------
                     IdmAuditLog auditLog = new IdmAuditLog();
                     auditLog.setAction(AuditAction.ADD_USER_TO_ORG.value());

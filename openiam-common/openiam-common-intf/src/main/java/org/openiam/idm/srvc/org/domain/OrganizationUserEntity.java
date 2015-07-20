@@ -23,12 +23,14 @@ import java.util.Date;
 @DozerDTOCorrespondence(OrganizationUserDTO.class)
 public class OrganizationUserEntity implements Serializable {
 
-    public OrganizationUserEntity(String userId, String organizationId) {
+    public OrganizationUserEntity(String userId, String organizationId, String metadayTypeId) {
         this.primaryKey = new OrganizationUserIdEntity();
         primaryKey.setUser(new UserEntity());
         primaryKey.setOrganization(new OrganizationEntity());
         primaryKey.getOrganization().setId(organizationId);
         primaryKey.getUser().setId(userId);
+        this.metadataTypeEntity = new MetadataTypeEntity();
+        metadataTypeEntity.setId(metadayTypeId);
     }
 
     public OrganizationUserEntity() {
