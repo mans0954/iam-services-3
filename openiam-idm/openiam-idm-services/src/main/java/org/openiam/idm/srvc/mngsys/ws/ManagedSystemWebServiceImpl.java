@@ -97,6 +97,8 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
 
     boolean encrypt = true; // default encryption setting
 
+    private boolean skipGroupProvision = false; // default flag for saving ManSys
+
     @Override
     public Integer getManagedSystemsCount(
             @WebParam(name = "searchBean", targetNamespace = "") ManagedSysSearchBean searchBean) {
@@ -152,12 +154,12 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
 
     @Override
     public Response saveManagedSystem(final ManagedSysDto sys) {
-    	final Response response = new Response(ResponseStatus.SUCCESS);
+  	final Response response = new Response(ResponseStatus.SUCCESS);
     	try {
     		if(sys == null) {
     			throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
     		}
-    		
+
     		if(StringUtils.isBlank(sys.getName())) {
     			throw new BasicDataServiceException(ResponseCode.NO_NAME);
     		}
@@ -176,6 +178,11 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     		}
 
 
+            if (sys.getSkipGroupProvision()==null){
+                sys.setSkipGroupProvision(skipGroupProvision);
+            }
+
+
     		if(StringUtils.isBlank(sys.getId())) {
     			managedSystemService.addManagedSys(sys);
     		}  else {
@@ -186,11 +193,11 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
 			response.setErrorCode(e.getCode());
 			response.setStatus(ResponseStatus.FAILURE);
 		} catch (Throwable e) {
-			log.error("Can't remove managed system", e);
+			log.error("Can't save managed system", e);
 			response.setErrorText(e.getMessage());
 			response.setStatus(ResponseStatus.FAILURE);
 		}
-        
+
     	return response;
     }
 
@@ -249,7 +256,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     /**
      * Finds objects for an object type (like User, Group) for a ManagedSystem
      * definition
-     * 
+     *
      * @param managedSystemId
      * @param objectType
      * @return
@@ -309,7 +316,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
         final List<ApproverAssociationEntity> entityList = approverAssociationDao.getByExample(entity, from, size);
         return (entityList != null) ? approverAssociationDozerConverter.convertToDTOList(entityList, searchBean.isDeepCopy()) : null;
     }
-    
+
     @Override
 	public Response saveApproverAssociations(final List<ApproverAssociation> approverAssociationList, final AssociationType type, final String entityId) {
     	final Response response = new Response(ResponseStatus.SUCCESS);
@@ -319,38 +326,38 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
 		             if (approverAssociation == null) {
 		                 throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
 		             }
-		
+
 		             if (StringUtils.isBlank(approverAssociation.getApproverEntityId())
 		                     || approverAssociation.getApproverEntityType() == null) {
 		                 approverAssociation.setApproverEntityId(null);
 		                 approverAssociation.setApproverEntityType(null);
 		             }
-		
+
 		             if (StringUtils.isBlank(approverAssociation.getOnApproveEntityId())
 		                     || approverAssociation.getOnApproveEntityType() == null) {
 		                 approverAssociation.setOnApproveEntityId(null);
 		                 approverAssociation.setOnApproveEntityType(null);
 		             }
-		
+
 		             if (StringUtils.isBlank(approverAssociation.getOnRejectEntityId())
 		                     || approverAssociation.getOnRejectEntityType() == null) {
 		                 approverAssociation.setOnRejectEntityId(null);
 		                 approverAssociation.setOnRejectEntityType(null);
 		             }
-		
+
 		             if (StringUtils.isBlank(approverAssociation.getAssociationEntityId())
 		                     || approverAssociation.getAssociationType() == null) {
 		                 approverAssociation.setAssociationEntityId(null);
 		                 approverAssociation.setAssociationType(null);
 		             }
-		
+
 		             if (approverAssociation.getApproverEntityType() == null
 		                     || StringUtils.isBlank(approverAssociation
-		                             .getApproverEntityId())) {
+                             .getApproverEntityId())) {
 		                 throw new BasicDataServiceException(
 		                         ResponseCode.REQUEST_APPROVERS_NOT_SET);
 		             }
-		             
+
 		             if(approverAssociation.getApproverLevel() == null) {
 		            	 approverAssociation.setApproverLevel(Integer.valueOf(0));
 		             }
@@ -406,7 +413,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
 
             if (approverAssociation.getApproverEntityType() == null
                     || StringUtils.isBlank(approverAssociation
-                            .getApproverEntityId())) {
+                    .getApproverEntityId())) {
                 throw new BasicDataServiceException(
                         ResponseCode.REQUEST_APPROVERS_NOT_SET);
             }
@@ -616,7 +623,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
                 .getAllDefaultReconAttributeMap();
         return list == null ? null
                 : defaultReconciliationAttributeMapDozerConverter
-                        .convertToDTOList(list, false);
+                .convertToDTOList(list, false);
     }
 
 //    @Override

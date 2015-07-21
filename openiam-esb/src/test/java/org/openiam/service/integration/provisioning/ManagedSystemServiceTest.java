@@ -45,7 +45,6 @@ public class ManagedSystemServiceTest extends AbstractServiceTest {
 
         managedSysDto.setName(manSysName);
         managedSysDto.setConnectorId(connectorId);
-        managedSysDto.setSkipGroupProvision(true);
         Response res = managedSystemWebService.saveManagedSystem(managedSysDto);
         Assert.assertNotNull(res);
         msId = (String) res.getResponseValue();
