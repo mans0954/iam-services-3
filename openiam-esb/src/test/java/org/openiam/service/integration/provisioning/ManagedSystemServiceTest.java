@@ -16,8 +16,8 @@ import java.util.List;
 
 public class ManagedSystemServiceTest extends AbstractServiceTest {
     private static final String connectorId = "100";
-    private static final String manSysName = "Managed System Name";
-    private static final String manSysNewName = "Managed System New Name";
+    private static final String manSysName = "Managed System Name TEST1";
+    private static final String manSysNewName = "Managed System New Name TEST1";
     private ManagedSysDto managedSysDto;
     private String msId;
 
@@ -45,7 +45,6 @@ public class ManagedSystemServiceTest extends AbstractServiceTest {
 
         managedSysDto.setName(manSysName);
         managedSysDto.setConnectorId(connectorId);
-        managedSysDto.setSkipGroupProvision(true);
         Response res = managedSystemWebService.saveManagedSystem(managedSysDto);
         Assert.assertNotNull(res);
         msId = (String) res.getResponseValue();
