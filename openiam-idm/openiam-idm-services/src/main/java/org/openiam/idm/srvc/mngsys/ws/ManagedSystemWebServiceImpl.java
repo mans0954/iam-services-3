@@ -97,8 +97,6 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
 
     boolean encrypt = true; // default encryption setting
 
-    private boolean skipGroupProvision = false; // default flag for saving ManSys
-
     @Override
     public Integer getManagedSystemsCount(
             @WebParam(name = "searchBean", targetNamespace = "") ManagedSysSearchBean searchBean) {
@@ -177,11 +175,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     			sys.setPswd(cryptor.encrypt(keyManagementService.getUserKey(systemUserId, KeyName.password.name()), sys.getPswd()));
     		}
 
-
-            if (sys.getSkipGroupProvision()==null){
-                sys.setSkipGroupProvision(skipGroupProvision);
-            }
-
+            sys.setSkipGroupProvision(sys.getSkipGroupProvision()==null ?false :sys.getSkipGroupProvision());
 
     		if(StringUtils.isBlank(sys.getId())) {
     			managedSystemService.addManagedSys(sys);
