@@ -61,17 +61,12 @@ public class ApproverAssocationSearchBeanServiseTest extends ApproverAssociation
 
         Assert.assertNotNull(approverAssociation);
 
-        if (approverAssociation.getApproverEntityId().equals(searchBean.getApproverEntityId()) &&
+        Assert.assertTrue(approverAssociation.getApproverEntityId().equals(searchBean.getApproverEntityId()) &&
                 approverAssociation.getApproverEntityType() == searchBean.getApproverEntityType() &&
                 approverAssociation.getOnApproveEntityId().equals(searchBean.getOnApproveEntityId()) &&
                 approverAssociation.getOnApproveEntityType() == searchBean.getOnApproveEntityType() &&
                 approverAssociation.getOnRejectEntityId().equals(searchBean.getOnRejectEntityId()) &&
-                approverAssociation.getOnRejectEntityType() == searchBean.getOnRejectEntityType()) {
-
-            Assert.assertTrue(true);
-        } else {
-            Assert.assertTrue(false);
-        }
+                approverAssociation.getOnRejectEntityType() == searchBean.getOnRejectEntityType());
 
         apprAssocId = approverAssociation.getId();
 
