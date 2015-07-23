@@ -5,6 +5,6 @@ machine:
 dependencies:
   override:
     - mvn install -s conf/settings.xml
-	- mvn package spring-boot:repackage -f openiam-esb/pom.xml
+    - mvn package spring-boot:repackage -f openiam-esb/pom.xml
   post:
     - mvn deploy -s conf/settings.xml
