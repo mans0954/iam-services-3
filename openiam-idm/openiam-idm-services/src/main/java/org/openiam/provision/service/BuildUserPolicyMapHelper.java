@@ -96,7 +96,7 @@ public class BuildUserPolicyMapHelper {
 
         Map<String, Object> bindingMap = new HashMap<>();
         bindingMap.put("sysId", sysConfiguration.getDefaultManagedSysId());
-        bindingMap.put("org", pUser.getPrimaryOrganization());
+        bindingMap.put("org", pUser.getPrimaryOrganization(sysConfiguration.getAffiliationPrimaryTypeId()));
         bindingMap.put("operation", operation);
         bindingMap.put(AbstractProvisioningService.USER, pUser);
         bindingMap.put(AbstractProvisioningService.USER_ATTRIBUTES, userMgr.getUserAttributesDto(pUser.getId()));

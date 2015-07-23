@@ -10,6 +10,7 @@ import org.openiam.access.review.model.AccessViewFilterBean;
 import org.openiam.access.review.model.AccessViewResponse;
 import org.openiam.access.review.service.AccessReviewService;
 import org.openiam.base.AttributeOperationEnum;
+import org.openiam.base.SysConfiguration;
 import org.openiam.base.TreeNode;
 import org.openiam.base.ws.Response;
 import org.openiam.bpm.util.ActivitiRequestType;
@@ -35,6 +36,8 @@ import java.util.List;
 public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
     @Autowired
     private AccessReviewService accessReviewService;
+    @Autowired
+    protected SysConfiguration sysConfiguration;
 
     public EntityMembershipDelegate() {
         super();
@@ -287,7 +290,7 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
                             if (organization != null && user != null) {
                                 organization.setOperation(AttributeOperationEnum.ADD);
                                 final ProvisionUser pUser = new ProvisionUser(user);
-                                pUser.getOrganizationUserDTOs().add(new OrganizationUserDTO(pUser.getId(), organization.getId(), "DEFAULT_AFFILIATION", AttributeOperationEnum.ADD));
+                                pUser.getOrganizationUserDTOs().add(new OrganizationUserDTO(pUser.getId(), organization.getId(), sysConfiguration.getAffiliationDefaultTypeId(), AttributeOperationEnum.ADD));
                                 response = provisionService.modifyUser(pUser);
                             }
                         } else {

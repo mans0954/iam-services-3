@@ -934,7 +934,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         // bind the objects to the scripting engine
         Map<String, Object> bindingMap = new HashMap<String, Object>();
         bindingMap.put("sysId", sysConfiguration.getDefaultManagedSysId());
-        bindingMap.put("org", pUser.getPrimaryOrganization());
+        bindingMap.put("org", pUser.getPrimaryOrganization(sysConfiguration.getAffiliationPrimaryTypeId()));
         bindingMap.put("operation", isAdd ? "ADD" : "MODIFY");
         bindingMap.put(USER, pUser);
         bindingMap.put("sendActivationLink", sendActivationLink);
@@ -1118,7 +1118,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         resourceSet.addAll(getResourcesForRoles(roleSet));
         resourceSet.addAll(getResourcesForGroups(groupSet));
 
-        List<Organization> orgs = orgManager.getOrganizationsForUser(pUser.getId(), null, 0, 100);
+        List<Organization> orgs = orgManager.getOrganizationsForUserLocalized(pUser.getId(), null, 0, 100, null);
         for (Organization org : orgs) {
             Resource res = resourceDataService.getResource(org.getAdminResourceId(), null);
             if (res != null) {
@@ -2965,7 +2965,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
         Map<String, Object> bindingMap = new HashMap<String, Object>();
         bindingMap.put("sysId", sysConfiguration.getDefaultManagedSysId());
-        bindingMap.put("org", user.getPrimaryOrganization());
+        bindingMap.put("org", user.getPrimaryOrganization(sysConfiguration.getAffiliationPrimaryTypeId()));
         bindingMap.put("operation", operation);
         bindingMap.put(USER, user);
         bindingMap.put(USER_ATTRIBUTES, userMgr.getUserAttributesDto(user.getId()));

@@ -102,6 +102,8 @@ public abstract class AbstractActivitiJob implements JavaDelegate, TaskListener 
     @Value("${org.openiam.idm.system.user.id}")
     protected String systemUserId;
 
+
+
     @Autowired
     @Qualifier("userWS")
     private UserDataWebService userDataWebService;

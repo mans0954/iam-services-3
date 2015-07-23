@@ -103,8 +103,7 @@ public class OrganizationEntity extends AbstractMetdataTypeEntity {
 //    @JoinTable(name = "USER_AFFILIATION", joinColumns = { @JoinColumn(name = "COMPANY_ID") }, inverseJoinColumns = { @JoinColumn(name = "USER_ID") })
 //	private Set<UserEntity> users;
 //
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "primaryKey.organization", cascade =
-            {CascadeType.PERSIST, CascadeType.MERGE})
+    @OneToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY, mappedBy = "primaryKey.organization", orphanRemoval = true)
     public Set<OrganizationUserEntity> organizationUser;
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = {CascadeType.ALL})
