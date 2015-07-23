@@ -576,6 +576,10 @@
             <b>adminResourceCoorelatedName</b>
         </field>
         <field-exclude>
+            <a>organizationUser</a>
+            <b>organizationUserDTOs</b>
+        </field-exclude>
+        <field-exclude>
             <a>attributes</a>
             <b>attributes</b>
         </field-exclude>

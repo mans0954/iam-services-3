@@ -373,7 +373,7 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         this.skipPostProcessor = skipPostProcessor;
     }
 
-    public Organization getPrimaryOrganization() {
+    public Organization getPrimaryOrganization(String metadataType) {
         Organization retVal = null;
         if (CollectionUtils.isNotEmpty(organizationUserDTOs)) {
             for (final OrganizationUserDTO organizationUserDTO : organizationUserDTOs) {
@@ -382,7 +382,7 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
                         retVal = organizationUserDTO.getOrganization();
                     }
                 }
-                if ("PRIMARY_AFFILIATION".equals(organizationUserDTO.getMdTypeId())) {
+                if (metadataType.equals(organizationUserDTO.getMdTypeId())) {
                     break;
                 }
             }
