@@ -668,6 +668,11 @@
     <mapping>
         <class-a>org.openiam.idm.srvc.org.domain.OrganizationEntity</class-a>
         <class-b>org.openiam.idm.srvc.org.dto.Organization</class-b>
+        <field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
+               custom-converter-param="dto2entityShallowDozerMapper">
+            <a>organizationUser</a>
+            <b>organizationUserDTOs</b>
+        </field>
         <field>
             <a>type.id</a>
             <b>mdTypeId</b>

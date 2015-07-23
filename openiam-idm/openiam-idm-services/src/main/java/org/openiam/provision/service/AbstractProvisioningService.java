@@ -1521,11 +1521,11 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
 
     public void updateAffiliations(final UserEntity userEntity, final ProvisionUser pUser, final IdmAuditLog parentLog) {
         if (CollectionUtils.isNotEmpty(pUser.getOrganizationUserDTOs())) {
+//            OrganizationEntity org = null;
             for (OrganizationUserDTO o : pUser.getOrganizationUserDTOs()) {
-                Organization organ = organizationService.getOrganizationDTO(o.getOrganization().getId(), null);
                 AttributeOperationEnum operation = o.getOperation();
                 if (operation == AttributeOperationEnum.ADD) {
-                    OrganizationEntity org = organizationService.getOrganizationLocalized(o.getOrganization().getId(), null);
+//                    org = organizationService.getOrganizationLocalized(o.getOrganization().getId(), null);
                     if (userEntity.getOrganizationUser() == null)
                         userEntity.setOrganizationUser(new HashSet<OrganizationUserEntity>());
                     userEntity.getOrganizationUser().add(new OrganizationUserEntity(pUser.getId(), o.getOrganization().getId(), o.getMdTypeId()));
@@ -1535,8 +1535,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
                     String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
                     auditLog.setTargetUser(pUser.getId(), loginStr);
-                    auditLog.setTargetOrg(org.getId(), org.getName());
-                    auditLog.addCustomRecord("ORG", org.getName());
+                    auditLog.setTargetOrg(o.getOrganization().getId(), o.getOrganization().getName());
+                    auditLog.addCustomRecord("ORG", o.getOrganization().getName());
                     parentLog.addChild(auditLog);
                     // --------------------------------------------------------------
                 } else if (operation == AttributeOperationEnum.DELETE) {
@@ -1550,8 +1550,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                             Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
                             String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
                             auditLog.setTargetUser(pUser.getId(), loginStr);
-                            auditLog.setTargetOrg(organ.getId(), organ.getName());
-                            auditLog.addCustomRecord("ORG", organ.getName());
+                            auditLog.setTargetOrg(o.getOrganization().getId(), o.getOrganization().getName());
+                            auditLog.addCustomRecord("ORG", o.getOrganization().getName());
                             parentLog.addChild(auditLog);
                             // -------------------------------------------------------------
                             break;
