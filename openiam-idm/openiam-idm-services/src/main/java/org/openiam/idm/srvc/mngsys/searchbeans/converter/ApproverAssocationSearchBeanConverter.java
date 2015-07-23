@@ -2,9 +2,7 @@ package org.openiam.idm.srvc.mngsys.searchbeans.converter;
 
 import org.apache.commons.lang.StringUtils;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
-import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
-import org.openiam.idm.srvc.mngsys.dto.ApproverAssocationSearchBean;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSysSearchBean;
+import org.openiam.idm.srvc.mngsys.bean.ApproverAssocationSearchBean;
 import org.openiam.idm.srvc.searchbean.converter.SearchBeanConverter;
 import org.springframework.stereotype.Component;
 

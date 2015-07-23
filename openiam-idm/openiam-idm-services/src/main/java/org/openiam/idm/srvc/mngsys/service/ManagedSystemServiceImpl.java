@@ -12,28 +12,28 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.am.srvc.dao.AuthProviderDao;
 import org.openiam.am.srvc.domain.AuthProviderEntity;
+import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.ws.ResponseCode;
+import org.openiam.dozer.converter.AttributeMapDozerConverter;
 import org.openiam.dozer.converter.ManagedSysDozerConverter;
 import org.openiam.dozer.converter.ManagedSystemObjectMatchDozerConverter;
+import org.openiam.dozer.converter.MngSysPolicyDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.AttributeMapSearchBean;
+import org.openiam.idm.searchbeans.MngSysPolicySearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
+import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
+import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
-import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
-import org.openiam.idm.srvc.mngsys.domain.AssociationType;
-import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
-import org.openiam.idm.srvc.mngsys.domain.DefaultReconciliationAttributeMapEntity;
-import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
-import org.openiam.idm.srvc.mngsys.domain.ManagedSysRuleEntity;
-import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
-import org.openiam.idm.srvc.mngsys.domain.ReconciliationResourceAttributeMapEntity;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSysSearchBean;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
+import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
+import org.openiam.idm.srvc.mngsys.bean.AttributeMapBean;
+import org.openiam.idm.srvc.mngsys.bean.MngSysPolicyBean;
+import org.openiam.idm.srvc.mngsys.domain.*;
+import org.openiam.idm.srvc.mngsys.dto.*;
 import org.openiam.idm.srvc.mngsys.searchbeans.converter.ManagedSystemSearchBeanConverter;
 import org.openiam.idm.srvc.policy.domain.PolicyEntity;
 import org.openiam.idm.srvc.policy.service.PolicyDAO;
@@ -49,8 +49,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -60,16 +58,31 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
             .getLog(ManagedSystemServiceImpl.class);
     @Autowired
     private ManagedSysDAO managedSysDAO;
+
+    @Autowired
+    private MngSysPolicyDAO mngSysPolicyDAO;
+
     @Autowired
     private ManagedSystemSearchBeanConverter managedSystemSearchBeanConverter;
+
+    @Autowired
+    private MngSysPolicyDozerConverter mngSysPolicyDozerConverter;
+
     @Autowired
     protected AttributeMapDAO attributeMapDAO;
+
+    @Autowired
+    private AttributeMapDozerConverter attributeMapDozerConverter;
+
     @Autowired
     protected ReconciliationResourceAttributeMapDAO reconciliationResourceAttributeMapDAO;
+
     @Autowired
     protected DefaultReconciliationAttributeMapDAO defaultReconciliationAttributeMapDAO;
+
     @Autowired
     protected ManagedSysRuleDAO managedSysRuleDAO;
+
     @Autowired
     protected PolicyDAO policyDAO;
 
@@ -106,6 +119,9 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     @Autowired
     private MetadataElementDAO elementDAO;
 
+    @Autowired
+    private MetadataTypeDAO metadataTypeDAO;
+
     private static final String resourceTypeId = "MANAGED_SYS";
 
     @Autowired
@@ -137,6 +153,12 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     @Transactional(readOnly = true)
     public ManagedSysEntity getManagedSysById(String id) {
         return managedSysDAO.findById(id);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public MngSysPolicyEntity getManagedSysPolicyById(String id) {
+        return mngSysPolicyDAO.findById(id);
     }
 
     @Override
@@ -275,6 +297,16 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     }
 
     @Override
+    @Transactional
+    public void removeMngSysPolicy(String mngSysPolicyId) throws BasicDataServiceException {
+        MngSysPolicyEntity entity = mngSysPolicyDAO.findById(mngSysPolicyId);
+        if (entity == null) {
+            throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+        }
+        mngSysPolicyDAO.delete(entity);
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public List<AttributeMapEntity> getResourceAttributeMaps(String resourceId) {
         return attributeMapDAO.findByResourceId(resourceId);
@@ -282,8 +314,9 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<AttributeMapEntity> getAttributeMapsByManagedSysId(String managedSysId) {
-        return attributeMapDAO.findByManagedSysId(managedSysId);
+    public List<AttributeMap> getAttributeMapsByMngSysPolicyId(String mngSysPolicyId) {
+        List<AttributeMapEntity> attributeMapEntities = attributeMapDAO.findByMngSysPolicyId(mngSysPolicyId);
+        return attributeMapDozerConverter.convertToDTOList(attributeMapEntities,false);
     }
 
     @Override
@@ -331,23 +364,16 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     @Override
     @Transactional
     public List<AttributeMapEntity> saveAttributesMap(
-            List<AttributeMapEntity> attrMap, String mSysId, String resId,
+            List<AttributeMapEntity> attrMap, String mSysPolicyId, String resId,
             String synchConfigId) throws Exception {
 
         if (attrMap == null) {
             return null;
         }
 
-        ManagedSysEntity mngSys = getManagedSysById(mSysId);
+        MngSysPolicyEntity mngSysPolicy = getManagedSysPolicyById(mSysPolicyId);
         Map<String, AttributeMapEntity> curAttrMapsMap = new HashMap<String, AttributeMapEntity>();
-        List<AttributeMapEntity> curAttrMaps = null;
-        if (StringUtils.isNotBlank(mSysId)) {
-            curAttrMaps = this.getAttributeMapsByManagedSysId(mSysId);
-        } else if (StringUtils.isNotBlank(synchConfigId)) {
-            AttributeMapSearchBean attributeMapSearchBean = new AttributeMapSearchBean();
-            attributeMapSearchBean.setSynchConfigId(synchConfigId);
-            curAttrMaps = this.getResourceAttributeMaps(attributeMapSearchBean);
-        }
+        List<AttributeMapEntity> curAttrMaps =  attributeMapDAO.findByMngSysPolicyId(mSysPolicyId);
         for (AttributeMapEntity ame : curAttrMaps) {
             curAttrMapsMap.put(ame.getId(), ame);
         }
@@ -363,7 +389,7 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
                 throw new BasicDataServiceException(ResponseCode.VALUE_REQUIRED);
             }
             ame.setReconResAttribute(rram);
-            ame.setManagedSystem(mngSys);
+            ame.setMngSysPolicy(mngSysPolicy);
             ame.setResourceId(resId);
             ame.setSynchConfigId(synchConfigId);
             if (StringUtils.isNotBlank(ame.getId())) {
@@ -423,6 +449,147 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
         return authProviderDao.getByManagedSysId(managedSysId);
     }
 
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<MngSysPolicyDto> getManagedSysPolicyByMngSysId(String mngSysId) {
+        List<MngSysPolicyEntity> policyDtos = mngSysPolicyDAO.findByMngSysId(mngSysId);
+        return mngSysPolicyDozerConverter.convertToDTOList(policyDtos, false);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public MngSysPolicyDto getManagedSysPolicyByMngSysIdAndMetadataType(String mngSysId, String metadataTypeId) {
+        MngSysPolicyEntity mngSysPolicyEntity = mngSysPolicyDAO.findPrimaryByMngSysIdAndType(mngSysId, metadataTypeId);
+        return mngSysPolicyDozerConverter.convertToDTO(mngSysPolicyEntity, true);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<MngSysPolicyDto> findMngSysPolicies(MngSysPolicySearchBean searchBean, Integer from, Integer size) {
+        List<MngSysPolicyEntity> entities = mngSysPolicyDAO.getByExample(searchBean, from, size);
+        return mngSysPolicyDozerConverter.convertToDTOList(entities, searchBean.isDeepCopy());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<MngSysPolicyBean> findMngSysPolicyBeans(MngSysPolicySearchBean searchBean, Integer from, Integer size) {
+        List<MngSysPolicyBean> ret = new ArrayList<>();
+        List<MngSysPolicyDto> policies = findMngSysPolicies(searchBean, from, size);
+        if (CollectionUtils.isNotEmpty(policies)) {
+            for (MngSysPolicyDto policy : policies) {
+                ret.add(new MngSysPolicyBean(policy));
+            }
+        }
+        return ret;
+    }
+
+    @Override
+    @Transactional
+    public String saveMngSysPolicyBean(MngSysPolicyBean mngSysPolicy) throws BasicDataServiceException {
+        if (mngSysPolicy != null) {
+            Date curDate = new Date();
+            MngSysPolicyEntity entity = null;
+            if (StringUtils.isNotEmpty(mngSysPolicy.getId())) {
+                entity = mngSysPolicyDAO.findById(mngSysPolicy.getId());
+                if (entity == null) {
+                    throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+                }
+            } else {
+                entity = new MngSysPolicyEntity();
+                entity.setCreateDate(curDate);
+            }
+            ManagedSysEntity mSys = null;
+            if (StringUtils.isNotEmpty(mngSysPolicy.getManagedSysId())) {
+                mSys = managedSysDAO.findById(mngSysPolicy.getManagedSysId());
+            }
+            if (mSys == null) {
+                throw new BasicDataServiceException(ResponseCode.MANAGED_SYSTEM_NOT_SET);
+            }
+            MetadataTypeEntity mdType = null;
+            if(StringUtils.isNotEmpty(mngSysPolicy.getMdTypeId())) {
+                mdType = metadataTypeDAO.findById(mngSysPolicy.getMdTypeId());
+            }
+            if (mdType == null) {
+                throw new BasicDataServiceException(ResponseCode.MANAGED_SYSTEM_NOT_SET);
+            }
+            entity.setName(mngSysPolicy.getName());
+            entity.setManagedSystem(mSys);
+            if (mngSysPolicy.isPrimary()) {
+                //TODO: make all other policies of same type for managed sys not primary
+            }
+            entity.setPrimary(mngSysPolicy.isPrimary());
+            entity.setType(mdType);
+            entity.setLastUpdate(curDate);
+            if (CollectionUtils.isNotEmpty(mngSysPolicy.getAttrMaps())) {
+                for (AttributeMapBean attrBean : mngSysPolicy.getAttrMaps()) {
+                    List<AttributeMapEntity> toDelete = new ArrayList<>();
+                    if (attrBean.getOperation()!=null && !AttributeOperationEnum.NO_CHANGE.equals(attrBean.getOperation())) {
+                        AttributeMapEntity attrEntity = null;
+                        if (StringUtils.isNotEmpty(attrBean.getId()) && AttributeOperationEnum.REPLACE.equals(attrBean.getOperation())) {
+                            attrEntity = findAttributeMapEntityById(entity, attrBean.getId());
+                        } else if (AttributeOperationEnum.ADD.equals(attrBean.getOperation())) {
+                            attrEntity = new AttributeMapEntity();
+                            attrEntity.setMngSysPolicy(entity);
+                            entity.getAttributeMaps().add(attrEntity);
+                        } else if (StringUtils.isNotEmpty(attrBean.getId()) && AttributeOperationEnum.DELETE.equals(attrBean.getOperation())) {
+                            AttributeMapEntity del = findAttributeMapEntityById(entity, attrBean.getId());
+                            if (del != null) {
+                                toDelete.add(del);
+                            }
+                        }
+                        if (attrEntity != null) {
+                            attrEntity.setMapForObjectType(attrBean.getObjectType());
+                            attrEntity.setName(attrBean.getAttributeName());
+
+                            ReconciliationResourceAttributeMapEntity reconAttr = attrEntity.getReconResAttribute();
+                            if (reconAttr == null) {
+                                reconAttr = new ReconciliationResourceAttributeMapEntity();
+                                reconAttr.setAttributeMap(attrEntity);
+                                attrEntity.setReconResAttribute(reconAttr);
+                            }
+                            if ("DEFAULT_IDM".equals(attrBean.getPolicyType())) {
+                                if (reconAttr.getDefaultAttributePolicy() == null ||
+                                        !StringUtils.equals(reconAttr.getDefaultAttributePolicy().getDefaultAttributeMapId(),attrBean.getDefaultAttributePolicyId())) {
+                                    DefaultReconciliationAttributeMapEntity defRecon = defaultReconciliationAttributeMapDAO.findById(attrBean.getDefaultAttributePolicyId());
+                                    reconAttr.setDefaultAttributePolicy(defRecon);
+                                    reconAttr.setAttributePolicy(null);
+                                }
+                            } else if ("POLICY".equals(attrBean.getPolicyType())) {
+                                if (reconAttr.getAttributePolicy() == null ||
+                                        !StringUtils.equals(reconAttr.getAttributePolicy().getId(),attrBean.getAttributePolicyId())) {
+                                    PolicyEntity policy = policyDAO.findById(attrBean.getAttributePolicyId());
+                                    reconAttr.setAttributePolicy(policy);
+                                    reconAttr.setDefaultAttributePolicy(null);
+                                }
+                            }
+                            attrEntity.setDataType(attrBean.getDataType());
+                            attrEntity.setDefaultValue(attrBean.getDefaultValue());
+                            attrEntity.setStatus(attrBean.getStatus());
+                        }
+                        entity.getAttributeMaps().removeAll(toDelete);
+                    }
+                }
+            }
+
+            mngSysPolicyDAO.save(entity);
+            return entity.getId();
+
+        } else {
+            throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+        }
+    }
+
+    private AttributeMapEntity findAttributeMapEntityById(final MngSysPolicyEntity mngSysPolicyEntity, String id) {
+        final Optional<AttributeMapEntity> entity = mngSysPolicyEntity.getAttributeMaps().stream().filter(e-> id.equals(e.getId())).findFirst();
+        return entity.isPresent() ? entity.get() : null;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public int getMngSysPoliciesCount(MngSysPolicySearchBean searchBean) {
+        return mngSysPolicyDAO.count(searchBean);
+    }
 
     public String getDecryptedPassword(ManagedSysDto managedSys) {
         String result = null;

@@ -311,5 +311,13 @@
             <b>reviewValues</b>
         </field-exclude>
     </mapping>
+	<mapping>
+		<class-a>org.openiam.idm.srvc.mngsys.domain.MngSysPolicyEntity</class-a>
+		<class-b>org.openiam.idm.srvc.mngsys.domain.MngSysPolicyEntity</class-b>
+		<field-exclude>
+			<a>attributeMaps</a>
+			<b>attributeMaps</b>
+		</field-exclude>
+	</mapping>
 </mappings>
         
