@@ -18,6 +18,7 @@ import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.mngsys.dto.PolicyMapObjectTypeOptions;
 import org.openiam.idm.srvc.res.dto.Resource;
+import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.provision.dto.ProvOperationEnum;
@@ -88,13 +89,11 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
                                     bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_IDENTITY_STATUS, null);
                                     bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_IDENTITY, null);
                                     // Protects other resources if one resource failed
-                                    Map<String, Object> tmpMap = new HashMap<>(bindingMap); // prevent
-                                    // bindingMap
-                                    // rewrite
-                                    // in
-                                    // dataList
+
+                                    // prevent bindingMap rewrite in dataList
+                                    Map<String, Object> tmpMap = new HashMap<>(bindingMap);
                                     ProvisionDataContainer data = provisionResource(res, userEntity, new ProvisionUser(user), tmpMap,
-                                            primaryIdentity, requestorUserId);
+                                            primaryIdentity, requestorUserId, false);
 
                                     auditLog.addAttribute(AuditAttributeName.DESCRIPTION,
                                             "Provisioning for resource: " + res.getName());
@@ -102,6 +101,18 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
                                         data.setParentAuditLogId(auditLog.getId());
                                         dataList.add(data);
                                     }
+
+                                    // Additional operation is required for managed system with property ON_DELETE = DISABLE
+                                    String onDeleteProp = resourceDataService.getResourcePropValueByName(res.getId(), "ON_DELETE");
+                                    if (onDeleteProp != null && "DISABLE".equalsIgnoreCase(onDeleteProp)) {
+                                        ProvisionDataContainer enableData = provisionResource(res, userEntity, new ProvisionUser(user), bindingMap,
+                                                primaryIdentity, requestorUserId, true);
+                                        if (enableData != null) {
+                                            enableData.setParentAuditLogId(auditLog.getId());
+                                            dataList.add(enableData);
+                                        }
+                                    }
+
                                 } catch (Throwable tw) {
                                     auditLog.fail();
                                     auditLog.setFailureReason(
@@ -136,7 +147,8 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
                                                     final ProvisionUser pUser,
                                                     final Map<String, Object> tmpMap,
                                                     final Login primaryIdentity,
-                                                    final String requestId) {
+                                                    final String requestId,
+                                                    boolean doEnable) {
 
         Map<String, Object> bindingMap = new HashMap<>(tmpMap); // prevent data rewriting
         log.debug(" - provisionResource started ");
@@ -178,23 +190,12 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
                 bindingMap.put(AbstractProvisioningService.MATCH_PARAM, matchObj);
             }
 
-            String onDeleteProp = resourceDataService.getResourcePropValueByName(res.getId(), "ON_DELETE");
-            if(StringUtils.isEmpty(onDeleteProp)) {
-                onDeleteProp = "DELETE";
-            }
-            ProvLoginStatusEnum provLoginStatus;
-            switch (onDeleteProp) {
-                case "DISABLE":
-                    provLoginStatus = ProvLoginStatusEnum.PENDING_ENABLE;
-                    break;
-                default:
-                    provLoginStatus = ProvLoginStatusEnum.PENDING_UPDATE;
-            }
+            ProvLoginStatusEnum provLoginStatus = ProvLoginStatusEnum.PENDING_UPDATE;
 
             // get the identity linked to this resource / managedsys
             LoginEntity mLg = null;
             for (LoginEntity l : userEntity.getPrincipalList()) {
-                if (managedSysId != null && managedSysId.equals(l.getManagedSysId())) {
+                if (managedSysId.equals(l.getManagedSysId())) {
                     l.setStatus(LoginStatusEnum.ACTIVE);
                     l.setProvStatus(provLoginStatus);
                     mLg = l;
@@ -274,16 +275,12 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
             }
 
             ProvisionDataContainer data = new ProvisionDataContainer();
-            if (isMngSysIdentityExistsInOpeniam) {
-                switch (onDeleteProp) {
-                    case "DISABLE":
-                        data.setOperation(ProvOperationEnum.ENABLE);
-                        bindingMap.put("operation", "RESUME");
-                        break;
-                    default:
-                        data.setOperation(ProvOperationEnum.UPDATE);
-                        bindingMap.put("operation", "MODIFY");
-                }
+            if (doEnable) {
+                data.setOperation(ProvOperationEnum.ENABLE);
+                bindingMap.put("operation", "RESUME");
+            } else if (isMngSysIdentityExistsInOpeniam) {
+                data.setOperation(ProvOperationEnum.UPDATE);
+                bindingMap.put("operation", "MODIFY");
             } else {
                 data.setOperation(ProvOperationEnum.CREATE);
                 bindingMap.put("operation", "ADD");

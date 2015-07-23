@@ -143,11 +143,10 @@
             <a>resources</a>
             <b>resources</b>
         </field>
-        <field
-                custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
-                custom-converter-param="dto2entityShallowDozerMapper">
-            <a>affiliations</a>
-            <b>affiliations</b>
+        <field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
+               custom-converter-param="dto2entityShallowDozerMapper">
+            <a>organizationUser</a>
+            <b>organizationUserDTOs</b>
         </field>
         <field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
                custom-converter-param="dto2entityShallowDozerMapper">
@@ -669,6 +668,11 @@
     <mapping>
         <class-a>org.openiam.idm.srvc.org.domain.OrganizationEntity</class-a>
         <class-b>org.openiam.idm.srvc.org.dto.Organization</class-b>
+        <field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
+               custom-converter-param="dto2entityShallowDozerMapper">
+            <a>organizationUser</a>
+            <b>organizationUserDTOs</b>
+        </field>
         <field>
             <a>type.id</a>
             <b>mdTypeId</b>
@@ -792,12 +796,12 @@
             <a>mngSysObjectMatchs</a>
             <b>mngSysObjectMatchs</b>
         </field>
-        <field
-                custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentListConverter"
-                custom-converter-param="dto2entityShallowDozerMapper">
-            <a>rules</a>
-            <b>rules</b>
-        </field>
+        <!--<field-->
+        <!--custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentListConverter"-->
+        <!--custom-converter-param="dto2entityShallowDozerMapper">-->
+        <!--<a>rules</a>-->
+        <!--<b>rules</b>-->
+        <!--</field>-->
         <field-exclude>
             <a>groups</a>
             <b>groups</b>
@@ -1007,6 +1011,10 @@
                 custom-converter-param="dto2entityShallowDozerMapper">
             <a>resourceAttributeMap</a>
             <b>resourceAttributeMap</b>
+        </field>
+        <field>
+            <a>nextAuthProvider.providerId</a>
+            <b>nextAuthProviderId</b>
         </field>
     </mapping>
 
@@ -1221,6 +1229,26 @@
         <field>
             <a>synchReview.synchReviewId</a>
             <b>synchReviewId</b>
+        </field>
+    </mapping>
+    <mapping>
+        <class-a>org.openiam.idm.srvc.org.domain.OrganizationUserEntity</class-a>
+        <class-b>org.openiam.idm.srvc.org.dto.OrganizationUserDTO</class-b>
+        <field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentObjectConverter"
+               custom-converter-param="dto2entityShallowDozerMapper">
+            <a>metadataTypeEntity.id</a>
+            <b>mdTypeId</b>
+        </field>
+        <field
+                custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentObjectConverter"
+                custom-converter-param="dto2entityShallowDozerMapper">
+            <a>primaryKey.organization</a>
+            <b>organization</b>
+        </field>
+        <field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentObjectConverter"
+               custom-converter-param="dto2entityShallowDozerMapper">
+            <a>primaryKey.user</a>
+            <b>user</b>
         </field>
     </mapping>
 </mappings>

@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.grp.ws;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -133,13 +134,17 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
             throw new BasicDataServiceException(ResponseCode.NO_NAME);
         }
 
-        final GroupEntity found = groupManager.getGroupByName(group.getName(), null);
-        if (found != null) {
-            if (StringUtils.isBlank(group.getId()) && found != null) {
-                throw new BasicDataServiceException(ResponseCode.NAME_TAKEN, "Group name is already in use");
-            }
+        //final GroupEntity found = groupManager.getGroupByName(group.getName(), null);
+        log.debug("Validating group " + group.getName() + " of managed system " + group.getManagedSysId());
+        //final GroupEntity found = groupManager.getGroupByNameAndManagedSys(group.getName(), group.getManagedSysId(), null);
+        GroupSearchBean groupSearchBean = new GroupSearchBean();
+        groupSearchBean.setName(group.getName());
+        groupSearchBean.setManagedSysId(group.getManagedSysId());
+        final List <GroupEntity> foundList = groupManager.findBeans(groupSearchBean, null, 0, 1);
+        final GroupEntity found = (CollectionUtils.isNotEmpty(foundList)) ? foundList.get(0) : null;
 
-            if (StringUtils.isNotBlank(group.getId()) && !group.getId().equals(found.getId())) {
+        if (found != null) {
+            if ( ( !found.getId().equals(group.getId()))) {
                 throw new BasicDataServiceException(ResponseCode.NAME_TAKEN, "Group name is already in use");
             }
         }

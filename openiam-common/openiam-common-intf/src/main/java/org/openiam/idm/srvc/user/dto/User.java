@@ -15,6 +15,7 @@ import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.org.dto.Organization;
+import org.openiam.idm.srvc.org.dto.OrganizationUserDTO;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -87,7 +88,7 @@ import java.util.*;
         "roles",
         "resources",
         "groups",
-        "affiliations",
+        "organizationUserDTOs",
         "supervisors",
         "subordinates",
         "isFromActivitiCreation"
@@ -222,7 +223,7 @@ public class User extends AbstractMetadataTypeDTO {
 
     protected Set<Role> roles = new HashSet<Role>(0);
 
-    protected Set<Organization> affiliations = new HashSet<Organization>(0);
+    protected Set<OrganizationUserDTO> organizationUserDTOs = new HashSet<OrganizationUserDTO>(0);
 
     protected Set<Group> groups = new HashSet<Group>(0);
 
@@ -297,25 +298,38 @@ public class User extends AbstractMetadataTypeDTO {
         this.middleInit = middleInit;
     }
 
-    public Set<Organization> getAffiliations() {
-        return affiliations;
+    public Set<OrganizationUserDTO> getOrganizationUserDTOs() {
+        return organizationUserDTOs;
     }
 
-    public void addAffiliation(final Organization org) {
+    public OrganizationUserDTO containOrganization(Organization org) {
+        if (org == null || org.getId() == null) {
+            return null;
+        }
+        for (OrganizationUserDTO organizationUserDTO : this.organizationUserDTOs) {
+            if (organizationUserDTO.getOrganization() != null && org.getId().equals(organizationUserDTO.getOrganization().getId())) {
+                return organizationUserDTO;
+            }
+        }
+        return null;
+    }
+
+    public void addOrganizationUser(final OrganizationUserDTO org) {
         if (org != null) {
-            if (affiliations == null) {
-                affiliations = new HashSet<Organization>();
+            if (organizationUserDTOs == null) {
+                organizationUserDTOs = new HashSet<OrganizationUserDTO>();
             }
             org.setOperation(AttributeOperationEnum.ADD);
-            affiliations.add(org);
+            organizationUserDTOs.add(org);
         }
     }
 
     public void markAffiliateAsDeleted(final String id) {
         if (id != null) {
-            if (affiliations != null) {
-                for (final Organization organization : affiliations) {
-                    if (StringUtils.equals(organization.getId(), id)) {
+            if (organizationUserDTOs != null) {
+                for (final OrganizationUserDTO organization : organizationUserDTOs) {
+                    if (organization.getOrganization() != null && organization.getOrganization().getId() != null &&
+                            StringUtils.equals(organization.getOrganization().getId(), id)) {
                         organization.setOperation(AttributeOperationEnum.DELETE);
                         break;
                     }
@@ -324,8 +338,8 @@ public class User extends AbstractMetadataTypeDTO {
         }
     }
 
-    public void setAffiliations(Set<Organization> affiliations) {
-        this.affiliations = affiliations;
+    public void setOrganizationUserDTOs(Set<OrganizationUserDTO> organizationUserDTOs) {
+        this.organizationUserDTOs = organizationUserDTOs;
     }
 
     public String getTitle() {

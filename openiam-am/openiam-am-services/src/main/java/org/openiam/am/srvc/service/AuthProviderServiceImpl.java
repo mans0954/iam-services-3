@@ -176,6 +176,12 @@ public class AuthProviderServiceImpl implements AuthProviderService {
             throw new NullPointerException("Cannot create resource for provider. Resource type is not found");
         }
         
+    	if(provider.isChained()) {
+    		provider.setNextAuthProvider(authProviderDao.findById(provider.getNextAuthProvider().getProviderId()));
+    	} else {
+    		provider.setNextAuthProvider(null);
+    	}
+        
         final ResourceEntity resource = new ResourceEntity();
         resource.setName(System.currentTimeMillis() + "_" + provider.getName());
         resource.setResourceType(resourceType);
@@ -217,6 +223,7 @@ public class AuthProviderServiceImpl implements AuthProviderService {
             entity.setManagedSysId(provider.getManagedSysId());
             entity.setName(provider.getName());
             entity.setDescription(provider.getDescription());
+            entity.setChained(provider.isChained());
             if(provider.getPrivateKey()!=null && provider.getPrivateKey().length>0){
                 entity.setPrivateKey(provider.getPrivateKey());
             }
@@ -224,6 +231,16 @@ public class AuthProviderServiceImpl implements AuthProviderService {
                 entity.setPublicKey(provider.getPublicKey());
             }
             entity.setSignRequest(provider.isSignRequest());
+            
+            if(!entity.getType().isChainable()) {
+            	entity.setChained(false);
+            } else {
+            	if(entity.isChained()) {
+            		entity.setNextAuthProvider(authProviderDao.findById(provider.getNextAuthProvider().getProviderId()));
+            	} else {
+            		entity.setNextAuthProvider(null);
+            	}
+            }
 
             // get resource for provider
             if(entity.getResource()!=null){

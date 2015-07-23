@@ -18,6 +18,7 @@ import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
+import org.openiam.idm.srvc.lang.service.LanguageDAO;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
 import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
@@ -59,7 +60,9 @@ public class RoleDataServiceImpl implements RoleDataService {
 	
 	@Autowired
 	private RolePolicyDAO rolePolicyDao;
-	
+
+	@Autowired
+	protected LanguageDAO languageDAO;
 
     @Autowired
     private MetadataElementDAO metadataElementDAO;
@@ -628,6 +631,26 @@ public class RoleDataServiceImpl implements RoleDataService {
         searchBean.setName(roleName);
         final List<RoleEntity> foundList = this.findBeans(searchBean, requesterId, 0, 1);
 		return (CollectionUtils.isNotEmpty(foundList)) ? foundList.get(0) : null;
+	}
+
+	@Override
+	@Deprecated
+	public RoleEntity geRoleByNameAndManagedSys(final String roleName, final String managedSysId, final String requesterId) {
+		return getRoleByNameLocalize(roleName, managedSysId, requesterId, getDefaultLanguage());
+	}
+
+	@Override
+	@LocalizedServiceGet
+	public RoleEntity getRoleByNameLocalize(final String roleName, final String managedSysId, final String requesterId, final LanguageEntity language) {
+		final RoleSearchBean searchBean = new RoleSearchBean();
+		searchBean.setName(roleName);
+		searchBean.setManagedSysId(managedSysId);
+		final List<RoleEntity> foundList = this.findBeans(searchBean, requesterId, 0, 1);
+		return (CollectionUtils.isNotEmpty(foundList)) ? foundList.get(0) : null;
+	}
+
+	protected LanguageEntity getDefaultLanguage() {
+		return languageDAO.getDefaultLanguage();
 	}
 
     private Set<String> getDelegationFilter(String requesterId){

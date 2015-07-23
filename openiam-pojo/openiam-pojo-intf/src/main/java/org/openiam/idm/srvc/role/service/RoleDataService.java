@@ -27,6 +27,9 @@ public interface RoleDataService {
 
     public Role getRoleDtoByName(final String roleName, String requesterId);
 
+    public RoleEntity geRoleByNameAndManagedSys(final String roleName, final String managedSysId, final String requesterId);
+    public RoleEntity getRoleByNameLocalize(final String roleName, final String managedSysId, final String requesterId, final LanguageEntity language);
+
     public RoleEntity getRoleLocalized(final String roleId, final String requestorId, final LanguageEntity language);
     
     public void saveRole(final RoleEntity role, final String requestorId) throws BasicDataServiceException;

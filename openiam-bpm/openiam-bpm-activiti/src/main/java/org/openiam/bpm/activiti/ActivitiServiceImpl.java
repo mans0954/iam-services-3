@@ -1032,4 +1032,9 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
         return response;
     }
 
+    @Override
+    @Transactional(readOnly=true)
+    public List<String> getApproverUserIds(List<String> associationIds, final String targetUserId) {
+        return activitiHelper.getCandidateUserIds(associationIds, targetUserId, null);
+    }
 }

@@ -176,6 +176,22 @@ public class GroupDataServiceImpl implements GroupDataService {
     }
 
     @Override
+    @Deprecated
+    public GroupEntity getGroupByNameAndManagedSys(final String groupName, final String managedSysId, final String requesterId) {
+        return getGroupByNameLocalize(groupName, managedSysId, requesterId, getDefaultLanguage());
+    }
+
+    @Override
+    @LocalizedServiceGet
+    public GroupEntity getGroupByNameLocalize(final String groupName, final String managedSysId, final String requesterId, final LanguageEntity language) {
+        final GroupSearchBean searchBean = new GroupSearchBean();
+        searchBean.setName(groupName);
+        searchBean.setManagedSysId(managedSysId);
+        final List<GroupEntity> foundList = this.findBeans(searchBean, requesterId, 0, 1);
+        return (CollectionUtils.isNotEmpty(foundList)) ? foundList.get(0) : null;
+    }
+
+    @Override
     @LocalizedServiceGet
     public GroupEntity getGroupByNameLocalize(final String groupName, final String requesterId, final LanguageEntity language) {
         final GroupSearchBean searchBean = new GroupSearchBean();
@@ -716,19 +732,36 @@ public class GroupDataServiceImpl implements GroupDataService {
     private Set<String> getDelegationFilter(String requesterId){
         Set<String> filterData = null;
         if(StringUtils.isNotBlank(requesterId)){
+            boolean isFiltered = false;
             Map<String, UserAttribute> attrbutes =  userDataService.getUserAttributesDto(requesterId);
             filterData = new HashSet<String>(DelegationFilterHelper.getGroupFilterFromString(attrbutes));
             List<String> rolesFromDelegation = DelegationFilterHelper.getRoleFilterFromString(attrbutes);
             if(rolesFromDelegation != null && rolesFromDelegation.size() > 0){
                 GroupSearchBean groupSearchBean = new GroupSearchBean();
-                groupSearchBean.setRoleIdSet(new HashSet<String>(rolesFromDelegation));
+                groupSearchBean.setRoleIdSet(new HashSet<>(rolesFromDelegation));
                 List<String> groupIds = groupDao.getIDsByExample(groupSearchBean, 0, Integer.MAX_VALUE);
-                // IF we can't find any groups by Role Delegation filter we add default skip ID to remove all others groups
-                if(groupIds == null || groupIds.size() == 0) {
-                    filterData.add("NOTEXIST");
-                } else {
-                    filterData.addAll(groupIds);
+                filterData.addAll(groupIds);
+                if(groupIds.size() == 0) {
+                    isFiltered = true;
                 }
+            }
+            Set<String> organizationFromDelegation = new HashSet<>();
+            organizationFromDelegation.addAll(DelegationFilterHelper.getOrgIdFilterFromString(attrbutes));
+            organizationFromDelegation.addAll(DelegationFilterHelper.getDeptFilterFromString(attrbutes));
+            organizationFromDelegation.addAll(DelegationFilterHelper.getDivisionFilterFromString(attrbutes));
+            if(organizationFromDelegation.size() > 0){
+                GroupSearchBean groupSearchBean = new GroupSearchBean();
+                groupSearchBean.setOrganizationIdSet(organizationFromDelegation);
+                List<String> groupIds = groupDao.getIDsByExample(groupSearchBean, 0, Integer.MAX_VALUE);
+                filterData.addAll(groupIds);
+                if(groupIds.size() == 0) {
+                    isFiltered = true;
+                }
+            }
+            // IF we can't find any groups or orgs by Role Delegation filter,
+            // we add default skip ID to remove all others groups
+            if (filterData.size() == 0 && isFiltered) {
+                filterData.add("NOTEXIST");
             }
         }
         return filterData;

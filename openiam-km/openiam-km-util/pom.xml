@@ -4,14 +4,14 @@
     <parent>
         <artifactId>km-core</artifactId>
         <groupId>org.openiam</groupId>
-        <version>3.3.2.RELEASE</version>
+        <version>3.3.3.RELEASE</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.openiam</groupId>
     <artifactId>openiam-km-util</artifactId>
     <packaging>jar</packaging>
     <name>openiam-km-util</name>
-    <version>3.3.2.RELEASE</version>
+    <version>3.3.3.RELEASE</version>
     <description>OpenIAM Access Manager sepcific service</description>
     <ciManagement>
         <system>idm</system>

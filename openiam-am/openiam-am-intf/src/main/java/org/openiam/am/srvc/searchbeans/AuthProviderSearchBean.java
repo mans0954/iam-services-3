@@ -11,12 +11,14 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "AuthProviderSearchBean", propOrder = {
         "providerName",
         "managedSysId",
-        "providerType"
+        "providerType",
+        "nextAuthProviderId"
 })
 public class AuthProviderSearchBean extends AbstractSearchBean<AuthProvider, String> {
     private String providerName;
     private String managedSysId;
     private String providerType;
+    private String nextAuthProviderId;
 
     public String getProviderName() {
         return providerName;
@@ -42,7 +44,15 @@ public class AuthProviderSearchBean extends AbstractSearchBean<AuthProvider, Str
         this.providerType = providerType;
     }
 
-    @Override
+    public String getNextAuthProviderId() {
+		return nextAuthProviderId;
+	}
+
+	public void setNextAuthProviderId(String nextAuthProviderId) {
+		this.nextAuthProviderId = nextAuthProviderId;
+	}
+
+	@Override
     public String getCacheUniqueBeanKey() {
         return new StringBuilder()
                 .append(providerName != null ? providerName : "")
