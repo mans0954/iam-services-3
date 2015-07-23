@@ -37,6 +37,7 @@ import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.dto.UserToGroupMembershipXref;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.type.*;
+import org.springframework.stereotype.Component;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -52,6 +53,7 @@ import java.util.*;
  * Lev Bornovalov - This class has lost it's purpose.  Deprecating and marking for removal
  */
 @Deprecated
+@Component("attrHelper")
 public class UserAttributeHelper {
 
     protected static final Log log = LogFactory

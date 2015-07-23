@@ -1,5 +1,16 @@
 package org.openiam.idm.srvc.audit.service;
 
+import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+
+import javax.annotation.PostConstruct;
+import javax.jms.JMSException;
+import javax.jms.Session;
+
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -28,18 +39,10 @@ import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.service.RoleDAO;
 import org.openiam.util.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.core.MessageCreator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import javax.annotation.PostConstruct;
-import javax.jms.JMSException;
-import javax.jms.Queue;
-import javax.jms.Session;
-import java.net.InetAddress;
-import java.util.*;
 
 /**
  * Implementation class for <code>IdmAuditLogDataService</code>. All audit logging activities 
@@ -50,10 +53,6 @@ public class AuditLogServiceImpl implements AuditLogService {
     
 	@Autowired
     private JmsTemplate jmsTemplate;
-	
-	@Autowired
-    @Qualifier(value = "logQueue")
-    private Queue queue;
 	
 	@Autowired
 	private IdmAuditLogDAO logDAO;
@@ -208,7 +207,7 @@ public class AuditLogServiceImpl implements AuditLogService {
 	}
 	
 	 private void send(final IdmAuditLog log) {
-		 jmsTemplate.send(queue, new MessageCreator() {
+		 jmsTemplate.send("logQueue", new MessageCreator() {
 			 public javax.jms.Message createMessage(Session session) throws JMSException {
 				 javax.jms.Message message = session.createObjectMessage(log);
 				 return message;

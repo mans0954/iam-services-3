@@ -1,10 +1,12 @@
 package org.openiam.provision.service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Map;
 
 import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
-import javax.jms.Queue;
 import javax.jms.QueueBrowser;
 import javax.jms.Session;
 
@@ -16,7 +18,6 @@ import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.thread.Sweepable;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jms.core.BrowserCallback;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -31,10 +32,6 @@ public class ProvisionDispatcher implements Sweepable {
     private JmsTemplate jmsTemplate;
 
     @Autowired
-    @Qualifier(value = "provQueue")
-    private Queue queue;
-
-    @Autowired
     protected ProvisionConnectorService connectorService;
 
     @Autowired
@@ -45,18 +42,17 @@ public class ProvisionDispatcher implements Sweepable {
 
 
     @Override
-    //TODO change when Spring 3.2.2 @Scheduled(fixedDelayString = "${org.openiam.prov.threadsweep}")
-    @Scheduled(fixedDelay=3000)
+    @Scheduled(fixedRateString="${org.openiam.prov.threadsweep}", initialDelayString="${org.openiam.prov.threadsweep}")
     public void sweep() {
 
-        jmsTemplate.browse(queue, new BrowserCallback<Object>() {
+        jmsTemplate.browse("provQueue", new BrowserCallback<Object>() {
             @Override
             public Object doInJms(Session session, QueueBrowser browser) throws JMSException {
                 synchronized (mutex) {
                     final List<ProvisionDataContainer> list = new ArrayList<ProvisionDataContainer>();
                     Enumeration e = browser.getEnumeration();
                     while (e.hasMoreElements()) {
-                        list.add((ProvisionDataContainer) ((ObjectMessage) jmsTemplate.receive(queue)).getObject());
+                        list.add((ProvisionDataContainer) ((ObjectMessage) jmsTemplate.receive("provQueue")).getObject());
                         e.nextElement();
                     }
 

@@ -9,6 +9,7 @@ import org.openiam.idm.srvc.access.ws.AccessRightDataService;
 import org.openiam.service.integration.AbstractKeyNameServiceTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.testng.annotations.Test;
 
 public class AccessRightServiceTest extends AbstractKeyNameServiceTest<AccessRight, AccessRightSearchBean> {
 
@@ -49,4 +50,6 @@ public class AccessRightServiceTest extends AbstractKeyNameServiceTest<AccessRig
 		return accessRightServiceClient.findBeans(searchBean, from, size, getDefaultLanguage());
 	}
 
+	@Test
+	public void foo() {}
 }

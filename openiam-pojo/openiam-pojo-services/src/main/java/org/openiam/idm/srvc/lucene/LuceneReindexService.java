@@ -26,7 +26,11 @@ import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/** 
+ * ES handled re-indexing now 
+ */
 //@ManagedResource(objectName="org.openiam.authorization.manager:name=LuceneReindexService")
+@Deprecated
 public class LuceneReindexService implements InitializingBean, Sweepable/*, Runnable*/ {
 
 	private Date lastReindexTimestamp = new Date();

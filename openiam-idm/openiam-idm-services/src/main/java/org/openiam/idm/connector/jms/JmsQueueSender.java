@@ -9,6 +9,12 @@ import javax.jms.Session;
 import org.springframework.jms.core.MessageCreator;
 import org.springframework.jms.core.JmsTemplate;
 
+/**
+ * Do not use this class
+ * @author lbornova
+ *
+ */
+@Deprecated
 public class JmsQueueSender {
 
     private JmsTemplate jmsTemplate;

@@ -119,7 +119,8 @@
 	</modules>
 	<properties>
 		<activiti.version>5.17.0</activiti.version>
-		<spring.version>4.1.2.RELEASE</spring.version>
+		<!--  <spring.version>4.1.2.RELEASE</spring.version> -->
+		<spring.boot.version>1.2.5.RELEASE</spring.boot.version>
 		<cxf.version>3.0.2</cxf.version>
 		<activemq.version>5.3.2</activemq.version>
 		<xbean.version>3.6</xbean.version>
@@ -131,7 +132,7 @@
 		<!--<hibernate.search.orm.version>4.4.3.Final</hibernate.search.orm.version>-->
 		<!--<hibernate.search.analyzers.version>4.4.3.Final</hibernate.search.analyzers.version>-->
 
-
+		<velocity.version>1.7</velocity.version>
 		<validation-api.version>1.1.0.Final</validation-api.version>
 		<hibernate-validator.version>5.1.3.Final</hibernate-validator.version>
 		<servletapi.version>3.0</servletapi.version>
@@ -175,11 +176,15 @@
 		<maven.jar.plugin.version>2.3.1</maven.jar.plugin.version>
 		<hazelcast.version>3.2.2</hazelcast.version>
         <es.version>1.5.0</es.version>
-		<javaee.web.api.version>6.0</javaee.web.api.version>
+		<javaee.web.api.version>7.0</javaee.web.api.version>
 		<artifactory.version>2.2.1</artifactory.version>
 		<slf4j.simple.version>1.6.1</slf4j.simple.version>
 		<googleauth.version>0.4.3</googleauth.version>
         <jackson.version>2.4.3</jackson.version>
+        <sqlserver.version>4.0</sqlserver.version>
+        <oracle.version>11.2.0.1.0</oracle.version>
+        <posgres.version>9.3-1102-jdbc41</posgres.version>
+        <jtds.version>1.3.1</jtds.version>
 		<skipTests>true</skipTests>
 	</properties>
 
@@ -187,50 +192,89 @@
 		<dependencies>
 			<!-- Spring Dependencies -->
 			<dependency>
-				<groupId>org.springframework</groupId>
-				<artifactId>spring-core</artifactId>
-				<version>${spring.version}</version>
+	            <!-- Import dependency management from Spring Boot -->
+	            <groupId>org.springframework.boot</groupId>
+	            <artifactId>spring-boot-dependencies</artifactId>
+	            <version>${spring.boot.version}</version>
+	            <type>pom</type>
+	            <scope>import</scope>
+	        </dependency>
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-starter</artifactId>
+				<version>${spring.boot.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.springframework</groupId>
-				<artifactId>spring-aop</artifactId>
-				<version>${spring.version}</version>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-starter-aop</artifactId>
+				<version>${spring.boot.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.springframework</groupId>
-				<artifactId>spring-context</artifactId>
-				<version>${spring.version}</version>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-starter-cache</artifactId>
+				<version>${spring.boot.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.springframework</groupId>
-				<artifactId>spring-context-support</artifactId>
-				<version>${spring.version}</version>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-starter-actuator</artifactId>
+				<version>${spring.boot.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.springframework</groupId>
-				<artifactId>spring-tx</artifactId>
-				<version>${spring.version}</version>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-starter-batch</artifactId>
+				<version>${spring.boot.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.springframework</groupId>
-				<artifactId>spring-jms</artifactId>
-				<version>${spring.version}</version>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-starter-data-elasticsearch</artifactId>
+				<version>${spring.boot.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.springframework</groupId>
-				<artifactId>spring-jdbc</artifactId>
-				<version>${spring.version}</version>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-starter-data-jpa</artifactId>
+				<version>${spring.boot.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.springframework</groupId>
-				<artifactId>spring-orm</artifactId>
-				<version>${spring.version}</version>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-starter-groovy-templates</artifactId>
+				<version>${spring.boot.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.springframework</groupId>
-				<artifactId>spring-test</artifactId>
-				<version>${spring.version}</version>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-starter-jdbc</artifactId>
+				<version>${spring.boot.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-starter-mail</artifactId>
+				<version>${spring.boot.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-starter-web</artifactId>
+				<version>${spring.boot.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-starter-ws</artifactId>
+				<version>${spring.boot.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-starter-hornetq</artifactId>
+				<version>${spring.boot.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-starter-tomcat</artifactId>
+				<version>${spring.boot.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-starter-logging</artifactId>
+				<version>${spring.boot.version}</version>
+			</dependency>
+
 			<!-- Hibernate dependencies -->
 			<dependency>
 				<groupId>org.hibernate</groupId>
@@ -474,31 +518,30 @@
 				<groupId>mysql</groupId>
 				<artifactId>mysql-connector-java</artifactId>
 				<version>${mysql.version}</version>
-				<scope>provided</scope>
 			</dependency>
             <!-- mssql dependencies -->
             <dependency>
                 <groupId>com.microsoft.sqlserver</groupId>
                 <artifactId>sqljdbc4</artifactId>
-                <version>4.0</version>
+                <version>${sqlserver.version}</version>
             </dependency>
 			<!-- oracle dependencies -->
 			<dependency>
 				<groupId>com.oracle</groupId>
 				<artifactId>ojdbc6</artifactId>
-				<version>11.2.0.1.0</version>
+				<version>${oracle.version}</version>
 			</dependency>
 			<!-- postgress dependencies -->
 			<dependency>
 				<groupId>org.postgresql</groupId>
 				<artifactId>postgresql</artifactId>
-				<version>9.3-1102-jdbc41</version>
+				<version>${posgres.version}</version>
 			</dependency>
             <!-- jdbs driver for mssql with windows authentication dependencies -->
             <dependency>
                 <groupId>net.sourceforge.jtds</groupId>
                 <artifactId>jtds</artifactId>
-                <version>1.3.1</version>
+                <version>${jtds.version}</version>
             </dependency>
 			<!-- Testing -->
 			<dependency>
@@ -514,9 +557,9 @@
 				<scope>test</scope>
 			</dependency>
 			<dependency>
-				<groupId>org.springframework</groupId>
-				<artifactId>spring-test</artifactId>
-				<version>${spring.version}</version>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-starter-test</artifactId>
+				<version>${spring.boot.version}</version>
 				<scope>test</scope>
 			</dependency>
 			<dependency>
@@ -699,7 +742,7 @@
 				<groupId>com.hazelcast</groupId>
 				<artifactId>hazelcast</artifactId>
 				<version>${hazelcast.version}</version>
-				<scope>provided</scope>
+				<scope>compile</scope>
 			</dependency>
 			
 			<dependency>
@@ -1042,6 +1085,15 @@
                         <include>org.openiam:*</include>
                     </includes>
                 </configuration>
+            </plugin>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<version>${spring.boot.version}</version>
+				<configuration>
+					<mainClass>org.openiam.config.Application</mainClass>
+<!--				<layout>ZIP</layout>-->
+				</configuration>
             </plugin>
 		</plugins>
 

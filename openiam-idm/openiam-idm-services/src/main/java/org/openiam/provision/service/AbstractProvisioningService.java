@@ -237,13 +237,16 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     private Map<String, ProvisionServicePreProcessor> preProcessorInstanceMap = new HashMap<String, ProvisionServicePreProcessor>();
     private Map<String, ProvisionServicePostProcessor> postProcessorInstanceMap = new HashMap<String, ProvisionServicePostProcessor>();
 
-    @Autowired
+    @Value("${org.openiam.idm.eventProcessor.groovy.script}")
     private String eventProcessor;
-    @Autowired
+    
+    @Value("${org.openiam.idm.preProcessor.groovy.script}")
     protected String preProcessor;
-    @Autowired
+    
+    @Value("${org.openiam.idm.postProcessor.groovy.script}")
     protected String postProcessor;
-    @Autowired
+    
+    @Value("${org.openiam.idm.resourceOrderProcessor.groovy.script}")
     protected String resourceOrderProcessor;
     @Autowired
     protected AttributeMapDozerConverter attributeMapDozerConverter;

@@ -19,6 +19,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
@@ -280,6 +281,7 @@ public class OrganizationTypeServiceImpl extends AbstractBaseService implements 
 
     @Override
     @Transactional
+    @Scheduled(fixedRateString="${org.openiam.org.manager.threadsweep}", initialDelayString="${org.openiam.org.manager.threadsweep}")
     public void sweep() {
         final StopWatch sw = new StopWatch();
         sw.start();

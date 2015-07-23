@@ -4,6 +4,16 @@
           http://dozer.sourceforge.net/schema/beanmapping.xsd">
 	
 	<mapping>
+        <class-a>org.openiam.idm.srvc.mngsys.domain.ProvisionConnectorEntity</class-a>
+        <class-b>org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto</class-b>
+    </mapping>
+	
+	<mapping>
+		<class-a>org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity</class-a>
+		<class-b>org.openiam.idm.srvc.mngsys.dto.ApproverAssociation</class-b>
+	</mapping>
+	
+	<mapping>
 		<class-a>org.openiam.idm.srvc.user.domain.UserToOrganizationMembershipXrefEntity</class-a>
 		<class-b>org.openiam.idm.srvc.user.dto.UserToOrganizationMembershipXref</class-b>
 		<field>

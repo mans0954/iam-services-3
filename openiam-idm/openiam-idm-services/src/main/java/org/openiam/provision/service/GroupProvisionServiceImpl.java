@@ -99,10 +99,10 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
     @Value(",${org.openiam.debug.hidden.attributes},")
     private String hiddenAttributes;
 
-    @Autowired
+    @Value("${org.openiam.idm.preProcessorGroup.groovy.script}")
     protected String preProcessorGroup;
 
-    @Autowired
+    @Value("${org.openiam.idm.postProcessorGroup.groovy.script}")
     protected String postProcessorGroup;
 
     @Autowired

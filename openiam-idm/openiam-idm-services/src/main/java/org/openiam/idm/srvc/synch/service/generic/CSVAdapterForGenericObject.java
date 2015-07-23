@@ -52,6 +52,7 @@ import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.ProvisionUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**
@@ -71,9 +72,9 @@ public class CSVAdapterForGenericObject implements SourceAdapter {
     protected RoleDataService roleDataService;
     @Autowired
     protected UserDataService userMgr;
-    @Autowired
-    @Qualifier("systemAccount")
-    String systemAccount;
+   
+    @Value("${org.openiam.idm.system.user.id}")
+    private String systemAccount;
     @Autowired
     MatchRuleFactory matchRuleFactory;
     @Autowired
@@ -286,14 +287,6 @@ public class CSVAdapterForGenericObject implements SourceAdapter {
 
     public void setUserMgr(UserDataService userMgr) {
         this.userMgr = userMgr;
-    }
-
-    public String getSystemAccount() {
-        return systemAccount;
-    }
-
-    public void setSystemAccount(String systemAccount) {
-        this.systemAccount = systemAccount;
     }
 
     public MatchRuleFactory getMatchRuleFactory() {

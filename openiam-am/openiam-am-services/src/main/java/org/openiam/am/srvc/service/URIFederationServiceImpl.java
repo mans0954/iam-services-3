@@ -75,6 +75,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.http.HttpMethod;
 import org.springframework.jmx.export.annotation.ManagedOperation;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
@@ -199,6 +200,7 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 	 */
 	@ManagedOperation(description="sweep the Content Provider Cache")
 	@Transactional
+	@Scheduled(fixedRateString="${org.openiam.am.uri.federation.threadsweep}", initialDelayString="${org.openiam.am.uri.federation.threadsweep}")
 	public void sweep() {
 		try {
 			LOG.info("Attemtping to refresh Content Provider Cache...");

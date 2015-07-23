@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.jms.JMSException;
-import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jws.WebService;
 
@@ -18,16 +17,15 @@ import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.idm.srvc.report.dto.ReportCriteriaParamDto;
+import org.openiam.idm.srvc.report.dto.ReportDataDto;
+import org.openiam.idm.srvc.report.dto.ReportInfoDto;
 import org.openiam.idm.srvc.report.dto.ReportParamMetaTypeDto;
+import org.openiam.idm.srvc.report.dto.ReportParamTypeDto;
 import org.openiam.idm.srvc.report.dto.ReportQueryDto;
 import org.openiam.idm.srvc.report.dto.ReportSubCriteriaParamDto;
-import org.openiam.idm.srvc.report.dto.ReportDataDto;
 import org.openiam.idm.srvc.report.dto.ReportSubscriptionDto;
-import org.openiam.idm.srvc.report.dto.ReportInfoDto;
-import org.openiam.idm.srvc.report.dto.ReportParamTypeDto;
 import org.openiam.idm.srvc.report.service.ReportDataService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jms.JmsException;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.core.MessageCreator;
@@ -57,9 +55,6 @@ public class ReportWebServiceImpl implements ReportWebService {
 	private ReportDataService reportDataService;
 	@Autowired
 	private JmsTemplate jmsTemplate;
-	@Autowired
-	@Qualifier(value = "subsQueue")
-	private Queue queue;
 
 	@Override
 	public GetReportDataResponse executeQuery(final ReportQueryDto reportQuery) {
@@ -657,7 +652,7 @@ public class ReportWebServiceImpl implements ReportWebService {
 		Response response = new Response();
 		if (reportSubscription != null) {
 			try {
-				jmsTemplate.send(queue, new MessageCreator() {
+				jmsTemplate.send("subsQueue", new MessageCreator() {
 					public javax.jms.Message createMessage(Session session) throws JMSException {
 						return session.createObjectMessage(reportSubscription);
 					}
@@ -679,7 +674,7 @@ public class ReportWebServiceImpl implements ReportWebService {
 
 			if (reportSubscription != null) {
 				try {
-					jmsTemplate.send(queue, new MessageCreator() {
+					jmsTemplate.send("subsQueue", new MessageCreator() {
 						public javax.jms.Message createMessage(Session session) throws JMSException {
 							return session.createObjectMessage(reportSubscription);
 						}

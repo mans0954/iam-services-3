@@ -1,18 +1,24 @@
 package org.openiam.idm.srvc.meta.service;
 
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
+import javax.jms.JMSException;
+import javax.jms.Session;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.service.AbstractLanguageService;
 import org.openiam.base.ws.ResponseCode;
-import org.openiam.exception.BasicDataServiceException;
 import org.openiam.dozer.converter.MetaDataElementDozerConverter;
 import org.openiam.dozer.converter.MetaDataTypeDozerConverter;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
-import org.openiam.idm.srvc.lang.domain.LanguageEntity;
-import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.lang.service.LanguageMappingDAO;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
@@ -27,20 +33,11 @@ import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.idm.srvc.searchbean.converter.MetadataTypeSearchBeanConverter;
 import org.openiam.internationalization.LocalizedServiceGet;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.core.MessageCreator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import javax.jms.JMSException;
-import javax.jms.Queue;
-import javax.jms.Session;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
 
 /**
  * Data service implementation for Metadata.
@@ -82,10 +79,6 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 
     @Autowired
     private JmsTemplate jmsTemplate;
-
-    @Autowired
-    @Qualifier(value = "metaElementQueue")
-    private Queue queue;
 
     private static final Log log = LogFactory.getLog(MetadataServiceImpl.class);
 
@@ -203,7 +196,7 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 	}
 
     private void send(final MetadataElementEntity entity) {
-        jmsTemplate.send(queue, new MessageCreator() {
+        jmsTemplate.send("metaElementQueue", new MessageCreator() {
             public javax.jms.Message createMessage(Session session) throws JMSException {
                 javax.jms.Message message = session.createObjectMessage(entity);
                 return message;

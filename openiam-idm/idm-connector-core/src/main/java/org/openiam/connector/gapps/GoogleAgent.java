@@ -373,49 +373,4 @@ public class GoogleAgent {
 		} while (feedURL != null);
 		return allEntries;
 	}
-
-	// test for groups
-	// public static void main(String[] args) throws Exception {
-	// GoogleAgent a = new GoogleAgent();
-	// String adminEmail = "dmitry.zaporozhec@openiam.com";
-	// String password = "12#DoomiDDqD";
-	// String domain = "openiam.com";
-	//
-	// // System.out.println("------- 1. Get All groups");
-	// // List<GenericEntry> groups = a.getAllUsers(adminEmail, password,
-	// // domain);
-	// // for (GenericEntry g : groups) {
-	// // System.out.println(g.getAllProperties());
-	// // }
-	//
-	// // System.out.println("------- 2. ADD NEW GROUP");
-	// // Map<String, String> newGroup = new HashMap<String, String>();
-	// // newGroup.put("groupName", "testZ");
-	// // newGroup.put("description", "test group from " + adminEmail);
-	// // newGroup.put("groupId", "testZ@" + domain);
-	// // a.addGroup(adminEmail, password, domain, newGroup);
-	// // a.deleteUserFromGroup(adminEmail, password, domain,
-	// // "testZ@openiam.com", "dmitry.zaporozhec");
-	// // a.addUserToGroup(adminEmail, password, domain, "testZ@openiam.com",
-	// // "dmitry.zaporozhec");
-	// // System.out.println("------- 3. Get All groups");
-	// // groups = a.getAllGroup(adminEmail, password, domain);
-	// // for (GenericEntry g : groups) {
-	// // System.out.println(g.getAllProperties());
-	// // }
-	// //
-	// // System.out.println("------- 4. Get MY groups");
-	// // GenericEntry group = a.getGroup(adminEmail, password, domain,
-	// // "testZ");
-	// // System.out.println(group.getAllProperties());
-	// //
-	// // System.out.println("------- 5. DELETE NEW GROUP");
-	// // a.deleteGroup(adminEmail, password, domain, "testZ");
-	// //
-	// // System.out.println("------- 6. Get All groups");
-	// // groups = a.getAllGroup(adminEmail, password, domain);
-	// // for (GenericEntry g : groups) {
-	// // System.out.println(g.getAllProperties());
-	// // }
-	// }
 }

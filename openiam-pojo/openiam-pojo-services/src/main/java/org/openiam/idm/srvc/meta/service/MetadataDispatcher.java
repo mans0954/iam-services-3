@@ -1,12 +1,26 @@
 package org.openiam.idm.srvc.meta.service;
 
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.jms.JMSException;
+import javax.jms.ObjectMessage;
+import javax.jms.QueueBrowser;
+import javax.jms.Session;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.StopWatch;
 import org.apache.log4j.Logger;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.hibernate.HibernateUtils;
-import org.openiam.idm.searchbeans.*;
+import org.openiam.idm.searchbeans.GroupSearchBean;
+import org.openiam.idm.searchbeans.OrganizationSearchBean;
+import org.openiam.idm.searchbeans.ResourceSearchBean;
+import org.openiam.idm.searchbeans.RoleSearchBean;
+import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupAttributeDAO;
@@ -39,12 +53,6 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
-
-import javax.jms.*;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Created by: Alexander Duckardt
@@ -79,19 +87,14 @@ public class MetadataDispatcher implements Sweepable {
     private JmsTemplate jmsTemplate;
 
     @Autowired
-    @Qualifier(value = "metaElementQueue")
-    private Queue queue;
-
-    @Autowired
     @Qualifier("transactionManager")
     private PlatformTransactionManager platformTransactionManager;
     private final Object mutex = new Object();
 
     @Override
-    //TODO change when Spring 3.2.2 @Scheduled(fixedDelayString = "${org.openiam.metadata.threadsweep}")
-    @Scheduled(fixedDelay=10000)
+    @Scheduled(fixedRateString="${org.openiam.metadata.threadsweep}", initialDelayString="${org.openiam.metadata.threadsweep}")
     public void sweep() {
-        jmsTemplate.browse(queue, new BrowserCallback<Object>() {
+        jmsTemplate.browse("metaElementQueue", new BrowserCallback<Object>() {
             @Override
             public Object doInJms(Session session, QueueBrowser browser) throws JMSException {
                 synchronized (mutex){
@@ -104,7 +107,7 @@ public class MetadataDispatcher implements Sweepable {
                         Enumeration e = browser.getEnumeration();
 
                         while (e.hasMoreElements()) {
-                            final MetadataElementEntity metadataElementEntity = (MetadataElementEntity)((ObjectMessage) jmsTemplate.receive(queue)).getObject();
+                            final MetadataElementEntity metadataElementEntity = (MetadataElementEntity)((ObjectMessage) jmsTemplate.receive("metaElementQueue")).getObject();
 
                             TransactionTemplate transactionTemplate = new TransactionTemplate(platformTransactionManager);
                             transactionTemplate.setPropagationBehavior(TransactionTemplate.PROPAGATION_REQUIRED);

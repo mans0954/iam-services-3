@@ -62,6 +62,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
@@ -136,10 +137,10 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     @Qualifier("configurableGroovyScriptEngine")
     private ScriptIntegration scriptRunner;
 
-    @Autowired
+    @Value("${org.openiam.idm.preProcessorOrganization.groovy.script}")
     protected String preProcessorOrganization;
 
-    @Autowired
+    @Value("${org.openiam.idm.postProcessorOrganization.groovy.script}")
     protected String postProcessorOrganization;
     
     @Autowired
@@ -914,6 +915,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
 
     @Override
     @Transactional
+    @Scheduled(fixedRateString="${org.openiam.org.manager.threadsweep}", initialDelayString="${org.openiam.org.manager.threadsweep}")
     public void sweep() {
         final StopWatch sw = new StopWatch();
         sw.start();

@@ -60,11 +60,11 @@ public class BaseProvisioningHelper {
     protected RoleDataService roleDataService;
     @Autowired
     protected GroupDataService groupManager;
-    @Autowired
-    @Qualifier("connectorWsdl")
+    
+    @Value("${org.openiam.connector.wsdl}")
     protected String connectorWsdl;
-    @Autowired
-    @Qualifier("defaultProvisioningModel")
+    
+    @Value("${org.openiam.default.provisioning.model}")
     protected String defaultProvisioningModel;
     @Autowired
     protected SysConfiguration sysConfiguration;

@@ -1,14 +1,14 @@
 package org.openiam.dozer.converter;
 
-import org.openiam.dozer.AbstractIdmDozerEntityConverter;
+import java.util.List;
+import java.util.Set;
+
 import org.openiam.idm.srvc.mngsys.domain.ProvisionConnectorEntity;
 import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-
 @Component("provisionConnectorConverter")
-public class ProvisionConnectorConverter extends AbstractIdmDozerEntityConverter<ProvisionConnectorDto, ProvisionConnectorEntity> {
+public class ProvisionConnectorConverter extends AbstractDozerEntityConverter<ProvisionConnectorDto, ProvisionConnectorEntity> {
 
     @Override
     public ProvisionConnectorEntity convertEntity(ProvisionConnectorEntity userEntity, boolean isDeep) {
@@ -39,4 +39,16 @@ public class ProvisionConnectorConverter extends AbstractIdmDozerEntityConverter
     public List<ProvisionConnectorDto> convertToDTOList(List<ProvisionConnectorEntity> list, boolean isDeep) {
         return convertListToCrossEntity(list, isDeep, ProvisionConnectorDto.class);
     }
+
+	@Override
+	public Set<ProvisionConnectorEntity> convertToEntitySet(
+			Set<ProvisionConnectorDto> set, boolean isDeep) {
+		return convertSetToCrossEntity(set, isDeep, ProvisionConnectorEntity.class);
+	}
+
+	@Override
+	public Set<ProvisionConnectorDto> convertToDTOSet(
+			Set<ProvisionConnectorEntity> set, boolean isDeep) {
+		return convertSetToCrossEntity(set, isDeep, ProvisionConnectorDto.class);
+	}
 }
