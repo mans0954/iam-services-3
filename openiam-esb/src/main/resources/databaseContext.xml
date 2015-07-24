@@ -32,7 +32,7 @@
 		<prop key="hibernate.dialect">${openiam.hibernate.dialect}</prop>
 	</util:properties>
 
-	<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+	<bean id="dataSource" primary="true" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
 		<property name="driverClassName" value="${jdbc.driverClassName}" />
 		<property name="url" value="${jdbc.url}" />
 		<property name="username" value="${jdbc_username}" />
