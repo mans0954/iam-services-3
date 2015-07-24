@@ -673,10 +673,10 @@
 			<a>mngSysObjectMatchs</a>
 			<b>mngSysObjectMatchs</b>
 		</field-exclude>
-		<field-exclude>
-			<a>rules</a>
-			<b>rules</b>
-		</field-exclude>
+		<!--<field-exclude>-->
+			<!--<a>rules</a>-->
+			<!--<b>rules</b>-->
+		<!--</field-exclude>-->
 		<field-exclude>
 			<a>groups</a>
 			<b>groups</b>

@@ -84,12 +84,21 @@
 	<bean id="roleServiceClient" class="org.openiam.idm.srvc.role.ws.RoleDataWebService"
 		factory-bean="roleServiceFactory" factory-method="create" />
 
-
 	<bean id="roleServiceFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
 		<property name="serviceClass"
 			value="org.openiam.idm.srvc.role.ws.RoleDataWebService" />
 		<property name="address"
 			value="${openiam.service_host}${openiam.idm.ws.path}RoleDataWebService" />
+	</bean>
+
+	<bean id="manSysServiceClient" class="org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService"
+		  factory-bean="manSysServiceFactory" factory-method="create" />
+
+	<bean id="manSysServiceFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
+		<property name="serviceClass"
+			value="org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService" />
+		<property name="address"
+			value="${openiam.service_host}${openiam.idm.ws.path}ManagedSystemWebService" />
 	</bean>
 
     <bean id="groupProvisionServiceClient" class="org.openiam.provision.service.ObjectProvisionService"
