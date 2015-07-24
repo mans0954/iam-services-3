@@ -617,6 +617,8 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
             } else {
                 curEntity.getOrganizationUser().clear();
             }
+        } else {
+
         }
     }
 
