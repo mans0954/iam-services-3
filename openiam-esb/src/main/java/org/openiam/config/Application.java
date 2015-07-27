@@ -6,6 +6,7 @@ import java.util.Map;
 import org.apache.cxf.transport.servlet.CXFServlet;
 import org.openiam.authmanager.web.AuthorizationManagerHessianServlet;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.embedded.FilterRegistrationBean;
 import org.springframework.boot.context.embedded.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -14,7 +15,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.orm.hibernate4.support.OpenSessionInViewFilter;
 
 @Configuration
-//@SpringBootApplication
+@SpringBootApplication
 //@EnableAutoConfiguration
 //@EnableJpaRepositories
 @Import(value={BasePojoConfiguration.class, BaseAuthManagerConfiguration.class, BaseActivitiConfiguration.class, BaseAccessManagerConfig.class})
