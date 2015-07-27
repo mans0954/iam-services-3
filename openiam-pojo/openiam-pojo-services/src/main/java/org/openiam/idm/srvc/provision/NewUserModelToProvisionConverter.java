@@ -7,6 +7,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.base.AttributeOperationEnum;
+import org.openiam.base.SysConfiguration;
 import org.openiam.dozer.converter.GroupDozerConverter;
 import org.openiam.dozer.converter.OrganizationDozerConverter;
 import org.openiam.dozer.converter.RoleDozerConverter;
@@ -71,6 +72,11 @@ public class NewUserModelToProvisionConverter {
     @Autowired
     private OrganizationDozerConverter organizationDozerConverter;
 
+
+    @Autowired
+    private SysConfiguration sysConfiguration;
+
+
     @Transactional
     public ProvisionUser convertNewProfileModel(final NewUserProfileRequestModel request) {
         ProvisionUser user = null;
@@ -119,7 +125,7 @@ public class NewUserModelToProvisionConverter {
                         userRoles.add(role);
                     }
                     /*
-					final UserRole userRole = new UserRole(null, roleId);
+                    final UserRole userRole = new UserRole(null, roleId);
 					userRoles.add(userRole);
 					*/
                 }
@@ -148,6 +154,7 @@ public class NewUserModelToProvisionConverter {
                         OrganizationUserDTO dto = new OrganizationUserDTO();
                         dto.setOperation(AttributeOperationEnum.ADD);
                         dto.setOrganization(organization);
+                        dto.setMdTypeId(sysConfiguration.getAffiliationPrimaryTypeId());//TODO only for CGI
                         userOrganizations.add(dto);
                     }
                 }

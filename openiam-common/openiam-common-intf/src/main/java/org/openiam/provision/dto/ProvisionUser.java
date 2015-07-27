@@ -378,7 +378,7 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         if (CollectionUtils.isNotEmpty(organizationUserDTOs)) {
             for (final OrganizationUserDTO organizationUserDTO : organizationUserDTOs) {
                 if (!AttributeOperationEnum.DELETE.equals(organizationUserDTO.getOperation())) {
-                    if (organizationUserDTO.getOrganization() != null && organizationUserDTO.getOrganization().isOrganization()) {
+                    if (organizationUserDTO.getOrganization() != null) {
                         retVal = organizationUserDTO.getOrganization();
                     }
                 }
