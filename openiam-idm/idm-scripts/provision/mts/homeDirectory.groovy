@@ -1,1 +1,0 @@
-output = user.userAttributes?.get('homeDirectory')?.value?: null

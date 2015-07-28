@@ -123,15 +123,18 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
 
     @Override
     @LocalizedServiceGet
+    @Transactional(readOnly = true)
     public List<Organization> findBeansLocalized(final OrganizationSearchBean searchBean, final String requesterId, final int from, final int size, final Language language) {
         final List<OrganizationEntity> entityList = organizationService.findBeans(searchBean, requesterId, from, size, languageConverter.convertToEntity(language, false));
         final List<Organization> resultList = new LinkedList<Organization>();
         for (OrganizationEntity organizationEntity : entityList) {
-            Organization newOrg = organizationDozerConverter.convertToDTO(organizationEntity, false);
-            newOrg.setOrganizationUserDTOs(new HashSet<OrganizationUserDTO>());
-            for (OrganizationUserEntity e : organizationEntity.getOrganizationUser()) {
-                OrganizationUserDTO dto = new OrganizationUserDTO(e.getUser().getId(), e.getOrganization().getId(), e.getMetadataTypeEntity().getId(), null);
-                newOrg.getOrganizationUserDTOs().add(dto);
+            Organization newOrg = organizationDozerConverter.convertToDTO(organizationEntity, searchBean.isDeepCopy());
+            if (searchBean.isDeepCopy()) {
+                newOrg.setOrganizationUserDTOs(new HashSet<OrganizationUserDTO>());
+                for (OrganizationUserEntity e : organizationEntity.getOrganizationUser()) {
+                    OrganizationUserDTO dto = new OrganizationUserDTO(e.getUser().getId(), e.getOrganization().getId(), e.getMetadataTypeEntity().getId(), null);
+                    newOrg.getOrganizationUserDTOs().add(dto);
+                }
             }
             resultList.add(newOrg);
         }

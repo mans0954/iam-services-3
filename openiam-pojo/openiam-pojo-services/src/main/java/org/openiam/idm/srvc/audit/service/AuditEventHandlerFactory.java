@@ -15,31 +15,30 @@ import java.util.ResourceBundle;
 
 public class AuditEventHandlerFactory {
 
-    static protected ResourceBundle res = ResourceBundle.getBundle("securityconf");
-    private static final Log log = LogFactory.getLog(AuditEventHandlerFactory.class);
 
     public static ExportAuditEvent createInstance() {
+        ResourceBundle res = ResourceBundle.getBundle("securityconf");
+        Log log = LogFactory.getLog(AuditEventHandlerFactory.class);
 
-
-		try {
-            String handlerName =  res.getString("EXPORT_AUDIT_EVENT_HANDLER");
+        try {
+            String handlerName = res.getString("EXPORT_AUDIT_EVENT_HANDLER");
             if (handlerName == null || handlerName.length() == 0) {
                 return null;
             }
 
             Class cls = Class.forName(handlerName);
-			return (ExportAuditEvent)cls.newInstance();
-        }catch(ClassNotFoundException cnfe ) {
-              log.error(cnfe.getMessage(),cnfe);
-        }catch(IllegalAccessException ia) {
-			log.error(ia.getMessage(),ia);
+            return (ExportAuditEvent) cls.newInstance();
+        } catch (ClassNotFoundException cnfe) {
+            log.error(cnfe.getMessage(), cnfe);
+        } catch (IllegalAccessException ia) {
+            log.error(ia.getMessage(), ia);
 
-		}catch(InstantiationException ie) {
-			log.error(ie.getMessage(),ie);
-		}catch(Exception e) {
-            log.error(e.getMessage(),e);
+        } catch (InstantiationException ie) {
+            log.error(ie.getMessage(), ie);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
         }
-		return null;
+        return null;
 
 
     }
