@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.audit.service;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.idm.srvc.audit.dto.AuditLogTarget;
@@ -109,43 +110,43 @@ public class IHEAuditEvent implements ExportAuditEvent {
         }
 
         byte[] bAry = null;
+        if (CollectionUtils.isNotEmpty(log.getTargets()))
+            for (AuditLogTarget auditLogTarget : log.getTargets()) {
 
-        for (AuditLogTarget auditLogTarget : log.getTargets()) {
 
-
-            if (auditLogTarget.getTargetType().equalsIgnoreCase("USER")) {
-                if (log.getAction().equalsIgnoreCase("LOGIN")) {
-                    bAry = login(log);
+                if (auditLogTarget.getTargetType().equalsIgnoreCase("USER")) {
+                    if (log.getAction().equalsIgnoreCase("LOGIN")) {
+                        bAry = login(log);
+                    }
+                    if (log.getAction().equalsIgnoreCase("LOGOUT")) {
+                        bAry = logout(log);
+                    }
                 }
-                if (log.getAction().equalsIgnoreCase("LOGOUT")) {
-                    bAry = logout(log);
+                if (auditLogTarget.getTargetType().equalsIgnoreCase("USER")) {
+                    bAry = userChange(log);
                 }
-            }
-            if (auditLogTarget.getTargetType().equalsIgnoreCase("USER")) {
-                bAry = userChange(log);
-            }
         /*if (auditLogTarget.getTargetType().equalsIgnoreCase("PASSWORD")) {
             bAry = userChange(log);
         }*/
 
-            if (auditLogTarget.getTargetType().equalsIgnoreCase("ROLE")) {
-                bAry = roleChange(log);
-            }
-            if (auditLogTarget.getTargetType().equalsIgnoreCase("RESOURCE")) {
-                bAry = roleChange(log);
-            }
+                if (auditLogTarget.getTargetType().equalsIgnoreCase("ROLE")) {
+                    bAry = roleChange(log);
+                }
+                if (auditLogTarget.getTargetType().equalsIgnoreCase("RESOURCE")) {
+                    bAry = roleChange(log);
+                }
         /*if (auditLogTarget.getTargetType().equalsIgnoreCase("POLICY")) {
             bAry = roleChange(log);
         }*/
 
-            if (auditLogTarget.getTargetType().equalsIgnoreCase("GROUP")) {
-                bAry = roleChange(log);
-            }
+                if (auditLogTarget.getTargetType().equalsIgnoreCase("GROUP")) {
+                    bAry = roleChange(log);
+                }
 
         /*if (auditLogTarget.getTargetType().equalsIgnoreCase("MANAGED_SYS")) {
             bAry = roleChange(log);
         }*/
-        }
+            }
 
 
         l.debug("Calling Send ATNA Message");
@@ -585,7 +586,9 @@ public class IHEAuditEvent implements ExportAuditEvent {
 
 
     private String getParentLogId(IdmAuditLog log) {
-
+        if (CollectionUtils.isEmpty(log.getParentLogs())) {
+            return null;
+        }
         String parentLogId = null;
 
         for (IdmAuditLog idmAuditLog : log.getParentLogs()) {
