@@ -31,6 +31,15 @@
         <property name="address" value="${openiam.service_host}${openiam.idm.ws.path}UserDataService" />
     </bean>
 
+
+
+    <bean id="publishService" class="org.openiam.idm.srvc.audit.ws.PublishAuditEventWebService"
+          factory-bean="publishServiceFactory" factory-method="create" lazy-init="false" />
+    <bean id="publishServiceFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
+        <property name="serviceClass" value="org.openiam.idm.srvc.audit.ws.PublishAuditEventWebService" />
+        <property name="address" value="${openiam.service_host}${openiam.idm.ws.path}PublishAuditEventWebService" />
+    </bean>
+
     <!--<bean id="groupServiceClient" class="org.openiam.idm.srvc.grp.ws.GroupDataWebService"
           factory-bean="groupServiceFactory" factory-method="create" lazy-init="false" />
     <bean id="groupServiceFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
