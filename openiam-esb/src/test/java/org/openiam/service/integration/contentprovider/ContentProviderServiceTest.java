@@ -77,6 +77,11 @@ public class ContentProviderServiceTest extends AbstractContentProviderServiceTe
 		cp.setAuthProviderId(getRandomName());
 		response = save(cp);
 		assertResponseCode(response, ResponseCode.AUTH_PROVIDER_NOT_SET);
+		
+		cp = createBean();
+		cp.setUnavailable(true);
+		response = save(cp);
+		assertResponseCode(response, ResponseCode.UNAVAILABLE_URL_REQUIRED);
 	}
 	
 	private void addServers(final int howMany, final Set<ContentProviderServer> serverSet) {

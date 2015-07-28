@@ -17,6 +17,7 @@ import org.openiam.thread.Sweepable;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -43,6 +44,7 @@ public class PropertyValueSweeperImpl implements Sweepable, PropertyValueSweeper
     private Map<String, PropertyValue> valueCache;
 	
 	@Override
+	@Scheduled(fixedRateString="${org.openiam.property.value.threadsweep}", initialDelayString="${org.openiam.property.value.threadsweep}")
 	public void sweep() {
 		TransactionTemplate transactionTemplate = new TransactionTemplate(platformTransactionManager);
         transactionTemplate.setPropagationBehavior(TransactionTemplate.PROPAGATION_REQUIRED);

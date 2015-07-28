@@ -34,8 +34,4 @@ public class UUIDGen {
 		String uuidStr = UUID.randomUUID().toString();
 		return  uuidStr.replaceAll("-", "");
 	}
-	
-	public static void main(String[] args) {
-		System.out.println("2rig uuid=" + UUIDGen.getUUID());
-	}
 }

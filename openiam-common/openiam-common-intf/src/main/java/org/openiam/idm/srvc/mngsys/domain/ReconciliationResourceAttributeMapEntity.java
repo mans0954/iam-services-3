@@ -30,8 +30,8 @@ public class ReconciliationResourceAttributeMapEntity implements
     @OneToOne(mappedBy = "reconResAttribute", orphanRemoval = true, cascade = CascadeType.ALL, optional = false)
     private AttributeMapEntity attributeMap;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "ATTR_POLICY_ID", nullable = false, updatable = true)
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "ATTR_POLICY_ID", nullable = true, updatable = true)
     private PolicyEntity attributePolicy;
 
     @ManyToOne(optional = true)

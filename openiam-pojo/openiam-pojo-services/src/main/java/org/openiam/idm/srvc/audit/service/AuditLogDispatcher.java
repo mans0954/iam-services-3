@@ -1,9 +1,13 @@
 package org.openiam.idm.srvc.audit.service;
 
-import java.util.*;
+import java.util.Enumeration;
+import java.util.LinkedList;
+import java.util.List;
 
-import javax.jms.*;
-import javax.jms.Queue;
+import javax.jms.JMSException;
+import javax.jms.ObjectMessage;
+import javax.jms.QueueBrowser;
+import javax.jms.Session;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.StopWatch;
@@ -37,10 +41,6 @@ public class AuditLogDispatcher implements Sweepable {
     private JmsTemplate jmsTemplate;
 
     @Autowired
-    @Qualifier(value = "logQueue")
-    private Queue queue;
-
-    @Autowired
     @Qualifier("transactionManager")
     private PlatformTransactionManager platformTransactionManager;
     private final Object mutex = new Object();
@@ -55,10 +55,9 @@ public class AuditLogDispatcher implements Sweepable {
     private IdmAuditLogCustomDozerConverter idmAuditLogCustomDozerConverter;
 
     @Override
-    //TODO change when Spring 3.2.2 @Scheduled(fixedDelayString = "${org.openiam.audit.threadsweep}")
-    @Scheduled(fixedDelay=10000)
+    @Scheduled(fixedRateString="${org.openiam.audit.threadsweep}", initialDelayString="${org.openiam.audit.threadsweep}")
     public void sweep() {
-        jmsTemplate.browse(queue, new BrowserCallback<Object>() {
+        jmsTemplate.browse("logQueue", new BrowserCallback<Object>() {
             @Override
             public Object doInJms(Session session, QueueBrowser browser) throws JMSException {
               synchronized (mutex){
@@ -72,7 +71,7 @@ public class AuditLogDispatcher implements Sweepable {
 
                         final List<IdmAuditLog> messageList = new LinkedList<>();
                         while (e.hasMoreElements()) {
-                            final IdmAuditLog messageObject = (IdmAuditLog) ((ObjectMessage) jmsTemplate.receive(queue)).getObject();
+                            final IdmAuditLog messageObject = (IdmAuditLog) ((ObjectMessage) jmsTemplate.receive("logQueue")).getObject();
 
                             messageList.add(messageObject);
                             if(messageList.size() > 100) {

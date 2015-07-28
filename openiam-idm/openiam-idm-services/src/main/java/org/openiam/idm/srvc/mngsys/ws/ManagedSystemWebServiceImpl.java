@@ -1,6 +1,6 @@
 package org.openiam.idm.srvc.mngsys.ws;
 
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -15,40 +15,23 @@ import org.openiam.am.srvc.domain.AuthProviderEntity;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.dozer.converter.*;
 import org.openiam.exception.BasicDataServiceException;
-import org.openiam.dozer.converter.ApproverAssociationDozerConverter;
-import org.openiam.dozer.converter.AttributeMapDozerConverter;
-import org.openiam.dozer.converter.DefaultReconciliationAttributeMapDozerConverter;
-import org.openiam.dozer.converter.ManagedSysDozerConverter;
-import org.openiam.dozer.converter.ManagedSysRuleDozerConverter;
-import org.openiam.dozer.converter.ManagedSystemObjectMatchDozerConverter;
-import org.openiam.dozer.converter.ResourcePropDozerConverter;
 import org.openiam.idm.searchbeans.AttributeMapSearchBean;
+import org.openiam.idm.searchbeans.MngSysPolicySearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
-import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
-import org.openiam.idm.srvc.mngsys.domain.AssociationType;
-import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
-import org.openiam.idm.srvc.mngsys.domain.DefaultReconciliationAttributeMapEntity;
-import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
-import org.openiam.idm.srvc.mngsys.domain.ManagedSysRuleEntity;
-import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
-import org.openiam.idm.srvc.mngsys.dto.ApproverAssocationSearchBean;
-import org.openiam.idm.srvc.mngsys.dto.ApproverAssociation;
-import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
-import org.openiam.idm.srvc.mngsys.dto.DefaultReconciliationAttributeMap;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSysRuleDto;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSysSearchBean;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
+import org.openiam.idm.srvc.mngsys.bean.ApproverAssocationSearchBean;
+import org.openiam.idm.srvc.mngsys.bean.MngSysPolicyBean;
+import org.openiam.idm.srvc.mngsys.domain.*;
+import org.openiam.idm.srvc.mngsys.dto.*;
 import org.openiam.idm.srvc.mngsys.searchbeans.converter.ApproverAssocationSearchBeanConverter;
 import org.openiam.idm.srvc.mngsys.searchbeans.converter.ManagedSystemSearchBeanConverter;
 import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
-import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.util.SSLCert;
 import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,9 +66,14 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     private KeyManagementService keyManagementService;
 
     @Autowired
+    private MngSysPolicyDozerConverter mngSysPolicyDozerConverter;
+
+    @Autowired
     private ManagedSysRuleDozerConverter managedSysRuleDozerConverter;
+
     @Autowired
     private ManagedSysDozerConverter managedSysDozerConverter;
+
     @Autowired
     private AttributeMapDozerConverter attributeMapDozerConverter;
 
@@ -154,12 +142,6 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
         return response;
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public List<AttributeMap> getAttributeMapsByManagedSysId(final String managedSysId) {
-        List<AttributeMapEntity> attributeMaps = managedSystemService.getAttributeMapsByManagedSysId(managedSysId);
-        return attributeMapDozerConverter.convertToDTOList(attributeMaps, true);
-    }
 
     @Override
     @Transactional(readOnly = true)
@@ -656,4 +638,57 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
         managedSystemService.deleteRules(ruleId);
     }
 
+    @Override
+    public void removeMngSysPolicy(String mngSysPolicyId) throws Exception {
+        managedSystemService.removeMngSysPolicy(mngSysPolicyId);
+    }
+
+    @Override
+    public List<AttributeMap> getAttributeMapsByMngSysPolicyId(String mngSysPolicyId) {
+        return managedSystemService.getAttributeMapsByMngSysPolicyId(mngSysPolicyId);
+    }
+
+    @Override
+    public MngSysPolicyDto getMngSysPolicyById(String mngSysPolicyId) {
+        MngSysPolicyEntity entity = managedSystemService.getManagedSysPolicyById(mngSysPolicyId);
+        return mngSysPolicyDozerConverter.convertToDTO(entity, true);
+    }
+
+    @Override
+    public MngSysPolicyBean getMngSysPolicyBeanById(String mngSysPolicyId) {
+        return new MngSysPolicyBean(getMngSysPolicyById(mngSysPolicyId));
+    }
+
+    @Override
+    public List<MngSysPolicyDto> getMngSysPoliciesByMngSysId(String mngSysId) {
+        return managedSystemService.getManagedSysPolicyByMngSysId(mngSysId);
+    }
+
+    @Override
+    public List<MngSysPolicyDto> findMngSysPolicies(MngSysPolicySearchBean searchBean, Integer from, Integer size) {
+        return managedSystemService.findMngSysPolicies(searchBean, from, size);
+    }
+
+    @Override
+    public List<MngSysPolicyBean> findMngSysPolicyBeans(MngSysPolicySearchBean searchBean, Integer from, Integer size) {
+        return managedSystemService.findMngSysPolicyBeans(searchBean, from, size);
+    }
+
+    @Override
+    public int getMngSysPoliciesCount(MngSysPolicySearchBean searchBean) {
+        return managedSystemService.getMngSysPoliciesCount(searchBean);
+    }
+
+    @Override
+    public Response saveMngSysPolicyBean(MngSysPolicyBean mngSysPolicy) {
+        Response res = new Response();
+        try {
+            res.setResponseValue(managedSystemService.saveMngSysPolicyBean(mngSysPolicy));
+            res.succeed();
+        } catch (BasicDataServiceException e) {
+            res.setErrorCode(e.getCode());
+            res.fail();
+        }
+        return res;
+    }
 }

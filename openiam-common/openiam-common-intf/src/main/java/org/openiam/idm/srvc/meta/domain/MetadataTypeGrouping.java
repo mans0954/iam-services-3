@@ -25,6 +25,7 @@ public enum MetadataTypeGrouping {
 	AD_GROUP_TYPE(false),
 	AD_GROUP_SCOPE(false),
 	RISK(false),
+	PROV_OBJECT(true),
 	OAUTH_CLIENT_AUTH_TYPE(false),
 	OAUTH_AUTH_GRANT(false);
 

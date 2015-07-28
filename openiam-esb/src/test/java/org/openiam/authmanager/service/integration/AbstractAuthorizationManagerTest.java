@@ -54,20 +54,6 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 	private Organization organization = null;
 	private Resource resource = null;
 	
-	private void assertSuccess(final Response response) {
-		Assert.assertTrue(response.isSuccess());
-	}
-	
-
-	protected Set<String> getRightIdsNotIn(final Set<String> rightIds) {
-		return accessRightServiceClient.findBeans(null, 0, Integer.MAX_VALUE, getDefaultLanguage())
-									   .stream()
-									   .map(e -> e.getId())
-									   .filter(e -> !rightIds.contains(e))
-									   .collect(Collectors.toSet());
-	}
-
-	
 	@BeforeClass
 	public void _init() {
 		user = super.createUser();
@@ -112,18 +98,6 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 		resourceDataService.deleteResource(resource.getId(), null);
 	}
 	
-	private Set<String> getRightIds() {
-		final List<AccessRight> rights = accessRightServiceClient.findBeans(null, 0, Integer.MAX_VALUE, getDefaultLanguage());
-		final Set<String> rightIds = rights.subList(0, rights.size() / 2).stream().map(e -> e.getId()).collect(Collectors.toSet());
-		return rightIds;
-	}
-	
-	private Set<String> getAllRightIds() {
-		final List<AccessRight> rights = accessRightServiceClient.findBeans(null, 0, Integer.MAX_VALUE, getDefaultLanguage());
-		final Set<String> rightIds = rights.stream().map(e -> e.getId()).collect(Collectors.toSet());
-		return rightIds;
-	}
-
 	@Test
 	public void testUser2ResourceDirect() {
 		doUser2ResourceAddition(user.getId(), resource.getId(), null);

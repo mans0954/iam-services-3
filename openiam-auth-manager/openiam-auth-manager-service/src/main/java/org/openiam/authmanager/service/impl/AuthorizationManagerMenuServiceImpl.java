@@ -45,6 +45,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.jmx.export.annotation.ManagedOperation;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
@@ -242,6 +243,7 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
 	
 	@Override
 	@Transactional
+	@Scheduled(fixedRateString="${org.openiam.authorization.manager.threadsweep}", initialDelayString="${org.openiam.authorization.manager.threadsweep}")
     //@ManagedOperation(description="sweep the Menu Cache")
 	public void sweep() {
 		final StopWatch sw = new StopWatch();
@@ -591,7 +593,7 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
             if(CollectionUtils.isNotEmpty(menuEntitlementsRequest.getDisentitled())) {
             	final List<ResourceEntity> resourceEntities = resourceDAOHibernate.findByIds(menuEntitlementsRequest.getDisentitled());
                 for(final ResourceEntity resourceEntity : resourceEntities) {
-                	role.addResource(resourceEntity, null);
+                	role.removeResource(resourceEntity);
                 }
 
             }

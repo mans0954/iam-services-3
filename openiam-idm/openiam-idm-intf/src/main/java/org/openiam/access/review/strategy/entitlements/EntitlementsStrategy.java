@@ -105,29 +105,30 @@ public abstract class EntitlementsStrategy {
     }
 
     public Set<String> getUserEntitlements(){
+    	/*
         if(CollectionUtils.isEmpty(userEntitlementCache)){
             userEntitlementCache = new HashSet<String>();
 
-            /* compile groups */
+            // compile groups
             final Set<String> compiledGroups = getCompiledGroups();
 
-            /* compile roles */
+            // compile roles
             final Set<String> compiledRoles = getCompiledRoles(compiledGroups);
 
-            /* get all resources for the compiled roles */
+            // get all resources for the compiled roles
             final Set<String> resourcesForCompiledRoles = getResourcesForRoles(compiledRoles, accessReviewData.getMatrix().getRoleToResourceMap());
 
-            /* get all resources for the compiled groups */
+            // get all resources for the compiled groups
             final Set<String> resourcesForCompiledGroups = getResourcesForGroups(compiledGroups, accessReviewData.getMatrix().getGroupToResourceMap());
 
-            /* compiles resources for groups and roles */
+            // compiles resources for groups and roles
             final Set<String> compiledResources = new HashSet<String>();
             userEntitlementCache.addAll(getCompiledResources(resourcesForCompiledRoles, accessReviewData.getMatrix().getChildResToParentResMap()));
             userEntitlementCache.addAll(getCompiledResources(resourcesForCompiledGroups, accessReviewData.getMatrix().getChildResToParentResMap()));
             userEntitlementCache.addAll(resourcesForCompiledGroups);
             userEntitlementCache.addAll(resourcesForCompiledRoles);
 
-            /* set the direct resources, and add any indirect resources to the compiled set */
+            // set the direct resources, and add any indirect resources to the compiled set
             if(CollectionUtils.isNotEmpty(accessReviewData.getMatrix().getResourceIds())) {
                 final Set<String> directResources = accessReviewData.getMatrix().getResourceIds();
                 userEntitlementCache.addAll(directResources);
@@ -135,6 +136,7 @@ public abstract class EntitlementsStrategy {
             }
         }
         return userEntitlementCache;
+        */ return null;
     }
 
     protected Set<String> getCompiledResourcesForGroups(){
@@ -160,9 +162,10 @@ public abstract class EntitlementsStrategy {
     }
 
     protected Set<String> getCompiledResourcesForGroup(String groupId){
+    	/*
         if(!group2ResCache.containsKey(groupId)){
             Set<String> retVal = new HashSet<String>();
-            /* compile roles */
+            //compile roles
             final Set<String> compiledRoles = new HashSet<String>();
             if(this.accessReviewData.getMatrix().getGroupToRoleMap().containsKey(groupId)) {
                 final Set<String> visitedSet = new HashSet<String>();
@@ -171,22 +174,22 @@ public abstract class EntitlementsStrategy {
                     compiledRoles.addAll(compileRoles(roleId, this.accessReviewData.getMatrix().getChildRoleToParentRoleMap(), visitedSet));
                 }
             }
-            /* compile the groups for this group */
+            //compile the groups for this group
             final Set<String> compiledGroups = compileGroups(groupId, this.accessReviewData.getMatrix().getChildGroupToParentGroupMap(), new HashSet<String>());
-            /* compiles the roles for compiled groups */
+            //compiles the roles for compiled groups
             compiledRoles.addAll(getRolesForGroups(compiledGroups, this.accessReviewData.getMatrix().getGroupToRoleMap()));
-            /* get all resources for the compiled roles */
+            //get all resources for the compiled roles
             final Set<String> resourcesForCompiledRoles = getResourcesForRoles(compiledRoles, this.accessReviewData.getMatrix().getRoleToResourceMap());
-            /* get all resources for the compiled groups */
+            //get all resources for the compiled groups
             final Set<String> resourcesForCompiledGroups = getResourcesForGroups(compiledGroups, this.accessReviewData.getMatrix().getGroupToResourceMap());
 
-            /* compiles resources for groups and roles */
+            //compiles resources for groups and roles
             retVal.addAll(getCompiledResources(resourcesForCompiledRoles, this.accessReviewData.getMatrix().getChildResToParentResMap()));
             retVal.addAll(getCompiledResources(resourcesForCompiledGroups, this.accessReviewData.getMatrix().getChildResToParentResMap()));
             retVal.addAll(resourcesForCompiledGroups);
             retVal.addAll(resourcesForCompiledRoles);
 
-            /* set the direct resources, and add any indirect resources to the compiled set */
+            //set the direct resources, and add any indirect resources to the compiled set
             if(this.accessReviewData.getMatrix().getGroupToResourceMap().containsKey(groupId)) {
                 final Set<String> directResources = this.accessReviewData.getMatrix().getGroupToResourceMap().get(groupId);
                 retVal.addAll(directResources);
@@ -195,21 +198,23 @@ public abstract class EntitlementsStrategy {
             group2ResCache.put(groupId, retVal);
         }
         return group2ResCache.get(groupId);
+        */ return null;
     }
 
     protected Set<String> getCompiledResourcesForRole(String roleId){
+    	/*
         if(!role2ResCache.containsKey(roleId)){
             Set<String> retVal = new HashSet<String>();
-            /* compile the roles for this role */
+            //compile the roles for this role
             final Set<String> compiledRoles = compileRoles(roleId, this.accessReviewData.getMatrix().getChildRoleToParentRoleMap(), new HashSet<String>());
-            /* get all resources for the compiled roles */
+            //get all resources for the compiled roles
             final Set<String> resourcesForCompiledRoles = getResourcesForRoles(compiledRoles, this.accessReviewData.getMatrix().getRoleToResourceMap());
 
-            /*get all child resources for the already-compiled resoruces */
+            //get all child resources for the already-compiled resoruces
             final Set<String> compiledResources = getCompiledResources(resourcesForCompiledRoles, this.accessReviewData.getMatrix().getChildResToParentResMap());
             retVal.addAll(compiledResources);
 
-            /* set the direct resources, and add any indirect resources to the compiled set */
+            //set the direct resources, and add any indirect resources to the compiled set
             if(this.accessReviewData.getMatrix().getRoleToResourceMap().containsKey(roleId)) {
                 final Set<String> directResources = this.accessReviewData.getMatrix().getRoleToResourceMap().get(roleId);
                 retVal.addAll(directResources);
@@ -219,9 +224,11 @@ public abstract class EntitlementsStrategy {
             role2ResCache.put(roleId, retVal);
         }
         return role2ResCache.get(roleId);
+        */ return null;
     }
 
     protected Set<String> getCompiledGroups(){
+    	/*
         final Set<String> compiledGroups = new HashSet<String>();
         final Set<String> visitedGroupSet = new HashSet<String>();
 
@@ -235,9 +242,11 @@ public abstract class EntitlementsStrategy {
             compiledGroups.addAll(accessReviewData.getMatrix().getGroupIds());
         }
         return compiledGroups;
+        */ return null;
     }
 
     protected Set<String> getCompiledGroupsForResource(String resourceId){
+    	/*
         final Set<String> compiledGroups = new HashSet<String>();
         final Set<String> visitedGroupSet = new HashSet<String>();
         if(accessReviewData.getMatrix().getResourceToGroupMap().containsKey(resourceId)){
@@ -251,12 +260,14 @@ public abstract class EntitlementsStrategy {
         if(CollectionUtils.isNotEmpty(accessReviewData.getMatrix().getGroupIds()))
             compiledGroups.addAll(accessReviewData.getMatrix().getGroupIds());
         return compiledGroups;
+        */ return null;
     }
 
     protected Set<String> getCompiledRoles(){
         return getCompiledRoles(null);
     }
     protected Set<String> getCompiledRoles(Set<String> compiledGroups){
+    	/*
         if(CollectionUtils.isEmpty(compiledGroups)){
             compiledGroups = getCompiledGroups();
         }
@@ -282,13 +293,16 @@ public abstract class EntitlementsStrategy {
                 }
             }
         }
-            /* compiles the roles for compiled groups */
+            
+        //compiles the roles for compiled groups
         compiledRoles.addAll(getRolesForGroups(compiledGroups, accessReviewData.getMatrix().getGroupToRoleMap()));
 
         return compiledRoles;
+        */ return null;
     }
 
     protected Set<String> getCompiledRolesForResource(String resourceId){
+    	/*
          final Set<String> compiledRoles = new HashSet<String>();
          final Set<String> visitedRoleSet = new HashSet<String>();
          if(accessReviewData.getMatrix().getResourceToRoleMap().containsKey(resourceId)){
@@ -300,6 +314,7 @@ public abstract class EntitlementsStrategy {
              }
          }
         return compiledRoles;
+        */ return null;
     }
 
     private Set<String> compileGroups(String groupId, Map<String, Set<String>> groupToGroupMap,

@@ -1,12 +1,13 @@
 package org.openiam.idm.srvc.mngsys.service;
 
 import org.openiam.am.srvc.domain.AuthProviderEntity;
+import org.openiam.base.ws.Response;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.AttributeMapSearchBean;
+import org.openiam.idm.searchbeans.MngSysPolicySearchBean;
+import org.openiam.idm.srvc.mngsys.bean.MngSysPolicyBean;
 import org.openiam.idm.srvc.mngsys.domain.*;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSysSearchBean;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
+import org.openiam.idm.srvc.mngsys.dto.*;
 
 import java.util.List;
 
@@ -18,6 +19,20 @@ public interface ManagedSystemService {
     Integer getManagedSystemsCountByExample(ManagedSysEntity example);
 
     ManagedSysEntity getManagedSysById(String id);
+
+    MngSysPolicyEntity getManagedSysPolicyById(String id);
+
+    List<MngSysPolicyDto> getManagedSysPolicyByMngSysId(String mngSysId);
+
+    MngSysPolicyDto getManagedSysPolicyByMngSysIdAndMetadataType(String mngSysId, String metadataTypeId);
+
+    List<MngSysPolicyDto> findMngSysPolicies(MngSysPolicySearchBean searchBean, Integer from, Integer size);
+
+    List<MngSysPolicyBean> findMngSysPolicyBeans(MngSysPolicySearchBean searchBean, Integer from, Integer size);
+
+    String saveMngSysPolicyBean(MngSysPolicyBean mngSysPolicy) throws BasicDataServiceException;
+
+    int getMngSysPoliciesCount(MngSysPolicySearchBean searchBean);
 
     List<ManagedSysEntity> getManagedSysByConnectorId(String connectorId);
 
@@ -45,7 +60,9 @@ public interface ManagedSystemService {
 
     List<AttributeMapEntity> getResourceAttributeMaps(String resourceId);
 
-    List<AttributeMapEntity> getAttributeMapsByManagedSysId(String managedSysId);
+    void removeMngSysPolicy(String mngSysPolicyId) throws BasicDataServiceException ;
+
+    List<AttributeMap> getAttributeMapsByMngSysPolicyId(String mngSysPolicyId);
 
     List<AttributeMapEntity> getResourceAttributeMaps(AttributeMapSearchBean searchBean);
 

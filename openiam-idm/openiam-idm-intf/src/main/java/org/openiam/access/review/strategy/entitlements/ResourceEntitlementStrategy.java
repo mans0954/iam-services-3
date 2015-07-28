@@ -69,16 +69,20 @@ public class ResourceEntitlementStrategy extends EntitlementsStrategy {
 
     @Override
     public Set<AccessViewBean> getResources(AccessViewBean parent) {
+    	/*
         if(parent==null){
             return getResourceBeans(this.getUserEntitlements());
         }
         return getResourceBeans(accessReviewData.getMatrix().getResourceToResourceMap().get(parent.getId()));
+        */ return null;
     }
 
     @Override
     public boolean isDirectEntitled(AbstractAuthorizationEntity entity){
+    	/*
         if(CollectionUtils.isNotEmpty(this.accessReviewData.getMatrix().getResourceIds()))
             return this.accessReviewData.getMatrix().getResourceIds().contains(entity.getId());
         return false;
+        */ return false;
     }
 }

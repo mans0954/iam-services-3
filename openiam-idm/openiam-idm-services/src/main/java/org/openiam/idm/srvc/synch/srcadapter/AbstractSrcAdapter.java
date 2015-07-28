@@ -52,7 +52,7 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
 
     private static final Log log = LogFactory.getLog(AbstractSrcAdapter.class);
 
-    @Autowired
+    @Value("${org.openiam.idm.system.user.id}")
     protected String systemAccount;
     @Autowired
     protected UserDataWebService userDataWebService;

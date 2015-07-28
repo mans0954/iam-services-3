@@ -2,20 +2,17 @@ package org.openiam.http.client;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -35,7 +32,7 @@ import org.springframework.stereotype.Component;
 @Component("httpClientHelper")
 public final class OpenIAMHttpClient {
 	
-	private static Logger LOG = Logger.getLogger(OpenIAMHttpClient.class);
+	private static final Log LOG = LogFactory.getLog(OpenIAMHttpClient.class);
 	
 	@Value("${org.openiam.http.client.max.per.route}")
 	private int maxNumOfConnectionsPerHost;

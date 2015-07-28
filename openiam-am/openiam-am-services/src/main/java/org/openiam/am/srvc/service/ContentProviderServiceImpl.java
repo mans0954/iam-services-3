@@ -188,6 +188,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
             resource.setURL(cpURL);
             resourceDao.save(resource);
             
+            provider.setUnavailableResource(generateUnavailableResource(provider, cpURL));
             provider.setResource(resource);
             
             final Set<AuthLevelGroupingContentProviderXrefEntity> incomingXrefs = provider.getGroupingXrefs();
@@ -212,6 +213,14 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
         		provider.getResource().setCoorelatedName(provider.getName());
         		provider.setPatternSet(dbEntity.getPatternSet());
         		
+        		provider.setUnavailableResource(dbEntity.getUnavailableResource());
+        		if(provider.getUnavailableResource() == null) {
+        			provider.setUnavailableResource(generateUnavailableResource(provider, cpURL));
+        		} else {
+        			provider.getUnavailableResource().setURL(cpURL);
+        			provider.getUnavailableResource().setCoorelatedName(String.format("%s - Unavailable Resource", provider.getName()));
+        		}
+        		
         		if(CollectionUtils.isNotEmpty(provider.getGroupingXrefs())) {
         			
         			provider.getGroupingXrefs().forEach(xref -> {
@@ -225,6 +234,19 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
         		contentProviderDao.merge(provider);
         	}
         }
+    }
+    
+    private ResourceEntity generateUnavailableResource(final ContentProviderEntity provider, final String cpURL) {
+    	final ResourceTypeEntity resourceType = resourceTypeDAO.findById(resourceTypeId);
+    	final ResourceEntity resource = new ResourceEntity();
+        resource.setName(resourceTypeId+"_"+provider.getName() + "_" + System.currentTimeMillis());
+        resource.setResourceType(resourceType);
+        resource.setId(null);
+        resource.setIsPublic(false);
+        resource.setCoorelatedName(String.format("%s - Unavailable Resource", provider.getName()));
+        resource.setURL(cpURL);
+        resourceDao.save(resource);
+        return resource;
     }
     
     @Override

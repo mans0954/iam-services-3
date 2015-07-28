@@ -981,6 +981,18 @@
 			<a>uiTheme.id</a>
 			<b>themeId</b>
 		</field>
+		<field>
+			<a>unavailableResource.id</a>
+			<b>unavailableResourceId</b>
+		</field>
+		<field>
+			<a>unavailableResource.name</a>
+			<b>unavailableResourceName</b>
+		</field>
+		<field>
+			<a>unavailableResource.coorelatedName</a>
+			<b>unavailableResourceCoorelatedName</b>
+		</field>
     </mapping>
 
     <mapping>

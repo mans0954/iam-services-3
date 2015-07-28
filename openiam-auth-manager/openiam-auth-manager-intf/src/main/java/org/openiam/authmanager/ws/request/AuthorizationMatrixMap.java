@@ -13,32 +13,28 @@ import javax.xml.bind.annotation.XmlType;
 })
 public class AuthorizationMatrixMap {
 
-	private List<AuthorizationMatrixEntry> entries;
+private List<AuthorizationMatrixMapEntry> entries;
 	
-	public List<AuthorizationMatrixEntry> getEntries() {
+	public List<AuthorizationMatrixMapEntry> getEntries() {
 		return entries;
 	}
 	
-	
-	
-	public void setEntries(List<AuthorizationMatrixEntry> entries) {
+	public void setEntries(List<AuthorizationMatrixMapEntry> entries) {
 		this.entries = entries;
 	}
-
-
-
+	
 	@XmlAccessorType(XmlAccessType.FIELD)
-    @XmlType(name = "AuthorizationMatrixEntry", propOrder = {
+    @XmlType(name = "AuthorizationMatrixMapEntry", propOrder = {
     	"key",
     	"values"
     })
-    public static class AuthorizationMatrixEntry {
+    public static class AuthorizationMatrixMapEntry {
 		private String key;
 		private Set<String> values;
 		
-		public AuthorizationMatrixEntry() {} 
+		public AuthorizationMatrixMapEntry() {} 
 		
-		public AuthorizationMatrixEntry(final String key, final Set<String> values) {
+		public AuthorizationMatrixMapEntry(final String key, final Set<String> values) {
 			this.key = key;
 			this.values = values;
 		}

@@ -2,6 +2,10 @@ package org.openiam.idm.srvc.synch.service.generic;
 
 import java.util.*;
 
+import javax.annotation.PostConstruct;
+
+import org.springframework.stereotype.Component;
+
 /**
  * Provides a map of Adapters for each type of Object.
  * User: suneetshah
@@ -9,26 +13,19 @@ import java.util.*;
  * Time: 3:12 PM
  * To change this template use File | Settings | File Templates.
  */
+@Component("adapterMap")
 public class ObjectAdapterMap {
-    Map adapterMap;
-
-    public Map getAdapterMap() {
-        return adapterMap;
-    }
-
-    public void setAdapterMap(Map adapterMap) {
-        this.adapterMap = adapterMap;
-    }
+	
+	@PostConstruct
+	public void init() {
+		adapterMap = new HashMap<String, String>();
+		adapterMap.put("GROUP", "/sync/generic/GroupAdapter.groovy");
+	}
+	
+    private Map<String, String> adapterMap;
 
     public String getHandlerName(String key) {
-        return (String)adapterMap.get(key);
+        return adapterMap.get(key);
 
-    }
-
-    @Override
-    public String toString() {
-        return "ObjectAdapterMap{" +
-                "adapterMap=" + adapterMap +
-                '}';
     }
 }

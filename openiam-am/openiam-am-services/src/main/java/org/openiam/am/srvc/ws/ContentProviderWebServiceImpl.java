@@ -255,6 +255,13 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
             	throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_SERVER_REQUIRED);
             }
             
+
+            if(provider.isUnavailable()) {
+            	if(StringUtils.isBlank(provider.getUnavailableURL())) {
+            		throw new BasicDataServiceException(ResponseCode.UNAVAILABLE_URL_REQUIRED);
+            	}
+            }
+            
             for(final ContentProviderServer server : provider.getServerSet()) {
             	if(StringUtils.isEmpty(server.getServerURL())) {
             		throw new  BasicDataServiceException(ResponseCode.SERVER_URL_NOT_SET);

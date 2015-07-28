@@ -15,10 +15,8 @@ import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.auth.dto.ProvLoginStatusEnum;
-import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
-import org.openiam.idm.srvc.mngsys.dto.PolicyMapObjectTypeOptions;
+import org.openiam.idm.srvc.mngsys.dto.*;
+import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
@@ -41,6 +39,9 @@ import java.util.*;
 public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
     @Autowired
     ProvisionServiceUtil provisionServiceUtil;
+
+    @Autowired
+    protected ManagedSystemService managedSystemService;
 
     public ProvisionUserResponse provisionSelectedResources(final List<String> userIds, final String requestorUserId, final Collection<String> resourceList) {
         final List<ProvisionDataContainer> dataList = new LinkedList<>();
@@ -313,8 +314,8 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
      * @return
      */
     public ExtensibleUser buildFromRules(String managedSysId, Map<String, Object> bindingMap) {
-
-        List<AttributeMap> attrMap = managedSysService.getAttributeMapsByManagedSysId(managedSysId);
+        MngSysPolicyDto mngSysPolicy = managedSystemService.getManagedSysPolicyByMngSysIdAndMetadataType(managedSysId, "USER_OBJECT");
+        List<AttributeMap> attrMap = managedSystemService.getAttributeMapsByMngSysPolicyId(mngSysPolicy.getId());
 
         ExtensibleUser extUser = new ExtensibleUser();
 
@@ -438,7 +439,8 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
      * @return
      */
     public ExtensibleUser buildEmptyAttributesExtensibleUser(String managedSysId) {
-        List<AttributeMap> attrMap = managedSysService.getAttributeMapsByManagedSysId(managedSysId);
+        MngSysPolicyDto mngSysPolicy = managedSystemService.getManagedSysPolicyByMngSysIdAndMetadataType(managedSysId, "USER_OBJECT");
+        List<AttributeMap> attrMap = managedSystemService.getAttributeMapsByMngSysPolicyId(mngSysPolicy.getId());
         ExtensibleUser extUser = new ExtensibleUser();
         if (attrMap != null) {
             for (AttributeMap attr : attrMap) {
