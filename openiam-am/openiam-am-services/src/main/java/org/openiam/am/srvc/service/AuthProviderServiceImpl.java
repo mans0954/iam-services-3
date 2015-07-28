@@ -1,5 +1,6 @@
 package org.openiam.am.srvc.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
@@ -7,23 +8,37 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.am.srvc.dao.*;
 import org.openiam.am.srvc.domain.*;
-import org.openiam.am.srvc.dto.AuthProviderType;
+import org.openiam.am.srvc.dozer.converter.AuthProviderDozerConverter;
+import org.openiam.am.srvc.dozer.converter.OAuthCodeDozerConverter;
+import org.openiam.am.srvc.dozer.converter.OAuthTokenDozerConverter;
+import org.openiam.am.srvc.dozer.converter.OAuthUserClientXrefDozerConverter;
+import org.openiam.am.srvc.dto.*;
 import org.openiam.am.srvc.searchbeans.AuthProviderSearchBean;
+import org.openiam.authmanager.common.model.ResourceAuthorizationRight;
+import org.openiam.authmanager.service.AuthorizationManagerService;
 import org.openiam.base.ws.ResponseCode;
+import org.openiam.dozer.converter.ResourceDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
+import org.openiam.idm.searchbeans.ResourceSearchBean;
+import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
 import org.openiam.idm.srvc.policy.service.PolicyDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
+import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.res.service.ResourceService;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
+import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.idm.srvc.user.service.UserDataService;
+import org.openiam.internationalization.LocalizedServiceGet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service("authProviderService")
 public class AuthProviderServiceImpl implements AuthProviderService {
@@ -46,6 +61,30 @@ public class AuthProviderServiceImpl implements AuthProviderService {
     
     @Autowired
     private PolicyDAO policyDAO;
+
+    @Autowired
+    private AuthProviderDozerConverter authProviderDozerConverter;
+
+    @Autowired
+    private ResourceDozerConverter resourceDozerConverter;
+
+    @Autowired
+    private AuthorizationManagerService authorizationManagerService;
+    @Autowired
+    private OAuthUserClientXrefDao oauthUserClientXrefDao;
+    @Autowired
+    private UserDataService userDataService;
+    @Autowired
+    private OAuthUserClientXrefDozerConverter oauthUserClientXrefDozerConverter;
+    @Autowired
+    private OAuthTokenDozerConverter oauthTokenDozerConverter;
+    @Autowired
+    private OAuthTokenDao oAuthTokenDao;
+
+    @Autowired
+    private OAuthCodeDozerConverter oauthCodeDozerConverter;
+    @Autowired
+    private OAuthCodeDao oAuthCodeDao;
 
     /*
     *==================================================
@@ -253,7 +292,124 @@ public class AuthProviderServiceImpl implements AuthProviderService {
     *===================================================
     */
     @Override
-    public AuthProviderEntity getOAuthClient(final String clientId){
-        return authProviderDao.getOAuthClient(clientId);
+    public AuthProvider getOAuthClient(final String clientId){
+        return authProviderDozerConverter.convertToDTO(authProviderDao.getOAuthClient(clientId), true);
+    }
+
+    @Override
+    @LocalizedServiceGet
+    public List<Resource> getScopesForAuthrorization(String clientId, String userId, Language language){
+        AuthProvider provider = getOAuthClient(clientId);
+        Set<String> clientScopesIds = null;
+        if(CollectionUtils.isNotEmpty(provider.getAttributes())) {
+            AuthProviderAttribute scopes =  provider.getAttributes().stream().filter(attr -> "OAuthClientScopes".equals(attr.getAttributeId())).findFirst().get();
+            if(scopes !=null && StringUtils.isNotBlank(scopes.getValue())){
+                clientScopesIds = new HashSet<>(Arrays.asList(scopes.getValue().split(","))).stream().filter(str -> StringUtils.isNotBlank(str)).collect(Collectors.toSet());
+            }
+        }
+        // get user resource
+        Set<ResourceAuthorizationRight>  userResources = authorizationManagerService.getResourcesForUser(userId);
+        Set<String> userResourceIds = null;
+        if(CollectionUtils.isNotEmpty(userResources)) {
+            userResourceIds = userResources.stream().map(res->res.getEntity().getId()).collect(Collectors.toSet());
+        }
+
+        if(CollectionUtils.isNotEmpty(clientScopesIds) && CollectionUtils.isNotEmpty(userResourceIds)){
+            //
+            clientScopesIds.retainAll(userResourceIds);
+
+            List<OAuthUserClientXrefEntity> authorizedResources = oauthUserClientXrefDao.getByClientAndUser(clientId, userId);
+            if(CollectionUtils.isNotEmpty(authorizedResources)){
+                Set<String> authorizedResourcesIds = authorizedResources.stream().map(xref -> xref.getScope().getId()).collect(Collectors.toSet());
+                clientScopesIds.removeAll(authorizedResourcesIds);
+            }
+
+            return  resourceDozerConverter.convertToDTOList(resourceService.findResourcesByIds(clientScopesIds), false);
+        }
+        return null;
+    }
+
+
+    public void saveClientScopeAuthorization(String providerId, String userId, List<OAuthUserClientXref> oauthUserClientXrefList) throws BasicDataServiceException {
+        AuthProviderEntity client = this.getAuthProvider(providerId);
+        UserEntity user = userDataService.getUser(userId);
+
+        if(client==null)
+            throw new BasicDataServiceException(ResponseCode.OAUTH_CLIENT_NOT_FOUND);
+
+        if(CollectionUtils.isNotEmpty(oauthUserClientXrefList)){
+            List<OAuthUserClientXrefEntity> xrefEntityList =  oauthUserClientXrefDozerConverter.convertToEntityList(oauthUserClientXrefList, true);
+
+            for(OAuthUserClientXrefEntity xref:xrefEntityList){
+                xref.setClient(client);
+                xref.setUser(user);
+                xref.setScope(resourceService.findResourceById(xref.getScope().getId()));
+            }
+            oauthUserClientXrefDao.save(xrefEntityList);
+        }
+    }
+
+    public OAuthCode saveOAuthCode(OAuthCode oAuthCode){
+        OAuthCodeEntity entity = oauthCodeDozerConverter.convertToEntity(oAuthCode, true);
+        OAuthCodeEntity entityDb = oAuthCodeDao.getByClientAndUser(oAuthCode.getClientId(), oAuthCode.getUserId());
+
+        if(entityDb==null){
+            entity.setClient(this.getAuthProvider(oAuthCode.getClientId()));
+            entity.setUser(userDataService.getUser(oAuthCode.getUserId()));
+            entity.setCode(oAuthCode.getCode());
+            entity.setExpiredOn(oAuthCode.getExpiredOn());
+            entity.setRedirectUrl(oAuthCode.getRedirectUrl());
+            oAuthCodeDao.save(entity);
+        } else {
+            if(StringUtils.isNotBlank(oAuthCode.getCode())){
+                entityDb.setCode(oAuthCode.getCode());
+                entityDb.setExpiredOn(oAuthCode.getExpiredOn());
+            }
+            if(StringUtils.isNotBlank(oAuthCode.getRedirectUrl())){
+                entityDb.setRedirectUrl(oAuthCode.getRedirectUrl());
+            }
+            oAuthCodeDao.merge(entityDb);
+        }
+
+        return getOAuthCode(oAuthCode.getClientId(), oAuthCode.getUserId());
+    }
+
+    public OAuthCode getOAuthCode(String providerId, String userId){
+        return oauthCodeDozerConverter.convertToDTO(oAuthCodeDao.getByClientAndUser(providerId, userId), true);
+    }
+    public OAuthCode getOAuthCode(String code){
+        return oauthCodeDozerConverter.convertToDTO(oAuthCodeDao.getByCode(code), true);
+    }
+
+    public OAuthToken saveOAuthToken(OAuthToken oAuthToken){
+        OAuthTokenEntity entity = oauthTokenDozerConverter.convertToEntity(oAuthToken, true);
+        OAuthTokenEntity entityDb = null;
+
+        if(StringUtils.isNotBlank(oAuthToken.getToken())){
+            entityDb = oAuthTokenDao.getByAccessToken(oAuthToken.getToken());
+        } else if(StringUtils.isNotBlank(oAuthToken.getRefreshToken())){
+            entityDb = oAuthTokenDao.getByRefreshToken(oAuthToken.getRefreshToken());
+        }
+
+
+        if(entityDb==null){
+            entity.setClient(this.getAuthProvider(oAuthToken.getClientId()));
+            entity.setUser(userDataService.getUser(oAuthToken.getUserId()));
+            entity.setToken(oAuthToken.getToken());
+            entity.setExpiredOn(oAuthToken.getExpiredOn());
+            entity.setRefreshToken(oAuthToken.getRefreshToken());
+            oAuthTokenDao.save(entity);
+        } else {
+            if(StringUtils.isNotBlank(oAuthToken.getToken())){
+                entityDb.setToken(oAuthToken.getToken());
+                entityDb.setExpiredOn(oAuthToken.getExpiredOn());
+            }
+            if(StringUtils.isNotBlank(oAuthToken.getRefreshToken())) {
+                entityDb.setRedirectUrl(oAuthToken.getRefreshToken());
+            }
+            oAuthTokenDao.merge(entityDb);
+        }
+
+        return oauthTokenDozerConverter.convertToDTO(oAuthTokenDao.getByAccessToken(oAuthToken.getToken()), true);
     }
 }

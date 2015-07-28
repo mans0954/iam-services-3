@@ -12,6 +12,7 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -31,6 +32,8 @@ import org.openiam.elasticsearch.constants.Index;
 import org.openiam.idm.srvc.access.domain.AccessRightEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.membership.domain.AbstractMembershipXrefEntity;
+import org.openiam.idm.srvc.membership.domain.GroupAwareMembershipXref;
+import org.openiam.idm.srvc.membership.domain.OrganizationAwareMembershipXref;
 import org.openiam.idm.srvc.org.dto.GroupToOrgMembershipXref;
 
 @Entity
@@ -40,7 +43,7 @@ import org.openiam.idm.srvc.org.dto.GroupToOrgMembershipXref;
 @DozerDTOCorrespondence(GroupToOrgMembershipXref.class)
 @ElasticsearchIndex(indexName = ESIndexName.GRP_TO_ORG_XREF)
 @ElasticsearchMapping(typeName = ESIndexType.GRP_TO_ORG_XREF)
-public class GroupToOrgMembershipXrefEntity extends AbstractMembershipXrefEntity<OrganizationEntity, GroupEntity> {
+public class GroupToOrgMembershipXrefEntity extends AbstractMembershipXrefEntity<OrganizationEntity, GroupEntity> implements GroupAwareMembershipXref, OrganizationAwareMembershipXref {
 
 	@ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "COMPANY_ID", referencedColumnName = "COMPANY_ID", insertable = true, updatable = false, nullable=false)
@@ -75,6 +78,18 @@ public class GroupToOrgMembershipXrefEntity extends AbstractMembershipXrefEntity
 	public void setMemberEntity(GroupEntity memberEntity) {
 		this.memberEntity = memberEntity;
 	}
+	
+	@Override
+	@Transient
+	public GroupEntity getGroup() {
+		return memberEntity;
+	}
+
+	@Override
+	@Transient
+	public OrganizationEntity getOrganization() {
+		return entity;
+	}	
 
 	public Set<AccessRightEntity> getRights() {
 		return rights;
@@ -121,6 +136,4 @@ public class GroupToOrgMembershipXrefEntity extends AbstractMembershipXrefEntity
 			return false;
 		return true;
 	}
-
-	
 }

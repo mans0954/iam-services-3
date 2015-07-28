@@ -31,6 +31,8 @@ import org.openiam.elasticsearch.constants.Index;
 import org.openiam.idm.srvc.access.domain.AccessRightEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.membership.domain.AbstractMembershipXrefEntity;
+import org.openiam.idm.srvc.membership.domain.OrganizationAwareMembershipXref;
+import org.openiam.idm.srvc.membership.domain.RoleAwareMembershipXref;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 
 @Entity
@@ -39,7 +41,7 @@ import org.openiam.idm.srvc.role.domain.RoleEntity;
 @AttributeOverride(name = "id", column = @Column(name = "MEMBERSHIP_ID"))
 @ElasticsearchIndex(indexName = ESIndexName.ROLE_TO_ORG_XREF)
 @ElasticsearchMapping(typeName = ESIndexType.ROLE_TO_ORG_XREF)
-public class RoleToOrgMembershipXrefEntity extends AbstractMembershipXrefEntity<OrganizationEntity, RoleEntity> {
+public class RoleToOrgMembershipXrefEntity extends AbstractMembershipXrefEntity<OrganizationEntity, RoleEntity> implements OrganizationAwareMembershipXref, RoleAwareMembershipXref {
 
 	@ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "COMPANY_ID", referencedColumnName = "COMPANY_ID", insertable = true, updatable = false, nullable=false)
@@ -58,6 +60,17 @@ public class RoleToOrgMembershipXrefEntity extends AbstractMembershipXrefEntity<
             inverseJoinColumns = {@JoinColumn(name = "ACCESS_RIGHT_ID")})
     @Fetch(FetchMode.SUBSELECT)
     private Set<AccessRightEntity> rights;
+    
+	@Override
+	public RoleEntity getRole() {
+		return memberEntity;
+	}
+
+	@Override
+	public OrganizationEntity getOrganization() {
+		return entity;
+	}
+    
 
 	public OrganizationEntity getEntity() {
 		return entity;
@@ -120,6 +133,5 @@ public class RoleToOrgMembershipXrefEntity extends AbstractMembershipXrefEntity<
 			return false;
 		return true;
 	}
-    
     
 }

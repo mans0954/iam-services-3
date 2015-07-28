@@ -44,6 +44,7 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 			final ResourceSearchBean resourceSearchBean = (ResourceSearchBean)searchBean;
 			ResourceEntity example = resourceSearchBeanConverter.convert(resourceSearchBean);
 			example.setId(null);
+			example.setResourceType(null);
 			criteria = getExampleCriteria(example);
 			addSearchBeanCriteria(criteria, resourceSearchBean);
 		}
@@ -160,6 +161,9 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 
 			if(Boolean.TRUE.equals(searchBean.getRootsOnly())) {
 				criteria.add(Restrictions.isEmpty("parentResources"));
+			}
+			if(CollectionUtils.isNotEmpty(searchBean.getResourceTypeIdSet())) {
+				criteria.add(Restrictions.in("resourceType.id", searchBean.getResourceTypeIdSet()));
 			}
 			
 			if(CollectionUtils.isNotEmpty(searchBean.getExcludeResourceTypes())) {

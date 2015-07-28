@@ -2,7 +2,9 @@ package org.openiam.am.srvc.domain;
 
 import org.hibernate.annotations.*;
 import org.hibernate.annotations.Cache;
+import org.openiam.am.srvc.dto.OAuthUserClientXref;
 import org.openiam.base.domain.KeyEntity;
+import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -19,6 +21,7 @@ import java.util.Set;
 @Entity
 @Table(name = "OAUTH_USER_CLIENT_AUTHORIZATION")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@DozerDTOCorrespondence(OAuthUserClientXref.class)
 @AttributeOverride(name = "id", column = @Column(name = "OAUTH_AUTHORIZATION_ID"))
 public class OAuthUserClientXrefEntity extends KeyEntity {
 

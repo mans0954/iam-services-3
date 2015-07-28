@@ -4,8 +4,14 @@ import org.openiam.am.srvc.domain.AuthAttributeEntity;
 import org.openiam.am.srvc.domain.AuthProviderAttributeEntity;
 import org.openiam.am.srvc.domain.AuthProviderEntity;
 import org.openiam.am.srvc.domain.AuthProviderTypeEntity;
+import org.openiam.am.srvc.dto.AuthProvider;
+import org.openiam.am.srvc.dto.OAuthCode;
+import org.openiam.am.srvc.dto.OAuthToken;
+import org.openiam.am.srvc.dto.OAuthUserClientXref;
 import org.openiam.am.srvc.searchbeans.AuthProviderSearchBean;
 import org.openiam.exception.BasicDataServiceException;
+import org.openiam.idm.srvc.lang.dto.Language;
+import org.openiam.idm.srvc.res.dto.Resource;
 
 import java.util.List;
 
@@ -44,6 +50,13 @@ public interface AuthProviderService {
     *===================================================
     */
 
-    AuthProviderEntity getOAuthClient(final String clientId);
+    AuthProvider getOAuthClient(final String clientId);
+    List<Resource> getScopesForAuthrorization(String clientId, String userId, Language language);
 
+    void saveClientScopeAuthorization(String providerId, String userId, List<OAuthUserClientXref> oauthUserClientXrefList) throws BasicDataServiceException;
+    OAuthCode saveOAuthCode(OAuthCode oAuthCode);
+    OAuthCode getOAuthCode(String providerId, String userId);
+    OAuthCode getOAuthCode(String code);
+
+    OAuthToken saveOAuthToken(OAuthToken oAuthToken);
 }

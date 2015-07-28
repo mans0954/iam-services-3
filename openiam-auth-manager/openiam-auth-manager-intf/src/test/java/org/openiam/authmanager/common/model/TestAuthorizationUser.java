@@ -206,7 +206,7 @@ public class TestAuthorizationUser {
 		
 		final StopWatch sw = new StopWatch();
 		sw.start();
-		user.compile(3);
+		user.compile(3, -1);
 		sw.stop();
 		System.out.println(sw.getTotalTimeMillis());
 	}

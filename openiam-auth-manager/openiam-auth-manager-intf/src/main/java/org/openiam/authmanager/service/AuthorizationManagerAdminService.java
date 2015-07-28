@@ -10,17 +10,18 @@ import java.util.Set;
 
 public interface AuthorizationManagerAdminService {
 
-	ResourceEntitlementToken getNonCachedEntitlementsForUser(final String userId);
-	ResourceEntitlementToken getNonCachedEntitlementsForGroup(final String groupId);
-	ResourceEntitlementToken getNonCachedEntitlementsForRole(final String roleId);
-	UserEntitlementsMatrix getUserEntitlementsMatrix(final String entityId);
+	public ResourceEntitlementToken getNonCachedEntitlementsForUser(final String userId);
+	public ResourceEntitlementToken getNonCachedEntitlementsForGroup(final String groupId);
+	public ResourceEntitlementToken getNonCachedEntitlementsForRole(final String roleId);
+	public ResourceEntitlementToken getNonCachedEntitlementsForOrganization(final String organizationId);
+	public UserEntitlementsMatrix getUserEntitlementsMatrix(final String entityId);
 
-    Set<String> getOwnerIdsForResource(String resourceId);
-    HashMap<String, SetStringResponse> getOwnerIdsForResourceSet(Set<String> resourceIdSet);
-	Set<String> getUserIdsEntitledForResource(String resourceId);
-	HashMap<String, SetStringResponse> getUserIdsEntitledForResourceSet(Set<String> resourceIdSet);
+    public Set<String> getOwnerIdsForResource(String resourceId);
+    public HashMap<String, SetStringResponse> getOwnerIdsForResourceSet(Set<String> resourceIdSet);
+	public Set<String> getUserIdsEntitledForResource(String resourceId);
+	public HashMap<String, SetStringResponse> getUserIdsEntitledForResourceSet(Set<String> resourceIdSet);
 
-	Set<String> getOwnerIdsForGroup(String groupId);
+	public Set<String> getOwnerIdsForGroup(String groupId);
 
-    HashMap<String,SetStringResponse> getOwnerIdsForGroupSet(Set<String> groupIdSet);
+    public HashMap<String,SetStringResponse> getOwnerIdsForGroupSet(Set<String> groupIdSet);
 }

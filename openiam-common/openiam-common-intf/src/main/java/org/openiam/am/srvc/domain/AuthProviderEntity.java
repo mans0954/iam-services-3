@@ -97,6 +97,10 @@ public class AuthProviderEntity extends AbstractKeyNameEntity {
 	@Fetch(FetchMode.SUBSELECT)
 	private Set<OAuthTokenEntity> oAuthTokens;
 
+	@OneToMany(fetch = FetchType.LAZY,cascade = { CascadeType.DETACH, CascadeType.REFRESH }, mappedBy = "client")
+	@Fetch(FetchMode.SUBSELECT)
+	private Set<OAuthCodeEntity> oAuthCodes;
+
 	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="client", orphanRemoval=true)
 	@Fetch(FetchMode.SUBSELECT)
 	private Set<OAuthUserClientXrefEntity> authorizedUsers = new HashSet<OAuthUserClientXrefEntity>(0);
@@ -290,6 +294,14 @@ public class AuthProviderEntity extends AbstractKeyNameEntity {
 
 	public void setAuthorizedUsers(Set<OAuthUserClientXrefEntity> authorizedUsers) {
 		this.authorizedUsers = authorizedUsers;
+	}
+
+	public Set<OAuthCodeEntity> getoAuthCodes() {
+		return oAuthCodes;
+	}
+
+	public void setoAuthCodes(Set<OAuthCodeEntity> oAuthCodes) {
+		this.oAuthCodes = oAuthCodes;
 	}
 
 	@Override

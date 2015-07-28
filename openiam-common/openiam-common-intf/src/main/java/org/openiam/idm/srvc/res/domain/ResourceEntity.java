@@ -32,6 +32,7 @@ import javax.persistence.Table;
 import javax.validation.constraints.Size;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -320,6 +321,10 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
 				this.users.removeIf(e -> e.getMemberEntity().getId().equals(entity.getId()));
 			}
 		}
+    }
+    
+    public void addUser(final UserEntity entity) {
+    	addUser(entity, Collections.EMPTY_LIST);
     }
     
     public void addUser(final UserEntity entity, final Collection<AccessRightEntity> rights) {

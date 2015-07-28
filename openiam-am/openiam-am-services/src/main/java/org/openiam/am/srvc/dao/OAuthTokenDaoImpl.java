@@ -36,4 +36,5 @@ public class OAuthTokenDaoImpl extends BaseDaoImpl<OAuthTokenEntity, String> imp
 
         return (OAuthTokenEntity)criteria.uniqueResult();
     }
+
 }
