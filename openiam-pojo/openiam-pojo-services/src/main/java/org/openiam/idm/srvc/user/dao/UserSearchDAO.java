@@ -36,6 +36,25 @@ public class UserSearchDAO extends AbstractHibernateSearchDao<UserEntity, UserSe
 			}
 		}
 
+		param = query.getNickNameMatchToken();
+		if(param != null && param.isValid()) {
+			Query clause = null;
+			switch(param.getMatchType()) {
+				case EXACT:
+					clause = buildExactClause("nickNameUntokenized", param.getValue());
+					break;
+				case STARTS_WITH:
+					clause = buildTokenizedClause("nickName", param.getValue());
+					break;
+				default:
+					break;
+			}
+
+			if(clause != null) {
+				luceneQuery.add(clause, BooleanClause.Occur.MUST);
+			}
+		}
+
 		param = query.getLastNameMatchToken();
 		if(param != null && param.isValid()) {
 			Query clause = null;

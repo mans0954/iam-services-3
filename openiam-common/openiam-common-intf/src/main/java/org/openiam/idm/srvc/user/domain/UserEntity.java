@@ -184,6 +184,11 @@ public class UserEntity {
     private Date claimDate;
 
     @Column(name = "NICKNAME", length = 40)
+    @Fields ({
+            @Field(index = Index.TOKENIZED),
+            @Field(name = "nickName", index = Index.TOKENIZED, store = Store.YES),
+            @Field(name = "nickNameUntokenized", index = Index.UN_TOKENIZED, store = Store.YES)
+    })
     @Size(max = 100, message = "validator.user.nick.name.toolong")
     private String nickname;
 
