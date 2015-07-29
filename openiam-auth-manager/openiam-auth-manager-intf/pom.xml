@@ -9,7 +9,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.openiam</groupId>
     <artifactId>openiam-auth-manager-intf</artifactId>
-    <name>openiam-auth-manager-common</name>
+    <name>openiam-auth-manager-intf</name>
     <packaging>jar</packaging>
     <version>4.0.0</version>
     <description>OpenIAM Authorization Manager Common</description>
