@@ -5,7 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openiam.base.id.UUIDGen;
 import org.openiam.idm.srvc.batch.domain.BatchTaskEntity;
 import org.openiam.idm.srvc.batch.domain.BatchTaskScheduleEntity;
@@ -16,7 +17,7 @@ import org.springframework.context.ApplicationContext;
 
 public class BatchTaskGroovyThread extends AbstractBatchTaskThread {
 
-    private static Logger LOG = Logger.getLogger(BatchTaskGroovyThread.class);
+	private static final Log LOG = LogFactory.getLog(BatchTaskGroovyThread.class);
 
     @Autowired
     @Qualifier("configurableGroovyScriptEngine")

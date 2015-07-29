@@ -15,6 +15,9 @@ import org.springframework.stereotype.Component;
 @Component("sysConfiguration")
 public class SysConfiguration {
 	
+	@Value("${openiam.dbType}")
+    private String dbType;
+	
 	@Autowired
 	private PropertyValueSweeper propertyValueSweeper;
 	
@@ -29,6 +32,10 @@ public class SysConfiguration {
 	
     @Value("${org.openiam.idm.system.user.id}")
     private String systemUserId;
+    
+    public boolean isCaseInSensitiveDatabase() {
+    	return "ORACLE_INSENSITIVE".equalsIgnoreCase(dbType);
+    }
     
     public String getSystemUserId() {
     	return systemUserId;

@@ -20,6 +20,7 @@ import java.util.Set;
  * @version 1
  */
 public interface RoleDataService {
+	
 
 	@Deprecated
     public RoleEntity getRole(String roleId);
@@ -29,8 +30,10 @@ public interface RoleDataService {
 	
 	@Deprecated
     public RoleEntity getRoleByName(final String roleName, String requesterId);
+	
+	public RoleEntity getRoleByNameAndManagedSysId(final String roleName, final String managedSysId);
     
-
+	@Deprecated
     public Role getRoleDtoByName(final String roleName, String requesterId);
 
     public RoleEntity getRoleLocalized(final String roleId, final String requestorId, final LanguageEntity language);

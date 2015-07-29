@@ -3,14 +3,10 @@ package org.openiam.elasticsearch.factory;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
-import org.openiam.core.dao.lucene.AbstractHibernateSearchDao;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openiam.core.dao.lucene.HibernateSearchDao;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.BeanFactoryAware;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
@@ -22,7 +18,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class ESSearchDAOFactory implements ApplicationContextAware {
 	
-	protected static Logger logger = Logger.getLogger(ESSearchDAOFactory.class);
+	private static final Log logger = LogFactory.getLog(ESSearchDAOFactory.class);
 	
 	private Map<String, HibernateSearchDao> searchDAOMap = new HashMap<String, HibernateSearchDao>();
 	

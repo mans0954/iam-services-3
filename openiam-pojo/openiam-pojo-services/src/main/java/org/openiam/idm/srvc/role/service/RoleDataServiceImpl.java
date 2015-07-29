@@ -127,6 +127,7 @@ public class RoleDataServiceImpl implements RoleDataService {
 
     @Override
     @Transactional(readOnly = true)
+    @Deprecated
     public Role getRoleDtoByName(String roleName, String requesterId) {
         RoleEntity roleEntity = getRoleByName(roleName,requesterId);
         return roleDozerConverter.convertToDTO(roleEntity, true);
@@ -219,10 +220,6 @@ public class RoleDataServiceImpl implements RoleDataService {
 				}
 			}
 		}
-	}
-	
-	private void makeAdmin(final RoleEntity role, final String requestorId) {
-		
 	}
 	
 	@Override
@@ -643,6 +640,27 @@ public class RoleDataServiceImpl implements RoleDataService {
 			return CollectionUtils.isNotEmpty(role.getChildRoles()) || CollectionUtils.isNotEmpty(role.getResources());
 		} else {
 			return false;
+		}
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public RoleEntity getRoleByNameAndManagedSysId(final String roleName, final String managedSysId) {
+		final RoleSearchBean sb = new RoleSearchBean();
+		sb.setName(roleName);
+		sb.setManagedSysId(managedSysId);
+		final List<RoleEntity> roles = roleDao.getByExample(sb);
+		if(roles != null) {
+			if(roles.size() == 1) {
+				return roles.get(0);
+			} else if(roles.size() > 1) {
+				log.error(String.format("Multiple ROle with name '%s' and managed system %s'", roleName, managedSysId));
+				return null;
+			} else {
+				return null;
+			}
+		} else {
+			return null;
 		}
 	}
 }

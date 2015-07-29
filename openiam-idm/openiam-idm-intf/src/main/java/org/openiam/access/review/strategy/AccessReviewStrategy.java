@@ -1,34 +1,40 @@
 package org.openiam.access.review.strategy;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.time.StopWatch;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.openiam.access.review.constant.AccessReviewConstant;
+import org.openiam.access.review.constant.AccessReviewData;
 import org.openiam.access.review.model.AccessViewBean;
 import org.openiam.access.review.model.AccessViewFilterBean;
-import org.openiam.authmanager.common.model.AbstractAuthorizationEntity;
-import org.openiam.authmanager.common.model.AuthorizationGroup;
-import org.openiam.authmanager.common.model.AuthorizationResource;
-import org.openiam.authmanager.common.model.AuthorizationRole;
 import org.openiam.access.review.strategy.entitlements.EntitlementsStrategy;
 import org.openiam.access.review.strategy.entitlements.GroupEntitlementStrategy;
 import org.openiam.access.review.strategy.entitlements.ResourceEntitlementStrategy;
 import org.openiam.access.review.strategy.entitlements.RoleEntitlementStrategy;
-import org.openiam.access.review.constant.AccessReviewConstant;
-import org.openiam.access.review.constant.AccessReviewData;
+import org.openiam.authmanager.common.model.AbstractAuthorizationEntity;
+import org.openiam.authmanager.common.model.AuthorizationGroup;
+import org.openiam.authmanager.common.model.AuthorizationResource;
+import org.openiam.authmanager.common.model.AuthorizationRole;
 import org.openiam.base.TreeNode;
 import org.openiam.bpm.response.TaskWrapper;
 import org.openiam.bpm.util.ActivitiRequestType;
 import org.openiam.idm.srvc.res.dto.ResourceType;
-
-import java.util.*;
 
 /**
  * Created by: Alexander Duckardt
  * Date: 5/27/14.
  */
 public abstract class AccessReviewStrategy {
-    protected final Logger log = Logger.getLogger(this.getClass());
+	protected static final Log LOG = LogFactory.getLog(AccessReviewStrategy.class);
 
     protected AccessReviewData accessReviewData;
 

@@ -1,34 +1,26 @@
 package org.openiam.idm.connector.csv;
 
+import java.util.LinkedList;
+import java.util.List;
+
+import org.openiam.connector.ConnectorService;
 import org.openiam.connector.type.request.CrudRequest;
 import org.openiam.connector.type.request.LookupRequest;
 import org.openiam.connector.type.request.RequestType;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
-import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.provision.dto.ProvisionUser;
-import org.openiam.provision.service.UserAttributeHelper;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleEmailAddress;
 import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.service.integration.AbstractServiceTest;
-import org.openiam.connector.ConnectorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.annotations.Test;
-
-import java.util.LinkedList;
-import java.util.List;
 
 public class CSVTouchTest extends AbstractServiceTest {
 	@Autowired
 	@Qualifier("csvConnector")
 	private ConnectorService connectorService;
-	@Autowired
-	@Qualifier("managedSysServiceClient")
-	protected ManagedSystemWebService managedSysServiceClient;
 
 	@Test
 	public void addTouchCSVTest() {

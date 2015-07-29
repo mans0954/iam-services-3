@@ -5,7 +5,8 @@ import java.util.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openiam.am.srvc.dao.URIPatternDao;
 import org.openiam.am.srvc.domain.URIPatternEntity;
 import org.openiam.authmanager.common.model.AuthorizationResource;
@@ -90,7 +91,7 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 	@Autowired
 	private AuthorizationManagerService authorizationManagerService;
 	
-	private static Logger LOG = Logger.getLogger(MetadataElementTemplateServiceImpl.class);
+	private static final Log LOG = LogFactory.getLog(MetadataElementTemplateServiceImpl.class);
 
 	@Override
 	public List<MetadataElementPageTemplateEntity> findBeans(final MetadataElementPageTemplateSearchBean searchBean, final int from, final int size) {

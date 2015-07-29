@@ -7,7 +7,8 @@ import java.util.Map;
 import javax.annotation.PostConstruct;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.lang.dto.LanguageMapping;
 import org.openiam.idm.srvc.property.converter.PropertyValueConverter;
@@ -29,7 +30,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 @Service("propertyValueSweeper")
 public class PropertyValueSweeperImpl implements Sweepable, PropertyValueSweeper {
 	
-	private static Logger log = Logger.getLogger(PropertyValueSweeperImpl.class);
+	private static final Log log = LogFactory.getLog(PropertyValueSweeperImpl.class);
 
     @Autowired
     @Qualifier("transactionManager")
@@ -44,7 +45,7 @@ public class PropertyValueSweeperImpl implements Sweepable, PropertyValueSweeper
     private Map<String, PropertyValue> valueCache;
 	
 	@Override
-	@Scheduled(fixedRateString="${org.openiam.property.value.threadsweep}", initialDelayString="${org.openiam.property.value.threadsweep}")
+	@Scheduled(fixedRateString="${org.openiam.property.value.threadsweep}", initialDelay=0)
 	public void sweep() {
 		TransactionTemplate transactionTemplate = new TransactionTemplate(platformTransactionManager);
         transactionTemplate.setPropagationBehavior(TransactionTemplate.PROPAGATION_REQUIRED);

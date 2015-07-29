@@ -1,11 +1,13 @@
 package org.openiam.validator;
 
-import org.apache.log4j.Logger;
 
 import javax.annotation.PostConstruct;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Created with IntelliJ IDEA.
@@ -15,7 +17,7 @@ import javax.validation.ValidatorFactory;
  * To change this template use File | Settings | File Templates.
  */
 public abstract class AbstractEntityValidator implements EntityValidator {
-    protected Logger log = Logger.getLogger(this.getClass());
+	protected static final Log LOG = LogFactory.getLog(AbstractEntityValidator.class);
     protected Validator validator;
 
     @PostConstruct

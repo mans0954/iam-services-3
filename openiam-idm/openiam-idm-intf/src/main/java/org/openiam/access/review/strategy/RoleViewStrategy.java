@@ -26,7 +26,7 @@ public class RoleViewStrategy extends AccessReviewStrategy {
                                                                      AccessReviewConstant.INITIAL_LEVEL);
             return applyFilter(dataList);
         } catch (Exception ex){
-            log.error(ex.getLocalizedMessage(), ex);
+        	LOG.error(ex.getLocalizedMessage(), ex);
             return Collections.EMPTY_LIST;
         }
     }

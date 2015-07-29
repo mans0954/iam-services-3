@@ -28,7 +28,8 @@ import javax.jws.WebService;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
@@ -82,7 +83,7 @@ import org.springframework.transaction.annotation.Transactional;
             portName = "UserDataWebServicePort")
 public class UserDataWebServiceImpl implements UserDataWebService {
 
-    private static Logger log = Logger.getLogger(UserDataWebServiceImpl.class);
+	private static final Log log = LogFactory.getLog(UserDataWebServiceImpl.class);
 
     @Autowired
     private UserDataService userDataService;

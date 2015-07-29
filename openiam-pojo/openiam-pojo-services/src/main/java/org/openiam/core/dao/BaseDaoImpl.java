@@ -1,13 +1,33 @@
 package org.openiam.core.dao;
 
+import static org.hibernate.criterion.Projections.id;
+import static org.hibernate.criterion.Projections.rowCount;
+import static org.hibernate.criterion.Restrictions.eq;
+
+import java.io.Serializable;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
 import org.hibernate.LockOptions;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.criterion.*;
+import org.hibernate.criterion.Criterion;
+import org.hibernate.criterion.Disjunction;
+import org.hibernate.criterion.Example;
+import org.hibernate.criterion.MatchMode;
+import org.hibernate.criterion.Order;
+import org.hibernate.criterion.Projections;
+import org.hibernate.criterion.Restrictions;
 import org.openiam.base.OrderConstants;
 import org.openiam.base.ws.SortParam;
 import org.openiam.idm.searchbeans.AbstractSearchBean;
@@ -18,21 +38,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.Serializable;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-
-import static org.hibernate.criterion.Projections.id;
-import static org.hibernate.criterion.Projections.rowCount;
-import static org.hibernate.criterion.Restrictions.eq;
-
 public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable>
 implements BaseDao<T, PrimaryKey> {
-    protected final Logger log = Logger.getLogger(this.getClass());
+	protected final Log log = LogFactory.getLog(this.getClass());
     protected final Class<T> domainClass;
     private SessionFactory sessionFactory;
     
@@ -93,6 +101,29 @@ implements BaseDao<T, PrimaryKey> {
     }
     protected Order createOrder(String field, OrderConstants orderDir){
         return orderDir.equals(OrderConstants.DESC) ? Order.desc(field) : Order.asc(field);
+    }
+    
+
+    protected Criterion getStringCriterion(String fieldName, String value, boolean caseInsensitive) {
+        Criterion criterion = null;
+        MatchMode matchMode = null;
+        if (StringUtils.indexOf(value, "*") == 0) {
+            matchMode = MatchMode.END;
+            value = value.substring(1);
+        }
+        if (StringUtils.isNotEmpty(value) && StringUtils.indexOf(value, "*") == value.length() - 1) {
+            value = value.substring(0, value.length() - 1);
+            matchMode = (matchMode == MatchMode.END) ? MatchMode.ANYWHERE : MatchMode.START;
+        }
+
+        if (StringUtils.isNotEmpty(value)) {
+            if (matchMode != null) {
+                criterion = Restrictions.ilike(fieldName, value, matchMode);
+            } else {
+                criterion = (caseInsensitive) ? Restrictions.eq(fieldName, value).ignoreCase() : Restrictions.eq(fieldName, value);
+            }
+        }
+        return criterion;
     }
 
     @Override

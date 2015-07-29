@@ -25,7 +25,6 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.log4j.Logger;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.exception.data.IdentityAnswerNotFoundException;
@@ -61,7 +60,7 @@ import java.util.List;
 @Service("challengeResponseValidator")
 public class DefaultChallengeResponseValidator implements ChallengeResponseValidator {
 
-    private static Logger LOG = Logger.getLogger(DefaultChallengeResponseValidator.class);
+	private static final Log LOG = LogFactory.getLog(DefaultChallengeResponseValidator.class);
 
     @Autowired
     private LoginDataService loginManager;

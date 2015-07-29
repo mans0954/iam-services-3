@@ -7,11 +7,11 @@ import javax.annotation.PostConstruct;
 import javax.jws.WebService;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openiam.am.srvc.service.URIFederationService;
 import org.openiam.am.srvc.uriauth.dto.SSOLoginResponse;
 import org.openiam.am.srvc.uriauth.dto.URIFederationResponse;
-import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.exception.BasicDataServiceException;
@@ -21,11 +21,8 @@ import org.openiam.idm.srvc.auth.dto.Subject;
 import org.openiam.idm.srvc.auth.service.AuthenticationService;
 import org.openiam.idm.srvc.auth.ws.AuthenticationResponse;
 import org.openiam.thread.Sweepable;
-import org.openiam.util.SpringContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.http.HttpMethod;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 @WebService(endpointInterface = "org.openiam.am.srvc.ws.URIFederationWebService",
@@ -34,7 +31,7 @@ import org.springframework.stereotype.Service;
 @Service("uriFederationWebServiceComponent")
 public class URIFederationWebServiceImpl implements URIFederationWebService {
 	
-	private static Logger LOG = Logger.getLogger(URIFederationWebServiceImpl.class);
+	private static final Log LOG = LogFactory.getLog(URIFederationWebServiceImpl.class);
 
 	@Autowired
 	private URIFederationService uriFederationService;

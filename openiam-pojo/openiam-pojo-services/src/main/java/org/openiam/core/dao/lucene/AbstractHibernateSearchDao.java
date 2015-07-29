@@ -1,17 +1,32 @@
 package org.openiam.core.dao.lucene;
 
+import java.io.Serializable;
+import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.locks.ReentrantLock;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.StopWatch;
-import org.apache.log4j.Logger;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanClause;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TermQuery;
 import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.index.query.*;
+import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.hibernate.Criteria;
 import org.hibernate.Session;
@@ -27,15 +42,6 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-import java.io.Serializable;
-import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.util.*;
-import java.util.concurrent.locks.ReentrantLock;
-
 //import org.hibernate.search.FullTextQuery;
 //import org.hibernate.search.FullTextSession;
 //import org.hibernate.search.Search;
@@ -46,7 +52,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public abstract class AbstractHibernateSearchDao<T, Q, KeyType extends Serializable> implements HibernateSearchDao<T, Q, KeyType>, DisposableBean {
 
-	protected static Logger logger = Logger.getLogger(AbstractHibernateSearchDao.class);
+	private static final Log logger = LogFactory.getLog(AbstractHibernateSearchDao.class);
 	
 	private final ReentrantLock reentrantLock = new ReentrantLock();
 

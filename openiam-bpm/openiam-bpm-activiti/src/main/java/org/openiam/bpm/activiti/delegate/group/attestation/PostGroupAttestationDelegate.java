@@ -1,8 +1,11 @@
 package org.openiam.bpm.activiti.delegate.group.attestation;
 
+import java.util.Collection;
+
 import org.activiti.engine.delegate.DelegateExecution;
 import org.apache.commons.lang.time.StopWatch;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openiam.bpm.activiti.delegate.entitlements.AbstractEntitlementsDelegate;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
@@ -12,15 +15,13 @@ import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 
-import java.util.Collection;
-
 public class PostGroupAttestationDelegate extends AbstractEntitlementsDelegate {
 	
 	public PostGroupAttestationDelegate() {
 		super();
 	}
 	
-	private static Logger LOG = Logger.getLogger(PostGroupAttestationDelegate.class);
+	private static final Log LOG = LogFactory.getLog(PostGroupAttestationDelegate.class);
 
 	@Override
 	public void execute(DelegateExecution execution) throws Exception {

@@ -1,6 +1,6 @@
 package org.openiam.elasticsearch.hibernate;
-
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.hibernate.SessionFactory;
 import org.hibernate.event.spi.*;
 import org.hibernate.internal.util.ReflectHelper;
@@ -27,7 +27,7 @@ public class OpeniamHibernateEventListener implements InitializingBean,
                                                       PostUpdateEventListener,
                                                       PostInsertEventListener {
 
-    private static Logger log = Logger.getLogger(OpeniamHibernateEventListener.class);
+	private static final Log log = LogFactory.getLog(OpeniamHibernateEventListener.class);
     @Autowired
     private SessionFactory sessionFactory;
     @Autowired

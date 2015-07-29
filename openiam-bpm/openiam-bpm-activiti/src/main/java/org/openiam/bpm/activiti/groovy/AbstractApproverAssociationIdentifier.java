@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
-import org.openiam.bpm.request.ActivitiRequestDecision;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openiam.bpm.request.GenericWorkflowRequest;
 import org.openiam.bpm.util.ActivitiRequestType;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
@@ -18,7 +18,6 @@ import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.util.CustomJacksonMapper;
 import org.openiam.util.SpringContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 
 public abstract class AbstractApproverAssociationIdentifier {
 	
@@ -31,7 +30,7 @@ public abstract class AbstractApproverAssociationIdentifier {
 	@Autowired
 	protected CustomJacksonMapper jacksonMapper;
 
-	protected static Logger LOG = Logger.getLogger(AbstractApproverAssociationIdentifier.class);
+	protected static final Log LOG = LogFactory.getLog(AbstractApproverAssociationIdentifier.class);
 	
 	protected final List<String> approverAssociationIds = new LinkedList<String>();
 	protected final List<String> approverUserIds = new LinkedList<String>();

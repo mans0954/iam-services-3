@@ -1,6 +1,7 @@
 package org.openiam.elasticsearch.service;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openiam.elasticsearch.model.ElasticsearchReindexRequest;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +18,7 @@ import java.util.concurrent.TimeUnit;
  */
 @Service("elasticsearchReindexService")
 public class ElasticsearchReindexServiceImpl implements InitializingBean, ElasticsearchReindexService {
-    private static Logger log = Logger.getLogger(ElasticsearchReindexServiceImpl.class);
+	private static final Log log = LogFactory.getLog(ElasticsearchReindexServiceImpl.class);
     protected final long SHUTDOWN_TIME = 5000;
     private ExecutorService service;
     @Autowired

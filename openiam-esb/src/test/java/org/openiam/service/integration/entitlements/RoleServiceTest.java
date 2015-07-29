@@ -4,19 +4,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.annotation.Resource;
-
 import org.openiam.base.ws.Response;
-import org.openiam.idm.searchbeans.GroupSearchBean;
+import org.openiam.base.ws.ResponseCode;
 import org.openiam.idm.searchbeans.RoleSearchBean;
-import org.openiam.idm.srvc.grp.dto.Group;
-import org.openiam.idm.srvc.grp.dto.GroupAttribute;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.dto.RoleAttribute;
 import org.openiam.idm.srvc.role.ws.RoleDataWebService;
 import org.openiam.service.integration.AbstractAttributeServiceTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.testng.annotations.Test;
 
 public class RoleServiceTest extends AbstractAttributeServiceTest<Role, RoleSearchBean, RoleAttribute> {
 
@@ -76,4 +73,50 @@ public class RoleServiceTest extends AbstractAttributeServiceTest<Role, RoleSear
 		return roleServiceClient.findBeans(searchBean, null, from, size);
 	}
 
+	@Test
+	public void testContraintViolationWithNoManagedSystem() {
+		final String name = getRandomName();
+		Role r1 = newInstance();
+		Role r2 = newInstance();
+		
+		r1.setName(name);
+		r2.setName(name);
+		Response response = roleServiceClient.saveRole(r1, getRequestorId());
+		assertSuccess(response);
+		response = roleServiceClient.saveRole(r2, getRequestorId());
+		assertResponseCode(response, ResponseCode.CONSTRAINT_VIOLATION);
+	}
+	
+	@Test
+	public void testContraintViolationWithManagedSystem() {
+		final String name = getRandomName();
+		final String managedSystemId = getDefaultManagedSystemId();
+		Role r1 = newInstance();
+		Role r2 = newInstance();
+		
+		r1.setName(name);
+		r1.setManagedSysId(managedSystemId);
+		r2.setName(name);
+		r2.setManagedSysId(managedSystemId);
+		Response response = roleServiceClient.saveRole(r1, getRequestorId());
+		assertSuccess(response);
+		response = roleServiceClient.saveRole(r2, getRequestorId());
+		assertResponseCode(response, ResponseCode.CONSTRAINT_VIOLATION);
+	}
+	
+	@Test
+	public void testContraintViolationDifferentManagedSystem() {
+		final String name = getRandomName();
+		Role r1 = newInstance();
+		Role r2 = newInstance();
+		
+		r1.setName(name);
+		r1.setManagedSysId(managedSysServiceClient.getManagedSystems(null, 10, 0).get(0).getId());
+		r2.setName(name);
+		r2.setManagedSysId(managedSysServiceClient.getManagedSystems(null, 10, 0).get(1).getId());
+		Response response = roleServiceClient.saveRole(r1, getRequestorId());
+		assertSuccess(response);
+		response = roleServiceClient.saveRole(r2, getRequestorId());
+		assertSuccess(response);
+	}
 }

@@ -29,7 +29,8 @@ import javax.jws.WebService;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
@@ -60,7 +61,7 @@ public class MetadataWebServiceImpl implements MetadataWebService {
     @Autowired
     private MetaDataTypeDozerConverter metaDataTypeDozerConverter;
 
-    private static Logger LOG = Logger.getLogger(MetadataWebServiceImpl.class);
+    private static final Log LOG = LogFactory.getLog(MetadataWebServiceImpl.class);
 
     @Override
     public MetadataElement getElementByAttrNameAndTypeId(String attrName, String typeId, final Language language) {

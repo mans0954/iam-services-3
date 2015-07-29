@@ -44,7 +44,7 @@ public class EntityValidatorImpl extends AbstractEntityValidator {
                 token.setMessage(constraintViolation.getMessage());
                 token.setValue(constraintViolation.getInvalidValue());
 
-                log.error("Validation Error: " + token.toString());
+                LOG.error("Validation Error: " + token.toString());
 
                 exception.addErrorToken(token);
             }

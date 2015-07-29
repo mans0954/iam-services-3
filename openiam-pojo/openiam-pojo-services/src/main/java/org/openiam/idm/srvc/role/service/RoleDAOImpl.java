@@ -13,11 +13,13 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
+import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.criterion.Subqueries;
+import org.openiam.base.SysConfiguration;
 import org.openiam.base.TreeObjectId;
 import org.openiam.base.Tuple;
 import org.openiam.base.ws.SortParam;
@@ -33,6 +35,9 @@ import org.springframework.stereotype.Repository;
 
 @Repository("roleDAO")
 public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements RoleDAO {
+	
+	@Autowired
+	private SysConfiguration sysConfig;
 
 	private static final Log log = LogFactory.getLog(RoleDAOImpl.class);
 
@@ -136,53 +141,17 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
 			if(StringUtils.isNotBlank(entity.getId())) {
 				criteria.add(Restrictions.eq(getPKfieldName(), entity.getId()));
 			} else {
-
-				if (StringUtils.isNotEmpty(entity.getName())) {
-	                String name = entity.getName();
-	                MatchMode matchMode = null;
-	                if (StringUtils.indexOf(name, "*") == 0) {
-	                    matchMode = MatchMode.END;
-	                    name = name.substring(1);
-	                }
-	                if (StringUtils.isNotBlank(name) && StringUtils.indexOf(name, "*") == name.length() - 1) {
-	                	name = name.substring(0, name.length() - 1);
-	                    matchMode = (matchMode == MatchMode.END) ? MatchMode.ANYWHERE : MatchMode.START;
-	                }
-
-	                if (StringUtils.isNotBlank(name)) {
-	                    if (matchMode != null) {
-	                        criteria.add(Restrictions.ilike("name", name, matchMode));
-	                    } else {
-	                        criteria.add(Restrictions.eq("name", name));
-	                    }
-	                }
-	            }
-
+				Criterion c = getStringCriterion("name", entity.getName(), sysConfig.isCaseInSensitiveDatabase());
+				if(c != null) {
+					criteria.add(c);
+				}
                 if(entity.getManagedSystem()!=null && StringUtils.isNotBlank(entity.getManagedSystem().getId())){
                     criteria.add(Restrictions.eq("managedSystem.id", entity.getManagedSystem().getId()));
                 }
-
-                if (StringUtils.isNotEmpty(entity.getDescription())) {
-                    String description = entity.getDescription();
-                    MatchMode descMatchMode = null;
-                    if (StringUtils.indexOf(description, "*") == 0) {
-                        descMatchMode = MatchMode.END;
-                        description = description.substring(1);
-                    }
-                    if (StringUtils.isNotBlank(description) && StringUtils.indexOf(description, "*") == description.length() - 1) {
-                        description = description.substring(0, description.length() - 1);
-                        descMatchMode = (descMatchMode == MatchMode.END) ? MatchMode.ANYWHERE : MatchMode.START;
-                    }
-
-                    if (StringUtils.isNotBlank(description)) {
-                        if (descMatchMode != null) {
-                            criteria.add(Restrictions.ilike("description", description, descMatchMode));
-                        } else {
-                            criteria.add(Restrictions.eq("description", description));
-                        }
-                    }
-                }
-
+                c = getStringCriterion("description", entity.getDescription(), false);
+                if(c != null) {
+					criteria.add(c);
+				}
 			}
 		}
 		return criteria;

@@ -6,8 +6,8 @@ import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.time.StopWatch;
-import org.apache.log4j.Logger;
-import org.openiam.base.ws.Response;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.bpm.activiti.ActivitiService;
 import org.openiam.bpm.dto.BasicWorkflowResponse;
@@ -30,7 +30,7 @@ import org.springframework.stereotype.Component;
 public class AttestationInitializer {
 	
 	
-	private static Logger LOG = Logger.getLogger(AttestationInitializer.class);
+	private static final Log LOG = LogFactory.getLog(AttestationInitializer.class);
 	
 	@Autowired
     @Qualifier("activitiBPMService")

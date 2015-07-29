@@ -1,16 +1,10 @@
 package org.openiam.am.srvc.comparator;
 
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openiam.am.srvc.dto.PatternMatchMode;
 import org.openiam.am.srvc.dto.URIPatternMethod;
 import org.openiam.am.srvc.dto.URIPatternMethodParameter;
@@ -22,7 +16,7 @@ import org.openiam.am.srvc.dto.URIPatternMethodParameter;
  */
 public class URIPatternMethodComparator implements Comparator<URIPatternMethod> {
 	
-	private static Logger LOG = Logger.getLogger(URIPatternMethodComparator.class);
+	private static final Log LOG = LogFactory.getLog(URIPatternMethodComparator.class);
 
 	/* 
 	 * This method makes the assumption that the HTTP Method represented by o1 and o2 is equal (i.e. o1.method==o2.method)

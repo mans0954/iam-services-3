@@ -2,12 +2,13 @@ package org.openiam.bpm.activiti.delegate.group.attestation;
 
 import org.activiti.engine.delegate.DelegateExecution;
 import org.apache.commons.lang.time.StopWatch;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openiam.bpm.activiti.delegate.core.AbstractActivitiJob;
 import org.openiam.bpm.util.ActivitiConstants;
 
 public class GroupAttestationWorkDelegate extends AbstractActivitiJob {
-	private static Logger LOG = Logger.getLogger(GroupAttestationWorkDelegate.class);
+	private static final Log LOG = LogFactory.getLog(GroupAttestationWorkDelegate.class);
 
 	public GroupAttestationWorkDelegate() {
 		super();

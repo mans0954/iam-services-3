@@ -2,7 +2,8 @@ package org.openiam.idm.srvc.org.service;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
@@ -21,13 +22,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.jws.WebParam;
 import javax.jws.WebService;
+
 import java.util.List;
 
 @Service("organizationTypeDataService")
 @WebService(targetNamespace = "urn:idm.openiam.org/srvc/org/service", name = "OrganizationTypeDataService")
 public class OrganizationTypeDataServiceImpl implements OrganizationTypeDataService {
 	
-	private Logger LOG = Logger.getLogger(OrganizationTypeDataServiceImpl.class);
+	private static final Log LOG = LogFactory.getLog(OrganizationTypeDataServiceImpl.class);
 
 	@Autowired
 	private OrganizationTypeService organizationTypeService;

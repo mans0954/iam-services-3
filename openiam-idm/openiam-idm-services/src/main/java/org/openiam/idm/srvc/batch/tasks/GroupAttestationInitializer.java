@@ -1,7 +1,8 @@
 package org.openiam.idm.srvc.batch.tasks;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.time.StopWatch;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openiam.authmanager.common.SetStringResponse;
 import org.openiam.authmanager.service.AuthorizationManagerAdminService;
 import org.openiam.base.ws.Response;
@@ -29,7 +30,7 @@ import java.util.Set;
 @Component("groupAttestationInitializer")
 public class GroupAttestationInitializer {
 
-    private static Logger LOG = Logger.getLogger(GroupAttestationInitializer.class);
+	private static final Log LOG = LogFactory.getLog(GroupAttestationInitializer.class);
 
     @Autowired
     private ActivitiService activitiService;

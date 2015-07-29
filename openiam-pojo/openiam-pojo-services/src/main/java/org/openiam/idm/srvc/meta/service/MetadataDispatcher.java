@@ -13,7 +13,8 @@ import javax.jms.Session;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.StopWatch;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.hibernate.HibernateUtils;
 import org.openiam.idm.searchbeans.GroupSearchBean;
@@ -60,7 +61,7 @@ import org.springframework.transaction.support.TransactionTemplate;
  */
 @Component("metadataDispatcher")
 public class MetadataDispatcher implements Sweepable {
-    private static Logger log = Logger.getLogger(MetadataDispatcher.class);
+	private static final Log log = LogFactory.getLog(MetadataDispatcher.class);
     @Autowired
     private UserDataService userManager;
     @Autowired
