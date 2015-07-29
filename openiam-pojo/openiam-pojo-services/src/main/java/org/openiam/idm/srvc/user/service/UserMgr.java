@@ -673,6 +673,7 @@ public class UserMgr implements UserDataService {
         if(searchBean!=null){
 
             result = result || checkSearchParam(searchBean.getFirstNameMatchToken())
+                    || checkSearchParam(searchBean.getNickNameMatchToken())
                     || checkSearchParam(searchBean.getLastNameMatchToken())
                     || checkSearchParam(searchBean.getMaidenNameMatchToken())
                     || checkSearchParam(searchBean.getEmployeeIdMatchToken())
