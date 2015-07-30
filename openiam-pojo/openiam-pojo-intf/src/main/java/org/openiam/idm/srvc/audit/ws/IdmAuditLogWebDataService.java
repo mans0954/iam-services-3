@@ -37,4 +37,6 @@ public interface IdmAuditLogWebDataService {
 	@WebMethod
 	public int count(final @WebParam(name = "searchBean", targetNamespace = "") AuditLogSearchBean searchBean);
 
+    @WebMethod IdmAuditLog save(final IdmAuditLog idmAuditLog);
+
 }

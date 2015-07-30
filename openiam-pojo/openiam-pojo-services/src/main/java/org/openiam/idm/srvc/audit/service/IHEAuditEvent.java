@@ -3,6 +3,8 @@ package org.openiam.idm.srvc.audit.service;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.base.ws.ResponseCode;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.srvc.audit.dto.AuditLogTarget;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLogCustom;
@@ -86,7 +88,7 @@ public class IHEAuditEvent implements ExportAuditEvent {
     private static final Log l = LogFactory.getLog(IHEAuditEvent.class);
 
 
-    public void event(IdmAuditLog log) {
+    public void event(IdmAuditLog log) throws Exception{
         l.debug("IHEAuditEvent Audit Event called...");
 
         l.debug("Linked Log Id =" + getParentLogId(log));
@@ -151,7 +153,11 @@ public class IHEAuditEvent implements ExportAuditEvent {
 
         l.debug("Calling Send ATNA Message");
         // -----
-        sendMessage(bAry);
+        try {
+            sendMessage(bAry);
+        } catch (Exception e) {
+            throw new BasicDataServiceException(ResponseCode.FAIL_CONNECTION);
+        }
         // -----
 
         l.debug("IHEAuditEvent Audit Event completed...");
@@ -217,7 +223,7 @@ public class IHEAuditEvent implements ExportAuditEvent {
 
     }
 
-    private void sendMessage(byte[] bAry) {
+    private void sendMessage(byte[] bAry) throws Exception {
 
         l.debug("IHEAuditEvent Sending Message...");
 
@@ -278,7 +284,8 @@ public class IHEAuditEvent implements ExportAuditEvent {
 
         } catch (Exception e) {
             l.error(e.toString(), e);
-            return;
+            throw new BasicDataServiceException(ResponseCode.FAIL_CONNECTION);
+            //return;
 
 
         }
@@ -359,7 +366,7 @@ public class IHEAuditEvent implements ExportAuditEvent {
 
         String payLoad = buf.toString();
 
-        l.debug("LOGIN MESSAGE:" + buf.toString());
+        l.debug("LOGOUT MESSAGE:" + buf.toString());
 
         return payLoad.getBytes();
 
@@ -522,6 +529,7 @@ public class IHEAuditEvent implements ExportAuditEvent {
         String payLoad = buf.toString();
 
         l.debug("ROLE CHANGE MESSAGE:" + buf.toString());
+
 
         return payLoad.getBytes();
 

@@ -2,6 +2,8 @@ package org.openiam.idm.srvc.audit.ws;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.base.ws.ResponseCode;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 
 import javax.jws.WebService;
@@ -24,7 +26,7 @@ public class PublishAuditEventWebServiceImpl implements PublishAuditEventWebServ
     @Autowired
     protected  ExportAuditEvent iheAuditEvent;
 
-    public void publishEvent(IdmAuditLog log) {
+    public void publishEvent(IdmAuditLog log) throws Exception{
 
         l.debug("PublishEvent operation called..");
 
@@ -36,6 +38,8 @@ public class PublishAuditEventWebServiceImpl implements PublishAuditEventWebServ
             iheAuditEvent.event(log);
         } catch (Exception e) {
             l.error(e.toString());
+            throw new BasicDataServiceException(ResponseCode.FAIL_CONNECTION);
+
         }
     }
 

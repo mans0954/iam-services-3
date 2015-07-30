@@ -12,7 +12,7 @@ import javax.jws.WebService;
 public interface PublishAuditEventWebService {
 
     @WebMethod
-    public void publishEvent(IdmAuditLog log);
+    public void publishEvent(IdmAuditLog log) throws Exception;
 
     @WebMethod
     public boolean isAlive();

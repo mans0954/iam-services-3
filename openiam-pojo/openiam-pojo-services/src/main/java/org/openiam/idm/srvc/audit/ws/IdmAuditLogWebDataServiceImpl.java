@@ -114,4 +114,10 @@ public class IdmAuditLogWebDataServiceImpl implements IdmAuditLogWebDataService 
 		return entity;
 	}
 
+	@Override
+	public IdmAuditLog save(final IdmAuditLog idmAuditLog){
+		final IdmAuditLog idmAudLog = auditLogService.save(idmAuditLog);
+		return idmAudLog;
+	}
+
 }
