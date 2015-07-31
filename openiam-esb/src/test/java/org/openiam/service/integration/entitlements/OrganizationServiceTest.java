@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.openiam.base.ws.Response;
+import org.openiam.base.ws.ResponseCode;
 import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.srvc.grp.dto.Group;
@@ -16,6 +17,7 @@ import org.openiam.idm.srvc.org.service.OrganizationTypeDataService;
 import org.openiam.service.integration.AbstractAttributeServiceTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.testng.annotations.Test;
 
 public class OrganizationServiceTest extends AbstractAttributeServiceTest<Organization, OrganizationSearchBean, OrganizationAttribute> {
 	
@@ -84,4 +86,50 @@ public class OrganizationServiceTest extends AbstractAttributeServiceTest<Organi
 		return organizationServiceClient.findBeansLocalized(searchBean, null, from, size, null);
 	}
 
+	@Test
+	public void testContraintViolationWithNoManagedSystem() {
+		final String name = getRandomName();
+		Organization r1 = newInstance();
+		Organization r2 = newInstance();
+		
+		r1.setName(name);
+		r2.setName(name);
+		Response response = organizationServiceClient.saveOrganization(r1, getRequestorId());
+		assertSuccess(response);
+		response = organizationServiceClient.saveOrganization(r2, getRequestorId());
+		assertResponseCode(response, ResponseCode.CONSTRAINT_VIOLATION);
+	}
+	
+	@Test
+	public void testContraintViolationWithManagedSystem() {
+		final String name = getRandomName();
+		final String typeId = organizationTypeClient.findBeans(null, 0, 10, null).get(0).getId();
+		Organization r1 = newInstance();
+		Organization r2 = newInstance();
+		
+		r1.setName(name);
+		r1.setOrganizationTypeId(typeId);
+		r2.setName(name);
+		r2.setOrganizationTypeId(typeId);
+		Response response = organizationServiceClient.saveOrganization(r1, getRequestorId());
+		assertSuccess(response);
+		response = organizationServiceClient.saveOrganization(r2, getRequestorId());
+		assertResponseCode(response, ResponseCode.CONSTRAINT_VIOLATION);
+	}
+	
+	@Test
+	public void testContraintViolationDifferentManagedSystem() {
+		final String name = getRandomName();
+		Organization r1 = newInstance();
+		Organization r2 = newInstance();
+		
+		r1.setName(name);
+		r1.setOrganizationTypeId(organizationTypeClient.findBeans(null, 0, 10, null).get(0).getId());
+		r2.setName(name);
+		r2.setOrganizationTypeId(organizationTypeClient.findBeans(null, 0, 10, null).get(1).getId());
+		Response response = organizationServiceClient.saveOrganization(r1, getRequestorId());
+		assertSuccess(response);
+		response = organizationServiceClient.saveOrganization(r2, getRequestorId());
+		assertSuccess(response);
+	}
 }
