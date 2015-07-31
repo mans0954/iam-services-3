@@ -169,6 +169,9 @@ public enum ResponseCode {
     @XmlEnumValue("FAIL_LENGTH_RULE")
     FAIL_LENGTH_RULE("FAIL_LENGTH_RULE"),
 
+    @XmlEnumValue("ANSWER_IS_TOO_LONG")
+    ANSWER_IS_TOO_LONG("ANSWER_IS_TOO_LONG"),
+
     @XmlEnumValue("FAIL_NEQ_NAME")
     FAIL_NEQ_NAME("FAIL_NEQ_NAME"),
 
