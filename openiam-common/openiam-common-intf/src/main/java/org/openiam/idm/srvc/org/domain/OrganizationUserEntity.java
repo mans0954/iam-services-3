@@ -42,6 +42,7 @@ public class OrganizationUserEntity implements Serializable {
 
     @ManyToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
     @JoinColumn(name = "METADATA_TYPE_ID", referencedColumnName = "TYPE_ID", insertable = true, updatable = true, nullable = true)
+    @Internationalized
     private MetadataTypeEntity metadataTypeEntity;
 
 

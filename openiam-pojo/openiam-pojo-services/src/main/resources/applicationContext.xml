@@ -132,8 +132,8 @@
         <property name="defaultPswdPolicyId" value="${org.openiam.default.password.policy}"/>
         <property name="developmentMode" value="${openiam.development_mode}"/>
         <property name="provisionServiceFlag" value="${org.openiam.provision.service.flag}"/>
-        <property name="affiliationDefaultTypeId" value="${opr.openiam.org.default.type.id}"/>
-        <property name="affiliationPrimaryTypeId" value="${opr.openiam.org.primary.type.id}"/>
+        <property name="affiliationDefaultTypeId" value="${org.openiam.affiliation.default.type.id}"/>
+        <property name="affiliationPrimaryTypeId" value="${org.openiam.affiliation.primary.type.id}"/>
     </bean>
 
     <!-- HEARTBEAT Beans -->

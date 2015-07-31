@@ -533,14 +533,6 @@ public class UserDataWebServiceImpl implements UserDataWebService {
     public User getUserWithDependent(String id, String requestorId, boolean dependants) {
         final UserEntity user = userManager.getUser(id, requestorId);
         User u = userDozerConverter.convertToDTO(user, dependants);
-        if (dependants) {
-            Set<OrganizationUserDTO> orgUsers = new HashSet<OrganizationUserDTO>();
-            if (CollectionUtils.isNotEmpty(user.getOrganizationUser()))
-                for (OrganizationUserEntity organizationUser : user.getOrganizationUser())
-                    orgUsers.add(new OrganizationUserDTO(organizationUser.getUser().getId(), organizationUser.getOrganization().getId(),
-                            organizationUser.getMetadataTypeEntity().getId(), null));
-            u.setOrganizationUserDTOs(orgUsers);
-        }
         return u;
     }
 

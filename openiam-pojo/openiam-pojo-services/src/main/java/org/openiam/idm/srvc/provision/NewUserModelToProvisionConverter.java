@@ -7,6 +7,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.base.AttributeOperationEnum;
+import org.openiam.base.SysConfiguration;
 import org.openiam.dozer.converter.GroupDozerConverter;
 import org.openiam.dozer.converter.OrganizationDozerConverter;
 import org.openiam.dozer.converter.RoleDozerConverter;
@@ -35,6 +36,7 @@ import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.ProvisionUser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -70,6 +72,11 @@ public class NewUserModelToProvisionConverter {
 
     @Autowired
     private OrganizationDozerConverter organizationDozerConverter;
+
+
+    @Autowired
+    @Qualifier("sysConfiguration")
+    private SysConfiguration sysConfiguration;
 
     @Transactional
     public ProvisionUser convertNewProfileModel(final NewUserProfileRequestModel request) {
@@ -119,7 +126,7 @@ public class NewUserModelToProvisionConverter {
                         userRoles.add(role);
                     }
                     /*
-					final UserRole userRole = new UserRole(null, roleId);
+                    final UserRole userRole = new UserRole(null, roleId);
 					userRoles.add(userRole);
 					*/
                 }
@@ -141,15 +148,14 @@ public class NewUserModelToProvisionConverter {
 
             if (CollectionUtils.isNotEmpty(request.getOrganizationIds())) {
                 final Set<OrganizationUserDTO> userOrganizations = new HashSet<OrganizationUserDTO>();
+                boolean first = true;
+                String affiliationType = sysConfiguration.getAffiliationPrimaryTypeId();
                 for (final String organizationId : request.getOrganizationIds()) {
-                    final OrganizationEntity entity = organizationDataService.getOrganizationLocalized(organizationId, null);
-                    if (entity != null) {
-                        final Organization organization = organizationDozerConverter.convertToDTO(entity, false);
-                        OrganizationUserDTO dto = new OrganizationUserDTO();
-                        dto.setOperation(AttributeOperationEnum.ADD);
-                        dto.setOrganization(organization);
-                        userOrganizations.add(dto);
+                    if (!first) {
+                        affiliationType = sysConfiguration.getAffiliationDefaultTypeId();
                     }
+                    first = false;
+                    userOrganizations.add(new OrganizationUserDTO(user.getId(), organizationId, affiliationType, AttributeOperationEnum.ADD));
                 }
                 user.setOrganizationUserDTOs(userOrganizations);
             }
@@ -157,8 +163,8 @@ public class NewUserModelToProvisionConverter {
             if (CollectionUtils.isNotEmpty(request.getSupervisorIds())) {
                 final Set<User> userSupervisors = new HashSet<User>();
                 for (final String supervisorId : request.getSupervisorIds()) {
-					/*
-					final UserEntity entity = userDataService.getUser(supervisorId);
+                    /*
+                    final UserEntity entity = userDataService.getUser(supervisorId);
 					if(entity != null) {
 						final User supervisor = userDozerConverter.convertToDTO(entity, false);
                         supervisor.setOperation(AttributeOperationEnum.ADD);
