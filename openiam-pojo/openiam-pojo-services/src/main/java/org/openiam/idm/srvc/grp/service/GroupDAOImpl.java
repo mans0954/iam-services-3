@@ -12,6 +12,7 @@ import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.criterion.Subqueries;
+import org.openiam.base.SysConfiguration;
 import org.openiam.base.Tuple;
 import org.openiam.base.ws.SortParam;
 import org.openiam.core.dao.BaseDaoImpl;
@@ -28,6 +29,9 @@ import org.springframework.stereotype.Repository;
 public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements GroupDAO {
     @Autowired
     private GroupSearchBeanConverter groupSearchBeanConverter;
+    
+    @Autowired
+    private SysConfiguration sysConfig;
 
     @Override
     protected String getPKfieldName() {
@@ -121,33 +125,12 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
 			criteria.add(Restrictions.eq(getPKfieldName(), group.getId()));
 		} else {
 			if (StringUtils.isNotEmpty(group.getName())) {
-                String groupName = group.getName();
-                MatchMode matchMode = null;
-                if (StringUtils.indexOf(groupName, "*") == 0) {
-                    matchMode = MatchMode.END;
-                    groupName = groupName.substring(1);
-                }
-                if (StringUtils.isNotEmpty(groupName) && StringUtils.indexOf(groupName, "*") == groupName.length() - 1) {
-                	groupName = groupName.substring(0, groupName.length() - 1);
-                    matchMode = (matchMode == MatchMode.END) ? MatchMode.ANYWHERE : MatchMode.START;
-                }
-
-                if (StringUtils.isNotEmpty(groupName)) {
-                    if (matchMode != null) {
-                        criteria.add(Restrictions.ilike("name", groupName, matchMode));
-                    } else {
-                        criteria.add(Restrictions.eq("name", groupName));
-                    }
-                }
+				criteria.add(getStringCriterion("name", group.getName(), sysConfig.isCaseInSensitiveDatabase()));
             }
 			
 			if(group.getManagedSystem() != null && StringUtils.isNotBlank(group.getManagedSystem().getId())) {
 				criteria.add(Restrictions.eq("managedSystem.id", group.getManagedSystem().getId()));
 			}
-			
-//			if(group.getCompany() != null && StringUtils.isNotBlank(group.getCompany().getId())) {
-//				criteria.add(Restrictions.eq("company.id", group.getCompany().getId()));
-//			}
 		}
 		return criteria;
 	}

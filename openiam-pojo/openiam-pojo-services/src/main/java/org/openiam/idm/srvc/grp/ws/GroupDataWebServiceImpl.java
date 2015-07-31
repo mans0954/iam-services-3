@@ -129,27 +129,23 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
         }
     }
 
-    private void validate(final Group group) throws BasicDataServiceException {
-        if (group == null) {
+    private void validate(final Group entity) throws BasicDataServiceException {
+        if (entity == null) {
             throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
         }
 
-        if (StringUtils.isBlank(group.getName())) {
+        if (StringUtils.isBlank(entity.getName())) {
             throw new BasicDataServiceException(ResponseCode.NO_NAME);
         }
 
-        final GroupEntity found = groupManager.getGroupByName(group.getName(), null);
-        if (found != null) {
-            if (StringUtils.isBlank(group.getId()) && found != null) {
-                throw new BasicDataServiceException(ResponseCode.NAME_TAKEN, "Group name is already in use");
-            }
+        final GroupEntity nameEntity = groupManager.getGroupByNameAndManagedSystem(entity.getName(), entity.getManagedSysId(), null, null);
+        if(nameEntity != null) {
+			if(StringUtils.isBlank(entity.getId()) || !entity.getId().equals(nameEntity.getId())) {
+				throw new BasicDataServiceException(ResponseCode.CONSTRAINT_VIOLATION, "Role Name + Managed Sys combination taken");
+			}
+		}
 
-            if (StringUtils.isNotBlank(group.getId()) && !group.getId().equals(found.getId())) {
-                throw new BasicDataServiceException(ResponseCode.NAME_TAKEN, "Group name is already in use");
-            }
-        }
-
-        entityValidator.isValid(groupDozerConverter.convertToEntity(group, true));
+        entityValidator.isValid(groupDozerConverter.convertToEntity(entity, true));
     }
 
     @Override

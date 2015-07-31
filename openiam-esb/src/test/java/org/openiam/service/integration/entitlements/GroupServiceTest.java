@@ -4,6 +4,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.junit.AfterClass;
 import org.mortbay.jetty.servlet.HashSessionIdManager;
 import org.openiam.base.ws.Response;
+import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.srvc.access.dto.AccessRight;
@@ -16,6 +17,7 @@ import org.openiam.idm.srvc.grp.dto.GroupAttribute;
 import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.service.OrganizationDataService;
+import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.service.integration.AbstractAttributeServiceTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -170,5 +172,53 @@ public class GroupServiceTest extends AbstractAttributeServiceTest<Group, GroupS
 		Assert.assertTrue(group.getOrganizations().stream().filter(o -> o.getEntityId().equals(organization.getId())).count() > 0);
 		Assert.assertEquals(group.getOrganizations().stream().filter(o -> o.getEntityId().equals(organization.getId())).findFirst().get().getAccessRightIds(), rightIds);
 		return get((String)response.getResponseValue());
+	}
+	
+
+	@Test
+	public void testContraintViolationWithNoManagedSystem() {
+		final String name = getRandomName();
+		Group r1 = newInstance();
+		Group r2 = newInstance();
+		
+		r1.setName(name);
+		r2.setName(name);
+		Response response = groupServiceClient.saveGroup(r1, getRequestorId());
+		assertSuccess(response);
+		response = groupServiceClient.saveGroup(r2, getRequestorId());
+		assertResponseCode(response, ResponseCode.CONSTRAINT_VIOLATION);
+	}
+	
+	@Test
+	public void testContraintViolationWithManagedSystem() {
+		final String name = getRandomName();
+		final String managedSystemId = getDefaultManagedSystemId();
+		Group r1 = newInstance();
+		Group r2 = newInstance();
+		
+		r1.setName(name);
+		r1.setManagedSysId(managedSystemId);
+		r2.setName(name);
+		r2.setManagedSysId(managedSystemId);
+		Response response = groupServiceClient.saveGroup(r1, getRequestorId());
+		assertSuccess(response);
+		response = groupServiceClient.saveGroup(r2, getRequestorId());
+		assertResponseCode(response, ResponseCode.CONSTRAINT_VIOLATION);
+	}
+	
+	@Test
+	public void testContraintViolationDifferentManagedSystem() {
+		final String name = getRandomName();
+		Group r1 = newInstance();
+		Group r2 = newInstance();
+		
+		r1.setName(name);
+		r1.setManagedSysId(managedSysServiceClient.getManagedSystems(null, 10, 0).get(0).getId());
+		r2.setName(name);
+		r2.setManagedSysId(managedSysServiceClient.getManagedSystems(null, 10, 0).get(1).getId());
+		Response response = groupServiceClient.saveGroup(r1, getRequestorId());
+		assertSuccess(response);
+		response = groupServiceClient.saveGroup(r2, getRequestorId());
+		assertSuccess(response);
 	}
 }

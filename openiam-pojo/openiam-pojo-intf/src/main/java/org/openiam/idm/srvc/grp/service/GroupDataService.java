@@ -29,12 +29,11 @@ public interface GroupDataService {
 	
 	@Deprecated
     public GroupEntity getGroup(final String id, final String requesterId);
-    public GroupEntity getGroupByName(final String groupName, final String requesterId);
+	public GroupEntity getGroupByNameAndManagedSystem(final String groupName, final String managedSystemId, final String requesterId, final LanguageEntity language);
     public List<Group> getCompiledGroupsForUser(final String userId);
 
     public GroupEntity getGroupLocalize(final String id, final LanguageEntity language);
     public GroupEntity getGroupLocalize(final String id, final String requesterId, final LanguageEntity language);
-    public GroupEntity getGroupByNameLocalize(final String groupName, final String requesterId, final LanguageEntity language);
     public List<Group> getCompiledGroupsForUserLocalize(final String userId, final LanguageEntity language);
     /**
      * Returns a list of Group objects that satisfy the search criteria defined through the GroupSearch parameter.
