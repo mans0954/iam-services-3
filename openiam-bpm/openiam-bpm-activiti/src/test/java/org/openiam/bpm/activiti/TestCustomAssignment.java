@@ -7,7 +7,8 @@ import org.activiti.engine.TaskService;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
 import org.activiti.engine.test.Deployment;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
@@ -17,7 +18,7 @@ import org.testng.annotations.Test;
 @ContextConfiguration("classpath:test-bpm-context.xml")
 public class TestCustomAssignment extends AbstractTestNGSpringContextTests {
 
-	private static Logger log = Logger.getLogger(TestCustomAssignment.class);
+	private static final Log log = LogFactory.getLog(TestCustomAssignment.class);
 	
 	  @Autowired
 	  private RuntimeService runtimeService;

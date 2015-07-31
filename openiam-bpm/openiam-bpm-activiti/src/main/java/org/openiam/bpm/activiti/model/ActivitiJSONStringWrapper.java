@@ -2,12 +2,13 @@ package org.openiam.bpm.activiti.model;
 
 import java.io.Serializable;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openiam.idm.util.CustomJacksonMapper;
 
 public class ActivitiJSONStringWrapper implements Serializable {
 
-	private static transient final Logger LOG = Logger.getLogger(ActivitiJSONStringWrapper.class);
+	private static transient final Log LOG = LogFactory.getLog(ActivitiJSONStringWrapper.class);
 	
 	/**
 	 * 

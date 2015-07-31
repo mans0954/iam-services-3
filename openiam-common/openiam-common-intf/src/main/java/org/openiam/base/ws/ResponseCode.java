@@ -55,7 +55,10 @@ public enum ResponseCode {
 
     @XmlEnumValue("nameTaken")
     NAME_TAKEN("nameTaken"),
-
+    
+    @XmlEnumValue("CONSTRAINT_VIOLATION")
+    CONSTRAINT_VIOLATION("CONSTRAINT_VIOLATION"),
+    
     @XmlEnumValue("READONLY")
     READONLY("READONLY"),
 

@@ -9,7 +9,8 @@ import org.activiti.engine.delegate.TaskListener;
 import org.activiti.engine.impl.el.FixedValue;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openiam.bpm.activiti.ActivitiService;
 import org.openiam.bpm.activiti.model.ActivitiJSONStringWrapper;
 import org.openiam.bpm.util.ActivitiConstants;
@@ -49,7 +50,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 public abstract class AbstractActivitiJob implements JavaDelegate, TaskListener {
 	
-	protected static Logger LOG = Logger.getLogger(AbstractActivitiJob.class);
+	private static final Log LOG = LogFactory.getLog(AbstractActivitiJob.class);
 	
 	private FixedValue notificationType;
 	private FixedValue targetVariable;

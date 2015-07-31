@@ -13,8 +13,9 @@ import java.util.TreeSet;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.http.protocol.UriPatternMatcher;
-import org.apache.log4j.Logger;
 import org.openiam.am.srvc.dto.AbstractParameter;
 import org.openiam.am.srvc.dto.ContentProvider;
 import org.openiam.am.srvc.dto.PatternMatchMode;
@@ -30,7 +31,7 @@ import org.springframework.http.HttpMethod;
 
 public class ContentProviderNode {
 	
-	private static Logger LOG = Logger.getLogger(ContentProviderNode.class);
+	private static final Log LOG = LogFactory.getLog(ContentProviderNode.class);
 
 	private ContentProvider contentProvider;
 	private UriPatternMatcher<URIPattern> patternMatcher = new UriPatternMatcher<>();

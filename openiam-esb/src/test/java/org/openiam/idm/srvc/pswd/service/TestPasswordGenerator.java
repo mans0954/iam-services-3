@@ -1,7 +1,8 @@
 package org.openiam.idm.srvc.pswd.service;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.springframework.test.context.ContextConfiguration;
@@ -43,7 +44,7 @@ public class TestPasswordGenerator extends AbstractTestNGSpringContextTests {
         LIMIT_NUM_REPEAT_CHAR, REJECT_CHARS_IN_PSWD, ALPHA_CHARS
     };
 
-    private static Logger LOG = Logger.getLogger(TestPasswordGenerator.class);
+    private static final Log LOG = LogFactory.getLog(TestPasswordGenerator.class);
 
     @BeforeClass
     protected void setUp() throws Exception {

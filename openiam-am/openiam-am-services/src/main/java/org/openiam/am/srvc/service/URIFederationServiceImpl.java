@@ -16,7 +16,8 @@ import java.util.Set;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.StopWatch;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openiam.am.srvc.dao.AuthLevelGroupingDao;
 import org.openiam.am.srvc.dao.ContentProviderDao;
 import org.openiam.am.srvc.domain.AuthLevelGroupingEntity;
@@ -86,7 +87,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 //@ManagedResource(objectName="org.openiam.am.srvc.service:name=URIFederationService")
 public class URIFederationServiceImpl implements URIFederationService, ApplicationContextAware, InitializingBean, Sweepable {
 	
-	private static Logger LOG = Logger.getLogger(URIFederationServiceImpl.class);
+	private static final Log LOG = LogFactory.getLog(URIFederationServiceImpl.class);
 	private ApplicationContext ctx;
 
 	private ContentProviderTree contentProviderTree;

@@ -11,7 +11,8 @@ import javax.jms.Session;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.StopWatch;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openiam.dozer.converter.IdmAuditLogCustomDozerConverter;
 import org.openiam.dozer.converter.IdmAuditLogDozerConverter;
 import org.openiam.dozer.converter.IdmAuditLogTargetDozerConverter;
@@ -33,7 +34,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 @Component("auditLogDispatcher")
 public class AuditLogDispatcher implements Sweepable {
 
-    private static Logger LOG = Logger.getLogger(AuditLogDispatcher.class);
+	private static final Log LOG = LogFactory.getLog(AuditLogDispatcher.class);
 
     @Autowired
     private AuditLogService auditLogService;

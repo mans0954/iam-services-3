@@ -1,15 +1,14 @@
 package org.openiam.util;
 
-import java.io.FileWriter;
-import java.io.PrintWriter;
 
-import org.apache.log4j.*;
 
 /**
  * Provides a logging utility using Log4J.
  * @author suneet
  *
+ *This needs to be deleted from teh codebase
  */
+@Deprecated
 public class LoggerUtil {
 	
 	/*

@@ -28,7 +28,8 @@ import java.util.List;
 import javax.jws.WebService;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.dozer.util.ReflectionUtils;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
@@ -66,7 +67,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class BatchDataServiceImpl implements BatchDataService, ApplicationContextAware {
 	
-	private static Logger LOG = Logger.getLogger(BatchDataServiceImpl.class);
+	private static final Log LOG = LogFactory.getLog(BatchDataServiceImpl.class);
 	
 	private ApplicationContext ctx;
 	

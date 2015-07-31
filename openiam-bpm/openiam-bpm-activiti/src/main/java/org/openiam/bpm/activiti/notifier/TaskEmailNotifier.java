@@ -9,7 +9,8 @@ import org.activiti.engine.task.IdentityLink;
 import org.activiti.engine.task.Task;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.idm.srvc.msg.service.MailService;
@@ -23,7 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Component("taskEmailNotifier")
 public class TaskEmailNotifier {
 	
-	private static Logger LOG = Logger.getLogger(TaskEmailNotifier.class);
+	private static final Log LOG = LogFactory.getLog(TaskEmailNotifier.class);
 	
 	@Autowired
 	@Qualifier("activitiTaskService")

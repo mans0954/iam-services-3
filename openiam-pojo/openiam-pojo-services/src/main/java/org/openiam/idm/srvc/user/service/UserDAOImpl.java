@@ -1,10 +1,26 @@
 package org.openiam.idm.srvc.user.service;
 
+import static org.hibernate.criterion.Projections.rowCount;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
-import org.hibernate.criterion.*;
+import org.hibernate.criterion.Criterion;
+import org.hibernate.criterion.DetachedCriteria;
+import org.hibernate.criterion.Disjunction;
+import org.hibernate.criterion.MatchMode;
+import org.hibernate.criterion.Order;
+import org.hibernate.criterion.Projections;
+import org.hibernate.criterion.Restrictions;
+import org.hibernate.criterion.Subqueries;
 import org.openiam.base.OrderConstants;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.SearchParam;
@@ -19,12 +35,7 @@ import org.openiam.idm.srvc.user.dto.DelegationFilterSearch;
 import org.openiam.idm.srvc.user.dto.SearchAttribute;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
-
-import java.util.*;
-
-import static org.hibernate.criterion.Projections.rowCount;
 
 /**
  * Data access implementation for domain model class User and UserWS. UserWS is
@@ -36,10 +47,8 @@ import static org.hibernate.criterion.Projections.rowCount;
  */
 @Repository("userDAO")
 public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements UserDAO {
-    @Value("${openiam.dbType}")
-    private String dbType;
     @Autowired
-    protected SysConfiguration sysConfiguration;
+    private SysConfiguration sysConfiguration;
 
     @Override
     protected String getPKfieldName() {
@@ -131,30 +140,8 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         return getStringCriterion(fieldName, value, false);
     }
 
-    private Criterion getStringCriterion(String fieldName, String value, boolean caseInsensitive) {
-        Criterion criterion = null;
-        MatchMode matchMode = null;
-        if (StringUtils.indexOf(value, "*") == 0) {
-            matchMode = MatchMode.END;
-            value = value.substring(1);
-        }
-        if (StringUtils.isNotEmpty(value) && StringUtils.indexOf(value, "*") == value.length() - 1) {
-            value = value.substring(0, value.length() - 1);
-            matchMode = (matchMode == MatchMode.END) ? MatchMode.ANYWHERE : MatchMode.START;
-        }
-
-        if (StringUtils.isNotEmpty(value)) {
-            if (matchMode != null) {
-                criterion = Restrictions.ilike(fieldName, value, matchMode);
-            } else {
-                criterion = (caseInsensitive) ? Restrictions.eq(fieldName, value).ignoreCase() : Restrictions.eq(fieldName, value);
-            }
-        }
-        return criterion;
-    }
-
     private Criteria getExampleCriteria(UserSearchBean searchBean) {
-        boolean ORACLE_INSENSITIVE = "ORACLE_INSENSITIVE".equalsIgnoreCase(dbType);
+        final boolean caseInsensitive = sysConfiguration.isCaseInSensitiveDatabase();
 
         final Criteria criteria = getCriteria();
         if (StringUtils.isNotBlank(searchBean.getKey())) {
@@ -164,10 +151,10 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
                 criteria.add(Restrictions.eq("showInSearch", searchBean.getShowInSearch()));
             }
             if (searchBean.getFirstNameMatchToken() != null && searchBean.getFirstNameMatchToken().isValid()) {
-                criteria.add(getStringCriterion("firstName", searchBean.getFirstNameMatchToken().getValue(), ORACLE_INSENSITIVE));
+                criteria.add(getStringCriterion("firstName", searchBean.getFirstNameMatchToken().getValue(), caseInsensitive));
             }
             if (searchBean.getLastNameMatchToken() != null && searchBean.getLastNameMatchToken().isValid()) {
-                criteria.add(getStringCriterion("lastName", searchBean.getLastNameMatchToken().getValue(), ORACLE_INSENSITIVE));
+                criteria.add(getStringCriterion("lastName", searchBean.getLastNameMatchToken().getValue(), caseInsensitive));
             }
             if (StringUtils.isNotEmpty(searchBean.getNickName())) {
                 criteria.add(getStringCriterion("nickname", searchBean.getNickName()));
@@ -218,8 +205,8 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
             if (searchBean.getEmailAddressMatchToken() != null) {
                 criteria.createAlias("emailAddresses", "em");
                 final Disjunction disjunction = Restrictions.disjunction();
-                disjunction.add(getStringCriterion("em.emailAddress", searchBean.getEmailAddressMatchToken().getValue(), ORACLE_INSENSITIVE))
-                                .add(getStringCriterion("email", searchBean.getEmailAddressMatchToken().getValue(), ORACLE_INSENSITIVE));
+                disjunction.add(getStringCriterion("em.emailAddress", searchBean.getEmailAddressMatchToken().getValue(), caseInsensitive))
+                                .add(getStringCriterion("email", searchBean.getEmailAddressMatchToken().getValue(), caseInsensitive));
                 criteria.add(disjunction);
             }
             
@@ -288,7 +275,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
                 if (searchBean.getPrincipal() != null) {
                 	final SearchParam param = searchBean.getPrincipal().getLoginMatchToken();
                 	if(param != null && param.isValid()) {
-                		criteria.add(getStringCriterion("lg.login", param.getValue(), ORACLE_INSENSITIVE));
+                		criteria.add(getStringCriterion("lg.login", param.getValue(), caseInsensitive));
                 	}
                 	if (StringUtils.isNotEmpty(searchBean.getPrincipal().getManagedSysId())) {
                 		criteria.add(Restrictions.eq("lg.managedSysId", searchBean.getPrincipal().getManagedSysId()));

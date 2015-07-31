@@ -14,7 +14,8 @@ import javax.annotation.PreDestroy;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openiam.core.dao.lucene.HibernateSearchDao;
 import org.openiam.thread.Sweepable;
 import org.springframework.beans.factory.InitializingBean;
@@ -36,7 +37,7 @@ public class LuceneReindexService implements InitializingBean, Sweepable/*, Runn
 	private Date lastReindexTimestamp = new Date();
 	private Map<String, HibernateSearchDao> daoMap;
 	
-	private static final Logger log = Logger.getLogger(LuceneReindexService.class);
+	private static final Log log = LogFactory.getLog(LuceneReindexService.class);
 	
 	/*
 	private boolean forceThreadShutdown = false;

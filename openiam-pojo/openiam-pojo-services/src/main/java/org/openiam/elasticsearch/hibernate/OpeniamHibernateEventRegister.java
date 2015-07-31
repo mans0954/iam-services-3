@@ -1,6 +1,7 @@
 package org.openiam.elasticsearch.hibernate;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.hibernate.SessionFactory;
 import org.hibernate.event.service.spi.EventListenerRegistry;
 import org.hibernate.event.spi.EventType;
@@ -16,7 +17,7 @@ import javax.annotation.PostConstruct;
  */
 @Component
 public class OpeniamHibernateEventRegister {
-    private static Logger log = Logger.getLogger(OpeniamHibernateEventRegister.class);
+	private static final Log log = LogFactory.getLog(OpeniamHibernateEventRegister.class);
 
     @Autowired
     private SessionFactory sessionFactory;

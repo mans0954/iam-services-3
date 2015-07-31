@@ -2,7 +2,8 @@ package org.openiam.elasticsearch.service;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.elasticsearch.action.admin.cluster.state.ClusterStateResponse;
 import org.elasticsearch.action.admin.indices.analyze.AnalyzeResponse;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
@@ -44,6 +45,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.*;
@@ -54,7 +56,7 @@ import java.util.*;
  */
 @Component
 public class ElasticsearchProvider implements InitializingBean, DisposableBean {
-    protected static Logger logger = Logger.getLogger(ElasticsearchProvider.class);
+	private static final Log logger = LogFactory.getLog(ElasticsearchProvider.class);
 
     private static Map<String, ElasticsearchMetadata> indexeMetadataMap = new HashMap<>();
 

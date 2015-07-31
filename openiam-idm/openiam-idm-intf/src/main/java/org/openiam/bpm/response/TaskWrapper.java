@@ -12,14 +12,12 @@ import javax.xml.bind.annotation.XmlType;
 
 import org.activiti.engine.ActivitiException;
 import org.activiti.engine.RuntimeService;
-import org.activiti.engine.history.HistoricActivityInstance;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.task.Task;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openiam.bpm.util.ActivitiConstants;
-import org.openiam.provision.dto.ProvisionUser;
-import org.springframework.validation.beanvalidation.CustomValidatorBean;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "TaskWrapper", propOrder = {
@@ -49,7 +47,7 @@ import org.springframework.validation.beanvalidation.CustomValidatorBean;
 })
 public class TaskWrapper implements Serializable {
 	
-	private static Logger LOG = Logger.getLogger(TaskWrapper.class);
+	private static final Log LOG = LogFactory.getLog(TaskWrapper.class);
 
 	private String id;
 	private String name;

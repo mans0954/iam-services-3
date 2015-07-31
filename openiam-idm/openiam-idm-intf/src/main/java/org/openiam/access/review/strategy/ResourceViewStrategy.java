@@ -25,7 +25,7 @@ public class ResourceViewStrategy extends AccessReviewStrategy {
             List<TreeNode<AccessViewBean>> dataList = proceedSubTree(getResourceBeanList(resourceIds, true, false), 0);
             return applyFilter(dataList);
         } catch (Exception ex){
-            log.error(ex.getLocalizedMessage(), ex);
+        	LOG.error(ex.getLocalizedMessage(), ex);
             return Collections.EMPTY_LIST;
         }
     }

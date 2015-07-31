@@ -6,7 +6,8 @@ import javax.jws.WebService;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
@@ -59,7 +60,7 @@ public class MetadataElementTemplateWebServiceImpl implements MetadataElementTem
 	@Autowired
 	private MetadataTemplateTypeFieldDozerConverter uiFieldDozerConverter;
 	
-	private static Logger LOG = Logger.getLogger(MetadataElementTemplateWebServiceImpl.class);
+	private static final Log LOG = LogFactory.getLog(MetadataElementTemplateWebServiceImpl.class);
 
 	@Override
     @Transactional(readOnly = true)

@@ -20,7 +20,8 @@
  */
 package org.openiam.idm.srvc.audit.ws;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
@@ -33,6 +34,7 @@ import org.springframework.stereotype.Service;
 
 import javax.jws.WebParam;
 import javax.jws.WebService;
+
 import java.util.List;
 
 /**
@@ -46,7 +48,7 @@ public class IdmAuditLogWebDataServiceImpl implements IdmAuditLogWebDataService 
 	@Autowired
 	private AuditLogService auditLogService;
 
-    private static Logger LOG = Logger.getLogger(IdmAuditLogWebDataServiceImpl.class);
+	private static final Log LOG = LogFactory.getLog(IdmAuditLogWebDataServiceImpl.class);
 
     @Override
     public Response addLog(IdmAuditLog record) {

@@ -4,7 +4,8 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.After;
 import org.aspectj.lang.annotation.AfterReturning;
@@ -25,7 +26,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class InternationalizationJoinpointProvider implements InitializingBean, ApplicationContextAware {
 	
-	private static Logger LOG = Logger.getLogger(InternationalizationJoinpointProvider.class);
+	private static final Log LOG = LogFactory.getLog(InternationalizationJoinpointProvider.class);
 	
 	private ApplicationContext ctx;
 	

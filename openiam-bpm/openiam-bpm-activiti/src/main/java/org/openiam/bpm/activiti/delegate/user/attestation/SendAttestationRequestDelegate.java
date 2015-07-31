@@ -1,15 +1,11 @@
 package org.openiam.bpm.activiti.delegate.user.attestation;
 
-import java.util.ArrayList;
 import java.util.Collection;
 
 import org.activiti.engine.delegate.DelegateExecution;
-import org.activiti.engine.delegate.JavaDelegate;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.StopWatch;
-import org.apache.log4j.Logger;
-import org.openiam.bpm.activiti.delegate.core.AbstractActivitiJob;
-import org.openiam.bpm.activiti.delegate.core.AbstractNotificationDelegate;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openiam.bpm.activiti.delegate.entitlements.AbstractEntitlementsDelegate;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
@@ -17,13 +13,10 @@ import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.idm.srvc.user.domain.UserEntity;
-import org.openiam.idm.srvc.user.service.UserDataService;
-import org.openiam.util.SpringContextProvider;
-import org.springframework.beans.factory.annotation.Autowired;
 
 public class SendAttestationRequestDelegate extends AbstractEntitlementsDelegate {
 	
-	private static Logger LOG = Logger.getLogger(SendAttestationRequestDelegate.class);
+	private static final Log LOG = LogFactory.getLog(SendAttestationRequestDelegate.class);
 	
 	public SendAttestationRequestDelegate() {
 		super();

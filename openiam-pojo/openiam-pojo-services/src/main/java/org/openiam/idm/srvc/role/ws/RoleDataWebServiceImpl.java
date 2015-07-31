@@ -21,25 +21,31 @@
  */
 package org.openiam.idm.srvc.role.ws;
 
+import java.util.List;
+import java.util.Set;
+
+import javax.annotation.PostConstruct;
+import javax.jws.WebMethod;
+import javax.jws.WebService;
+
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.TreeObjectId;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.exception.BasicDataServiceException;
 import org.openiam.dozer.converter.LanguageDozerConverter;
 import org.openiam.dozer.converter.RoleDozerConverter;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.RoleSearchBean;
 import org.openiam.idm.srvc.access.service.AccessRightProcessor;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
-import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
-import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
@@ -54,13 +60,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.PostConstruct;
-import javax.jws.WebMethod;
-import javax.jws.WebService;
-
-import java.util.List;
-import java.util.Set;
-
 /**
  * @author suneet
  *
@@ -72,7 +71,7 @@ import java.util.Set;
 @Service("roleWS")
 public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleDataWebService {
 	
-	private static Logger LOG = Logger.getLogger(RoleDataWebServiceImpl.class);
+	private static final Log LOG = LogFactory.getLog(RoleDataWebServiceImpl.class);
 	
 	@Autowired
     private RoleDataService roleDataService;
@@ -144,10 +143,10 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 		}
 		
 		/* check if the name is taken by another entity */
-		final RoleEntity nameEntity = roleDataService.getRoleByName(role.getName(), null);
+		final RoleEntity nameEntity = roleDataService.getRoleByNameAndManagedSysId(role.getName(), role.getManagedSysId());
 		if(nameEntity != null) {
 			if(StringUtils.isBlank(entity.getId()) || !entity.getId().equals(nameEntity.getId())) {
-				throw new BasicDataServiceException(ResponseCode.NAME_TAKEN, "Role Name is already exists");
+				throw new BasicDataServiceException(ResponseCode.CONSTRAINT_VIOLATION, "Role Name + Managed Sys combination taken");
 			}
 		}
 		
@@ -385,6 +384,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 			roleDataService.saveRole(entity, requesterId);
             response.setResponseValue(entity.getId());
 		} catch(BasicDataServiceException e) {
+			LOG.warn(String.format("Could not save role", e));
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
             response.setErrorTokenList(e.getErrorTokenList());

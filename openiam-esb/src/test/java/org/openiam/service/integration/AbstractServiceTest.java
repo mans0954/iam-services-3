@@ -37,6 +37,7 @@ import org.openiam.idm.srvc.lang.service.LanguageWebService;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.meta.ws.MetadataWebService;
+import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.service.OrganizationDataService;
 import org.openiam.idm.srvc.org.service.OrganizationTypeDataService;
@@ -64,6 +65,10 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 	@Autowired
 	@Qualifier("languageServiceClient")
 	protected LanguageWebService languageServiceClient;
+	
+	@Autowired
+	@Qualifier("managedSysServiceClient")
+	protected ManagedSystemWebService managedSysServiceClient;
 
 	@Autowired
 	@Qualifier("userServiceClient")

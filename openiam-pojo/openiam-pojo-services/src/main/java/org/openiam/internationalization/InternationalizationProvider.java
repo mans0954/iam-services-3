@@ -4,7 +4,8 @@ import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.hibernate.proxy.HibernateProxyHelper;
 import org.openiam.base.BaseIdentity;
 import org.openiam.base.domain.KeyEntity;
@@ -35,7 +36,7 @@ public class InternationalizationProvider {
 	@Autowired
 	private LanguageMappingDAO languageDAO;
 	
-	private static Logger LOG = Logger.getLogger(InternationalizationProvider.class);
+	private static final Log LOG = LogFactory.getLog(InternationalizationProvider.class);
 	
 	
 	@PostConstruct

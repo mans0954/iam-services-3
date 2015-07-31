@@ -3,7 +3,8 @@ package org.openiam.bpm.activiti.delegate.group.attestation;
 import org.activiti.engine.delegate.DelegateExecution;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.time.StopWatch;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openiam.bpm.activiti.delegate.entitlements.AbstractEntitlementsDelegate;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.bpm.util.ActivitiRequestType;
@@ -19,7 +20,7 @@ import java.util.Collection;
 
 public class SendAttestationRequestDelegate extends AbstractEntitlementsDelegate {
 	
-	private static Logger LOG = Logger.getLogger(SendAttestationRequestDelegate.class);
+	private static final Log LOG = LogFactory.getLog(SendAttestationRequestDelegate.class);
 	
 	public SendAttestationRequestDelegate() {
 		super();
