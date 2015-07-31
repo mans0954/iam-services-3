@@ -17,7 +17,7 @@
  */
 
 /**
- * 
+ *
  */
 package org.openiam.idm.srvc.user.ws;
 
@@ -58,6 +58,10 @@ import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.idm.srvc.msg.service.MailService;
 import org.openiam.idm.srvc.msg.service.MailTemplateParameters;
+import org.openiam.idm.srvc.org.domain.OrganizationEntity;
+import org.openiam.idm.srvc.org.domain.OrganizationUserEntity;
+import org.openiam.idm.srvc.org.dto.Organization;
+import org.openiam.idm.srvc.org.dto.OrganizationUserDTO;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -72,13 +76,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author suneet
- * 
  */
 @Service("userWS")
 @WebService(endpointInterface = "org.openiam.idm.srvc.user.ws.UserDataWebService",
-            targetNamespace = "urn:idm.openiam.org/srvc/user/service",
-            serviceName = "UserDataWebService",
-            portName = "UserDataWebServicePort")
+        targetNamespace = "urn:idm.openiam.org/srvc/user/service",
+        serviceName = "UserDataWebService",
+        portName = "UserDataWebServicePort")
 public class UserDataWebServiceImpl implements UserDataWebService {
 
     private static Logger log = Logger.getLogger(UserDataWebServiceImpl.class);
@@ -446,7 +449,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
     }
 
     @Override
-    @Transactional(readOnly=true)
+    @Transactional(readOnly = true)
     public List<User> findPotentialSupSubs(PotentialSupSubSearchBean userSearchBean, Integer from, Integer size) {
         List<User> resultList = Collections.EMPTY_LIST;
         try {
@@ -529,7 +532,16 @@ public class UserDataWebServiceImpl implements UserDataWebService {
     @Transactional(readOnly = true)
     public User getUserWithDependent(String id, String requestorId, boolean dependants) {
         final UserEntity user = userManager.getUser(id, requestorId);
-        return userDozerConverter.convertToDTO(user, dependants);
+        User u = userDozerConverter.convertToDTO(user, dependants);
+        if (dependants) {
+            Set<OrganizationUserDTO> orgUsers = new HashSet<OrganizationUserDTO>();
+            if (CollectionUtils.isNotEmpty(user.getOrganizationUser()))
+                for (OrganizationUserEntity organizationUser : user.getOrganizationUser())
+                    orgUsers.add(new OrganizationUserDTO(organizationUser.getUser().getId(), organizationUser.getOrganization().getId(),
+                            organizationUser.getMetadataTypeEntity().getId(), null));
+            u.setOrganizationUserDTOs(orgUsers);
+        }
+        return u;
     }
 
     @Override
@@ -699,7 +711,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
         try {
             count = userManager.count(userSearchBean);
         } catch (BasicDataServiceException e) {
-          log.error(e.getMessage(), e);
+            log.error(e.getMessage(), e);
         }
         return count;
     }
@@ -880,11 +892,10 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<User> getUsersForResourceWithSorting(final UserSearchBean userSearchBean,  final int from, final int size) {
+    public List<User> getUsersForResourceWithSorting(final UserSearchBean userSearchBean, final int from, final int size) {
         final List<UserEntity> entityList = userManager.getUsersForResource(userSearchBean, from, size);
         return userDozerConverter.convertToDTOList(entityList, userSearchBean.isDeepCopy());
     }
-
 
 
     @Override
@@ -1092,14 +1103,14 @@ public class UserDataWebServiceImpl implements UserDataWebService {
     public List<UserAttribute> getUserAttributes(final String userId) {
         return userManager.getUserAttributesDtoList(userId);
     }
-    
-	@Override
+
+    @Override
     @Transactional(readOnly = true)
-	public List<UserAttribute> getUserAttributesInternationalized(final String userId, final Language language) {
+    public List<UserAttribute> getUserAttributesInternationalized(final String userId, final Language language) {
         final List<UserAttributeEntity> attributes = userManager.getUserAttributeList(userId, languageConverter.convertToEntity(language, false));
         final List<UserAttribute> retval = userAttributeDozerConverter.convertToDTOList(attributes, true);
         return retval;
-	}
+    }
 
     @Override
     public SaveTemplateProfileResponse saveUserProfile(final UserProfileRequestModel request) {
@@ -1299,7 +1310,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
         return response;
     }
 
-    public Response validateUserSearchRequest(UserSearchBean userSearchBean){
+    public Response validateUserSearchRequest(UserSearchBean userSearchBean) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
             if (!userManager.validateSearchBean(userSearchBean)) {
@@ -1344,12 +1355,12 @@ public class UserDataWebServiceImpl implements UserDataWebService {
         return userManager.getAllSuperiorsCount();
     }
 
-	@Override
-	@Transactional(readOnly = true)
-	public List<EmailAddress> findEmailBeans(final EmailSearchBean searchBean, final int size, final int from) {
-		final List<EmailAddressEntity> emailAddresses = userManager.getEmailAddressList(searchBean, size, from);
-		return emailAddressDozerConverter.convertToDTOList(emailAddresses, searchBean.isDeepCopy());
-	}
+    @Override
+    @Transactional(readOnly = true)
+    public List<EmailAddress> findEmailBeans(final EmailSearchBean searchBean, final int size, final int from) {
+        final List<EmailAddressEntity> emailAddresses = userManager.getEmailAddressList(searchBean, size, from);
+        return emailAddressDozerConverter.convertToDTOList(emailAddresses, searchBean.isDeepCopy());
+    }
 
 //    @Override
 //    public Map<String, UserAttribute> getUserAttributesAsMap(@WebParam(name = "userId", targetNamespace = "") String userId){

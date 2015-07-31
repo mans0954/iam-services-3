@@ -216,10 +216,10 @@
     </mapping>
 
     <!--<mapping>-->
-        <!--<class-a>org.openiam.idm.srvc.mngsys.domain.ManagedSysRuleEntity-->
-        <!--</class-a>-->
-        <!--<class-b>org.openiam.idm.srvc.mngsys.dto.ManagedSysRuleDto-->
-        <!--</class-b>-->
+    <!--<class-a>org.openiam.idm.srvc.mngsys.domain.ManagedSysRuleEntity-->
+    <!--</class-a>-->
+    <!--<class-b>org.openiam.idm.srvc.mngsys.dto.ManagedSysRuleDto-->
+    <!--</class-b>-->
     <!--</mapping>-->
     <mapping>
         <class-a>org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity
@@ -547,6 +547,7 @@
             <b>synchReviewRecordId</b>
         </field>
     </mapping>
+
     <mapping>
         <class-a>org.openiam.idm.srvc.policy.domain.PolicyAttributeEntity</class-a>
         <class-b>org.openiam.idm.srvc.policy.dto.PolicyAttribute</class-b>

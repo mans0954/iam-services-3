@@ -3,6 +3,7 @@ package org.openiam.idm.srvc.org.service;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
+import org.hibernate.Query;
 import org.hibernate.criterion.*;
 import org.openiam.base.Tuple;
 import org.openiam.base.ws.SortParam;
@@ -13,6 +14,7 @@ import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.org.domain.Org2OrgXrefEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
+import org.openiam.idm.srvc.org.domain.OrganizationUserEntity;
 import org.openiam.idm.srvc.searchbean.converter.OrganizationSearchBeanConverter;
 import org.openiam.internationalization.LocalizedDatabaseGet;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,10 +65,11 @@ public class OrganizationDAOImpl extends
 
     private Criteria getOrganizationsForUserCriteria(final String userId,
                                                      final Set<String> filter) {
+
         final Criteria criteria = getCriteria();
         if (StringUtils.isNotBlank(userId)) {
-            criteria.createAlias("users", "u").add(
-                    Restrictions.eq("u.id", userId));
+            criteria.createAlias("organizationUser", "ou").
+                    add(Restrictions.eq("ou.primaryKey.user.id", userId));
         }
 
         if (filter != null && !filter.isEmpty()) {
@@ -79,8 +82,8 @@ public class OrganizationDAOImpl extends
                                                           final Set<String> filter) {
         final Criteria criteria = getCriteria();
         if (StringUtils.isNotBlank(userId)) {
-            criteria.createAlias("users", "u").add(
-                    Restrictions.eq("u.id", userId));
+            criteria.createAlias("organizationUser", "ou").
+                    add(Restrictions.eq("ou.primaryKey.user.id", userId));
         }
 
         if (filter != null && !filter.isEmpty()) {
@@ -114,8 +117,8 @@ public class OrganizationDAOImpl extends
             }
 
             if (CollectionUtils.isNotEmpty(organizationSearchBean.getUserIdSet())) {
-                criteria.createAlias("users", "usr");
-                criteria.add(Restrictions.in("usr.id", organizationSearchBean.getUserIdSet()));
+                criteria.createAlias("organizationUser", "ou");
+                criteria.add(Restrictions.in("ou.primaryKey.user.id", organizationSearchBean.getUserIdSet()));
             }
 
             if (CollectionUtils.isNotEmpty(organizationSearchBean.getParentIdSet())) {

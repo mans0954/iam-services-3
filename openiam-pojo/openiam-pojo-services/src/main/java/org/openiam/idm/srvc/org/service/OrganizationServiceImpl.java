@@ -9,6 +9,7 @@ import org.openiam.base.ws.ResponseCode;
 import org.openiam.dozer.converter.LocationDozerConverter;
 import org.openiam.dozer.converter.OrganizationAttributeDozerConverter;
 import org.openiam.dozer.converter.OrganizationDozerConverter;
+import org.openiam.dozer.converter.OrganizationUserDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.LocationSearchBean;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
@@ -23,6 +24,7 @@ import org.openiam.idm.srvc.loc.domain.LocationEntity;
 import org.openiam.idm.srvc.loc.dto.Location;
 import org.openiam.idm.srvc.loc.service.LocationDAO;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
+import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
 import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
@@ -31,8 +33,10 @@ import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
 import org.openiam.idm.srvc.org.domain.Org2OrgXrefEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
+import org.openiam.idm.srvc.org.domain.OrganizationUserEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.dto.OrganizationAttribute;
+import org.openiam.idm.srvc.org.dto.OrganizationUserDTO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.idm.srvc.searchbean.converter.LocationSearchBeanConverter;
@@ -58,8 +62,8 @@ import java.util.*;
 @Transactional
 public class OrganizationServiceImpl extends AbstractBaseService implements OrganizationService, InitializingBean {
     private static final Log log = LogFactory.getLog(OrganizationServiceImpl.class);
-	@Autowired
-	private OrganizationTypeDAO orgTypeDAO;
+    @Autowired
+    private OrganizationTypeDAO orgTypeDAO;
 
     @Autowired
     private LocationDozerConverter locationDozerConverter;
@@ -69,8 +73,8 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     @Autowired
     private LocationSearchBeanConverter locationSearchBeanConverter;
 
-	@Autowired
-	private MetadataElementDAO metadataDAO;
+    @Autowired
+    private MetadataElementDAO metadataDAO;
 
     @Autowired
     private ApproverAssociationDAO approverAssociationDAO;
@@ -89,25 +93,29 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
 
     @Autowired
     private OrganizationTypeService organizationTypeService;
-    
+
     @Autowired
     private OrganizationDozerConverter organizationDozerConverter;
 
+
+    @Autowired
+    private OrganizationUserDozerConverter organizationUserDozerConverter;
+
     @Autowired
     private OrganizationAttributeDozerConverter organizationAttributeDozerConverter;
-    
+
     @Autowired
     private MetadataElementDAO metadataElementDAO;
-    
-	@Value("${org.openiam.resource.admin.resource.type.id}")
-	private String adminResourceTypeId;
-	
-	@Autowired
+
+    @Value("${org.openiam.resource.admin.resource.type.id}")
+    private String adminResourceTypeId;
+
+    @Autowired
     private ResourceTypeDAO resourceTypeDao;
-	
+
     @Autowired
     private MetadataTypeDAO typeDAO;
-    
+
     @Autowired
     private GroupDAO groupDAO;
 
@@ -157,18 +165,18 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
         final List<OrganizationEntity> foundList = this.findBeans(searchBean, requesterId, 0, 1, null);
         return (CollectionUtils.isNotEmpty(foundList)) ? foundList.get(0) : null;
     }
-    
+
     @Override
     @Transactional(readOnly = true)
     public int getNumOfOrganizationsForUser(final String userId, final String requesterId) {
-    	return orgDao.getNumOfOrganizationsForUser(userId, getDelegationFilter(requesterId));
+        return orgDao.getNumOfOrganizationsForUser(userId, getDelegationFilter(requesterId));
     }
 
     @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
     public List<OrganizationEntity> getOrganizationsForUser(String userId, String requesterId, final int from, final int size, final LanguageEntity langauge) {
-    	return orgDao.getOrganizationsForUser(userId, getDelegationFilter(requesterId), from, size);
+        return orgDao.getOrganizationsForUser(userId, getDelegationFilter(requesterId), from, size);
     }
 
     @Override
@@ -230,15 +238,38 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     public void addUserToOrg(String orgId, String userId) {
         final OrganizationEntity organization = orgDao.findById(orgId);
         final UserEntity user = userDAO.findById(userId);
-        user.getAffiliations().add(organization);
+        OrganizationUserEntity organizationUserEntity = new OrganizationUserEntity();
+        organizationUserEntity.setOrganization(organization);
+        organizationUserEntity.setUser(user);
+        user.getOrganizationUser().add(organizationUserEntity);
+    }
+
+    @Override
+    @Transactional
+    public void addUserToOrg(String orgId, String userId, String metadataTypeId) {
+        final OrganizationEntity organization = orgDao.findById(orgId);
+        final UserEntity user = userDAO.findById(userId);
+        final MetadataTypeEntity metadataTypeEntity = typeDAO.findById(metadataTypeId);
+        OrganizationUserEntity organizationUserEntity = new OrganizationUserEntity();
+        organizationUserEntity.setOrganization(organization);
+        organizationUserEntity.setUser(user);
+        organizationUserEntity.setMetadataTypeEntity(metadataTypeEntity);
+        user.getOrganizationUser().add(organizationUserEntity);
     }
 
     @Override
     @Transactional
     public void removeUserFromOrg(String orgId, String userId) {
-        final OrganizationEntity organization = orgDao.findById(orgId);
+//        final OrganizationEntity organization = orgDao.findById(orgId);
         final UserEntity user = userDAO.findById(userId);
-        user.getAffiliations().remove(organization);
+        Iterator<OrganizationUserEntity> organizationUserEntityIterator = user.getOrganizationUser().iterator();
+        while (organizationUserEntityIterator.hasNext()) {
+            OrganizationUserEntity organizationUserEntity = organizationUserEntityIterator.next();
+            if (organizationUserEntity.getOrganization() != null && organizationUserEntity.getOrganization().getId().equals(orgId)) {
+                user.getOrganizationUser().remove(organizationUserEntity);
+                break;
+            }
+        }
     }
 
     @Override
@@ -274,7 +305,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
             Map<String, Object> bindingMap = new HashMap<String, Object>();
             if (!skipPrePostProcessors) {
                 OrganizationServicePrePostProcessor preProcessor = getPreProcessScript();
-                if (preProcessor != null &&  preProcessor.save(organization, bindingMap, idmAuditLog) != OrganizationServicePrePostProcessor.SUCCESS) {
+                if (preProcessor != null && preProcessor.save(organization, bindingMap, idmAuditLog) != OrganizationServicePrePostProcessor.SUCCESS) {
                     idmAuditLog.fail();
                     idmAuditLog.setFailureReason(ResponseCode.FAIL_PREPROCESSOR);
                     throw new BasicDataServiceException(ResponseCode.FAIL_PREPROCESSOR);
@@ -309,7 +340,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
                 mergeLocations(curEntity, newEntity);
                 mergeApproverAssociations(curEntity, newEntity);
 
-                if(curEntity.getAdminResource() == null) {
+                if (curEntity.getAdminResource() == null) {
                     curEntity.setAdminResource(getNewAdminResource(curEntity, requestorId));
                 }
 
@@ -349,7 +380,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
             return org;
 
         } finally {
-            if(StringUtils.isBlank(idmAuditLog.getResult())) {
+            if (StringUtils.isBlank(idmAuditLog.getResult())) {
                 idmAuditLog.fail();
             }
             auditLogService.enqueue(idmAuditLog);
@@ -359,13 +390,13 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     @Override
     @Transactional
     public void addRequiredAttributes(OrganizationEntity organization) {
-        if(organization!=null && organization.getType()!=null && StringUtils.isNotBlank(organization.getType().getId())){
+        if (organization != null && organization.getType() != null && StringUtils.isNotBlank(organization.getType().getId())) {
             MetadataElementSearchBean sb = new MetadataElementSearchBean();
             sb.addTypeId(organization.getType().getId());
             List<MetadataElementEntity> elementList = metadataElementDAO.getByExample(sb, -1, -1);
-            if(CollectionUtils.isNotEmpty(elementList)){
-                for(MetadataElementEntity element: elementList){
-                    if(element.isRequired()){
+            if (CollectionUtils.isNotEmpty(elementList)) {
+                for (MetadataElementEntity element : elementList) {
+                    if (element.isRequired()) {
                         orgAttrDao.save(AttributeUtil.buildOrgAttribute(organization, element));
                     }
                 }
@@ -374,23 +405,23 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     }
 
     private ResourceEntity getNewAdminResource(final OrganizationEntity entity, final String requestorId) {
-		final ResourceEntity adminResource = new ResourceEntity();
-		adminResource.setName(String.format("ORG_ADMIN_%s_%s", entity.getName(), RandomStringUtils.randomAlphanumeric(2)));
-		adminResource.setResourceType(resourceTypeDao.findById(adminResourceTypeId));
-		adminResource.addUser(userDAO.findById(requestorId));
-		adminResource.setCoorelatedName(entity.getName());
-		return adminResource;
-	}
-    
+        final ResourceEntity adminResource = new ResourceEntity();
+        adminResource.setName(String.format("ORG_ADMIN_%s_%s", entity.getName(), RandomStringUtils.randomAlphanumeric(2)));
+        adminResource.setResourceType(resourceTypeDao.findById(adminResourceTypeId));
+        adminResource.addUser(userDAO.findById(requestorId));
+        adminResource.setCoorelatedName(entity.getName());
+        return adminResource;
+    }
+
     private ApproverAssociationEntity createDefaultApproverAssociations(final OrganizationEntity entity, final String requestorId) {
-		final ApproverAssociationEntity association = new ApproverAssociationEntity();
-		association.setAssociationEntityId(entity.getId());
-		association.setAssociationType(AssociationType.ORGANIZATION);
-		association.setApproverLevel(Integer.valueOf(0));
-		association.setApproverEntityId(requestorId);
-		association.setApproverEntityType(AssociationType.USER);
-		return association;
-	}
+        final ApproverAssociationEntity association = new ApproverAssociationEntity();
+        association.setAssociationEntityId(entity.getId());
+        association.setAssociationType(AssociationType.ORGANIZATION);
+        association.setApproverLevel(Integer.valueOf(0));
+        association.setApproverEntityId(requestorId);
+        association.setApproverEntityType(AssociationType.USER);
+        return association;
+    }
 
     private void mergeParents(final OrganizationEntity curEntity, final OrganizationEntity newEntity) {
         if (curEntity.getParentOrganizations() == null) {
@@ -549,40 +580,42 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     }
 
     private void mergeUsers(final OrganizationEntity curEntity, final OrganizationEntity newEntity) {
-        if (curEntity.getUsers() == null) {
-            curEntity.setUsers(new HashSet<UserEntity>());
+        if (curEntity.getOrganizationUser() == null) {
+            curEntity.setOrganizationUser(new HashSet<OrganizationUserEntity>());
         }
-        if (newEntity != null && newEntity.getUsers() != null) {
+        if (newEntity != null && newEntity.getOrganizationUser() != null) {
             List<String> currIds = new ArrayList<String>();
-            for (UserEntity cou : curEntity.getUsers()) {
-                currIds.add(cou.getId());
+            for (OrganizationUserEntity cou : curEntity.getOrganizationUser()) {
+                if (cou.getUser() != null) {
+                    currIds.add(cou.getUser().getId());
+                }
             }
-            final Set<UserEntity> toAdd = new HashSet<UserEntity>();
-            final Set<UserEntity> toRemove = new HashSet<UserEntity>();
-            if (CollectionUtils.isNotEmpty(newEntity.getUsers())) {
-                Iterator<UserEntity> iterator = newEntity.getUsers().iterator();
+            final Set<OrganizationUserEntity> toAdd = new HashSet<OrganizationUserEntity>();
+            final Set<OrganizationUserEntity> toRemove = new HashSet<OrganizationUserEntity>();
+            if (CollectionUtils.isNotEmpty(newEntity.getOrganizationUser())) {
+                Iterator<OrganizationUserEntity> iterator = newEntity.getOrganizationUser().iterator();
                 while (iterator.hasNext()) {
-                    UserEntity nou = iterator.next();
-                    if (currIds.contains(nou.getId())) {
-                        currIds.remove(nou.getId());
+                    OrganizationUserEntity nou = iterator.next();
+                    if (nou.getUser() != null && currIds.contains(nou.getUser().getId())) {
+                        currIds.remove(nou.getUser().getId());
                         // user exists
-                    } else {
+                    } else if (nou.getUser() != null) {
                         // add
-                        toAdd.add(userDAO.findById(nou.getId()));
+                        toAdd.add(nou);
                     }
                     //remove
-                    for (UserEntity cou : curEntity.getUsers()) {
-                        if (currIds.contains(cou.getId())) {
+                    for (OrganizationUserEntity cou : curEntity.getOrganizationUser()) {
+                        if (cou.getUser() != null && currIds.contains(cou.getUser().getId())) {
                             toRemove.add(cou);
                             break;
                         }
                     }
-                    curEntity.getUsers().removeAll(toRemove);
-                    curEntity.getUsers().addAll(toAdd);
+                    curEntity.getOrganizationUser().removeAll(toRemove);
+                    curEntity.getOrganizationUser().addAll(toAdd);
                 }
 
             } else {
-                curEntity.getUsers().clear();
+                curEntity.getOrganizationUser().clear();
             }
         }
     }
@@ -628,8 +661,8 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
 
     private void mergeOrgProperties(final OrganizationEntity curEntity, final OrganizationEntity newEntity) {
         BeanUtils.copyProperties(newEntity, curEntity,
-                new String[] {"attributes", "parentOrganizations", "childOrganizations", "users", "approverAssociations",
-                "adminResource", "groups", "locations", "organizationType", "type", "lstUpdate", "lstUpdatedBy", "createDate", "createdBy"});
+                new String[]{"attributes", "parentOrganizations", "childOrganizations", "users", "approverAssociations",
+                        "adminResource", "groups", "locations", "organizationType", "type", "lstUpdate", "lstUpdatedBy", "createDate", "createdBy"});
     }
 
     private void mergeAttributes(final OrganizationEntity curEntity, final OrganizationEntity newEntity) {
@@ -681,30 +714,30 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
                 curEntity.getAttributes().clear();
             }
         }
-	}
-    
-    private MetadataElementEntity getEntity(final MetadataElementEntity bean) {
-    	if(bean != null && StringUtils.isNotBlank(bean.getId())) {
-    		return metadataElementDAO.findById(bean.getId());
-    	} else {
-    		return null;
-    	}
     }
-    
+
+    private MetadataElementEntity getEntity(final MetadataElementEntity bean) {
+        if (bean != null && StringUtils.isNotBlank(bean.getId())) {
+            return metadataElementDAO.findById(bean.getId());
+        } else {
+            return null;
+        }
+    }
+
     private void setMetadataTypeOnOrgAttribute(final OrganizationAttributeEntity bean) {
-    	if(bean.getElement() != null && bean.getElement().getId() != null) {
-    		bean.setElement(metadataElementDAO.findById(bean.getElement().getId()));
-		} else {
-			bean.setElement(null);
-		}
+        if (bean.getElement() != null && bean.getElement().getId() != null) {
+            bean.setElement(metadataElementDAO.findById(bean.getElement().getId()));
+        } else {
+            bean.setElement(null);
+        }
     }
 
     @Override
     @Transactional
     public void save(OrganizationAttributeEntity attribute) {
-    	attribute.setElement(metadataDAO.findById(attribute.getElement().getId()));
-    	attribute.setOrganization(orgDao.findById(attribute.getOrganization().getId()));
-    	
+        attribute.setElement(metadataDAO.findById(attribute.getElement().getId()));
+        attribute.setOrganization(orgDao.findById(attribute.getOrganization().getId()));
+
         if (StringUtils.isNotBlank(attribute.getId())) {
             orgAttrDao.merge(attribute);
         } else {
@@ -762,7 +795,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
             Map<String, Object> bindingMap = new HashMap<String, Object>();
             if (!skipPrePostProcessors) {
                 OrganizationServicePrePostProcessor preProcessor = getPreProcessScript();
-                if (preProcessor != null &&  preProcessor.delete(orgId, bindingMap, idmAuditLog) != OrganizationServicePrePostProcessor.SUCCESS) {
+                if (preProcessor != null && preProcessor.delete(orgId, bindingMap, idmAuditLog) != OrganizationServicePrePostProcessor.SUCCESS) {
                     idmAuditLog.setFailureReason(ResponseCode.FAIL_PREPROCESSOR);
                     throw new BasicDataServiceException(ResponseCode.FAIL_PREPROCESSOR);
                 }
@@ -772,8 +805,8 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
                 final GroupEntity example = new GroupEntity();
                 example.addOrganization(entity);
                 final List<GroupEntity> groups = groupDAO.getByExample(example);
-                if(groups != null) {
-                    for(final GroupEntity group : groups) {
+                if (groups != null) {
+                    for (final GroupEntity group : groups) {
                         group.removeOrganization(entity.getId());
                         groupDAO.update(group);
                     }
@@ -783,7 +816,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
 
             if (!skipPrePostProcessors) {
                 OrganizationServicePrePostProcessor postProcessor = getPostProcessScript();
-                if (postProcessor != null &&  postProcessor.delete(orgId, bindingMap, idmAuditLog) != OrganizationServicePrePostProcessor.SUCCESS) {
+                if (postProcessor != null && postProcessor.delete(orgId, bindingMap, idmAuditLog) != OrganizationServicePrePostProcessor.SUCCESS) {
                     idmAuditLog.setFailureReason(ResponseCode.FAIL_POSTPROCESSOR);
                     throw new BasicDataServiceException(ResponseCode.FAIL_POSTPROCESSOR);
                 }
@@ -792,7 +825,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
             idmAuditLog.succeed();
 
         } finally {
-            if(StringUtils.isBlank(idmAuditLog.getResult())) {
+            if (StringUtils.isBlank(idmAuditLog.getResult())) {
                 idmAuditLog.fail();
             }
             auditLogService.enqueue(idmAuditLog);
@@ -824,7 +857,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
 
     private Set<String> getDelegationFilter(Map<String, UserAttribute> attrMap, boolean isUncoverParents) {
         Set<String> filterData = new HashSet<String>();
-        if(attrMap!=null && !attrMap.isEmpty()){
+        if (attrMap != null && !attrMap.isEmpty()) {
             boolean isUseOrgInhFlag = DelegationFilterHelper.isUseOrgInhFilterSet(attrMap);
 
             filterData.addAll(this.getOrgTreeFlatList(DelegationFilterHelper.getOrgIdFilterFromString(attrMap), isUseOrgInhFlag, false));
@@ -837,7 +870,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
-    public List<OrganizationEntity> getAllowedParentOrganizationsForType(final String orgTypeId, String requesterId, final LanguageEntity langauge){
+    public List<OrganizationEntity> getAllowedParentOrganizationsForType(final String orgTypeId, String requesterId, final LanguageEntity langauge) {
         Set<String> filterData = null;
         Set<String> allowedOrgTypes = null;
         Map<String, UserAttribute> requesterAttributes = null;
@@ -851,27 +884,33 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
         return orgDao.findAllByTypesAndIds(allowedOrgTypes, filterData);
     }
 
-    private Set<String> getFullOrgFilterList(Map<String, UserAttribute> attrMap, boolean isUseOrgInhFlag){
+    private Set<String> getFullOrgFilterList(Map<String, UserAttribute> attrMap, boolean isUseOrgInhFlag) {
         Set<String> filterData = this.getOrgTreeFlatList(DelegationFilterHelper.getOrgIdFilterFromString(attrMap), isUseOrgInhFlag, false);
         filterData.addAll(this.getOrgTreeFlatList(DelegationFilterHelper.getDeptFilterFromString(attrMap), isUseOrgInhFlag, false));
         filterData.addAll(this.getOrgTreeFlatList(DelegationFilterHelper.getDivisionFilterFromString(attrMap), isUseOrgInhFlag, false));
         return filterData;
     }
 
-	@Override
-	@LocalizedServiceGet
+    @Override
+    @LocalizedServiceGet
     @Transactional(readOnly = true)
-	public Organization getOrganizationDTO(String orgId, final LanguageEntity langauge) {
-		return organizationDozerConverter.convertToDTO(getOrganizationLocalized(orgId, langauge), true);
-	}
+    public Organization getOrganizationDTO(String orgId, final LanguageEntity langauge) {
+        return organizationDozerConverter.convertToDTO(getOrganizationLocalized(orgId, langauge), true);
+    }
 
-	@Override
-	@Transactional
-	public void validateOrg2OrgAddition(String parentId, String memberId)
-			throws BasicDataServiceException {
-		final OrganizationEntity parent = orgDao.findById(parentId);
-		final OrganizationEntity child = orgDao.findById(memberId);
-		if (parent == null || child == null) {
+//    @Override
+//    @Transactional(readOnly = true)
+//    public OrganizationUserDTO getOrganizationUserDTOByOrganizationId(String orgId) {
+//        return organizationUserDozerConverter.convertToDTO(this.findOrganizationUserEntitiesByOrganizationId(orgId), true);
+//    }
+
+    @Override
+    @Transactional
+    public void validateOrg2OrgAddition(String parentId, String memberId)
+            throws BasicDataServiceException {
+        final OrganizationEntity parent = orgDao.findById(parentId);
+        final OrganizationEntity child = orgDao.findById(memberId);
+        if (parent == null || child == null) {
             throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
         }
 
@@ -886,7 +925,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
         if (parentId.equals(memberId)) {
             throw new BasicDataServiceException(ResponseCode.CANT_ADD_YOURSELF_AS_CHILD);
         }
-	}
+    }
 
     @Override
     @Transactional(readOnly = true)
@@ -894,8 +933,8 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     public List<OrganizationEntity> findOrganizationsByAttributeValue(final String attrName, String attrValue, final LanguageEntity langauge) {
         return orgDao.findOrganizationsByAttributeValue(attrName, attrValue);
     }
-	
-	private boolean causesCircularDependency(final OrganizationEntity parent, final OrganizationEntity child, final Set<OrganizationEntity> visitedSet) {
+
+    private boolean causesCircularDependency(final OrganizationEntity parent, final OrganizationEntity child, final Set<OrganizationEntity> visitedSet) {
         boolean retval = false;
         if (parent != null && child != null) {
             if (!visitedSet.contains(child)) {
@@ -921,11 +960,11 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
         final Map<String, Set<String>> parentOrg2ChildOrgMap = new HashMap<String, Set<String>>();
         final Map<String, String> child2ParentOrgMap = new HashMap<String, String>();
 
-        for(final Org2OrgXrefEntity xref : xrefList) {
+        for (final Org2OrgXrefEntity xref : xrefList) {
             final String orgId = xref.getId().getOrganizationId();
             final String memberOrgId = xref.getId().getMemberOrganizationId();
 
-            if(!parentOrg2ChildOrgMap.containsKey(orgId)) {
+            if (!parentOrg2ChildOrgMap.containsKey(orgId)) {
                 parentOrg2ChildOrgMap.put(orgId, new HashSet<String>());
             }
 
@@ -936,11 +975,11 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
         organizationInvertedTree = child2ParentOrgMap;
     }
 
-    private Set<String> getOrgTreeFlatList(final List<String> rootElementsIdList, boolean isUseOrgInhFlag, boolean isUncoverParents){
+    private Set<String> getOrgTreeFlatList(final List<String> rootElementsIdList, boolean isUseOrgInhFlag, boolean isUncoverParents) {
         List<String> result = new ArrayList<String>();
-        if(isUseOrgInhFlag){
-            if(CollectionUtils.isNotEmpty(rootElementsIdList)){
-                for (String rootElementId : rootElementsIdList){
+        if (isUseOrgInhFlag) {
+            if (CollectionUtils.isNotEmpty(rootElementsIdList)) {
+                for (String rootElementId : rootElementsIdList) {
                     result.addAll(getOrgTreeFlatList(rootElementId));
                 }
             }
@@ -948,20 +987,20 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
             result = new ArrayList<>(rootElementsIdList);
         }
         if (isUncoverParents) {
-            for (String elementId : rootElementsIdList){
+            for (String elementId : rootElementsIdList) {
                 result.addAll(getParentsFlatList(elementId));
             }
         }
         return new HashSet<String>(result);
     }
 
-    private List<String> getOrgTreeFlatList(String rootId){
+    private List<String> getOrgTreeFlatList(String rootId) {
         List<String> result = new ArrayList<String>();
-        if(StringUtils.isNotBlank(rootId)){
+        if (StringUtils.isNotBlank(rootId)) {
             result.add(rootId);
-            for(int i=0; i<result.size();i++){
+            for (int i = 0; i < result.size(); i++) {
                 String curElem = result.get(i);
-                if(this.organizationTree.containsKey(curElem)){
+                if (this.organizationTree.containsKey(curElem)) {
                     result.addAll(this.organizationTree.get(curElem));
                 }
             }
@@ -972,7 +1011,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     private List<String> getParentsFlatList(String childId) {
         List<String> result = new ArrayList<String>();
         String elementId = this.organizationInvertedTree.get(childId);
-        while(StringUtils.isNotBlank(elementId)){
+        while (StringUtils.isNotBlank(elementId)) {
             result.add(elementId);
             elementId = this.organizationInvertedTree.get(elementId);
         }
@@ -988,55 +1027,64 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
 
     @Deprecated
     @Transactional(readOnly = true)
-    public Organization getOrganizationDTO(final String orgId){
+    public Organization getOrganizationDTO(final String orgId) {
         return this.getOrganizationDTO(orgId, getDefaultLanguage());
     }
+
     @Deprecated
     @Transactional(readOnly = true)
-    public OrganizationEntity getOrganization(String orgId){
+    public OrganizationEntity getOrganization(String orgId) {
         return this.getOrganization(orgId, null);
     }
+
     @Deprecated
     @Transactional(readOnly = true)
-    public OrganizationEntity getOrganization(final String orgId, String requesterId){
+    public OrganizationEntity getOrganization(final String orgId, String requesterId) {
         return this.getOrganizationLocalized(orgId, requesterId, getDefaultLanguage());
     }
+
     @Deprecated
     @Transactional(readOnly = true)
-    public OrganizationEntity getOrganizationByName(final String name, String requesterId){
+    public OrganizationEntity getOrganizationByName(final String name, String requesterId) {
         return this.getOrganizationByName(name, requesterId, getDefaultLanguage());
     }
+
     @Deprecated
-    public List<OrganizationEntity> getOrganizationsForUser(String userId, String requesterId, final int from, final int size){
+    public List<OrganizationEntity> getOrganizationsForUser(String userId, String requesterId, final int from, final int size) {
         return this.getOrganizationsForUser(userId, requesterId, from, size, getDefaultLanguage());
     }
+
     @Deprecated
     @Transactional(readOnly = true)
-    public List<OrganizationEntity> getParentOrganizations(final String orgId, String requesterId, final int from, final int size){
+    public List<OrganizationEntity> getParentOrganizations(final String orgId, String requesterId, final int from, final int size) {
         return this.getParentOrganizations(orgId, requesterId, from, size, getDefaultLanguage());
     }
+
     @Deprecated
     @Transactional(readOnly = true)
-    public List<OrganizationEntity> getChildOrganizations(final String orgId, String requesterId, final int from, final int size){
+    public List<OrganizationEntity> getChildOrganizations(final String orgId, String requesterId, final int from, final int size) {
         return this.getChildOrganizations(orgId, requesterId, from, size, getDefaultLanguage());
     }
+
     @Deprecated
     @Transactional(readOnly = true)
-    public List<OrganizationEntity> findBeans(final OrganizationSearchBean searchBean, String requesterId, final int from, final int size){
+    public List<OrganizationEntity> findBeans(final OrganizationSearchBean searchBean, String requesterId, final int from, final int size) {
         return this.findBeans(searchBean, requesterId, from, size, getDefaultLanguage());
     }
+
     @Deprecated
     @Transactional(readOnly = true)
-    public List<OrganizationEntity> getAllowedParentOrganizationsForType(final String orgTypeId, String requesterId){
+    public List<OrganizationEntity> getAllowedParentOrganizationsForType(final String orgTypeId, String requesterId) {
         return this.getAllowedParentOrganizationsForType(orgTypeId, requesterId, getDefaultLanguage());
     }
+
     @Deprecated
     @Transactional(readOnly = true)
-    public List<OrganizationEntity> findOrganizationsByAttributeValue(final String attrName, String attrValue){
+    public List<OrganizationEntity> findOrganizationsByAttributeValue(final String attrName, String attrValue) {
         return this.findOrganizationsByAttributeValue(attrName, attrValue, getDefaultLanguage());
     }
 
-    private LanguageEntity getDefaultLanguage(){
+    private LanguageEntity getDefaultLanguage() {
         LanguageEntity lang = new LanguageEntity();
         lang.setId("1");
         return lang;
@@ -1066,7 +1114,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
             }
         }
 
-        if(organization.getOrganizationType() == null || StringUtils.isBlank(organization.getOrganizationType().getId())) {
+        if (organization.getOrganizationType() == null || StringUtils.isBlank(organization.getOrganizationType().getId())) {
             throw new BasicDataServiceException(ResponseCode.ORGANIZATION_TYPE_NOT_SET);
         }
 
@@ -1151,7 +1199,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     public void removeLocation(final String locationId) {
         final LocationEntity entity = locationDao.findById(locationId);
 
-        if(entity != null) {
+        if (entity != null) {
             locationDao.delete(entity);
         }
     }
@@ -1197,7 +1245,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
 
     @Override
     @Transactional(readOnly = true)
-    public List<LocationEntity> getLocationList(String organizationId, Integer from, Integer size ) {
+    public List<LocationEntity> getLocationList(String organizationId, Integer from, Integer size) {
         if (organizationId == null)
             throw new NullPointerException("organizationId is null");
 
@@ -1246,8 +1294,8 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
         Map<String, OrganizationAttribute> attributeMap = new HashMap<String, OrganizationAttribute>();
         if (StringUtils.isNotEmpty(orgId)) {
             List<OrganizationAttribute> orgAttributes = getOrgAttributesDtoList(orgId);
-            if(CollectionUtils.isNotEmpty(orgAttributes)) {
-                for(OrganizationAttribute attr : orgAttributes) {
+            if (CollectionUtils.isNotEmpty(orgAttributes)) {
+                for (OrganizationAttribute attr : orgAttributes) {
                     attributeMap.put(attr.getName(), attr);
                 }
             }
