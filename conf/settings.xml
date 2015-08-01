@@ -5,7 +5,7 @@
     <server>
       <id>central</id>
       <username>sysadmin</username>
-      <password>544pacific</password>
+      <password>${env.ARTIFACTORY_PASSWORD}</password>
     </server>
   </servers>
   <profiles>
@@ -14,14 +14,14 @@
         <repository>
           <id>central</id>
           <name>repo</name>
-          <url>https://openiam.artifactoryonline.com/openiam/repo</url>
+          <url>http://openiam.artifactoryonline.com/openiam/repo</url>
         </repository>
       </repositories>
       <pluginRepositories>
         <pluginRepository>
           <id>central</id>
           <name>repo</name>
-          <url>https://openiam.artifactoryonline.com/openiam/repo</url>
+          <url>http://openiam.artifactoryonline.com/openiam/repo</url>
         </pluginRepository>
       </pluginRepositories>
       <id>artifactory</id>
