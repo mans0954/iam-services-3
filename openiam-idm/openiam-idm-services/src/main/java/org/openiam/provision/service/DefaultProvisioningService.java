@@ -312,7 +312,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     }
                     idmAuditLog = auditLogService.save(idmAuditLog);
                     ProvisionUserResponse tmpRes = addModifyUser(pUser, false, dataList, idmAuditLog);
-                    idmAuditLog = auditLogService.save(idmAuditLog);
+                    //idmAuditLog = auditLogService.save(idmAuditLog);
                     return tmpRes;
                 }
             });
