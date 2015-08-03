@@ -90,6 +90,8 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
 
     private static final Log log = LogFactory.getLog(DefaultChallengeResponseValidator.class);
 
+    private static final Integer maxLengthAnswer = 255;
+
     @Override
     public boolean isResponseValid(String userId, List<UserIdentityAnswerEntity> newAnswerList, int requiredCorrectAns)
             throws Exception {
@@ -321,7 +323,7 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
     }
 
     private boolean validateAnswerLength (String answer) {
-        if (answer.length() <= 255){
+        if (answer.length() <= maxLengthAnswer){
             return true;
         }
         return false;
