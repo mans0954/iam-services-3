@@ -5,6 +5,7 @@ import org.openiam.am.srvc.dto.OAuthCode;
 import org.openiam.am.srvc.dto.OAuthToken;
 import org.openiam.am.srvc.dto.OAuthUserClientXref;
 import org.openiam.base.ws.Response;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.res.dto.Resource;
 
@@ -25,7 +26,7 @@ public interface OAuthWebService {
     @WebMethod
     List<Resource> getScopesForAuthrorization(@WebParam(name = "clientId", targetNamespace = "") String clientId,
                                               @WebParam(name = "userId", targetNamespace = "") String userId,
-                                              @WebParam(name = "language", targetNamespace = "")  Language language);
+                                              @WebParam(name = "language", targetNamespace = "")  Language language) throws BasicDataServiceException;
 
     @WebMethod
     Response saveClientScopeAuthorization(@WebParam(name = "providerId", targetNamespace = "") String providerId,

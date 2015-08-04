@@ -298,35 +298,47 @@ public class AuthProviderServiceImpl implements AuthProviderService {
 
     @Override
     @LocalizedServiceGet
-    public List<Resource> getScopesForAuthrorization(String clientId, String userId, Language language){
+    public List<Resource> getScopesForAuthrorization(String clientId, String userId, Language language) throws BasicDataServiceException {
         AuthProvider provider = getOAuthClient(clientId);
         Set<String> clientScopesIds = null;
+        // determine if the client is authorized for some scopes
+        boolean isClientAuthorized = false;
         if(CollectionUtils.isNotEmpty(provider.getAttributes())) {
             AuthProviderAttribute scopes =  provider.getAttributes().stream().filter(attr -> "OAuthClientScopes".equals(attr.getAttributeId())).findFirst().get();
             if(scopes !=null && StringUtils.isNotBlank(scopes.getValue())){
                 clientScopesIds = new HashSet<>(Arrays.asList(scopes.getValue().split(","))).stream().filter(str -> StringUtils.isNotBlank(str)).collect(Collectors.toSet());
             }
         }
-        // get user resource
-        Set<ResourceAuthorizationRight>  userResources = authorizationManagerService.getResourcesForUser(userId);
-        Set<String> userResourceIds = null;
-        if(CollectionUtils.isNotEmpty(userResources)) {
-            userResourceIds = userResources.stream().map(res->res.getEntity().getId()).collect(Collectors.toSet());
-        }
-
-        if(CollectionUtils.isNotEmpty(clientScopesIds) && CollectionUtils.isNotEmpty(userResourceIds)){
-            //
-            clientScopesIds.retainAll(userResourceIds);
-
+        if(CollectionUtils.isNotEmpty(clientScopesIds)){
+            // get already authorized scopes
             List<OAuthUserClientXrefEntity> authorizedResources = oauthUserClientXrefDao.getByClientAndUser(clientId, userId);
             if(CollectionUtils.isNotEmpty(authorizedResources)){
+                isClientAuthorized = true;
                 Set<String> authorizedResourcesIds = authorizedResources.stream().map(xref -> xref.getScope().getId()).collect(Collectors.toSet());
+                // leave only unauthorized scopes
                 clientScopesIds.removeAll(authorizedResourcesIds);
             }
 
-            return  resourceDozerConverter.convertToDTOList(resourceService.findResourcesByIds(clientScopesIds), false);
+            if(CollectionUtils.isNotEmpty(clientScopesIds)){
+                // if not all scopes authorized
+                // get user resource
+                Set<ResourceAuthorizationRight>  userResources = authorizationManagerService.getResourcesForUser(userId);
+                if(CollectionUtils.isNotEmpty(userResources)) {
+                    Set<String> userResourceIds = userResources.stream().map(res->res.getEntity().getId()).collect(Collectors.toSet());
+                    // do intersection between unauthorized scopes and user resources
+                    // leave only those scopes that user have access to
+                    clientScopesIds.retainAll(userResourceIds);
+                }
+            }
+
+            if(CollectionUtils.isNotEmpty(clientScopesIds) || isClientAuthorized){
+                return  resourceDozerConverter.convertToDTOList(resourceService.findResourcesByIds(clientScopesIds), false);
+            } else {
+                throw new  BasicDataServiceException(ResponseCode.OAUTH_CLIENT_SCOPE_CALCULATION_ERROR);
+            }
+        } else {
+            throw new  BasicDataServiceException(ResponseCode.OAUTH_CLIENT_SCOPE_CALCULATION_ERROR);
         }
-        return null;
     }
 
 

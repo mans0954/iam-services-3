@@ -13,7 +13,7 @@ import javax.xml.bind.annotation.XmlType;
  * Created by alexander on 21/07/15.
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "OAuthToken", propOrder = {
+@XmlType(name = "OAuthCode", propOrder = {
         "expiredOn",
         "clientId",
         "userId",

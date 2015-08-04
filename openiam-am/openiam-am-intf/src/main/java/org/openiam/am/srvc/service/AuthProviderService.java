@@ -51,7 +51,7 @@ public interface AuthProviderService {
     */
 
     AuthProvider getOAuthClient(final String clientId);
-    List<Resource> getScopesForAuthrorization(String clientId, String userId, Language language);
+    List<Resource> getScopesForAuthrorization(String clientId, String userId, Language language) throws BasicDataServiceException;
 
     void saveClientScopeAuthorization(String providerId, String userId, List<OAuthUserClientXref> oauthUserClientXrefList) throws BasicDataServiceException;
     OAuthCode saveOAuthCode(OAuthCode oAuthCode);

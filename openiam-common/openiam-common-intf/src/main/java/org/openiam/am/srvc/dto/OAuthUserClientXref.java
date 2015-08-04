@@ -29,7 +29,7 @@ public class OAuthUserClientXref extends KeyDTO {
     private String scopeId;
     private String scopeName;
 
-    public boolean isAllowed() {
+    public boolean getIsAllowed() {
         return isAllowed;
     }
 

@@ -3,10 +3,7 @@ package org.openiam.am.srvc.ws;
 import org.apache.log4j.Logger;
 import org.openiam.am.srvc.domain.AuthProviderEntity;
 import org.openiam.am.srvc.dozer.converter.AuthProviderDozerConverter;
-import org.openiam.am.srvc.dto.AuthProvider;
-import org.openiam.am.srvc.dto.OAuthCode;
-import org.openiam.am.srvc.dto.OAuthToken;
-import org.openiam.am.srvc.dto.OAuthUserClientXref;
+import org.openiam.am.srvc.dto.*;
 import org.openiam.am.srvc.service.AuthProviderService;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
@@ -45,8 +42,24 @@ public class OAuthWebServiceImpl implements OAuthWebService {
     }
 
     @Override
-    public List<Resource> getScopesForAuthrorization(String clientId, String userId, Language language){
+    public List<Resource> getScopesForAuthrorization(String clientId, String userId, Language language) throws BasicDataServiceException {
+//        final Response response = new Response(ResponseStatus.SUCCESS);
         return authProviderService.getScopesForAuthrorization(clientId, userId, language);
+
+//        try{
+//            List<Resource> unAuthorizedScopeList = a
+//
+//            OAuthScopes scopes = new OAuthScopes();
+//            scopes.setOauthScopeList(unAuthorizedScopeList);
+//            response.setResponseValue(scopes);
+//        } catch(BasicDataServiceException e) {
+//            log.error(e.getMessage(), e);
+//            response.setStatus(ResponseStatus.FAILURE);
+//            response.setErrorCode(e.getCode());
+//            response.setErrorTokenList(e.getErrorTokenList());
+//        }
+//
+//        return response;
     }
 
     @Override
