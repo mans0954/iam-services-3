@@ -1571,7 +1571,15 @@ public class UserMgr implements UserDataService {
             userIds = getUserIds(searchBean);
         }
         userIds.removeAll(userDao.getAllAttachedSupSubIds(searchBean.getTargetUserIds()));
-        return userDao.findByIds(userIds);
+
+        List<UserEntity> entityList = userDao.findByIds(userIds);
+
+        if(CollectionUtils.isNotEmpty(entityList)
+                && searchBean.getInitDefaulLoginFlag()){
+            setDefaultLogin(entityList);
+        }
+
+        return entityList;
     }
 
     @Override
