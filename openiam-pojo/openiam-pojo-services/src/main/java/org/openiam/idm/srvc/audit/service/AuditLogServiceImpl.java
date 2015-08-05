@@ -254,7 +254,7 @@ public class AuditLogServiceImpl implements AuditLogService {
         IdmAuditLogEntity auditLogEntity = prepare(auditLog);
         try {
             if (StringUtils.isNotEmpty(auditLogEntity.getId())) {
-                logDAO.save(auditLogEntity);
+                logDAO.merge(auditLogEntity);
             } else {
                 logDAO.persist(auditLogEntity);
             }
