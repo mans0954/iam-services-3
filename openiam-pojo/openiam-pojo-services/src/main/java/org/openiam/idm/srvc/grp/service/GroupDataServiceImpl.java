@@ -176,19 +176,15 @@ public class GroupDataServiceImpl implements GroupDataService {
 	public GroupEntity getGroup(final String id, final String requesterId) {
         return getGroupLocalize(id, requesterId, getDefaultLanguage());
 	}
-
-    @Override
-    @Deprecated
-    public GroupEntity getGroupByName(final String groupName, final String requesterId) {
-        return getGroupByNameLocalize(groupName, requesterId, getDefaultLanguage());
-    }
-
     @Override
     @LocalizedServiceGet
-    public GroupEntity getGroupByNameLocalize(final String groupName, final String requesterId, final LanguageEntity language) {
+    public GroupEntity getGroupByNameAndManagedSystem(final String groupName, final String managedSystemId, final String requesterId, final LanguageEntity language) {
         final GroupSearchBean searchBean = new GroupSearchBean();
         searchBean.setName(groupName);
-        final List<GroupEntity> foundList = this.findBeans(searchBean, requesterId, 0, 1);
+        searchBean.setManagedSysId(managedSystemId);
+        
+        /* can only ever return 1 due to DB constraint */
+        final List<GroupEntity> foundList = findBeansLocalize(searchBean, requesterId, 0, Integer.MAX_VALUE, language);
         return (CollectionUtils.isNotEmpty(foundList)) ? foundList.get(0) : null;
     }
 

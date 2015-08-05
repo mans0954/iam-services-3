@@ -1030,31 +1030,44 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     public void validate(final Organization organization) throws BasicDataServiceException {
         validateEntity(organizationDozerConverter.convertToEntity(organization, true));
     }
+    
+    private OrganizationEntity getByNameAndType(final String name, final String typeId) {
+    	final OrganizationSearchBean sb = new OrganizationSearchBean();
+        sb.setName(name);
+        sb.addOrganizationTypeId(typeId);
+        
+        /* db constraing would prevent more than 1 */
+        final List<OrganizationEntity> found = orgDao.getByExample(sb);
+        return (CollectionUtils.isNotEmpty(found)) ? found.get(0) : null;
+    }
 
-    private void validateEntity(final OrganizationEntity organization) throws BasicDataServiceException {
-        if (organization == null) {
+    private void validateEntity(final OrganizationEntity entity) throws BasicDataServiceException {
+        if (entity == null) {
             throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
         }
-        if (StringUtils.isBlank(organization.getName())) {
+        if (StringUtils.isBlank(entity.getName())) {
             throw new BasicDataServiceException(ResponseCode.ORGANIZATION_NAME_NOT_SET);
         }
-
-        final OrganizationEntity found = getOrganizationByName(organization.getName(), null, null);
-        if (found != null) {
-            if (StringUtils.isBlank(organization.getId()) && found != null) {
-                throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
-            }
-
-            if (StringUtils.isNotBlank(organization.getId()) && !organization.getId().equals(found.getId())) {
-                throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
-            }
+        
+        final OrganizationSearchBean sb = new OrganizationSearchBean();
+        sb.setName(entity.getName());
+        if(entity.getType() != null && StringUtils.isNotBlank(entity.getType().getId())) {
+        	sb.addOrganizationTypeId(entity.getType().getId());
         }
+        
 
-        if(organization.getOrganizationType() == null || StringUtils.isBlank(organization.getOrganizationType().getId())) {
+        if(entity.getOrganizationType() == null || StringUtils.isBlank(entity.getOrganizationType().getId())) {
             throw new BasicDataServiceException(ResponseCode.ORGANIZATION_TYPE_NOT_SET);
         }
 
-        entityValidator.isValid(organization);
+        final OrganizationEntity nameEntity = getByNameAndType(entity.getName(), entity.getOrganizationType().getId());
+        if(nameEntity != null) {
+			if(StringUtils.isBlank(entity.getId()) || !entity.getId().equals(nameEntity.getId())) {
+				throw new BasicDataServiceException(ResponseCode.CONSTRAINT_VIOLATION, "Organization Name + TypeID combination taken");
+			}
+		}
+
+        entityValidator.isValid(entity);
     }
 
     private OrganizationServicePrePostProcessor getPreProcessScript() {
