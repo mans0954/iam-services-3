@@ -22,7 +22,10 @@ import org.openiam.am.srvc.service.AuthProviderService;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.dozer.converter.ResourcePropDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
+import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
+import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,6 +55,8 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
     private AuthAttributeDozerConverter authAttributeDozerConverter;
     @Autowired
     private AuthProviderDozerConverter authProviderDozerConverter;
+    @Autowired
+    private ResourcePropDozerConverter resourcePropDozerConverter;
     @Autowired
     private AuthProviderAttributeDozerConverter authProviderAttributeDozerConverter;
 
@@ -364,6 +369,14 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
             validateAndSyncProviderAttributes(provider);
 
             final AuthProviderEntity entity = authProviderDozerConverter.convertToEntity(provider, true);
+            if (provider.getResource() != null) {
+                final Set<ResourceProp> propSet = provider.getResource().getResourceProps();
+                if (CollectionUtils.isNotEmpty(propSet)) {
+                    final Set<ResourcePropEntity> propEntitySet =
+                            resourcePropDozerConverter.convertToEntitySet(propSet, true);
+                    entity.getResource().setResourceProps(propEntitySet);
+                }
+            }
             authProviderService.updateAuthProvider(entity, requestorId);
             response.setResponseValue(entity.getProviderId());
         } catch(BasicDataServiceException e) {

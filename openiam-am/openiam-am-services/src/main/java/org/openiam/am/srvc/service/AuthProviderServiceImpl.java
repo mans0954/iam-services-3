@@ -1,16 +1,20 @@
 package org.openiam.am.srvc.service;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.am.srvc.dao.*;
 import org.openiam.am.srvc.domain.*;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
+import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.res.service.ResourceService;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -208,6 +212,7 @@ public class AuthProviderServiceImpl implements AuthProviderService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "resourcePropCache", allEntries=true)
     public void updateAuthProvider(AuthProviderEntity provider, final String requestorId) throws Exception{
         if(provider==null)
             throw new NullPointerException("provider is null");
@@ -248,6 +253,8 @@ public class AuthProviderServiceImpl implements AuthProviderService {
                resource.setURL(provider.getResource().getURL());
                resource.setCoorelatedName(provider.getName());
                //resourceService.save(resource, null);
+
+                mergeResourceProps(provider.getResource(), entity.getResource());
             }
         }
         
@@ -258,6 +265,31 @@ public class AuthProviderServiceImpl implements AuthProviderService {
         }
         if(provider.getResourceAttributeMap()!=null && !provider.getResourceAttributeMap().isEmpty()){
             saveAuthResourceAttributes(entity, provider.getResourceAttributeMap());
+        }
+    }
+
+    private void mergeResourceProps(ResourceEntity resSrc, ResourceEntity resDst) {
+        Set<ResourcePropEntity> propToDelete = new HashSet<>(resDst.getResourceProps());
+        for (ResourcePropEntity propSrc : resSrc.getResourceProps()) {
+            boolean isNew = true;
+            for (ResourcePropEntity propDst : resDst.getResourceProps()) {
+                if (propSrc.getName().equals(propDst.getName())) {
+                    propDst.setValue(propSrc.getValue());
+                    propToDelete.remove(propDst);
+                    isNew = false;
+                }
+            }
+            if (isNew) {
+                final ResourcePropEntity propEntity = new ResourcePropEntity();
+                propEntity.setResource(resDst);
+                propEntity.setName(propSrc.getName());
+                propEntity.setValue(propSrc.getValue());
+                propEntity.setIsMultivalued(propSrc.getIsMultivalued());
+                resDst.getResourceProps().add(propEntity);
+            }
+        }
+        for (ResourcePropEntity prop : propToDelete) {
+            resDst.getResourceProps().remove(prop);
         }
     }
 
