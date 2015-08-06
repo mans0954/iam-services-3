@@ -25,6 +25,8 @@ import org.openiam.dozer.converter.*;
 import org.openiam.exception.ObjectNotFoundException;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
+import org.openiam.idm.srvc.audit.constant.AuditConstants;
+import org.openiam.idm.srvc.audit.constant.AuditTarget;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
@@ -1521,11 +1523,9 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
 
     public void updateAffiliations(final UserEntity userEntity, final ProvisionUser pUser, final IdmAuditLog parentLog) {
         if (CollectionUtils.isNotEmpty(pUser.getOrganizationUserDTOs())) {
-//            OrganizationEntity org = null;
             for (OrganizationUserDTO o : pUser.getOrganizationUserDTOs()) {
                 AttributeOperationEnum operation = o.getOperation();
                 if (operation == AttributeOperationEnum.ADD) {
-//                    org = organizationService.getOrganizationLocalized(o.getOrganization().getId(), null);
                     if (userEntity.getOrganizationUser() == null)
                         userEntity.setOrganizationUser(new HashSet<OrganizationUserEntity>());
                     userEntity.getOrganizationUser().add(new OrganizationUserEntity(pUser.getId(), o.getOrganization().getId(), o.getMdTypeId()));
@@ -1551,7 +1551,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                             String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
                             auditLog.setTargetUser(pUser.getId(), loginStr);
                             auditLog.setTargetOrg(o.getOrganization().getId(), o.getOrganization().getName());
-                            auditLog.addCustomRecord("ORG", o.getOrganization().getName());
+                            auditLog.addCustomRecord(AuditTarget.ORG.value(), o.getOrganization().getName());
                             parentLog.addChild(auditLog);
                             // -------------------------------------------------------------
                             break;
