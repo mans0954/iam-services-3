@@ -123,6 +123,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     @Value("${org.openiam.send.user.activation.link}")
     private Boolean sendActivationLink;
 
+    @Value("${org.openiam.send.admin.reset.password.link}")
+    private Boolean sendAdminResetPasswordLink;
+
+
     private static final Log log = LogFactory.getLog(DefaultProvisioningService.class);
     private String errorDescription;
 
@@ -1429,7 +1433,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         boolean allResetOK = true;
         final PasswordResponse response = new PasswordResponse(ResponseStatus.SUCCESS);
         try {
-            if (this.sendActivationLink) {
+            if (this.sendAdminResetPasswordLink) {
                 User u = userMgr.getUserDto(passwordSync.getUserId());
                 if (u == null) {
                     allResetOK = false;
