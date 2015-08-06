@@ -29,7 +29,7 @@ import javax.xml.bind.annotation.XmlSeeAlso;
 @XmlSeeAlso({
         Group.class
 })
-public interface AuthenticationService {
+public interface AuthenticationWebService {
 
     /**
      * This method executes a global logout so that the user is logged out all the application they have logged into. <br>

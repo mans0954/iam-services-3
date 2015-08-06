@@ -141,13 +141,13 @@
 		<property name="timingEnabled" value="false" />
 	</bean>
 
-	<bean id="authServiceClient" class="org.openiam.idm.srvc.auth.service.AuthenticationService"
+	<bean id="authServiceClient" class="org.openiam.idm.srvc.auth.service.AuthenticationWebService"
 		factory-bean="authServiceFactory" factory-method="create" lazy-init="false" />
 
 
 	<bean id="authServiceFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
 		<property name="serviceClass"
-			value="org.openiam.idm.srvc.auth.service.AuthenticationService" />
+			value="org.openiam.idm.srvc.auth.service.AuthenticationWebService" />
 		<property name="address"
 			value="${openiam.service_host}${openiam.connector.ws.path}AuthenticationService" />
 	</bean>

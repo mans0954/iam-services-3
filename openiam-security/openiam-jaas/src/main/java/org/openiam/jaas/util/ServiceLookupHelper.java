@@ -2,7 +2,7 @@ package org.openiam.jaas.util;
 
 import org.apache.cxf.frontend.ClientProxyFactoryBean;
 import org.apache.cxf.jaxws.JaxWsProxyFactoryBean;
-import org.openiam.idm.srvc.auth.service.AuthenticationService;
+import org.openiam.idm.srvc.auth.service.AuthenticationWebService;
 import org.openiam.idm.srvc.auth.ws.LoginDataWebService;
 import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
 import org.openiam.idm.srvc.org.service.OrganizationDataService;
@@ -15,8 +15,8 @@ public class ServiceLookupHelper {
     private static JaasConfiguration jaasConfiguration = JaasConfiguration.getInstance();
 
 
-    public static AuthenticationService getAuthenticationService() {
-        return getServceInstance("AuthenticationService","AuthenticationServicePort", AuthenticationService.class);
+    public static AuthenticationWebService getAuthenticationService() {
+        return getServceInstance("AuthenticationService","AuthenticationServicePort", AuthenticationWebService.class);
     }
 
     public static LoginDataWebService getLoginService() {

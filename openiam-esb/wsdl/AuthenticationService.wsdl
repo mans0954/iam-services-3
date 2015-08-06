@@ -485,7 +485,7 @@
     <wsdl:part name="parameters" element="tns:renewTokenResponse">
     </wsdl:part>
   </wsdl:message>
-  <wsdl:portType name="AuthenticationService">
+  <wsdl:portType name="AuthenticationWebService">
     <wsdl:operation name="authenticateByToken">
       <wsdl:input name="authenticateByToken" message="tns:authenticateByToken">
     </wsdl:input>

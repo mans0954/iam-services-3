@@ -6,14 +6,13 @@ import org.apache.log4j.Logger;
 import org.openiam.am.srvc.service.URIFederationService;
 import org.openiam.am.srvc.uriauth.dto.SSOLoginResponse;
 import org.openiam.am.srvc.uriauth.dto.URIFederationResponse;
-import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.srvc.auth.dto.AuthenticationRequest;
 import org.openiam.idm.srvc.auth.dto.SSOToken;
 import org.openiam.idm.srvc.auth.dto.Subject;
-import org.openiam.idm.srvc.auth.service.AuthenticationService;
+import org.openiam.idm.srvc.auth.service.AuthenticationWebService;
 import org.openiam.idm.srvc.auth.ws.AuthenticationResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,7 +29,7 @@ public class URIFederationWebServiceImpl implements URIFederationWebService {
 	private URIFederationService uriFederationService;
 	
 	@Autowired
-	private AuthenticationService authenticationService;
+	private AuthenticationWebService authenticationService;
 	
 	@Override
 	public URIFederationResponse federateProxyURI(final String userId, final int authLevel, final String proxyURI) {
