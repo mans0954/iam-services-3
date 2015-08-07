@@ -2,7 +2,7 @@ package org.openiam.authentication.integration;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.idm.srvc.auth.service.AuthenticationWebService;
+import org.openiam.idm.srvc.auth.service.AuthenticationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
@@ -15,7 +15,7 @@ public class LoginStresstest extends AbstractTestNGSpringContextTests {
 
 	@Autowired
 	@Qualifier("authServiceClient")
-	private AuthenticationWebService authServiceClient;
+	private AuthenticationService authServiceClient;
 	
 	/*
 	@Test

@@ -12,7 +12,7 @@ import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.srvc.auth.dto.AuthenticationRequest;
 import org.openiam.idm.srvc.auth.dto.SSOToken;
 import org.openiam.idm.srvc.auth.dto.Subject;
-import org.openiam.idm.srvc.auth.service.AuthenticationWebService;
+import org.openiam.idm.srvc.auth.service.AuthenticationService;
 import org.openiam.idm.srvc.auth.ws.AuthenticationResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,7 +29,7 @@ public class URIFederationWebServiceImpl implements URIFederationWebService {
 	private URIFederationService uriFederationService;
 	
 	@Autowired
-	private AuthenticationWebService authenticationService;
+	private AuthenticationService authenticationService;
 	
 	@Override
 	public URIFederationResponse federateProxyURI(final String userId, final int authLevel, final String proxyURI) {

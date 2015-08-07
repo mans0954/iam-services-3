@@ -4,7 +4,7 @@ import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.idm.srvc.auth.dto.AuthenticationRequest;
 import org.openiam.idm.srvc.auth.dto.SSOToken;
-import org.openiam.idm.srvc.auth.service.AuthenticationWebService;
+import org.openiam.idm.srvc.auth.service.AuthenticationService;
 import org.openiam.idm.srvc.auth.ws.AuthenticationResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -23,7 +23,7 @@ public class RenewTokenTest extends AbstractTestNGSpringContextTests {
 
     @Autowired
     @Qualifier("authServiceClient")
-    private AuthenticationWebService authServiceClient;
+    private AuthenticationService authServiceClient;
 
     private static String token=null;
     private static AtomicInteger counter=new AtomicInteger(0);

@@ -27,8 +27,8 @@ import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.AuthStateSearchBean;
 import org.openiam.idm.srvc.auth.domain.AuthStateEntity;
 import org.openiam.idm.srvc.auth.dto.*;
+import org.openiam.idm.srvc.auth.service.AuthenticationService;
 import org.openiam.idm.srvc.auth.service.AuthenticationServiceService;
-import org.openiam.idm.srvc.auth.service.AuthenticationWebService;
 import org.openiam.idm.srvc.auth.ws.AuthenticationResponse;
 import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,9 +43,9 @@ import org.springframework.stereotype.Service;
  */
 
 @Service("authenticate")
-@WebService(endpointInterface = "org.openiam.idm.srvc.auth.service.AuthenticationWebService", targetNamespace = "urn:idm.openiam.org/srvc/auth/service", portName = "AuthenticationServicePort", serviceName = "AuthenticationService")
+@WebService(endpointInterface = "org.openiam.idm.srvc.auth.service.AuthenticationService", targetNamespace = "urn:idm.openiam.org/srvc/auth/service", portName = "AuthenticationServicePort", serviceName = "AuthenticationService")
 @ManagedResource(objectName = "openiam:name=authenticationService", description = "Authentication Service")
-public class AuthenticationWebServiceImpl extends AbstractBaseService implements AuthenticationWebService {
+public class AuthenticationWebServiceImpl extends AbstractBaseService implements AuthenticationService {
 
     @Autowired
     private AuthenticationServiceService authenticationService;
