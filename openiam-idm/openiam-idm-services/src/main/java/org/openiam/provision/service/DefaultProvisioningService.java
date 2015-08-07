@@ -51,6 +51,7 @@ import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.org.dto.Organization;
+import org.openiam.idm.srvc.org.dto.OrganizationUserDTO;
 import org.openiam.idm.srvc.prov.request.dto.BulkOperationEnum;
 import org.openiam.idm.srvc.prov.request.dto.BulkOperationRequest;
 import org.openiam.idm.srvc.prov.request.dto.OperationBean;
@@ -122,6 +123,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
     @Value("${org.openiam.send.user.activation.link}")
     private Boolean sendActivationLink;
+
+    @Value("${org.openiam.send.admin.reset.password.link}")
+    private Boolean sendAdminResetPasswordLink;
+
 
     private static final Log log = LogFactory.getLog(DefaultProvisioningService.class);
     private String errorDescription;
@@ -280,12 +285,12 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
      * .provision.dto.ProvisionUser)
      */
     @Override
-    @CacheEvict(value = "resources", allEntries=true)
+    @CacheEvict(value = "resources", allEntries = true)
     public ProvisionUserResponse modifyUser(final ProvisionUser pUser) {
         return modifyUser(pUser, null);
     }
 
-    @CacheEvict(value = "resources", allEntries=true)
+    @CacheEvict(value = "resources", allEntries = true)
     private ProvisionUserResponse modifyUser(final ProvisionUser pUser, final IdmAuditLog auditLog) {
         final List<ProvisionDataContainer> dataList = new LinkedList<ProvisionDataContainer>();
         TransactionTemplate transactionTemplate = new TransactionTemplate(platformTransactionManager);
@@ -933,7 +938,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         // bind the objects to the scripting engine
         Map<String, Object> bindingMap = new HashMap<String, Object>();
         bindingMap.put("sysId", sysConfiguration.getDefaultManagedSysId());
-        bindingMap.put("org", pUser.getPrimaryOrganization());
+        bindingMap.put("org", pUser.getPrimaryOrganization(sysConfiguration.getAffiliationPrimaryTypeId()));
         bindingMap.put("operation", isAdd ? "ADD" : "MODIFY");
         bindingMap.put(USER, pUser);
         bindingMap.put("sendActivationLink", sendActivationLink);
@@ -1117,7 +1122,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         resourceSet.addAll(getResourcesForRoles(roleSet));
         resourceSet.addAll(getResourcesForGroups(groupSet));
 
-        List<Organization> orgs = orgManager.getOrganizationsForUser(pUser.getId(), null, 0, 100);
+        List<Organization> orgs = orgManager.getOrganizationsForUserLocalized(pUser.getId(), null, 0, 100, null);
         for (Organization org : orgs) {
             Resource res = resourceDataService.getResource(org.getAdminResourceId(), null);
             if (res != null) {
@@ -1429,7 +1434,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         boolean allResetOK = true;
         final PasswordResponse response = new PasswordResponse(ResponseStatus.SUCCESS);
         try {
-            if (this.sendActivationLink) {
+            if (this.sendAdminResetPasswordLink) {
                 User u = userMgr.getUserDto(passwordSync.getUserId());
                 if (u == null) {
                     allResetOK = false;
@@ -2431,8 +2436,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         Set<Role> existingRoles = pUser.getRoles();
                         pUser.setRoles(new HashSet<Role>());
 
-                        Set<Organization> existingOrganizations = pUser.getAffiliations();
-                        pUser.setAffiliations(new HashSet<Organization>());
+                        Set<OrganizationUserDTO> existingOrganizations = pUser.getOrganizationUserDTOs();
+                        pUser.setOrganizationUserDTOs(new HashSet<OrganizationUserDTO>());
 
                         Set<Resource> existingResources = pUser.getResources();
                         pUser.setResources(new HashSet<Resource>());
@@ -2608,22 +2613,40 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                     break;
                                 case ORGANIZATION:
                                     boolean isModifiedOrg = false;
-                                    Organization organization = organizationService.getOrganizationDTO(ob.getObjectId(), null);
-                                    if (existingOrganizations.contains(organization)) {
+//                                    Organization organization = organizationService.getOrganizationDTO(ob.getObjectId(), null);
+                                    Iterator<OrganizationUserDTO> organizationUserDTOIterator = existingOrganizations.iterator();
+                                    boolean toDelete = false;
+                                    OrganizationUserDTO retVal = null;
+                                    while (organizationUserDTOIterator.hasNext()) {
+                                        OrganizationUserDTO organizationUserDTO = organizationUserDTOIterator.next();
+                                        Organization organz = organizationUserDTO.getOrganization();
+                                        if (organz.getId().equals(ob.getObjectId())) {
+                                            retVal = organizationUserDTO;
+                                            toDelete = true;
+                                            break;
+                                        }
+                                    }
+                                    if (toDelete) {
                                         if (BulkOperationEnum.DELETE_ENTITLEMENT.equals(ob.getOperation())) {
-                                            existingOrganizations.remove(organization);
-                                            organization.setOperation(AttributeOperationEnum.DELETE);
+                                            existingOrganizations.remove(retVal);
+                                            retVal.setOperation(AttributeOperationEnum.DELETE);
+                                            pUser.getOrganizationUserDTOs().add(retVal);
                                             isModifiedOrg = true;
                                         }
                                     } else {
                                         if (BulkOperationEnum.ADD_ENTITLEMENT.equals(ob.getOperation())) {
-                                            existingOrganizations.add(organization);
-                                            organization.setOperation(AttributeOperationEnum.ADD);
+                                            OrganizationUserDTO organizationUserDTO = new OrganizationUserDTO();
+                                            organizationUserDTO.setOrganization(new Organization());
+                                            organizationUserDTO.getOrganization().setId(ob.getObjectId());
+                                            organizationUserDTO.setUser(new User());
+                                            organizationUserDTO.getUser().setId(userId);
+                                            existingOrganizations.add(organizationUserDTO);
+                                            organizationUserDTO.setOperation(AttributeOperationEnum.ADD);
+                                            pUser.getOrganizationUserDTOs().add(organizationUserDTO);
                                             isModifiedOrg = true;
                                         }
                                     }
                                     if (isModifiedOrg) {
-                                        pUser.getAffiliations().add(organization);
                                         isEntitlementModified = true;
                                     }
                                     break;
@@ -2946,7 +2969,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
         Map<String, Object> bindingMap = new HashMap<String, Object>();
         bindingMap.put("sysId", sysConfiguration.getDefaultManagedSysId());
-        bindingMap.put("org", user.getPrimaryOrganization());
+        bindingMap.put("org", user.getPrimaryOrganization(sysConfiguration.getAffiliationPrimaryTypeId()));
         bindingMap.put("operation", operation);
         bindingMap.put(USER, user);
         bindingMap.put(USER_ATTRIBUTES, userMgr.getUserAttributesDto(user.getId()));

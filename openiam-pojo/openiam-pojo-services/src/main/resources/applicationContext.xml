@@ -17,11 +17,11 @@
        http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
        http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-3.0.xsd http://www.springframework.org/schema/cache http://www.springframework.org/schema/cache/spring-cache.xsd">
 
-    <import resource="jmsContext.xml" />
+    <import resource="jmsContext.xml"/>
 
-	<context:annotation-config />
-	<context:component-scan
-		base-package="org.openiam.idm.srvc.org.service,
+    <context:annotation-config/>
+    <context:component-scan
+            base-package="org.openiam.idm.srvc.org.service,
 		                                  org.openiam.util,
     								      org.openiam.core,
     								      org.openiam.idm.*,
@@ -29,78 +29,78 @@
     								      org.openiam.dozer.converter,
     								      org.openiam.validator,
     								      org.openiam.internationalization,
-    								      org.openiam.access.review.*" />
+    								      org.openiam.access.review.*"/>
 
 
-    <task:executor id="executor" pool-size="8-25" queue-capacity="100" />
-    <task:scheduler id="scheduler" pool-size="10" />
+    <task:executor id="executor" pool-size="8-25" queue-capacity="100"/>
+    <task:scheduler id="scheduler" pool-size="10"/>
 
-    <task:annotation-driven executor="executor" scheduler="scheduler" />
+    <task:annotation-driven executor="executor" scheduler="scheduler"/>
 
-	<bean id="springContextProvider" class="org.openiam.util.SpringContextProvider" />
+    <bean id="springContextProvider" class="org.openiam.util.SpringContextProvider"/>
 
-	<bean id="customJacksonMapper" class="org.openiam.idm.util.CustomJacksonMapper" />
+    <bean id="customJacksonMapper" class="org.openiam.idm.util.CustomJacksonMapper"/>
 
-	<bean id="deepDozerMapper" class="org.dozer.DozerBeanMapper">
-		<property name="mappingFiles">
-			<list>
-				<value>org/openiam/dozer/dozer-common-mapping.xml</value>
-				<value>org/openiam/dozer/dozer-deep-mapping.xml</value>
-			</list>
-		</property>
-	</bean>
+    <bean id="deepDozerMapper" class="org.dozer.DozerBeanMapper">
+        <property name="mappingFiles">
+            <list>
+                <value>org/openiam/dozer/dozer-common-mapping.xml</value>
+                <value>org/openiam/dozer/dozer-deep-mapping.xml</value>
+            </list>
+        </property>
+    </bean>
 
-	<bean id="shallowDozerMapper" class="org.dozer.DozerBeanMapper">
-		<property name="mappingFiles">
-			<list>
-				<value>org/openiam/dozer/dozer-common-mapping.xml</value>
-				<value>org/openiam/dozer/dozer-shallow-mapping.xml</value>
-			</list>
-		</property>
-	</bean>
+    <bean id="shallowDozerMapper" class="org.dozer.DozerBeanMapper">
+        <property name="mappingFiles">
+            <list>
+                <value>org/openiam/dozer/dozer-common-mapping.xml</value>
+                <value>org/openiam/dozer/dozer-shallow-mapping.xml</value>
+            </list>
+        </property>
+    </bean>
 
-	<bean id="dto2entityShallowDozerMapper" class="org.dozer.DozerBeanMapper">
-		<property name="mappingFiles">
-			<list>
-				<value>org/openiam/dozer/dto2entity/entity2dto.common.mappings.xml
-				</value>
-				<value>org/openiam/dozer/dto2entity/entity2dto.shallow.mappings.xml
-				</value>
-			</list>
-		</property>
-	</bean>
+    <bean id="dto2entityShallowDozerMapper" class="org.dozer.DozerBeanMapper">
+        <property name="mappingFiles">
+            <list>
+                <value>org/openiam/dozer/dto2entity/entity2dto.common.mappings.xml
+                </value>
+                <value>org/openiam/dozer/dto2entity/entity2dto.shallow.mappings.xml
+                </value>
+            </list>
+        </property>
+    </bean>
 
-	<bean id="dto2entityDeepDozerMapper" class="org.dozer.DozerBeanMapper">
-		<property name="mappingFiles">
-			<list>
-				<value>org/openiam/dozer/dto2entity/entity2dto.common.mappings.xml
-				</value>
-				<value>org/openiam/dozer/dto2entity/entity2dto.deep.mappings.xml
-				</value>
-			</list>
-		</property>
-	</bean>
+    <bean id="dto2entityDeepDozerMapper" class="org.dozer.DozerBeanMapper">
+        <property name="mappingFiles">
+            <list>
+                <value>org/openiam/dozer/dto2entity/entity2dto.common.mappings.xml
+                </value>
+                <value>org/openiam/dozer/dto2entity/entity2dto.deep.mappings.xml
+                </value>
+            </list>
+        </property>
+    </bean>
 
-	<bean id="pojoProperties"
-		class="org.springframework.beans.factory.config.PropertiesFactoryBean">
-		<property name="locations">
-			<list>
-				<value>classpath:datasource.properties</value>
-				<value>classpath:iam-plugin.properties</value>
-				<value>classpath:securityconf.properties</value>
-				<value>classpath:openiam.esb.properties</value>
-				<value>classpath:notification.properties</value>
-				<value>file:${confpath}/conf/datasource.properties</value>
-				<value>file:${confpath}/conf/iam-plugin.properties</value>
-				<value>file:${confpath}/conf/securityconf.properties</value>
-				<value>file:${confpath}/conf/openiam.esb.properties</value>
-				<value>file:${confpath}/conf/notification.properties</value>
-			</list>
-		</property>
-		<property name="ignoreResourceNotFound" value="true" />
-	</bean>
+    <bean id="pojoProperties"
+          class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+        <property name="locations">
+            <list>
+                <value>classpath:datasource.properties</value>
+                <value>classpath:iam-plugin.properties</value>
+                <value>classpath:securityconf.properties</value>
+                <value>classpath:openiam.esb.properties</value>
+                <value>classpath:notification.properties</value>
+                <value>file:${confpath}/conf/datasource.properties</value>
+                <value>file:${confpath}/conf/iam-plugin.properties</value>
+                <value>file:${confpath}/conf/securityconf.properties</value>
+                <value>file:${confpath}/conf/openiam.esb.properties</value>
+                <value>file:${confpath}/conf/notification.properties</value>
+            </list>
+        </property>
+        <property name="ignoreResourceNotFound" value="true"/>
+    </bean>
 
-    <ehcache:annotation-driven />
+    <ehcache:annotation-driven/>
 
     <bean id="cacheManager" class="org.springframework.cache.ehcache.EhCacheCacheManager">
         <property name="cacheManager" ref="coreCacheManager"/>
@@ -121,126 +121,127 @@
         </property>
     </bean>
 
-	<bean
-		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-		<property name="properties" ref="pojoProperties" />
-	</bean>
+    <bean
+            class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="properties" ref="pojoProperties"/>
+    </bean>
 
-	<bean id="sysConfiguration" class="org.openiam.base.SysConfiguration">
-		<property name="defaultManagedSysId" value="${openiam.default_managed_sys}" />
-        <property name="defaultAuthPolicyId" value="${org.openiam.default.auth.policy}" />
-        <property name="defaultPswdPolicyId" value="${org.openiam.default.password.policy}" />
-        <property name="developmentMode" value="${openiam.development_mode}" />
-        <property name="provisionServiceFlag" value="${org.openiam.provision.service.flag}" />
-	</bean>
+    <bean id="sysConfiguration" class="org.openiam.base.SysConfiguration">
+        <property name="defaultManagedSysId" value="${openiam.default_managed_sys}"/>
+        <property name="defaultAuthPolicyId" value="${org.openiam.default.auth.policy}"/>
+        <property name="defaultPswdPolicyId" value="${org.openiam.default.password.policy}"/>
+        <property name="developmentMode" value="${openiam.development_mode}"/>
+        <property name="provisionServiceFlag" value="${org.openiam.provision.service.flag}"/>
+        <property name="affiliationDefaultTypeId" value="${org.openiam.affiliation.default.type.id}"/>
+        <property name="affiliationPrimaryTypeId" value="${org.openiam.affiliation.primary.type.id}"/>
+    </bean>
 
-	<!-- HEARTBEAT Beans -->
+    <!-- HEARTBEAT Beans -->
 
-	<bean id="heartBeat" class="org.openiam.idm.srvc.health.HeartBeatWebServiceImpl">
-	</bean>
+    <bean id="heartBeat" class="org.openiam.idm.srvc.health.HeartBeatWebServiceImpl">
+    </bean>
 
-	<bean id="defaultLoginModuleManager" class="org.openiam.idm.srvc.auth.spi.DefaultLoginModule">
-	</bean>
+    <bean id="defaultLoginModuleManager" class="org.openiam.idm.srvc.auth.spi.DefaultLoginModule">
+    </bean>
 
-	<bean id="configurableGroovyScriptEngine" class="${org.openiam.groovy.script.engine}" />
+    <bean id="configurableGroovyScriptEngine" class="${org.openiam.groovy.script.engine}"/>
 
-	<!-- QueryDataService -->
-	<bean id="queryWS" class="org.openiam.idm.srvc.qry.ws.QueryDataWebServiceImpl">
-		<property name="queryService" ref="queryDataService" />
-	</bean>
+    <!-- QueryDataService -->
+    <bean id="queryWS" class="org.openiam.idm.srvc.qry.ws.QueryDataWebServiceImpl">
+        <property name="queryService" ref="queryDataService"/>
+    </bean>
 
-	<bean id="queryDataService" class="org.openiam.idm.srvc.qry.service.QueryDataServiceImpl">
-		<property name="sessionFactory" ref="sessionFactory"></property>
-	</bean>
+    <bean id="queryDataService" class="org.openiam.idm.srvc.qry.service.QueryDataServiceImpl">
+        <property name="sessionFactory" ref="sessionFactory"></property>
+    </bean>
 
-	<bean id="luceneReindexService" class="org.openiam.idm.srvc.lucene.LuceneReindexService">
-		<property name="hibernateSearchDAOs">
-			<list>
-				<ref bean="userSearchDAO" />
-				<ref bean="loginSearchDAO" />
-				<ref bean="emailSearchDAO" />
-				<ref bean="phoneSearchDAO" />
-			</list>
-		</property>
-	</bean>
+    <bean id="luceneReindexService" class="org.openiam.idm.srvc.lucene.LuceneReindexService">
+        <property name="hibernateSearchDAOs">
+            <list>
+                <ref bean="userSearchDAO"/>
+                <ref bean="loginSearchDAO"/>
+                <ref bean="emailSearchDAO"/>
+                <ref bean="phoneSearchDAO"/>
+            </list>
+        </property>
+    </bean>
 
-	<bean id="seqGenDAO" class="org.openiam.base.id.SequenceGenDAOImpl">
-		<property name="sessionFactory" ref="sessionFactory"></property>
-	</bean>
+    <bean id="seqGenDAO" class="org.openiam.base.id.SequenceGenDAOImpl">
+        <property name="sessionFactory" ref="sessionFactory"></property>
+    </bean>
 
-	<bean id="sysMessageDAO" class="org.openiam.idm.srvc.msg.service.SysMessageDAOImpl">
-		<property name="sessionFactory" ref="sessionFactory"></property>
-	</bean>
+    <bean id="sysMessageDAO" class="org.openiam.idm.srvc.msg.service.SysMessageDAOImpl">
+        <property name="sessionFactory" ref="sessionFactory"></property>
+    </bean>
 
-	<bean id="orgPolicyDAO" class="org.openiam.idm.srvc.orgpolicy.service.OrgPolicyDAOImpl">
-		<property name="sessionFactory" ref="sessionFactory"></property>
-	</bean>
-	<bean id="orgPolicyLogDAO"
-		class="org.openiam.idm.srvc.orgpolicy.service.OrgPolicyUserLogDAOImpl">
-		<property name="sessionFactory" ref="sessionFactory"></property>
-	</bean>
+    <bean id="orgPolicyDAO" class="org.openiam.idm.srvc.orgpolicy.service.OrgPolicyDAOImpl">
+        <property name="sessionFactory" ref="sessionFactory"></property>
+    </bean>
+    <bean id="orgPolicyLogDAO"
+          class="org.openiam.idm.srvc.orgpolicy.service.OrgPolicyUserLogDAOImpl">
+        <property name="sessionFactory" ref="sessionFactory"></property>
+    </bean>
 
-	<bean id="emailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
-		<property name="host" value="${mail.host}" />
-		<property name="port" value="${mail.port}" />
-		<property name="username" value="${mail.username}" />
-		<property name="password" value="${mail.password}" />
-		<property name="javaMailProperties">
-			<props>
-				<prop key="mail.smtp.auth">${mail.smtp.auth}</prop>
-				<prop key="mail.smtp.starttls.enable">${mail.smtp.starttls.enable}</prop>
-			</props>
-		</property>
-	</bean>
+    <bean id="emailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+        <property name="host" value="${mail.host}"/>
+        <property name="port" value="${mail.port}"/>
+        <property name="username" value="${mail.username}"/>
+        <property name="password" value="${mail.password}"/>
+        <property name="javaMailProperties">
+            <props>
+                <prop key="mail.smtp.auth">${mail.smtp.auth}</prop>
+                <prop key="mail.smtp.starttls.enable">${mail.smtp.starttls.enable}</prop>
+            </props>
+        </property>
+    </bean>
 
-	<bean id="mailSenderClient" class=" org.openiam.idm.srvc.msg.service.MailSenderClient">
-		<property name="host" value="${mail.host}" />
-		<property name="port" value="${mail.port}" />
-		<property name="username" value="${mail.username}" />
-		<property name="password" value="${mail.password}" />
-		<property name="auth" value="${mail.smtp.auth}" />
-		<property name="starttls" value="${mail.smtp.starttls.enable}" />
-	</bean>
+    <bean id="mailSenderClient" class=" org.openiam.idm.srvc.msg.service.MailSenderClient">
+        <property name="host" value="${mail.host}"/>
+        <property name="port" value="${mail.port}"/>
+        <property name="username" value="${mail.username}"/>
+        <property name="password" value="${mail.password}"/>
+        <property name="auth" value="${mail.smtp.auth}"/>
+        <property name="starttls" value="${mail.smtp.starttls.enable}"/>
+    </bean>
 
-	<bean id="locationDAO" class="org.openiam.idm.srvc.loc.service.LocationDAOImpl">
-		<property name="sessionFactory" ref="sessionFactory"></property>
-	</bean>
+    <bean id="locationDAO" class="org.openiam.idm.srvc.loc.service.LocationDAOImpl">
+        <property name="sessionFactory" ref="sessionFactory"></property>
+    </bean>
 
-	<!-- Utility Beans -->
-	<bean id="cryptor" class="org.openiam.util.encrypt.DESedeCryptor">
-	</bean>
+    <!-- Utility Beans -->
+    <bean id="cryptor" class="org.openiam.util.encrypt.DESedeCryptor">
+    </bean>
 
 
+    <!-- Batch related beans -->
+    <!--
+    <bean id="batchConfigDAO" class="org.openiam.idm.srvc.batch.service.BatchConfigDAOImpl">
+        <property name="sessionFactory" ref="sessionFactory"></property>
+    </bean>
+    -->
 
-	<!-- Batch related beans -->
-	<!--
-	<bean id="batchConfigDAO" class="org.openiam.idm.srvc.batch.service.BatchConfigDAOImpl">
-		<property name="sessionFactory" ref="sessionFactory"></property>
-	</bean>
-	-->
+    <!-- Hibernate SessionFactory -->
+    <bean id="sessionFactory"
+          class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+        <!-- <property name="jtaTransactionManager"> <bean factory-bean="transactionManager"
+            factory-method="getTransactionManager" /> </property> -->
+        <property name="mappingResources">
+            <list>
+                <!-- Util Maps -->
+                <value>org/openiam/base/id/SequenceGen.hbm.xml</value>
 
-	<!-- Hibernate SessionFactory -->
-	<bean id="sessionFactory"
-		class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
-		<property name="dataSource" ref="dataSource" />
-		<!-- <property name="jtaTransactionManager"> <bean factory-bean="transactionManager" 
-			factory-method="getTransactionManager" /> </property> -->
-		<property name="mappingResources">
-			<list>
-				<!-- Util Maps -->
-				<value>org/openiam/base/id/SequenceGen.hbm.xml</value>
-
-				<value>org/openiam/idm/srvc/msg/service/NotificationConfig.hbm.xml
-				</value>
-				<value>org/openiam/idm/srvc/orgpolicy/service/OrgPolicy.hbm.xml
-				</value>
-				<value>org/openiam/idm/srvc/orgpolicy/service/OrgPolicyUserLog.hbm.xml
-				</value>
-			</list>
-		</property>
-		<property name="hibernateProperties" ref="hibernateProperties" />
-		<property name="packagesToScan"
-			value="org.openiam.core.domain*,
+                <value>org/openiam/idm/srvc/msg/service/NotificationConfig.hbm.xml
+                </value>
+                <value>org/openiam/idm/srvc/orgpolicy/service/OrgPolicy.hbm.xml
+                </value>
+                <value>org/openiam/idm/srvc/orgpolicy/service/OrgPolicyUserLog.hbm.xml
+                </value>
+            </list>
+        </property>
+        <property name="hibernateProperties" ref="hibernateProperties"/>
+        <property name="packagesToScan"
+                  value="org.openiam.core.domain*,
 											   org.openiam.idm.srvc.loc.domain*,
 											   org.openiam.idm.srvc.grp.domain*,
 											   org.openiam.idm.srvc.role.domain*,
@@ -263,87 +264,87 @@
                                                org.openiam.idm.srvc.prov*,
                                                org.openiam.idm.srvc.batch.domain*,
                                                org.openiam.idm.srvc.ui*
-                                               " />
+                                               "/>
 
-	</bean>
-	<util:properties id="hibernateProperties"
-		location="classpath:openiam.search.hibernate.properties">
-		<prop key="hibernate.dialect">${openiam.hibernate.dialect}</prop>
-		<prop key="hibernate.show_sql">${openiam.hibernate.show.sql}</prop>
-		<prop key="hibernate.generate_statistics">${openiam.hibernate.generate.statistics}</prop>
+    </bean>
+    <util:properties id="hibernateProperties"
+                     location="classpath:openiam.search.hibernate.properties">
+        <prop key="hibernate.dialect">${openiam.hibernate.dialect}</prop>
+        <prop key="hibernate.show_sql">${openiam.hibernate.show.sql}</prop>
+        <prop key="hibernate.generate_statistics">${openiam.hibernate.generate.statistics}</prop>
 
         <prop key="hibernate.cache.region.factory_class">net.sf.ehcache.hibernate.EhCacheRegionFactory</prop>
-		<prop key="hibernate.cache.use_second_level_cache">${openiam.hibernate.second.level.cache.enabled}</prop>
-		<prop key="hibernate.cache.use_query_cache">${openiam.hibernate.query.cache.enabled}</prop>
+        <prop key="hibernate.cache.use_second_level_cache">${openiam.hibernate.second.level.cache.enabled}</prop>
+        <prop key="hibernate.cache.use_query_cache">${openiam.hibernate.query.cache.enabled}</prop>
 
-		<prop key="hibernate.use_sql_comments">${openiam.hibernate.sql.comments.enabled}</prop>
-		<prop key="hibernate.connection.autoReconnect">${openiam.hibernate.auto.connect.enabled}</prop>
+        <prop key="hibernate.use_sql_comments">${openiam.hibernate.sql.comments.enabled}</prop>
+        <prop key="hibernate.connection.autoReconnect">${openiam.hibernate.auto.connect.enabled}</prop>
 
         <prop key="hibernate.connection.CharSet">UTF-8</prop>
         <prop key="hibernate.connection.characterEncoding">UTF-8</prop>
         <prop key="hibernate.connection.useUnicode">true</prop>
         <prop key="hibernate.search.default.indexBase">${confpath}/conf/lucene</prop>
-		<!--<prop key="hibernate.validationQuery">${openiam.hibernate.validationQuery}</prop>-->
-	</util:properties>
+        <!--<prop key="hibernate.validationQuery">${openiam.hibernate.validationQuery}</prop>-->
+    </util:properties>
 
-	<bean id="hibernateTemplate" class="org.springframework.orm.hibernate3.HibernateTemplate">
-		<property name="sessionFactory" ref="sessionFactory" />
-	</bean>
+    <bean id="hibernateTemplate" class="org.springframework.orm.hibernate3.HibernateTemplate">
+        <property name="sessionFactory" ref="sessionFactory"/>
+    </bean>
 
-	<jee:jndi-lookup jndi-name="${datasource.jndi.name}"
-		id="dataSource" />
+    <jee:jndi-lookup jndi-name="${datasource.jndi.name}"
+                     id="dataSource"/>
 
-	<bean id="exporter" class="org.springframework.jmx.export.MBeanExporter"
-		lazy-init="false">
-		<property name="autodetect" value="true" />
-		<property name="namingStrategy" ref="namingStrategy" />
-		<property name="assembler" ref="assembler" />
-	</bean>
-	<bean id="attributeSource"
-		class="org.springframework.jmx.export.annotation.AnnotationJmxAttributeSource" />
-	<bean id="assembler"
-		class="org.springframework.jmx.export.assembler.MetadataMBeanInfoAssembler">
-		<property name="attributeSource" ref="attributeSource" />
-	</bean>
-	<bean id="namingStrategy"
-		class="org.springframework.jmx.export.naming.MetadataNamingStrategy">
-		<property name="attributeSource" ref="attributeSource" />
-	</bean>
+    <bean id="exporter" class="org.springframework.jmx.export.MBeanExporter"
+          lazy-init="false">
+        <property name="autodetect" value="true"/>
+        <property name="namingStrategy" ref="namingStrategy"/>
+        <property name="assembler" ref="assembler"/>
+    </bean>
+    <bean id="attributeSource"
+          class="org.springframework.jmx.export.annotation.AnnotationJmxAttributeSource"/>
+    <bean id="assembler"
+          class="org.springframework.jmx.export.assembler.MetadataMBeanInfoAssembler">
+        <property name="attributeSource" ref="attributeSource"/>
+    </bean>
+    <bean id="namingStrategy"
+          class="org.springframework.jmx.export.naming.MetadataNamingStrategy">
+        <property name="attributeSource" ref="attributeSource"/>
+    </bean>
 
-	<bean id="transactionManager"
-		class="org.springframework.orm.hibernate3.HibernateTransactionManager">
-		<property name="sessionFactory" ref="sessionFactory" />
-	</bean>
+    <bean id="transactionManager"
+          class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+        <property name="sessionFactory" ref="sessionFactory"/>
+    </bean>
 
-	<bean id="httpClient" class="org.openiam.http.client.OpenIAMHttpClient">
-		<constructor-arg index="0">
-			<bean class="org.apache.http.impl.conn.PoolingClientConnectionManager">
-				<property name="defaultMaxPerRoute" value="${org.openiam.http.client.max.per.route}" />
-				<property name="maxTotal" value="${org.openiam.http.client.max.total}" />
-			</bean>
-		</constructor-arg>
-	</bean>
+    <bean id="httpClient" class="org.openiam.http.client.OpenIAMHttpClient">
+        <constructor-arg index="0">
+            <bean class="org.apache.http.impl.conn.PoolingClientConnectionManager">
+                <property name="defaultMaxPerRoute" value="${org.openiam.http.client.max.per.route}"/>
+                <property name="maxTotal" value="${org.openiam.http.client.max.total}"/>
+            </bean>
+        </constructor-arg>
+    </bean>
 
-	<!-- enable the configuration of transactional behavior based on annotations -->
-	<tx:annotation-driven transaction-manager="transactionManager" />
-
-
-	<tx:advice id="txAdvice" transaction-manager="transactionManager">
-		<!-- the transactional semantics... -->
-		<tx:attributes>
-			<!-- all methods starting with 'get' are read-only -->
-			<tx:method name="get*" read-only="true" propagation="SUPPORTS" />
-			<tx:method name="start*" read-only="true" propagation="NOT_SUPPORTED" />
-			<tx:method name="send*" read-only="true" propagation="NOT_SUPPORTED" />
-			<!-- other methods use the default transaction settings (see below) -->
-			<tx:method name="*" propagation="REQUIRED" rollback-for="RuntimeException" />
-
-		</tx:attributes>
-	</tx:advice>
+    <!-- enable the configuration of transactional behavior based on annotations -->
+    <tx:annotation-driven transaction-manager="transactionManager"/>
 
 
-	<aop:aspectj-autoproxy  />
-	<!-- <aop:aspectj-autoproxy  proxy-target-class="true"/> -->
+    <tx:advice id="txAdvice" transaction-manager="transactionManager">
+        <!-- the transactional semantics... -->
+        <tx:attributes>
+            <!-- all methods starting with 'get' are read-only -->
+            <tx:method name="get*" read-only="true" propagation="SUPPORTS"/>
+            <tx:method name="start*" read-only="true" propagation="NOT_SUPPORTED"/>
+            <tx:method name="send*" read-only="true" propagation="NOT_SUPPORTED"/>
+            <!-- other methods use the default transaction settings (see below) -->
+            <tx:method name="*" propagation="REQUIRED" rollback-for="RuntimeException"/>
+
+        </tx:attributes>
+    </tx:advice>
+
+
+    <aop:aspectj-autoproxy/>
+    <!-- <aop:aspectj-autoproxy  proxy-target-class="true"/> -->
     <!-- <bean class="org.springframework.aop.aspectj.annotation.AnnotationAwareAspectJAutoProxyCreator" /> -->
 
     <bean id="auditCacheManager" class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean">
