@@ -1,31 +1,4 @@
-/*
- * Copyright 2009, OpenIAM LLC This file is part of the OpenIAM Identity and
- * Access Management Suite
- * 
- * OpenIAM Identity and Access Management Suite is free software: you can
- * redistribute it and/or modify it under the terms of the Lesser GNU General
- * Public License version 3 as published by the Free Software Foundation.
- * 
- * OpenIAM is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- * A PARTICULAR PURPOSE. See the Lesser GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * OpenIAM. If not, see <http://www.gnu.org/licenses/>. *
- */
-
-/**
- *
- */
 package org.openiam.idm.srvc.auth.spi;
-
-import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import javax.jws.WebService;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -41,6 +14,7 @@ import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
 import org.openiam.idm.srvc.audit.constant.AuditTarget;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.auth.context.AuthContextFactory;
 import org.openiam.idm.srvc.auth.context.AuthenticationContext;
 import org.openiam.idm.srvc.auth.context.PasswordCredential;
@@ -51,14 +25,13 @@ import org.openiam.idm.srvc.auth.dto.*;
 import org.openiam.idm.srvc.auth.login.AuthStateDAO;
 import org.openiam.idm.srvc.auth.service.AuthCredentialsValidator;
 import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
-import org.openiam.idm.srvc.auth.service.AuthenticationService;
+import org.openiam.idm.srvc.auth.service.AuthenticationServiceService;
 import org.openiam.idm.srvc.auth.service.AuthenticationUtils;
 import org.openiam.idm.srvc.auth.sso.SSOTokenFactory;
 import org.openiam.idm.srvc.auth.sso.SSOTokenModule;
 import org.openiam.idm.srvc.auth.ws.AuthenticationResponse;
 import org.openiam.idm.srvc.auth.ws.LoginDataWebService;
 import org.openiam.idm.srvc.auth.ws.LoginResponse;
-import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.policy.domain.PolicyAttributeEntity;
 import org.openiam.idm.srvc.policy.domain.PolicyEntity;
@@ -74,34 +47,28 @@ import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.jmx.export.annotation.ManagedAttribute;
-import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-// import edu.emory.mathcs.backport.java.util.Arrays;
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
- * @author suneet
+ * Created by Vitaly on 8/6/2015.
  */
+@Service
+public class AuthenticationServiceServiceImpl implements AuthenticationServiceService, BeanFactoryAware {
+    private BeanFactory beanFactory;
 
-@Service("authenticate")
-@WebService(endpointInterface = "org.openiam.idm.srvc.auth.service.AuthenticationService", targetNamespace = "urn:idm.openiam.org/srvc/auth/service", portName = "AuthenticationServicePort", serviceName = "AuthenticationService")
-@ManagedResource(objectName = "openiam:name=authenticationService", description = "Authentication Service")
-@Transactional
-public class AuthenticationServiceImpl extends AbstractBaseService implements AuthenticationService, BeanFactoryAware {
-
-    @Autowired
-    private AuthStateDAO authStateDao;
+    private static final Log log = LogFactory.getLog(AuthenticationServiceServiceImpl.class);
 
     @Autowired
-    @Qualifier("loginWS")
-    protected LoginDataWebService loginManager;
-
-    @Value("${org.openiam.core.login.authentication.context.class}")
-    private String authContextClass;
+    protected AuditLogService auditLogService;
 
     @Autowired
     private UserDataService userManager;
@@ -121,22 +88,27 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
     private ScriptIntegration scriptRunner;
 
     @Autowired
-    protected KeyManagementService keyManagementService;
-
-    @Autowired
-    protected AuthenticationUtils authenticationUtils;
-
-    private BeanFactory beanFactory;
-
-    private static final Log log = LogFactory.getLog(AuthenticationServiceImpl.class);
+    private AuthStateDAO authStateDao;
 
     @Value("${org.openiam.core.login.login.module.default}")
     private String defaultLoginModule;
 
-    @Override
-    @ManagedAttribute
-    public void globalLogout(String userId) throws Throwable {
+    @Autowired
+    @Qualifier("loginWS")
+    protected LoginDataWebService loginManager;
 
+    @Value("${org.openiam.core.login.authentication.context.class}")
+    private String authContextClass;
+
+    @Autowired
+    protected AuthenticationUtils authenticationUtils;
+
+    @Autowired
+    protected KeyManagementService keyManagementService;
+
+
+    @Transactional
+    public void globalLogout(String userId) throws Throwable {
         IdmAuditLog newLogoutEvent = new IdmAuditLog();
         newLogoutEvent.setUserId(userId);
         UserEntity userEntity = userManager.getUser(userId);
@@ -176,7 +148,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
         }
     }
 
-    @Override
+    @Transactional
     public AuthenticationResponse login(AuthenticationRequest request) {
         IdmAuditLog newLoginEvent = new IdmAuditLog();
         newLoginEvent.setUserId(null);
@@ -314,7 +286,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
                 }
 
                 if (modSel.getModuleType() == LoginModuleSelector.MODULE_TYPE_LOGIN_MODULE) {
-	            	/* here for backward compatability. in case a groovy script returned an actual class name, get 
+	            	/* here for backward compatability. in case a groovy script returned an actual class name, get
 	            	 * the spring bean name
 	            	 */
                     try {
@@ -429,8 +401,8 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
     }
 
     @Override
+    @Transactional
     public Response renewToken(String principal, String token, String tokenType) {
-
         log.debug("RenewToken called.");
 
         Response resp = new Response(ResponseStatus.SUCCESS);
@@ -508,7 +480,6 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
             resp.setErrorText(e.getMessage());
         }
         return resp;
-
     }
 
     private String getPolicyAttribute(Set<PolicyAttributeEntity> attr, String name) {
@@ -524,6 +495,11 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 
     }
 
+    @Override
+    public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+        this.beanFactory = beanFactory;
+    }
+
     private void updateAuthState(Subject sub) {
 
         final AuthStateEntity state = new AuthStateEntity(null, new BigDecimal(1),
@@ -535,20 +511,14 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
     }
 
     @Override
-    public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
-        this.beanFactory = beanFactory;
-    }
-
-    @Override
     @Transactional(readOnly = true)
-    public List<AuthStateEntity> findBeans(AuthStateSearchBean searchBean,
-                                           int from, int size) {
+    public List<AuthStateEntity> findBeans(AuthStateSearchBean searchBean, int from, int size) {
         return authStateDao.getByExample(searchBean, from, size);
     }
 
     @Override
     @Transactional
-    public Response save(final AuthStateEntity entity) {
+    public Response save(AuthStateEntity entity) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
             authStateDao.saveAuthState(entity);
@@ -559,5 +529,4 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
         }
         return response;
     }
-
 }

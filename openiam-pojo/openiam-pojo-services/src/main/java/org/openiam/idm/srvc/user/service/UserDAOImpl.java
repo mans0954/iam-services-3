@@ -56,7 +56,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
 
         if (delegationFilter != null) {
             if (CollectionUtils.isNotEmpty(delegationFilter.getOrganizationIdSet())) {
-                criteria.createAlias("affiliations", "aff").add(Restrictions.in("aff.id", delegationFilter.getOrganizationIdSet()));
+                criteria.createAlias("organizationUser", "aff").add(Restrictions.in("aff.primaryKey.organization.id", delegationFilter.getOrganizationIdSet()));
             }
 
             if (CollectionUtils.isNotEmpty(delegationFilter.getGroupIdSet())) {
@@ -203,7 +203,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
                 criteria.add(Restrictions.eq("postalCd", searchBean.getZipCode()));
             }
             if (CollectionUtils.isNotEmpty(searchBean.getOrganizationIdSet())) {
-                criteria.createAlias("affiliations", "aff").add(Restrictions.in("aff.id", searchBean.getOrganizationIdSet()));
+                criteria.createAlias("organizationUser", "aff").add(Restrictions.in("aff.primaryKey.organization.id", searchBean.getOrganizationIdSet()));
             }
             if (StringUtils.isNotEmpty(searchBean.getPhoneAreaCd()) || StringUtils.isNotEmpty(searchBean.getPhoneNbr())) {
                 if (StringUtils.isNotEmpty(searchBean.getPhoneAreaCd())) {
@@ -417,7 +417,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
 
         if (delegationFilter != null) {
             if (CollectionUtils.isNotEmpty(delegationFilter.getOrganizationIdSet())) {
-                criteria.createAlias("affiliations", "aff").add(Restrictions.in("aff.id", delegationFilter.getOrganizationIdSet()));
+                criteria.createAlias("organizationUser", "aff").add(Restrictions.in("aff.primaryKey.organization.id", delegationFilter.getOrganizationIdSet()));
             }
         }
         criteria.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
@@ -619,7 +619,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
     public List<String> getUserIdsForOrganizations(final Set<String> organizationIds, final int from, final int size) {
         List<String> retVal = null;
         if (CollectionUtils.isNotEmpty(organizationIds)) {
-            final Criteria criteria = getCriteria().createAlias("affiliations", "af").add(Restrictions.in("af.id", organizationIds))
+            final Criteria criteria = getCriteria().createAlias("organizationUser", "af").add(Restrictions.in("af.primaryKey.organization.id", organizationIds))
                             .setProjection(Projections.property("id"));
             if (from > -1) {
                 criteria.setFirstResult(from);
@@ -781,11 +781,11 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
                 criteria.createAlias("principalList", "l", Criteria.LEFT_JOIN, Restrictions.eq("l.managedSysId", sysConfiguration.getDefaultManagedSysId()));
                 criteria.addOrder(createOrder("l.login", orderDir));
             }else if("organization".equals(sort.getSortBy())){
-                criteria.createAlias("affiliations", "org", Criteria.LEFT_JOIN).add(
+                criteria.createAlias("organizationUser.primaryKey.organization", "org", Criteria.LEFT_JOIN).add(
                         Restrictions.or(Restrictions.isNull("org.organizationType.id"), Restrictions.eq("org.organizationType.id", organizationTypeId)));
                 criteria.addOrder(createOrder("org.name", orderDir));
             }else if("department".equals(sort.getSortBy())) {
-                criteria.createAlias("affiliations", "dep", Criteria.LEFT_JOIN).add(
+                criteria.createAlias("organizationUser.primaryKey.organization", "dep", Criteria.LEFT_JOIN).add(
                         Restrictions.or(Restrictions.isNull("dep.organizationType.id"), Restrictions.eq("dep.organizationType.id", departmentTypeId)));
                 criteria.addOrder(createOrder("dep.name", orderDir));
             } else {
