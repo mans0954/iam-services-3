@@ -1,9 +1,11 @@
 package org.openiam.idm.srvc.synch.srcadapter;
 
+import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.solr.common.util.Base64;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
@@ -185,7 +187,10 @@ public abstract class GenericLdapAdapter extends AbstractSrcAdapter {
                                 log.debug("attribute id=: " + key);
                                 for (NamingEnumeration e = attr.getAll(); e.hasMore(); ) {
                                     Object o = e.next();
-                                    if (o.toString() != null) {
+                                    if(o instanceof byte[]){
+                                        valueList.add(Hex.encodeHexString((byte[])o));
+                                        log.debug("- value:=" + Hex.encodeHexString((byte[])o));
+                                    } else if (o.toString() != null) {
                                         valueList.add(o.toString());
                                         log.debug("- value:=" + o.toString());
                                     }
@@ -359,6 +364,7 @@ public abstract class GenericLdapAdapter extends AbstractSrcAdapter {
         envDC.put(Context.PROVIDER_URL, hostUrl);
         envDC.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
         envDC.put(Context.SECURITY_AUTHENTICATION, "simple"); // simple
+        envDC.put("java.naming.ldap.attributes.binary", "objectGUID");
         envDC.put(Context.SECURITY_PRINCIPAL, config.getSrcLoginId());  //"administrator@diamelle.local"
         envDC.put(Context.SECURITY_CREDENTIALS, config.getSrcPassword());
         //    envDC.put(Context.BATCHSIZE, "100");
