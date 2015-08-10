@@ -1,10 +1,13 @@
 package org.openiam.idm.srvc.key.service;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.core.dao.UserKeyDao;
 import org.openiam.core.domain.UserKey;
 import org.openiam.exception.EncryptionException;
+import org.openiam.hazelcast.HazelcastConfiguration;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDAO;
@@ -28,7 +31,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import com.hazelcast.core.EntryEvent;
+import com.hazelcast.core.EntryListener;
+import com.hazelcast.core.IMap;
+
 import javax.annotation.PostConstruct;
+
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -54,6 +64,9 @@ public class KeyManagementServiceImpl implements KeyManagementService {
 
     @Value("${org.openiam.idm.system.user.id}")
     private String systemUserId;
+    
+    @Autowired
+    private HazelcastConfiguration hazelcastConfiguration;
 
     @Autowired
     private Cryptor cryptor;
@@ -69,9 +82,11 @@ public class KeyManagementServiceImpl implements KeyManagementService {
     private ManagedSysDAO managedSysDAO;
     @Autowired
     private UserIdentityAnswerDAO userIdentityAnswerDAO;
+    
+    private JKSEntryListener jksListener = null;
 
     @PostConstruct
-    public void init() {
+    public void init() throws IOException {
         if (!StringUtils.hasText(this.jksFile)) {
             this.jksFile = JksManager.KEYSTORE_DEFAULT_LOCATION + JksManager.KEYSTORE_FILE_NAME;
         }
@@ -89,6 +104,72 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         } else {
             jksManager = new JksManager(this.jksFile, this.iterationCount);
         }
+        
+        final IMap<String, byte[]> keyMap = hazelcastConfiguration.getMap("keyManagementCache");
+        jksListener = new JKSEntryListener();
+        keyMap.addEntryListener(jksListener, "jksFileKey", true);
+        
+        final File file = new File(jksFile);
+        if(file.exists()) {
+        	keyMap.put("jksFileKey", FileUtils.readFileToByteArray(file));
+        } else {
+        	final byte[] key = keyMap.get("jksFileKey");
+        	jksListener.addOrUpdate(key);
+        }
+    }
+    
+    private class JKSEntryListener implements EntryListener<String, byte[]> {
+    	
+    	void addOrUpdate(final byte[] value) {
+    		log.warn("Received add or update JKS event");
+    		if(value != null && value.length > 0) {
+	    		try {
+					final File file = new File(jksFile);
+					boolean updateFile = false;
+					if(!file.exists()) {
+						file.createNewFile();
+						log.warn("jks file does not exists - creating it due to cache event");
+						updateFile = true;
+					} else {
+						final byte[] fileBytes = FileUtils.readFileToByteArray(file);
+						if(!Arrays.equals(fileBytes, value)) {
+							log.warn("jks file does not exists - creating it an updated jks file on another node");
+							updateFile = true;
+						}
+					}
+					if(updateFile) {
+						FileUtils.writeByteArrayToFile(file, value);
+					}
+				} catch(Throwable e) {
+					throw new RuntimeException("Could not create or update key", e);
+				}
+    		}
+    	}
+
+		@Override
+		public void entryAdded(EntryEvent<String, byte[]> event) {
+			log.warn("entryAdded() event called for jks key");
+			addOrUpdate(event.getValue());
+		}
+
+		@Override
+		public void entryUpdated(EntryEvent<String, byte[]> event) {
+			log.warn("entryUpdated() event called for jks key");
+			addOrUpdate(event.getValue());
+		}
+		
+
+		@Override
+		public void entryRemoved(EntryEvent<String, byte[]> event) {
+			// TODO Auto-generated method stub
+		}
+
+		@Override
+		public void entryEvicted(EntryEvent<String, byte[]> event) {
+			// TODO Auto-generated method stub
+
+		}
+    	
     }
 
     @Override
@@ -166,6 +247,9 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         userKeyDao.deleteAll();
         addUserKeys(newUserKeyList);
         log.warn("End generating new master key...");
+        
+        final IMap<String, byte[]> keyMap = hazelcastConfiguration.getMap("keyManagementCache");
+        keyMap.put("jksFileKey", masterKey);
     }
 
     @Override

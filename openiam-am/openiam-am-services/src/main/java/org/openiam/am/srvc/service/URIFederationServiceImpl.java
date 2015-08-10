@@ -201,7 +201,7 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 	 */
 	@ManagedOperation(description="sweep the Content Provider Cache")
 	@Transactional
-	@Scheduled(fixedRateString="${org.openiam.am.uri.federation.threadsweep}", initialDelayString="${org.openiam.am.uri.federation.threadsweep}")
+	@Scheduled(fixedRateString="${org.openiam.am.uri.federation.threadsweep}", initialDelay=0)
 	public void sweep() {
 		try {
 			LOG.info("Attemtping to refresh Content Provider Cache...");
