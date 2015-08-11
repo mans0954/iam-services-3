@@ -67,6 +67,8 @@ public interface UserDataService {
 
     public List<UserEntity> findUserByOrganization(String orgId) throws BasicDataServiceException;
 
+    public List<User> findUserDtoByOrganization(String orgId) throws BasicDataServiceException;
+
     public List<UserEntity> searchByDelegationProperties(DelegationFilterSearch search);
 
     public List<UserEntity> findBeans(UserSearchBean searchBean) throws BasicDataServiceException;
@@ -109,11 +111,15 @@ public interface UserDataService {
 
     public AddressEntity getAddressById(String addressId);
 
+    public Address getAddressDtoById(String addressId);
+
     public List<AddressEntity> getAddressList(String userId);
 
     public List<Address> getAddressDtoList(String userId, boolean isDeep);
 
     public List<AddressEntity> getAddressList(String userId, Integer size, Integer from);
+
+    public List<Address> getAddressDtoList(String userId, Integer size, Integer from);
 
     public List<AddressEntity> getAddressList(AddressSearchBean searchBean, Integer size, Integer from);
 

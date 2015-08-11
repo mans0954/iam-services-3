@@ -509,6 +509,15 @@ public class UserMgr implements UserDataService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<User> findUserDtoByOrganization(String orgId) throws BasicDataServiceException {
+        UserSearchBean searchBean = new UserSearchBean();
+        searchBean.addOrganizationId(orgId);
+        List<UserEntity> userEntityList = findBeans(searchBean);
+        return userDozerConverter.convertToDTOList(userEntityList, false);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<UserEntity> searchByDelegationProperties(DelegationFilterSearch search) {
         return userDao.findByDelegationProperties(search);
     }
@@ -1036,6 +1045,17 @@ public class UserMgr implements UserDataService {
 
     @Override
     @Transactional(readOnly = true)
+    public Address getAddressDtoById(String addressId) {
+        if (addressId == null)
+            throw new NullPointerException("addressId is null");
+
+        AddressEntity addressEntity = addressDao.findById(addressId);
+
+        return addressDozerConverter.convertToDTO(addressEntity, false);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<AddressEntity> getAddressList(String userId) {
         return this.getAddressList(userId, Integer.MAX_VALUE, 0);
     }
@@ -1056,6 +1076,19 @@ public class UserMgr implements UserDataService {
         searchBean.setParentId(userId);
         /* searchBean.setParentType(ContactConstants.PARENT_TYPE_USER); */
         return getAddressList(searchBean, size, from);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Address> getAddressDtoList(String userId, Integer size, Integer from) {
+        if (userId == null)
+            throw new NullPointerException("userId is null");
+
+        AddressSearchBean searchBean = new AddressSearchBean();
+        searchBean.setParentId(userId);
+        /* searchBean.setParentType(ContactConstants.PARENT_TYPE_USER); */
+        List<AddressEntity> addressEntityList = getAddressList(searchBean, size, from);
+        return addressDozerConverter.convertToDTOList(addressEntityList, false);
     }
 
     @Override

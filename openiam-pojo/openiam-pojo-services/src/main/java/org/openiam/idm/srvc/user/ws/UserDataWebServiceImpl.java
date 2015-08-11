@@ -291,13 +291,12 @@ public class UserDataWebServiceImpl implements UserDataWebService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    //@Transactional(readOnly = true)
     public List<User> findUserByOrganization(final String orgId) {
 
         List<User> resultList = Collections.EMPTY_LIST;
         try {
-            List<UserEntity> userList = userManager.findUserByOrganization(orgId);
-            resultList = userDozerConverter.convertToDTOList(userList, false);
+            resultList = userManager.findUserDtoByOrganization(orgId);
         } catch (BasicDataServiceException e) {
             log.error(e.getMessage(), e);
         }
@@ -305,23 +304,22 @@ public class UserDataWebServiceImpl implements UserDataWebService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    //@Transactional(readOnly = true)
     public Address getAddressById(String addressId) {
-        final AddressEntity adr = userManager.getAddressById(addressId);
-        return addressDozerConverter.convertToDTO(adr, false);
+        return userManager.getAddressDtoById(addressId);
     }
 
     @Override
-    @Transactional(readOnly = true)
+    //@Transactional(readOnly = true)
     public List<Address> getAddressList(String userId) {
         return this.getAddressListByPage(userId, Integer.MAX_VALUE, 0);
     }
 
     @Override
-    @Transactional(readOnly = true)
+    //@Transactional(readOnly = true)
     public List<Address> getAddressListByPage(String userId, Integer size, Integer from) {
-        final List<AddressEntity> adrList = userManager.getAddressList(userId, size, from);
-        return addressDozerConverter.convertToDTOList(adrList, false);
+
+        return userManager.getAddressDtoList(userId, size, from);
     }
 
     /*
