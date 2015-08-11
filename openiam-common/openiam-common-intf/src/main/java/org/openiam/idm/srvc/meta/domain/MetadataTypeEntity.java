@@ -38,7 +38,7 @@ public class MetadataTypeEntity extends KeyEntity {
 
     @Column(name = "ACTIVE")
     @Type(type = "yes_no")
-    private boolean active;
+    private Boolean active = Boolean.FALSE;
 
     @Column(name = "SYNC_MANAGED_SYS")
     @Type(type = "yes_no")
@@ -120,11 +120,11 @@ public class MetadataTypeEntity extends KeyEntity {
     	this.description = description;
     }
 
-    public boolean isActive() {
+    public Boolean getActive() {
     	return active;
     }
 
-    public void setActive(boolean active) {
+    public void setActive(Boolean active) {
     	this.active = active;
     }
 

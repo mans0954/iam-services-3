@@ -131,7 +131,7 @@ public class AuthProviderType extends KeyDTO {
 	@Override
 	public String toString() {
 		return String
-				.format("AuthProviderType [description=%s, isActive=%s, hasPublicKey=%s, hasPrivateKey=%s, toString()=%s]",
+				.format("AuthProviderType [description=%s, getActive=%s, hasPublicKey=%s, hasPrivateKey=%s, toString()=%s]",
 						description, isActive, hasPublicKey, hasPrivateKey,
 						super.toString());
 	}

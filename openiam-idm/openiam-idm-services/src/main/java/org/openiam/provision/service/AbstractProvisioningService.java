@@ -1536,7 +1536,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
                     auditLog.setTargetUser(pUser.getId(), loginStr);
                     auditLog.setTargetOrg(o.getOrganization().getId(), o.getOrganization().getName());
-                    auditLog.addCustomRecord("ORG", o.getOrganization().getName());
+                    auditLog.addCustomRecord(AuditTarget.ORG.value(), o.getOrganization().getName());
                     parentLog.addChild(auditLog);
                     // --------------------------------------------------------------
                 } else if (operation == AttributeOperationEnum.DELETE) {
@@ -1559,7 +1559,25 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     }
 
                 } else if (operation == AttributeOperationEnum.REPLACE) {
-                    throw new UnsupportedOperationException("Operation 'REPLACE' is not supported for affiliations");
+                    Set<OrganizationUserEntity> affiliations = userEntity.getOrganizationUser();
+                    for (OrganizationUserEntity a : affiliations) {
+                        if (a.getOrganization() != null && StringUtils.equals(o.getOrganization().getId(), a.getOrganization().getId())) {
+                            MetadataTypeEntity metadataTypeEntity = new MetadataTypeEntity();
+                            metadataTypeEntity.setId(o.getMdTypeId());
+                            a.setMetadataTypeEntity(metadataTypeEntity);
+                            // Audit Log ---------------------------------------------------
+                            IdmAuditLog auditLog = new IdmAuditLog();
+                            auditLog.setAction(AuditAction.REPLACE_USER_FROM_ORG.value());
+                            Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
+                            String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
+                            auditLog.setTargetUser(pUser.getId(), loginStr);
+                            auditLog.setTargetOrg(o.getOrganization().getId(), o.getOrganization().getName());
+                            auditLog.addCustomRecord(AuditTarget.ORG.value(), o.getOrganization().getName());
+                            parentLog.addChild(auditLog);
+                            // -------------------------------------------------------------
+                            break;
+                        }
+                    }
                 }
             }
         }

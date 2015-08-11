@@ -629,6 +629,10 @@
     <mapping>
         <class-a>org.openiam.idm.srvc.meta.domain.MetadataTypeEntity</class-a>
         <class-b>org.openiam.idm.srvc.meta.dto.MetadataType</class-b>
+        <field>
+            <a>active</a>
+            <b>active</b>
+        </field>
         <field
                 custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
                 custom-converter-param="dto2entityDeepDozerMapper">
