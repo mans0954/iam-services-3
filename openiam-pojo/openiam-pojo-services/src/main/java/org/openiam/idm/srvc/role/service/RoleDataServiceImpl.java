@@ -137,6 +137,17 @@ public class RoleDataServiceImpl implements RoleDataService {
         }
         return null;
 	}
+
+	@Override
+	@LocalizedServiceGet
+	@Transactional(readOnly = true)
+	public Role getRoleDtoLocalized(final String roleId, final String requesterId, final LanguageEntity language) {
+		if(DelegationFilterHelper.isAllowed(roleId, getDelegationFilter(requesterId))){
+			RoleEntity roleEntity = roleDao.findById(roleId);
+			return roleDozerConverter.convertToDTO(roleEntity, true);
+		}
+		return null;
+	}
 	
 	@Override
 	@Transactional
@@ -484,6 +495,13 @@ public class RoleDataServiceImpl implements RoleDataService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
+	public List<Role> getRolesDtoInGroup(final String groupId, final String requesterId, int from, int size) {
+		List<RoleEntity> roleEntityList = roleDao.getRolesForGroup(groupId, getDelegationFilter(requesterId), from, size);
+		return roleDozerConverter.convertToDTOList(roleEntityList, false);
+	}
+
+	@Override
     @Transactional(readOnly = true)
 	public List<RoleEntity> getUserRoles(String userId, final String requesterId, int from, int size) {
 		return roleDao.getRolesForUser(userId, getDelegationFilter(requesterId), from, size);
@@ -527,6 +545,19 @@ public class RoleDataServiceImpl implements RoleDataService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
+	public List<Role> findBeansDto(RoleSearchBean searchBean, final String requesterId, int from, int size) {
+		Set<String> filter = getDelegationFilter(requesterId);
+		if(StringUtils.isBlank(searchBean.getKey()))
+			searchBean.setKeys(filter);
+		else if(!DelegationFilterHelper.isAllowed(searchBean.getKey(), filter)){
+			return new ArrayList<Role>(0);
+		}
+		List<RoleEntity> roleEntityList = roleDao.getByExample(searchBean, from, size);
+		return roleDozerConverter.convertToDTOList(roleEntityList, false);
+	}
+
+	@Override
     @Transactional(readOnly = true)
 	public int countBeans(RoleSearchBean searchBean, final String requesterId) {
         Set<String> filter = getDelegationFilter(requesterId);
@@ -545,9 +576,23 @@ public class RoleDataServiceImpl implements RoleDataService {
     }
 
 	@Override
+	@Transactional(readOnly = true)
+	public List<Role> findRolesDtoByAttributeValue(String attrName, String attrValue) {
+		List<RoleEntity> roleEntityList = roleDao.findRolesByAttributeValue(attrName, attrValue);
+		return roleDozerConverter.convertToDTOList(roleEntityList, true);
+	}
+
+	@Override
     @Transactional(readOnly = true)
 	public List<RoleEntity> getRolesForResource(final String resourceId, final String requesterId, final int from, final int size) {
 		return roleDao.getRolesForResource(resourceId, getDelegationFilter(requesterId), from, size);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public List<Role> getRolesDtoForResource(final String resourceId, final String requesterId, final int from, final int size) {
+		List<RoleEntity> roleEntityList = roleDao.getRolesForResource(resourceId, getDelegationFilter(requesterId), from, size);
+		return roleDozerConverter.convertToDTOList(roleEntityList, false);
 	}
 
 	@Override
@@ -563,6 +608,13 @@ public class RoleDataServiceImpl implements RoleDataService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
+	public List<Role> getChildRolesDto(final String id, final String requesterId, int from, int size) {
+		List<RoleEntity> roleEntityList = roleDao.getChildRoles(id, getDelegationFilter(requesterId), from, size);
+		return roleDozerConverter.convertToDTOList(roleEntityList, false);
+	}
+
+	@Override
     @Transactional(readOnly = true)
 	public int getNumOfChildRoles(final String id, final String requesterId) {
 		return roleDao.getNumOfChildRoles(id, getDelegationFilter(requesterId));
@@ -572,6 +624,13 @@ public class RoleDataServiceImpl implements RoleDataService {
     @Transactional(readOnly = true)
 	public List<RoleEntity> getParentRoles(final String id, final String requesterId, int from, int size) {
 		return roleDao.getParentRoles(id, getDelegationFilter(requesterId), from, size);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public List<Role> getParentRolesDto(final String id, final String requesterId, int from, int size) {
+		List<RoleEntity> roleEntityList = roleDao.getParentRoles(id, getDelegationFilter(requesterId), from, size);
+		return roleDozerConverter.convertToDTOList(roleEntityList, false);
 	}
 
 	@Override
