@@ -35,6 +35,7 @@ public class Application {
 	    final Map<String, String> initParameters = new HashMap<String, String>();
 	    initParameters.put("config-location", "classpath:ws-beans.xml");
 	    registration.setInitParameters(initParameters);
+	    registration.setLoadOnStartup(1);
 	    return registration;
 	}
 	
@@ -42,6 +43,7 @@ public class Application {
 	public ServletRegistrationBean hessianServlet(){
 		final AuthorizationManagerHessianServlet servlet = new AuthorizationManagerHessianServlet();
 	    final ServletRegistrationBean registration = new ServletRegistrationBean(servlet,"/iamauthmgr");
+	    registration.setLoadOnStartup(2);
 	    return registration;
 	}
 	

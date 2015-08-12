@@ -26,6 +26,7 @@
 				<value>classpath:openiam.esb.properties</value>
 				<value>classpath:notification.properties</value>
 				<value>classpath:application.properties</value>
+				<value>classpath:openiam.hibernate.properties</value>
 				<value>file:${confpath}/conf/datasource.properties</value>
 				<value>file:${confpath}/conf/service-urls.properties</value>
 				<value>file:${confpath}/conf/securityconf.properties</value>
