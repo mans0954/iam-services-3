@@ -25,14 +25,14 @@ public class PolicyServiceImpl implements PolicyService {
 
     private static final Log log = LogFactory.getLog(PolicyServiceImpl.class);
 
-	@Autowired
-	private PolicyDAO policyDao;
+    @Autowired
+    private PolicyDAO policyDao;
 
-	@Autowired
-	PolicyObjectAssocDAO policyObjectAssocDAO;
+    @Autowired
+    PolicyObjectAssocDAO policyObjectAssocDAO;
 
-	@Autowired
-	private PolicyDefParamDAO policyDefParamDao;
+    @Autowired
+    private PolicyDefParamDAO policyDefParamDao;
 
     /**
      * The policy dozer converter.
@@ -62,45 +62,45 @@ public class PolicyServiceImpl implements PolicyService {
     private String passwordExpirationBatchTaskId;
 
 
-	@Override
-	@Transactional(readOnly=true)
-	public Policy getPolicy(String policyId) {
+    @Override
+    @Transactional(readOnly = true)
+    public Policy getPolicy(String policyId) {
         PolicyEntity policyEntity = policyDao.findById(policyId);
         return policyDozerConverter.convertToDTO(policyEntity, true);
-	}
+    }
 
-	@Override
-	@Transactional
-	public String save(final Policy policy) {
+    @Override
+    @Transactional
+    public String save(final Policy policy) {
         final PolicyEntity pe = policyDozerConverter.convertToEntity(policy, true);
-		if (StringUtils.isNotBlank(pe.getPolicyId())) {
-			final PolicyEntity poObject = policyDao.findById(pe.getPolicyId());
-			
-			if(CollectionUtils.isNotEmpty(pe.getPolicyAttributes())) {
-				for(final PolicyAttributeEntity attribute : pe.getPolicyAttributes()) {
-					attribute.setPolicyId(poObject.getPolicyId());
-				}
-			}
+        if (StringUtils.isNotBlank(pe.getPolicyId())) {
+            final PolicyEntity poObject = policyDao.findById(pe.getPolicyId());
 
-			// TODO: extend this merge
-			poObject.setCreateDate(pe.getCreateDate());
-			poObject.setCreatedBy(pe.getCreatedBy());
-			poObject.setDescription(pe.getDescription());
-			poObject.setPolicyId(pe.getPolicyId());
-			poObject.setPolicyDefId(pe.getPolicyDefId());
-			poObject.setName(pe.getName());
-			poObject.setLastUpdate(pe.getLastUpdate());
-			poObject.setLastUpdatedBy(pe.getLastUpdatedBy());
-			poObject.setRule(pe.getRule());
-			poObject.setRuleSrcUrl(pe.getRuleSrcUrl());
-			poObject.setStatus(pe.getStatus());
-			poObject.setPolicyAttributes(pe.getPolicyAttributes());
-			// Updating Policy.
-			policyDao.update(poObject);
-		} else {
-			// creating new Policy
-			policyDao.save(pe);
-		}
+            if (CollectionUtils.isNotEmpty(pe.getPolicyAttributes())) {
+                for (final PolicyAttributeEntity attribute : pe.getPolicyAttributes()) {
+                    attribute.setPolicyId(poObject.getPolicyId());
+                }
+            }
+
+            // TODO: extend this merge
+            poObject.setCreateDate(pe.getCreateDate());
+            poObject.setCreatedBy(pe.getCreatedBy());
+            poObject.setDescription(pe.getDescription());
+            poObject.setPolicyId(pe.getPolicyId());
+            poObject.setPolicyDefId(pe.getPolicyDefId());
+            poObject.setName(pe.getName());
+            poObject.setLastUpdate(pe.getLastUpdate());
+            poObject.setLastUpdatedBy(pe.getLastUpdatedBy());
+            poObject.setRule(pe.getRule());
+            poObject.setRuleSrcUrl(pe.getRuleSrcUrl());
+            poObject.setStatus(pe.getStatus());
+            poObject.setPolicyAttributes(pe.getPolicyAttributes());
+            // Updating Policy.
+            policyDao.update(poObject);
+        } else {
+            // creating new Policy
+            policyDao.save(pe);
+        }
         try {
             this.policyPostProcessor(pe);
         } catch (Exception e) {
@@ -108,7 +108,7 @@ public class PolicyServiceImpl implements PolicyService {
             log.error(e);
         }
         return pe.getPolicyId();
-	}
+    }
 
     private void policyPostProcessor(PolicyEntity pe) {
         // turn on Task Password near expiration
@@ -121,49 +121,49 @@ public class PolicyServiceImpl implements PolicyService {
         }
     }
 
-	@Override
-	@Transactional(readOnly=true)
-	public List<Policy> findPolicyByName(String policyDefId, String policyName) {
+    @Override
+    @Transactional(readOnly = true)
+    public List<Policy> findPolicyByName(String policyDefId, String policyName) {
         List<PolicyEntity> policyEntities = policyDao.findPolicyByName(policyDefId, policyName);
         return policyDozerConverter.convertToDTOList(policyEntities, false);
-	}
+    }
 
-	@Override
-	@Transactional
-	public void delete(final String policyId) {
-		final PolicyEntity entity = policyDao.findById(policyId);
-		if(entity != null) {
-			List<PolicyObjectAssocEntity> assocList = policyObjectAssocDAO.findByPolicy(policyId);
+    @Override
+    @Transactional
+    public void delete(final String policyId) {
+        final PolicyEntity entity = policyDao.findById(policyId);
+        if (entity != null) {
+            List<PolicyObjectAssocEntity> assocList = policyObjectAssocDAO.findByPolicy(policyId);
             if (CollectionUtils.isNotEmpty(assocList)) {
                 for (PolicyObjectAssocEntity assoc : assocList) {
                     policyObjectAssocDAO.delete(assoc);
                 }
             }
 
-			policyDao.delete(entity);
-		}
-	}
+            policyDao.delete(entity);
+        }
+    }
 
-	@Override
-	@Transactional(readOnly=true)
-	public int count(PolicySearchBean searchBean) {
-		return policyDao.count(searchBean);
-	}
+    @Override
+    @Transactional(readOnly = true)
+    public int count(PolicySearchBean searchBean) {
+        return policyDao.count(searchBean);
+    }
 
-	@Override
-	@Transactional(readOnly=true)
-	public List<Policy> findBeans(PolicySearchBean searchBean, int from,
-			int size) {
+    @Override
+    @Transactional(readOnly = true)
+    public List<Policy> findBeans(PolicySearchBean searchBean, int from,
+                                  int size) {
         List<PolicyEntity> entities = policyDao.getByExampleNoLocalize(searchBean, from, size);
         return policyDozerConverter.convertToDTOList(entities, true);
-	}
-	
-	@Override
-	@Transactional(readOnly=true)
-	public List<PolicyDefParam> findPolicyDefParamByGroup(final String policyDefId, final String pswdGroup) {
-		List<PolicyDefParamEntity> entities =  policyDefParamDao.findPolicyDefParamByGroup(policyDefId, pswdGroup);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PolicyDefParam> findPolicyDefParamByGroup(final String policyDefId, final String pswdGroup) {
+        List<PolicyDefParamEntity> entities = policyDefParamDao.findPolicyDefParamByGroup(policyDefId, pswdGroup);
         return policyDefParamDozerConverter.convertToDTOList(entities, true);
-	}
+    }
 
     @Override
     @Transactional(readOnly = true)
@@ -177,7 +177,7 @@ public class PolicyServiceImpl implements PolicyService {
     @Override
     @Transactional
     public String savePolicyAssoc(PolicyObjectAssoc poa) {
-        if(poa == null) {
+        if (poa == null) {
             return null;
         }
         PolicyObjectAssocEntity poaEntity = policyAssocObjectDozerConverter
@@ -201,7 +201,7 @@ public class PolicyServiceImpl implements PolicyService {
     @Transactional
     public void resetITPolicy() {
         ITPolicyEntity itPolicyEntity = itPolicyDao.findITPolicy();
-        if(itPolicyEntity != null){
+        if (itPolicyEntity != null) {
             itPolicyDao.delete(itPolicyEntity);
         }
     }
@@ -210,7 +210,11 @@ public class PolicyServiceImpl implements PolicyService {
     @Transactional
     public String saveITPolicy(ITPolicy itPolicy) {
         ITPolicyEntity pe = itPolicyDozerConverter.convertToEntity(itPolicy, true);
-        itPolicyDao.save(pe);
+        if (pe.getPolicyId() == null) {
+            itPolicyDao.save(pe);
+        } else {
+            itPolicyDao.merge(pe);
+        }
         return pe.getPolicyId();
     }
 }
