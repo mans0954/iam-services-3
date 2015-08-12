@@ -311,7 +311,7 @@ public class AuthProviderServiceImpl implements AuthProviderService {
         }
         if(CollectionUtils.isNotEmpty(clientScopesIds)){
             // get already authorized scopes
-            List<OAuthUserClientXrefEntity> authorizedResources = oauthUserClientXrefDao.getByClientAndUser(clientId, userId);
+            List<OAuthUserClientXrefEntity> authorizedResources = oauthUserClientXrefDao.getByClientAndUser(clientId, userId, null);
             if(CollectionUtils.isNotEmpty(authorizedResources)){
                 isClientAuthorized = true;
                 Set<String> authorizedResourcesIds = authorizedResources.stream().map(xref -> xref.getScope().getId()).collect(Collectors.toSet());
@@ -341,6 +341,15 @@ public class AuthProviderServiceImpl implements AuthProviderService {
         }
     }
 
+    @LocalizedServiceGet
+    public List<Resource> getAuthorizedScopes(String clientId, String userId, Language language){
+        List<OAuthUserClientXrefEntity> authorizedResources = oauthUserClientXrefDao.getByClientAndUser(clientId, userId, true);
+        if(CollectionUtils.isNotEmpty(authorizedResources)){
+            Set<String> authorizedResourcesIds = authorizedResources.stream().map(xref -> xref.getScope().getId()).collect(Collectors.toSet());
+            return  resourceDozerConverter.convertToDTOList(resourceService.findResourcesByIds(authorizedResourcesIds), false);
+        }
+        return null;
+    }
 
     public void saveClientScopeAuthorization(String providerId, String userId, List<OAuthUserClientXref> oauthUserClientXrefList) throws BasicDataServiceException {
         AuthProviderEntity client = this.getAuthProvider(providerId);
@@ -361,36 +370,41 @@ public class AuthProviderServiceImpl implements AuthProviderService {
         }
     }
 
-    public OAuthCode saveOAuthCode(OAuthCode oAuthCode){
+    public void saveOAuthCode(OAuthCode oAuthCode){
         OAuthCodeEntity entity = oauthCodeDozerConverter.convertToEntity(oAuthCode, true);
-        OAuthCodeEntity entityDb = oAuthCodeDao.getByClientAndUser(oAuthCode.getClientId(), oAuthCode.getUserId());
-
-        if(entityDb==null){
-            entity.setClient(this.getAuthProvider(oAuthCode.getClientId()));
-            entity.setUser(userDataService.getUser(oAuthCode.getUserId()));
-            entity.setCode(oAuthCode.getCode());
-            entity.setExpiredOn(oAuthCode.getExpiredOn());
-            entity.setRedirectUrl(oAuthCode.getRedirectUrl());
-            oAuthCodeDao.save(entity);
-        } else {
-            if(StringUtils.isNotBlank(oAuthCode.getCode())){
-                entityDb.setCode(oAuthCode.getCode());
-                entityDb.setExpiredOn(oAuthCode.getExpiredOn());
-            }
-            if(StringUtils.isNotBlank(oAuthCode.getRedirectUrl())){
-                entityDb.setRedirectUrl(oAuthCode.getRedirectUrl());
-            }
-            oAuthCodeDao.merge(entityDb);
-        }
-
-        return getOAuthCode(oAuthCode.getClientId(), oAuthCode.getUserId());
+        entity.setClient(this.getAuthProvider(oAuthCode.getClientId()));
+        entity.setUser(userDataService.getUser(oAuthCode.getUserId()));
+        entity.setCode(oAuthCode.getCode());
+        entity.setExpiredOn(oAuthCode.getExpiredOn());
+        entity.setRedirectUrl(oAuthCode.getRedirectUrl());
+        oAuthCodeDao.save(entity);
     }
 
-    public OAuthCode getOAuthCode(String providerId, String userId){
-        return oauthCodeDozerConverter.convertToDTO(oAuthCodeDao.getByClientAndUser(providerId, userId), true);
-    }
     public OAuthCode getOAuthCode(String code){
-        return oauthCodeDozerConverter.convertToDTO(oAuthCodeDao.getByCode(code), true);
+        OAuthCodeEntity codeEntity = oAuthCodeDao.getByCode(code);
+        OAuthCode codeDto = null;
+        if(codeEntity!=null) {
+            codeDto = oauthCodeDozerConverter.convertToDTO(codeEntity, true);
+            oAuthCodeDao.delete(codeEntity);
+        }
+        return codeDto;
+    }
+
+    @Override
+    public OAuthToken getOAuthToken(String token) {
+        OAuthTokenEntity tokenEntity = oAuthTokenDao.getByAccessToken(token);
+        return oauthTokenDozerConverter.convertToDTO(tokenEntity, false);
+    }
+
+    @Override
+    public OAuthToken getOAuthTokenByRefreshToken(String refreshToken){
+        OAuthTokenEntity tokenEntity = oAuthTokenDao.getByRefreshToken(refreshToken);
+        OAuthToken token = null;
+        if(tokenEntity!=null){
+            token = oauthTokenDozerConverter.convertToDTO(tokenEntity, false);
+            oAuthTokenDao.delete(tokenEntity);
+        }
+        return token;
     }
 
     public OAuthToken saveOAuthToken(OAuthToken oAuthToken){

@@ -5,6 +5,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.am.srvc.domain.OAuthCodeEntity;
 import org.openiam.base.AbstractMetadataTypeDTO;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseConstants;
@@ -249,6 +250,9 @@ public class User extends AbstractMetadataTypeDTO {
     // Constructors
     
     private Set<String> accessRightIds;
+
+    @XmlTransient
+    private Set<OAuthCodeEntity> oAuthCodes;
 
     /**
      * default constructor
@@ -1493,6 +1497,14 @@ public class User extends AbstractMetadataTypeDTO {
 			this.accessRightIds = new HashSet<String>(accessRightIds);
 		}
 	}
+
+    public Set<OAuthCodeEntity> getoAuthCodes() {
+        return oAuthCodes;
+    }
+
+    public void setoAuthCodes(Set<OAuthCodeEntity> oAuthCodes) {
+        this.oAuthCodes = oAuthCodes;
+    }
 
     @Override
     public boolean equals(Object o) {

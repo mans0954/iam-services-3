@@ -9,5 +9,5 @@ import java.util.List;
  * Created by alexander on 15/07/15.
  */
 public interface OAuthUserClientXrefDao  extends BaseDao<OAuthUserClientXrefEntity, String> {
-    List<OAuthUserClientXrefEntity> getByClientAndUser(String clientId, String userId);
+    List<OAuthUserClientXrefEntity> getByClientAndUser(String clientId, String userId, Boolean isAuthorized);
 }

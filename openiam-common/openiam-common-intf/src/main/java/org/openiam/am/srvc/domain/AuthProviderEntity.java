@@ -97,7 +97,7 @@ public class AuthProviderEntity extends AbstractKeyNameEntity {
 	@Fetch(FetchMode.SUBSELECT)
 	private Set<OAuthTokenEntity> oAuthTokens;
 
-	@OneToMany(fetch = FetchType.LAZY,cascade = { CascadeType.DETACH, CascadeType.REFRESH }, mappedBy = "client")
+	@OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "primaryKey.client")
 	@Fetch(FetchMode.SUBSELECT)
 	private Set<OAuthCodeEntity> oAuthCodes;
 

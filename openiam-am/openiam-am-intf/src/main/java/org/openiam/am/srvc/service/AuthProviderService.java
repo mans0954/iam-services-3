@@ -52,11 +52,12 @@ public interface AuthProviderService {
 
     AuthProvider getOAuthClient(final String clientId);
     List<Resource> getScopesForAuthrorization(String clientId, String userId, Language language) throws BasicDataServiceException;
-
+    public List<Resource> getAuthorizedScopes(String clientId, String userId, Language language);
     void saveClientScopeAuthorization(String providerId, String userId, List<OAuthUserClientXref> oauthUserClientXrefList) throws BasicDataServiceException;
-    OAuthCode saveOAuthCode(OAuthCode oAuthCode);
-    OAuthCode getOAuthCode(String providerId, String userId);
+    void saveOAuthCode(OAuthCode oAuthCode);
     OAuthCode getOAuthCode(String code);
 
+    OAuthToken getOAuthToken(String token);
+    OAuthToken getOAuthTokenByRefreshToken(String refreshToken);
     OAuthToken saveOAuthToken(OAuthToken oAuthToken);
 }

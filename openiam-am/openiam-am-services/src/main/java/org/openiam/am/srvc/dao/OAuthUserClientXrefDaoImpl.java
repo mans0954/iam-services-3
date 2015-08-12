@@ -20,14 +20,20 @@ public class OAuthUserClientXrefDaoImpl extends BaseDaoImpl<OAuthUserClientXrefE
     }
 
     @Override
-    public List<OAuthUserClientXrefEntity> getByClientAndUser(String clientId, String userId) {
+    public List<OAuthUserClientXrefEntity> getByClientAndUser(String clientId, String userId, Boolean isAuthorized) {
         Criteria criteria = getCriteria();
 
         criteria.createAlias("client","cl", JoinType.INNER_JOIN);
-        criteria.createAlias("cl.attributes","attr", JoinType.INNER_JOIN);
+        criteria.createAlias("cl.attributes", "attr", JoinType.INNER_JOIN);
         criteria.add(Restrictions.eq("attr.attribute.id", "OAuthClientID"));
         criteria.add(Restrictions.eq("attr.value", clientId));
         criteria.add(Restrictions.eq("user.id", userId));
+
+        if(isAuthorized!=null){
+            criteria.add(Restrictions.eq("isAllowed", isAuthorized));
+        }
+
+
 
         return criteria.list();
     }

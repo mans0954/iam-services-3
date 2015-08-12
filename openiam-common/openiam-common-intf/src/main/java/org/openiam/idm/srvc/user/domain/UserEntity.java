@@ -37,6 +37,7 @@ import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.FilterDef;
 import org.hibernate.annotations.ParamDef;
+import org.openiam.am.srvc.domain.OAuthCodeEntity;
 import org.openiam.am.srvc.domain.OAuthUserClientXrefEntity;
 import org.openiam.base.BaseConstants;
 import org.openiam.base.domain.KeyEntity;
@@ -303,6 +304,10 @@ public class UserEntity extends KeyEntity {
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="user", orphanRemoval=true)
     @Fetch(FetchMode.SUBSELECT)
     private Set<OAuthUserClientXrefEntity> authorizedOAuthClients = new HashSet<OAuthUserClientXrefEntity>(0);
+
+    @OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "primaryKey.user")
+    @Fetch(FetchMode.SUBSELECT)
+    private Set<OAuthCodeEntity> oAuthCodes;
 
     @Transient
     private String defaultLogin;
@@ -1227,6 +1232,14 @@ public class UserEntity extends KeyEntity {
 
     public void setAuthorizedOAuthClients(Set<OAuthUserClientXrefEntity> authorizedOAuthClients) {
         this.authorizedOAuthClients = authorizedOAuthClients;
+    }
+
+    public Set<OAuthCodeEntity> getoAuthCodes() {
+        return oAuthCodes;
+    }
+
+    public void setoAuthCodes(Set<OAuthCodeEntity> oAuthCodes) {
+        this.oAuthCodes = oAuthCodes;
     }
 
     @Override

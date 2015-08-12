@@ -2,6 +2,7 @@ package org.openiam.am.srvc.domain;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.openiam.am.srvc.domain.pk.OAuthCodeIdEntity;
 import org.openiam.am.srvc.dto.OAuthCode;
 import org.openiam.base.domain.KeyEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
@@ -14,29 +15,43 @@ import javax.persistence.*;
  */
 @Entity
 @Table(name = "OAUTH_CODE")
-@DozerDTOCorrespondence(OAuthCode.class)
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-@AttributeOverrides({
-        @AttributeOverride(name = "id", column = @Column(name = "OAUTH_CODE_ID"))
-})
-public class OAuthCodeEntity extends KeyEntity {
+@AssociationOverrides({
+    @AssociationOverride(name = "primaryKey.user",
+            joinColumns = @JoinColumn(name = "USER_ID")),
+    @AssociationOverride(name = "primaryKey.client",
+            joinColumns = @JoinColumn(name = "PROVIDER_ID"))})
+@DozerDTOCorrespondence(OAuthCode.class)
+public class OAuthCodeEntity {
+
+    public OAuthCodeEntity(String userId, String providerId, String code){
+        this.primaryKey = new OAuthCodeIdEntity();
+        primaryKey.setUser(new UserEntity());
+        primaryKey.setClient(new AuthProviderEntity());
+        primaryKey.getClient().setId(providerId);
+        primaryKey.getUser().setId(userId);
+        primaryKey.setCode(code);
+    }
+
+    public OAuthCodeEntity(){
+    }
+
+    @EmbeddedId
+    private OAuthCodeIdEntity primaryKey = new OAuthCodeIdEntity();
 
     @Column(name = "EXPIRED_ON", nullable = false)
     private Long expiredOn;
 
-    @Column(name = "CODE", length = 100, nullable = false)
-    private String code;
-
     @Column(name = "REDIRECT_URL", length = 255, nullable = true)
     private String redirectUrl;
 
-    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch= FetchType.LAZY)
-    @JoinColumn(name = "PROVIDER_ID", referencedColumnName = "PROVIDER_ID", insertable = true, updatable = true, nullable=true)
-    private AuthProviderEntity client;
+    public OAuthCodeIdEntity getPrimaryKey() {
+        return primaryKey;
+    }
 
-    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch= FetchType.LAZY)
-    @JoinColumn(name = "USER_ID",  insertable = true, updatable = true, nullable=true)
-    private UserEntity user;
+    public void setPrimaryKey(OAuthCodeIdEntity primaryKey) {
+        this.primaryKey = primaryKey;
+    }
 
     public Long getExpiredOn() {
         return expiredOn;
@@ -45,29 +60,29 @@ public class OAuthCodeEntity extends KeyEntity {
     public void setExpiredOn(Long expiredOn) {
         this.expiredOn = expiredOn;
     }
-
+    @Transient
     public AuthProviderEntity getClient() {
-        return client;
+        return this.primaryKey.getClient();
     }
 
     public void setClient(AuthProviderEntity client) {
-        this.client = client;
+        this.primaryKey.setClient(client);
     }
-
+    @Transient
     public UserEntity getUser() {
-        return user;
+        return primaryKey.getUser();
     }
 
     public void setUser(UserEntity user) {
-        this.user = user;
+        this.primaryKey.setUser(user);
     }
-
+    @Transient
     public String getCode() {
-        return code;
+        return primaryKey.getCode();
     }
 
     public void setCode(String code) {
-        this.code = code;
+        this.primaryKey.setCode(code);
     }
 
     public String getRedirectUrl() {
@@ -87,9 +102,9 @@ public class OAuthCodeEntity extends KeyEntity {
         OAuthCodeEntity that = (OAuthCodeEntity) o;
 
         if (expiredOn != null ? !expiredOn.equals(that.expiredOn) : that.expiredOn != null) return false;
-        if (client != null ? !client.equals(that.client) : that.client != null) return false;
-        if (user != null ? !user.equals(that.user) : that.user != null) return false;
-        if (code != null ? !code.equals(that.code) : that.code != null) return false;
+        if (getClient() != null ? !getClient().equals(that.getClient()) : that.getClient() != null) return false;
+        if (getUser() != null ? !getUser().equals(that.getUser()) : that.getUser() != null) return false;
+        if (getCode() != null ? !getCode().equals(that.getCode()) : that.getCode() != null) return false;
         if (redirectUrl != null ? !redirectUrl.equals(that.redirectUrl) : that.redirectUrl != null) return false;
         return true;
 
@@ -99,9 +114,9 @@ public class OAuthCodeEntity extends KeyEntity {
     public int hashCode() {
         int result = super.hashCode();
         result = 31 * result + (expiredOn != null ? expiredOn.hashCode() : 0);
-        result = 31 * result + (client != null ? client.hashCode() : 0);
-        result = 31 * result + (user != null ? user.hashCode() : 0);
-        result = 31 * result + (code != null ? code.hashCode() : 0);
+        result = 31 * result + (getClient() != null ? getClient().hashCode() : 0);
+        result = 31 * result + (getUser() != null ? getUser().hashCode() : 0);
+        result = 31 * result + (getCode() != null ? getCode().hashCode() : 0);
         result = 31 * result + (redirectUrl != null ? redirectUrl.hashCode() : 0);
         return result;
     }
@@ -110,9 +125,9 @@ public class OAuthCodeEntity extends KeyEntity {
     public String toString() {
         return "OAuthTokenEntity{" +
                 " expiredOn=" + expiredOn +
-                ", client=" + client +
-                ", user=" + user +
-                ", code=" + code +
+                ", client=" + getClient() +
+                ", user=" + getUser() +
+                ", code=" + getCode() +
                 ", redirectUrl=" + redirectUrl +
                 '}';
     }

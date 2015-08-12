@@ -128,6 +128,10 @@
             <a>employeeType.id</a>
             <b>employeeTypeId</b>
         </field>
+		<field-exclude>
+			<a>oAuthCodes</a>
+			<b>oAuthCodes</b>
+		</field-exclude>
 	</mapping>
 
 	<mapping>

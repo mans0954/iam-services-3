@@ -43,23 +43,7 @@ public class OAuthWebServiceImpl implements OAuthWebService {
 
     @Override
     public List<Resource> getScopesForAuthrorization(String clientId, String userId, Language language) throws BasicDataServiceException {
-//        final Response response = new Response(ResponseStatus.SUCCESS);
         return authProviderService.getScopesForAuthrorization(clientId, userId, language);
-
-//        try{
-//            List<Resource> unAuthorizedScopeList = a
-//
-//            OAuthScopes scopes = new OAuthScopes();
-//            scopes.setOauthScopeList(unAuthorizedScopeList);
-//            response.setResponseValue(scopes);
-//        } catch(BasicDataServiceException e) {
-//            log.error(e.getMessage(), e);
-//            response.setStatus(ResponseStatus.FAILURE);
-//            response.setErrorCode(e.getCode());
-//            response.setErrorTokenList(e.getErrorTokenList());
-//        }
-//
-//        return response;
     }
 
     @Override
@@ -84,8 +68,7 @@ public class OAuthWebServiceImpl implements OAuthWebService {
     public Response saveOAuthCode(OAuthCode oAuthCode){
         final Response response = new Response(ResponseStatus.SUCCESS);
         try{
-            OAuthCode code = authProviderService.saveOAuthCode(oAuthCode);
-            response.setResponseValue(code);
+            authProviderService.saveOAuthCode(oAuthCode);
         } catch(Throwable e) {
             log.error("Error while saving token info", e);
             response.setStatus(ResponseStatus.FAILURE);
@@ -94,13 +77,19 @@ public class OAuthWebServiceImpl implements OAuthWebService {
         return response;
     }
 
-    public OAuthCode getOAuthCodeByClientAndUser(String providerId, String userId){
-        return authProviderService.getOAuthCode(providerId, userId);
-    }
     public OAuthCode getOAuthCode(String code){
         return authProviderService.getOAuthCode(code);
     }
 
+    @Override
+    public OAuthToken getOAuthToken(String token) {
+        return authProviderService.getOAuthToken(token);
+    }
+
+    @Override
+    public OAuthToken getOAuthTokenByRefreshToken(String refreshToken){
+        return authProviderService.getOAuthTokenByRefreshToken(refreshToken);
+    }
 
     @Override
     public Response saveOAuthToken(OAuthToken oAuthToken){
@@ -114,5 +103,10 @@ public class OAuthWebServiceImpl implements OAuthWebService {
             response.setErrorText(e.getMessage());
         }
         return response;
+    }
+
+    @Override
+    public List<Resource> getAuthorizedScopes(String clientId, String userId, Language language) {
+        return authProviderService.getAuthorizedScopes(clientId, userId, language);
     }
 }

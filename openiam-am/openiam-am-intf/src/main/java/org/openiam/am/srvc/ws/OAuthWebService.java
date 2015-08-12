@@ -37,12 +37,19 @@ public interface OAuthWebService {
     Response saveOAuthCode(@WebParam(name = "oAuthToken", targetNamespace = "") OAuthCode oAuthToken);
 
     @WebMethod
-    OAuthCode getOAuthCodeByClientAndUser(@WebParam(name = "providerId", targetNamespace = "") String providerId,
-                            @WebParam(name = "userId", targetNamespace = "") String userId);
-
-    @WebMethod
     OAuthCode getOAuthCode(@WebParam(name = "code", targetNamespace = "") String code);
 
     @WebMethod
+    OAuthToken getOAuthToken(@WebParam(name = "token", targetNamespace = "") String token);
+
+    @WebMethod
+    OAuthToken getOAuthTokenByRefreshToken(@WebParam(name = "refreshToken", targetNamespace = "") String refreshToken);
+
+    @WebMethod
     Response saveOAuthToken(@WebParam(name = "oAuthToken", targetNamespace = "")  OAuthToken oAuthToken);
+
+    @WebMethod
+    List<Resource> getAuthorizedScopes(@WebParam(name = "clientId", targetNamespace = "") String clientId,
+                                       @WebParam(name = "userId", targetNamespace = "") String userId,
+                                       @WebParam(name = "language", targetNamespace = "")  Language language);
 }
