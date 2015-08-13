@@ -42,9 +42,8 @@ public class SupervisorID implements Serializable {
         SupervisorID that = (SupervisorID) o;
 
         if (employeeId != null ? !employeeId.equals(that.employeeId) : that.employeeId != null) return false;
-        if (supervisorId != null ? !supervisorId.equals(that.supervisorId) : that.supervisorId != null) return false;
+        return !(supervisorId != null ? !supervisorId.equals(that.supervisorId) : that.supervisorId != null);
 
-        return true;
     }
 
     @Override

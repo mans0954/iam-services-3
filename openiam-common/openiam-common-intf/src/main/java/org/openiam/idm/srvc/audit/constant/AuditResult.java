@@ -14,7 +14,7 @@ public enum AuditResult {
 
     private String value;
 
-    private AuditResult(String val){
+    AuditResult(String val){
         this.value=val;
     }
     public String value(){

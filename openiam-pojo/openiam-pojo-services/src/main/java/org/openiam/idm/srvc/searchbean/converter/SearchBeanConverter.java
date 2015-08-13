@@ -4,5 +4,5 @@ import org.openiam.idm.searchbeans.AbstractSearchBean;
 
 public interface SearchBeanConverter<T, K extends AbstractSearchBean> {
 
-	public T convert(K searchBean);
+	T convert(K searchBean);
 }

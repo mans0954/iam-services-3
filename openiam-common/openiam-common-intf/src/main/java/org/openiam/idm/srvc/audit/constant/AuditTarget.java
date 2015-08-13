@@ -15,7 +15,7 @@ public enum AuditTarget {
 
     private String value;
 
-    private AuditTarget(String val){
+    AuditTarget(String val){
         this.value=val;
     }
     public String value(){

@@ -218,9 +218,7 @@ public class CategoryEntity extends KeyEntity {
                 return false;
         } else if (!parentId.equals(other.parentId))
             return false;
-        if (showList != other.showList)
-            return false;
-        return true;
+        return showList == other.showList;
     }
 
 }

@@ -384,7 +384,7 @@ public class LdapV3 implements Directory {
     protected String getScrambledPswd(ExtensibleObject extObject) {
         String scrambledPswd = getUserPassword(extObject);
         if (StringUtils.isEmpty(scrambledPswd)) {
-            scrambledPswd =	passwordGenerator.generatePassword(10);
+            scrambledPswd =	PasswordGenerator.generatePassword(10);
         }
         return scrambledPswd;
     }

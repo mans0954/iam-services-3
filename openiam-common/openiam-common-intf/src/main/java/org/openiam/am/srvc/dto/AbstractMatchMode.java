@@ -42,9 +42,7 @@ public abstract class AbstractMatchMode extends KeyDTO {
 		if (getClass() != obj.getClass())
 			return false;
 		AbstractMatchMode other = (AbstractMatchMode) obj;
-		if (matchMode != other.matchMode)
-			return false;
-		return true;
+		return matchMode == other.matchMode;
 	}
 
 	@Override

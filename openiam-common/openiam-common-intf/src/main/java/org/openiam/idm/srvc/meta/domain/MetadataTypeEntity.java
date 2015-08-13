@@ -215,9 +215,7 @@ public class MetadataTypeEntity extends AbstractKeyNameEntity {
 			return false;
 		if (syncManagedSys != other.syncManagedSys)
 			return false;
-		if (usedForSMSOTP != other.usedForSMSOTP)
-			return false;
-		return true;
+		return usedForSMSOTP == other.usedForSMSOTP;
 	}
 
 	@Override

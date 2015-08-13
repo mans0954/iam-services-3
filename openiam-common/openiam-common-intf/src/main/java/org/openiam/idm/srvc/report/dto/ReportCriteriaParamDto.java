@@ -171,9 +171,8 @@ public class ReportCriteriaParamDto {
         if (metaTypeId != null ? !metaTypeId.equals(that.metaTypeId) : that.metaTypeId != null) return false;
 		if (metaTypeName != null ? !metaTypeName.equals(that.metaTypeName) : that.metaTypeName != null) return false;
 		if (displayOrder != null ? !displayOrder.equals(that.displayOrder) : that.displayOrder != null) return false;
-		if (requestParameters != null ? !requestParameters.equals(that.requestParameters) : that.requestParameters != null) return false;
+        return !(requestParameters != null ? !requestParameters.equals(that.requestParameters) : that.requestParameters != null);
 
-        return true;
     }
 
     @Override

@@ -33,7 +33,7 @@ public class CSVHelper {
         this.strategy = strategy;
     }
 
-    public String[][] getAllValues() throws java.io.IOException, UnsupportedEncodingException {
+    public String[][] getAllValues() throws java.io.IOException {
 
         Reader reader = null;
 

@@ -135,11 +135,7 @@ public class LdapAdapterForGenericObject implements SourceAdapter {
         }
 
         ctx = new InitialLdapContext(envDC, null);
-        if (ctx != null) {
-            return true;
-        }
-
-        return false;
+        return ctx != null;
 
     }
 

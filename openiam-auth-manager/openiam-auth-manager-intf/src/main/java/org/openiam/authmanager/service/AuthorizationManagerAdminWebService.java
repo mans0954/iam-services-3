@@ -14,18 +14,18 @@ import java.util.Set;
 			name = "AuthorizationManagerAdminWebService")
 public interface AuthorizationManagerAdminWebService {
     @WebMethod
-	public UserEntitlementsMatrix getUserEntitlementsMatrix(@WebParam(name = "entityId", targetNamespace = "") final String entityId);
+    UserEntitlementsMatrix getUserEntitlementsMatrix(@WebParam(name = "entityId", targetNamespace = "") final String entityId);
 
     @WebMethod
-    public Set<String> getOwnerIdsForResource(@WebParam(name = "resourceId", targetNamespace = "") String resourceId);
+    Set<String> getOwnerIdsForResource(@WebParam(name = "resourceId", targetNamespace = "") String resourceId);
 
     @WebMethod
-    public HashMap<String, SetStringResponse> getOwnerIdsForResourceSet(@WebParam(name = "resourceIdSet", targetNamespace = "") Set<String> resourceIdSet);
+    HashMap<String, SetStringResponse> getOwnerIdsForResourceSet(@WebParam(name = "resourceIdSet", targetNamespace = "") Set<String> resourceIdSet);
 
     @WebMethod
-    public Set<String> getOwnerIdsForGroup(@WebParam(name = "groupId", targetNamespace = "") String groupId);
+    Set<String> getOwnerIdsForGroup(@WebParam(name = "groupId", targetNamespace = "") String groupId);
 
     @WebMethod
-    public HashMap<String, SetStringResponse> getOwnerIdsForGroupSet(@WebParam(name = "groupIdSet", targetNamespace = "") Set<String> groupIdSet);
+    HashMap<String, SetStringResponse> getOwnerIdsForGroupSet(@WebParam(name = "groupIdSet", targetNamespace = "") Set<String> groupIdSet);
 
 }

@@ -34,7 +34,7 @@ public class ResourceEntitlementStrategy extends EntitlementsStrategy {
                     AuthorizationRole role = accessReviewData.getMatrix().getRoleMap().get(roleId);
                     if(StringUtils.isNotBlank(role.getManagedSysId())
                        && mngsys.getId().equals(role.getManagedSysId())){
-                        AccessViewBean bean = this.createBean(role);
+                        AccessViewBean bean = createBean(role);
                         retVal.add(bean);
                     }
                 }
@@ -56,7 +56,7 @@ public class ResourceEntitlementStrategy extends EntitlementsStrategy {
                     if(StringUtils.isNotBlank(group.getManagedSysId())
                        && mngsys.getId().equals(group.getManagedSysId())){
 
-                        AccessViewBean bean = this.createBean(group);
+                        AccessViewBean bean = createBean(group);
                         retVal.add(bean);
                     }
                 }

@@ -11,19 +11,19 @@ import java.util.List;
  */
 @Deprecated
 public interface WebResourceAttributeService {
-    public AttributeMap getAttributeMap(String attributeId) throws Exception;
+    AttributeMap getAttributeMap(String attributeId) throws Exception;
 
-    public List<AttributeMap> getAttributeMapCollection(String resourceId) throws Exception;
+    List<AttributeMap> getAttributeMapCollection(String resourceId) throws Exception;
 
-    public AttributeMap addAttributeMap(AttributeMap attribute) throws Exception;
+    AttributeMap addAttributeMap(AttributeMap attribute) throws Exception;
 
-    public void addAttributeMapCollection(List<AttributeMap> attributeList) throws Exception;
+    void addAttributeMapCollection(List<AttributeMap> attributeList) throws Exception;
 
-    public AttributeMap updateAttributeMap(AttributeMap attribute) throws Exception;
+    AttributeMap updateAttributeMap(AttributeMap attribute) throws Exception;
 
-    public void removeAttributeMap(String attributeId) throws Exception;
+    void removeAttributeMap(String attributeId) throws Exception;
 
-    public int removeResourceAttributeMaps(String resourceId) throws Exception;
+    int removeResourceAttributeMaps(String resourceId) throws Exception;
 
-    public List<Attribute> getSSOAttributes(String resourceId, String principalName, String managedSysId);
+    List<Attribute> getSSOAttributes(String resourceId, String principalName, String managedSysId);
 }

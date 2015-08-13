@@ -55,9 +55,8 @@ public class SynchReviewRecordValueEntity extends KeyEntity {
             return false;
         if (id != null ? !id.equals(that.id) : that.id != null)
             return false;
-        if (value != null ? !value.equals(that.value) : that.value != null) return false;
+        return !(value != null ? !value.equals(that.value) : that.value != null);
 
-        return true;
     }
 
     @Override

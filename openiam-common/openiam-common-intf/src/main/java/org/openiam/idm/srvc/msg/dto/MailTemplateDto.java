@@ -101,9 +101,7 @@ public class MailTemplateDto extends KeyNameDTO {
 				return false;
 		} else if (!subject.equals(other.subject))
 			return false;
-		if (type != other.type)
-			return false;
-		return true;
+		return type == other.type;
 	}
 
 	@Override

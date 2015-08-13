@@ -12,9 +12,9 @@ public interface AuthResourceAttributeService {
     * AuthResourceAMAttribute section
     *===================================================
     */
-    public AuthResourceAMAttributeEntity getAmAttribute(String attributeId);
+    AuthResourceAMAttributeEntity getAmAttribute(String attributeId);
 
-    public List<AuthResourceAMAttributeEntity> getAmAttributeList();
+    List<AuthResourceAMAttributeEntity> getAmAttributeList();
 
     /*
     *==================================================
@@ -22,14 +22,14 @@ public interface AuthResourceAttributeService {
     *===================================================
     */
 
-    public List<AuthResourceAttributeMapEntity> getAttributeMapList(String providerId) ;
+    List<AuthResourceAttributeMapEntity> getAttributeMapList(String providerId) ;
     
-    public AuthResourceAttributeMapEntity getAttribute(String id);
+    AuthResourceAttributeMapEntity getAttribute(String id);
 
-    public void saveAttributeMap(AuthResourceAttributeMapEntity attribute);
+    void saveAttributeMap(AuthResourceAttributeMapEntity attribute);
 
-    public void removeAttributeMap(String attributeMapId);
+    void removeAttributeMap(String attributeMapId);
 
-    public List<SSOAttribute> getSSOAttributes(String providerId, String userId);
+    List<SSOAttribute> getSSOAttributes(String providerId, String userId);
 
 }

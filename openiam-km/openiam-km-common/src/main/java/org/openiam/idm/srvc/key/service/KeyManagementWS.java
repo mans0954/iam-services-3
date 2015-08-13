@@ -34,11 +34,11 @@ public interface KeyManagementWS {
     @WebResult(targetNamespace = "")
     @RequestWrapper(localName = "encryptUserData", targetNamespace = "urn:idm.openiam.org/srvc/res/service", className = "org.openiam.idm.srvc.key.service.EncryptUserData")
     @ResponseWrapper(localName = "encryptUserDataResponse", targetNamespace = "urn:idm.openiam.org/srvc/res/service", className = "org.openiam.idm.srvc.key.service.EncryptUserDataResponse")
-    public String encryptUserData(
-        @WebParam(name = "arg0", targetNamespace = "")
-        String arg0,
-        @WebParam(name = "arg1", targetNamespace = "")
-        String arg1);
+    String encryptUserData(
+            @WebParam(name = "arg0", targetNamespace = "")
+            String arg0,
+            @WebParam(name = "arg1", targetNamespace = "")
+            String arg1);
 
     /**
      * 
@@ -49,7 +49,7 @@ public interface KeyManagementWS {
     @WebResult(targetNamespace = "")
     @RequestWrapper(localName = "initKeyManagement", targetNamespace = "urn:idm.openiam.org/srvc/res/service", className = "org.openiam.idm.srvc.key.service.InitKeyManagement")
     @ResponseWrapper(localName = "initKeyManagementResponse", targetNamespace = "urn:idm.openiam.org/srvc/res/service", className = "org.openiam.idm.srvc.key.service.InitKeyManagementResponse")
-    public Response initKeyManagement();
+    Response initKeyManagement();
 
     /**
      * 
@@ -61,9 +61,9 @@ public interface KeyManagementWS {
     @WebResult(targetNamespace = "")
     @RequestWrapper(localName = "migrateData", targetNamespace = "urn:idm.openiam.org/srvc/res/service", className = "org.openiam.idm.srvc.key.service.MigrateData")
     @ResponseWrapper(localName = "migrateDataResponse", targetNamespace = "urn:idm.openiam.org/srvc/res/service", className = "org.openiam.idm.srvc.key.service.MigrateDataResponse")
-    public Response migrateData(
-        @WebParam(name = "secretKey", targetNamespace = "")
-        String secretKey);
+    Response migrateData(
+            @WebParam(name = "secretKey", targetNamespace = "")
+            String secretKey);
 
     /**
      * 
@@ -75,7 +75,7 @@ public interface KeyManagementWS {
     @WebResult(targetNamespace = "")
     @RequestWrapper(localName = "generateCookieKey", targetNamespace = "urn:idm.openiam.org/srvc/res/service", className = "org.openiam.idm.srvc.key.service.GenerateCookieKey")
     @ResponseWrapper(localName = "generateCookieKeyResponse", targetNamespace = "urn:idm.openiam.org/srvc/res/service", className = "org.openiam.idm.srvc.key.service.GenerateCookieKeyResponse")
-    public byte[] generateCookieKey()
+    byte[] generateCookieKey()
         throws Exception_Exception
     ;
 
@@ -89,7 +89,7 @@ public interface KeyManagementWS {
     @WebResult(targetNamespace = "")
     @RequestWrapper(localName = "getCookieKey", targetNamespace = "urn:idm.openiam.org/srvc/res/service", className = "org.openiam.idm.srvc.key.service.GetCookieKey")
     @ResponseWrapper(localName = "getCookieKeyResponse", targetNamespace = "urn:idm.openiam.org/srvc/res/service", className = "org.openiam.idm.srvc.key.service.GetCookieKeyResponse")
-    public byte[] getCookieKey()
+    byte[] getCookieKey()
         throws Exception_Exception
     ;
 
@@ -102,7 +102,7 @@ public interface KeyManagementWS {
     @WebResult(targetNamespace = "")
     @RequestWrapper(localName = "generateMasterKey", targetNamespace = "urn:idm.openiam.org/srvc/res/service", className = "org.openiam.idm.srvc.key.service.GenerateMasterKey")
     @ResponseWrapper(localName = "generateMasterKeyResponse", targetNamespace = "urn:idm.openiam.org/srvc/res/service", className = "org.openiam.idm.srvc.key.service.GenerateMasterKeyResponse")
-    public Response generateMasterKey();
+    Response generateMasterKey();
 
     /**
      * 
@@ -115,11 +115,11 @@ public interface KeyManagementWS {
     @WebResult(targetNamespace = "")
     @RequestWrapper(localName = "decryptUserData", targetNamespace = "urn:idm.openiam.org/srvc/res/service", className = "org.openiam.idm.srvc.key.service.DecryptUserData")
     @ResponseWrapper(localName = "decryptUserDataResponse", targetNamespace = "urn:idm.openiam.org/srvc/res/service", className = "org.openiam.idm.srvc.key.service.DecryptUserDataResponse")
-    public String decryptUserData(
-        @WebParam(name = "arg0", targetNamespace = "")
-        String arg0,
-        @WebParam(name = "arg1", targetNamespace = "")
-        String arg1);
+    String decryptUserData(
+            @WebParam(name = "arg0", targetNamespace = "")
+            String arg0,
+            @WebParam(name = "arg1", targetNamespace = "")
+            String arg1);
 
     /**
      * 
@@ -131,9 +131,9 @@ public interface KeyManagementWS {
     @WebResult(targetNamespace = "")
     @RequestWrapper(localName = "decryptData", targetNamespace = "urn:idm.openiam.org/srvc/res/service", className = "org.openiam.idm.srvc.key.service.DecryptData")
     @ResponseWrapper(localName = "decryptDataResponse", targetNamespace = "urn:idm.openiam.org/srvc/res/service", className = "org.openiam.idm.srvc.key.service.DecryptDataResponse")
-    public String decryptData(
-        @WebParam(name = "arg0", targetNamespace = "")
-        String arg0);
+    String decryptData(
+            @WebParam(name = "arg0", targetNamespace = "")
+            String arg0);
 
     /**
      * 
@@ -145,8 +145,8 @@ public interface KeyManagementWS {
     @WebResult(targetNamespace = "")
     @RequestWrapper(localName = "encryptData", targetNamespace = "urn:idm.openiam.org/srvc/res/service", className = "org.openiam.idm.srvc.key.service.EncryptData")
     @ResponseWrapper(localName = "encryptDataResponse", targetNamespace = "urn:idm.openiam.org/srvc/res/service", className = "org.openiam.idm.srvc.key.service.EncryptDataResponse")
-    public String encryptData(
-        @WebParam(name = "arg0", targetNamespace = "")
-        String arg0);
+    String encryptData(
+            @WebParam(name = "arg0", targetNamespace = "")
+            String arg0);
 
 }

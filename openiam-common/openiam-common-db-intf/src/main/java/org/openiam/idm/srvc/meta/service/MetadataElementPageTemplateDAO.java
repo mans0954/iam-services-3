@@ -7,5 +7,5 @@ import org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateEntity;
 
 public interface MetadataElementPageTemplateDAO extends BaseDao<MetadataElementPageTemplateEntity, String> {
 
-	public List<MetadataElementPageTemplateEntity> getByResourceId(final String resourceId);
+	List<MetadataElementPageTemplateEntity> getByResourceId(final String resourceId);
 }

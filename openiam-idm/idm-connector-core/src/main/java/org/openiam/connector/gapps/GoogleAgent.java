@@ -48,29 +48,29 @@ public class GoogleAgent {
 
 	// get ALL USERS
 	public List<GenericEntry> getAllUsers(String adminEmail, String password,
-			String domain) throws AppsForYourDomainException,
-			MalformedURLException, IOException, ServiceException {
+			String domain) throws
+			IOException, ServiceException {
 		return this.getAllUsers(this.getService(adminEmail, password, domain),
 				domain);
 	}
 
 	public List<GenericEntry> getAllUsers(AppsPropertyService service,
-			String domain) throws AppsForYourDomainException,
-			MalformedURLException, IOException, ServiceException {
+			String domain) throws
+			IOException, ServiceException {
 		return retrieveAllPages(service, new URL(APP_URL_USER + domain));
 	}
 
 	// GET ALL GROUPS
 	public List<GenericEntry> getAllGroup(String adminEmail, String password,
-			String domain) throws AppsForYourDomainException,
-			MalformedURLException, IOException, ServiceException {
+			String domain) throws
+			IOException, ServiceException {
 		return this.getAllGroup(this.getService(adminEmail, password, domain),
 				domain);
 	}
 
 	public List<GenericEntry> getAllGroup(AppsPropertyService service,
-			String domain) throws AppsForYourDomainException,
-			MalformedURLException, IOException, ServiceException {
+			String domain) throws
+			IOException, ServiceException {
 		return retrieveAllPages(service, new URL(APP_URL_GROUP + domain));
 	}
 
@@ -94,7 +94,7 @@ public class GoogleAgent {
 
 	public GenericEntry getEntity(String adminEmail, String password,
 			String domain, String entity, String URL)
-			throws AppsForYourDomainException, MalformedURLException,
+			throws
 			IOException, ServiceException {
 		if (!StringUtils.hasText(entity))
 			return null;
@@ -106,22 +106,22 @@ public class GoogleAgent {
 	}
 
 	public GenericEntry getUser(String adminEmail, String password,
-			String domain, String email) throws AppsForYourDomainException,
-			MalformedURLException, IOException, ServiceException {
+			String domain, String email) throws
+			IOException, ServiceException {
 		return this
 				.getEntity(adminEmail, password, domain, email, APP_URL_USER);
 	}
 
 	public GenericEntry getGroup(String adminEmail, String password,
-			String domain, String group) throws AppsForYourDomainException,
-			MalformedURLException, IOException, ServiceException {
+			String domain, String group) throws
+			IOException, ServiceException {
 		return this.getEntity(adminEmail, password, domain, group,
 				APP_URL_GROUP);
 	}
 
 	private GenericEntry retrieveCustomerId(AppsPropertyService service,
-			String domain) throws AppsForYourDomainException,
-			MalformedURLException, IOException, ServiceException {
+			String domain) throws
+			IOException, ServiceException {
 		GenericEntry entry = service
 				.getEntry(
 						new URL(
@@ -132,8 +132,8 @@ public class GoogleAgent {
 
 	public GenericEntry addUser(String adminEmail, String password,
 			String domain, Map<String, String> googleUserProps)
-			throws AppsForYourDomainException, AuthenticationException,
-			MalformedURLException, IOException, ServiceException {
+			throws
+			IOException, ServiceException {
 		GenericEntry entry = new GenericEntry();
 		entry.addProperties(googleUserProps);
         if (entry.getProperty("isAdmin") == null) {
@@ -170,7 +170,7 @@ public class GoogleAgent {
 
 	public GenericEntry createAlias(AppsPropertyService service,
 			String aliasEmail, String userEmail, String domain)
-			throws AppsForYourDomainException, MalformedURLException,
+			throws
 			IOException, ServiceException {
 		GenericEntry entry = new GenericEntry();
 		entry.addProperty("userEmail", userEmail);
@@ -180,8 +180,8 @@ public class GoogleAgent {
 
 	public void addGroup(String adminEmail, String password, String domain,
 			Map<String, String> googleGroupProps)
-			throws AppsForYourDomainException, AuthenticationException,
-			MalformedURLException, IOException, ServiceException {
+			throws
+			IOException, ServiceException {
 		GenericEntry entry = new GenericEntry();
 		entry.addProperty("emailPermission", "Anyone");
 		entry.addProperties(googleGroupProps);
@@ -193,8 +193,8 @@ public class GoogleAgent {
 
 	public void addUserToGroup(String adminEmail, String password,
 			String domain, String groupId, String userId)
-			throws AppsForYourDomainException, AuthenticationException,
-			MalformedURLException, IOException, ServiceException {
+			throws
+			IOException, ServiceException {
 		GenericEntry user = this.getUser(adminEmail, password, domain, userId);
 		user.addProperty("memberId", userId);
 		this.getService(adminEmail, password, domain).insert(
@@ -204,8 +204,8 @@ public class GoogleAgent {
 
 	public void deleteUserFromGroup(String adminEmail, String password,
 			String domain, String groupId, String userId)
-			throws AppsForYourDomainException, AuthenticationException,
-			MalformedURLException, IOException, ServiceException {
+			throws
+			IOException, ServiceException {
 		this.getService(adminEmail, password, domain).delete(
 				new URL("APP_URL_GROUP" + domain + "/" + groupId + "/member/"
 						+ userId));
@@ -213,8 +213,8 @@ public class GoogleAgent {
 
 	public List<GenericEntry> retrieveAllOrganizationUsersByOrgUnit(
 			String adminEmail, String password, String domain,
-			String orgUnitPath) throws AppsForYourDomainException,
-			MalformedURLException, IOException, ServiceException {
+			String orgUnitPath) throws
+			IOException, ServiceException {
 		AppsPropertyService service = this.getService(adminEmail, password,
 				domain);
 		String URL = APP_URL_OU
@@ -243,8 +243,8 @@ public class GoogleAgent {
 
 	public GenericEntry updateUser(String adminEmail, String password,
 			String domain, GenericEntry entry)
-			throws AppsForYourDomainException, AuthenticationException,
-			MalformedURLException, IOException, ServiceException {
+			throws
+			IOException, ServiceException {
 		return updateUser(adminEmail, password, domain, entry,
 				entry.getProperty("userEmail"), false);
 	}
@@ -252,8 +252,8 @@ public class GoogleAgent {
 	// to update primary email address
 	public GenericEntry updateUser(String adminEmail, String password,
 			String domain, GenericEntry entry, String id, boolean isPKUpdate)
-			throws AppsForYourDomainException, AuthenticationException,
-			MalformedURLException, IOException, ServiceException {
+			throws
+			IOException, ServiceException {
 		AppsPropertyService service = this.getService(adminEmail, password,
 				domain);
 		URL url = null;
@@ -292,8 +292,8 @@ public class GoogleAgent {
 
 	public GenericEntry updateUser(String adminEmail, String password,
 			String domain, Map<String, String> googleUserProps, String id)
-			throws AppsForYourDomainException, AuthenticationException,
-			MalformedURLException, IOException, ServiceException {
+			throws
+			IOException, ServiceException {
 		GenericEntry entry = new GenericEntry();
 		entry.addProperties(googleUserProps);
 		GenericEntry newE = updateUser(adminEmail, password, domain, entry);
@@ -303,7 +303,7 @@ public class GoogleAgent {
 
 	public GenericEntry retrieveAlias(AppsPropertyService service,
 			String aliasEmail, String domain)
-			throws AppsForYourDomainException, MalformedURLException,
+			throws
 			IOException, ServiceException {
 
 		return service.getEntry(new URL(APP_URL_ALIAS + domain + "/"
@@ -311,15 +311,15 @@ public class GoogleAgent {
 	}
 
 	public void deleteAlias(AppsPropertyService service, String aliasEmail,
-			String domain) throws AppsForYourDomainException,
-			MalformedURLException, IOException, ServiceException {
+			String domain) throws
+			IOException, ServiceException {
 		service.delete(new URL(APP_URL_ALIAS + domain + "/" + aliasEmail));
 	}
 
 	public void updateGroup(String adminEmail, String password, String domain,
 			Map<String, String> googleGroupProps, String id)
-			throws AppsForYourDomainException, AuthenticationException,
-			MalformedURLException, IOException, ServiceException {
+			throws
+			IOException, ServiceException {
 		GenericEntry entry = new GenericEntry();
 		entry.addProperties(googleGroupProps);
 		GenericEntry newE = this.getService(adminEmail, password, domain)
@@ -331,8 +331,8 @@ public class GoogleAgent {
 	}
 
 	public void deleteUser(String adminEmail, String password, String domain,
-			String email) throws AppsForYourDomainException,
-			MalformedURLException, IOException, ServiceException {
+			String email) throws
+			IOException, ServiceException {
 		List<GenericEntry> aliases = this.getAllUserAliases(adminEmail,
 				password, email, domain);
 		AppsPropertyService service = this.getService(adminEmail, password,
@@ -346,8 +346,8 @@ public class GoogleAgent {
 	}
 
 	public void deleteGroup(String adminEmail, String password, String domain,
-			String groupName) throws AppsForYourDomainException,
-			MalformedURLException, IOException, ServiceException {
+			String groupName) throws
+			IOException, ServiceException {
 		this.getService(adminEmail, password, domain).delete(
 				new URL(APP_URL_GROUP
 						+ domain
@@ -358,7 +358,7 @@ public class GoogleAgent {
 
 	public List<GenericEntry> getAllUserAliases(String adminEmail,
 			String password, String id, String domain)
-			throws AppsForYourDomainException, MalformedURLException,
+			throws
 			IOException, ServiceException {
 		AppsPropertyService service = this.getService(adminEmail, password,
 				domain);

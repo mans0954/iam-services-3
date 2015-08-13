@@ -30,10 +30,10 @@ public interface ProvisionConnectorWebService {
      * @return
      */
     @WebMethod
-    public Integer getProvisionConnectorsCount(@WebParam(name = "searchBean", targetNamespace = "")ProvisionConnectorSearchBean searchBean);
+    Integer getProvisionConnectorsCount(@WebParam(name = "searchBean", targetNamespace = "") ProvisionConnectorSearchBean searchBean);
 
     @WebMethod
-    public List<MetadataType> getProvisionConnectorsTypes();
+    List<MetadataType> getProvisionConnectorsTypes();
 
     /**
      * Return an list of the connectors in the system by SearchBean

@@ -5,5 +5,5 @@ package org.openiam.elasticsearch.constants;
  * Date: 6/25/14.
  */
 public enum ESAnalyze {
-    Yes, No;
+    Yes, No
 }

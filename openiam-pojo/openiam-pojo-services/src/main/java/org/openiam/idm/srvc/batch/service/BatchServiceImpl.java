@@ -243,7 +243,7 @@ public class BatchServiceImpl implements BatchService, ApplicationContextAware {
 	public void deleteScheduledTask(String id) {
 		final BatchTaskScheduleEntity entity = batchScheduleDAO.findById(id);
 		if(entity != null) {
-			batchScheduleDAO.delete(entity);;
+			batchScheduleDAO.delete(entity);
 		}
 	}
 

@@ -6,5 +6,5 @@ package org.openiam.sso.validator;
  */
 public interface SSOValidator {
 
-    public boolean validate(Object data);
+    boolean validate(Object data);
 }

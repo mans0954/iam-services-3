@@ -41,9 +41,9 @@ import org.openiam.idm.srvc.res.dto.Resource;
 @WebService
 public interface PolicyDataService {
 
-	public List<Policy> findBeans(final PolicySearchBean searchBean, final int from, final int size);
+	List<Policy> findBeans(final PolicySearchBean searchBean, final int from, final int size);
 	
-	public int count(final PolicySearchBean searchBean);
+	int count(final PolicySearchBean searchBean);
 	
 	/**
 	 * @param policyDefId
@@ -79,7 +79,7 @@ public interface PolicyDataService {
 	Response updatePolicy(Policy  policy);
 	
 	
-	public Response savePolicy(final Policy policy);
+	Response savePolicy(final Policy policy);
 	
 	/**
 	 * Delete policy.

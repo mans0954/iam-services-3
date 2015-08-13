@@ -18,21 +18,21 @@ public interface MailTemplateWebService {
      * @param transientInstance
      * @return
      */
-    public Response save(MailTemplateDto transientInstance);
+    Response save(MailTemplateDto transientInstance);
 
     /**
      * method for deleting template.
      * @param id
      */
-    public Response removeTemplate(String id);
+    Response removeTemplate(String id);
 
     /**
      * method for retriving template by id .
      * @param id
      * @return
      */
-    public MailTemplateDto getTemplateById(String id);
+    MailTemplateDto getTemplateById(String id);
     
-    public List<MailTemplateDto> findBeans(final MailTemplateSearchBean searchBean, final int from, final int size);
+    List<MailTemplateDto> findBeans(final MailTemplateSearchBean searchBean, final int from, final int size);
 
 }

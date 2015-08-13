@@ -18,5 +18,5 @@ import java.util.Map;
 public interface AddressDAO extends BaseDao<AddressEntity, String> {
 
 
-	public void removeByUserId(final String userId);
+	void removeByUserId(final String userId);
 }

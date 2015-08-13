@@ -147,6 +147,10 @@
             <a>employeeType.id</a>
             <b>employeeTypeId</b>
         </field>
+		<field-exclude>
+			<a>oAuthCodes</a>
+			<b>oAuthCodes</b>
+		</field-exclude>
 	</mapping>
 
     <mapping>
@@ -1018,6 +1022,14 @@
 		<field-exclude>
 			<a>uriPatterns</a>
 			<b>uriPatterns</b>
+		</field-exclude>
+		<field-exclude>
+			<a>oAuthTokens</a>
+			<b>oAuthTokens</b>
+		</field-exclude>
+		<field-exclude>
+			<a>authorizedUsers</a>
+			<b>authorizedUsers</b>
 		</field-exclude>
 	</mapping>
 

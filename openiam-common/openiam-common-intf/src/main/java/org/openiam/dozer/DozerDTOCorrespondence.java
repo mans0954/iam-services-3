@@ -9,5 +9,5 @@ import java.lang.annotation.Target;
 @Target(value=ElementType.TYPE)
 public @interface DozerDTOCorrespondence {
 
-	public Class<?> value();
+	Class<?> value();
 }

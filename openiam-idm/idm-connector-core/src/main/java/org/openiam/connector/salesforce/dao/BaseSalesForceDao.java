@@ -12,10 +12,10 @@ import org.openiam.connector.salesforce.model.BaseModel;
  * To change this template use File | Settings | File Templates.
  */
 public interface BaseSalesForceDao<Model extends BaseModel> {
-    public void save(final Model model) throws ConnectionException, SalesForcePersistException;
-    public void update(final Model model) throws ConnectionException, SalesForcePersistException;
-    public void saveOrUpdate(Model model) throws ConnectionException, SalesForcePersistException;
-    public String getProfileIdByName(final String profileName) throws ConnectionException;
+    void save(final Model model) throws ConnectionException, SalesForcePersistException;
+    void update(final Model model) throws ConnectionException, SalesForcePersistException;
+    void saveOrUpdate(Model model) throws ConnectionException, SalesForcePersistException;
+    String getProfileIdByName(final String profileName) throws ConnectionException;
 
-    public Model findByName(final String name) throws ConnectionException;
+    Model findByName(final String name) throws ConnectionException;
 }

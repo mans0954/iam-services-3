@@ -32,7 +32,7 @@ public enum ReconExecStatusOptions {
         return value;
     }
 
-    private ReconExecStatusOptions(String value) {
+    ReconExecStatusOptions(String value) {
         this.value = value;
     }
 

@@ -12,5 +12,5 @@ import org.openiam.idm.srvc.audit.domain.IdmAuditLogCustomEntity;
 public interface IdmAuditLogCustomDAO extends
         BaseDao<IdmAuditLogCustomEntity, String> {
 
-    public List<IdmAuditLogCustomEntity> getByIdmAuditLogId(String LogId);
+    List<IdmAuditLogCustomEntity> getByIdmAuditLogId(String LogId);
 }

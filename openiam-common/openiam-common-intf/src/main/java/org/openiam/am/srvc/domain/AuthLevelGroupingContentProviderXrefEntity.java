@@ -108,9 +108,7 @@ public class AuthLevelGroupingContentProviderXrefEntity {
 				return false;
 		} else if (!id.equals(other.id))
 			return false;
-		if (order != other.order)
-			return false;
-		return true;
+		return order == other.order;
 	}
 
 	@Override

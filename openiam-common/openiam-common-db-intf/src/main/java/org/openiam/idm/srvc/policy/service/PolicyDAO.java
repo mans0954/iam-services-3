@@ -38,7 +38,7 @@ public interface PolicyDAO extends BaseDao<PolicyEntity, String> {
 	 * @param policyDefId the policy def id
 	 * @return the list
 	 */
-	public List<PolicyEntity> findAllPolicies(String policyDefId, int startAt, int size);
+	List<PolicyEntity> findAllPolicies(String policyDefId, int startAt, int size);
 
 	/**
 	 * Find policy by name.
@@ -47,7 +47,7 @@ public interface PolicyDAO extends BaseDao<PolicyEntity, String> {
 	 * @param policyName the policy name
 	 * @return the list
 	 */
-	public List<PolicyEntity> findPolicyByName(String policyDefId,
-			String policyName);
+	List<PolicyEntity> findPolicyByName(String policyDefId,
+										String policyName);
 
 }

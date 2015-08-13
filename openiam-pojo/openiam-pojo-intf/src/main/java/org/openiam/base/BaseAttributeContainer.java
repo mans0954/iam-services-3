@@ -34,10 +34,8 @@ public class BaseAttributeContainer {
 
         BaseAttributeContainer that = (BaseAttributeContainer) o;
 
-        if (attributeList != null ? !attributeList.equals(that.attributeList) : that.attributeList != null)
-            return false;
+        return !(attributeList != null ? !attributeList.equals(that.attributeList) : that.attributeList != null);
 
-        return true;
     }
 
     @Override

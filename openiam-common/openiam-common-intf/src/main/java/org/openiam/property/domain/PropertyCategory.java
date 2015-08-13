@@ -7,5 +7,5 @@ public enum PropertyCategory {
 	Organization,
 	System,
 	Workflow,
-	Authentication;
+	Authentication
 }

@@ -295,8 +295,7 @@ public class Role extends AbstractEntitlementsDTO implements Comparable<Role> {
         if (selected != null ? !selected.equals(role.selected) : role.selected != null) return false;
         if (status != null ? !status.equals(role.status) : role.status != null) return false;
         if (managedSysId != null ? !managedSysId.equals(role.managedSysId) : role.managedSysId != null) return false;
-        if (managedSysName != null ? !managedSysName.equals(role.managedSysName) : role.managedSysName != null) return false;
-        return true;
+        return !(managedSysName != null ? !managedSysName.equals(role.managedSysName) : role.managedSysName != null);
     }
 
     @Override

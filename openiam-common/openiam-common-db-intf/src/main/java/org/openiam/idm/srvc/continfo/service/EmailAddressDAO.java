@@ -15,5 +15,5 @@ import java.util.Map;
  * @author Suneet Shah
  */
 public interface EmailAddressDAO extends BaseDao<EmailAddressEntity, String> {
-    public void removeByUserId(final String userId);
+    void removeByUserId(final String userId);
 }

@@ -52,7 +52,7 @@ public class SetPasswordScimCommand extends
 			connection.setRequestProperty("Authorization", "Bearer "
 					+ encrypted);
 			connection.connect();
-			super.makeCall(
+			makeCall(
 					connection,
 					"<User xmlns=\"urn:scim:schemas:core:1.0\" "
 							+ "xmlns:enterprise=\"urn:scim:schemas:extension:enterprise:1.0\">"

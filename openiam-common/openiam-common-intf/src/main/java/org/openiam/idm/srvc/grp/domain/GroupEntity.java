@@ -540,8 +540,7 @@ public class GroupEntity extends AbstractMetdataTypeEntity {
         if (classification != null ? !classification.equals(that.classification) : that.classification != null) return false;
         if (adGroupType != null ? !adGroupType.equals(that.adGroupType) : that.adGroupType != null) return false;
         if (adGroupScope != null ? !adGroupScope.equals(that.adGroupScope) : that.adGroupScope != null) return false;
-        if (risk != null ? !risk.equals(that.risk) : that.risk != null) return false;
-        return true;
+        return !(risk != null ? !risk.equals(that.risk) : that.risk != null);
     }
 
     @Override

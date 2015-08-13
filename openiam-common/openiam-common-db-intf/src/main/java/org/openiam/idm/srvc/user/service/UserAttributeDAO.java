@@ -9,9 +9,9 @@ import java.util.Set;
 
 public interface UserAttributeDAO extends BaseDao<UserAttributeEntity, String>{
 
-	public List<UserAttributeEntity> findUserAttributes(String userId, final Set<String> metadataElementIds);
+	List<UserAttributeEntity> findUserAttributes(String userId, final Set<String> metadataElementIds);
 	
-    public List<UserAttributeEntity> findUserAttributes(String userId);
+    List<UserAttributeEntity> findUserAttributes(String userId);
 
     void deleteUserAttributes(String userId);
 }

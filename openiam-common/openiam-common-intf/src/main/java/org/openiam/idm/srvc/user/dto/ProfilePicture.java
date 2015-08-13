@@ -49,9 +49,8 @@ public class ProfilePicture extends KeyNameDTO {
         ProfilePicture that = (ProfilePicture) o;
 
         if (!Arrays.equals(picture, that.picture)) return false;
-        if (user != null ? !user.equals(that.user) : that.user != null) return false;
+        return !(user != null ? !user.equals(that.user) : that.user != null);
 
-        return true;
     }
 
     @Override

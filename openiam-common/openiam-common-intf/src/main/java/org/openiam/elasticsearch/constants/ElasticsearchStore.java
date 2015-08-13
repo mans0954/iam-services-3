@@ -8,7 +8,7 @@ public enum ElasticsearchStore {
 
     private boolean value;
 
-    private ElasticsearchStore(boolean value){
+    ElasticsearchStore(boolean value){
         this.value=value;
     }
 

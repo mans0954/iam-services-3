@@ -8,7 +8,7 @@ import org.openiam.idm.srvc.org.dto.OrgType2OrgTypeXref;
 import java.util.List;
 
 public interface OrganizationTypeDAO extends BaseDao<OrganizationTypeEntity, String> {
-    public List<OrgType2OrgTypeXrefEntity> getOrgTypeToOrgTypeXrefList();
+    List<OrgType2OrgTypeXrefEntity> getOrgTypeToOrgTypeXrefList();
 
-    public List<String> findAllIds();
+    List<String> findAllIds();
 }

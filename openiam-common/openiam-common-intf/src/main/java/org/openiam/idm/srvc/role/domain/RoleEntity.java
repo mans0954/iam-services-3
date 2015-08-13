@@ -24,6 +24,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.Where;
+import org.openiam.am.srvc.domain.OAuthUserClientXrefEntity;
 import org.openiam.base.domain.AbstractMetdataTypeEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.access.domain.AccessRightEntity;
@@ -417,7 +418,7 @@ public class RoleEntity extends AbstractMetdataTypeEntity {
 
 	public void setOrganizations(Set<RoleToOrgMembershipXrefEntity> organizations) {
 		this.organizations = organizations;
-	}
+    }
 
 	@Override
 	public int hashCode() {

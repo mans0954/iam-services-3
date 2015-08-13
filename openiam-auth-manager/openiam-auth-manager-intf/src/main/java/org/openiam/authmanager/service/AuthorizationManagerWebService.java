@@ -1,5 +1,6 @@
 package org.openiam.authmanager.service;
 
+import java.util.List;
 import java.util.Set;
 
 import javax.jws.WebMethod;

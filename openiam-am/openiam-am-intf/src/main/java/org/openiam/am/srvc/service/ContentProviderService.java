@@ -11,23 +11,23 @@ import java.util.List;
 
 public interface ContentProviderService {
 	
-	public List<AuthLevelEntity> getAuthLevelList();
+	List<AuthLevelEntity> getAuthLevelList();
 	
-	public void deleteAuthLevelAttribute(final String id);
+	void deleteAuthLevelAttribute(final String id);
 	
-	public AuthLevelAttributeEntity getAuthLevelAttribute(final String id);
+	AuthLevelAttributeEntity getAuthLevelAttribute(final String id);
 	
-	public void saveAuthLevelAttibute(final AuthLevelAttributeEntity entity);
+	void saveAuthLevelAttibute(final AuthLevelAttributeEntity entity);
 	
-	public void deleteAuthLevelGrouping(final String id);
+	void deleteAuthLevelGrouping(final String id);
 	
-	public void saveAuthLevelGrouping(final AuthLevelGroupingEntity entity);
+	void saveAuthLevelGrouping(final AuthLevelGroupingEntity entity);
 	
-	public void validateDeleteAuthLevelGrouping(final String id) throws BasicDataServiceException;
+	void validateDeleteAuthLevelGrouping(final String id) throws BasicDataServiceException;
 	
-	public void validateSaveAuthLevelGrouping(final AuthLevelGroupingEntity entity) throws BasicDataServiceException;
+	void validateSaveAuthLevelGrouping(final AuthLevelGroupingEntity entity) throws BasicDataServiceException;
 	
-	public AuthLevelGroupingEntity getAuthLevelGrouping(final String id);
+	AuthLevelGroupingEntity getAuthLevelGrouping(final String id);
 
     List<AuthLevelGroupingEntity> getAuthLevelGroupingList();
 
@@ -56,7 +56,7 @@ public interface ContentProviderService {
 
     List<ContentProviderEntity> getProviderByDomainPattern(String domainPattern, Boolean isSSL);
     
-    public List<URIPatternEntity> getURIPatternsForContentProviderMatchingPattern(final String contentProviderId, final String pattern);
+    List<URIPatternEntity> getURIPatternsForContentProviderMatchingPattern(final String contentProviderId, final String pattern);
     
-    public void createDefaultURIPatterns(String providerId);
+    void createDefaultURIPatterns(String providerId);
 }

@@ -13,5 +13,5 @@ import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
 public interface MetadataTypeDAO extends BaseDao<MetadataTypeEntity, String> {
 
 //    public List<MetadataTypeEntity> findTypesInCategory(String categoryId);
-    public MetadataTypeEntity findByNameGrouping(String name, MetadataTypeGrouping grouping);
+MetadataTypeEntity findByNameGrouping(String name, MetadataTypeGrouping grouping);
 }

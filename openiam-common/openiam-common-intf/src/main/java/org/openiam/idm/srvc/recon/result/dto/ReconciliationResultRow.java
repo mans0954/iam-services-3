@@ -66,9 +66,7 @@ public class ReconciliationResultRow implements java.io.Serializable {
         if (getClass() != obj.getClass())
             return false;
         ReconciliationResultRow other = (ReconciliationResultRow) obj;
-        if (rowId != other.rowId)
-            return false;
-        return true;
+        return rowId == other.rowId;
     }
 
     public String toCSV() {

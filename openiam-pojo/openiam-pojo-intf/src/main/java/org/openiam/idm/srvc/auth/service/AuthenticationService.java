@@ -70,20 +70,20 @@ public interface AuthenticationService {
             AuthenticationRequest request);
     
     @WebMethod
-    public Response clearOTPActiveStatus(@WebParam(name = "request", targetNamespace = "") OTPServiceRequest request);
+    Response clearOTPActiveStatus(@WebParam(name = "request", targetNamespace = "") OTPServiceRequest request);
     
     @WebMethod
-    public boolean isOTPActive(@WebParam(name = "request", targetNamespace = "") OTPServiceRequest request);
+    boolean isOTPActive(@WebParam(name = "request", targetNamespace = "") OTPServiceRequest request);
     
     @WebMethod
-    public Response sendOTPToken(@WebParam(name = "request", targetNamespace = "") OTPServiceRequest request);
+    Response sendOTPToken(@WebParam(name = "request", targetNamespace = "") OTPServiceRequest request);
     
     @WebMethod
-    public Response confirmOTPToken(@WebParam(name = "request", targetNamespace = "") OTPServiceRequest request);
+    Response confirmOTPToken(@WebParam(name = "request", targetNamespace = "") OTPServiceRequest request);
 
 
     @WebMethod
-    public Response getOTPSecretKey(@WebParam(name = "request", targetNamespace = "") OTPServiceRequest request);
+    Response getOTPSecretKey(@WebParam(name = "request", targetNamespace = "") OTPServiceRequest request);
     
     /**
      * Attempts to renew the SSO Token for this user.   
@@ -110,6 +110,6 @@ public interface AuthenticationService {
     								final @WebParam(name = "size", targetNamespace = "") int size);
     
     @WebMethod
-    public Response save(final @WebParam(name = "entity", targetNamespace = "") AuthStateEntity entity);
+    Response save(final @WebParam(name = "entity", targetNamespace = "") AuthStateEntity entity);
 
 }

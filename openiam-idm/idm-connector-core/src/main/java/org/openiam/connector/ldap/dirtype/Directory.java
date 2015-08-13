@@ -24,8 +24,8 @@ import java.util.List;
  */
 public interface Directory {
     
-    final static String ACTIVE_DIRECTORY = "ACTIVE_DIRECTORY";
-    final static String LDAP_V3 = "LDAP_V3";
+    String ACTIVE_DIRECTORY = "ACTIVE_DIRECTORY";
+    String LDAP_V3 = "LDAP_V3";
 
     
     ModificationItem[] setPassword(PasswordRequest reqType) throws UnsupportedEncodingException;

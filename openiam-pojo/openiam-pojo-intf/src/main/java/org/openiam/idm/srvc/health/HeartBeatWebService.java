@@ -19,7 +19,7 @@ public interface HeartBeatWebService {
      * @return
      */
     @WebMethod
-    public String isAlive();
+    String isAlive();
 
 
 }

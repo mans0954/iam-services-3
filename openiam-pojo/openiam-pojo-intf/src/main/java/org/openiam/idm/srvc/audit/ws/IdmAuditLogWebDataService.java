@@ -17,24 +17,24 @@ import java.util.List;
 public interface IdmAuditLogWebDataService {
     
 	@WebMethod
-	public IdmAuditLog getLogRecord(final @WebParam(name = "id", targetNamespace = "") String id);
+	IdmAuditLog getLogRecord(final @WebParam(name = "id", targetNamespace = "") String id);
 	
 	@WebMethod
-    public Response addLogs(final List<IdmAuditLog> events);
+	Response addLogs(final List<IdmAuditLog> events);
 
     @WebMethod
-    public Response addLog(final IdmAuditLog record);
+	Response addLog(final IdmAuditLog record);
 
 	@WebMethod
-    public List<IdmAuditLog> findBeans(final @WebParam(name = "searchBean", targetNamespace = "") AuditLogSearchBean searchBean,
-    								   final @WebParam(name = "from", targetNamespace = "") int from,
-    								   final @WebParam(name = "size", targetNamespace = "") int size);
+	List<IdmAuditLog> findBeans(final @WebParam(name = "searchBean", targetNamespace = "") AuditLogSearchBean searchBean,
+								final @WebParam(name = "from", targetNamespace = "") int from,
+								final @WebParam(name = "size", targetNamespace = "") int size);
     @WebMethod
-    public List<String> getIds(final @WebParam(name = "searchBean", targetNamespace = "") AuditLogSearchBean searchBean,
-                                       final @WebParam(name = "from", targetNamespace = "") int from,
-                                       final @WebParam(name = "size", targetNamespace = "") int size);
+	List<String> getIds(final @WebParam(name = "searchBean", targetNamespace = "") AuditLogSearchBean searchBean,
+						final @WebParam(name = "from", targetNamespace = "") int from,
+						final @WebParam(name = "size", targetNamespace = "") int size);
 	
 	@WebMethod
-	public int count(final @WebParam(name = "searchBean", targetNamespace = "") AuditLogSearchBean searchBean);
+	int count(final @WebParam(name = "searchBean", targetNamespace = "") AuditLogSearchBean searchBean);
 
 }

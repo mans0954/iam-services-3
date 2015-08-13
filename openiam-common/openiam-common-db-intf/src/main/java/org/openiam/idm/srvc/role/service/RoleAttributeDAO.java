@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface RoleAttributeDAO extends BaseDao<RoleAttributeEntity, String> {
 
-     public List<RoleAttributeEntity> findByRoleId(String roleID);
+     List<RoleAttributeEntity> findByRoleId(String roleID);
 
 	//public void deleteByRoleId(final String roleId);
 }

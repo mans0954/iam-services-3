@@ -59,7 +59,7 @@ public class SetPasswordSoapCommand extends
 			String scriptName = this.getScriptName(commandHandler);
 			String argsName = this.getArgs(commandHandler, user);
 
-			super.makeCall(
+			makeCall(
 					connection,
 					"<User xmlns=\"urn:scim:schemas:core:1.0\" "
 							+ "xmlns:enterprise=\"urn:scim:schemas:extension:enterprise:1.0\">"

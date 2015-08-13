@@ -41,14 +41,14 @@ public interface CategoryDataService {
      * @param cat
      * @return 
      */
-    public Category addCategory(Category cat);
+    Category addCategory(Category cat);
 
     /**
      * Updates an existing category
      *
      * @param cat
      */
-    public void updateCategory(Category cat);
+    void updateCategory(Category cat);
 
     /**
      * Removes a existing specified by the categoryId. If the nested flag is set to true, then
@@ -57,7 +57,7 @@ public interface CategoryDataService {
      * @param categoryId
      * @return Returns the number of records that have been deleted.
      */
-    public int removeCategory(String categoryId, boolean nested);
+    int removeCategory(String categoryId, boolean nested);
 
     /**
      * Returns a category defined by CategoryId. Returns null if no category is found.
@@ -65,14 +65,14 @@ public interface CategoryDataService {
      * @param categoryId
      * @return
      */
-    public Category getCategory(String categoryId);
+    Category getCategory(String categoryId);
 
     /**
      * Returns all the categories starting with top level categories.
      *
      * @return
      */
-    public List<Category> getAllCategories(boolean nested);
+    List<Category> getAllCategories(boolean nested);
 
     /**
      * Get all categories for the specified categoryId.
@@ -81,5 +81,5 @@ public interface CategoryDataService {
      * @param nested
      * @return
      */
-    public List<Category> getChildCategories(String categoryId, boolean nested);
+    List<Category> getChildCategories(String categoryId, boolean nested);
 }

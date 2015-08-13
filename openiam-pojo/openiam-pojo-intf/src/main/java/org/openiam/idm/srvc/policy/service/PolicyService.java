@@ -10,13 +10,13 @@ import org.openiam.idm.srvc.policy.dto.PolicyDefParam;
 
 public interface PolicyService {
 
-	public Policy getPolicy(final String policyId);
-	public void save(final Policy policy);
-	public List<Policy> findPolicyByName(final String policyDefId, final String policyName);
-	public void delete(final String policyId)  throws BasicDataServiceException;
-	public int count(PolicySearchBean searchBean);
-	public List<Policy> findBeans(final PolicySearchBean searchBean, int from, int size);
-	public List<PolicyDefParam> findPolicyDefParamByGroup(final String policyDefId, final String pswdGroup);
+	Policy getPolicy(final String policyId);
+	void save(final Policy policy);
+	List<Policy> findPolicyByName(final String policyDefId, final String policyName);
+	void delete(final String policyId)  throws BasicDataServiceException;
+	int count(PolicySearchBean searchBean);
+	List<Policy> findBeans(final PolicySearchBean searchBean, int from, int size);
+	List<PolicyDefParam> findPolicyDefParamByGroup(final String policyDefId, final String pswdGroup);
     ITPolicy findITPolicy();
     void resetITPolicy();
     void saveITPolicy(ITPolicy itPolicy);

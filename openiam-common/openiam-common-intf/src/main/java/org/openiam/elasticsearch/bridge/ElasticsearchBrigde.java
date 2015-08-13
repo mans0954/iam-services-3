@@ -5,6 +5,6 @@ package org.openiam.elasticsearch.bridge;
  * Date: 9/17/14.
  */
 public interface ElasticsearchBrigde {
-    public String objectToString(Object object);
-    public Object stringToObject(String stringValue);
+    String objectToString(Object object);
+    Object stringToObject(String stringValue);
 }

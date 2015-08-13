@@ -8,6 +8,6 @@ import org.openiam.idm.srvc.batch.domain.LockTableEntity;
 
 public interface LockTableDAO extends BaseDao<LockTableEntity, String>{
 
-	public void lock(final String id) throws LockObtainException;
-	public void unlock(final String id) throws UnlockException;
+	void lock(final String id) throws LockObtainException;
+	void unlock(final String id) throws UnlockException;
 }

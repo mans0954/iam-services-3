@@ -78,10 +78,9 @@ public class IdmAuditLogCustom implements Serializable {
         if (timestamp != that.timestamp) return false;
         if (key != null ? !key.equals(that.key) : that.key != null) return false;
         if (logId != null ? !logId.equals(that.logId) : that.logId != null) return false;
-        if (value != null ? !value.equals(that.value) : that.value != null) return false;
+		return !(value != null ? !value.equals(that.value) : that.value != null);
 
-        return true;
-    }
+	}
 
     @Override
     public int hashCode() {

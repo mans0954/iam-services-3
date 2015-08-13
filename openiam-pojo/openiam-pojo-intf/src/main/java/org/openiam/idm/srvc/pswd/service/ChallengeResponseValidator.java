@@ -35,20 +35,20 @@ import java.util.List;
  */
 public interface ChallengeResponseValidator {
     
-    public boolean isResponseValid(String userId, List<UserIdentityAnswerEntity> newAnswerList, int requiredCorrectAns)
+    boolean isResponseValid(String userId, List<UserIdentityAnswerEntity> newAnswerList, int requiredCorrectAns)
             throws Exception;
-    public Integer count(final IdentityQuestionSearchBean searchBean);
-    public List<IdentityQuestionEntity> findQuestionBeans(final IdentityQuestionSearchBean searchBean, final int from, final int size);
-    public List<UserIdentityAnswerEntity> findAnswerBeans(final IdentityAnswerSearchBean searchBean, String requesterId, final int from, final int size)
+    Integer count(final IdentityQuestionSearchBean searchBean);
+    List<IdentityQuestionEntity> findQuestionBeans(final IdentityQuestionSearchBean searchBean, final int from, final int size);
+    List<UserIdentityAnswerEntity> findAnswerBeans(final IdentityAnswerSearchBean searchBean, String requesterId, final int from, final int size)
             throws Exception;
-    public void saveQuestion(final IdentityQuestionEntity entity) throws Exception;
-    public void deleteQuestion(final String questionId) throws Exception;
-    public IdentityQuestionEntity getQuestion(final String questionId);
-    public void saveAnswer(final UserIdentityAnswerEntity answer) throws Exception;
-    public void deleteAnswer(final String answerId) throws Exception;
-    public void saveAnswers(List<UserIdentityAnswerEntity> answerList) throws Exception;
-    public boolean isUserAnsweredSecurityQuestions(final String userId) throws Exception;
-    public Integer getNumOfRequiredQuestions(final String userId);
-    public Integer getNumOfCorrectAnswers(final String userId);
-    public void resetQuestionsForUser(final String userId);
+    void saveQuestion(final IdentityQuestionEntity entity) throws Exception;
+    void deleteQuestion(final String questionId) throws Exception;
+    IdentityQuestionEntity getQuestion(final String questionId);
+    void saveAnswer(final UserIdentityAnswerEntity answer) throws Exception;
+    void deleteAnswer(final String answerId) throws Exception;
+    void saveAnswers(List<UserIdentityAnswerEntity> answerList) throws Exception;
+    boolean isUserAnsweredSecurityQuestions(final String userId) throws Exception;
+    Integer getNumOfRequiredQuestions(final String userId);
+    Integer getNumOfCorrectAnswers(final String userId);
+    void resetQuestionsForUser(final String userId);
 }

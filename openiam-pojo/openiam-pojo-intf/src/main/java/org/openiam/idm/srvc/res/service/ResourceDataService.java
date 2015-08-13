@@ -75,8 +75,8 @@ public interface ResourceDataService {
      * @return resource
      */
     @WebMethod
-    public List<Resource> getResourcesByIds(final @WebParam(name = "resourceIds", targetNamespace = "") List<String> resourceIds,
-                                            final @WebParam(name = "language", targetNamespace = "") Language language);
+    List<Resource> getResourcesByIds(final @WebParam(name = "resourceIds", targetNamespace = "") List<String> resourceIds,
+                                     final @WebParam(name = "language", targetNamespace = "") Language language);
 
     @WebMethod
     String getResourcePropValueByName(@WebParam(name = "resourceId", targetNamespace = "") String resourceId, @WebParam(name = "propName", targetNamespace = "") String propName);
@@ -90,7 +90,7 @@ public interface ResourceDataService {
     List<ResourceType> getAllResourceTypes(final Language language);
 
     @WebMethod
-    public List<ResourceType> findResourceTypes(final ResourceTypeSearchBean searchBean, final int from, final int size, final Language language);
+    List<ResourceType> findResourceTypes(final ResourceTypeSearchBean searchBean, final int from, final int size, final Language language);
 
     /**
      * Add a resource property.
@@ -443,11 +443,11 @@ public interface ResourceDataService {
      */
     @WebMethod
     @Deprecated
-    public List<Resource> getResourcesForUserByType(
-	    final @WebParam(name = "userId", targetNamespace = "") String userId,
-	    final @WebParam(name = "resourceTypeId", targetNamespace = "") String resourceTypeId,
-	    final @WebParam(name = "searchBean", targetNamespace = "") ResourceSearchBean searchBean,
-	    final @WebParam(name = "language", targetNamespace = "") Language language);
+    List<Resource> getResourcesForUserByType(
+            final @WebParam(name = "userId", targetNamespace = "") String userId,
+            final @WebParam(name = "resourceTypeId", targetNamespace = "") String resourceTypeId,
+            final @WebParam(name = "searchBean", targetNamespace = "") ResourceSearchBean searchBean,
+            final @WebParam(name = "language", targetNamespace = "") Language language);
 
     /**
      * Tells the caller if the user can be entitled to this resource
@@ -459,8 +459,8 @@ public interface ResourceDataService {
      * @return a Response Object, with details about the result of the operation
      */
     @WebMethod
-    public Response canAddUserToResource(final @WebParam(name = "userId", targetNamespace = "") String userId,
-	    final @WebParam(name = "resourceId", targetNamespace = "") String resourceId);
+    Response canAddUserToResource(final @WebParam(name = "userId", targetNamespace = "") String userId,
+                                  final @WebParam(name = "resourceId", targetNamespace = "") String resourceId);
 
     /**
      * Tells the caller if the user can be disentitled from this resource
@@ -472,8 +472,8 @@ public interface ResourceDataService {
      * @return a Response Object, with details about the result of the operation
      */
     @WebMethod
-    public Response canRemoveUserFromResource(final @WebParam(name = "userId", targetNamespace = "") String userId,
-	    final @WebParam(name = "resourceId", targetNamespace = "") String resourceId);
+    Response canRemoveUserFromResource(final @WebParam(name = "userId", targetNamespace = "") String userId,
+                                       final @WebParam(name = "resourceId", targetNamespace = "") String resourceId);
 
     @WebMethod
     int countResourceTypes(@WebParam(name = "searchBean", targetNamespace = "") ResourceTypeSearchBean searchBean);

@@ -162,8 +162,7 @@ public class IdentityEntity extends KeyEntity  {
         if (createdBy != null ? !createdBy.equals(that.createdBy) : that.createdBy != null) return false;
         if (status != null ? !status.equals(that.status) : that.status != null) return false;
         if (provStatus != null ? !provStatus.equals(that.provStatus) : that.provStatus != null) return false;
-        if (lastUpdate != null ? !lastUpdate.equals(that.lastUpdate) : that.lastUpdate != null) return false;
-        return true;
+        return !(lastUpdate != null ? !lastUpdate.equals(that.lastUpdate) : that.lastUpdate != null);
     }
 
     @Override

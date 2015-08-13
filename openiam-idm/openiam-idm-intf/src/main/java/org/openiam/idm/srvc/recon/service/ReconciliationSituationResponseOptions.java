@@ -41,7 +41,7 @@ public enum ReconciliationSituationResponseOptions {
         return label;
     }
 
-    private ReconciliationSituationResponseOptions(String value, String label) {
+    ReconciliationSituationResponseOptions(String value, String label) {
         this.value = value;
         this.label = label;
     }

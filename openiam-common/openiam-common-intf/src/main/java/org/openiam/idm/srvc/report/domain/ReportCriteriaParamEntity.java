@@ -169,9 +169,8 @@ public class ReportCriteriaParamEntity {
         if (value != null ? !value.equals(that.value) : that.value != null) return false;
         if (metaType != null ? !metaType.equals(that.metaType) : that.metaType != null) return false;
 		if (displayOrder != null ? !displayOrder.equals(that.displayOrder) : that.displayOrder != null) return false;
-		if (requestParameters != null ? !requestParameters.equals(that.requestParameters) : that.requestParameters != null) return false;
+        return !(requestParameters != null ? !requestParameters.equals(that.requestParameters) : that.requestParameters != null);
 
-        return true;
     }
 
     @Override
