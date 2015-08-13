@@ -110,7 +110,7 @@ import java.util.*;
  * Base class for the provisioning service
  * User: suneetshah
  */
-public abstract class AbstractProvisioningService extends AbstractBaseService implements ProvisionService {
+public abstract class AbstractProvisioningService extends AbstractBaseService {
 
     protected static final Log log = LogFactory.getLog(AbstractProvisioningService.class);
 
@@ -1716,7 +1716,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         }
     }
 
-    public ObjectResponse requestAddModify(ExtensibleUser extUser, Login mLg, boolean isAdd,
+    protected ObjectResponse requestAddModify(ExtensibleUser extUser, Login mLg, boolean isAdd,
                                            String requestId, final IdmAuditLog idmAuditLog) {
 
         ObjectResponse response = new ObjectResponse();
@@ -1940,8 +1940,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                 connectorAdapter.resumeRequest(mSys, resumeReq, MuleContextProvider.getCtx());
     }
 
-    @Override
-    public Response addEvent(ProvisionActionEvent event, ProvisionActionTypeEnum type) {
+
+    protected Response addEvent(ProvisionActionEvent event, ProvisionActionTypeEnum type) {
         Map<String, Object> bindingMap = new HashMap<>();
         Response response = new Response(ResponseStatus.SUCCESS);
         response.setResponseValue(ProvisionServiceEventProcessor.CONTINUE);
