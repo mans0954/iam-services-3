@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.ILock;
 import com.hazelcast.core.IMap;
 
 @Component
@@ -37,5 +38,7 @@ public class HazelcastConfiguration {
 		return hzInstance.getMap(name);
 	}
 	
-	
+	public ILock getLock(final String name) {
+		return hzInstance.getLock(name);
+	}
 }
