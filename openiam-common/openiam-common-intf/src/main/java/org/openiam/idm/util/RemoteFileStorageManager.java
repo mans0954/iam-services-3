@@ -79,7 +79,7 @@ public class RemoteFileStorageManager {
         if (StringUtils.isNotEmpty(remoteFilestorageKeypath)) {
             jsch.addIdentity(remoteFilestorageKeypath);
         }
-        jsch.setConfig("StrictHostKeyChecking", "no");
+        JSch.setConfig("StrictHostKeyChecking", "no");
 
         session = jsch.getSession(remoteFilestorageUser, remoteFilestorageHost, remoteFilestoragePort);
         if (StringUtils.isNotEmpty(remoteFilestoragePasswd)) {

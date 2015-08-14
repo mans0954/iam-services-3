@@ -36,9 +36,7 @@ public abstract class AbstractAuthLevelGroupingXref implements Serializable {
 		if (getClass() != obj.getClass())
 			return false;
 		AbstractAuthLevelGroupingXref other = (AbstractAuthLevelGroupingXref) obj;
-		if (order != other.order)
-			return false;
-		return true;
+		return order == other.order;
 	}
 	@Override
 	public String toString() {

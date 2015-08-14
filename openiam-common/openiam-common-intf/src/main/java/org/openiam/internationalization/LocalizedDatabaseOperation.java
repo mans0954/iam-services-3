@@ -8,6 +8,6 @@ import java.lang.annotation.Target;
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface LocalizedDatabaseOperation {
-	public boolean saveOrUpdate() default false;
-	public boolean delete() default false;
+	boolean saveOrUpdate() default false;
+	boolean delete() default false;
 }

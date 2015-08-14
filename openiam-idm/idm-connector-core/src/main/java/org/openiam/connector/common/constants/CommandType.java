@@ -13,5 +13,5 @@ public enum CommandType {
     SUSPEND,
     RESUME,
     TEST,
-    SEARCH;
+    SEARCH
 }

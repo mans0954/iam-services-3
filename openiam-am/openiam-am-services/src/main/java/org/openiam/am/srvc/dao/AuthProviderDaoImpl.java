@@ -7,6 +7,7 @@ import org.hibernate.Query;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
+import org.hibernate.sql.JoinType;
 import org.openiam.am.srvc.domain.AuthProviderEntity;
 import org.openiam.am.srvc.domain.ContentProviderEntity;
 import org.openiam.am.srvc.domain.URIPatternEntity;
@@ -111,6 +112,17 @@ public class AuthProviderDaoImpl extends BaseDaoImpl<AuthProviderEntity, String>
         managedSysEntity.setId(managedSysId);
         entity.setManagedSystem(managedSysEntity);
         return getByExample(entity);
+    }
+
+    @Override
+    public AuthProviderEntity getOAuthClient(String clientId) {
+        Criteria criteria = this.getCriteria();
+
+        criteria.createAlias("attributes","attr", JoinType.INNER_JOIN);
+        criteria.add(Restrictions.eq("attr.attribute.id", "OAuthClientID"));
+        criteria.add(Restrictions.eq("attr.value", clientId));
+
+        return (AuthProviderEntity)criteria.uniqueResult();
     }
 
 }

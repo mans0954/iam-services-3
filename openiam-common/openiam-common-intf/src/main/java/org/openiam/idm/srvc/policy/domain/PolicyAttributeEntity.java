@@ -128,9 +128,8 @@ public class PolicyAttributeEntity extends KeyEntity {
         if (policy != null ? !policy.equals(that.policy) : that.policy != null) return false;
         if (rule != null ? !rule.equals(that.rule) : that.rule != null) return false;
         if (value1 != null ? !value1.equals(that.value1) : that.value1 != null) return false;
-        if (value2 != null ? !value2.equals(that.value2) : that.value2 != null) return false;
+        return !(value2 != null ? !value2.equals(that.value2) : that.value2 != null);
 
-        return true;
     }
 
     @Override

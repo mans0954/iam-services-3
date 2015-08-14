@@ -10,7 +10,6 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import java.io.Serializable;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -36,7 +35,8 @@ import java.util.Set;
         "supportsJustInTimeAuthentication",
         "supportsSMSOTP",
         "smsOTPGroovyScript",
-        "supportsTOTP"
+        "supportsTOTP",
+		"oAuthTokens"
 })
 @DozerDTOCorrespondence(AuthProviderEntity.class)
 public class AuthProvider extends KeyNameDTO {
@@ -60,6 +60,8 @@ public class AuthProvider extends KeyNameDTO {
     private Set<AuthProviderAttribute> attributes;
     private Map<String, AuthResourceAttributeMap> resourceAttributeMap=new HashMap<String, AuthResourceAttributeMap>(0);
     private Resource resource;
+
+	private Set<OAuthToken> oAuthTokens;
     @XmlTransient
     private Map<String, AuthProviderAttribute> attributeMap=null;
     
@@ -239,6 +241,14 @@ public class AuthProvider extends KeyNameDTO {
 
 	public void setAuthnPolicyId(String authnPolicyId) {
 		this.authnPolicyId = authnPolicyId;
+	}
+
+	public Set<OAuthToken> getoAuthTokens() {
+		return oAuthTokens;
+	}
+
+	public void setoAuthTokens(Set<OAuthToken> oAuthTokens) {
+		this.oAuthTokens = oAuthTokens;
 	}
 
 	@Override

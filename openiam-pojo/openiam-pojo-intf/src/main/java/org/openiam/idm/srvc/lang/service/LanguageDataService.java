@@ -24,7 +24,7 @@ public interface LanguageDataService {
      * 
      * @return
      */
-    public List<Language> getUsedLanguages(Language language);
+    List<Language> getUsedLanguages(Language language);
 
     /**
      * Returns the language specified by the language
@@ -32,12 +32,12 @@ public interface LanguageDataService {
      * @param id
      * @return
      */
-    public Language getLanguage(String id);
+    Language getLanguage(String id);
 
-    public List<Language> findBeans(final LanguageSearchBean searchBean, int from, int size);
+    List<Language> findBeans(final LanguageSearchBean searchBean, int from, int size);
 
-    public List<Language> findBeans(final LanguageSearchBean searchBean, int from, int size,
-            final Language language);
+    List<Language> findBeans(final LanguageSearchBean searchBean, int from, int size,
+                             final Language language);
 
 
     Language getDefaultLanguage();

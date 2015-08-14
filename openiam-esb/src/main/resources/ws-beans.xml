@@ -102,4 +102,6 @@
 
     <jaxws:endpoint id="ldapConnectorServiceEndpoint" implementor="#genericLdapConnector" address="/LDAPConnectorService"/>
 
+    <jaxws:endpoint id="oauthWebServiceEndpoint" implementor="#OAuthWS" address="/OAuthWebService"/>
+
 </beans>

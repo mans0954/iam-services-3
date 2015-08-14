@@ -8,10 +8,10 @@ import org.openiam.idm.srvc.ui.theme.domain.UIThemeEntity;
 
 public interface UIThemeService {
 
-	public void save(final UIThemeEntity entity);
-	public void delete(final String id);
-	public UIThemeEntity get(final String id);
-	public List<UIThemeEntity> findBeans(final UIThemeSearchBean searchBean, final int from, final int size);
-	public void validateSave(final UIThemeEntity entity) throws BasicDataServiceException;
-	public void validateDelete(final String id) throws BasicDataServiceException;
+	void save(final UIThemeEntity entity);
+	void delete(final String id);
+	UIThemeEntity get(final String id);
+	List<UIThemeEntity> findBeans(final UIThemeSearchBean searchBean, final int from, final int size);
+	void validateSave(final UIThemeEntity entity) throws BasicDataServiceException;
+	void validateDelete(final String id) throws BasicDataServiceException;
 }

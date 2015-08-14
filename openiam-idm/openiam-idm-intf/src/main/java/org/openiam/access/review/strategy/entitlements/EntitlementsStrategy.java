@@ -49,7 +49,7 @@ public abstract class EntitlementsStrategy {
             for(String roleId : roleIds){
                 AuthorizationRole role = accessReviewData.getMatrix().getRoleMap().get(roleId);
                 if(role!=null){
-                    AccessViewBean bean = this.createBean(role);
+                    AccessViewBean bean = createBean(role);
                     retVal.add(bean);
                 }
             }
@@ -64,7 +64,7 @@ public abstract class EntitlementsStrategy {
             for(String groupId : groupIds){
                 AuthorizationGroup group = accessReviewData.getMatrix().getGroupMap().get(groupId);
                 if(group!=null){
-                    AccessViewBean bean = this.createBean(group);
+                    AccessViewBean bean = createBean(group);
                     retVal.add(bean);
                 }
             }
@@ -78,7 +78,7 @@ public abstract class EntitlementsStrategy {
             for(String resourceId : resourceIds){
                 AuthorizationResource resource = accessReviewData.getMatrix().getResourceMap().get(resourceId);
                 if(resource!=null){
-                    AccessViewBean bean = this.createBean(resource);
+                    AccessViewBean bean = createBean(resource);
 
                     if("MANAGED_SYS".equals(resource.getResourceTypeId())){
                         bean.setManagedSys(accessReviewData.getMngsysMap().get(resource.getId()).getId());

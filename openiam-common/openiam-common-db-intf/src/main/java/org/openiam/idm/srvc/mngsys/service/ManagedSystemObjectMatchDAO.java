@@ -14,6 +14,6 @@ public interface ManagedSystemObjectMatchDAO extends BaseDao<ManagedSystemObject
 	 * @param objectType
 	 * @return
 	 */
-	public List<ManagedSystemObjectMatchEntity> findBySystemId(String managedSystemId, String objectType);
+	List<ManagedSystemObjectMatchEntity> findBySystemId(String managedSystemId, String objectType);
 	
 }

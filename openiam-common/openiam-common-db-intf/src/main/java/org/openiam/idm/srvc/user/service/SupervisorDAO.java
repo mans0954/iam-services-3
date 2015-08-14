@@ -36,7 +36,7 @@ public interface SupervisorDAO extends BaseDao<SupervisorEntity, SupervisorIDEnt
 //
 //    public SupervisorEntity findSupervisor(String superiorId, String subordinateId);
 //
-    public Set<String> getUniqueEmployeeIds();
+    Set<String> getUniqueEmployeeIds();
 
-    public void deleteById(SupervisorIDEntity id);
+    void deleteById(SupervisorIDEntity id);
 }

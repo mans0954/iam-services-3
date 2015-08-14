@@ -59,9 +59,8 @@ public class ProfilePictureEntity extends AbstractKeyNameEntity {
         ProfilePictureEntity entity = (ProfilePictureEntity) o;
 
         if (!Arrays.equals(picture, entity.picture)) return false;
-        if (user != null ? !user.equals(entity.user) : entity.user != null) return false;
+        return !(user != null ? !user.equals(entity.user) : entity.user != null);
 
-        return true;
     }
 
     @Override

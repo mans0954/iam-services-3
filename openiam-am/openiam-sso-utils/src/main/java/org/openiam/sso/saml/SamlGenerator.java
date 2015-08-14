@@ -23,7 +23,7 @@ public class SamlGenerator {
 
     private SamlGenerator(){
         this.sdf.setTimeZone(new SimpleTimeZone(SimpleTimeZone.UTC_TIME, "UTC"));
-    };
+    }
 
     public static SamlGenerator getInstance(){
           if(SamlGenerator.instance==null){

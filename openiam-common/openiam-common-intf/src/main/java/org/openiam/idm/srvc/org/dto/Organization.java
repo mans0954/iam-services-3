@@ -393,9 +393,8 @@ public class Organization extends AbstractEntitlementsDTO implements Serializabl
         if (domainName != null ? !domainName.equals(that.domainName) : that.domainName != null) return false;
         if (id != null ? !id.equals(that.id) : that.id != null) return false;
         if (this.getName() != null ? !this.getName().equals(that.getName()) : that.getName() != null) return false;
-        if (selectable != that.selectable) return false;
+        return selectable == that.selectable;
 
-        return true;
     }
 
     @Override

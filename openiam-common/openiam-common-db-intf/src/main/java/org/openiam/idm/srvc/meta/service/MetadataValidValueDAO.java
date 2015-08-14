@@ -5,5 +5,5 @@ import org.openiam.idm.srvc.meta.domain.MetadataValidValueEntity;
 
 public interface MetadataValidValueDAO extends BaseDao<MetadataValidValueEntity, String> {
 
-	public void deleteByMetaElementId(final String metaElementId);
+	void deleteByMetaElementId(final String metaElementId);
 }

@@ -17,13 +17,13 @@ public interface PostLogin {
 	/**
 	 * Post processing on successful authentication
 	 */
-	public void onSuccess();
+	void onSuccess();
 	/**
 	 * Post processing on failed authentication
 	 */
-	public void onFailure();
+	void onFailure();
 	/**
 	 *  Post processing on Logout.
 	 */
-	public void onLogout();
+	void onLogout();
 }

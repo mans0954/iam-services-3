@@ -22,40 +22,40 @@ import java.util.List;
 public interface BatchDataService {
 
 	@WebMethod
-	public List<BatchTask> findBeans(@WebParam(name = "searchBean", targetNamespace = "") BatchTaskSearchBean searchBean,
-									 @WebParam(name = "from", targetNamespace = "") int from,
-									 @WebParam(name = "size", targetNamespace = "") int size);
+    List<BatchTask> findBeans(@WebParam(name = "searchBean", targetNamespace = "") BatchTaskSearchBean searchBean,
+                              @WebParam(name = "from", targetNamespace = "") int from,
+                              @WebParam(name = "size", targetNamespace = "") int size);
 	
 	@WebMethod
-	public int getNumOfSchedulesForTask(@WebParam(name = "searchBean", targetNamespace = "") BatchTaskScheduleSearchBean searchBean);
+    int getNumOfSchedulesForTask(@WebParam(name = "searchBean", targetNamespace = "") BatchTaskScheduleSearchBean searchBean);
 	
 	@WebMethod
-	public List<BatchTaskSchedule> getSchedulesForTask(@WebParam(name = "searchBean", targetNamespace = "") BatchTaskScheduleSearchBean searchBean,
-			 										   @WebParam(name = "from", targetNamespace = "") int from,
-			 										   @WebParam(name = "size", targetNamespace = "") int size);
+    List<BatchTaskSchedule> getSchedulesForTask(@WebParam(name = "searchBean", targetNamespace = "") BatchTaskScheduleSearchBean searchBean,
+                                                @WebParam(name = "from", targetNamespace = "") int from,
+                                                @WebParam(name = "size", targetNamespace = "") int size);
 	
 
 	@WebMethod
-	public int count(@WebParam(name = "searchBean", targetNamespace = "") BatchTaskSearchBean searchBean);
+    int count(@WebParam(name = "searchBean", targetNamespace = "") BatchTaskSearchBean searchBean);
 
 	
     @WebMethod
-    public Response save(
+    Response save(
             @WebParam(name = "task", targetNamespace = "")
             BatchTask task);
 
     @WebMethod
-    public BatchTask getBatchTask(
+    BatchTask getBatchTask(
             @WebParam(name = "taskId", targetNamespace = "")
             String taskId);
 
-    public Response removeBatchTask(
+    Response removeBatchTask(
             @WebParam(name = "taskID", targetNamespace = "")
             String taskId);
     
-    public Response run(@WebParam(name = "taskId", targetNamespace = "") String id, @WebParam(name = "synchronous", targetNamespace = "") boolean synchronous);
+    Response run(@WebParam(name = "taskId", targetNamespace = "") String id, @WebParam(name = "synchronous", targetNamespace = "") boolean synchronous);
     
-    public Response schedule(@WebParam(name = "taskId", targetNamespace = "") String id, @WebParam(name = "date", targetNamespace = "") Date when);
+    Response schedule(@WebParam(name = "taskId", targetNamespace = "") String id, @WebParam(name = "date", targetNamespace = "") Date when);
     
-    public Response deleteScheduledTask(@WebParam(name = "taskId", targetNamespace = "") String id);
+    Response deleteScheduledTask(@WebParam(name = "taskId", targetNamespace = "") String id);
 }

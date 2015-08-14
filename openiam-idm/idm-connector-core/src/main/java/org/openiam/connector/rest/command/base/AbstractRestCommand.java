@@ -92,7 +92,7 @@ public abstract class AbstractRestCommand<Request extends RequestType, Response 
 	}
 
 	protected static ObjectResponse makeCall(HttpURLConnection connection,
-			String input) throws UnsupportedEncodingException, IOException {
+			String input) throws IOException {
 		final ObjectResponse response = new ObjectResponse();
 		response.setStatus(StatusCodeType.FAILURE);
 		OutputStreamWriter out = new OutputStreamWriter(

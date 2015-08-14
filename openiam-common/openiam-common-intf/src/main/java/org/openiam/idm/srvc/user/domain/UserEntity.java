@@ -37,6 +37,8 @@ import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.FilterDef;
 import org.hibernate.annotations.ParamDef;
+import org.openiam.am.srvc.domain.OAuthCodeEntity;
+import org.openiam.am.srvc.domain.OAuthUserClientXrefEntity;
 import org.openiam.base.BaseConstants;
 import org.openiam.base.domain.KeyEntity;
 import org.openiam.core.dao.lucene.LuceneLastUpdate;
@@ -298,6 +300,14 @@ public class UserEntity extends KeyEntity {
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "supervisor", fetch = FetchType.LAZY)
     // @Fetch(FetchMode.SUBSELECT)
     private Set<SupervisorEntity> subordinates;
+
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="user", orphanRemoval=true)
+    @Fetch(FetchMode.SUBSELECT)
+    private Set<OAuthUserClientXrefEntity> authorizedOAuthClients = new HashSet<OAuthUserClientXrefEntity>(0);
+
+    @OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "primaryKey.user")
+    @Fetch(FetchMode.SUBSELECT)
+    private Set<OAuthCodeEntity> oAuthCodes;
 
     @Transient
     private String defaultLogin;
@@ -1216,6 +1226,22 @@ public class UserEntity extends KeyEntity {
     }
 
 
+    public Set<OAuthUserClientXrefEntity> getAuthorizedOAuthClients() {
+        return authorizedOAuthClients;
+    }
+
+    public void setAuthorizedOAuthClients(Set<OAuthUserClientXrefEntity> authorizedOAuthClients) {
+        this.authorizedOAuthClients = authorizedOAuthClients;
+    }
+
+    public Set<OAuthCodeEntity> getoAuthCodes() {
+        return oAuthCodes;
+    }
+
+    public void setoAuthCodes(Set<OAuthCodeEntity> oAuthCodes) {
+        this.oAuthCodes = oAuthCodes;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -1230,9 +1256,8 @@ public class UserEntity extends KeyEntity {
         if (createdBy != null ? !createdBy.equals(that.createdBy) : that.createdBy != null) return false;
         if (employeeId != null ? !employeeId.equals(that.employeeId) : that.employeeId != null) return false;
         if (nickname != null ? !nickname.equals(that.nickname) : that.nickname != null) return false;
-        if (id != null ? !id.equals(that.id) : that.id != null) return false;
+        return !(id != null ? !id.equals(that.id) : that.id != null);
 
-        return true;
     }
 
     @Override

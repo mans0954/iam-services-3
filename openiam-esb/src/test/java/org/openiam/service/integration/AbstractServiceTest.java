@@ -159,8 +159,8 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 	}
 	
 	protected interface CollectionOperation<T, S> {
-		public Set<S> get(T t);
-		public void set(T t, Set<S> set);
+		Set<S> get(T t);
+		void set(T t, Set<S> set);
 	}
 	
 	protected void assertSuccess(final Response response) {
@@ -206,7 +206,7 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 	}
 	
 	protected interface EntityGenerator<T> {
-		public T generate();
+		T generate();
 	}
 	
 	protected void assertResponseCode(final Response response, final ResponseCode responseCode) {

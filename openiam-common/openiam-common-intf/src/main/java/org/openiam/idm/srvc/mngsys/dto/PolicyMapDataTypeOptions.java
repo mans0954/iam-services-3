@@ -30,7 +30,7 @@ public enum PolicyMapDataTypeOptions {
         return value;
     }
 
-    private PolicyMapDataTypeOptions(String value) {
+    PolicyMapDataTypeOptions(String value) {
         this.value = value;
     }
 

@@ -4,8 +4,14 @@ import org.openiam.am.srvc.domain.AuthAttributeEntity;
 import org.openiam.am.srvc.domain.AuthProviderAttributeEntity;
 import org.openiam.am.srvc.domain.AuthProviderEntity;
 import org.openiam.am.srvc.domain.AuthProviderTypeEntity;
+import org.openiam.am.srvc.dto.AuthProvider;
+import org.openiam.am.srvc.dto.OAuthCode;
+import org.openiam.am.srvc.dto.OAuthToken;
+import org.openiam.am.srvc.dto.OAuthUserClientXref;
 import org.openiam.am.srvc.searchbeans.AuthProviderSearchBean;
 import org.openiam.exception.BasicDataServiceException;
+import org.openiam.idm.srvc.lang.dto.Language;
+import org.openiam.idm.srvc.res.dto.Resource;
 
 import java.util.List;
 
@@ -16,27 +22,42 @@ public interface AuthProviderService {
     * AuthProviderType section
     *===================================================
     */
-    public AuthProviderTypeEntity getAuthProviderType(String providerType);
-    public List<AuthProviderTypeEntity> getAuthProviderTypeList();
-    public List<AuthProviderTypeEntity> getSocialAuthProviderTypeList();
+    AuthProviderTypeEntity getAuthProviderType(String providerType);
+    List<AuthProviderTypeEntity> getAuthProviderTypeList();
+    List<AuthProviderTypeEntity> getSocialAuthProviderTypeList();
     /*
     *==================================================
     * AuthAttributeEntity section
     *===================================================
     */
 
-    public List<AuthAttributeEntity> findAuthAttributeBeans(AuthAttributeEntity searchBean, Integer size, Integer from);
+    List<AuthAttributeEntity> findAuthAttributeBeans(AuthAttributeEntity searchBean, Integer size, Integer from);
 
     /*
     *==================================================
     *  AuthProviderEntity section
     *===================================================
     */
-    public int countAuthProviderBeans(final AuthProviderSearchBean entity);
-    public AuthProviderEntity getAuthProvider(final String id);
-    public List<AuthProviderEntity> findAuthProviderBeans(final AuthProviderSearchBean searchBean, int from, int size);
-    public void saveAuthProvider(AuthProviderEntity attribute, final String requestorId) throws BasicDataServiceException;
-    public void deleteAuthProvider(String providerId) throws BasicDataServiceException;
+    int countAuthProviderBeans(final AuthProviderSearchBean entity);
+    AuthProviderEntity getAuthProvider(final String id);
+    List<AuthProviderEntity> findAuthProviderBeans(final AuthProviderSearchBean searchBean, int from, int size);
+    void saveAuthProvider(AuthProviderEntity attribute, final String requestorId) throws BasicDataServiceException;
+    void deleteAuthProvider(String providerId) throws BasicDataServiceException;
 
+    /*
+    *==================================================
+    *  OAuth2 section
+    *===================================================
+    */
 
+    AuthProvider getOAuthClient(final String clientId);
+    List<Resource> getScopesForAuthrorization(String clientId, String userId, Language language) throws BasicDataServiceException;
+    public List<Resource> getAuthorizedScopes(String clientId, String userId, Language language);
+    void saveClientScopeAuthorization(String providerId, String userId, List<OAuthUserClientXref> oauthUserClientXrefList) throws BasicDataServiceException;
+    void saveOAuthCode(OAuthCode oAuthCode);
+    OAuthCode getOAuthCode(String code);
+
+    OAuthToken getOAuthToken(String token);
+    OAuthToken getOAuthTokenByRefreshToken(String refreshToken);
+    OAuthToken saveOAuthToken(OAuthToken oAuthToken);
 }

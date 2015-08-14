@@ -10,6 +10,6 @@ import org.openiam.idm.srvc.mngsys.dto.ApproverAssociation;
 
 public interface ApproverAssociationDAO extends BaseDao<ApproverAssociationEntity, String> {
 
-	public List<ApproverAssociationEntity> getByAssociation(final String associationId, final AssociationType associationType);
-	public List<ApproverAssociationEntity> getByApprover(final String associationId, final AssociationType associationType);
+	List<ApproverAssociationEntity> getByAssociation(final String associationId, final AssociationType associationType);
+	List<ApproverAssociationEntity> getByApprover(final String associationId, final AssociationType associationType);
 }

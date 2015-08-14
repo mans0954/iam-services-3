@@ -15,7 +15,7 @@ public class UserAttributeSetAdapter extends XmlAdapter<UserAttributeSet, Set<Us
         if (b == null) return v;
 
         for (Iterator<UserAttribute> iterator = b.iterator(); iterator.hasNext(); ) {
-            UserAttribute userAttribute = (UserAttribute) iterator.next();
+            UserAttribute userAttribute = iterator.next();
             UserAttributeSet.UserAttributeObj obj = new UserAttributeSet.UserAttributeObj();
             obj.setUserAttribute(userAttribute);
             v.getUserAttributeObj().add(obj);
@@ -30,7 +30,7 @@ public class UserAttributeSetAdapter extends XmlAdapter<UserAttributeSet, Set<Us
 
         List<UserAttributeSet.UserAttributeObj> l = v.getUserAttributeObj();
         for (Iterator<UserAttributeSet.UserAttributeObj> iterator = l.iterator(); iterator.hasNext(); ) {
-            UserAttributeSet.UserAttributeObj obj = (UserAttributeSet.UserAttributeObj) iterator.next();
+            UserAttributeSet.UserAttributeObj obj = iterator.next();
             b.add(obj.getUserAttribute());
         }
         return b;

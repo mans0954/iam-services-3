@@ -38,5 +38,5 @@ import org.openiam.idm.srvc.mngsys.dto.ReconciliationResourceAttributeMap;
  */
 public interface DefaultReconciliationAttributeMapDAO extends
         BaseDao<DefaultReconciliationAttributeMapEntity, String> {
-    public List<DefaultReconciliationAttributeMapEntity> getAll();
+    List<DefaultReconciliationAttributeMapEntity> getAll();
 }

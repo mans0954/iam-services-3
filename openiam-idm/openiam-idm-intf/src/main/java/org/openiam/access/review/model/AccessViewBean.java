@@ -119,9 +119,8 @@ public class AccessViewBean extends KeyNameDTO implements Comparable<AccessViewB
         AccessViewBean that = (AccessViewBean) o;
 
         if (getId() != null ? !getId().equals(that.getId()) : that.getId() != null) return false;
-        if (getBeanType() != null ? !getBeanType().equals(that.getBeanType()) : that.getBeanType() != null) return false;
+        return !(getBeanType() != null ? !getBeanType().equals(that.getBeanType()) : that.getBeanType() != null);
 
-        return true;
     }
 
     @Override

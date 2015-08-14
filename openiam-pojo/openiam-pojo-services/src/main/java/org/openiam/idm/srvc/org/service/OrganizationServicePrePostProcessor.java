@@ -7,8 +7,8 @@ import java.util.Map;
 
 public interface OrganizationServicePrePostProcessor {
 
-    public static final int FAIL =  0;
-    public static final int SUCCESS = 1;
+    int FAIL =  0;
+    int SUCCESS = 1;
 
     int save(Organization org, Map<String, Object> bindingMap, IdmAuditLog auditLog);
 

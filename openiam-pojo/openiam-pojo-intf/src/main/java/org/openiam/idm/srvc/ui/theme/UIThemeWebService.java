@@ -14,14 +14,14 @@ import org.openiam.idm.srvc.ui.theme.dto.UITheme;
 public interface UIThemeWebService {
 
 	@WebMethod
-	public Response save(final UITheme entity);
+	Response save(final UITheme entity);
 	
 	@WebMethod
-	public Response delete(final String id);
+	Response delete(final String id);
 	
 	@WebMethod
-	public UITheme get(final String id);
+	UITheme get(final String id);
 	
 	@WebMethod
-	public List<UITheme> findBeans(final UIThemeSearchBean searchBean, final int from, final int size);
+	List<UITheme> findBeans(final UIThemeSearchBean searchBean, final int from, final int size);
 }

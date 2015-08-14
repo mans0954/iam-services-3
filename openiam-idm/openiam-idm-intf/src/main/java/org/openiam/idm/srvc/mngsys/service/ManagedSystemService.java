@@ -93,7 +93,7 @@ public interface ManagedSystemService {
 
     List<AuthProviderEntity> findAuthProvidersByManagedSysId(String managedSysId);
 
-    public void saveApproverAssociations(final List<ApproverAssociationEntity> entityList, final AssociationType type, final String id);
+    void saveApproverAssociations(final List<ApproverAssociationEntity> entityList, final AssociationType type, final String id);
 
-    public void save(final ManagedSysEntity entity) throws BasicDataServiceException;
+    void save(final ManagedSysEntity entity) throws BasicDataServiceException;
 }

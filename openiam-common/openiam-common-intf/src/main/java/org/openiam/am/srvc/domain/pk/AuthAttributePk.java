@@ -45,11 +45,8 @@ public class AuthAttributePk implements Serializable {
         if (!attributeName.equals(that.attributeName)) {
             return false;
         }
-        if (!providerType.equals(that.providerType)) {
-            return false;
-        }
+        return providerType.equals(that.providerType);
 
-        return true;
     }
 
     @Override

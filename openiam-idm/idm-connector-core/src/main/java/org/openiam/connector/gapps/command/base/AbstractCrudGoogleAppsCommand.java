@@ -38,8 +38,8 @@ public abstract class AbstractCrudGoogleAppsCommand<ExtObject extends Extensible
     }
 
     protected boolean addGroups(ExtensibleObject user, GoogleAgent agent, String adminEmail, String password,
-	    String domain, String userId) throws AppsForYourDomainException, AuthenticationException,
-	    MalformedURLException, IOException, ServiceException {
+	    String domain, String userId) throws
+			IOException, ServiceException {
 	boolean res = false;
 	for (ExtensibleAttribute ea : user.getAttributes()) {
 	    if ("groups".equals(ea.getName())) {

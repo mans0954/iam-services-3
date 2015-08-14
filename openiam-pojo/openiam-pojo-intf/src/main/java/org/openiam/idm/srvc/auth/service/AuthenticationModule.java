@@ -9,6 +9,6 @@ import org.openiam.idm.srvc.user.domain.UserEntity;
 
 public interface AuthenticationModule {
 
-	public void logout(final LogoutRequest request, final IdmAuditLog auditLog) throws Exception;
-	public Subject login(final AuthenticationContext context) throws Exception;
+	void logout(final LogoutRequest request, final IdmAuditLog auditLog) throws Exception;
+	Subject login(final AuthenticationContext context) throws Exception;
 }

@@ -44,10 +44,8 @@ public class OrgType2OrgTypeXrefEntity {
 
         OrgType2OrgTypeXrefEntity that = (OrgType2OrgTypeXrefEntity) o;
 
-        if (id != null ? !id.equals(that.id) : that.id != null)
-            return false;
+        return !(id != null ? !id.equals(that.id) : that.id != null);
 
-        return true;
     }
 
     @Override

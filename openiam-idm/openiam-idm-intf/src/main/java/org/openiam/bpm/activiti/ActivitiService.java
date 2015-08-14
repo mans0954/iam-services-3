@@ -30,73 +30,73 @@ import org.openiam.provision.dto.ProvisionUser;
 public interface ActivitiService {
 
 	@WebMethod
-	public String sayHello();
+	String sayHello();
 	
 	@WebMethod
-	public BasicWorkflowResponse initiateWorkflow(final GenericWorkflowRequest request);
+	BasicWorkflowResponse initiateWorkflow(final GenericWorkflowRequest request);
 	
 	@WebMethod
-	public SaveTemplateProfileResponse initiateEditUserWorkflow(final UserProfileRequestModel request);
+	SaveTemplateProfileResponse initiateEditUserWorkflow(final UserProfileRequestModel request);
 	
 	@WebMethod
-	public SaveTemplateProfileResponse initiateNewHireRequest(final NewUserProfileRequestModel newHireRequest);
+	SaveTemplateProfileResponse initiateNewHireRequest(final NewUserProfileRequestModel newHireRequest);
 	
 	@WebMethod
-	public Response claimRequest(final ActivitiClaimRequest newHireRequest);
+	Response claimRequest(final ActivitiClaimRequest newHireRequest);
 	
 	@WebMethod
-	public Response makeDecision(final ActivitiRequestDecision newHireRequest);
+	Response makeDecision(final ActivitiRequestDecision newHireRequest);
 	
     /* use findTasks */
     @Deprecated
 	@WebMethod
-	public TaskListWrapper getTasksForUser(final String userId, final int from, final int size);
+	TaskListWrapper getTasksForUser(final String userId, final int from, final int size);
     
     /* use findTasks */
     @Deprecated
     @WebMethod
-    public List<TaskWrapper> getTasksForMemberAssociation(String memberAssociationId);
+	List<TaskWrapper> getTasksForMemberAssociation(String memberAssociationId);
 	
     /* use countTasks */
     @Deprecated
 	@WebMethod
-	public int getNumOfAssignedTasks(final String userId);
+	int getNumOfAssignedTasks(final String userId);
 	
     /* use countTasks */
     @Deprecated
 	@WebMethod
-	public int getNumOfCandidateTasks(final String userId);
+	int getNumOfCandidateTasks(final String userId);
 	
 	@WebMethod
-	public TaskWrapper getTask(final String taskId);
+	TaskWrapper getTask(final String taskId);
 	
 	@WebMethod
-	public TaskWrapper getTaskFromHistory(final String executionId, final String taskId);
+	TaskWrapper getTaskFromHistory(final String executionId, final String taskId);
 	
 	@WebMethod
-	public List<TaskWrapper> getHistory(final HistorySearchBean searchBean, final int from, final int size);
+	List<TaskWrapper> getHistory(final HistorySearchBean searchBean, final int from, final int size);
 	
 	@WebMethod
-	public List<TaskHistoryWrapper> getHistoryForInstance(final String instanceId);
+	List<TaskHistoryWrapper> getHistoryForInstance(final String instanceId);
 	
 	@WebMethod
-	public int count(final HistorySearchBean searchBean);
+	int count(final HistorySearchBean searchBean);
 	
 	@WebMethod
-	public Response deleteTask(final String taskId, final String userId);
+	Response deleteTask(final String taskId, final String userId);
 	
 	@WebMethod
-	public Response unclaimTask(final String taskId, final String userId);
+	Response unclaimTask(final String taskId, final String userId);
 	
 	@WebMethod
-	public Response deleteTasksForUser(final String userId);
+	Response deleteTasksForUser(final String userId);
 	
 	@WebMethod
-	public List<TaskWrapper> findTasks(final TaskSearchBean searchBean, final int from, final int size);
+	List<TaskWrapper> findTasks(final TaskSearchBean searchBean, final int from, final int size);
 	
 	@WebMethod
-	public int countTasks(final TaskSearchBean searchBean);
+	int countTasks(final TaskSearchBean searchBean);
 	
 	@WebMethod
-	public String getProcessInstanceIdByExecutionId(final String executionId);
+	String getProcessInstanceIdByExecutionId(final String executionId);
 }

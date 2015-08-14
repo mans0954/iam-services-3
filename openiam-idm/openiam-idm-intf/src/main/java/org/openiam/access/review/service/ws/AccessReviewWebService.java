@@ -14,13 +14,13 @@ import javax.jws.WebService;
 @WebService(targetNamespace = "urn:idm.openiam.org/srvc/access/review/service", name = "AccessReviewWebService")
 public interface AccessReviewWebService {
     @WebMethod
-    public AccessViewResponse getAccessReviewTree(final @WebParam(name = "filter", targetNamespace = "") AccessViewFilterBean filter,
-                                                  final @WebParam(name = "viewType", targetNamespace = "") String viewType,
-                                                  final @WebParam(name = "language", targetNamespace = "") Language language);
+    AccessViewResponse getAccessReviewTree(final @WebParam(name = "filter", targetNamespace = "") AccessViewFilterBean filter,
+                                           final @WebParam(name = "viewType", targetNamespace = "") String viewType,
+                                           final @WebParam(name = "language", targetNamespace = "") Language language);
     @WebMethod
-    public AccessViewResponse getAccessReviewSubTree(final @WebParam(name = "parentId", targetNamespace = "") String parentId,
-                                                     final @WebParam(name = "parentBeanType", targetNamespace = "") String parentBeanType,
-                                                     final @WebParam(name = "filter", targetNamespace = "") AccessViewFilterBean filter,
-                                                     final @WebParam(name = "viewType", targetNamespace = "") String viewType,
-                                                     final @WebParam(name = "language", targetNamespace = "") Language language);
+    AccessViewResponse getAccessReviewSubTree(final @WebParam(name = "parentId", targetNamespace = "") String parentId,
+                                              final @WebParam(name = "parentBeanType", targetNamespace = "") String parentBeanType,
+                                              final @WebParam(name = "filter", targetNamespace = "") AccessViewFilterBean filter,
+                                              final @WebParam(name = "viewType", targetNamespace = "") String viewType,
+                                              final @WebParam(name = "language", targetNamespace = "") Language language);
 }

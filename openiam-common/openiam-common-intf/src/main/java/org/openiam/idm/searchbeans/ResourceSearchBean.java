@@ -1,5 +1,6 @@
 package org.openiam.idm.searchbeans;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.base.Tuple;
 import org.openiam.idm.srvc.res.dto.Resource;
@@ -16,7 +17,8 @@ import java.util.Set;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ResourceSearchBean", propOrder = {
-        "resourceTypeId",
+		"keySet",
+        "resourceTypeIdSet",
         "rootsOnly",
         "attributes",
         "excludeResourceTypes",
@@ -31,8 +33,8 @@ public class ResourceSearchBean extends EntitlementsSearchBean<Resource, String>
 
 	private static final long serialVersionUID = 1L;
     public static final String TYPE_MANAGED_SYS = "MANAGED_SYS";
-
-	private String resourceTypeId;
+	private Set<String> keySet;
+	private Set<String> resourceTypeIdSet;
 	private Boolean rootsOnly;
 	private List<Tuple<String, String>> attributes;
 	private Set<String> excludeResourceTypes;
@@ -52,11 +54,14 @@ public class ResourceSearchBean extends EntitlementsSearchBean<Resource, String>
     }
 
 	public String getResourceTypeId() {
-		return resourceTypeId;
+		return (CollectionUtils.isNotEmpty(resourceTypeIdSet)) ? resourceTypeIdSet.iterator().next() : null;
 	}
 
 	public void setResourceTypeId(String resourceTypeId) {
-		this.resourceTypeId = resourceTypeId;
+		if(resourceTypeIdSet == null) {
+			resourceTypeIdSet = new HashSet<String>();
+		}
+		resourceTypeIdSet.add(resourceTypeId);
 	}
 
 	public Boolean getRootsOnly() {
@@ -142,6 +147,54 @@ public class ResourceSearchBean extends EntitlementsSearchBean<Resource, String>
 		this.ownerId = ownerId;
 	}
 
+
+	@Override
+	public String getKey() {
+		return (CollectionUtils.isNotEmpty(keySet)) ? keySet.iterator().next() : null;
+	}
+
+	@Override
+	public void setKey(final String key) {
+		if(keySet == null) {
+			keySet = new HashSet<String>();
+		}
+		keySet.add(key);
+	}
+
+	public Set<String> getKeys() {
+		return keySet;
+	}
+
+	public void addKey(final String key) {
+		if(this.keySet == null) {
+			this.keySet = new HashSet<String>();
+		}
+		this.keySet.add(key);
+	}
+
+	public boolean hasMultipleKeys() {
+		return (keySet != null && keySet.size() > 1);
+	}
+
+	public void setKeys(final Set<String> keySet) {
+		this.keySet = keySet;
+	}
+
+	public void addResourceType(final String resourceType) {
+		if(this.resourceTypeIdSet == null) {
+			this.resourceTypeIdSet = new HashSet<String>();
+		}
+		this.resourceTypeIdSet.add(resourceType);
+	}
+
+	public Set<String> getResourceTypeIdSet() {
+		return resourceTypeIdSet;
+	}
+
+	public void setResourceTypeIdSet(Set<String> resourceTypeIdSet) {
+		this.resourceTypeIdSet = resourceTypeIdSet;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -154,7 +207,7 @@ public class ResourceSearchBean extends EntitlementsSearchBean<Resource, String>
 				+ ((excludeResourceTypes == null) ? 0 : excludeResourceTypes
 						.hashCode());
 		result = prime * result
-				+ ((resourceTypeId == null) ? 0 : resourceTypeId.hashCode());
+				+ ((resourceTypeIdSet == null) ? 0 : resourceTypeIdSet.hashCode());
 		result = prime * result + ((risk == null) ? 0 : risk.hashCode());
 		result = prime * result
 				+ ((rootsOnly == null) ? 0 : rootsOnly.hashCode());
@@ -184,10 +237,10 @@ public class ResourceSearchBean extends EntitlementsSearchBean<Resource, String>
 				return false;
 		} else if (!excludeResourceTypes.equals(other.excludeResourceTypes))
 			return false;
-		if (resourceTypeId == null) {
-			if (other.resourceTypeId != null)
+		if (resourceTypeIdSet == null) {
+			if (other.resourceTypeIdSet != null)
 				return false;
-		} else if (!resourceTypeId.equals(other.resourceTypeId))
+		} else if (!resourceTypeIdSet.equals(other.resourceTypeIdSet))
 			return false;
 		if (risk != other.risk)
 			return false;

@@ -210,7 +210,7 @@ public class AuthResourceAttributeServiceImpl implements AuthResourceAttributeSe
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        this.applicationContext = applicationContext;
+        AuthResourceAttributeServiceImpl.applicationContext = applicationContext;
     }
 
 	@Override

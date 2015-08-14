@@ -22,13 +22,13 @@ import javax.jws.WebService;
 public interface PropertyValueWebService {
     
     @WebMethod
-    public Response save(final @WebParam(name = "entityList", targetNamespace = "") List<PropertyValue> entityList, 
-    					 final @WebParam(name = "requestorId", targetNamespace = "") String requestorId);
+    Response save(final @WebParam(name = "entityList", targetNamespace = "") List<PropertyValue> entityList,
+                  final @WebParam(name = "requestorId", targetNamespace = "") String requestorId);
     
     @WebMethod
-    public List<PropertyValue> getAll();
+    List<PropertyValue> getAll();
     
     @WebMethod
-    public String getCachedValue(final String key, final Language language);
+    String getCachedValue(final String key, final Language language);
     
 }

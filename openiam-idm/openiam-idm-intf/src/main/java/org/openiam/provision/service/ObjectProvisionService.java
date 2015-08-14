@@ -33,7 +33,7 @@ public interface ObjectProvisionService<T> {
      * @throws Exception
      */
     @WebMethod
-    public Response add(
+    Response add(
             @WebParam(name = "object", targetNamespace = "") T object)
             throws Exception;
     
@@ -58,7 +58,7 @@ public interface ObjectProvisionService<T> {
      * @return Response
      */
     @WebMethod
-    public Response modify (
+    Response modify(
             @WebParam(name = "object", targetNamespace = "") T object);
 
     /**
@@ -72,7 +72,7 @@ public interface ObjectProvisionService<T> {
      * @return
      */
     @WebMethod
-    public Response delete(
+    Response delete(
             @WebParam(name = "managedSystemId", targetNamespace = "") String managedSystemId,
             @WebParam(name = "objectId", targetNamespace = "") String objectId,
             @WebParam(name = "status", targetNamespace = "") UserStatusEnum status,
@@ -87,7 +87,7 @@ public interface ObjectProvisionService<T> {
      * @return
      */
     @WebMethod
-    public Response remove(
+    Response remove(
             @WebParam(name = "objectId", targetNamespace = "") String objectId,
             @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
     /**
@@ -99,7 +99,7 @@ public interface ObjectProvisionService<T> {
      * @return
      */
     @WebMethod
-    public Response deprovisionSelectedResources(
+    Response deprovisionSelectedResources(
             @WebParam(name = "objectId", targetNamespace = "") String objectId,
             @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
             @WebParam(name = "resourceList", targetNamespace = "") List<String> resourceList);
@@ -112,7 +112,7 @@ public interface ObjectProvisionService<T> {
      * @return Response
      */
     @WebMethod
-    public Response modifyIdentity (
+    Response modifyIdentity(
             @WebParam(name = "identity", targetNamespace = "") IdentityDto identity);
 
 

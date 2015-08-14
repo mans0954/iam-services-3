@@ -46,10 +46,8 @@ public class OrgType2OrgTypeXrefKey implements Serializable {
 
         if (memberOrganizationTypeId != null ? !memberOrganizationTypeId.equals(that.memberOrganizationTypeId) : that.memberOrganizationTypeId != null)
             return false;
-        if (organizationTypeId != null ? !organizationTypeId.equals(that.organizationTypeId) : that.organizationTypeId != null)
-            return false;
+        return !(organizationTypeId != null ? !organizationTypeId.equals(that.organizationTypeId) : that.organizationTypeId != null);
 
-        return true;
     }
 
     @Override

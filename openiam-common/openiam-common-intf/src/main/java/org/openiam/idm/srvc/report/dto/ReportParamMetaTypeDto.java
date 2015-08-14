@@ -69,9 +69,8 @@ public class ReportParamMetaTypeDto {
 
         if (id != null ? !id.equals(that.id) : that.id != null) return false;
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
-        if (isMultiple != null ? !isMultiple.equals(that.isMultiple) : that.isMultiple != null) return false;
+        return !(isMultiple != null ? !isMultiple.equals(that.isMultiple) : that.isMultiple != null);
 
-        return true;
     }
 
     @Override

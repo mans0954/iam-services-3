@@ -12,7 +12,7 @@ public enum AuditSource {
 
     private String value;
 
-    private AuditSource(String val){
+    AuditSource(String val){
         this.value=val;
     }
     public String value(){

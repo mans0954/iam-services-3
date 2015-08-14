@@ -72,7 +72,7 @@ public abstract class AbstractSoapCommand<Request extends RequestType, Response 
 	}
 
 	protected static String makeCall(HttpURLConnection connection, String input)
-			throws UnsupportedEncodingException, IOException {
+			throws IOException {
 		OutputStreamWriter out = new OutputStreamWriter(
 				connection.getOutputStream(), "UTF-8");
 		out.write(input);

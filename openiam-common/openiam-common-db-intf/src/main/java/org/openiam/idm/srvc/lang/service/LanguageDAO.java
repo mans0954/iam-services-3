@@ -7,8 +7,8 @@ import java.util.List;
 
 
 public interface LanguageDAO  extends BaseDao<LanguageEntity, String> {
-	public LanguageEntity getByLocale(final String locale);
-	public LanguageEntity getByCode(final String languageCode);
-	public LanguageEntity getDefaultLanguage();
-    public List<LanguageEntity> getUsedLanguages();
+	LanguageEntity getByLocale(final String locale);
+	LanguageEntity getByCode(final String languageCode);
+	LanguageEntity getDefaultLanguage();
+    List<LanguageEntity> getUsedLanguages();
 }

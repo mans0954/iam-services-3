@@ -20,21 +20,21 @@ import java.util.List;
 
 public interface LoginDataService {
 
-    public void addLogin(LoginEntity principal);
+    void addLogin(LoginEntity principal);
 
-    public void updateLogin(LoginEntity principal);
+    void updateLogin(LoginEntity principal);
 
-    public void deleteLogin(final String loginId);
+    void deleteLogin(final String loginId);
 
-    public void activateDeactivateLogin(String loginId, LoginStatusEnum status);
+    void activateDeactivateLogin(String loginId, LoginStatusEnum status);
 
-    public void removeLogin(String principal, String managedSysId);
+    void removeLogin(String principal, String managedSysId);
 
-    public LoginEntity getLoginDetails(final String loginId);
+    LoginEntity getLoginDetails(final String loginId);
 
-    public Login getLoginDTO(final String loginId);
+    Login getLoginDTO(final String loginId);
 
-    public LoginEntity getLoginByManagedSys(String principal, String sysId);
+    LoginEntity getLoginByManagedSys(String principal, String sysId);
 
     /**
      * Returns a list of Login objects for the managed system specified by the sysId
@@ -43,7 +43,7 @@ public interface LoginDataService {
      * @return
      */
     @Deprecated
-    public List<LoginEntity> getAllLoginByManagedSys(String managedSysId);
+    List<LoginEntity> getAllLoginByManagedSys(String managedSysId);
 
     /**
      * Returns the primary identity for this user
@@ -51,7 +51,7 @@ public interface LoginDataService {
      * @param userId
      * @return
      */
-    public LoginEntity getPrimaryIdentity(String userId);
+    LoginEntity getPrimaryIdentity(String userId);
 
     /**
      * Returns the identity for this user  and managedSysId
@@ -60,7 +60,7 @@ public interface LoginDataService {
      * @param managedSysId
      * @return
      */
-    public LoginEntity getByUserIdManagedSys(String userId, String managedSysId);
+    LoginEntity getByUserIdManagedSys(String userId, String managedSysId);
 
     /**
      * Returns a decrypted password.
@@ -69,7 +69,7 @@ public interface LoginDataService {
      * @param sysId
      * @return
      */
-    public String getPassword(String principal, String sysId) throws Exception;
+    String getPassword(String principal, String sysId) throws Exception;
 
     /**
      * determines if the new passowrd is equal to the current password that is associated with this principal
@@ -79,7 +79,7 @@ public interface LoginDataService {
      * @param newPassword
      * @return
      */
-    public boolean isPasswordEq(String principal, String sysId, String newPassword) throws Exception;
+    boolean isPasswordEq(String principal, String sysId, String newPassword) throws Exception;
 
     /**
      * Checks to see if a login exists for a user - domain - managed system combination
@@ -88,7 +88,7 @@ public interface LoginDataService {
      * @param sysId
      * @return
      */
-    public boolean loginExists(String principal, String sysId);
+    boolean loginExists(String principal, String sysId);
 
     /**
      * Sets the password for a principal. The password needs to be encrypted externally. this allow for flexiblity in
@@ -100,10 +100,10 @@ public interface LoginDataService {
      * @return
      */
     @Deprecated
-    public boolean setPassword(String principal, String sysId, String password, boolean preventChangeCountIncrement);
+    boolean setPassword(String principal, String sysId, String password, boolean preventChangeCountIncrement);
     
-    public boolean setPasswordUsingContentProvider(String login, String sysId,
-            String password, boolean preventChangeCountIncrement, final String contentProviderId);
+    boolean setPasswordUsingContentProvider(String login, String sysId,
+                                            String password, boolean preventChangeCountIncrement, final String contentProviderId);
 
     /**
      * Sets a new password for the identity and updates the support attributes such as locked account flag.
@@ -116,7 +116,7 @@ public interface LoginDataService {
      * @return
      */
 
-    public boolean resetPassword(final String login, final String managedSysId, final String contentProviderId, final String password, final boolean isActivate);
+    boolean resetPassword(final String login, final String managedSysId, final String contentProviderId, final String password, final boolean isActivate);
 
 
     /**
@@ -125,11 +125,11 @@ public interface LoginDataService {
      * @param password
      * @return
      */
-    public String encryptPassword(String userId, String password) throws Exception;
+    String encryptPassword(String userId, String password) throws Exception;
 
-    public String decryptPassword(String userId, String password) throws Exception;
+    String decryptPassword(String userId, String password) throws Exception;
 
-    public List<LoginEntity> getLoginByUser(String userId);
+    List<LoginEntity> getLoginByUser(String userId);
 
     void lockLogin(String principal, String sysId);
 
@@ -141,17 +141,17 @@ public interface LoginDataService {
      *
      * @param status
      */
-    public void bulkUnLock(UserStatusEnum status);
+    void bulkUnLock(UserStatusEnum status);
 
     int bulkResetPasswordChangeCount();
 
 //    List<LoginEntity> getLoginByDomain(String domain);
 
-    public List<LoginEntity> getLockedUserSince(Date lastExecTime);
+    List<LoginEntity> getLockedUserSince(Date lastExecTime);
 
-    public List<LoginEntity> getInactiveUsers(int startDays, int endDays);
+    List<LoginEntity> getInactiveUsers(int startDays, int endDays);
 
-    public List<LoginEntity> getUserNearPswdExpiration(int expDays);
+    List<LoginEntity> getUserNearPswdExpiration(int expDays);
 
     /**
      * Returns a list of Login objects which are nearing expiry depending on PWD_EXP_WARN password attribute
@@ -160,14 +160,14 @@ public interface LoginDataService {
      * @param
      * @return
      */
-    public List<LoginEntity> getUsersNearPswdExpiration();
+    List<LoginEntity> getUsersNearPswdExpiration();
 
     /**
      * List of users whose passworss are expiring today
      *
      * @return
      */
-    public List<LoginEntity> usersWithPasswordExpYesterday();
+    List<LoginEntity> usersWithPasswordExpYesterday();
 
     /**
      * Changes the identity of a user
@@ -178,10 +178,10 @@ public interface LoginDataService {
      * @param managedSysId
      * @return
      */
-    public int changeIdentityName(String newPrincipalName, String newPassword,
-                                  String userId, String managedSysId);
+    int changeIdentityName(String newPrincipalName, String newPassword,
+                           String userId, String managedSysId);
 
-    public List<LoginEntity> getLoginDetailsByManagedSys(String principalName, String managedSysId);
+    List<LoginEntity> getLoginDetailsByManagedSys(String principalName, String managedSysId);
 
     LoginEntity getPasswordResetToken(String token);
 

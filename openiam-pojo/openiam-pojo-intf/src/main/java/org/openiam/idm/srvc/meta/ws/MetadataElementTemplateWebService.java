@@ -24,35 +24,35 @@ import org.openiam.idm.srvc.meta.dto.TemplateRequest;
 public interface MetadataElementTemplateWebService {
 
 	 @WebMethod
-	 public List<MetadataElementPageTemplate> findBeans(
-	            @WebParam(name = "searchBean", targetNamespace = "") MetadataElementPageTemplateSearchBean searchBean,
-	            @WebParam(name = "from", targetNamespace = "") int from,
-				@WebParam(name = "size", targetNamespace = "") int size);
+	 List<MetadataElementPageTemplate> findBeans(
+			 @WebParam(name = "searchBean", targetNamespace = "") MetadataElementPageTemplateSearchBean searchBean,
+			 @WebParam(name = "from", targetNamespace = "") int from,
+			 @WebParam(name = "size", targetNamespace = "") int size);
 	 
 	 @WebMethod
-	 public int count(@WebParam(name = "searchBean", targetNamespace = "") MetadataElementPageTemplateSearchBean searchBean);
+	 int count(@WebParam(name = "searchBean", targetNamespace = "") MetadataElementPageTemplateSearchBean searchBean);
 	 
 	 @WebMethod
-	 public Response save(final @WebParam(name = "template", targetNamespace = "") MetadataElementPageTemplate template);
+	 Response save(final @WebParam(name = "template", targetNamespace = "") MetadataElementPageTemplate template);
 	 
 	 @WebMethod
-	 public Response delete(final @WebParam(name = "templateId", targetNamespace = "") String templateId);
+	 Response delete(final @WebParam(name = "templateId", targetNamespace = "") String templateId);
 
 	 @WebMethod
-	 public PageTempate getTemplate(final @WebParam(name = "template", targetNamespace = "") TemplateRequest request);
+	 PageTempate getTemplate(final @WebParam(name = "template", targetNamespace = "") TemplateRequest request);
 	 
 	 @WebMethod
-	 public MetadataTemplateType getTemplateType(final @WebParam(name = "id", targetNamespace = "") String id);
+	 MetadataTemplateType getTemplateType(final @WebParam(name = "id", targetNamespace = "") String id);
 	 
 	 @WebMethod
-	 public List<MetadataTemplateType> findTemplateTypes(final @WebParam(name = "searchBean", targetNamespace = "") MetadataTemplateTypeSearchBean searchBean,
-			 											 final @WebParam(name = "from", targetNamespace = "") int from,
-			 											 final @WebParam(name = "size", targetNamespace = "") int size);
+	 List<MetadataTemplateType> findTemplateTypes(final @WebParam(name = "searchBean", targetNamespace = "") MetadataTemplateTypeSearchBean searchBean,
+												  final @WebParam(name = "from", targetNamespace = "") int from,
+												  final @WebParam(name = "size", targetNamespace = "") int size);
 	 
 	 @WebMethod
-	 public List<MetadataTemplateTypeField> findUIFIelds(final @WebParam(name = "searchBean", targetNamespace = "") MetadataTemplateTypeFieldSearchBean searchBean,
-				 										 final @WebParam(name = "from", targetNamespace = "") int from,
-				 										 final @WebParam(name = "size", targetNamespace = "") int size);
+	 List<MetadataTemplateTypeField> findUIFIelds(final @WebParam(name = "searchBean", targetNamespace = "") MetadataTemplateTypeFieldSearchBean searchBean,
+												  final @WebParam(name = "from", targetNamespace = "") int from,
+												  final @WebParam(name = "size", targetNamespace = "") int size);
     @WebMethod
-    public int countUIFields(final @WebParam(name = "searchBean", targetNamespace = "") MetadataTemplateTypeFieldSearchBean searchBean);
+	int countUIFields(final @WebParam(name = "searchBean", targetNamespace = "") MetadataTemplateTypeFieldSearchBean searchBean);
 }

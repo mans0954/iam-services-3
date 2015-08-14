@@ -148,9 +148,7 @@ public class PropertyValueEntity extends KeyEntity {
 			return false;
 		if (type != other.type)
 			return false;
-		if (category != other.category)
-			return false;
-		return true;
+		return category == other.category;
 	}
 
 	@Override

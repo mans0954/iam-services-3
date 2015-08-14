@@ -32,10 +32,10 @@ import java.util.Set;
 
 public interface LocationDAO extends BaseDao<LocationEntity, String> {
 
-    public void removeByOrganizationId(final String organizationId);
+    void removeByOrganizationId(final String organizationId);
 
-    public List<LocationEntity> findByOrganizationList(Set<String> orgsId, Integer from, Integer size);
+    List<LocationEntity> findByOrganizationList(Set<String> orgsId, Integer from, Integer size);
 
-    public List<LocationEntity> findByOrganizationList(Set<String> orgsId);
+    List<LocationEntity> findByOrganizationList(Set<String> orgsId);
 
 }

@@ -154,10 +154,7 @@ public class LoginDataServiceImpl implements LoginDataService {
     @Override
     public boolean loginExists(String principal, String sysId) {
         LoginEntity lg = getLoginByManagedSys(principal, sysId);
-        if (lg == null) {
-            return false;
-        }
-        return true;
+        return lg != null;
     }
 
     /**
@@ -350,10 +347,7 @@ public class LoginDataServiceImpl implements LoginDataService {
 
         loginDao.update(lg);
 
-        if (lg != null) {
-            return true;
-        }
-        return false;
+        return lg != null;
     }
 
     @Override

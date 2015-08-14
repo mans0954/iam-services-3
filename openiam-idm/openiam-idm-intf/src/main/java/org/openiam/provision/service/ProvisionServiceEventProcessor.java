@@ -6,8 +6,8 @@ import org.openiam.provision.dto.ProvisionActionTypeEnum;
 
 public interface ProvisionServiceEventProcessor {
 
-    public static final String CONTINUE = "CONTINUE";
-    public static final String BREAK = "BREAK";
+    String CONTINUE = "CONTINUE";
+    String BREAK = "BREAK";
 
     Response process(ProvisionActionEvent event, ProvisionActionTypeEnum type);
 

@@ -77,5 +77,5 @@ public interface PasswordWebService {
             @WebParam(name = "token", targetNamespace = "") String token);
 
 
-    public Policy getPasswordPolicy(String principal, String msysId);
+    Policy getPasswordPolicy(String principal, String msysId);
 }

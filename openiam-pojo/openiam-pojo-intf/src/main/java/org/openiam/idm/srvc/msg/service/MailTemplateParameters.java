@@ -31,7 +31,7 @@ public enum MailTemplateParameters {
 
     private final String value;
 
-    private MailTemplateParameters(String value) {
+    MailTemplateParameters(String value) {
         this.value = value;
     }
     public String value() {

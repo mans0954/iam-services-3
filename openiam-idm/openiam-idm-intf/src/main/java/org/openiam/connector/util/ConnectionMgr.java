@@ -14,7 +14,7 @@ import org.springframework.context.ApplicationContext;
  */
 public interface ConnectionMgr {
 
-	public LdapContext connect(ManagedSysEntity managedSys) throws NamingException;
-	public void close() throws NamingException;
-    public void setApplicationContext(ApplicationContext applicationContext);
+	LdapContext connect(ManagedSysEntity managedSys) throws NamingException;
+	void close() throws NamingException;
+    void setApplicationContext(ApplicationContext applicationContext);
 }

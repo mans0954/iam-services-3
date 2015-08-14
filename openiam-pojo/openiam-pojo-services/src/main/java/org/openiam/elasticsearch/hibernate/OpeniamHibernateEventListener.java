@@ -102,10 +102,7 @@ public class OpeniamHibernateEventListener implements InitializingBean,
 
     private boolean isEntityIndexed(Class<?> clazz) {
         ElasticsearchIndex annotation =  clazz.getAnnotation(ElasticsearchIndex.class);
-        if (annotation != null) {
-            return true;
-        }
-        return false;
+        return annotation != null;
     }
 
     private void registerEntityHolder(Class<?> clazz) {

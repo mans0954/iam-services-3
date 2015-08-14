@@ -97,9 +97,8 @@ public class ReportSubCriteriaParamDto {
         if (reportId != null ? !reportId.equals(that.reportId) : that.reportId != null) return false;
         if (type != null ? !type.equals(that.type) : that.type != null) return false;
         if (value != null ? !value.equals(that.value) : that.value != null) return false;
-        if (rscpId != null ? !rscpId.equals(that.rscpId) : that.rscpId != null) return false;
+        return !(rscpId != null ? !rscpId.equals(that.rscpId) : that.rscpId != null);
 
-        return true;
     }
 
     @Override

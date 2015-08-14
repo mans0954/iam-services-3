@@ -55,7 +55,7 @@ public interface HibernateSearchDao<T, Q, KeyType> {
      * Returns when the last search index synchronization was made.
      * @return date time of the last search index synchronization
      */
-    public Date getReindexingCompletedOn();
+    Date getReindexingCompletedOn();
     
     /**
      * Returns when the last search index synchronization was made according to Db time.
@@ -67,7 +67,7 @@ public interface HibernateSearchDao<T, Q, KeyType> {
      * Start indexing the provided entities
      * @param idList
      */
-    public void updateIndecies(List<String> idList) throws Exception;
+    void updateIndecies(List<String> idList) throws Exception;
 
-    public void deleteIndecies(List<String> idList) throws Exception;
+    void deleteIndecies(List<String> idList) throws Exception;
 }

@@ -99,8 +99,7 @@ public class ReportSubscriptionDto implements Serializable {
         if (reportId != null ? !reportId.equals(reportDto.reportId) : reportDto.reportId != null) return false;
         if (reportName != null ? !reportName.equals(reportDto.reportName) : reportDto.reportName != null) return false;
         if (deliveryFormat != null ? !deliveryFormat.equals(reportDto.deliveryFormat) : reportDto.deliveryFormat != null) return false;
-        if (reportInfoId != null ? !reportInfoId.equals(reportDto.reportInfoId) : reportDto.reportInfoId != null) return false;
-        return true;
+        return !(reportInfoId != null ? !reportInfoId.equals(reportDto.reportInfoId) : reportDto.reportInfoId != null);
     }
 
     @Override

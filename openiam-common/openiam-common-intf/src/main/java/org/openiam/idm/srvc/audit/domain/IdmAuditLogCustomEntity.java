@@ -90,9 +90,8 @@ public class IdmAuditLogCustomEntity implements Serializable {
         if (timestamp != that.timestamp) return false;
         if (key != null ? !key.equals(that.key) : that.key != null) return false;
         if ((log != null && log.getId() != null) ? !log.getId().equals(that.log.getId()) : (that.log != null && that.log.getId() != null)) return false;
-        if (value != null ? !value.equals(that.value) : that.value != null) return false;
+        return !(value != null ? !value.equals(that.value) : that.value != null);
 
-        return true;
     }
 
     @Override

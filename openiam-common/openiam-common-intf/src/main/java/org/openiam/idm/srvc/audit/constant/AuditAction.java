@@ -246,7 +246,7 @@ public enum AuditAction {
 
     private String value;
 
-    private AuditAction(String val){
+    AuditAction(String val){
         this.value=val;
     }
     public String value(){

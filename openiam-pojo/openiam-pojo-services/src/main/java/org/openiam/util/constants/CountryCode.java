@@ -260,7 +260,7 @@ public enum CountryCode {
     private final String name;
     private final int numeric;
 
-    private CountryCode(String alpha3, int numeric, String name) {
+    CountryCode(String alpha3, int numeric, String name) {
         this.alpha3 = alpha3;
         this.name = name;
         this.numeric = numeric;

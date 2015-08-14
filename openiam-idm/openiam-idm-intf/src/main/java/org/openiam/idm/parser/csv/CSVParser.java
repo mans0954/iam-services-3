@@ -33,7 +33,7 @@ public interface CSVParser<T> {
     Map<String, ReconciliationResultField> convertToMap(
             List<AttributeMapEntity> attrMap, ReconciliationObject<T> obj);
 
-    public String getFileName(ManagedSysEntity mngSys, CSVSource source);
+    String getFileName(ManagedSysEntity mngSys, CSVSource source);
 
     String objectToString(List<String> head,
             Map<String, ReconciliationResultField> obj);
@@ -41,7 +41,7 @@ public interface CSVParser<T> {
     String objectToString(List<String> head,
             List<AttributeMapEntity> attrMapList, ReconciliationObject<T> u);
 
-    public T getObjectByReconResltFields(
+    T getObjectByReconResltFields(
             List<ReconciliationResultField> header,
             List<ReconciliationResultField> objFieds, boolean onlyKeyField)
             throws InstantiationException, IllegalAccessException;
@@ -50,7 +50,7 @@ public interface CSVParser<T> {
             List<AttributeMapEntity> attrMap, ReconciliationObject<T> u,
             ReconciliationObject<T> o);
 
-    public String getObjectSimlpeClass();
+    String getObjectSimlpeClass();
 
     T addObjectByReconResltFields(List<ReconciliationResultField> header,
             List<ReconciliationResultField> objFieds, T user)

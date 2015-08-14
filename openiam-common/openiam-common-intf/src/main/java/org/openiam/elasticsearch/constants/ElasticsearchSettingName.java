@@ -9,7 +9,7 @@ public enum ElasticsearchSettingName {
 
     private String value;
 
-    private ElasticsearchSettingName(String value){
+    ElasticsearchSettingName(String value){
         this.value=value;
     }
 
