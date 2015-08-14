@@ -401,11 +401,11 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @Transactional(readOnly = true)
-    @LocalizedServiceGet
     @Cacheable(value="resources", key="{ #searchBean.cacheUniqueBeanKey, #from, #size, #language}")
     public List<Resource> findBeansLocalizedDto(final ResourceSearchBean searchBean, final int from, final int size, final LanguageEntity language) {
-        List<ResourceEntity> resourceEntityList = resourceDao.getByExample(searchBean, from, size);
-        return resourceConverter.convertToDTOList(resourceEntityList, searchBean.isDeepCopy());
+        List<ResourceEntity> resourceEntityList = this.findBeansLocalized(searchBean, from, size, language);
+        List<Resource> resourceList = resourceConverter.convertToDTOList(resourceEntityList, searchBean.isDeepCopy());
+        return resourceList;
     }
 
     @Override
@@ -900,9 +900,10 @@ public class ResourceServiceImpl implements ResourceService {
             @CacheEvict(value = "resources", allEntries = true),
             @CacheEvict(value = "resourcePropCache", allEntries = true)
     })
+    @Transactional
     public ResourceEntity saveResource(Resource resource, final String requesterId) throws BasicDataServiceException {
         //final Response response = new Response(ResponseStatus.SUCCESS);
-        validate(resource);
+        this.validate(resource);
         final ResourceEntity entity = resourceConverter.convertToEntity(resource, true);
         this.save(entity, requesterId);
         //response.setResponseValue(entity.getId());
@@ -912,6 +913,7 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @CacheEvict(value = "resourcePropCache", allEntries=true)
+    @Transactional
     public ResourcePropEntity saveOrUpdateResourceProperty(ResourceProp prop, IdmAuditLog idmAuditLog) throws BasicDataServiceException {
         if (prop == null) {
             throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Resource Property object is null");
@@ -949,6 +951,7 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @CacheEvict(value = "resourcePropCache", allEntries=true)
+    @Transactional
     public void removeResourceProp(String resourcePropId, String requesterId) throws BasicDataServiceException {
         if (StringUtils.isBlank(resourcePropId)) {
             throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS,
@@ -959,6 +962,7 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @CacheEvict(value = "resources", allEntries=true)
+    @Transactional
     public void removeUserFromResource(String resourceId, String userId, String requesterId, IdmAuditLog idmAuditLog) throws BasicDataServiceException {
         idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.REMOVE_USER_FROM_RESOURCE.value());
@@ -999,6 +1003,7 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @CacheEvict(value = "resources", allEntries=true)
+    @Transactional
     public void deleteResourceWeb(String resourceId, String requesterId) throws BasicDataServiceException {
         if (resourceId == null) {
             throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND, "Resource ID is not specified");
@@ -1010,6 +1015,7 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @CacheEvict(value = "resources", allEntries=true)
+    @Transactional
     public void addChildResourceWeb(String resourceId, String childResourceId, String requesterId, IdmAuditLog idmAuditLog) throws BasicDataServiceException {
         idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.ADD_CHILD_RESOURCE.value());
@@ -1027,6 +1033,7 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @CacheEvict(value = "resources", allEntries=true)
+    @Transactional
     public void deleteChildResourceWeb(String resourceId, String memberResourceId, String requesterId, IdmAuditLog idmAuditLog) throws BasicDataServiceException {
         idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.REMOVE_CHILD_RESOURCE.value());
@@ -1048,6 +1055,7 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @CacheEvict(value = "resources", allEntries=true)
+    @Transactional
     public void addGroupToResourceWeb(String resourceId, String groupId, String requesterId, IdmAuditLog idmAuditLog) throws BasicDataServiceException {
         idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.ADD_GROUP_TO_RESOURCE.value());
@@ -1066,6 +1074,7 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @CacheEvict(value = "resources", allEntries=true)
+    @Transactional
     public void removeGroupToResource(String resourceId, String groupId, String requesterId, IdmAuditLog idmAuditLog) throws BasicDataServiceException {
         idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.REMOVE_GROUP_FROM_RESOURCE.value());
@@ -1084,6 +1093,7 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @CacheEvict(value = "resources", allEntries=true)
+    @Transactional
     public void addRoleToResourceWeb(String resourceId, String roleId, String requesterId, IdmAuditLog idmAuditLog) throws BasicDataServiceException {
         idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.ADD_ROLE_TO_RESOURCE.value());
@@ -1103,6 +1113,7 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @CacheEvict(value = "resources", allEntries=true)
+    @Transactional
     public void removeRoleToResource(String resourceId, String roleId, String requesterId, IdmAuditLog idmAuditLog) throws BasicDataServiceException {
         idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.REMOVE_ROLE_FROM_RESOURCE.value());

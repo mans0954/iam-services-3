@@ -129,7 +129,9 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     //@Cacheable(value="resources", key="{ #searchBean.cacheUniqueBeanKey, #from, #size, #language}")
     public List<Resource> findBeans(final ResourceSearchBean searchBean, final int from, final int size, final Language language) {
         //final List<Resource> finalList = resourceService.findBeansLocalizedDto(searchBean, from, size, languageConverter.convertToEntity(language, false));
-        return resourceService.findBeansLocalizedDto(searchBean, from, size, languageConverter.convertToEntity(language, false));
+        List<Resource> resourceList = resourceService.findBeansLocalizedDto(searchBean, from, size, languageConverter.convertToEntity(language, false));
+
+        return resourceList;
     }
 
     @Override
@@ -184,11 +186,11 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     public Response saveResource(Resource resource, final String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
-            /*resourceService.validate(resource);
+          /*resourceService.validate(resource);
             final ResourceEntity entity = resourceConverter.convertToEntity(resource, true);
             resourceService.save(entity, requesterId);*/
 
-            ResourceEntity entity = resourceService.saveResource(resource, requesterId);
+            final ResourceEntity entity = resourceService.saveResource(resource, requesterId);
             response.setResponseValue(entity.getId());
         } catch (BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);
