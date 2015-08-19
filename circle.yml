@@ -1,10 +1,19 @@
 machine:
   java:
     version: oraclejdk8
-   
+
 dependencies:
   override:
     - mvn install -s conf/settings.xml
     - mvn package spring-boot:repackage -f openiam-esb/pom.xml
   post:
     - mvn deploy -s conf/settings.xml
+test:
+  post:
+    - sudo mkdir -p /data/openiam/conf
+    - sudo cp conf/datasource.properties /data/openiam/conf/datasource.properties
+    - sudo cp conf/service-urls.properties /data/openiam/conf/service-urls.properties
+    - mvn test -DskipTests=false -DargLine="-Xmx1024m" -s conf/settings.xml:
+        timeout: 3600
+    - mkdir -p $CIRCLE_TEST_REPORTS/junit/
+    - find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} $CIRCLE_TEST_REPORTS/junit/ \;
