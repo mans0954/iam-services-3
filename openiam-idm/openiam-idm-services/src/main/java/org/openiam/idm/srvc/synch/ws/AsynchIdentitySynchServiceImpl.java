@@ -79,6 +79,24 @@ public class AsynchIdentitySynchServiceImpl implements AsynchIdentitySynchServic
         log.debug("A-START SYNCH END ---------------------");
     }
 
+    public void startCustomSynchronization(
+            final SynchConfig config, final String additionalValues) {
+
+
+        log.debug("A-START SYNCH CALLED...................");
+        try {
+            Executors.newSingleThreadExecutor().execute(new Runnable() {
+                public void run() {
+                    identitySynchWebService.startCustomSynchronization(config, additionalValues);
+                }
+            });
+        } catch (Exception e) {
+            log.debug("EXCEPTION:AsynchIdentitySynchService:startCustomSynchronization");
+            log.error(e);
+        }
+        log.debug("A-START SYNCH END ---------------------");
+    }
+
     @Override
     public void executeSynchReview(
             final SynchReviewRequest synchReviewRequest) {
