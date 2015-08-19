@@ -1,6 +1,7 @@
 package org.openiam.hazelcast;
 
 import java.io.FileNotFoundException;
+import java.util.List;
 
 import javax.annotation.PostConstruct;
 
@@ -10,10 +11,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
+import com.hazelcast.core.Cluster;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.ILock;
 import com.hazelcast.core.IMap;
+import com.hazelcast.core.Member;
 
 @Component
 @DependsOn("sessionFactory") /* depends on hibernate.  Otherwise, two hazelcast instnaces will be created! */
@@ -40,5 +43,9 @@ public class HazelcastConfiguration {
 	
 	public ILock getLock(final String name) {
 		return hzInstance.getLock(name);
+	}
+	
+	public HazelcastInstance getInstance() {
+		return hzInstance;
 	}
 }
