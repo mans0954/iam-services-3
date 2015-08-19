@@ -32,7 +32,6 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.csv.CSVStrategy;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
@@ -51,7 +50,6 @@ import org.openiam.idm.srvc.synch.srcadapter.SynchScriptFactory;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.ProvisionUser;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -79,6 +77,8 @@ public class CSVAdapterForGenericObject implements SourceAdapter {
     MatchRuleFactory matchRuleFactory;
     @Autowired
     protected SynchReviewDozerConverter synchReviewDozerConverter;
+
+    private Map<String, Object> attributeMap = new HashMap<String, Object>();
 
     private static final Log log = LogFactory
             .getLog(CSVAdapterForGenericObject.class);
@@ -329,5 +329,10 @@ public class CSVAdapterForGenericObject implements SourceAdapter {
             return record;
         }
         return null;
+    }
+
+    @Override
+    public void setAttributeMap(Map attributeMap) {
+        this.attributeMap = attributeMap;
     }
 }

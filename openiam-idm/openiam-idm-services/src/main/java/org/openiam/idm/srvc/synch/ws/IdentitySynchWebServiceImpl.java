@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
 
@@ -239,6 +240,15 @@ public class IdentitySynchWebServiceImpl implements IdentitySynchWebService {
     @Override
     public SyncResponse startSynchronization(SynchConfig config) {
         return synchService.startSynchronization(synchConfigDozerConverter.convertToEntity(config, false));
+    }
+
+    @WebMethod
+    public SyncResponse startCustomSynchronization(
+            @WebParam(name = "config", targetNamespace = "")
+            SynchConfig config,
+            @WebParam(name = "additionalValues", targetNamespace = "") String additionalValues) {
+
+        return synchService.startCustomSynchronization(synchConfigDozerConverter.convertToEntity(config, false), additionalValues);
     }
 
     @Override

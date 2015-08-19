@@ -181,14 +181,19 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 	}
 
     public SyncResponse startSynchronization(SynchConfigEntity config) {
-        return startSynchronization(config, null);
+        return startSynchronization(config, null, null);
     }
+
+    public SyncResponse startCustomSynchronization(SynchConfigEntity config, String additionalValues) {
+        return startSynchronization(config, null, additionalValues);
+    }
+
 
     public SyncResponse startSynchReview(SynchReviewEntity synchReview) {
-        return startSynchronization(synchReview.getSynchConfig(), synchReview);
+        return startSynchronization(synchReview.getSynchConfig(), synchReview, null);
     }
 
-	private SyncResponse startSynchronization(final SynchConfigEntity config, SynchReviewEntity review) {
+	private SyncResponse startSynchronization(final SynchConfigEntity config, SynchReviewEntity review, String additionalValues) {
 
         SyncResponse syncResponse = new SyncResponse(ResponseStatus.SUCCESS);
 
@@ -261,6 +266,11 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
             idmAuditLog = auditLogService.save(idmAuditLog);
             configDTO.setParentAuditLogId(idmAuditLog.getId());
             SourceAdapter adapt = adapterFactory.create(configDTO);
+            Map<String, Object> attributeMap = new HashMap<String, Object>();
+            if(additionalValues != null) {
+                attributeMap.put("ADDITIONAL_VALUES", additionalValues);
+            }
+            adapt.setAttributeMap(attributeMap);
             syncResponse = adapt.startSynch(configDTO, review, resultReview);
 			
  			log.debug("SyncReponse updateTime value=" + newLastExecTime);
@@ -274,7 +284,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 
             if (syncResponse.getLastRecProcessed() != null) {
 
-				synchConfigDao.updateLastRecProcessed(config.getId(),syncResponse.getLastRecProcessed() );
+				synchConfigDao.updateLastRecProcessed(config.getId(), syncResponse.getLastRecProcessed() );
 			}
 
 		    log.debug("-startSynchronization COMPLETE.^^^^^^^^");

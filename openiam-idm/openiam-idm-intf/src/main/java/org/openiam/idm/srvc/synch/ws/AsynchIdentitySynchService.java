@@ -21,6 +21,13 @@ public interface AsynchIdentitySynchService {
 			SynchConfig config);
 
     @WebMethod
+    void startCustomSynchronization(
+            @WebParam(name = "config", targetNamespace = "")
+            SynchConfig config,
+            @WebParam(name = "additionalValues", targetNamespace = "")
+            final String additionalValues);
+
+    @WebMethod
     void executeSynchReview(
             @WebParam(name = "synchReviewRequest", targetNamespace = "")
             SynchReviewRequest synchReviewRequest);

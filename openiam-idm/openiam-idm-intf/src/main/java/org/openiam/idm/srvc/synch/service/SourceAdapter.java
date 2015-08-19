@@ -26,6 +26,8 @@ import org.openiam.idm.srvc.synch.domain.SynchReviewEntity;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
 
+import java.util.Map;
+
 /**
  * Interface to implementing source adapters
  * @author suneet
@@ -37,4 +39,5 @@ public interface SourceAdapter {
 	SyncResponse startSynch(SynchConfig config);
     SyncResponse startSynch(SynchConfig config, SynchReviewEntity sourceReview, SynchReviewEntity resultReview);
     Response testConnection(SynchConfig config);
+    void setAttributeMap(Map attributeMap);
 }
