@@ -14,3 +14,4 @@ test:
     - sudo cp conf/datasource.properties /data/openiam/conf/datasource.properties
     - sudo cp conf/service-urls.properties /data/openiam/conf/service-urls.properties
     - mvn test -DskipTests=false -s conf/settings.xml
+      timeout: 1800
