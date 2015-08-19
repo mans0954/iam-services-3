@@ -8,3 +8,9 @@ dependencies:
     - mvn package spring-boot:repackage -f openiam-esb/pom.xml
   post:
     - mvn deploy -s conf/settings.xml
+test:
+  post:
+    - mkdir -p /data/openiam/conf
+    - cp conf/datasource.properties /data/openiam/conf/datasource.properties
+    - cp conf/service-urls.properties /data/openiam/conf/service-urls.properties
+    - mvn test -DskipTests=false -s conf/settings.xml
