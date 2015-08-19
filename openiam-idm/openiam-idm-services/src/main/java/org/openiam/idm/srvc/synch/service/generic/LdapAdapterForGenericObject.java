@@ -19,7 +19,9 @@
  */
 package org.openiam.idm.srvc.synch.service.generic;
 
+import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Map;
 import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.naming.ldap.InitialLdapContext;
@@ -64,6 +66,8 @@ public class LdapAdapterForGenericObject implements SourceAdapter {
 
     @Value("${KEYSTORE}")
     private String keystore;
+
+    private Map<String, Object> attributeMap = new HashMap<String, Object>();
 
     LdapContext ctx = null;
     @Autowired
@@ -137,6 +141,11 @@ public class LdapAdapterForGenericObject implements SourceAdapter {
         ctx = new InitialLdapContext(envDC, null);
         return ctx != null;
 
+    }
+
+    @Override
+    public void setAttributeMap(Map attributeMap) {
+        this.attributeMap = attributeMap;
     }
 
     private void closeConnection() {
