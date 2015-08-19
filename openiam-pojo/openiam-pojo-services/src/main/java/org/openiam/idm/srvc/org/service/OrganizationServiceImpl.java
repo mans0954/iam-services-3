@@ -272,6 +272,14 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
         }
     }
 
+
+    @Override
+    @Transactional
+    public OrganizationEntity getPrimaryAffliation(String userId, String mdTypeId) {
+        return orgDao.getPrimaryAffiliationForUser(userId, mdTypeId);
+    }
+
+
     @Override
     @Transactional
     public void removeAttribute(String attributeId) {

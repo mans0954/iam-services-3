@@ -88,6 +88,11 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     }
 
     @Override
+    public Organization getAffliation(final String userId, final String metadataTypeId, boolean deepCopy) {
+        return organizationDozerConverter.convertToDTO(organizationService.getPrimaryAffliation(userId, metadataTypeId), deepCopy);
+    }
+
+    @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
     public Organization getOrganizationLocalized(final String orgId, String requesterId, final Language language) {
@@ -280,6 +285,7 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     public Response saveOrganization(final Organization organization, final String requesterId) {
         return saveOrganizationWithSkipPrePostProcessors(organization, requesterId, false);
     }
+
 
     @Override
     public Response saveOrganizationWithSkipPrePostProcessors(final Organization organization, final String requestorId, final boolean skipPrePostProcessors) {

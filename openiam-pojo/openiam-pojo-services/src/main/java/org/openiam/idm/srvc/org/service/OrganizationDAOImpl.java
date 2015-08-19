@@ -63,6 +63,15 @@ public class OrganizationDAOImpl extends
         return criteria.list();
     }
 
+
+    @Override
+    public OrganizationEntity getPrimaryAffiliationForUser(
+            final String userId, final String mdType) {
+        final Criteria criteria = getPrimaryUserAffiliationCriteria(userId, mdType);
+        List<OrganizationEntity> res = criteria.list();
+        return CollectionUtils.isNotEmpty(res) ? res.get(0) : null;
+    }
+
     private Criteria getOrganizationsForUserCriteria(final String userId,
                                                      final Set<String> filter) {
 
@@ -77,6 +86,16 @@ public class OrganizationDAOImpl extends
         }
         return criteria;
     }
+
+    private Criteria getPrimaryUserAffiliationCriteria(final String userId, final String mdTypeId) {
+        final Criteria criteria = getCriteria();
+        if (StringUtils.isNotBlank(userId)) {
+            criteria.createAlias("organizationUser", "ou").
+                    add(Restrictions.and(Restrictions.eq("ou.primaryKey.user.id", userId), Restrictions.eq("ou.metadataTypeEntity.id", mdTypeId)));
+        }
+        return criteria;
+    }
+
 
     private Criteria getLocationsForOrganizationsCriteria(final String userId,
                                                           final Set<String> filter) {

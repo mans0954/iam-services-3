@@ -139,4 +139,6 @@ public interface OrganizationService {
     public List<LocationEntity> getLocationListByOrganizationId(Set<String> orgsId, Integer from, Integer size);
 
     public List<LocationEntity> getLocationListByOrganizationId(Set<String> orgsId);
+
+    public OrganizationEntity getPrimaryAffliation(String userId, String mdTypeId);
 }
