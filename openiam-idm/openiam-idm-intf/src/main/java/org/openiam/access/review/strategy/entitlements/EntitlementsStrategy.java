@@ -105,7 +105,7 @@ public abstract class EntitlementsStrategy {
     }
 
     public Set<String> getUserEntitlements(){
-    	/*
+
         if(CollectionUtils.isEmpty(userEntitlementCache)){
             userEntitlementCache = new HashSet<String>();
 
@@ -136,7 +136,7 @@ public abstract class EntitlementsStrategy {
             }
         }
         return userEntitlementCache;
-        */ return null;
+        //return null;
     }
 
     protected Set<String> getCompiledResourcesForGroups(){

@@ -30,48 +30,41 @@ import org.openiam.authmanager.ws.request.AuthorizationMatrixMapToSetAdapter;
 	"groupIds",
 	"resourceIds",
 	"resourceToResourceMap",
-    "childResToParentResMap",
-    
-    "resourceToGroupMap",
-    "resourceToRoleMap",
-    "resourceToOrgMap",
-    
+
 	"groupToGroupMap",
-	"groupToRoleMap",
 	"groupToResourceMap",
-	"groupToOrgMap",
-	
+
 	"roleToResourceMap",
     "roleToGroupMap",
     "roleToRoleMap",
-    "roleToOrgMap",
-    
-    "childGroupToParentGroupMap",
-    "childRoleToParentRoleMap",
-    
+
     "orgToOrgMap",
-    "childOrgToParentOrgMap",
     "orgToGroupMap",
     "orgToRoleMap",
     "orgToResourceMap"
 })
 public class UserEntitlementsMatrix implements Serializable {
 	private String userId;
-	
+
+	// orgId->Org
 	private Map<String, AuthorizationOrganization> orgMap;
+	// resourceId -> Resource
 	private Map<String, AuthorizationResource> resourceMap;
+	// groupId -> Group
 	private Map<String, AuthorizationGroup> groupMap;
+	// roleId -> Role
 	private Map<String, AuthorizationRole> roleMap;
-	
+
+	// direct user orgs with rights
 	@XmlJavaTypeAdapter(AuthorizationMatrixMapAdapter.class)
 	private Map<String, Set<String>> organizationIds;
-	
+	// direct user roles with rights
 	@XmlJavaTypeAdapter(AuthorizationMatrixMapAdapter.class)
 	private Map<String, Set<String>> roleIds;
-	
+	// direct user groups with rights
 	@XmlJavaTypeAdapter(AuthorizationMatrixMapAdapter.class)
 	private Map<String, Set<String>> groupIds;
-	
+	// direct user resource with rights
 	@XmlJavaTypeAdapter(AuthorizationMatrixMapAdapter.class)
 	private Map<String, Set<String>> resourceIds;
 	
@@ -97,12 +90,10 @@ public class UserEntitlementsMatrix implements Serializable {
 		this.groupMap = groupMap;
 		this.resourceMap = resourceMap;
 	}
-	
+
+	// parent orgId -> [childOrgs with right]
 	@XmlJavaTypeAdapter(AuthorizationMatrixMapToSetAdapter.class)
 	private Map<String, Map<String, Set<String>>> orgToOrgMap = new HashMap<String, Map<String,Set<String>>>();
-
-	@XmlJavaTypeAdapter(AuthorizationMatrixMapToSetAdapter.class)
-	private Map<String, Map<String, Set<String>>> childOrgToParentOrgMap = new HashMap<String, Map<String,Set<String>>>();
 
 	@XmlJavaTypeAdapter(AuthorizationMatrixMapToSetAdapter.class)
 	private Map<String, Map<String, Set<String>>> orgToGroupMap = new HashMap<String, Map<String,Set<String>>>();
@@ -116,20 +107,9 @@ public class UserEntitlementsMatrix implements Serializable {
 	@XmlJavaTypeAdapter(AuthorizationMatrixMapToSetAdapter.class)
 	private Map<String, Map<String, Set<String>>> groupToGroupMap = new HashMap<String, Map<String,Set<String>>>();
 	
-    @XmlJavaTypeAdapter(AuthorizationMatrixMapToSetAdapter.class)
-    private Map<String, Map<String, Set<String>>> childGroupToParentGroupMap = new HashMap<String, Map<String,Set<String>>>();
-    
-	@XmlJavaTypeAdapter(AuthorizationMatrixMapToSetAdapter.class)
-	private Map<String, Map<String, Set<String>>> groupToRoleMap = new HashMap<String, Map<String,Set<String>>>();
-	
-    @XmlJavaTypeAdapter(AuthorizationMatrixMapToSetAdapter.class)
-    private Map<String, Map<String, Set<String>>> groupToResourceMap = new HashMap<String, Map<String,Set<String>>>();
-    
-    @XmlJavaTypeAdapter(AuthorizationMatrixMapToSetAdapter.class)
-    private Map<String, Map<String, Set<String>>> groupToOrgMap = new HashMap<String, Map<String,Set<String>>>();
 
     @XmlJavaTypeAdapter(AuthorizationMatrixMapToSetAdapter.class)
-    private Map<String, Map<String, Set<String>>> childRoleToParentRoleMap = new HashMap<String, Map<String,Set<String>>>();
+    private Map<String, Map<String, Set<String>>> groupToResourceMap = new HashMap<String, Map<String,Set<String>>>();
     
     @XmlJavaTypeAdapter(AuthorizationMatrixMapToSetAdapter.class)
     private Map<String, Map<String, Set<String>>> roleToRoleMap = new HashMap<String, Map<String,Set<String>>>();
@@ -140,86 +120,64 @@ public class UserEntitlementsMatrix implements Serializable {
     @XmlJavaTypeAdapter(AuthorizationMatrixMapToSetAdapter.class)
     private Map<String, Map<String, Set<String>>> roleToResourceMap = new HashMap<String, Map<String,Set<String>>>();
     
-    @XmlJavaTypeAdapter(AuthorizationMatrixMapToSetAdapter.class)
-    private Map<String, Map<String, Set<String>>> roleToOrgMap = new HashMap<String, Map<String,Set<String>>>();
-    
 	@XmlJavaTypeAdapter(AuthorizationMatrixMapToSetAdapter.class)
 	private Map<String, Map<String, Set<String>>> resourceToResourceMap = new HashMap<String, Map<String,Set<String>>>();
 	
-    @XmlJavaTypeAdapter(AuthorizationMatrixMapToSetAdapter.class)
-    private Map<String, Map<String, Set<String>>> childResToParentResMap = new HashMap<String, Map<String,Set<String>>>();
-    
-    @XmlJavaTypeAdapter(AuthorizationMatrixMapToSetAdapter.class)
-    private Map<String, Map<String, Set<String>>> resourceToGroupMap = new HashMap<String, Map<String,Set<String>>>();
-    
-    @XmlJavaTypeAdapter(AuthorizationMatrixMapToSetAdapter.class)
-    private Map<String, Map<String, Set<String>>> resourceToRoleMap = new HashMap<String, Map<String,Set<String>>>();
-    
-    @XmlJavaTypeAdapter(AuthorizationMatrixMapToSetAdapter.class)
-    private Map<String, Map<String, Set<String>>> resourceToOrgMap = new HashMap<String, Map<String,Set<String>>>();
-    
+
     private void addRelationship(final Map<String, Map<String, Set<String>>> parent2ChildMap,
-    							 final Map<String, Map<String, Set<String>>> child2ParentMap,
     							 final String parentId,
     							 final String childId,
     							 final String rightId) {
     	if(!parent2ChildMap.containsKey(parentId)) {
     		parent2ChildMap.put(parentId, new HashMap<String, Set<String>>());
     	}
-    	if(!child2ParentMap.containsKey(childId)) {
-    		child2ParentMap.put(childId, new HashMap<String, Set<String>>());
-    	}
-    	
+
     	if(!parent2ChildMap.get(parentId).containsKey(childId)) {
     		parent2ChildMap.get(parentId).put(childId, new HashSet<String>());
     	}
-    	if(!child2ParentMap.get(childId).containsKey(parentId)) {
-    		child2ParentMap.get(childId).put(parentId, new HashSet<String>());
-    	}
     	if(rightId != null) {
     		parent2ChildMap.get(parentId).get(childId).add(rightId);
-    		child2ParentMap.get(childId).get(parentId).add(rightId);
     	}
     }
     
     public void addOrg2OrgRelationship(final String parentId, final String childId, final String rightId) {
-    	addRelationship(orgToOrgMap, childOrgToParentOrgMap, parentId, childId, rightId);
+    	addRelationship(orgToOrgMap,  parentId, childId, rightId);
     }
     
     public void addOrg2RoleRelationship(final String parentId, final String childId, final String rightId) {
-    	addRelationship(orgToRoleMap, roleToOrgMap, parentId, childId, rightId);
+    	addRelationship(orgToRoleMap,  parentId, childId, rightId);
     }
     
     public void addOrg2GroupRelationship(final String parentId, final String childId, final String rightId) {
-    	addRelationship(orgToGroupMap, groupToOrgMap, parentId, childId, rightId);
+    	addRelationship(orgToGroupMap,  parentId, childId, rightId);
     }
     
     public void addOrg2ResourceRelationship(final String parentId, final String childId, final String rightId) {
-    	addRelationship(orgToResourceMap, resourceToOrgMap, parentId, childId, rightId);
+    	addRelationship(orgToResourceMap,  parentId, childId, rightId);
     }
     
     public void addRole2RoleRelationship(final String parentId, final String childId, final String rightId) {
-    	addRelationship(roleToRoleMap, childRoleToParentRoleMap, parentId, childId, rightId);
+    	addRelationship(roleToRoleMap,  parentId, childId, rightId);
     }
     
     public void addRole2GroupRelationship(final String parentId, final String childId, final String rightId) {
-    	addRelationship(roleToGroupMap, groupToRoleMap, parentId, childId, rightId);
+    	addRelationship(roleToGroupMap, parentId, childId, rightId);
     }
     
     public void addRole2ResourceRelationship(final String parentId, final String childId, final String rightId) {
-    	addRelationship(roleToResourceMap, resourceToRoleMap, parentId, childId, rightId);
+    	addRelationship(roleToResourceMap, parentId, childId, rightId);
     }
     
     public void addGroup2GroupRelationship(final String parentId, final String childId, final String rightId) {
-    	addRelationship(groupToGroupMap, childGroupToParentGroupMap, parentId, childId, rightId);
+    	addRelationship(groupToGroupMap, parentId, childId, rightId);
     }
     
     public void addGroup2ResourceRelationship(final String parentId, final String childId, final String rightId) {
-    	addRelationship(groupToResourceMap, resourceToGroupMap, parentId, childId, rightId);
+    	addRelationship(groupToResourceMap, parentId, childId, rightId);
     }
     
     public void addResource2ResourceRelationship(final String parentId, final String childId, final String rightId) {
-    	addRelationship(resourceToResourceMap, childResToParentResMap, parentId, childId, rightId);
+    	addRelationship(resourceToResourceMap, parentId, childId, rightId);
     }
 
 	public String getUserId() {
@@ -270,15 +228,6 @@ public class UserEntitlementsMatrix implements Serializable {
 		this.orgToOrgMap = orgToOrgMap;
 	}
 
-	public Map<String, Map<String, Set<String>>> getChildOrgToParentOrgMap() {
-		return childOrgToParentOrgMap;
-	}
-
-	public void setChildOrgToParentOrgMap(
-			Map<String, Map<String, Set<String>>> childOrgToParentOrgMap) {
-		this.childOrgToParentOrgMap = childOrgToParentOrgMap;
-	}
-
 	public Map<String, Map<String, Set<String>>> getOrgToGroupMap() {
 		return orgToGroupMap;
 	}
@@ -313,23 +262,6 @@ public class UserEntitlementsMatrix implements Serializable {
 		this.groupToGroupMap = groupToGroupMap;
 	}
 
-	public Map<String, Map<String, Set<String>>> getChildGroupToParentGroupMap() {
-		return childGroupToParentGroupMap;
-	}
-
-	public void setChildGroupToParentGroupMap(
-			Map<String, Map<String, Set<String>>> childGroupToParentGroupMap) {
-		this.childGroupToParentGroupMap = childGroupToParentGroupMap;
-	}
-
-	public Map<String, Map<String, Set<String>>> getGroupToRoleMap() {
-		return groupToRoleMap;
-	}
-
-	public void setGroupToRoleMap(
-			Map<String, Map<String, Set<String>>> groupToRoleMap) {
-		this.groupToRoleMap = groupToRoleMap;
-	}
 
 	public Map<String, Map<String, Set<String>>> getGroupToResourceMap() {
 		return groupToResourceMap;
@@ -338,23 +270,6 @@ public class UserEntitlementsMatrix implements Serializable {
 	public void setGroupToResourceMap(
 			Map<String, Map<String, Set<String>>> groupToResourceMap) {
 		this.groupToResourceMap = groupToResourceMap;
-	}
-
-	public Map<String, Map<String, Set<String>>> getGroupToOrgMap() {
-		return groupToOrgMap;
-	}
-
-	public void setGroupToOrgMap(Map<String, Map<String, Set<String>>> groupToOrgMap) {
-		this.groupToOrgMap = groupToOrgMap;
-	}
-
-	public Map<String, Map<String, Set<String>>> getChildRoleToParentRoleMap() {
-		return childRoleToParentRoleMap;
-	}
-
-	public void setChildRoleToParentRoleMap(
-			Map<String, Map<String, Set<String>>> childRoleToParentRoleMap) {
-		this.childRoleToParentRoleMap = childRoleToParentRoleMap;
 	}
 
 	public Map<String, Map<String, Set<String>>> getRoleToRoleMap() {
@@ -383,14 +298,6 @@ public class UserEntitlementsMatrix implements Serializable {
 		this.roleToResourceMap = roleToResourceMap;
 	}
 
-	public Map<String, Map<String, Set<String>>> getRoleToOrgMap() {
-		return roleToOrgMap;
-	}
-
-	public void setRoleToOrgMap(Map<String, Map<String, Set<String>>> roleToOrgMap) {
-		this.roleToOrgMap = roleToOrgMap;
-	}
-
 	public Map<String, Map<String, Set<String>>> getResourceToResourceMap() {
 		return resourceToResourceMap;
 	}
@@ -400,41 +307,6 @@ public class UserEntitlementsMatrix implements Serializable {
 		this.resourceToResourceMap = resourceToResourceMap;
 	}
 
-	public Map<String, Map<String, Set<String>>> getChildResToParentResMap() {
-		return childResToParentResMap;
-	}
-
-	public void setChildResToParentResMap(
-			Map<String, Map<String, Set<String>>> childResToParentResMap) {
-		this.childResToParentResMap = childResToParentResMap;
-	}
-
-	public Map<String, Map<String, Set<String>>> getResourceToGroupMap() {
-		return resourceToGroupMap;
-	}
-
-	public void setResourceToGroupMap(
-			Map<String, Map<String, Set<String>>> resourceToGroupMap) {
-		this.resourceToGroupMap = resourceToGroupMap;
-	}
-
-	public Map<String, Map<String, Set<String>>> getResourceToRoleMap() {
-		return resourceToRoleMap;
-	}
-
-	public void setResourceToRoleMap(
-			Map<String, Map<String, Set<String>>> resourceToRoleMap) {
-		this.resourceToRoleMap = resourceToRoleMap;
-	}
-
-	public Map<String, Map<String, Set<String>>> getResourceToOrgMap() {
-		return resourceToOrgMap;
-	}
-
-	public void setResourceToOrgMap(
-			Map<String, Map<String, Set<String>>> resourceToOrgMap) {
-		this.resourceToOrgMap = resourceToOrgMap;
-	}
 
 	public Map<String, Set<String>> getOrganizationIds() {
 		return organizationIds;

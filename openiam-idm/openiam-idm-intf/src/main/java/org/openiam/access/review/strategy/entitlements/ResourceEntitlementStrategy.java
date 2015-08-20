@@ -69,12 +69,12 @@ public class ResourceEntitlementStrategy extends EntitlementsStrategy {
 
     @Override
     public Set<AccessViewBean> getResources(AccessViewBean parent) {
-    	/*
+
         if(parent==null){
             return getResourceBeans(this.getUserEntitlements());
         }
         return getResourceBeans(accessReviewData.getMatrix().getResourceToResourceMap().get(parent.getId()));
-        */ return null;
+//         return null;
     }
 
     @Override

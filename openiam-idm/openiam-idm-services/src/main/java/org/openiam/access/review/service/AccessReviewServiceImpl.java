@@ -8,6 +8,7 @@ import org.openiam.access.review.model.AccessViewBean;
 import org.openiam.access.review.model.AccessViewFilterBean;
 import org.openiam.access.review.model.AccessViewResponse;
 import org.openiam.access.review.strategy.AccessReviewStrategy;
+import org.openiam.activiti.model.dto.TaskSearchBean;
 import org.openiam.authmanager.model.UserEntitlementsMatrix;
 import org.openiam.authmanager.service.AuthorizationManagerAdminService;
 import org.openiam.base.SysConfiguration;
@@ -110,7 +111,11 @@ public class AccessReviewServiceImpl implements AccessReviewService {
         accessReviewData.setLoginList((CollectionUtils.isNotEmpty(loginList)) ? loginList : null);
         accessReviewData.setDefaultManagedSysId(sysConfiguration.getDefaultManagedSysId());
         accessReviewData.setMaxHierarchyLevel(filter.getMaxHierarchyLevel());
-        accessReviewData.setWorkflowsMaps(activitiService.getTasksForMemberAssociation(filter.getUserId()));
+
+        TaskSearchBean searchBean = new TaskSearchBean();
+        searchBean.setMemberAssociationId(filter.getUserId());
+
+        accessReviewData.setWorkflowsMaps(activitiService.findTasks(searchBean, 0, Integer.MAX_VALUE));
 
         AccessReviewStrategy strategy = null;
         if(AccessReviewConstant.ROLE_VIEW.equals(viewType)){

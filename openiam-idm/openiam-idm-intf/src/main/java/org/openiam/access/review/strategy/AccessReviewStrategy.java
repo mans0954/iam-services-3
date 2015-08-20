@@ -114,7 +114,7 @@ public abstract class AccessReviewStrategy {
     }
 
     private boolean skipResource(AccessViewBean bean) {
-    	/*
+
         AuthorizationResource thisResource = accessReviewData.getMatrix().getResourceMap().get(bean.getId());
 
         boolean result = false;
@@ -128,7 +128,7 @@ public abstract class AccessReviewStrategy {
         }
 
         return result || checkResourceId(bean.getId());
-        */ return false;
+         return false;
     }
     private boolean skipGroup(AccessViewBean bean) {
     	/*
