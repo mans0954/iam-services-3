@@ -142,7 +142,7 @@ public class AuthProviderTypeEntity extends KeyEntity {
 	@Override
 	public String toString() {
 		return String
-				.format("AuthProviderTypeEntity [description=%s, isActive=%s, hasPublicKey=%s, hasPrivateKey=%s, toString()=%s]",
+				.format("AuthProviderTypeEntity [description=%s, getActive=%s, hasPublicKey=%s, hasPrivateKey=%s, toString()=%s]",
 						description, isActive, hasPublicKey, hasPrivateKey,
 						super.toString());
 	}

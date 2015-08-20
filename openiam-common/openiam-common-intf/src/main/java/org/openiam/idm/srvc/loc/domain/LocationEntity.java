@@ -248,7 +248,7 @@ public class LocationEntity {
         sb.append(", postalCd='").append(postalCd).append('\'');
         sb.append(", organizationId='").append(organizationId).append('\'');
         sb.append(", internalLocationId='").append(internalLocationId).append('\'');
-        sb.append(", isActive=").append(isActive);
+        sb.append(", getActive=").append(isActive);
         sb.append(", sensitiveLocation=").append(sensitiveLocation);
         sb.append(", organization=").append(organization);
         sb.append('}');

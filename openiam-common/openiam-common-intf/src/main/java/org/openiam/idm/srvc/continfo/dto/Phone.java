@@ -93,7 +93,7 @@ public class Phone implements java.io.Serializable {
 
 //    public Phone(PhoneEntity phoneEntity) {
 //        this.phoneId = phoneEntity.getPhoneId();
-//        this.isActive = phoneEntity.getActive();
+//        this.getActive = phoneEntity.getActive();
 //        this.areaCd = phoneEntity.getAreaCd();
 //        this.countryCd = phoneEntity.getCountryCd();
 //        this.description = phoneEntity.getDescription();

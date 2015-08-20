@@ -54,7 +54,6 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
         User user = null;
         Resource resource = null;
         Organization organization = null;
-
         boolean provisioningEnabled = isProvisioningEnabled(execution);
 
         AuditAction action = null;
@@ -290,7 +289,22 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
                             if (organization != null && user != null) {
                                 organization.setOperation(AttributeOperationEnum.ADD);
                                 final ProvisionUser pUser = new ProvisionUser(user);
-                                pUser.getOrganizationUserDTOs().add(new OrganizationUserDTO(pUser.getId(), organization.getId(), sysConfiguration.getAffiliationDefaultTypeId(), AttributeOperationEnum.ADD));
+                                String affiliationType = null;
+                                try {
+                                    affiliationType = execution.getVariable("AFFILIATION_TYPE") == null ? sysConfiguration.getAffiliationDefaultTypeId() : (String) execution.getVariable("AFFILIATION_TYPE");
+                                } catch (Exception e) {
+                                    affiliationType = sysConfiguration.getAffiliationDefaultTypeId();
+                                }
+                                if (CollectionUtils.isNotEmpty(pUser.getOrganizationUserDTOs())) {
+                                    for (OrganizationUserDTO dto : pUser.getOrganizationUserDTOs()) {
+                                        if (sysConfiguration.getAffiliationPrimaryTypeId().equalsIgnoreCase(dto.getMdTypeId())) {
+                                            dto.setOperation(AttributeOperationEnum.REPLACE);
+                                            dto.setMdTypeId(sysConfiguration.getAffiliationDefaultTypeId());
+                                            break;
+                                        }
+                                    }
+                                }
+                                pUser.getOrganizationUserDTOs().add(new OrganizationUserDTO(pUser.getId(), organization.getId(), affiliationType, AttributeOperationEnum.ADD));
                                 response = provisionService.modifyUser(pUser);
                             }
                         } else {

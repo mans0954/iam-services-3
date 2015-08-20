@@ -35,7 +35,7 @@ public class OrganizationEntity extends AbstractMetdataTypeEntity {
 
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "organization", fetch = FetchType.LAZY)
     @OrderBy("name asc")
-    @Fetch(FetchMode.JOIN)
+    @Fetch(FetchMode.SUBSELECT)
     @Internationalized
     private Set<OrganizationAttributeEntity> attributes;
 

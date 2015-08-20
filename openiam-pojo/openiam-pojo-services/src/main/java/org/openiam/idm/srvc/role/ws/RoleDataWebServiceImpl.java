@@ -251,13 +251,12 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	}
 	
 	@Override
-	@LocalizedServiceGet
-	@Transactional(readOnly=true)
+	//@LocalizedServiceGet
+	//@Transactional(readOnly=true)
 	public Role getRoleLocalized(final String roleId, final String requesterId, final Language language) {
 		Role retVal = null;
 		 if (StringUtils.isNotBlank(roleId)) {
-			 final RoleEntity entity = roleDataService.getRoleLocalized(roleId, requesterId, languageConverter.convertToEntity(language, false));
-			 retVal = roleDozerConverter.convertToDTO(entity, true);
+			 retVal = roleDataService.getRoleDtoLocalized(roleId, requesterId, languageConverter.convertToEntity(language, false));
 		 }
 		 return retVal;
 	}
@@ -273,8 +272,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 
 	@Override
 	public List<Role> getRolesInGroup(final String groupId, String requesterId, boolean deepFlag, final int from, final int size) {
-        final List<RoleEntity> entityList = roleDataService.getRolesInGroup(groupId, requesterId, from, size);
-        return roleDozerConverter.convertToDTOList(entityList, false);
+        return roleDataService.getRolesDtoInGroup(groupId, requesterId, from, size);
 	}
 
 	@Override
@@ -523,8 +521,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 
 	@Override
 	public List<Role> findBeans(final RoleSearchBean searchBean, String requesterId, final int from, final int size) {
-        final List<RoleEntity> found = roleDataService.findBeans(searchBean, requesterId, from, size);
-        return roleDozerConverter.convertToDTOList(found, false);
+        return roleDataService.findBeansDto(searchBean, requesterId, from, size);
 	}
 
 	@Override
@@ -535,8 +532,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 
 	@Override
 	public List<Role> getRolesForResource(final String resourceId, String requesterId, boolean deepFlag,  final int from, final int size) {
-        final List<RoleEntity> entityList = roleDataService.getRolesForResource(resourceId, requesterId, from, size);
-        return roleDozerConverter.convertToDTOList(entityList, false);
+        return roleDataService.getRolesDtoForResource(resourceId, requesterId, from, size);
 	}
 
 	@Override
@@ -546,8 +542,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 
 	@Override
 	public List<Role> getChildRoles(final String roleId, String requesterId, Boolean deepFlag, final  int from, final int size) {
-        final List<RoleEntity> entityList = roleDataService.getChildRoles(roleId, requesterId, from, size);
-        return roleDozerConverter.convertToDTOList(entityList, false);
+        return roleDataService.getChildRolesDto(roleId, requesterId, from, size);
 	}
 
 	@Override
@@ -559,8 +554,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	@Override
 	@WebMethod
 	public List<Role> getParentRoles(final String roleId, String requesterId, final int from, final int size) {
-        final List<RoleEntity> entityList = roleDataService.getParentRoles(roleId, requesterId, from, size);
-        return roleDozerConverter.convertToDTOList(entityList, false);
+        return roleDataService.getParentRolesDto(roleId, requesterId, from, size);
 	}
 
 	@Override
@@ -692,10 +686,9 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	}
 
     @Override
-    @Transactional(readOnly = true)
+    //@Transactional(readOnly = true)
     public List<Role> findRolesByAttributeValue(String attrName, String attrValue) {
-        return roleDozerConverter.convertToDTOList(
-                roleDataService.findRolesByAttributeValue(attrName, attrValue), true);
+        return roleDataService.findRolesDtoByAttributeValue(attrName, attrValue);
     }
 
     @Override
