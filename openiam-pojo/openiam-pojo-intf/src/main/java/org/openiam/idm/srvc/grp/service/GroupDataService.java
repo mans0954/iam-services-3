@@ -31,6 +31,8 @@ public interface GroupDataService {
 
     public GroupEntity getGroupLocalize(final String id, final LanguageEntity language);
     public GroupEntity getGroupLocalize(final String id, final String requesterId, final LanguageEntity language);
+    public Group getGroupDtoLocalize(final String id, final String requesterId, final Language language);
+
     public GroupEntity getGroupByNameLocalize(final String groupName, final String requesterId, final LanguageEntity language);
     public List<Group> getCompiledGroupsForUserLocalize(final String userId, final LanguageEntity language);
     /**
@@ -40,6 +42,8 @@ public interface GroupDataService {
      * @return
      */
     public List<GroupEntity> findBeans(final GroupSearchBean searchBean, String requesterId, final int from, final int size);
+    public List<Group> findDtoBeans(final GroupSearchBean searchBean, String requesterId, final int from, final int size);
+
     public List<GroupEntity> getChildGroups(final String groupId, final String requesterId, final int from, final int size);
     public List<GroupEntity> getParentGroups(final String groupId, final String requesterId, final int from, final int size);
     public List<GroupEntity> getGroupsForResource(final String resourceId, final String requesterId, final int from, final int size);
@@ -50,11 +54,17 @@ public interface GroupDataService {
     public List<GroupEntity> getGroupsForRole(final String roleId, String requesterId, final int from, final int size);
 
     public List<GroupEntity> findBeansLocalize(final GroupSearchBean searchBean, String requesterId, final int from, final int size, final LanguageEntity language);
+    public List<Group> findBeansDtoLocalize(final GroupSearchBean searchBean, String requesterId, final int from, final int size, final Language language);
     public List<GroupEntity> getChildGroupsLocalize(final String groupId, final String requesterId, final int from, final int size, final LanguageEntity language);
+    public List<Group> getChildGroupsDtoLocalize(final String groupId, final String requesterId, final int from, final int size, final Language language);
     public List<GroupEntity> getParentGroupsLocalize(final String groupId, final String requesterId, final int from, final int size, final LanguageEntity language);
+    public List<Group> getParentGroupsDtoLocalize(final String groupId, final String requesterId, final int from, final int size, final Language language);
     public List<GroupEntity> getGroupsForResourceLocalize(final String resourceId, final String requesterId, final int from, final int size, final LanguageEntity language);
+    public List<Group> getGroupsDtoForResourceLocalize(final String resourceId, final String requesterId, final int from, final int size, final Language language);
     public List<GroupEntity> getGroupsForUserLocalize(final String userId, String requesterId, final int from, final int size, final LanguageEntity language);
+    public List<Group> getGroupsDtoForUserLocalize(final String userId, String requesterId, final int from, final int size, final Language language);
     public List<GroupEntity> getGroupsForRoleLocalize(final String roleId, String requesterId, final int from, final int size, final LanguageEntity language);
+    public List<Group> getGroupsDtoForRoleLocalize(final String roleId, String requesterId, final int from, final int size, final Language language, boolean deepFlag);
 
     public Set<String> getGroupIdList();
 
@@ -107,7 +117,10 @@ public interface GroupDataService {
 
     public Group getGroupDTOLocalize(final String groupId, LanguageEntity language);
     public List<GroupEntity> findGroupsByAttributeValueLocalize(String attrName, String attrValue, LanguageEntity language);
+    public List<Group> findGroupsDtoByAttributeValueLocalize(String attrName, String attrValue, LanguageEntity language);
 
     public int countGroupsForOwner(GroupSearchBean searchBean, String requesterId, String ownerId);
     public List<GroupEntity> findGroupsForOwner(GroupSearchBean searchBean, String requesterId, String ownerId, int from, int size, LanguageEntity languageEntity);
+
+    public List<Group> findGroupsDtoForOwner(GroupSearchBean searchBean, String requesterId, String ownerId, int from, int size, Language language);
 }

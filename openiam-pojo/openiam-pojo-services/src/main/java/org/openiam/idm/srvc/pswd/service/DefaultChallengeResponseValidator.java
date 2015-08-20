@@ -90,6 +90,8 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
 
     private static final Log log = LogFactory.getLog(DefaultChallengeResponseValidator.class);
 
+    private static final Integer maxLengthAnswer = 255;
+
     @Override
     public boolean isResponseValid(String userId, List<UserIdentityAnswerEntity> newAnswerList, int requiredCorrectAns)
             throws Exception {
@@ -304,14 +306,27 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
     public void saveAnswers(final List<UserIdentityAnswerEntity> answerList) throws Exception {
         if (answerList != null) {
             for (final UserIdentityAnswerEntity entity : answerList) {
-                if (entity.getIdentityQuestion() != null && StringUtils.isNotBlank(entity.getIdentityQuestion().getId())) {
-                    entity.setIdentityQuestion(questionDAO.findById(entity.getIdentityQuestion().getId()));
+
+                if(validateAnswerLength(entity.getQuestionAnswer())) {
+
+                    if (entity.getIdentityQuestion() != null && StringUtils.isNotBlank(entity.getIdentityQuestion().getId())) {
+                        entity.setIdentityQuestion(questionDAO.findById(entity.getIdentityQuestion().getId()));
+                    }
+                    entity.setQuestionAnswer(keyManagementService.encrypt(entity.getUserId(), KeyName.challengeResponse, entity.getQuestionAnswer()));
+                    entity.setIsEncrypted(true);
+                } else {
+                    throw new BasicDataServiceException(ResponseCode.ANSWER_IS_TOO_LONG);
                 }
-                entity.setQuestionAnswer(keyManagementService.encrypt(entity.getUserId(), KeyName.challengeResponse, entity.getQuestionAnswer()));
-                entity.setIsEncrypted(true);
             }
             answerDAO.save(answerList);
         }
+    }
+
+    private boolean validateAnswerLength (String answer) {
+        if (answer.length() <= maxLengthAnswer){
+            return true;
+        }
+        return false;
     }
 
     @Override

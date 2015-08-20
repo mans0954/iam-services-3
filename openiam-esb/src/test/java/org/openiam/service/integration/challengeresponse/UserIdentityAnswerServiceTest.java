@@ -1,9 +1,11 @@
 package org.openiam.service.integration.challengeresponse;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.openiam.base.ws.Response;
+import org.openiam.base.ws.ResponseCode;
 import org.openiam.idm.searchbeans.IdentityAnswerSearchBean;
 import org.openiam.idm.searchbeans.IdentityQuestionSearchBean;
 import org.openiam.idm.srvc.pswd.dto.IdentityQuestion;
@@ -14,6 +16,7 @@ import org.openiam.service.integration.AbstractKeyNameServiceTest;
 import org.openiam.service.integration.AbstractKeyServiceTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -21,7 +24,10 @@ import org.testng.annotations.Test;
 public class UserIdentityAnswerServiceTest extends AbstractChallengeResponseServiceTest<UserIdentityAnswer, IdentityAnswerSearchBean> {
 
 	private User user = null;
-	
+
+	private static final String invalidAnswer = "sadasdasdadasdasdasdasdadasadasdsadasdasdadasdasdasdasdadasadasdsadasdasdadasdasdasdasdadasadasdsadasdasdadasdasdasdasdadasadasdsadasdasdadasdasdasdasdadasadasdsadasdasdadasdasdasdasdadasadasdsadasdasdadasdasdasdasdadasadasdsadasdasdadasdasdasdasdadasassss";
+
+
 	@BeforeClass
 	public void _init() {
 		user = super.createUser();
@@ -92,6 +98,34 @@ public class UserIdentityAnswerServiceTest extends AbstractChallengeResponseServ
 		if(instance != null && instance.getId() != null) {
 			deleteAndAssert(instance);
     	}
+	}
+
+	@Test
+	public void saveAnswersWithInvalidLength() throws Exception {
+		List<UserIdentityAnswer> userIdentityAnswerList = new ArrayList<UserIdentityAnswer>();
+		UserIdentityAnswer uia1 = new UserIdentityAnswer();
+		uia1.setUserId("3000");
+		uia1.setQuestionId("200");
+		uia1.setQuestionAnswer(invalidAnswer);
+
+		UserIdentityAnswer uia2 = new UserIdentityAnswer();
+		uia2.setUserId("3000");
+		uia2.setQuestionId("202");
+		uia2.setQuestionAnswer("dsfdsf");
+
+		UserIdentityAnswer uia3 = new UserIdentityAnswer();
+		uia3.setUserId("3000");
+		uia3.setQuestionId("210");
+		uia3.setQuestionAnswer("sdasdasdasd");
+
+		userIdentityAnswerList.add(uia1);
+		userIdentityAnswerList.add(uia2);
+		userIdentityAnswerList.add(uia3);
+
+		Response res = challengeResponseServiceClient.saveAnswers(userIdentityAnswerList);
+
+		Assert.assertFalse(res.isSuccess());
+		Assert.assertEquals(res.getErrorCode(), ResponseCode.ANSWER_IS_TOO_LONG);
 	}
 	
 	public ClusterKey<UserIdentityAnswer, IdentityAnswerSearchBean> doClusterTest() throws Exception {

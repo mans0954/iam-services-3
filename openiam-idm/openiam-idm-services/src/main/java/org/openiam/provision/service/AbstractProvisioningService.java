@@ -25,6 +25,8 @@ import org.openiam.dozer.converter.*;
 import org.openiam.exception.ObjectNotFoundException;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
+import org.openiam.idm.srvc.audit.constant.AuditConstants;
+import org.openiam.idm.srvc.audit.constant.AuditTarget;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
@@ -61,7 +63,9 @@ import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.idm.srvc.msg.service.MailService;
 import org.openiam.idm.srvc.msg.service.MailTemplateParameters;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
+import org.openiam.idm.srvc.org.domain.OrganizationUserEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
+import org.openiam.idm.srvc.org.dto.OrganizationUserDTO;
 import org.openiam.idm.srvc.org.service.OrganizationDataService;
 import org.openiam.idm.srvc.org.service.OrganizationService;
 import org.openiam.idm.srvc.policy.dto.PasswordPolicyAssocSearchBean;
@@ -106,13 +110,14 @@ import java.util.*;
  * Base class for the provisioning service
  * User: suneetshah
  */
-public abstract class AbstractProvisioningService extends AbstractBaseService implements ProvisionService {
+public abstract class AbstractProvisioningService extends AbstractBaseService {
 
     protected static final Log log = LogFactory.getLog(AbstractProvisioningService.class);
 
     public static final String NEW_USER_EMAIL_SUPERVISOR_NOTIFICATION = "NEW_USER_EMAIL_SUPERVISOR";
     public static final String NEW_USER_EMAIL_NOTIFICATION = "NEW_USER_EMAIL";
     public static final String NEW_USER_ACTIVATION_NOTIFICATION = "NEW_USER_ACTIVATION_NOTIFICATION";
+    public static final String USER_RESET_PASSWORD_ACTIVATION_NOTIFICATION = "USER_RESET_PASSWORD_ACTIVATION_NOTIFICATION";
     public static final String PASSWORD_EMAIL_NOTIFICATION = "USER_PASSWORD_EMAIL";
 
     public static final String MATCH_PARAM = "matchParam";
@@ -327,7 +332,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
 
     }
 
-    protected void sendActivationLink(User user, Login login) {
+
+    private void sendActivationLink(User user, Login login, String notificationType) {
         try {
 
             final PasswordResetTokenRequest tokenRequest = new PasswordResetTokenRequest(login.getLogin(), login.getManagedSysId());
@@ -353,13 +359,21 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                 NotificationRequest notificationRequest = new NotificationRequest();
                 notificationRequest.setUserId(user.getId());
                 notificationRequest.setParamList(msgParams);
-                notificationRequest.setNotificationType(NEW_USER_ACTIVATION_NOTIFICATION);
+                notificationRequest.setNotificationType(notificationType);
                 client.sendAsync("vm://notifyUserByEmailMessage", notificationRequest, msgProp);
             }
 
         } catch (MuleException me) {
             log.error(me.toString());
         }
+    }
+
+    protected void sendActivationLink(User user, Login login) {
+        this.sendActivationLink(user, login, NEW_USER_ACTIVATION_NOTIFICATION);
+    }
+
+    protected void sendResetActivationLink(User user, Login login) {
+        this.sendActivationLink(user, login, USER_RESET_PASSWORD_ACTIVATION_NOTIFICATION);
     }
 
     protected void sendCredentialsToUser(User user, String identity, String password) {
@@ -1508,35 +1522,36 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     /* User Org Affiliation */
 
     public void updateAffiliations(final UserEntity userEntity, final ProvisionUser pUser, final IdmAuditLog parentLog) {
-        if (CollectionUtils.isNotEmpty(pUser.getAffiliations())) {
-            for (Organization o : pUser.getAffiliations()) {
+        if (CollectionUtils.isNotEmpty(pUser.getOrganizationUserDTOs())) {
+            for (OrganizationUserDTO o : pUser.getOrganizationUserDTOs()) {
                 AttributeOperationEnum operation = o.getOperation();
                 if (operation == AttributeOperationEnum.ADD) {
-                    OrganizationEntity org = organizationService.getOrganizationLocalized(o.getId(), null);
-                    userEntity.getAffiliations().add(org);
+                    if (userEntity.getOrganizationUser() == null)
+                        userEntity.setOrganizationUser(new HashSet<OrganizationUserEntity>());
+                    userEntity.getOrganizationUser().add(new OrganizationUserEntity(pUser.getId(), o.getOrganization().getId(), o.getMdTypeId()));
                     // Audit Log ---------------------------------------------------
                     IdmAuditLog auditLog = new IdmAuditLog();
                     auditLog.setAction(AuditAction.ADD_USER_TO_ORG.value());
                     Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
                     String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
                     auditLog.setTargetUser(pUser.getId(), loginStr);
-                    auditLog.setTargetOrg(org.getId(), org.getName());
-                    auditLog.addCustomRecord("ORG", org.getName());
+                    auditLog.setTargetOrg(o.getOrganization().getId(), o.getOrganization().getName());
+                    auditLog.addCustomRecord(AuditTarget.ORG.value(), o.getOrganization().getName());
                     parentLog.addChild(auditLog);
                     // --------------------------------------------------------------
                 } else if (operation == AttributeOperationEnum.DELETE) {
-                    Set<OrganizationEntity> affiliations = userEntity.getAffiliations();
-                    for (OrganizationEntity a : affiliations) {
-                        if (StringUtils.equals(o.getId(), a.getId())) {
-                            userEntity.getAffiliations().remove(a);
+                    Set<OrganizationUserEntity> affiliations = userEntity.getOrganizationUser();
+                    for (OrganizationUserEntity a : affiliations) {
+                        if (a.getOrganization() != null && StringUtils.equals(o.getOrganization().getId(), a.getOrganization().getId())) {
+                            userEntity.getOrganizationUser().remove(a);
                             // Audit Log ---------------------------------------------------
                             IdmAuditLog auditLog = new IdmAuditLog();
                             auditLog.setAction(AuditAction.REMOVE_USER_FROM_ORG.value());
                             Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
                             String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
                             auditLog.setTargetUser(pUser.getId(), loginStr);
-                            auditLog.setTargetOrg(o.getId(), o.getName());
-                            auditLog.addCustomRecord("ORG", o.getName());
+                            auditLog.setTargetOrg(o.getOrganization().getId(), o.getOrganization().getName());
+                            auditLog.addCustomRecord(AuditTarget.ORG.value(), o.getOrganization().getName());
                             parentLog.addChild(auditLog);
                             // -------------------------------------------------------------
                             break;
@@ -1544,7 +1559,25 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     }
 
                 } else if (operation == AttributeOperationEnum.REPLACE) {
-                    throw new UnsupportedOperationException("Operation 'REPLACE' is not supported for affiliations");
+                    Set<OrganizationUserEntity> affiliations = userEntity.getOrganizationUser();
+                    for (OrganizationUserEntity a : affiliations) {
+                        if (a.getOrganization() != null && StringUtils.equals(o.getOrganization().getId(), a.getOrganization().getId())) {
+                            MetadataTypeEntity metadataTypeEntity = new MetadataTypeEntity();
+                            metadataTypeEntity.setId(o.getMdTypeId());
+                            a.setMetadataTypeEntity(metadataTypeEntity);
+                            // Audit Log ---------------------------------------------------
+                            IdmAuditLog auditLog = new IdmAuditLog();
+                            auditLog.setAction(AuditAction.REPLACE_USER_FROM_ORG.value());
+                            Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
+                            String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
+                            auditLog.setTargetUser(pUser.getId(), loginStr);
+                            auditLog.setTargetOrg(o.getOrganization().getId(), o.getOrganization().getName());
+                            auditLog.addCustomRecord(AuditTarget.ORG.value(), o.getOrganization().getName());
+                            parentLog.addChild(auditLog);
+                            // -------------------------------------------------------------
+                            break;
+                        }
+                    }
                 }
             }
         }
@@ -1683,7 +1716,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         }
     }
 
-    public ObjectResponse requestAddModify(ExtensibleUser extUser, Login mLg, boolean isAdd,
+    protected ObjectResponse requestAddModify(ExtensibleUser extUser, Login mLg, boolean isAdd,
                                            String requestId, final IdmAuditLog idmAuditLog) {
 
         ObjectResponse response = new ObjectResponse();
@@ -1907,8 +1940,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                 connectorAdapter.resumeRequest(mSys, resumeReq, MuleContextProvider.getCtx());
     }
 
-    @Override
-    public Response addEvent(ProvisionActionEvent event, ProvisionActionTypeEnum type) {
+
+    protected Response addEvent(ProvisionActionEvent event, ProvisionActionTypeEnum type) {
         Map<String, Object> bindingMap = new HashMap<>();
         Response response = new Response(ResponseStatus.SUCCESS);
         response.setResponseValue(ProvisionServiceEventProcessor.CONTINUE);

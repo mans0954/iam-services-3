@@ -74,4 +74,7 @@ public interface ActivitiService {
 	
 	@WebMethod
 	public Response deleteTaskForUser(final String taskId, final String userId);
+
+	@WebMethod
+	public List<String> getApproverUserIds(List<String> associationIds, final String targetUserId);
 }
