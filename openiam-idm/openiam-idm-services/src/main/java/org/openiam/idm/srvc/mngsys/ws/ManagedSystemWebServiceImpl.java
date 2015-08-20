@@ -14,6 +14,8 @@ import org.openiam.idm.searchbeans.AttributeMapSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
+import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.mngsys.domain.*;
@@ -63,7 +65,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     @Autowired
     private KeyManagementService keyManagementService;
 
-//    @Autowired
+    //    @Autowired
 //    private ManagedSysRuleDozerConverter managedSysRuleDozerConverter;
     @Autowired
     private ManagedSysDozerConverter managedSysDozerConverter;
@@ -84,6 +86,9 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
 
     @Autowired
     private DefaultReconciliationAttributeMapDozerConverter defaultReconciliationAttributeMapDozerConverter;
+
+    @Autowired
+    private LoginDataService loginManager;
 
     private static final Log log = LogFactory
             .getLog(ManagedSystemWebServiceImpl.class);
@@ -115,12 +120,12 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
         auditLog.setTargetManagedSys(sys.getId(), sys.getName());
         try {
             String host = sys.getHostUrl();
-            if(host.indexOf("://") > 0) {
-               host = host.substring(host.indexOf("://")+"://".length());
+            if (host.indexOf("://") > 0) {
+                host = host.substring(host.indexOf("://") + "://".length());
             }
             SSLCert.installCert(host, sys.getPort(), keystorePasswd, keystore);
             auditLog.succeed();
-        } catch(Exception ex) {
+        } catch (Exception ex) {
             auditLog.fail();
             auditLog.setFailureReason(ex.toString());
             response.setErrorText(ex.toString());
@@ -152,66 +157,66 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
 
     @Override
     public Response saveManagedSystem(final ManagedSysDto sys) {
-  	final Response response = new Response(ResponseStatus.SUCCESS);
-    	try {
-    		if(sys == null) {
-    			throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
-    		}
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            if (sys == null) {
+                throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+            }
 
-    		if(StringUtils.isBlank(sys.getName())) {
-    			throw new BasicDataServiceException(ResponseCode.NO_NAME);
-    		}
+            if (StringUtils.isBlank(sys.getName())) {
+                throw new BasicDataServiceException(ResponseCode.NO_NAME);
+            }
 
             boolean isDefaultManagedSystem = sys.getId() != null && sys.getId().equals(defaultManagedSystemId);
-    		if(!isDefaultManagedSystem && StringUtils.isBlank(sys.getConnectorId())) {
-    			throw new BasicDataServiceException(ResponseCode.CONNECTOR_REQUIRED);
-    		}
+            if (!isDefaultManagedSystem && StringUtils.isBlank(sys.getConnectorId())) {
+                throw new BasicDataServiceException(ResponseCode.CONNECTOR_REQUIRED);
+            }
 
-            if(isDefaultManagedSystem && StringUtils.isNotBlank(sys.getConnectorId())) {
+            if (isDefaultManagedSystem && StringUtils.isNotBlank(sys.getConnectorId())) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }
 
             if (encrypt && sys.getPswd() != null) {
-    			sys.setPswd(cryptor.encrypt(keyManagementService.getUserKey(systemUserId, KeyName.password.name()), sys.getPswd()));
-    		}
+                sys.setPswd(cryptor.encrypt(keyManagementService.getUserKey(systemUserId, KeyName.password.name()), sys.getPswd()));
+            }
 
-            sys.setSkipGroupProvision(sys.getSkipGroupProvision()==null ?false :sys.getSkipGroupProvision());
+            sys.setSkipGroupProvision(sys.getSkipGroupProvision() == null ? false : sys.getSkipGroupProvision());
 
-    		if(StringUtils.isBlank(sys.getId())) {
-    			managedSystemService.addManagedSys(sys);
-    		}  else {
-    			managedSystemService.updateManagedSys(sys);
-    		}
-    		response.setResponseValue(sys.getId());
-    	} catch (BasicDataServiceException e) {
-			response.setErrorCode(e.getCode());
-			response.setStatus(ResponseStatus.FAILURE);
-		} catch (Throwable e) {
-			log.error("Can't save managed system", e);
-			response.setErrorText(e.getMessage());
-			response.setStatus(ResponseStatus.FAILURE);
-		}
+            if (StringUtils.isBlank(sys.getId())) {
+                managedSystemService.addManagedSys(sys);
+            } else {
+                managedSystemService.updateManagedSys(sys);
+            }
+            response.setResponseValue(sys.getId());
+        } catch (BasicDataServiceException e) {
+            response.setErrorCode(e.getCode());
+            response.setStatus(ResponseStatus.FAILURE);
+        } catch (Throwable e) {
+            log.error("Can't save managed system", e);
+            response.setErrorText(e.getMessage());
+            response.setStatus(ResponseStatus.FAILURE);
+        }
 
-    	return response;
+        return response;
     }
 
     @Override
     @Transactional(readOnly = true)
     public ManagedSysDto getManagedSys(String sysId) {
-    	ManagedSysDto sysDto = null;
+        ManagedSysDto sysDto = null;
         if (sysId != null) {
-        	ManagedSysEntity sys = managedSystemService.getManagedSysById(sysId);
-        	if (sys != null) {
-        		sysDto = managedSysDozerConverter.convertToDTO(sys, true);
-        		if (sysDto != null && sysDto.getPswd() != null) {
-        			try {
-        				final byte[] bytes = keyManagementService.getUserKey(systemUserId, KeyName.password.name());
-        				sysDto.setDecryptPassword(cryptor.decrypt(bytes, sys.getPswd()));
-        			} catch (Exception e) {
-        				log.error("Can't decrypt", e);
-        			}
-        		}
-        	}
+            ManagedSysEntity sys = managedSystemService.getManagedSysById(sysId);
+            if (sys != null) {
+                sysDto = managedSysDozerConverter.convertToDTO(sys, true);
+                if (sysDto != null && sysDto.getPswd() != null) {
+                    try {
+                        final byte[] bytes = keyManagementService.getUserKey(systemUserId, KeyName.password.name());
+                        sysDto.setDecryptPassword(cryptor.decrypt(bytes, sys.getPswd()));
+                    } catch (Exception e) {
+                        log.error("Can't decrypt", e);
+                    }
+                }
+            }
         }
         return sysDto;
     }
@@ -225,26 +230,30 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
 
     @Override
     public Response removeManagedSystem(String sysId) {
-    	final Response response = new Response(ResponseStatus.SUCCESS);
-    	try {
-    		if(StringUtils.isBlank(sysId)) {
-    			throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
-    		}
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            if (StringUtils.isBlank(sysId)) {
+                throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+            }
             List<AuthProviderEntity> authProviderEntities = managedSystemService.findAuthProvidersByManagedSysId(sysId);
             if (CollectionUtils.isNotEmpty(authProviderEntities)) {
                 throw new BasicDataServiceException(ResponseCode.LINKED_TO_AUTHENTICATION_PROVIDER, authProviderEntities.get(0).getName());
             }
-    		managedSystemService.removeManagedSysById(sysId);
-    	} catch (BasicDataServiceException e) {
+            List<LoginEntity> loginEntities = loginManager.getAllLoginByManagedSys(sysId);
+            if (CollectionUtils.isNotEmpty(loginEntities)) {
+                throw new BasicDataServiceException(ResponseCode.LINKED_TO_USERS, String.valueOf(loginEntities.size()));
+            }
+            managedSystemService.removeManagedSysById(sysId);
+        } catch (BasicDataServiceException e) {
             response.setResponseValue(e.getResponseValue());
-			response.setErrorCode(e.getCode());
-			response.setStatus(ResponseStatus.FAILURE);
-		} catch (Throwable e) {
-			log.error("Can't remove managed system", e);
-			response.setErrorText(e.getMessage());
-			response.setStatus(ResponseStatus.FAILURE);
-		}
-    	return response;
+            response.setErrorCode(e.getCode());
+            response.setStatus(ResponseStatus.FAILURE);
+        } catch (Throwable e) {
+            log.error("Can't remove managed system", e);
+            response.setErrorText(e.getMessage());
+            response.setStatus(ResponseStatus.FAILURE);
+        }
+        return response;
     }
 
     /**
@@ -256,7 +265,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
      * @return
      */
     @Override
-    @Cacheable(value="managedSysObjectParam", key="{ #managedSystemId, #objectType}")
+    @Cacheable(value = "managedSysObjectParam", key = "{ #managedSystemId, #objectType}")
     public ManagedSystemObjectMatch[] managedSysObjectParam(
             String managedSystemId, String objectType) {
         if (managedSystemId == null) {
@@ -280,21 +289,21 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     @Override
     @Transactional(readOnly = true)
     public ManagedSysDto getManagedSysByResource(String resourceId) {
-    	ManagedSysDto sysDto = null;
-        if(resourceId != null) {
-        	ManagedSysEntity sys = managedSystemService.getManagedSysByResource(resourceId, "ACTIVE");
-        	if (sys != null) {
-        		sysDto = managedSysDozerConverter.convertToDTO(sys, false);
-        		if (sysDto != null && sysDto.getPswd() != null) {
-        			try {
-        				sysDto.setDecryptPassword(cryptor.decrypt(
-                            keyManagementService.getUserKey(systemUserId,
-                                    KeyName.password.name()), sys.getPswd()));
-        			} catch (Exception e) {
-        				log.error(e);
-        			}
-        		}
-        	}
+        ManagedSysDto sysDto = null;
+        if (resourceId != null) {
+            ManagedSysEntity sys = managedSystemService.getManagedSysByResource(resourceId, "ACTIVE");
+            if (sys != null) {
+                sysDto = managedSysDozerConverter.convertToDTO(sys, false);
+                if (sysDto != null && sysDto.getPswd() != null) {
+                    try {
+                        sysDto.setDecryptPassword(cryptor.decrypt(
+                                keyManagementService.getUserKey(systemUserId,
+                                        KeyName.password.name()), sys.getPswd()));
+                    } catch (Exception e) {
+                        log.error(e);
+                    }
+                }
+            }
         }
         return sysDto;
     }
@@ -312,62 +321,62 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     }
 
     @Override
-	public Response saveApproverAssociations(final List<ApproverAssociation> approverAssociationList, final AssociationType type, final String entityId) {
-    	final Response response = new Response(ResponseStatus.SUCCESS);
-    	 try {
-    		 if(CollectionUtils.isNotEmpty(approverAssociationList)) {
-    			 for(final ApproverAssociation approverAssociation : approverAssociationList) {
-		             if (approverAssociation == null) {
-		                 throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
-		             }
+    public Response saveApproverAssociations(final List<ApproverAssociation> approverAssociationList, final AssociationType type, final String entityId) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            if (CollectionUtils.isNotEmpty(approverAssociationList)) {
+                for (final ApproverAssociation approverAssociation : approverAssociationList) {
+                    if (approverAssociation == null) {
+                        throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+                    }
 
-		             if (StringUtils.isBlank(approverAssociation.getApproverEntityId())
-		                     || approverAssociation.getApproverEntityType() == null) {
-		                 approverAssociation.setApproverEntityId(null);
-		                 approverAssociation.setApproverEntityType(null);
-		             }
+                    if (StringUtils.isBlank(approverAssociation.getApproverEntityId())
+                            || approverAssociation.getApproverEntityType() == null) {
+                        approverAssociation.setApproverEntityId(null);
+                        approverAssociation.setApproverEntityType(null);
+                    }
 
-		             if (StringUtils.isBlank(approverAssociation.getOnApproveEntityId())
-		                     || approverAssociation.getOnApproveEntityType() == null) {
-		                 approverAssociation.setOnApproveEntityId(null);
-		                 approverAssociation.setOnApproveEntityType(null);
-		             }
+                    if (StringUtils.isBlank(approverAssociation.getOnApproveEntityId())
+                            || approverAssociation.getOnApproveEntityType() == null) {
+                        approverAssociation.setOnApproveEntityId(null);
+                        approverAssociation.setOnApproveEntityType(null);
+                    }
 
-		             if (StringUtils.isBlank(approverAssociation.getOnRejectEntityId())
-		                     || approverAssociation.getOnRejectEntityType() == null) {
-		                 approverAssociation.setOnRejectEntityId(null);
-		                 approverAssociation.setOnRejectEntityType(null);
-		             }
+                    if (StringUtils.isBlank(approverAssociation.getOnRejectEntityId())
+                            || approverAssociation.getOnRejectEntityType() == null) {
+                        approverAssociation.setOnRejectEntityId(null);
+                        approverAssociation.setOnRejectEntityType(null);
+                    }
 
-		             if (StringUtils.isBlank(approverAssociation.getAssociationEntityId())
-		                     || approverAssociation.getAssociationType() == null) {
-		                 approverAssociation.setAssociationEntityId(null);
-		                 approverAssociation.setAssociationType(null);
-		             }
+                    if (StringUtils.isBlank(approverAssociation.getAssociationEntityId())
+                            || approverAssociation.getAssociationType() == null) {
+                        approverAssociation.setAssociationEntityId(null);
+                        approverAssociation.setAssociationType(null);
+                    }
 
-		             if (approverAssociation.getApproverEntityType() == null
-		                     || StringUtils.isBlank(approverAssociation
-                             .getApproverEntityId())) {
-		                 throw new BasicDataServiceException(
-		                         ResponseCode.REQUEST_APPROVERS_NOT_SET);
-		             }
+                    if (approverAssociation.getApproverEntityType() == null
+                            || StringUtils.isBlank(approverAssociation
+                            .getApproverEntityId())) {
+                        throw new BasicDataServiceException(
+                                ResponseCode.REQUEST_APPROVERS_NOT_SET);
+                    }
 
-		             if(approverAssociation.getApproverLevel() == null) {
-		            	 approverAssociation.setApproverLevel(Integer.valueOf(0));
-		             }
-	    		 }
-    		 }
+                    if (approverAssociation.getApproverLevel() == null) {
+                        approverAssociation.setApproverLevel(Integer.valueOf(0));
+                    }
+                }
+            }
 
-    		 final List<ApproverAssociationEntity> entityList = approverAssociationDozerConverter.convertToEntityList(approverAssociationList, true);
-    		 managedSystemService.saveApproverAssociations(entityList, type, entityId);
-         } catch (BasicDataServiceException e) {
-             response.setErrorCode(e.getCode());
-             response.setStatus(ResponseStatus.FAILURE);
-         } catch (Throwable e) {
-             log.error(e);
-             response.setStatus(ResponseStatus.FAILURE);
-         }
-    	return response;
+            final List<ApproverAssociationEntity> entityList = approverAssociationDozerConverter.convertToEntityList(approverAssociationList, true);
+            managedSystemService.saveApproverAssociations(entityList, type, entityId);
+        } catch (BasicDataServiceException e) {
+            response.setErrorCode(e.getCode());
+            response.setStatus(ResponseStatus.FAILURE);
+        } catch (Throwable e) {
+            log.error(e);
+            response.setStatus(ResponseStatus.FAILURE);
+        }
+        return response;
     }
 
     @Override
@@ -462,19 +471,19 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
      * (org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch)
      */
     @Override
-    @CacheEvict(value = "managedSysObjectParam", allEntries=true)
+    @CacheEvict(value = "managedSysObjectParam", allEntries = true)
     public Response saveManagedSystemObjectMatch(ManagedSystemObjectMatch obj) {
-    	final Response response = new Response(ResponseStatus.SUCCESS);
+        final Response response = new Response(ResponseStatus.SUCCESS);
         try {
             if (obj == null) {
                 throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
             }
 
-            if(StringUtils.isNotBlank(obj.getObjectSearchId())) {
-            	managedSystemService.updateManagedSystemObjectMatch(obj);
+            if (StringUtils.isNotBlank(obj.getObjectSearchId())) {
+                managedSystemService.updateManagedSystemObjectMatch(obj);
                 response.setResponseValue(obj.getObjectSearchId());
             } else {
-            	String objId = managedSystemService.saveManagedSystemObjectMatch(obj);
+                String objId = managedSystemService.saveManagedSystemObjectMatch(obj);
                 response.setResponseValue(objId);
             }
         } catch (BasicDataServiceException e) {
@@ -488,14 +497,14 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     }
 
     @Override
-    @CacheEvict(value = "managedSysObjectParam", allEntries=true)
+    @CacheEvict(value = "managedSysObjectParam", allEntries = true)
     public void removeManagedSystemObjectMatch(ManagedSystemObjectMatch obj) {
         this.managedSystemService.deleteManagedSystemObjectMatch(obj.getObjectSearchId());
     }
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value="resourceAttributeMaps", key="{ #attributeMapId}")
+    @Cacheable(value = "resourceAttributeMaps", key = "{ #attributeMapId}")
     public AttributeMap getAttributeMap(String attributeMapId) {
         if (attributeMapId == null) {
             throw new IllegalArgumentException("attributeMapId is null");
@@ -507,7 +516,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     }
 
     @Override
-    @CacheEvict(value = "resourceAttributeMaps", allEntries=true)
+    @CacheEvict(value = "resourceAttributeMaps", allEntries = true)
     public AttributeMap addAttributeMap(AttributeMap attributeMap) {
         if (attributeMap == null) {
             throw new IllegalArgumentException("AttributeMap object is null");
@@ -519,15 +528,15 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     }
 
     @Override
-    @CacheEvict(value = "resourceAttributeMaps", allEntries=true)
+    @CacheEvict(value = "resourceAttributeMaps", allEntries = true)
     public void deleteAttributesMapList(List<String> ids) throws Exception {
         managedSystemService.deleteAttributesMapList(ids);
     }
 
     @Override
-    @CacheEvict(value = "resourceAttributeMaps", allEntries=true)
+    @CacheEvict(value = "resourceAttributeMaps", allEntries = true)
     public List<AttributeMap> saveAttributesMap(List<AttributeMap> attrMap,
-            String mSysId, String resId, String synchConfigId) throws Exception {
+                                                String mSysId, String resId, String synchConfigId) throws Exception {
         if (CollectionUtils.isEmpty(attrMap)
                 && (StringUtils.isEmpty(resId) || StringUtils.isEmpty(mSysId))
                 && StringUtils.isEmpty(synchConfigId))
@@ -542,7 +551,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     }
 
     @Override
-    @CacheEvict(value = "resourceAttributeMaps", allEntries=true)
+    @CacheEvict(value = "resourceAttributeMaps", allEntries = true)
     public AttributeMap updateAttributeMap(AttributeMap attributeMap) {
         if (attributeMap == null) {
             throw new IllegalArgumentException("attributeMap object is null");
@@ -553,7 +562,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     }
 
     @Override
-    @CacheEvict(value = "resourceAttributeMaps", allEntries=true)
+    @CacheEvict(value = "resourceAttributeMaps", allEntries = true)
     public void removeAttributeMap(String attributeMapId) {
         if (attributeMapId == null) {
             throw new IllegalArgumentException("attributeMapId is null");
@@ -562,7 +571,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     }
 
     @Override
-    @CacheEvict(value = "resourceAttributeMaps", allEntries=true)
+    @CacheEvict(value = "resourceAttributeMaps", allEntries = true)
     public void removeResourceAttributeMaps(String resourceId) {
         if (resourceId == null) {
             throw new IllegalArgumentException("resourceId is null");
@@ -572,8 +581,8 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     }
 
     @Override
-	@Transactional(readOnly = true)
-    @Cacheable(value="resourceAttributeMaps", key="{ #resourceId}")
+    @Transactional(readOnly = true)
+    @Cacheable(value = "resourceAttributeMaps", key = "{ #resourceId}")
     public List<AttributeMap> getResourceAttributeMaps(final String resourceId) {
         if (resourceId == null) {
             throw new IllegalArgumentException("resourceId is null");
@@ -581,8 +590,8 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
         List<AttributeMapEntity> amEList = managedSystemService
                 .getResourceAttributeMaps(resourceId);
         List<AttributeMap> mapList = new LinkedList<AttributeMap>();
-        if(amEList != null) {
-            for(AttributeMapEntity ame : amEList) {
+        if (amEList != null) {
+            for (AttributeMapEntity ame : amEList) {
                 AttributeMap am = attributeMapDozerConverter.convertToDTO(ame, true);
                 mapList.add(am);
             }
