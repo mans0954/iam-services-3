@@ -41,6 +41,10 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
 	public void setTemplate(final @Qualifier("hibernateTemplate") HibernateTemplate hibernateTemplate) {
 		super.setHibernateTemplate(hibernateTemplate);
 	}
+	
+	protected boolean cachable() {
+		return false;
+	}
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public BaseDaoImpl() {
@@ -200,7 +204,7 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
     }
 
     protected Criteria getCriteria() {
-        return getSession().createCriteria(domainClass);
+        return getSession().createCriteria(domainClass).setCacheable(cachable());//.setCacheRegion("org.hibernate.cache.StandardQueryCache");
     }
 
     @SuppressWarnings({ "unchecked" })

@@ -25,6 +25,12 @@ import org.springframework.stereotype.Repository;
 @Repository("policyDAO")
 public class PolicyDAOImpl extends BaseDaoImpl<PolicyEntity, String> implements
         PolicyDAO {
+	
+	@Override
+	protected boolean cachable() {
+		return true;
+	}
+	
     @SuppressWarnings("unchecked")
     @Override
     public List<PolicyEntity> findAllPolicies(String policyDefId, int startAt, int size) {
