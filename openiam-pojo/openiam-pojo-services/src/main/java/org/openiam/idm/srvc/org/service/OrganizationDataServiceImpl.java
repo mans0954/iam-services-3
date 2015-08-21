@@ -551,28 +551,14 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     }
 
     @Override
-    //@Transactional(readOnly = true)
     public List<Location> getLocationListByPageForUser(String userId, Integer from, Integer size) {
-
-        /*Set<String> orgsId = new HashSet<String>();
-        List<OrganizationEntity> orgList = organizationService.getOrganizationsForUser(userId, null, from, size, languageConverter.convertToEntity(getDefaultLanguage(), false));
-        for (OrganizationEntity org : orgList) {
-            orgsId.add(org.getId());
-        }
-
-        if (orgsId == null) {
-            return null;
-        }
-        List<LocationEntity> listOrgEntity = organizationService.getLocationListByOrganizationId(orgsId, from, size);
-        if (listOrgEntity == null) {
-            return null;
-        }
-
-        List<Location> result = new ArrayList<Location>();
-        for (LocationEntity org : listOrgEntity) {
-            result.add(locationDozerConverter.convertToDTO(org, false));
-        }*/
 
         return organizationService.getLocationListByPageForUser(userId, from, size);
     }
+
+    @Override
+    public List<Organization> getUserAffiliationsByType(final String userId, final String typeId, int from, int size, final String requesterId, final Language language) {
+        return organizationService.getUserAffiliationsByType(userId, typeId, requesterId, from, size, languageConverter.convertToEntity(language, false));
+    }
+
 }
