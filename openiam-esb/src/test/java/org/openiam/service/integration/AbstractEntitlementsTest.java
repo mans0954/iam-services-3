@@ -101,7 +101,6 @@ public abstract class AbstractEntitlementsTest<Parent extends KeyDTO, Child exte
 	protected void doAddChildToParent(final Parent parent, final Child child, final Set<String> rightIds) {
 		Response response = addChildToParent(parent, child, rightIds);
 		refreshAuthorizationManager();
-		refreshAuthorizationManager();
 		Assert.assertTrue(response.isSuccess(), String.format("Could not add child to parent.  %s", response));
 		Assert.assertTrue(isChildInParent(parent, child, rightIds), String.format("Child %s not in parent %s", child, parent));
 		Assert.assertTrue(isChildInParent(parent, child, rightIds), String.format("Child %s not in parent %s", child, parent));
@@ -111,7 +110,6 @@ public abstract class AbstractEntitlementsTest<Parent extends KeyDTO, Child exte
 	
 	protected void doRemoveChildFromParent(final Parent parent, final Child child, final Set<String> rightIds) {
 		Response response = removeChildFromParent(parent, child);
-		refreshAuthorizationManager();
 		refreshAuthorizationManager();
 		Assert.assertTrue(response.isSuccess(), String.format("Could remove child from parent.  %s", response));
 		Assert.assertFalse(isChildInParent(parent, child, rightIds), String.format("Child %s in parent %s", child, parent));

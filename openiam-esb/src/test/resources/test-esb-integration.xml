@@ -19,7 +19,8 @@
             base-package="org.openiam.authmanager.service.integration,
 					  org.openiam.authentication.integration,
 					  org.openiam.provisioning,
-					  org.openiam.idm.stresstest" />
+					  org.openiam.idm.stresstest,
+					  org.openiam.http.client" />
 
     <tx:annotation-driven transaction-manager="transactionManager" />
 
@@ -50,8 +51,18 @@
         <property name="address"
                   value="${openiam.service_host}${openiam.idm.ws.path}AuthorizationManagerMenuWebService" />
     </bean>
-
-
+    
+    <bean id="restTemplate" class="org.springframework.web.client.RestTemplate">
+    	<property name="messageConverters">
+            <list>
+                <bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
+                	<property name="objectMapper">
+                		<bean class="org.openiam.idm.util.CustomJacksonMapper" />
+                	</property>
+                </bean>
+            </list>
+        </property>
+    </bean>
 
     <bean id="authorizationManagerServiceClient"
           class="org.openiam.authmanager.service.AuthorizationManagerWebService"
