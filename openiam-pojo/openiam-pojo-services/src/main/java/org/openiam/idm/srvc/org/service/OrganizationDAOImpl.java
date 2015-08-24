@@ -80,7 +80,7 @@ public class OrganizationDAOImpl extends
             sb.append("' AND ");
         }
         sb.append("ALIAS IS NOT NULL ");
-        sb.append("AND org.ORG_TYPE_ID='ORGANIZATION' GROUP BY org.COMPANY_ID");
+        sb.append("AND org.ORG_TYPE_ID='ORGANIZATION' GROUP BY org.ALIAS");
         reval = this.getSession().createSQLQuery(sb.toString()).list();
         if (CollectionUtils.isNotEmpty(reval)) {
             return StringUtils.join(reval, ',');
