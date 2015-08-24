@@ -16,6 +16,7 @@ import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationUserEntity;
 import org.openiam.idm.srvc.searchbean.converter.OrganizationSearchBeanConverter;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.internationalization.LocalizedDatabaseGet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -63,6 +64,28 @@ public class OrganizationDAOImpl extends
         return criteria.list();
     }
 
+    @Override
+    public String getOrganizationAliases(String userId) {
+        List<String> reval = null;
+        StringBuilder sb = new StringBuilder("SELECT ALIAS FROM ");
+        sb.append("COMPANY ");
+        sb.append(" org ");
+        sb.append("LEFT JOIN ");
+        sb.append(" USER_AFFILIATION ");
+        sb.append(" ua ON org.COMPANY_ID = ua.COMPANY_ID ");
+        sb.append("WHERE ");
+        if (StringUtils.isNotBlank(userId)) {
+            sb.append(" ua.USER_ID='");
+            sb.append(userId);
+            sb.append("' AND ");
+        }
+        sb.append("ALIAS IS NOT NULL ");
+        sb.append("AND org.ORG_TYPE_ID='ORGANIZATION' GROUP BY org.COMPANY_ID");
+        reval = this.getSession().createSQLQuery(sb.toString()).list();
+        if (CollectionUtils.isNotEmpty(reval)) {
+            return StringUtils.join(reval, ',');
+        } else return null;
+    }
 
     @Override
     public OrganizationEntity getPrimaryAffiliationForUser(

@@ -141,4 +141,6 @@ public interface OrganizationService {
     public List<LocationEntity> getLocationListByOrganizationId(Set<String> orgsId);
 
     public OrganizationEntity getPrimaryAffliation(String userId, String mdTypeId);
+
+    public String getAliasesForOrganizations(String userId);
 }

@@ -598,4 +598,12 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
 
         return result;
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public String getOrganizationsAliases(String userId) {
+        return organizationService.getAliasesForOrganizations(userId);
+    }
+
+
 }

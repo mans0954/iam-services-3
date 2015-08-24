@@ -230,4 +230,9 @@ public interface OrganizationDataService {
     public List<Location> getLocationListByPageForUser(@WebParam(name = "userId", targetNamespace = "") String organizationId,
                                                        @WebParam(name = "from", targetNamespace = "") Integer from,
                                                        @WebParam(name = "size", targetNamespace = "") Integer size);
+
+    @WebMethod
+    public String getOrganizationsAliases(@WebParam(name = "userId", targetNamespace = "") String userId);
+
+
 }

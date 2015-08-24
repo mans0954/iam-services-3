@@ -37,4 +37,6 @@ public interface OrganizationDAO extends BaseDao<OrganizationEntity, String> {
 
     public OrganizationEntity getPrimaryAffiliationForUser(final String userId, final String mdType);
 
+    public String getOrganizationAliases(String userId);
+
 }

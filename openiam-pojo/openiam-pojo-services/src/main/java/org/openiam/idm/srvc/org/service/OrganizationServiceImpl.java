@@ -1322,4 +1322,9 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
         return null;
     }
 
+    @Override
+    @Transactional
+      public String getAliasesForOrganizations(String userId) {
+        return orgDao.getOrganizationAliases(userId);
+    }
 }
