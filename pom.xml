@@ -274,6 +274,11 @@
 				<artifactId>spring-boot-starter-logging</artifactId>
 				<version>${spring.boot.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-starter-jersey</artifactId>
+				<version>${spring.boot.version}</version>
+			</dependency>
 
 			<!-- Hibernate dependencies -->
 			<dependency>
@@ -407,7 +412,12 @@
                 <artifactId>cxf-rt-frontend-jaxws</artifactId>
                 <version>${cxf.version}</version>
             </dependency>
-            <dependency>
+			<dependency>
+				<groupId>org.apache.cxf</groupId>
+				<artifactId>cxf-rt-frontend-jaxrs</artifactId>
+				<version>${cxf.version}</version>
+			</dependency>
+			<dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-bindings-xml</artifactId>
                 <version>${cxf.version}</version>
@@ -453,13 +463,6 @@
                 <artifactId>cxf-rt-databinding-aegis</artifactId>
                 <version>${cxf.version}</version>
             </dependency>
-
-
-
-
-
-
-
 
          <!-- apache httpclient -->
 			<dependency>

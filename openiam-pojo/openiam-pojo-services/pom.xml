@@ -300,10 +300,10 @@
             <artifactId>sqljdbc4</artifactId>
         </dependency>
         <!-- oracle dependencies -->
-        <dependency>
+       <!-- <dependency>
             <groupId>com.oracle</groupId>
             <artifactId>ojdbc6</artifactId>
-        </dependency>
+        </dependency>-->
         <!-- postgress dependencies -->
         <dependency>
             <groupId>org.postgresql</groupId>
