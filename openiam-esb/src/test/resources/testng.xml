@@ -27,10 +27,7 @@
 			
 			<class name="org.openiam.authmanager.service.integration.AuthorizationManagerWebServiceTest"/>
 			<class name="org.openiam.authmanager.service.integration.AuthorizationManagerHessianClientTest"/>
-			<!--
 			<class name="org.openiam.authmanager.service.integration.AuthorizationManagerMenuWebServiceTest" />
-			
-			-->
 		</classes>
 	</test>
 	
