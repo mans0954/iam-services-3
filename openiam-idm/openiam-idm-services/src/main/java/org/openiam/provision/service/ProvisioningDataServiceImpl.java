@@ -1489,7 +1489,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                 // get the user object associated with this principal
                 List<LoginEntity> identities = loginManager.getLoginByUser(passwordSync.getUserId());
 
-                idmAuditLog.setUserId(passwordSync.getUserId());
+                //idmAuditLog.setUserId(passwordSync.getUserId());
                 LoginEntity identity = null;
                 if (StringUtils.isNotBlank(passwordSync.getManagedSystemId())) {
                     for (LoginEntity le : identities) {
