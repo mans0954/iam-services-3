@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -107,7 +108,7 @@ public class AuthorizationManagerServiceImpl extends AbstractAuthorizationManage
 	private Map<String, AuthorizationRole> roleIdCache;
 	private Map<String, AuthorizationAccessRight> accessRightIdCache;
 	private Map<Integer, AuthorizationAccessRight> accessRightBitCache;
-	private Integer userBitSet;
+	private AtomicInteger userBitSet;
 	private Integer accessRightBitSet;
 	
 	@Autowired
@@ -192,18 +193,6 @@ public class AuthorizationManagerServiceImpl extends AbstractAuthorizationManage
 				populateUser(user, model);
 			});
 			
-			swDB.start();
-			visitOrganizations(model);
-			visitRoles(model);
-			visitGroups(model);
-			visitResources(model);
-
-			swDB.stop();
-			if(log.isDebugEnabled()) {
-				log.debug(String.format("Time to create xref objects: %s ms", swDB.getTime()));
-			}
-			swDB.reset();
-			
 			final int numOfRights = model.getTempAccessRightMap().size();
 			swDB.start();
 			if(log.isDebugEnabled()) {
@@ -257,7 +246,7 @@ public class AuthorizationManagerServiceImpl extends AbstractAuthorizationManage
 				}
 				
 				
-				userBitSet = model.getTempUserBitSet().get();
+				userBitSet = model.getTempUserBitSet();
 				roleIdCache = model.getTempRoleIdMap();
 				groupIdCache = model.getTempGroupIdMap();
 				resourceIdCache = model.getTempResourceIdMap();
@@ -346,71 +335,7 @@ public class AuthorizationManagerServiceImpl extends AbstractAuthorizationManage
 	
 	private AuthorizationUser process(final InternalAuthroizationUser user) {
 		if(user != null) {
-			final AuthorizationUser retVal = new AuthorizationUser(user);
-			if(MapUtils.isNotEmpty(user.getGroups())) {
-				user.getGroups().forEach((entityId, rights) -> {
-					final AuthorizationGroup entity = groupIdCache.get(entityId);
-					if(entity != null) {
-						final GroupUserXref xref = new GroupUserXref();
-						xref.setGroup(entity);
-						xref.setUser(retVal);
-						xref.setRights(getAccessRight(rights, accessRightIdCache));
-						retVal.addGroup(xref);
-					}
-				});
-			}
-			
-			if(MapUtils.isNotEmpty(user.getRoles())) {
-				user.getRoles().forEach((entityId, rights) -> {
-					final AuthorizationRole entity = roleIdCache.get(entityId);
-					if(entity != null) {
-						final RoleUserXref xref = new RoleUserXref();
-						xref.setRole(entity);
-						xref.setUser(retVal);
-						xref.setRights(getAccessRight(rights, accessRightIdCache));
-						retVal.addRole(xref);
-					}
-				});
-			}
-			
-			if(MapUtils.isNotEmpty(user.getResources())) {
-				user.getResources().forEach((entityId, rights) -> {
-					final AuthorizationResource entity = resourceIdCache.get(entityId);
-					if(entity != null) {
-						final ResourceUserXref xref = new ResourceUserXref();
-						xref.setResource(entity);
-						xref.setUser(retVal);
-						xref.setRights(getAccessRight(rights, accessRightIdCache));
-						retVal.addResource(xref);
-					}
-				});
-			}
-			
-			if(MapUtils.isNotEmpty(user.getOrganizations())) {
-				user.getOrganizations().forEach((entityId, rights) -> {
-					final AuthorizationOrganization entity = organizationIdCache.get(entityId);
-					if(entity != null) {
-						final OrgUserXref xref = new OrgUserXref();
-						xref.setOrganization(entity);
-						xref.setUser(retVal);
-						xref.setRights(getAccessRight(rights, accessRightIdCache));
-						retVal.addOrganization(xref);
-					}
-				});
-			}
-			
-			//NEW:  public resources are really public
-			/*
-			if(CollectionUtils.isNotEmpty(publicResources)) {
-				for(final AuthorizationResource resource : publicResources) {
-					retVal.addResource(resource);
-				}
-			}
-			*/
-			
-			final int numOfRights = accessRightIdCache.size();
-			retVal.compile(numOfRights, -1);
-			retVal.setBitSetIdx(userBitSet++);
+			final AuthorizationUser retVal = super.process(user, groupIdCache, roleIdCache, resourceIdCache, organizationIdCache, accessRightIdCache, userBitSet);
 			userCache.put(new Element(retVal.getId(), retVal));
 			return retVal;
 		} else {

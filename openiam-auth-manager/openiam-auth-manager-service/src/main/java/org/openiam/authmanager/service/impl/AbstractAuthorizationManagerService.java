@@ -3,16 +3,21 @@ package org.openiam.authmanager.service.impl;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import net.sf.ehcache.Element;
+
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.openiam.authmanager.common.model.AuthorizationAccessRight;
 import org.openiam.authmanager.common.model.AuthorizationGroup;
 import org.openiam.authmanager.common.model.AuthorizationOrganization;
 import org.openiam.authmanager.common.model.AuthorizationResource;
 import org.openiam.authmanager.common.model.AuthorizationRole;
 import org.openiam.authmanager.common.model.AuthorizationUser;
+import org.openiam.authmanager.common.model.InternalAuthroizationUser;
 import org.openiam.authmanager.common.xref.GroupGroupXref;
 import org.openiam.authmanager.common.xref.GroupUserXref;
 import org.openiam.authmanager.common.xref.OrgGroupXref;
@@ -65,164 +70,6 @@ public abstract class AbstractAuthorizationManagerService {
 	protected Map<String, Set<String>> getRightMap(final List<MembershipRightDTO> list) {
 		return list.stream().collect(Collectors.groupingBy(MembershipRightDTO::getId,
 				Collectors.mapping(MembershipRightDTO::getRightId, Collectors.toSet())));
-	}
-	
-	protected void visitResources(final AuthorizationManagerDataModel model) {
-		model.getHbmResourceList().forEach(entity -> {
-			final AuthorizationResource resource = model.getTempResourceIdMap().get(entity.getId());
-			if(resource != null) {
-				if(CollectionUtils.isNotEmpty(model.getResource2ResourceMap().get(entity.getId()))) {
-					model.getResource2ResourceMap().get(entity.getId()).forEach(e -> {
-						final AuthorizationResource child = model.getTempResourceIdMap().get(e.getMemberEntityId());
-						if(child != null) {
-							final ResourceResourceXref xref = new ResourceResourceXref();
-							xref.setResource(resource);
-							xref.setMemberResource(child);
-							xref.setRights(getAccessRight(model.getResource2ResourceRightMap().get(e.getId()), model.getTempAccessRightMap()));
-							child.addParentResoruce(xref);
-						}
-					});
-				}
-			}
-		});
-	}
-	
-	protected void visitGroups(final AuthorizationManagerDataModel model) {
-		model.getHbmGroupList().forEach(entity -> {
-			final AuthorizationGroup group = model.getTempGroupIdMap().get(entity.getId());
-			if(group != null) {
-				if(CollectionUtils.isNotEmpty(model.getGroup2ResourceMap().get(entity.getId()))) {
-					model.getGroup2ResourceMap().get(entity.getId()).forEach(e -> {
-						final AuthorizationResource resource = model.getTempResourceIdMap().get(e.getMemberEntityId());
-						if(resource != null) {
-							final ResourceGroupXref xref = new ResourceGroupXref();
-							xref.setGroup(group);
-							xref.setResource(resource);
-							xref.setRights(getAccessRight(model.getGroup2ResourceRightMap().get(e.getId()), model.getTempAccessRightMap()));
-							group.addResource(xref);
-						}
-					});
-				}
-				
-				if(CollectionUtils.isNotEmpty(model.getGroup2GroupMap().get(entity.getId()))) {
-					model.getGroup2GroupMap().get(entity.getId()).forEach(e -> {
-						final AuthorizationGroup child = model.getTempGroupIdMap().get(e.getMemberEntityId());
-						if(child != null) {
-							final GroupGroupXref xref = new GroupGroupXref();
-							xref.setGroup(group);
-							xref.setMemberGroup(child);
-							xref.setRights(getAccessRight(model.getGroup2GroupRightMap().get(e.getId()), model.getTempAccessRightMap()));
-							child.addParentGroup(xref);
-						}
-					});
-				}
-			}
-		});
-	}
-	
-	protected void visitRoles(final AuthorizationManagerDataModel model) {
-		model.getHbmRoleList().forEach(entity -> {
-			final AuthorizationRole role = model.getTempRoleIdMap().get(entity.getId());
-			if(role != null) {
-				if(CollectionUtils.isNotEmpty(model.getRole2GroupMap().get(entity.getId()))) {
-					model.getRole2GroupMap().get(entity.getId()).forEach(e -> {
-						final AuthorizationGroup group = model.getTempGroupIdMap().get(e.getMemberEntityId());
-						if(group != null) {
-							final RoleGroupXref xref = new RoleGroupXref();
-							xref.setRole(role);
-							xref.setGroup(group);
-							xref.setRights(getAccessRight(model.getRole2GroupRightMap().get(e.getId()), model.getTempAccessRightMap()));
-							role.addGroup(xref);
-						}
-					});
-				}
-				
-				if(CollectionUtils.isNotEmpty(model.getRole2ResourceMap().get(entity.getId()))) {
-					model.getRole2ResourceMap().get(entity.getId()).forEach(e -> {
-						final AuthorizationResource resource = model.getTempResourceIdMap().get(e.getMemberEntityId());
-						if(resource != null) {
-							final ResourceRoleXref xref = new ResourceRoleXref();
-							xref.setRole(role);
-							xref.setResource(resource);
-							xref.setRights(getAccessRight(model.getRole2ResourceRightMap().get(e.getId()), model.getTempAccessRightMap()));
-							role.addResource(xref);
-						}
-					});
-				}
-
-				if(CollectionUtils.isNotEmpty(model.getRole2RoleMap().get(entity.getId()))) {
-					model.getRole2RoleMap().get(entity.getId()).forEach(e -> {
-						final AuthorizationRole child = model.getTempRoleIdMap().get(e.getMemberEntityId());
-						if(child != null) {
-							final RoleRoleXref xref = new RoleRoleXref();
-							xref.setRole(role);
-							xref.setMemberRole(child);
-							xref.setRights(getAccessRight(model.getRole2RoleRightMap().get(e.getId()), model.getTempAccessRightMap()));
-							child.addParentRole(xref);
-						}
-					});
-				}
-			}
-		});
-	}
-	
-	protected void visitOrganizations(final AuthorizationManagerDataModel model) {
-		model.getHbmOrganizationList().forEach(entity -> {
-			final AuthorizationOrganization organization = model.getTempOrganizationIdMap().get(entity.getId());
-			if(organization != null) {
-				if(CollectionUtils.isNotEmpty(model.getResource2OrgMap().get(entity.getId()))) {
-					model.getResource2OrgMap().get(entity.getId()).forEach(e -> {
-						final AuthorizationResource resource = model.getTempResourceIdMap().get(e.getMemberEntityId());
-						if(resource != null) {
-							final OrgResourceXref xref = new OrgResourceXref();
-							xref.setOrganization(organization);
-							xref.setResource(resource);
-							xref.setRights(getAccessRight(model.getResource2OrgRightMap().get(e.getId()), model.getTempAccessRightMap()));
-							organization.addResource(xref);
-						}
-					});
-				}
-				
-				if(CollectionUtils.isNotEmpty(model.getGroup2OrgMap().get(entity.getId()))) {
-					model.getGroup2OrgMap().get(entity.getId()).forEach(e -> {
-						final AuthorizationGroup group = model.getTempGroupIdMap().get(e.getMemberEntityId());
-						if(group != null) {
-							final OrgGroupXref xref = new OrgGroupXref();
-							xref.setOrganization(organization);
-							xref.setGroup(group);
-							xref.setRights(getAccessRight(model.getGroup2OrgRightMap().get(e.getId()), model.getTempAccessRightMap()));
-							organization.addGroup(xref);
-						}
-					});
-				}
-				
-				if(CollectionUtils.isNotEmpty(model.getRole2OrgMap().get(entity.getId()))) {
-					model.getRole2OrgMap().get(entity.getId()).forEach(e -> {
-						final AuthorizationRole role = model.getTempRoleIdMap().get(e.getMemberEntityId());
-						if(role != null) {
-							final OrgRoleXref xref = new OrgRoleXref();
-							xref.setOrganization(organization);
-							xref.setRole(role);
-							xref.setRights(getAccessRight(model.getRole2OrgRightMap().get(e.getId()), model.getTempAccessRightMap()));
-							organization.addRole(xref);
-						}
-					});
-				}
-				
-				if(CollectionUtils.isNotEmpty(model.getOrg2Org2Map().get(entity.getId()))) {
-					model.getOrg2Org2Map().get(entity.getId()).forEach(e -> {
-						final AuthorizationOrganization child = model.getTempOrganizationIdMap().get(e.getMemberEntityId());
-						if(child != null) {
-							final OrgOrgXref xref = new OrgOrgXref();
-							xref.setOrganization(organization);
-							xref.setMemberOrganization(child);
-							xref.setRights(getAccessRight(model.getOrg2OrgRightMap().get(e.getId()), model.getTempAccessRightMap()));
-							child.addParentOrganization(xref);
-						}
-					});
-				}
-			}
-		});
 	}
 	
 	protected void populateUser(final AuthorizationUser user,
@@ -279,6 +126,85 @@ public abstract class AbstractAuthorizationManagerService {
 					}
 				});
 			}
+		}
+	}
+	
+	protected AuthorizationUser process(final InternalAuthroizationUser user,
+										final Map<String, AuthorizationGroup> groupIdCache,
+										final Map<String, AuthorizationRole> roleIdCache,
+										final Map<String, AuthorizationResource> resourceIdCache,
+										final Map<String, AuthorizationOrganization> organizationIdCache,
+										final Map<String, AuthorizationAccessRight> accessRightIdCache,
+										final AtomicInteger userBitSet) {
+		if(user != null) {
+			final AuthorizationUser retVal = new AuthorizationUser(user);
+			if(MapUtils.isNotEmpty(user.getGroups())) {
+				user.getGroups().forEach((entityId, rights) -> {
+					final AuthorizationGroup entity = groupIdCache.get(entityId);
+					if(entity != null) {
+						final GroupUserXref xref = new GroupUserXref();
+						xref.setGroup(entity);
+						xref.setUser(retVal);
+						xref.setRights(getAccessRight(rights, accessRightIdCache));
+						retVal.addGroup(xref);
+					}
+				});
+			}
+			
+			if(MapUtils.isNotEmpty(user.getRoles())) {
+				user.getRoles().forEach((entityId, rights) -> {
+					final AuthorizationRole entity = roleIdCache.get(entityId);
+					if(entity != null) {
+						final RoleUserXref xref = new RoleUserXref();
+						xref.setRole(entity);
+						xref.setUser(retVal);
+						xref.setRights(getAccessRight(rights, accessRightIdCache));
+						retVal.addRole(xref);
+					}
+				});
+			}
+			
+			if(MapUtils.isNotEmpty(user.getResources())) {
+				user.getResources().forEach((entityId, rights) -> {
+					final AuthorizationResource entity = resourceIdCache.get(entityId);
+					if(entity != null) {
+						final ResourceUserXref xref = new ResourceUserXref();
+						xref.setResource(entity);
+						xref.setUser(retVal);
+						xref.setRights(getAccessRight(rights, accessRightIdCache));
+						retVal.addResource(xref);
+					}
+				});
+			}
+			
+			if(MapUtils.isNotEmpty(user.getOrganizations())) {
+				user.getOrganizations().forEach((entityId, rights) -> {
+					final AuthorizationOrganization entity = organizationIdCache.get(entityId);
+					if(entity != null) {
+						final OrgUserXref xref = new OrgUserXref();
+						xref.setOrganization(entity);
+						xref.setUser(retVal);
+						xref.setRights(getAccessRight(rights, accessRightIdCache));
+						retVal.addOrganization(xref);
+					}
+				});
+			}
+			
+			//NEW:  public resources are really public
+			/*
+			if(CollectionUtils.isNotEmpty(publicResources)) {
+				for(final AuthorizationResource resource : publicResources) {
+					retVal.addResource(resource);
+				}
+			}
+			*/
+			
+			final int numOfRights = accessRightIdCache.size();
+			retVal.compile(numOfRights, -1);
+			retVal.setBitSetIdx(userBitSet.incrementAndGet());
+			return retVal;
+		} else {
+			return null;
 		}
 	}
 }

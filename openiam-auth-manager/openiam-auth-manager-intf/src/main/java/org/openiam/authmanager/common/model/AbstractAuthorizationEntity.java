@@ -131,4 +131,35 @@ public abstract class AbstractAuthorizationEntity {
     public void setManagedSysId(String managedSysId) {
         this.managedSysId = managedSysId;
     }
+    
+	protected int getBitIndex(final AuthorizationAccessRight right, final AbstractAuthorizationEntity entity, final int numOfRights) {
+		final int rightBit = (right != null) ? (right.getBitIdx()) : 0;
+		final int offset = (entity.getBitSetIdx() * numOfRights);
+		return rightBit + offset;
+	}
+	
+	/**
+	 * Reverse engineers the algorithm for calculating a bitset, and return the bit for the 'right'
+	 * @param bit - bit from the internal bitset of the Collection
+	 * @param entity - Entity you're looking up
+	 * @param numOfRights - number of Authorization Rights
+	 * @return
+	 */
+	public static int getRightBit(final int bit, final AbstractAuthorizationEntity entity, final int numOfRights) {
+		return bit - (entity.getBitSetIdx() * numOfRights);
+	}
+	
+	/**
+	 * * Reverse engineers the algorithm for calculating a bitset, and return the bit for the 'entity'
+	 * @param bit - bit from the internal bitset of the Collection
+	 * @param numOfRights - number of Authorization Rights
+	 * @return
+	 */
+	public static Integer getEntityBit(final int bit, final int numOfRights) {
+		/* 
+		 * right bit is 0, since you're not looking at rights
+		 * if mod is not 0, then it's a right big, return null in this case 
+		 */
+		return (bit % numOfRights == 0) ? (bit / numOfRights) : null;
+	}
 }

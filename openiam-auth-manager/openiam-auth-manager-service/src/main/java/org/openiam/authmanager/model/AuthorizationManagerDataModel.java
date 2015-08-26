@@ -82,6 +82,11 @@ public class AuthorizationManagerDataModel {
 	private Map<String, AuthorizationResource> tempResourceIdMap;
 	
 	private Map<String, AuthorizationGroup> tempGroupIdMap;
+	
+	private Map<Integer, AuthorizationResource> resourceBitSetMap;
+	private Map<Integer, AuthorizationGroup> groupBitSetMap;
+	private Map<Integer, AuthorizationRole> roleBitSetMap;
+	private Map<Integer, AuthorizationOrganization> organizationBitSetMap;
 
 	public AuthorizationManagerDataModel() {
 		
@@ -427,5 +432,42 @@ public class AuthorizationManagerDataModel {
 		this.tempGroupIdMap = tempGroupIdMap;
 	}
 
+	public int getNumOfRights() {
+		return getTempAccessRightMap().size();
+	}
+
+	public Map<Integer, AuthorizationResource> getResourceBitSetMap() {
+		return resourceBitSetMap;
+	}
+
+	public void setResourceBitSetMap(
+			Map<Integer, AuthorizationResource> resourceBitSetMap) {
+		this.resourceBitSetMap = resourceBitSetMap;
+	}
+
+	public Map<Integer, AuthorizationGroup> getGroupBitSetMap() {
+		return groupBitSetMap;
+	}
+
+	public void setGroupBitSetMap(Map<Integer, AuthorizationGroup> groupBitSetMap) {
+		this.groupBitSetMap = groupBitSetMap;
+	}
+
+	public Map<Integer, AuthorizationRole> getRoleBitSetMap() {
+		return roleBitSetMap;
+	}
+
+	public void setRoleBitSetMap(Map<Integer, AuthorizationRole> roleBitSetMap) {
+		this.roleBitSetMap = roleBitSetMap;
+	}
+
+	public Map<Integer, AuthorizationOrganization> getOrganizationBitSetMap() {
+		return organizationBitSetMap;
+	}
+
+	public void setOrganizationBitSetMap(
+			Map<Integer, AuthorizationOrganization> organizationBitSetMap) {
+		this.organizationBitSetMap = organizationBitSetMap;
+	}
 	
 }
