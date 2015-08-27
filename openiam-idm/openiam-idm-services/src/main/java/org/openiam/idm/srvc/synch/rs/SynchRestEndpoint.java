@@ -19,10 +19,8 @@ import org.springframework.web.bind.annotation.RestController;
  * Created by Vitaly on 8/24/2015.
  */
 @RestController("/synch")
-//@Path("/synch")
-//@Scope("prototype")
-//@Component("synchRestService")
 public class SynchRestEndpoint {
+
     @Autowired
     private IdentitySynchWebService synchConfigServiceClient;
 
@@ -31,7 +29,7 @@ public class SynchRestEndpoint {
 
     @RequestMapping(value="/run/{synchId}", method=RequestMethod.POST)
     public @ResponseBody Response execute(final @PathVariable(value="synchId") String synchId,
-                            final @RequestParam(value="json") String jsonValue) {
+                                          final @RequestParam(value="json") String jsonValue) {
         Response ajaxResponse = Response.accepted().build();
         try {
             if (StringUtils.isNotBlank(synchId)) {
@@ -44,7 +42,7 @@ public class SynchRestEndpoint {
                     } else {
                         ajaxResponse = Response.status(200).entity("WARN: Synch config ID=" + synchId + " - testConnection failed.").build();
                     }
-                 } else {
+                } else {
                     ajaxResponse = Response.status(200).entity("WARN: Synch config ID=" + synchId + " is not available.").build();
                 }
             }
