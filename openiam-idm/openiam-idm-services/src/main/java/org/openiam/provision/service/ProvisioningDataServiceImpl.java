@@ -1432,24 +1432,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
         final PasswordResponse response = new PasswordResponse(ResponseStatus.SUCCESS);
         try {
             if (this.sendAdminResetPasswordLink) {
-/*                User u = userMgr.getUserDto(passwordSync.getUserId());
-                if (u == null) {
-                    allResetOK = false;
-                    idmAuditLog.fail();
-                    idmAuditLog.setFailureReason(ResponseCode.USER_NOT_FOUND);
-                    response.setStatus(ResponseStatus.FAILURE);
-                    response.setErrorCode(ResponseCode.USER_NOT_FOUND);
-                }
-                List<LoginEntity> identities = loginManager.getLoginByUser(passwordSync.getUserId());
-                LoginEntity activetionPrimaryLogin = UserUtils.getUserManagedSysIdentityEntity(this.sysConfiguration.getDefaultManagedSysId(), identities);
-                if (activetionPrimaryLogin == null) {
-                    allResetOK = false;
-                    idmAuditLog.fail();
-                    idmAuditLog.setFailureReason(ResponseCode.PRINCIPAL_NOT_FOUND);
-                    response.setStatus(ResponseStatus.FAILURE);
-                    response.setErrorCode(ResponseCode.PRINCIPAL_NOT_FOUND);*/
 
-               //-----
                 List<LoginEntity> identities = loginManager.getLoginByUser(passwordSync.getUserId());
                 LoginEntity identity = null;
                 if (StringUtils.isNotBlank(passwordSync.getManagedSystemId())) {
@@ -1469,7 +1452,6 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                     response.setErrorCode(ResponseCode.PRINCIPAL_NOT_FOUND);
                     return response;
                 }
-                //----
 
                 if (this.sysConfiguration.getDefaultManagedSysId().equals(passwordSync.getManagedSystemId())) {
                     User u = userMgr.getUserDto(passwordSync.getUserId());
@@ -1495,10 +1477,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                     sendResetActivationLink(u, activationLogin);
 
                 }
-                /*Login activationLogin = new Login();
-                activationLogin.setLogin(activetionPrimaryLogin.getLogin());
-                activationLogin.setManagedSysId(activetionPrimaryLogin.getManagedSysId());
-                sendResetActivationLink(u, activationLogin);*/
+
             } else {
                 Map<String, Object> bindingMap = new HashMap<String, Object>();
                 if (callPreProcessor("RESET_PASSWORD", null, bindingMap, passwordSync) != ProvisioningConstants.SUCCESS) {
