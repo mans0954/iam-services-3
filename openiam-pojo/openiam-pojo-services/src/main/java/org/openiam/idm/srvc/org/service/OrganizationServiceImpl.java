@@ -194,7 +194,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     @Override
     //@LocalizedServiceGet
     @Transactional(readOnly = true)
-    public List<Location> getLocationListByPageForUser(String userId, Integer from, Integer size){
+    public List<Location> getLocationListByPageForUser(String userId, Integer from, Integer size) {
 
         Set<String> orgsId = new HashSet<String>();
         List<OrganizationEntity> orgList = this.getOrganizationsForUser(userId, null, from, size, languageConverter.convertToEntity(getDefaultLanguageDto(), false));
@@ -223,6 +223,15 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
         lang.setId("1");
         return lang;
     }
+
+    @Override
+    @LocalizedServiceGet
+    @Transactional(readOnly = true)
+    public List<Organization> getUserAffiliationsByType(String userId, String typeId, String requesterId, final int from, final int size, final LanguageEntity langauge) {
+        List<OrganizationEntity> organizationEntityList = orgDao.getUserAffiliationsByType(userId, typeId, getDelegationFilter(requesterId), from, size);
+        return organizationDozerConverter.convertToDTOList(organizationEntityList, false);
+    }
+
 
     @Override
     @LocalizedServiceGet
@@ -258,18 +267,21 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
             return new ArrayList<Organization>(0);
         }
         List<OrganizationEntity> organizationEntityList = orgDao.getByExample(searchBean, from, size);
-
-        final List<Organization> resultList = new LinkedList<Organization>();
-        for (OrganizationEntity organizationEntity : organizationEntityList) {
-            Organization newOrg = organizationDozerConverter.convertToDTO(organizationEntity, false);
-            newOrg.setOrganizationUserDTOs(new HashSet<OrganizationUserDTO>());
-            for (OrganizationUserEntity e : organizationEntity.getOrganizationUser()) {
-                OrganizationUserDTO dto = new OrganizationUserDTO(e.getUser().getId(), e.getOrganization().getId(), e.getMetadataTypeEntity().getId(), null);
-                newOrg.getOrganizationUserDTOs().add(dto);
+        List<Organization> resultList = null;
+        if (searchBean.isDeepCopy()) {
+            resultList = organizationDozerConverter.convertToDTOList(organizationEntityList, searchBean.isDeepCopy());
+        } else {
+            resultList = new ArrayList<Organization>();
+            for (OrganizationEntity organizationEntity : organizationEntityList) {
+                Organization newOrg = organizationDozerConverter.convertToDTO(organizationEntity, false);
+                newOrg.setOrganizationUserDTOs(new HashSet<OrganizationUserDTO>());
+                for (OrganizationUserEntity e : organizationEntity.getOrganizationUser()) {
+                    OrganizationUserDTO dto = new OrganizationUserDTO(e.getUser().getId(), e.getOrganization().getId(), e.getMetadataTypeEntity().getId(), null);
+                    newOrg.getOrganizationUserDTOs().add(dto);
+                }
+                resultList.add(newOrg);
             }
-            resultList.add(newOrg);
         }
-
         return resultList;
     }
 
@@ -994,7 +1006,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
         allowedOrgTypes = organizationTypeService.getAllowedParentsIds(orgTypeId, requesterAttributes);
 //        allowedOrgTypes.retainAll(allowedParentTypesIds);
 
-        List<OrganizationEntity> organizationEntityList =  orgDao.findAllByTypesAndIds(allowedOrgTypes, filterData);
+        List<OrganizationEntity> organizationEntityList = orgDao.findAllByTypesAndIds(allowedOrgTypes, filterData);
         return organizationDozerConverter.convertToDTOList(organizationEntityList, false);
     }
 

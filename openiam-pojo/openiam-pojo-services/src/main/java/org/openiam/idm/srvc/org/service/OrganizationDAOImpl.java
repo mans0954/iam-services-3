@@ -20,6 +20,7 @@ import org.openiam.internationalization.LocalizedDatabaseGet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import javax.persistence.criteria.JoinType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -63,6 +64,24 @@ public class OrganizationDAOImpl extends
         return criteria.list();
     }
 
+    @Override
+    @LocalizedDatabaseGet
+    public List<OrganizationEntity> getUserAffiliationsByType(
+            final String userId, final String typeId, final Set<String> filter, final int from,
+            final int size) {
+        final Criteria criteria = getUserAffiliationsByTypeCriteria(userId, typeId,
+                filter);
+
+        if (from > -1) {
+            criteria.setFirstResult(from);
+        }
+
+        if (size > -1) {
+            criteria.setMaxResults(size);
+        }
+        return criteria.list();
+    }
+
     private Criteria getOrganizationsForUserCriteria(final String userId,
                                                      final Set<String> filter) {
 
@@ -70,6 +89,21 @@ public class OrganizationDAOImpl extends
         if (StringUtils.isNotBlank(userId)) {
             criteria.createAlias("organizationUser", "ou").
                     add(Restrictions.eq("ou.primaryKey.user.id", userId));
+        }
+
+        if (filter != null && !filter.isEmpty()) {
+            criteria.add(Restrictions.in(getPKfieldName(), filter));
+        }
+        return criteria;
+    }
+
+    private Criteria getUserAffiliationsByTypeCriteria(final String userId, final String typeId,
+                                                       final Set<String> filter) {
+
+        final Criteria criteria = getCriteria();
+        if (StringUtils.isNotBlank(userId) && StringUtils.isNotBlank(typeId)) {
+            criteria.createAlias("organizationUser", "ou", Criteria.LEFT_JOIN).
+                    add(Restrictions.and(Restrictions.eq("ou.primaryKey.user.id", userId), Restrictions.eq("ou.metadataTypeEntity.id", typeId)));
         }
 
         if (filter != null && !filter.isEmpty()) {
@@ -265,11 +299,6 @@ public class OrganizationDAOImpl extends
         return ((Number) criteria.uniqueResult()).intValue();
     }
 
-    // BUG in Hibernate!! count() fails for some queries, while the normal
-    // select succeeds. the count query is indeed incorrect:
-    // select count(*) as y0_ from COMPANY this_ where
-    // parenttype1_.ORG_TYPE_ID=? order by this_.COMPANY_NAME asc
-    // using criteria.list.size();
     @Override
     public int count(final SearchBean searchBean) {
         final Criteria criteria = getExampleCriteria(searchBean);

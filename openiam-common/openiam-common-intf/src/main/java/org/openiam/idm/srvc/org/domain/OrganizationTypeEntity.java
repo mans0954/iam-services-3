@@ -47,14 +47,14 @@ public class OrganizationTypeEntity extends KeyEntity {
     @JoinTable(name="ORG_TYPE_VALID_MEMBERSHIP",
         joinColumns={@JoinColumn(name="MEMBER_ORG_TYPE_ID")},
         inverseJoinColumns={@JoinColumn(name="ORG_TYPE_ID")})
-    @Fetch(FetchMode.SUBSELECT)
+//    @Fetch(FetchMode.SUBSELECT)
     private Set<OrganizationTypeEntity> parentTypes;
     
 	@ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
     @JoinTable(name="ORG_TYPE_VALID_MEMBERSHIP",
         joinColumns={@JoinColumn(name="ORG_TYPE_ID")},
         inverseJoinColumns={@JoinColumn(name="MEMBER_ORG_TYPE_ID")})
-    @Fetch(FetchMode.SUBSELECT)
+//    @Fetch(FetchMode.SUBSELECT)
     private Set<OrganizationTypeEntity> childTypes;
 	
 	@OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "organizationType", fetch = FetchType.LAZY)

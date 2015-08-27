@@ -41,7 +41,9 @@ public class DefaultAuthCredentialsValidator implements AuthCredentialsValidator
             }
         }
         if (!UserStatusEnum.ACTIVE.equals(user.getStatus())
-                && !UserStatusEnum.PENDING_INITIAL_LOGIN.equals(user.getStatus())) {
+                && !UserStatusEnum.PENDING_INITIAL_LOGIN.equals(user.getStatus())
+                && !UserStatusEnum.PENDING_DEACTIVATION.equals(user.getStatus())
+                && !UserStatusEnum.PENDING_DELETE.equals(user.getStatus())) {
             // invalid status
             throw new AuthenticationException(
                     AuthenticationConstants.RESULT_INVALID_USER_STATUS);
@@ -73,7 +75,7 @@ public class DefaultAuthCredentialsValidator implements AuthCredentialsValidator
         // check password policy if it is necessary to change it after reset
         if (lg.getResetPassword() > 0) {
             Policy passwordPolicy = passwordManager.getPasswordPolicy(lg.getLogin(), lg.getManagedSysId());
-            String chngPwdAttr = getPolicyAttribute(passwordPolicy.getPolicyAttributes(),"CHNG_PSWD_ON_RESET");
+            String chngPwdAttr = getPolicyAttribute(passwordPolicy.getPolicyAttributes(), "CHNG_PSWD_ON_RESET");
             if (StringUtils.isNotBlank(chngPwdAttr) && StringUtils.equalsIgnoreCase(Boolean.TRUE.toString(), chngPwdAttr)) {
                 throw new AuthenticationException(AuthenticationConstants.RESULT_PASSWORD_CHANGE_AFTER_RESET);
             }

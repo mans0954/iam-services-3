@@ -3,6 +3,7 @@ package org.openiam.idm.srvc.policy.service;
 // Generated Mar 7, 2009 11:47:13 AM by Hibernate Tools 3.2.2.GA
 
 import java.util.List;
+
 import org.hibernate.Criteria;
 import org.hibernate.Hibernate;
 import org.hibernate.HibernateException;
@@ -19,6 +20,11 @@ import org.springframework.stereotype.Repository;
 @Repository("policyDefDAO")
 public class PolicyDefDAOImpl extends BaseDaoImpl<PolicyDefEntity, String>
         implements PolicyDefDAO {
+	
+	@Override
+	protected boolean cachable() {
+		return true;
+	}
 
     public List<String> findAllPolicyTypes() {
         try {

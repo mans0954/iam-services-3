@@ -4,9 +4,12 @@ package org.openiam.idm.srvc.policy.domain;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+
 import javax.persistence.*;
 
 import org.apache.commons.lang.StringUtils;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.mngsys.domain.ReconciliationResourceAttributeMapEntity;
@@ -15,6 +18,8 @@ import org.openiam.idm.srvc.policy.dto.Policy;
 @Entity
 @Table(name = "POLICY")
 @DozerDTOCorrespondence(Policy.class)
+@Cache(usage=CacheConcurrencyStrategy.READ_WRITE)
+//@Cacheable
 public class PolicyEntity implements java.io.Serializable {
 
     /**

@@ -161,4 +161,7 @@ public interface OrganizationService {
     public List<LocationEntity> getLocationListByOrganizationId(Set<String> orgsId, Integer from, Integer size);
 
     public List<LocationEntity> getLocationListByOrganizationId(Set<String> orgsId);
+
+    public List<Organization> getUserAffiliationsByType(String userId, String typeId, String requesterId, final int from, final int size, final LanguageEntity langauge);
+
 }

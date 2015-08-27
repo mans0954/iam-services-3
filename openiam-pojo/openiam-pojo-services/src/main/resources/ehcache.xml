@@ -50,6 +50,15 @@
         diskExpiryThreadIntervalSeconds="180"
         memoryStoreEvictionPolicy="LRU"
         />
+        
+  <cache name="org.hibernate.cache.StandardQueryCache"
+            maxElementsInMemory="10000"
+            eternal="false"
+            timeToIdleSeconds="120"
+            timeToLiveSeconds="120"
+            overflowToDisk="false"
+            memoryStoreEvictionPolicy="LRU"
+    />
 
     <cache name="org.openiam.idm.srvc.org.dto.Organization"
         maxElementsInMemory="10000"
@@ -183,7 +192,6 @@
         eternal="false"
         overflowToDisk="false" 
      />
-          
 
     <cache name="org.openiam.idm.srvc.policy.dto.Policy"
         maxElementsInMemory="1000"

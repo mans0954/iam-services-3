@@ -1470,6 +1470,34 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                     activationLogin.setLogin(activetionPrimaryLogin.getLogin());
                     activationLogin.setManagedSysId(activetionPrimaryLogin.getManagedSysId());
                     sendResetActivationLink(u, activationLogin);
+//------
+                    List<LoginEntity> loginByUser = loginManager.getLoginByUser(passwordSync.getUserId());
+
+                    //idmAuditLog.setUserId(passwordSync.getUserId());
+                    LoginEntity identity = null;
+                    if (StringUtils.isNotBlank(passwordSync.getManagedSystemId())) {
+                        for (LoginEntity le : loginByUser) {
+                            if (passwordSync.getManagedSystemId().equals(le.getManagedSysId())) {
+                                identity = le;
+                                break;
+                            }
+                        }
+                    } else {
+                        identity = loginManager.getPrimaryIdentity(passwordSync.getUserId());
+                    }
+
+                    if (identity != null) {
+                        idmAuditLog.setTargetUser(identity.getUserId(), identity.getLogin());
+
+                    } else {
+                        idmAuditLog.fail();
+                        idmAuditLog.setFailureReason(ResponseCode.PRINCIPAL_NOT_FOUND);
+                        response.setStatus(ResponseStatus.FAILURE);
+                        response.setErrorCode(ResponseCode.PRINCIPAL_NOT_FOUND);
+                        return response;
+                    }
+
+//---------
                 }
                 /*Login activationLogin = new Login();
                 activationLogin.setLogin(activetionPrimaryLogin.getLogin());
@@ -1489,7 +1517,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                 // get the user object associated with this principal
                 List<LoginEntity> identities = loginManager.getLoginByUser(passwordSync.getUserId());
 
-                idmAuditLog.setUserId(passwordSync.getUserId());
+                //idmAuditLog.setUserId(passwordSync.getUserId());
                 LoginEntity identity = null;
                 if (StringUtils.isNotBlank(passwordSync.getManagedSystemId())) {
                     for (LoginEntity le : identities) {
