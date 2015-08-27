@@ -1,5 +1,6 @@
 package org.openiam.service.integration;
 
+import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -8,7 +9,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.RandomStringUtils;
+import org.elasticsearch.common.lang3.StringUtils;
 import org.junit.runner.RunWith;
 import org.openiam.am.srvc.dto.AuthLevelGrouping;
 import org.openiam.am.srvc.dto.AuthLevelGroupingContentProviderXref;
@@ -21,6 +24,7 @@ import org.openiam.authmanager.service.AuthorizationManagerWebService;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.config.TestConfg;
+import org.openiam.http.client.OpenIAMHttpClient;
 import org.openiam.idm.searchbeans.LanguageSearchBean;
 import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
 import org.openiam.idm.searchbeans.ResourceTypeSearchBean;
@@ -49,13 +53,18 @@ import org.openiam.idm.srvc.role.ws.RoleDataWebService;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.ws.UserDataWebService;
 import org.openiam.idm.srvc.user.ws.UserResponse;
+import org.openiam.model.Cluster;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
+import org.springframework.web.client.RestTemplate;
 import org.testng.Assert;
+
+import com.hazelcast.client.proxy.ClientClusterProxy;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 //@Import(TestConfg.class)
@@ -128,6 +137,14 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 	@Qualifier("authServiceClient")
 	protected AuthenticationService authServiceClient;
 	
+	@Autowired
+	private RestTemplate restTemplate;
+	
+	@Value("${openiam.service_host}")
+	private String serviceHost;
+	
+	@Autowired
+	private OpenIAMHttpClient httpClient;
 	
 	protected Set<String> getRightIdsNotIn(final Set<String> rightIds) {
 		return accessRightServiceClient.findBeans(null, 0, Integer.MAX_VALUE, getDefaultLanguage())
@@ -263,7 +280,16 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 	}
 	
 	protected void refreshAuthorizationManager() {
-		authorizationManagerServiceClient.refreshCache();
+		final String hazelcastEndpoint = String.format("%s/openiam-esb/hazelcast/cluster", serviceHost);
+		restTemplate.getForEntity(hazelcastEndpoint, Cluster.class).getBody().getMembers().forEach(member -> {
+			final String authManagerEndpoint = String.format("http://%s:9080/openiam-esb/authmanager/refresh", member.getAddress().getHost());
+			try {
+				Assert.assertTrue(StringUtils.equalsIgnoreCase("OK", IOUtils.toString(httpClient.getInputStream(new URL(authManagerEndpoint)))));
+			} catch (Exception e) {
+				logger.error("Can't refresh auth manager", e);
+				throw new RuntimeException(e);
+			}
+		});
 	}
 	
 	

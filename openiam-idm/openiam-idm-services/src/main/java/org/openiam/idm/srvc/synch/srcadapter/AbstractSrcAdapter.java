@@ -86,6 +86,8 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
     @Value("${openiam.idm.ws.path}")
     private String serviceContext;
 
+    private Map attributeMap = new HashMap<String, Object>();
+
     public abstract SyncResponse startSynch(SynchConfig config);
 
     /**
@@ -370,4 +372,8 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
         return lineObject;
     }
 
+    @Override
+    public void setAttributeMap(Map attributeMap) {
+        this.attributeMap = attributeMap;
+    }
 }

@@ -75,6 +75,12 @@ public interface IdentitySynchWebService {
 			SynchConfig config);
 
     @WebMethod
+    SyncResponse startCustomSynchronization(
+            @WebParam(name = "config", targetNamespace = "")
+            SynchConfig config,
+            @WebParam(name = "additionalValues", targetNamespace = "") String additionalValues);
+
+    @WebMethod
     SynchReviewResponse executeSynchReview(
             @WebParam(name = "synchReviewRequest", targetNamespace = "")
             SynchReviewRequest synchReviewRequest);

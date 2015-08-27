@@ -1,76 +1,91 @@
 package org.openiam.authmanager.model;
 
-import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
+import org.openiam.authmanager.common.model.AuthorizationAccessRight;
 import org.openiam.authmanager.common.model.AuthorizationResource;
+import org.openiam.idm.srvc.access.dto.AccessRight;
 
 public class ResourceEntitlementToken {
 
-	private Set<AuthorizationResource> directResources;
-	private Set<AuthorizationResource> indirectResources;
-	
-	public boolean isResourceDirect(final String resourceId) {
-		return containsResource(directResources, resourceId);
+	/* key is the resource id, value is a set of right ids */
+	private Map<AuthorizationResource, Set<AuthorizationAccessRight>> directResources;
+	private Map<AuthorizationResource, Set<AuthorizationAccessRight>> allResources;
+	private Map<AuthorizationResource, Set<AuthorizationAccessRight>> indirectResources;
+	public Map<AuthorizationResource, Set<AuthorizationAccessRight>> getDirectResources() {
+		return directResources;
+	}
+	public void setDirectResources(
+			Map<AuthorizationResource, Set<AuthorizationAccessRight>> directResources) {
+		this.directResources = directResources;
+	}
+	public Map<AuthorizationResource, Set<AuthorizationAccessRight>> getAllResources() {
+		return allResources;
+	}
+	public void setAllResources(
+			Map<AuthorizationResource, Set<AuthorizationAccessRight>> allResources) {
+		this.allResources = allResources;
 	}
 	
-	public boolean isResourceIndirect(final String resourceId) {
-		return containsResource(indirectResources, resourceId);
-	}
-	
-	private boolean containsResource(final Set<AuthorizationResource> resourceSet, final String resourceId) {
-		boolean retVal = false;
-		if(resourceSet != null && resourceId != null) {
-			for(final Iterator<AuthorizationResource> it = resourceSet.iterator(); it.hasNext();) {
-				final AuthorizationResource resource = it.next();
-				if(resource != null) {
-					retVal = StringUtils.equals(resource.getId(), resourceId);
-					if(retVal) {
-						break;
-					}
-				}
-			}
-		}
-		return retVal;
-	}
-	
-	public void addDirectResource(final AuthorizationResource resource) {
+	public void addDirectResource(final AuthorizationResource resource, final AuthorizationAccessRight right) {
 		if(resource != null) {
 			if(directResources == null) {
-				directResources = new HashSet<AuthorizationResource>();
+				directResources = new HashMap<AuthorizationResource, Set<AuthorizationAccessRight>>();
 			}
-			directResources.add(resource);
+			if(!directResources.containsKey(resource)) {
+				directResources.put(resource, new HashSet<AuthorizationAccessRight>());
+			}
+			if(right != null) {
+				directResources.get(resource).add(right);
+			}
 		}
 	}
 	
-	public void addDirectResources(final Collection<AuthorizationResource> resources) {
-		if(resources != null) {
-			if(directResources == null) {
-				directResources = new HashSet<AuthorizationResource>();
+	public void addResource(final AuthorizationResource resource, final AuthorizationAccessRight right) {
+		if(resource != null) {
+			if(allResources == null) {
+				allResources = new HashMap<AuthorizationResource, Set<AuthorizationAccessRight>>();
 			}
-			directResources.addAll(resources);
+			if(!allResources.containsKey(resource)) {
+				allResources.put(resource, new HashSet<AuthorizationAccessRight>());
+			}
+			if(right != null) {
+				allResources.get(resource).add(right);
+			}
 		}
 	}
 	
-	public void addIndirectResource(final AuthorizationResource resource) {
+	public void addIndirectResource(final AuthorizationResource resource, final AuthorizationAccessRight right) {
 		if(resource != null) {
 			if(indirectResources == null) {
-				indirectResources = new HashSet<AuthorizationResource>();
+				indirectResources = new HashMap<AuthorizationResource, Set<AuthorizationAccessRight>>();
 			}
-			indirectResources.add(resource);
+			if(!indirectResources.containsKey(resource)) {
+				indirectResources.put(resource, new HashSet<AuthorizationAccessRight>());
+			}
+			if(right != null) {
+				indirectResources.get(resource).add(right);
+			}
 		}
 	}
 	
-	public void addIndirectResource(final Collection<AuthorizationResource> resources) {
-		if(resources != null) {
-			if(indirectResources == null) {
-				indirectResources = new HashSet<AuthorizationResource>();
-			}
-			indirectResources.addAll(resources);
-		}
+	public boolean isResourceDirect(final String id) {
+		return (directResources != null) ? directResources.keySet().stream().map(e -> e.getId()).filter(e -> e.equals(id)).findFirst().isPresent() : false;
 	}
+	
+	public boolean isResourceIndirect(final String id) {
+		return (indirectResources != null) ? indirectResources.keySet().stream().map(e -> e.getId()).filter(e -> e.equals(id)).findFirst().isPresent() : false;
+	}
+	public Map<AuthorizationResource, Set<AuthorizationAccessRight>> getIndirectResources() {
+		return indirectResources;
+	}
+	public void setIndirectResources(
+			Map<AuthorizationResource, Set<AuthorizationAccessRight>> indirectResources) {
+		this.indirectResources = indirectResources;
+	}
+	
+	
 }

@@ -34,6 +34,13 @@ public interface IdentitySynchService {
 	SyncResponse startSynchronization(SynchConfigEntity config);
 
     /**
+     * Starts the custom synchronization process from a custom adapter.
+     * @param config
+     * @return
+     */
+    SyncResponse startCustomSynchronization(SynchConfigEntity config, String additionalValues);
+
+    /**
      * Starts the synchronization process from a synch review object.
      * @param synchReview
      * @return

@@ -256,6 +256,13 @@
 			<artifactId>spring-boot-starter-tomcat</artifactId>
 		</dependency>
         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jersey</artifactId>
+        </dependency>
+
+
+
+        <dependency>
             <groupId>commons-lang</groupId>
             <artifactId>commons-lang</artifactId>
         </dependency>
@@ -302,7 +309,12 @@
 			<version>${slf4j.simple.version}</version>
 			<scope>test</scope>
 		</dependency>
-        
+
+        <dependency>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-rt-frontend-jaxrs</artifactId>
+        </dependency>
+
     </dependencies>
 
     <developers>
