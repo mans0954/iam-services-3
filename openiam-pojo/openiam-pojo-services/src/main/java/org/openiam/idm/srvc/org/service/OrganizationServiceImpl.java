@@ -266,7 +266,25 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
         else if (!DelegationFilterHelper.isAllowed(searchBean.getKey(), filter)) {
             return new ArrayList<Organization>(0);
         }
+
+        // Temporary solution
+        long time;
+        log.warn("START TIME =" + (time = System.currentTimeMillis()));
         List<OrganizationEntity> organizationEntityList = orgDao.getByExample(searchBean, from, size);
+        if (CollectionUtils.isNotEmpty(organizationEntityList) && searchBean.isDeepCopy() && searchBean.isForCurrentUsersOnly() && CollectionUtils.isNotEmpty(searchBean.getUserIdSet())) {
+            OrganizationUserEntity organizationUserEntity = null;
+            Iterator<OrganizationUserEntity> organizationUserEntityIterator =null;
+            for (OrganizationEntity organizationEntity : organizationEntityList) {
+                 organizationUserEntityIterator = organizationEntity.getOrganizationUser().iterator();
+                while (organizationUserEntityIterator.hasNext()) {
+                    organizationUserEntity = organizationUserEntityIterator.next();
+                    if (!searchBean.getUserIdSet().contains(organizationUserEntity.getUser().getId())) {
+                        organizationUserEntityIterator.remove();
+                    }
+                }
+            }
+        }
+        log.warn("FINISH TIME =" + (System.currentTimeMillis() - time));
         return organizationDozerConverter.convertToDTOList(organizationEntityList, searchBean.isDeepCopy());
     }
 
