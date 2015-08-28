@@ -267,22 +267,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
             return new ArrayList<Organization>(0);
         }
         List<OrganizationEntity> organizationEntityList = orgDao.getByExample(searchBean, from, size);
-        List<Organization> resultList = null;
-        if (searchBean.isDeepCopy()) {
-            resultList = organizationDozerConverter.convertToDTOList(organizationEntityList, searchBean.isDeepCopy());
-        } else {
-            resultList = new ArrayList<Organization>();
-            for (OrganizationEntity organizationEntity : organizationEntityList) {
-                Organization newOrg = organizationDozerConverter.convertToDTO(organizationEntity, false);
-                newOrg.setOrganizationUserDTOs(new HashSet<OrganizationUserDTO>());
-                for (OrganizationUserEntity e : organizationEntity.getOrganizationUser()) {
-                    OrganizationUserDTO dto = new OrganizationUserDTO(e.getUser().getId(), e.getOrganization().getId(), e.getMetadataTypeEntity().getId(), null);
-                    newOrg.getOrganizationUserDTOs().add(dto);
-                }
-                resultList.add(newOrg);
-            }
-        }
-        return resultList;
+        return organizationDozerConverter.convertToDTOList(organizationEntityList, searchBean.isDeepCopy());
     }
 
     @Override
