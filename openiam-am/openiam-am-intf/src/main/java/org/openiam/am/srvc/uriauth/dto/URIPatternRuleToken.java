@@ -7,6 +7,7 @@ import java.util.Map;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
 import org.openiam.am.srvc.dto.AbstractMeta;
@@ -16,9 +17,7 @@ import org.openiam.am.srvc.dto.URIPatternMetaType;
 @XmlType(name = "URIPatternRuleToken", propOrder = {
 	"metaType",
 	"valueList",
-	"contentType",
-	"cacheable",
-	"cacheTTL"
+	"contentType"
 })
 public class URIPatternRuleToken implements Serializable {
 	
@@ -29,7 +28,11 @@ public class URIPatternRuleToken implements Serializable {
 	private URIPatternMetaType metaType;
 	private String contentType;
 	private List<URIPatternRuleValue> valueList;
+	
+	@XmlTransient
 	private boolean cacheable;
+	
+	@XmlTransient
 	private Integer cacheTTL;
 	
 	private URIPatternRuleToken() {}
