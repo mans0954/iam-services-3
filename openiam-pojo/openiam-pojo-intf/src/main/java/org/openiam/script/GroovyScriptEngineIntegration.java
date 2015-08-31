@@ -127,7 +127,9 @@ public class GroovyScriptEngineIntegration implements ScriptIntegration, Applica
 
         try {
             String fullPath = storageDirectory + scriptName;
-            log.info("instantiateClass called: "+fullPath+".");
+            if(log.isDebugEnabled()) {
+            	log.debug(String.format("instantiateClass called: %s", fullPath));
+            }
 
             Class cl = gse.loadScriptByName(fullPath);
             Object instance = cl.newInstance();

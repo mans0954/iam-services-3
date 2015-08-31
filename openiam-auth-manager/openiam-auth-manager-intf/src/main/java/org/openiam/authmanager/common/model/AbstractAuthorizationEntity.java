@@ -150,7 +150,9 @@ public abstract class AbstractAuthorizationEntity {
 	}
 	
 	/**
-	 * * Reverse engineers the algorithm for calculating a bitset, and return the bit for the 'entity'
+	 * Reverse engineers the algorithm for calculating a bitset, and return the bit for the 'entity'
+	 * Returns null if this big represents a right, but not an entity.  This null is returned purposefully, and
+	 * other parts of the code depend on a null value to make certain assumptions.  DO NOT de-nullify this method!
 	 * @param bit - bit from the internal bitset of the Collection
 	 * @param numOfRights - number of Authorization Rights
 	 * @return

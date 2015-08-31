@@ -485,6 +485,8 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 					}
 					ruleToken = rule.process(userId, uri, type, abstractValueSet, pattern, method, cp, meta);
 					response.addRuleToken(ruleToken);
+					response.setCacheable(ruleToken.isCacheable());
+					response.setCacheTTL(ruleToken.getCacheTTL());
 				}
 			} catch(Throwable e) {
 				if(ruleToken != null) {

@@ -39,6 +39,7 @@ public abstract class AbstractURIPatternRule implements URIPatternRule {
 									   final ContentProvider contentProvider,
 									   final AbstractMeta meta) throws Exception {
 		final URIPatternRuleToken token = new URIPatternRuleToken(metaType, meta);
+		boolean cache = true;
 		if(CollectionUtils.isNotEmpty(valueSet)) {
 			for(final AbstractPatternMetaValue metaValue : valueSet) {
 				final String key = StringUtils.trimToNull(metaValue.getName());
@@ -49,6 +50,7 @@ public abstract class AbstractURIPatternRule implements URIPatternRule {
                     final URIFederationGroovyProcessor groovyProcessor = metaValue.getGroovyProcessor();
                     if(groovyProcessor != null) {
                         value = groovyProcessor.getValue(userId, contentProvider, pattern, metaValue, uri);
+                        cache = false;
                     }
 
                     if(value == null) {
@@ -59,11 +61,15 @@ public abstract class AbstractURIPatternRule implements URIPatternRule {
                             final AuthProviderEntity authProvider = authProviderService.getAuthProvider(contentProvider.getAuthProviderId());
                             final ManagedSysEntity managedSystem = authProvider.getManagedSystem();
                             value = authAttributeProcessor.process(metaValue.getAmAttribute().getReflectionKey(), userId, managedSystem.getId());
+                            cache = false;
                         }
                     }
                     
                     if(value == null) {
                     	value = metaValue.getFetchedValue();
+                    	if(StringUtils.isNotBlank(value)) {
+                    		cache = false;
+                    	}
                     }
 
                     if(value != null) {
@@ -73,6 +79,10 @@ public abstract class AbstractURIPatternRule implements URIPatternRule {
 			}
 		}
 		postProcess(userId, uri, metaType, valueSet, token, pattern, method, contentProvider);
+		if(cache) {
+			token.setCacheable(true);
+			token.setCacheTTL(30); /* in seconds */
+		}
 		return token;
 	}
 

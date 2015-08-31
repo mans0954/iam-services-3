@@ -16,7 +16,9 @@ import org.openiam.am.srvc.dto.URIPatternMetaType;
 @XmlType(name = "URIPatternRuleToken", propOrder = {
 	"metaType",
 	"valueList",
-	"contentType"
+	"contentType",
+	"cacheable",
+	"cacheTTL"
 })
 public class URIPatternRuleToken implements Serializable {
 	
@@ -27,6 +29,8 @@ public class URIPatternRuleToken implements Serializable {
 	private URIPatternMetaType metaType;
 	private String contentType;
 	private List<URIPatternRuleValue> valueList;
+	private boolean cacheable;
+	private Integer cacheTTL;
 	
 	private URIPatternRuleToken() {}
 
@@ -59,6 +63,22 @@ public class URIPatternRuleToken implements Serializable {
 
 	public void setContentType(String contentType) {
 		this.contentType = contentType;
+	}
+	
+	public boolean isCacheable() {
+		return cacheable;
+	}
+
+	public void setCacheable(boolean cacheable) {
+		this.cacheable = cacheable;
+	}
+
+	public Integer getCacheTTL() {
+		return cacheTTL;
+	}
+
+	public void setCacheTTL(Integer cacheTTL) {
+		this.cacheTTL = cacheTTL;
 	}
 
 	@Override
