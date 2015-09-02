@@ -20,10 +20,7 @@ import org.openiam.access.review.strategy.entitlements.EntitlementsStrategy;
 import org.openiam.access.review.strategy.entitlements.GroupEntitlementStrategy;
 import org.openiam.access.review.strategy.entitlements.ResourceEntitlementStrategy;
 import org.openiam.access.review.strategy.entitlements.RoleEntitlementStrategy;
-import org.openiam.authmanager.common.model.AbstractAuthorizationEntity;
-import org.openiam.authmanager.common.model.AuthorizationGroup;
-import org.openiam.authmanager.common.model.AuthorizationResource;
-import org.openiam.authmanager.common.model.AuthorizationRole;
+import org.openiam.authmanager.common.model.*;
 import org.openiam.base.TreeNode;
 import org.openiam.bpm.response.TaskWrapper;
 import org.openiam.bpm.util.ActivitiRequestType;
@@ -73,15 +70,12 @@ public abstract class AccessReviewStrategy {
         List<TreeNode<AccessViewBean>> result = new ArrayList<TreeNode<AccessViewBean>>();
         if(CollectionUtils.isNotEmpty(resourcesList)){
             for(AccessViewBean bean : resourcesList){
-                AuthorizationResource resource = accessReviewData.getMatrix().getResourceMap().get(bean.getId());
-
                 if(skipResource(bean)){
                     continue;
                 }
 
-
                 if(!accessReviewData.isElementInUse(bean)){
-                    ResourceType resType = accessReviewData.getResourceTypeMap().get(resource.getResourceTypeId());
+                    ResourceType resType = accessReviewData.getResourceTypeMap().get(bean.getResourceTypeId());
                     String icon=null;
                     String iconType=null;
                     String iconDescr = null;
@@ -94,7 +88,7 @@ public abstract class AccessReviewStrategy {
 
                     TreeNode<AccessViewBean> node = new TreeNode<AccessViewBean>(bean, icon, iconType);
                     node.setIconDescription(iconDescr);
-                    node.setIsDeletable(getResourceEntitlementStrategy().isDirectEntitled(resource));
+                    node.setIsDeletable(isException(bean.getId()));
                     node.setIsException(isParentException || isException(bean.getId()));
                     node.setIsTerminate(isTerminating(bean.getBeanType(), bean.getId()));
                     result.add(node);
@@ -120,32 +114,45 @@ public abstract class AccessReviewStrategy {
         boolean result = false;
         if(accessReviewData.isHasParent(thisResource)){
             // get parent resource
-            String resId = accessReviewData.getMatrix().getChildResToParentResMap().get(thisResource.getId()).iterator().next();
+            String resId = accessReviewData.getMatrix().getChildResToParentResMap().get(thisResource.getId()).keySet().iterator().next();
             AuthorizationResource parentResource = accessReviewData.getMatrix().getResourceMap().get(resId);
-            AccessViewBean parentBean = EntitlementsStrategy.createBean(parentResource);
+            Set<String> parentRights = accessReviewData.getMatrix().getCompiledResourceIds().get(parentResource.getId());
+
+            AccessViewBean parentBean = EntitlementsStrategy.createBean(parentResource, accessReviewData.getAccessRightList(parentRights));
 
             result = !accessReviewData.isElementInUse(parentBean);
         }
 
         return result || checkResourceId(bean.getId());
-         return false;
     }
-    private boolean skipGroup(AccessViewBean bean) {
-    	/*
-        AuthorizationGroup thisGroup = accessReviewData.getMatrix().getGroupMap().get(bean.getId());
-
+    private boolean skipRole(AuthorizationRole thisRole) {
         boolean result = false;
-        if(accessReviewData.isHasParent(thisGroup)){
-            // get parent group
-            String grId = accessReviewData.getMatrix().getChildGroupToParentGroupMap().get(thisGroup.getId()).iterator().next();
-            AuthorizationGroup parent = accessReviewData.getMatrix().getGroupMap().get(grId);
-            AccessViewBean parentBean = EntitlementsStrategy.createBean(parent);
+        if(accessReviewData.isHasParent(thisRole)){
+            // get parent role
+            String roleId = accessReviewData.getMatrix().getChildRoleToParentRoleMap().get(thisRole.getId()).keySet().iterator().next();
+            AuthorizationRole parentRole = accessReviewData.getMatrix().getRoleMap().get(roleId);
+            Set<String> parentRights = accessReviewData.getMatrix().getCompiledRoleIds().get(parentRole.getId());
 
+            AccessViewBean parentBean = EntitlementsStrategy.createBean(parentRole, accessReviewData.getAccessRightList(parentRights));
             result = !accessReviewData.isElementInUse(parentBean);
         }
 
         return result;
-        */ return false;
+    }
+
+    private boolean skipGroup(AuthorizationGroup thisGroup) {
+
+        boolean result = false;
+        if(accessReviewData.isHasParent(thisGroup)){
+            // get parent group
+            String grId = accessReviewData.getMatrix().getChildGroupToParentGroupMap().get(thisGroup.getId()).keySet().iterator().next();
+            AuthorizationGroup parent = accessReviewData.getMatrix().getGroupMap().get(grId);
+            Set<String> parentRights = accessReviewData.getMatrix().getCompiledGroupIds().get(parent.getId());
+            AccessViewBean parentBean = EntitlementsStrategy.createBean(parent, accessReviewData.getAccessRightList(parentRights));
+            result = !accessReviewData.isElementInUse(parentBean);
+        }
+
+        return result;
     }
 
     protected  List<TreeNode<AccessViewBean>> getGroupBeanList(Set<AccessViewBean> groupList,
@@ -153,12 +160,9 @@ public abstract class AccessReviewStrategy {
         List<TreeNode<AccessViewBean>> result = new ArrayList<TreeNode<AccessViewBean>>();
         if (CollectionUtils.isNotEmpty(groupList)) {
             for (AccessViewBean bean : groupList) {
-                if(skipGroup(bean))
+                AuthorizationGroup group  = accessReviewData.getMatrix().getGroupMap().get(bean.getId());
+                if(skipGroup(group) || isParentException)
                     continue;
-                if(isParentException)
-                    continue;
-
-                AuthorizationGroup group = accessReviewData.getMatrix().getGroupMap().get(bean.getId());
 
                 if(checkMngSys(parentMngSysId, group, level)){
                     if(!accessReviewData.isElementInUse(bean)){
@@ -180,13 +184,11 @@ public abstract class AccessReviewStrategy {
         List<TreeNode<AccessViewBean>> result = new ArrayList<TreeNode<AccessViewBean>>();
         if(CollectionUtils.isNotEmpty(roleList)){
             for(AccessViewBean bean : roleList){
-                if(isParentException)
+                AuthorizationRole role = accessReviewData.getMatrix().getRoleMap().get(bean.getId());
+                if(skipRole(role) || isParentException)
                     continue;
 
-                AuthorizationRole role = accessReviewData.getMatrix().getRoleMap().get(bean.getId());
-
                 if(checkMngSys(parentMngSysId, role, level)){
-
                     if(!accessReviewData.isElementInUse(bean)){
                         TreeNode<AccessViewBean> node = new TreeNode<AccessViewBean>(bean, AccessReviewConstant.ROLE_TYPE);
                         node.setIconDescription(AccessReviewConstant.ROLE_ICON_DESCR);
@@ -216,16 +218,16 @@ public abstract class AccessReviewStrategy {
 
         if(level <= accessReviewData.getMaxHierarchyLevel()){
             if(AccessReviewConstant.ROLE_TYPE.equals(parentElement.getData().getBeanType())){
-                childrenList.addAll(getRoles(getRoleEntitlementStrategy(), parentElement.getData(),parentElement.getIsException(), level));
                 childrenList.addAll(getGroups(getRoleEntitlementStrategy(), parentElement.getData(),parentElement.getIsException(), level));
+                childrenList.addAll(getRoles(getRoleEntitlementStrategy(), parentElement.getData(),parentElement.getIsException(), level));
                 childrenList.addAll(getResources(getRoleEntitlementStrategy(), parentElement.getData(),parentElement.getIsException(), level));
             } else if(AccessReviewConstant.GROUP_TYPE.equals(parentElement.getData().getBeanType())){
+                childrenList.addAll(getRoles(getGroupEntitlementStrategy(), parentElement.getData(), parentElement.getIsException(), level));
                 childrenList.addAll(getGroups(getGroupEntitlementStrategy(), parentElement.getData(),parentElement.getIsException(), level));
-                childrenList.addAll(getRoles(getGroupEntitlementStrategy(), parentElement.getData(),parentElement.getIsException(), level));
                 childrenList.addAll(getResources(getGroupEntitlementStrategy(), parentElement.getData(),parentElement.getIsException(), level));
             } else if(AccessReviewConstant.RESOURCE_TYPE.equals(parentElement.getData().getBeanType())){
-                childrenList.addAll(getGroups(getResourceEntitlementStrategy(), parentElement.getData(),parentElement.getIsException(), level));
                 childrenList.addAll(getRoles(getResourceEntitlementStrategy(), parentElement.getData(), parentElement.getIsException(), level));
+                childrenList.addAll(getGroups(getResourceEntitlementStrategy(), parentElement.getData(),parentElement.getIsException(), level));
                 childrenList.addAll(getResources(getResourceEntitlementStrategy(), parentElement.getData(),parentElement.getIsException(), level));
             }
         }
@@ -258,7 +260,7 @@ public abstract class AccessReviewStrategy {
         } else if(AccessReviewConstant.RESOURCE_TYPE.equals(node.getData().getBeanType())){
             if("resources".equals(accessReviewData.getView())){
                 // get all direct entitlements
-                accessReviewData.addTargetResourceIds(this.getResourceEntitlementStrategy().getUserEntitlements());
+                accessReviewData.addTargetResourceIds(accessReviewData.getMatrix().getResourceMap().keySet());
             }
         }
     }
@@ -298,14 +300,9 @@ public abstract class AccessReviewStrategy {
         return !accessReviewData.isInTargetResource(resourceId) && !isException(resourceId);
     }
     private boolean isException(String resourceId){
-        Set<String> exceptions = getResourceEntitlementStrategy().getUserExceptionsCache();
-        return CollectionUtils.isNotEmpty(exceptions) && exceptions.contains(resourceId);
+        return accessReviewData.getMatrix().getDirectResourceIds().containsKey(resourceId);
     }
 
-    private boolean isDeletable(String resourceId){
-        Set<String> exceptions = getResourceEntitlementStrategy().getUserExceptionsCache();
-        return CollectionUtils.isNotEmpty(exceptions) && exceptions.contains(resourceId);
-    }
 
 
 

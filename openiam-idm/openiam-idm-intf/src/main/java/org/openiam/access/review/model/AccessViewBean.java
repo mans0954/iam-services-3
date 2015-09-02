@@ -1,10 +1,14 @@
 package org.openiam.access.review.model;
 
+import org.openiam.authmanager.common.model.AuthorizationAccessRight;
 import org.openiam.base.KeyNameDTO;
+import org.openiam.idm.srvc.access.dto.AccessRight;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Created by: Alexander Duckardt
@@ -19,7 +23,9 @@ import javax.xml.bind.annotation.XmlType;
         "status",
         "identity",
         "loginId",
-        "managedSys"
+        "managedSys",
+        "resourceTypeId",
+        "accessRights"
 })
 public class AccessViewBean extends KeyNameDTO implements Comparable<AccessViewBean> {
     private Boolean hasChild=false;
@@ -30,6 +36,8 @@ public class AccessViewBean extends KeyNameDTO implements Comparable<AccessViewB
     private String identity;
     private String loginId;
     private String managedSys;
+    private String resourceTypeId;
+    private List<AccessRight> accessRights;
 
 
     public AccessViewBean() {
@@ -99,7 +107,13 @@ public class AccessViewBean extends KeyNameDTO implements Comparable<AccessViewB
         this.loginId = loginId;
     }
 
+    public String getResourceTypeId() {
+        return resourceTypeId;
+    }
 
+    public void setResourceTypeId(String resourceTypeId) {
+        this.resourceTypeId = resourceTypeId;
+    }
 
     public String getManagedSys() {
         return managedSys;
@@ -109,7 +123,13 @@ public class AccessViewBean extends KeyNameDTO implements Comparable<AccessViewB
         this.managedSys = managedSys;
     }
 
+    public List<AccessRight> getAccessRights() {
+        return accessRights;
+    }
 
+    public void setAccessRights(List<AccessRight> accessRights) {
+        this.accessRights = accessRights;
+    }
 
     @Override
     public boolean equals(Object o) {

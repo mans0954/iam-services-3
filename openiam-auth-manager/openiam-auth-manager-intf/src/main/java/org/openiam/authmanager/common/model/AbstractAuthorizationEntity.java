@@ -137,6 +137,8 @@ public abstract class AbstractAuthorizationEntity {
 		final int offset = (entity.getBitSetIdx() * numOfRights);
 		return rightBit + offset;
 	}
+
+	public abstract AbstractAuthorizationEntity shallowCopy();
 	
 	/**
 	 * Reverse engineers the algorithm for calculating a bitset, and return the bit for the 'right'

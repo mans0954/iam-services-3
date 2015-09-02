@@ -14,6 +14,9 @@ import org.openiam.authmanager.service.AuthorizationManagerAdminService;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.TreeNode;
 import org.openiam.bpm.activiti.ActivitiService;
+import org.openiam.idm.searchbeans.AccessRightSearchBean;
+import org.openiam.idm.srvc.access.dto.AccessRight;
+import org.openiam.idm.srvc.access.ws.AccessRightDataService;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.lang.dto.Language;
@@ -50,6 +53,8 @@ public class AccessReviewServiceImpl implements AccessReviewService {
     private ActivitiService activitiService;
     @Autowired
     protected SysConfiguration sysConfiguration;
+    @Autowired
+    private AccessRightDataService accessRightDataService;
 
     @Override
     public AccessViewResponse getAccessReviewTree(AccessViewFilterBean filter, String viewType,final Language language) {
@@ -100,6 +105,7 @@ public class AccessReviewServiceImpl implements AccessReviewService {
 
     private AccessReviewStrategy getAccessReviewStrategy(AccessViewFilterBean filter, String viewType, Language language) {
         final List<LoginEntity> loginList = loginDS.getLoginByUser(filter.getUserId());
+        final List<AccessRight> accessRights = accessRightDataService.findBeans(new AccessRightSearchBean(), 0, Integer.MAX_VALUE, language);
         UserEntitlementsMatrix userEntitlementsMatrix = adminService.getUserEntitlementsMatrix(filter.getUserId());
 
         AccessReviewData accessReviewData = new AccessReviewData();
@@ -111,6 +117,7 @@ public class AccessReviewServiceImpl implements AccessReviewService {
         accessReviewData.setLoginList((CollectionUtils.isNotEmpty(loginList)) ? loginList : null);
         accessReviewData.setDefaultManagedSysId(sysConfiguration.getDefaultManagedSysId());
         accessReviewData.setMaxHierarchyLevel(filter.getMaxHierarchyLevel());
+        accessReviewData.populateAccessRightMap(accessRights);
 
         TaskSearchBean searchBean = new TaskSearchBean();
         searchBean.setMemberAssociationId(filter.getUserId());

@@ -181,11 +181,11 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
 	
 	private void doEntitlementsCheck(final AuthorizationMenu menu, final ResourceEntitlementToken token) {
 		if(menu != null && token != null) {
-			if(token.isResourceDirect(menu.getId())) {
+			if(token.isDirect(menu.getId())) {
 				menu.addEntitlementType(MenuEntitlementType.EXPLICIT);
 			}
 			
-			if(token.isResourceIndirect(menu.getId())) {
+			if(token.isIndirect(menu.getId())) {
 				menu.addEntitlementType(MenuEntitlementType.IMPLICIT);
 			}
 			

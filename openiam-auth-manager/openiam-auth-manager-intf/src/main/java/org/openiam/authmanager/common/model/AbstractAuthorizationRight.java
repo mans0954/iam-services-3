@@ -9,13 +9,19 @@ import javax.xml.bind.annotation.XmlType;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "AbstractAuthorizationRight", propOrder = {
-        "rights"
+        "rights",
+		"entity"
 })
 public abstract class AbstractAuthorizationRight<T extends AbstractAuthorizationEntity> {
 
 	private Set<AuthorizationAccessRight> rights;
+	private T entity;
 	
 	public AbstractAuthorizationRight() {}
+
+	public AbstractAuthorizationRight(final T entity) {
+		this.entity = entity;
+	}
 	
 	public void addRight(final AuthorizationAccessRight right) {
 		if(right != null) {
@@ -33,14 +39,37 @@ public abstract class AbstractAuthorizationRight<T extends AbstractAuthorization
 	public void setRights(Set<AuthorizationAccessRight> rights) {
 		this.rights = rights;
 	}
-	
-	public abstract T getEntity();
+
+	public T getEntity() {
+		return entity;
+	}
+
+	public void setEntity(T entity) {
+		this.entity = entity;
+	}
+
+
+	public static AbstractAuthorizationRight getInstance(Class<? extends AbstractAuthorizationRight> clazz){
+		switch (clazz.getSimpleName()){
+			case "RoleAuthorizationRight":
+				return new RoleAuthorizationRight();
+			case "ResourceAuthorizationRight":
+				return new ResourceAuthorizationRight();
+			case "OrganizationAuthorizationRight":
+				return new OrganizationAuthorizationRight();
+			case "GroupAuthorizationRight":
+				return new GroupAuthorizationRight();
+			default:
+				return null;
+		}
+	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((rights == null) ? 0 : rights.hashCode());
+		result = prime * result + ((entity == null) ? 0 : entity.hashCode());
 		return result;
 	}
 
@@ -57,6 +86,11 @@ public abstract class AbstractAuthorizationRight<T extends AbstractAuthorization
 			if (other.rights != null)
 				return false;
 		} else if (!rights.equals(other.rights))
+			return false;
+		if (entity == null) {
+			if (other.entity != null)
+				return false;
+		} else if (!entity.equals(other.entity))
 			return false;
 		return true;
 	}
