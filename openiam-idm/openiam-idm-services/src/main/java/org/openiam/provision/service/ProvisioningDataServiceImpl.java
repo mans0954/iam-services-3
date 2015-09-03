@@ -1432,22 +1432,27 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
         final PasswordResponse response = new PasswordResponse(ResponseStatus.SUCCESS);
         try {
             if (this.sendAdminResetPasswordLink) {
-/*                User u = userMgr.getUserDto(passwordSync.getUserId());
-                if (u == null) {
-                    allResetOK = false;
-                    idmAuditLog.fail();
-                    idmAuditLog.setFailureReason(ResponseCode.USER_NOT_FOUND);
-                    response.setStatus(ResponseStatus.FAILURE);
-                    response.setErrorCode(ResponseCode.USER_NOT_FOUND);
-                }
+
                 List<LoginEntity> identities = loginManager.getLoginByUser(passwordSync.getUserId());
-                LoginEntity activetionPrimaryLogin = UserUtils.getUserManagedSysIdentityEntity(this.sysConfiguration.getDefaultManagedSysId(), identities);
-                if (activetionPrimaryLogin == null) {
-                    allResetOK = false;
+                LoginEntity identity = null;
+                if (StringUtils.isNotBlank(passwordSync.getManagedSystemId())) {
+                    identity = UserUtils.getUserManagedSysIdentityEntity(passwordSync.getManagedSystemId(), identities);
+
+                } else {
+                    identity = loginManager.getPrimaryIdentity(passwordSync.getUserId());
+                }
+
+                if (identity != null) {
+                    idmAuditLog.setTargetUser(identity.getUserId(), identity.getLogin());
+
+                } else {
                     idmAuditLog.fail();
                     idmAuditLog.setFailureReason(ResponseCode.PRINCIPAL_NOT_FOUND);
                     response.setStatus(ResponseStatus.FAILURE);
-                    response.setErrorCode(ResponseCode.PRINCIPAL_NOT_FOUND);*/
+                    response.setErrorCode(ResponseCode.PRINCIPAL_NOT_FOUND);
+                    return response;
+                }
+
                 if (this.sysConfiguration.getDefaultManagedSysId().equals(passwordSync.getManagedSystemId())) {
                     User u = userMgr.getUserDto(passwordSync.getUserId());
                     if (u == null) {
@@ -1457,7 +1462,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                         response.setStatus(ResponseStatus.FAILURE);
                         response.setErrorCode(ResponseCode.USER_NOT_FOUND);
                     }
-                    List<LoginEntity> identities = loginManager.getLoginByUser(passwordSync.getUserId());
+                    //List<LoginEntity> identities = loginManager.getLoginByUser(passwordSync.getUserId());
                     LoginEntity activetionPrimaryLogin = UserUtils.getUserManagedSysIdentityEntity(this.sysConfiguration.getDefaultManagedSysId(), identities);
                     if (activetionPrimaryLogin == null) {
                         allResetOK = false;
@@ -1470,39 +1475,9 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                     activationLogin.setLogin(activetionPrimaryLogin.getLogin());
                     activationLogin.setManagedSysId(activetionPrimaryLogin.getManagedSysId());
                     sendResetActivationLink(u, activationLogin);
-//------
-                    List<LoginEntity> loginByUser = loginManager.getLoginByUser(passwordSync.getUserId());
 
-                    //idmAuditLog.setUserId(passwordSync.getUserId());
-                    LoginEntity identity = null;
-                    if (StringUtils.isNotBlank(passwordSync.getManagedSystemId())) {
-                        for (LoginEntity le : loginByUser) {
-                            if (passwordSync.getManagedSystemId().equals(le.getManagedSysId())) {
-                                identity = le;
-                                break;
-                            }
-                        }
-                    } else {
-                        identity = loginManager.getPrimaryIdentity(passwordSync.getUserId());
-                    }
-
-                    if (identity != null) {
-                        idmAuditLog.setTargetUser(identity.getUserId(), identity.getLogin());
-
-                    } else {
-                        idmAuditLog.fail();
-                        idmAuditLog.setFailureReason(ResponseCode.PRINCIPAL_NOT_FOUND);
-                        response.setStatus(ResponseStatus.FAILURE);
-                        response.setErrorCode(ResponseCode.PRINCIPAL_NOT_FOUND);
-                        return response;
-                    }
-
-//---------
                 }
-                /*Login activationLogin = new Login();
-                activationLogin.setLogin(activetionPrimaryLogin.getLogin());
-                activationLogin.setManagedSysId(activetionPrimaryLogin.getManagedSysId());
-                sendResetActivationLink(u, activationLogin);*/
+
             } else {
                 Map<String, Object> bindingMap = new HashMap<String, Object>();
                 if (callPreProcessor("RESET_PASSWORD", null, bindingMap, passwordSync) != ProvisioningConstants.SUCCESS) {
