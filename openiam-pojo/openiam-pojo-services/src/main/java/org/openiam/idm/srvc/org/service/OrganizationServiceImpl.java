@@ -47,10 +47,13 @@ import org.openiam.internationalization.LocalizedServiceGet;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.util.AttributeUtil;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -58,7 +61,7 @@ import java.util.*;
 
 @Service("organizationService")
 @Transactional
-public class OrganizationServiceImpl extends AbstractBaseService implements OrganizationService, InitializingBean {
+public class OrganizationServiceImpl extends AbstractBaseService implements OrganizationService, InitializingBean, ApplicationContextAware {
     private static final Log log = LogFactory.getLog(OrganizationServiceImpl.class);
     @Autowired
     private OrganizationTypeDAO orgTypeDAO;
@@ -140,6 +143,13 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     @Autowired
     protected String postProcessorOrganization;
 
+    private ApplicationContext ac;
+
+
+    public void setApplicationContext(final ApplicationContext ac) throws BeansException {
+        this.ac = ac;
+    }
+
     @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
@@ -161,8 +171,11 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     @Transactional(readOnly = true)
     @LocalizedServiceGet
     public Organization getOrganizationLocalizedDto(String orgId, String requesterId, final LanguageEntity langauge) {
-        if (DelegationFilterHelper.isAllowed(orgId, getDelegationFilter(requesterId))) {
-            OrganizationEntity organizationEntity = orgDao.findById(orgId);
+        //OrganizationService bean = (OrganizationService)ac.getBean("organizationService");
+
+        OrganizationEntity organizationEntity = this.getProxyService().getOrganizationLocalized(orgId, requesterId, langauge);
+
+        if (organizationEntity!=null) {
             return organizationDozerConverter.convertToDTO(organizationEntity, true);
         }
         return null;
@@ -237,7 +250,8 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     @LocalizedServiceGet
     @Transactional(readOnly = true)
     public List<Organization> getOrganizationsDtoForUser(String userId, String requesterId, final int from, final int size, final LanguageEntity langauge) {
-        List<OrganizationEntity> organizationEntityList = orgDao.getOrganizationsForUser(userId, getDelegationFilter(requesterId), from, size);
+        //List<OrganizationEntity> organizationEntityList = orgDao.getOrganizationsForUser(userId, getDelegationFilter(requesterId), from, size);
+        List<OrganizationEntity> organizationEntityList = this.getProxyService().getOrganizationsForUser(userId, requesterId, from, size, langauge);
         return organizationDozerConverter.convertToDTOList(organizationEntityList, false);
     }
 
@@ -259,14 +273,18 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     @LocalizedServiceGet
     @Transactional(readOnly = true)
     public List<Organization> findBeansDto(final OrganizationSearchBean searchBean, String requesterId, int from, int size, final LanguageEntity langauge) {
-        final boolean isUncoverParents = Boolean.TRUE.equals(searchBean.getUncoverParents());
+        /*final boolean isUncoverParents = Boolean.TRUE.equals(searchBean.getUncoverParents());
         Set<String> filter = getDelegationFilter(requesterId, isUncoverParents);
         if (StringUtils.isBlank(searchBean.getKey()))
             searchBean.setKeys(filter);
         else if (!DelegationFilterHelper.isAllowed(searchBean.getKey(), filter)) {
             return new ArrayList<Organization>(0);
         }
-        List<OrganizationEntity> organizationEntityList = orgDao.getByExample(searchBean, from, size);
+        List<OrganizationEntity> organizationEntityList = orgDao.getByExample(searchBean, from, size);*/
+
+        //OrganizationService bean = (OrganizationService)ac.getBean("organizationService");
+        List<OrganizationEntity> organizationEntityList = this.getProxyService().findBeans(searchBean, requesterId, from, size, langauge);
+
         List<Organization> resultList = null;
         if (searchBean.isDeepCopy()) {
             resultList = organizationDozerConverter.convertToDTOList(organizationEntityList, searchBean.isDeepCopy());
@@ -296,7 +314,8 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     @LocalizedServiceGet
     @Transactional(readOnly = true)
     public List<Organization> getParentOrganizationsDto(String orgId, String requesterId, int from, int size, final LanguageEntity langauge) {
-        List<OrganizationEntity> organizationEntityList = orgDao.getParentOrganizations(orgId, getDelegationFilter(requesterId), from, size);
+        //List<OrganizationEntity> organizationEntityList = orgDao.getParentOrganizations(orgId, getDelegationFilter(requesterId), from, size);
+        List<OrganizationEntity> organizationEntityList = this.getProxyService().getParentOrganizations(orgId, requesterId, from, size, langauge);
         return organizationDozerConverter.convertToDTOList(organizationEntityList, false);
     }
 
@@ -311,7 +330,8 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     @LocalizedServiceGet
     @Transactional(readOnly = true)
     public List<Organization> getChildOrganizationsDto(String orgId, String requesterId, int from, int size, final LanguageEntity langauge) {
-        List<OrganizationEntity> organizationEntityList = orgDao.getChildOrganizations(orgId, getDelegationFilter(requesterId), from, size);
+        //List<OrganizationEntity> organizationEntityList = orgDao.getChildOrganizations(orgId, getDelegationFilter(requesterId), from, size);
+        List<OrganizationEntity> organizationEntityList = this.getProxyService().getChildOrganizations(orgId, requesterId, from, size, langauge);
         return organizationDozerConverter.convertToDTOList(organizationEntityList, false);
     }
 
@@ -1359,9 +1379,10 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     @Override
     @Transactional(readOnly = true)
     public Location getLocationDtoById(String locationId) {
-        if (locationId == null)
-            throw new NullPointerException("locationId is null");
-        LocationEntity locationEntity = locationDao.findById(locationId);
+        /*if (locationId == null)
+            throw new NullPointerException("locationId is null");*/
+        //LocationEntity locationEntity = locationDao.findById(locationId);
+        LocationEntity locationEntity = this.getProxyService().getLocationById(locationId);
         return locationDozerConverter.convertToDTO(locationEntity, false);
     }
 
@@ -1401,13 +1422,14 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     @Override
     @Transactional(readOnly = true)
     public List<Location> getLocationDtoList(String organizationId, Integer from, Integer size) {
-        if (organizationId == null)
+        /*if (organizationId == null)
             throw new NullPointerException("organizationId is null");
 
         LocationSearchBean searchBean = new LocationSearchBean();
-        searchBean.setOrganizationId(organizationId);
+        searchBean.setOrganizationId(organizationId);*/
         /* searchBean.setParentType(ContactConstants.PARENT_TYPE_USER); */
-        List<LocationEntity> locationEntityList = getLocationList(searchBean, from, size);
+        //List<LocationEntity> locationEntityList = getLocationList(searchBean, from, size);
+        List<LocationEntity> locationEntityList = this.getProxyService().getLocationList(organizationId, from, size);
         return locationDozerConverter.convertToDTOList(locationEntityList, false);
     }
 
@@ -1423,10 +1445,13 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     @Override
     @Transactional(readOnly = true)
     public List<Location> getLocationDtoList(LocationSearchBean searchBean, Integer from, Integer size) {
-        if (searchBean == null)
-            throw new NullPointerException("searchBean is null");
+        /*if (searchBean == null)
+            throw new NullPointerException("searchBean is null");*/
 
-        List<LocationEntity> locationEntityList = locationDao.getByExample(locationSearchBeanConverter.convert(searchBean), from, size);
+        //List<LocationEntity> locationEntityList = locationDao.getByExample(locationSearchBeanConverter.convert(searchBean), from, size);
+
+        List<LocationEntity> locationEntityList = this.getProxyService().getLocationList(searchBean, from, size);
+
         return locationDozerConverter.convertToDTOList(locationEntityList, false);
     }
 
@@ -1476,6 +1501,11 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
             return organizationAttributeDozerConverter.convertToDTOList(attributeEntities, false);
         }
         return null;
+    }
+
+    private OrganizationService getProxyService() {
+        OrganizationService bean = (OrganizationService)ac.getBean("organizationService");
+        return bean;
     }
 
 }

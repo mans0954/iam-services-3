@@ -11,6 +11,7 @@ import org.openiam.authmanager.service.AuthorizationManagerService;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.dozer.converter.GroupDozerConverter;
+import org.openiam.dozer.converter.LanguageDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
@@ -52,9 +53,12 @@ import org.openiam.internationalization.LocalizedServiceGet;
 import org.openiam.util.AttributeUtil;
 import org.openiam.util.ws.collection.StringUtil;
 import org.openiam.validator.EntityValidator;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -71,7 +75,7 @@ import java.util.*;
  */
 
 @Service("groupManager")
-public class GroupDataServiceImpl implements GroupDataService {
+public class GroupDataServiceImpl implements GroupDataService, ApplicationContextAware {
     @Autowired
     protected SysConfiguration sysConfiguration;
 
@@ -128,6 +132,16 @@ public class GroupDataServiceImpl implements GroupDataService {
     protected AuditLogService auditLogService;
 
     @Autowired
+    private LanguageDozerConverter languageConverter;
+
+    private ApplicationContext ac;
+
+
+    public void setApplicationContext(final ApplicationContext ac) throws BeansException {
+        this.ac = ac;
+    }
+
+    @Autowired
     @Qualifier("authorizationManagerAdminService")
     private AuthorizationManagerAdminService authorizationManagerAdminService;
 
@@ -163,8 +177,13 @@ public class GroupDataServiceImpl implements GroupDataService {
     @LocalizedServiceGet
     @Transactional(readOnly = true)
     public Group getGroupDtoLocalize(final String id, final String requesterId, final Language language) {
-        if(DelegationFilterHelper.isAllowed(id, getDelegationFilter(requesterId))){
-            GroupEntity groupEntity = groupDao.findById(id);
+        /*if(DelegationFilterHelper.isAllowed(id, getDelegationFilter(requesterId))){*/
+
+        //GroupDataService bean = (GroupDataService)ac.getBean("groupManager");
+        GroupEntity groupEntity = this.getProxyService().getGroupLocalize(id, requesterId, languageConverter.convertToEntity(language, false));
+
+        if(groupEntity != null){
+            //GroupEntity groupEntity = groupDao.findById(id);
             return groupDozerConverter.convertToDTO(groupEntity, true);
         }
         return null;
@@ -256,7 +275,11 @@ public class GroupDataServiceImpl implements GroupDataService {
     @Override
     @Transactional(readOnly = true)
     public List<Group> findDtoBeans(final GroupSearchBean searchBean, final  String requesterId, int from, int size) {
-        List<GroupEntity> groupEntities = getGroupEntities(searchBean, requesterId, from, size);
+
+        //GroupDataService bean = (GroupDataService)ac.getBean("groupManager");
+        List<GroupEntity> groupEntities = this.getProxyService().findBeans(searchBean, requesterId, from, size);
+
+        //List<GroupEntity> groupEntities = getGroupEntities(searchBean, requesterId, from, size);
         return groupDozerConverter.convertToDTOList(groupEntities, false);
     }
 
@@ -281,7 +304,8 @@ public class GroupDataServiceImpl implements GroupDataService {
     @LocalizedServiceGet
     @Transactional(readOnly = true)
     public List<Group> findBeansDtoLocalize(final GroupSearchBean searchBean, final  String requesterId, int from, int size, final Language language) {
-        List<GroupEntity> groupEntities = getGroupEntities(searchBean, requesterId, from, size);
+        //List<GroupEntity> groupEntities = getGroupEntities(searchBean, requesterId, from, size);
+        List<GroupEntity> groupEntities = this.getProxyService().findBeansLocalize(searchBean, requesterId, from, size, languageConverter.convertToEntity(language, false));
         return groupDozerConverter.convertToDTOList(groupEntities, false);
     }
 
@@ -307,7 +331,7 @@ public class GroupDataServiceImpl implements GroupDataService {
     @Transactional(readOnly = true)
     public List<Group> findGroupsDtoForOwner(GroupSearchBean searchBean, String requesterId, String ownerId,
                                                 int from, int size, Language language){
-        List<GroupEntity> finalizedGroups = getGroupListForOwner(searchBean, requesterId, ownerId, getDefaultLanguage());
+        /*List<GroupEntity> finalizedGroups = getGroupListForOwner(searchBean, requesterId, ownerId, getDefaultLanguage());
 
         if (from > -1 && size > -1) {
             if (finalizedGroups != null && finalizedGroups.size() >= from) {
@@ -317,7 +341,8 @@ public class GroupDataServiceImpl implements GroupDataService {
                 }
                 finalizedGroups = new ArrayList<GroupEntity>(finalizedGroups.subList(from, to));
             }
-        }
+        }*/
+        List<GroupEntity> finalizedGroups = this.getProxyService().findGroupsForOwner(searchBean, requesterId, ownerId, from, size, languageConverter.convertToEntity(language, false));
 
         return groupDozerConverter.convertToDTOList(finalizedGroups, false);
     }
@@ -947,5 +972,10 @@ public class GroupDataServiceImpl implements GroupDataService {
     public List<Group> findGroupsDtoByAttributeValueLocalize(String attrName, String attrValue, LanguageEntity language) {
         List<GroupEntity> groupEntities = groupDao.findGroupsByAttributeValue(attrName, attrValue);
         return groupDozerConverter.convertToDTOList(groupEntities, true);
+    }
+
+    private GroupDataService getProxyService() {
+        GroupDataService bean = (GroupDataService)ac.getBean("groupManager");
+        return bean;
     }
 }

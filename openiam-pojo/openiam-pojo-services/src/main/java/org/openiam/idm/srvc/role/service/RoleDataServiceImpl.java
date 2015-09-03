@@ -39,16 +39,19 @@ import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
 import org.openiam.internationalization.LocalizedServiceGet;
 import org.openiam.util.AttributeUtil;
 import org.openiam.validator.EntityValidator;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
 @Service("roleDataService")
-public class RoleDataServiceImpl implements RoleDataService {
+public class RoleDataServiceImpl implements RoleDataService, ApplicationContextAware {
 
 	@Autowired
 	private RoleDAO roleDao;
@@ -91,6 +94,13 @@ public class RoleDataServiceImpl implements RoleDataService {
     
 	@Value("${org.openiam.resource.admin.resource.type.id}")
 	private String adminResourceTypeId;
+
+	private ApplicationContext ac;
+
+
+	public void setApplicationContext(final ApplicationContext ac) throws BeansException {
+		this.ac = ac;
+	}
 	
     @Autowired
     private MetadataTypeDAO typeDAO;
@@ -142,8 +152,11 @@ public class RoleDataServiceImpl implements RoleDataService {
 	@LocalizedServiceGet
 	@Transactional(readOnly = true)
 	public Role getRoleDtoLocalized(final String roleId, final String requesterId, final LanguageEntity language) {
-		if(DelegationFilterHelper.isAllowed(roleId, getDelegationFilter(requesterId))){
-			RoleEntity roleEntity = roleDao.findById(roleId);
+
+		//RoleDataService bean = (RoleDataService)ac.getBean("roleDataService");
+		RoleEntity roleEntity = this.getProxyService().getRoleLocalized(roleId, requesterId, language);
+
+		if(roleEntity != null){
 			return roleDozerConverter.convertToDTO(roleEntity, true);
 		}
 		return null;
@@ -510,7 +523,8 @@ public class RoleDataServiceImpl implements RoleDataService {
     @Override
     @Transactional(readOnly = true)
     public List<Role> getRolesDtoForUser(String userId, String requesterId, int from, int size) {
-        final List<RoleEntity> entityList = getRolesForUser(userId, requesterId, from, size);
+        //final List<RoleEntity> entityList = getRolesForUser(userId, requesterId, from, size);
+		final List<RoleEntity> entityList = this.getProxyService().getRolesForUser(userId, requesterId, from, size);
         return roleDozerConverter.convertToDTOList(entityList, false);
     }
 
@@ -547,13 +561,17 @@ public class RoleDataServiceImpl implements RoleDataService {
 	@Override
 	@Transactional(readOnly = true)
 	public List<Role> findBeansDto(RoleSearchBean searchBean, final String requesterId, int from, int size) {
-		Set<String> filter = getDelegationFilter(requesterId);
+/*		Set<String> filter = getDelegationFilter(requesterId);
 		if(StringUtils.isBlank(searchBean.getKey()))
 			searchBean.setKeys(filter);
 		else if(!DelegationFilterHelper.isAllowed(searchBean.getKey(), filter)){
 			return new ArrayList<Role>(0);
 		}
-		List<RoleEntity> roleEntityList = roleDao.getByExample(searchBean, from, size);
+		List<RoleEntity> roleEntityList = roleDao.getByExample(searchBean, from, size);*/
+
+		//RoleDataService bean = (RoleDataService)ac.getBean("roleDataService");
+		List<RoleEntity> roleEntityList = this.getProxyService().findBeans(searchBean, requesterId, from, size);
+
 		return roleDozerConverter.convertToDTOList(roleEntityList, false);
 	}
 
@@ -591,7 +609,8 @@ public class RoleDataServiceImpl implements RoleDataService {
 	@Override
 	@Transactional(readOnly = true)
 	public List<Role> getRolesDtoForResource(final String resourceId, final String requesterId, final int from, final int size) {
-		List<RoleEntity> roleEntityList = roleDao.getRolesForResource(resourceId, getDelegationFilter(requesterId), from, size);
+		//List<RoleEntity> roleEntityList = roleDao.getRolesForResource(resourceId, getDelegationFilter(requesterId), from, size);
+		List<RoleEntity> roleEntityList = this.getProxyService().getRolesForResource(resourceId, requesterId, from, size);
 		return roleDozerConverter.convertToDTOList(roleEntityList, false);
 	}
 
@@ -828,4 +847,9 @@ public class RoleDataServiceImpl implements RoleDataService {
         roleDao.rolesHierarchyRebuild();
         log.info("Role Hierarchy Cache preparation done.");
     }
+
+	private RoleDataService getProxyService() {
+		RoleDataService bean = (RoleDataService)ac.getBean("roleDataService");
+		return bean;
+	}
 }
