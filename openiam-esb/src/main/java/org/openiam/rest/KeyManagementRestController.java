@@ -49,10 +49,7 @@ public class KeyManagementRestController {
 	 * @return
 	 */
 	@RequestMapping("/initKeyManagement")
-	public @ResponseBody Response initKeyManagement() {
-		return new Response().succeed();
-		/*
-		TODO:  only run key management if there is no file, and no jks cache key
+	public @ResponseBody Response initKeyManagement() { 
 		final Response response = new Response();
 		try {
 			service.initKeyManagement();
@@ -62,6 +59,5 @@ public class KeyManagementRestController {
 			response.fail();
 		}
 		return response;
-		*/
 	}
 }
