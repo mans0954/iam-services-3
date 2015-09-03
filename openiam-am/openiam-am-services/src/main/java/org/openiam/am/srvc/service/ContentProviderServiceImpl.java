@@ -766,6 +766,11 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
 										pattern.addXssRule(rule);
 									}
 								}
+							} else {
+								if(pattern.getXssRules() == null) {
+									pattern.setXssRules(new HashSet<URIParamXSSRuleEntity>());
+								}
+								pattern.getXssRules().clear();
 							}
 							//saveURIPattern(pattern);
 							uriPatternDao.update(pattern);

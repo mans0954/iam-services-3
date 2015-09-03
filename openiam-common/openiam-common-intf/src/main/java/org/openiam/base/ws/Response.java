@@ -72,12 +72,14 @@ public class Response implements Serializable {
         return status;
     }
     
-    public void succeed() {
+    public Response succeed() {
     	this.status = ResponseStatus.SUCCESS;
+    	return this;
     }
     
-    public void fail() {
+    public Response fail() {
     	this.status = ResponseStatus.FAILURE;
+    	return this;
     }
 
     public void setStatus(ResponseStatus status) {

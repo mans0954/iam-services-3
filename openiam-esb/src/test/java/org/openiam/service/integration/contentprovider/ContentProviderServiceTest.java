@@ -182,13 +182,18 @@ public class ContentProviderServiceTest extends AbstractContentProviderServiceTe
 		ContentProvider cp = null;
 		try {
 			cp = super.createContentProvider();
+			cp.setName(getRandomName());
 			Response response = saveAndAssert(cp);
 			cp = get((String)response.getResponseValue());
 			Assert.assertNotNull(cp);
 			
 			response = contentProviderServiceClient.createDefaultURIPatterns(cp.getId());
 			Assert.assertNotNull(response);
-			Assert.assertTrue(response.isSuccess());
+			Assert.assertTrue(response.isSuccess(), response.toString());
+			
+			response = contentProviderServiceClient.createDefaultURIPatterns(cp.getId());
+			Assert.assertNotNull(response);
+			Assert.assertTrue(response.isSuccess(), response.toString());
 		} finally {
 			if(cp != null && cp.getId() != null) {
 				delete(cp);
