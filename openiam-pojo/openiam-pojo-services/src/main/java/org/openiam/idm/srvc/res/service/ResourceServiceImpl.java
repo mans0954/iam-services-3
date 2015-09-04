@@ -59,12 +59,15 @@ import org.openiam.internationalization.LocalizedServiceGet;
 import org.openiam.util.AttributeUtil;
 import org.openiam.util.UserUtils;
 import org.openiam.validator.EntityValidator;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -74,8 +77,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-@Service
-public class ResourceServiceImpl implements ResourceService {
+@Service("resourceService")
+public class ResourceServiceImpl implements ResourceService, ApplicationContextAware {
 
     @Autowired
     private ResourceDAO resourceDao;
@@ -142,6 +145,13 @@ public class ResourceServiceImpl implements ResourceService {
     private RoleDataService roleService;
 
     private static final Log log = LogFactory.getLog(ResourceDataServiceImpl.class);
+
+    private ApplicationContext ac;
+
+
+    public void setApplicationContext(final ApplicationContext ac) throws BeansException {
+        this.ac = ac;
+    }
 
     @Value("${org.openiam.resource.admin.resource.type.id}")
     private String adminResourceTypeId;
@@ -359,7 +369,8 @@ public class ResourceServiceImpl implements ResourceService {
         Resource resource = null;
         try {
             if (resourceId != null) {
-                ResourceEntity resourceEntity = resourceDao.findById(resourceId);
+                //ResourceEntity resourceEntity = resourceDao.findById(resourceId);
+                ResourceEntity resourceEntity = this.getProxyService().findResourceById(resourceId);
                 Resource resourceDto = resourceConverter.convertToDTO(resourceEntity, true);
                 if (resourceDto != null){
                     resource = resourceDto;
@@ -403,7 +414,11 @@ public class ResourceServiceImpl implements ResourceService {
     @Transactional(readOnly = true)
     @Cacheable(value="resources", key="{ #searchBean.cacheUniqueBeanKey, #from, #size, #language}")
     public List<Resource> findBeansLocalizedDto(final ResourceSearchBean searchBean, final int from, final int size, final LanguageEntity language) {
-        List<ResourceEntity> resourceEntityList = this.findBeansLocalized(searchBean, from, size, language);
+        //List<ResourceEntity> resourceEntityList = this.findBeansLocalized(searchBean, from, size, language);
+
+        //ResourceService bean = (ResourceService)ac.getBean("resourceService");
+        List<ResourceEntity> resourceEntityList = this.getProxyService().findBeansLocalized(searchBean, from, size, language);
+
         List<Resource> resourceList = resourceConverter.convertToDTOList(resourceEntityList, searchBean.isDeepCopy());
         return resourceList;
     }
@@ -446,7 +461,8 @@ public class ResourceServiceImpl implements ResourceService {
     @Transactional(readOnly = true)
     @LocalizedServiceGet
     public List<ResourceType> getAllResourceTypesDto(final Language language) {
-        List<ResourceTypeEntity> resourceTypeEntityList = resourceTypeDao.findAll();
+        //List<ResourceTypeEntity> resourceTypeEntityList = resourceTypeDao.findAll();
+        List<ResourceTypeEntity> resourceTypeEntityList = this.getProxyService().getAllResourceTypes();
         return resourceTypeConverter.convertToDTOList(resourceTypeEntityList, false);
     }
 
@@ -697,8 +713,9 @@ public class ResourceServiceImpl implements ResourceService {
         List<Resource> resourceList = null;
         try {
             if (CollectionUtils.isNotEmpty(resourceIdCollection)) {
-                List<ResourceEntity> resourceEntityList = resourceDao.findByIds(resourceIdCollection);
-                List<Resource> resourceListDto = resourceConverter.convertToDTOList(resourceEntityList, true);
+                //List<ResourceEntity> resourceEntityList = resourceDao.findByIds(resourceIdCollection);
+                List<ResourceEntity> resourceEntityList = this.getProxyService().findResourcesByIds(resourceIdCollection);
+                        List<Resource> resourceListDto = resourceConverter.convertToDTOList(resourceEntityList, true);
                 if (CollectionUtils.isNotEmpty(resourceListDto)) {
                     resourceList = resourceListDto;
                 }
@@ -858,7 +875,8 @@ public class ResourceServiceImpl implements ResourceService {
     @LocalizedServiceGet
     @Transactional(readOnly=true)
     public List<ResourceType> findResourceTypesDto(final ResourceTypeSearchBean searchBean, int from, int size, Language language) {
-        List<ResourceTypeEntity> resourceTypeEntityList = resourceTypeDao.getByExample(searchBean, from, size);
+        //List<ResourceTypeEntity> resourceTypeEntityList = resourceTypeDao.getByExample(searchBean, from, size);
+        List<ResourceTypeEntity> resourceTypeEntityList = this.getProxyService().findResourceTypes(searchBean, from, size);
         return resourceTypeConverter.convertToDTOList(resourceTypeEntityList, searchBean.isDeepCopy());
     }
 
@@ -1127,5 +1145,10 @@ public class ResourceServiceImpl implements ResourceService {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "RoleId or ResourceId is null");
             }
         this.deleteResourceRole(resourceId, roleId);
+    }
+
+    private ResourceService getProxyService() {
+        ResourceService service = (ResourceService)ac.getBean("resourceService");
+        return service;
     }
 }
