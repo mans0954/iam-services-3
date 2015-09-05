@@ -118,7 +118,7 @@ public abstract class AccessReviewStrategy {
             AuthorizationResource parentResource = accessReviewData.getMatrix().getResourceMap().get(resId);
             Set<String> parentRights = accessReviewData.getMatrix().getCompiledResourceIds().get(parentResource.getId());
 
-            AccessViewBean parentBean = EntitlementsStrategy.createBean(parentResource, accessReviewData.getAccessRightList(parentRights));
+            AccessViewBean parentBean = EntitlementsStrategy.createBean(parentResource, parentRights);
 
             result = !accessReviewData.isElementInUse(parentBean);
         }
@@ -133,7 +133,7 @@ public abstract class AccessReviewStrategy {
             AuthorizationRole parentRole = accessReviewData.getMatrix().getRoleMap().get(roleId);
             Set<String> parentRights = accessReviewData.getMatrix().getCompiledRoleIds().get(parentRole.getId());
 
-            AccessViewBean parentBean = EntitlementsStrategy.createBean(parentRole, accessReviewData.getAccessRightList(parentRights));
+            AccessViewBean parentBean = EntitlementsStrategy.createBean(parentRole, parentRights);
             result = !accessReviewData.isElementInUse(parentBean);
         }
 
@@ -148,7 +148,7 @@ public abstract class AccessReviewStrategy {
             String grId = accessReviewData.getMatrix().getChildGroupToParentGroupMap().get(thisGroup.getId()).keySet().iterator().next();
             AuthorizationGroup parent = accessReviewData.getMatrix().getGroupMap().get(grId);
             Set<String> parentRights = accessReviewData.getMatrix().getCompiledGroupIds().get(parent.getId());
-            AccessViewBean parentBean = EntitlementsStrategy.createBean(parent, accessReviewData.getAccessRightList(parentRights));
+            AccessViewBean parentBean = EntitlementsStrategy.createBean(parent, parentRights);
             result = !accessReviewData.isElementInUse(parentBean);
         }
 

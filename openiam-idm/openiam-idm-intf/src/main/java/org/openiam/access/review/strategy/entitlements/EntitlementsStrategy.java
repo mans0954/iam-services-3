@@ -42,7 +42,7 @@ public abstract class EntitlementsStrategy {
             for(String roleId : roleIds){
                 AuthorizationRole role = accessReviewData.getMatrix().getRoleMap().get(roleId);
                 if(role!=null){
-                    AccessViewBean bean = createBean(role, accessReviewData.getAccessRightList(accessReviewData.getMatrix().getCompiledRoleIds().get(roleId)));
+                    AccessViewBean bean = createBean(role, accessReviewData.getMatrix().getCompiledRoleIds().get(roleId));
                     retVal.add(bean);
                 }
             }
@@ -57,7 +57,7 @@ public abstract class EntitlementsStrategy {
             for(String groupId : groupIds){
                 AuthorizationGroup group = accessReviewData.getMatrix().getGroupMap().get(groupId);
                 if(group!=null){
-                    AccessViewBean bean = createBean(group, accessReviewData.getAccessRightList(accessReviewData.getMatrix().getCompiledGroupIds().get(groupId)));
+                    AccessViewBean bean = createBean(group, accessReviewData.getMatrix().getCompiledGroupIds().get(groupId));
                     retVal.add(bean);
                 }
             }
@@ -72,7 +72,7 @@ public abstract class EntitlementsStrategy {
                 AuthorizationResource resource = accessReviewData.getMatrix().getResourceMap().get(resourceId);
 
                 if(resource!=null){
-                    AccessViewBean bean = createBean(resource, accessReviewData.getAccessRightList(accessReviewData.getMatrix().getCompiledResourceIds().get(resourceId)));
+                    AccessViewBean bean = createBean(resource, accessReviewData.getMatrix().getCompiledResourceIds().get(resourceId));
 
                     if("MANAGED_SYS".equals(resource.getResourceTypeId())){
                         bean.setManagedSys(accessReviewData.getMngsysMap().get(resource.getId()).getId());
@@ -87,31 +87,31 @@ public abstract class EntitlementsStrategy {
         return retVal;
     }
 
-    public static AccessViewBean createBean(AuthorizationRole entity, List<AccessRight> rightSet){
+    public static AccessViewBean createBean(AuthorizationRole entity, Set<String> rightSet){
 //        Map.Entry<AuthorizationRole, Set<AuthorizationAccessRight>> data = entity.entrySet().iterator().next();
         return createBean(entity.getId(), entity.getName(), entity.getDescription(), entity.getStatus(), entity.getManagedSysId(),
                           AccessReviewConstant.ROLE_TYPE, null, null, rightSet);
     }
 
-    public static  AccessViewBean createBean(AuthorizationGroup entity, List<AccessRight> rightSet){
+    public static  AccessViewBean createBean(AuthorizationGroup entity, Set<String> rightSet){
 //        Map.Entry<AuthorizationGroup, Set<AuthorizationAccessRight>> data = entity.entrySet().iterator().next();
         return createBean(entity.getId(), entity.getName(), entity.getDescription(), entity.getStatus(), entity.getManagedSysId(),
                           AccessReviewConstant.GROUP_TYPE, null, null, rightSet);
     }
 
-    public static  AccessViewBean createBean(AuthorizationResource entity, List<AccessRight> rightSet){
+    public static  AccessViewBean createBean(AuthorizationResource entity, Set<String> rightSet){
         return createBean(entity.getId(), entity.getName(), entity.getDescription(), entity.getStatus(), entity.getManagedSysId(),
                 AccessReviewConstant.RESOURCE_TYPE, entity.getResourceTypeId(), entity.getRisk(), rightSet);
     }
 
-    public static  AccessViewBean createBean(String id, String name, String description, String status, String managedSys, String type, String resourceTypeId, String risk, List<AccessRight> rightSet){
+    public static  AccessViewBean createBean(String id, String name, String description, String status, String managedSys, String type, String resourceTypeId, String risk, Set<String> rightSet){
         AccessViewBean bean =  new AccessViewBean(id, name, description);
         bean.setStatus(status);
         bean.setManagedSys(managedSys);
         bean.setBeanType(type);
         bean.setRisk(risk);
         bean.setResourceTypeId(resourceTypeId);
-        bean.setAccessRights(rightSet);
+        bean.addAccessRights(rightSet);
         return bean;
     }
 

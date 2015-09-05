@@ -30,9 +30,14 @@ public class RoleEntitlementStrategy extends EntitlementsStrategy {
         if(parent==null){
             return getRoleBeans(accessReviewData.getMatrix().getDirectRoleIds().keySet());
         }
-        // children roles
-        Set<String> childrenIds = accessReviewData.getMatrix().getRoleToRoleMap().get(parent.getId()).keySet();
-        Set<String> roleIds = accessReviewData.getMatrix().getDirectRoleIds().keySet();
+
+        Map<String, Set<String>> childrenRoles = accessReviewData.getMatrix().getRoleToRoleMap().get(parent.getId());
+        Set<String> childrenIds = null;
+        if(MapUtils.isNotEmpty(childrenRoles)) {
+            childrenIds = childrenRoles.keySet();
+        }
+
+        Set<String> roleIds = (MapUtils.isNotEmpty(accessReviewData.getMatrix().getDirectRoleIds()))?accessReviewData.getMatrix().getDirectRoleIds().keySet():null;
 
         if(CollectionUtils.isNotEmpty(childrenIds)
                 && CollectionUtils.isNotEmpty(roleIds)){

@@ -1,5 +1,6 @@
 package org.openiam.access.review.model;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.openiam.authmanager.common.model.AuthorizationAccessRight;
 import org.openiam.base.KeyNameDTO;
 import org.openiam.idm.srvc.access.dto.AccessRight;
@@ -7,6 +8,8 @@ import org.openiam.idm.srvc.access.dto.AccessRight;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -37,7 +40,7 @@ public class AccessViewBean extends KeyNameDTO implements Comparable<AccessViewB
     private String loginId;
     private String managedSys;
     private String resourceTypeId;
-    private List<AccessRight> accessRights;
+    private List<String> accessRights;
 
 
     public AccessViewBean() {
@@ -123,12 +126,20 @@ public class AccessViewBean extends KeyNameDTO implements Comparable<AccessViewB
         this.managedSys = managedSys;
     }
 
-    public List<AccessRight> getAccessRights() {
+    public List<String> getAccessRights() {
         return accessRights;
     }
 
-    public void setAccessRights(List<AccessRight> accessRights) {
+    public void setAccessRights(List<String> accessRights) {
         this.accessRights = accessRights;
+    }
+
+    public void addAccessRights(Collection<String> accessRights) {
+        if(CollectionUtils.isNotEmpty(accessRights)) {
+            if (this.accessRights == null)
+                this.accessRights = new ArrayList<>();
+            this.accessRights.addAll(accessRights);
+        }
     }
 
     @Override

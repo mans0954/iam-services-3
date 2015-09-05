@@ -53,7 +53,7 @@ public class JdbcMembershipDAO extends AbstractJDBCDao implements MembershipDAO 
 
 	private static final String GET_MEMBERSHIP = "SELECT %s AS MEMBER_ENTITY_ID, %s AS ENTITY_ID, MEMBERSHIP_ID AS MEMBERSHIP_ID FROM %s.%s";
 	private static final String GET_RIGHTS = "SELECT MEMBERSHIP_ID AS MEMBERSHIP_ID, ACCESS_RIGHT_ID AS ACCESS_RIGHT_ID FROM %s.%s";
-	private static final String GET_ENTITY = "SELECT %S AS ID, %s AS NAME, %s AS DESCRIPTION, %s AS STATUS FROM %s.%s";
+	private static final String GET_ENTITY = "SELECT %S AS ID, %s AS NAME, %s AS DESCRIPTION, %s AS STATUS, %s AS MANAGED_SYS_ID  FROM %s.%s";
 	
 	private String GET_FULLY_POPULATED_USER_RS_LIST = "SELECT " + 
 													  "	l.USER_ID AS ID, " + 
@@ -92,11 +92,11 @@ public class JdbcMembershipDAO extends AbstractJDBCDao implements MembershipDAO 
 	private String GET_USER_IDS_FOR_GROUP = "SELECT USER_ID FROM %s.USER_GRP WHERE GRP_ID=?";
 	
 	private String GET_USERS = "SELECT USER_ID AS ID FROM %s.LOGIN WHERE LAST_LOGIN >= ?";
-	private String GET_RESOURCES = "SELECT RESOURCE_ID AS ID, NAME AS NAME, DESCRIPTION AS DESCRIPTION, RESOURCE_TYPE_ID AS RESOURCE_TYPE_ID FROM %s.RES";
+	private String GET_RESOURCES = "SELECT RESOURCE_ID AS ID, NAME AS NAME, DESCRIPTION AS DESCRIPTION, RESOURCE_TYPE_ID AS RESOURCE_TYPE_ID, RISK AS RISK, COORELATED_NAME AS COORELATED_NAME FROM %s.RES";
 	private String GET_GROUPS;
 	private String GET_ROLES;
-	private String GET_ORGS;
-	
+	private String GET_ORGS="SELECT COMPANY_ID AS ID, COMPANY_NAME AS NAME, DESCRIPTION AS DESCRIPTION, STATUS AS STATUS FROM %s.COMPANY";
+
 	private String USER_ROLE_XREFS;
 	private String USER_GRP_XREFS;
 	private String USER_ORG_XREFS;
@@ -143,8 +143,8 @@ public class JdbcMembershipDAO extends AbstractJDBCDao implements MembershipDAO 
 		return String.format(GET_RIGHTS, getSchemaName(), tableName);
 	}
 	
-	private String getEntitySQL(final String idName, final String name, final String description, final String status, final String tableName) {
-		return String.format(GET_ENTITY, idName, name, description, status, getSchemaName(), tableName);
+	private String getEntitySQL(final String idName, final String name, final String description, final String status, final String managedSysId, final String tableName) {
+		return String.format(GET_ENTITY, idName, name, description, status, managedSysId, getSchemaName(), tableName);
 	}
 	
 	@Override
@@ -157,9 +157,9 @@ public class JdbcMembershipDAO extends AbstractJDBCDao implements MembershipDAO 
 		GET_USER_IDS_FOR_GROUP_WITH_RIGHT = String.format(GET_USER_IDS_FOR_GROUP_WITH_RIGHT, schemaName, schemaName);
 		GET_USER_IDS_FOR_GROUP = String.format(GET_USER_IDS_FOR_GROUP, schemaName);
 		GET_RESOURCES = String.format(GET_RESOURCES, schemaName);
-		GET_ORGS = getEntitySQL("COMPANY_ID", "COMPANY_NAME", "DESCRIPTION", "STATUS", "COMPANY");
-		GET_ROLES = getEntitySQL("ROLE_ID", "ROLE_NAME", "DESCRIPTION", "STATUS", "ROLE");
-		GET_GROUPS = getEntitySQL("GRP_ID", "GRP_NAME", "GROUP_DESC", "STATUS", "GRP");
+		GET_ORGS = String.format(GET_ORGS, schemaName);
+		GET_ROLES = getEntitySQL("ROLE_ID", "ROLE_NAME", "DESCRIPTION", "STATUS", "MANAGED_SYS_ID","ROLE");
+		GET_GROUPS = getEntitySQL("GRP_ID", "GRP_NAME", "GROUP_DESC", "STATUS", "MANAGED_SYS_ID","GRP");
 		
 		USER_ROLE_XREFS = getMembershipSQL("USER_ID", "ROLE_ID", "USER_ROLE");
 		USER_GRP_XREFS = getMembershipSQL("USER_ID", "GRP_ID", "USER_GRP");
@@ -388,6 +388,7 @@ public class JdbcMembershipDAO extends AbstractJDBCDao implements MembershipDAO 
 			dto.setId(rs.getString("ID"));
 			dto.setName(rs.getString("NAME"));
 			dto.setStatus(rs.getString("STATUS"));
+			dto.setManagedSysId(rs.getString("MANAGED_SYS_ID"));
 			return dto;
 		}
 	}
@@ -440,6 +441,7 @@ public class JdbcMembershipDAO extends AbstractJDBCDao implements MembershipDAO 
 			dto.setId(rs.getString("ID"));
 			dto.setName(rs.getString("NAME"));
 			dto.setStatus(rs.getString("STATUS"));
+			dto.setManagedSysId(rs.getString("MANAGED_SYS_ID"));
 			return dto;
 		}
 		
@@ -470,6 +472,8 @@ public class JdbcMembershipDAO extends AbstractJDBCDao implements MembershipDAO 
 			dto.setId(rs.getString("ID"));
 			dto.setName(rs.getString("NAME"));
 			dto.setResourceTypeId(rs.getString("RESOURCE_TYPE_ID"));
+			dto.setRisk(rs.getString("RISK"));
+			dto.setCoorelatedName(rs.getString("COORELATED_NAME"));
 			return dto;
 		}
 		

@@ -201,7 +201,7 @@ public class AuthorizationManagerAdminServiceImpl extends AbstractAuthorizationM
 						user.getGroups());
 
 
-				matrix.populate(userId, userResources, userRoles, userGroups);
+				matrix.populate(userId, userResources, userRoles, userGroups, model.getTempResourceIdMap(), model.getTempGroupIdMap(), model.getTempRoleIdMap());
 
 
 				populateWithMemberEntityIdAsValue(model.getRole2RoleMap(), model.getRole2RoleRightMap()).forEach((parentId, membership) -> {

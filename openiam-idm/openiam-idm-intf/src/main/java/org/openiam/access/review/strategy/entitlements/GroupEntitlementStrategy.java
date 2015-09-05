@@ -10,6 +10,7 @@ import org.openiam.authmanager.common.xref.AbstractResourceXref;
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -29,8 +30,14 @@ public class GroupEntitlementStrategy extends EntitlementsStrategy {
     @Override
     public Set<AccessViewBean> getGroups(AccessViewBean parent) {
         // children groups
-        Set<String> childrenIds = accessReviewData.getMatrix().getGroupToGroupMap().get(parent.getId()).keySet();
-        Set<String> directGroupIds = accessReviewData.getMatrix().getDirectGroupIds().keySet();
+
+        Map<String, Set<String>> childrenGrp = accessReviewData.getMatrix().getGroupToGroupMap().get(parent.getId());
+        Set<String> childrenIds = null;
+        if(MapUtils.isNotEmpty(childrenGrp)) {
+            childrenIds = childrenGrp.keySet();
+        }
+
+        Set<String> directGroupIds = (MapUtils.isNotEmpty(accessReviewData.getMatrix().getDirectGroupIds()))?accessReviewData.getMatrix().getDirectGroupIds().keySet():null;
 
         if(CollectionUtils.isNotEmpty(childrenIds)
                 && CollectionUtils.isNotEmpty(directGroupIds)){

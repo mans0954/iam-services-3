@@ -108,7 +108,10 @@ public class UserEntitlementsMatrix implements Serializable {
 	public void populate(final String userId,
 						 final ResourceEntitlementToken resourceEntitlementToken,
 						 final RoleEntitlementToken roleEntitlementToken,
-						 final GroupEntitlementToken groupEntitlementToken) {
+						 final GroupEntitlementToken groupEntitlementToken,
+						 final Map<String, AuthorizationResource> resourceMap,
+						 final Map<String, AuthorizationGroup> groupMap,
+						 final Map<String, AuthorizationRole> roleMap) {
 		this.userId = userId;
 		this.directRoleIds = roleEntitlementToken.getDirectEntitlementIds();
 		this.compiledRoleIds = roleEntitlementToken.getEntitlementIds();
@@ -119,9 +122,9 @@ public class UserEntitlementsMatrix implements Serializable {
 		this.directResourceIds = resourceEntitlementToken.getDirectEntitlementIds();
 		this.compiledResourceIds = resourceEntitlementToken.getEntitlementIds();
 
-		this.roleMap = roleEntitlementToken.getEntitlementMap();
-		this.groupMap = groupEntitlementToken.getEntitlementMap();
-		this.resourceMap = resourceEntitlementToken.getEntitlementMap();
+		this.roleMap = roleMap;
+		this.groupMap = groupMap;
+		this.resourceMap = resourceMap;
 	}
 
 

@@ -18,7 +18,8 @@ import org.openiam.idm.srvc.res.domain.ResourceEntity;
         "resourceTypeId",
         "inheritFromParent",
         "isPublic",
-        "risk"
+        "risk",
+		"coorelatedName"
 })
 public class AuthorizationResource extends AbstractAuthorizationEntity implements Serializable  {
 
@@ -34,6 +35,8 @@ public class AuthorizationResource extends AbstractAuthorizationEntity implement
 	private boolean isPublic = false;
 
     private String risk;
+
+	private String coorelatedName;
 
 	/*
 	private BitSet linearBitSet = new BitSet();
@@ -93,6 +96,14 @@ public class AuthorizationResource extends AbstractAuthorizationEntity implement
     public void setRisk(String risk) {
         this.risk = risk;
     }
+
+	public String getCoorelatedName() {
+		return coorelatedName;
+	}
+
+	public void setCoorelatedName(String coorelatedName) {
+		this.coorelatedName = coorelatedName;
+	}
 
 	public Set<AbstractResourceXref> visitResources(final Set<AuthorizationResource> visitedSet) {
 		final Set<AbstractResourceXref> compiledResourceBitSet = new HashSet<AbstractResourceXref>();

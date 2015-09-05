@@ -11,7 +11,9 @@ import org.openiam.access.review.constant.AccessReviewData;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -34,7 +36,7 @@ public class ResourceEntitlementStrategy extends EntitlementsStrategy {
                     AuthorizationRole role = accessReviewData.getMatrix().getRoleMap().get(roleId);
                     if(StringUtils.isNotBlank(role.getManagedSysId())
                        && mngsys.getId().equals(role.getManagedSysId())){
-                        AccessViewBean bean = createBean(role, accessReviewData.getAccessRightList(accessReviewData.getMatrix().getCompiledRoleIds().get(roleId)));
+                        AccessViewBean bean = createBean(role, accessReviewData.getMatrix().getCompiledRoleIds().get(roleId));
                         retVal.add(bean);
                     }
                 }
@@ -55,7 +57,7 @@ public class ResourceEntitlementStrategy extends EntitlementsStrategy {
                     AuthorizationGroup group = accessReviewData.getMatrix().getGroupMap().get(groupId);
                     if(StringUtils.isNotBlank(group.getManagedSysId())
                        && mngsys.getId().equals(group.getManagedSysId())){
-                        AccessViewBean bean = createBean(group, accessReviewData.getAccessRightList(accessReviewData.getMatrix().getCompiledGroupIds().get(groupId)));
+                        AccessViewBean bean = createBean(group, accessReviewData.getMatrix().getCompiledGroupIds().get(groupId));
                         retVal.add(bean);
                     }
                 }
@@ -69,9 +71,13 @@ public class ResourceEntitlementStrategy extends EntitlementsStrategy {
     @Override
     public Set<AccessViewBean> getResources(AccessViewBean parent) {
         if(parent==null){
-            return getResourceBeans(accessReviewData.getMatrix().getResourceMap().keySet());
+            return getResourceBeans((MapUtils.isNotEmpty(accessReviewData.getMatrix().getCompiledResourceIds()))?accessReviewData.getMatrix().getCompiledResourceIds().keySet():null);
         }
-        return getResourceBeans(accessReviewData.getMatrix().getResourceToResourceMap().get(parent.getId()).keySet());
+        Map<String, Set<String>> childrenResources = accessReviewData.getMatrix().getResourceToResourceMap().get(parent.getId());
+        if(MapUtils.isNotEmpty(childrenResources)) {
+            return getResourceBeans(accessReviewData.getMatrix().getResourceToResourceMap().get(parent.getId()).keySet());
+        }
+        return null;
     }
 
     @Override
