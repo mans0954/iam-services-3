@@ -19,22 +19,25 @@ public class AuthorizationAccessRight {
 	public String getId() {
 		return id;
 	}
-	public void setId(String id) {
+	public AuthorizationAccessRight setId(String id) {
 		this.id = id;
+		return this;
 	}
 	public int getBitIdx() {
 		return bitIdx;
 	}
-	public void setBitIdx(int bitIdx) {
+	public AuthorizationAccessRight setBitIdx(int bitIdx) {
 		this.bitIdx = bitIdx;
+		return this;
 	}
 
 	public String getName() {
 		return name;
 	}
 
-	public void setName(String name) {
+	public AuthorizationAccessRight setName(String name) {
 		this.name = name;
+		return this;
 	}
 
 	@Override
