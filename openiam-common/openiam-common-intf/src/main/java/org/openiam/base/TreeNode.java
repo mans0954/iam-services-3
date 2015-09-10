@@ -19,8 +19,8 @@ import java.util.List;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "TreeNode", propOrder = {
 //        "parent",
-        "children",
         "data",
+        "children",
         "icon",
         "iconType",
         "iconDescription",
