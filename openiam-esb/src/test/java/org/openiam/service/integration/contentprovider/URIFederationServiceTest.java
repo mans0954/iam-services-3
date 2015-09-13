@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.openiam.am.srvc.dto.ContentProvider;
 import org.openiam.am.srvc.dto.PatternMatchMode;
 import org.openiam.am.srvc.dto.URIPattern;
@@ -57,7 +58,9 @@ public class URIFederationServiceTest extends AbstractURIFederationTest {
 	    tuples.add(new Tuple<String, PatternMatchMode>("/paramsWithMethod/*", PatternMatchMode.SPECIFIC_PARAMS));
 	    
 	    for(final Tuple<String, PatternMatchMode> tuple : tuples) {
-	    	URIPattern pattern = new URIPattern();
+	    	final URIPattern pattern = new URIPattern();
+	    	pattern.setCacheable(true);
+	    	pattern.setCacheTTL(Integer.valueOf(RandomUtils.nextInt(30, 100)));
 	    	pattern.setContentProviderId(cp.getId());
 	    	pattern.setPattern(tuple.getKey());
 	    	pattern.setMatchMode(tuple.getValue());
@@ -195,9 +198,11 @@ public class URIFederationServiceTest extends AbstractURIFederationTest {
 		
 		response = uriFederationServiceClient.federateProxyURI(userId, "http://www.example.com/paramsWithNoMethod/foobar?0=0&1=1&2=2&3=3&4=4&5=5", "TRACE");
 		assertSuccess(response, true);
+		Assert.assertNotNull(response.getCacheTTL());
 		
 		response = uriFederationServiceClient.federateProxyURI(userId, "http://www.example.com/paramsWithMethod/foobar?0=0&1=1&2=2&3=3&4=4&5=5", "TRACE");
 		assertSuccess(response, true);
+		Assert.assertNotNull(response.getCacheTTL());
 		
 		//uriFederationServiceClient.getMetadata(proxyURI, method);
 	}

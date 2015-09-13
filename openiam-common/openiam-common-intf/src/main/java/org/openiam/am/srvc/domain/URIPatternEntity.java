@@ -115,6 +115,13 @@ public class URIPatternEntity extends AbstractMatchModeEntity {
     @Column(name="REDIRECT_TO_GROOVY_SCRIPT", length=400)
     private String redirectToGroovyScript;
     
+    @Column(name = "IS_CACHEABLE", nullable = false)
+	@Type(type = "yes_no")
+    private boolean cacheable = true;
+    
+    @Column(name="CACHE_TTL")
+	private Integer cacheTTL;
+    
 	public Set<URIPatternParameterEntity> getParams() {
 		return params;
 	}
@@ -378,6 +385,22 @@ public class URIPatternEntity extends AbstractMatchModeEntity {
 	public void setXssRules(Set<URIParamXSSRuleEntity> xssRules) {
 		this.xssRules = xssRules;
 	}
+	
+	public boolean isCacheable() {
+		return cacheable;
+	}
+
+	public void setCacheable(boolean cacheable) {
+		this.cacheable = cacheable;
+	}
+
+	public Integer getCacheTTL() {
+		return cacheTTL;
+	}
+
+	public void setCacheTTL(Integer cacheTTL) {
+		this.cacheTTL = cacheTTL;
+	}
 
 	@Override
 	public int hashCode() {
@@ -403,6 +426,9 @@ public class URIPatternEntity extends AbstractMatchModeEntity {
 		
 		result = prime * result
 				+ ((applicationName == null) ? 0 : applicationName.hashCode());
+		
+		result = prime * result + (cacheable ? 1231 : 1237);
+		result = prime * result + ((cacheTTL == null) ? 0 : cacheTTL.hashCode());
 		return result;
 	}
 
@@ -464,6 +490,15 @@ public class URIPatternEntity extends AbstractMatchModeEntity {
 			if (other.applicationName != null)
 				return false;
 		} else if (!applicationName.equals(other.applicationName))
+			return false;
+		
+		if(cacheable != other.cacheable) {
+			return false;
+		}
+		if (cacheTTL == null) {
+			if (other.cacheTTL != null)
+				return false;
+		} else if (!cacheTTL.equals(other.cacheTTL))
 			return false;
 		return true;
 	}

@@ -29,12 +29,6 @@ public class URIPatternRuleToken implements Serializable {
 	private String contentType;
 	private List<URIPatternRuleValue> valueList;
 	
-	@XmlTransient
-	private boolean cacheable;
-	
-	@XmlTransient
-	private Integer cacheTTL;
-	
 	private URIPatternRuleToken() {}
 
 	public URIPatternRuleToken(final URIPatternMetaType metaType, final AbstractMeta meta) {
@@ -68,22 +62,6 @@ public class URIPatternRuleToken implements Serializable {
 		this.contentType = contentType;
 	}
 	
-	public boolean isCacheable() {
-		return cacheable;
-	}
-
-	public void setCacheable(boolean cacheable) {
-		this.cacheable = cacheable;
-	}
-
-	public Integer getCacheTTL() {
-		return cacheTTL;
-	}
-
-	public void setCacheTTL(Integer cacheTTL) {
-		this.cacheTTL = cacheTTL;
-	}
-
 	@Override
 	public String toString() {
 		return "URIPatternRuleToken [metaType=" + metaType + ", contentType="

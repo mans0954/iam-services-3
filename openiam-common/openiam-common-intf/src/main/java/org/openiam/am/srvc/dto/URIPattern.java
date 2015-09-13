@@ -59,7 +59,9 @@ import java.util.TreeSet;
         "url",
         "applicationName",
         "ignoreXSS",
-        "xssRules"
+        "xssRules",
+        "cacheable",
+    	"cacheTTL"
 })
 @DozerDTOCorrespondence(URIPatternEntity.class)
 public class URIPattern extends AbstractMatchMode {
@@ -88,6 +90,8 @@ public class URIPattern extends AbstractMatchMode {
 	private String url;
 	private String applicationName;
 	private boolean ignoreXSS;
+	private boolean cacheable;
+	private Integer cacheTTL;
 	
 	@Transient
 	@XmlTransient
@@ -370,6 +374,22 @@ public class URIPattern extends AbstractMatchMode {
 		this.xssRules = xssRules;
 	}
 
+	public boolean isCacheable() {
+		return cacheable;
+	}
+
+	public void setCacheable(boolean cacheable) {
+		this.cacheable = cacheable;
+	}
+
+	public Integer getCacheTTL() {
+		return cacheTTL;
+	}
+
+	public void setCacheTTL(Integer cacheTTL) {
+		this.cacheTTL = cacheTTL;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -395,6 +415,8 @@ public class URIPattern extends AbstractMatchMode {
 		result = prime * result
 				+ ((applicationName == null) ? 0 : applicationName.hashCode());
 		result = prime * result + (ignoreXSS ? 1231 : 1237);
+		result = prime * result + (cacheable ? 1231 : 1237);
+		result = prime * result + ((cacheTTL == null) ? 0 : cacheTTL.hashCode());
 		return result;
 	}
 	@Override
@@ -449,10 +471,19 @@ public class URIPattern extends AbstractMatchMode {
 		if(ignoreXSS != other.ignoreXSS) {
 			return false;
 		}
+		if(cacheable != other.cacheable) {
+			return false;
+		}
 		if (applicationName == null) {
 			if (other.applicationName != null)
 				return false;
 		} else if (!applicationName.equals(other.applicationName))
+			return false;
+		
+		if (cacheTTL == null) {
+			if (other.cacheTTL != null)
+				return false;
+		} else if (!cacheTTL.equals(other.cacheTTL))
 			return false;
 		return true;
 	}

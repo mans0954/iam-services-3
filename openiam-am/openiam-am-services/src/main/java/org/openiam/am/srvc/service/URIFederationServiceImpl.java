@@ -485,8 +485,6 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 					}
 					ruleToken = rule.process(userId, uri, type, abstractValueSet, pattern, method, cp, meta);
 					response.addRuleToken(ruleToken);
-					response.setCacheable(ruleToken.isCacheable());
-					response.setCacheTTL(ruleToken.getCacheTTL());
 				}
 			} catch(Throwable e) {
 				if(ruleToken != null) {
@@ -615,6 +613,12 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 				if(!isEntitled(userId, cp.getUnavailableResourceId())) {
 					response.setRedirectTo(StringUtils.trimToNull(cp.getUnavailableURL()));
 				}
+			}
+			
+			/* lastly, add caching metadata for proxy */
+			if(uriPattern != null) {
+				response.setCacheable(uriPattern.isCacheable());
+				response.setCacheTTL(uriPattern.getCacheTTL());
 			}
 			
 			response.setStatus(ResponseStatus.SUCCESS);

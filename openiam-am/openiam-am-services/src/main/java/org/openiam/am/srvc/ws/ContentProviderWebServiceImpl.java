@@ -467,6 +467,16 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
             	pattern.setUrl(null);
             	pattern.setApplicationName(null);
             }
+            
+            if(pattern.isCacheable()) {
+            	if(pattern.getCacheTTL() == null) {
+            		throw new BasicDataServiceException(ResponseCode.INVALID_CACHE_TTL);
+            	} else if(pattern.getCacheTTL().intValue() <= 0) {
+            		throw new BasicDataServiceException(ResponseCode.INVALID_CACHE_TTL);
+            	}
+            } else {
+            	pattern.setCacheTTL(null);
+            }
 
             // validate pattern
             try{
