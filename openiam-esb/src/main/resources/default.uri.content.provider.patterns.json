@@ -2,19 +2,27 @@
 	"patterns" : [
 		{
 			"pattern" : "/selfservice/*",
-			"isPublic" : true
+			"isPublic" : true,
+			"cacheable" : true,
+			"cacheTTL" : 30
 		},
 		{
 			"pattern" : "/webconsole-am/*",
-			"isPublic" : true
+			"isPublic" : true,
+			"cacheable" : true,
+			"cacheTTL" : 30
 		},
 		{
 			"pattern" : "/webconsole-idm/*",
-			"isPublic" : true
+			"isPublic" : true,
+			"cacheable" : true,
+			"cacheTTL" : 30
 		},
 		{
 			"pattern" : "/webconsole/*",
-			"isPublic" : true
+			"isPublic" : true,
+			"cacheable" : true,
+			"cacheTTL" : 30
 		},
 		{
 			"pattern" : "/selfservice/selfRegistration.html",
@@ -25,7 +33,9 @@
 						"groupingId" : "NONE"
 					}
 				}
-			]
+			],
+			"cacheable" : true,
+			"cacheTTL" : 30
 		},
 		{
 			"pattern" : "/openiam-ui-static/*",
@@ -36,7 +46,9 @@
 						"groupingId" : "NONE"
 					}
 				}
-			]
+			],
+			"cacheable" : true,
+			"cacheTTL" : 300
 		},
 		{
 			"pattern" : "/idp/changePassword.html",
@@ -61,7 +73,8 @@
 					"paramName" : "newPasswordConfirm",
 					"ignoreXSS" : true
 				}
-			]
+			],
+			"cacheable" : false
 		},
 		{
 			"pattern" : "/idp/unlockPassword.html",
@@ -72,7 +85,8 @@
 						"groupingId" : "NONE"
 					}
 				}
-			]
+			],
+			"cacheable" : false
 		},
 		{
 			"pattern" : "/idp/logout.html",
@@ -83,7 +97,8 @@
 						"groupingId" : "NONE"
 					}
 				}
-			]
+			],
+			"cacheable" : false
 		},
 		{
 			"pattern" : "/idp/login.html",
@@ -100,7 +115,8 @@
 					"paramName" : "password",
 					"ignoreXSS" : true
 				}
-			]
+			],
+			"cacheable" : false
 		},
 		{
 			"pattern" : "/idp/SAMLLogin.html",
@@ -112,7 +128,8 @@
 						"groupingId" : "NONE"
 					}
 				}
-			]
+			],
+			"cacheable" : false
 		},
 		{
 			"pattern" : "/idp/SAMLMetadata.html",
@@ -123,7 +140,8 @@
 						"groupingId" : "NONE"
 					}
 				}
-			]
+			],
+			"cacheable" : false
 		},
 		{
 			"pattern" : "/idp/unlockPasswordQuestions.html",
@@ -134,7 +152,8 @@
 						"groupingId" : "NONE"
 					}
 				}
-			]
+			],
+			"cacheable" : false
 		},
 		{
 			"pattern" : "/idp/unlockUserResetPasswordForm.html",
@@ -155,18 +174,20 @@
 					"paramName" : "newPasswordConfirm",
 					"ignoreXSS" : true
 				}
-			]
+			],
+			"cacheable" : false
 		},
 		{
 		  "pattern" : "/idp/activate.html",
 		  "isPublic" : true,
 		  "groupingXrefs" : [
-			{
-			  "id" : {
-				"groupingId" : "NONE"
-			  }
-			}
-		  ]
+				{
+			  		"id" : {
+						"groupingId" : "NONE"
+			  		}
+				}
+		  	],
+			"cacheable" : false
 		},
 		{
 			"pattern" : "/webconsole/clearContext.html",
@@ -177,7 +198,8 @@
 						"groupingId" : "NONE"
 					}
 				}
-			]
+			],
+			"cacheable" : false
 		},
 		{
 			"pattern" : "/webconsole-am/clearContext.html",
@@ -188,7 +210,8 @@
 						"groupingId" : "NONE"
 					}
 				}
-			]
+			],
+			"cacheable" : false
 		},
 		{
 			"pattern" : "/webconsole-idm/clearContext.html",
@@ -199,7 +222,8 @@
 						"groupingId" : "NONE"
 					}
 				}
-			]
+			],
+			"cacheable" : false
 		},
 		{
 			"pattern" : "/selfservice/clearContext.html",
@@ -210,7 +234,8 @@
 						"groupingId" : "NONE"
 					}
 				}
-			]
+			],
+			"cacheable" : false
 		},
 		{
 			"pattern" : "/selfservice-ext/clearContext.html",
@@ -221,7 +246,8 @@
 						"groupingId" : "NONE"
 					}
 				}
-			]
+			],
+			"cacheable" : false
 		},
 		{
 			"pattern" : "/selfservice/rest/api/entitlements/searchOrganizations",
@@ -232,7 +258,9 @@
 						"groupingId" : "NONE"
 					}
 				}
-			]
+			],
+			"cacheable" : true,
+			"cacheTTL" : 30
 		},
 		{
 			"pattern" : "/reportviewer/*",
@@ -243,7 +271,9 @@
 						"groupingId" : "NONE"
 					}
 				}
-			]
+			],
+			"cacheable" : true,
+			"cacheTTL" : 30
 		},
 		{
 			"pattern" : "/selfservice/language/languageSupport.html",
@@ -255,7 +285,9 @@
 						"groupingId" : "NONE"
 					}
 				}
-			]
+			],
+			"cacheable" : true,
+			"cacheTTL" : 30
 		},
 		{
 			"pattern" : "/selfservice/rest/api/metadata/roleMetadata",
@@ -266,7 +298,9 @@
 						"groupingId" : "NONE"
 					}
 				}
-			]
+			],
+			"cacheable" : true,
+			"cacheTTL" : 30
 		},
 		{
 			"pattern" : "/selfservice/rest/api/entitlements/searchRoles",
@@ -277,7 +311,9 @@
 						"groupingId" : "NONE"
 					}
 				}
-			]
+			],
+			"cacheable" : true,
+			"cacheTTL" : 30
 		},
 		{
 			"pattern" : "/selfservice/rest/api/metadata/groupMetadata",
@@ -288,7 +324,9 @@
 						"groupingId" : "NONE"
 					}
 				}
-			]
+			],
+			"cacheable" : true,
+			"cacheTTL" : 30
 		},
 		{
 			"pattern" : "/selfservice/rest/api/entitlements/searchGroups",
@@ -299,7 +337,9 @@
 						"groupingId" : "NONE"
 					}
 				}
-			]
+			],
+			"cacheable" : true,
+			"cacheTTL" : 30
 		},
 		{
 			"pattern" : "/selfservice/rest/api/metadata/organizationMetadata",
@@ -310,7 +350,9 @@
 						"groupingId" : "NONE"
 					}
 				}
-			]
+			],
+			"cacheable" : true,
+			"cacheTTL" : 30
 		},
 		{
 			"pattern" : "/idp/sp/*",
@@ -322,7 +364,8 @@
 						"groupingId" : "NONE"
 					}
 				}
-			]
+			],
+			"cacheable" : false
 		},
 		{
 			"pattern" : "/idp/rest/api/password/validation/*",
@@ -333,7 +376,8 @@
 						"groupingId" : "NONE"
 					}
 				}
-			]
+			],
+			"cacheable" : false
 		}
 	]
 }
