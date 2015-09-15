@@ -84,7 +84,7 @@ public class URIFederationServiceTest extends AbstractURIFederationTest {
 	    	}
 	    	response = contentProviderServiceClient.saveURIPattern(pattern);
 	    	Assert.assertNotNull(response);
-		    Assert.assertTrue(response.isSuccess());
+		    Assert.assertTrue(response.isSuccess(), String.format("Response: %s", response));
 		    
 		    //pattern = contentProviderServiceClient.getURIPattern((String)response.getResponseValue());
 	    }
