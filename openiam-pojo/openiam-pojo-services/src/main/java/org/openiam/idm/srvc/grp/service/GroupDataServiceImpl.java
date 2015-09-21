@@ -416,7 +416,7 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
     @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
-    public List<Group> getGroupsDtoForRoleLocalize(final String roleId, final String requesterId, int from, int size, Language language, boolean deepFlag) {
+    public List<Group> getGroupsDtoForRoleLocalize(final String roleId, final String requesterId, int from, int size, boolean deepFlag, Language language) {
         List<GroupEntity> groupEntities = groupDao.getGroupsForRole(roleId, getDelegationFilter(requesterId), from, size);
         return groupDozerConverter.convertToDTOList(groupEntities, deepFlag);
     }

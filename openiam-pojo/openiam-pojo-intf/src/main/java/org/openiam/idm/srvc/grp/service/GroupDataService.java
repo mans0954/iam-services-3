@@ -64,7 +64,7 @@ public interface GroupDataService {
     public List<GroupEntity> getGroupsForUserLocalize(final String userId, String requesterId, final int from, final int size, final LanguageEntity language);
     public List<Group> getGroupsDtoForUserLocalize(final String userId, String requesterId, final int from, final int size, final Language language);
     public List<GroupEntity> getGroupsForRoleLocalize(final String roleId, String requesterId, final int from, final int size, final LanguageEntity language);
-    public List<Group> getGroupsDtoForRoleLocalize(final String roleId, String requesterId, final int from, final int size, final Language language, boolean deepFlag);
+    public List<Group> getGroupsDtoForRoleLocalize(final String roleId, String requesterId, final int from, final int size, boolean deepFlag, final Language language);
 
     public Set<String> getGroupIdList();
 

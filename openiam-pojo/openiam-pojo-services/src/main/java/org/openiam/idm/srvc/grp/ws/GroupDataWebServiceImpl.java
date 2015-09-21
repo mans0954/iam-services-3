@@ -482,7 +482,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     @Override
     public List<Group> getGroupsForRoleLocalize(final String roleId, final String requesterId, final int from, final int size,
                                         boolean deepFlag, final Language language) {
-        return groupManager.getGroupsDtoForRoleLocalize(roleId, requesterId, from, size, language, deepFlag);
+        return groupManager.getGroupsDtoForRoleLocalize(roleId, requesterId, from, size, deepFlag, language);
     }
 
     @Override
