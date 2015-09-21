@@ -1276,7 +1276,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         }
 
         userEntity.updateUser(userDozerConverter.convertToEntity(pUser.getUser(), false));
-
+        userEntity.setSecondaryStatus(pUser.getSecondaryStatus());
         userEntity.setType(type);
         userEntity.setJobCode(jobCode);
         userEntity.setEmployeeType(employeeType);
