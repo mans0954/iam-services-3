@@ -8,11 +8,15 @@ import org.openiam.access.review.model.AccessViewBean;
 import org.openiam.access.review.model.AccessViewFilterBean;
 import org.openiam.access.review.model.AccessViewResponse;
 import org.openiam.access.review.strategy.AccessReviewStrategy;
+import org.openiam.activiti.model.dto.TaskSearchBean;
 import org.openiam.authmanager.model.UserEntitlementsMatrix;
 import org.openiam.authmanager.service.AuthorizationManagerAdminService;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.TreeNode;
 import org.openiam.bpm.activiti.ActivitiService;
+import org.openiam.idm.searchbeans.AccessRightSearchBean;
+import org.openiam.idm.srvc.access.dto.AccessRight;
+import org.openiam.idm.srvc.access.ws.AccessRightDataService;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.lang.dto.Language;
@@ -49,6 +53,8 @@ public class AccessReviewServiceImpl implements AccessReviewService {
     private ActivitiService activitiService;
     @Autowired
     protected SysConfiguration sysConfiguration;
+    @Autowired
+    private AccessRightDataService accessRightDataService;
 
     @Override
     public AccessViewResponse getAccessReviewTree(AccessViewFilterBean filter, String viewType,final Language language) {
@@ -62,7 +68,7 @@ public class AccessReviewServiceImpl implements AccessReviewService {
             exceptionList = strategy.getExceptionsList();
 
             log.debug("========ACCESS VIEW TREE============");
-            TreeNode<AccessViewBean> rootElement = new TreeNode<>(new AccessViewBean());
+            TreeNode<AccessViewBean> rootElement = new TreeNode<>(new AccessViewBean(), null);
             rootElement.add(dataList);
             log.debug(rootElement.toString());
         }
@@ -72,7 +78,7 @@ public class AccessReviewServiceImpl implements AccessReviewService {
     }
 
     @Override
-    public AccessViewResponse getAccessReviewSubTree(String parentId, String parentBeanType, AccessViewFilterBean filter, String viewType, Language language) {
+    public AccessViewResponse getAccessReviewSubTree(String parentId, String parentBeanType, boolean isRootOnly, AccessViewFilterBean filter, String viewType, Language language) {
         AccessViewResponse response = this.getAccessReviewTree(filter, viewType, language);
         List<TreeNode<AccessViewBean>> childrenList = new ArrayList<>();
         if(response==null)
@@ -80,25 +86,35 @@ public class AccessReviewServiceImpl implements AccessReviewService {
         if(CollectionUtils.isNotEmpty(response.getBeans())){
             List<TreeNode<AccessViewBean>> treeNodes = response.getBeans();
 //            Iterator<TreeNode<AccessViewBean>> iter = treeNodes.iterator();
-
-            for(int i=0; i<treeNodes.size();i++){
-                TreeNode<AccessViewBean> node = treeNodes.get(i);
-                AccessViewBean data = node.getData();
-                if(data.getBeanType().equals(parentBeanType)
-                        && data.getId().equals(parentId)
-                        && CollectionUtils.isNotEmpty(node.getChildren())){
-                    childrenList = node.getChildren();
-                    break;
-                } else if(CollectionUtils.isNotEmpty(node.getChildren())){
-                    treeNodes.addAll(node.getChildren());
+            if(parentId==null){
+                // get roots elements
+                childrenList = treeNodes;
+            } else {
+                for (int i = 0; i < treeNodes.size(); i++) {
+                    TreeNode<AccessViewBean> node = treeNodes.get(i);
+                    AccessViewBean data = node.getData();
+                    if (data.getBeanType().equals(parentBeanType)
+                            && data.getId().equals(parentId)
+                            && CollectionUtils.isNotEmpty(node.getChildren())) {
+                        childrenList = node.getChildren();
+                        break;
+                    } else if (CollectionUtils.isNotEmpty(node.getChildren())) {
+                        treeNodes.addAll(node.getChildren());
+                    }
                 }
             }
+            if(isRootOnly && CollectionUtils.isNotEmpty(childrenList)){
+                childrenList.forEach(node ->{
+                    node.hideChildren();
+                });
+            }
         }
-        return new AccessViewResponse(childrenList, childrenList.size(), null);
+        return new AccessViewResponse(childrenList, childrenList.size(), response.getExceptions());
     }
 
     private AccessReviewStrategy getAccessReviewStrategy(AccessViewFilterBean filter, String viewType, Language language) {
         final List<LoginEntity> loginList = loginDS.getLoginByUser(filter.getUserId());
+        final List<AccessRight> accessRights = accessRightDataService.findBeans(new AccessRightSearchBean(), 0, Integer.MAX_VALUE, language);
         UserEntitlementsMatrix userEntitlementsMatrix = adminService.getUserEntitlementsMatrix(filter.getUserId());
 
         AccessReviewData accessReviewData = new AccessReviewData();
@@ -110,7 +126,12 @@ public class AccessReviewServiceImpl implements AccessReviewService {
         accessReviewData.setLoginList((CollectionUtils.isNotEmpty(loginList)) ? loginList : null);
         accessReviewData.setDefaultManagedSysId(sysConfiguration.getDefaultManagedSysId());
         accessReviewData.setMaxHierarchyLevel(filter.getMaxHierarchyLevel());
-        accessReviewData.setWorkflowsMaps(activitiService.getTasksForMemberAssociation(filter.getUserId()));
+        accessReviewData.populateAccessRightMap(accessRights);
+
+        TaskSearchBean searchBean = new TaskSearchBean();
+        searchBean.setMemberAssociationId(filter.getUserId());
+
+        accessReviewData.setWorkflowsMaps(activitiService.findTasks(searchBean, 0, Integer.MAX_VALUE));
 
         AccessReviewStrategy strategy = null;
         if(AccessReviewConstant.ROLE_VIEW.equals(viewType)){

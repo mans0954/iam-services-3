@@ -1,6 +1,7 @@
 package org.openiam.access.review.constant;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.access.review.model.AccessViewBean;
 import org.openiam.access.review.model.AccessViewFilterBean;
@@ -11,6 +12,7 @@ import org.openiam.authmanager.common.model.AuthorizationRole;
 import org.openiam.authmanager.model.UserEntitlementsMatrix;
 import org.openiam.base.TreeNode;
 import org.openiam.bpm.response.TaskWrapper;
+import org.openiam.idm.srvc.access.dto.AccessRight;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
@@ -44,6 +46,8 @@ public class AccessReviewData {
     private Map<String, TaskWrapper> resourceWorkflowMap;
     private Map<String, TaskWrapper> roleWorkflowMap;
     private Map<String, TaskWrapper> groupWorkflowMap;
+
+    private Map<String, AccessRight> accessRightsMap;
 
     public UserEntitlementsMatrix getMatrix() {
         return matrix;
@@ -135,9 +139,9 @@ public class AccessReviewData {
 
     public boolean isHasParent(AbstractAuthorizationEntity bean){
         if(bean!=null){
-            Map<String, Set<String>> child2ParentMap = getChild2ParentMap(bean.getClass().getSimpleName());
+            Map<String, Map<String, Set<String>>> child2ParentMap = getChild2ParentMap(bean.getClass().getSimpleName());
             if(child2ParentMap!=null){
-                return CollectionUtils.isNotEmpty(child2ParentMap.get(bean.getId()));
+                return MapUtils.isNotEmpty(child2ParentMap.get(bean.getId()));
             }
         }
         return false;
@@ -147,8 +151,7 @@ public class AccessReviewData {
         return !isHasParent(bean);
     }
 
-    private Map<String, Set<String>> getChild2ParentMap(String className){
-    	/*
+    private Map<String, Map<String, Set<String>>> getChild2ParentMap(String className){
         if(this.roleClass.equals(className)){
             return this.matrix.getChildRoleToParentRoleMap();
         } else if(this.groupClass.equals(className)){
@@ -158,7 +161,6 @@ public class AccessReviewData {
         }else{
             return null;
         }
-        */ return null;
     }
 
     public boolean isFilterSet(){
@@ -257,5 +259,34 @@ public class AccessReviewData {
 
     private void addTask(Map<String, TaskWrapper> workflowMap, TaskWrapper task) {
         workflowMap.put(task.getAssociationId(), task);
+    }
+
+    public void populateAccessRightMap(List<AccessRight> rights){
+        if(CollectionUtils.isNotEmpty(rights)){
+            accessRightsMap = new HashMap<>();
+            rights.forEach(r -> {
+                accessRightsMap.put(r.getId(), r);
+            });
+        }
+    }
+
+    public AccessRight getAccessRight(String rightId){
+        if(MapUtils.isNotEmpty(accessRightsMap)){
+            return accessRightsMap.get(rightId);
+        }
+        return null;
+    }
+    public List<AccessRight> getAccessRightList(Collection<String> rightIds){
+        List<AccessRight> rightList = new ArrayList<>();
+        if(CollectionUtils.isNotEmpty(rightIds)){
+            rightIds.forEach(id ->{
+                AccessRight right = getAccessRight(id);
+                if(right!=null){
+                    rightList.add(right);
+                }
+
+            });
+        }
+        return rightList;
     }
 }

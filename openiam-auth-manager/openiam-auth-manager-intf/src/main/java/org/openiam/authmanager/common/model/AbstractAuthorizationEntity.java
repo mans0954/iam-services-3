@@ -152,6 +152,8 @@ public abstract class AbstractAuthorizationEntity {
 		final int b = (right != null) ? right.getBitIdx() : 0;
 		return (n * r) + r + b;
 	}
+
+	public abstract AbstractAuthorizationEntity shallowCopy();
 	
 	/**
 	 * Reverse engineers the algorithm for calculating a bitset, and return the bit for the 'right'

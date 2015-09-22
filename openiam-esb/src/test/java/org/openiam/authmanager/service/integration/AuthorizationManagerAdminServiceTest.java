@@ -37,12 +37,20 @@ public class AuthorizationManagerAdminServiceTest extends AbstractServiceTest {
 		Role role = null;
 		Group group = null;
 		Resource resource = null;
+
+		Role childRole = null;
+		Group childGroup = null;
+		Resource childResource = null;
 		try {
 			user = super.createUser();
 			organization = super.createOrganization();
 			role = super.createRole();
 			group = super.createGroup();
 			resource = super.createResource();
+
+			childRole = super.createRole();
+			childGroup = super.createGroup();
+			childResource = super.createResource();
 			
 			final Set<String> rightIds = getRightIds();
 			final String userId = user.getId();
@@ -51,6 +59,10 @@ public class AuthorizationManagerAdminServiceTest extends AbstractServiceTest {
 			final String groupId = group.getId();
 			final String resourceId = resource.getId();
 			final String requesterId = null;
+
+			final String childRoleId = childRole.getId();
+			final String childGroupId = childGroup.getId();
+			final String childResourceId = childResource.getId();
 			
 			assertSuccess(organizationServiceClient.addUserToOrg(organizationId, userId, rightIds));
 			assertSuccess(organizationServiceClient.addGroupToOrganization(organizationId, groupId, rightIds));
@@ -65,69 +77,60 @@ public class AuthorizationManagerAdminServiceTest extends AbstractServiceTest {
 			assertSuccess(resourceDataService.addGroupToResource(resourceId, groupId, requesterId, rightIds));
 			assertSuccess(resourceDataService.addRoleToResource(resourceId, roleId, requesterId, rightIds));
 			assertSuccess(resourceDataService.addUserToResource(resourceId, userId, requesterId, rightIds));
-			
+
+			assertSuccess(resourceDataService.addChildResource(resourceId, childResourceId, requesterId, rightIds));
+			assertSuccess(groupServiceClient.addChildGroup(groupId, childGroupId, requesterId, rightIds));
+			assertSuccess(roleServiceClient.addChildRole(roleId, childRoleId, requesterId, rightIds));
+
 			final UserEntitlementsMatrix matrix = authMangerAdminClient.getUserEntitlementsMatrix(user.getId());
 			Assert.assertNotNull(matrix);
 			
 			Assert.assertTrue(MapUtils.isNotEmpty(matrix.getResourceMap()));
 			Assert.assertTrue(MapUtils.isNotEmpty(matrix.getGroupMap()));
 			Assert.assertTrue(MapUtils.isNotEmpty(matrix.getRoleMap()));
-			Assert.assertTrue(MapUtils.isNotEmpty(matrix.getOrgMap()));
-			
-			Assert.assertTrue(MapUtils.isNotEmpty(matrix.getGroupIds()));
-			Assert.assertTrue(MapUtils.isNotEmpty(matrix.getRoleIds()));
-			Assert.assertTrue(MapUtils.isNotEmpty(matrix.getResourceIds()));
-			Assert.assertTrue(MapUtils.isNotEmpty(matrix.getOrganizationIds()));
-			
-			Assert.assertTrue(matrix.getGroupIds().containsKey(groupId));
-			Assert.assertTrue(matrix.getRoleIds().containsKey(roleId));
-			Assert.assertTrue(matrix.getResourceIds().containsKey(resourceId));
-			Assert.assertTrue(matrix.getOrganizationIds().containsKey(organizationId));
-			
-			Assert.assertTrue(CollectionUtils.isNotEmpty(matrix.getGroupIds().get(groupId)));
-			Assert.assertTrue(CollectionUtils.isNotEmpty(matrix.getRoleIds().get(roleId)));
-			Assert.assertTrue(CollectionUtils.isNotEmpty(matrix.getResourceIds().get(resourceId)));
-			Assert.assertTrue(CollectionUtils.isNotEmpty(matrix.getOrganizationIds().get(organizationId)));
-			
-			Assert.assertEquals(matrix.getGroupIds().get(groupId), rightIds);
-			Assert.assertEquals(matrix.getRoleIds().get(roleId), rightIds);
-			Assert.assertEquals(matrix.getResourceIds().get(resourceId), rightIds);
-			Assert.assertEquals(matrix.getOrganizationIds().get(organizationId), rightIds);
-			
-			Assert.assertTrue(MapUtils.isNotEmpty(matrix.getGroupToOrgMap()));
-			Assert.assertTrue(MapUtils.isNotEmpty(matrix.getGroupToRoleMap()));
+
+			Assert.assertTrue(MapUtils.isNotEmpty(matrix.getDirectGroupIds()));
+			Assert.assertTrue(MapUtils.isNotEmpty(matrix.getDirectRoleIds()));
+			Assert.assertTrue(MapUtils.isNotEmpty(matrix.getDirectResourceIds()));
+
+			Assert.assertTrue(matrix.getDirectGroupIds().containsKey(groupId));
+			Assert.assertTrue(matrix.getDirectRoleIds().containsKey(roleId));
+			Assert.assertTrue(matrix.getDirectResourceIds().containsKey(resourceId));
+
+			Assert.assertTrue(CollectionUtils.isNotEmpty(matrix.getDirectGroupIds().get(groupId)));
+			Assert.assertTrue(CollectionUtils.isNotEmpty(matrix.getDirectRoleIds().get(roleId)));
+			Assert.assertTrue(CollectionUtils.isNotEmpty(matrix.getDirectResourceIds().get(resourceId)));
+
+			Assert.assertEquals(matrix.getDirectGroupIds().get(groupId), rightIds);
+			Assert.assertEquals(matrix.getDirectRoleIds().get(roleId), rightIds);
+			Assert.assertEquals(matrix.getDirectResourceIds().get(resourceId), rightIds);
+
 			Assert.assertTrue(MapUtils.isNotEmpty(matrix.getGroupToResourceMap()));
 			
 			Assert.assertTrue(MapUtils.isNotEmpty(matrix.getRoleToGroupMap()));
-			Assert.assertTrue(MapUtils.isNotEmpty(matrix.getRoleToOrgMap()));
 			Assert.assertTrue(MapUtils.isNotEmpty(matrix.getRoleToResourceMap()));
 			
 			Assert.assertTrue(MapUtils.isNotEmpty(matrix.getResourceToGroupMap()));
-			Assert.assertTrue(MapUtils.isNotEmpty(matrix.getResourceToOrgMap()));
 			Assert.assertTrue(MapUtils.isNotEmpty(matrix.getResourceToRoleMap()));
-			
-			Assert.assertTrue(MapUtils.isNotEmpty(matrix.getOrgToGroupMap()));
-			Assert.assertTrue(MapUtils.isNotEmpty(matrix.getOrgToResourceMap()));
-			Assert.assertTrue(MapUtils.isNotEmpty(matrix.getOrgToRoleMap()));
+
+			Assert.assertTrue(MapUtils.isNotEmpty(matrix.getResourceToResourceMap()));
+			Assert.assertTrue(MapUtils.isNotEmpty(matrix.getGroupToGroupMap()));
+			Assert.assertTrue(MapUtils.isNotEmpty(matrix.getRoleToRoleMap()));
 			
 			//
-			Assert.assertTrue(matrix.getGroupToOrgMap().get(groupId).containsKey(organizationId));
-			Assert.assertTrue(matrix.getGroupToRoleMap().get(groupId).containsKey(roleId));
 			Assert.assertTrue(matrix.getGroupToResourceMap().get(groupId).containsKey(resourceId));
 			
 			Assert.assertTrue(matrix.getRoleToGroupMap().get(roleId).containsKey(groupId));
-			Assert.assertTrue(matrix.getRoleToOrgMap().get(roleId).containsKey(organizationId));
 			Assert.assertTrue(matrix.getRoleToResourceMap().get(roleId).containsKey(resourceId));
 			
 			Assert.assertTrue(matrix.getResourceToGroupMap().get(resourceId).containsKey(groupId));
-			Assert.assertTrue(matrix.getResourceToOrgMap().get(resourceId).containsKey(organizationId));
 			Assert.assertTrue(matrix.getResourceToRoleMap().get(resourceId).containsKey(roleId));
-			
-			Assert.assertTrue(matrix.getOrgToGroupMap().get(organizationId).containsKey(groupId));
-			Assert.assertTrue(matrix.getOrgToResourceMap().get(organizationId).containsKey(resourceId));
-			Assert.assertTrue(matrix.getOrgToRoleMap().get(organizationId).containsKey(roleId));
-			
-			
+
+
+			Assert.assertTrue(matrix.getResourceToResourceMap().get(resourceId).containsKey(childResourceId));
+			Assert.assertTrue(matrix.getGroupToGroupMap().get(groupId).containsKey(childGroupId));
+			Assert.assertTrue(matrix.getRoleToRoleMap().get(roleId).containsKey(childRoleId));
+
 		} finally {
 			if(user != null) {
 				assertSuccess(userServiceClient.removeUser(user.getId()));

@@ -139,7 +139,7 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
                                 // delete whole access subtree
                                 AccessViewFilterBean filterBean = new AccessViewFilterBean();
                                 filterBean.setUserId(memberAssociationId);
-                                AccessViewResponse accessViewResponse = accessReviewService.getAccessReviewSubTree(associationId, AccessReviewConstant.RESOURCE_TYPE, filterBean, AccessReviewConstant.RESOURCE_VIEW, null);
+                                AccessViewResponse accessViewResponse = accessReviewService.getAccessReviewSubTree(associationId, AccessReviewConstant.RESOURCE_TYPE, false, filterBean, AccessReviewConstant.RESOURCE_VIEW, null);
                                 if(accessViewResponse!=null && CollectionUtils.isNotEmpty(accessViewResponse.getBeans())){
                                     // look through the tree for direct entitlements
                                     List<TreeNode<AccessViewBean>> treeNodes = accessViewResponse.getBeans();

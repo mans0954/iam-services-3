@@ -22,7 +22,7 @@ public class AccessReviewWebServiceImpl implements AccessReviewWebService {
     }
 
     @Override
-    public AccessViewResponse getAccessReviewSubTree(String parentId, String parentBeanType, AccessViewFilterBean filter, String viewType, Language language) {
-        return accessReviewService.getAccessReviewSubTree(parentId,parentBeanType,filter,viewType,language);
+    public AccessViewResponse getAccessReviewSubTree(String parentId, String parentBeanType, boolean isRootOnly, AccessViewFilterBean filter, String viewType, Language language) {
+        return accessReviewService.getAccessReviewSubTree(parentId,parentBeanType,isRootOnly,filter,viewType,language);
     }
 }
