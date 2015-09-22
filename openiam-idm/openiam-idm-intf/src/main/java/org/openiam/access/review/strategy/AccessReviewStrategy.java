@@ -86,7 +86,7 @@ public abstract class AccessReviewStrategy {
                     }
 
 
-                    TreeNode<AccessViewBean> node = new TreeNode<AccessViewBean>(bean, icon, iconType);
+                    TreeNode<AccessViewBean> node = new TreeNode<AccessViewBean>(bean, bean.getBeanType(), icon, iconType);
                     node.setIconDescription(iconDescr);
                     node.setIsDeletable(isException(bean.getId()));
                     node.setIsException(isParentException || isException(bean.getId()));
@@ -166,7 +166,7 @@ public abstract class AccessReviewStrategy {
 
                 if(checkMngSys(parentMngSysId, group, level)){
                     if(!accessReviewData.isElementInUse(bean)){
-                        TreeNode<AccessViewBean> node = new TreeNode<AccessViewBean>(bean, AccessReviewConstant.GROUP_TYPE);
+                        TreeNode<AccessViewBean> node = new TreeNode<AccessViewBean>(bean, bean.getBeanType(),AccessReviewConstant.GROUP_TYPE);
                         node.setIconDescription(AccessReviewConstant.GROUP_ICON_DESCR);
                         node.setIsDeletable(getGroupEntitlementStrategy().isDirectEntitled(group));
                         node.setIsTerminate(isTerminating(bean.getBeanType(), bean.getId()));
@@ -190,7 +190,7 @@ public abstract class AccessReviewStrategy {
 
                 if(checkMngSys(parentMngSysId, role, level)){
                     if(!accessReviewData.isElementInUse(bean)){
-                        TreeNode<AccessViewBean> node = new TreeNode<AccessViewBean>(bean, AccessReviewConstant.ROLE_TYPE);
+                        TreeNode<AccessViewBean> node = new TreeNode<AccessViewBean>(bean, bean.getBeanType(), AccessReviewConstant.ROLE_TYPE);
                         node.setIconDescription(AccessReviewConstant.ROLE_ICON_DESCR);
                         node.setIsDeletable(getRoleEntitlementStrategy().isDirectEntitled(role));
                         node.setIsTerminate(isTerminating(bean.getBeanType(), bean.getId()));

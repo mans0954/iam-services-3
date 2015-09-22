@@ -19,7 +19,6 @@ import java.util.Set;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "AccessViewBean", propOrder = {
-        "hasChild",
         "beanType",
         "description",
         "risk",
@@ -31,7 +30,6 @@ import java.util.Set;
         "accessRights"
 })
 public class AccessViewBean extends KeyNameDTO implements Comparable<AccessViewBean> {
-    private Boolean hasChild=false;
     private String beanType = this.getClass().getSimpleName();
     private String description;
     private String risk;
@@ -52,14 +50,6 @@ public class AccessViewBean extends KeyNameDTO implements Comparable<AccessViewB
         this.id =id;
         this.setName(name);
         this.description=description;
-    }
-
-    public Boolean getHasChild() {
-        return hasChild;
-    }
-
-    public void setHasChild(Boolean hasChild) {
-        this.hasChild = hasChild;
     }
 
     public String getBeanType() {

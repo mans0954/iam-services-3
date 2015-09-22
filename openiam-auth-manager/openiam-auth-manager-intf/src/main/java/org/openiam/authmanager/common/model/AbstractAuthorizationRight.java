@@ -1,5 +1,8 @@
 package org.openiam.authmanager.common.model;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -9,20 +12,15 @@ import javax.xml.bind.annotation.XmlType;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "AbstractAuthorizationRight", propOrder = {
-        "rights",
-		"entity"
+        "rights"
 })
 public abstract class AbstractAuthorizationRight<T extends AbstractAuthorizationEntity> {
+	private static final Log log = LogFactory.getLog(AbstractAuthorizationRight.class);
 
 	private Set<AuthorizationAccessRight> rights;
-	private T entity;
 	
 	public AbstractAuthorizationRight() {}
 
-	public AbstractAuthorizationRight(final T entity) {
-		this.entity = entity;
-	}
-	
 	public void addRight(final AuthorizationAccessRight right) {
 		if(right != null) {
 			if(this.rights == null) {
@@ -40,27 +38,15 @@ public abstract class AbstractAuthorizationRight<T extends AbstractAuthorization
 		this.rights = rights;
 	}
 
-	public T getEntity() {
-		return entity;
-	}
-
-	public void setEntity(T entity) {
-		this.entity = entity;
-	}
-
+	public abstract T getEntity();
+	public abstract void setEntity(T entity);
 
 	public static AbstractAuthorizationRight getInstance(Class<? extends AbstractAuthorizationRight> clazz){
-		switch (clazz.getSimpleName()){
-			case "RoleAuthorizationRight":
-				return new RoleAuthorizationRight();
-			case "ResourceAuthorizationRight":
-				return new ResourceAuthorizationRight();
-			case "OrganizationAuthorizationRight":
-				return new OrganizationAuthorizationRight();
-			case "GroupAuthorizationRight":
-				return new GroupAuthorizationRight();
-			default:
-				return null;
+		try {
+			return clazz.newInstance();
+		} catch (Exception e) {
+			log.warn("Cannot create instance of: "+clazz.getName(), e);
+			return null;
 		}
 	}
 
@@ -69,7 +55,7 @@ public abstract class AbstractAuthorizationRight<T extends AbstractAuthorization
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((rights == null) ? 0 : rights.hashCode());
-		result = prime * result + ((entity == null) ? 0 : entity.hashCode());
+		result = prime * result + ((getEntity() == null) ? 0 : getEntity().hashCode());
 		return result;
 	}
 
@@ -87,10 +73,10 @@ public abstract class AbstractAuthorizationRight<T extends AbstractAuthorization
 				return false;
 		} else if (!rights.equals(other.rights))
 			return false;
-		if (entity == null) {
-			if (other.entity != null)
+		if (getEntity() == null) {
+			if (other.getEntity() != null)
 				return false;
-		} else if (!entity.equals(other.entity))
+		} else if (!getEntity().equals(other.getEntity()))
 			return false;
 		return true;
 	}

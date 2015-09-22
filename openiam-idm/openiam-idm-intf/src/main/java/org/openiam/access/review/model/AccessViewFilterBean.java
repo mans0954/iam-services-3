@@ -127,4 +127,5 @@ public class AccessViewFilterBean implements Serializable {
     public boolean isEmpty(){
         return StringUtils.isBlank(this.name) && StringUtils.isBlank(this.description);
     }
+
 }
