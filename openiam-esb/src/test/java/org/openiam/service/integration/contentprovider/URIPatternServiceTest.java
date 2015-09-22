@@ -579,6 +579,16 @@ public class URIPatternServiceTest extends AbstractContentProviderServiceTest<UR
 		assertResponseCode(response, ResponseCode.URI_PATTERN_PARAMETER_NAME_REQUIRED);
 		
 		methodParam.setName(getRandomName());
+		
+		pattern.setCacheable(true);;
+		response = save(pattern);
+		assertResponseCode(response, ResponseCode.INVALID_CACHE_TTL);
+		
+		pattern.setCacheTTL(-1);
+		response = save(pattern);
+		assertResponseCode(response, ResponseCode.INVALID_CACHE_TTL);
+		
+		pattern.setCacheTTL(30);
 		saveAndAssert(pattern);
 	}
 	
@@ -597,6 +607,7 @@ public class URIPatternServiceTest extends AbstractContentProviderServiceTest<UR
 		pattern.setContentProviderId(cp.getId());
 		pattern.setPattern(getRandomName());
 		pattern.setMatchMode(PatternMatchMode.ANY_PARAMS);
+		pattern.setCacheable(false);
 		return pattern;
 	}
 

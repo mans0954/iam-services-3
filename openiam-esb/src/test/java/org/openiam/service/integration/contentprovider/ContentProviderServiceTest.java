@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.IntStream;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.hibernate.sql.Insert;
 import org.openiam.am.srvc.dto.AuthLevelGrouping;
 import org.openiam.am.srvc.dto.AuthLevelGroupingContentProviderXref;
@@ -182,13 +183,27 @@ public class ContentProviderServiceTest extends AbstractContentProviderServiceTe
 		ContentProvider cp = null;
 		try {
 			cp = super.createContentProvider();
+			cp.setName(getRandomName());
 			Response response = saveAndAssert(cp);
 			cp = get((String)response.getResponseValue());
 			Assert.assertNotNull(cp);
 			
 			response = contentProviderServiceClient.createDefaultURIPatterns(cp.getId());
 			Assert.assertNotNull(response);
-			Assert.assertTrue(response.isSuccess());
+			Assert.assertTrue(response.isSuccess(), response.toString());
+			
+			response = contentProviderServiceClient.createDefaultURIPatterns(cp.getId());
+			Assert.assertNotNull(response);
+			Assert.assertTrue(response.isSuccess(), response.toString());
+			
+			final ContentProvider tempCP = contentProviderServiceClient.getContentProvider(cp.getId());
+			Assert.assertNotNull(tempCP);
+			Assert.assertTrue(CollectionUtils.isNotEmpty(tempCP.getPatternSet()));
+			tempCP.getPatternSet().forEach(pattern -> {
+				if(pattern.isCacheable()) {
+					Assert.assertNotNull(pattern.getCacheTTL());
+				}
+			});
 		} finally {
 			if(cp != null && cp.getId() != null) {
 				delete(cp);

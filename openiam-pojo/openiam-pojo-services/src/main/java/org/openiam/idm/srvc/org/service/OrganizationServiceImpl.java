@@ -917,11 +917,17 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     @Transactional
     @Scheduled(fixedRateString="${org.openiam.org.manager.threadsweep}", initialDelayString="${org.openiam.org.manager.threadsweep}")
     public void sweep() {
-        final StopWatch sw = new StopWatch();
-        sw.start();
-        fireUpdateOrgMap();
-        sw.stop();
-        log.debug(String.format("Done creating orgs trees. Took: %s ms", sw.getTime()));
+        transactionTemplate.execute(new TransactionCallback<Void>() {
+            @Override
+            public Void doInTransaction(TransactionStatus status) {
+		        final StopWatch sw = new StopWatch();
+		        sw.start();
+		        fireUpdateOrgMap();
+		        sw.stop();
+		        log.debug(String.format("Done creating orgs trees. Took: %s ms", sw.getTime()));
+		        return null;
+            }
+        });
     }
 
     @Transactional(readOnly = true)

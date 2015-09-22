@@ -37,7 +37,9 @@ import org.openiam.base.ws.ResponseStatus;
 	"substitutionList",
 	"errorMappingList",
 	"loginURL",
-	"postbackURLParamName"
+	"postbackURLParamName",
+	"cacheable",
+	"cacheTTL"
 })
 public class URIFederationResponse extends Response {
 
@@ -59,6 +61,8 @@ public class URIFederationResponse extends Response {
 	private String authCookieDomain;
 	private String methodId;
 	private String redirectTo;
+	private boolean cacheable;
+	private Integer cacheTTL;
 	
 	public URIFederationResponse() {}
 	
@@ -196,6 +200,22 @@ public class URIFederationResponse extends Response {
 
 	public void setRedirectTo(String redirectTo) {
 		this.redirectTo = redirectTo;
+	}
+	
+	public boolean isCacheable() {
+		return cacheable;
+	}
+
+	public void setCacheable(boolean cacheable) {
+		this.cacheable = cacheable;
+	}
+
+	public Integer getCacheTTL() {
+		return cacheTTL;
+	}
+
+	public void setCacheTTL(Integer cacheTTL) {
+		this.cacheTTL = cacheTTL;
 	}
 
 	@Override

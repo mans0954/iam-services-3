@@ -7,6 +7,7 @@ import java.util.Map;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
 import org.openiam.am.srvc.dto.AbstractMeta;
@@ -60,7 +61,7 @@ public class URIPatternRuleToken implements Serializable {
 	public void setContentType(String contentType) {
 		this.contentType = contentType;
 	}
-
+	
 	@Override
 	public String toString() {
 		return "URIPatternRuleToken [metaType=" + metaType + ", contentType="

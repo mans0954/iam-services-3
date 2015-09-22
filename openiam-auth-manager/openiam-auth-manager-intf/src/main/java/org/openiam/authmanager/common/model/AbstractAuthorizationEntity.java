@@ -51,24 +51,27 @@ public abstract class AbstractAuthorizationEntity {
 		return id;
 	}
 	
-	public void setId(final String id) {
+	public AbstractAuthorizationEntity setId(final String id) {
 		this.id = id;
+		return this;
 	}
 
 	public int getBitSetIdx() {
 		return bitSetIdx;
 	}
 
-	public void setBitSetIdx(int bitSetIdx) {
+	public AbstractAuthorizationEntity setBitSetIdx(int bitSetIdx) {
 		this.bitSetIdx = bitSetIdx;
+		return this;
 	}
 	
 	public String getName() {
 		return name;
 	}
 
-	public void setName(String name) {
+	public AbstractAuthorizationEntity setName(String name) {
 		this.name = name;
+		return this;
 	}
 	
 	protected void makeCopy(final AbstractAuthorizationEntity entity) {
@@ -132,10 +135,22 @@ public abstract class AbstractAuthorizationEntity {
         this.managedSysId = managedSysId;
     }
     
+    /**
+     * Formula:  nr + r + b = B
+     * n = number of rights
+     * r = bit of entity
+     * b = bit of right. If no right, b == 0
+     * B = output bit
+     * @param right
+     * @param entity
+     * @param numOfRights
+     * @return
+     */
 	protected int getBitIndex(final AuthorizationAccessRight right, final AbstractAuthorizationEntity entity, final int numOfRights) {
-		final int rightBit = (right != null) ? (right.getBitIdx()) : 0;
-		final int offset = (entity.getBitSetIdx() * numOfRights);
-		return rightBit + offset;
+		final int n = numOfRights;
+		final int r = entity.getBitSetIdx();
+		final int b = (right != null) ? right.getBitIdx() : 0;
+		return (n * r) + r + b;
 	}
 
 	public abstract AbstractAuthorizationEntity shallowCopy();
@@ -148,11 +163,13 @@ public abstract class AbstractAuthorizationEntity {
 	 * @return
 	 */
 	public static int getRightBit(final int bit, final AbstractAuthorizationEntity entity, final int numOfRights) {
-		return bit - (entity.getBitSetIdx() * numOfRights);
+		return bit - (entity.getBitSetIdx() * numOfRights) - entity.getBitSetIdx();
 	}
 	
 	/**
-	 * * Reverse engineers the algorithm for calculating a bitset, and return the bit for the 'entity'
+	 * Reverse engineers the algorithm for calculating a bitset, and return the bit for the 'entity'
+	 * Returns null if this bit represents a right, but not an entity.  This null is returned purposefully, and
+	 * other parts of the code depend on a null value to make certain assumptions.  DO NOT de-nullify this method!
 	 * @param bit - bit from the internal bitset of the Collection
 	 * @param numOfRights - number of Authorization Rights
 	 * @return
@@ -162,6 +179,6 @@ public abstract class AbstractAuthorizationEntity {
 		 * right bit is 0, since you're not looking at rights
 		 * if mod is not 0, then it's a right big, return null in this case 
 		 */
-		return (bit % numOfRights == 0) ? (bit / numOfRights) : null;
+		return (bit % (numOfRights + 1) == 0) ? (bit / (numOfRights + 1)) : null;
 	}
 }

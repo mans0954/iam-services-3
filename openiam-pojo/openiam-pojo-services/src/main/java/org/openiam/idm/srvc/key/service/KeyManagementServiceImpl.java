@@ -205,6 +205,11 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         this.generateMasterKey();
         this.generateCookieKey();
         this.generateCommonKey();
+        
+        /* notifies other nodes that the JKS file has been created/modified */
+        final IMap<String, byte[]> keyMap = hazelcastConfiguration.getMap("keyManagementCache");
+        final byte[] fileTypes = FileUtils.readFileToByteArray(new File(jksFile));
+        keyMap.put("jksFileKey", fileTypes);
     }
 
     @Override
@@ -248,8 +253,6 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         addUserKeys(newUserKeyList);
         log.warn("End generating new master key...");
         
-        final IMap<String, byte[]> keyMap = hazelcastConfiguration.getMap("keyManagementCache");
-        keyMap.put("jksFileKey", masterKey);
     }
 
     @Override

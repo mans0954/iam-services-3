@@ -321,7 +321,7 @@ public class PasswordServiceImpl implements PasswordService {
         try {
             expirationDays = Integer.parseInt(expirationTime.getValue1());
         } catch(Throwable e) {
-            log.warn("Can't parse the '' policy attribute. Either it's not an integer, or it doesn't exist. Defaulting...", e);
+            log.warn(String.format("Can't parse the '%s' policy attribute. Either it's not an integer, or it doesn't exist. Defaulting...", expirationTime));
             expirationDays = 3;
         }
         LoginEntity l = loginManager.getLoginByManagedSys(request.getPrincipal(), request.getManagedSysId());

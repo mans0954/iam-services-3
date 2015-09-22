@@ -757,15 +757,23 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
 								}
 							}
 							if(CollectionUtils.isNotEmpty(defaultPattern.getXssRules())) {
-								for(final URIParamXSSRuleEntity rule : defaultPattern.getXssRules()) {
-									if(pattern.hasXssRule(rule.getParamName())) {
-										//final URIParamXSSRuleEntity dbRule = pattern.getXssRule(rule.getParamName());
-										//dbRule.setIgnoreXSS(rule.isIgnoreXSS());
+								for(final URIParamXSSRuleEntity defaultRule : defaultPattern.getXssRules()) {
+									if(pattern.hasXssRule(defaultRule.getParamName())) {
+										final URIParamXSSRuleEntity dbRule = pattern.getXssRule(defaultRule.getParamName());
+										dbRule.setIgnoreXSS(defaultRule.isIgnoreXSS());
 									} else {
+										final URIParamXSSRuleEntity rule = new URIParamXSSRuleEntity();
+										rule.setIgnoreXSS(defaultRule.isIgnoreXSS());
+										rule.setParamName(defaultRule.getParamName());
 										rule.setPattern(pattern);
 										pattern.addXssRule(rule);
 									}
 								}
+							} else {
+								if(pattern.getXssRules() == null) {
+									pattern.setXssRules(new HashSet<URIParamXSSRuleEntity>());
+								}
+								pattern.getXssRules().clear();
 							}
 							//saveURIPattern(pattern);
 							uriPatternDao.update(pattern);
@@ -783,7 +791,21 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
 						pattern.setPattern(defaultPattern.getPattern());
 						pattern.setIgnoreXSS(defaultPattern.isIgnoreXSS());
 						pattern.setMatchMode(PatternMatchMode.IGNORE);
-						pattern.setXssRules(defaultPattern.getXssRules());
+						if(CollectionUtils.isNotEmpty(defaultPattern.getXssRules())) {
+							defaultPattern.getXssRules().forEach(defaultRule -> {
+								final URIParamXSSRuleEntity rule = new URIParamXSSRuleEntity();
+								rule.setIgnoreXSS(defaultRule.isIgnoreXSS());
+								rule.setParamName(defaultRule.getParamName());
+								rule.setPattern(pattern);
+								pattern.addXssRule(rule);
+							});
+						}
+						pattern.setCacheable(defaultPattern.isCacheable());
+						if(pattern.isCacheable()) {
+							pattern.setCacheTTL(defaultPattern.getCacheTTL());
+						} else {
+							pattern.setCacheTTL(null);
+						}
 						if(pattern.getXssRules() != null) {
 							pattern.getXssRules().forEach(e -> { e.setPattern(pattern); });
 						}

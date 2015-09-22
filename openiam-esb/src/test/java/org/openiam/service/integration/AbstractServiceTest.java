@@ -71,6 +71,9 @@ import com.hazelcast.client.proxy.ClientClusterProxy;
 @ContextConfiguration(locations={"classpath:test-integration-environment.xml","classpath:test-esb-integration.xml"})
 public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTests {
 
+	protected ContentProvider cp = null;
+	protected User user = null;
+	
 	@Autowired
 	@Qualifier("languageServiceClient")
 	protected LanguageWebService languageServiceClient;
@@ -282,7 +285,7 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 	protected void refreshAuthorizationManager() {
 		final String hazelcastEndpoint = String.format("%s/openiam-esb/hazelcast/cluster", serviceHost);
 		restTemplate.getForEntity(hazelcastEndpoint, Cluster.class).getBody().getMembers().forEach(member -> {
-			final String authManagerEndpoint = String.format("http://%s:9080/openiam-esb/authmanager/refresh", member.getAddress().getHost());
+			final String authManagerEndpoint = String.format("http://%s:9080/openiam-esb/authmanager/refresh", (serviceHost.contains("localhost") ? "localhost" : member.getAddress().getHost()));
 			try {
 				Assert.assertTrue(StringUtils.equalsIgnoreCase("OK", IOUtils.toString(httpClient.getInputStream(new URL(authManagerEndpoint)))));
 			} catch (Exception e) {

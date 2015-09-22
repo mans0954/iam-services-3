@@ -615,6 +615,12 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 				}
 			}
 			
+			/* lastly, add caching metadata for proxy */
+			if(uriPattern != null) {
+				response.setCacheable(uriPattern.isCacheable());
+				response.setCacheTTL(uriPattern.getCacheTTL());
+			}
+			
 			response.setStatus(ResponseStatus.SUCCESS);
 		} catch(BasicDataServiceException e) {
 			response.setErrorCode(e.getCode());
