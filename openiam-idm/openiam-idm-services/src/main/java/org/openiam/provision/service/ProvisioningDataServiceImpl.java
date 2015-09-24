@@ -1074,6 +1074,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                 // encrypt/decrypt password
                 pUser.setId(userEntity.getId());
                 Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
+                auditUserProperties(userEntity, pUser, auditLog); //SIA 2015-08-01
                 auditLog.setTargetUser(userEntity.getId(), login.getLogin());
             } catch (Exception e) {
                 auditLog.fail();
