@@ -629,28 +629,11 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
                 .convertToDTOList(list, false);
     }
 
-//    @Override
-//    public List<ManagedSysRuleDto> getRulesByManagedSysId(String managedSysId) {
-//        List<ManagedSysRuleEntity> resList = managedSystemService
-//                .getRulesByManagedSysId(managedSysId);
-//        return resList == null ? null : managedSysRuleDozerConverter
-//                .convertToDTOList(resList, false);
-//    }
-
-//    @Override
-//    public ManagedSysRuleDto addRules(ManagedSysRuleDto entity) {
-//        if (entity == null)
-//            return null;
-//        ManagedSysRuleEntity res = managedSystemService
-//                .addRules(managedSysRuleDozerConverter.convertToEntity(entity,
-//                        false));
-//        return res == null ? null : managedSysRuleDozerConverter.convertToDTO(
-//                res, false);
-//    }
-
-//    @Override
-//    public void deleteRules(String ruleId) {
-//        managedSystemService.deleteRules(ruleId);
-//    }
+    @Transactional(readOnly = true)
+    @Override
+    public List<ManagedSysDto> getAllManagedSysNames() {
+        final List<ManagedSysEntity> sysList = managedSystemService.getAllManagedSysNames();
+        return managedSysDozerConverter.convertToDTOList(sysList, true);
+    }
 
 }
