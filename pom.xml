@@ -960,23 +960,9 @@
                                 <contextUrl>{{ARTIFACTORY_CONTEXT_URL|"https://openiam.artifactoryonline.com/openiam"}}</contextUrl>
                                 <username>sysadmin</username>
                                 <password>${env.ARTIFACTORY_PASSWORD}</password>
-                                <!-- <excludePatterns>*-tests.jar</excludePatterns> -->
                                 <repoKey>libs-releases-local</repoKey>
                                 <snapshotRepoKey>libs-snapshot-local</snapshotRepoKey>
                             </publisher>
-                            <buildInfo>
-                                <buildName>${project.artifactId}</buildName>
-                                <buildNumber>{{CIRCLE_BUILD_NUM|'SNAPSHOT'}}</buildNumber>
-                            </buildInfo>
-                            <!--
-                            <licenses>
-                                <autoDiscover>true</autoDiscover>
-                                <includePublishedArtifacts>false</includePublishedArtifacts>
-                                <runChecks>true</runChecks>
-                                <scopes>compile,runtime</scopes>
-                                <violationRecipients>lev.bornovalov@openiam.com</violationRecipients>
-                            </licenses>
-                            -->
                         </configuration>
                     </execution>
                 </executions>
