@@ -1720,9 +1720,6 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
     @Transactional
     public LookupUserResponse getTargetSystemUser(String principalName, String managedSysId,
                                                   List<ExtensibleAttribute> extensibleAttributes) {
-        final IdmAuditLog idmAuditLog = new IdmAuditLog();
-        idmAuditLog.setRequestorUserId(systemUserId);
-        idmAuditLog.setAction(AuditAction.PROVISIONING_LOOKUP.value());
 
         log.debug("getTargetSystemUser called. for = " + principalName);
 
@@ -1799,10 +1796,10 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
             response.setAttrList(responseType.getObjectList().get(0).getAttributeList());
             response.setResponseValue(responseType.getObjectList().get(0));
 
-            idmAuditLog.succeed();
+            //idmAuditLog.succeed();
 
-        } finally {
-            auditLogService.enqueue(idmAuditLog);
+        } catch (Exception e) {
+            log.error("Exception:" + e.getMessage());
         }
 
         return response;
