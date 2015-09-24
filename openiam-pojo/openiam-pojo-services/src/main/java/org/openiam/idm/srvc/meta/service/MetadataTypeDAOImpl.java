@@ -8,6 +8,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.MatchMode;
+import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.srvc.cat.domain.CategoryEntity;
@@ -29,6 +30,7 @@ public class MetadataTypeDAOImpl extends BaseDaoImpl<MetadataTypeEntity, String>
     @Override
     protected Criteria getExampleCriteria(final MetadataTypeEntity entity) {
         final Criteria criteria = getCriteria();
+        criteria.addOrder(Order.asc("description")); //SIA 2015-08-01
         if (StringUtils.isNotBlank(entity.getId())) {
             criteria.add(Restrictions.eq(getPKfieldName(), entity.getId()));
         } else {
