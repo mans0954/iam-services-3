@@ -964,12 +964,11 @@
                                 <repoKey>libs-releases-local</repoKey>
                                 <snapshotRepoKey>libs-snapshot-local</snapshotRepoKey>
                             </publisher>
-                            <!--
                             <buildInfo>
-                                <buildName>plugin-demo</buildName>
-                                <buildNumber>{{DRONE_BUILD_NUMBER|TRAVIS_BUILD_NUMBER|CI_BUILD_NUMBER|BUILD_NUMBER|'SNAPSHOT'}}</buildNumber>
-                                <buildUrl>{{DRONE_BUILD_URL|CI_BUILD_URL|BUILD_URL}}</buildUrl>
+                                <buildName>${project.artifactId}</buildName>
+                                <buildNumber>{{CIRCLE_BUILD_NUM|'SNAPSHOT'}}</buildNumber>
                             </buildInfo>
+                            <!--
                             <licenses>
                                 <autoDiscover>true</autoDiscover>
                                 <includePublishedArtifacts>false</includePublishedArtifacts>
