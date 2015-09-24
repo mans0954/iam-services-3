@@ -81,4 +81,6 @@ public interface ManagedSystemService {
     List<AuthProviderEntity> findAuthProvidersByManagedSysId(String managedSysId);
     
     public void saveApproverAssociations(final List<ApproverAssociationEntity> entityList, final AssociationType type, final String id);
+
+    List<ManagedSysEntity> getAllManagedSysNames();
 }

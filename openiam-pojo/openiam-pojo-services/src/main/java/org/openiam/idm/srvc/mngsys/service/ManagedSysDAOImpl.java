@@ -13,6 +13,8 @@ import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -144,5 +146,23 @@ public class ManagedSysDAOImpl extends BaseDaoImpl<ManagedSysEntity, String> imp
         return getCriteria()
                 .add(Restrictions.eq("resourceId", resourceId))
                 .addOrder(Order.asc("name")).list();
+    }
+
+    @Override
+    @SuppressWarnings(value = "unchecked")
+    public List<ManagedSysEntity> findAllManagedSysNames() {
+        List<ManagedSysEntity> ret = new ArrayList<ManagedSysEntity>();
+        List<Object[]> tmp = getHibernateTemplate().find("select id, name from ManagedSysEntity order by name asc");
+        if (tmp != null && !tmp.isEmpty()) {
+            Iterator<Object[]> iterator = tmp.iterator();
+            while (iterator.hasNext()) {
+                Object[] obj = iterator.next();
+                ManagedSysEntity msys = new ManagedSysEntity();
+                msys.setId((String) obj[0]);
+                msys.setName((String) obj[1]);
+                ret.add(msys);
+            }
+        }
+        return ret;
     }
 }
