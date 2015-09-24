@@ -48,7 +48,14 @@ public class AuthorizationUser extends AbstractAuthorizationEntity implements Se
 	public AuthorizationUser(final InternalAuthroizationUser entity) {
 		super.setId(entity.getUserId());
 	}
-	
+
+	public AuthorizationUser shallowCopy() {
+		final AuthorizationUser copy = new AuthorizationUser();
+		super.makeCopy(copy);
+		return copy;
+	}
+
+
 	public void addOrganization(final OrgUserXref organization) {
 		if(organization != null) {
 			if(directOrganizations == null) {
@@ -387,4 +394,6 @@ public class AuthorizationUser extends AbstractAuthorizationEntity implements Se
 		}
 		return linearBitSet;
 	}
+
+
 }

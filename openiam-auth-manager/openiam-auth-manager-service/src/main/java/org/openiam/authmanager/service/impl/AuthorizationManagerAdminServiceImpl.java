@@ -1,9 +1,6 @@
 package org.openiam.authmanager.service.impl;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -11,24 +8,19 @@ import java.util.stream.Collectors;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.authmanager.common.SetStringResponse;
-import org.openiam.authmanager.common.model.AuthorizationAccessRight;
-import org.openiam.authmanager.common.model.AuthorizationGroup;
-import org.openiam.authmanager.common.model.AuthorizationOrganization;
-import org.openiam.authmanager.common.model.AuthorizationResource;
-import org.openiam.authmanager.common.model.AuthorizationRole;
-import org.openiam.authmanager.common.model.AuthorizationUser;
-import org.openiam.authmanager.common.model.InternalAuthroizationUser;
+import org.openiam.authmanager.common.model.*;
 import org.openiam.authmanager.dao.MembershipDAO;
-import org.openiam.authmanager.model.AuthorizationManagerDataModel;
-import org.openiam.authmanager.model.ResourceEntitlementToken;
-import org.openiam.authmanager.model.UserEntitlementsMatrix;
+import org.openiam.authmanager.model.*;
 import org.openiam.authmanager.provider.AuthorizationManagerDataProvider;
 import org.openiam.authmanager.service.AuthorizationManagerAdminService;
+import org.openiam.authmanager.ws.request.AuthorizationMatrixMapAdapter;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.membership.MembershipDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 @Service("authorizationManagerAdminService")
 public class AuthorizationManagerAdminServiceImpl extends AbstractAuthorizationManagerService implements AuthorizationManagerAdminService {
@@ -53,25 +45,14 @@ public class AuthorizationManagerAdminServiceImpl extends AbstractAuthorizationM
 			final InternalAuthroizationUser user = membershipDAO.getUser(userId);
 			if(user != null) {
 				final AuthorizationUser entity = super.process(user, model.getTempGroupIdMap(), model.getTempRoleIdMap(), model.getTempResourceIdMap(), model.getTempOrganizationIdMap(), model.getTempAccessRightMap(), new AtomicInteger(0));
-				
-				
-				entity.getLinearResources().forEach(bit -> {
-					final Integer entityBit = AuthorizationUser.getEntityBit(bit, model.getNumOfRights());
-					final AuthorizationResource resource = model.getResourceBitSetMap().get(entityBit);
-					final int rightBit = AuthorizationUser.getRightBit(bit, resource, model.getNumOfRights());
-					final AuthorizationAccessRight right = model.getTempAccessRightBitMap().get(Integer.valueOf(rightBit));
-					if(user.getResources() != null && user.getResources().containsKey(resource.getId())) {
-						retVal.addDirectResource(resource, right);
-					} else {
-						retVal.addIndirectResource(resource, right);
-					}
-					retVal.addResource(resource, right);
-				});
+
+				Set<ResourceAuthorizationRight> tempDataSet =  getEntitlementData(entity.getLinearResources(), model.getResourceBitSetMap(), model.getTempAccessRightBitMap(), model.getNumOfRights(), ResourceAuthorizationRight.class);
+				fillEntitlementToken(retVal, tempDataSet, user.getResources());
 			}
 		}
 		return retVal;
 	}
-	
+
 	@Override
 	public ResourceEntitlementToken getNonCachedEntitlementsForGroup(final String groupId) {
 		final ResourceEntitlementToken retVal = new ResourceEntitlementToken();
@@ -80,19 +61,19 @@ public class AuthorizationManagerAdminServiceImpl extends AbstractAuthorizationM
 			if(model.getTempGroupIdMap().containsKey(groupId)) {
 				final AuthorizationGroup entity = model.getTempGroupIdMap().get(groupId);
 				entity.compile(model.getNumOfRights());
-				
-				entity.getLinearResources().forEach(bit -> {
-					final Integer entityBit = AuthorizationUser.getEntityBit(bit, model.getNumOfRights());
-					final AuthorizationResource resource = model.getResourceBitSetMap().get(entityBit);
-					final int rightBit = AuthorizationUser.getRightBit(bit, resource, model.getNumOfRights());
-					final AuthorizationAccessRight right = model.getTempAccessRightBitMap().get(Integer.valueOf(rightBit));
-					if(entity.hasResource(resource.getId())) {
-						retVal.addDirectResource(resource, right);
-					} else {
-						retVal.addIndirectResource(resource, right);
-					}
-					retVal.addResource(resource, right);
-				});
+
+				Set<ResourceAuthorizationRight> tempDataSet =  getEntitlementData(entity.getLinearResources(), model.getResourceBitSetMap(), model.getTempAccessRightBitMap(), model.getNumOfRights(), ResourceAuthorizationRight.class);
+
+				if(CollectionUtils.isNotEmpty(tempDataSet)){
+					tempDataSet.forEach(data ->{
+						if (entity.hasResource(data.getEntity().getId())) {
+							retVal.addDirectEntitlement(data.getEntity(), data.getRights());
+						} else {
+							retVal.addIndirectEntitlement(data.getEntity(), data.getRights());
+						}
+						retVal.addEntitlement(data.getEntity(), data.getRights());
+					});
+				}
 			}
 		}
 		return retVal;
@@ -106,19 +87,19 @@ public class AuthorizationManagerAdminServiceImpl extends AbstractAuthorizationM
 			if(model.getTempRoleIdMap().containsKey(roleId)) {
 				final AuthorizationRole entity = model.getTempRoleIdMap().get(roleId);
 				entity.compile(model.getNumOfRights());
-				
-				entity.getLinearResources().forEach(bit -> {
-					final Integer entityBit = AuthorizationUser.getEntityBit(bit, model.getNumOfRights());
-					final AuthorizationResource resource = model.getResourceBitSetMap().get(entityBit);
-					final int rightBit = AuthorizationUser.getRightBit(bit, resource, model.getNumOfRights());
-					final AuthorizationAccessRight right = model.getTempAccessRightBitMap().get(Integer.valueOf(rightBit));
-					if(entity.hasResource(resource.getId())) {
-						retVal.addDirectResource(resource, right);
-					} else {
-						retVal.addIndirectResource(resource, right);
-					}
-					retVal.addResource(resource, right);
-				});
+
+				Set<ResourceAuthorizationRight> tempDataSet =  getEntitlementData(entity.getLinearResources(), model.getResourceBitSetMap(), model.getTempAccessRightBitMap(), model.getNumOfRights(), ResourceAuthorizationRight.class);
+
+				if(CollectionUtils.isNotEmpty(tempDataSet)){
+					tempDataSet.forEach(data ->{
+						if (entity.hasResource(data.getEntity().getId())) {
+							retVal.addDirectEntitlement(data.getEntity(), data.getRights());
+						} else {
+							retVal.addIndirectEntitlement(data.getEntity(), data.getRights());
+						}
+						retVal.addEntitlement(data.getEntity(), data.getRights());
+					});
+				}
 			}
 		}
 		return retVal;
@@ -132,101 +113,100 @@ public class AuthorizationManagerAdminServiceImpl extends AbstractAuthorizationM
 			if(model.getTempOrganizationIdMap().containsKey(organizationId)) {
 				final AuthorizationOrganization entity = model.getTempOrganizationIdMap().get(organizationId);
 				entity.compile(model.getNumOfRights());
-				
-				entity.getLinearResources().forEach(bit -> {
-					final Integer entityBit = AuthorizationUser.getEntityBit(bit, model.getNumOfRights());
-					final AuthorizationResource resource = model.getResourceBitSetMap().get(entityBit);
-					final int rightBit = AuthorizationUser.getRightBit(bit, resource, model.getNumOfRights());
-					final AuthorizationAccessRight right = model.getTempAccessRightBitMap().get(Integer.valueOf(rightBit));
-					if(entity.hasResource(resource.getId())) {
-						retVal.addDirectResource(resource, right);
-					} else {
-						retVal.addIndirectResource(resource, right);
-					}
-					retVal.addResource(resource, right);
-				});
+
+				Set<ResourceAuthorizationRight> tempDataSet =  getEntitlementData(entity.getLinearResources(), model.getResourceBitSetMap(), model.getTempAccessRightBitMap(), model.getNumOfRights(), ResourceAuthorizationRight.class);
+
+				if(CollectionUtils.isNotEmpty(tempDataSet)){
+					tempDataSet.forEach(data ->{
+						if (entity.hasResource(data.getEntity().getId())) {
+							retVal.addDirectEntitlement(data.getEntity(), data.getRights());
+						} else {
+							retVal.addIndirectEntitlement(data.getEntity(), data.getRights());
+						}
+						retVal.addEntitlement(data.getEntity(), data.getRights());
+					});
+				}
 			}
 		}
 		return retVal;
 	}
-	
+
+	private <Entity extends AbstractAuthorizationEntity, AuthEntity extends AbstractAuthorizationRight>
+	Set<AuthEntity> getEntitlementData(List<Integer> linearEntitlementBitList,
+							  Map<Integer, Entity> bitSetMap, Map<Integer, AuthorizationAccessRight> rightMap, int numOfRights, Class<AuthEntity> clazz){
+
+		Set<AuthEntity> tempDataSet = new HashSet<>();
+		AuthEntity currentEntity = null;
+		for(int i = 0; i < linearEntitlementBitList.size(); i++) {
+			final Integer bit = linearEntitlementBitList.get(i);
+			final Integer entityBit = AuthorizationUser.getEntityBit(bit.intValue(), numOfRights);
+			if(entityBit != null && bitSetMap.containsKey(entityBit)) {
+				currentEntity = (AuthEntity)AbstractAuthorizationRight.getInstance(clazz);
+				currentEntity.setEntity(bitSetMap.get(entityBit).shallowCopy());
+				tempDataSet.add(currentEntity);
+			} else {
+				if(currentEntity != null) {
+					final int rightBit = AuthorizationUser.getRightBit(bit.intValue(), currentEntity.getEntity(), numOfRights);
+					final AuthorizationAccessRight right = rightMap.get(Integer.valueOf(rightBit));
+					if(right != null) {
+						currentEntity.addRight(right);
+					}
+				}
+			}
+		}
+		return tempDataSet;
+	}
+
+	private void fillEntitlementToken(final AbstractEntitlementToken entitlementToken, final  Set<? extends AbstractAuthorizationRight> tempDataSet,  final  Map<String, Set<String>> directEntitlements){
+		if(CollectionUtils.isNotEmpty(tempDataSet)){
+			for(AbstractAuthorizationRight data: tempDataSet){
+				if (directEntitlements != null && directEntitlements.containsKey(data.getEntity().getId())) {
+					entitlementToken.addDirectEntitlement(data.getEntity(), data.getRights());
+				} else {
+					entitlementToken.addIndirectEntitlement(data.getEntity(), data.getRights());
+				}
+				entitlementToken.addEntitlement(data.getEntity(), data.getRights());
+			}
+		}
+	}
+
 	@Override
 	public UserEntitlementsMatrix getUserEntitlementsMatrix(final String userId) {
 		
 		final UserEntitlementsMatrix matrix = new UserEntitlementsMatrix();
 		if(userId != null) {
+			final AuthorizationManagerDataModel model = dataProvider.getModel();
 			final InternalAuthroizationUser user = membershipDAO.getUser(userId);
 			if(user != null) {
-				final Map<String, AuthorizationOrganization> orgMap = membershipDAO.getOrganizations()
-						.stream()
-						.collect(Collectors.toMap(AuthorizationOrganization::getId, Function.identity()));
-				
-				final Map<String, AuthorizationRole> roleMap = membershipDAO.getRoles()
-						.stream()
-						.collect(Collectors.toMap(AuthorizationRole::getId, Function.identity()));
-				
-				final Map<String, AuthorizationResource> resourceMap = membershipDAO.getResources()
-						.stream()
-						.collect(Collectors.toMap(AuthorizationResource::getId, Function.identity()));
-				
-				final Map<String, AuthorizationGroup> groupMap = membershipDAO.getGroups()
-						.stream()
-						.collect(Collectors.toMap(AuthorizationGroup::getId, Function.identity()));
+				final AuthorizationUser entity = super.process(user, model.getTempGroupIdMap(), model.getTempRoleIdMap(), model.getTempResourceIdMap(), model.getTempOrganizationIdMap(), model.getTempAccessRightMap(), new AtomicInteger(0));
 
-				
-				matrix.populate(userId, user.getOrganizations(), user.getRoles(), user.getGroups(), user.getResources(), orgMap, resourceMap, groupMap, roleMap);
-				
-				getOrg2OrgMap().forEach((childId, membership) -> {
-					membership.forEach((parentId, rights) -> {
-						if(CollectionUtils.isNotEmpty(rights)) {
-							rights.forEach(rightId -> {
-								matrix.addOrg2OrgRelationship(parentId, childId, rightId);
-							});
-						} else {
-							matrix.addOrg2OrgRelationship(parentId, childId, null);
-						}
-					});
-				});
-				
-				getRole2OrgMap().forEach((childId, membership) -> {
-					membership.forEach((parentId, rights) -> {
-						if(CollectionUtils.isNotEmpty(rights)) {
-							rights.forEach(rightId -> {
-								matrix.addOrg2RoleRelationship(parentId, childId, rightId);
-							});
-						} else {
-							matrix.addOrg2RoleRelationship(parentId, childId, null);
-						}
-					});
-				});
-				
-				getGroup2OrgMap().forEach((childId, membership) -> {
-					membership.forEach((parentId, rights) -> {
-						if(CollectionUtils.isNotEmpty(rights)) {
-							rights.forEach(rightId -> {
-								matrix.addOrg2GroupRelationship(parentId, childId, rightId);
-							});
-						} else {
-							matrix.addOrg2GroupRelationship(parentId, childId, null);
-						}
-					});
-				});
-				
-				getResource2OrgMap().forEach((childId, membership) -> {
-					membership.forEach((parentId, rights) -> {
-						if(CollectionUtils.isNotEmpty(rights)) {
-							rights.forEach(rightId -> {
-								matrix.addOrg2ResourceRelationship(parentId, childId, rightId);
-							});
-						} else {
-							matrix.addOrg2ResourceRelationship(parentId, childId, null);
-						}
-					});
-				});
-				
-				getRole2RoleMap().forEach((childId, membership) -> {
-					membership.forEach((parentId, rights) -> {
-						if(CollectionUtils.isNotEmpty(rights)) {
+				// resources for user
+				ResourceEntitlementToken userResources = new ResourceEntitlementToken();
+				fillEntitlementToken(userResources,
+						getEntitlementData(entity.getLinearResources(), model.getResourceBitSetMap(), model.getTempAccessRightBitMap(), model.getNumOfRights(), ResourceAuthorizationRight.class),
+						user.getResources());
+
+
+				// roles for user
+				RoleEntitlementToken userRoles = new RoleEntitlementToken();
+				fillEntitlementToken(userRoles,
+						getEntitlementData(entity.getLinearRoles(), model.getRoleBitSetMap(), model.getTempAccessRightBitMap(), model.getNumOfRights(), RoleAuthorizationRight.class),
+						user.getRoles());
+
+
+				// groups for user
+				GroupEntitlementToken userGroups = new GroupEntitlementToken();
+				fillEntitlementToken(userGroups,
+						getEntitlementData(entity.getLinearGroups(), model.getGroupBitSetMap(), model.getTempAccessRightBitMap(), model.getNumOfRights(), GroupAuthorizationRight.class),
+						user.getGroups());
+
+
+				matrix.populate(userId, userResources, userRoles, userGroups, model.getTempResourceIdMap(), model.getTempGroupIdMap(), model.getTempRoleIdMap());
+
+
+				populateWithMemberEntityIdAsValue(model.getRole2RoleMap(), model.getRole2RoleRightMap()).forEach((parentId, membership) -> {
+					membership.forEach((childId, rights) -> {
+						if (CollectionUtils.isNotEmpty(rights)) {
 							rights.forEach(rightId -> {
 								matrix.addRole2RoleRelationship(parentId, childId, rightId);
 							});
@@ -235,10 +215,9 @@ public class AuthorizationManagerAdminServiceImpl extends AbstractAuthorizationM
 						}
 					});
 				});
-				
-				getGroup2RoleMap().forEach((childId, membership) -> {
-					membership.forEach((parentId, rights) -> {
-						if(CollectionUtils.isNotEmpty(rights)) {
+				populateWithMemberEntityIdAsValue(model.getRole2GroupMap(), model.getRole2GroupRightMap()).forEach((parentId, membership) -> {
+					membership.forEach((childId, rights) -> {
+						if (CollectionUtils.isNotEmpty(rights)) {
 							rights.forEach(rightId -> {
 								matrix.addRole2GroupRelationship(parentId, childId, rightId);
 							});
@@ -247,10 +226,9 @@ public class AuthorizationManagerAdminServiceImpl extends AbstractAuthorizationM
 						}
 					});
 				});
-				
-				getResource2RoleMap().forEach((childId, membership) -> {
-					membership.forEach((parentId, rights) -> {
-						if(CollectionUtils.isNotEmpty(rights)) {
+				populateWithMemberEntityIdAsValue(model.getRole2ResourceMap(), model.getRole2ResourceRightMap()).forEach((parentId, membership) -> {
+					membership.forEach((childId, rights) -> {
+						if (CollectionUtils.isNotEmpty(rights)) {
 							rights.forEach(rightId -> {
 								matrix.addRole2ResourceRelationship(parentId, childId, rightId);
 							});
@@ -259,10 +237,9 @@ public class AuthorizationManagerAdminServiceImpl extends AbstractAuthorizationM
 						}
 					});
 				});
-				
-				getGroup2GroupMap().forEach((childId, membership) -> {
-					membership.forEach((parentId, rights) -> {
-						if(CollectionUtils.isNotEmpty(rights)) {
+				populateWithMemberEntityIdAsValue(model.getGroup2GroupMap(), model.getGroup2GroupRightMap()).forEach((parentId, membership) -> {
+					membership.forEach((childId, rights) -> {
+						if (CollectionUtils.isNotEmpty(rights)) {
 							rights.forEach(rightId -> {
 								matrix.addGroup2GroupRelationship(parentId, childId, rightId);
 							});
@@ -271,10 +248,9 @@ public class AuthorizationManagerAdminServiceImpl extends AbstractAuthorizationM
 						}
 					});
 				});
-				
-				getResource2GroupMap().forEach((childId, membership) -> {
-					membership.forEach((parentId, rights) -> {
-						if(CollectionUtils.isNotEmpty(rights)) {
+				populateWithMemberEntityIdAsValue(model.getGroup2ResourceMap(), model.getGroup2ResourceRightMap()).forEach((parentId, membership) -> {
+					membership.forEach((childId, rights) -> {
+						if (CollectionUtils.isNotEmpty(rights)) {
 							rights.forEach(rightId -> {
 								matrix.addGroup2ResourceRelationship(parentId, childId, rightId);
 							});
@@ -283,9 +259,8 @@ public class AuthorizationManagerAdminServiceImpl extends AbstractAuthorizationM
 						}
 					});
 				});
-				
-				getResource2ResourceMap().forEach((childId, membership) -> {
-					membership.forEach((parentId, rights) -> {
+				populateWithMemberEntityIdAsValue(model.getResource2ResourceMap(), model.getResource2ResourceRightMap()).forEach((parentId, membership) -> {
+					membership.forEach((childId, rights) -> {
 						if(CollectionUtils.isNotEmpty(rights)) {
 							rights.forEach(rightId -> {
 								matrix.addResource2ResourceRelationship(parentId, childId, rightId);
@@ -304,7 +279,27 @@ public class AuthorizationManagerAdminServiceImpl extends AbstractAuthorizationM
     public Set<String> getOwnerIdsForResource(String resourceId){
         return getUserIdsForResource(resourceId, adminRightId);
     }
-	
+
+	private Map<String, Map<String, Set<String>>> populateWithMemberEntityIdAsValue(final Map<String, Set<MembershipDTO>> entityMap,
+																			  final Map<String, Set<String>> rightMap) {
+		final Map<String, Map<String, Set<String>>> retval = new HashMap<String, Map<String,Set<String>>>();
+		entityMap.forEach((entityId, memberships) -> {
+			if(!retval.containsKey(entityId)) {
+				retval.put(entityId, new HashMap<String, Set<String>>());
+			}
+			if(CollectionUtils.isNotEmpty(memberships)) {
+				memberships.forEach(membership -> {
+					if(!retval.get(entityId).containsKey(membership.getMemberEntityId())) {
+						retval.get(entityId).put(membership.getMemberEntityId(), new HashSet<String>());
+					}
+					if(rightMap.containsKey(membership.getId())) {
+						retval.get(entityId).get(membership.getMemberEntityId()).addAll(rightMap.get(membership.getId()));
+					}
+				});
+			}
+		});
+		return retval;
+	}
 	private Map<String, Map<String, Set<String>>> populateWithEntityIdAsValue(final Map<String, Set<MembershipDTO>> entityMap, 
 											 								  final Map<String, Set<String>> rightMap) {
 		final Map<String, Map<String, Set<String>>> retval = new HashMap<String, Map<String,Set<String>>>();

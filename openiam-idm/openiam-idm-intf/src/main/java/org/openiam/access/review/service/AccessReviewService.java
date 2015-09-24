@@ -10,5 +10,5 @@ import org.openiam.idm.srvc.lang.dto.Language;
  */
 public interface AccessReviewService {
     AccessViewResponse getAccessReviewTree(AccessViewFilterBean filter, String viewType,final Language language);
-    AccessViewResponse getAccessReviewSubTree(String parentId, String parentBeanType, AccessViewFilterBean filter, String viewType,final Language language);
+    AccessViewResponse getAccessReviewSubTree(String parentId, String parentBeanType, boolean isRootOnly, AccessViewFilterBean filter, String viewType,final Language language);
 }

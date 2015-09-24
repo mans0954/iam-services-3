@@ -1,10 +1,17 @@
 package org.openiam.access.review.model;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.openiam.authmanager.common.model.AuthorizationAccessRight;
 import org.openiam.base.KeyNameDTO;
+import org.openiam.idm.srvc.access.dto.AccessRight;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Created by: Alexander Duckardt
@@ -12,17 +19,17 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "AccessViewBean", propOrder = {
-        "hasChild",
         "beanType",
         "description",
         "risk",
         "status",
         "identity",
         "loginId",
-        "managedSys"
+        "managedSys",
+        "resourceTypeId",
+        "accessRights"
 })
 public class AccessViewBean extends KeyNameDTO implements Comparable<AccessViewBean> {
-    private Boolean hasChild=false;
     private String beanType = this.getClass().getSimpleName();
     private String description;
     private String risk;
@@ -30,6 +37,8 @@ public class AccessViewBean extends KeyNameDTO implements Comparable<AccessViewB
     private String identity;
     private String loginId;
     private String managedSys;
+    private String resourceTypeId;
+    private List<String> accessRights;
 
 
     public AccessViewBean() {
@@ -41,14 +50,6 @@ public class AccessViewBean extends KeyNameDTO implements Comparable<AccessViewB
         this.id =id;
         this.setName(name);
         this.description=description;
-    }
-
-    public Boolean getHasChild() {
-        return hasChild;
-    }
-
-    public void setHasChild(Boolean hasChild) {
-        this.hasChild = hasChild;
     }
 
     public String getBeanType() {
@@ -99,7 +100,13 @@ public class AccessViewBean extends KeyNameDTO implements Comparable<AccessViewB
         this.loginId = loginId;
     }
 
+    public String getResourceTypeId() {
+        return resourceTypeId;
+    }
 
+    public void setResourceTypeId(String resourceTypeId) {
+        this.resourceTypeId = resourceTypeId;
+    }
 
     public String getManagedSys() {
         return managedSys;
@@ -109,7 +116,21 @@ public class AccessViewBean extends KeyNameDTO implements Comparable<AccessViewB
         this.managedSys = managedSys;
     }
 
+    public List<String> getAccessRights() {
+        return accessRights;
+    }
 
+    public void setAccessRights(List<String> accessRights) {
+        this.accessRights = accessRights;
+    }
+
+    public void addAccessRights(Collection<String> accessRights) {
+        if(CollectionUtils.isNotEmpty(accessRights)) {
+            if (this.accessRights == null)
+                this.accessRights = new ArrayList<>();
+            this.accessRights.addAll(accessRights);
+        }
+    }
 
     @Override
     public boolean equals(Object o) {

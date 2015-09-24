@@ -18,15 +18,16 @@ import java.util.List;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "TreeNode", propOrder = {
-//        "parent",
-        "children",
         "data",
+        "dataType",
+        "children",
         "icon",
         "iconType",
         "iconDescription",
         "isException",
         "isDeletable",
-        "isTerminate"
+        "isTerminate",
+        "childrenCount"
 })
 public class TreeNode<Bean extends KeyDTO> implements Serializable {
     @JsonIgnore
@@ -34,24 +35,27 @@ public class TreeNode<Bean extends KeyDTO> implements Serializable {
     private TreeNode<Bean> parent;
     private List<TreeNode<Bean>> children = new ArrayList<TreeNode<Bean>>();
     private Bean data;
+    private String dataType;
     private String icon;
     private String iconType;
     private String iconDescription;
     private boolean isException=false;
     private boolean isDeletable=false;
     private boolean isTerminate=false;
+    private int childrenCount=0;
 
     public TreeNode(){
     }
 
-    public TreeNode(Bean data){
-        this(data, null);
+    public TreeNode(Bean data, String dataType){
+        this(data, dataType, null);
     }
-    public TreeNode(Bean data, String icon){
-        this(data, icon, null);
+    public TreeNode(Bean data, String dataType, String icon){
+        this(data, dataType, icon, null);
     }
-    public TreeNode(Bean data, String icon, String iconType){
+    public TreeNode(Bean data, String dataType, String icon, String iconType){
         this.data=data;
+        this.dataType=dataType;
         this.icon=icon;
         this.iconType=iconType;
     }
@@ -69,6 +73,7 @@ public class TreeNode<Bean extends KeyDTO> implements Serializable {
             children.add(index, child);
         }
         child.parent = this;
+        this.childrenCount++;
     }
     public void add(List<TreeNode<Bean>> children){
         if(CollectionUtils.isNotEmpty(children)){
@@ -101,11 +106,6 @@ public class TreeNode<Bean extends KeyDTO> implements Serializable {
                 return child;
             }
         }
-//        for(int i=children.size()-1; i>=0; i--){
-//            if(node.data.getId().equals(children.get(i).data.getId())){
-//                return remove(i);
-//            }
-//        }
         return node;
     }
 
@@ -240,5 +240,20 @@ public class TreeNode<Bean extends KeyDTO> implements Serializable {
 
     public void setIsTerminate(boolean isTerminate) {
         this.isTerminate = isTerminate;
+    }
+
+    public int getChildrenCount() {
+        return childrenCount;
+    }
+    public void hideChildren(){
+        this.children=null;
+    }
+
+    public String getDataType() {
+        return dataType;
+    }
+
+    public void setDataType(String dataType) {
+        this.dataType = dataType;
     }
 }

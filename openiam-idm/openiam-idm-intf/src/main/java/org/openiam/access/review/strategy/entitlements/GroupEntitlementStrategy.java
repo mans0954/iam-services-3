@@ -1,11 +1,16 @@
 package org.openiam.access.review.strategy.entitlements;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.openiam.access.review.model.AccessViewBean;
 import org.openiam.authmanager.common.model.AbstractAuthorizationEntity;
 import org.openiam.access.review.constant.AccessReviewData;
+import org.openiam.authmanager.common.model.AuthorizationGroup;
+import org.openiam.authmanager.common.xref.AbstractResourceXref;
 
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -19,45 +24,48 @@ public class GroupEntitlementStrategy extends EntitlementsStrategy {
 
     @Override
     public Set<AccessViewBean> getRoles(AccessViewBean parent) {
-    	/*
-        Set<String> childIds = accessReviewData.getMatrix().getGroupToRoleMap().get(parent.getId());
-        Set<String> entitledIds =accessReviewData.getMatrix().getRoleIds();
-
-        if(CollectionUtils.isNotEmpty(childIds)
-           && CollectionUtils.isNotEmpty(entitledIds)){
-            childIds.retainAll(entitledIds);
-            return getRoleBeans(childIds);
-        }
-        return Collections.EMPTY_SET;
-        */ return null;
+    	return Collections.EMPTY_SET;
     }
 
     @Override
     public Set<AccessViewBean> getGroups(AccessViewBean parent) {
-    	/*
-        Set<String> childIds = accessReviewData.getMatrix().getGroupToGroupMap().get(parent.getId());
-        Set<String> entitledIds =accessReviewData.getMatrix().getGroupIds();
+        // children groups
 
-        if(CollectionUtils.isNotEmpty(childIds)
-                && CollectionUtils.isNotEmpty(entitledIds)){
-            childIds.retainAll(entitledIds);
-            return getGroupBeans(childIds);
+        Map<String, Set<String>> childrenGrp = accessReviewData.getMatrix().getGroupToGroupMap().get(parent.getId());
+        Set<String> childrenIds = null;
+        if(MapUtils.isNotEmpty(childrenGrp)) {
+            childrenIds = childrenGrp.keySet();
+        }
+
+        Set<String> directGroupIds = (MapUtils.isNotEmpty(accessReviewData.getMatrix().getDirectGroupIds()))?accessReviewData.getMatrix().getDirectGroupIds().keySet():null;
+
+        if(CollectionUtils.isNotEmpty(childrenIds)
+                && CollectionUtils.isNotEmpty(directGroupIds)){
+            childrenIds.retainAll(directGroupIds);
+            return getGroupBeans(childrenIds);
         }
         return Collections.EMPTY_SET;
-        */ return null;
     }
 
     @Override
     public Set<AccessViewBean> getResources(AccessViewBean parent) {
-        return getResourceBeans(getCompiledResourcesForGroup(parent.getId()));
+
+        AuthorizationGroup group = accessReviewData.getMatrix().getGroupMap().get(parent.getId());
+        Set<AbstractResourceXref> resourcesXref = group.visitResources(new HashSet<AuthorizationGroup>());
+
+        Set<String> resourceIds = new HashSet<>();
+        if(CollectionUtils.isNotEmpty(resourcesXref)){
+            resourcesXref.forEach(xref ->{
+                resourceIds.add(xref.getResource().getId());
+            });
+        }
+        return getResourceBeans(resourceIds);
     }
 
     @Override
     public boolean isDirectEntitled(AbstractAuthorizationEntity entity){
-    	/*
-        if(CollectionUtils.isNotEmpty(this.accessReviewData.getMatrix().getGroupIds()))
-            return this.accessReviewData.getMatrix().getGroupIds().contains(entity.getId());
+        if(MapUtils.isNotEmpty(this.accessReviewData.getMatrix().getDirectGroupIds()))
+            return this.accessReviewData.getMatrix().getDirectGroupIds().containsKey(entity.getId());
         return false;
-        */ return false;
     }
 }
