@@ -44,7 +44,7 @@ public class SuspendUserAppTableCommand extends AbstractAppTableCommand<SuspendR
         try {
             statement = createChangeUserControlParamsStatement(con, configuration,
                     this.getTableName(configuration, this.getObjectType()), suspendRequest.getObjectIdentity(),
-                    configuration.getActiveUserStatus(), false);
+                    configuration.getInactiveUserStatus(), false);
             statement.executeUpdate();
             return response;
         } catch (SQLException se) {
