@@ -1065,10 +1065,11 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
         userEntity.setLastUpdate(currDate);
 
         // update originalUser from IDM with the new user information
-        updateUserProperties(userEntity, pUser, auditLog);
+        //SIA 2015-08-01 updateUserProperties(userEntity, pUser, auditLog);
 
         if (isAdd) {
             try {
+                addUserProperties(userEntity, pUser); //SIA 2015-08-01
                 userMgr.addUser(userEntity); // Need to have userId to
                 // encrypt/decrypt password
                 pUser.setId(userEntity.getId());
@@ -1084,6 +1085,8 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                 resp.setErrorCode(ResponseCode.FAIL_OTHER);
                 return resp;
             }
+        } else {
+            updateUserProperties(userEntity, pUser, auditLog); //SIA 2015-08-01
         }
 
         // update addresses
@@ -1446,6 +1449,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                     idmAuditLog.setTargetUser(identity.getUserId(), identity.getLogin());
 
                 } else {
+                    log.debug(ResponseCode.PRINCIPAL_NOT_FOUND); //SIA 2015-08-01
                     idmAuditLog.fail();
                     idmAuditLog.setFailureReason(ResponseCode.PRINCIPAL_NOT_FOUND);
                     response.setStatus(ResponseStatus.FAILURE);
@@ -1525,6 +1529,8 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                 try {
                     encPassword = loginManager.encryptPassword(identity.getUserId(), password);
                 } catch (Exception e) {
+                    log.debug(ResponseCode.FAIL_ENCRYPTION); //SIA 2015-08-01
+                    log.error(e.getStackTrace()); //SIA 2015-08-01
                     idmAuditLog.fail();
                     idmAuditLog.setFailureReason(ResponseCode.FAIL_ENCRYPTION);
                     response.setStatus(ResponseStatus.FAILURE);
@@ -1862,6 +1868,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                 idmAuditLog.setTargetUser(identity.getUserId(), identity.getLogin());
 
             } else {
+                log.debug(ResponseCode.PRINCIPAL_NOT_FOUND); //SIA 2015-08-01
                 log.error("Identity not found. " + ResponseCode.PRINCIPAL_NOT_FOUND);
                 idmAuditLog.fail();
                 idmAuditLog.setFailureReason(ResponseCode.PRINCIPAL_NOT_FOUND);
@@ -1885,7 +1892,8 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                         return response;
                     }
                 } catch (ObjectNotFoundException oe) {
-                    log.error("Object not found", oe);
+                    log.debug("Object not found", oe); //SIA 2015-08-01
+                    log.error(oe.getStackTrace()); //SIA 2015-08-01
                     idmAuditLog.setException(oe);
                     idmAuditLog.setFailureReason(oe.getMessage());
                     idmAuditLog.fail();
@@ -1933,7 +1941,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                         log.debug(String.format("- Password changed for principal: %s, user: %s, managed sys: %s -",
                                 identity.getLogin(), identity.getUserId(), identity.getManagedSysId()));
                         idmAuditLog.addCustomRecord("Password changed success for principal", "ManagedSysId='" + identity.getManagedSysId() + "'");
-                        idmAuditLog.succeed();
+//                        idmAuditLog.succeed();
 
                         /*
                          * came with merge from v2.3 //check if password should be sent
@@ -1946,6 +1954,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
 
                     } else {
                         idmAuditLog.fail();
+                        log.debug(ResponseCode.PRINCIPAL_NOT_FOUND); //SIA 2015-08-01
                         idmAuditLog.setFailureReason(ResponseCode.PRINCIPAL_NOT_FOUND);
                         response.setStatus(ResponseStatus.FAILURE);
                         response.setErrorCode(ResponseCode.PRINCIPAL_NOT_FOUND);
@@ -2065,7 +2074,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
             if (!allSetOK) {
                 idmAuditLog.fail();
             }
-            auditLogService.enqueue(idmAuditLog);
+            auditLogService.save(idmAuditLog); //SIA 2015-08-01
         }
     }
 
@@ -2309,6 +2318,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                             return response;
                         }
                     } catch (Exception e) {
+                        log.error(e.getStackTrace()); //SIA 2015-08-01
                     }
                     break;
                 }
@@ -2359,6 +2369,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                         Response resp = new Response();
                         resp.setStatus(ResponseStatus.FAILURE);
                         resp.setErrorCode(ResponseCode.PRINCIPAL_NOT_FOUND);
+                        return response; //SIA 2015-08-01
                     }
                 } else {
 
@@ -3185,12 +3196,12 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
     }
 
     @Override
-    public Response addEvent(ProvisionActionEvent event, ProvisionActionTypeEnum type){
+    public Response addEvent(ProvisionActionEvent event, ProvisionActionTypeEnum type) {
         return super.addEvent(event, type);
     }
 
     @Override
-    public ObjectResponse requestAddModify(ExtensibleUser extUser, Login mLg, boolean isAdd, String requestId, final IdmAuditLog idmAuditLog){
+    public ObjectResponse requestAddModify(ExtensibleUser extUser, Login mLg, boolean isAdd, String requestId, final IdmAuditLog idmAuditLog) {
         return super.requestAddModify(extUser, mLg, isAdd, requestId, idmAuditLog);
     }
 
