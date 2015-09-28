@@ -39,4 +39,6 @@ public interface OrganizationDAO extends BaseDao<OrganizationEntity, String> {
     public List<OrganizationEntity> getUserAffiliationsByType(final String userId, final String typeId, final Set<String> filter, final int from,
                                                               final int size);
 
+    public void deleteOrganizationUserDependency(final String orgId) ;
+
 }

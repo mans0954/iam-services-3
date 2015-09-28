@@ -175,7 +175,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
 
         OrganizationEntity organizationEntity = this.getProxyService().getOrganizationLocalized(orgId, requesterId, langauge);
 
-        if (organizationEntity!=null) {
+        if (organizationEntity != null) {
             return organizationDozerConverter.convertToDTO(organizationEntity, true);
         }
         return null;
@@ -288,7 +288,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
         List<OrganizationEntity> organizationEntityList = this.getProxyService().findBeans(searchBean, requesterId, from, size, langauge);
         if (CollectionUtils.isNotEmpty(organizationEntityList) && searchBean.isDeepCopy() && searchBean.isForCurrentUsersOnly() && CollectionUtils.isNotEmpty(searchBean.getUserIdSet())) {
             OrganizationUserEntity organizationUserEntity = null;
-            Iterator<OrganizationUserEntity> organizationUserEntityIterator =null;
+            Iterator<OrganizationUserEntity> organizationUserEntityIterator = null;
             for (OrganizationEntity organizationEntity : organizationEntityList) {
                 organizationUserEntityIterator = organizationEntity.getOrganizationUser().iterator();
                 while (organizationUserEntityIterator.hasNext()) {
@@ -939,6 +939,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
                         groupDAO.update(group);
                     }
                 }
+                orgDao.deleteOrganizationUserDependency(orgId);
                 orgDao.delete(entity);
             }
 
@@ -1504,7 +1505,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     }
 
     private OrganizationService getProxyService() {
-        OrganizationService service = (OrganizationService)ac.getBean("organizationService");
+        OrganizationService service = (OrganizationService) ac.getBean("organizationService");
         return service;
     }
 

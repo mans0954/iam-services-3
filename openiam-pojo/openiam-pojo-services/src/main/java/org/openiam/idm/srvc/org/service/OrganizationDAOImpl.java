@@ -361,6 +361,13 @@ public class OrganizationDAOImpl extends
     }
 
     @Override
+    public void deleteOrganizationUserDependency(final String orgId) {
+        if (StringUtils.isNotBlank(orgId)) {
+            this.getSession().createSQLQuery("DELETE FROM USER_AFFILIATION WHERE COMPANY_ID='" + orgId + "'").executeUpdate();
+        }
+    }
+
+    @Override
     @LocalizedDatabaseGet
     public List<OrganizationEntity> findOrganizationsByAttributeValue(final String attrName, final String attrValue) {
         List ret = new ArrayList<OrganizationEntity>();
