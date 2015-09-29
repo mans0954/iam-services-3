@@ -26,6 +26,7 @@ import org.apache.commons.lang.StringUtils;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.org.dto.Organization;
+import org.openiam.idm.srvc.org.dto.OrganizationUserDTO;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.user.dto.User;
 
@@ -146,7 +147,7 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         principalList = user.getPrincipalList();
         roles = user.getRoles();
         groups = user.getGroups();
-        affiliations = user.getAffiliations();
+        organizationUserDTOs = user.getOrganizationUserDTOs();
         resources = user.getResources();
         setPassword(user.getPassword());
         setLogin(user.getLogin());
@@ -210,7 +211,7 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         user.setPrincipalList(principalList);
         user.setRoles(roles);
         user.setGroups(groups);
-        user.setAffiliations(affiliations);
+        user.setOrganizationUserDTOs(organizationUserDTOs);
         user.setResources(resources);
         user.setUserOwnerId(userOwnerId);
         user.setDateChallengeRespChanged(dateChallengeRespChanged);
@@ -372,14 +373,13 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         this.skipPostProcessor = skipPostProcessor;
     }
 
-    // temporary solution
-    public Organization getPrimaryOrganization() {
+    public Organization getPrimaryOrganization(String metadataType) {
         Organization retVal = null;
-        if (CollectionUtils.isNotEmpty(affiliations)) {
-            for (final Organization organization : affiliations) {
-                if (!AttributeOperationEnum.DELETE.equals(organization.getOperation())) {
-                    if (organization.isOrganization()) {
-                        retVal = organization;
+        if (CollectionUtils.isNotEmpty(organizationUserDTOs)) {
+            for (final OrganizationUserDTO organizationUserDTO : organizationUserDTOs) {
+                if (!AttributeOperationEnum.DELETE.equals(organizationUserDTO.getOperation())) {
+                    if (organizationUserDTO.getOrganization() != null && (metadataType == null || metadataType.equals(organizationUserDTO.getMdTypeId()))) {
+                        retVal = organizationUserDTO.getOrganization();
                         break;
                     }
                 }
@@ -390,10 +390,10 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
 
     public boolean isOrganizationMarkedAsDeleted(final String organizationId) {
         boolean retVal = false;
-        if (CollectionUtils.isNotEmpty(affiliations)) {
-            for (final Organization organization : affiliations) {
-                if (AttributeOperationEnum.DELETE.equals(organization.getOperation())) {
-                    if (StringUtils.equalsIgnoreCase(organizationId, organization.getId())) {
+        if (CollectionUtils.isNotEmpty(organizationUserDTOs)) {
+            for (final OrganizationUserDTO organizationUserDTO : organizationUserDTOs) {
+                if (AttributeOperationEnum.DELETE.equals(organizationUserDTO.getOperation())) {
+                    if (organizationUserDTO.getOrganization() != null && StringUtils.equalsIgnoreCase(organizationId, organizationUserDTO.getOrganization().getId())) {
                         retVal = true;
                         break;
                     }

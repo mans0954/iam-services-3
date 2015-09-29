@@ -25,6 +25,12 @@ import org.springframework.stereotype.Repository;
 @Repository("policyDAO")
 public class PolicyDAOImpl extends BaseDaoImpl<PolicyEntity, String> implements
         PolicyDAO {
+
+    @Override
+    protected boolean cachable() {
+        return true;
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     public List<PolicyEntity> findAllPolicies(String policyDefId, int startAt, int size) {
@@ -33,7 +39,7 @@ public class PolicyDAOImpl extends BaseDaoImpl<PolicyEntity, String> implements
 
             Criteria cr = this.getCriteria()
                     .add(Restrictions.eq("policyDefId", policyDefId))
-                    .addOrder(Order.asc("policyId"));
+                    .addOrder(Order.asc("name")).addOrder(Order.asc("policyId"));
             if (startAt > -1) {
                 cr.setFirstResult(startAt);
             }
@@ -58,7 +64,7 @@ public class PolicyDAOImpl extends BaseDaoImpl<PolicyEntity, String> implements
                     Restrictions.and(
                             Restrictions.eq("policyDefId", policyDefId),
                             Restrictions.eq("name", policyName)));
-
+            cr.addOrder(Order.asc("name"));
             return (List<PolicyEntity>) cr.list();
         } catch (HibernateException re) {
             log.error("find by example failed", re);
@@ -70,6 +76,7 @@ public class PolicyDAOImpl extends BaseDaoImpl<PolicyEntity, String> implements
     @Override
     protected Criteria getExampleCriteria(final SearchBean searchBean) {
         final Criteria criteria = getCriteria();
+        criteria.addOrder(Order.asc("name")); //SIA 2015-08-01 Order by name
         if (searchBean instanceof PolicySearchBean) {
             PolicySearchBean sb = (PolicySearchBean) searchBean;
             if (StringUtils.isNotBlank(sb.getPolicyDefId())) {

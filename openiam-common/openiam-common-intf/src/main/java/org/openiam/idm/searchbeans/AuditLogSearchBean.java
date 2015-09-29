@@ -24,7 +24,8 @@ import org.openiam.idm.srvc.continfo.dto.Address;
     "parentId",
     "result",
     "secondaryTargetId",
-    "secondaryTargetType"
+    "secondaryTargetType",
+    "userVsTargetAndFlag"
 })
 public class AuditLogSearchBean extends AbstractSearchBean<IdmAuditLog, String> implements SearchBean<IdmAuditLog, String> {
 
@@ -40,6 +41,11 @@ public class AuditLogSearchBean extends AbstractSearchBean<IdmAuditLog, String> 
     private String parentId;
     private String secondaryTargetId;
     private String secondaryTargetType;
+    private Boolean userVsTargetAndFlag;
+
+    public AuditLogSearchBean() {
+        userVsTargetAndFlag = false;
+    }
 
     public void setParentOnly(){
         parentId = "null";
@@ -140,6 +146,14 @@ public class AuditLogSearchBean extends AbstractSearchBean<IdmAuditLog, String> 
         this.result = result;
     }
 
+    public Boolean getUserVsTargetAndFlag() {
+        return userVsTargetAndFlag;
+    }
+
+    public void setUserVsTargetAndFlag(Boolean userVsTargetAndFlag) {
+        this.userVsTargetAndFlag = userVsTargetAndFlag;
+    }
+
     @Override
     public String getCacheUniqueBeanKey() {
         return new StringBuilder()
@@ -155,6 +169,7 @@ public class AuditLogSearchBean extends AbstractSearchBean<IdmAuditLog, String> 
                 .append(parentId != null ? parentId : "")
                 .append(secondaryTargetId != null ? secondaryTargetId : "")
                 .append(secondaryTargetType != null ? secondaryTargetType : "")
+                .append(userVsTargetAndFlag != null ? userVsTargetAndFlag : "")
                 .append(getKey() != null ? getKey() : "")
                 .toString();
     }

@@ -483,7 +483,7 @@ public class AddressEntity {
         final StringBuilder sb = new StringBuilder();
         sb.append("AddressEntity");
         sb.append("{addressId='").append(addressId).append('\'');
-        sb.append(", isActive=").append(isActive);
+        sb.append(", getActive=").append(isActive);
         sb.append(", isDefault=").append(isDefault);
         sb.append(", bldgNumber='").append(bldgNumber).append('\'');
         sb.append(", streetDirection='").append(streetDirection).append('\'');

@@ -2,6 +2,8 @@ package org.openiam.idm.srvc.policy.domain;
 
 import javax.persistence.*;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.openiam.dozer.DozerDTOCorrespondence;
@@ -17,6 +19,8 @@ import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 @Entity
 @Table(name = "POLICY_ATTRIBUTE")
 @DozerDTOCorrespondence(PolicyAttribute.class)
+@Cache(usage=CacheConcurrencyStrategy.READ_WRITE)
+//@Cacheable
 public class PolicyAttributeEntity implements java.io.Serializable, Comparable<PolicyAttributeEntity> {
 
     private static final long serialVersionUID = -291717117636794761L;

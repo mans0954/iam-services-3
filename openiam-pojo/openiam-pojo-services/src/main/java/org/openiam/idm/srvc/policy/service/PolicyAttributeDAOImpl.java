@@ -4,6 +4,7 @@ package org.openiam.idm.srvc.policy.service;
 
 import java.util.Collection;
 import java.util.List;
+
 import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
@@ -21,6 +22,11 @@ import org.springframework.stereotype.Repository;
 @Repository("policyAttributeDAO")
 public class PolicyAttributeDAOImpl extends BaseDaoImpl<PolicyAttributeEntity, String> implements
 		PolicyAttributeDAO {
+	
+	@Override
+	protected boolean cachable() {
+		return true;
+	}
 
 	@Override
 	protected String getPKfieldName() {

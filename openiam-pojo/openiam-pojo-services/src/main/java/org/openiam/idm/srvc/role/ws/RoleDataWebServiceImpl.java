@@ -21,6 +21,7 @@
  */
 package org.openiam.idm.srvc.role.ws;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.openiam.base.SysConfiguration;
@@ -136,24 +137,31 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	}
 
 	private void validate(final Role role) throws BasicDataServiceException {
-		if(role == null) {
-			throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Role object is null");
+
+		if (role == null) {
+			throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 		}
-		
-		final RoleEntity entity = roleDozerConverter.convertToEntity(role, true);
-		if(StringUtils.isBlank(entity.getName())) {
-			throw new BasicDataServiceException(ResponseCode.NO_NAME, "Role Name is null or empty");
+
+		if (StringUtils.isBlank(role.getName())) {
+			throw new BasicDataServiceException(ResponseCode.NO_NAME);
 		}
-		
-		/* check if the name is taken by another entity */
-		final RoleEntity nameEntity = roleDataService.getRoleByName(role.getName(), null);
-		if(nameEntity != null) {
-			if(StringUtils.isBlank(entity.getId()) || !entity.getId().equals(nameEntity.getId())) {
-				throw new BasicDataServiceException(ResponseCode.NAME_TAKEN, "Role Name is already exists");
+
+		//final RoleEntity nameEntity = roleDataService.getRoleByName(role.getName(), null);
+		LOG.debug("Validating role "+role.getName()+" of managed system "+role.getManagedSysId());
+		//final RoleEntity found = roleDataService.geRoleByNameAndManagedSys(role.getName(), role.getManagedSysId(), null);
+		RoleSearchBean roleSearchBean = new RoleSearchBean();
+		roleSearchBean.setName(role.getName());
+		roleSearchBean.setManagedSysId(role.getManagedSysId());
+		final List<RoleEntity> foundList = roleDataService.findBeans(roleSearchBean, null, 0, 1);
+		final RoleEntity found = (CollectionUtils.isNotEmpty(foundList)) ? foundList.get(0) : null;
+
+		if (found != null) {
+			if ( ( !found.getId().equals(role.getId()))) {
+				throw new BasicDataServiceException(ResponseCode.NAME_TAKEN, "Role name is already in use");
 			}
 		}
-		
-		entityValidator.isValid(entity);
+
+		entityValidator.isValid(roleDozerConverter.convertToEntity(role, true));
 	}
 	
 	public void validateDeleteInternal(final String roleId) throws BasicDataServiceException {
@@ -243,13 +251,12 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	}
 	
 	@Override
-	@LocalizedServiceGet
-	@Transactional(readOnly=true)
+	//@LocalizedServiceGet
+	//@Transactional(readOnly=true)
 	public Role getRoleLocalized(final String roleId, final String requesterId, final Language language) {
 		Role retVal = null;
 		 if (StringUtils.isNotBlank(roleId)) {
-			 final RoleEntity entity = roleDataService.getRoleLocalized(roleId, requesterId, languageConverter.convertToEntity(language, false));
-			 retVal = roleDozerConverter.convertToDTO(entity, true);
+			 retVal = roleDataService.getRoleDtoLocalized(roleId, requesterId, languageConverter.convertToEntity(language, false));
 		 }
 		 return retVal;
 	}
@@ -265,8 +272,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 
 	@Override
 	public List<Role> getRolesInGroup(final String groupId, String requesterId, boolean deepFlag, final int from, final int size) {
-        final List<RoleEntity> entityList = roleDataService.getRolesInGroup(groupId, requesterId, from, size);
-        return roleDozerConverter.convertToDTOList(entityList, false);
+        return roleDataService.getRolesDtoInGroup(groupId, requesterId, from, size);
 	}
 
 	@Override
@@ -515,8 +521,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 
 	@Override
 	public List<Role> findBeans(final RoleSearchBean searchBean, String requesterId, final int from, final int size) {
-        final List<RoleEntity> found = roleDataService.findBeans(searchBean, requesterId, from, size);
-        return roleDozerConverter.convertToDTOList(found, false);
+        return roleDataService.findBeansDto(searchBean, requesterId, from, size);
 	}
 
 	@Override
@@ -527,8 +532,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 
 	@Override
 	public List<Role> getRolesForResource(final String resourceId, String requesterId, boolean deepFlag,  final int from, final int size) {
-        final List<RoleEntity> entityList = roleDataService.getRolesForResource(resourceId, requesterId, from, size);
-        return roleDozerConverter.convertToDTOList(entityList, false);
+        return roleDataService.getRolesDtoForResource(resourceId, requesterId, from, size);
 	}
 
 	@Override
@@ -538,8 +542,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 
 	@Override
 	public List<Role> getChildRoles(final String roleId, String requesterId, Boolean deepFlag, final  int from, final int size) {
-        final List<RoleEntity> entityList = roleDataService.getChildRoles(roleId, requesterId, from, size);
-        return roleDozerConverter.convertToDTOList(entityList, false);
+        return roleDataService.getChildRolesDto(roleId, requesterId, from, size);
 	}
 
 	@Override
@@ -551,8 +554,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	@Override
 	@WebMethod
 	public List<Role> getParentRoles(final String roleId, String requesterId, final int from, final int size) {
-        final List<RoleEntity> entityList = roleDataService.getParentRoles(roleId, requesterId, from, size);
-        return roleDozerConverter.convertToDTOList(entityList, false);
+        return roleDataService.getParentRolesDto(roleId, requesterId, from, size);
 	}
 
 	@Override
@@ -684,10 +686,9 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	}
 
     @Override
-    @Transactional(readOnly = true)
+    //@Transactional(readOnly = true)
     public List<Role> findRolesByAttributeValue(String attrName, String attrValue) {
-        return roleDozerConverter.convertToDTOList(
-                roleDataService.findRolesByAttributeValue(attrName, attrValue), true);
+        return roleDataService.findRolesDtoByAttributeValue(attrName, attrValue);
     }
 
     @Override

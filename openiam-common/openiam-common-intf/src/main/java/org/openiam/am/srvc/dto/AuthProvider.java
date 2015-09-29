@@ -27,7 +27,9 @@ import java.util.Set;
         "privateKey",
         "providerAttributeSet",
         "resource",
-        "resourceAttributeMap"
+        "resourceAttributeMap",
+        "chained",
+        "nextAuthProviderId"
 })
 @DozerDTOCorrespondence(AuthProviderEntity.class)
 public class AuthProvider implements Serializable {
@@ -40,6 +42,8 @@ public class AuthProvider implements Serializable {
     private boolean isSignRequest=false;
     private byte[] publicKey;
     private byte[] privateKey;
+    private boolean chained;
+    private String nextAuthProviderId;
 
     private Set<AuthProviderAttribute> providerAttributeSet;
     private Map<String, AuthResourceAttributeMap> resourceAttributeMap=new HashMap<String, AuthResourceAttributeMap>(0);
@@ -167,15 +171,33 @@ public class AuthProvider implements Serializable {
             providerAttributeMap.put(attr.getAttributeName(), attr);
         }
     }
+    
+    public boolean isChained() {
+		return chained;
+	}
 
-    @Override
+	public void setChained(boolean chained) {
+		this.chained = chained;
+	}
+	
+    public String getNextAuthProviderId() {
+		return nextAuthProviderId;
+	}
+
+	public void setNextAuthProviderId(String nextAuthProviderId) {
+		this.nextAuthProviderId = nextAuthProviderId;
+	}
+
+	@Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
         AuthProvider that = (AuthProvider) o;
 
+        if (chained != that.chained) return false;
         if (isSignRequest != that.isSignRequest) return false;
+        if (nextAuthProviderId != null ? !nextAuthProviderId.equals(that.nextAuthProviderId) : that.nextAuthProviderId != null) return false;
         if (providerId != null ? !providerId.equals(that.providerId) : that.providerId != null) return false;
         if (providerType != null ? !providerType.equals(that.providerType) : that.providerType != null) return false;
         if (managedSysId != null ? !managedSysId.equals(that.managedSysId) : that.managedSysId != null) return false;
@@ -196,12 +218,14 @@ public class AuthProvider implements Serializable {
     @Override
     public int hashCode() {
         int result = providerId != null ? providerId.hashCode() : 0;
+        result = 31 * result + (nextAuthProviderId != null ? nextAuthProviderId.hashCode() : 0);
         result = 31 * result + (providerType != null ? providerType.hashCode() : 0);
         result = 31 * result + (managedSysId != null ? managedSysId.hashCode() : 0);
         result = 31 * result + (resourceId != null ? resourceId.hashCode() : 0);
         result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (description != null ? description.hashCode() : 0);
         result = 31 * result + (isSignRequest ? 1 : 0);
+        result = 31 * result + (chained ? 1 : 0);
         result = 31 * result + (publicKey != null ? Arrays.hashCode(publicKey) : 0);
         result = 31 * result + (privateKey != null ? Arrays.hashCode(privateKey) : 0);
         result = 31 * result + (providerAttributeSet != null ? providerAttributeSet.hashCode() : 0);

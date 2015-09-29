@@ -55,13 +55,13 @@ public interface ManagedSystemService {
 
     List<AttributeMapEntity> getAllAttributeMaps();
 
-    List<ManagedSysRuleEntity> getRulesByManagedSysId(String managedSysId);
+//    List<ManagedSysRuleEntity> getRulesByManagedSysId(String managedSysId);
 
     List<DefaultReconciliationAttributeMapEntity> getAllDefaultReconAttributeMap();
 
-    ManagedSysRuleEntity addRules(ManagedSysRuleEntity entity);
+//    ManagedSysRuleEntity addRules(ManagedSysRuleEntity entity);
 
-    void deleteRules(String ruleId);
+//    void deleteRules(String ruleId);
 
     List<ManagedSystemObjectMatchEntity> managedSysObjectParam(
             String managedSystemId, String objectType);
@@ -81,4 +81,6 @@ public interface ManagedSystemService {
     List<AuthProviderEntity> findAuthProvidersByManagedSysId(String managedSysId);
     
     public void saveApproverAssociations(final List<ApproverAssociationEntity> entityList, final AssociationType type, final String id);
+
+    List<ManagedSysEntity> getAllManagedSysNames();
 }

@@ -3,6 +3,7 @@ package org.openiam.idm.srvc.policy.service;
 // Generated Mar 7, 2009 11:47:13 AM by Hibernate Tools 3.2.2.GA
 
 import java.util.List;
+
 import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
 import org.hibernate.criterion.Restrictions;
@@ -18,6 +19,11 @@ import org.springframework.stereotype.Repository;
 public class PolicyDefParamDAOImpl extends
 		BaseDaoImpl<PolicyDefParamEntity, String> implements PolicyDefParamDAO {
 
+	@Override
+	protected boolean cachable() {
+		return true;
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * 

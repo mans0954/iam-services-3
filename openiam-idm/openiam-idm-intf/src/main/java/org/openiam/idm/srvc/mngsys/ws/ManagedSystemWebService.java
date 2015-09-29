@@ -1,27 +1,24 @@
 package org.openiam.idm.srvc.mngsys.ws;
 
-import java.util.List;
-
-import javax.jws.WebMethod;
-import javax.jws.WebParam;
-import javax.jws.WebService;
-
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.AttributeMapSearchBean;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.dto.*;
 
+import javax.jws.WebMethod;
+import javax.jws.WebParam;
+import javax.jws.WebService;
+import java.util.List;
+
 /**
  * Interface for <code>ManagedSystemWebService</code>
- * 
+ *
  * @author suneet shah
- * 
  */
 @WebService
 public interface ManagedSystemWebService {
 
     /**
-     * 
      * @param searchBean
      * @return
      */
@@ -31,7 +28,7 @@ public interface ManagedSystemWebService {
 
     /**
      * Return an list of the ManagedSys object in the system by SearchBean
-     * 
+     *
      * @return the managed systems
      */
     @WebMethod
@@ -42,24 +39,22 @@ public interface ManagedSystemWebService {
 
     /**
      * Returns a ManagedSys object for the specified systemId.
-     * 
-     * @param sysId
-     *            the sys id
+     *
+     * @param sysId the sys id
      * @return the managed sys
      */
     @WebMethod
     ManagedSysDto getManagedSys(
             @WebParam(name = "sysId", targetNamespace = "") String sysId);
 
-    
+
     @WebMethod
     List<ManagedSysDto> getAllManagedSys();
 
     /**
      * Gets the managed sys by resource.
-     * 
-     * @param resourceId
-     *            the resource id
+     *
+     * @param resourceId the resource id
      * @return the managed sys by resource
      */
     @WebMethod
@@ -69,9 +64,8 @@ public interface ManagedSystemWebService {
     /**
      * Creates a new managed system entry into the system. The ManagedSystemId
      * is auto-generated. Required fields include: <li>ConnectorId <li>DomainId
-     * 
-     * @param sys
-     *            the sys
+     *
+     * @param sys the sys
      */
     @WebMethod
     Response saveManagedSystem(
@@ -90,9 +84,8 @@ public interface ManagedSystemWebService {
 
     /**
      * Removes a managed system entry from the system.
-     * 
-     * @param sysId
-     *            the sys id
+     *
+     * @param sysId the sys id
      */
     @WebMethod
     Response removeManagedSystem(
@@ -101,11 +94,9 @@ public interface ManagedSystemWebService {
     /**
      * Finds objects for an object type (like User, Group) for a ManagedSystem
      * definition.
-     * 
-     * @param managedSystemId
-     *            the managed system id
-     * @param objectType
-     *            the object type
+     *
+     * @param managedSystemId the managed system id
+     * @param objectType      the object type
      * @return the managed system object match[]
      */
     @WebMethod
@@ -123,9 +114,8 @@ public interface ManagedSystemWebService {
 
     /**
      * Removes the approver association.
-     * 
-     * @param approverAssociationId
-     *            the approver association id
+     *
+     * @param approverAssociationId the approver association id
      */
     @WebMethod
     Response removeApproverAssociation(
@@ -133,9 +123,8 @@ public interface ManagedSystemWebService {
 
     /**
      * Gets the attribute map.
-     * 
-     * @param attributeMapId
-     *            the attribute map id
+     *
+     * @param attributeMapId the attribute map id
      * @return the attribute map
      */
     @WebMethod
@@ -144,9 +133,8 @@ public interface ManagedSystemWebService {
 
     /**
      * Adds the attribute map.
-     * 
-     * @param attributeMap
-     *            the attribute map
+     *
+     * @param attributeMap the attribute map
      * @return the attribute map
      */
     @WebMethod
@@ -155,9 +143,8 @@ public interface ManagedSystemWebService {
 
     /**
      * Updates attribute map.
-     * 
-     * @param attributeMap
-     *            the attribute map
+     *
+     * @param attributeMap the attribute map
      * @return the attribute map
      */
     @WebMethod
@@ -166,9 +153,8 @@ public interface ManagedSystemWebService {
 
     /**
      * Removes the attribute map.
-     * 
-     * @param attributeMapId
-     *            the attribute map id
+     *
+     * @param attributeMapId the attribute map id
      */
     @WebMethod
     void removeAttributeMap(
@@ -176,9 +162,8 @@ public interface ManagedSystemWebService {
 
     /**
      * Removes the resource attribute maps.
-     * 
-     * @param resourceId
-     *            the resource id
+     *
+     * @param resourceId the resource id
      * @return the int
      */
     @WebMethod
@@ -187,9 +172,8 @@ public interface ManagedSystemWebService {
 
     /**
      * Return the AttributeMap for the specified resourceId.
-     * 
-     * @param resourceId
-     *            the resource id
+     *
+     * @param resourceId the resource id
      * @return the attribute map for resource
      */
     @WebMethod
@@ -204,7 +188,7 @@ public interface ManagedSystemWebService {
 
     /**
      * Gets the all attribute maps.
-     * 
+     *
      * @return the all attribute maps
      */
     @WebMethod
@@ -215,7 +199,7 @@ public interface ManagedSystemWebService {
 
     @WebMethod
     public Response saveApproverAssociations(final List<ApproverAssociation> approverAssociationList, final AssociationType type, final String entityId);
-    
+
     @WebMethod
     public Response saveApproverAssociation(
             final @WebParam(name = "approverAssociation", targetNamespace = "") ApproverAssociation approverAssociation);
@@ -226,17 +210,17 @@ public interface ManagedSystemWebService {
             final @WebParam(name = "from", targetNamespace = "") int from,
             final @WebParam(name = "size", targetNamespace = "") int size);
 
-    @WebMethod
-    List<ManagedSysRuleDto> getRulesByManagedSysId(
-            final @WebParam(name = "managedSysId", targetNamespace = "") String managedSysId);
-
-    @WebMethod
-    ManagedSysRuleDto addRules(
-            final @WebParam(name = "entity", targetNamespace = "") ManagedSysRuleDto entity);
-
-    @WebMethod
-    void deleteRules(
-            final @WebParam(name = "ruleId", targetNamespace = "") String ruleId);
+//    @WebMethod
+//    List<ManagedSysRuleDto> getRulesByManagedSysId(
+//            final @WebParam(name = "managedSysId", targetNamespace = "") String managedSysId);
+//
+//    @WebMethod
+//    ManagedSysRuleDto addRules(
+//            final @WebParam(name = "entity", targetNamespace = "") ManagedSysRuleDto entity);
+//
+//    @WebMethod
+//    void deleteRules(
+//            final @WebParam(name = "ruleId", targetNamespace = "") String ruleId);
 
     @WebMethod
     List<AttributeMap> saveAttributesMap(
@@ -247,5 +231,8 @@ public interface ManagedSystemWebService {
             throws Exception;
 
     void deleteAttributesMapList(List<String> ids) throws Exception;
+
+    @WebMethod
+    List<ManagedSysDto> getAllManagedSysNames();
 
 }

@@ -32,7 +32,9 @@ import java.util.Set;
         "metadataType",
         "isSelectable",
         "adminResourceId",
-        "abbreviation"
+        "abbreviation",
+        "uncoverParents",
+        "forCurrentUsersOnly"
 })
 public class OrganizationSearchBean extends EntitlementsSearchBean<Organization, String> implements SearchBean<Organization, String>,
         Serializable {
@@ -47,7 +49,8 @@ public class OrganizationSearchBean extends EntitlementsSearchBean<Organization,
     private Boolean isSelectable = null;
     private String adminResourceId;
     private String abbreviation;
-
+    private Boolean uncoverParents = false;
+    private boolean forCurrentUsersOnly = false;
 
     public String getName() {
         return name;
@@ -137,6 +140,14 @@ public class OrganizationSearchBean extends EntitlementsSearchBean<Organization,
         this.isSelectable = isSelectable;
     }
 
+    public Boolean getUncoverParents() {
+        return uncoverParents;
+    }
+
+    public void setUncoverParents(Boolean uncoverParents) {
+        this.uncoverParents = uncoverParents;
+    }
+
     public String getValidParentTypeId() {
         return validParentTypeId;
     }
@@ -196,6 +207,14 @@ public class OrganizationSearchBean extends EntitlementsSearchBean<Organization,
         return true;
     }
 
+    public boolean isForCurrentUsersOnly() {
+        return forCurrentUsersOnly;
+    }
+
+    public void setForCurrentUsersOnly(boolean forCurrentUserOnly) {
+        this.forCurrentUsersOnly = forCurrentUserOnly;
+    }
+
     public String getAbbreviation() {
         return abbreviation;
     }
@@ -221,6 +240,7 @@ public class OrganizationSearchBean extends EntitlementsSearchBean<Organization,
                 .append(internalOrgId != null ? internalOrgId : "")
                 .append(adminResourceId != null ? adminResourceId : "")
                 .append(attributes != null ? attributes.toString().hashCode() : "")
+                .append(uncoverParents != null ? uncoverParents.hashCode() : "")
                 .append(getKey() != null ? getKey() : "")
                 .append(getKeys() != null ? getKeys().hashCode() : "")
                 .toString();

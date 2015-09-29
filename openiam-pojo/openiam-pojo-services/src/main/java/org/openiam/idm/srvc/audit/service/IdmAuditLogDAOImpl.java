@@ -102,8 +102,11 @@ public class IdmAuditLogDAOImpl extends BaseDaoImpl<IdmAuditLogEntity, String> i
                 DetachedCriteria subquery = DetachedCriteria.forClass(AuditLogTargetEntity.class);
                 subquery.add(Restrictions.eq("targetId",auditSearch.getTargetId()));
                 subquery.setProjection(Projections.property("log.id"));
-                criteria.add(Restrictions.or(sourceCriterion, Subqueries.propertyIn("id",subquery)));
-
+                if (((AuditLogSearchBean) searchBean).getUserVsTargetAndFlag()) {
+                    criteria.add(Restrictions.and(sourceCriterion, Subqueries.propertyIn("id",subquery)));
+                } else {
+                    criteria.add(Restrictions.or(sourceCriterion, Subqueries.propertyIn("id",subquery)));
+                }
             } else {
                 if(StringUtils.isNotBlank(auditSearch.getUserId())) {
                     criteria.add(Restrictions.eq("userId", auditSearch.getUserId()));

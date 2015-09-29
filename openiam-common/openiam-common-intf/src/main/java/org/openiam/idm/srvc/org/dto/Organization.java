@@ -52,7 +52,8 @@ import org.openiam.idm.srvc.user.dto.User;
         "operation",
         "parentOrganizations",
         "childOrganizations",
-        "selectable"
+        "selectable",
+        "organizationUserDTOs"
 })
 @DozerDTOCorrespondence(OrganizationEntity.class)
 public class Organization extends AdminResourceDTO implements Serializable, Comparable<Organization> {
@@ -83,9 +84,9 @@ public class Organization extends AdminResourceDTO implements Serializable, Comp
     protected String internalOrgId;
 
     protected String status;
-    
+
     protected String organizationTypeId;
-    
+
     private String organizationTypeName;
 
     protected String abbreviation;
@@ -94,13 +95,15 @@ public class Organization extends AdminResourceDTO implements Serializable, Comp
 
     protected Boolean selected = Boolean.FALSE;
 
+    private Set<OrganizationUserDTO> organizationUserDTOs;
+
     protected AttributeOperationEnum operation = AttributeOperationEnum.NO_CHANGE;
 
     private Set<Organization> parentOrganizations;
     private Set<Organization> childOrganizations;
-    
+
     private boolean selectable = true;
-    
+
     /**
      * default constructor
      */
@@ -269,7 +272,7 @@ public class Organization extends AdminResourceDTO implements Serializable, Comp
         this.lstUpdatedBy = value;
     }
 
-	/**
+    /**
      * Gets the value of the status property.
      *
      * @return possible object is {@link String }
@@ -327,58 +330,66 @@ public class Organization extends AdminResourceDTO implements Serializable, Comp
         this.operation = operation;
     }
 
-	public Set<Organization> getParentOrganizations() {
-		return parentOrganizations;
-	}
+    public Set<Organization> getParentOrganizations() {
+        return parentOrganizations;
+    }
 
-	public void setParentOrganizations(Set<Organization> parentOrganizations) {
-		this.parentOrganizations = parentOrganizations;
-	}
+    public void setParentOrganizations(Set<Organization> parentOrganizations) {
+        this.parentOrganizations = parentOrganizations;
+    }
 
-	public Set<Organization> getChildOrganizations() {
-		return childOrganizations;
-	}
+    public Set<Organization> getChildOrganizations() {
+        return childOrganizations;
+    }
 
-	public void setChildOrganizations(Set<Organization> childOrganizations) {
-		this.childOrganizations = childOrganizations;
-	}
+    public void setChildOrganizations(Set<Organization> childOrganizations) {
+        this.childOrganizations = childOrganizations;
+    }
 
-	public int compareTo(Organization o) {
+    public int compareTo(Organization o) {
         if (getName() == null || o == null) {
             return Integer.MIN_VALUE;
         }
         return getName().compareTo(o.getName());
     }
 
-	public String getOrganizationTypeId() {
-		return organizationTypeId;
-	}
+    public Set<OrganizationUserDTO> getOrganizationUserDTOs() {
+        return organizationUserDTOs;
+    }
 
-	public void setOrganizationTypeId(String organizationTypeId) {
-		this.organizationTypeId = organizationTypeId;
-	}
+    public void setOrganizationUserDTOs(Set<OrganizationUserDTO> organizationUserDTOs) {
+        this.organizationUserDTOs = organizationUserDTOs;
+    }
 
-	public boolean isOrganization() {
-		return StringUtils.equalsIgnoreCase("organization", organizationTypeId);
-	}
+    public String getOrganizationTypeId() {
+        return organizationTypeId;
+    }
 
-	public String getOrganizationTypeName() {
-		return organizationTypeName;
-	}
+    public void setOrganizationTypeId(String organizationTypeId) {
+        this.organizationTypeId = organizationTypeId;
+    }
 
-	public void setOrganizationTypeName(String organizationTypeName) {
-		this.organizationTypeName = organizationTypeName;
-	}
+    public boolean isOrganization() {
+        return StringUtils.equalsIgnoreCase("organization", organizationTypeId);
+    }
+
+    public String getOrganizationTypeName() {
+        return organizationTypeName;
+    }
+
+    public void setOrganizationTypeName(String organizationTypeName) {
+        this.organizationTypeName = organizationTypeName;
+    }
 
     public boolean isSelectable() {
-		return selectable;
-	}
+        return selectable;
+    }
 
-	public void setSelectable(boolean selectable) {
-		this.selectable = selectable;
-	}
+    public void setSelectable(boolean selectable) {
+        this.selectable = selectable;
+    }
 
-	@Override
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;

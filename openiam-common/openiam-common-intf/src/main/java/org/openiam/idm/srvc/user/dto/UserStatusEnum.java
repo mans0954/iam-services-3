@@ -45,7 +45,11 @@ public enum UserStatusEnum {
     @XmlEnumValue("retired")
     RETIRED("RETIRED"),
     @XmlEnumValue("leave")
-    LEAVE("LEAVE");
+    LEAVE("LEAVE"),
+    @XmlEnumValue("pending_delete")
+    PENDING_DELETE("PENDING_DELETE"),
+    @XmlEnumValue("pending_deactivation")
+    PENDING_DEACTIVATION("PENDING_DEACTIVATION");
     private String value;
 
     UserStatusEnum(String val) {
@@ -61,13 +65,13 @@ public enum UserStatusEnum {
     }
 
     public static UserStatusEnum getFromString(final String val) {
-    	UserStatusEnum retVal = null;
-    	for(final UserStatusEnum e : UserStatusEnum.values()) {
-    		if(StringUtils.equals(val, e.getValue())) {
-    			retVal = e;
-    			break;
-    		}
-    	}
-    	return retVal;
+        UserStatusEnum retVal = null;
+        for (final UserStatusEnum e : UserStatusEnum.values()) {
+            if (StringUtils.equals(val, e.getValue())) {
+                retVal = e;
+                break;
+            }
+        }
+        return retVal;
     }
 }

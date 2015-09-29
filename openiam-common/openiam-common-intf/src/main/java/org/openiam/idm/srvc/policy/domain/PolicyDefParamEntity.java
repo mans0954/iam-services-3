@@ -3,6 +3,7 @@ package org.openiam.idm.srvc.policy.domain;
 
 import java.util.HashSet;
 import java.util.Set;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -13,6 +14,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.policy.dto.PolicyDefParam;
@@ -23,6 +26,7 @@ import org.openiam.idm.srvc.policy.dto.PolicyDefParam;
 @Entity
 @Table(name = "POLICY_DEF_PARAM")
 @DozerDTOCorrespondence(PolicyDefParam.class)
+@Cache(usage=CacheConcurrencyStrategy.READ_WRITE)
 public class PolicyDefParamEntity implements java.io.Serializable {
 
     private static final long serialVersionUID = 1L;

@@ -18,7 +18,8 @@ import java.util.Set;
         "description",
         "isActive",
         "hasPublicKey",
-        "hasPrivateKey"
+        "hasPrivateKey",
+        "chainable"
 })
 @DozerDTOCorrespondence(AuthProviderTypeEntity.class)
 public class AuthProviderType extends KeyDTO {
@@ -26,6 +27,7 @@ public class AuthProviderType extends KeyDTO {
     private boolean isActive = true;
     private boolean hasPublicKey;
     private boolean hasPrivateKey;
+    private boolean chainable;
     
     @XmlTransient
     private Set<AuthAttributeEntity> attributeSet;
@@ -79,6 +81,14 @@ public class AuthProviderType extends KeyDTO {
 	public void setHasPrivateKey(boolean hasPrivateKey) {
 		this.hasPrivateKey = hasPrivateKey;
 	}
+	
+	public boolean isChainable() {
+		return chainable;
+	}
+
+	public void setChainable(boolean chainable) {
+		this.chainable = chainable;
+	}
 
 	@Override
 	public int hashCode() {
@@ -89,6 +99,7 @@ public class AuthProviderType extends KeyDTO {
 		result = prime * result + (hasPrivateKey ? 1231 : 1237);
 		result = prime * result + (hasPublicKey ? 1231 : 1237);
 		result = prime * result + (isActive ? 1231 : 1237);
+		result = prime * result + (chainable ? 1231 : 1237);
 		return result;
 	}
 
@@ -112,13 +123,15 @@ public class AuthProviderType extends KeyDTO {
 			return false;
 		if (isActive != other.isActive)
 			return false;
+		if (chainable != other.chainable)
+			return false;
 		return true;
 	}
 
 	@Override
 	public String toString() {
 		return String
-				.format("AuthProviderType [description=%s, isActive=%s, hasPublicKey=%s, hasPrivateKey=%s, toString()=%s]",
+				.format("AuthProviderType [description=%s, getActive=%s, hasPublicKey=%s, hasPrivateKey=%s, toString()=%s]",
 						description, isActive, hasPublicKey, hasPrivateKey,
 						super.toString());
 	}

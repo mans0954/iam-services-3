@@ -61,6 +61,8 @@ public class ReportWebServiceImpl implements ReportWebService {
 	@Qualifier(value = "subsQueue")
 	private Queue queue;
 
+
+
 	@Override
 	public GetReportDataResponse executeQuery(final ReportQueryDto reportQuery) {
 		GetReportDataResponse response = new GetReportDataResponse();
@@ -89,6 +91,7 @@ public class ReportWebServiceImpl implements ReportWebService {
 	public String getReportUrl(final ReportQueryDto reportQuery,
 							   final String taskName, final String reportBaseUrl, String locale) {
 		try {
+
 			ReportInfoDto report = reportDataService.getReportByName(reportQuery.getReportName());
 			if (report == null) {
 				log.debug("Report couldn't be found. Report name = " + reportQuery.getReportName());

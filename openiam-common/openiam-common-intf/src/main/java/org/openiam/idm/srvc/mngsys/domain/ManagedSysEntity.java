@@ -100,9 +100,9 @@ public class ManagedSysEntity implements Serializable {
     @OneToMany(mappedBy = "managedSys")
     private Set<ManagedSystemObjectMatchEntity> mngSysObjectMatchs = new HashSet<ManagedSystemObjectMatchEntity>();
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JoinColumn(name = "MANAGED_SYS_ID", referencedColumnName = "MANAGED_SYS_ID")
-    private List<ManagedSysRuleEntity> rules = new ArrayList<ManagedSysRuleEntity>(0);
+//    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+//    @JoinColumn(name = "MANAGED_SYS_ID", referencedColumnName = "MANAGED_SYS_ID")
+//    private List<ManagedSysRuleEntity> rules = new ArrayList<ManagedSysRuleEntity>(0);
 
     @OneToMany(fetch = FetchType.LAZY, orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "managedSystem")
     private Set<AttributeMapEntity> attributeMaps = new HashSet<AttributeMapEntity>(0);
@@ -113,13 +113,6 @@ public class ManagedSysEntity implements Serializable {
     @OneToMany(orphanRemoval = false, cascade = {CascadeType.DETACH, CascadeType.REFRESH}, mappedBy = "managedSystem", fetch = FetchType.LAZY)
     private Set<RoleEntity> roles;
 
-    public List<ManagedSysRuleEntity> getRules() {
-        return rules;
-    }
-
-    public void setRules(List<ManagedSysRuleEntity> rules) {
-        this.rules = rules;
-    }
 
     public String getId() {
         return id;
