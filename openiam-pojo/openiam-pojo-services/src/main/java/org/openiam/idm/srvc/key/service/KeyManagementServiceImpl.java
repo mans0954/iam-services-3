@@ -8,9 +8,12 @@ import org.openiam.core.dao.UserKeyDao;
 import org.openiam.core.domain.UserKey;
 import org.openiam.exception.EncryptionException;
 import org.openiam.hazelcast.HazelcastConfiguration;
+import org.openiam.idm.srvc.audit.constant.AuditAction;
+import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDAO;
+import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.dto.UserSecurityWrapper;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
@@ -45,7 +48,7 @@ import java.util.*;
  * Created by: Alexander Duckardt Date: 09.10.12
  */
 @Service("keyManagementService")
-public class KeyManagementServiceImpl implements KeyManagementService {
+public class KeyManagementServiceImpl extends AbstractBaseService implements KeyManagementService {
     protected final Log log = LogFactory.getLog(this.getClass());
     private static final char[] HEX_CHARS = "0123456789abcdef".toCharArray();
     private static final int FETCH_COUNT = 1000;
@@ -210,6 +213,11 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         final IMap<String, byte[]> keyMap = hazelcastConfiguration.getMap("keyManagementCache");
         final byte[] fileTypes = FileUtils.readFileToByteArray(new File(jksFile));
         keyMap.put("jksFileKey", fileTypes);
+        
+        /* we have chef code that depends on this record being there, so persist right away - no jsm BS */
+        final IdmAuditLog log = new IdmAuditLog();
+        log.setAction(AuditAction.KEY_MANAGEMENT_INITIALIZATION.value());
+        auditLogService.save(log);;
     }
 
     @Override
