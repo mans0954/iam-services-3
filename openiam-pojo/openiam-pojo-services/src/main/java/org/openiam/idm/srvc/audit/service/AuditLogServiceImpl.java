@@ -39,6 +39,7 @@ import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.service.RoleDAO;
 import org.openiam.util.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.core.MessageCreator;
 import org.springframework.stereotype.Service;
@@ -260,4 +261,5 @@ public class AuditLogServiceImpl implements AuditLogService {
         final String id = auditLogEntity.getId();
         return auditLogDozerConverter.convertToDTO(auditLogEntity,true);
     }
+
 }

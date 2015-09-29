@@ -1,13 +1,16 @@
 package org.openiam.idm.srvc.key.service;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.dozer.DozerBeanMapper;
 import org.openiam.core.dao.UserKeyDao;
 import org.openiam.core.domain.UserKey;
 import org.openiam.exception.EncryptionException;
 import org.openiam.hazelcast.HazelcastConfiguration;
+import org.openiam.idm.searchbeans.AuditLogSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
@@ -28,10 +31,16 @@ import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.util.encrypt.Cryptor;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.StringUtils;
 
 import com.hazelcast.core.EntryEvent;
@@ -46,9 +55,13 @@ import java.util.*;
 
 /**
  * Created by: Alexander Duckardt Date: 09.10.12
+ * 
+ * Depends on dozer, b/c audit log check requires dozer to be present, when checking if key management
+ * was ever run or not.
  */
 @Service("keyManagementService")
-public class KeyManagementServiceImpl extends AbstractBaseService implements KeyManagementService {
+//@DependsOn(value={"dto2entityDeepDozerMapper", "dto2entityShallowDozerMapper"})
+public class KeyManagementServiceImpl extends AbstractBaseService implements KeyManagementService, InitializingBean {
     protected final Log log = LogFactory.getLog(this.getClass());
     private static final char[] HEX_CHARS = "0123456789abcdef".toCharArray();
     private static final int FETCH_COUNT = 1000;
@@ -87,9 +100,13 @@ public class KeyManagementServiceImpl extends AbstractBaseService implements Key
     private UserIdentityAnswerDAO userIdentityAnswerDAO;
     
     private JKSEntryListener jksListener = null;
+    
+    @Autowired
+    @Qualifier("transactionTemplate")
+    private TransactionTemplate transactionTemplate;
 
     @PostConstruct
-    public void init() throws IOException {
+    public void init() throws Exception {
         if (!StringUtils.hasText(this.jksFile)) {
             this.jksFile = JksManager.KEYSTORE_DEFAULT_LOCATION + JksManager.KEYSTORE_FILE_NAME;
         }
@@ -120,6 +137,10 @@ public class KeyManagementServiceImpl extends AbstractBaseService implements Key
         	jksListener.addOrUpdate(key);
         }
     }
+    
+    private boolean hasKeyManagementToolBeenRun() {
+		return (userKeyDao.countAll().intValue() > 0);
+	}
     
     private class JKSEntryListener implements EntryListener<String, byte[]> {
     	
@@ -213,11 +234,6 @@ public class KeyManagementServiceImpl extends AbstractBaseService implements Key
         final IMap<String, byte[]> keyMap = hazelcastConfiguration.getMap("keyManagementCache");
         final byte[] fileTypes = FileUtils.readFileToByteArray(new File(jksFile));
         keyMap.put("jksFileKey", fileTypes);
-        
-        /* we have chef code that depends on this record being there, so persist right away - no jsm BS */
-        final IdmAuditLog log = new IdmAuditLog();
-        log.setAction(AuditAction.KEY_MANAGEMENT_INITIALIZATION.value());
-        auditLogService.save(log);;
     }
 
     @Override
@@ -833,4 +849,25 @@ public class KeyManagementServiceImpl extends AbstractBaseService implements Key
         }
         return pwdHistoryMap;
     }
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
+
+        /* we're in Spring 4 world, so any initialization needs to be wrapped in a transaction */
+        transactionTemplate.execute(new TransactionCallback<Void>() {
+            @Override
+            public Void doInTransaction(TransactionStatus status) {
+		        if(!hasKeyManagementToolBeenRun()) {
+		        	try {
+						initKeyManagement();
+					} catch (Throwable e) {
+						throw new RuntimeException(e);
+					}
+		        } else {
+		        	log.warn("Key management was already setup.  Doing nothing.  This message is normal; it will show on every server startup");
+		        }
+		        return null;
+            }
+        });
+	}
 }

@@ -49,28 +49,6 @@ public class KeyManagementRestController extends AbstractBaseService {
 	}
 	
 	/**
-	 * Used by chef to initialize key management.  Do not Remove!
-	 * @return this method is used by shell scripts, which don't easily parse json.  Therefore, any error will
-	 * return an actual 500.
-	 * If you change this functionality, change the underlying chef recipe too!!!
-	 * @throws Exception 
-	 */
-	@RequestMapping("/initKeyManagement")
-	public void initKeyManagement() throws Exception { 
-		if(!hasKeyManagementToolBeenRun()) {
-			service.initKeyManagement();
-		} else {
-			throw new RuntimeException("Key Management tool has been run before - not initializing.  Don't worry, this is a normal error.  A shell script is probably calling this method.");
-		}
-	}
-	
-	private boolean hasKeyManagementToolBeenRun() {
-		final AuditLogSearchBean searchBean = new AuditLogSearchBean();
-		searchBean.setAction(AuditAction.KEY_MANAGEMENT_INITIALIZATION.value());
-		return CollectionUtils.isNotEmpty(auditLogService.findIDs(searchBean, 0, 1));
-	}
-	
-	/**
 	 * Convenience method to re-genrate a jks key
 	 */
 	@RequestMapping("/recalculateKey")
