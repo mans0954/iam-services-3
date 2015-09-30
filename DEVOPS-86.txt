@@ -1,3 +1,0 @@
-DEVOPS-86 test commit
-
-tttest smart 1
