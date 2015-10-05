@@ -204,8 +204,11 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
         LoginResponse lg2Resp = loginManager.getLoginByManagedSys(distinguishedName, managedSysId);
 
         if (lg2Resp.getStatus() == ResponseStatus.FAILURE) {
+            //try with entered value:
+            lg2Resp = loginManager.getLoginByManagedSys(principal, managedSysId);
+            if (lg2Resp.getStatus() == ResponseStatus.FAILURE) {
             throw new AuthenticationException(
-                    AuthenticationConstants.RESULT_INVALID_LOGIN);
+                    AuthenticationConstants.RESULT_INVALID_LOGIN);}
         }
         Login lg = lg2Resp.getPrincipal();
         UserEntity user = this.userManager.getUser(lg.getUserId());
