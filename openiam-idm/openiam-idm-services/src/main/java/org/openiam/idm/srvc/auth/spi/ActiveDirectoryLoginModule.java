@@ -202,10 +202,11 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
         tokenParam.put("TOKEN_ISSUER", tokenIssuer);
         tokenParam.put("PRINCIPAL", distinguishedName);
         LoginResponse lg2Resp = loginManager.getLoginByManagedSys(distinguishedName, managedSysId);
-
+        sub.setPrincipal(distinguishedName);
         if (lg2Resp.getStatus() == ResponseStatus.FAILURE) {
             //try with entered value:
             lg2Resp = loginManager.getLoginByManagedSys(principal, managedSysId);
+            sub.setPrincipal(principal);
             if (lg2Resp.getStatus() == ResponseStatus.FAILURE) {
             throw new AuthenticationException(
                     AuthenticationConstants.RESULT_INVALID_LOGIN);}
@@ -235,7 +236,7 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
 
         // Successful login
         sub.setUserId(lg.getUserId());
-        sub.setPrincipal(distinguishedName);
+       // sub.setPrincipal(distinguishedName);
         sub.setSsoToken(token(lg.getUserId(), tokenParam));
         setResultCode(lg, sub, curDate, null);
 
