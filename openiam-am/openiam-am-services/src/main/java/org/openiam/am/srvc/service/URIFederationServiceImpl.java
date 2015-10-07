@@ -74,6 +74,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.http.HttpMethod;
 import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -84,6 +85,7 @@ import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
 @Service("uriFederationService")
+@DependsOn("springContextProvider") /* otherwise sweep() fails */
 //@ManagedResource(objectName="org.openiam.am.srvc.service:name=URIFederationService")
 public class URIFederationServiceImpl implements URIFederationService, ApplicationContextAware, InitializingBean, Sweepable {
 	
@@ -376,38 +378,43 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 			final URI uri = new URI(proxyURI);
 			final ContentProviderNode cpNode = contentProviderTree.find(uri);
 			if(cpNode == null) {
-				throw new BasicDataServiceException(ResponseCode.URI_FEDERATION_CONTENT_PROVIDER_NOT_FOUND);
-			}
-			cp = cpNode.getContentProvider();
-			final URIPatternSearchResult patternNode = cpNode.getURIPattern(uri, method);
-			uriPattern = patternNode.getPattern();
-			uriMethod = patternNode.getMethod();
-			
-			if(uriPattern != null && CollectionUtils.isNotEmpty(uriPattern.getGroupingXrefs())) {
-				for(final AuthLevelGroupingURIPatternXref xref : uriPattern.getOrderedGroupingXrefs()) {
-					final String groupingId = xref.getId().getGroupingId();
-					final AuthLevelGrouping grouping = groupingMap.get(groupingId);
-					if(grouping != null) {
-						groupingList.add(grouping);
-					}
-				}
+				response.setConfigured(false);
+				//throw new BasicDataServiceException(ResponseCode.URI_FEDERATION_CONTENT_PROVIDER_NOT_FOUND);
 			} else {
-				if(CollectionUtils.isNotEmpty(cp.getGroupingXrefs())) {
-					for(final AuthLevelGroupingContentProviderXref xref : cp.getOrderedGroupingXrefs()) {
+				response.setConfigured(true);
+				cp = cpNode.getContentProvider();
+				final URIPatternSearchResult patternNode = cpNode.getURIPattern(uri, method);
+				uriPattern = patternNode.getPattern();
+				uriMethod = patternNode.getMethod();
+				
+				if(uriPattern != null && CollectionUtils.isNotEmpty(uriPattern.getGroupingXrefs())) {
+					for(final AuthLevelGroupingURIPatternXref xref : uriPattern.getOrderedGroupingXrefs()) {
 						final String groupingId = xref.getId().getGroupingId();
 						final AuthLevelGrouping grouping = groupingMap.get(groupingId);
 						if(grouping != null) {
 							groupingList.add(grouping);
 						}
 					}
+				} else {
+					if(CollectionUtils.isNotEmpty(cp.getGroupingXrefs())) {
+						for(final AuthLevelGroupingContentProviderXref xref : cp.getOrderedGroupingXrefs()) {
+							final String groupingId = xref.getId().getGroupingId();
+							final AuthLevelGrouping grouping = groupingMap.get(groupingId);
+							if(grouping != null) {
+								groupingList.add(grouping);
+							}
+						}
+					}
 				}
 			}
-			response.setStatus(ResponseStatus.SUCCESS);
+			response.succeed();
+		/*
 		} catch(BasicDataServiceException e) {
 			response.setErrorCode(e.getCode());
 			response.setResponseValue(e.getResponseValue());
 			response.setStatus(ResponseStatus.FAILURE);
 			//LOG.info(String.format("CP or Pattern Exception: %s", e.getMessage()));
+		*/
 		} catch(URISyntaxException e) {
 			response.setErrorCode(ResponseCode.INVALID_URI);
 			response.setStatus(ResponseStatus.FAILURE);
@@ -518,110 +525,113 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 			final URI uri = new URI(proxyURI);
 			final ContentProviderNode cpNode = contentProviderTree.find(uri);
 			if(cpNode == null) {
-				throw new BasicDataServiceException(ResponseCode.URI_FEDERATION_CONTENT_PROVIDER_NOT_FOUND);
-			}
-			cp = cpNode.getContentProvider();
-			if(!cp.getIsPublic() && !isEntitled(userId, cp.getResourceId())) {
-				throw new BasicDataServiceException(ResponseCode.URI_FEDERATION_NOT_ENTITLED_TO_CONTENT_PROVIDER);
-			}
-			
-			final URIPatternSearchResult patternNode = cpNode.getURIPattern(uri, method);
-			uriPattern = patternNode.getPattern();
-			uriMethod = patternNode.getMethod();
-			
-			/* means that no matching pattern has been found for this URI (i.e. none configured) - check against the CP */
-			if(uriPattern != null) {
-				
-				/* check entitlements and auth level on patterns */
-				if(!uriPattern.getIsPublic() && !isEntitled(userId, uriPattern.getResourceId())) {
-					throw new BasicDataServiceException(ResponseCode.URI_FEDERATION_NOT_ENTITLED_TO_PATTERN, uriPattern.getPattern());
-				}
-				
-				if(uriMethod != null) {
-					if(!isEntitled(userId, uriMethod.getResourceId())) {
-						throw new BasicDataServiceException(ResponseCode.URI_FEDERATION_NOT_ENTITLED_TO_METHOD, uriMethod.getId());
-					}
-				}
-				
-				if(StringUtils.isNotBlank(uriPattern.getRedirectTo())) {
-					response.setRedirectTo(uriPattern.getRedirectTo());
-				} else if(uriPattern.getRedirectProcessor() != null) {
-					response.setRedirectTo(uriPattern.getRedirectProcessor().getRedirectURL(userId, cp, uriPattern, uriMethod));
-				}
-			
-				/* do rule processes */				
-				if(uriMethod != null) {
-					if(CollectionUtils.isNotEmpty(uriMethod.getMetaEntitySet())) {
-						for(final URIPatternMethodMeta meta : uriMethod.getMetaEntitySet()) {
-							processMeta(response, userId, uri, uriPattern, uriMethod, cp, meta);
-						}
-					}
-				} else {
-					if(CollectionUtils.isNotEmpty(uriPattern.getMetaEntitySet())) {
-						for(final URIPatternMeta meta : uriPattern.getMetaEntitySet()) {
-							processMeta(response, userId, uri, uriPattern, uriMethod, cp, meta);
-						}
-					}
-				}
-			} else if(patternNode.isUriPatternFound()) {
-				throw new BasicDataServiceException(ResponseCode.URI_FEDERATION_PATTERN_NOT_FOUND);
-			}
-			
-			if(uriPattern != null && CollectionUtils.isNotEmpty(uriPattern.getGroupingXrefs())) {
-				for(final AuthLevelGroupingURIPatternXref xref : uriPattern.getOrderedGroupingXrefs()) {
-					final String groupingId = xref.getId().getGroupingId();
-					final AuthLevelGrouping grouping = groupingMap.get(groupingId);
-					if(grouping != null) {
-						groupingList.add(grouping);
-					}
-				}
+				response.setConfigured(false);
+				//throw new BasicDataServiceException(ResponseCode.URI_FEDERATION_CONTENT_PROVIDER_NOT_FOUND);
 			} else {
-				if(CollectionUtils.isNotEmpty(cp.getGroupingXrefs())) {
-					for(final AuthLevelGroupingContentProviderXref xref : cp.getOrderedGroupingXrefs()) {
+				response.setConfigured(true);
+				cp = cpNode.getContentProvider();
+				if(!cp.getIsPublic() && !isEntitled(userId, cp.getResourceId())) {
+					throw new BasicDataServiceException(ResponseCode.URI_FEDERATION_NOT_ENTITLED_TO_CONTENT_PROVIDER);
+				}
+				
+				final URIPatternSearchResult patternNode = cpNode.getURIPattern(uri, method);
+				uriPattern = patternNode.getPattern();
+				uriMethod = patternNode.getMethod();
+				
+				/* means that no matching pattern has been found for this URI (i.e. none configured) - check against the CP */
+				if(uriPattern != null) {
+					
+					/* check entitlements and auth level on patterns */
+					if(!uriPattern.getIsPublic() && !isEntitled(userId, uriPattern.getResourceId())) {
+						throw new BasicDataServiceException(ResponseCode.URI_FEDERATION_NOT_ENTITLED_TO_PATTERN, uriPattern.getPattern());
+					}
+					
+					if(uriMethod != null) {
+						if(!isEntitled(userId, uriMethod.getResourceId())) {
+							throw new BasicDataServiceException(ResponseCode.URI_FEDERATION_NOT_ENTITLED_TO_METHOD, uriMethod.getId());
+						}
+					}
+					
+					if(StringUtils.isNotBlank(uriPattern.getRedirectTo())) {
+						response.setRedirectTo(uriPattern.getRedirectTo());
+					} else if(uriPattern.getRedirectProcessor() != null) {
+						response.setRedirectTo(uriPattern.getRedirectProcessor().getRedirectURL(userId, cp, uriPattern, uriMethod));
+					}
+				
+					/* do rule processes */				
+					if(uriMethod != null) {
+						if(CollectionUtils.isNotEmpty(uriMethod.getMetaEntitySet())) {
+							for(final URIPatternMethodMeta meta : uriMethod.getMetaEntitySet()) {
+								processMeta(response, userId, uri, uriPattern, uriMethod, cp, meta);
+							}
+						}
+					} else {
+						if(CollectionUtils.isNotEmpty(uriPattern.getMetaEntitySet())) {
+							for(final URIPatternMeta meta : uriPattern.getMetaEntitySet()) {
+								processMeta(response, userId, uri, uriPattern, uriMethod, cp, meta);
+							}
+						}
+					}
+				} else if(patternNode.isUriPatternFound()) {
+					throw new BasicDataServiceException(ResponseCode.URI_FEDERATION_PATTERN_NOT_FOUND);
+				}
+				
+				if(uriPattern != null && CollectionUtils.isNotEmpty(uriPattern.getGroupingXrefs())) {
+					for(final AuthLevelGroupingURIPatternXref xref : uriPattern.getOrderedGroupingXrefs()) {
 						final String groupingId = xref.getId().getGroupingId();
 						final AuthLevelGrouping grouping = groupingMap.get(groupingId);
 						if(grouping != null) {
 							groupingList.add(grouping);
 						}
 					}
+				} else {
+					if(CollectionUtils.isNotEmpty(cp.getGroupingXrefs())) {
+						for(final AuthLevelGroupingContentProviderXref xref : cp.getOrderedGroupingXrefs()) {
+							final String groupingId = xref.getId().getGroupingId();
+							final AuthLevelGrouping grouping = groupingMap.get(groupingId);
+							if(grouping != null) {
+								groupingList.add(grouping);
+							}
+						}
+					}
+				}
+				
+				if(CollectionUtils.isEmpty(groupingList)) {
+					throw new BasicDataServiceException(ResponseCode.FAIL_OTHER);
+				}
+				
+				boolean requiresAuthentication = false;
+				for(final AuthLevelGrouping grouping : groupingList) {
+					if(grouping.getAuthLevel().isRequiresAuthentication()) {
+						requiresAuthentication = true;
+					}
+				}
+				
+				if(StringUtils.isEmpty(userId) && requiresAuthentication) {
+					throw new BasicDataServiceException(ResponseCode.UNAUTHORIZED);
+				}
+				
+				if(CollectionUtils.isNotEmpty(uriPattern.getSubstititonOrderedSet())) {
+					for(final URIPatternSubstitution substition : uriPattern.getSubstititonOrderedSet()) {
+						response.addSubstitution(new URISubstitutionToken(substition.getQuery(), substition.getReplaceWith(), substition.isExactMatch(), substition.isFastSearch()));
+					}
+				}
+				
+	
+				if(cp.isUnavailable()) {
+					if(!isEntitled(userId, cp.getUnavailableResourceId())) {
+						response.setRedirectTo(StringUtils.trimToNull(cp.getUnavailableURL()));
+					}
+				}
+				
+				/* lastly, add caching metadata for proxy */
+				if(uriPattern != null) {
+					response.setCacheable(uriPattern.isCacheable());
+					response.setCacheTTL(uriPattern.getCacheTTL());
 				}
 			}
 			
-			if(CollectionUtils.isEmpty(groupingList)) {
-				throw new BasicDataServiceException(ResponseCode.FAIL_OTHER);
-			}
-			
-			boolean requiresAuthentication = false;
-			for(final AuthLevelGrouping grouping : groupingList) {
-				if(grouping.getAuthLevel().isRequiresAuthentication()) {
-					requiresAuthentication = true;
-				}
-			}
-			
-			if(StringUtils.isEmpty(userId) && requiresAuthentication) {
-				throw new BasicDataServiceException(ResponseCode.UNAUTHORIZED);
-			}
-			
-			if(CollectionUtils.isNotEmpty(uriPattern.getSubstititonOrderedSet())) {
-				for(final URIPatternSubstitution substition : uriPattern.getSubstititonOrderedSet()) {
-					response.addSubstitution(new URISubstitutionToken(substition.getQuery(), substition.getReplaceWith(), substition.isExactMatch(), substition.isFastSearch()));
-				}
-			}
-			
-
-			if(cp.isUnavailable()) {
-				if(!isEntitled(userId, cp.getUnavailableResourceId())) {
-					response.setRedirectTo(StringUtils.trimToNull(cp.getUnavailableURL()));
-				}
-			}
-			
-			/* lastly, add caching metadata for proxy */
-			if(uriPattern != null) {
-				response.setCacheable(uriPattern.isCacheable());
-				response.setCacheTTL(uriPattern.getCacheTTL());
-			}
-			
-			response.setStatus(ResponseStatus.SUCCESS);
+			response.succeed();
 		} catch(BasicDataServiceException e) {
 			response.setErrorCode(e.getCode());
 			response.setResponseValue(e.getResponseValue());

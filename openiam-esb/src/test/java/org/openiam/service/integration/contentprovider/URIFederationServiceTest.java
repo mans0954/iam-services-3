@@ -91,8 +91,7 @@ public class URIFederationServiceTest extends AbstractURIFederationTest {
 	    cp = contentProviderServiceClient.getContentProvider(id);
 	    Assert.assertNotNull(cp);
 	    
-	    uriFederationServiceClient.sweep();
-	    uriFederationServiceClient.sweep();
+	    refreshContentProviderManager();
 	    
 	    user = super.createUser();
 	    Assert.assertNotNull(user);
@@ -124,27 +123,35 @@ public class URIFederationServiceTest extends AbstractURIFederationTest {
 		authorizationManagerServiceClient.refreshCache();
 		
 		response = uriFederationServiceClient.federateProxyURI(userId, "http://www.foo.com", null);
-		assertResponseCode(response, ResponseCode.URI_FEDERATION_CONTENT_PROVIDER_NOT_FOUND);
+		Assert.assertFalse(response.isConfigured());
+		//assertResponseCode(response, ResponseCode.URI_FEDERATION_CONTENT_PROVIDER_NOT_FOUND);
 		
 		response = uriFederationServiceClient.federateProxyURI(userId, "http://www.example.com", null);
+		Assert.assertTrue(response.isConfigured());
 		assertResponseCode(response, ResponseCode.URI_FEDERATION_NOT_ENTITLED_TO_PATTERN);
 		
 		response = uriFederationServiceClient.federateProxyURI(userId, "http://www.example.com/", null);
+		Assert.assertTrue(response.isConfigured());
 		assertResponseCode(response, ResponseCode.URI_FEDERATION_NOT_ENTITLED_TO_PATTERN);
 		
 		response = uriFederationServiceClient.federateProxyURI(userId, "http://www.example.com/ignore/foobar", null);
+		Assert.assertTrue(response.isConfigured());
 		assertResponseCode(response, ResponseCode.URI_FEDERATION_NOT_ENTITLED_TO_PATTERN);
 		
 		response = uriFederationServiceClient.federateProxyURI(userId, "http://www.example.com/paramsWithNoMethod/foobar", null);
+		Assert.assertTrue(response.isConfigured());
 		assertResponseCode(response, ResponseCode.URI_FEDERATION_PATTERN_NOT_FOUND);
 		
 		response = uriFederationServiceClient.federateProxyURI(userId, "http://www.example.com/paramsWithMethod/foobar", null);
+		Assert.assertTrue(response.isConfigured());
 		assertResponseCode(response, ResponseCode.URI_FEDERATION_PATTERN_NOT_FOUND);
 		
 		response = uriFederationServiceClient.federateProxyURI(userId, "http://www.example.com/paramsWithNoMethod/foobar?0=0&1=1&2=2&3=3&4=4&5=5", null);
+		Assert.assertTrue(response.isConfigured());
 		assertResponseCode(response, ResponseCode.URI_FEDERATION_NOT_ENTITLED_TO_PATTERN);
 		
 		response = uriFederationServiceClient.federateProxyURI(userId, "http://www.example.com/paramsWithMethod/foobar?0=0&1=1&2=2&3=3&4=4&5=5", null);
+		Assert.assertTrue(response.isConfigured());
 		assertResponseCode(response, ResponseCode.URI_FEDERATION_NOT_ENTITLED_TO_PATTERN);
 		
 		cp.getPatternSet().forEach(pattern -> {
@@ -155,34 +162,44 @@ public class URIFederationServiceTest extends AbstractURIFederationTest {
 		refreshAuthorizationManager();
 		
 		response = uriFederationServiceClient.federateProxyURI(userId, "http://www.example.com", null);
+		Assert.assertTrue(response.isConfigured());
 		assertSuccess(response, false);
 		
 		response = uriFederationServiceClient.federateProxyURI(userId, "http://www.example.com/", null);
+		Assert.assertTrue(response.isConfigured());
 		assertSuccess(response, false);
 		
 		response = uriFederationServiceClient.federateProxyURI(userId, "http://www.example.com/ignore/foobar", null);
+		Assert.assertTrue(response.isConfigured());
 		assertSuccess(response, false);
 		
 		response = uriFederationServiceClient.federateProxyURI(userId, "http://www.example.com/paramsWithNoMethod/foobar?0=0&1=1&2=2&3=3&4=4&5=5", null);
+		Assert.assertTrue(response.isConfigured());
 		assertSuccess(response, false);
 		
 		response = uriFederationServiceClient.federateProxyURI(userId, "http://www.example.com/paramsWithMethod/foobar?0=0&1=1&2=2&3=3&4=4&5=5", null);
+		Assert.assertTrue(response.isConfigured());
 		assertSuccess(response, false);
 		
 		
 		response = uriFederationServiceClient.federateProxyURI(userId, "http://www.example.com", "GET");
+		Assert.assertTrue(response.isConfigured());
 		assertSuccess(response, false);
 		
 		response = uriFederationServiceClient.federateProxyURI(userId, "http://www.example.com/", "GET");
+		Assert.assertTrue(response.isConfigured());
 		assertSuccess(response, false);
 		
 		response = uriFederationServiceClient.federateProxyURI(userId, "http://www.example.com/ignore/foobar", "GET");
+		Assert.assertTrue(response.isConfigured());
 		assertSuccess(response, false);
 		
 		response = uriFederationServiceClient.federateProxyURI(userId, "http://www.example.com/paramsWithNoMethod/foobar?0=0&1=1&2=2&3=3&4=4&5=5", "TRACE");
+		Assert.assertTrue(response.isConfigured());
 		assertResponseCode(response, ResponseCode.URI_FEDERATION_NOT_ENTITLED_TO_METHOD);
 		
 		response = uriFederationServiceClient.federateProxyURI(userId, "http://www.example.com/paramsWithMethod/foobar?0=0&1=1&2=2&3=3&4=4&5=5", "TRACE");
+		Assert.assertTrue(response.isConfigured());
 		assertResponseCode(response, ResponseCode.URI_FEDERATION_NOT_ENTITLED_TO_METHOD);
 		
 		cp.getPatternSet().forEach(pattern -> {
@@ -198,10 +215,12 @@ public class URIFederationServiceTest extends AbstractURIFederationTest {
 		
 		response = uriFederationServiceClient.federateProxyURI(userId, "http://www.example.com/paramsWithNoMethod/foobar?0=0&1=1&2=2&3=3&4=4&5=5", "TRACE");
 		assertSuccess(response, true);
+		Assert.assertTrue(response.isConfigured());
 		Assert.assertNotNull(response.getCacheTTL());
 		
 		response = uriFederationServiceClient.federateProxyURI(userId, "http://www.example.com/paramsWithMethod/foobar?0=0&1=1&2=2&3=3&4=4&5=5", "TRACE");
 		assertSuccess(response, true);
+		Assert.assertTrue(response.isConfigured());
 		Assert.assertNotNull(response.getCacheTTL());
 		
 		//uriFederationServiceClient.getMetadata(proxyURI, method);

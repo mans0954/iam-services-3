@@ -1,6 +1,5 @@
 package org.openiam.am.srvc.service;
 
-import org.openiam.am.srvc.dto.URIPattern;
 import org.openiam.am.srvc.uriauth.dto.URIFederationResponse;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.srvc.auth.dto.AuthenticationRequest;
@@ -13,4 +12,6 @@ public interface URIFederationService {
 	URIFederationResponse federateProxyURI(final String userId, final String proxyURI, final HttpMethod method);
 	
 	URIFederationResponse getMetadata(String proxyURI, final HttpMethod method);
+	
+	public void sweep();
 }
