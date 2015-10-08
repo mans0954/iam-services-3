@@ -1917,8 +1917,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                          * to the user. if (passwordSync.isSendPasswordToUser()) { //
                          * sendPasswordToUser(usr, password); }
                          */
-                        if (passwordSync.getSendPasswordToUser()) {
-                            sendResetPasswordToUser(identity, passwordSync.getPassword());
+                        if (passwordSync.getSendPasswordToUser() && sysConfiguration.getDefaultManagedSysId().equals(identity.getManagedSysId())) {
+                             sendResetPasswordToUser(identity, passwordSync.getPassword());
                         }
 
                     } else {
