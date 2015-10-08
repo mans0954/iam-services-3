@@ -67,13 +67,13 @@ public class ChallengeResponseWebServiceImpl implements ChallengeResponseWebServ
 			.getLog(ChallengeResponseWebServiceImpl.class);
 
 	@Override
-	public Integer getNumOfRequiredQuestions(String userId) {
-		return challengeResponseService.getNumOfRequiredQuestions(userId);
+	public Integer getNumOfRequiredQuestions(String userId, boolean isEnterprise) {
+		return challengeResponseService.getNumOfRequiredQuestions(userId,isEnterprise);
 	}
 
     @Override
-    public Integer getNumOfCorrectAnswers(String userId) {
-        return challengeResponseService.getNumOfCorrectAnswers(userId);
+    public Integer getNumOfCorrectAnswers(String userId, boolean isEnterprise) {
+        return challengeResponseService.getNumOfCorrectAnswers(userId,isEnterprise);
     }
 
 	@Override
