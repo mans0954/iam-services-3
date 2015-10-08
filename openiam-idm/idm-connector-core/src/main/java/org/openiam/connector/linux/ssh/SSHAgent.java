@@ -93,9 +93,6 @@ public class SSHAgent {
         try {
             // Open a session
             Session session = connection.openSession();
-
-            log.debug("Sending SSH command: " + command);
-
             // Execute the command
             session.execCommand(command);
 
