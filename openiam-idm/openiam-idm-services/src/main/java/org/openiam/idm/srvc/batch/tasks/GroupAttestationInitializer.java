@@ -53,11 +53,11 @@ public class GroupAttestationInitializer {
         sw.start();
         final Set<String> groupIds = groupDataService.getGroupIdList();
         if(CollectionUtils.isNotEmpty(groupIds)) {
-            HashMap<String, SetStringResponse> groupOwnerMap = adminService.getOwnerIdsForGroupSet(groupIds);
+            HashMap<String, Set<String>> groupOwnerMap = adminService.getOwnerIdsForGroupSet(groupIds);
             if(groupOwnerMap!=null && !groupOwnerMap.isEmpty()){
                 for(final String groupId : groupOwnerMap.keySet()) {
-                    SetStringResponse groupOwnerResponse = groupOwnerMap.get(groupId);
-                    if(groupOwnerResponse!=null && CollectionUtils.isNotEmpty(groupOwnerResponse.getSetString())){
+                    Set<String> groupOwnerResponse = groupOwnerMap.get(groupId);
+                    if(groupOwnerResponse!=null && CollectionUtils.isNotEmpty(groupOwnerResponse)){
 
                         final GroupEntity group = groupDataService.getGroup(groupId);
 
@@ -66,7 +66,7 @@ public class GroupAttestationInitializer {
                         request.setActivitiRequestType(ActivitiRequestType.GROUP_ATTESTATION.getKey());
                         request.setDescription(taskName);
                         request.setName(taskName);
-                        request.setCustomApproverIds(groupOwnerResponse.getSetString());
+                        request.setCustomApproverIds(groupOwnerResponse);
                         request.addParameter(ActivitiConstants.EMPLOYEE_ID.getName(), groupId);
                         request.addParameter(ActivitiConstants.ATTESTATION_URL.getName(), attestationURL);
                         request.setRequestorUserId(systemUserId);
