@@ -2448,6 +2448,8 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
             idmAuditLog.setRequestorPrincipal(lRequestor.getLogin());
 
             List<String> failedUserIds = new ArrayList<String>();
+            List<String> exceedMaxUserCountForGroup = new ArrayList<String>();
+
             try {
 
                 for (String userId : bulkRequest.getUserIds()) {
@@ -2589,9 +2591,13 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                                         }
                                     } else {
                                         if (BulkOperationEnum.ADD_ENTITLEMENT.equals(ob.getOperation())) {
-                                            existingGroups.add(group);
-                                            group.setOperation(AttributeOperationEnum.ADD);
-                                            isModifiedGroup = true;
+                                            if ((group.getMaxUserNumber() == null) || (userMgr.getNumOfUsersForGroup(group.getId(), requestorId) < group.getMaxUserNumber())) {
+                                                existingGroups.add(group);
+                                                group.setOperation(AttributeOperationEnum.ADD);
+                                                isModifiedGroup = true;
+                                            } else {
+                                                exceedMaxUserCountForGroup.add(userId);
+                                            }
                                         }
                                     }
                                     if (isModifiedGroup) {
@@ -2698,6 +2704,12 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                     idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "Successfully processed " + (bulkRequest.getUserIds().size() - failedUserIds.size()) + " users");
                     idmAuditLog.addAttribute(AuditAttributeName.FAILURE_REASON, "Failed to process " + failedUserIds.size() + " users");
                     for (String id : failedUserIds) {
+                        idmAuditLog.addAttribute(AuditAttributeName.FAILURE_REASON, id);
+                    }
+                } else if (CollectionUtils.isNotEmpty(exceedMaxUserCountForGroup)) {
+                    idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "Successfully processed " + (bulkRequest.getUserIds().size() - exceedMaxUserCountForGroup.size()) + " users");
+                    idmAuditLog.addAttribute(AuditAttributeName.FAILURE_REASON, "Cann't add " + exceedMaxUserCountForGroup.size() + " users to group");
+                    for (String id : exceedMaxUserCountForGroup) {
                         idmAuditLog.addAttribute(AuditAttributeName.FAILURE_REASON, id);
                     }
                 } else {

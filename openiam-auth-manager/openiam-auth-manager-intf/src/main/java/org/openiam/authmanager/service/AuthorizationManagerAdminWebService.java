@@ -2,6 +2,7 @@ package org.openiam.authmanager.service;
 
 import org.openiam.authmanager.common.HashMapResponse;
 import org.openiam.authmanager.common.SetStringResponse;
+import org.openiam.authmanager.model.ObjectOwnerBean;
 import org.openiam.authmanager.model.UserEntitlementsMatrix;
 
 import javax.jws.WebMethod;
@@ -20,12 +21,12 @@ public interface AuthorizationManagerAdminWebService {
     public Set<String> getOwnerIdsForResource(@WebParam(name = "resourceId", targetNamespace = "") String resourceId);
 
     @WebMethod
-    public HashMap<String, SetStringResponse> getOwnerIdsForResourceSet(@WebParam(name = "resourceIdSet", targetNamespace = "") Set<String> resourceIdSet);
+    public ObjectOwnerBean getOwnerIdsForResourceSet(@WebParam(name = "resourceIdSet", targetNamespace = "") Set<String> resourceIdSet);
 
     @WebMethod
     public Set<String> getOwnerIdsForGroup(@WebParam(name = "groupId", targetNamespace = "") String groupId);
 
     @WebMethod
-    public HashMap<String, SetStringResponse> getOwnerIdsForGroupSet(@WebParam(name = "groupIdSet", targetNamespace = "") Set<String> groupIdSet);
+    public ObjectOwnerBean getOwnerIdsForGroupSet(@WebParam(name = "groupIdSet", targetNamespace = "") Set<String> groupIdSet);
 
 }

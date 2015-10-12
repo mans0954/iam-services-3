@@ -1421,7 +1421,6 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
                 AttributeOperationEnum operation = g.getOperation();
                 if (operation == AttributeOperationEnum.ADD) {
                     GroupEntity groupEntity = groupManager.getGroup(g.getId());
-                    userEntity.getGroups().add(groupEntity);
                     // Audit Log ---------------------------------------------------
                     IdmAuditLog auditLog = new IdmAuditLog();
                     auditLog.setRequestorUserId(pUser.getRequestorUserId()); //SIA 2015-08-01
@@ -1432,6 +1431,14 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
                     auditLog.setTargetGroup(g.getId(), g.getName());
                     auditLog.addCustomRecord("GROUP", g.getName());
                     parentLog.addChild(auditLog);
+                    if (groupEntity != null) {
+                        if ((groupEntity.getMaxUserNumber() == null) || (userMgr.getNumOfUsersForGroup(groupEntity.getId(), pUser.getRequestorUserId()) < groupEntity.getMaxUserNumber())) {
+                            userEntity.getGroups().add(groupEntity);
+                        } else {
+                            auditLog.fail();
+                            auditLog.setFailureReason("Group's limit of user count exceeded");
+                        }
+                    }
                     //--------------------------------------------------------------
 
                 } else if (operation == AttributeOperationEnum.DELETE) {

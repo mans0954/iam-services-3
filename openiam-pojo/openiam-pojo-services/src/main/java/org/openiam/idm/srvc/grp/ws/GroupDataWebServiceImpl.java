@@ -275,12 +275,15 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
         auditLog.setRequestorUserId(requesterId);
         auditLog.setAuditDescription(String.format("Add user %s to group: %s", userId, groupId));
         try {
-            if (groupId == null) {
-                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Group Id is null or empty");
+            if ((groupId == null) || (groupEntity == null)) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Group Id or groupEntity is null or empty");
             }
-
-            userManager.addUserToGroup(userId, groupId);
-            auditLog.succeed();
+            if ((groupEntity.getMaxUserNumber() == null) || (userManager.getNumOfUsersForGroup(groupId, requesterId) < groupEntity.getMaxUserNumber())) {
+                userManager.addUserToGroup(userId, groupId);
+                auditLog.succeed();
+            } else {
+                throw new BasicDataServiceException(ResponseCode.GROUP_LIMIT_OF_USERS_EXCEEDED, "group's limit of user count exceeded");
+            }
         } catch (BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
@@ -584,6 +587,16 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
                 throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS, String.format(
                         "User %s has already been added to group: %s", userId, groupId));
             }
+
+            GroupEntity groupEntity = groupManager.getGroup(groupId);
+            if (groupEntity != null) {
+                if (!((groupEntity.getMaxUserNumber() == null) || (userManager.getNumOfUsersForGroup(groupId, null) < groupEntity.getMaxUserNumber()))) {
+                    throw new BasicDataServiceException(ResponseCode.GROUP_LIMIT_OF_USERS_EXCEEDED, "group's limit of user count exceeded");
+                }
+            } else {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "groupEntity is null");
+            }
+
         } catch (BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
