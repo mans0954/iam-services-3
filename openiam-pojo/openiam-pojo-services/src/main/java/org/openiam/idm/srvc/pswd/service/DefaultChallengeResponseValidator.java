@@ -319,6 +319,10 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
                         entity.setIdentityQuestion(questionDAO.findById(entity.getIdentityQuestion().getId()));
                     }
                     entity.setQuestionAnswer(keyManagementService.encrypt(entity.getUserId(), KeyName.challengeResponse, entity.getQuestionAnswer()));
+                    //enncrypt Custom question
+                    if (entity.getIdentityQuestion() == null && StringUtils.isNotBlank(entity.getQuestionText())) {
+                        entity.setQuestionText(keyManagementService.encrypt(entity.getUserId(), KeyName.challengeResponse, entity.getQuestionText()));
+                    }
                     entity.setIsEncrypted(true);
                 } else {
                     throw new BasicDataServiceException(ResponseCode.ANSWER_IS_TOO_LONG);
@@ -352,6 +356,12 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
 
                     entity.setQuestionAnswer(keyManagementService.decrypt(entity.getUserId(), KeyName.challengeResponse,
                             entity.getQuestionAnswer()));
+
+                }
+                //enncrypt Custom question
+                if ((entity.getIdentityQuestion() == null || entity.getIdentityQuestion().getId() == null) && StringUtils.isNotBlank(entity.getQuestionText())) {
+                    entity.setQuestionText(keyManagementService.decrypt(entity.getUserId(), KeyName.challengeResponse,
+                            entity.getQuestionText()));
                 }
             }
         }
