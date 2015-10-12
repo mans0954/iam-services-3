@@ -477,10 +477,10 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
                 foundGroupsId.add(grp.getId());
             }
         }
-        HashMap<String, SetStringResponse> ownersMap = authorizationManagerAdminService.getOwnerIdsForGroupSet(foundGroupsId);
+        HashMap<String, Set<String>> ownersMap = authorizationManagerAdminService.getOwnerIdsForGroupSet(foundGroupsId);
         for (GroupEntity grp: foundGroups){
-            SetStringResponse idsResp = ownersMap.get(grp.getId());
-            if(idsResp!=null && CollectionUtils.isNotEmpty(idsResp.getSetString()) && idsResp.getSetString().contains(ownerId)){
+            Set<String> idsResp = ownersMap.get(grp.getId());
+            if(idsResp!=null && CollectionUtils.isNotEmpty(idsResp) && idsResp.contains(ownerId)){
                 finalizedGroups.add(grp);
             }
         }

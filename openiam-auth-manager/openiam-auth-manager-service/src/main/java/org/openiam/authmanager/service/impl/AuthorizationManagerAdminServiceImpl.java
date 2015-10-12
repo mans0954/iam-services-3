@@ -625,8 +625,8 @@ public class AuthorizationManagerAdminServiceImpl implements AuthorizationManage
 				group2GroupMap, role2RoleMap, group2RoleMap);
     }
 
-    public HashMap<String, SetStringResponse> getOwnerIdsForResourceSet(Set<String> resourceIdSet){
-		HashMap<String, SetStringResponse> ownerIdsMap = new HashMap<String, SetStringResponse>();
+    public HashMap<String,  Set<String>> getOwnerIdsForResourceSet(Set<String> resourceIdSet){
+		HashMap<String, Set<String>> ownerIdsMap = new HashMap<String, Set<String>>();
 		if(CollectionUtils.isEmpty(resourceIdSet)){
 			return ownerIdsMap;
 		}
@@ -640,13 +640,13 @@ public class AuthorizationManagerAdminServiceImpl implements AuthorizationManage
         final Map<String, Set<AuthorizationRole>> role2RoleMap = getRole2RoleMap(roleMap, true);
         final Map<String, Set<AuthorizationRole>> group2RoleMap = getGroup2RoleMap(roleMap);
 
-        SetStringResponse setString;
+        Set<String> setString;
 
         if(CollectionUtils.isNotEmpty(resourceIdSet)) for (String resourceId : resourceIdSet) {
-            setString = new SetStringResponse();
+            setString = new HashSet<>();
 			final AuthorizationResource resource = resourceMap.get(resourceId);
 			final String adminResourceId = resource != null ? resource.getAdminResourceId() : null;
-			setString.setSetString(getUserIdsForResource(adminResourceId, resourceMap,
+			setString.addAll(getUserIdsForResource(adminResourceId, resourceMap,
 					resource2RoleMap, resource2GroupMap,
 					group2GroupMap, role2RoleMap, group2RoleMap));
             ownerIdsMap.put(resourceId, setString);
@@ -731,8 +731,8 @@ public class AuthorizationManagerAdminServiceImpl implements AuthorizationManage
 				group2GroupMap, role2RoleMap, group2RoleMap);
 	}
 
-    public HashMap<String,SetStringResponse> getOwnerIdsForGroupSet(Set<String> groupIdSet){
-        HashMap<String, SetStringResponse> ownerIdsMap = new HashMap<String, SetStringResponse>();
+    public HashMap<String, Set<String>> getOwnerIdsForGroupSet(Set<String> groupIdSet){
+        HashMap<String, Set<String>> ownerIdsMap = new HashMap<String, Set<String>>();
         if(CollectionUtils.isEmpty(groupIdSet)){
             return ownerIdsMap;
         }
@@ -746,12 +746,12 @@ public class AuthorizationManagerAdminServiceImpl implements AuthorizationManage
         final Map<String, Set<AuthorizationRole>> role2RoleMap = getRole2RoleMap(roleMap, true);
         final Map<String, Set<AuthorizationRole>> group2RoleMap = getGroup2RoleMap(roleMap);
 
-        SetStringResponse setString;
+		Set<String> setString;
 
         if(CollectionUtils.isNotEmpty(groupIdSet)) {
             for (String groupId : groupIdSet) {
-                setString = new SetStringResponse();
-                setString.setSetString(getOwnerIdsForGroup(groupMap.get(groupId), resourceMap,
+                setString = new HashSet<>();
+                setString.addAll(getOwnerIdsForGroup(groupMap.get(groupId), resourceMap,
                         resource2RoleMap, resource2GroupMap,
                         group2GroupMap, role2RoleMap, group2RoleMap));
                 ownerIdsMap.put(groupId, setString);
