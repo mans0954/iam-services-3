@@ -46,6 +46,11 @@ public abstract class AbstractLinuxCommand<Request extends RequestType, Response
         return getSSHAgent(managedSysService.getManagedSysById(targetId));
     }
 
+    protected SSHAgent newSSHConnection(String targetId) throws ConnectorDataException {
+        log.debug("New SSH for managed sys with id=" + targetId);
+        return newSSHConnection(managedSysService.getManagedSysById(targetId));
+    }
+
     protected String getKeyField(String mSysId) {
         List<AttributeMapEntity> attrMapList = managedSysService
                 .getAttributeMapsByManagedSysId(mSysId);
@@ -88,6 +93,40 @@ public abstract class AbstractLinuxCommand<Request extends RequestType, Response
                                 this.getDecryptedPassword(managedSys.getPswd()));
                     }
                 }
+            }
+        }
+        if (ssh == null)
+            throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR,
+                    "Cannot establish connection");
+        return ssh;
+    }
+
+    protected SSHAgent newSSHConnection(ManagedSysEntity managedSys) throws ConnectorDataException {
+        SSHAgent ssh = null;
+        if (managedSys != null) {
+            String managedSysId = managedSys.getId();
+            if (!(managedSys.getResourceId() == null || managedSys
+                    .getResourceId().length() == 0)) {
+                log.debug("ManagedSys found; Name=" + managedSys.getName());
+
+                    File f = null;
+                    if (org.apache.commons.lang.StringUtils.isNotBlank(managedSys.getConnectionString())) {
+                        try {
+                            f = new File(managedSys.getConnectionString());
+                            ssh = sshConnectionFactory.addSSH(managedSysId,
+                                    managedSys.getHostUrl(), managedSys.getPort(),
+                                    managedSys.getUserId(),
+                                    f);
+                        } catch (Exception e) {
+                            log.error("Can't read public key file!");
+                        }
+                    }
+                    if (f == null) {
+                        ssh = sshConnectionFactory.addSSH(managedSysId,
+                                managedSys.getHostUrl(), managedSys.getPort(),
+                                managedSys.getUserId(),
+                                this.getDecryptedPassword(managedSys.getPswd()));
+                    }
             }
         }
         if (ssh == null)

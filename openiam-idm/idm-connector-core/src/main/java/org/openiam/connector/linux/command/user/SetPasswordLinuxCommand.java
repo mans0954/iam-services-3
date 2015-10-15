@@ -22,7 +22,7 @@ public class SetPasswordLinuxCommand extends
 
         String login = passwordRequest.getObjectIdentity();
         String password = passwordRequest.getPassword();
-        SSHAgent ssh = getSSHAgent(passwordRequest.getTargetID());
+        SSHAgent ssh = newSSHConnection(passwordRequest.getTargetID());
         try {
             LinuxUser user = new LinuxUser(null, login, password, null, null,
                     null, null, null, null, null);
