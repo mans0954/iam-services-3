@@ -5,8 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.google.gdata.data.introspection.Collection;
-import org.apache.commons.collections.CollectionUtils;
 import org.openiam.connector.common.command.AbstractCommand;
 import org.openiam.connector.linux.data.LinuxGroup;
 import org.openiam.connector.linux.data.LinuxUser;
@@ -23,7 +21,6 @@ import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.dto.PolicyMapObjectTypeOptions;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
-import org.openiam.util.StringUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.StringUtils;
 
@@ -112,8 +109,14 @@ public abstract class AbstractLinuxCommand<Request extends RequestType, Response
     protected void sendPassword(SSHAgent sshAgent, LinuxUser user,
                                 String sudoPassword) throws SSHException {
         String pass = user.getPassword();
-        String doubledPass = pass + "\n" + pass + "\n" + sudoPassword + "\n";
-        sshAgent.executeCommand(user.getUserSetPasswordCommand(), doubledPass);
+        StringBuilder doubledPass = new StringBuilder();
+        if (org.apache.commons.lang.StringUtils.isNotBlank(sudoPassword)){
+            doubledPass.append(sudoPassword).append("\n");
+        }
+            doubledPass.append(pass).append("\n");
+            doubledPass.append(pass).append("\n");
+
+        sshAgent.executeCommand(user.getUserSetPasswordCommand(), doubledPass.toString());
     }
 
     /**
