@@ -16,7 +16,7 @@
  */
 
 /**
- * 
+ *
  */
 package org.openiam.idm.srvc.pswd.service;
 
@@ -54,79 +54,79 @@ import java.util.Set;
 @WebService(endpointInterface = "org.openiam.idm.srvc.pswd.service.ChallengeResponseWebService", targetNamespace = "urn:idm.openiam.org/srvc/pswd/service", portName = "ChallengeResponseWebServicePort", serviceName = "ChallengeResponseWebService")
 public class ChallengeResponseWebServiceImpl implements ChallengeResponseWebService {
 
-	@Autowired
-	private ChallengeResponseService challengeResponseService;
+    @Autowired
+    private ChallengeResponseService challengeResponseService;
 
-	@Autowired
-	private IdentityQuestionDozerConverter questionDozerConverter;
+    @Autowired
+    private IdentityQuestionDozerConverter questionDozerConverter;
 
-	@Autowired
-	private UserIdentityAnswerDozerConverter answerDozerConverter;
+    @Autowired
+    private UserIdentityAnswerDozerConverter answerDozerConverter;
 
-	private static final Log log = LogFactory
-			.getLog(ChallengeResponseWebServiceImpl.class);
-
-	@Override
-	public Integer getNumOfRequiredQuestions(String userId) {
-		return challengeResponseService.getNumOfRequiredQuestions(userId);
-	}
+    private static final Log log = LogFactory
+            .getLog(ChallengeResponseWebServiceImpl.class);
 
     @Override
-    public Integer getNumOfCorrectAnswers(String userId) {
-        return challengeResponseService.getNumOfCorrectAnswers(userId);
+    public Integer getNumOfRequiredQuestions(String userId, boolean isEnterprise) {
+        return challengeResponseService.getNumOfRequiredQuestions(userId, isEnterprise);
     }
 
-	@Override
-	public Integer count(final IdentityQuestionSearchBean searchBean) {
-		return challengeResponseService.count(searchBean);
-	}
-	
-	@Override
-	@LocalizedServiceGet
-    @Transactional(readOnly = true)
-	public IdentityQuestion getQuestion(final String questionId, final Language language) {
-		final IdentityQuestionEntity question = challengeResponseService.getQuestion(questionId);
-		return (question != null) ? questionDozerConverter.convertToDTO(question, false) : null;
+    @Override
+    public Integer getNumOfCorrectAnswers(String userId, boolean isEnterprise) {
+        return challengeResponseService.getNumOfCorrectAnswers(userId, isEnterprise);
+    }
 
-	}
+    @Override
+    public Integer count(final IdentityQuestionSearchBean searchBean) {
+        return challengeResponseService.count(searchBean);
+    }
 
-	@Override
-	@LocalizedServiceGet
+    @Override
+    @LocalizedServiceGet
     @Transactional(readOnly = true)
-	public List<IdentityQuestion> findQuestionBeans(final IdentityQuestionSearchBean searchBean, final int from, final int size, final Language language) {
-		final List<IdentityQuestionEntity> resultList = challengeResponseService.findQuestionBeans(searchBean, from, size);
-		return (resultList != null) ? questionDozerConverter.convertToDTOList(resultList, searchBean.isDeepCopy()) : null;
-	}
+    public IdentityQuestion getQuestion(final String questionId, final Language language) {
+        final IdentityQuestionEntity question = challengeResponseService.getQuestion(questionId);
+        return (question != null) ? questionDozerConverter.convertToDTO(question, false) : null;
 
-	@Override
+    }
+
+    @Override
+    @LocalizedServiceGet
     @Transactional(readOnly = true)
-	public List<UserIdentityAnswer> findAnswerBeans(final IdentityAnswerSearchBean searchBean, final  String requesterId, final int from, final int size)
+    public List<IdentityQuestion> findQuestionBeans(final IdentityQuestionSearchBean searchBean, final int from, final int size, final Language language) {
+        final List<IdentityQuestionEntity> resultList = challengeResponseService.findQuestionBeans(searchBean, from, size);
+        return (resultList != null) ? questionDozerConverter.convertToDTOList(resultList, searchBean.isDeepCopy()) : null;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<UserIdentityAnswer> findAnswerBeans(final IdentityAnswerSearchBean searchBean, final String requesterId, final int from, final int size)
             throws Exception {
-		final List<UserIdentityAnswerEntity> resultList = challengeResponseService
-				.findAnswerBeans(searchBean, requesterId, from, size);
-		return (resultList != null) ? answerDozerConverter.convertToDTOList(
-				resultList, searchBean.isDeepCopy()) : null;
-	}
+        final List<UserIdentityAnswerEntity> resultList = challengeResponseService
+                .findAnswerBeans(searchBean, requesterId, from, size);
+        return (resultList != null) ? answerDozerConverter.convertToDTOList(
+                resultList, searchBean.isDeepCopy()) : null;
+    }
 
-	@Override
-	public Response saveQuestion(final IdentityQuestion question) {
-		final Response response = new Response(ResponseStatus.SUCCESS);
-		try {
-			if (question == null) {
-				throw new BasicDataServiceException(
-						ResponseCode.OBJECT_NOT_FOUND);
-			}
+    @Override
+    public Response saveQuestion(final IdentityQuestion question) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            if (question == null) {
+                throw new BasicDataServiceException(
+                        ResponseCode.OBJECT_NOT_FOUND);
+            }
 
-			if (StringUtils.isBlank(question.getIdentityQuestGrpId())) {
-				throw new BasicDataServiceException(
-						ResponseCode.NO_IDENTITY_QUESTION_GROUP);
-			}
-			if (MapUtils.isEmpty(question.getDisplayNameMap())) {
-				throw new BasicDataServiceException(
-						ResponseCode.NO_IDENTITY_QUESTION);
-			}
-			/*
-			final IdentityQuestionSearchBean searchBean = new IdentityQuestionSearchBean();
+            if (StringUtils.isBlank(question.getIdentityQuestGrpId())) {
+                throw new BasicDataServiceException(
+                        ResponseCode.NO_IDENTITY_QUESTION_GROUP);
+            }
+            if (MapUtils.isEmpty(question.getDisplayNameMap())) {
+                throw new BasicDataServiceException(
+                        ResponseCode.NO_IDENTITY_QUESTION);
+            }
+            /*
+            final IdentityQuestionSearchBean searchBean = new IdentityQuestionSearchBean();
 			searchBean.setQuestionText(question.getQuestionText());
 			final List<IdentityQuestionEntity> found = challengeResponseService.findQuestionBeans(searchBean, 0, 2);
 			if (found.size() > 0) {
@@ -142,91 +142,95 @@ public class ChallengeResponseWebServiceImpl implements ChallengeResponseWebServ
 			}
 			*/
 
-			final IdentityQuestionEntity entity = questionDozerConverter.convertToEntity(question, false);
-			challengeResponseService.saveQuestion(entity);
-			response.setResponseValue(entity.getId());
-		} catch (BasicDataServiceException e) {
-			log.error("Can't save or update resource", e);
-			response.setErrorCode(e.getCode());
-			response.setStatus(ResponseStatus.FAILURE);
-		} catch (Throwable e) {
-			log.error("Can't save or update resource", e);
-			response.setErrorText(e.getMessage());
-			response.setStatus(ResponseStatus.FAILURE);
-		}
-		return response;
-	}
+            final IdentityQuestionEntity entity = questionDozerConverter.convertToEntity(question, false);
+            challengeResponseService.saveQuestion(entity);
+            response.setResponseValue(entity.getId());
+        } catch (BasicDataServiceException e) {
+            log.error("Can't save or update resource", e);
+            response.setErrorCode(e.getCode());
+            response.setStatus(ResponseStatus.FAILURE);
+        } catch (Throwable e) {
+            log.error("Can't save or update resource", e);
+            response.setErrorText(e.getMessage());
+            response.setStatus(ResponseStatus.FAILURE);
+        }
+        return response;
+    }
 
-	@Override
-	public Response deleteQuestion(final String questionId) {
-		final Response response = new Response(ResponseStatus.SUCCESS);
-		try {
-			if (StringUtils.isBlank(questionId)) {
-				throw new BasicDataServiceException(
-						ResponseCode.OBJECT_NOT_FOUND);
-			}
+    @Override
+    public Response deleteQuestion(final String questionId) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            if (StringUtils.isBlank(questionId)) {
+                throw new BasicDataServiceException(
+                        ResponseCode.OBJECT_NOT_FOUND);
+            }
 
-			challengeResponseService.deleteQuestion(questionId);
-		} catch (BasicDataServiceException e) {
-			response.setErrorCode(e.getCode());
-			response.setStatus(ResponseStatus.FAILURE);
-		} catch (Throwable e) {
-			log.error("Can't save or update resource", e);
-			response.setErrorText(e.getMessage());
-			response.setStatus(ResponseStatus.FAILURE);
-		}
-		return response;
-	}
+            challengeResponseService.deleteQuestion(questionId);
+        } catch (BasicDataServiceException e) {
+            response.setErrorCode(e.getCode());
+            response.setStatus(ResponseStatus.FAILURE);
+        } catch (Throwable e) {
+            log.error("Can't save or update resource", e);
+            response.setErrorText(e.getMessage());
+            response.setStatus(ResponseStatus.FAILURE);
+        }
+        return response;
+    }
 
-	@Override
-	public Response saveAnswer(final UserIdentityAnswer answer) {
-		final Response response = new Response(ResponseStatus.SUCCESS);
-		try {
-			if (answer == null) {
-				throw new BasicDataServiceException(
-						ResponseCode.OBJECT_NOT_FOUND);
-			}
+    @Override
+    public Response saveAnswer(final UserIdentityAnswer answer) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            if (answer == null) {
+                throw new BasicDataServiceException(
+                        ResponseCode.OBJECT_NOT_FOUND);
+            }
 
-			if (StringUtils.isBlank(answer.getQuestionId())) {
-				throw new BasicDataServiceException(
-						ResponseCode.NO_IDENTITY_QUESTION);
-			}
+            if (StringUtils.isBlank(answer.getQuestionId())) {
+                throw new BasicDataServiceException(
+                        ResponseCode.NO_IDENTITY_QUESTION);
+            }
 
-			final UserIdentityAnswerEntity entity = answerDozerConverter
-					.convertToEntity(answer, true);
-			challengeResponseService.saveAnswer(entity);
-			response.setResponseValue(entity.getId());
-		} catch (BasicDataServiceException e) {
-			response.setErrorCode(e.getCode());
-			response.setStatus(ResponseStatus.FAILURE);
-		} catch (Throwable e) {
-			log.error("Can't save or update resource", e);
-			response.setErrorText(e.getMessage());
-			response.setStatus(ResponseStatus.FAILURE);
-		}
-		return response;
-	}
+            final UserIdentityAnswerEntity entity = answerDozerConverter
+                    .convertToEntity(answer, true);
+            if (answer.getQuestionId() == null) {
+                entity.setIdentityQuestion(null);
+            }
+            challengeResponseService.saveAnswer(entity);
+            response.setResponseValue(entity.getId());
+        } catch (BasicDataServiceException e) {
+            response.setErrorCode(e.getCode());
+            response.setStatus(ResponseStatus.FAILURE);
+        } catch (Throwable e) {
+            log.error("Can't save or update resource", e);
+            response.setErrorText(e.getMessage());
+            response.setStatus(ResponseStatus.FAILURE);
+        }
+        return response;
+    }
 
-	@Override
-	public Response deleteAnswer(final String answerId) {
-		final Response response = new Response(ResponseStatus.SUCCESS);
-		try {
-			if (StringUtils.isBlank(answerId)) {
-				throw new BasicDataServiceException(
-						ResponseCode.OBJECT_NOT_FOUND);
-			}
+    @Override
+    public Response deleteAnswer(final String answerId) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            if (StringUtils.isBlank(answerId)) {
+                throw new BasicDataServiceException(
+                        ResponseCode.OBJECT_NOT_FOUND);
+            }
 
-			challengeResponseService.deleteAnswer(answerId);
-		} catch (BasicDataServiceException e) {
-			response.setErrorCode(e.getCode());
-			response.setStatus(ResponseStatus.FAILURE);
-		} catch (Throwable e) {
-			log.error("Can't save or update resource", e);
-			response.setErrorText(e.getMessage());
-			response.setStatus(ResponseStatus.FAILURE);
-		}
-		return response;
-	}
+            challengeResponseService.deleteAnswer(answerId);
+        } catch (BasicDataServiceException e) {
+            response.setErrorCode(e.getCode());
+            response.setStatus(ResponseStatus.FAILURE);
+        } catch (Throwable e) {
+            log.error("Can't save or update resource", e);
+            response.setErrorText(e.getMessage());
+            response.setStatus(ResponseStatus.FAILURE);
+        }
+        return response;
+    }
+
     @Override
     public Response validateAnswers(List<UserIdentityAnswer> answerList) {
         final Response response = new Response(ResponseStatus.SUCCESS);
@@ -239,21 +243,30 @@ public class ChallengeResponseWebServiceImpl implements ChallengeResponseWebServ
 
 			/* check for duplicates */
             final Set<String> questionIdSet = new HashSet<String>();
+            final Set<String> questionTextSet = new HashSet<String>();
             for (final UserIdentityAnswer answer : answerList) {
-                if (questionIdSet.contains(answer.getQuestionId())) {
+                if (StringUtils.isNotBlank(answer.getQuestionId()) && questionIdSet.contains(answer.getQuestionId())) {
                     throw new BasicDataServiceException(
                             ResponseCode.IDENTICAL_QUESTIONS);
                 }
-                if(StringUtils.isBlank(answer.getQuestionId())){
+                if (StringUtils.isNotBlank(answer.getQuestionText()) && questionTextSet.contains(answer.getQuestionText())) {
+                    throw new BasicDataServiceException(
+                            ResponseCode.IDENTICAL_QUESTIONS);
+                }
+                if (StringUtils.isBlank(answer.getQuestionId()) && StringUtils.isBlank(answer.getQuestionText())) {
                     throw new BasicDataServiceException(
                             ResponseCode.QUEST_NOT_SELECTED);
                 }
 
-                if(StringUtils.isBlank(answer.getQuestionAnswer())){
+                if (StringUtils.isBlank(answer.getQuestionAnswer())) {
                     throw new BasicDataServiceException(
                             ResponseCode.ANSWER_NOT_TAKEN);
                 }
-                questionIdSet.add(answer.getQuestionId());
+                if (StringUtils.isNotBlank(answer.getQuestionId()))
+                    questionIdSet.add(answer.getQuestionId());
+
+                if (StringUtils.isNotBlank(answer.getQuestionText()))
+                    questionTextSet.add(answer.getQuestionText());
             }
 
         } catch (BasicDataServiceException e) {
@@ -267,53 +280,57 @@ public class ChallengeResponseWebServiceImpl implements ChallengeResponseWebServ
         return response;
 
     }
+
     @Override
-	public Response saveAnswers(List<UserIdentityAnswer> answerList) {
+    public Response saveAnswers(List<UserIdentityAnswer> answerList) {
         Response response = new Response(ResponseStatus.SUCCESS);
-		try {
+        try {
             response = validateAnswers(answerList);
             if (response.isSuccess()) {
                 final List<UserIdentityAnswerEntity> answerEntityList = new LinkedList<UserIdentityAnswerEntity>();
                 for (final UserIdentityAnswer answer : answerList) {
                     final UserIdentityAnswerEntity entity = answerDozerConverter
                             .convertToEntity(answer, true);
+                    if (answer.getQuestionId() == null)
+                        entity.setIdentityQuestion(null);
                     answerEntityList.add(entity);
                 }
                 challengeResponseService.saveAnswers(answerEntityList);
             }
-		} catch (BasicDataServiceException e) {
-			response.setErrorCode(e.getCode());
-			response.setStatus(ResponseStatus.FAILURE);
-		} catch (Throwable e) {
-			log.error("Can't save or update resource", e);
-			response.setErrorText(e.getMessage());
-			response.setStatus(ResponseStatus.FAILURE);
-		}
-		return response;
-	}
+        } catch (BasicDataServiceException e) {
+            response.setErrorCode(e.getCode());
+            response.setStatus(ResponseStatus.FAILURE);
+        } catch (Throwable e) {
+            log.error("Can't save or update resource", e);
+            response.setErrorText(e.getMessage());
+            response.setStatus(ResponseStatus.FAILURE);
+        }
+        return response;
+    }
+
     @Override
-	public boolean isResponseValid(String userId,
-			List<UserIdentityAnswer> newAnswerList) throws Exception {
-		final List<UserIdentityAnswerEntity> entityList = answerDozerConverter
-				.convertToEntityList(newAnswerList, true);
-		return challengeResponseService.isResponseValid(userId, entityList);
-	}
+    public boolean isResponseValid(String userId,
+                                   List<UserIdentityAnswer> newAnswerList) throws Exception {
+        final List<UserIdentityAnswerEntity> entityList = answerDozerConverter
+                .convertToEntityList(newAnswerList, true);
+        return challengeResponseService.isResponseValid(userId, entityList);
+    }
 
-	@Override
-	public boolean isUserAnsweredSecurityQuestions(final String userId) throws Exception {
-		return challengeResponseService.isUserAnsweredSecurityQuestions(userId);
-	}
+    @Override
+    public boolean isUserAnsweredSecurityQuestions(final String userId) throws Exception {
+        return challengeResponseService.isUserAnsweredSecurityQuestions(userId);
+    }
 
-	@Override
-	public Response resetQuestionsForUser(String userId) {
-		final Response response = new Response(ResponseStatus.SUCCESS);
-		try {
-			challengeResponseService.resetQuestionsForUser(userId);
-		} catch (Throwable e) {
-			log.error(String.format("Can't reset questions for user %s", userId), e);
-			response.setErrorText(e.getMessage());
-			response.setStatus(ResponseStatus.FAILURE);
-		}
-		return response;
-	}
+    @Override
+    public Response resetQuestionsForUser(String userId) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            challengeResponseService.resetQuestionsForUser(userId);
+        } catch (Throwable e) {
+            log.error(String.format("Can't reset questions for user %s", userId), e);
+            response.setErrorText(e.getMessage());
+            response.setStatus(ResponseStatus.FAILURE);
+        }
+        return response;
+    }
 }
