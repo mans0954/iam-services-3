@@ -343,6 +343,11 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
     @Transactional
     public void resetQuestionsForUser(String userId) {
         answerDAO.deleteByUser(userId);
+        LoginEntity login = loginManager.getPrimaryIdentity(userId);
+        if (login != null) {
+            login.setChallengeResponseFailCount(0);
+            loginManager.updateLogin(login);
+        }
     }
 
 

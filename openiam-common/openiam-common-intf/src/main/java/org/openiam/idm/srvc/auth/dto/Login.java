@@ -74,7 +74,7 @@ public class Login implements java.io.Serializable {
     protected String password;
 
     protected String pwdEquivalentToken;
-    private Integer challengeResponseFailCount = 0;
+    private Integer challengeResponseFailCount = new Integer(0);
     @XmlSchemaType(name = "dateTime")
     private Date pwdChanged;
 

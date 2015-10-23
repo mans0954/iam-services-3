@@ -7,6 +7,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
 import org.hibernate.Query;
+import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.srvc.pswd.domain.UserIdentityAnswerEntity;
@@ -36,7 +37,7 @@ public class UserIdentityAnswerDAOImpl extends BaseDaoImpl<UserIdentityAnswerEnt
 		if(example.getIdentityQuestion() != null) {
 			criteria.add(Restrictions.eq("identityQuestion.id", example.getIdentityQuestion().getId()));
 		}
-		return criteria;
+		return criteria.addOrder(Order.asc("identityQuestion.id"));
 	}
 
 	@Override
