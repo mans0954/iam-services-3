@@ -248,6 +248,15 @@ public interface UserDataWebService {
     @WebMethod
     public Response addPhone(@WebParam(name = "phone", targetNamespace = "") Phone phone);
     
+    /**
+     * Validate that a phone is valid.
+     * 
+     * @param phone
+     * @return a Response Object, containing the result of this operation 
+     */
+    @WebMethod
+    public Response validatePhone(@WebParam(name = "phone", targetNamespace = "") Phone phone);
+    
     @WebMethod
     public Response addTOPTTokenToPhone(@WebParam(name = "phoneId", targetNamespace = "") String phoneId,
     									@WebParam(name = "secret", targetNamespace = "") String secret);
