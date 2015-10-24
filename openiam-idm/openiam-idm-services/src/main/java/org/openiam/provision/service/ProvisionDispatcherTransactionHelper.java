@@ -159,6 +159,7 @@ public class ProvisionDispatcherTransactionHelper {
                     if (StatusCodeType.SUCCESS.equals(statusCodeType)) {
                         loginChanges.setProvStatus(ProvLoginStatusEnum.DELETED);
                         loginChanges.setAuthFailCount(0);
+                        loginChanges.setChallengeResponseFailCount(0);
                         loginChanges.setPasswordChangeCount(0);
                         loginChanges.setIsLocked(0);
 

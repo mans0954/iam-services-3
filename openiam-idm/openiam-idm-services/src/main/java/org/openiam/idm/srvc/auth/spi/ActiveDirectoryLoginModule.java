@@ -247,6 +247,7 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
         lg.setLastLoginIP(authContext.getClientIP());
 
         lg.setAuthFailCount(0);
+        lg.setChallengeResponseFailCount(0);
         lg.setFirstTimeLogin(0);
         log.debug("-Good Authn: Login object updated.");
         loginManager.saveLogin(lg);
