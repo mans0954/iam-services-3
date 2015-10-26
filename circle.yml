@@ -15,6 +15,7 @@ test:
   post:
     - sudo mkdir -p /data/openiam/conf
     - sudo mkdir -p /etc/chef
+    - sudo mkdir -p /opt/openiam/webapps
     - sudo cp conf/client.rb /etc/chef/client.rb
     - sudo cp conf/client.pem /etc/chef/client.pem
     - sudo chef-client -o openiam-esb::standalone_with_database -E DEV
