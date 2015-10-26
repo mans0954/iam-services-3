@@ -1,13 +1,17 @@
 package org.openiam.am.srvc.domain;
 
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Type;
+import org.hibernate.annotations.*;
+import org.hibernate.annotations.Cache;
 import org.openiam.am.srvc.dto.AuthProvider;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 
 import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.MapKey;
+import javax.persistence.Table;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -18,6 +22,7 @@ import java.util.Set;
 @Entity
 @Table(name = "AUTH_PROVIDER")
 @DozerDTOCorrespondence(AuthProvider.class)
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class AuthProviderEntity implements Serializable {
     @Id
     @GeneratedValue(generator = "system-uuid")
@@ -54,25 +59,31 @@ public class AuthProviderEntity implements Serializable {
 
     @ManyToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
     @JoinColumn(name="PROVIDER_TYPE", referencedColumnName = "PROVIDER_TYPE", insertable = false, updatable = false)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private AuthProviderTypeEntity type;
 
     @ManyToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
     @JoinColumn(name="MANAGED_SYS_ID", referencedColumnName = "MANAGED_SYS_ID", insertable = false, updatable = false)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private ManagedSysEntity managedSys;
     
     @ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name="NEXT_PROVIDER_ID", referencedColumnName = "PROVIDER_ID", insertable = true, updatable = true, nullable=true)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private AuthProviderEntity nextAuthProvider;
 
     @ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name="RESOURCE_ID", referencedColumnName = "RESOURCE_ID", insertable = true, updatable = false, nullable=false)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private ResourceEntity resource;
 
     @OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "provider")
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<AuthProviderAttributeEntity> providerAttributeSet;
 
     @OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "provider")
     @MapKey(name = "targetAttributeName")
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Map<String, AuthResourceAttributeMapEntity> resourceAttributeMap=new HashMap<String, AuthResourceAttributeMapEntity>(0);
 
     public String getProviderId() {

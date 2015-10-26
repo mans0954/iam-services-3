@@ -1,10 +1,14 @@
 package org.openiam.am.srvc.domain;
 
-import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.*;
+import org.hibernate.annotations.Cache;
 import org.openiam.am.srvc.dto.AuthResourceAMAttribute;
 import org.openiam.dozer.DozerDTOCorrespondence;
 
 import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 
 import java.io.Serializable;
 import java.util.Set;
@@ -12,6 +16,7 @@ import java.util.Set;
 @Entity
 @Table(name = "AUTH_RESOURCE_AM_ATTRIBUTE")
 @DozerDTOCorrespondence(AuthResourceAMAttribute.class)
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class AuthResourceAMAttributeEntity implements Serializable {
     @Id
     @GeneratedValue(generator="system-uuid")
@@ -25,6 +30,7 @@ public class AuthResourceAMAttributeEntity implements Serializable {
     private String attributeName;
     
     @OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "amAttribute")
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<URIPatternMetaValueEntity> metaValues;
 
     public String getId() {

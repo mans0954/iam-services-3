@@ -62,16 +62,7 @@ public class ContentProviderEntity implements Serializable {
     @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private UIThemeEntity uiTheme;
 
-	/*
-    @Column(name = "CONTEXT_PATH", nullable = false)
-    private String contextPath;
-    */
 
-	/*
-    @Column(name = "RESOURCE_ID", length = 32, nullable = false)
-    private String resourceId;
-    */
-	
 	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name="MANAGED_SYS_ID", referencedColumnName = "MANAGED_SYS_ID", insertable = true, updatable = true, nullable=false)
     @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)

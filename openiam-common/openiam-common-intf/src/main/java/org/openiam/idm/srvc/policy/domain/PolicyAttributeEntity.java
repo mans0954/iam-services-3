@@ -20,7 +20,6 @@ import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 @Table(name = "POLICY_ATTRIBUTE")
 @DozerDTOCorrespondence(PolicyAttribute.class)
 @Cache(usage=CacheConcurrencyStrategy.READ_WRITE)
-//@Cacheable
 public class PolicyAttributeEntity implements java.io.Serializable, Comparable<PolicyAttributeEntity> {
 
     private static final long serialVersionUID = -291717117636794761L;
@@ -35,19 +34,8 @@ public class PolicyAttributeEntity implements java.io.Serializable, Comparable<P
 
     @ManyToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
     @JoinColumn(name = "DEF_PARAM_ID", insertable = true, updatable = true, nullable = true)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private PolicyDefParamEntity defaultParametr;
-
-    /**
-     * Deprecated for Password Policy, got from PolicyDefParamEntity
-     */
-//    @Column(name = "NAME", length = 100)
-//    private String name;
-
-    /**
-     * Deprecated for Password Policy, got from PolicyDefParamEntity
-     */
-//    @Column(name = "OPERATION", length = 20)
-//    private String operation;
 
     @Column(name = "VALUE1", length = 2048)
     private String value1;

@@ -64,21 +64,22 @@ public class RoleEntity extends AbstractMetdataTypeEntity {
     @JoinTable(name="GRP_ROLE",
 	    joinColumns={@JoinColumn(name="ROLE_ID")},
 	    inverseJoinColumns={@JoinColumn(name="GRP_ID")})
-	@Fetch(FetchMode.SUBSELECT)
+//	@Fetch(FetchMode.SUBSELECT)
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<GroupEntity> groups;
 	
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="role", orphanRemoval=true)
     @OrderBy("name asc")
     //@JoinColumn(name = "ROLE_ID")
-    @Fetch(FetchMode.SUBSELECT)
+//    @Fetch(FetchMode.SUBSELECT)
     @Internationalized
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	private Set<RoleAttributeEntity> roleAttributes;
 	
 	@OneToMany(fetch=FetchType.LAZY,orphanRemoval=true,cascade=CascadeType.ALL)
 	@JoinColumn(name="ROLE_ID")
-	@Fetch(FetchMode.SUBSELECT)
+//	@Fetch(FetchMode.SUBSELECT)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	private Set<RolePolicyEntity> rolePolicy;
 	
 	@ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)

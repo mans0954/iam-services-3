@@ -1,5 +1,7 @@
 package org.openiam.idm.srvc.org.domain;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 
 import javax.persistence.Embeddable;
@@ -10,10 +12,13 @@ import java.io.Serializable;
  * Created by zaporozhec on 7/17/15.
  */
 @Embeddable
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class OrganizationUserIdEntity implements Serializable {
     @ManyToOne
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private UserEntity user;
     @ManyToOne
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private OrganizationEntity organization;
 
 

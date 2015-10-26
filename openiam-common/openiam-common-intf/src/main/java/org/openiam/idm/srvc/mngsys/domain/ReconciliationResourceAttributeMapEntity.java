@@ -1,8 +1,12 @@
 package org.openiam.idm.srvc.mngsys.domain;
 
 import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 
-import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.*;
+import org.hibernate.annotations.Cache;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.mngsys.dto.ReconciliationResourceAttributeMap;
 import org.openiam.idm.srvc.policy.domain.PolicyEntity;
@@ -13,6 +17,7 @@ import org.openiam.idm.srvc.policy.domain.PolicyEntity;
 @Entity
 @Table(name = "RECON_RES_ATTR_MAP")
 @DozerDTOCorrespondence(ReconciliationResourceAttributeMap.class)
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class ReconciliationResourceAttributeMapEntity implements
         java.io.Serializable {
 
@@ -25,14 +30,17 @@ public class ReconciliationResourceAttributeMapEntity implements
     private String reconciliationResourceAttributeMapId;
 
     @OneToOne(mappedBy = "reconResAttribute", orphanRemoval = true, cascade = CascadeType.ALL, optional = false)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private AttributeMapEntity attributeMap;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "ATTR_POLICY_ID", nullable = false, updatable = true)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private PolicyEntity attributePolicy;
 
     @ManyToOne(optional = true)
     @JoinColumn(name = "DEF_RECON_ATTR_MAP_ID", nullable = true, updatable = true)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private DefaultReconciliationAttributeMapEntity defaultAttributePolicy;
 
     public String getReconciliationResourceAttributeMapId() {

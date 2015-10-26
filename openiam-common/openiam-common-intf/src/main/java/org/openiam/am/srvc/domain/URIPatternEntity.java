@@ -50,11 +50,6 @@ public class URIPatternEntity implements Serializable {
     @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private UIThemeEntity uiTheme;
 
-	/*
-    @Column(name = "RESOURCE_ID", length = 32, nullable = false)
-    private String resourceId;
-    */
-	
 	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name="RESOURCE_ID", referencedColumnName = "RESOURCE_ID", insertable = true, updatable = false, nullable=false)
     @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)

@@ -5,6 +5,8 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.mngsys.dto.DefaultReconciliationAttributeMap;
 
@@ -14,6 +16,7 @@ import org.openiam.idm.srvc.mngsys.dto.DefaultReconciliationAttributeMap;
 @Entity
 @Table(name = "DEF_RECON_ATTR_MAP")
 @DozerDTOCorrespondence(DefaultReconciliationAttributeMap.class)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class DefaultReconciliationAttributeMapEntity implements
         java.io.Serializable {
 

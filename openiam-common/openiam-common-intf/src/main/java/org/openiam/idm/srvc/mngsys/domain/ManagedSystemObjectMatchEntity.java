@@ -22,6 +22,7 @@ public class ManagedSystemObjectMatchEntity implements Serializable {
 
     @ManyToOne
     @JoinColumn(name = "MANAGED_SYS_ID")
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private ManagedSysEntity managedSys;
 
     @Column(name="OBJECT_TYPE", length=20)

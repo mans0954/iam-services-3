@@ -16,7 +16,6 @@ import java.util.*;
 
 @Entity
 @Table(name = "MANAGED_SYS")
-@Cacheable
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(ManagedSysDto.class)
 public class ManagedSysEntity implements Serializable {
@@ -100,10 +99,6 @@ public class ManagedSysEntity implements Serializable {
     @OneToMany(mappedBy = "managedSys")
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<ManagedSystemObjectMatchEntity> mngSysObjectMatchs = new HashSet<ManagedSystemObjectMatchEntity>();
-
-//    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-//    @JoinColumn(name = "MANAGED_SYS_ID", referencedColumnName = "MANAGED_SYS_ID")
-//    private List<ManagedSysRuleEntity> rules = new ArrayList<ManagedSysRuleEntity>(0);
 
     @OneToMany(fetch = FetchType.LAZY, orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "managedSystem")
     @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)

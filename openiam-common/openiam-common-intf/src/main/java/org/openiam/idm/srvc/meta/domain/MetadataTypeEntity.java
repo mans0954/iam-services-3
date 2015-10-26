@@ -59,6 +59,7 @@ public class MetadataTypeEntity extends KeyEntity {
     @JoinColumn(name = "TYPE_ID", referencedColumnName = "TYPE_ID")
     @MapKeyColumn(name = "ATTRIBUTE_NAME")
     @Fetch(FetchMode.SUBSELECT)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Map<String, MetadataElementEntity> elementAttributes = new HashMap<String, MetadataElementEntity>(0);
     /*
      * @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, fetch =
@@ -71,6 +72,7 @@ public class MetadataTypeEntity extends KeyEntity {
     @ManyToMany(cascade = { CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH }, fetch = FetchType.LAZY)
     @JoinTable(name = "CATEGORY_TYPE", joinColumns = { @JoinColumn(name = "TYPE_ID") }, inverseJoinColumns = { @JoinColumn(name = "CATEGORY_ID") })
     @Fetch(FetchMode.SUBSELECT)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<CategoryEntity> categories = new HashSet<CategoryEntity>(0);
     
     @Transient
@@ -79,6 +81,7 @@ public class MetadataTypeEntity extends KeyEntity {
 
     @OneToMany(mappedBy = "employeeType")
     @ContainedIn
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<UserEntity> userEntitySet;
     
     @Transient
