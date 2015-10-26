@@ -30,6 +30,7 @@ import javax.persistence.Entity;
 import javax.persistence.MapKey;
 import javax.persistence.Table;
 import javax.validation.constraints.Size;
+import java.io.Serializable;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -40,7 +41,7 @@ import java.util.Map.Entry;
 @Indexed
 @Internationalized
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class UserEntity {
+public class UserEntity implements Serializable {
     @Id
     @GeneratedValue(generator = "system-uuid")
     @GenericGenerator(name = "system-uuid", strategy = "uuid")
