@@ -190,7 +190,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
         idmAuditLog.setTargetGroup(groupId, groupEntity.getName());
         RoleEntity roleEntity = roleDataService.getRole(roleId);
         idmAuditLog.setTargetRole(roleId, roleEntity.getName());
-        idmAuditLog.setAuditDescription(String.format("Add group to role: %s", groupEntity.getName()));
+        idmAuditLog.setAuditDescription(String.format("Add group to role: %s", roleEntity.getName()));
 		try {
 			roleDataService.validateGroup2RoleAddition(roleId, groupId);
 			roleDataService.addGroupToRole(roleId, groupId);
