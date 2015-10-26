@@ -16,7 +16,6 @@ import javax.xml.bind.annotation.XmlType;
 
 @Entity
 @Table(name="LOGIN_ATTRIBUTE")
-@Cacheable
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(LoginAttribute.class)
 public class LoginAttributeEntity implements java.io.Serializable {

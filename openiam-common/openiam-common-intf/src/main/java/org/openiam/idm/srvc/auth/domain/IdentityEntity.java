@@ -17,7 +17,6 @@ import java.util.Date;
 
 @Entity
 @Table(name="IDENTIFICATION")
-@Cacheable
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(IdentityDto.class)
 @Indexed

@@ -1,5 +1,6 @@
 package org.openiam.am.srvc.domain;
 
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.openiam.am.srvc.dto.URIPatternMetaValue;
@@ -13,6 +14,7 @@ import java.io.Serializable;
 @Entity
 @Table(name = "URI_PATTERN_META_VALUE")
 @DozerDTOCorrespondence(URIPatternMetaValue.class)
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class URIPatternMetaValueEntity implements Serializable {
 
 	private static final long serialVersionUID = 1L;

@@ -1,18 +1,21 @@
 package org.openiam.am.srvc.domain;
 
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Type;
+import org.hibernate.annotations.*;
 import org.openiam.am.srvc.constants.AuthAttributeDataType;
 import org.openiam.am.srvc.dto.AuthAttribute;
 import org.openiam.dozer.DozerDTOCorrespondence;
 
 import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import java.io.Serializable;
 
 @Entity
 @Table(name = "AUTH_ATTRIBUTE", uniqueConstraints = {
         @UniqueConstraint(columnNames={"ATTRIBUTE_NAME", "PROVIDER_TYPE"})
 })
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(AuthAttribute.class)
 public class AuthAttributeEntity implements Serializable {
     @Id

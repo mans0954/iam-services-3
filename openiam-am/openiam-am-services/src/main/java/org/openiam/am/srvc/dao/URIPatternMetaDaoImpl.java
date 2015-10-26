@@ -11,11 +11,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 public class URIPatternMetaDaoImpl extends BaseDaoImpl<URIPatternMetaEntity, String> implements URIPatternMetaDao {
+    protected boolean cachable() {
+        return true;
+    }
 
-	@Override
-	protected String getPKfieldName() {
-		return "id";
-	}
+    @Override
+    protected String getPKfieldName() {
+        return "id";
+    }
 
     @Override
     protected Criteria getExampleCriteria(final URIPatternMetaEntity entity) {
@@ -23,22 +26,23 @@ public class URIPatternMetaDaoImpl extends BaseDaoImpl<URIPatternMetaEntity, Str
         if (StringUtils.isNotBlank(entity.getId())) {
             criteria.add(Restrictions.eq(getPKfieldName(), entity.getId()));
         } else {
-            if(entity.getPattern()!=null && StringUtils.isNotEmpty(entity.getPattern().getId())){
+            if (entity.getPattern() != null && StringUtils.isNotEmpty(entity.getPattern().getId())) {
                 criteria.createAlias("pattern", "p");
                 criteria.add(Restrictions.eq("p.id", entity.getPattern().getId()));
             }
-            if(entity.getMetaType()!=null && StringUtils.isNotEmpty(entity.getMetaType().getId())){
+            if (entity.getMetaType() != null && StringUtils.isNotEmpty(entity.getMetaType().getId())) {
                 criteria.createAlias("metaType", "m");
                 criteria.add(Restrictions.eq("m.id", entity.getPattern().getId()));
             }
         }
+        criteria.setCacheable(this.cachable());
         return criteria;
     }
 
     @Override
     @Transactional
     public void deleteById(String id) {
-        Query qry = getSession().createQuery("delete "+this.domainClass.getName()+ " p where p.id=:id ");
+        Query qry = getSession().createQuery("delete " + this.domainClass.getName() + " p where p.id=:id ");
         qry.setString("id", id);
         qry.executeUpdate();
     }

@@ -14,7 +14,6 @@ import java.util.Set;
 
 @Entity
 @Table(name = "AUTH_PROVIDER_TYPE")
-@Cacheable
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(AuthProviderType.class)
 @AttributeOverride(name = "id", column = @Column(name = "PROVIDER_TYPE"))

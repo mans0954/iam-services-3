@@ -40,7 +40,12 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 	@Autowired
     private ResourceSearchBeanConverter resourceSearchBeanConverter;
 
-	@Override
+    @Override
+    protected boolean cachable() {
+        return true;
+    }
+
+    @Override
 	protected Criteria getExampleCriteria(SearchBean searchBean) {
 		Criteria criteria = getCriteria();
 		if(searchBean != null && searchBean instanceof ResourceSearchBean) {

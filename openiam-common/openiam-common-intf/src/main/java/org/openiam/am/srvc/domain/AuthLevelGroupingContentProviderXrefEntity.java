@@ -9,12 +9,14 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.openiam.am.srvc.domain.pk.AuthLevelGroupingContentProviderXrefIdEntity;
 import org.openiam.am.srvc.dto.AuthLevelGroupingContentProviderXref;
 import org.openiam.dozer.DozerDTOCorrespondence;
 
 @Entity
 @Table(name = "CP_AUTH_LEVEL_GRP_XREF")
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(AuthLevelGroupingContentProviderXref.class)
 public class AuthLevelGroupingContentProviderXrefEntity {
 
@@ -23,10 +25,12 @@ public class AuthLevelGroupingContentProviderXrefEntity {
 	
 	@ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch=FetchType.LAZY)
     @JoinColumn(name = "CONTENT_PROVIDER_ID", insertable = false, updatable = false)
+    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	private ContentProviderEntity contentProvider;
 	
 	@ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch=FetchType.LAZY)
     @JoinColumn(name = "AUTH_LEVEL_GROUPING_ID", insertable = false, updatable = false)
+    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	private AuthLevelGroupingEntity grouping;
 	
 	@Column(name="EXEC_ORDER")

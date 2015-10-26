@@ -14,6 +14,7 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.validation.constraints.Size;
 
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.am.srvc.domain.ContentProviderEntity;
 import org.openiam.am.srvc.domain.URIPatternEntity;
@@ -24,6 +25,7 @@ import org.openiam.idm.srvc.ui.theme.dto.UITheme;
 
 @Entity
 @Table(name = "UI_THEME")
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(UITheme.class)
 public class UIThemeEntity implements Serializable {
 	
@@ -44,9 +46,11 @@ public class UIThemeEntity implements Serializable {
 	private String url;
 	
 	@OneToMany(orphanRemoval = false, cascade = {CascadeType.DETACH, CascadeType.REFRESH}, mappedBy = "uiTheme", fetch = FetchType.LAZY)
+    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	private Set<ContentProviderEntity> contentProviders;
 	
 	@OneToMany(orphanRemoval = false, cascade = {CascadeType.DETACH, CascadeType.REFRESH}, mappedBy = "uiTheme", fetch = FetchType.LAZY)
+    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	private Set<URIPatternEntity> uriPatterns;
 
 	public String getId() {

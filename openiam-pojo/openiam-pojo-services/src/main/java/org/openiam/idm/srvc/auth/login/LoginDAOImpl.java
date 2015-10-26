@@ -31,54 +31,59 @@ import org.springframework.stereotype.Repository;
 
 @Repository("loginDAO")
 public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements LoginDAO {
-	
-	/* DO NOT MERGE INTO 4.0!!!!  Only for 3.3.1 to solve IDMAPPS-2735.  Delete this function */
-	@Override
-	public List<String> getUserIds(LoginSearchBean searchBean) {
-		return getExampleCriteria(searchBean).setProjection(Projections.property("userId")).list();
-	}
-	
-	/* DO NOT MERGE INTO 4.0!!!!  Only for 3.3.1 to solve IDMAPPS-2735.  Delete this function */
-    @Override
-	protected Criteria getExampleCriteria(final SearchBean sb) {
-    	final Criteria criteria = super.getCriteria();
-    	if(sb != null) {
-    		if(sb instanceof LoginSearchBean) {
-    			final LoginSearchBean searchBean = (LoginSearchBean)sb;
-    			
-    			final SearchParam param = searchBean.getLoginMatchToken();
-    			if(param != null && param.isValid()) {
-    				final String value = StringUtils.trimToNull(param.getValue());
-    				if(value != null) {
-	    				switch(param.getMatchType()) {
-	    					case EXACT:
-	    						criteria.add(Restrictions.eq("lowerCaseLogin", StringUtils.lowerCase(value)));
-	    						break;
-	    					case STARTS_WITH:
-	    						criteria.add(Restrictions.ilike("lowerCaseLogin", value.toLowerCase(), MatchMode.START));
-	    						break;
-	    					default:
-	    						break;
-	    				}
-    				}
-    			}
-    			
-    			if(StringUtils.isNotBlank(searchBean.getManagedSysId())) {
-    				criteria.add(Restrictions.eq("managedSysId", searchBean.getManagedSysId()));
-    			}
-    			
-    			if(StringUtils.isNotBlank(searchBean.getUserId())) {
-    				criteria.add(Restrictions.eq("userId", searchBean.getUserId()));
-    			}
-    		}
-    	}
-    	return criteria;
-	}
+    protected boolean cachable() {
+        return true;
+    }
 
-	private static final Log log = LogFactory.getLog(LoginDAOImpl.class);
+    /* DO NOT MERGE INTO 4.0!!!!  Only for 3.3.1 to solve IDMAPPS-2735.  Delete this function */
+    @Override
+    public List<String> getUserIds(LoginSearchBean searchBean) {
+        return getExampleCriteria(searchBean).setProjection(Projections.property("userId")).list();
+    }
+
+    /* DO NOT MERGE INTO 4.0!!!!  Only for 3.3.1 to solve IDMAPPS-2735.  Delete this function */
+    @Override
+    protected Criteria getExampleCriteria(final SearchBean sb) {
+        final Criteria criteria = super.getCriteria();
+        if (sb != null) {
+            if (sb instanceof LoginSearchBean) {
+                final LoginSearchBean searchBean = (LoginSearchBean) sb;
+
+                final SearchParam param = searchBean.getLoginMatchToken();
+                if (param != null && param.isValid()) {
+                    final String value = StringUtils.trimToNull(param.getValue());
+                    if (value != null) {
+                        switch (param.getMatchType()) {
+                            case EXACT:
+                                criteria.add(Restrictions.eq("lowerCaseLogin", StringUtils.lowerCase(value)));
+                                break;
+                            case STARTS_WITH:
+                                criteria.add(Restrictions.ilike("lowerCaseLogin", value.toLowerCase(), MatchMode.START));
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                }
+
+                if (StringUtils.isNotBlank(searchBean.getManagedSysId())) {
+                    criteria.add(Restrictions.eq("managedSysId", searchBean.getManagedSysId()));
+                }
+
+                if (StringUtils.isNotBlank(searchBean.getUserId())) {
+                    criteria.add(Restrictions.eq("userId", searchBean.getUserId()));
+                }
+            }
+        }
+        criteria.setCacheable(this.cachable());
+        return criteria;
+    }
+
+    private static final Log log = LogFactory.getLog(LoginDAOImpl.class);
+
     @Override
     public int changeIdentity(String principal, String pswd, String userId,
-            String managedSysId) {
+                              String managedSysId) {
         Session session = getSession();
         String hq = " UPDATE LoginEntity l " + " set l.login = :principal,  "
                 + "     l.password = :pswd," + "	   l.passwordChangeCount = 0,"
@@ -90,11 +95,13 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements Lo
         qry.setString("principal", principal);
         qry.setString("pswd", pswd);
         qry.setString("managedSysId", managedSysId);
+        qry.setCacheable(this.cachable());
         return qry.executeUpdate();
     }
+
     @Override
     public LoginEntity getRecord(final String login, final String managedSysId) {
-        return (LoginEntity) getCriteria()
+        return (LoginEntity) getCriteria().setCacheable(this.cachable())
                 .add(Restrictions.eq("lowerCaseLogin",
                         (login != null) ? login.toLowerCase() : null))
                 .add(Restrictions.eq("managedSysId", managedSysId)).uniqueResult();
@@ -104,25 +111,29 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements Lo
     protected String getPKfieldName() {
         return "id";
     }
+
     @Override
     public List<LoginEntity> findAllLoginByManagedSys(String managedSysId) {
-        return getCriteria().add(Restrictions.eq("managedSysId", managedSysId))
+        return getCriteria().setCacheable(this.cachable()).add(Restrictions.eq("managedSysId", managedSysId))
                 .list();
     }
+
     @Override
     public List<LoginEntity> getLoginSublist(int startPos, int size) {
         StringBuilder sql = new StringBuilder();
         sql.append("from ").append(LoginEntity.class.getName()).append(" l");
-        return (List<LoginEntity>) getSession().createQuery(sql.toString())
+        return (List<LoginEntity>) getSession().createQuery(sql.toString()).setCacheable(this.cachable())
                 .setFirstResult(startPos).setMaxResults(size).list();
     }
+
     @Override
     public Long getLoginCount() {
         StringBuilder sql = new StringBuilder();
         sql.append("SELECT count(l.password) from ")
                 .append(LoginEntity.class.getName()).append(" l");
-        return (Long) getSession().createQuery(sql.toString()).uniqueResult();
+        return (Long) getSession().createQuery(sql.toString()).setCacheable(this.cachable()).uniqueResult();
     }
+
     @Override
     public List<LoginEntity> findUser(String userId) {
         Session session = getSession();
@@ -130,35 +141,10 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements Lo
                 .createQuery("from org.openiam.idm.srvc.auth.domain.LoginEntity l "
                         + " where l.userId = :userId order by l.status desc, l.managedSysId asc ");
         qry.setString("userId", userId);
-        return (List<LoginEntity>) qry.list();
+        return (List<LoginEntity>) qry.setCacheable(this.cachable()).list();
 
     }
-//    @Override
-//    public List<LoginEntity> findLoginByDomain(String domain) {
-//        Session session = getSession();
-//        Query qry = session
-//                .createQuery("from org.openiam.idm.srvc.auth.domain.LoginEntity l "
-//                        + " where l.domainId = :domain ");
-//        qry.setString("domain", domain);
-//        return (List<LoginEntity>) qry.list();
-//
-//    }
-//    @Override
-//    public LoginEntity findLoginByManagedSys(String managedSys, String userId) {
-//        Session session = getSession();
-//        Query qry = session
-//                .createQuery("from org.openiam.idm.srvc.auth.domain.LoginEntity l "
-//                        + " where  l.managedSysId = :managedSys and "
-//                        + "  l.userId = :userId ");
-//        log.debug("managedSys=" + managedSys + " userId=" + userId);
-//        qry.setString("managedSys", managedSys);
-//        qry.setString("userId", userId);
-//        List<LoginEntity> results = (List<LoginEntity>) qry.list();
-//        if (results != null && results.size() > 0) {
-//            return results.get(0);
-//        }
-//        return null;
-//    }
+
     @Override
     public List<LoginEntity> findLoginByManagedSys(String principalName, String managedSysId) {
         Session session = getSession();
@@ -169,9 +155,10 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements Lo
 
         qry.setString("managedSys", managedSysId);
         qry.setString("login", principalName);
-        return (List<LoginEntity>) qry.list();
+        return (List<LoginEntity>) qry.setCacheable(this.cachable()).list();
 
     }
+
     @Override
     public LoginEntity findByPasswordResetToken(String token) {
         Session session = getSession();
@@ -180,14 +167,15 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements Lo
                         + " where  l.pswdResetToken = :token  ");
 
         qry.setString("token", token);
-        return (LoginEntity) qry.uniqueResult();
+        return (LoginEntity) qry.setCacheable(this.cachable()).uniqueResult();
     }
+
     @Override
     public List<LoginEntity> findLockedUsers(Date startTime) {
         Criteria c = getCriteria().add(
                 Restrictions.and(Restrictions.eq("isLocked", 1),
                         Restrictions.ge("lastAuthAttempt", startTime)));
-        return c.list();
+        return c.setCacheable(this.cachable()).list();
     }
 
     /*
@@ -267,7 +255,7 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements Lo
      */
     @Override
     public List<LoginEntity> findInactiveUsers(int startDays, int endDays,
-            String managedSysId) {
+                                               String managedSysId) {
         log.debug("findInactiveUsers called.");
         log.debug("Start days=" + startDays);
         log.debug("End days=" + endDays);
@@ -320,7 +308,7 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements Lo
             qry.setDate("endDate", endDate);
         }
 
-        List<LoginEntity> results = (List<LoginEntity>) qry.list();
+        List<LoginEntity> results = (List<LoginEntity>) qry.setCacheable(this.cachable()).list();
         if (results == null) {
             return (new ArrayList<LoginEntity>());
         }
@@ -365,13 +353,14 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements Lo
         qry.setDate("startDate", expDate);
         qry.setDate("endDate", endDate);
 
-        List<LoginEntity> results = (List<LoginEntity>) qry.list();
+        List<LoginEntity> results = (List<LoginEntity>) qry.setCacheable(this.cachable()).list();
         if (results == null) {
             return (new ArrayList<LoginEntity>());
         }
         return results;
 
     }
+
     @Override
     public List<LoginEntity> findUserPswdExpYesterday() {
         log.debug("findUserPswdExpToday: findUserNearPswdExp called.");
@@ -399,7 +388,7 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements Lo
         qry.setDate("startDate", expDate);
         qry.setDate("endDate", endDate);
 
-        List<LoginEntity> results = (List<LoginEntity>) qry.list();
+        List<LoginEntity> results = (List<LoginEntity>) qry.setCacheable(this.cachable()).list();
         if (results == null) {
             return (new ArrayList<LoginEntity>());
         }
@@ -487,8 +476,8 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements Lo
     }
 
     @Override
-    public List<LoginEntity> findByUserIds(List<String> userIds, String managedSysId){
-        return getCriteria().add(Restrictions.in("userId", userIds)).add(Restrictions.eq("managedSysId", managedSysId))
-                            .list();
+    public List<LoginEntity> findByUserIds(List<String> userIds, String managedSysId) {
+        return getCriteria().setCacheable(this.cachable()).add(Restrictions.in("userId", userIds)).add(Restrictions.eq("managedSysId", managedSysId))
+                .list();
     }
 }

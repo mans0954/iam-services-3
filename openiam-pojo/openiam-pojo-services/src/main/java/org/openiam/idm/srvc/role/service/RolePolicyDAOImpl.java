@@ -21,7 +21,9 @@ import org.springframework.stereotype.Repository;
 
 @Repository("rolePolicyDAO")
 public class RolePolicyDAOImpl extends BaseDaoImpl<RolePolicyEntity, String> implements RolePolicyDAO {
-
+    protected boolean cachable() {
+        return true;
+    }
     private static final Log log = LogFactory.getLog(RolePolicyDAOImpl.class);
 
 	@Override

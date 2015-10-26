@@ -11,7 +11,6 @@ import java.io.Serializable;
 
 @Entity
 @Table(name = "MNG_SYS_OBJECT_MATCH")
-@Cacheable
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(ManagedSystemObjectMatch.class)
 public class ManagedSystemObjectMatchEntity implements Serializable {

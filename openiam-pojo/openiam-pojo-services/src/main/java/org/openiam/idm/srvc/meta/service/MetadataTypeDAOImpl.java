@@ -21,10 +21,13 @@ import org.springframework.stereotype.Repository;
  */
 @Repository("metadataTypeDAO")
 public class MetadataTypeDAOImpl extends BaseDaoImpl<MetadataTypeEntity, String> implements MetadataTypeDAO {
+    protected boolean cachable() {
+        return true;
+    }
 
     @Override
     public MetadataTypeEntity findByNameGrouping(String name, MetadataTypeGrouping grouping) {
-        return (MetadataTypeEntity) getCriteria().add(Restrictions.eq("description", name)).add(Restrictions.eq("grouping", grouping)).uniqueResult();
+        return (MetadataTypeEntity) getCriteria().setCacheable(cachable()).add(Restrictions.eq("description", name)).add(Restrictions.eq("grouping", grouping)).uniqueResult();
     }
 
     @Override
@@ -35,7 +38,7 @@ public class MetadataTypeDAOImpl extends BaseDaoImpl<MetadataTypeEntity, String>
             criteria.add(Restrictions.eq(getPKfieldName(), entity.getId()));
         } else {
             /*
-		    if (StringUtils.isNotBlank(entity.getDescription())) {
+            if (StringUtils.isNotBlank(entity.getDescription())) {
 		    	criteria.add(Restrictions.eq("description", entity.getDescription()));
 		    }
 		    */
@@ -74,13 +77,14 @@ public class MetadataTypeDAOImpl extends BaseDaoImpl<MetadataTypeEntity, String>
                 criteria.createAlias("categories", "category").add(Restrictions.in("category.id", categoryIds));
             }
         }
+        criteria.setCacheable(cachable());
         return criteria;
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public List<MetadataTypeEntity> findTypesInCategory(String categoryId) {
-        final Criteria criteria = getCriteria().createAlias("categories", "category").add(
+        final Criteria criteria = getCriteria().setCacheable(cachable()).createAlias("categories", "category").add(
                 Restrictions.eq("category.id", categoryId));
         return criteria.list();
     }
