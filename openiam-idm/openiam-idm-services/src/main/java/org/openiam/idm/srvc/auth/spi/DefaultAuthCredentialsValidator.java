@@ -5,6 +5,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.exception.AuthenticationException;
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.service.AuthCredentialsValidator;
 import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
@@ -30,7 +31,7 @@ public class DefaultAuthCredentialsValidator implements AuthCredentialsValidator
 
     private static final Log log = LogFactory.getLog(DefaultAuthCredentialsValidator.class);
 
-    public void execute(UserEntity user, Login lg, int operation, Map<String, Object> bindingMap) throws AuthenticationException {
+    public void execute(UserEntity user, LoginEntity lg, int operation, Map<String, Object> bindingMap) throws AuthenticationException {
 
         Date curDate = new Date(System.currentTimeMillis());
 
@@ -105,7 +106,7 @@ public class DefaultAuthCredentialsValidator implements AuthCredentialsValidator
      * @param lg
      * @return
      */
-    private int passwordExpired(Login lg, Date curDate) {
+    private int passwordExpired(LoginEntity lg, Date curDate) {
         log.debug("passwordExpired Called.");
         log.debug("- Password Exp =" + lg.getPwdExp());
         log.debug("- Password Grace Period =" + lg.getGracePeriod());
@@ -137,7 +138,7 @@ public class DefaultAuthCredentialsValidator implements AuthCredentialsValidator
         return AuthenticationConstants.RESULT_SUCCESS_PASSWORD_EXP;
     }
 
-    private Date getGracePeriodDate(Login lg, Date curDate) {
+    private Date getGracePeriodDate(LoginEntity lg, Date curDate) {
 
         Date pwdExpDate = lg.getPwdExp();
 
