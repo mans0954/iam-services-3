@@ -21,6 +21,8 @@ dependencies:
     - mvn deploy -s conf/settings.xml
 test:
   post:
+    - sudo java -Xms512m -Xmx1024m -XX:ReservedCodeCacheSize=64m -XX:MaxPermSize=256m -Dconfpath=/data/openiam -jar /home/ubuntu/iam-services/openiam-esb/target/openiam-esb.jar
+    - sleep 240
     - mvn test -DskipTests=false -DargLine="-Xmx1024m" -s conf/settings.xml:
         timeout: 3600
     - mkdir -p $CIRCLE_TEST_REPORTS/junit/
