@@ -1,11 +1,15 @@
 package org.openiam.am.srvc.domain;
 
-import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.*;
+import org.hibernate.annotations.Cache;
 import org.openiam.am.srvc.constants.SsoAttributeType;
 import org.openiam.am.srvc.dto.AuthResourceAttributeMap;
 import org.openiam.dozer.DozerDTOCorrespondence;
 
 import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import java.io.Serializable;
 
 @Entity
@@ -13,6 +17,7 @@ import java.io.Serializable;
         @UniqueConstraint(columnNames={"PROVIDER_ID","TARGET_ATTRIBUTE_NAME"})
 })
 @DozerDTOCorrespondence(AuthResourceAttributeMap.class)
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class AuthResourceAttributeMapEntity implements Serializable {
 
     @Id
@@ -38,10 +43,12 @@ public class AuthResourceAttributeMapEntity implements Serializable {
 
     @ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH})
     @JoinColumn(name="PROVIDER_ID", referencedColumnName = "PROVIDER_ID", insertable = false, updatable = false)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private AuthProviderEntity provider;
 
     @ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH}, optional = true)
     @JoinColumn(name="AM_RES_ATTRIBUTE_ID", referencedColumnName = "AM_RES_ATTRIBUTE_ID", insertable = false, updatable = false, nullable=true)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private AuthResourceAMAttributeEntity amAttribute;
 
     public String getAttributeMapId() {

@@ -1,11 +1,15 @@
 package org.openiam.am.srvc.domain;
 
-import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.*;
+import org.hibernate.annotations.Cache;
 import org.openiam.am.srvc.constants.AuthAttributeDataType;
 import org.openiam.am.srvc.dto.AuthProviderAttribute;
 import org.openiam.dozer.DozerDTOCorrespondence;
 
 import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import java.io.Serializable;
 
 @Entity
@@ -13,6 +17,7 @@ import java.io.Serializable;
         @UniqueConstraint(columnNames={"PROVIDER_ID", "AUTH_ATTRIBUTE_ID"})
 })
 @DozerDTOCorrespondence(AuthProviderAttribute.class)
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class AuthProviderAttributeEntity implements Serializable {
     @Id
     @GeneratedValue(generator = "system-uuid")
@@ -31,9 +36,11 @@ public class AuthProviderAttributeEntity implements Serializable {
 
     @ManyToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
     @JoinColumn(name="PROVIDER_ID", referencedColumnName = "PROVIDER_ID", insertable = false, updatable = false)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private AuthProviderEntity provider;
     @ManyToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
     @JoinColumn(name="AUTH_ATTRIBUTE_ID", referencedColumnName = "AUTH_ATTRIBUTE_ID", insertable = false, updatable = false)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private AuthAttributeEntity attribute;
 
     public String getProviderAttributeId() {

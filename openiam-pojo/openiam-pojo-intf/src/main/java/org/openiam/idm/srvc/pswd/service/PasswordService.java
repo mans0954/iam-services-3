@@ -164,5 +164,6 @@ public interface PasswordService {
 
     Set<PasswordHistory> getPasswordHistory(String id, Integer from, Integer count);
 
+    Policy getPasswordPolicy(LoginEntity lg);
 
 }
