@@ -3,5 +3,20 @@
 		"mcast" : { 
 				"enabled" : "true"
 		}
+	},
+	"openiam" : {
+		"datasource" : {
+			"esb" : {
+				"openiam" : {
+					"url" : "jdbc:mysql://localhost:3306/openiam?useUnicode=true&amp;characterEncoding=UTF-8"
+				},
+				"activiti" : {
+					"url" : "jdbc:mysql://localhost:3306/activiti?useUnicode=true&amp;characterEncoding=UTF-8"
+				}
+			}
+		},
+		"service_urls_props" : {
+			"openiam.service_base" : "localhost:9080"
+		}
 	}
 }
