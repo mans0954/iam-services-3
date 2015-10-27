@@ -5,6 +5,10 @@ machine:
 dependencies:
   pre:
     - sudo apt-get install dos2unix
+    - mysql -u root --execute="SET PASSWORD FOR 'root'@'localhost' = PASSWORD('passwd00')"
+    - sudo apt-add-repository -y 'deb http://ppa.launchpad.net/ondrej/mysql-experimental/ubuntu precise main'
+    - sudo apt-get update
+    - sudo DEBIAN_FRONTEND=noninteractive apt-get install -y mysql-server-5.6
   override:
     - mvn install -s conf/settings.xml
     - mvn package spring-boot:repackage -f openiam-esb/pom.xml
