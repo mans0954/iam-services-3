@@ -8,10 +8,14 @@
 		"datasource" : {
 			"esb" : {
 				"openiam" : {
-					"url" : "jdbc:mysql://localhost:3306/openiam?useUnicode=true&amp;characterEncoding=UTF-8"
+					"url" : "jdbc:mysql://localhost:3306/openiam?useUnicode=true&amp;characterEncoding=UTF-8",
+					"username" : "idmuser",
+					"password" : "idmuser"
 				},
 				"activiti" : {
-					"url" : "jdbc:mysql://localhost:3306/activiti?useUnicode=true&amp;characterEncoding=UTF-8"
+					"url" : "jdbc:mysql://localhost:3306/activiti?useUnicode=true&amp;characterEncoding=UTF-8",
+					"username" : "idmuser",
+					"password" : "idmuser"
 				}
 			}
 		},
