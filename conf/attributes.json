@@ -1,0 +1,8 @@
+{
+	"hazelcast" : { 
+		"mcast" : 
+			{ 
+				"enabled" : "true" }
+		}
+	}
+}
