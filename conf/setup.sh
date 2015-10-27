@@ -18,4 +18,3 @@ sudo chef-client -o openiam-properties::securityconf -E DEV
 sudo chef-client -o openiam-properties::service-urls -E DEV
 sudo chef-client -o openiam-conf -E DEV
 sudo chef-client -o openiam-hazelcast -E DEV -j /etc/chef/attributes.json
-cd /tmp/openiam/schema/mysql; sudo ./execute.sh passwd00 new_install
