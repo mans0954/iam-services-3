@@ -23,5 +23,5 @@
 			"openiam.service_base" : "localhost:9080"
 		}
 	},
-	"mariadb" : "true"
+	"mariadb" : "true" 
 }
