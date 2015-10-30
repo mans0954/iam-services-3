@@ -52,6 +52,9 @@ public class ManagedSysDAOImpl extends BaseDaoImpl<ManagedSysEntity, String> imp
 						}
 					}
 				}
+				if(example.getResource()!=null && StringUtils.isNotBlank(example.getResource().getId())){
+					criteria.add(Restrictions.eq("resource.id", example.getResource().getId()));
+				}
 			}
 		}
 		return criteria;

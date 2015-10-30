@@ -9,10 +9,12 @@ import javax.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 
 @XmlType(name = "ManagedSysSearchBean", propOrder = {
-        "name"
+        "name",
+        "resourceId"
 })
 public class ManagedSysSearchBean extends AbstractSearchBean<ProvisionConnectorDto, String> {
     private String name;
+    private String resourceId;
 
     public ManagedSysSearchBean() {
     }
@@ -25,4 +27,11 @@ public class ManagedSysSearchBean extends AbstractSearchBean<ProvisionConnectorD
         this.name = name;
     }
 
+    public String getResourceId() {
+        return resourceId;
+    }
+
+    public void setResourceId(String resourceId) {
+        this.resourceId = resourceId;
+    }
 }
