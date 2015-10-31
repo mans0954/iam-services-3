@@ -3,6 +3,14 @@ machine:
     version: oraclejdk8
 
 dependencies:
+  pre:
+    - sudo apt-get install dos2unix
+    - mysql -u root --execute="SET PASSWORD FOR 'root'@'localhost' = PASSWORD('passwd00')"
+    - sudo apt-add-repository -y 'deb http://ppa.launchpad.net/ondrej/mysql-experimental/ubuntu precise main'
+    - sudo apt-get update
+    - sudo DEBIAN_FRONTEND=noninteractive apt-get install -y mysql-server-5.6
+    - cd conf; sudo /bin/sh setup.sh
+    - cd /tmp/openiam/schema/mysql; sudo ./execute.sh passwd00 new_install
   override:
     - mvn install -s conf/settings.xml
     - mvn package spring-boot:repackage -f openiam-esb/pom.xml
@@ -13,9 +21,8 @@ dependencies:
     - mvn deploy -s conf/settings.xml
 test:
   post:
-    - sudo mkdir -p /data/openiam/conf
-    - sudo cp conf/datasource.properties /data/openiam/conf/datasource.properties
-    - sudo cp conf/service-urls.properties /data/openiam/conf/service-urls.properties
+    - sudo nohup bash -c "sudo java -Xms512m -Xmx1024m -XX:ReservedCodeCacheSize=64m -XX:MaxPermSize=256m -Dconfpath=/data/openiam -jar /home/ubuntu/iam-services/openiam-esb/target/openiam-esb.jar > /var/log/esb.log &"
+    - sleep 300
     - mvn test -DskipTests=false -DargLine="-Xmx1024m" -s conf/settings.xml:
         timeout: 3600
     - mkdir -p $CIRCLE_TEST_REPORTS/junit/

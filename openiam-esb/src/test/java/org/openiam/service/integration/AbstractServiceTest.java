@@ -295,6 +295,19 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 		});
 	}
 	
+	protected void refreshContentProviderManager() {
+		final String hazelcastEndpoint = String.format("%s/openiam-esb/hazelcast/cluster", serviceHost);
+		restTemplate.getForEntity(hazelcastEndpoint, Cluster.class).getBody().getMembers().forEach(member -> {
+			final String authManagerEndpoint = String.format("http://%s:9080/openiam-esb/contentprovider/refresh", (serviceHost.contains("localhost") ? "localhost" : member.getAddress().getHost()));
+			try {
+				Assert.assertTrue(StringUtils.equalsIgnoreCase("OK", IOUtils.toString(httpClient.getInputStream(new URL(authManagerEndpoint)))));
+			} catch (Exception e) {
+				logger.error("Can't refresh auth manager", e);
+				throw new RuntimeException(e);
+			}
+		});
+	}
+	
 	
 	protected Group createGroup() {
 		Group group = new Group();

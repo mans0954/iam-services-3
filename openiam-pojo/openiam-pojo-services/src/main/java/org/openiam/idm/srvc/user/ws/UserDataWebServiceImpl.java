@@ -1396,6 +1396,31 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 		return emailAddressDozerConverter.convertToDTOList(emailAddresses, searchBean.isDeepCopy());
 	}
 
+	@Override
+	public Response validatePhone(Phone phone) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            if(StringUtils.isEmpty(phone.getCountryCd())) {
+            	throw new BasicDataServiceException(ResponseCode.PHONE_COUNTRY_CODE_REQUIRED);
+            }
+            if(StringUtils.isEmpty(phone.getAreaCd())) {
+            	throw new BasicDataServiceException(ResponseCode.PHONE_AREA_CODE_REQUIRED);
+            }
+            if(StringUtils.isEmpty(phone.getPhoneNbr())) {
+            	throw new BasicDataServiceException(ResponseCode.PHONE_NUMBER_REQUIRED);
+            }
+            response.succeed();
+        } catch (BasicDataServiceException e) {
+            response.setErrorCode(e.getCode());
+            response.setStatus(ResponseStatus.FAILURE);
+        } catch (Throwable e) {
+            log.error("Can't perform operation", e);
+            response.setErrorText(e.getMessage());
+            response.setStatus(ResponseStatus.FAILURE);
+        }
+        return response;
+	}
+
 //    @Override
 //    public Map<String, UserAttribute> getUserAttributesAsMap(@WebParam(name = "userId", targetNamespace = "") String userId){
 //        return userManager.getUserAttributesDto(userId);

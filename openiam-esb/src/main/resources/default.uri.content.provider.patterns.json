@@ -378,6 +378,18 @@
 				}
 			],
 			"cacheable" : false
+		},
+		{
+			"pattern" : "/webconsole-am/setup.html",
+			"isPublic" : false,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "PASSWORD_AUTH"
+					}
+				}
+			],
+			"cacheable" : false
 		}
 	]
 }
