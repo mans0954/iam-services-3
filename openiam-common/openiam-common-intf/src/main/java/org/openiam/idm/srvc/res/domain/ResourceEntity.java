@@ -334,7 +334,16 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
 			}
 			UserToResourceMembershipXrefEntity theXref = null;
 			for(final UserToResourceMembershipXrefEntity xref : this.users) {
-				if(xref.getEntity().getId().equals(getId()) && xref.getMemberEntity().getId().equals(entity.getId())) {
+				
+				/* 
+				 * normally, we rely on equals() to tell us if this is the same resource.
+				 * However, at this stage, the resouce could somehow have been modified (i.e. name, description, etc)
+				 * but still contain the same ID.  Therefore, we check that the resource is equals OR the IDs are the same.
+				 * Note:  This fixes IDMAPPS-3419, which was throwing a NPE b/c the current resource has a null ID (i.e. hasn't
+				 * been saved yet)
+				 */
+				final boolean isSameResource = (xref.getEntity().equals(this)) || (xref.getEntity().getId().equals(getId()));
+				if(isSameResource && xref.getMemberEntity().getId().equals(entity.getId())) {
 					theXref = xref;
 					break;
 				}
