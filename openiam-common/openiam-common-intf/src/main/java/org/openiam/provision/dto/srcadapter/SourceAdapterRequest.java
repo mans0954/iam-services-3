@@ -11,11 +11,11 @@ import java.util.Set;
  * Created by zaporozhec on 10/29/15.
  */
 
-@XmlType(name = "SourceAdapterRequest", propOrder = {"action", "forceMode", "key", "requestor", "firstName", "lastName", "employeeId",
+@XmlType(name = "SourceAdapterRequest", propOrder = {"action", "forceMode", "key", "requestor", "logins", "firstName", "lastName", "employeeId",
         "middleName", "prefix", "sex", "status", "secondaryStatus", "suffix",
         "title", "nickname", "maidenName", "userTypeId", "startDate", "lastDate",
         "userAttributes", "groups", "roles", "resources", "organizations", "emails", "addresses", "phones",
-        /*"subordinates",*/ "supervisors"})
+        /*"subordinates",*/ "supervisors", "passwordRequest"})
 @XmlAccessorType(XmlAccessType.FIELD)
 public class SourceAdapterRequest {
     private SourceAdapterOperationEnum action;
@@ -40,8 +40,15 @@ public class SourceAdapterRequest {
     private String suffix;
     private String nickname;
     private String maidenName;
+
     @XmlElement(name = "skipWarnings")
     private boolean forceMode;
+
+    @XmlElementWrapper(name = "principals-set")
+    @XmlElements({
+            @XmlElement(name = "principal")}
+    )
+    private Set<SourceAdapterLoginRequest> logins;
 
     @XmlElementWrapper(name = "groups-set")
     @XmlElements({
@@ -97,11 +104,12 @@ public class SourceAdapterRequest {
     )
     private Set<SourceAdapterMemberhipKey> supervisors;
 
-//    @XmlElementWrapper(name = "user-subordinates-set")
+    //    @XmlElementWrapper(name = "user-subordinates-set")
 //    @XmlElements({
 //            @XmlElement(name = "user-subordinate")}
 //    )
 //    private Set<SourceAdapterMemberhipKey> subordinates;
+    private SourceAdapterPasswordRequest passwordRequest;
 
     //forceMode
     public Set<SourceAdapterAttributeRequest> getUserAttributes() {
@@ -312,7 +320,15 @@ public class SourceAdapterRequest {
         this.resources = resources;
     }
 
-//    public Set<SourceAdapterMemberhipKey> getSubordinates() {
+    public Set<SourceAdapterLoginRequest> getLogins() {
+        return logins;
+    }
+
+    public void setLogins(Set<SourceAdapterLoginRequest> logins) {
+        this.logins = logins;
+    }
+
+    //    public Set<SourceAdapterMemberhipKey> getSubordinates() {
 //        return subordinates;
 //    }
 //
@@ -334,5 +350,13 @@ public class SourceAdapterRequest {
 
     public void setForceMode(boolean forceMode) {
         this.forceMode = forceMode;
+    }
+
+    public SourceAdapterPasswordRequest getPasswordRequest() {
+        return passwordRequest;
+    }
+
+    public void setPasswordRequest(SourceAdapterPasswordRequest passwordRequest) {
+        this.passwordRequest = passwordRequest;
     }
 }

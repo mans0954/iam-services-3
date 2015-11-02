@@ -10,6 +10,7 @@ import org.openiam.base.ws.ResponseStatus;
 import org.openiam.base.ws.SearchParam;
 import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.idm.searchbeans.*;
+import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
@@ -19,6 +20,7 @@ import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.dto.OrganizationUserDTO;
 import org.openiam.idm.srvc.org.service.OrganizationDataService;
 import org.openiam.idm.srvc.org.service.OrganizationDataServiceImpl;
+import org.openiam.idm.srvc.pswd.dto.PasswordValidationResponse;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.role.dto.Role;
@@ -29,9 +31,11 @@ import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.ws.UserDataWebService;
 import org.openiam.provision.dto.*;
 import org.openiam.provision.dto.srcadapter.*;
+import org.openiam.provision.resp.PasswordResponse;
 import org.openiam.provision.resp.ProvisionUserResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import sun.rmi.runtime.Log;
 
 import javax.jws.WebService;
 import java.text.SimpleDateFormat;
@@ -134,6 +138,42 @@ public class SourceAdapterImpl implements SourceAdapter {
                 response.setError(resp.getErrorText());
                 break;
             }
+            case CHANGE_PASSWORD: {
+                if (request.getPasswordRequest() != null) {
+                    PasswordSync passwordSync = new PasswordSync();
+                    passwordSync.setUserId(pUser.getId());
+                    passwordSync.setRequestorId(requestorId);
+                    passwordSync.setManagedSystemId(request.getPasswordRequest().getManagedSystemId());
+                    passwordSync.setPassword(request.getPasswordRequest().getPassword());
+                    passwordSync.setSendPasswordToUser(request.getPasswordRequest().isSendToUser());
+                    passwordSync.setUserActivateFlag(request.getPasswordRequest().isActivate());
+                    PasswordValidationResponse resetPasswordResponse = provisioningDataService.setPassword(passwordSync);
+                    response.setStatus(resetPasswordResponse.getStatus());
+                    response.setError(resetPasswordResponse.getErrorText());
+                } else {
+                    response.setStatus(ResponseStatus.FAILURE);
+                    warnings.append("Change password request is empty");
+                }
+                break;
+            }
+            case RESET_PASSWORD: {
+                if (request.getPasswordRequest() != null) {
+                    PasswordSync passwordSync = new PasswordSync();
+                    passwordSync.setUserId(pUser.getId());
+                    passwordSync.setRequestorId(requestorId);
+                    passwordSync.setManagedSystemId(request.getPasswordRequest().getManagedSystemId());
+                    passwordSync.setPassword(request.getPasswordRequest().getPassword());
+                    passwordSync.setSendPasswordToUser(request.getPasswordRequest().isSendToUser());
+                    passwordSync.setUserActivateFlag(request.getPasswordRequest().isActivate());
+                    PasswordResponse resetPasswordResponse = provisioningDataService.resetPassword(passwordSync);
+                    response.setStatus(resetPasswordResponse.getStatus());
+                    response.setError(resetPasswordResponse.getErrorText());
+                } else {
+                    response.setStatus(ResponseStatus.FAILURE);
+                    warnings.append("Reset password request is empty");
+                }
+                break;
+            }
             case NO_CHANGE: {
                 break;
             }
@@ -157,6 +197,7 @@ public class SourceAdapterImpl implements SourceAdapter {
         fillUserAttribute(pUser, request, warnings);
         fillOrganizations(pUser, request, warnings, requestorId);
         fillSuperVisors(pUser, request, warnings);
+        fillPrincipals(pUser, request, warnings, requestorId);
         //superiors
         return pUser;
     }
@@ -209,7 +250,57 @@ public class SourceAdapterImpl implements SourceAdapter {
         }
     }
 
-    private void fillGroups(ProvisionUser pUser, SourceAdapterRequest request, StringBuilder warnings, String requestorId) throws Exception {
+    private void fillPrincipals(ProvisionUser pUser, SourceAdapterRequest request, StringBuilder warnings, String requestorId) throws Exception {
+        if (CollectionUtils.isNotEmpty(request.getLogins())) {
+            boolean isFound;
+            if (pUser.getPrincipalList() == null) {
+                pUser.setPrincipalList(new ArrayList<Login>());
+            }
+            for (SourceAdapterLoginRequest loginRequest : request.getLogins()) {
+                if (loginRequest.getOperation() == null) {
+                    warnings.append(getWarning("Incorrect operation for group=" + loginRequest.getLogin() + " Skip this!"));
+                    continue;
+                }
+                isFound = false;
+                for (Login l : pUser.getPrincipalList()) {
+                    if (l.getLogin().equals(loginRequest.getLogin())) {
+                        if (AttributeOperationEnum.DELETE.equals(loginRequest.getOperation())) {
+                            //delete
+                            l.setOperation(AttributeOperationEnum.DELETE);
+                        } else if (AttributeOperationEnum.REPLACE.equals(loginRequest.getOperation())) {
+                            //replace
+                            populateLogin(loginRequest, l, AttributeOperationEnum.REPLACE);
+                        } else if (AttributeOperationEnum.ADD.equals(loginRequest.getOperation())) {
+                            //add
+                            warnings.append(this.getWarning("Can't ADD this login. Login have already existed for user=" + loginRequest.getLogin() + ". Skip it."));
+                        }
+                        isFound = true;
+                        break;
+                    }
+                }
+                if (!isFound) {
+                    if (!AttributeOperationEnum.ADD.equals(loginRequest.getOperation())) {
+                        warnings.append(this.getWarning("Can't replace this login. Login operation must be ADD=" + loginRequest.getLogin() + ". Skip it."));
+                        continue;
+                    } else {
+//add
+                        Login l = new Login();
+                        populateLogin(loginRequest, l, AttributeOperationEnum.ADD);
+                        pUser.addPrincipal(l);
+                    }
+                }
+            }
+        }
+    }
+
+    private static void populateLogin(SourceAdapterLoginRequest loginRequest, Login login, AttributeOperationEnum operation) {
+        login.setOperation(operation);
+        login.setLogin(StringUtils.isBlank(loginRequest.getNewLogin()) ? loginRequest.getLogin() : loginRequest.getNewLogin());
+        login.setManagedSysId(loginRequest.getManagedSystemId());
+    }
+
+    private void fillGroups(ProvisionUser pUser, SourceAdapterRequest request, StringBuilder warnings, String
+            requestorId) throws Exception {
         if (CollectionUtils.isNotEmpty(request.getGroups())) {
             boolean isFound;
             if (pUser.getGroups() == null) {
@@ -256,7 +347,8 @@ public class SourceAdapterImpl implements SourceAdapter {
 
     }
 
-    private void fillOrganizations(ProvisionUser pUser, SourceAdapterRequest request, StringBuilder warnings, String requestorId) throws Exception {
+    private void fillOrganizations(ProvisionUser pUser, SourceAdapterRequest request, StringBuilder
+            warnings, String requestorId) throws Exception {
         if (CollectionUtils.isNotEmpty(request.getOrganizations())) {
             boolean isFound = false;
             if (pUser.getOrganizationUserDTOs() == null) {
@@ -321,7 +413,8 @@ public class SourceAdapterImpl implements SourceAdapter {
     }
 
 
-    private void fillSuperVisors(ProvisionUser pUser, SourceAdapterRequest request, StringBuilder warnings) throws Exception {
+    private void fillSuperVisors(ProvisionUser pUser, SourceAdapterRequest request, StringBuilder warnings) throws
+            Exception {
         if (CollectionUtils.isNotEmpty(request.getSupervisors())) {
             boolean isFound = false;
             List<User> superiorsFromDB = userDataService.getSuperiors(pUser.getId(), 0, Integer.MAX_VALUE);
@@ -377,7 +470,8 @@ public class SourceAdapterImpl implements SourceAdapter {
     }
 
 
-    private void fillRoles(ProvisionUser pUser, SourceAdapterRequest request, StringBuilder warnings, String requestorId) throws Exception {
+    private void fillRoles(ProvisionUser pUser, SourceAdapterRequest request, StringBuilder warnings, String
+            requestorId) throws Exception {
         if (CollectionUtils.isNotEmpty(request.getRoles())) {
             boolean isFound;
             if (pUser.getRoles() == null) {
@@ -425,7 +519,8 @@ public class SourceAdapterImpl implements SourceAdapter {
         }
     }
 
-    private void fillResources(ProvisionUser pUser, SourceAdapterRequest request, StringBuilder warnings) throws Exception {
+    private void fillResources(ProvisionUser pUser, SourceAdapterRequest request, StringBuilder warnings) throws
+            Exception {
         if (CollectionUtils.isNotEmpty(request.getResources())) {
             boolean isFound;
             if (pUser.getResources() == null) {
@@ -471,7 +566,8 @@ public class SourceAdapterImpl implements SourceAdapter {
         }
     }
 
-    private static void fillAddresses(ProvisionUser pUser, SourceAdapterRequest request, StringBuilder warnings) throws Exception {
+    private static void fillAddresses(ProvisionUser pUser, SourceAdapterRequest request, StringBuilder
+            warnings) throws Exception {
         if (CollectionUtils.isNotEmpty(request.getAddresses())) {
             boolean isFound;
             if (pUser.getAddresses() == null) {
@@ -504,7 +600,8 @@ public class SourceAdapterImpl implements SourceAdapter {
         }
     }
 
-    private static void fillEmail(ProvisionUser pUser, SourceAdapterRequest request, StringBuilder warnings) throws Exception {
+    private static void fillEmail(ProvisionUser pUser, SourceAdapterRequest request, StringBuilder warnings) throws
+            Exception {
         if (CollectionUtils.isNotEmpty(request.getEmails())) {
             boolean isFound;
             if (pUser.getEmailAddresses() == null) {
@@ -537,7 +634,8 @@ public class SourceAdapterImpl implements SourceAdapter {
         }
     }
 
-    private static void fillUserAttribute(ProvisionUser pUser, SourceAdapterRequest request, StringBuilder warnings) throws Exception {
+    private static void fillUserAttribute(ProvisionUser pUser, SourceAdapterRequest request, StringBuilder
+            warnings) throws Exception {
         if (CollectionUtils.isNotEmpty(request.getUserAttributes())) {
             for (SourceAdapterAttributeRequest fromWS : request.getUserAttributes()) {
                 if (fromWS.getOperation() == null) {
@@ -564,7 +662,8 @@ public class SourceAdapterImpl implements SourceAdapter {
     }
 
 
-    private static void fillPhones(ProvisionUser pUser, SourceAdapterRequest request, StringBuilder warnings) throws Exception {
+    private static void fillPhones(ProvisionUser pUser, SourceAdapterRequest request, StringBuilder warnings) throws
+            Exception {
         if (CollectionUtils.isNotEmpty(request.getPhones())) {
             boolean isFound;
             if (pUser.getPhones() == null) {
@@ -598,7 +697,8 @@ public class SourceAdapterImpl implements SourceAdapter {
         }
     }
 
-    private static void convertToEmailAddress(EmailAddress r, SourceAdapterEmailRequest address, AttributeOperationEnum operation) throws Exception {
+    private static void convertToEmailAddress(EmailAddress r, SourceAdapterEmailRequest
+            address, AttributeOperationEnum operation) throws Exception {
         r.setOperation(operation);
         r.setMetadataTypeId(StringUtils.isBlank(address.getNewTypeId()) ? address.getTypeId() : address.getNewTypeId());
         r.setIsDefault(address.isPrimary());
@@ -606,7 +706,8 @@ public class SourceAdapterImpl implements SourceAdapter {
         r.setEmailAddress(address.getEmail());
     }
 
-    private static void convertToAddress(Address r, SourceAdapterAddressRequest address, AttributeOperationEnum operation) {
+    private static void convertToAddress(Address r, SourceAdapterAddressRequest address, AttributeOperationEnum
+            operation) {
         r.setOperation(operation);
         r.setAddress1(getNULLValue(address.getAddress()));
         r.setBldgNumber(getNULLValue(address.getBldgNumber()));
@@ -621,7 +722,8 @@ public class SourceAdapterImpl implements SourceAdapter {
         r.setCity(getNULLValue(address.getCity()));
     }
 
-    private static void convertToPhone(Phone r, SourceAdapterPhoneRequest address, AttributeOperationEnum operation) {
+    private static void convertToPhone(Phone r, SourceAdapterPhoneRequest address, AttributeOperationEnum
+            operation) {
         r.setOperation(operation);
         r.setMetadataTypeId(StringUtils.isBlank(address.getNewTypeId()) ? address.getTypeId() : address.getNewTypeId());
         r.setIsDefault(address.isPrimary());
