@@ -572,7 +572,7 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 							}
 						}
 					}
-				} else if(patternNode.isUriPatternFound()) {
+				} else if(!patternNode.isUriPatternFound()) {
 					throw new BasicDataServiceException(ResponseCode.URI_FEDERATION_PATTERN_NOT_FOUND);
 				}
 				
@@ -611,7 +611,7 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 					throw new BasicDataServiceException(ResponseCode.UNAUTHORIZED);
 				}
 				
-				if(CollectionUtils.isNotEmpty(uriPattern.getSubstititonOrderedSet())) {
+				if(uriPattern != null && CollectionUtils.isNotEmpty(uriPattern.getSubstititonOrderedSet())) {
 					for(final URIPatternSubstitution substition : uriPattern.getSubstititonOrderedSet()) {
 						response.addSubstitution(new URISubstitutionToken(substition.getQuery(), substition.getReplaceWith(), substition.isExactMatch(), substition.isFastSearch()));
 					}
