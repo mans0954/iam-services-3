@@ -26,4 +26,4 @@ deployment:
   developement:
     branch: [development]
     commands:
-      - sudo /bin/sh conf/deploy.sh
+      - /bin/sh conf/deploy.sh
