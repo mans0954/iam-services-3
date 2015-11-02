@@ -14,11 +14,6 @@ dependencies:
   override:
     - mvn install -s conf/settings.xml
     - mvn package spring-boot:repackage -f openiam-esb/pom.xml
-    - mvn deploy -s conf/settings.xml
-    - ./update_version.sh $(mvn help:evaluate -Dexpression=project.version | grep -v '\[.*')-${CIRCLE_BUILD_NUM}
-    - mvn install -s conf/settings.xml
-    - mvn package spring-boot:repackage -f openiam-esb/pom.xml
-    - mvn deploy -s conf/settings.xml
 test:
   post:
     - sudo nohup bash -c "sudo java -Xms512m -Xmx1024m -XX:ReservedCodeCacheSize=64m -XX:MaxPermSize=256m -Dconfpath=/data/openiam -jar /home/ubuntu/iam-services/openiam-esb/target/openiam-esb.jar > /var/log/esb.log &"
@@ -27,3 +22,8 @@ test:
         timeout: 3600
     - mkdir -p $CIRCLE_TEST_REPORTS/junit/
     - find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} $CIRCLE_TEST_REPORTS/junit/ \;
+deployment:
+  developement:
+    branch: [development]
+    commands:
+      - sudo /bin/sh conf/deploy.sh
