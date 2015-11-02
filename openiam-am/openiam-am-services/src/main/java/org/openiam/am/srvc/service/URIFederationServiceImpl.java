@@ -572,7 +572,7 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 							}
 						}
 					}
-				} else if(!patternNode.isUriPatternFound()) {
+				} else /*if(!patternNode.isUriPatternFound()) {*/ {
 					throw new BasicDataServiceException(ResponseCode.URI_FEDERATION_PATTERN_NOT_FOUND);
 				}
 				
