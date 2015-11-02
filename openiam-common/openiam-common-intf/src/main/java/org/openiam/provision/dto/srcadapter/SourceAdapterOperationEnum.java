@@ -1,4 +1,4 @@
-package org.openiam.provision.dto;
+package org.openiam.provision.dto.srcadapter;
 
 import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;

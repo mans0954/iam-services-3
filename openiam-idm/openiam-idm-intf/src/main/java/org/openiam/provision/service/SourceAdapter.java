@@ -1,7 +1,7 @@
 package org.openiam.provision.service;
 
-import org.openiam.provision.dto.SourceAdapterRequest;
-import org.openiam.provision.dto.SourceAdapterResponse;
+import org.openiam.provision.dto.srcadapter.SourceAdapterRequest;
+import org.openiam.provision.dto.srcadapter.SourceAdapterResponse;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;

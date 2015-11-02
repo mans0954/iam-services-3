@@ -1,4 +1,4 @@
-package org.openiam.provision.dto;
+package org.openiam.provision.dto.srcadapter;
 
 import org.openiam.base.KeyNameDTO;
 import org.openiam.base.ws.ResponseStatus;

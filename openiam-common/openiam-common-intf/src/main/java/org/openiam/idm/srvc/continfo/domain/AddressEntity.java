@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.continfo.domain;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import javax.persistence.*;
@@ -30,7 +31,7 @@ import org.openiam.idm.srvc.user.domain.UserEntity;
 @DozerDTOCorrespondence(Address.class)
 @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Indexed
-public class AddressEntity {
+public class AddressEntity implements Serializable{
     @Id
     @GeneratedValue(generator = "system-uuid")
     @GenericGenerator(name = "system-uuid", strategy = "uuid")

@@ -1,4 +1,4 @@
-package org.openiam.provision.dto;
+package org.openiam.provision.dto.srcadapter;
 
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 
@@ -11,14 +11,18 @@ import java.util.Set;
  * Created by zaporozhec on 10/29/15.
  */
 
-@XmlType(name = "SourceAdapterRequest", propOrder = {"action", "key", "firstName", "lastName", "employeeId",
+@XmlType(name = "SourceAdapterRequest", propOrder = {"action", "forceMode", "key", "requestor", "firstName", "lastName", "employeeId",
         "middleName", "prefix", "sex", "status", "secondaryStatus", "suffix",
-        "title", "nickname", "maidenName", "userTypeId", "startDate", "lastDate", "groups", "roles", "userAttributes"})
+        "title", "nickname", "maidenName", "userTypeId", "startDate", "lastDate",
+        "userAttributes", "groups", "roles", "resources", "organizations", "emails", "addresses", "phones",
+        /*"subordinates",*/ "supervisors"})
 @XmlAccessorType(XmlAccessType.FIELD)
 public class SourceAdapterRequest {
     private SourceAdapterOperationEnum action;
     @XmlElement(required = true)
     private SourceAdapterKey key;
+    @XmlElement(required = true)
+    private SourceAdapterKey requestor;
     private String firstName;
     private String lastName;
     private String employeeId;
@@ -36,6 +40,8 @@ public class SourceAdapterRequest {
     private String suffix;
     private String nickname;
     private String maidenName;
+    @XmlElement(name = "skipWarnings")
+    private boolean forceMode;
 
     @XmlElementWrapper(name = "groups-set")
     @XmlElements({
@@ -49,12 +55,55 @@ public class SourceAdapterRequest {
     )
     private Set<SourceAdapterEntityRequest> roles;
 
+    @XmlElementWrapper(name = "resources-set")
+    @XmlElements({
+            @XmlElement(name = "resource")}
+    )
+    private Set<SourceAdapterEntityRequest> resources;
+
+    @XmlElementWrapper(name = "affiliation-set")
+    @XmlElements({
+            @XmlElement(name = "affiliation")}
+    )
+    private Set<SourceAdapterOrganizationRequest> organizations;
+
     @XmlElementWrapper(name = "user-attributes-set")
     @XmlElements({
             @XmlElement(name = "user-attribute")}
     )
     private Set<SourceAdapterAttributeRequest> userAttributes;
 
+    @XmlElementWrapper(name = "user-emails-set")
+    @XmlElements({
+            @XmlElement(name = "user-email")}
+    )
+    private Set<SourceAdapterEmailRequest> emails;
+
+    @XmlElementWrapper(name = "user-addresses-set")
+    @XmlElements({
+            @XmlElement(name = "user-address")}
+    )
+    private Set<SourceAdapterAddressRequest> addresses;
+
+    @XmlElementWrapper(name = "user-phones-set")
+    @XmlElements({
+            @XmlElement(name = "user-phone")}
+    )
+    private Set<SourceAdapterPhoneRequest> phones;
+
+    @XmlElementWrapper(name = "user-supervisors-set")
+    @XmlElements({
+            @XmlElement(name = "user-supervisor")}
+    )
+    private Set<SourceAdapterMemberhipKey> supervisors;
+
+//    @XmlElementWrapper(name = "user-subordinates-set")
+//    @XmlElements({
+//            @XmlElement(name = "user-subordinate")}
+//    )
+//    private Set<SourceAdapterMemberhipKey> subordinates;
+
+    //forceMode
     public Set<SourceAdapterAttributeRequest> getUserAttributes() {
         return userAttributes;
     }
@@ -213,5 +262,77 @@ public class SourceAdapterRequest {
 
     public void setRoles(Set<SourceAdapterEntityRequest> roles) {
         this.roles = roles;
+    }
+
+    public Set<SourceAdapterOrganizationRequest> getOrganizations() {
+        return organizations;
+    }
+
+    public void setOrganizations(Set<SourceAdapterOrganizationRequest> organizations) {
+        this.organizations = organizations;
+    }
+
+    public Set<SourceAdapterEmailRequest> getEmails() {
+        return emails;
+    }
+
+    public void setEmails(Set<SourceAdapterEmailRequest> emails) {
+        this.emails = emails;
+    }
+
+    public Set<SourceAdapterAddressRequest> getAddresses() {
+        return addresses;
+    }
+
+    public void setAddresses(Set<SourceAdapterAddressRequest> addresses) {
+        this.addresses = addresses;
+    }
+
+    public Set<SourceAdapterPhoneRequest> getPhones() {
+        return phones;
+    }
+
+    public void setPhones(Set<SourceAdapterPhoneRequest> phones) {
+        this.phones = phones;
+    }
+
+    public Set<SourceAdapterMemberhipKey> getSupervisors() {
+        return supervisors;
+    }
+
+    public void setSupervisors(Set<SourceAdapterMemberhipKey> supervisors) {
+        this.supervisors = supervisors;
+    }
+
+    public Set<SourceAdapterEntityRequest> getResources() {
+        return resources;
+    }
+
+    public void setResources(Set<SourceAdapterEntityRequest> resources) {
+        this.resources = resources;
+    }
+
+//    public Set<SourceAdapterMemberhipKey> getSubordinates() {
+//        return subordinates;
+//    }
+//
+//    public void setSubordinates(Set<SourceAdapterMemberhipKey> subordinates) {
+//        this.subordinates = subordinates;
+//    }
+
+    public SourceAdapterKey getRequestor() {
+        return requestor;
+    }
+
+    public void setRequestor(SourceAdapterKey requestor) {
+        this.requestor = requestor;
+    }
+
+    public boolean isForceMode() {
+        return forceMode;
+    }
+
+    public void setForceMode(boolean forceMode) {
+        this.forceMode = forceMode;
     }
 }

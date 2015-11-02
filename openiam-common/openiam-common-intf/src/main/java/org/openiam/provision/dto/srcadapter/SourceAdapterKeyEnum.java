@@ -1,4 +1,4 @@
-package org.openiam.provision.dto;
+package org.openiam.provision.dto.srcadapter;
 
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 

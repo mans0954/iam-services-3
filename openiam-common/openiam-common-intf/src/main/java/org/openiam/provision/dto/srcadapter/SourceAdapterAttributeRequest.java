@@ -1,4 +1,4 @@
-package org.openiam.provision.dto;
+package org.openiam.provision.dto.srcadapter;
 
 import org.openiam.base.AttributeOperationEnum;
 
@@ -10,21 +10,13 @@ import javax.xml.bind.annotation.XmlType;
  * Created by zaporozhec on 10/29/15.
  */
 
-@XmlType(propOrder = {"id", "name", "value", "operation"})
+@XmlType(propOrder = {"name", "newName", "value", "operation"})
 @XmlAccessorType(XmlAccessType.FIELD)
 public class SourceAdapterAttributeRequest {
-    private String id;
     private String name;
+    private String newName;
     private String value;
     private AttributeOperationEnum operation;
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
 
     public String getName() {
         return name;
@@ -48,5 +40,13 @@ public class SourceAdapterAttributeRequest {
 
     public void setValue(String value) {
         this.value = value;
+    }
+
+    public String getNewName() {
+        return newName;
+    }
+
+    public void setNewName(String newName) {
+        this.newName = newName;
     }
 }
