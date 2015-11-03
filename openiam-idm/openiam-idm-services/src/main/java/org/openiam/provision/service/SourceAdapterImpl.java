@@ -388,7 +388,7 @@ public class SourceAdapterImpl implements SourceAdapter {
             if (pUser.getGroups() == null) {
                 pUser.setGroups(new HashSet<Group>());
             }
-            for (SourceAdapterEntityRequest group : request.getGroups()) {
+            for (SourceAdapterEntityManagedSystemRequest group : request.getGroups()) {
                 if (group.getOperation() == null) {
                     warnings.append(getWarning("Incorrect operation for group=" + group.getName() + " Skip this!"));
                     continue;
@@ -399,7 +399,7 @@ public class SourceAdapterImpl implements SourceAdapter {
                 }
                 isFound = false;
                 for (Group g : pUser.getGroups()) {
-                    if (g.getName().equals(group.getName())) {
+                    if (( g.getManagedSysId()==null || g.getManagedSysId().equals(group.getManagedSystemId())) && g.getName().equals(group.getName())) {
                         if (AttributeOperationEnum.DELETE.equals(group.getOperation())) {
                             g.setOperation(AttributeOperationEnum.DELETE);
                         }
@@ -410,6 +410,7 @@ public class SourceAdapterImpl implements SourceAdapter {
                 if (!isFound) {
                     GroupSearchBean gsb = new GroupSearchBean();
                     gsb.setName(group.getName());
+                    gsb.setManagedSysId(group.getManagedSystemId());
                     List<Group> dbGroups = groupDataWebService.findBeans(gsb, requestorId, -1, -1);
                     if (CollectionUtils.isNotEmpty(dbGroups)) {
                         if (dbGroups.size() > 1) {
@@ -560,7 +561,7 @@ public class SourceAdapterImpl implements SourceAdapter {
                 pUser.setRoles(new HashSet<Role>());
             }
 
-            for (SourceAdapterEntityRequest role : request.getRoles()) {
+            for (SourceAdapterEntityManagedSystemRequest role : request.getRoles()) {
                 if (role.getOperation() == null) {
                     warnings.append(getWarning("Incorrect operation for role=" + role.getName() + " Skip this!"));
                     continue;
@@ -572,7 +573,7 @@ public class SourceAdapterImpl implements SourceAdapter {
                 }
                 isFound = false;
                 for (Role r : pUser.getRoles()) {
-                    if (r.getName().equals(role.getName())) {
+                    if ((r.getManagedSysId() == null || r.getManagedSysId().equals(role.getManagedSystemId())) && r.getName().equals(role.getName())) {
                         if (AttributeOperationEnum.DELETE.equals(role.getOperation())) {
                             r.setOperation(AttributeOperationEnum.DELETE);
                         }
@@ -583,6 +584,7 @@ public class SourceAdapterImpl implements SourceAdapter {
                 if (!isFound) {
                     RoleSearchBean rsb = new RoleSearchBean();
                     rsb.setName(role.getName());
+                    rsb.setManagedSysId(role.getManagedSystemId());
                     List<Role> dbRoles = roleDataWebService.findBeans(rsb, requestorId, -1, -1);
                     if (CollectionUtils.isNotEmpty(dbRoles)) {
                         if (dbRoles.size() > 1) {

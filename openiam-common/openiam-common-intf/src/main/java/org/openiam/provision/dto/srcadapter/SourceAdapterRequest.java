@@ -55,13 +55,13 @@ public class SourceAdapterRequest {
     @XmlElements({
             @XmlElement(name = "group")}
     )
-    private Set<SourceAdapterEntityRequest> groups;
+    private Set<SourceAdapterEntityManagedSystemRequest> groups;
 
     @XmlElementWrapper(name = "roles-set")
     @XmlElements({
             @XmlElement(name = "role")}
     )
-    private Set<SourceAdapterEntityRequest> roles;
+    private Set<SourceAdapterEntityManagedSystemRequest> roles;
 
     @XmlElementWrapper(name = "resources-set")
     @XmlElements({
@@ -257,19 +257,19 @@ public class SourceAdapterRequest {
         this.lastDate = lastDate;
     }
 
-    public Set<SourceAdapterEntityRequest> getGroups() {
+    public Set<SourceAdapterEntityManagedSystemRequest> getGroups() {
         return groups;
     }
 
-    public void setGroups(Set<SourceAdapterEntityRequest> groups) {
+    public void setGroups(Set<SourceAdapterEntityManagedSystemRequest> groups) {
         this.groups = groups;
     }
 
-    public Set<SourceAdapterEntityRequest> getRoles() {
+    public Set<SourceAdapterEntityManagedSystemRequest> getRoles() {
         return roles;
     }
 
-    public void setRoles(Set<SourceAdapterEntityRequest> roles) {
+    public void setRoles(Set<SourceAdapterEntityManagedSystemRequest> roles) {
         this.roles = roles;
     }
 
