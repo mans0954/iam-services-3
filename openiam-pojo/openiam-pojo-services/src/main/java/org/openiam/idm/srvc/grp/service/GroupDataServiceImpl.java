@@ -403,7 +403,7 @@ public class GroupDataServiceImpl implements GroupDataService {
                     			group.getOrganizations().stream().map(e -> e.getEntity().getId()).collect(Collectors.toSet()) : null;
                     	group.getOrganizations().forEach(xref -> {
                     		dbGroup.getOrganizations().removeIf(e -> {
-                    			return !incomingOrganizationIds.contains(xref.getEntity().getId());
+                    			return !incomingOrganizationIds.contains(e.getEntity().getId());
                     		});
                     		dbGroup.addOrganization(xref.getEntity(), xref.getRights());
                     	});

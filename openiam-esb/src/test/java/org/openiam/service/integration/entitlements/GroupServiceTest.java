@@ -151,7 +151,8 @@ public class GroupServiceTest extends AbstractAttributeServiceTest<Group, GroupS
 			group.addOrganization(org2, modifiedRights);
 			group = saveAndAssert(org2, group, modifiedRights);
 			
-			group.getOrganizations().removeIf(e -> e.getEntityId().equals(org2.getId()));
+			final boolean wasRemoved = group.getOrganizations().removeIf(e -> e.getEntityId().equals(org2.getId()));
+			Assert.assertTrue(wasRemoved, "org2 not removed - bug in test");
 			group = saveAndAssert(org1, group, modifiedRights);
 			Assert.assertTrue(group.getOrganizations().stream().filter(e -> e.getEntityId().equals(org2.getId())).count() == 0);
 			

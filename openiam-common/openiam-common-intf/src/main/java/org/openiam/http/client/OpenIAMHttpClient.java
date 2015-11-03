@@ -22,11 +22,30 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLContexts;
+import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
+import org.apache.http.conn.ssl.TrustStrategy;
 import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 @Component("httpClientHelper")
 public final class OpenIAMHttpClient {
@@ -44,12 +63,41 @@ public final class OpenIAMHttpClient {
 	
 	private HttpClient client;
 	
-	public OpenIAMHttpClient() {
+	private static class DefaultTrustManager implements X509TrustManager {
+
+        @Override
+        public void checkClientTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {}
+
+        @Override
+        public void checkServerTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {}
+
+        @Override
+        public X509Certificate[] getAcceptedIssuers() {
+            return null;
+        }
+    }
+	
+	public OpenIAMHttpClient() throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException {
+		/*
+		SSLContext sslContext = SSLContexts.custom()
+		        .loadTrustMaterial(null, new TrustStrategy() {
+
+		            @Override
+		            public boolean isTrusted(final X509Certificate[] chain, final String authType) throws CertificateException {
+		                return true;
+		            }
+		        })
+		        .useTLS()
+		        .build();
+		*/
 		client = HttpClients.custom()
 				.setMaxConnPerRoute(maxNumOfConnectionsPerHost)
 				.setMaxConnTotal(maxNumOfTotalConnections)
 				.setRetryHandler(new DefaultHttpRequestRetryHandler(3, false))
-				.build();
+				.setSSLSocketFactory(new SSLConnectionSocketFactory(SSLContexts.custom()
+                    .loadTrustMaterial(null, new TrustSelfSignedStrategy())
+                    .build()
+                )).build();
 	}
 	
 	public String doPost(final URL url, final Map<String, String> headers, final Map<String, String> params) throws IOException {
