@@ -16,6 +16,12 @@ import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
+import org.openiam.idm.srvc.lang.dto.Language;
+import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
+import org.openiam.idm.srvc.meta.dto.MetadataType;
+import org.openiam.idm.srvc.meta.ws.MetadataWebService;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
+import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.dto.OrganizationUserDTO;
 import org.openiam.idm.srvc.org.service.OrganizationDataService;
@@ -62,7 +68,10 @@ public class SourceAdapterImpl implements SourceAdapter {
     private ResourceDataService resourceDataService;
     @Autowired
     private OrganizationDataService organizationDataService;
-
+    @Autowired
+    private MetadataWebService metadataWS;
+    @Autowired
+    private ManagedSystemWebService managedSysService;
     @Autowired
     protected SysConfiguration sysConfiguration;
 
@@ -183,6 +192,79 @@ public class SourceAdapterImpl implements SourceAdapter {
         }
         response.setError(warnings.toString());
         return response;
+    }
+
+    @Override
+    public SourceAdapterInfoResponse info() {
+        SourceAdapterInfoResponse response = new SourceAdapterInfoResponse();
+        MetadataTypeSearchBean metadataTypeSearchBean = new MetadataTypeSearchBean();
+        metadataTypeSearchBean.setDeepCopy(false);
+        metadataTypeSearchBean.setActive(true);
+        List<String> notes = new ArrayList<String>();
+        notes.add(this.getKeyNote());
+        notes.add(this.getWarningNote());
+        notes.add(this.getManagedSystems());
+        notes.add(this.getNote(metadataTypeSearchBean, MetadataTypeGrouping.ADDRESS));
+        notes.add(this.getNote(metadataTypeSearchBean, MetadataTypeGrouping.AFFILIATIONS));
+        notes.add(this.getNote(metadataTypeSearchBean, MetadataTypeGrouping.EMAIL));
+        notes.add(this.getNote(metadataTypeSearchBean, MetadataTypeGrouping.PHONE));
+        notes.add(this.getNote(metadataTypeSearchBean, MetadataTypeGrouping.USER_TYPE));
+        response.setNotes(notes);
+        return response;
+    }
+
+    private String getManagedSystems() {
+        StringBuilder sb = new StringBuilder("Available Managed System Ids (for principals) \n");
+        List<ManagedSysDto> managedSysDtos = managedSysService.getAllManagedSys();
+        if (CollectionUtils.isNotEmpty(managedSysDtos)) {
+            for (ManagedSysDto managedSysDto : managedSysDtos) {
+                if ("ACTIVE".equals(managedSysDto.getStatus())) {
+                    sb.append("id:");
+                    sb.append(managedSysDto.getId());
+                    sb.append("/Name:");
+                    sb.append(managedSysDto.getName());
+                    sb.append("\n");
+                }
+            }
+        }
+        return sb.toString();
+    }
+
+    private String getKeyNote() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("\n<key>,<requestor>,<user-supervisor> entities are working with name/value attributes\n");
+        sb.append("This means that user will be found by this key. Available key values are:\n");
+        sb.append("'user_id' - find by internal user Id\n");
+        sb.append("'email' - find by primary email\n");
+        sb.append("'employee_id' - find by employee Id\n");
+        return sb.toString();
+    }
+
+    private String getWarningNote() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("\n<skipWarnings> entity provide ability to skip all validation warnings and perform request\n");
+        sb.append("It may be wrong operation or role/group/role with unavailable names\n");
+        sb.append("In this case only wrong parts will be ignored\n");
+        return sb.toString();
+    }
+
+    private String getNote(MetadataTypeSearchBean metadataTypeSearchBean, MetadataTypeGrouping name) {
+        metadataTypeSearchBean.setGrouping(name);
+        List<MetadataType> types = metadataWS.findTypeBeans(metadataTypeSearchBean, 0, Integer.MAX_VALUE, null);
+        StringBuilder sb = new StringBuilder();
+        sb.append("\nAvailable types for ");
+        sb.append(name.name());
+        sb.append("\n");
+        if (CollectionUtils.isNotEmpty(types)) {
+            for (MetadataType type : types) {
+                sb.append("Description:");
+                sb.append(type.getDescription());
+                sb.append("/Value:");
+                sb.append(type.getId());
+                sb.append("\n");
+            }
+        }
+        return sb.toString();
     }
 
     private ProvisionUser convertToProvisionUser(SourceAdapterRequest request, StringBuilder warnings, String requestorId) throws Exception {

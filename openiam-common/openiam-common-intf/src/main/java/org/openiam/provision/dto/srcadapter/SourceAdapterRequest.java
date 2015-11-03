@@ -18,6 +18,7 @@ import java.util.Set;
         /*"subordinates",*/ "supervisors", "passwordRequest"})
 @XmlAccessorType(XmlAccessType.FIELD)
 public class SourceAdapterRequest {
+    @XmlElement(required = true)
     private SourceAdapterOperationEnum action;
     @XmlElement(required = true)
     private SourceAdapterKey key;

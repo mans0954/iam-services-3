@@ -1,5 +1,6 @@
 package org.openiam.provision.service;
 
+import org.openiam.provision.dto.srcadapter.SourceAdapterInfoResponse;
 import org.openiam.provision.dto.srcadapter.SourceAdapterRequest;
 import org.openiam.provision.dto.srcadapter.SourceAdapterResponse;
 
@@ -14,4 +15,7 @@ import javax.jws.WebService;
 public interface SourceAdapter {
     @WebMethod
     public SourceAdapterResponse perform(@WebParam(name = "user", targetNamespace = "") SourceAdapterRequest request);
+
+    @WebMethod
+    public SourceAdapterInfoResponse info();
 }
