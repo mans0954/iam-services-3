@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.continfo.domain;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import org.hibernate.annotations.*;
@@ -31,7 +32,7 @@ import javax.validation.constraints.Size;
 @DozerDTOCorrespondence(EmailAddress.class)
 @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Indexed
-public class EmailAddressEntity {
+public class EmailAddressEntity implements Serializable {
     @Id
     @GeneratedValue(generator = "system-uuid")
     @GenericGenerator(name = "system-uuid", strategy = "uuid")

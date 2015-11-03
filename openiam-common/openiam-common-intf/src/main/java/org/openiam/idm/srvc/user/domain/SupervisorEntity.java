@@ -6,10 +6,12 @@ import org.hibernate.annotations.Type;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.user.dto.Supervisor;
 
+import java.io.Serializable;
+
 @Entity
 @Table(name = "ORG_STRUCTURE")
 @DozerDTOCorrespondence(Supervisor.class)
-public class SupervisorEntity {
+public class SupervisorEntity implements Serializable {
     @EmbeddedId
     private SupervisorIDEntity id;
 
