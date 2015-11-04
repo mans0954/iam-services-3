@@ -43,7 +43,10 @@ import org.openiam.bpm.util.ActivitiConstants;
     "associationType",
     "associationId",
     "memberAssociationId",
-    "memberAssociationType"
+    "memberAssociationType",
+	"startMembershipDate",
+	"endMembershipDate",
+	"userNotes"
 })
 public class TaskWrapper implements Serializable {
 	
@@ -80,6 +83,12 @@ public class TaskWrapper implements Serializable {
     private String associationId;
     private String memberAssociationType;
     private String memberAssociationId;
+
+	@XmlSchemaType(name = "dateTime")
+	private Date startMembershipDate;
+	@XmlSchemaType(name = "dateTime")
+	private Date endMembershipDate;
+	private String userNotes;
 
 	public TaskWrapper() {
 		
@@ -165,6 +174,16 @@ public class TaskWrapper implements Serializable {
                     if(customVariables.containsKey(ActivitiConstants.MEMBER_ASSOCIATION_ID.getName())) {
                         memberAssociationId = (String)customVariables.get(ActivitiConstants.MEMBER_ASSOCIATION_ID.getName());
                     }
+
+					if(customVariables.containsKey(ActivitiConstants.START_DATE.getName())) {
+						startMembershipDate = (Date)customVariables.get(ActivitiConstants.START_DATE.getName());
+					}
+					if(customVariables.containsKey(ActivitiConstants.END_DATE.getName())) {
+						endMembershipDate = (Date)customVariables.get(ActivitiConstants.END_DATE.getName());
+					}
+					if(customVariables.containsKey(ActivitiConstants.USER_NOTE.getName())) {
+						userNotes = (String)customVariables.get(ActivitiConstants.USER_NOTE.getName());
+					}
 				}
 			} catch(ActivitiException e) {
 				LOG.warn(String.format("Could not fetch variables for Execution ID: %s.  Changes are that the task is completed.", executionId));
@@ -284,8 +303,30 @@ public class TaskWrapper implements Serializable {
 	public void setEndDate(Date endDate) {
 		this.endDate = endDate;
 	}
-	
-	
+
+	public Date getStartMembershipDate() {
+		return startMembershipDate;
+	}
+
+	public void setStartMembershipDate(Date startMembershipDate) {
+		this.startMembershipDate = startMembershipDate;
+	}
+
+	public Date getEndMembershipDate() {
+		return endMembershipDate;
+	}
+
+	public void setEndMembershipDate(Date endMembershipDate) {
+		this.endMembershipDate = endMembershipDate;
+	}
+
+	public String getUserNotes() {
+		return userNotes;
+	}
+
+	public void setUserNotes(String userNotes) {
+		this.userNotes = userNotes;
+	}
 
 	public Map<String, String> getRequestMetadataMap() {
 		return requestMetadataMap;

@@ -1,13 +1,10 @@
 package org.openiam.bpm.request;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -32,7 +29,10 @@ import org.openiam.idm.srvc.mngsys.domain.AssociationType;
         "jsonSerializedParams",
         "additionalApproverIds",
         "deletable",
-        "accessRights"
+        "accessRights",
+        "startDate",
+        "endDate",
+        "userNotes"
 })
 public class GenericWorkflowRequest extends BaseObject {
 
@@ -54,6 +54,12 @@ public class GenericWorkflowRequest extends BaseObject {
     private boolean isCustomApproversSequential;
     private Set<String> additionalApproverIds;
     private Set<String> accessRights;
+
+    @XmlSchemaType(name = "dateTime")
+    private Date startDate;
+    @XmlSchemaType(name = "dateTime")
+    private Date endDate;
+    private String userNotes;
 
     public String getActivitiRequestType() {
         return activitiRequestType;
@@ -213,6 +219,28 @@ public class GenericWorkflowRequest extends BaseObject {
 	public void setAccessRights(Set<String> accessRights) {
 		this.accessRights = accessRights;
 	}
-    
-    
+
+    public Date getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(Date startDate) {
+        this.startDate = startDate;
+    }
+
+    public Date getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(Date endDate) {
+        this.endDate = endDate;
+    }
+
+    public String getUserNotes() {
+        return userNotes;
+    }
+
+    public void setUserNotes(String userNotes) {
+        this.userNotes = userNotes;
+    }
 }

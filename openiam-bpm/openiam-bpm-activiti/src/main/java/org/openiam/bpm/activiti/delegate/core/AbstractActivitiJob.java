@@ -232,6 +232,16 @@ public abstract class AbstractActivitiJob implements JavaDelegate, TaskListener 
 	protected Set<String> getAccessRights(final DelegateExecution execution) {
 		return getObjectVariable(execution, ActivitiConstants.ACCESS_RIGHTS, Set.class);
 	}
+
+	protected Date getStartDate(final DelegateExecution execution) {
+		return getObjectVariable(execution, ActivitiConstants.START_DATE, Date.class);
+	}
+	protected Date getEndDate(final DelegateExecution execution) {
+		return getObjectVariable(execution, ActivitiConstants.END_DATE, Date.class);
+	}
+	protected String getUserNotes(final DelegateExecution execution) {
+		return getStringVariable(execution, ActivitiConstants.USER_NOTE);
+	}
 	
 	protected void addAuditLogChild(final DelegateExecution execution, final IdmAuditLog log) {
 		final String auditLogId = getStringVariable(execution, ActivitiConstants.AUDIT_LOG_ID);

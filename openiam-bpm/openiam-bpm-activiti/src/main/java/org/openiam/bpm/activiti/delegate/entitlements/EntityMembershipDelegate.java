@@ -29,6 +29,7 @@ import org.openiam.provision.dto.ProvisionUser;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -46,6 +47,10 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
 		final String associationId = getAssociationId(execution);
 		final String memberAssociationId = getMemberAssociationId(execution);
 		final Set<String> rights = getAccessRights(execution);
+		final Date startDate = getStartDate(execution);
+		final Date endDate = getEndDate(execution);
+		final String userNotes = getUserNotes(execution);
+
 		
 		Group group = null;
 		Role role = null;
