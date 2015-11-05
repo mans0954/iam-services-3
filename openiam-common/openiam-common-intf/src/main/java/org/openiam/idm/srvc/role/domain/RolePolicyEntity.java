@@ -8,6 +8,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.role.dto.RolePolicy;
@@ -15,6 +17,7 @@ import org.openiam.idm.srvc.role.dto.RolePolicy;
 @Entity
 @Table(name="ROLE_POLICY")
 @DozerDTOCorrespondence(RolePolicy.class)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class RolePolicyEntity implements Serializable {
 
     @Id

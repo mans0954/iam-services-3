@@ -16,7 +16,6 @@ import java.util.*;
 
 @Entity
 @Table(name = "MANAGED_SYS")
-@Cacheable
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(ManagedSysDto.class)
 public class ManagedSysEntity implements Serializable {
@@ -98,19 +97,19 @@ public class ManagedSysEntity implements Serializable {
     private boolean changedByEndUser = true;
 
     @OneToMany(mappedBy = "managedSys")
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<ManagedSystemObjectMatchEntity> mngSysObjectMatchs = new HashSet<ManagedSystemObjectMatchEntity>();
 
-//    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-//    @JoinColumn(name = "MANAGED_SYS_ID", referencedColumnName = "MANAGED_SYS_ID")
-//    private List<ManagedSysRuleEntity> rules = new ArrayList<ManagedSysRuleEntity>(0);
-
     @OneToMany(fetch = FetchType.LAZY, orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "managedSystem")
+    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<AttributeMapEntity> attributeMaps = new HashSet<AttributeMapEntity>(0);
 
     @OneToMany(orphanRemoval = false, cascade = {CascadeType.DETACH, CascadeType.REFRESH}, mappedBy = "managedSystem", fetch = FetchType.LAZY)
+    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<GroupEntity> groups;
 
     @OneToMany(orphanRemoval = false, cascade = {CascadeType.DETACH, CascadeType.REFRESH}, mappedBy = "managedSystem", fetch = FetchType.LAZY)
+    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<RoleEntity> roles;
 
 

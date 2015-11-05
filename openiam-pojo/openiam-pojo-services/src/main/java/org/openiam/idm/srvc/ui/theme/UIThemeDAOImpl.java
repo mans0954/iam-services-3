@@ -13,32 +13,38 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class UIThemeDAOImpl extends BaseDaoImpl<UIThemeEntity, String> implements UIThemeDAO {
 
-	@Override
+    protected boolean cachable() {
+        return true;
+    }
+
+    @Override
     protected Criteria getExampleCriteria(final SearchBean searchBean) {
         Criteria criteria = getCriteria();
-        if(searchBean != null && (searchBean instanceof UIThemeSearchBean)) {
-        	final UIThemeSearchBean uiThemeSearchBean = (UIThemeSearchBean)searchBean;
+        if (searchBean != null && (searchBean instanceof UIThemeSearchBean)) {
+            final UIThemeSearchBean uiThemeSearchBean = (UIThemeSearchBean) searchBean;
         }
+        criteria.setCacheable(this.cachable());
         return criteria;
-	}
-	
-	@Override
-	protected Criteria getExampleCriteria(UIThemeEntity entity) {
-		final Criteria criteria = getCriteria();
-		if(entity != null) {
-			
-		}
-		return criteria;
-	}
-	
-	@Override
-	protected String getPKfieldName() {
-		return "id";
-	}
+    }
 
-	@Override
-	public UIThemeEntity getByName(String name) {
-		return (UIThemeEntity)getCriteria().add(Restrictions.eq("name", name)).uniqueResult();
-	}
+    @Override
+    protected Criteria getExampleCriteria(UIThemeEntity entity) {
+        final Criteria criteria = getCriteria();
+        if (entity != null) {
+
+        }
+        criteria.setCacheable(this.cachable());
+        return criteria;
+    }
+
+    @Override
+    protected String getPKfieldName() {
+        return "id";
+    }
+
+    @Override
+    public UIThemeEntity getByName(String name) {
+        return (UIThemeEntity) getCriteria().setCacheable(this.cachable()).add(Restrictions.eq("name", name)).uniqueResult();
+    }
 
 }

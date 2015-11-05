@@ -1,15 +1,18 @@
 package org.openiam.idm.srvc.mngsys.domain;
 
-import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.*;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
 
 import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import java.io.Serializable;
 
 @Entity
 @Table(name = "PROVISION_CONNECTOR")
 @DozerDTOCorrespondence(ProvisionConnectorDto.class)
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class ProvisionConnectorEntity implements Serializable {
     @Id
     @GeneratedValue(generator = "system-uuid")

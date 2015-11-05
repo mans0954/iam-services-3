@@ -40,7 +40,12 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 	@Autowired
     private ResourceSearchBeanConverter resourceSearchBeanConverter;
 
-	@Override
+    @Override
+    protected boolean cachable() {
+        return true;
+    }
+
+    @Override
 	protected Criteria getExampleCriteria(SearchBean searchBean) {
 		Criteria criteria = getCriteria();
 		if(searchBean != null && searchBean instanceof ResourceSearchBean) {
@@ -156,26 +161,6 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 		}
 		return criteria;
 	}
-
-	/*
-	@Override
-	public List<ResourceEntity> getRootResources(ResourceEntity resource,
-			int startAt, int size) {
-		final Criteria criteria = getExampleCriteria(resource);
-		// criteria.add(Restrictions.isNull("parentResources"));
-
-		if (startAt > -1) {
-			criteria.setFirstResult(startAt);
-		}
-
-		if (size > -1) {
-			criteria.setMaxResults(size);
-		}
-		criteria.add(Restrictions.isEmpty("parentResources"));
-
-		return (List<ResourceEntity>) criteria.list();
-	}
-	*/
 
 	@Override
 	@LocalizedDatabaseGet

@@ -338,6 +338,15 @@ public class PasswordServiceImpl implements PasswordService {
 
         // get the user for this principal
         final LoginEntity lg = loginManager.getLoginByManagedSys(principal, managedSysId);
+        return this.getPasswordPolicy(lg);
+    }
+
+    @Override
+    public Policy getPasswordPolicy(LoginEntity lg) {
+        // Find a password policy for this user
+        // order of search, type, classification, domain, global
+
+        // get the user for this principal
         log.info(String.format("login=%s", lg));
 //		final UserEntity user = userManager.getUser(lg.getUserId());
         PasswordPolicyAssocSearchBean searchBean = new PasswordPolicyAssocSearchBean();

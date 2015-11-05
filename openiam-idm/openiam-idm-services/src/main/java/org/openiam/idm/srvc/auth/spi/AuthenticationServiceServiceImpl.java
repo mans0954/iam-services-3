@@ -23,6 +23,7 @@ import org.openiam.idm.srvc.auth.domain.AuthStateId;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.*;
 import org.openiam.idm.srvc.auth.login.AuthStateDAO;
+import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.auth.service.AuthCredentialsValidator;
 import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
 import org.openiam.idm.srvc.auth.service.AuthenticationServiceService;
@@ -94,8 +95,8 @@ public class AuthenticationServiceServiceImpl implements AuthenticationServiceSe
     private String defaultLoginModule;
 
     @Autowired
-    @Qualifier("loginWS")
-    protected LoginDataWebService loginManager;
+    @Qualifier("loginManager")
+    protected LoginDataService loginManager;
 
     @Value("${org.openiam.core.login.authentication.context.class}")
     private String authContextClass;
@@ -174,7 +175,7 @@ public class AuthenticationServiceServiceImpl implements AuthenticationServiceSe
             String loginModName = null;
             LoginModuleSelector modSel = new LoginModuleSelector();
 
-            Login lg = null;
+            LoginEntity lg = null;
 
             newLoginEvent.setManagedSysId(sysConfiguration.getDefaultManagedSysId());
 
@@ -214,7 +215,7 @@ public class AuthenticationServiceServiceImpl implements AuthenticationServiceSe
                 if (StringUtils.isBlank(password)) {
 
                     log.debug("Invalid password");
-	                /*
+                    /*
 	                log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
 	                        "INVALID PASSWORD", secDomainId, null, principal, null,
 	                        null, clientIP, nodeIP);
@@ -229,8 +230,7 @@ public class AuthenticationServiceServiceImpl implements AuthenticationServiceSe
 
                 }
 
-                LoginResponse lgResp = loginManager.getLoginByManagedSys(principal, sysConfiguration.getDefaultManagedSysId());
-                lg = lgResp.getPrincipal();
+                lg = loginManager.getLoginByManagedSys(principal, sysConfiguration.getDefaultManagedSysId());
 
                 if (lg == null) {
                     newLoginEvent.fail();
@@ -316,7 +316,7 @@ public class AuthenticationServiceServiceImpl implements AuthenticationServiceSe
 
             Map<String, Object> authParamMap = new HashMap<String, Object>();
             authParamMap.put("AUTH_SYS_ID", sysConfiguration.getDefaultManagedSysId());
-            authParamMap.put(AuthenticationRequest.AUTH_POLICY_ID,authPolicyId);
+            authParamMap.put(AuthenticationRequest.AUTH_POLICY_ID, authPolicyId);
             ctx.setAuthParam(authParamMap);
             ctx.setLoginModule(loginModName);
 
@@ -414,12 +414,11 @@ public class AuthenticationServiceServiceImpl implements AuthenticationServiceSe
         String tokenLife = getPolicyAttribute(plcy.getPolicyAttributes(), "TOKEN_LIFE");
         String tokenIssuer = getPolicyAttribute(plcy.getPolicyAttributes(), "TOKEN_ISSUER");
         String managedSyId = getPolicyAttribute(plcy.getPolicyAttributes(), "MANAGED_SYS_ID");
-        if (StringUtils.isBlank(managedSyId)){
+        if (StringUtils.isBlank(managedSyId)) {
             managedSyId = sysConfiguration.getDefaultManagedSysId();
         }
         // get the userId of this token
-        LoginResponse lgResp = loginManager.getLoginByManagedSys(principal, managedSyId);
-        Login lg = lgResp.getPrincipal();
+        LoginEntity lg = loginManager.getLoginByManagedSys(principal, managedSyId);
 
         if (lg == null) {
             resp.setStatus(ResponseStatus.FAILURE);

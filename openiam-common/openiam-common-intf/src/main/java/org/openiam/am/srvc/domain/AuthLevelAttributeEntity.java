@@ -13,6 +13,7 @@ import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.am.srvc.dto.AuthLevelAttribute;
 import org.openiam.dozer.DozerDTOCorrespondence;
@@ -20,6 +21,7 @@ import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 
 @Entity
 @Table(name = "AUTH_LEVEL_ATTRIBUTE")
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(AuthLevelAttribute.class)
 public class AuthLevelAttributeEntity implements Serializable {
 
@@ -31,10 +33,12 @@ public class AuthLevelAttributeEntity implements Serializable {
 	
 	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name="AUTH_LEVEL_GROUPING_ID", referencedColumnName = "AUTH_LEVEL_GROUPING_ID")
+    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	private AuthLevelGroupingEntity grouping;
 	
 	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "TYPE_ID", referencedColumnName="TYPE_ID")
+    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private MetadataTypeEntity type;
 	
     @Column(name = "NAME", length = 100)

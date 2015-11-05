@@ -23,96 +23,102 @@ import java.util.Set;
  */
 @Repository("metadataElementDAO")
 public class MetadataElementDAOImpl extends BaseDaoImpl<MetadataElementEntity, String> implements MetadataElementDAO {
-
+    @Override
+    protected boolean cachable() {
+        return true;
+    }
 
     @Override
     public MetadataElementEntity findByAttrNameTypeId(String attrName, String typeId) {
-        return (MetadataElementEntity)getCriteria().add(Restrictions.eq("attributeName",attrName)).add(Restrictions.eq("metadataType.id",typeId)).uniqueResult();
+        return (MetadataElementEntity) getCriteria().setCacheable(cachable()).add(Restrictions.eq("attributeName", attrName)).add(Restrictions.eq("metadataType.id", typeId)).uniqueResult();
     }
 
     @Override
     public String findIdByAttrNameTypeId(String attrName, String typeId) {
-        return (String)getCriteria().add(Restrictions.eq("attributeName", attrName)).add(Restrictions.eq("metadataType.id", typeId)).setProjection(Projections.id()).uniqueResult();
+        return (String) getCriteria().setCacheable(cachable()).add(Restrictions.eq("attributeName", attrName)).add(Restrictions.eq("metadataType.id", typeId)).setProjection(Projections.id()).uniqueResult();
     }
 
     @Override
-	protected Criteria getExampleCriteria(final SearchBean searchBean) {
-		final Criteria criteria = getCriteria();
-		if(searchBean != null && searchBean instanceof MetadataElementSearchBean) {
-			final MetadataElementSearchBean metaSearchBean = (MetadataElementSearchBean)searchBean;
-			if(CollectionUtils.isNotEmpty(metaSearchBean.getKeys())) {
-				criteria.add(Restrictions.in("id", metaSearchBean.getKeys()));
-			} else {
-				setAttributeNameCriteria(criteria, metaSearchBean.getAttributeName());	
-				if(CollectionUtils.isNotEmpty(metaSearchBean.getTypeIdSet())) {
-					criteria.add(Restrictions.in("metadataType.id", metaSearchBean.getTypeIdSet()));
-				}
-				
-				//TODO:  Bug in Hibernate - metadataType.grouping throws org.hibernate.QueryException: could not resolve property
-				if(CollectionUtils.isNotEmpty(metaSearchBean.getExcludedGroupings())) {
-					//criteria.createAlias("metadataType", "mt").add(Restrictions.not(Restrictions.in("mt.grouping", metaSearchBean.getExcludedGroupings())));
-					//criteria.add(Restrictions.not(Restrictions.in("metadataType.grouping", metaSearchBean.getExcludedGroupings())));
-				}
-				
-				if(CollectionUtils.isNotEmpty(metaSearchBean.getGroupings())) {
-					criteria.createAlias("metadataType", "mt")
-							.add(Restrictions.in("mt.grouping", metaSearchBean.getGroupings()));
-				}
-				
-				if(StringUtils.isNotBlank(metaSearchBean.getTemplateId())) {
-					final Set<String> templateIdSet = new HashSet<String>();	
-					templateIdSet.add(metaSearchBean.getTemplateId());
-					setTemplateCriteria(criteria, templateIdSet);
-				}
-			}
-		}
-		return criteria;
-	}
+    protected Criteria getExampleCriteria(final SearchBean searchBean) {
+        final Criteria criteria = getCriteria();
+        if (searchBean != null && searchBean instanceof MetadataElementSearchBean) {
+            final MetadataElementSearchBean metaSearchBean = (MetadataElementSearchBean) searchBean;
+            if (CollectionUtils.isNotEmpty(metaSearchBean.getKeys())) {
+                criteria.add(Restrictions.in("id", metaSearchBean.getKeys()));
+            } else {
+                setAttributeNameCriteria(criteria, metaSearchBean.getAttributeName());
+                if (CollectionUtils.isNotEmpty(metaSearchBean.getTypeIdSet())) {
+                    criteria.add(Restrictions.in("metadataType.id", metaSearchBean.getTypeIdSet()));
+                }
 
-	@Override
-	protected Criteria getExampleCriteria(final MetadataElementEntity entity) {
-		final Criteria criteria = getCriteria();
-		if(StringUtils.isNotBlank(entity.getId())) {
-			criteria.add(Restrictions.eq("id", entity.getId()));
-		} else {
-			setAttributeNameCriteria(criteria, entity.getAttributeName());			
-			if(StringUtils.isNotBlank(entity.getDataType())) {
-				criteria.add(Restrictions.eq("dataType", entity.getDataType()));
-			}
-			
-			if(entity.getMetadataType() != null && StringUtils.isNotBlank(entity.getMetadataType().getId())) {
-				final String metadataTypeId = entity.getMetadataType().getId();
-				criteria.add(Restrictions.eq("metadataType.id", metadataTypeId));
-			}
-			
-			if(CollectionUtils.isNotEmpty(entity.getTemplateSet())) {
-				final Set<String> templateIdSet = new HashSet<String>();
-				for(final MetadataElementPageTemplateXrefEntity xref : entity.getTemplateSet()) {
-					if(xref.getTemplate() != null && StringUtils.isNotBlank(xref.getTemplate().getId())) {
-						templateIdSet.add(xref.getTemplate().getId());
-					}
-				}
-				
-				setTemplateCriteria(criteria, templateIdSet);
-			}
-			
-			if(entity.getResource() != null && StringUtils.isNotEmpty(entity.getResource().getId())) {
-            	criteria.add(Restrictions.eq("resource.id", entity.getResource().getId()));
+                //TODO:  Bug in Hibernate - metadataType.grouping throws org.hibernate.QueryException: could not resolve property
+                if (CollectionUtils.isNotEmpty(metaSearchBean.getExcludedGroupings())) {
+                    //criteria.createAlias("metadataType", "mt").add(Restrictions.not(Restrictions.in("mt.grouping", metaSearchBean.getExcludedGroupings())));
+                    //criteria.add(Restrictions.not(Restrictions.in("metadataType.grouping", metaSearchBean.getExcludedGroupings())));
+                }
+
+                if (CollectionUtils.isNotEmpty(metaSearchBean.getGroupings())) {
+                    criteria.createAlias("metadataType", "mt")
+                            .add(Restrictions.in("mt.grouping", metaSearchBean.getGroupings()));
+                }
+
+                if (StringUtils.isNotBlank(metaSearchBean.getTemplateId())) {
+                    final Set<String> templateIdSet = new HashSet<String>();
+                    templateIdSet.add(metaSearchBean.getTemplateId());
+                    setTemplateCriteria(criteria, templateIdSet);
+                }
             }
-		}
-		return criteria;
-	}
-	
-	private void setTemplateCriteria(final Criteria criteria, final Set<String> templateIdSet) {
-		if(CollectionUtils.isNotEmpty(templateIdSet)) {
-			criteria.createAlias("templateSet", "xref")
-					.createAlias("xref.template", "template")
-					.add(Restrictions.in("template.id", templateIdSet));
-		}
-	}
-	
-	private void setAttributeNameCriteria(final Criteria criteria, final String attributeName) {
-		if (StringUtils.isNotBlank(attributeName)) {
+        }
+        criteria.setCacheable(cachable());
+        return criteria;
+    }
+
+    @Override
+    protected Criteria getExampleCriteria(final MetadataElementEntity entity) {
+        final Criteria criteria = getCriteria();
+        if (StringUtils.isNotBlank(entity.getId())) {
+            criteria.add(Restrictions.eq("id", entity.getId()));
+        } else {
+            setAttributeNameCriteria(criteria, entity.getAttributeName());
+            if (StringUtils.isNotBlank(entity.getDataType())) {
+                criteria.add(Restrictions.eq("dataType", entity.getDataType()));
+            }
+
+            if (entity.getMetadataType() != null && StringUtils.isNotBlank(entity.getMetadataType().getId())) {
+                final String metadataTypeId = entity.getMetadataType().getId();
+                criteria.add(Restrictions.eq("metadataType.id", metadataTypeId));
+            }
+
+            if (CollectionUtils.isNotEmpty(entity.getTemplateSet())) {
+                final Set<String> templateIdSet = new HashSet<String>();
+                for (final MetadataElementPageTemplateXrefEntity xref : entity.getTemplateSet()) {
+                    if (xref.getTemplate() != null && StringUtils.isNotBlank(xref.getTemplate().getId())) {
+                        templateIdSet.add(xref.getTemplate().getId());
+                    }
+                }
+
+                setTemplateCriteria(criteria, templateIdSet);
+            }
+
+            if (entity.getResource() != null && StringUtils.isNotEmpty(entity.getResource().getId())) {
+                criteria.add(Restrictions.eq("resource.id", entity.getResource().getId()));
+            }
+        }
+        criteria.setCacheable(this.cachable());
+        return criteria;
+    }
+
+    private void setTemplateCriteria(final Criteria criteria, final Set<String> templateIdSet) {
+        if (CollectionUtils.isNotEmpty(templateIdSet)) {
+            criteria.setCacheable(this.cachable()).createAlias("templateSet", "xref")
+                    .createAlias("xref.template", "template")
+                    .add(Restrictions.in("template.id", templateIdSet));
+        }
+    }
+
+    private void setAttributeNameCriteria(final Criteria criteria, final String attributeName) {
+        criteria.setCacheable(cachable());
+        if (StringUtils.isNotBlank(attributeName)) {
             String name = attributeName;
             MatchMode matchMode = null;
             if (StringUtils.indexOf(name, "*") == 0) {
@@ -120,7 +126,7 @@ public class MetadataElementDAOImpl extends BaseDaoImpl<MetadataElementEntity, S
                 name = name.substring(1);
             }
             if (StringUtils.isNotEmpty(name) && StringUtils.indexOf(name, "*") == name.length() - 1) {
-            	name = name.substring(0, name.length() - 1);
+                name = name.substring(0, name.length() - 1);
                 matchMode = (matchMode == MatchMode.END) ? MatchMode.ANYWHERE : MatchMode.START;
             }
 
@@ -132,20 +138,20 @@ public class MetadataElementDAOImpl extends BaseDaoImpl<MetadataElementEntity, S
                 }
             }
         }
-	}
+    }
 
     @Override
     protected String getPKfieldName() {
         return "id";
     }
 
-	@Override
-	public List<MetadataElementEntity> getByResourceId(String resourceId) {
-		final MetadataElementEntity entity = new MetadataElementEntity();
-		final ResourceEntity resource = new ResourceEntity();
-		resource.setId(resourceId);
-		entity.setResource(resource);
-		return getByExample(entity);
-	}
+    @Override
+    public List<MetadataElementEntity> getByResourceId(String resourceId) {
+        final MetadataElementEntity entity = new MetadataElementEntity();
+        final ResourceEntity resource = new ResourceEntity();
+        resource.setId(resourceId);
+        entity.setResource(resource);
+        return getByExample(entity);
+    }
 
 }

@@ -10,6 +10,7 @@ import org.openiam.connector.type.response.ResponseType;
 import org.openiam.exception.AuthenticationException;
 import org.openiam.idm.srvc.auth.context.AuthenticationContext;
 import org.openiam.idm.srvc.auth.context.PasswordCredential;
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.AuthenticationRequest;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.Subject;
@@ -76,8 +77,7 @@ public class MngSysLoginModule extends AbstractLoginModule {
         String managedSysId = mSys.getId();
 
         // checking if Login exists in OpenIAM
-        LoginResponse lgResp = loginManager.getLoginByManagedSys(principal, managedSysId);
-        Login lg = lgResp.getPrincipal();
+        LoginEntity lg = loginManager.getLoginByManagedSys(principal, managedSysId);
         if (lg == null) {
             throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_LOGIN);
         }
@@ -165,7 +165,7 @@ public class MngSysLoginModule extends AbstractLoginModule {
                 if (failCount >= authFailCount) {
                     // lock the record and save the record.
                     lg.setIsLocked(1);
-                    loginManager.saveLogin(lg);
+                    loginManager.updateLogin(lg);
 
                     // set the flag on the primary user record
                     user.setSecondaryStatus(UserStatusEnum.LOCKED);
@@ -175,7 +175,7 @@ public class MngSysLoginModule extends AbstractLoginModule {
 
                 } else {
                     // update the counter save the record
-                    loginManager.saveLogin(lg);
+                    loginManager.updateLogin(lg);
 
                     throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_PASSWORD);
                 }
@@ -217,7 +217,7 @@ public class MngSysLoginModule extends AbstractLoginModule {
         lg.setChallengeResponseFailCount(0);
         lg.setFirstTimeLogin(0);
         log.debug("-Good Authn: Login object updated.");
-        loginManager.saveLogin(lg);
+        loginManager.updateLogin(lg);
 
         // check the user status
         if (UserStatusEnum.PENDING_INITIAL_LOGIN.equals(user.getStatus()) ||

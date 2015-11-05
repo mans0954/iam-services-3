@@ -9,6 +9,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.am.srvc.dto.URIPatternMetaType;
 import org.openiam.dozer.DozerDTOCorrespondence;
@@ -16,6 +17,7 @@ import org.openiam.dozer.DozerDTOCorrespondence;
 @Entity
 @Table(name = "URI_PATTERN_META_TYPE")
 @DozerDTOCorrespondence(URIPatternMetaType.class)
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class URIPatternMetaTypeEntity  implements Serializable {
 
 	@Id

@@ -1381,7 +1381,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
                                 auditLog.setTargetUser(se.getId(), login != null ? loginSupervisor.getLogin() : StringUtils.EMPTY);
                                 auditLog.setAction(AuditAction.DELETE_SUPERVISOR.value());
 
-                                auditLog.addCustomRecord("SUPERVISOR", loginSupervisor.getLogin());
+                                auditLog.addCustomRecord("SUPERVISOR", loginSupervisor != null ? loginSupervisor.getLogin() : se.getId());
                                 parentLog.addChild(auditLog);
                                 // -------------------------------------------------
                             }
@@ -1401,9 +1401,9 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
                     String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
                     Login loginSupervisor = UserUtils.getUserManagedSysIdentity(sysConfiguration.getDefaultManagedSysId(), se.getPrincipalList());
                     auditLog.setTargetUser(userEntity.getId(), loginStr);
-                    auditLog.setTargetUser(se.getId(), login != null ? loginSupervisor.getLogin() : StringUtils.EMPTY);
+                    auditLog.setTargetUser(se.getId(), loginSupervisor != null ? loginSupervisor.getLogin() : StringUtils.EMPTY);
                     auditLog.setAction(AuditAction.ADD_SUPERVISOR.value());
-                    auditLog.addCustomRecord("SUPERVISOR", loginSupervisor.getLogin());
+                    auditLog.addCustomRecord("SUPERVISOR", loginSupervisor != null ? loginSupervisor.getLogin() : se.getId());
                     parentLog.addChild(auditLog);
                     // -------------------------------------------------
 

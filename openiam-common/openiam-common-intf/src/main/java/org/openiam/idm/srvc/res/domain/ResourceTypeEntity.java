@@ -10,6 +10,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.openiam.base.domain.KeyEntity;
@@ -23,6 +24,7 @@ import org.openiam.internationalization.InternationalizedCollection;
 @Table(name = "RESOURCE_TYPE")
 @DozerDTOCorrespondence(ResourceType.class)
 @AttributeOverride(name = "id", column = @Column(name = "RESOURCE_TYPE_ID"))
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Internationalized
 public class ResourceTypeEntity extends KeyEntity {
 
@@ -54,6 +56,7 @@ public class ResourceTypeEntity extends KeyEntity {
     
     @Transient
     @InternationalizedCollection(targetField="displayName")
+    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Map<String, LanguageMappingEntity> displayNameMap;
     
     @Transient
