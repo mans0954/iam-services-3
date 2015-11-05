@@ -52,7 +52,12 @@ public enum ActivitiConstants {
 	ORGANIZATION("Organization", "organization", false),
 	
 	IS_REQUESTOR_ONLY_APROVER("IsRequestorOnlyApprover", null, false),
-	IS_REQUESTOR_CANDIDATE("IsRequestorCandidate", null, false);
+	IS_REQUESTOR_CANDIDATE("IsRequestorCandidate", null, false),
+
+	// TODO: need to fix field name once start/end date will be added to the entity model
+	START_DATE("StartDate", null, false),
+	END_DATE("EndDate", null, false),
+	USER_NOTE("UserNotes", null, false);
 	
 	private String name;
 	

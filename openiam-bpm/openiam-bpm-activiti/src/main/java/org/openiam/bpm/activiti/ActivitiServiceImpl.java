@@ -682,6 +682,17 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			variables.put(ActivitiConstants.REQUESTOR.getName(), request.getRequestorUserId());
 			variables.put(ActivitiConstants.DELETABLE.getName(), Boolean.valueOf(request.isDeletable()));
 			variables.put(ActivitiConstants.ACCESS_RIGHTS.getName(), request.getAccessRights());
+
+			if(request.getStartDate() != null) {
+				variables.put(ActivitiConstants.START_DATE.getName(), request.getStartDate());
+			}
+			if(request.getEndDate() != null) {
+				variables.put(ActivitiConstants.END_DATE.getName(), request.getEndDate());
+			}
+			if(request.getUserNotes() != null) {
+				variables.put(ActivitiConstants.USER_NOTE.getName(), request.getUserNotes());
+			}
+
 			if(request.getAssociationId() != null) {
 				variables.put(ActivitiConstants.ASSOCIATION_ID.getName(), request.getAssociationId());
 			}
