@@ -1,6 +1,10 @@
 #!/bin/bash
 
 echo 'Will change the version in pom.xml files...'
+
+echo 'VERSION ARG: '
+echo $1
+
 # get current branch name
 branch=$(git rev-parse --abbrev-ref HEAD)
 echo 'Current branch: ' 
@@ -23,12 +27,12 @@ version=$branch
 suffix=$(echo $version | cut -d \- -f 2)
 
 # check  branch
-if [ $branch == 'master' ]; then
+if [ $branch = 'master' ]; then
 	echo "Update version in master branch is not allowed. Please use corresponding RELEASE branch"  
 	exit 999;
 fi
 
-if [ $branch == 'development' ]; then
+if [ $branch = 'development' ]; then
 	if [ -z $1 ]; then
 		echo "Please provide new project version. Usage: ./update-version <new version>"        
 		exit 999;
@@ -36,7 +40,7 @@ if [ $branch == 'development' ]; then
         
         version=$1
 fi
-if [ $prefix_branch == 'RELEASE' ]; then
+if [ $prefix_branch = 'RELEASE' ]; then
 	version=$suffix.$prefix_branch
 
 fi
