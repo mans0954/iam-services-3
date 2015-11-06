@@ -98,6 +98,11 @@ public class SourceAdapterImpl implements SourceAdapter {
         }
         String requestorId = null;
         try {
+
+            if (request.getAction() == null) {
+                throw new Exception("Can't process... 'action' is not defined!");
+            }
+
             User requestor = this.getUser(request.getRequestor(), request);
             if (requestor != null && StringUtils.isNotBlank(requestor.getId())) {
                 requestorId = requestor.getId();
@@ -118,9 +123,12 @@ public class SourceAdapterImpl implements SourceAdapter {
         ProvisionUser pUser = null;
         try {
             pUser = this.convertToProvisionUser(request, warnings, requestorId);
+            if (SourceAdapterOperationEnum.ADD.equals(request.getAction()) && StringUtils.isNotBlank(pUser.getId())) {
+                throw new Exception("Such user exists. Can't add! User=" + pUser.getDisplayName());
+            }
         } catch (Exception e) {
             response.setStatus(ResponseStatus.FAILURE);
-            response.setError(e.getMessage());
+            response.setError(e.getCause().getMessage());
             idmAuditLog.fail();
             idmAuditLog.setFailureReason(e.getMessage());
             idmAuditLog.setException(e);
@@ -890,11 +898,10 @@ public class SourceAdapterImpl implements SourceAdapter {
             }
             return userList.get(0);
         } else if (SourceAdapterOperationEnum.ADD.equals(request.getAction())) {
-            new User();
+            return new User();
         } else {
             throw new Exception("No user with such Identifier=" + matchAttrName + ":" + matchAttrValue);
         }
-        return null;
     }
 
 }
