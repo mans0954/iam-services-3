@@ -553,4 +553,5 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     public String getOrganizationsAliases(String userId) {
         return organizationService.getAliasesForOrganizations(userId);
     }
+
 }

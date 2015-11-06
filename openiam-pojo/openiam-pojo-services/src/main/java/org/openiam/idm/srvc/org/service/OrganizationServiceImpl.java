@@ -245,6 +245,11 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
         return organizationDozerConverter.convertToDTOList(organizationEntityList, false);
     }
 
+    @Override
+    public OrganizationEntity getPrimaryAffliation(String userId, String mdTypeId) {
+        return orgDao.getPrimaryAffiliationForUser(userId,mdTypeId);
+    }
+
 
     @Override
     @LocalizedServiceGet

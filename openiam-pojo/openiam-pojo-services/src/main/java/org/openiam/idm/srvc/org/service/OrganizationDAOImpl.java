@@ -106,7 +106,7 @@ public class OrganizationDAOImpl extends
             criteria.createAlias("organizationUser", "ou", Criteria.LEFT_JOIN).
                     add(Restrictions.and(Restrictions.eq("ou.primaryKey.user.id", userId), Restrictions.eq("ou.metadataTypeEntity.id", typeId)));
         }
-a
+
         if (filter != null && !filter.isEmpty()) {
             criteria.add(Restrictions.in(getPKfieldName(), filter));
         }
