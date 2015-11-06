@@ -10,6 +10,9 @@ import org.openiam.base.ws.ResponseStatus;
 import org.openiam.base.ws.SearchParam;
 import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.idm.searchbeans.*;
+import org.openiam.idm.srvc.audit.constant.AuditAction;
+import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
@@ -75,6 +78,9 @@ public class SourceAdapterImpl implements SourceAdapter {
     @Autowired
     protected SysConfiguration sysConfiguration;
 
+    @Autowired
+    protected AuditLogService auditLogService;
+
     final static SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/YYYY");
     final static String WARNING = "Warning! %s.\n";
     private String source;
@@ -84,11 +90,19 @@ public class SourceAdapterImpl implements SourceAdapter {
         SourceAdapterResponse response = new SourceAdapterResponse();
         response.setStatus(ResponseStatus.SUCCESS);
         StringBuilder warnings = new StringBuilder();
+        IdmAuditLog idmAuditLog = new IdmAuditLog();
+
         if (request.isForceMode()) {
+            idmAuditLog.addCustomRecord("Skip Warnings", "true");
             warnings.append(getWarning("Warnings will be skipped!"));
         }
         String requestorId = null;
         try {
+
+            if (request.getAction() == null) {
+                throw new Exception("Can't process... 'action' is not defined!");
+            }
+
             User requestor = this.getUser(request.getRequestor(), request);
             if (requestor != null && StringUtils.isNotBlank(requestor.getId())) {
                 requestorId = requestor.getId();
@@ -96,22 +110,41 @@ public class SourceAdapterImpl implements SourceAdapter {
             if (StringUtils.isBlank(requestorId)) {
                 throw new Exception("Requestor not found");
             }
+            idmAuditLog.setRequestorUserId(requestorId);
         } catch (Exception e) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setError(e.getMessage());
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(e.getMessage());
+            idmAuditLog.setException(e);
+            auditLogService.save(idmAuditLog);
             return response;
         }
         ProvisionUser pUser = null;
         try {
             pUser = this.convertToProvisionUser(request, warnings, requestorId);
+            if (SourceAdapterOperationEnum.ADD.equals(request.getAction()) && StringUtils.isNotBlank(pUser.getId())) {
+                throw new Exception("Such user exists. Can't add! User=" + pUser.getDisplayName());
+            }
         } catch (Exception e) {
             response.setStatus(ResponseStatus.FAILURE);
-            response.setError(e.getMessage());
+            response.setError(e.getCause().getMessage());
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(e.getMessage());
+            idmAuditLog.setException(e);
+            auditLogService.save(idmAuditLog);
             return response;
         }
+        idmAuditLog.setUserId(pUser.getId());
+        idmAuditLog.setAction(AuditAction.SOURCE_ADAPTER_CALL.value());
+        idmAuditLog.setSource("Source Adapter");
+        idmAuditLog.setAuditDescription("Operation:" + request.getAction().name());
         if (warnings.length() > 0 && !request.isForceMode()) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setError(warnings.toString());
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(warnings.toString());
+            auditLogService.save(idmAuditLog);
             return response;
         }
         switch (request.getAction()) {
@@ -189,8 +222,16 @@ public class SourceAdapterImpl implements SourceAdapter {
             default:
                 response.setStatus(ResponseStatus.FAILURE);
                 response.setError("Operation not supported");
+                idmAuditLog.fail();
+                idmAuditLog.setFailureReason("Operation not supported");
+                auditLogService.save(idmAuditLog);
         }
         response.setError(warnings.toString());
+        if (ResponseStatus.FAILURE.equals(response.getStatus())) {
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(warnings.toString());
+            auditLogService.save(idmAuditLog);
+        }
         return response;
     }
 
@@ -399,7 +440,7 @@ public class SourceAdapterImpl implements SourceAdapter {
                 }
                 isFound = false;
                 for (Group g : pUser.getGroups()) {
-                    if (( g.getManagedSysId()==null || g.getManagedSysId().equals(group.getManagedSystemId())) && g.getName().equals(group.getName())) {
+                    if ((g.getManagedSysId() == null || g.getManagedSysId().equals(group.getManagedSystemId())) && g.getName().equals(group.getName())) {
                         if (AttributeOperationEnum.DELETE.equals(group.getOperation())) {
                             g.setOperation(AttributeOperationEnum.DELETE);
                         }
@@ -857,11 +898,10 @@ public class SourceAdapterImpl implements SourceAdapter {
             }
             return userList.get(0);
         } else if (SourceAdapterOperationEnum.ADD.equals(request.getAction())) {
-            new User();
+            return new User();
         } else {
             throw new Exception("No user with such Identifier=" + matchAttrName + ":" + matchAttrValue);
         }
-        return null;
     }
 
 }
