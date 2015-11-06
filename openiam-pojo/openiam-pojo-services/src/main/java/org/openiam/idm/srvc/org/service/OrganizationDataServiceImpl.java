@@ -88,16 +88,10 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     }
 
     @Override
-    public Organization getAffliation(final String userId, final String metadataTypeId, boolean deepCopy) {
-        return organizationDozerConverter.convertToDTO(organizationService.getPrimaryAffliation(userId, metadataTypeId), deepCopy);
-    }
-
-    @Override
-    @LocalizedServiceGet
-    @Transactional(readOnly = true)
+    //@LocalizedServiceGet
+    //@Transactional(readOnly = true)
     public Organization getOrganizationLocalized(final String orgId, String requesterId, final Language language) {
-        final OrganizationEntity entity = organizationService.getOrganizationLocalized(orgId, requesterId, languageConverter.convertToEntity(language, false));
-        return organizationDozerConverter.convertToDTO(entity, true);
+        return organizationService.getOrganizationLocalizedDto(orgId, requesterId, languageConverter.convertToEntity(language, false));
     }
 
     @Override
@@ -114,10 +108,9 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     }
 
     @Override
-    @LocalizedServiceGet
+    //@LocalizedServiceGet
     public List<Organization> getOrganizationsForUserLocalized(final String userId, final String requesterId, final int from, final int size, final Language language) {
-        final List<OrganizationEntity> ogranizationEntity = organizationService.getOrganizationsForUser(userId, requesterId, from, size, languageConverter.convertToEntity(language, false));
-        return organizationDozerConverter.convertToDTOList(ogranizationEntity, false);
+        return organizationService.getOrganizationsDtoForUser(userId, requesterId, from, size, languageConverter.convertToEntity(language, false));
     }
 
     @Override
@@ -127,24 +120,9 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     }
 
     @Override
-    @LocalizedServiceGet
-    @Transactional(readOnly = true)
+    //@LocalizedServiceGet
     public List<Organization> findBeansLocalized(final OrganizationSearchBean searchBean, final String requesterId, final int from, final int size, final Language language) {
-        final List<OrganizationEntity> entityList = organizationService.findBeans(searchBean, requesterId, from, size, languageConverter.convertToEntity(language, false));
-        final List<Organization> resultList = new LinkedList<Organization>();
-        for (OrganizationEntity organizationEntity : entityList) {
-            Organization newOrg = organizationDozerConverter.convertToDTO(organizationEntity, searchBean.isDeepCopy());
-            if (searchBean.isDeepCopy()) {
-                newOrg.setOrganizationUserDTOs(new HashSet<OrganizationUserDTO>());
-                for (OrganizationUserEntity e : organizationEntity.getOrganizationUser()) {
-                    OrganizationUserDTO dto = new OrganizationUserDTO(e.getUser().getId(), e.getOrganization().getId(), e.getMetadataTypeEntity().getId(), null);
-                    newOrg.getOrganizationUserDTOs().add(dto);
-                }
-            }
-            resultList.add(newOrg);
-        }
-
-        return resultList;
+        return organizationService.findBeansDto(searchBean, requesterId, from, size, languageConverter.convertToEntity(language, false));
     }
 
     @Override
@@ -154,11 +132,9 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     }
 
     @Override
-    @LocalizedServiceGet
+    //@LocalizedServiceGet
     public List<Organization> getParentOrganizationsLocalized(String orgId, String requesterId, final int from, final int size, final Language language) {
-        final List<OrganizationEntity> entityList = organizationService.getParentOrganizations(orgId, requesterId, from, size, languageConverter.convertToEntity(language, false));
-        final List<Organization> organizationList = organizationDozerConverter.convertToDTOList(entityList, false);
-        return organizationList;
+        return organizationService.getParentOrganizationsDto(orgId, requesterId, from, size, languageConverter.convertToEntity(language, false));
     }
 
     @Override
@@ -168,11 +144,9 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     }
 
     @Override
-    @LocalizedServiceGet
+    //@LocalizedServiceGet
     public List<Organization> getChildOrganizationsLocalized(String orgId, String requesterId, final int from, final int size, final Language language) {
-        final List<OrganizationEntity> entityList = organizationService.getChildOrganizations(orgId, requesterId, from, size, languageConverter.convertToEntity(language, false));
-        final List<Organization> organizationList = organizationDozerConverter.convertToDTOList(entityList, false);
-        return organizationList;
+        return organizationService.getChildOrganizationsDto(orgId, requesterId, from, size, languageConverter.convertToEntity(language, false));
     }
 
     @Override
@@ -197,11 +171,9 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     }
 
     @Override
-    @LocalizedServiceGet
+    //@LocalizedServiceGet
     public List<Organization> getAllowedParentOrganizationsForTypeLocalized(final String orgTypeId, String requesterId, final Language language) {
-        final List<OrganizationEntity> entityList = organizationService.getAllowedParentOrganizationsForType(orgTypeId, requesterId, languageConverter.convertToEntity(language, false));
-        final List<Organization> resultList = organizationDozerConverter.convertToDTOList(entityList, false);
-        return resultList;
+        return organizationService.getAllowedParentOrganizationsDtoForType(orgTypeId, requesterId, languageConverter.convertToEntity(language, false));
     }
 
     @Override
@@ -211,11 +183,10 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     }
 
     @Override
-    @LocalizedServiceGet
-    @Transactional(readOnly = true)
+    //@LocalizedServiceGet
+    //@Transactional(readOnly = true)
     public List<Organization> findOrganizationsByAttributeValueLocalized(String attrName, String attrValue, final Language language) {
-        return organizationDozerConverter.convertToDTOList(
-                organizationService.findOrganizationsByAttributeValue(attrName, attrValue, languageConverter.convertToEntity(language, false)), true);
+        return organizationService.findOrganizationsDtoByAttributeValue(attrName, attrValue, languageConverter.convertToEntity(language, false));
     }
 
 
@@ -226,7 +197,7 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     }
 
     @Override
-    @LocalizedServiceGet
+    //@LocalizedServiceGet
     public List<Organization> getOrganizationsForUserByTypeLocalized(final String userId, final String requesterId, final String organizationTypeId, final Language language) {
         final OrganizationSearchBean searchBean = new OrganizationSearchBean();
         searchBean.addUserId(userId);
@@ -285,7 +256,6 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     public Response saveOrganization(final Organization organization, final String requesterId) {
         return saveOrganizationWithSkipPrePostProcessors(organization, requesterId, false);
     }
-
 
     @Override
     public Response saveOrganizationWithSkipPrePostProcessors(final Organization organization, final String requestorId, final boolean skipPrePostProcessors) {
@@ -527,33 +497,28 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    //@Transactional(readOnly = true)
     public Location getLocationById(String locationId) {
-
-        final LocationEntity loc = organizationService.getLocationById(locationId);
-        return locationDozerConverter.convertToDTO(loc, false);
+        return organizationService.getLocationDtoById(locationId);
     }
 
     @Override
-    @Transactional(readOnly = true)
+    //@Transactional(readOnly = true)
     public List<Location> getLocationList(String organizationId) {
 
         return this.getLocationListByPage(organizationId, 0, Integer.MAX_VALUE);
     }
 
     @Override
-    @Transactional(readOnly = true)
+    //@Transactional(readOnly = true)
     public List<Location> getLocationListByPage(String organizationId, Integer from, Integer size) {
-
-        final List<LocationEntity> adrList = organizationService.getLocationList(organizationId, from, size);
-        return locationDozerConverter.convertToDTOList(adrList, false);
+        return organizationService.getLocationDtoList(organizationId, from, size);
     }
 
     @Override
-    @Transactional(readOnly = true)
+    //@Transactional(readOnly = true)
     public List<Location> findLocationBeans(final LocationSearchBean searchBean, final int from, final int size) {
-        final List<LocationEntity> locList = organizationService.getLocationList(searchBean, from, size);
-        return locationDozerConverter.convertToDTOList(locList, false);
+        return organizationService.getLocationDtoList(searchBean, from, size);
     }
 
     @Override
@@ -562,48 +527,30 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    //@Transactional(readOnly = true)
     public int getNumOfLocationsForOrganization(String organizationId) {
         return organizationService.getNumOfLocationsForOrganization(organizationId);
     }
 
     @Override
-    @Transactional(readOnly = true)
+    //@Transactional(readOnly = true)
     public int getNumOfLocationsForUser(String userId) {
         return organizationService.getNumOfLocationsForUser(userId);
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<Location> getLocationListByPageForUser(String userId, Integer from, Integer size) {
 
-        Set<String> orgsId = new HashSet<String>();
-        List<OrganizationEntity> orgList = organizationService.getOrganizationsForUser(userId, null, from, size, languageConverter.convertToEntity(getDefaultLanguage(), false));
-        for (OrganizationEntity org : orgList) {
-            orgsId.add(org.getId());
-        }
-
-        if (orgsId == null) {
-            return null;
-        }
-        List<LocationEntity> listOrgEntity = organizationService.getLocationListByOrganizationId(orgsId, from, size);
-        if (listOrgEntity == null) {
-            return null;
-        }
-
-        List<Location> result = new ArrayList<Location>();
-        for (LocationEntity org : listOrgEntity) {
-            result.add(locationDozerConverter.convertToDTO(org, false));
-        }
-
-        return result;
+        return organizationService.getLocationListByPageForUser(userId, from, size);
     }
 
+    @Override
+    public List<Organization> getUserAffiliationsByType(final String userId, final String typeId, int from, int size, final String requesterId, final Language language) {
+        return organizationService.getUserAffiliationsByType(userId, typeId, requesterId, from, size, languageConverter.convertToEntity(language, false));
+    }
     @Override
     @Transactional(readOnly = true)
     public String getOrganizationsAliases(String userId) {
         return organizationService.getAliasesForOrganizations(userId);
     }
-
-
 }

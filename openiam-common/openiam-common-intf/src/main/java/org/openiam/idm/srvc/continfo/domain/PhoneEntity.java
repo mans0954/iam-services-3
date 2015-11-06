@@ -1,13 +1,18 @@
 package org.openiam.idm.srvc.continfo.domain;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlTransient;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Type;
+
+import org.hibernate.annotations.*;
+import org.hibernate.annotations.Cache;
 import org.hibernate.search.annotations.DocumentId;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.FieldBridge;
@@ -26,8 +31,9 @@ import org.openiam.idm.srvc.user.domain.UserEntity;
 @Entity
 @Table(name = "PHONE")
 @DozerDTOCorrespondence(Phone.class)
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Indexed
-public class PhoneEntity {
+public class PhoneEntity implements Serializable{
     @Id
     @GeneratedValue(generator = "system-uuid")
     @GenericGenerator(name = "system-uuid", strategy = "uuid")
@@ -64,6 +70,7 @@ public class PhoneEntity {
     @ManyToOne
     @JoinColumn(name="PARENT_ID")
     @Field(name="parent", bridge=@FieldBridge(impl=UserBridge.class), store=Store.YES)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private UserEntity parent;
 
     @Column(name="PHONE_EXT", length=20)
@@ -97,6 +104,7 @@ public class PhoneEntity {
 
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
     @JoinColumn(name = "TYPE_ID", insertable=true, updatable=true)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private MetadataTypeEntity metadataType;
 
     public PhoneEntity() {

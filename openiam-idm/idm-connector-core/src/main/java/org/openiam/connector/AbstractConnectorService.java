@@ -138,29 +138,33 @@ public abstract class AbstractConnectorService implements ConnectorService, Appl
                 }
                 response = (Response) cmd.execute(requestType);
             } catch (ConnectorDataException e) {
-                log.error(e.getMessage(), e);
+                log.error("ConnectorDataException:"+e.getMessage(), e);
                 response.setStatus(StatusCodeType.FAILURE);
                 response.setError(e.getCode());
-                String cleanXMLString = null;
+                String cleanXMLString = "";
                 Pattern pattern = null;
                 Matcher matcher = null;
-                pattern = Pattern.compile("[\\000]*");
-                matcher = pattern.matcher(e.getMessage());
-                if (matcher.find()) {
-                    cleanXMLString = matcher.replaceAll("");
+                if (e!=null && e.getMessage()!=null && !"".equals(e.getMessage())) {
+                    pattern = Pattern.compile("[\\000]*");
+                    matcher = pattern.matcher(e.getMessage());
+                    if (matcher.find()) {
+                        cleanXMLString = matcher.replaceAll("");
+                    }
                 }
                 response.addErrorMessage(cleanXMLString);
             } catch (Throwable t) {
-                log.error(t.getMessage(), t);
+                log.error("Throwable:"+t.getMessage(), t);
                 response.setStatus(StatusCodeType.FAILURE);
                 response.setError(ErrorCode.CONNECTOR_ERROR);
-                String cleanXMLString = null;
+                String cleanXMLString = "";
                 Pattern pattern = null;
                 Matcher matcher = null;
-                pattern = Pattern.compile("[\\000]*");
-                matcher = pattern.matcher(t.getMessage());
-                if (matcher.find()) {
-                    cleanXMLString = matcher.replaceAll("");
+                if (t!=null && t.getMessage()!=null && !"".equals(t.getMessage())) {
+                    pattern = Pattern.compile("[\\000]*");
+                    matcher = pattern.matcher(t.getMessage());
+                    if (matcher.find()) {
+                        cleanXMLString = matcher.replaceAll("");
+                    }
                 }
                 response.addErrorMessage(cleanXMLString);
             }

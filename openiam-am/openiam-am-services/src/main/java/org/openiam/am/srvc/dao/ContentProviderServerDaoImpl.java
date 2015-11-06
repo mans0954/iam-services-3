@@ -17,7 +17,9 @@ public class ContentProviderServerDaoImpl extends BaseDaoImpl<ContentProviderSer
 		return "id";
 	}
 
-
+    protected boolean cachable() {
+        return true;
+    }
     @Override
     protected Criteria getExampleCriteria(final ContentProviderServerEntity entity) {
         final Criteria criteria = getCriteria();

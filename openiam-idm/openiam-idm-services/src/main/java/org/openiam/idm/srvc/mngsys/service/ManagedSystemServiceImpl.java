@@ -49,23 +49,23 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     protected ReconciliationResourceAttributeMapDAO reconciliationResourceAttributeMapDAO;
     @Autowired
     protected DefaultReconciliationAttributeMapDAO defaultReconciliationAttributeMapDAO;
-//    @Autowired
+    //    @Autowired
 //    protected ManagedSysRuleDAO managedSysRuleDAO;
     @Autowired
     protected PolicyDAO policyDAO;
 
     @Autowired
     private ManagedSystemObjectMatchDAO matchDAO;
-    
+
     @Autowired
     private ResourceTypeDAO resourceTypeDAO;
-    
+
     @Autowired
     private ResourceDAO resourceDAO;
 
     @Autowired
     private ManagedSysDozerConverter managedSysDozerConverter;
-    
+
     @Autowired
     private GroupDAO groupDAO;
 
@@ -74,17 +74,17 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
 
     @Autowired
     private AuthProviderDao authProviderDao;
-    
+
     @Autowired
     private RoleDAO roleDAO;
-    
+
     @Autowired
     private ApproverAssociationDAO approverAssociationDao;
-    
+
     @Autowired
     private ResourceService resourceService;
 
-    private static final String resourceTypeId="MANAGED_SYS";
+    private static final String resourceTypeId = "MANAGED_SYS";
 
     @Autowired
     @Qualifier("cryptor")
@@ -149,42 +149,42 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
 //        for (ManagedSysRuleEntity ruleEntity : sysEntity.getRules()) {
 //            managedSysRuleDAO.delete(ruleEntity);
 //        }
-        if(CollectionUtils.isNotEmpty(sysEntity.getGroups())) {
-        	for(final GroupEntity group : sysEntity.getGroups()) {
-        		group.setManagedSystem(null);
-        		groupDAO.update(group);
-        	}
+        if (CollectionUtils.isNotEmpty(sysEntity.getGroups())) {
+            for (final GroupEntity group : sysEntity.getGroups()) {
+                group.setManagedSystem(null);
+                groupDAO.update(group);
+            }
         }
-        
-        if(CollectionUtils.isNotEmpty(sysEntity.getRoles())) {
-        	for(final RoleEntity role : sysEntity.getRoles()) {
-        		role.setManagedSystem(null);
-        		roleDAO.update(role);
-        	}
+
+        if (CollectionUtils.isNotEmpty(sysEntity.getRoles())) {
+            for (final RoleEntity role : sysEntity.getRoles()) {
+                role.setManagedSystem(null);
+                roleDAO.update(role);
+            }
         }
         List<AttributeMapEntity> attributeMapEntities = attributeMapDAO.findByManagedSysId(id);
-        for(AttributeMapEntity mapEntity : attributeMapEntities) {
+        for (AttributeMapEntity mapEntity : attributeMapEntities) {
             attributeMapDAO.delete(mapEntity);
         }
         managedSysDAO.delete(sysEntity);
         resourceService.deleteResource(sysEntity.getResourceId());
     }
-    
+
     @Override
-    @CacheEvict(value = "decryptManagedSysPassword", allEntries=true)
+    @CacheEvict(value = "decryptManagedSysPassword", allEntries = true)
     @Transactional
     public void addManagedSys(ManagedSysDto sys) {
         final ManagedSysEntity entity = managedSysDozerConverter.convertToEntity(sys, true);
 
-    	final ResourceEntity resource = new ResourceEntity();
-    	resource.setName(String.format("%s_%S", entity.getName(), System.currentTimeMillis()));
-    	resource.setResourceType(resourceTypeDAO.findById(resourceTypeId));
-    	resource.setIsPublic(false);
-    	resource.setCoorelatedName(sys.getName());
+        final ResourceEntity resource = new ResourceEntity();
+        resource.setName(String.format("%s_%S", entity.getName(), System.currentTimeMillis()));
+        resource.setResourceType(resourceTypeDAO.findById(resourceTypeId));
+        resource.setIsPublic(false);
+        resource.setCoorelatedName(sys.getName());
 
-    	resourceService.save(resource, null);
-    	//resourceDAO.save(resource);
-    	entity.setResourceId(resource.getId());
+        resourceService.save(resource, null);
+        //resourceDAO.save(resource);
+        entity.setResourceId(resource.getId());
 
         managedSysDAO.save(entity);
         
@@ -195,27 +195,27 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     }
 
     @Override
-    @CacheEvict(value = "decryptManagedSysPassword", allEntries=true)
+    @CacheEvict(value = "decryptManagedSysPassword", allEntries = true)
     @Transactional
     public void updateManagedSys(ManagedSysDto sys) {
         final ManagedSysEntity entity = managedSysDozerConverter.convertToEntity(sys, true);
-    	ResourceEntity resource = null;
-    	if(StringUtils.isEmpty(entity.getResourceId())) {
-    		resource = new ResourceEntity();
-    		resource.setName(String.format("%s_%S", entity.getName(), System.currentTimeMillis()));
-    		resource.setResourceType(resourceTypeDAO.findById(resourceTypeId));
-    		resource.setIsPublic(false);
-    		resource.setCoorelatedName(sys.getName());
-    		resourceService.save(resource, null);
-    		entity.setResourceId(resource.getId());
+        ResourceEntity resource = null;
+        if (StringUtils.isEmpty(entity.getResourceId())) {
+            resource = new ResourceEntity();
+            resource.setName(String.format("%s_%S", entity.getName(), System.currentTimeMillis()));
+            resource.setResourceType(resourceTypeDAO.findById(resourceTypeId));
+            resource.setIsPublic(false);
+            resource.setCoorelatedName(sys.getName());
+            resourceService.save(resource, null);
+            entity.setResourceId(resource.getId());
             //resource.setManagedSysId(sys.getManagedSysId());
-    	} else {
-    		resource = resourceService.findResourceById(entity.getResourceId());
-    		if(resource != null) {
-    			resource.setCoorelatedName(entity.getName());
-    			resourceService.save(resource, null);
-    		}
-    	}
+        } else {
+            resource = resourceService.findResourceById(entity.getResourceId());
+            if (resource != null) {
+                resource.setCoorelatedName(entity.getName());
+                resourceService.save(resource, null);
+            }
+        }
         managedSysDAO.save(entity);
 
     }
@@ -429,7 +429,7 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     }
 
 
-    @Cacheable(value="decryptManagedSysPassword", key="{ #managedSys.id}")
+    @Cacheable(value = "decryptManagedSysPassword", key = "{ #managedSys.id}")
     public String getDecryptedPassword(ManagedSysDto managedSys) {
         String result = null;
         if (managedSys.getPswd() != null) {
@@ -442,48 +442,54 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
         return result;
     }
 
-	@Override
-	@Transactional
-	public void saveApproverAssociations(List<ApproverAssociationEntity> entityList, final AssociationType type, final String entityId) {
-		//final List<ApproverAssociationEntity> newList = new LinkedList<ApproverAssociationEntity>();
-		//final List<ApproverAssociationEntity> updateList = new LinkedList<ApproverAssociationEntity>();
-		final List<ApproverAssociationEntity> deleteList = new LinkedList<ApproverAssociationEntity>();
-		
-		if(type != null && StringUtils.isNotBlank(entityId)) {
-			final List<ApproverAssociationEntity> existingList = approverAssociationDao.getByAssociation(entityId, type);
-			if(CollectionUtils.isNotEmpty(existingList)) {
-				for(final ApproverAssociationEntity existingEntity : existingList) {
-					boolean contains = false;
-					if(CollectionUtils.isNotEmpty(entityList)) {
-						for(final ApproverAssociationEntity incomingEntity : entityList) {
-							if(StringUtils.equals(existingEntity.getId(), incomingEntity.getId())) {
-								contains = true;
-								break;
-							}
-						}
-					}
-					
-					if(!contains) {
-						deleteList.add(existingEntity);
-					}
-				}
-			}
-		}
-		
-		if(CollectionUtils.isNotEmpty(entityList)) {
-			for(final ApproverAssociationEntity entity : entityList) {
-				if(StringUtils.isNotBlank(entity.getId())) {
-					approverAssociationDao.merge(entity);
-				} else {
-					approverAssociationDao.save(entity);
-				}
-			}
-		}
-		
-		if(CollectionUtils.isNotEmpty(deleteList)) {
-			for(final ApproverAssociationEntity entity : deleteList) {
-				approverAssociationDao.delete(entity);
-			}
-		}
-	}
+    @Override
+    @Transactional
+    public void saveApproverAssociations(List<ApproverAssociationEntity> entityList, final AssociationType type, final String entityId) {
+        //final List<ApproverAssociationEntity> newList = new LinkedList<ApproverAssociationEntity>();
+        //final List<ApproverAssociationEntity> updateList = new LinkedList<ApproverAssociationEntity>();
+        final List<ApproverAssociationEntity> deleteList = new LinkedList<ApproverAssociationEntity>();
+
+        if (type != null && StringUtils.isNotBlank(entityId)) {
+            final List<ApproverAssociationEntity> existingList = approverAssociationDao.getByAssociation(entityId, type);
+            if (CollectionUtils.isNotEmpty(existingList)) {
+                for (final ApproverAssociationEntity existingEntity : existingList) {
+                    boolean contains = false;
+                    if (CollectionUtils.isNotEmpty(entityList)) {
+                        for (final ApproverAssociationEntity incomingEntity : entityList) {
+                            if (StringUtils.equals(existingEntity.getId(), incomingEntity.getId())) {
+                                contains = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (!contains) {
+                        deleteList.add(existingEntity);
+                    }
+                }
+            }
+        }
+
+        if (CollectionUtils.isNotEmpty(entityList)) {
+            for (final ApproverAssociationEntity entity : entityList) {
+                if (StringUtils.isNotBlank(entity.getId())) {
+                    approverAssociationDao.merge(entity);
+                } else {
+                    approverAssociationDao.save(entity);
+                }
+            }
+        }
+
+        if (CollectionUtils.isNotEmpty(deleteList)) {
+            for (final ApproverAssociationEntity entity : deleteList) {
+                approverAssociationDao.delete(entity);
+            }
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ManagedSysEntity> getAllManagedSysNames() {
+        return managedSysDAO.findAllManagedSysNames();
+    }
 }

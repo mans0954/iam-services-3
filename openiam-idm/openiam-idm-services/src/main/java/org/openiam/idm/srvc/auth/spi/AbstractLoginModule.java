@@ -27,11 +27,12 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.base.SysConfiguration;
 import org.openiam.exception.AuthenticationException;
 import org.openiam.exception.EncryptionException;
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.SSOToken;
 import org.openiam.idm.srvc.auth.dto.Subject;
+import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
-import org.openiam.idm.srvc.auth.service.AuthenticationService;
 import org.openiam.idm.srvc.auth.service.AuthenticationUtils;
 import org.openiam.idm.srvc.auth.sso.SSOTokenFactory;
 import org.openiam.idm.srvc.auth.sso.SSOTokenModule;
@@ -82,13 +83,8 @@ public abstract class AbstractLoginModule implements LoginModule {
     protected ManagedSystemWebService managedSystemWebService;
 
     @Autowired
-    @Qualifier("loginWS")
-    protected LoginDataWebService loginManager;
-
-    @Autowired
-    @Qualifier("userWS")
-    protected UserDataWebService userDataWebService;
-
+    @Qualifier("loginManager")
+    protected LoginDataService loginManager;
     @Autowired
     @Qualifier("userManager")
     protected UserDataService userManager;
@@ -149,7 +145,20 @@ public abstract class AbstractLoginModule implements LoginModule {
         return null;
     }
 
-    public void setResultCode(Login lg, Subject sub, Date curDate, Policy pwdPolicy) throws AuthenticationException {
+    public String encryptPassword(String userId, String decPassword)
+            throws Exception {
+        if (decPassword != null) {
+            try {
+                return cryptor.encrypt(keyManagementService.getUserKey(userId,
+                        KeyName.password.name()), decPassword);
+            } catch (EncryptionException e) {
+                return null;
+            }
+        }
+        return null;
+    }
+
+    public void setResultCode(LoginEntity lg, Subject sub, Date curDate, Policy pwdPolicy) throws AuthenticationException {
         if (lg.getFirstTimeLogin() == 1) {
             sub.setResultCode(AuthenticationConstants.RESULT_SUCCESS_FIRST_TIME);
         } else if (lg.getPwdExp() != null) {
@@ -175,7 +184,7 @@ public abstract class AbstractLoginModule implements LoginModule {
 
     }
 
-    public Integer getDaysToPasswordExpiration(Login lg, Date curDate, Policy pwdPolicy) {
+    public Integer getDaysToPasswordExpiration(LoginEntity lg, Date curDate, Policy pwdPolicy) {
         if (pwdPolicy != null && StringUtils.isBlank(pwdPolicy.getAttribute("PWD_EXPIRATION").getValue1())) {
             return null;
         }

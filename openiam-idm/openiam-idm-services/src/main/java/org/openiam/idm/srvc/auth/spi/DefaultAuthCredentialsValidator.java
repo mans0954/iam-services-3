@@ -5,6 +5,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.exception.AuthenticationException;
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.service.AuthCredentialsValidator;
 import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
@@ -30,7 +31,7 @@ public class DefaultAuthCredentialsValidator implements AuthCredentialsValidator
 
     private static final Log log = LogFactory.getLog(DefaultAuthCredentialsValidator.class);
 
-    public void execute(UserEntity user, Login lg, int operation, Map<String, Object> bindingMap) throws AuthenticationException {
+    public void execute(UserEntity user, LoginEntity lg, int operation, Map<String, Object> bindingMap) throws AuthenticationException {
 
         Date curDate = new Date(System.currentTimeMillis());
 
@@ -41,7 +42,9 @@ public class DefaultAuthCredentialsValidator implements AuthCredentialsValidator
             }
         }
         if (!UserStatusEnum.ACTIVE.equals(user.getStatus())
-                && !UserStatusEnum.PENDING_INITIAL_LOGIN.equals(user.getStatus())) {
+                && !UserStatusEnum.PENDING_INITIAL_LOGIN.equals(user.getStatus())
+                && !UserStatusEnum.PENDING_DEACTIVATION.equals(user.getStatus())
+                && !UserStatusEnum.PENDING_DELETE.equals(user.getStatus())) {
             // invalid status
             throw new AuthenticationException(
                     AuthenticationConstants.RESULT_INVALID_USER_STATUS);
@@ -73,7 +76,7 @@ public class DefaultAuthCredentialsValidator implements AuthCredentialsValidator
         // check password policy if it is necessary to change it after reset
         if (lg.getResetPassword() > 0) {
             Policy passwordPolicy = passwordManager.getPasswordPolicy(lg.getLogin(), lg.getManagedSysId());
-            String chngPwdAttr = getPolicyAttribute(passwordPolicy.getPolicyAttributes(),"CHNG_PSWD_ON_RESET");
+            String chngPwdAttr = getPolicyAttribute(passwordPolicy.getPolicyAttributes(), "CHNG_PSWD_ON_RESET");
             if (StringUtils.isNotBlank(chngPwdAttr) && StringUtils.equalsIgnoreCase(Boolean.TRUE.toString(), chngPwdAttr)) {
                 throw new AuthenticationException(AuthenticationConstants.RESULT_PASSWORD_CHANGE_AFTER_RESET);
             }
@@ -103,7 +106,7 @@ public class DefaultAuthCredentialsValidator implements AuthCredentialsValidator
      * @param lg
      * @return
      */
-    private int passwordExpired(Login lg, Date curDate) {
+    private int passwordExpired(LoginEntity lg, Date curDate) {
         log.debug("passwordExpired Called.");
         log.debug("- Password Exp =" + lg.getPwdExp());
         log.debug("- Password Grace Period =" + lg.getGracePeriod());
@@ -135,7 +138,7 @@ public class DefaultAuthCredentialsValidator implements AuthCredentialsValidator
         return AuthenticationConstants.RESULT_SUCCESS_PASSWORD_EXP;
     }
 
-    private Date getGracePeriodDate(Login lg, Date curDate) {
+    private Date getGracePeriodDate(LoginEntity lg, Date curDate) {
 
         Date pwdExpDate = lg.getPwdExp();
 

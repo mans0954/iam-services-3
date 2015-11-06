@@ -1,6 +1,7 @@
 package org.openiam.authmanager.service.impl;
 
 import org.openiam.authmanager.common.SetStringResponse;
+import org.openiam.authmanager.model.ObjectOwnerBean;
 import org.openiam.authmanager.model.UserEntitlementsMatrix;
 import org.openiam.authmanager.service.AuthorizationManagerAdminService;
 import org.openiam.authmanager.service.AuthorizationManagerAdminWebService;
@@ -35,8 +36,11 @@ public class AuthorizationManagerAdminWebServiceImpl implements AuthorizationMan
     }
     @Override
     @WebMethod
-    public HashMap<String, SetStringResponse> getOwnerIdsForResourceSet(@WebParam(name = "resourceIdSet", targetNamespace = "") Set<String> resourceIdSet){
-        return authManagerAdminService.getOwnerIdsForResourceSet(resourceIdSet);
+    public ObjectOwnerBean getOwnerIdsForResourceSet(@WebParam(name = "resourceIdSet", targetNamespace = "") Set<String> resourceIdSet){
+        ObjectOwnerBean resp =new ObjectOwnerBean();
+        resp.setObjectOwnerMap(authManagerAdminService.getOwnerIdsForResourceSet(resourceIdSet));
+
+        return resp;
     }
     @Override
     @WebMethod
@@ -45,7 +49,9 @@ public class AuthorizationManagerAdminWebServiceImpl implements AuthorizationMan
     }
     @Override
     @WebMethod
-    public HashMap<String, SetStringResponse> getOwnerIdsForGroupSet(@WebParam(name = "groupIdSet", targetNamespace = "") Set<String> groupIdSet){
-        return authManagerAdminService.getOwnerIdsForGroupSet(groupIdSet);
+    public ObjectOwnerBean getOwnerIdsForGroupSet(@WebParam(name = "groupIdSet", targetNamespace = "") Set<String> groupIdSet){
+        ObjectOwnerBean resp =new ObjectOwnerBean();
+        resp.setObjectOwnerMap(authManagerAdminService.getOwnerIdsForGroupSet(groupIdSet));
+        return resp;
     }
 }

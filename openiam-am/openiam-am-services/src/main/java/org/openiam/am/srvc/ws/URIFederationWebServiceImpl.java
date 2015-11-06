@@ -6,7 +6,6 @@ import org.apache.log4j.Logger;
 import org.openiam.am.srvc.service.URIFederationService;
 import org.openiam.am.srvc.uriauth.dto.SSOLoginResponse;
 import org.openiam.am.srvc.uriauth.dto.URIFederationResponse;
-import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.exception.BasicDataServiceException;

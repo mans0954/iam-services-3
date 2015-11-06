@@ -113,7 +113,7 @@ public class SuspendLdapCommand extends AbstractLdapCommand<SuspendResumeRequest
 
         } catch(Exception ne) {
             log.error(ne.getMessage(), ne);
-            throw new ConnectorDataException(ErrorCode.NO_SUCH_IDENTIFIER);
+            throw new ConnectorDataException(ErrorCode.NO_SUCH_IDENTIFIER,ne.getMessage());
         } finally {
 	 		/* close the connection to the directory */
             this.closeContext(ldapctx);

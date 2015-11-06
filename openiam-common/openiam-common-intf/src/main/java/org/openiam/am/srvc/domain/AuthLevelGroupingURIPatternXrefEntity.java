@@ -2,21 +2,16 @@ package org.openiam.am.srvc.domain;
 
 import java.io.Serializable;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.EmbeddedId;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.openiam.am.srvc.domain.pk.AuthLevelGroupingURIPatternXrefIdEntity;
 import org.openiam.am.srvc.dto.AuthLevelGroupingURIPatternXref;
 import org.openiam.dozer.DozerDTOCorrespondence;
 
 @Entity
 @Table(name = "URI_AUTH_LEVEL_GRP_XREF")
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(AuthLevelGroupingURIPatternXref.class)
 public class AuthLevelGroupingURIPatternXrefEntity implements Serializable {
 	
@@ -25,10 +20,12 @@ public class AuthLevelGroupingURIPatternXrefEntity implements Serializable {
 
 	@ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch=FetchType.LAZY)
     @JoinColumn(name = "URI_PATTERN_ID", insertable = false, updatable = false)
+    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	private URIPatternEntity pattern;
 	
 	@ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch=FetchType.LAZY)
     @JoinColumn(name = "AUTH_LEVEL_GROUPING_ID", insertable = false, updatable = false)
+    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	private AuthLevelGroupingEntity grouping;
 	
 	@Column(name="EXEC_ORDER")

@@ -272,19 +272,16 @@
         <prop key="hibernate.dialect">${openiam.hibernate.dialect}</prop>
         <prop key="hibernate.show_sql">${openiam.hibernate.show.sql}</prop>
         <prop key="hibernate.generate_statistics">${openiam.hibernate.generate.statistics}</prop>
-
         <prop key="hibernate.cache.region.factory_class">net.sf.ehcache.hibernate.EhCacheRegionFactory</prop>
         <prop key="hibernate.cache.use_second_level_cache">${openiam.hibernate.second.level.cache.enabled}</prop>
         <prop key="hibernate.cache.use_query_cache">${openiam.hibernate.query.cache.enabled}</prop>
 
         <prop key="hibernate.use_sql_comments">${openiam.hibernate.sql.comments.enabled}</prop>
         <prop key="hibernate.connection.autoReconnect">${openiam.hibernate.auto.connect.enabled}</prop>
-
         <prop key="hibernate.connection.CharSet">UTF-8</prop>
         <prop key="hibernate.connection.characterEncoding">UTF-8</prop>
         <prop key="hibernate.connection.useUnicode">true</prop>
         <prop key="hibernate.search.default.indexBase">${confpath}/conf/lucene</prop>
-        <!--<prop key="hibernate.validationQuery">${openiam.hibernate.validationQuery}</prop>-->
     </util:properties>
 
     <bean id="hibernateTemplate" class="org.springframework.orm.hibernate3.HibernateTemplate">

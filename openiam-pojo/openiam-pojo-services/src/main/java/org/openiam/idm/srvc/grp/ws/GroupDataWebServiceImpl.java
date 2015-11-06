@@ -31,7 +31,6 @@ import org.openiam.internationalization.LocalizedServiceGet;
 import org.openiam.util.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.jws.WebMethod;
 import javax.jws.WebService;
@@ -177,19 +176,15 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     }
 
     @Override
-    @Transactional(readOnly=true)
-    public  Group getGroup(final String groupId, final String requesterId) {
+    public Group getGroup(final String groupId, final String requesterId) {
         return getGroupLocalize(groupId, requesterId, getDefaultLanguage());
     }
 
     @Override
-    @LocalizedServiceGet
-    @Transactional(readOnly=true)
     public Group getGroupLocalize(final String groupId, final String requesterId, final Language language) {
         Group retVal = null;
         if (StringUtils.isNotBlank(groupId)) {
-            final GroupEntity entity = groupManager.getGroupLocalize(groupId, requesterId, languageConverter.convertToEntity(language, false));
-            retVal = groupDozerConverter.convertToDTO(entity, true);
+            retVal = groupManager.getGroupDtoLocalize(groupId, requesterId, language);
         }
         return retVal;
     }
@@ -226,11 +221,9 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     }
 
     @Override
-    @LocalizedServiceGet
     public List<Group> getChildGroupsLocalize(final String groupId, final String requesterId, final Boolean deepFlag,
                                       final int from, final int size, final Language language) {
-        final List<GroupEntity> groupEntityList = groupManager.getChildGroupsLocalize(groupId, requesterId, from, size, languageConverter.convertToEntity(language, false));
-        return groupDozerConverter.convertToDTOList(groupEntityList, false);
+        return groupManager.getChildGroupsDtoLocalize(groupId, requesterId, from, size, language);
     }
 
     @Override
@@ -245,10 +238,8 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     }
 
     @Override
-    @LocalizedServiceGet
     public List<Group> getParentGroupsLocalize(final String groupId, final String requesterId, final int from, final int size, final Language language) {
-        final List<GroupEntity> groupEntityList = groupManager.getParentGroupsLocalize(groupId, requesterId, from, size, languageConverter.convertToEntity(language, false));
-        return groupDozerConverter.convertToDTOList(groupEntityList, false);
+        return groupManager.getParentGroupsDtoLocalize(groupId, requesterId, from, size, language);
     }
 
     @Override
@@ -284,12 +275,15 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
         auditLog.setRequestorUserId(requesterId);
         auditLog.setAuditDescription(String.format("Add user %s to group: %s", userId, groupId));
         try {
-            if (groupId == null) {
-                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Group Id is null or empty");
+            if ((groupId == null) || (groupEntity == null)) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Group Id or groupEntity is null or empty");
             }
-
-            userManager.addUserToGroup(userId, groupId);
-            auditLog.succeed();
+            if ((groupEntity.getMaxUserNumber() == null) || (userManager.getNumOfUsersForGroup(groupId, requesterId) < groupEntity.getMaxUserNumber())) {
+                userManager.addUserToGroup(userId, groupId);
+                auditLog.succeed();
+            } else {
+                throw new BasicDataServiceException(ResponseCode.GROUP_LIMIT_OF_USERS_EXCEEDED, "group's limit of user count exceeded");
+            }
         } catch (BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
@@ -415,27 +409,15 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     /**
      * Without @Localization for internal use only
      */
-    @Transactional(readOnly=true)
     public List<Group> findBeans(final GroupSearchBean searchBean, final String requesterId, final int from,
             final int size) {
-        final List<GroupEntity> groupEntityList = groupManager.findBeans(searchBean, requesterId, from, size);
-        List<Group> groupList = groupDozerConverter.convertToDTOList(groupEntityList, false);
-        return groupList;
+        return groupManager.findDtoBeans(searchBean, requesterId, from, size);
     }
 
     @Override
-    @LocalizedServiceGet
     public List<Group> findBeansLocalize(final GroupSearchBean searchBean, final String requesterId, final int from, final int size,
                                          final Language language) {
-        final List<GroupEntity> groupEntityList = groupManager.findBeansLocalize(searchBean, requesterId, from, size, languageConverter.convertToEntity(language, false));
-        List<Group> groupList = groupDozerConverter.convertToDTOList(groupEntityList, false);
-//        Collections.sort(groupList, new Comparator<Group>() {
-//            @Override
-//            public int compare(Group o1, Group o2) {
-//                return o1.getName().compareTo(o2.getName());
-//            }
-//        });
-        return groupList;
+        return groupManager.findBeansDtoLocalize(searchBean, requesterId, from, size, language);
     }
 
     @Override
@@ -444,13 +426,11 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     }
 
     @Override
-    @LocalizedServiceGet
     public List<Group> findGroupsForOwner(final GroupSearchBean searchBean, final String requesterId, String ownerId, final int from, final int size,
                                          final Language language) {
-        final List<GroupEntity> groupEntityList = groupManager.findGroupsForOwner(searchBean, requesterId, ownerId, from, size, languageConverter.convertToEntity(language, false));
-        List<Group> groupList = groupDozerConverter.convertToDTOList(groupEntityList, false);
-        return groupList;
+        return groupManager.findGroupsDtoForOwner(searchBean, requesterId, ownerId, from, size, language);
     }
+
     @Override
     public int countGroupsForOwner(final GroupSearchBean searchBean, final String requesterId, String ownerId) {
         return groupManager.countGroupsForOwner(searchBean, requesterId, ownerId);
@@ -467,11 +447,9 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     }
 
     @Override
-    @LocalizedServiceGet
     public List<Group> getGroupsForUserLocalize(final String userId, final String requesterId, Boolean deepFlag,
                                         final int from, final int size, final Language language) {
-        final List<GroupEntity> groupEntityList = groupManager.getGroupsForUserLocalize(userId, requesterId, from, size, languageConverter.convertToEntity(language, false));
-        return groupDozerConverter.convertToDTOList(groupEntityList, false);
+        return groupManager.getGroupsDtoForUserLocalize(userId, requesterId, from, size, language);
     }
 
     @Override
@@ -487,11 +465,9 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     }
 
     @Override
-    @LocalizedServiceGet
     public List<Group> getGroupsForResourceLocalize(final String resourceId, final String requesterId, final boolean deepFlag,
                                             final int from, final int size, final Language language) {
-        final List<GroupEntity> groupEntityList = groupManager.getGroupsForResourceLocalize(resourceId, requesterId, from, size, languageConverter.convertToEntity(language, false));
-        return groupDozerConverter.convertToDTOList(groupEntityList, false);
+        return groupManager.getGroupsDtoForResourceLocalize(resourceId, requesterId, from, size, language);
     }
 
     @Override
@@ -507,12 +483,9 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     }
 
     @Override
-    @LocalizedServiceGet
-    @Transactional(readOnly = true)
     public List<Group> getGroupsForRoleLocalize(final String roleId, final String requesterId, final int from, final int size,
                                         boolean deepFlag, final Language language) {
-        final List<GroupEntity> groupEntityList = groupManager.getGroupsForRoleLocalize(roleId, requesterId, from, size, languageConverter.convertToEntity(language, false));
-        return groupDozerConverter.convertToDTOList(groupEntityList, deepFlag);
+        return groupManager.getGroupsDtoForRoleLocalize(roleId, requesterId, from, size, deepFlag, language);
     }
 
     @Override
@@ -614,6 +587,16 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
                 throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS, String.format(
                         "User %s has already been added to group: %s", userId, groupId));
             }
+
+            GroupEntity groupEntity = groupManager.getGroup(groupId);
+            if (groupEntity != null) {
+                if (!((groupEntity.getMaxUserNumber() == null) || (userManager.getNumOfUsersForGroup(groupId, null) < groupEntity.getMaxUserNumber()))) {
+                    throw new BasicDataServiceException(ResponseCode.GROUP_LIMIT_OF_USERS_EXCEEDED, "group's limit of user count exceeded");
+                }
+            } else {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "groupEntity is null");
+            }
+
         } catch (BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
@@ -666,10 +649,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     }
 
     @Override
-    @LocalizedServiceGet
-    @Transactional(readOnly = true)
     public List<Group> findGroupsByAttributeValueLocalize(String attrName, String attrValue, final Language language) {
-        return groupDozerConverter.convertToDTOList(
-                groupManager.findGroupsByAttributeValueLocalize(attrName, attrValue, languageConverter.convertToEntity(language, false)), true);
+        return groupManager.findGroupsDtoByAttributeValueLocalize(attrName, attrValue, languageConverter.convertToEntity(language, false));
     }
 }

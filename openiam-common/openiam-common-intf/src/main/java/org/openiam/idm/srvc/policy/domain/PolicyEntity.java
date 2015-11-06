@@ -4,9 +4,12 @@ package org.openiam.idm.srvc.policy.domain;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+
 import javax.persistence.*;
 
 import org.apache.commons.lang.StringUtils;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.mngsys.domain.ReconciliationResourceAttributeMapEntity;
@@ -15,6 +18,7 @@ import org.openiam.idm.srvc.policy.dto.Policy;
 @Entity
 @Table(name = "POLICY")
 @DozerDTOCorrespondence(Policy.class)
+@Cache(usage=CacheConcurrencyStrategy.READ_WRITE)
 public class PolicyEntity implements java.io.Serializable {
 
     /**
@@ -64,9 +68,11 @@ public class PolicyEntity implements java.io.Serializable {
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "POLICY_ID", insertable = true, updatable = true)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<PolicyAttributeEntity> policyAttributes = new HashSet<PolicyAttributeEntity>(0);
 
     @OneToMany(fetch = FetchType.LAZY, orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "attributePolicy")
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<ReconciliationResourceAttributeMapEntity> attributeMaps = new HashSet<ReconciliationResourceAttributeMapEntity>(0);
 
     public PolicyEntity() {

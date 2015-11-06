@@ -157,7 +157,9 @@ public class DelegationFilterHelper {
                         value.append(v);
                     }
                 } else {
-                    value.append(ua.getValue());
+                    if(ua.getValue() != null) {
+                        value.append(ua.getValue());
+                    }
                 }
             }
         }

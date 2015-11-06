@@ -20,18 +20,24 @@ import org.springframework.stereotype.Repository;
 @Repository("resourceTypeDAO")
 public class ResourceTypeDAOImpl extends BaseDaoImpl<ResourceTypeEntity, String> implements ResourceTypeDAO {
 
+
     @Autowired
     private ResourceTypeSearchBeanConverter converter;
+
+    @Override
+    protected boolean cachable() {
+        return true;
+    }
 
     @Override
     protected Criteria getExampleCriteria(SearchBean searchBean) {
         Criteria criteria = null;
         if (searchBean != null && searchBean instanceof ResourceTypeSearchBean) {
-        	final ResourceTypeSearchBean resourceTypeSearchBean = (ResourceTypeSearchBean) searchBean;
+            final ResourceTypeSearchBean resourceTypeSearchBean = (ResourceTypeSearchBean) searchBean;
             final ResourceTypeEntity entity = converter.convert(resourceTypeSearchBean);
             criteria = getExampleCriteria(entity);
-            if(resourceTypeSearchBean.getSupportsHierarchy() != null) {
-            	criteria.add(Restrictions.eq("supportsHierarchy", resourceTypeSearchBean.getSupportsHierarchy()));
+            if (resourceTypeSearchBean.getSupportsHierarchy() != null) {
+                criteria.add(Restrictions.eq("supportsHierarchy", resourceTypeSearchBean.getSupportsHierarchy()));
             }
         } else {
             criteria = super.getCriteria();

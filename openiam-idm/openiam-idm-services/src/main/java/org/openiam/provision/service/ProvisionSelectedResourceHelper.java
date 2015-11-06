@@ -203,7 +203,7 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
             }
 
             if (mLg != null) {
-                log.debug("PROCESSING IDENTITY =");
+                log.debug("PROCESSING IDENTITY ="+mLg.getLogin()); //SIA 2015-08-01
             } else {
                 log.debug("BUILDING NEW IDENTITY");
             }

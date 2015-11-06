@@ -33,7 +33,8 @@ import java.util.Set;
         "isSelectable",
         "adminResourceId",
         "abbreviation",
-        "uncoverParents"
+        "uncoverParents",
+        "forCurrentUsersOnly"
 })
 public class OrganizationSearchBean extends EntitlementsSearchBean<Organization, String> implements SearchBean<Organization, String>,
         Serializable {
@@ -49,7 +50,7 @@ public class OrganizationSearchBean extends EntitlementsSearchBean<Organization,
     private String adminResourceId;
     private String abbreviation;
     private Boolean uncoverParents = false;
-
+    private boolean forCurrentUsersOnly = false;
 
     public String getName() {
         return name;
@@ -204,6 +205,14 @@ public class OrganizationSearchBean extends EntitlementsSearchBean<Organization,
             return false;
 
         return true;
+    }
+
+    public boolean isForCurrentUsersOnly() {
+        return forCurrentUsersOnly;
+    }
+
+    public void setForCurrentUsersOnly(boolean forCurrentUserOnly) {
+        this.forCurrentUsersOnly = forCurrentUserOnly;
     }
 
     public String getAbbreviation() {

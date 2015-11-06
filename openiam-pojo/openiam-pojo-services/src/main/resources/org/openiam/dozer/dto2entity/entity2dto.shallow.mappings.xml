@@ -336,6 +336,10 @@
             <a>displayNameMap</a>
             <b>displayNameMap</b>
         </field-exclude>
+        <field>
+            <a>active</a>
+            <b>active</b>
+        </field>
     </mapping>
 
     <mapping>

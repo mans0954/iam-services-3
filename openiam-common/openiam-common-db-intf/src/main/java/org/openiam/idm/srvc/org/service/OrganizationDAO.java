@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.org.service;
 
+import org.hibernate.Criteria;
 import org.openiam.core.dao.BaseDao;
 import org.openiam.idm.srvc.org.domain.Org2OrgXrefEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
@@ -18,15 +19,12 @@ import java.util.Set;
 public interface OrganizationDAO extends BaseDao<OrganizationEntity, String> {
 
     int getNumOfChildOrganizations(String orgId, Set<String> filter);
-
     List<OrganizationEntity> getChildOrganizations(String orgId, Set<String> filter, final int from, final int size);
-
+    
     int getNumOfParentOrganizations(String orgId, Set<String> filter);
-
     List<OrganizationEntity> getParentOrganizations(String orgId, Set<String> filter, final int from, final int size);
-
+    
     public List<OrganizationEntity> getOrganizationsForUser(final String userId, final Set<String> filter, final int from, final int size);
-
     public int getNumOfOrganizationsForUser(final String userId, final Set<String> filter);
 
     public List<Org2OrgXrefEntity> getOrgToOrgXrefList();
@@ -35,8 +33,11 @@ public interface OrganizationDAO extends BaseDao<OrganizationEntity, String> {
 
     public List<OrganizationEntity> findOrganizationsByAttributeValue(final String attrName, final String attrValue);
 
+    public List<OrganizationEntity> getUserAffiliationsByType(final String userId, final String typeId, final Set<String> filter, final int from,
+                                                              final int size);
     public OrganizationEntity getPrimaryAffiliationForUser(final String userId, final String mdType);
 
+    public void deleteOrganizationUserDependency(final String orgId) ;
     public String getOrganizationAliases(String userId);
 
 }

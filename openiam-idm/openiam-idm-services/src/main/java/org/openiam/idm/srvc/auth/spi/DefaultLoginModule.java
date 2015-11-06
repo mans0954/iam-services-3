@@ -27,6 +27,7 @@ import org.openiam.dozer.converter.PasswordHistoryDozerConverter;
 import org.openiam.exception.AuthenticationException;
 import org.openiam.idm.srvc.auth.context.AuthenticationContext;
 import org.openiam.idm.srvc.auth.context.PasswordCredential;
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.Subject;
 import org.openiam.idm.srvc.auth.service.AuthCredentialsValidator;
@@ -89,15 +90,11 @@ public class DefaultLoginModule extends AbstractLoginModule {
         String password = cred.getPassword();
 
         // checking if Login exists in OpenIAM
-        LoginResponse lgResp = loginManager.getLoginByManagedSys(principal, sysConfiguration.getDefaultManagedSysId());
-        Login lg = lgResp.getPrincipal();
+       LoginEntity lg = loginManager.getLoginByManagedSys(principal, sysConfiguration.getDefaultManagedSysId());
         if (lg == null) {
             throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_LOGIN);
         }
         principal = lg.getLogin();
-
-        Set<PasswordHistory> phSet = passwordManager.getPasswordHistory(lg.getLoginId(), 0, Integer.MAX_VALUE);
-        lg.setPasswordHistory(phSet);
 
         // checking if User is valid
         UserEntity user = userManager.getUser(lg.getUserId());
@@ -106,7 +103,7 @@ public class DefaultLoginModule extends AbstractLoginModule {
         }
 
         // checking password policy
-        Policy passwordPolicy = passwordManager.getPasswordPolicy(principal, lg.getManagedSysId());
+        Policy passwordPolicy = passwordManager.getPasswordPolicy(lg);
         if (passwordPolicy == null) {
             throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_CONFIGURATION);
         }
@@ -141,8 +138,8 @@ public class DefaultLoginModule extends AbstractLoginModule {
         }
 
         // checking passwords are equal
-        String decryptPswd = decryptPassword(lg.getUserId(), lg.getPassword());
-        if (!StringUtils.equals(decryptPswd, password)) {
+        String encryptPswd = encryptPassword(lg.getUserId(), password);
+        if (!StringUtils.equals(lg.getPassword(), encryptPswd)) {
             // get the authentication lock out policy
             String attrValue = getPolicyAttribute(authPolicy.getPolicyAttributes(), "FAILED_AUTH_COUNT");
 
@@ -162,19 +159,16 @@ public class DefaultLoginModule extends AbstractLoginModule {
                 if (failCount >= authFailCount) {
                     // lock the record and save the record.
                     lg.setIsLocked(1);
-                    loginManager.saveLogin(lg);
-
+                    loginManager.updateLogin(lg);
                     // set the flag on the primary user record
                     user.setSecondaryStatus(UserStatusEnum.LOCKED);
                     userManager.updateUser(user);
-
                     throw new AuthenticationException(
                             AuthenticationConstants.RESULT_LOGIN_LOCKED);
 
                 } else {
                     // update the counter save the record
-                    loginManager.saveLogin(lg);
-
+                    loginManager.updateLogin(lg);
                     throw new AuthenticationException(
                             AuthenticationConstants.RESULT_INVALID_PASSWORD);
                 }
@@ -216,9 +210,10 @@ public class DefaultLoginModule extends AbstractLoginModule {
         lg.setLastLoginIP(authContext.getClientIP());
 
         lg.setAuthFailCount(0);
+        lg.setChallengeResponseFailCount(0);
         lg.setFirstTimeLogin(0);
         log.debug("-Good Authn: Login object updated.");
-        loginManager.saveLogin(lg);
+        loginManager.updateLogin(lg);
 
         // check the user status
         if (UserStatusEnum.PENDING_INITIAL_LOGIN.equals(user.getStatus()) ||

@@ -12,12 +12,17 @@ import java.util.List;
 
 /**
  * Home object for domain model class MngSysObjectMatch.
- * @see org.openiam.idm.srvc.meta.service.MetadataService
+ *
  * @author Hibernate Tools
+ * @see org.openiam.idm.srvc.meta.service.MetadataService
  */
 @Repository("managedSysObjectMatchDAO")
 public class ManagedSystemObjectMatchDAOImpl extends BaseDaoImpl<ManagedSystemObjectMatchEntity, String> implements ManagedSystemObjectMatchDAO {
 
+
+    protected boolean cachable() {
+        return true;
+    }
 
     @Override
     protected String getPKfieldName() {
@@ -25,22 +30,23 @@ public class ManagedSystemObjectMatchDAOImpl extends BaseDaoImpl<ManagedSystemOb
     }
 
     /**
-	 * Finds objects for an object type (like User, Group) for a ManagedSystem definition
-	 * @param managedSystemId
-	 * @param objectType
-	 * @return
-	 */
-	public List<ManagedSystemObjectMatchEntity> findBySystemId(String managedSystemId, String objectType) {
-		Session session = getSession();
-		Query qry = session.createQuery("from org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity sys " +
-						" where sys.managedSys = :managedSystemId  and sys.objectType = :objectType" );
-		qry.setString("managedSystemId", managedSystemId);
-		qry.setString("objectType", objectType);
-		List<ManagedSystemObjectMatchEntity> result = (List<ManagedSystemObjectMatchEntity>)qry.list();
-		if (result == null || result.size() == 0)
-			return null;
-		return result;
-	}
-	
+     * Finds objects for an object type (like User, Group) for a ManagedSystem definition
+     *
+     * @param managedSystemId
+     * @param objectType
+     * @return
+     */
+    public List<ManagedSystemObjectMatchEntity> findBySystemId(String managedSystemId, String objectType) {
+        Session session = getSession();
+        Query qry = session.createQuery("from org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity sys " +
+                " where sys.managedSys = :managedSystemId  and sys.objectType = :objectType");
+        qry.setString("managedSystemId", managedSystemId);
+        qry.setCacheable(this.cachable()).setString("objectType", objectType);
+        List<ManagedSystemObjectMatchEntity> result = (List<ManagedSystemObjectMatchEntity>) qry.list();
+        if (result == null || result.size() == 0)
+            return null;
+        return result;
+    }
+
 
 }

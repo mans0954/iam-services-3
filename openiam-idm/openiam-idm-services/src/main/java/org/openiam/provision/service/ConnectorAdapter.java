@@ -86,7 +86,7 @@ public class ConnectorAdapter {
 
                 MuleMessage msg = getService(connector, addReqType,
                         connector.getServiceUrl(), "add", muleContext);
-                log.debug("***ADD Payload=" +msg);
+                log.debug("***ADD Payload=" + msg);
                 if (msg.getPayload() != null
                         && msg.getPayload() instanceof ObjectResponse) {
                     return (ObjectResponse) msg.getPayload();
@@ -96,7 +96,10 @@ public class ConnectorAdapter {
             return resp;
 
         } catch (Exception e) {
-            // log.error(e);
+            log.debug("Exception caught in ConnectorAdapter:addRequest"); //SIA 2015-08-01
+            log.error(e);
+            log.error(e.getStackTrace()); //SIA 2015-08-01
+
             resp.setError(ErrorCode.OTHER_ERROR);
             resp.addErrorMessage(e.toString());
             return resp;
@@ -142,6 +145,7 @@ public class ConnectorAdapter {
         } catch (Exception e) {
             log.debug("Exception caught in ConnectorAdaptor:modifyRequest");
             log.error(e);
+            log.error(e.getStackTrace()); //SIA 2015-08-01
 
             resp.setError(ErrorCode.OTHER_ERROR);
             resp.addErrorMessage(e.toString());
@@ -237,7 +241,10 @@ public class ConnectorAdapter {
 
             }
         } catch (Exception e) {
+            log.debug("Exception caught in ConnectorAdapter:search"); //SIA 2015-08-01
             log.error(e);
+            log.error(e.getStackTrace()); //SIA 2015-08-01
+
         }
         resp.setStatus(StatusCodeType.FAILURE);
         return resp;
@@ -278,7 +285,9 @@ public class ConnectorAdapter {
             }
             return type;
         } catch (Exception e) {
+            log.debug("Exception caught in ConnectorAdapter:reconcileResource"); //SIA 2015-08-01
             log.error(e);
+            log.error(e.getStackTrace()); //SIA 2015-08-01
 
             type.setError(ErrorCode.OTHER_ERROR);
             type.addErrorMessage(e.toString());
@@ -322,7 +331,9 @@ public class ConnectorAdapter {
             }
             return type;
         } catch (Exception e) {
+            log.debug("Exception caught in ConnectorAdapter:lookupAttributes"); //SIA 2015-08-01
             log.error(e);
+            log.error(e.getStackTrace()); //SIA 2015-08-01
 
             type.setError(ErrorCode.OTHER_ERROR);
             type.addErrorMessage(e.toString());
@@ -366,7 +377,9 @@ public class ConnectorAdapter {
             }
             return resp;
         } catch (Exception e) {
+            log.debug("Exception caught in ConnectorAdapter:deleteRequest"); //SIA 2015-08-01
             log.error(e);
+            log.error(e.getStackTrace()); //SIA 2015-08-01
 
             resp.setError(ErrorCode.OTHER_ERROR);
             resp.addErrorMessage(e.toString());
@@ -375,6 +388,7 @@ public class ConnectorAdapter {
         }
 
     }
+
     @Deprecated
 /**
  * Please use ResetPassword instead
@@ -413,8 +427,9 @@ public class ConnectorAdapter {
             }
             return resp;
         } catch (Exception e) {
+            log.debug("Exception caught in ConnectorAdapter:setPasswordRequest"); //SIA 2015-08-01
             log.error(e);
-
+            log.error(e.getStackTrace()); //SIA 2015-08-01
             resp.setError(ErrorCode.OTHER_ERROR);
             resp.addErrorMessage(e.toString());
             return resp;
@@ -461,8 +476,9 @@ public class ConnectorAdapter {
             }
             return resp;
         } catch (Exception e) {
+            log.debug("Exception caught in ConnectorAdapter:resetPasswordRequest"); //SIA 2015-08-01
             log.error(e);
-
+            log.error(e.getStackTrace()); //SIA 2015-08-01
             resp.setError(ErrorCode.OTHER_ERROR);
             resp.addErrorMessage(e.toString());
             return resp;
@@ -508,8 +524,9 @@ public class ConnectorAdapter {
             return resp;
 
         } catch (Exception e) {
+            log.debug("Exception caught in ConnectorAdapter:suspendRequest"); //SIA 2015-08-01
             log.error(e);
-
+            log.error(e.getStackTrace()); //SIA 2015-08-01
             resp.setError(ErrorCode.OTHER_ERROR);
             resp.addErrorMessage(e.toString());
             return resp;
@@ -551,8 +568,9 @@ public class ConnectorAdapter {
             }
             return type;
         } catch (Exception e) {
+            log.debug("Exception caught in ConnectorAdapter:resumeRequest"); //SIA 2015-08-01
             log.error(e);
-
+            log.error(e.getStackTrace()); //SIA 2015-08-01
             type.setError(ErrorCode.OTHER_ERROR);
             type.addErrorMessage(e.toString());
             return type;
@@ -604,8 +622,9 @@ public class ConnectorAdapter {
             }
             return resp;
         } catch (Exception e) {
+            log.debug("Exception caught in ConnectorAdapter:validatePassword"); //SIA 2015-08-01
             log.error(e);
-
+            log.error(e.getStackTrace()); //SIA 2015-08-01
             resp.setError(ErrorCode.OTHER_ERROR);
             resp.addErrorMessage(e.toString());
             return resp;
@@ -660,8 +679,9 @@ public class ConnectorAdapter {
             }
             return type;
         } catch (Exception e) {
-            log.error("Can't test connection", e);
-
+            log.debug("Exception caught in ConnectorAdapter:testConnection"); //SIA 2015-08-01
+            log.error(e);
+            log.error(e.getStackTrace()); //SIA 2015-08-01
             type.setError(ErrorCode.OTHER_ERROR);
             type.addErrorMessage(e.toString());
             return type;

@@ -24,7 +24,6 @@ import java.util.Set;
 
 @Entity
 @Table(name = "METADATA_ELEMENT")
-@Cacheable
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(MetadataElement.class)
 @AttributeOverride(name = "id", column = @Column(name = "METADATA_ID"))

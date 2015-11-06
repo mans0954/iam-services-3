@@ -21,6 +21,7 @@ import org.openiam.internationalization.LocalizedDatabaseGet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import javax.persistence.criteria.JoinType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -65,34 +66,21 @@ public class OrganizationDAOImpl extends
     }
 
     @Override
-    public String getOrganizationAliases(String userId) {
-        List<String> reval = null;
-        StringBuilder sb = new StringBuilder("SELECT ALIAS FROM ");
-        sb.append("COMPANY ");
-        sb.append(" org ");
-        sb.append("LEFT JOIN ");
-        sb.append(" USER_AFFILIATION ");
-        sb.append(" ua ON org.COMPANY_ID = ua.COMPANY_ID ");
-        sb.append("WHERE ");
-        if (StringUtils.isNotBlank(userId)) {
-            sb.append(" ua.USER_ID='");
-            sb.append(userId);
-            sb.append("' AND ");
-        }
-        sb.append("ALIAS IS NOT NULL ");
-        sb.append("AND org.ORG_TYPE_ID='ORGANIZATION' GROUP BY org.ALIAS");
-        reval = this.getSession().createSQLQuery(sb.toString()).list();
-        if (CollectionUtils.isNotEmpty(reval)) {
-            return StringUtils.join(reval, ',');
-        } else return null;
-    }
+    @LocalizedDatabaseGet
+    public List<OrganizationEntity> getUserAffiliationsByType(
+            final String userId, final String typeId, final Set<String> filter, final int from,
+            final int size) {
+        final Criteria criteria = getUserAffiliationsByTypeCriteria(userId, typeId,
+                filter);
 
-    @Override
-    public OrganizationEntity getPrimaryAffiliationForUser(
-            final String userId, final String mdType) {
-        final Criteria criteria = getPrimaryUserAffiliationCriteria(userId, mdType);
-        List<OrganizationEntity> res = criteria.list();
-        return CollectionUtils.isNotEmpty(res) ? res.get(0) : null;
+        if (from > -1) {
+            criteria.setFirstResult(from);
+        }
+
+        if (size > -1) {
+            criteria.setMaxResults(size);
+        }
+        return criteria.list();
     }
 
     private Criteria getOrganizationsForUserCriteria(final String userId,
@@ -110,6 +98,20 @@ public class OrganizationDAOImpl extends
         return criteria;
     }
 
+    private Criteria getUserAffiliationsByTypeCriteria(final String userId, final String typeId,
+                                                       final Set<String> filter) {
+
+        final Criteria criteria = getCriteria();
+        if (StringUtils.isNotBlank(userId) && StringUtils.isNotBlank(typeId)) {
+            criteria.createAlias("organizationUser", "ou", Criteria.LEFT_JOIN).
+                    add(Restrictions.and(Restrictions.eq("ou.primaryKey.user.id", userId), Restrictions.eq("ou.metadataTypeEntity.id", typeId)));
+        }
+a
+        if (filter != null && !filter.isEmpty()) {
+            criteria.add(Restrictions.in(getPKfieldName(), filter));
+        }
+        return criteria;
+    }
     private Criteria getPrimaryUserAffiliationCriteria(final String userId, final String mdTypeId) {
         final Criteria criteria = getCriteria();
         if (StringUtils.isNotBlank(userId)) {
@@ -118,8 +120,6 @@ public class OrganizationDAOImpl extends
         }
         return criteria;
     }
-
-
     private Criteria getLocationsForOrganizationsCriteria(final String userId,
                                                           final Set<String> filter) {
         final Criteria criteria = getCriteria();
@@ -307,11 +307,6 @@ public class OrganizationDAOImpl extends
         return ((Number) criteria.uniqueResult()).intValue();
     }
 
-    // BUG in Hibernate!! count() fails for some queries, while the normal
-    // select succeeds. the count query is indeed incorrect:
-    // select count(*) as y0_ from COMPANY this_ where
-    // parenttype1_.ORG_TYPE_ID=? order by this_.COMPANY_NAME asc
-    // using criteria.list.size();
     @Override
     public int count(final SearchBean searchBean) {
         final Criteria criteria = getExampleCriteria(searchBean);
@@ -374,6 +369,13 @@ public class OrganizationDAOImpl extends
     }
 
     @Override
+    public void deleteOrganizationUserDependency(final String orgId) {
+        if (StringUtils.isNotBlank(orgId)) {
+            this.getSession().createSQLQuery("DELETE FROM USER_AFFILIATION WHERE COMPANY_ID='" + orgId + "'").executeUpdate();
+        }
+    }
+
+    @Override
     @LocalizedDatabaseGet
     public List<OrganizationEntity> findOrganizationsByAttributeValue(final String attrName, final String attrValue) {
         List ret = new ArrayList<OrganizationEntity>();
@@ -383,5 +385,36 @@ public class OrganizationDAOImpl extends
             ret = getHibernateTemplate().find("select oa.organization from OrganizationAttributeEntity oa left join oa.values av where oa.name = ? and ((oa.isMultivalued = false and oa.value = ?) or (oa.isMultivalued = true and av in ?))", attrName, attrValue, attrValue);
         }
         return ret;
+    }
+
+    @Override
+    public String getOrganizationAliases(String userId) {
+        List<String> reval = null;
+        StringBuilder sb = new StringBuilder("SELECT ALIAS FROM ");
+        sb.append("COMPANY ");
+        sb.append(" org ");
+        sb.append("LEFT JOIN ");
+        sb.append(" USER_AFFILIATION ");
+        sb.append(" ua ON org.COMPANY_ID = ua.COMPANY_ID ");
+        sb.append("WHERE ");
+        if (StringUtils.isNotBlank(userId)) {
+            sb.append(" ua.USER_ID='");
+            sb.append(userId);
+            sb.append("' AND ");
+        }
+        sb.append("ALIAS IS NOT NULL ");
+        sb.append("AND org.ORG_TYPE_ID='ORGANIZATION' GROUP BY org.ALIAS");
+        reval = this.getSession().createSQLQuery(sb.toString()).list();
+        if (CollectionUtils.isNotEmpty(reval)) {
+            return StringUtils.join(reval, ',');
+        } else return null;
+    }
+
+    @Override
+    public OrganizationEntity getPrimaryAffiliationForUser(
+            final String userId, final String mdType) {
+        final Criteria criteria = getPrimaryUserAffiliationCriteria(userId, mdType);
+        List<OrganizationEntity> res = criteria.list();
+        return CollectionUtils.isNotEmpty(res) ? res.get(0) : null;
     }
 }

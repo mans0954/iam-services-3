@@ -1,8 +1,11 @@
 package org.openiam.idm.srvc.user.domain;
 
 import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 
-import org.hibernate.annotations.Type;
+import org.hibernate.annotations.*;
+import org.hibernate.annotations.Cache;
 import org.openiam.base.domain.AbstractAttributeEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
@@ -19,12 +22,14 @@ import java.util.List;
 	@AttributeOverride(name = "id", column = @Column(name = "ID")),
 	@AttributeOverride(name = "value", column = @Column(name="VALUE", length=4000))
 })
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class UserAttributeEntity extends AbstractAttributeEntity {
     private static final long serialVersionUID = 6695609793883291213L;
 
     @ElementCollection
     @CollectionTable(name="USER_ATTRIBUTE_VALUES", joinColumns=@JoinColumn(name="USER_ATTRIBUTE_ID", referencedColumnName="ID"))
     @Column(name="VALUE", length = 255)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private List<String> values = new ArrayList<String>();
 
     @Column(name = "IS_MULTIVALUED", nullable = false)

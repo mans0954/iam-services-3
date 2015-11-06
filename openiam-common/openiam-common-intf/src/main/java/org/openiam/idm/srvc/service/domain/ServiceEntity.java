@@ -25,7 +25,6 @@ import org.openiam.idm.srvc.res.dto.Resource;
 
 @Entity
 @Table(name = "SERVICE")
-@Cacheable
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class ServiceEntity implements Serializable {
 

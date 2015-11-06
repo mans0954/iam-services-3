@@ -3,8 +3,12 @@ package org.openiam.idm.srvc.mngsys.domain;
 import java.util.Date;
 
 import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 
-import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.*;
+import org.hibernate.annotations.Cache;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.mngsys.dto.PolicyMapDataTypeOptions;
@@ -14,10 +18,11 @@ import org.openiam.idm.srvc.mngsys.dto.PolicyMapDataTypeOptions;
  */
 @Entity
 @Table(name = "ATTRIBUTE_MAP")
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(AttributeMap.class)
 public class AttributeMapEntity implements java.io.Serializable {
     /**
-	 * 
+	 *
 	 */
     private static final long serialVersionUID = 1L;
 
@@ -29,6 +34,7 @@ public class AttributeMapEntity implements java.io.Serializable {
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "MANAGED_SYS_ID", nullable = false)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private ManagedSysEntity managedSystem;
 
     @Column(name = "RESOURCE_ID", length = 32)
@@ -51,6 +57,7 @@ public class AttributeMapEntity implements java.io.Serializable {
 
     @OneToOne(optional = false, cascade = CascadeType.ALL, orphanRemoval=true)
     @JoinColumn(name = "ATTRIBUTE_POLICY_ID", nullable = false)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private ReconciliationResourceAttributeMapEntity reconResAttribute;
 
     @Column(name = "RULE_TEXT")

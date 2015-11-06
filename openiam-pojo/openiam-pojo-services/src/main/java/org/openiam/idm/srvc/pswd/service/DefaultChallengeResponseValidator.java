@@ -90,18 +90,20 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
 
     private static final Log log = LogFactory.getLog(DefaultChallengeResponseValidator.class);
 
+    private static final Integer maxLengthAnswer = 255;
+
     @Override
-    public boolean isResponseValid(String userId, List<UserIdentityAnswerEntity> newAnswerList, int requiredCorrectAns)
+    public boolean isResponseValid(String userId, List<UserIdentityAnswerEntity> newAnswerList, int requiredCorrectAns, boolean isEnterprise)
             throws Exception {
-        final int correctAns = getNumOfCorrectAnswers(userId, newAnswerList);
-        if (correctAns >= requiredCorrectAns && requiredCorrectAns > 0) {
+        final int correctAns = getNumOfCorrectAnswers(userId, newAnswerList, isEnterprise);
+        if (correctAns >= requiredCorrectAns) {
             return true;
         }
         return false;
     }
 
     @Override
-    public Integer getNumOfRequiredQuestions(final String userId) {
+    public Integer getNumOfRequiredQuestions(final String userId, boolean isEnterprise) {
         Policy passwordPolicy = null;
         if (StringUtils.isNotBlank(userId)) {
             PasswordPolicyAssocSearchBean searchBean = new PasswordPolicyAssocSearchBean();
@@ -114,7 +116,7 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
 
         Integer count = null;
         if (passwordPolicy != null) {
-            PolicyAttribute countAttr = passwordPolicy.getAttribute("QUEST_COUNT");
+            PolicyAttribute countAttr = isEnterprise ? passwordPolicy.getAttribute("QUEST_COUNT") : passwordPolicy.getAttribute("CUSTOM_QUEST_COUNT");
             try {
                 count = Integer.valueOf(countAttr.getValue1());
             } catch (Throwable e) {
@@ -125,7 +127,7 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
     }
 
     @Override
-    public Integer getNumOfCorrectAnswers(final String userId) {
+    public Integer getNumOfCorrectAnswers(final String userId, boolean isEnterprise) {
         Policy passwordPolicy = null;
         if (StringUtils.isNotBlank(userId)) {
             PasswordPolicyAssocSearchBean searchBean = new PasswordPolicyAssocSearchBean();
@@ -138,7 +140,7 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
 
         Integer count = null;
         if (passwordPolicy != null) {
-            PolicyAttribute countAttr = passwordPolicy.getAttribute("QUEST_ANSWER_CORRECT");
+            PolicyAttribute countAttr = isEnterprise ? passwordPolicy.getAttribute("QUEST_ANSWER_CORRECT") : passwordPolicy.getAttribute("CUSTOM_QUEST_ANSWER_COUNT");
             try {
                 count = Integer.valueOf(countAttr.getValue1());
             } catch (Throwable e) {
@@ -150,10 +152,13 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
 
     @Override
     public boolean isUserAnsweredSecurityQuestions(final String userId) throws Exception {
-        final Integer numOfRequiredQuestions = getNumOfRequiredQuestions(userId);
+        return this.isUserAnsweredSecurityQuestions(userId, true) && this.isUserAnsweredSecurityQuestions(userId, false);
+    }
+
+    @Override
+    public boolean isUserAnsweredSecurityQuestions(final String userId, boolean isEnterprise) throws Exception {
+        final Integer numOfRequiredQuestions = getNumOfRequiredQuestions(userId, isEnterprise);
         final List<UserIdentityAnswerEntity> answerList = answersByUser(userId);
-
-
         boolean retVal = false;
         if (numOfRequiredQuestions == null) {
             retVal = true;
@@ -166,7 +171,7 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
         return retVal;
     }
 
-    private int getNumOfCorrectAnswers(final String userId, final List<UserIdentityAnswerEntity> newAnswerList)
+    private int getNumOfCorrectAnswers(final String userId, final List<UserIdentityAnswerEntity> newAnswerList, boolean isEnterprise)
             throws Exception {
         int correctAns = 0;
 
@@ -182,6 +187,9 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
         }
 
         for (UserIdentityAnswerEntity savedAns : savedAnsList) {
+            if ((isEnterprise && savedAns.getIdentityQuestion() == null) || (!isEnterprise && savedAns.getIdentityQuestion() != null)) {
+                continue;
+            }
             for (UserIdentityAnswerEntity newAns : newAnswerList) {
                 if (StringUtils.equalsIgnoreCase(newAns.getId(), savedAns.getId())) {
                     String savedAnswer = (savedAns.getIsEncrypted()) ? keyManagementService.decrypt(lg.getUserId(), KeyName.challengeResponse, savedAns.getQuestionAnswer())
@@ -305,12 +313,16 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
         if (answerList != null) {
             for (final UserIdentityAnswerEntity entity : answerList) {
 
-                if(validateAnswerLength(entity.getQuestionAnswer())) {
+                if (validateAnswerLength(entity.getQuestionAnswer())) {
 
                     if (entity.getIdentityQuestion() != null && StringUtils.isNotBlank(entity.getIdentityQuestion().getId())) {
                         entity.setIdentityQuestion(questionDAO.findById(entity.getIdentityQuestion().getId()));
                     }
                     entity.setQuestionAnswer(keyManagementService.encrypt(entity.getUserId(), KeyName.challengeResponse, entity.getQuestionAnswer()));
+                    //enncrypt Custom question
+                    if (entity.getIdentityQuestion() == null && StringUtils.isNotBlank(entity.getQuestionText())) {
+                        entity.setQuestionText(keyManagementService.encrypt(entity.getUserId(), KeyName.challengeResponse, entity.getQuestionText()));
+                    }
                     entity.setIsEncrypted(true);
                 } else {
                     throw new BasicDataServiceException(ResponseCode.ANSWER_IS_TOO_LONG);
@@ -320,8 +332,8 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
         }
     }
 
-    private boolean validateAnswerLength (String answer) {
-        if (answer.length() <= 255){
+    private boolean validateAnswerLength(String answer) {
+        if (answer.length() <= maxLengthAnswer) {
             return true;
         }
         return false;
@@ -331,6 +343,11 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
     @Transactional
     public void resetQuestionsForUser(String userId) {
         answerDAO.deleteByUser(userId);
+        LoginEntity login = loginManager.getPrimaryIdentity(userId);
+        if (login != null) {
+            login.setChallengeResponseFailCount(0);
+            loginManager.updateLogin(login);
+        }
     }
 
 
@@ -344,6 +361,12 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
 
                     entity.setQuestionAnswer(keyManagementService.decrypt(entity.getUserId(), KeyName.challengeResponse,
                             entity.getQuestionAnswer()));
+
+                }
+                //enncrypt Custom question
+                if ((entity.getIdentityQuestion() == null || entity.getIdentityQuestion().getId() == null) && StringUtils.isNotBlank(entity.getQuestionText())) {
+                    entity.setQuestionText(keyManagementService.decrypt(entity.getUserId(), KeyName.challengeResponse,
+                            entity.getQuestionText()));
                 }
             }
         }

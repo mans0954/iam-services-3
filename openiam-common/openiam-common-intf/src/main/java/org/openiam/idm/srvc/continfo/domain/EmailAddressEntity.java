@@ -1,9 +1,10 @@
 package org.openiam.idm.srvc.continfo.domain;
 
+import java.io.Serializable;
 import java.util.Date;
 
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Type;
+import org.hibernate.annotations.*;
+import org.hibernate.annotations.Cache;
 import org.hibernate.search.annotations.DocumentId;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.FieldBridge;
@@ -21,13 +22,17 @@ import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 
 import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import javax.validation.constraints.Size;
 
 @Entity
 @Table(name = "EMAIL_ADDRESS")
 @DozerDTOCorrespondence(EmailAddress.class)
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Indexed
-public class EmailAddressEntity {
+public class EmailAddressEntity implements Serializable {
     @Id
     @GeneratedValue(generator = "system-uuid")
     @GenericGenerator(name = "system-uuid", strategy = "uuid")
@@ -60,6 +65,7 @@ public class EmailAddressEntity {
     @ManyToOne
     @JoinColumn(name = "PARENT_ID")
     @Field(name="parent", bridge=@FieldBridge(impl=UserBridge.class), store=Store.YES)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private UserEntity parent;
 
     @Column(name = "NAME", length = 100)
@@ -76,6 +82,7 @@ public class EmailAddressEntity {
 
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
     @JoinColumn(name = "TYPE_ID", insertable=true, updatable=true)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private MetadataTypeEntity metadataType;
 
     public EmailAddressEntity() {

@@ -17,7 +17,7 @@
  */
 
 /**
- * 
+ *
  */
 package org.openiam.idm.srvc.lang.service;
 
@@ -47,7 +47,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author suneet
- * 
  */
 @Service("languageDataService")
 public class LanguageDataServiceImpl implements LanguageDataService {
@@ -70,7 +69,7 @@ public class LanguageDataServiceImpl implements LanguageDataService {
     @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
-    @Cacheable(value="languages", key="{#language}")
+    @Cacheable(value = "languages", key = "{#language}")
     public List<Language> getUsedLanguages(Language language) {
         List<LanguageEntity> languageEntities = languageDao.getUsedLanguages();
         return languageEntities != null ? languageDozerConverter.convertToDTOList(languageEntities, true) : null;
@@ -88,7 +87,7 @@ public class LanguageDataServiceImpl implements LanguageDataService {
     }
 
     @Transactional
-    @CacheEvict(value = "languages", allEntries=true)
+    @CacheEvict(value = "languages", allEntries = true)
     public void removeLanguage(String languageId) {
         if (languageId == null) {
             throw new NullPointerException("languageCd is null");
@@ -98,7 +97,7 @@ public class LanguageDataServiceImpl implements LanguageDataService {
     }
 
     @Transactional
-    @CacheEvict(value = "languages", allEntries=true)
+    @CacheEvict(value = "languages", allEntries = true)
     public void updateLanguage(LanguageEntity lg) {
         if (lg == null) {
             throw new NullPointerException("lg is null");
@@ -111,7 +110,7 @@ public class LanguageDataServiceImpl implements LanguageDataService {
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value="languages",key="{ #searchBean.cacheUniqueBeanKey, #from, #size}")
+    @Cacheable(value = "languages", key = "{ #searchBean.cacheUniqueBeanKey, #from, #size}")
     public List<Language> findBeans(final LanguageSearchBean searchBean, final int from, final int size) {
         List<LanguageEntity> languageEntities = languageDao.getByExample(searchBean, from, size);
         return languageEntities != null ? languageDozerConverter.convertToDTOList(languageEntities, true) : null;
@@ -120,9 +119,9 @@ public class LanguageDataServiceImpl implements LanguageDataService {
     @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
-    @Cacheable(value="languages", key="{ #searchBean.cacheUniqueBeanKey, #from, #size,#language}")
+    @Cacheable(value = "languages", key = "{ #searchBean.cacheUniqueBeanKey, #from, #size,#language}")
     public List<Language> findBeans(final LanguageSearchBean searchBean, int from, int size,
-            final Language language) {
+                                    final Language language) {
         return this.findBeans(searchBean, from, size);
     }
 
@@ -154,13 +153,13 @@ public class LanguageDataServiceImpl implements LanguageDataService {
     @Override
     @Transactional(readOnly = true)
     public Language getDefaultLanguage() {
-        LanguageEntity languageEntity =  languageDao.getDefaultLanguage();
+        LanguageEntity languageEntity = languageDao.getDefaultLanguage();
         return languageEntity != null ? languageDozerConverter.convertToDTO(languageEntity, true) : null;
     }
 
     @Override
     @Transactional
-    @CacheEvict(value = "languages", allEntries=true)
+    @CacheEvict(value = "languages", allEntries = true)
     public String save(Language language) throws BasicDataServiceException {
         if (language == null) {
             throw new BasicDataServiceException(ResponseCode.INTERNAL_ERROR);
@@ -210,7 +209,7 @@ public class LanguageDataServiceImpl implements LanguageDataService {
                 updateLanguage(defaultLanguage);
             }
             // add languages without fetches
-            languageDao.add(entity);
+            id = languageDao.add(entity).getId();
         } else {
             // update language
             id = entity.getId();
@@ -260,19 +259,6 @@ public class LanguageDataServiceImpl implements LanguageDataService {
             if (!CollectionUtils.isEmpty(db)) {
                 for (LanguageLocaleEntity lledb : db) {
                     languageLocaleDao.delete(lledb);
-                }
-            }
-        }
-        if (isAdd) {
-            for (String str : language.getDisplayNameMap().keySet()) {
-                LanguageMappingEntity newE = new LanguageMappingEntity();
-                LanguageMapping oldE = language.getDisplayNameMap().get(str);
-                if (oldE != null) {
-                    newE.setLanguageId(str);
-                    newE.setReferenceId(entity.getId());
-                    newE.setReferenceType("LanguageEntity.displayNameMap");
-                    newE.setValue(oldE.getValue());
-                    languageMappingDAO.add(newE);
                 }
             }
         }

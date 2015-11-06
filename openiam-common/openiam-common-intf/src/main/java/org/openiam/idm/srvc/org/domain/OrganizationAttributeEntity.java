@@ -1,9 +1,12 @@
 package org.openiam.idm.srvc.org.domain;
 
 import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Type;
+import org.hibernate.annotations.*;
+import org.hibernate.annotations.Cache;
 import org.openiam.base.domain.AbstractAttributeEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
@@ -18,15 +21,18 @@ import java.util.List;
 @AttributeOverride(name = "id", column = @Column(name = "COMPANY_ATTR_ID"))
 @DozerDTOCorrespondence(OrganizationAttribute.class)
 @Internationalized
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class OrganizationAttributeEntity extends AbstractAttributeEntity {
    
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "COMPANY_ID", referencedColumnName = "COMPANY_ID", insertable = true, updatable = false)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private OrganizationEntity organization;
 
     @ElementCollection
     @CollectionTable(name="COMPANY_ATTRIBUTE_VALUES", joinColumns=@JoinColumn(name="COMPANY_ATTRIBUTE_ID", referencedColumnName="COMPANY_ATTR_ID"))
     @Column(name="VALUE", length = 255)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private List<String> values = new ArrayList<String>();
 
     @Column(name = "IS_MULTIVALUED", nullable = false)

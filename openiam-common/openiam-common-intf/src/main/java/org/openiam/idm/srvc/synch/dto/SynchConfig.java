@@ -9,131 +9,140 @@ import javax.xml.bind.annotation.*;
 import java.util.List;
 
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "SynchConfig", 
-		propOrder = { "synchConfigId",
-		"name",
-		"status", 
-		"synchAdapter",
-        "useSystemPath",
-		"fileName",
-		"managedSysId",
-		"loadMatchOnly",
-		"updateAttribute",
-		"synchFrequency",
-        "companyId",
-		"synchType",
-		"processRule",
-        "preSyncScript",
-        "postSyncScript",
-		"validationRule",
-        "usePolicyMap",
-        "useTransformationScript",
-        "policyMapBeforeTransformation",
-		"transformationRule",
-		"matchFieldName",
-		"matchManagedSysId",
-		"matchSrcFieldName",
-		"srcLoginId",
-		"srcPassword", 
-		"srcHost", 
-		"driver", 
-		"connectionUrl", 
-		"query", 
-		"queryTimeField", 
-		"lastExecTime", 
-		"customMatchRule",
-		"customMatchAttr",
-		"customAdatperScript",
-		"baseDn",
-        "attributeNamesLookup",
-        "searchScope",
-        "lastRecProcessed",
-        "wsScript",
-        "wsUrl",
-        "synchReviews",
-        "parentAuditLogId"
-})
+@XmlType(name = "SynchConfig",
+        propOrder = {"synchConfigId",
+                "name",
+                "status",
+                "synchAdapter",
+                "useSystemPath",
+                "fileName",
+                "managedSysId",
+                "loadMatchOnly",
+                "updateAttribute",
+                "synchFrequency",
+                "companyId",
+                "synchType",
+                "processRule",
+                "preSyncScript",
+                "postSyncScript",
+                "validationRule",
+                "usePolicyMap",
+                "useTransformationScript",
+                "policyMapBeforeTransformation",
+                "transformationRule",
+                "matchFieldName",
+                "matchManagedSysId",
+                "matchSrcFieldName",
+                "srcLoginId",
+                "srcPassword",
+                "srcHost",
+                "driver",
+                "connectionUrl",
+                "query",
+                "queryTimeField",
+                "lastExecTime",
+                "customMatchRule",
+                "customMatchAttr",
+                "customAdatperScript",
+                "baseDn",
+                "attributeNamesLookup",
+                "searchScope",
+                "lastRecProcessed",
+                "wsUrl",
+                "wsUri",
+                "wsNameSpace",
+                "wsOperation",
+                "wsAttributes",
+                "wsTargetEntityPath",
+                "synchReviews",
+                "parentAuditLogId"
+        })
 /**
  * Object containing the configuration for a synchronization task
  */
 @DozerDTOCorrespondence(SynchConfigEntity.class)
 public class SynchConfig implements MatchConfig, java.io.Serializable {
 
-	private String synchConfigId;
-	private String name;
-	private String status;
-	private String synchAdapter;
+    private String synchConfigId;
+    private String name;
+    private String status;
+    private String synchAdapter;
     private Boolean useSystemPath;
-	private String fileName;
-	private String managedSysId;
-	private Integer loadMatchOnly;
-	private Integer updateAttribute;
-	private String synchFrequency;
+    private String fileName;
+    private String managedSysId;
+    private Integer loadMatchOnly;
+    private Integer updateAttribute;
+    private String synchFrequency;
     private String companyId;
-	private String synchType;
-	//private String deleteRule;
-	private String processRule;
+    private String synchType;
+    //private String deleteRule;
+    private String processRule;
     private String preSyncScript;
     private String postSyncScript;
-	private String validationRule;
+    private String validationRule;
     private Boolean usePolicyMap;
     private Boolean useTransformationScript;
     private Boolean policyMapBeforeTransformation;
-	private String transformationRule;
-	private String matchFieldName;
-	private String matchManagedSysId;
-	private String matchSrcFieldName;
-	private String srcLoginId;
-	private String srcPassword;
-	private String srcHost;
-	private String driver;
-	private String connectionUrl;
-	private String query;
-	private String queryTimeField;
-	@XmlSchemaType(name = "dateTime")
-	private java.util.Date lastExecTime;
+    private String transformationRule;
+    private String matchFieldName;
+    private String matchManagedSysId;
+    private String matchSrcFieldName;
+    private String srcLoginId;
+    private String srcPassword;
+    private String srcHost;
+    private String driver;
+    private String connectionUrl;
+    private String query;
+    private String queryTimeField;
+    @XmlSchemaType(name = "dateTime")
+    private java.util.Date lastExecTime;
     private String lastRecProcessed;
-	private String customMatchRule;
-	private String customAdatperScript;
-	private String customMatchAttr;
-	private String baseDn;
+    private String customMatchRule;
+    private String customAdatperScript;
+    private String customMatchAttr;
+    private String baseDn;
     private String attributeNamesLookup;
     private SearchScopeType searchScope = SearchScopeType.SUBTREE_SCOPE;
     private String wsUrl;
-    private String wsScript;
+    private String wsUri;
+    private String wsNameSpace;
+    private String wsOperation;
+    private String wsAttributes;
+    private String wsTargetEntityPath;
+
     private List<SynchReview> synchReviews;
     private String parentAuditLogId;
 
-	public SynchConfig() {
-	}
+    public SynchConfig() {
+    }
 
-	public SynchConfig(String synchConfigId) {
-		this.synchConfigId = synchConfigId;
-	}
+    public SynchConfig(String synchConfigId) {
+        this.synchConfigId = synchConfigId;
+    }
 
-	public String getSynchConfigId() {
-		return this.synchConfigId;
-	}
+    public String getSynchConfigId() {
+        return this.synchConfigId;
+    }
 
-	public void setSynchConfigId(String synchConfigId) {
-		this.synchConfigId = synchConfigId;
-	}
+    public void setSynchConfigId(String synchConfigId) {
+        this.synchConfigId = synchConfigId;
+    }
 
-	public String getName() {
-		return this.name;
-	}
+    public String getName() {
+        return this.name;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	public String getStatus() {
-		return this.status;
-	}
+    public String getStatus() {
+        return this.status;
+    }
 
-	public void setStatus(String status) {
-		this.status = status;
-	}
+    public void setStatus(String status) {
+        this.status = status;
+    }
 
     public String getParentAuditLogId() {
         return parentAuditLogId;
@@ -152,44 +161,44 @@ public class SynchConfig implements MatchConfig, java.io.Serializable {
     }
 
     public String getFileName() {
-		return this.fileName;
-	}
+        return this.fileName;
+    }
 
-	public void setFileName(String fileName) {
-		this.fileName = fileName;
-	}
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
 
-	public String getManagedSysId() {
-		return this.managedSysId;
-	}
+    public String getManagedSysId() {
+        return this.managedSysId;
+    }
 
-	public void setManagedSysId(String managedSysId) {
-		this.managedSysId = managedSysId;
-	}
+    public void setManagedSysId(String managedSysId) {
+        this.managedSysId = managedSysId;
+    }
 
-	public Integer getLoadMatchOnly() {
-		return this.loadMatchOnly;
-	}
+    public Integer getLoadMatchOnly() {
+        return this.loadMatchOnly;
+    }
 
-	public void setLoadMatchOnly(Integer loadMatchOnly) {
-		this.loadMatchOnly = loadMatchOnly;
-	}
+    public void setLoadMatchOnly(Integer loadMatchOnly) {
+        this.loadMatchOnly = loadMatchOnly;
+    }
 
-	public Integer getUpdateAttribute() {
-		return this.updateAttribute;
-	}
+    public Integer getUpdateAttribute() {
+        return this.updateAttribute;
+    }
 
-	public void setUpdateAttribute(Integer updateAttribute) {
-		this.updateAttribute = updateAttribute;
-	}
+    public void setUpdateAttribute(Integer updateAttribute) {
+        this.updateAttribute = updateAttribute;
+    }
 
-	public String getSynchFrequency() {
-		return this.synchFrequency;
-	}
+    public String getSynchFrequency() {
+        return this.synchFrequency;
+    }
 
-	public void setSynchFrequency(String synchFrequency) {
-		this.synchFrequency = synchFrequency;
-	}
+    public void setSynchFrequency(String synchFrequency) {
+        this.synchFrequency = synchFrequency;
+    }
 
     public String getCompanyId() {
         return companyId;
@@ -200,126 +209,125 @@ public class SynchConfig implements MatchConfig, java.io.Serializable {
     }
 
     public String getProcessRule() {
-		return this.processRule;
-	}
+        return this.processRule;
+    }
 
-	public void setProcessRule(String processRule) {
-		this.processRule = processRule;
-	}
+    public void setProcessRule(String processRule) {
+        this.processRule = processRule;
+    }
 
-	public String getTransformationRule() {
-		return this.transformationRule;
-	}
+    public String getTransformationRule() {
+        return this.transformationRule;
+    }
 
-	public void setTransformationRule(String transformationRule) {
-		this.transformationRule = transformationRule;
-	}
+    public void setTransformationRule(String transformationRule) {
+        this.transformationRule = transformationRule;
+    }
 
-	public String getMatchFieldName() {
-		return this.matchFieldName;
-	}
+    public String getMatchFieldName() {
+        return this.matchFieldName;
+    }
 
-	public void setMatchFieldName(String matchFieldName) {
-		this.matchFieldName = matchFieldName;
-	}
+    public void setMatchFieldName(String matchFieldName) {
+        this.matchFieldName = matchFieldName;
+    }
 
-	public String getMatchSrcFieldName() {
-		return this.matchSrcFieldName;
-	}
+    public String getMatchSrcFieldName() {
+        return this.matchSrcFieldName;
+    }
 
-	public void setMatchSrcFieldName(String matchSrcFieldName) {
-		this.matchSrcFieldName = matchSrcFieldName;
-	}
+    public void setMatchSrcFieldName(String matchSrcFieldName) {
+        this.matchSrcFieldName = matchSrcFieldName;
+    }
 
-	public String getMatchManagedSysId() {
-		return matchManagedSysId;
-	}
+    public String getMatchManagedSysId() {
+        return matchManagedSysId;
+    }
 
-	public void setMatchManagedSysId(String matchManagedSysId) {
-		this.matchManagedSysId = matchManagedSysId;
-	}
+    public void setMatchManagedSysId(String matchManagedSysId) {
+        this.matchManagedSysId = matchManagedSysId;
+    }
 
-	public String getSrcLoginId() {
-		return srcLoginId;
-	}
+    public String getSrcLoginId() {
+        return srcLoginId;
+    }
 
-	public void setSrcLoginId(String srcLoginId) {
-		this.srcLoginId = srcLoginId;
-	}
+    public void setSrcLoginId(String srcLoginId) {
+        this.srcLoginId = srcLoginId;
+    }
 
-	public String getSrcPassword() {
-		return srcPassword;
-	}
+    public String getSrcPassword() {
+        return srcPassword;
+    }
 
-	public void setSrcPassword(String srcPassword) {
-		this.srcPassword = srcPassword;
-	}
+    public void setSrcPassword(String srcPassword) {
+        this.srcPassword = srcPassword;
+    }
 
-	public String getSrcHost() {
-		return srcHost;
-	}
+    public String getSrcHost() {
+        return srcHost;
+    }
 
-	public void setSrcHost(String srcHost) {
-		this.srcHost = srcHost;
-	}
+    public void setSrcHost(String srcHost) {
+        this.srcHost = srcHost;
+    }
 
-	public String getDriver() {
-		return driver;
-	}
+    public String getDriver() {
+        return driver;
+    }
 
-	public void setDriver(String driver) {
-		this.driver = driver;
-	}
+    public void setDriver(String driver) {
+        this.driver = driver;
+    }
 
-	public String getConnectionUrl() {
-		return connectionUrl;
-	}
+    public String getConnectionUrl() {
+        return connectionUrl;
+    }
 
-	public void setConnectionUrl(String connectionUrl) {
-		this.connectionUrl = connectionUrl;
-	}
+    public void setConnectionUrl(String connectionUrl) {
+        this.connectionUrl = connectionUrl;
+    }
 
-	public String getQuery() {
-		return query;
-	}
+    public String getQuery() {
+        return query;
+    }
 
-	public void setQuery(String query) {
-		this.query = query;
-	}
+    public void setQuery(String query) {
+        this.query = query;
+    }
 
-	public String getQueryTimeField() {
-		return queryTimeField;
-	}
+    public String getQueryTimeField() {
+        return queryTimeField;
+    }
 
-	public void setQueryTimeField(String queryTimeField) {
-		this.queryTimeField = queryTimeField;
-	}
+    public void setQueryTimeField(String queryTimeField) {
+        this.queryTimeField = queryTimeField;
+    }
 
 
+    public String getCustomMatchRule() {
+        return customMatchRule;
+    }
 
-	public String getCustomMatchRule() {
-		return customMatchRule;
-	}
+    public void setCustomMatchRule(String customMatchRule) {
+        this.customMatchRule = customMatchRule;
+    }
 
-	public void setCustomMatchRule(String customMatchRule) {
-		this.customMatchRule = customMatchRule;
-	}
+    public String getCustomAdatperScript() {
+        return customAdatperScript;
+    }
 
-	public String getCustomAdatperScript() {
-		return customAdatperScript;
-	}
+    public void setCustomAdatperScript(String customAdatperScript) {
+        this.customAdatperScript = customAdatperScript;
+    }
 
-	public void setCustomAdatperScript(String customAdatperScript) {
-		this.customAdatperScript = customAdatperScript;
-	}
+    public String getSynchAdapter() {
+        return synchAdapter;
+    }
 
-	public String getSynchAdapter() {
-		return synchAdapter;
-	}
-
-	public void setSynchAdapter(String synchAdapter) {
-		this.synchAdapter = synchAdapter;
-	}
+    public void setSynchAdapter(String synchAdapter) {
+        this.synchAdapter = synchAdapter;
+    }
 
     public String getPreSyncScript() {
         return preSyncScript;
@@ -338,12 +346,12 @@ public class SynchConfig implements MatchConfig, java.io.Serializable {
     }
 
     public String getValidationRule() {
-		return validationRule;
-	}
+        return validationRule;
+    }
 
-	public void setValidationRule(String validationRule) {
-		this.validationRule = validationRule;
-	}
+    public void setValidationRule(String validationRule) {
+        this.validationRule = validationRule;
+    }
 
     public Boolean getUsePolicyMap() {
         return usePolicyMap;
@@ -370,28 +378,28 @@ public class SynchConfig implements MatchConfig, java.io.Serializable {
     }
 
     public String getSynchType() {
-		return synchType;
-	}
+        return synchType;
+    }
 
-	public void setSynchType(String synchType) {
-		this.synchType = synchType;
-	}
+    public void setSynchType(String synchType) {
+        this.synchType = synchType;
+    }
 
-	public String getCustomMatchAttr() {
-		return customMatchAttr;
-	}
+    public String getCustomMatchAttr() {
+        return customMatchAttr;
+    }
 
-	public void setCustomMatchAttr(String customMatchAttr) {
-		this.customMatchAttr = customMatchAttr;
-	}
+    public void setCustomMatchAttr(String customMatchAttr) {
+        this.customMatchAttr = customMatchAttr;
+    }
 
-	public java.util.Date getLastExecTime() {
-		return lastExecTime;
-	}
+    public java.util.Date getLastExecTime() {
+        return lastExecTime;
+    }
 
-	public void setLastExecTime(java.util.Date lastExecTime) {
-		this.lastExecTime = lastExecTime;
-	}
+    public void setLastExecTime(java.util.Date lastExecTime) {
+        this.lastExecTime = lastExecTime;
+    }
 
     public String getBaseDn() {
         return baseDn;
@@ -433,12 +441,36 @@ public class SynchConfig implements MatchConfig, java.io.Serializable {
         this.wsUrl = wsUrl;
     }
 
-    public String getWsScript() {
-        return wsScript;
+    public String getWsNameSpace() {
+        return wsNameSpace;
     }
 
-    public void setWsScript(String wsScript) {
-        this.wsScript = wsScript;
+    public String getWsUri() {
+        return wsUri;
+    }
+
+    public void setWsUri(String wsUri) {
+        this.wsUri = wsUri;
+    }
+
+    public void setWsNameSpace(String wsNameSpace) {
+        this.wsNameSpace = wsNameSpace;
+    }
+
+    public String getWsOperation() {
+        return wsOperation;
+    }
+
+    public void setWsOperation(String wsOperation) {
+        this.wsOperation = wsOperation;
+    }
+
+    public String getWsAttributes() {
+        return wsAttributes;
+    }
+
+    public void setWsAttributes(String wsAttributes) {
+        this.wsAttributes = wsAttributes;
     }
 
     public List<SynchReview> getSynchReviews() {
@@ -447,6 +479,14 @@ public class SynchConfig implements MatchConfig, java.io.Serializable {
 
     public void setSynchReviews(List<SynchReview> synchReviews) {
         this.synchReviews = synchReviews;
+    }
+
+    public String getWsTargetEntityPath() {
+        return wsTargetEntityPath;
+    }
+
+    public void setWsTargetEntityPath(String wsTargetEntityPath) {
+        this.wsTargetEntityPath = wsTargetEntityPath;
     }
 
     @Override
