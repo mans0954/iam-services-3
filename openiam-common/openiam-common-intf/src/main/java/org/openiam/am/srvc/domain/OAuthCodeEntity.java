@@ -1,5 +1,7 @@
 package org.openiam.am.srvc.domain;
 
+import java.io.Serializable;
+
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.openiam.am.srvc.domain.pk.OAuthCodeIdEntity;
@@ -22,7 +24,7 @@ import javax.persistence.*;
     @AssociationOverride(name = "primaryKey.client",
             joinColumns = @JoinColumn(name = "PROVIDER_ID"))})
 @DozerDTOCorrespondence(OAuthCode.class)
-public class OAuthCodeEntity {
+public class OAuthCodeEntity implements  Serializable {
 
     public OAuthCodeEntity(String userId, String providerId, String code){
         this.primaryKey = new OAuthCodeIdEntity();
