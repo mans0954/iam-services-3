@@ -46,6 +46,7 @@ import org.springframework.util.StringUtils;
 import com.hazelcast.core.EntryEvent;
 import com.hazelcast.core.EntryListener;
 import com.hazelcast.core.IMap;
+import com.hazelcast.core.MapEvent;
 
 import javax.annotation.PostConstruct;
 
@@ -192,6 +193,18 @@ public class KeyManagementServiceImpl extends AbstractBaseService implements Key
 		public void entryEvicted(EntryEvent<String, byte[]> event) {
 			// TODO Auto-generated method stub
 
+		}
+
+		@Override
+		public void mapCleared(MapEvent arg0) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void mapEvicted(MapEvent arg0) {
+			// TODO Auto-generated method stub
+			
 		}
     	
     }
