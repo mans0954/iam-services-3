@@ -42,8 +42,20 @@ public class OAuthWebServiceImpl implements OAuthWebService {
     }
 
     @Override
-    public List<Resource> getScopesForAuthrorization(String clientId, String userId, Language language) throws BasicDataServiceException {
-        return authProviderService.getScopesForAuthrorization(clientId, userId, language);
+    public Response getScopesForAuthrorization(String clientId, String userId, Language language) {
+    	final Response response = new Response();
+    	try {
+    		final List<Resource> resources = authProviderService.getScopesForAuthrorization(clientId, userId, language);
+    		response.succeed();
+    		response.setResponseValue(resources);
+    	} catch(BasicDataServiceException e) {
+    		response.setErrorCode(e.getCode());
+    		response.fail();
+    	} catch(Throwable e) {
+    		log.error("Can't get scopes for authorization", e);
+    		response.fail();
+    	}
+    	return response;
     }
 
     @Override

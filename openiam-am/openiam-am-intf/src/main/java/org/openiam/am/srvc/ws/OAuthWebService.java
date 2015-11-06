@@ -24,9 +24,9 @@ public interface OAuthWebService {
     AuthProvider getClient(@WebParam(name = "clientId", targetNamespace = "") String clientId);
 
     @WebMethod
-    List<Resource> getScopesForAuthrorization(@WebParam(name = "clientId", targetNamespace = "") String clientId,
+    Response getScopesForAuthrorization(@WebParam(name = "clientId", targetNamespace = "") String clientId,
                                               @WebParam(name = "userId", targetNamespace = "") String userId,
-                                              @WebParam(name = "language", targetNamespace = "")  Language language) throws BasicDataServiceException;
+                                              @WebParam(name = "language", targetNamespace = "")  Language language);
 
     @WebMethod
     Response saveClientScopeAuthorization(@WebParam(name = "providerId", targetNamespace = "") String providerId,

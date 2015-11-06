@@ -304,7 +304,8 @@ public class AuthProviderServiceImpl implements AuthProviderService {
         // determine if the client is authorized for some scopes
         boolean isClientAuthorized = false;
         if(CollectionUtils.isNotEmpty(provider.getAttributes())) {
-            AuthProviderAttribute scopes =  provider.getAttributes().stream().filter(attr -> "OAuthClientScopes".equals(attr.getAttributeId())).findFirst().get();
+        	final Optional<AuthProviderAttribute> scopeOptional = provider.getAttributes().stream().filter(attr -> "OAuthClientScopes".equals(attr.getAttributeId())).findFirst();
+            AuthProviderAttribute scopes = (scopeOptional.isPresent()) ? scopeOptional.get() : null;
             if(scopes !=null && StringUtils.isNotBlank(scopes.getValue())){
                 clientScopesIds = new HashSet<>(Arrays.asList(scopes.getValue().split(","))).stream().filter(str -> StringUtils.isNotBlank(str)).collect(Collectors.toSet());
             }
