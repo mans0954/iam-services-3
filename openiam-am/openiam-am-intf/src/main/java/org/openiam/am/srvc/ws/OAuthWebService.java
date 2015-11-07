@@ -1,9 +1,6 @@
 package org.openiam.am.srvc.ws;
 
-import org.openiam.am.srvc.dto.AuthProvider;
-import org.openiam.am.srvc.dto.OAuthCode;
-import org.openiam.am.srvc.dto.OAuthToken;
-import org.openiam.am.srvc.dto.OAuthUserClientXref;
+import org.openiam.am.srvc.dto.*;
 import org.openiam.base.ws.Response;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.srvc.lang.dto.Language;
@@ -24,7 +21,7 @@ public interface OAuthWebService {
     AuthProvider getClient(@WebParam(name = "clientId", targetNamespace = "") String clientId);
 
     @WebMethod
-    Response getScopesForAuthrorization(@WebParam(name = "clientId", targetNamespace = "") String clientId,
+    OAuthScopesResponse getScopesForAuthrorization(@WebParam(name = "clientId", targetNamespace = "") String clientId,
                                               @WebParam(name = "userId", targetNamespace = "") String userId,
                                               @WebParam(name = "language", targetNamespace = "")  Language language);
 

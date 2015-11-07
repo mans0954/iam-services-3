@@ -186,6 +186,9 @@ public class AuthProviderServiceImpl implements AuthProviderService {
         	provider.setResourceAttributeMap(dbEntity.getResourceAttributeMap());
         	provider.setDefaultProvider(dbEntity.isDefaultProvider());
         	provider.setContentProviders(dbEntity.getContentProviders());
+            provider.setAuthorizedUsers(dbEntity.getAuthorizedUsers());
+            provider.setoAuthCodes(dbEntity.getoAuthCodes());
+            provider.setoAuthTokens(dbEntity.getoAuthTokens());
         	if(CollectionUtils.isEmpty(provider.getAttributes())) {
         		if(dbEntity.getAttributes() != null) {
         			provider.setAttributes(dbEntity.getAttributes());
