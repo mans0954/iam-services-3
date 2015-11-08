@@ -137,7 +137,7 @@ public final class OpenIAMHttpClient {
 		return content;
 	}
 	
-	public InputStream getInputStream(final URL url) throws IOException {
+	public String getResponse(final URL url) throws IOException {
 		final RequestConfig config = RequestConfig.custom()
 													.setConnectionRequestTimeout(timeout)
 													.setSocketTimeout(timeout)
@@ -148,11 +148,21 @@ public final class OpenIAMHttpClient {
 		final HttpResponse response = client.execute(httpGet);
 		final int status = response.getStatusLine().getStatusCode();
 		final HttpEntity entity = response.getEntity();
-		if(status == 200) {
-			return entity.getContent();
-		} else {
-			throw new IOException(String.format("Response was: %s", status));
+		InputStream is = null;
+		String retval = null;
+		try {
+			if(status == 200) {
+				is = entity.getContent();
+			} else {
+				throw new IOException(String.format("Response was: %s", status));
+			}
+		} finally {
+			if(is != null) {
+				retval = IOUtils.toString(is);
+				IOUtils.closeQuietly(is);;
+			}
 		}
+		return retval;
 	}
 	
 	@PostConstruct

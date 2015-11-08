@@ -5,15 +5,17 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.junit.Assert;
+import org.openiam.authmanager.common.model.ResourceAuthorizationRight;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
+import org.openiam.idm.searchbeans.ResourceTypeSearchBean;
 import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.ws.UserDataWebService;
 import org.openiam.service.integration.AbstractEntitlementsTest;
+import org.testng.Assert;
 import org.testng.annotations.Test;
 
 public class Resource2UserEntitlementsTest extends AbstractEntitlementsTest<Resource, User> {
@@ -57,7 +59,7 @@ public class Resource2UserEntitlementsTest extends AbstractEntitlementsTest<Reso
 		final List<Resource> dtos = resourceDataService.findBeans(searchBean, 0, 100, getDefaultLanguage());
 		if(CollectionUtils.isNotEmpty(dtos)) {
 			final Optional<Resource> optional = dtos.stream().filter(e -> e.getId().equals(parent.getId())).findAny();
-			Assert.assertTrue(String.format("Can't find parent"), optional.isPresent());
+			Assert.assertTrue(optional.isPresent(), String.format("Can't find parent"));
 			final Resource e = optional.get();
 			if(CollectionUtils.isEmpty(rights)) {
 				Assert.assertTrue(CollectionUtils.isEmpty(e.getAccessRightIds()));
@@ -79,7 +81,7 @@ public class Resource2UserEntitlementsTest extends AbstractEntitlementsTest<Reso
 		final List<User> dtos = userServiceClient.findBeans(searchBean, 0, 100);
 		if(CollectionUtils.isNotEmpty(dtos)) {
 			final Optional<User> optional = dtos.stream().filter(e -> e.getId().equals(child.getId())).findAny();
-			Assert.assertTrue(String.format("Can't find parent"), optional.isPresent());
+			Assert.assertTrue(optional.isPresent(), String.format("Can't find parent"));
 			final User e = optional.get();
 			if(CollectionUtils.isEmpty(rights)) {
 				Assert.assertTrue(CollectionUtils.isEmpty(e.getAccessRightIds()));
@@ -101,7 +103,4 @@ public class Resource2UserEntitlementsTest extends AbstractEntitlementsTest<Reso
 	protected User getChildById(User child) {
 		return userServiceClient.getUserWithDependent(child.getId(), "3000", false);
 	}
-
-	@Test
-	public void foo() {}
 }

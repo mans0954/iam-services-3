@@ -287,7 +287,7 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 		restTemplate.getForEntity(hazelcastEndpoint, Cluster.class).getBody().getMembers().forEach(member -> {
 			final String authManagerEndpoint = String.format("http://%s:9080/openiam-esb/authmanager/refresh", (serviceHost.contains("localhost") ? "localhost" : member.getAddress().getHost()));
 			try {
-				Assert.assertTrue(StringUtils.equalsIgnoreCase("OK", IOUtils.toString(httpClient.getInputStream(new URL(authManagerEndpoint)))));
+				Assert.assertTrue(StringUtils.equalsIgnoreCase("OK", httpClient.getResponse(new URL(authManagerEndpoint))));
 			} catch (Exception e) {
 				logger.error("Can't refresh auth manager", e);
 				throw new RuntimeException(e);
@@ -300,7 +300,7 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 		restTemplate.getForEntity(hazelcastEndpoint, Cluster.class).getBody().getMembers().forEach(member -> {
 			final String authManagerEndpoint = String.format("http://%s:9080/openiam-esb/contentprovider/refresh", (serviceHost.contains("localhost") ? "localhost" : member.getAddress().getHost()));
 			try {
-				Assert.assertTrue(StringUtils.equalsIgnoreCase("OK", IOUtils.toString(httpClient.getInputStream(new URL(authManagerEndpoint)))));
+			Assert.assertTrue(StringUtils.equalsIgnoreCase("OK", httpClient.getResponse(new URL(authManagerEndpoint))));
 			} catch (Exception e) {
 				logger.error("Can't refresh auth manager", e);
 				throw new RuntimeException(e);
