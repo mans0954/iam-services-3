@@ -442,4 +442,9 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
         }
         return orClause;
     }
+
+    public void evictCollectionRegions() {
+        this.getSession().getSessionFactory().getCache().evictCollectionRegions();
+    }
+
 }

@@ -91,8 +91,8 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
 
     @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinTable(name = "RESOURCE_GROUP",
-            joinColumns = { @JoinColumn(name = "RESOURCE_ID") },
-            inverseJoinColumns = { @JoinColumn(name = "GRP_ID") })
+            joinColumns = {@JoinColumn(name = "RESOURCE_ID")},
+            inverseJoinColumns = {@JoinColumn(name = "GRP_ID")})
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<GroupEntity> groups;
 

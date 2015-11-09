@@ -85,6 +85,7 @@ public class ContentProviderDaoImpl extends BaseDaoImpl<ContentProviderEntity, S
         return criteria.list();
     }
 
+
     @Override
     @Transactional
     public void deleteById(String providerId) {

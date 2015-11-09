@@ -4,10 +4,12 @@ import java.io.Serializable;
 
 import javax.persistence.Column;
 
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.openiam.am.srvc.dto.AuthLevelGroupingURIPatternXrefId;
 import org.openiam.dozer.DozerDTOCorrespondence;
 
 @DozerDTOCorrespondence(AuthLevelGroupingURIPatternXrefId.class)
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class AuthLevelGroupingURIPatternXrefIdEntity implements Serializable {
 
 	@Column(name="AUTH_LEVEL_GROUPING_ID", length = 32, nullable = false)
