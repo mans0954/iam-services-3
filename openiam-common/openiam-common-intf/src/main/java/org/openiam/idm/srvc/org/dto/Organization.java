@@ -53,7 +53,8 @@ import org.openiam.idm.srvc.user.dto.User;
         "parentOrganizations",
         "childOrganizations",
         "selectable",
-        "organizationUserDTOs"
+        "organizationUserDTOs",
+        "classification"
 })
 @DozerDTOCorrespondence(OrganizationEntity.class)
 public class Organization extends AdminResourceDTO implements Serializable, Comparable<Organization> {
@@ -90,6 +91,8 @@ public class Organization extends AdminResourceDTO implements Serializable, Comp
     private String organizationTypeName;
 
     protected String abbreviation;
+
+    protected String classification;
 
     protected String symbol;
 
@@ -387,6 +390,14 @@ public class Organization extends AdminResourceDTO implements Serializable, Comp
 
     public void setSelectable(boolean selectable) {
         this.selectable = selectable;
+    }
+
+    public String getClassification() {
+        return classification;
+    }
+
+    public void setClassification(String classification) {
+        this.classification = classification;
     }
 
     @Override

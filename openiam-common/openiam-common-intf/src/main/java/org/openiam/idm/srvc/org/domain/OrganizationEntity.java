@@ -122,6 +122,9 @@ public class OrganizationEntity extends AbstractMetdataTypeEntity {
     @Type(type = "yes_no")
     private boolean selectable = true;
 
+    @Column(name = "CLASSIFICATION")
+    private String classification;
+
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "organization", fetch = FetchType.LAZY)
     @OrderBy("name asc")
 //    @Fetch(FetchMode.SUBSELECT)
@@ -368,6 +371,14 @@ public class OrganizationEntity extends AbstractMetdataTypeEntity {
 
     public void setGroups(Set<GroupEntity> groups) {
         this.groups = groups;
+    }
+
+    public String getClassification() {
+        return classification;
+    }
+
+    public void setClassification(String classification) {
+        this.classification = classification;
     }
 
     @Override
