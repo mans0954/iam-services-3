@@ -842,6 +842,7 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
 				if(!group.hasChildGroup(childGroupId)) {
 					group.addChildGroup(child);
 					groupDao.update(group);
+                    groupDao.evictCache();
 				}
 			}
 		}
@@ -854,6 +855,7 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
 			final GroupEntity childGroup = groupDao.findById(childGroupId);
 			if(childGroup != null) {
                 childGroup.removeParentGroup(groupId);
+                groupDao.evictCache();
 			}
 		}
 	}

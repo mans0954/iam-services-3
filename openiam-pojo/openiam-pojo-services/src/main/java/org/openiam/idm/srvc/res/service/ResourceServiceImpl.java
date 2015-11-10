@@ -115,7 +115,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
 
     @Autowired
     private UserDAO userDAO;
-    
+
     @Autowired
     private MetadataTypeDAO typeDAO;
 
@@ -163,7 +163,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     }
 
     @Override
-    @Cacheable(value="resourcePropCache", key="{ #resourceId, #propName}")
+    @Cacheable(value = "resourcePropCache", key = "{ #resourceId, #propName}")
     public String getResourcePropValueByNameWeb(final String resourceId, final String propName) {
         return this.getResourcePropValueByName(resourceId, propName);
     }
@@ -199,11 +199,11 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
 
         /* admin resource can't have an admin resource - do this check here */
         boolean isAdminResource = StringUtils.equals(entity.getResourceType().getId(), adminResourceTypeId);
-        
-        if(entity.getType() != null && StringUtils.isNotBlank(entity.getType().getId())) {
-        	entity.setType(typeDAO.findById(entity.getType().getId()));
+
+        if (entity.getType() != null && StringUtils.isNotBlank(entity.getType().getId())) {
+            entity.setType(typeDAO.findById(entity.getType().getId()));
         } else {
-        	entity.setType(null);
+            entity.setType(null);
         }
 
         if (StringUtils.isNotBlank(entity.getId())) {
@@ -245,21 +245,21 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
 
             addRequiredAttributes(entity);
         }
-        
-        
+
 
         resourceDao.merge(entity);
     }
+
     @Override
     @Transactional
     public void addRequiredAttributes(ResourceEntity resource) {
-        if(resource!=null && resource.getType()!=null && StringUtils.isNotBlank(resource.getType().getId())){
+        if (resource != null && resource.getType() != null && StringUtils.isNotBlank(resource.getType().getId())) {
             MetadataElementSearchBean sb = new MetadataElementSearchBean();
             sb.addTypeId(resource.getType().getId());
             List<MetadataElementEntity> elementList = elementDAO.getByExample(sb, -1, -1);
-            if(CollectionUtils.isNotEmpty(elementList)){
-                for(MetadataElementEntity element: elementList){
-                    if(element.isRequired()){
+            if (CollectionUtils.isNotEmpty(elementList)) {
+                for (MetadataElementEntity element : elementList) {
+                    if (element.isRequired()) {
                         resourcePropDao.save(AttributeUtil.buildResAttribute(resource, element));
                     }
                 }
@@ -288,24 +288,24 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     }
 
     private void mergeAttribute(final ResourceEntity bean, final ResourceEntity dbObject) {
-    	
+
     	/* 
     	 * if the incoming bean is from the database, there is no reason to do any merging 
     	 * This was written to avoid merging  of attributes when you call findById on the resourceService,
     	 * and then save the same object (see ManagedSystemServiceImpl.updateMangagedSys)
     	 */
-    	if(bean.getResourceProps() != null && bean.getResourceProps() instanceof PersistentCollection) {
-    		return;
-    	}
+        if (bean.getResourceProps() != null && bean.getResourceProps() instanceof PersistentCollection) {
+            return;
+        }
         Set<ResourcePropEntity> beanProps = (bean.getResourceProps() != null) ? bean.getResourceProps() : new HashSet<ResourcePropEntity>();
         Set<ResourcePropEntity> dbProps = (dbObject.getResourceProps() != null) ? new HashSet<ResourcePropEntity>(dbObject.getResourceProps()) : new HashSet<ResourcePropEntity>();
 
         /* update */
         Iterator<ResourcePropEntity> dbIteroator = dbProps.iterator();
-        while(dbIteroator.hasNext()) {
-        	final ResourcePropEntity dbProp = dbIteroator.next();
-        	
-        	boolean contains = false;
+        while (dbIteroator.hasNext()) {
+            final ResourcePropEntity dbProp = dbIteroator.next();
+
+            boolean contains = false;
             for (final ResourcePropEntity beanProp : beanProps) {
                 if (StringUtils.equals(dbProp.getId(), beanProp.getId())) {
                     dbProp.setValue(beanProp.getValue());
@@ -319,8 +319,8 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
             }
             
             /* remove */
-            if(!contains) {
-            	dbIteroator.remove();
+            if (!contains) {
+                dbIteroator.remove();
             }
         }
 
@@ -329,8 +329,8 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
         for (final ResourcePropEntity beanProp : beanProps) {
             boolean contains = false;
             dbIteroator = dbProps.iterator();
-            while(dbIteroator.hasNext()) {
-            	final ResourcePropEntity dbProp = dbIteroator.next();
+            while (dbIteroator.hasNext()) {
+                final ResourcePropEntity dbProp = dbIteroator.next();
                 if (StringUtils.equals(dbProp.getId(), beanProp.getId())) {
                     contains = true;
                 }
@@ -343,16 +343,16 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
             }
         }
         dbProps.addAll(toAdd);
-        
+
         bean.setResourceProps(dbProps);
     }
-    
+
     private MetadataElementEntity getEntity(final MetadataElementEntity bean) {
-    	if(bean != null && StringUtils.isNotBlank(bean.getId())) {
-    		return elementDAO.findById(bean.getId());
-    	} else {
-    		return null;
-    	}
+        if (bean != null && StringUtils.isNotBlank(bean.getId())) {
+            return elementDAO.findById(bean.getId());
+        } else {
+            return null;
+        }
     }
 
     @Override
@@ -364,7 +364,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
-    @Cacheable(value="resources", key="{ #resourceId,#language}")
+    @Cacheable(value = "resources", key = "{ #resourceId,#language}")
     public Resource findResourceDtoById(String resourceId, Language language) {
         Resource resource = null;
         try {
@@ -372,13 +372,13 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
                 //ResourceEntity resourceEntity = resourceDao.findById(resourceId);
                 ResourceEntity resourceEntity = this.getProxyService().findResourceById(resourceId);
                 Resource resourceDto = resourceConverter.convertToDTO(resourceEntity, true);
-                if (resourceDto != null){
+                if (resourceDto != null) {
                     resource = resourceDto;
                 }
             }
-            } catch (Throwable e) {
-        log.error("Exception", e);
-    }
+        } catch (Throwable e) {
+            log.error("Exception", e);
+        }
 
         return resource;
     }
@@ -412,7 +412,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value="resources", key="{ #searchBean.cacheUniqueBeanKey, #from, #size, #language}")
+    @Cacheable(value = "resources", key = "{ #searchBean.cacheUniqueBeanKey, #from, #size, #language}")
     public List<Resource> findBeansLocalizedDto(final ResourceSearchBean searchBean, final int from, final int size, final LanguageEntity language) {
         //List<ResourceEntity> resourceEntityList = this.findBeansLocalized(searchBean, from, size, language);
 
@@ -557,6 +557,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
         final ResourceEntity child = resourceDao.findById(childResourceId);
         parent.addChildResource(child);
         resourceDao.save(parent);
+        resourceDao.evictCache();
     }
 
     @Override
@@ -566,6 +567,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
         final ResourceEntity child = resourceDao.findById(childResourceId);
         parent.removeChildResource(child);
         resourceDao.save(parent);
+        resourceDao.evictCache();
     }
 
     @Override
@@ -575,6 +577,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
         final GroupEntity groupEntity = groupDao.findById(groupId);
         entity.addGroup(groupEntity);
         resourceDao.save(entity);
+        resourceDao.evictCache();
     }
 
     @Override
@@ -584,6 +587,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
         final GroupEntity groupEntity = groupDao.findById(groupId);
         entity.remove(groupEntity);
         resourceDao.save(entity);
+        resourceDao.evictCache();
     }
 
     @Override
@@ -593,6 +597,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
         final RoleEntity roleEntity = roleDao.findById(roleId);
         entity.addRole(roleEntity);
         resourceDao.save(entity);
+        resourceDao.evictCache();
     }
 
     @Override
@@ -602,6 +607,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
         final RoleEntity roleEntity = roleDao.findById(roleId);
         entity.remove(roleEntity);
         resourceDao.save(entity);
+        resourceDao.evictCache();
     }
 
     @Override
@@ -621,7 +627,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     @Transactional(readOnly = true)
     @LocalizedServiceGet
     public List<Resource> getResourcesDtoForRole(String roleId, int from, int size,
-                                                    final ResourceSearchBean searchBean, Language language) {
+                                                 final ResourceSearchBean searchBean, Language language) {
         List<ResourceEntity> resourceEntityList = resourceDao.getResourcesForRole(roleId, from, size, searchBean);
         return resourceConverter.convertToDTOList(resourceEntityList, false);
     }
@@ -650,7 +656,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     @Transactional(readOnly = true)
     @LocalizedServiceGet
     public List<Resource> getResourcesDtoForGroup(String groupId, int from, int size,
-                                                     final ResourceSearchBean searchBean, Language language) {
+                                                  final ResourceSearchBean searchBean, Language language) {
         List<ResourceEntity> resourceEntityList = resourceDao.getResourcesForGroup(groupId, from, size, searchBean);
         return resourceConverter.convertToDTOList(resourceEntityList, false);
     }
@@ -679,7 +685,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     @Transactional(readOnly = true)
     @LocalizedServiceGet
     public List<Resource> getResourcesDtoForUser(String userId, int from, int size,
-                                                    final ResourceSearchBean searchBean, Language language) {
+                                                 final ResourceSearchBean searchBean, Language language) {
         List<ResourceEntity> resourceEntityList = resourceDao.getResourcesForUser(userId, from, size, searchBean);
         return resourceConverter.convertToDTOList(resourceEntityList, false);
     }
@@ -695,7 +701,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     @Transactional(readOnly = true)
     @LocalizedServiceGet
     public List<Resource> getResourcesDtoForUserByType(String userId, String resourceTypeId,
-                                                          final ResourceSearchBean searchBean, Language language) {
+                                                       final ResourceSearchBean searchBean, Language language) {
         List<ResourceEntity> resourceEntityList = resourceDao.getResourcesForUserByType(userId, resourceTypeId, searchBean);
         return resourceConverter.convertToDTOList(resourceEntityList, true);
     }
@@ -715,7 +721,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
             if (CollectionUtils.isNotEmpty(resourceIdCollection)) {
                 //List<ResourceEntity> resourceEntityList = resourceDao.findByIds(resourceIdCollection);
                 List<ResourceEntity> resourceEntityList = this.getProxyService().findResourcesByIds(resourceIdCollection);
-                        List<Resource> resourceListDto = resourceConverter.convertToDTOList(resourceEntityList, true);
+                List<Resource> resourceListDto = resourceConverter.convertToDTOList(resourceEntityList, true);
                 if (CollectionUtils.isNotEmpty(resourceListDto)) {
                     resourceList = resourceListDto;
                 }
@@ -873,7 +879,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
 
     @Override
     @LocalizedServiceGet
-    @Transactional(readOnly=true)
+    @Transactional(readOnly = true)
     public List<ResourceType> findResourceTypesDto(final ResourceTypeSearchBean searchBean, int from, int size, Language language) {
         //List<ResourceTypeEntity> resourceTypeEntityList = resourceTypeDao.getByExample(searchBean, from, size);
         List<ResourceTypeEntity> resourceTypeEntityList = this.getProxyService().findResourceTypes(searchBean, from, size);
@@ -930,7 +936,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     }
 
     @Override
-    @CacheEvict(value = "resourcePropCache", allEntries=true)
+    @CacheEvict(value = "resourcePropCache", allEntries = true)
     @Transactional
     public ResourcePropEntity saveOrUpdateResourceProperty(ResourceProp prop, IdmAuditLog idmAuditLog) throws BasicDataServiceException {
         if (prop == null) {
@@ -968,7 +974,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     }
 
     @Override
-    @CacheEvict(value = "resourcePropCache", allEntries=true)
+    @CacheEvict(value = "resourcePropCache", allEntries = true)
     @Transactional
     public void removeResourceProp(String resourcePropId, String requesterId) throws BasicDataServiceException {
         if (StringUtils.isBlank(resourcePropId)) {
@@ -979,7 +985,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     }
 
     @Override
-    @CacheEvict(value = "resources", allEntries=true)
+    @CacheEvict(value = "resources", allEntries = true)
     @Transactional
     public void removeUserFromResource(String resourceId, String userId, String requesterId, IdmAuditLog idmAuditLog) throws BasicDataServiceException {
         idmAuditLog.setRequestorUserId(requesterId);
@@ -1000,7 +1006,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
 
     @Override
     @Transactional
-    @CacheEvict(value = "resources", allEntries=true)
+    @CacheEvict(value = "resources", allEntries = true)
     public void addUserToResource(String resourceId, String userId, String requesterId, IdmAuditLog idmAuditLog) throws BasicDataServiceException {
         idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.ADD_USER_TO_RESOURCE.value());
@@ -1012,15 +1018,15 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
 
         idmAuditLog.setAuditDescription(String.format("Add user %s to resource: %s", userId, resourceId));
 
-            if (resourceId == null || userId == null) {
-                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "ResourceId or UserId is not set");
-            }
+        if (resourceId == null || userId == null) {
+            throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "ResourceId or UserId is not set");
+        }
 
-            userDataService.addUserToResource(userId, resourceId);
+        userDataService.addUserToResource(userId, resourceId);
     }
 
     @Override
-    @CacheEvict(value = "resources", allEntries=true)
+    @CacheEvict(value = "resources", allEntries = true)
     @Transactional
     public void deleteResourceWeb(String resourceId, String requesterId) throws BasicDataServiceException {
         if (resourceId == null) {
@@ -1032,7 +1038,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     }
 
     @Override
-    @CacheEvict(value = "resources", allEntries=true)
+    @CacheEvict(value = "resources", allEntries = true)
     @Transactional
     public void addChildResourceWeb(String resourceId, String childResourceId, String requesterId, IdmAuditLog idmAuditLog) throws BasicDataServiceException {
         idmAuditLog.setRequestorUserId(requesterId);
@@ -1045,12 +1051,12 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
         idmAuditLog.setAuditDescription(
                 String.format("Add child resource: %s to resource: %s", childResourceId, resourceId));
 
-            this.validateResource2ResourceAddition(resourceId, childResourceId);
-            this.addChildResource(resourceId, childResourceId);
+        this.validateResource2ResourceAddition(resourceId, childResourceId);
+        this.addChildResource(resourceId, childResourceId);
     }
 
     @Override
-    @CacheEvict(value = "resources", allEntries=true)
+    @CacheEvict(value = "resources", allEntries = true)
     @Transactional
     public void deleteChildResourceWeb(String resourceId, String memberResourceId, String requesterId, IdmAuditLog idmAuditLog) throws BasicDataServiceException {
         idmAuditLog.setRequestorUserId(requesterId);
@@ -1063,16 +1069,16 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
         idmAuditLog.setAuditDescription(
                 String.format("Remove child resource: %s from resource: %s", memberResourceId, resourceId));
 
-            if (StringUtils.isBlank(resourceId) || StringUtils.isBlank(memberResourceId)) {
-                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS,
-                        "Parent ResourceId or Child ResourceId is null");
-            }
+        if (StringUtils.isBlank(resourceId) || StringUtils.isBlank(memberResourceId)) {
+            throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS,
+                    "Parent ResourceId or Child ResourceId is null");
+        }
 
-            this.deleteChildResource(resourceId, memberResourceId);
+        this.deleteChildResource(resourceId, memberResourceId);
     }
 
     @Override
-    @CacheEvict(value = "resources", allEntries=true)
+    @CacheEvict(value = "resources", allEntries = true)
     @Transactional
     public void addGroupToResourceWeb(String resourceId, String groupId, String requesterId, IdmAuditLog idmAuditLog) throws BasicDataServiceException {
         idmAuditLog.setRequestorUserId(requesterId);
@@ -1083,15 +1089,15 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
         idmAuditLog.setTargetResource(resourceId, resource.getName());
 
         idmAuditLog.setAuditDescription(String.format("Add group: %s to resource: %s", groupId, resourceId));
-            if (StringUtils.isBlank(resourceId) || StringUtils.isBlank(groupId)) {
-                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "GroupId or ResourceId is null");
-            }
+        if (StringUtils.isBlank(resourceId) || StringUtils.isBlank(groupId)) {
+            throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "GroupId or ResourceId is null");
+        }
 
-            this.addResourceGroup(resourceId, groupId);
+        this.addResourceGroup(resourceId, groupId);
     }
 
     @Override
-    @CacheEvict(value = "resources", allEntries=true)
+    @CacheEvict(value = "resources", allEntries = true)
     @Transactional
     public void removeGroupToResource(String resourceId, String groupId, String requesterId, IdmAuditLog idmAuditLog) throws BasicDataServiceException {
         idmAuditLog.setRequestorUserId(requesterId);
@@ -1102,35 +1108,35 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
         idmAuditLog.setTargetResource(resourceId, resourceEntity.getName());
         idmAuditLog.setAuditDescription(String.format("Remove group: %s from resource: %s", groupId, resourceId));
 
-            if (StringUtils.isBlank(resourceId) || StringUtils.isBlank(groupId)) {
-                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "GroupId or ResourceId is null");
-            }
+        if (StringUtils.isBlank(resourceId) || StringUtils.isBlank(groupId)) {
+            throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "GroupId or ResourceId is null");
+        }
 
-            this.deleteResourceGroup(resourceId, groupId);
+        this.deleteResourceGroup(resourceId, groupId);
     }
 
     @Override
-    @CacheEvict(value = "resources", allEntries=true)
+    @CacheEvict(value = "resources", allEntries = true)
     @Transactional
     public void addRoleToResourceWeb(String resourceId, String roleId, String requesterId, IdmAuditLog idmAuditLog) throws BasicDataServiceException {
         idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.ADD_ROLE_TO_RESOURCE.value());
         RoleEntity roleEntity = roleService.getRole(roleId);
         idmAuditLog.setTargetRole(roleId, roleEntity.getName());
-        ResourceEntity resourceEntity  = this.findResourceById(resourceId);
+        ResourceEntity resourceEntity = this.findResourceById(resourceId);
         idmAuditLog.setTargetResource(resourceId, resourceEntity.getName());
 
         idmAuditLog.setAuditDescription(String.format("Add role: %s to resource: %s", roleId, resourceId));
 
-            if (StringUtils.isBlank(resourceId) || StringUtils.isBlank(roleId)) {
-                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "RoleId or ResourceId is null");
-            }
+        if (StringUtils.isBlank(resourceId) || StringUtils.isBlank(roleId)) {
+            throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "RoleId or ResourceId is null");
+        }
 
-            this.addResourceToRole(resourceId, roleId);
+        this.addResourceToRole(resourceId, roleId);
     }
 
     @Override
-    @CacheEvict(value = "resources", allEntries=true)
+    @CacheEvict(value = "resources", allEntries = true)
     @Transactional
     public void removeRoleToResource(String resourceId, String roleId, String requesterId, IdmAuditLog idmAuditLog) throws BasicDataServiceException {
         idmAuditLog.setRequestorUserId(requesterId);
@@ -1141,14 +1147,14 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
         idmAuditLog.setTargetResource(resourceId, resourceEntity.getName());
         idmAuditLog.setAuditDescription(String.format("Remove role: %s from resource: %s", roleId, resourceId));
 
-            if (StringUtils.isBlank(resourceId) || StringUtils.isBlank(roleId)) {
-                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "RoleId or ResourceId is null");
-            }
+        if (StringUtils.isBlank(resourceId) || StringUtils.isBlank(roleId)) {
+            throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "RoleId or ResourceId is null");
+        }
         this.deleteResourceRole(resourceId, roleId);
     }
 
     private ResourceService getProxyService() {
-        ResourceService service = (ResourceService)ac.getBean("resourceService");
+        ResourceService service = (ResourceService) ac.getBean("resourceService");
         return service;
     }
 }

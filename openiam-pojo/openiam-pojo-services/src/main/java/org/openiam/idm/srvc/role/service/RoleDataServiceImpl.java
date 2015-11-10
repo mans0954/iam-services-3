@@ -183,6 +183,7 @@ public class RoleDataServiceImpl implements RoleDataService, ApplicationContextA
             if (role != null && group != null) {
                 role.addGroup(group);
                 roleDao.save(role);
+                roleDao.evictCache();
             }
         }
     }
@@ -196,6 +197,7 @@ public class RoleDataServiceImpl implements RoleDataService, ApplicationContextA
             if (role != null && group != null) {
                 role.removeGroup(group.getId());
                 roleDao.save(role);
+                roleDao.evictCache();
             }
         }
 
@@ -669,6 +671,7 @@ public class RoleDataServiceImpl implements RoleDataService, ApplicationContextA
                 parent.addChildRole(child);
             }
             roleDao.update(parent);
+            roleDao.evictCache();
         }
     }
 
@@ -682,6 +685,7 @@ public class RoleDataServiceImpl implements RoleDataService, ApplicationContextA
                 parent.removeChildRole(child.getId());
             }
             roleDao.update(parent);
+            roleDao.evictCache();
         }
     }
 
