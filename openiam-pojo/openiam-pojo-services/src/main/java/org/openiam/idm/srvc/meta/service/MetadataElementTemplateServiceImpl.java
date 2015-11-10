@@ -199,6 +199,7 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 								//xref.setLanguageMap(null);
 								if (xref.getId() == null) {
                                     uiFieldXrefDAO.save(xref);
+                                    uiFieldXrefDAO.evictCollectionRegions();
                                 }
 								fieldXrefs.add(xref);
 							//}
@@ -210,9 +211,11 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 			entity.setMetadataElements(renewedXrefs);
 			if(StringUtils.isBlank(entity.getId())) {
 				pageTemplateDAO.save(entity);
+
 			} else {
 				pageTemplateDAO.merge(entity);
 			}
+            pageTemplateDAO.evictCollectionRegions();
 		}
 	}
 

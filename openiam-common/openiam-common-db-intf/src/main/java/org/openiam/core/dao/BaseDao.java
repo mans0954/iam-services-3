@@ -74,4 +74,7 @@ public interface BaseDao<T, PrimaryKey extends Serializable> {
 
     void clear();
 
+    void evictCollectionRegions();
+    public void evictCache();
+
 }

@@ -47,7 +47,7 @@ public class AuthLevelGroupingEntity implements Serializable {
     @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	private Set<AuthLevelAttributeEntity> attributes;
 	
-	@OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "grouping", fetch = FetchType.LAZY)
+	@OneToMany(orphanRemoval = true, cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, mappedBy = "grouping", fetch = FetchType.LAZY)
     @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	private Set<AuthLevelGroupingURIPatternXrefEntity> patternXrefs;
 	
