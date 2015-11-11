@@ -9,6 +9,8 @@ import javax.xml.bind.annotation.XmlEnumValue;
 public enum ResourceRisk {
     @XmlEnumValue("high")
     HIGH("HIGH"),
+    @XmlEnumValue("medium")
+    MEDIUM("MEDIUM"),
     @XmlEnumValue("low")
     LOW("LOW");
 
