@@ -44,7 +44,8 @@ import org.openiam.internationalization.InternationalizedCollection;
         "displayNameMap",
         "displayName",
         "coorelatedName",
-        "referenceId"
+        "referenceId",
+        "groovyScript"
 })
 @XmlSeeAlso({
         Role.class,
@@ -76,6 +77,7 @@ public class Resource extends AbstractEntitlementsDTO {
     private String minAuthLevel;
     private boolean isPublic = true;
     private ResourceRisk risk;
+    private String groovyScript;
     
     @InternationalizedCollection(targetField="displayName")
     private Map<String, LanguageMapping> displayNameMap;
@@ -254,6 +256,14 @@ public class Resource extends AbstractEntitlementsDTO {
 	public void setReferenceId(String referenceId) {
 		this.referenceId = referenceId;
 	}
+	
+	public String getGroovyScript() {
+		return groovyScript;
+	}
+
+	public void setGroovyScript(String groovyScript) {
+		this.groovyScript = groovyScript;
+	}
 
 	@Override
 	public int hashCode() {
@@ -273,6 +283,7 @@ public class Resource extends AbstractEntitlementsDTO {
 				+ ((resourceType == null) ? 0 : resourceType.hashCode());
 		result = prime * result + ((risk == null) ? 0 : risk.hashCode());
 		result = prime * result + ((referenceId == null) ? 0 : referenceId.hashCode());
+		result = prime * result + ((groovyScript == null) ? 0 : groovyScript.hashCode());
 		return result;
 	}
 
@@ -324,6 +335,12 @@ public class Resource extends AbstractEntitlementsDTO {
 			if (other.referenceId != null)
 				return false;
 		} else if (!referenceId.equals(other.referenceId))
+			return false;
+		
+		if (groovyScript == null) {
+			if (other.groovyScript != null)
+				return false;
+		} else if (!groovyScript.equals(other.groovyScript))
 			return false;
 		return true;
 	}
