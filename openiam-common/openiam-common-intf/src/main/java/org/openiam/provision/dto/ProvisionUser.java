@@ -149,6 +149,7 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         groups = user.getGroups();
         organizationUserDTOs = user.getOrganizationUserDTOs();
         resources = user.getResources();
+        setResetPasswordType(user.getResetPasswordType());
         setPassword(user.getPassword());
         setLogin(user.getLogin());
         if (user instanceof ProvisionUser) {

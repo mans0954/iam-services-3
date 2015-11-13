@@ -2158,6 +2158,9 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
 
     @Transactional
     public void mergeUserFields(UserEntity origUserEntity, UserEntity newUserEntity) {
+
+        origUserEntity.setResetPasswordType(newUserEntity.getResetPasswordType());
+
         if (newUserEntity.getBirthdate() != null) {
             if (newUserEntity.getBirthdate().equals(BaseConstants.NULL_DATE)) {
                 origUserEntity.setBirthdate(null);
