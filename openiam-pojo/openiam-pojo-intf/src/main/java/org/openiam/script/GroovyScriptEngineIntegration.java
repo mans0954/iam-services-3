@@ -126,12 +126,16 @@ public class GroovyScriptEngineIntegration implements ScriptIntegration, Applica
     public Object instantiateClass(Map<String, Object> bindingMap, String storageDirectory, String scriptName) throws IOException {
 
         try {
-            String fullPath = storageDirectory + scriptName;
+        	final StringBuilder fullPath = new StringBuilder(storageDirectory);
+        	if(!scriptName.startsWith("/")) {
+        		fullPath.append("/");
+        	}
+        	fullPath.append(scriptName);
             if(log.isDebugEnabled()) {
             	log.debug(String.format("instantiateClass called: %s", fullPath));
             }
 
-            Class cl = gse.loadScriptByName(fullPath);
+            Class cl = gse.loadScriptByName(fullPath.toString());
             Object instance = cl.newInstance();
 
             try {
