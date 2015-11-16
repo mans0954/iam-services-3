@@ -286,6 +286,7 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 		final String endpoint = String.format("%s/openiam-esb/authmanager/refresh", serviceHost);
 		try {
 			httpClient.getResponse(new URL(endpoint));
+			Thread.sleep(200L);
 		} catch (Exception e) {
 			logger.error("Can't refresh auth manager", e);
 			throw new RuntimeException(e);
@@ -296,6 +297,7 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 		final String endpoint = String.format("%s/openiam-esb/contentprovider/refresh", serviceHost);
 		try {
 			httpClient.getResponse(new URL(endpoint));
+			Thread.sleep(200L);
 		} catch (Exception e) {
 			logger.error("Can't refresh auth manager", e);
 			throw new RuntimeException(e);
