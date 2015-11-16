@@ -32,7 +32,7 @@ public class SynchReviewRecordDAOImpl extends BaseDaoImpl<SynchReviewRecordEntit
     }
 
     @Override
-    protected Criteria getExampleCriteria(final SearchBean searchBean) {
+    protected Criteria getExampleCriteria(final SearchBean searchBean, boolean isCount) {
         final Criteria criteria = getCriteria();
         return criteria;
     }

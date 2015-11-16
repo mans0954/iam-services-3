@@ -35,7 +35,7 @@ public class BatchConfigDAOImpl extends BaseDaoImpl<BatchTaskEntity, String> imp
 	}
 
     @Override
-    protected Criteria getExampleCriteria(final SearchBean searchBean) {
+    protected Criteria getExampleCriteria(final SearchBean searchBean, boolean isCount) {
         Criteria criteria = getCriteria();
         if(searchBean != null && searchBean instanceof BatchTaskSearchBean) {
             final BatchTaskSearchBean taskSearchBean = (BatchTaskSearchBean)searchBean;
