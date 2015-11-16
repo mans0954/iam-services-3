@@ -43,6 +43,7 @@ import org.openiam.authmanager.dao.MembershipDAO;
 import org.openiam.authmanager.model.AuthorizationManagerDataModel;
 import org.openiam.authmanager.provider.AuthorizationManagerDataProvider;
 import org.openiam.authmanager.service.AuthorizationManagerService;
+import org.openiam.hazelcast.HazelcastConfiguration;
 import org.openiam.thread.Sweepable;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
@@ -60,6 +61,9 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import com.hazelcast.core.Message;
+import com.hazelcast.core.MessageListener;
+
 /**
  * @author Lev Bornovalov
  * Use this class for checking Entitlements between Users, Groups, Roles, and Resources
@@ -69,7 +73,7 @@ import org.springframework.transaction.support.TransactionTemplate;
  */
 @Service("authorizationManagerService")
 @ManagedResource(objectName="org.openiam.authorization.manager:name=authorizationManagerService")
-public class AuthorizationManagerServiceImpl extends AbstractAuthorizationManagerService implements AuthorizationManagerService, InitializingBean, ApplicationContextAware, Sweepable/*, Runnable*/ {
+public class AuthorizationManagerServiceImpl extends AbstractAuthorizationManagerService implements AuthorizationManagerService, InitializingBean, ApplicationContextAware, Sweepable, MessageListener<String> {
 
 	private ApplicationContext ctx;
 	
@@ -89,6 +93,9 @@ public class AuthorizationManagerServiceImpl extends AbstractAuthorizationManage
     @Autowired
     @Qualifier("authManagerCompilationPool")
     private ThreadPoolTaskExecutor authManagerCompilationPool;
+    
+    @Autowired
+    private HazelcastConfiguration hazelcastConfiguration;
 	
 	/*
 	private boolean forceThreadShutdown = false;
@@ -559,6 +566,13 @@ public class AuthorizationManagerServiceImpl extends AbstractAuthorizationManage
 	
 	@Override
 	public void afterPropertiesSet() throws Exception {
+		onMessage(null);
+		hazelcastConfiguration.getTopic("authManagerTopic").addMessageListener(this);
+	}
+	
+
+	@Override
+	public void onMessage(Message<String> message) {
 		transactionTemplate.execute(new TransactionCallback<Void>() {
 
 			@Override

@@ -61,6 +61,7 @@ import org.openiam.authmanager.service.AuthorizationManagerService;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.exception.BasicDataServiceException;
+import org.openiam.hazelcast.HazelcastConfiguration;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.AuthenticationRequest;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
@@ -84,10 +85,13 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import com.hazelcast.core.Message;
+import com.hazelcast.core.MessageListener;
+
 @Service("uriFederationService")
 @DependsOn("springContextProvider") /* otherwise sweep() fails */
 //@ManagedResource(objectName="org.openiam.am.srvc.service:name=URIFederationService")
-public class URIFederationServiceImpl implements URIFederationService, ApplicationContextAware, InitializingBean, Sweepable {
+public class URIFederationServiceImpl implements URIFederationService, ApplicationContextAware, InitializingBean, Sweepable, MessageListener<String> {
 	
 	private static final Log LOG = LogFactory.getLog(URIFederationServiceImpl.class);
 	private ApplicationContext ctx;
@@ -127,6 +131,8 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
     @Autowired
     private AuthLevelGroupingDozerConverter authLevelGroupingDozerConverter;
     
+    @Autowired
+    private HazelcastConfiguration hazelcastConfiguration;
 
     @Autowired
     @Qualifier("transactionTemplate")
@@ -134,6 +140,13 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 	
 	@Override
 	public void afterPropertiesSet() throws Exception {
+		onMessage(null);
+		hazelcastConfiguration.getTopic("uriFederationTopic").addMessageListener(this);
+	}
+	
+	/* this is here so that different nodes can send messages using the publish() method on ITopics */
+	@Override
+	public void onMessage(final Message<String> message) {
 		transactionTemplate.execute(new TransactionCallback<Void>() {
 
 			@Override

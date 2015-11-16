@@ -4,6 +4,7 @@ import java.io.FileNotFoundException;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
+import javax.jms.Topic;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -16,6 +17,7 @@ import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.ILock;
 import com.hazelcast.core.IMap;
+import com.hazelcast.core.ITopic;
 import com.hazelcast.core.Member;
 
 @Component
@@ -47,5 +49,9 @@ public class HazelcastConfiguration {
 	
 	public HazelcastInstance getInstance() {
 		return hzInstance;
+	}
+	
+	public ITopic getTopic(final String name) {
+		return hzInstance.getTopic(name);
 	}
 }
