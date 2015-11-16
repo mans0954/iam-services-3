@@ -283,29 +283,23 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 	}
 	
 	protected void refreshAuthorizationManager() {
-		final String hazelcastEndpoint = String.format("%s/openiam-esb/hazelcast/cluster", serviceHost);
-		restTemplate.getForEntity(hazelcastEndpoint, Cluster.class).getBody().getMembers().forEach(member -> {
-			final String authManagerEndpoint = String.format("http://%s:9080/openiam-esb/authmanager/refresh", (serviceHost.contains("localhost") ? "localhost" : member.getAddress().getHost()));
-			try {
-				Assert.assertTrue(StringUtils.equalsIgnoreCase("OK", httpClient.getResponse(new URL(authManagerEndpoint))));
-			} catch (Exception e) {
-				logger.error("Can't refresh auth manager", e);
-				throw new RuntimeException(e);
-			}
-		});
+		final String endpoint = String.format("%s/openiam-esb/authmanager/refresh", serviceHost);
+		try {
+			httpClient.getResponse(new URL(endpoint));
+		} catch (Exception e) {
+			logger.error("Can't refresh auth manager", e);
+			throw new RuntimeException(e);
+		}
 	}
 	
 	protected void refreshContentProviderManager() {
-		final String hazelcastEndpoint = String.format("%s/openiam-esb/hazelcast/cluster", serviceHost);
-		restTemplate.getForEntity(hazelcastEndpoint, Cluster.class).getBody().getMembers().forEach(member -> {
-			final String authManagerEndpoint = String.format("http://%s:9080/openiam-esb/contentprovider/refresh", (serviceHost.contains("localhost") ? "localhost" : member.getAddress().getHost()));
-			try {
-			Assert.assertTrue(StringUtils.equalsIgnoreCase("OK", httpClient.getResponse(new URL(authManagerEndpoint))));
-			} catch (Exception e) {
-				logger.error("Can't refresh auth manager", e);
-				throw new RuntimeException(e);
-			}
-		});
+		final String endpoint = String.format("%s/openiam-esb/contentprovider/refresh", serviceHost);
+		try {
+			httpClient.getResponse(new URL(endpoint));
+		} catch (Exception e) {
+			logger.error("Can't refresh auth manager", e);
+			throw new RuntimeException(e);
+		}
 	}
 	
 	
