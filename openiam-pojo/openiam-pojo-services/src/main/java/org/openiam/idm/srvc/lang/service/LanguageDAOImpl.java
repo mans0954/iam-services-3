@@ -63,7 +63,7 @@ public class LanguageDAOImpl extends BaseDaoImpl<LanguageEntity, String> impleme
     }
 
     @Override
-    protected Criteria getExampleCriteria(final SearchBean searchBean) {
+    protected Criteria getExampleCriteria(final SearchBean searchBean, boolean isCount) {
         Criteria criteria = getCriteria();
         if (searchBean != null && (searchBean instanceof LanguageSearchBean)) {
             final LanguageSearchBean sb = (LanguageSearchBean) searchBean;

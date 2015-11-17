@@ -50,7 +50,7 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
 
 
     @Override
-    protected Criteria getExampleCriteria(final SearchBean searchBean) {
+    protected Criteria getExampleCriteria(final SearchBean searchBean, boolean isCount) {
         Criteria criteria = getCriteria();
         if (searchBean != null && searchBean instanceof RoleSearchBean) {
             final RoleSearchBean roleSearchBean = (RoleSearchBean) searchBean;
