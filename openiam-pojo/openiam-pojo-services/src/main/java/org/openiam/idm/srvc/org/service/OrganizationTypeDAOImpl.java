@@ -26,7 +26,7 @@ public class OrganizationTypeDAOImpl extends BaseDaoImpl<OrganizationTypeEntity,
 	private OrganizationTypeSearchBeanConverter converter;
 	
 	 @Override
-	 protected Criteria getExampleCriteria(final SearchBean searchBean) {
+	 protected Criteria getExampleCriteria(final SearchBean searchBean, boolean isCount) {
 		 Criteria criteria = getCriteria();
 		 if(searchBean instanceof OrganizationTypeSearchBean) {
 			 final OrganizationTypeSearchBean typeSearchBean = (OrganizationTypeSearchBean)searchBean;

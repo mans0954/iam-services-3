@@ -16,6 +16,7 @@ import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.dto.OrganizationUserDTO;
+import org.openiam.idm.srvc.policy.dto.ResetPasswordTypeEnum;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -91,7 +92,8 @@ import java.util.*;
         "organizationUserDTOs",
         "supervisors",
         "subordinates",
-        "isFromActivitiCreation"
+        "isFromActivitiCreation",
+        "resetPasswordType"
 })
 @XmlSeeAlso({
         Login.class,
@@ -239,8 +241,10 @@ public class User extends AbstractMetadataTypeDTO {
     private Set<Supervisor> subordinates;
 
     private boolean isFromActivitiCreation = false;
-    // Constructors
 
+    private ResetPasswordTypeEnum resetPasswordType;
+
+    // Constructors
     /**
      * default constructor
      */
@@ -1308,6 +1312,13 @@ public class User extends AbstractMetadataTypeDTO {
         this.subordinates = subordinatesSet;
     }
 
+    public ResetPasswordTypeEnum getResetPasswordType() {
+        return resetPasswordType;
+    }
+
+    public void setResetPasswordType(ResetPasswordTypeEnum resetPasswordType) {
+        this.resetPasswordType = resetPasswordType;
+    }
 
     @Override
     public boolean equals(Object o) {

@@ -135,7 +135,7 @@ public class OrganizationDAOImpl extends
     }
 
     @Override
-    protected Criteria getExampleCriteria(final SearchBean searchBean) {
+    protected Criteria getExampleCriteria(final SearchBean searchBean, boolean isCount) {
         Criteria criteria = getCriteria();
         if (searchBean != null && searchBean instanceof OrganizationSearchBean) {
             final OrganizationSearchBean organizationSearchBean = (OrganizationSearchBean) searchBean;

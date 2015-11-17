@@ -13,7 +13,6 @@ import org.openiam.idm.srvc.audit.dto.AuditLogTarget;
 @Entity
 @Table(name="OPENIAM_LOG_TARGET")
 @DozerDTOCorrespondence(AuditLogTarget.class)
-@Cache(usage=CacheConcurrencyStrategy.NONE)
 public class AuditLogTargetEntity implements Serializable {
 
     @Id

@@ -28,8 +28,11 @@ public class ManagedSysDAOImpl extends BaseDaoImpl<ManagedSysEntity, String> imp
 
 
     @Override
-    protected Criteria getExampleCriteria(ManagedSysEntity example) {
-        final Criteria criteria = getCriteria().addOrder(Order.asc("name"));
+    protected Criteria getExampleCriteria(ManagedSysEntity example, boolean isCount) {
+        final Criteria criteria = getCriteria();
+        if (!isCount) {
+            criteria.addOrder(Order.asc("name"));
+        }
         if (example != null) {
             if (StringUtils.isNotBlank(example.getId())) {
                 criteria.add(Restrictions.eq(getPKfieldName(), example.getId()));

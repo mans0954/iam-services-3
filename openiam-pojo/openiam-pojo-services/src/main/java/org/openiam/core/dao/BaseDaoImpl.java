@@ -74,11 +74,20 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
         }
     }
 
-    protected Criteria getExampleCriteria(T t) {
+    protected Criteria getExampleCriteria(T t, boolean isCount) {
         return getCriteria().add(Example.create(t));
     }
 
+    protected Criteria getExampleCriteria(T t) {
+        return getExampleCriteria(t, false);
+    }
+
+
     protected Criteria getExampleCriteria(final SearchBean searchBean) {
+        return getExampleCriteria(searchBean, false);
+    }
+
+    protected Criteria getExampleCriteria(final SearchBean searchBean, boolean isCount) {
         throw new UnsupportedOperationException("Method must be overridden");
     }
 
@@ -95,7 +104,7 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
 
     @Override
     public int count(final SearchBean searchBean) {
-        return ((Number) getExampleCriteria(searchBean).setProjection(rowCount())
+        return ((Number) getExampleCriteria(searchBean, true).setProjection(rowCount())
                 .uniqueResult()).intValue();
     }
 
@@ -203,7 +212,7 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
 
     @Override
     public int count(T t) {
-        return ((Number) getExampleCriteria(t).setProjection(rowCount())
+        return ((Number) getExampleCriteria(t, true).setProjection(rowCount())
                 .uniqueResult()).intValue();
     }
 

@@ -50,7 +50,7 @@ public class IdentityDAOImpl extends BaseDaoImpl<IdentityEntity, String> impleme
     }
 
     @Override
-    protected Criteria getExampleCriteria(final SearchBean searchBean) {
+    protected Criteria getExampleCriteria(final SearchBean searchBean, boolean isCount) {
         Criteria criteria = getCriteria();
         if(searchBean != null && searchBean instanceof IdentitySearchBean) {
             final IdentitySearchBean identitySearchBean = (IdentitySearchBean)searchBean;

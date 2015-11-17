@@ -1,15 +1,12 @@
 package org.openiam.idm.srvc.audit.domain;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.*;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
+import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 
-import javax.persistence.CascadeType;
 import javax.persistence.*;
-import javax.persistence.Entity;
-import javax.persistence.Table;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashSet;
@@ -19,7 +16,6 @@ import java.util.Set;
 @Entity
 @Table(name = "OPENIAM_LOG")
 @DozerDTOCorrespondence(IdmAuditLog.class)
-@Cache(usage=CacheConcurrencyStrategy.NONE)
 public class IdmAuditLogEntity implements Serializable {
     @Id
     @GeneratedValue(generator = "system-uuid")

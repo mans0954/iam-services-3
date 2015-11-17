@@ -1435,7 +1435,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
         boolean allResetOK = true;
         final PasswordResponse response = new PasswordResponse(ResponseStatus.SUCCESS);
         try {
-            if (this.sendAdminResetPasswordLink) {
+            if (passwordSync.getUserActivateFlag()) {
 
                 List<LoginEntity> identities = loginManager.getLoginByUser(passwordSync.getUserId());
                 LoginEntity identity = null;

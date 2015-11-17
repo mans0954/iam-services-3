@@ -18,6 +18,7 @@ import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationUserEntity;
+import org.openiam.idm.srvc.policy.dto.ResetPasswordTypeEnum;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.user.dto.User;
@@ -181,7 +182,7 @@ public class UserEntity implements Serializable {
     private Date claimDate;
 
     @Column(name = "NICKNAME", length = 40)
-    @Fields ({
+    @Fields({
             @Field(index = Index.TOKENIZED),
             @Field(name = "nickName", index = Index.TOKENIZED, store = Store.YES),
             @Field(name = "nickNameUntokenized", index = Index.UN_TOKENIZED, store = Store.YES)
@@ -253,13 +254,11 @@ public class UserEntity implements Serializable {
     private List<LoginEntity> principalList = new LinkedList<LoginEntity>();
 
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "user", fetch = FetchType.LAZY)
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     protected Set<UserKey> userKeys = new HashSet<UserKey>(0);
 
     @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
     @JoinTable(name = "USER_GRP", joinColumns = {@JoinColumn(name = "USER_ID")}, inverseJoinColumns = {@JoinColumn(name = "GRP_ID")})
     @Fetch(FetchMode.SUBSELECT)
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<GroupEntity> groups = new HashSet<GroupEntity>(0);
 
     @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
@@ -286,6 +285,10 @@ public class UserEntity implements Serializable {
 
     @Transient
     private String defaultLogin;
+
+    @Column(name = "RESET_PASSWORD_TYPE", length = 20)
+    @Enumerated(EnumType.STRING)
+    private ResetPasswordTypeEnum resetPasswordType;
 
     public UserEntity() {
     }
@@ -1069,6 +1072,13 @@ public class UserEntity implements Serializable {
         this.claimDate = claimDate;
     }
 
+    public ResetPasswordTypeEnum getResetPasswordType() {
+        return resetPasswordType;
+    }
+
+    public void setResetPasswordType(ResetPasswordTypeEnum resetPasswordType) {
+        this.resetPasswordType = resetPasswordType;
+    }
 
     @Override
     public boolean equals(Object o) {

@@ -64,7 +64,6 @@ public class RoleEntity extends AbstractMetdataTypeEntity {
     @JoinTable(name="GRP_ROLE",
 	    joinColumns={@JoinColumn(name="ROLE_ID")},
 	    inverseJoinColumns={@JoinColumn(name="GRP_ID")})
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<GroupEntity> groups;
 	
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="role", orphanRemoval=true)
@@ -72,13 +71,11 @@ public class RoleEntity extends AbstractMetdataTypeEntity {
     //@JoinColumn(name = "ROLE_ID")
 //    @Fetch(FetchMode.SUBSELECT)
     @Internationalized
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	private Set<RoleAttributeEntity> roleAttributes;
 	
 	@OneToMany(fetch=FetchType.LAZY,orphanRemoval=true,cascade=CascadeType.ALL)
 	@JoinColumn(name="ROLE_ID")
 //	@Fetch(FetchMode.SUBSELECT)
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	private Set<RolePolicyEntity> rolePolicy;
 	
 	@ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
@@ -86,7 +83,6 @@ public class RoleEntity extends AbstractMetdataTypeEntity {
         joinColumns={@JoinColumn(name="MEMBER_ROLE_ID")},
         inverseJoinColumns={@JoinColumn(name="ROLE_ID")})
     @Fetch(FetchMode.SUBSELECT)
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<RoleEntity> parentRoles;
     
 	@ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
@@ -94,17 +90,14 @@ public class RoleEntity extends AbstractMetdataTypeEntity {
         joinColumns={@JoinColumn(name="ROLE_ID")},
         inverseJoinColumns={@JoinColumn(name="MEMBER_ROLE_ID")})
     @Fetch(FetchMode.SUBSELECT)
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<RoleEntity> childRoles;
 
     @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinTable(name = "RESOURCE_ROLE", joinColumns = { @JoinColumn(name = "ROLE_ID") }, inverseJoinColumns = { @JoinColumn(name = "RESOURCE_ID") })
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<ResourceEntity> resources;
 
     @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinTable(name = "USER_ROLE", joinColumns = { @JoinColumn(name = "ROLE_ID") }, inverseJoinColumns = { @JoinColumn(name = "USER_ID") })
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<UserEntity> users = new HashSet<UserEntity>(0);
 
     @Column(name="CREATE_DATE",length=19)

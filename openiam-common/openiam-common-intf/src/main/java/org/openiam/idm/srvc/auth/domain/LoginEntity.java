@@ -154,7 +154,6 @@ public class LoginEntity implements java.io.Serializable {
 
     @OneToMany(orphanRemoval = true, mappedBy = "login", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @Fetch(FetchMode.SUBSELECT)
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<PasswordHistoryEntity> passwordHistory = new HashSet<PasswordHistoryEntity>(0);
 
     public LoginEntity() {

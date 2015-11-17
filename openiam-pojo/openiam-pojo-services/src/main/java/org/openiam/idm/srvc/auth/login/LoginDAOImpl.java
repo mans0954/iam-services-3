@@ -43,7 +43,7 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements Lo
 
     /* DO NOT MERGE INTO 4.0!!!!  Only for 3.3.1 to solve IDMAPPS-2735.  Delete this function */
     @Override
-    protected Criteria getExampleCriteria(final SearchBean sb) {
+    protected Criteria getExampleCriteria(final SearchBean sb, boolean isCount) {
         final Criteria criteria = super.getCriteria();
         if (sb != null) {
             if (sb instanceof LoginSearchBean) {

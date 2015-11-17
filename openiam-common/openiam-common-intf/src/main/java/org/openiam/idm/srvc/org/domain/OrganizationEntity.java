@@ -90,7 +90,6 @@ public class OrganizationEntity extends AbstractMetdataTypeEntity {
     @JoinTable(name = "COMPANY_TO_COMPANY_MEMBERSHIP",
             joinColumns = {@JoinColumn(name = "MEMBER_COMPANY_ID")},
             inverseJoinColumns = {@JoinColumn(name = "COMPANY_ID")})
-//    @Fetch(FetchMode.SUBSELECT)
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<OrganizationEntity> parentOrganizations;
 
@@ -98,14 +97,9 @@ public class OrganizationEntity extends AbstractMetdataTypeEntity {
     @JoinTable(name = "COMPANY_TO_COMPANY_MEMBERSHIP",
             joinColumns = {@JoinColumn(name = "COMPANY_ID")},
             inverseJoinColumns = {@JoinColumn(name = "MEMBER_COMPANY_ID")})
-//    @Fetch(FetchMode.SUBSELECT)
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<OrganizationEntity> childOrganizations;
 
-    //    	@ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
-//    @JoinTable(name = "USER_AFFILIATION", joinColumns = { @JoinColumn(name = "COMPANY_ID") }, inverseJoinColumns = { @JoinColumn(name = "USER_ID") })
-//	private Set<UserEntity> users;
-//
     @OneToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY, mappedBy = "primaryKey.organization")
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     public Set<OrganizationUserEntity> organizationUser;

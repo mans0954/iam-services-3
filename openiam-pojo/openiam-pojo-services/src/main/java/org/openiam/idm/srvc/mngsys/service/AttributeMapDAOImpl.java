@@ -46,7 +46,7 @@ public class AttributeMapDAOImpl extends
     }
 
     @Override
-    protected Criteria getExampleCriteria(final SearchBean searchBean) {
+    protected Criteria getExampleCriteria(final SearchBean searchBean, boolean isCount) {
         final Criteria criteria = getCriteria();
         if (searchBean instanceof AttributeMapSearchBean) {
             AttributeMapSearchBean amsb = (AttributeMapSearchBean)searchBean;

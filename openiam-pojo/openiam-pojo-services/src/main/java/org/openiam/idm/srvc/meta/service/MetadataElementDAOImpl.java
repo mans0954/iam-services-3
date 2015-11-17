@@ -39,7 +39,7 @@ public class MetadataElementDAOImpl extends BaseDaoImpl<MetadataElementEntity, S
     }
 
     @Override
-    protected Criteria getExampleCriteria(final SearchBean searchBean) {
+    protected Criteria getExampleCriteria(final SearchBean searchBean, boolean isCount) {
         final Criteria criteria = getCriteria();
         if (searchBean != null && searchBean instanceof MetadataElementSearchBean) {
             final MetadataElementSearchBean metaSearchBean = (MetadataElementSearchBean) searchBean;
