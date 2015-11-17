@@ -254,13 +254,11 @@ public class UserEntity implements Serializable {
     private List<LoginEntity> principalList = new LinkedList<LoginEntity>();
 
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "user", fetch = FetchType.LAZY)
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     protected Set<UserKey> userKeys = new HashSet<UserKey>(0);
 
     @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
     @JoinTable(name = "USER_GRP", joinColumns = {@JoinColumn(name = "USER_ID")}, inverseJoinColumns = {@JoinColumn(name = "GRP_ID")})
     @Fetch(FetchMode.SUBSELECT)
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<GroupEntity> groups = new HashSet<GroupEntity>(0);
 
     @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)

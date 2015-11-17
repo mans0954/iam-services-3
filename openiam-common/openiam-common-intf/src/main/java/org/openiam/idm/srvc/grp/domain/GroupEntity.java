@@ -49,7 +49,6 @@ public class GroupEntity extends AbstractMetdataTypeEntity {
     
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "MANAGED_SYS_ID", referencedColumnName = "MANAGED_SYS_ID", insertable = true, updatable = true, nullable=true)
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private ManagedSysEntity managedSystem;
     
     @Column(name = "GROUP_DESC", length = 512)
@@ -69,7 +68,6 @@ public class GroupEntity extends AbstractMetdataTypeEntity {
     @JoinTable(name = "RESOURCE_GROUP",
             joinColumns = { @JoinColumn(name = "GRP_ID") },
             inverseJoinColumns = { @JoinColumn(name = "RESOURCE_ID") })
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<ResourceEntity> resources;
 
     @ManyToMany(cascade = { CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH }, fetch = FetchType.LAZY)
@@ -77,14 +75,12 @@ public class GroupEntity extends AbstractMetdataTypeEntity {
                joinColumns = { @JoinColumn(name = "MEMBER_GROUP_ID") },
                inverseJoinColumns = { @JoinColumn(name = "GROUP_ID") })
 //    @Fetch(FetchMode.SUBSELECT)
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<GroupEntity> parentGroups;
 
     @ManyToMany(cascade = { CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH }, fetch = FetchType.LAZY)
     @JoinTable(name = "grp_to_grp_membership",
                joinColumns = { @JoinColumn(name = "GROUP_ID") },
                inverseJoinColumns = { @JoinColumn(name = "MEMBER_GROUP_ID") })
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 //    @Fetch(FetchMode.SUBSELECT)
     private Set<GroupEntity> childGroups;
 
@@ -93,13 +89,11 @@ public class GroupEntity extends AbstractMetdataTypeEntity {
     @MapKeyColumn(name = "name")
     @Fetch(FetchMode.SUBSELECT)
     @Internationalized
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<GroupAttributeEntity> attributes;
 
     @ManyToMany(cascade = { CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH }, fetch = FetchType.LAZY)
     @JoinTable(name = "GRP_ROLE", joinColumns = { @JoinColumn(name = "GRP_ID") }, inverseJoinColumns = { @JoinColumn(name = "ROLE_ID") })
 //    @Fetch(FetchMode.SUBSELECT)
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<RoleEntity> roles;
 
     @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})

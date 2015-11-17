@@ -43,14 +43,12 @@ public class OrganizationUserEntity implements Serializable {
     }
 
     @EmbeddedId
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private OrganizationUserIdEntity primaryKey = new OrganizationUserIdEntity();
 
 
     @ManyToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
     @JoinColumn(name = "METADATA_TYPE_ID", referencedColumnName = "TYPE_ID", insertable = true, updatable = true, nullable = true)
     @Internationalized
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private MetadataTypeEntity metadataTypeEntity;
 
 
