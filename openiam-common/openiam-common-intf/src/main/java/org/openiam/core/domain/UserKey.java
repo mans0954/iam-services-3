@@ -21,7 +21,6 @@ import javax.xml.bind.annotation.XmlTransient;
  */
 @Entity
 @Table(name = "USER_KEY")
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class UserKey implements Serializable {
     @Id
     @GeneratedValue(generator="system-uuid")

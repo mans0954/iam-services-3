@@ -102,7 +102,7 @@ public class AddressEntity implements Serializable{
     @ManyToOne
     @JoinColumn(name = "PARENT_ID")
     @Field(name="parent", bridge=@FieldBridge(impl=UserBridge.class), store=Store.YES)
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+//    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private UserEntity parent;
 
     @Column(name = "POSTAL_CD", length = 100)

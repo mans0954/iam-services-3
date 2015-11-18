@@ -15,10 +15,8 @@ import java.io.Serializable;
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class OrganizationUserIdEntity implements Serializable {
     @ManyToOne
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private UserEntity user;
     @ManyToOne
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private OrganizationEntity organization;
 
 

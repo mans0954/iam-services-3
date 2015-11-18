@@ -13,7 +13,6 @@ import org.openiam.idm.srvc.pswd.dto.PasswordHistory;
 @Entity
 @Table(name = "PWD_HISTORY")
 @DozerDTOCorrespondence(PasswordHistory.class)
-@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class PasswordHistoryEntity {
 
 	@Id
@@ -24,7 +23,6 @@ public class PasswordHistoryEntity {
 
     @ManyToOne
     @JoinColumn(name="LOGIN_ID")
-    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private LoginEntity login;
 	
 	/* 

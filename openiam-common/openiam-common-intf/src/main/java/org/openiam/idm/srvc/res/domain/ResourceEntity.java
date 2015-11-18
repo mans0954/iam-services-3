@@ -65,7 +65,6 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
             joinColumns = {@JoinColumn(name = "MEMBER_RESOURCE_ID")},
             inverseJoinColumns = {@JoinColumn(name = "RESOURCE_ID")})
     @Fetch(FetchMode.SUBSELECT)
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<ResourceEntity> parentResources = new HashSet<ResourceEntity>(0);
 
     @ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
@@ -73,7 +72,6 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
             joinColumns = {@JoinColumn(name = "RESOURCE_ID")},
             inverseJoinColumns = {@JoinColumn(name = "MEMBER_RESOURCE_ID")})
     @Fetch(FetchMode.SUBSELECT)
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<ResourceEntity> childResources = new HashSet<ResourceEntity>(0);
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="resource", orphanRemoval=true)
@@ -86,19 +84,16 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
 
     @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinTable(name = "RESOURCE_USER", joinColumns = { @JoinColumn(name = "RESOURCE_ID") }, inverseJoinColumns = { @JoinColumn(name = "USER_ID") })
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<UserEntity> users;
 
     @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinTable(name = "RESOURCE_GROUP",
             joinColumns = {@JoinColumn(name = "RESOURCE_ID")},
             inverseJoinColumns = {@JoinColumn(name = "GRP_ID")})
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<GroupEntity> groups;
 
     @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinTable(name = "RESOURCE_ROLE", joinColumns = { @JoinColumn(name = "RESOURCE_ID") }, inverseJoinColumns = { @JoinColumn(name = "ROLE_ID") })
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<RoleEntity> roles;
 
     @Column(name = "MIN_AUTH_LEVEL")
@@ -113,7 +108,6 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
     
 	@ManyToOne(fetch = FetchType.EAGER,cascade={CascadeType.ALL})
     @JoinColumn(name="ADMIN_RESOURCE_ID", referencedColumnName = "RESOURCE_ID", insertable = true, updatable = true, nullable=true)
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	private ResourceEntity adminResource;
 	
 	@OneToMany(cascade = {CascadeType.ALL}, fetch = FetchType.LAZY, mappedBy="associationEntityId", orphanRemoval=true)
