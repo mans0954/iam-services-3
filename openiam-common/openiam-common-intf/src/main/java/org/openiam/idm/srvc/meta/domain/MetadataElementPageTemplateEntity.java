@@ -132,6 +132,15 @@ public class MetadataElementPageTemplateEntity extends AbstractKeyNameEntity {
 	public Set<MetadataFieldTemplateXrefEntity> getFieldXrefs() {
 		return fieldXrefs;
 	}
+	
+	public void addField(final MetadataFieldTemplateXrefEntity field) {
+		if(field != null) {
+			if(this.fieldXrefs == null) {
+				this.fieldXrefs = new HashSet<MetadataFieldTemplateXrefEntity>();
+			}
+			this.fieldXrefs.add(field);
+		}
+	}
 
 	public void setFieldXrefs(Set<MetadataFieldTemplateXrefEntity> fieldXrefs) {
 		this.fieldXrefs = fieldXrefs;

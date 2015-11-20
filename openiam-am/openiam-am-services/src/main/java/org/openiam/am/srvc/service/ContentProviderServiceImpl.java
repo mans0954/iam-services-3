@@ -1,31 +1,75 @@
 package org.openiam.am.srvc.service;
 
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.am.srvc.dao.*;
-import org.openiam.am.srvc.domain.*;
+import org.openiam.am.srvc.dao.AuthLevelAttributeDAO;
+import org.openiam.am.srvc.dao.AuthLevelDao;
+import org.openiam.am.srvc.dao.AuthLevelGroupingDao;
+import org.openiam.am.srvc.dao.AuthProviderDao;
+import org.openiam.am.srvc.dao.AuthResourceAMAttributeDao;
+import org.openiam.am.srvc.dao.ContentProviderDao;
+import org.openiam.am.srvc.dao.ContentProviderServerDao;
+import org.openiam.am.srvc.dao.URIPatternDao;
+import org.openiam.am.srvc.dao.URIPatternMetaTypeDao;
+import org.openiam.am.srvc.domain.AbstractMetaValueEntity;
+import org.openiam.am.srvc.domain.AuthLevelAttributeEntity;
+import org.openiam.am.srvc.domain.AuthLevelEntity;
+import org.openiam.am.srvc.domain.AuthLevelGroupingContentProviderXrefEntity;
+import org.openiam.am.srvc.domain.AuthLevelGroupingEntity;
+import org.openiam.am.srvc.domain.AuthLevelGroupingURIPatternXrefEntity;
+import org.openiam.am.srvc.domain.AuthResourceAMAttributeEntity;
+import org.openiam.am.srvc.domain.ContentProviderEntity;
+import org.openiam.am.srvc.domain.ContentProviderServerEntity;
+import org.openiam.am.srvc.domain.URIParamXSSRuleEntity;
+import org.openiam.am.srvc.domain.URIPatternEntity;
+import org.openiam.am.srvc.domain.URIPatternErrorMappingEntity;
+import org.openiam.am.srvc.domain.URIPatternMetaEntity;
+import org.openiam.am.srvc.domain.URIPatternMetaTypeEntity;
+import org.openiam.am.srvc.domain.URIPatternMetaValueEntity;
+import org.openiam.am.srvc.domain.URIPatternMethodEntity;
+import org.openiam.am.srvc.domain.URIPatternMethodMetaEntity;
+import org.openiam.am.srvc.domain.URIPatternMethodMetaValueEntity;
+import org.openiam.am.srvc.domain.URIPatternMethodParameterEntity;
+import org.openiam.am.srvc.domain.URIPatternParameterEntity;
+import org.openiam.am.srvc.domain.URIPatternServerEntity;
+import org.openiam.am.srvc.domain.URIPatternSubstitutionEntity;
 import org.openiam.am.srvc.domain.pk.AuthLevelGroupingContentProviderXrefIdEntity;
 import org.openiam.am.srvc.domain.pk.AuthLevelGroupingURIPatternXrefIdEntity;
-import org.openiam.am.srvc.dto.PatternMatchMode;
 import org.openiam.am.srvc.dozer.converter.ContentProviderDozerConverter;
 import org.openiam.am.srvc.dto.ContentProvider;
+import org.openiam.am.srvc.dto.PatternMatchMode;
+import org.openiam.am.srvc.model.MetadataTemplateFieldJSONWrapper;
 import org.openiam.am.srvc.model.URIPatternJSONWrapper;
-import org.openiam.am.srvc.searchbeans.URIPatternSearchBean;
 import org.openiam.am.srvc.searchbeans.ContentProviderSearchBean;
+import org.openiam.am.srvc.searchbeans.URIPatternSearchBean;
 import org.openiam.am.srvc.searchbeans.converter.ContentProviderSearchBeanConverter;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.exception.BasicDataServiceException;
+import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
+import org.openiam.idm.srvc.lang.service.LanguageDAO;
+import org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateEntity;
+import org.openiam.idm.srvc.meta.domain.MetadataFieldTemplateXrefEntity;
+import org.openiam.idm.srvc.meta.domain.MetadataTemplateTypeEntity;
+import org.openiam.idm.srvc.meta.domain.MetadataTemplateTypeFieldEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
+import org.openiam.idm.srvc.meta.dto.MetadataFieldTemplateXref;
+import org.openiam.idm.srvc.meta.service.MetadataElementTemplateService;
+import org.openiam.idm.srvc.meta.service.MetadataTemplateTypeFieldEntityDAO;
 import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
-import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.res.service.ResourceService;
-import org.openiam.idm.srvc.res.service.ResourceServiceImpl;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.idm.srvc.ui.theme.UIThemeDAO;
 import org.openiam.idm.srvc.ui.theme.domain.UIThemeEntity;
@@ -33,13 +77,10 @@ import org.openiam.idm.util.CustomJacksonMapper;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.io.File;
-import java.io.InputStream;
-import java.util.*;
 
 @Service("contentProviderService")
 public class ContentProviderServiceImpl implements  ContentProviderService, InitializingBean {
@@ -47,7 +88,9 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
     private static final String resourceTypeId="CONTENT_PROVIDER";
     private static final String patternResourceTypeId="URL_PATTERN";
     private static final String patternMethodResourceTypeId = "URI_PATTERN_METHOD";
-    
+
+    @Autowired
+    private MetadataElementTemplateService templateService;
 
     @Autowired
     private ContentProviderSearchBeanConverter contentProviderSearchBeanConverter;
@@ -93,8 +136,15 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
     private MetadataTypeDAO typeDAO;
     
     @Autowired
+    private LanguageDAO languageDAO;
+    
+    @Autowired
     @Qualifier("defaultPatternResource")
     private Resource defaultPatternResource;
+    
+    @Autowired
+    @Qualifier("defaultTemplateFieldResource")
+    private Resource defaultTemplateFieldResource;
     
     @Autowired
     @Qualifier("customJacksonMapper")
@@ -103,7 +153,14 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
     @Autowired
     private ResourceService resourceService;
     
+    @Value("${org.openiam.user.template.id}")
+    private String userTemplateId;
+    
+    private MetadataTemplateFieldJSONWrapper fieldWrapper;
     private URIPatternJSONWrapper patternWrapper;
+    
+    @Autowired
+    private MetadataTemplateTypeFieldEntityDAO templateTypeEntityDAO;
 
     @Override
     public List<AuthLevelEntity> getAuthLevelList() {
@@ -728,7 +785,8 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
 
 	@Override
 	@Transactional
-	public void createDefaultURIPatterns(String providerId) {
+	public Set<URIPatternEntity> createDefaultURIPatterns(String providerId) {
+		final Set<URIPatternEntity> retVal = new HashSet<URIPatternEntity>();
 		if(patternWrapper == null) {
 			throw new RuntimeException(String.format("Can't get json metadata.  Check that '%s' is in the classpath", defaultPatternResource));
 		}
@@ -777,6 +835,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
 							}
 							//saveURIPattern(pattern);
 							uriPatternDao.update(pattern);
+							retVal.add(pattern);
 						}
 					}
 					patternsNotToAdd.add(pattern.getPattern());
@@ -818,15 +877,81 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
 							pattern.setGroupingXrefs(groupingXrefs);
 						}
 						saveURIPattern(pattern);
+						retVal.add(pattern);
 					}
 				}
 			}
 		}
+		return retVal;
 	}
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
         InputStream stream = defaultPatternResource.getInputStream();
 		patternWrapper = mapper.readValue(stream, URIPatternJSONWrapper.class);
+		
+		stream = defaultTemplateFieldResource.getInputStream();
+		fieldWrapper = mapper.readValue(stream, MetadataTemplateFieldJSONWrapper.class);
+	}
+	
+	private MetadataElementPageTemplateEntity getTemplate(final ContentProviderEntity provider) {
+		MetadataElementPageTemplateEntity template = new MetadataElementPageTemplateEntity();
+		template.setPublic(true);
+		template.setTemplateType(new MetadataTemplateTypeEntity());
+		template.getTemplateType().setId(userTemplateId);
+		template.setName(String.format("Default Template for %s", provider.getName()));
+		return template;
+	}
+
+	@Override
+	@Transactional
+	public void setupApplication(final ContentProviderEntity provider) {
+		saveContentProvider(provider);
+		Set<URIPatternEntity> patternSet = createDefaultURIPatterns(provider.getId());
+		
+		patternSet = patternSet.stream().filter(e -> 
+			StringUtils.startsWithIgnoreCase(e.getPattern(), "/selfservice/selfRegistration") ||
+			StringUtils.startsWithIgnoreCase(e.getPattern(), "/selfservice/editProfile") ||
+			StringUtils.startsWithIgnoreCase(e.getPattern(), "/selfservice/newUser")
+		).collect(Collectors.toSet());
+		MetadataElementPageTemplateEntity template = getTemplate(provider);
+		templateService.save(template);
+		
+		/* crazy bug.  since hte templateService.save() method is basically a huge merge, it will use
+		 * the same refernces as the template object.  Consequently, it *may* null out things that we set
+		 * in this method, because hibernate may re-set objects that we modify here
+		 * 
+		 * Therefore, we make a deep copy of that object, so that no reference is the same, and just use that
+		 */
+		final String id = template.getId();
+		template = getTemplate(provider);
+		template.setId(id);
+		
+		for(final MetadataFieldTemplateXref field : fieldWrapper.getFields()) {
+			final MetadataFieldTemplateXrefEntity xref = new MetadataFieldTemplateXrefEntity();
+			xref.setDisplayOrder(field.getDisplayOrder());
+			xref.setEditable(field.isEditable());
+			xref.setRequired(field.isRequired());
+			//xref.setTemplate(template);
+			if(xref.getLanguageMap() == null) {
+				xref.setLanguageMap(new HashMap<String, LanguageMappingEntity>());
+			}
+			field.getLanguageMap().forEach((languageId, text) -> {
+				if(StringUtils.isNotBlank(languageId)) {
+					final LanguageMappingEntity mapping = new LanguageMappingEntity();
+					mapping.setLanguageId(languageId);
+					mapping.setValue(text.getValue());
+					//mapping.setReferenceId(referenceId);
+					xref.getLanguageMap().put(languageId, mapping);
+				}
+			});
+			xref.setField(new MetadataTemplateTypeFieldEntity());
+			xref.getField().setId(field.getField().getId());
+			xref.setTemplate(template);
+			template.addField(xref);
+		}
+		
+		template.setUriPatterns(patternSet);
+		templateService.save(template);
 	}
 }

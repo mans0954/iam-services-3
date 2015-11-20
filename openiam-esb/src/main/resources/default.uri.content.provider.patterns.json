@@ -38,6 +38,45 @@
 			"cacheTTL" : 30
 		},
 		{
+			"pattern" : "/selfservice/editProfile.html",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "PASSWORD_AUTH"
+					}
+				}
+			],
+			"cacheable" : true,
+			"cacheTTL" : 30
+		},
+		{
+			"pattern" : "/selfservice/newUser.html",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "PASSWORD_AUTH"
+					}
+				}
+			],
+			"cacheable" : true,
+			"cacheTTL" : 30
+		},
+		{
+			"pattern" : "/selfservice/newUserWithApprover.html",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "PASSWORD_AUTH"
+					}
+				}
+			],
+			"cacheable" : true,
+			"cacheTTL" : 30
+		},
+		{
 			"pattern" : "/openiam-ui-static/*",
 			"isPublic" : true,
 			"groupingXrefs" : [

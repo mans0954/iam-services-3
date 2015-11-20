@@ -207,8 +207,18 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 					}
 				}
 			}
-			entity.setFieldXrefs(fieldXrefs);
-			entity.setMetadataElements(renewedXrefs);
+			if(entity.getFieldXrefs() == null) {
+				entity.setFieldXrefs(new HashSet<MetadataFieldTemplateXrefEntity>());
+			}
+			entity.getFieldXrefs().clear();
+			entity.getFieldXrefs().addAll(fieldXrefs);
+			//entity.setFieldXrefs(fieldXrefs);
+			if(entity.getMetadataElements() == null) {
+				entity.setMetadataElements(new HashSet<MetadataElementPageTemplateXrefEntity>());
+			}
+			entity.getMetadataElements().clear();
+			entity.getMetadataElements().addAll(renewedXrefs);
+			//entity.setMetadataElements(renewedXrefs);
 			if(StringUtils.isBlank(entity.getId())) {
 				pageTemplateDAO.save(entity);
 			} else {

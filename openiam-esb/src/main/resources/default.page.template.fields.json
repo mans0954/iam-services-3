@@ -1,0 +1,34 @@
+{
+	"fields" : [
+		{
+			"id":null,
+			"field": {
+				"id" : "USER_FIRST_NAME"
+			},
+			"required":true,
+			"editable":true,
+			"displayOrder":1,
+			"languageMap":{
+				"1" : {
+					"value":"First Name",
+					"languageId" : 1
+				}
+			}
+		},
+		{
+			"id":null,
+			"field" : {
+				"id":"USER_LAST_NAME"
+			},
+			"required":true,
+			"editable":true,
+			"displayOrder":2,
+			"languageMap" : {
+				"1" : {
+					"value":"Last Name",
+					"languageId":1
+				}
+			}
+		}
+	]
+}

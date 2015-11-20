@@ -37,6 +37,14 @@ public interface ContentProviderWebService {
     @WebMethod
     List<AuthLevelGrouping> getAuthLevelGroupingList();
     
+    /**
+     * This method is called upon initialization of a Tenant / OpenIAM instance
+     * @param cp
+     * @return
+     */
+    @WebMethod
+    Response setupApplication(final ContentProvider cp);
+    
     @WebMethod
     Response createDefaultURIPatterns(@WebParam(name = "providerId", targetNamespace = "") String providerId);
 

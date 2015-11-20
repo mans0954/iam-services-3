@@ -20,6 +20,9 @@ import org.testng.annotations.Test;
 
 public class Resource2UserEntitlementsTest extends AbstractEntitlementsTest<Resource, User> {
 
+	@Test
+	public void foo() {}
+	
 	@Override
 	protected Resource createParent() {
 		return super.createResource();
