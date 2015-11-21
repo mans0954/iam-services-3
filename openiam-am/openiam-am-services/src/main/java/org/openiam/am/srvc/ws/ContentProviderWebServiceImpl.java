@@ -3,6 +3,7 @@ package org.openiam.am.srvc.ws;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.am.srvc.domain.AuthLevelAttributeEntity;
@@ -721,10 +722,12 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
             response.setErrorTokenList(e.getErrorTokenList());
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
+            response.setStacktraceText(ExceptionUtils.getFullStackTrace(e));
         } catch(Throwable e) {
             log.error(e.getMessage(), e);
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorText(e.getMessage());
+            response.setStacktraceText(ExceptionUtils.getFullStackTrace(e));
         }
         return response;
     }

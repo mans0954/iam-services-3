@@ -47,7 +47,8 @@ import java.util.Map;
         "responseValue",
         "errorText",
         "errorTokenList",
-        "fieldMappings"
+        "fieldMappings",
+        "stacktraceText"
 })
 public class Response implements Serializable {
 
@@ -56,6 +57,7 @@ public class Response implements Serializable {
     protected ResponseCode errorCode;
     protected String errorText;
     protected Map<String, String> fieldMappings;
+    private String stacktraceText;
 
     protected Object responseValue;
     private List<EsbErrorToken> errorTokenList;
@@ -152,6 +154,16 @@ public class Response implements Serializable {
 	public void setFieldMappings(Map<String, String> fieldMappings) {
 		this.fieldMappings = fieldMappings;
 	}
+	
+	
+
+	public String getStacktraceText() {
+		return stacktraceText;
+	}
+
+	public void setStacktraceText(String stacktraceText) {
+		this.stacktraceText = stacktraceText;
+	}
 
 	@Override
     public String toString() {
@@ -161,6 +173,7 @@ public class Response implements Serializable {
                 ", errorText='" + errorText + '\'' +
                 ", responseValue=" + responseValue +
                 ", errorTokenList=" + errorTokenList +
+                ", stacktraceText=" + stacktraceText +
                 '}';
     }
 }
