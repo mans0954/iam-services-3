@@ -109,7 +109,9 @@ public class InternationalizationProvider {
 	}
 
 	public void doSaveUpdate(final KeyEntity object) {
-		LOG.debug("Start doSaveUpdate method");
+		if(LOG.isDebugEnabled()) {
+			LOG.debug("Start doSaveUpdate method");
+		}
 		final Set<TargetInternationalizedField> fieldList = getTargetFields(object, false);
 		if(CollectionUtils.isNotEmpty(fieldList)) {
 			for(final TargetInternationalizedField target : fieldList) {
@@ -121,7 +123,9 @@ public class InternationalizationProvider {
 
 	
 	public void doDelete(final KeyEntity object) {
-		LOG.debug("Start doDelete method");
+		if(LOG.isDebugEnabled()) {
+			LOG.debug("Start doDelete method");
+		}
 		final Set<TargetInternationalizedField> fieldList = getTargetFields(object, true);
 		if(CollectionUtils.isNotEmpty(fieldList)) {
 			for(final TargetInternationalizedField target : fieldList) {
@@ -129,18 +133,22 @@ public class InternationalizationProvider {
 				//field.setAccessible(true);
 				final InternationalizedCollection metadata = field.getAnnotation(InternationalizedCollection.class);
 				StringBuilder sb = new StringBuilder();
-				sb.append("ThreadId=").append(Thread.currentThread().getId());
-				sb.append("; REFERENCE_ID=").append(target.getEntity().getId());
-				sb.append("; REFERENCE_TYPE=").append(getReferenceType(target.getEntity(), field));
-				sb.append("; Entity={").append((target != null)?(target.getEntity() != null)?target.getEntity().toString():"null":"null").append("}");
-				LOG.debug(sb.toString());
+				if(LOG.isDebugEnabled()) {
+					sb.append("ThreadId=").append(Thread.currentThread().getId());
+					sb.append("; REFERENCE_ID=").append(target.getEntity().getId());
+					sb.append("; REFERENCE_TYPE=").append(getReferenceType(target.getEntity(), field));
+					sb.append("; Entity={").append((target != null)?(target.getEntity() != null)?target.getEntity().toString():"null":"null").append("}");
+					LOG.debug(sb.toString());
+				}
 				final List<LanguageMappingEntity> dbList = languageDAO.getByReferenceIdAndType(target.getEntity().getId(), getReferenceType(target.getEntity(), field));
 				if(CollectionUtils.isNotEmpty(dbList)) {
 					for(final LanguageMappingEntity entity : dbList) {
-						sb = new StringBuilder();
-						sb.append("ThreadId=").append(Thread.currentThread().getId());
-						sb.append("; LanguageMappingEntity=").append((entity != null)?entity.toString():"null");
-						LOG.debug("ThreadId=" + Thread.currentThread().getId() + "LanguageMappingEntity : " + entity.toString());
+						if(LOG.isDebugEnabled()) {
+							sb = new StringBuilder();
+							sb.append("ThreadId=").append(Thread.currentThread().getId());
+							sb.append("; LanguageMappingEntity=").append((entity != null)?entity.toString():"null");
+							LOG.debug("ThreadId=" + Thread.currentThread().getId() + "LanguageMappingEntity : " + entity.toString());
+						}
 						languageDAO.delete(entity);
 					}
 				}
@@ -295,10 +303,12 @@ public class InternationalizationProvider {
 			}
 			final Map<String, LanguageMappingEntity> transientMap = (Map<String, LanguageMappingEntity>)fieldObject;
 			StringBuilder sb = new StringBuilder();
-			sb.append("ThreadId=").append(Thread.currentThread().getId());
-			sb.append("; REFERENCE_ID=").append(object.getId());
-			sb.append("; REFERENCE_TYPE=").append(getReferenceType(object, field));
-			LOG.debug(sb.toString());
+			if(LOG.isDebugEnabled()) {
+				sb.append("ThreadId=").append(Thread.currentThread().getId());
+				sb.append("; REFERENCE_ID=").append(object.getId());
+				sb.append("; REFERENCE_TYPE=").append(getReferenceType(object, field));
+				LOG.debug(sb.toString());
+			}
 			final List<LanguageMappingEntity> dbList = languageDAO.getByReferenceIdAndType(object.getId(), getReferenceType(object, field));
 			if(MapUtils.isEmpty(transientMap)) {
 				toDelete = dbList;
@@ -352,31 +362,37 @@ public class InternationalizationProvider {
 
 			if(CollectionUtils.isNotEmpty(toSave)) {
 				for(final LanguageMappingEntity entity : toSave) {
-					sb = new StringBuilder();
-					sb.append("ThreadId=").append(Thread.currentThread().getId());
-					sb.append(" : START SAVE LANGUAGE_MAPPING : ");
-					sb.append("; entity=").append((entity != null)?entity.toString():"null");
-					LOG.debug(sb.toString());
+					if(LOG.isDebugEnabled()) {
+						sb = new StringBuilder();
+						sb.append("ThreadId=").append(Thread.currentThread().getId());
+						sb.append(" : START SAVE LANGUAGE_MAPPING : ");
+						sb.append("; entity=").append((entity != null)?entity.toString():"null");
+						LOG.debug(sb.toString());
+					}
 					languageDAO.save(entity);
 				}
 			}
 			if(CollectionUtils.isNotEmpty(toUpdate)) {
 				for(final LanguageMappingEntity entity : toUpdate) {
-					sb = new StringBuilder();
-					sb.append("ThreadId=").append(Thread.currentThread().getId());
-					sb.append(" : START UPDATE LANGUAGE_MAPPING : ");
-					sb.append("; entity=").append((entity != null) ? entity.toString() : "null");
-					LOG.debug(sb.toString());
+					if(LOG.isDebugEnabled()) {
+						sb = new StringBuilder();
+						sb.append("ThreadId=").append(Thread.currentThread().getId());
+						sb.append(" : START UPDATE LANGUAGE_MAPPING : ");
+						sb.append("; entity=").append((entity != null) ? entity.toString() : "null");
+						LOG.debug(sb.toString());
+					}
 					languageDAO.update(entity);
 				}
 			}
 			if(CollectionUtils.isNotEmpty(toDelete)) {
 				for(final LanguageMappingEntity entity : toDelete) {
-					sb = new StringBuilder();
-					sb.append("ThreadId=").append(Thread.currentThread().getId());
-					sb.append(" : START DELETE LANGUAGE_MAPPING : ");
-					sb.append("; entity=").append((entity != null)?entity.toString():"null");
-					LOG.debug(sb.toString());
+					if(LOG.isDebugEnabled()) {
+						sb = new StringBuilder();
+						sb.append("ThreadId=").append(Thread.currentThread().getId());
+						sb.append(" : START DELETE LANGUAGE_MAPPING : ");
+						sb.append("; entity=").append((entity != null)?entity.toString():"null");
+						LOG.debug(sb.toString());
+					}
 					languageDAO.delete(entity);
 				}
 			}
