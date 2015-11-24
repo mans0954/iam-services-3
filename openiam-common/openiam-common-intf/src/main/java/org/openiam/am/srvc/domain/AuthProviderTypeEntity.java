@@ -73,6 +73,10 @@ public class AuthProviderTypeEntity extends AbstractKeyNameEntity {
     @Type(type = "yes_no")
     private boolean supportsTOTP;
     
+    @Column(name="IS_LINKABLE_TO_CP")
+    @Type(type = "yes_no")
+    private boolean linkableToContentProvider;
+    
     @OneToMany(mappedBy = "type", cascade = CascadeType.ALL,fetch = FetchType.LAZY)
     private Set<AuthAttributeEntity> attributeSet;
     
@@ -192,6 +196,14 @@ public class AuthProviderTypeEntity extends AbstractKeyNameEntity {
 		this.authnPolicyRequired = authnPolicyRequired;
 	}
 
+	public boolean isLinkableToContentProvider() {
+		return linkableToContentProvider;
+	}
+
+	public void setLinkableToContentProvider(boolean linkableToContentProvider) {
+		this.linkableToContentProvider = linkableToContentProvider;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -208,6 +220,7 @@ public class AuthProviderTypeEntity extends AbstractKeyNameEntity {
 		result = prime * result + (supportsTOTP ? 1231 : 1237);
 		result = prime * result + (hasAuthnPolicy ? 1231 : 1237);
 		result = prime * result + (authnPolicyRequired ? 1231 : 1237);
+		result = prime * result + (linkableToContentProvider ? 1231 : 1237);
 		return result;
 	}
 
@@ -241,6 +254,8 @@ public class AuthProviderTypeEntity extends AbstractKeyNameEntity {
 		if (supportsTOTP != other.supportsTOTP)
 			return false;
 		if (hasAuthnPolicy != other.hasAuthnPolicy)
+			return false;
+		if (linkableToContentProvider != other.linkableToContentProvider)
 			return false;
 		return authnPolicyRequired == other.authnPolicyRequired;
 	}

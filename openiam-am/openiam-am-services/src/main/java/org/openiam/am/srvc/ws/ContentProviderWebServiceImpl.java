@@ -8,6 +8,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.am.srvc.domain.AuthLevelAttributeEntity;
 import org.openiam.am.srvc.domain.AuthLevelGroupingEntity;
+import org.openiam.am.srvc.domain.AuthProviderEntity;
+import org.openiam.am.srvc.domain.AuthProviderTypeEntity;
 import org.openiam.am.srvc.domain.ContentProviderEntity;
 import org.openiam.am.srvc.domain.URIPatternEntity;
 import org.openiam.am.srvc.dozer.converter.*;
@@ -348,8 +350,19 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
         	throw new  BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_SET);
         }
         
-        if(authProviderService.getAuthProvider(provider.getAuthProviderId()) == null) {
+        final AuthProviderEntity authProviderType = authProviderService.getAuthProvider(provider.getAuthProviderId());
+        if(authProviderType == null) {
         	throw new  BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_SET);
+        }
+        
+        final AuthProviderTypeEntity type = authProviderService.getAuthProviderTypeForProvider(provider.getAuthProviderId());
+        if(type == null) {
+        	log.error(String.format("Type was null for auth provider '%s'", provider.getAuthProviderId()));
+        	throw new  BasicDataServiceException(ResponseCode.INTERNAL_ERROR);
+        }
+        
+        if(!type.isLinkableToContentProvider()) {
+        	throw new  BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_LINKABLE);
         }
 	}
 

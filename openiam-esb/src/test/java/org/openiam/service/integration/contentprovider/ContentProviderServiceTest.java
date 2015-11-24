@@ -13,8 +13,10 @@ import org.hibernate.sql.Insert;
 import org.openiam.am.srvc.dto.AuthLevelGrouping;
 import org.openiam.am.srvc.dto.AuthLevelGroupingContentProviderXref;
 import org.openiam.am.srvc.dto.AuthLevelGroupingContentProviderXrefId;
+import org.openiam.am.srvc.dto.AuthProvider;
 import org.openiam.am.srvc.dto.ContentProvider;
 import org.openiam.am.srvc.dto.ContentProviderServer;
+import org.openiam.am.srvc.searchbeans.AuthProviderSearchBean;
 import org.openiam.am.srvc.searchbeans.ContentProviderSearchBean;
 import org.openiam.am.srvc.ws.AuthProviderWebService;
 import org.openiam.am.srvc.ws.ContentProviderWebService;
@@ -92,10 +94,20 @@ public class ContentProviderServiceTest extends AbstractContentProviderServiceTe
 		response = save(cp);
 		assertResponseCode(response, ResponseCode.AUTH_PROVIDER_NOT_SET);
 		
+		final AuthProviderSearchBean sb = new AuthProviderSearchBean();
+		sb.setLinkableToContentProvider(false);
+		final List<AuthProvider> authProviders = authProviderServiceClient.findAuthProviderBeans(sb, 0, Integer.MAX_VALUE);
+		if(CollectionUtils.isNotEmpty(authProviders)) {
+			cp.setAuthProviderId(authProviders.get(0).getId());
+			response = save(cp);
+			assertResponseCode(response, ResponseCode.AUTH_PROVIDER_NOT_LINKABLE);
+		}
+		
 		cp = createBean();
 		cp.setUnavailable(true);
 		response = save(cp);
 		assertResponseCode(response, ResponseCode.UNAVAILABLE_URL_REQUIRED);
+		
 	}
 	
 	private void addServers(final int howMany, final Set<ContentProviderServer> serverSet) {
@@ -172,7 +184,9 @@ public class ContentProviderServiceTest extends AbstractContentProviderServiceTe
 				final PageTempate template = metadataTemplateServiceClient.getTemplate(templateRequest);
 				Assert.assertNotNull(template);
 				Assert.assertTrue(StringUtils.isNotBlank(template.getTemplateId()));
-				Assert.assertTrue(template.getUiFields() != null && template.getUiFields().size() > 0);
+				
+				/* the current UI Field size is based on # of elemtns in defualt.page.template.fields.json */
+				Assert.assertTrue(template.getUiFields() != null && template.getUiFields().size() == 3);
 			});
 			
 			/* b/c default patterns were created in setup */

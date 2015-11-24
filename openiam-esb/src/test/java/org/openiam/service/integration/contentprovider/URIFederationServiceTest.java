@@ -223,7 +223,10 @@ public class URIFederationServiceTest extends AbstractURIFederationTest {
 		Assert.assertTrue(response.isConfigured());
 		Assert.assertNotNull(response.getCacheTTL());
 		
-		//uriFederationServiceClient.getMetadata(proxyURI, method);
+		/* all auth level groupings should have been added by the code that created the cp */
+		Assert.assertTrue(CollectionUtils.isNotEmpty(response.getAuthLevelTokenList()));
+		Assert.assertTrue(response.getAuthLevelTokenList().stream().filter(e -> e.getAuthLevelId().equals("OAUTH")).count() > 0, 
+				"OAuth Auth Level shoudl have been present");
 	}
 	
 }

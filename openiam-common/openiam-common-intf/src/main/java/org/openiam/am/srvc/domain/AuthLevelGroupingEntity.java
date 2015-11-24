@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.AttributeOverride;
+import javax.persistence.AttributeOverrides;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -22,23 +24,19 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.am.srvc.dto.AuthLevelGrouping;
 import org.openiam.am.srvc.dto.AuthLevelGroupingURIPatternXref;
+import org.openiam.base.domain.AbstractKeyNameEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 
 @Entity
 @Table(name = "AUTH_LEVEL_GROUPING")
 @DozerDTOCorrespondence(AuthLevelGrouping.class)
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class AuthLevelGroupingEntity implements Serializable {
+@AttributeOverrides({
+	@AttributeOverride(name = "id", column = @Column(name = "AUTH_LEVEL_GROUPING_ID")),
+	@AttributeOverride(name = "name", column = @Column(name = "NAME", length = 100, nullable = false))
+})
+public class AuthLevelGroupingEntity extends AbstractKeyNameEntity {
 
-	@Id
-    @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name = "system-uuid", strategy = "uuid")
-    @Column(name = "AUTH_LEVEL_GROUPING_ID", length = 32, nullable = false)
-	private String id;
-	
-	@Column(name = "NAME", length = 100, nullable = false)
-	private String name;
-	
 	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name="AUTH_LEVEL_ID", referencedColumnName = "AUTH_LEVEL_ID", insertable=true, updatable=true, nullable=false)
 	private AuthLevelEntity authLevel;
@@ -56,21 +54,6 @@ public class AuthLevelGroupingEntity implements Serializable {
 		
 	}
 
-	public String getId() {
-		return id;
-	}
-
-	public void setId(String id) {
-		this.id = id;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
 	public AuthLevelEntity getAuthLevel() {
 		return authLevel;
 	}
@@ -117,10 +100,9 @@ public class AuthLevelGroupingEntity implements Serializable {
 	@Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((authLevel == null) ? 0 : authLevel.hashCode());
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		int result = super.hashCode();
+		result = prime * result
+				+ ((authLevel == null) ? 0 : authLevel.hashCode());
 		return result;
 	}
 
@@ -128,7 +110,7 @@ public class AuthLevelGroupingEntity implements Serializable {
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (obj == null)
+		if (!super.equals(obj))
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
@@ -138,24 +120,14 @@ public class AuthLevelGroupingEntity implements Serializable {
 				return false;
 		} else if (!authLevel.equals(other.authLevel))
 			return false;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
-			return false;
-		if (name == null) {
-			if (other.name != null)
-				return false;
-		} else if (!name.equals(other.name))
-			return false;
 		return true;
 	}
 
 	@Override
 	public String toString() {
-		return String.format("AuthLevelGroupingEntity [id=%s, authLevel=%s, name=%s]",
-				id, authLevel, name);
+		return "AuthLevelGroupingEntity [authLevel=" + authLevel
+				+ ", toString()=" + super.toString() + "]";
 	}
-	
+
 	
 }

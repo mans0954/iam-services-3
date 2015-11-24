@@ -22,6 +22,7 @@ public interface AuthProviderService {
     * AuthProviderType section
     *===================================================
     */
+	AuthProviderTypeEntity getAuthProviderTypeForProvider(final String providerId);
     AuthProviderTypeEntity getAuthProviderType(String providerType);
     List<AuthProviderTypeEntity> getAuthProviderTypeList();
     List<AuthProviderTypeEntity> getSocialAuthProviderTypeList();

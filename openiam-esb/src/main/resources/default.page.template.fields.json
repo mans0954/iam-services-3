@@ -29,6 +29,21 @@
 					"languageId":1
 				}
 			}
+		},
+		{
+			"id":null,
+			"field" : {
+				"id":"USER_EMAIL_CREATABLE"
+			},
+			"required":true,
+			"editable":true,
+			"displayOrder":3,
+			"languageMap" : {
+				"1" : {
+					"value":"User can create email addresses",
+					"languageId":"1"
+				}
+			}
 		}
 	]
 }

@@ -18,6 +18,7 @@ import org.openiam.am.srvc.dto.AuthLevelGroupingContentProviderXref;
 import org.openiam.am.srvc.dto.AuthLevelGroupingContentProviderXrefId;
 import org.openiam.am.srvc.dto.ContentProvider;
 import org.openiam.am.srvc.dto.ContentProviderServer;
+import org.openiam.am.srvc.searchbeans.AuthProviderSearchBean;
 import org.openiam.am.srvc.ws.AuthProviderWebService;
 import org.openiam.am.srvc.ws.ContentProviderWebService;
 import org.openiam.authmanager.service.AuthorizationManagerWebService;
@@ -202,7 +203,10 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 		cp.setDomainPattern(getRandomName());
 		cp.setAuthCookieDomain(cp.getDomainPattern());
 		cp.setUrl(getRandomName());
-		cp.setAuthProviderId(authProviderServiceClient.findAuthProviderBeans(null, 0, 1).get(0).getId());
+		
+		final AuthProviderSearchBean sb = new AuthProviderSearchBean();
+		sb.setLinkableToContentProvider(true);
+		cp.setAuthProviderId(authProviderServiceClient.findAuthProviderBeans(sb, 0, 1).get(0).getId());
 		cp.setUnavailable(false);
 		
 		final ContentProviderServer server = new ContentProviderServer();
