@@ -17,12 +17,14 @@ import java.util.Set;
         "providerType",
         "defaultAuthProvider",
         "contentProviderIds",
-        "uriPatternIds"
+        "uriPatternIds",
+        "linkableToContentProvider"
 })
 public class AuthProviderSearchBean extends AbstractKeyNameSearchBean<AuthProvider, String> {
     private String managedSysId;
     private String providerType;
     private Boolean defaultAuthProvider;
+    private Boolean linkableToContentProvider;
     private Set<String> contentProviderIds;
     private Set<String> uriPatternIds;
 
@@ -77,4 +79,14 @@ public class AuthProviderSearchBean extends AbstractKeyNameSearchBean<AuthProvid
             uriPatternIds = new HashSet<>();
         uriPatternIds.add(id);
     }
+
+	public Boolean getLinkableToContentProvider() {
+		return linkableToContentProvider;
+	}
+
+	public void setLinkableToContentProvider(Boolean linkableToContentProvider) {
+		this.linkableToContentProvider = linkableToContentProvider;
+	}
+    
+    
 }

@@ -10,6 +10,7 @@ import java.util.stream.IntStream;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.math.RandomUtils;
+import org.mortbay.log.Log;
 import org.openiam.am.srvc.dto.AuthLevelGrouping;
 import org.openiam.am.srvc.dto.AuthLevelGroupingContentProviderXref;
 import org.openiam.am.srvc.dto.AuthLevelGroupingContentProviderXrefId;
@@ -404,7 +405,9 @@ public class URIPatternServiceTest extends AbstractContentProviderServiceTest<UR
 			@Override
 			public URIPatternErrorMapping generate() {
 				final URIPatternErrorMapping mapping = new URIPatternErrorMapping();
-				mapping.setErrorCode(RandomUtils.nextInt(500));
+				final int randomInt = RandomUtils.nextInt(500000);
+				Log.info(String.format("Random int used for URI Pattern Test: %s", randomInt));
+				mapping.setErrorCode(randomInt);
 				mapping.setRedirectURL("/" + getRandomName());
 				return mapping;
 			}

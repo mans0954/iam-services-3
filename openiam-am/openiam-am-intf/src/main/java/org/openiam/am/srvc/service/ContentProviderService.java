@@ -8,6 +8,7 @@ import org.openiam.am.srvc.searchbeans.URIPatternSearchBean;
 import org.openiam.exception.BasicDataServiceException;
 
 import java.util.List;
+import java.util.Set;
 
 public interface ContentProviderService {
 	
@@ -58,5 +59,7 @@ public interface ContentProviderService {
     
     List<URIPatternEntity> getURIPatternsForContentProviderMatchingPattern(final String contentProviderId, final String pattern);
     
-    void createDefaultURIPatterns(String providerId);
+    Set<URIPatternEntity> createDefaultURIPatterns(String providerId);
+    
+    void setupApplication(final ContentProviderEntity provider);
 }

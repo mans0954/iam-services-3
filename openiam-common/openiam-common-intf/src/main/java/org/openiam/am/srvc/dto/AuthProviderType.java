@@ -27,7 +27,8 @@ import java.util.Set;
         "supportsSMSOTP",
         "supportsTOTP",
         "hasAuthnPolicy",
-        "authnPolicyRequired"
+        "authnPolicyRequired",
+        "linkableToContentProvider"
 })
 @DozerDTOCorrespondence(AuthProviderTypeEntity.class)
 public class AuthProviderType extends KeyNameDTO {
@@ -43,6 +44,7 @@ public class AuthProviderType extends KeyNameDTO {
     private boolean supportsTOTP;
     private boolean hasAuthnPolicy;
     private boolean authnPolicyRequired;
+    private boolean linkableToContentProvider;
     
     @XmlTransient
     private Set<AuthAttributeEntity> attributeSet;
@@ -162,6 +164,14 @@ public class AuthProviderType extends KeyNameDTO {
 		this.authnPolicyRequired = authnPolicyRequired;
 	}
 
+	public boolean isLinkableToContentProvider() {
+		return linkableToContentProvider;
+	}
+
+	public void setLinkableToContentProvider(boolean linkableToContentProvider) {
+		this.linkableToContentProvider = linkableToContentProvider;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -178,6 +188,7 @@ public class AuthProviderType extends KeyNameDTO {
 		result = prime * result + (supportsTOTP ? 1231 : 1237);
 		result = prime * result + (hasAuthnPolicy ? 1231 : 1237);
 		result = prime * result + (authnPolicyRequired ? 1231 : 1237);
+		result = prime * result + (linkableToContentProvider ? 1231 : 1237);
 		return result;
 	}
 
@@ -211,6 +222,8 @@ public class AuthProviderType extends KeyNameDTO {
 		if (supportsTOTP != other.supportsTOTP)
 			return false;
 		if (hasAuthnPolicy != other.hasAuthnPolicy)
+			return false;
+		if (linkableToContentProvider != other.linkableToContentProvider)
 			return false;
 		return authnPolicyRequired == other.authnPolicyRequired;
 	}

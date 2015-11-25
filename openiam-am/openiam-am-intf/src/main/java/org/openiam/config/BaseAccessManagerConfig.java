@@ -12,9 +12,17 @@ public class BaseAccessManagerConfig {
 	
 	@Value("${org.openiam.uri.patterns.defaut.object.file}")
 	private String patternFileName;
+	
+	@Value("${org.openiam.template.field.defaut.object.file}")
+	private String fieldFileName;
 
 	@Bean(name="defaultPatternResource")
 	public ClassPathResource defaultPatternResource() {
 		return new ClassPathResource(patternFileName);
+	}
+	
+	@Bean(name="defaultTemplateFieldResource")
+	public ClassPathResource defaultTemplateFieldResource() {
+		return new ClassPathResource(fieldFileName);
 	}
 }

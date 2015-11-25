@@ -1,6 +1,7 @@
 package org.openiam.am.srvc.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
@@ -442,4 +443,12 @@ public class AuthProviderServiceImpl implements AuthProviderService {
 
         return oauthTokenDozerConverter.convertToDTO(oAuthTokenDao.getByAccessToken(oAuthToken.getToken()), true);
     }
+
+	@Override
+	@Transactional(readOnly = true)
+	public AuthProviderTypeEntity getAuthProviderTypeForProvider(
+			String providerId) {
+		final AuthProviderEntity provider = authProviderDao.findById(providerId);
+		return (provider != null) ? provider.getType() : null;
+	}
 }

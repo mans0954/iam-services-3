@@ -10,22 +10,19 @@ import javax.xml.bind.annotation.XmlType;
 import org.openiam.am.srvc.domain.AuthLevelGroupingContentProviderXrefEntity;
 import org.openiam.am.srvc.domain.AuthLevelGroupingEntity;
 import org.openiam.am.srvc.domain.AuthLevelGroupingURIPatternXrefEntity;
+import org.openiam.base.KeyNameDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "AuthLevelGrouping", propOrder = {
-        "id",
-        "name",
         "authLevel",
         "attributes",
         "patternXrefs",
         "contentProviderXrefs"
 })
 @DozerDTOCorrespondence(AuthLevelGroupingEntity.class)
-public class AuthLevelGrouping implements Serializable {
+public class AuthLevelGrouping extends KeyNameDTO {
 
-	private String id;
-	private String name;
 	private AuthLevel authLevel;
 	private Set<AuthLevelAttribute> attributes;
 	private Set<AuthLevelGroupingURIPatternXref> patternXrefs;
@@ -33,24 +30,6 @@ public class AuthLevelGrouping implements Serializable {
 	
 	public AuthLevelGrouping() {
 		
-	}
-
-	public String getId() {
-		return id;
-	}
-
-	public void setId(String id) {
-		this.id = id;
-	}
-	
-	
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
 	}
 
 	public AuthLevel getAuthLevel() {
@@ -89,10 +68,9 @@ public class AuthLevelGrouping implements Serializable {
 	@Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((authLevel == null) ? 0 : authLevel.hashCode());
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		int result = super.hashCode();
+		result = prime * result
+				+ ((authLevel == null) ? 0 : authLevel.hashCode());
 		return result;
 	}
 
@@ -100,7 +78,7 @@ public class AuthLevelGrouping implements Serializable {
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (obj == null)
+		if (!super.equals(obj))
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
@@ -110,24 +88,14 @@ public class AuthLevelGrouping implements Serializable {
 				return false;
 		} else if (!authLevel.equals(other.authLevel))
 			return false;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
-			return false;
-		if (name == null) {
-			if (other.name != null)
-				return false;
-		} else if (!name.equals(other.name))
-			return false;
 		return true;
 	}
 
 	@Override
 	public String toString() {
-		return String.format("AuthLevelGrouping [id=%s, authLevel=%s, name=%s]", 
-				id, authLevel, name);
+		return "AuthLevelGrouping [authLevel=" + authLevel + ", toString()="
+				+ super.toString() + "]";
 	}
-	
+
 	
 }

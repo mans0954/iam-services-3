@@ -52,6 +52,10 @@ public class AuthProviderDaoImpl extends BaseDaoImpl<AuthProviderEntity, String>
                 criteria.createAlias("uriPatterns", "up");
                 criteria.add(Restrictions.in("up.id", searchBean.getUriPatternIds()));
             }
+            if(searchBean.getLinkableToContentProvider() != null) {
+            	criteria.createAlias("type", "providerType");
+            	criteria.add(Restrictions.eq("providerType.linkableToContentProvider", searchBean.getLinkableToContentProvider()));
+            }
     	}
     	return criteria;
     }

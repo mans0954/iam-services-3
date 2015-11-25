@@ -1,5 +1,6 @@
 package org.openiam.service.integration.contentprovider;
 
+import java.net.URL;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -7,24 +8,38 @@ import java.util.Set;
 import java.util.stream.IntStream;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.elasticsearch.common.lang3.StringUtils;
 import org.hibernate.sql.Insert;
 import org.openiam.am.srvc.dto.AuthLevelGrouping;
 import org.openiam.am.srvc.dto.AuthLevelGroupingContentProviderXref;
 import org.openiam.am.srvc.dto.AuthLevelGroupingContentProviderXrefId;
+import org.openiam.am.srvc.dto.AuthProvider;
 import org.openiam.am.srvc.dto.ContentProvider;
 import org.openiam.am.srvc.dto.ContentProviderServer;
+import org.openiam.am.srvc.searchbeans.AuthProviderSearchBean;
 import org.openiam.am.srvc.searchbeans.ContentProviderSearchBean;
 import org.openiam.am.srvc.ws.AuthProviderWebService;
 import org.openiam.am.srvc.ws.ContentProviderWebService;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
+import org.openiam.idm.srvc.meta.dto.TemplateRequest;
+import org.openiam.idm.srvc.meta.ws.MetadataElementTemplateWebService;
 import org.openiam.service.integration.AbstractKeyNameServiceTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.testng.Assert;
 import org.testng.annotations.Test;
+import org.openiam.idm.srvc.meta.dto.PageTempate;
 
 public class ContentProviderServiceTest extends AbstractContentProviderServiceTest<ContentProvider, ContentProviderSearchBean> {
+	
+	 @Value("${org.openiam.selfservice.password.authlevel.id}")
+	 private String passwordAuthLevelId;
+	 
+	 @Autowired
+	 @Qualifier("metadataTemplateServiceClient")
+	 private MetadataElementTemplateWebService metadataTemplateServiceClient;
 	
 	@Test
 	public void testErrorCodes() {
@@ -79,10 +94,20 @@ public class ContentProviderServiceTest extends AbstractContentProviderServiceTe
 		response = save(cp);
 		assertResponseCode(response, ResponseCode.AUTH_PROVIDER_NOT_SET);
 		
+		final AuthProviderSearchBean sb = new AuthProviderSearchBean();
+		sb.setLinkableToContentProvider(false);
+		final List<AuthProvider> authProviders = authProviderServiceClient.findAuthProviderBeans(sb, 0, Integer.MAX_VALUE);
+		if(CollectionUtils.isNotEmpty(authProviders)) {
+			cp.setAuthProviderId(authProviders.get(0).getId());
+			response = save(cp);
+			assertResponseCode(response, ResponseCode.AUTH_PROVIDER_NOT_LINKABLE);
+		}
+		
 		cp = createBean();
 		cp.setUnavailable(true);
 		response = save(cp);
 		assertResponseCode(response, ResponseCode.UNAVAILABLE_URL_REQUIRED);
+		
 	}
 	
 	private void addServers(final int howMany, final Set<ContentProviderServer> serverSet) {
@@ -126,6 +151,49 @@ public class ContentProviderServiceTest extends AbstractContentProviderServiceTe
 		} finally {
 			if(cp != null && cp.getId() != null) {
 				delete(cp);
+			}
+		}
+	}
+	
+	@Test
+	public void testSetup() {
+		Assert.assertTrue(contentProviderServiceClient.setupApplication(null).isFailure());
+		
+		ContentProvider provider = null;
+		try {
+			provider = super.createContentProvider();
+			provider.setName(getRandomName());
+			final Response wsResponse = contentProviderServiceClient.setupApplication(provider);
+			refreshContentProviderManager();
+			refreshAuthorizationManager();
+			Assert.assertNotNull(wsResponse);
+			Assert.assertTrue(wsResponse.isSuccess());
+			provider = get((String)wsResponse.getResponseValue());
+			Assert.assertNotNull(provider);
+			
+			provider.getPatternSet().stream().filter(e -> 
+				StringUtils.startsWithIgnoreCase(e.getPattern(), "/selfservice/selfRegistration") ||
+				StringUtils.startsWithIgnoreCase(e.getPattern(), "/selfservice/newUser") ||
+				StringUtils.startsWithIgnoreCase(e.getPattern(), "/selfservice/editUser")
+			).forEach(e -> {
+				final TemplateRequest templateRequest = new TemplateRequest();
+				templateRequest.setLanguageId(getDefaultLanguage().getId());
+				//templateRequest.setRequestURI(URIUtils.getRequestURL(request));
+				templateRequest.setPatternId(e.getId());
+				templateRequest.setUserId("3000");
+				final PageTempate template = metadataTemplateServiceClient.getTemplate(templateRequest);
+				Assert.assertNotNull(template);
+				Assert.assertTrue(StringUtils.isNotBlank(template.getTemplateId()));
+				
+				/* the current UI Field size is based on # of elemtns in defualt.page.template.fields.json */
+				Assert.assertTrue(template.getUiFields() != null && template.getUiFields().size() == 3);
+			});
+			
+			/* b/c default patterns were created in setup */
+			Assert.assertTrue(CollectionUtils.isNotEmpty(provider.getPatternSet()));
+		} finally {
+			if(provider != null && StringUtils.isNotBlank(provider.getId())) {
+				delete(provider);
 			}
 		}
 	}

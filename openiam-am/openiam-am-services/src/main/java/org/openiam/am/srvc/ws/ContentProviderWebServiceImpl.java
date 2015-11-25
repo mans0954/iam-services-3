@@ -3,10 +3,13 @@ package org.openiam.am.srvc.ws;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.am.srvc.domain.AuthLevelAttributeEntity;
 import org.openiam.am.srvc.domain.AuthLevelGroupingEntity;
+import org.openiam.am.srvc.domain.AuthProviderEntity;
+import org.openiam.am.srvc.domain.AuthProviderTypeEntity;
 import org.openiam.am.srvc.domain.ContentProviderEntity;
 import org.openiam.am.srvc.domain.URIPatternEntity;
 import org.openiam.am.srvc.dozer.converter.*;
@@ -236,102 +239,138 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
     public int getNumOfContentProviders(ContentProviderSearchBean searchBean) {
         return contentProviderService.getNumOfContentProviders(searchBean);
     }
+    
+
+	@Override
+	public Response setupApplication(final ContentProvider provider) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+        	validate(provider);
+        	final ContentProviderEntity contentProvider = contentProviderDozerConverter.convertToEntity(provider,true);
+        	contentProviderService.setupApplication(contentProvider);
+        	response.setResponseValue(contentProvider.getId());
+        } catch(BasicDataServiceException e) {
+            log.info(e.getMessage(), e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+        } catch(Throwable e) {
+            log.error(e.getMessage(), e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+        }
+        return response;
+	}
+	
+	private void validate(final ContentProvider provider) throws BasicDataServiceException {
+		if (provider == null) {
+            throw new  BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+        }
+        if (StringUtils.isBlank(provider.getName())) {
+            throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_NAME_NOT_SET);
+        }
+        if (provider.getDomainPattern()==null || StringUtils.isBlank(provider.getDomainPattern())) {
+            throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_DOMAIN_PATERN_NOT_SET);
+        }
+        
+        if(CollectionUtils.isEmpty(provider.getServerSet())) {
+        	throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_SERVER_REQUIRED);
+        }
+        
+
+        if(provider.isUnavailable()) {
+        	if(StringUtils.isBlank(provider.getUnavailableURL())) {
+        		throw new BasicDataServiceException(ResponseCode.UNAVAILABLE_URL_REQUIRED);
+        	}
+        }
+        
+        for(final ContentProviderServer server : provider.getServerSet()) {
+        	if(StringUtils.isEmpty(server.getServerURL())) {
+        		throw new  BasicDataServiceException(ResponseCode.SERVER_URL_NOT_SET);
+        	}
+        }
+        
+        if(StringUtils.isBlank(provider.getAuthCookieDomain())) {
+        	throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_COOKIE_DOMAIN_REQUIRED);
+        }
+        
+        if(StringUtils.isBlank(provider.getAuthCookieName())) {
+        	throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_COOKIE_NAME_REQUIRED);
+        }
+        
+        if(CollectionUtils.isEmpty(provider.getGroupingXrefs())) {
+        	throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_AUTH_LEVEL_NOT_SET);
+        }
+
+        final ContentProviderSearchBean searchBean = new ContentProviderSearchBean();
+        searchBean.setName(provider.getName());
+        searchBean.setDeepCopy(false);
+        final List<ContentProvider> cpEntityWithNameList = findBeans(searchBean, 0, Integer.MAX_VALUE);
+        if(CollectionUtils.isNotEmpty(cpEntityWithNameList)) {
+        	if(StringUtils.isBlank(provider.getId())) {
+        		throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_WITH_NAME_EXISTS);
+        	} else {
+        		for(final ContentProvider test : cpEntityWithNameList) {
+        			if(!StringUtils.equals(provider.getId(), test.getId())) {
+        				throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_WITH_NAME_EXISTS);
+        			}
+        		}
+        	}
+        }
+
+        if(provider.getId()==null){
+            // if provider is new, test for unique domain+ssl
+            final List<ContentProviderEntity> result = contentProviderService.getProviderByDomainPattern(
+                    provider.getDomainPattern(), provider.getIsSSL());
+            if(CollectionUtils.isNotEmpty(result)) {
+                if(StringUtils.isBlank(provider.getId())) {
+                    throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_DOMAIN_PATTERN_EXISTS);
+                } else {
+                    for(final ContentProviderEntity test : result) {
+                        if(!StringUtils.equals(provider.getId(), test.getId())) {
+                            throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_DOMAIN_PATTERN_EXISTS);
+                        }
+                    }
+                }
+            }
+        }
+        
+        String domainPattern = provider.getDomainPattern();
+        if(domainPattern != null) {
+        	/* ignore port */
+        	if(domainPattern.indexOf(":") > -1) {
+        		domainPattern = domainPattern.substring(0, domainPattern.indexOf(":"));
+        	}
+        	
+        	if(!domainPattern.endsWith(provider.getAuthCookieDomain())) {
+            	throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_COOKIE_DOMAIN_NOT_SUBSTR_OF_DOMAIN_PATTERN);
+            }
+        }
+        
+        if(StringUtils.isBlank(provider.getAuthProviderId())) {
+        	throw new  BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_SET);
+        }
+        
+        final AuthProviderEntity authProviderType = authProviderService.getAuthProvider(provider.getAuthProviderId());
+        if(authProviderType == null) {
+        	throw new  BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_SET);
+        }
+        
+        final AuthProviderTypeEntity type = authProviderService.getAuthProviderTypeForProvider(provider.getAuthProviderId());
+        if(type == null) {
+        	log.error(String.format("Type was null for auth provider '%s'", provider.getAuthProviderId()));
+        	throw new  BasicDataServiceException(ResponseCode.INTERNAL_ERROR);
+        }
+        
+        if(!type.isLinkableToContentProvider()) {
+        	throw new  BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_LINKABLE);
+        }
+	}
 
     @Override
     public Response saveContentProvider(ContentProvider provider) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
-            if (provider == null) {
-                throw new  BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-            }
-            if (StringUtils.isBlank(provider.getName())) {
-                throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_NAME_NOT_SET);
-            }
-            if (provider.getDomainPattern()==null || StringUtils.isBlank(provider.getDomainPattern())) {
-                throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_DOMAIN_PATERN_NOT_SET);
-            }
-            
-            if(CollectionUtils.isEmpty(provider.getServerSet())) {
-            	throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_SERVER_REQUIRED);
-            }
-            
-
-            if(provider.isUnavailable()) {
-            	if(StringUtils.isBlank(provider.getUnavailableURL())) {
-            		throw new BasicDataServiceException(ResponseCode.UNAVAILABLE_URL_REQUIRED);
-            	}
-            }
-            
-            for(final ContentProviderServer server : provider.getServerSet()) {
-            	if(StringUtils.isEmpty(server.getServerURL())) {
-            		throw new  BasicDataServiceException(ResponseCode.SERVER_URL_NOT_SET);
-            	}
-            }
-            
-            if(StringUtils.isBlank(provider.getAuthCookieDomain())) {
-            	throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_COOKIE_DOMAIN_REQUIRED);
-            }
-            
-            if(StringUtils.isBlank(provider.getAuthCookieName())) {
-            	throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_COOKIE_NAME_REQUIRED);
-            }
-            
-            if(CollectionUtils.isEmpty(provider.getGroupingXrefs())) {
-            	throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_AUTH_LEVEL_NOT_SET);
-            }
-
-            final ContentProviderSearchBean searchBean = new ContentProviderSearchBean();
-            searchBean.setName(provider.getName());
-            searchBean.setDeepCopy(false);
-            final List<ContentProvider> cpEntityWithNameList = findBeans(searchBean, 0, Integer.MAX_VALUE);
-            if(CollectionUtils.isNotEmpty(cpEntityWithNameList)) {
-            	if(StringUtils.isBlank(provider.getId())) {
-            		throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_WITH_NAME_EXISTS);
-            	} else {
-            		for(final ContentProvider test : cpEntityWithNameList) {
-            			if(!StringUtils.equals(provider.getId(), test.getId())) {
-            				throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_WITH_NAME_EXISTS);
-            			}
-            		}
-            	}
-            }
-
-            if(provider.getId()==null){
-                // if provider is new, test for unique domain+ssl
-                final List<ContentProviderEntity> result = contentProviderService.getProviderByDomainPattern(
-                        provider.getDomainPattern(), provider.getIsSSL());
-                if(CollectionUtils.isNotEmpty(result)) {
-                    if(StringUtils.isBlank(provider.getId())) {
-                        throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_DOMAIN_PATTERN_EXISTS);
-                    } else {
-                        for(final ContentProviderEntity test : result) {
-                            if(!StringUtils.equals(provider.getId(), test.getId())) {
-                                throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_DOMAIN_PATTERN_EXISTS);
-                            }
-                        }
-                    }
-                }
-            }
-            
-            String domainPattern = provider.getDomainPattern();
-            if(domainPattern != null) {
-            	/* ignore port */
-            	if(domainPattern.indexOf(":") > -1) {
-            		domainPattern = domainPattern.substring(0, domainPattern.indexOf(":"));
-            	}
-            	
-            	if(!domainPattern.endsWith(provider.getAuthCookieDomain())) {
-                	throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_COOKIE_DOMAIN_NOT_SUBSTR_OF_DOMAIN_PATTERN);
-                }
-            }
-            
-            if(StringUtils.isBlank(provider.getAuthProviderId())) {
-            	throw new  BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_SET);
-            }
-            
-            if(authProviderService.getAuthProvider(provider.getAuthProviderId()) == null) {
-            	throw new  BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_SET);
-            }
+        	validate(provider);
             
             final ContentProviderEntity contentProvider = contentProviderDozerConverter.convertToEntity(provider,true);
             contentProviderService.saveContentProvider(contentProvider);
@@ -696,10 +735,12 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
             response.setErrorTokenList(e.getErrorTokenList());
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
+            response.setStacktraceText(ExceptionUtils.getFullStackTrace(e));
         } catch(Throwable e) {
             log.error(e.getMessage(), e);
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorText(e.getMessage());
+            response.setStacktraceText(ExceptionUtils.getFullStackTrace(e));
         }
         return response;
     }
