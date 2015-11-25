@@ -16,6 +16,7 @@ import org.openiam.idm.srvc.continfo.dto.Address;
 	"from",
 	"to",
     "action",
+    "actions",
     "managedSysId",
     "source",
     "userId",
@@ -32,7 +33,8 @@ public class AuditLogSearchBean extends AbstractSearchBean<IdmAuditLog, String> 
 	private String userId;
 	private Date from;
 	private Date to;
-	private String action;
+    private String action;
+	private String[] actions;
     private String result;
     private String managedSysId;
     private String source;
@@ -74,6 +76,14 @@ public class AuditLogSearchBean extends AbstractSearchBean<IdmAuditLog, String> 
 
     public void setAction(String action) {
         this.action = action;
+    }
+
+    public String[] getActions() {
+        return actions;
+    }
+
+    public void setActions(String[] actions) {
+        this.actions = actions;
     }
 
     public String getManagedSysId() {
