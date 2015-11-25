@@ -269,7 +269,7 @@ public class ContentProviderServiceTest extends AbstractContentProviderServiceTe
 			Assert.assertTrue(CollectionUtils.isNotEmpty(tempCP.getPatternSet()));
 			tempCP.getPatternSet().forEach(pattern -> {
 				if(pattern.isCacheable()) {
-					Assert.assertNotNull(pattern.getCacheTTL());
+					Assert.assertNotNull(pattern.getCacheTTL(), String.format("Pattern '%s:%s' did not have a cache TTL", pattern.getId(), pattern.getPattern()));
 				}
 			});
 		} finally {

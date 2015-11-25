@@ -195,6 +195,58 @@
 			"cacheable" : false
 		},
 		{
+			"pattern" : "/idp/oauth2/authorize",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "PASSWORD_AUTH"
+					}
+				}
+			],
+			"cacheable" : true,
+			"cacheTTL" : 30
+		},
+		{
+			"pattern" : "/idp/oauth2/token",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "PASSWORD_AUTH"
+					}
+				}
+			],
+			"cacheable" : true,
+			"cacheTTL" : 30
+		},
+		{
+			"pattern" : "/idp/oauth2/token/refresh",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "PASSWORD_AUTH"
+					}
+				}
+			],
+			"cacheable" : true,
+			"cacheTTL" : 30
+		},
+		{
+			"pattern" : "/idp/oauth2/token/info",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "PASSWORD_AUTH"
+					}
+				}
+			],
+			"cacheable" : true,
+			"cacheTTL" : 30
+		},
+		{
 			"pattern" : "/idp/unlockUserResetPasswordForm.html",
 			"isPublic" : true,
 			"groupingXrefs" : [
