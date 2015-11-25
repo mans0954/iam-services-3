@@ -128,7 +128,7 @@ public class SourceAdapterImpl implements SourceAdapter {
             }
         } catch (Exception e) {
             response.setStatus(ResponseStatus.FAILURE);
-            response.setError(e.getCause().getMessage());
+            response.setError(e.getMessage());
             idmAuditLog.fail();
             idmAuditLog.setFailureReason(e.getMessage());
             idmAuditLog.setException(e);
@@ -541,7 +541,10 @@ public class SourceAdapterImpl implements SourceAdapter {
             Exception {
         if (CollectionUtils.isNotEmpty(request.getSupervisors())) {
             boolean isFound = false;
-            List<User> superiorsFromDB = userDataService.getSuperiors(pUser.getId(), 0, Integer.MAX_VALUE);
+            List<User> superiorsFromDB = null;
+            if (pUser.getId() != null) {
+                superiorsFromDB = userDataService.getSuperiors(pUser.getId(), 0, Integer.MAX_VALUE);
+            }
             if (CollectionUtils.isNotEmpty(superiorsFromDB)) {
                 pUser.setSuperiors(new HashSet<User>(superiorsFromDB));
             }
@@ -553,7 +556,7 @@ public class SourceAdapterImpl implements SourceAdapter {
                     continue;
                 }
                 User user = this.getUser(superUser, request);
-                if (user == null) {
+                if (user == null || user.getId() == null) {
                     break;
                 }
                 for (User supervisor : pUser.getSuperiors()) {
@@ -869,7 +872,9 @@ public class SourceAdapterImpl implements SourceAdapter {
     }
 
     private User getUser(SourceAdapterKey keyPair, SourceAdapterRequest request) throws Exception {
-
+        if (keyPair == null && SourceAdapterOperationEnum.ADD.equals(request.getAction())) {
+            return new User();
+        }
         UserSearchBean searchBean = new UserSearchBean();
         SourceAdapterKeyEnum matchAttrName = keyPair.getName();
         String matchAttrValue = keyPair.getValue();
