@@ -1,5 +1,6 @@
 package org.openiam.am.srvc.ws;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
 import org.openiam.am.srvc.domain.AuthProviderEntity;
 import org.openiam.am.srvc.dozer.converter.AuthProviderDozerConverter;
@@ -9,14 +10,26 @@ import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.dozer.converter.ResourceDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
+import org.openiam.hazelcast.HazelcastConfiguration;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.res.dto.Resource;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
 
+import com.hazelcast.core.Message;
+import com.hazelcast.core.MessageListener;
+
+import javax.annotation.PostConstruct;
 import javax.jws.WebParam;
 import javax.jws.WebService;
+
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by alexander on 06/07/15.
@@ -25,9 +38,12 @@ import java.util.List;
 @WebService(endpointInterface = "org.openiam.am.srvc.ws.OAuthWebService",
         targetNamespace = "urn:idm.openiam.org/srvc/am/service", portName = "OAuthWebServicePort",
         serviceName = "OAuthWebService")
-public class OAuthWebServiceImpl implements OAuthWebService {
+public class OAuthWebServiceImpl implements OAuthWebService, InitializingBean, MessageListener<String> {
     private static Logger log = Logger.getLogger(OAuthWebServiceImpl.class);
 
+    private Map<String, AuthProvider> idCache = new HashMap<String, AuthProvider>();
+    private Map<String, AuthProvider> nameCache = new HashMap<String, AuthProvider>();
+    
     @Autowired
     private AuthProviderService authProviderService;
 
@@ -35,6 +51,8 @@ public class OAuthWebServiceImpl implements OAuthWebService {
     @Autowired
     private ResourceDozerConverter resourceDozerConverter;
 
+    @Autowired
+    private HazelcastConfiguration hazelcastConfiguration;
 
     @Override
     public AuthProvider getClient(String clientId) {
@@ -124,4 +142,48 @@ public class OAuthWebServiceImpl implements OAuthWebService {
     public List<Resource> getAuthorizedScopes(String clientId, String userId, Language language) {
         return authProviderService.getAuthorizedScopes(clientId, userId, language);
     }
+
+    
+	@Override
+	@Scheduled(fixedRateString="${org.openiam.am.oauth.client.threadsweep}", initialDelay=0)
+	public void sweep() {
+		final Map<String, AuthProvider> tempIdCache = new HashMap<String, AuthProvider>();
+		final Map<String, AuthProvider> tempNameCache = new HashMap<String, AuthProvider>();
+		
+		final List<AuthProvider> providers = authProviderService.getOAuthClients();
+		if(CollectionUtils.isNotEmpty(providers)) {
+			providers.forEach(provider -> {
+				tempIdCache.put(provider.getId(), provider);
+				tempNameCache.put(provider.getName(), provider);
+				provider.generateId2ValueAttributeMap();
+			});
+		}
+		
+		synchronized(this) {
+			idCache = tempIdCache;
+			nameCache = tempNameCache;
+		}
+	}
+
+	@Override
+	public AuthProvider getCachedOAuthProviderById(String id) {
+		return idCache.get(id);
+	}
+
+	@Override
+	public AuthProvider getCachedOAuthProviderByName(String name) {
+		return nameCache.get(name);
+	}
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		onMessage(null);
+		hazelcastConfiguration.getTopic("oAuthProviderTopic").addMessageListener(this);
+	}
+	
+	/* this is here so that different nodes can send messages using the publish() method on ITopics */
+	@Override
+	public void onMessage(final Message<String> message) {
+		sweep();
+	}
 }

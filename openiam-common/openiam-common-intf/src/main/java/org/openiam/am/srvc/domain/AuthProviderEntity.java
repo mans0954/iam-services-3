@@ -61,6 +61,10 @@ public class AuthProviderEntity extends AbstractKeyNameEntity {
     @Type(type = "yes_no")
     private boolean supportsTOTP;
     
+    @Column(name="IS_READ_ONLY")
+    @Type(type = "yes_no")
+    private boolean readOnly;
+    
     @Column(name = "PUBLIC_KEY", nullable = true)
     @Lob
     private byte[] publicKey=null;
@@ -303,6 +307,14 @@ public class AuthProviderEntity extends AbstractKeyNameEntity {
 	public void setoAuthCodes(Set<OAuthCodeEntity> oAuthCodes) {
 		this.oAuthCodes = oAuthCodes;
 	}
+	
+	public boolean isReadOnly() {
+		return readOnly;
+	}
+
+	public void setReadOnly(boolean readOnly) {
+		this.readOnly = readOnly;
+	}
 
 	@Override
 	public int hashCode() {
@@ -310,6 +322,7 @@ public class AuthProviderEntity extends AbstractKeyNameEntity {
 		int result = super.hashCode();
 		result = prime * result + (supportsJustInTimeAuthentication ? 1231 : 1237);
 		result = prime * result + (defaultProvider ? 1231 : 1237);
+		result = prime * result + (readOnly ? 1231 : 1237);
 		result = prime * result
 				+ ((description == null) ? 0 : description.hashCode());
 		result = prime * result
@@ -397,6 +410,8 @@ public class AuthProviderEntity extends AbstractKeyNameEntity {
 		if (supportsSMSOTP != other.supportsSMSOTP)
 			return false;
 		if (supportsTOTP != other.supportsTOTP)
+			return false;
+		if (readOnly != other.readOnly)
 			return false;
 		if (smsOTPGroovyScript == null) {
 			if (other.smsOTPGroovyScript != null)

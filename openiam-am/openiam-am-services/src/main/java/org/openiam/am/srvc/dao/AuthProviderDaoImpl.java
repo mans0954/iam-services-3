@@ -129,4 +129,12 @@ public class AuthProviderDaoImpl extends BaseDaoImpl<AuthProviderEntity, String>
         return (AuthProviderEntity)criteria.uniqueResult();
     }
 
+	@Override
+	public List<AuthProviderEntity> getOAuthClients() {
+		final Criteria criteria = this.getCriteria();
+		criteria.createAlias("attributes","attr", JoinType.INNER_JOIN);
+		criteria.add(Restrictions.eq("attr.attribute.id", "OAuthClientID"));
+		return criteria.list();
+	}
+
 }

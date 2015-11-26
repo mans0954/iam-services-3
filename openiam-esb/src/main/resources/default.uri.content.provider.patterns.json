@@ -494,6 +494,84 @@
 				}
 			],
 			"cacheable" : false
+		},
+		{
+			"pattern" : "/idp/rest/api/*",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "OAUTH"
+					}
+				}
+			],
+			"cacheable" : true,
+			"cacheTTL" : 30
+		},
+		{
+			"pattern" : "/webconsole/rest/api/*",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "OAUTH"
+					}
+				}
+			],
+			"cacheable" : true,
+			"cacheTTL" : 30
+		},
+		{
+			"pattern" : "/selfservice/rest/api/*",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "OAUTH"
+					}
+				}
+			],
+			"cacheable" : true,
+			"cacheTTL" : 30
+		},
+		{
+			"pattern" : "/selfservice-ext/rest/api/*",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "OAUTH"
+					}
+				}
+			],
+			"cacheable" : true,
+			"cacheTTL" : 30
+		},
+		{
+			"pattern" : "/webconsole-am/rest/api/*",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "OAUTH"
+					}
+				}
+			],
+			"cacheable" : true,
+			"cacheTTL" : 30
+		},
+		{
+			"pattern" : "/webconsole-idm/rest/api/*",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "OAUTH"
+					}
+				}
+			],
+			"cacheable" : true,
+			"cacheTTL" : 30
 		}
 	]
 }

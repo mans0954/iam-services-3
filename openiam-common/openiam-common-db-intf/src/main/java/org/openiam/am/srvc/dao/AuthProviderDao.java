@@ -12,4 +12,6 @@ public interface AuthProviderDao extends BaseDao<AuthProviderEntity, String>{
     List<AuthProviderEntity> getByManagedSysId(final String managedSysId);
 
     AuthProviderEntity getOAuthClient(final String clientId);
+    
+    List<AuthProviderEntity> getOAuthClients();
 }
