@@ -232,4 +232,6 @@ public interface OrganizationDataService {
                                                         @WebParam(name = "language", targetNamespace = "") final Language language);
     public String getOrganizationsAliases(@WebParam(name = "userId", targetNamespace = "") String userId);
 
+    public Organization getAffliation(final String userId, final String metadataTypeId, boolean deepCopy);
+
 }

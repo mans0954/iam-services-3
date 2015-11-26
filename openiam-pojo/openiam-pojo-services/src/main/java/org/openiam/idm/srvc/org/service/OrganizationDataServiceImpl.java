@@ -554,4 +554,9 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
         return organizationService.getAliasesForOrganizations(userId);
     }
 
+    @Override
+    public Organization getAffliation(final String userId, final String metadataTypeId, boolean deepCopy) {
+        return organizationDozerConverter.convertToDTO(organizationService.getPrimaryAffliation(userId, metadataTypeId), deepCopy);
+    }
+
 }
