@@ -40,7 +40,7 @@ public class SourceAdapterEntityRequest {
 //    public Set<SourceAdapterAttributeRequest> getEntityAttributes() {
 //        return entityAttributes;
 //    }
-
+//
 //    public void setEntityAttributes(Set<SourceAdapterAttributeRequest> entityAttributes) {
 //        this.entityAttributes = entityAttributes;
 //    }

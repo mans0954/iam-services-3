@@ -26,6 +26,7 @@ import org.openiam.idm.srvc.meta.ws.MetadataWebService;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.org.dto.Organization;
+import org.openiam.idm.srvc.org.dto.OrganizationAttribute;
 import org.openiam.idm.srvc.org.dto.OrganizationUserDTO;
 import org.openiam.idm.srvc.org.service.OrganizationDataService;
 import org.openiam.idm.srvc.org.service.OrganizationDataServiceImpl;
@@ -48,9 +49,7 @@ import sun.rmi.runtime.Log;
 
 import javax.jws.WebService;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by zaporozhec on 10/29/15.
@@ -480,6 +479,7 @@ public class SourceAdapterImpl implements SourceAdapter {
             }
             List<OrganizationUserDTO> result = new ArrayList<OrganizationUserDTO>();
             for (SourceAdapterOrganizationRequest org : request.getOrganizations()) {
+                Organization organizationDB = null;
                 isFound = false;
                 if (org.getOperation() == null) {
                     warnings.append(getWarning("Incorrect operation for organization=" + org.getName() + " Skip this!"));
@@ -496,6 +496,12 @@ public class SourceAdapterImpl implements SourceAdapter {
                             }
                             case REPLACE: {
                                 organizationUserDTO.setMdTypeId(org.getMetadataTypeId());
+                                organizationDB = this.getOrganizationFromDataBase(org, warnings, requestorId);
+                                this.convertToOrganization(organizationDB, org, warnings);
+                                Response response = organizationDataService.saveOrganization(organizationDB, requestorId);
+                                if (response.isFailure()) {
+                                    warnings.append(getWarning("Organization doesn't added/updated to DataBase. " + response.getErrorCode() + ":" + response.getErrorText()));
+                                }
                             }
                             case DELETE: {
                                 organizationUserDTO.setOperation(org.getOperation());
@@ -513,22 +519,24 @@ public class SourceAdapterImpl implements SourceAdapter {
                     if (!AttributeOperationEnum.ADD.equals(org.getOperation())) {
                         warnings.append(getWarning("Incorrect operation for organization=" + org.getName() + " this organization is not entitled with user. Use ADD operation. Skip this!"));
                     } else {
-                        OrganizationSearchBean organizationSearchBean = new OrganizationSearchBean();
-                        organizationSearchBean.setName(org.getName());
-                        organizationSearchBean.setOrganizationTypeId(org.getOrganizationTypeId());
-                        organizationSearchBean.setDeepCopy(false);
-                        List<Organization> organization = organizationDataService.findBeans(organizationSearchBean, requestorId, 0, 2);
-                        if (CollectionUtils.isEmpty(organization)) {
-                            warnings.append(getWarning("No such organization name=" + org.getName() + ". Organization Type=" + org.getOrganizationTypeId() + " Skip this!"));
+                        organizationDB = this.getOrganizationFromDataBase(org, warnings, requestorId);
+                        if (organizationDB == null && !org.isAddIfNotExistsInOpenIAM()) {
                             break;
-                        }
-                        if (organization.size() > 1) {
-                            warnings.append(getWarning("Multiple associations with organization! name=" + org.getName() + ". Organization Type=" + org.getOrganizationTypeId() + " Skip this!"));
-                            break;
+                        } else {
+                            if (organizationDB== null) {
+                                organizationDB = new Organization();
+                            }
+                            this.convertToOrganization(organizationDB, org, warnings);
+                            Response response = organizationDataService.saveOrganization(organizationDB, requestorId);
+                            if (response.isSuccess()) {
+                                organizationDB.setId((String) response.getResponseValue());
+                                result.add(new OrganizationUserDTO(pUser.getId(), organizationDB.getId(), org.getMetadataTypeId(), AttributeOperationEnum.ADD));
+                            } else {
+                                warnings.append(getWarning("Organization doesn't added/updated to DataBase. " + response.getErrorCode() + ":" + response.getErrorText()));
+                                break;
+                            }
                         }
 
-                        Organization orgDB = organization.get(0);
-                        result.add(new OrganizationUserDTO(pUser.getId(), orgDB.getId(), org.getMetadataTypeId(), AttributeOperationEnum.ADD));
                     }
                 }
             }
@@ -536,6 +544,110 @@ public class SourceAdapterImpl implements SourceAdapter {
         }
     }
 
+    private void convertToOrganization(Organization organizationDB, SourceAdapterOrganizationRequest org, StringBuilder warnings) {
+        if (organizationDB == null || org == null) {
+            return;
+        }
+        if (StringUtils.isNotBlank(org.getAbbreviation())) {
+            organizationDB.setAbbreviation(org.getAbbreviation());
+        }
+        if (StringUtils.isNotBlank(org.getAlias())) {
+            organizationDB.setAlias(org.getAlias());
+        }
+        if (StringUtils.isNotBlank(org.getClassification())) {
+            organizationDB.setClassification(org.getClassification());
+        }
+        if (StringUtils.isNotBlank(org.getDescription())) {
+            organizationDB.setDescription(org.getDescription());
+        }
+        if (StringUtils.isNotBlank(org.getNewName())) {
+            organizationDB.setName(org.getNewName());
+        }
+        if (StringUtils.isNotBlank(org.getDomainName())) {
+            organizationDB.setDomainName(org.getDomainName());
+        }
+        if (StringUtils.isNotBlank(org.getInternalOrgId())) {
+            organizationDB.setInternalOrgId(org.getInternalOrgId());
+        }
+        if (StringUtils.isNotBlank(org.getLdapString())) {
+            organizationDB.setLdapStr(org.getLdapString());
+        }
+        if (StringUtils.isNotBlank(org.getOrganizationTypeId())) {
+            organizationDB.setOrganizationTypeId(org.getOrganizationTypeId());
+        }
+        if (StringUtils.isNotBlank(org.getStatus())) {
+            organizationDB.setStatus(org.getStatus());
+        }
+        if (StringUtils.isNotBlank(org.getSymbol())) {
+            organizationDB.setSymbol(org.getSymbol());
+        }
+        if (StringUtils.isNotBlank(org.getOrganizationTypeId())) {
+            organizationDB.setOrganizationTypeId(org.getOrganizationTypeId());
+        }
+
+        if (CollectionUtils.isEmpty(org.getEntityAttributes())) {
+            organizationDB.setAttributes(null);
+        } else {
+            for (SourceAdapterAttributeRequest attributeRequest : org.getEntityAttributes()) {
+                this.processAttribute(organizationDB.getAttributes(), attributeRequest, warnings);
+            }
+        }
+    }
+
+    private void processAttribute(Set<OrganizationAttribute> attributes, SourceAdapterAttributeRequest attributeRequest, StringBuilder warnings) {
+        if (attributeRequest == null || StringUtils.isBlank(attributeRequest.getName())) {
+            return;
+        }
+        if (attributes == null) {
+            return;
+        }
+        boolean isFound = false;
+        Iterator<OrganizationAttribute> organizationAttributeIterator = attributes.iterator();
+        while (organizationAttributeIterator.hasNext()) {
+            OrganizationAttribute attribute = organizationAttributeIterator.next();
+            if (attribute.getName().equals(attributeRequest.getName())) {
+                isFound = true;
+                switch (attributeRequest.getOperation()) {
+                    case ADD:
+                    case REPLACE: {
+                        if (CollectionUtils.isEmpty(attributeRequest.getValues())) {
+                            attribute.setValues(null);
+                            attribute.setIsMultivalued(false);
+                            attribute.setValue(attributeRequest.getValue());
+                        } else {
+                            attribute.setValues(attributeRequest.getValues());
+                            attribute.setIsMultivalued(true);
+                            attribute.setValue(null);
+                        }
+                        break;
+                    }
+                    case DELETE:
+                        organizationAttributeIterator.remove();
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+    }
+
+    private Organization getOrganizationFromDataBase(SourceAdapterOrganizationRequest org, StringBuilder
+            warnings, String requestorId) {
+        OrganizationSearchBean organizationSearchBean = new OrganizationSearchBean();
+        organizationSearchBean.setName(org.getName());
+        organizationSearchBean.setOrganizationTypeId(org.getOrganizationTypeId());
+        organizationSearchBean.setDeepCopy(false);
+        List<Organization> organization = organizationDataService.findBeans(organizationSearchBean, requestorId, 0, 2);
+        if (CollectionUtils.isEmpty(organization)) {
+            warnings.append(getWarning("No such organization name=" + org.getName() + ". Organization Type=" + org.getOrganizationTypeId() + " Skip this!"));
+            return null;
+        }
+        if (organization.size() > 1) {
+            warnings.append(getWarning("Multiple associations with organization! name=" + org.getName() + ". Organization Type=" + org.getOrganizationTypeId() + " Skip this!"));
+            return null;
+        }
+        return organization.get(0);
+    }
 
     private void fillSuperVisors(ProvisionUser pUser, SourceAdapterRequest request, StringBuilder warnings) throws
             Exception {
@@ -774,7 +886,15 @@ public class SourceAdapterImpl implements SourceAdapter {
                 if (a != null) {
                     a.setOperation(AttributeOperationEnum.ADD.equals(fromWS.getOperation()) ? AttributeOperationEnum.REPLACE : fromWS.getOperation());
                     a.setName(StringUtils.isBlank(fromWS.getNewName()) ? fromWS.getName() : fromWS.getNewName());
-                    a.setValue(getNULLValue(fromWS.getValue()));
+                    if (CollectionUtils.isNotEmpty(fromWS.getValues())) {
+                        a.setIsMultivalued(true);
+                        a.setValues(fromWS.getValues());
+                        a.setValue(null);
+                    } else {
+                        a.setValues(null);
+                        a.setIsMultivalued(false);
+                        a.setValue(getNULLValue(fromWS.getValue()));
+                    }
                 } else {
                     UserAttribute attr = new UserAttribute(fromWS.getName(), fromWS.getValue());
                     if (!AttributeOperationEnum.ADD.equals(fromWS.getOperation())) {
