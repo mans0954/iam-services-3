@@ -1,34 +1,52 @@
 package org.openiam.am.srvc.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.am.srvc.dao.*;
-import org.openiam.am.srvc.domain.*;
+import org.openiam.am.srvc.dao.AuthAttributeDao;
+import org.openiam.am.srvc.dao.AuthProviderDao;
+import org.openiam.am.srvc.dao.AuthProviderTypeDao;
+import org.openiam.am.srvc.dao.OAuthCodeDao;
+import org.openiam.am.srvc.dao.OAuthTokenDao;
+import org.openiam.am.srvc.dao.OAuthUserClientXrefDao;
+import org.openiam.am.srvc.domain.AuthAttributeEntity;
+import org.openiam.am.srvc.domain.AuthProviderAttributeEntity;
+import org.openiam.am.srvc.domain.AuthProviderEntity;
+import org.openiam.am.srvc.domain.AuthProviderTypeEntity;
+import org.openiam.am.srvc.domain.OAuthCodeEntity;
+import org.openiam.am.srvc.domain.OAuthTokenEntity;
+import org.openiam.am.srvc.domain.OAuthUserClientXrefEntity;
 import org.openiam.am.srvc.dozer.converter.AuthProviderDozerConverter;
 import org.openiam.am.srvc.dozer.converter.OAuthCodeDozerConverter;
 import org.openiam.am.srvc.dozer.converter.OAuthTokenDozerConverter;
 import org.openiam.am.srvc.dozer.converter.OAuthUserClientXrefDozerConverter;
-import org.openiam.am.srvc.dto.*;
+import org.openiam.am.srvc.dto.AuthProvider;
+import org.openiam.am.srvc.dto.AuthProviderAttribute;
+import org.openiam.am.srvc.dto.OAuthCode;
+import org.openiam.am.srvc.dto.OAuthToken;
+import org.openiam.am.srvc.dto.OAuthUserClientXref;
 import org.openiam.am.srvc.searchbeans.AuthProviderSearchBean;
 import org.openiam.authmanager.common.model.ResourceAuthorizationRight;
 import org.openiam.authmanager.service.AuthorizationManagerService;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.dozer.converter.ResourceDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
-import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
 import org.openiam.idm.srvc.policy.service.PolicyDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
-import org.openiam.idm.srvc.res.service.ResourceDAO;
-import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.res.service.ResourceService;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -37,9 +55,6 @@ import org.openiam.internationalization.LocalizedServiceGet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.*;
-import java.util.stream.Collectors;
 
 @Service("authProviderService")
 public class AuthProviderServiceImpl implements AuthProviderService {
@@ -183,6 +198,10 @@ public class AuthProviderServiceImpl implements AuthProviderService {
     	
         final AuthProviderEntity dbEntity = authProviderDao.findById(provider.getId());
         if(dbEntity!=null){
+        	if(dbEntity.isReadOnly()) {
+        		throw new BasicDataServiceException(ResponseCode.READONLY);
+        	}
+        	
         	provider.setResource(dbEntity.getResource());
         	provider.setResourceAttributeMap(dbEntity.getResourceAttributeMap());
         	provider.setDefaultProvider(dbEntity.isDefaultProvider());
@@ -289,6 +308,12 @@ public class AuthProviderServiceImpl implements AuthProviderService {
 	public AuthProviderEntity getAuthProvider(String id) {
 		return authProviderDao.findById(id);
 	}
+	
+    @Override
+    @Transactional(readOnly=true)
+    public AuthProvider getProvider(final String id) {
+    	return authProviderDozerConverter.convertToDTO(authProviderDao.findById(id), true);
+    }
 
     /*
     *==================================================
@@ -296,9 +321,17 @@ public class AuthProviderServiceImpl implements AuthProviderService {
     *===================================================
     */
     @Override
+    @Transactional(readOnly=true)
     public AuthProvider getOAuthClient(final String clientId){
         return authProviderDozerConverter.convertToDTO(authProviderDao.getOAuthClient(clientId), true);
     }
+    
+	@Override
+	@Transactional(readOnly=true)
+	public List<AuthProvider> getOAuthClients() {
+		final List<AuthProviderEntity> entities = authProviderDao.getOAuthClients();
+		return authProviderDozerConverter.convertToDTOList(entities, true);
+	}
 
     @Override
     @LocalizedServiceGet

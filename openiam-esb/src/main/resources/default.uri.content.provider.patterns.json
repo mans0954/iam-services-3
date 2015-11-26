@@ -38,6 +38,19 @@
 			"cacheTTL" : 30
 		},
 		{
+			"pattern" : "/idp/oauth2/.well-known/openid-configuration",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "NONE"
+					}
+				}
+			],
+			"cacheable" : true,
+			"cacheTTL" : 1800
+		},
+		{
 			"pattern" : "/selfservice/editProfile.html",
 			"isPublic" : true,
 			"groupingXrefs" : [
@@ -193,6 +206,58 @@
 				}
 			],
 			"cacheable" : false
+		},
+		{
+			"pattern" : "/idp/oauth2/authorize",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "PASSWORD_AUTH"
+					}
+				}
+			],
+			"cacheable" : true,
+			"cacheTTL" : 30
+		},
+		{
+			"pattern" : "/idp/oauth2/token",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "PASSWORD_AUTH"
+					}
+				}
+			],
+			"cacheable" : true,
+			"cacheTTL" : 30
+		},
+		{
+			"pattern" : "/idp/oauth2/token/refresh",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "PASSWORD_AUTH"
+					}
+				}
+			],
+			"cacheable" : true,
+			"cacheTTL" : 30
+		},
+		{
+			"pattern" : "/idp/oauth2/token/info",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "PASSWORD_AUTH"
+					}
+				}
+			],
+			"cacheable" : true,
+			"cacheTTL" : 30
 		},
 		{
 			"pattern" : "/idp/unlockUserResetPasswordForm.html",
@@ -429,6 +494,84 @@
 				}
 			],
 			"cacheable" : false
+		},
+		{
+			"pattern" : "/idp/rest/api/*",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "OAUTH"
+					}
+				}
+			],
+			"cacheable" : true,
+			"cacheTTL" : 30
+		},
+		{
+			"pattern" : "/webconsole/rest/api/*",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "OAUTH"
+					}
+				}
+			],
+			"cacheable" : true,
+			"cacheTTL" : 30
+		},
+		{
+			"pattern" : "/selfservice/rest/api/*",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "OAUTH"
+					}
+				}
+			],
+			"cacheable" : true,
+			"cacheTTL" : 30
+		},
+		{
+			"pattern" : "/selfservice-ext/rest/api/*",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "OAUTH"
+					}
+				}
+			],
+			"cacheable" : true,
+			"cacheTTL" : 30
+		},
+		{
+			"pattern" : "/webconsole-am/rest/api/*",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "OAUTH"
+					}
+				}
+			],
+			"cacheable" : true,
+			"cacheTTL" : 30
+		},
+		{
+			"pattern" : "/webconsole-idm/rest/api/*",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "OAUTH"
+					}
+				}
+			],
+			"cacheable" : true,
+			"cacheTTL" : 30
 		}
 	]
 }

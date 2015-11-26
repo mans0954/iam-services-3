@@ -5,17 +5,19 @@ import org.openiam.base.ws.Response;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.res.dto.Resource;
+import org.openiam.thread.Sweepable;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
+
 import java.util.List;
 
 /**
  * Created by alexander on 06/07/15.
  */
 @WebService(targetNamespace = "urn:idm.openiam.org/srvc/am/service", name = "OAuthWebService")
-public interface OAuthWebService {
+public interface OAuthWebService extends Sweepable {
 
     @WebMethod
     AuthProvider getClient(@WebParam(name = "clientId", targetNamespace = "") String clientId);
@@ -49,4 +51,7 @@ public interface OAuthWebService {
     List<Resource> getAuthorizedScopes(@WebParam(name = "clientId", targetNamespace = "") String clientId,
                                        @WebParam(name = "userId", targetNamespace = "") String userId,
                                        @WebParam(name = "language", targetNamespace = "")  Language language);
+    
+    public AuthProvider getCachedOAuthProviderById(final String id);
+    public AuthProvider getCachedOAuthProviderByName(final String name);
 }

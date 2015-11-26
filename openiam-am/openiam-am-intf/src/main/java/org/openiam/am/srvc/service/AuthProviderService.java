@@ -44,6 +44,7 @@ public interface AuthProviderService {
     List<AuthProviderEntity> findAuthProviderBeans(final AuthProviderSearchBean searchBean, int from, int size);
     void saveAuthProvider(AuthProviderEntity attribute, final String requestorId) throws BasicDataServiceException;
     void deleteAuthProvider(String providerId) throws BasicDataServiceException;
+    public AuthProvider getProvider(final String id);
 
     /*
     *==================================================
@@ -61,4 +62,6 @@ public interface AuthProviderService {
     OAuthToken getOAuthToken(String token);
     OAuthToken getOAuthTokenByRefreshToken(String refreshToken);
     OAuthToken saveOAuthToken(OAuthToken oAuthToken);
+    
+    public List<AuthProvider> getOAuthClients();
 }

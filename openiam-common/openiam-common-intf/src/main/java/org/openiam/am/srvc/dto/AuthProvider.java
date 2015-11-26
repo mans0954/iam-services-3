@@ -36,7 +36,9 @@ import java.util.Set;
         "supportsSMSOTP",
         "smsOTPGroovyScript",
         "supportsTOTP",
-		"oAuthTokens"
+		"oAuthTokens",
+		"readOnly",
+		"attributeId2ValueMap"
 })
 @DozerDTOCorrespondence(AuthProviderEntity.class)
 public class AuthProvider extends KeyNameDTO {
@@ -56,6 +58,8 @@ public class AuthProvider extends KeyNameDTO {
     private boolean supportsSMSOTP;
     private String smsOTPGroovyScript;
     private boolean supportsTOTP;
+    private boolean readOnly = false;
+    private Map<String, String> attributeId2ValueMap;
 
     private Set<AuthProviderAttribute> attributes;
     private Map<String, AuthResourceAttributeMap> resourceAttributeMap=new HashMap<String, AuthResourceAttributeMap>(0);
@@ -158,8 +162,31 @@ public class AuthProvider extends KeyNameDTO {
         }
         return attributeMap;
     }
+    
+    public String getAttribute(final String name) {
+    	return (name != null && attributeId2ValueMap != null) ? attributeId2ValueMap.get(name) : null;
+    }
+    
+    public void generateId2ValueAttributeMap() {
+    	if(attributes != null) {
+    		if(attributeId2ValueMap == null) {
+    			attributeId2ValueMap = new HashMap<String, String>();
+    		}
+    		attributes.forEach(e -> {
+    			attributeId2ValueMap.put(e.getAttributeId(), e.getValue());
+    		});
+    	}
+    }
 
-    public void setAttributeMap(Map<String, AuthProviderAttribute> attributeMap) {
+    public Map<String, String> getName2ValueAttributeMap() {
+		return attributeId2ValueMap;
+	}
+
+	public void setName2ValueAttributeMap(Map<String, String> name2ValueAttributeMap) {
+		this.attributeId2ValueMap = name2ValueAttributeMap;
+	}
+
+	public void setAttributeMap(Map<String, AuthProviderAttribute> attributeMap) {
         this.attributeMap = attributeMap;
     }
 
@@ -251,6 +278,14 @@ public class AuthProvider extends KeyNameDTO {
 		this.oAuthTokens = oAuthTokens;
 	}
 
+	public boolean isReadOnly() {
+		return readOnly;
+	}
+
+	public void setReadOnly(boolean readOnly) {
+		this.readOnly = readOnly;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -275,6 +310,7 @@ public class AuthProvider extends KeyNameDTO {
 		result = prime * result + ((springBeanName == null) ? 0 : springBeanName.hashCode());
 		result = prime * result + (supportsSMSOTP ? 1231 : 1237);
 		result = prime * result + (supportsTOTP ? 1231 : 1237);
+		result = prime * result + (readOnly ? 1231 : 1237);
 		result = prime * result + ((smsOTPGroovyScript == null) ? 0 : smsOTPGroovyScript.hashCode());
 		result = prime * result + ((passwordPolicyId == null) ? 0 : passwordPolicyId.hashCode());
 		result = prime * result + ((authnPolicyId == null) ? 0 : authnPolicyId.hashCode());
@@ -338,6 +374,8 @@ public class AuthProvider extends KeyNameDTO {
 		if (supportsSMSOTP != other.supportsSMSOTP)
 			return false;
 		if (supportsTOTP != other.supportsTOTP)
+			return false;
+		if (readOnly != other.readOnly)
 			return false;
 		if (smsOTPGroovyScript == null) {
 			if (other.smsOTPGroovyScript != null)
