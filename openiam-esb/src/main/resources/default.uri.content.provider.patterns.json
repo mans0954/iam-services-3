@@ -38,6 +38,19 @@
 			"cacheTTL" : 30
 		},
 		{
+			"pattern" : "/idp/oauth2/.well-known/openid-configuration",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "NONE"
+					}
+				}
+			],
+			"cacheable" : true,
+			"cacheTTL" : 1800
+		},
+		{
 			"pattern" : "/selfservice/editProfile.html",
 			"isPublic" : true,
 			"groupingXrefs" : [
