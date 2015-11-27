@@ -523,10 +523,19 @@ public class SourceAdapterImpl implements SourceAdapter {
                         if (organizationDB == null && !org.isAddIfNotExistsInOpenIAM()) {
                             break;
                         } else {
-                            if (organizationDB== null) {
+                            if (organizationDB == null) {
                                 organizationDB = new Organization();
                             }
                             this.convertToOrganization(organizationDB, org, warnings);
+                            if (StringUtils.isBlank(organizationDB.getId()) && CollectionUtils.isNotEmpty(organizationDB.getAttributes())) {
+                                Set<OrganizationAttribute> attributes = organizationDB.getAttributes();
+                                organizationDB.setAttributes(null);
+                                Response response = organizationDataService.saveOrganization(organizationDB, requestorId);
+                                if (response.isSuccess()) {
+                                    organizationDB.setId((String) response.getResponseValue());
+                                    organizationDB.setAttributes(attributes);
+                                }
+                            }
                             Response response = organizationDataService.saveOrganization(organizationDB, requestorId);
                             if (response.isSuccess()) {
                                 organizationDB.setId((String) response.getResponseValue());
@@ -560,9 +569,7 @@ public class SourceAdapterImpl implements SourceAdapter {
         if (StringUtils.isNotBlank(org.getDescription())) {
             organizationDB.setDescription(org.getDescription());
         }
-        if (StringUtils.isNotBlank(org.getNewName())) {
-            organizationDB.setName(org.getNewName());
-        }
+        organizationDB.setName(StringUtils.isBlank(org.getNewName()) ? org.getName() : org.getNewName());
         if (StringUtils.isNotBlank(org.getDomainName())) {
             organizationDB.setDomainName(org.getDomainName());
         }
@@ -581,20 +588,18 @@ public class SourceAdapterImpl implements SourceAdapter {
         if (StringUtils.isNotBlank(org.getSymbol())) {
             organizationDB.setSymbol(org.getSymbol());
         }
-        if (StringUtils.isNotBlank(org.getOrganizationTypeId())) {
-            organizationDB.setOrganizationTypeId(org.getOrganizationTypeId());
-        }
+
 
         if (CollectionUtils.isEmpty(org.getEntityAttributes())) {
             organizationDB.setAttributes(null);
         } else {
             for (SourceAdapterAttributeRequest attributeRequest : org.getEntityAttributes()) {
-                this.processAttribute(organizationDB.getAttributes(), attributeRequest, warnings);
+                this.processAttribute(organizationDB.getAttributes(), attributeRequest, organizationDB.getId(), warnings);
             }
         }
     }
 
-    private void processAttribute(Set<OrganizationAttribute> attributes, SourceAdapterAttributeRequest attributeRequest, StringBuilder warnings) {
+    private void processAttribute(Set<OrganizationAttribute> attributes, SourceAdapterAttributeRequest attributeRequest, String orgId, StringBuilder warnings) {
         if (attributeRequest == null || StringUtils.isBlank(attributeRequest.getName())) {
             return;
         }
@@ -610,6 +615,7 @@ public class SourceAdapterImpl implements SourceAdapter {
                 switch (attributeRequest.getOperation()) {
                     case ADD:
                     case REPLACE: {
+                        attribute.setName(StringUtils.isNotBlank(attributeRequest.getNewName()) ? attributeRequest.getNewName() : attributeRequest.getName());
                         if (CollectionUtils.isEmpty(attributeRequest.getValues())) {
                             attribute.setValues(null);
                             attribute.setIsMultivalued(false);
@@ -629,6 +635,20 @@ public class SourceAdapterImpl implements SourceAdapter {
                 }
             }
         }
+        if (!isFound) {
+            OrganizationAttribute organizationAttribute = new OrganizationAttribute();
+            organizationAttribute.setName(StringUtils.isNotBlank(attributeRequest.getNewName()) ? attributeRequest.getNewName() : attributeRequest.getName());
+            if (CollectionUtils.isEmpty(attributeRequest.getValues())) {
+                organizationAttribute.setValues(null);
+                organizationAttribute.setIsMultivalued(false);
+                organizationAttribute.setValue(attributeRequest.getValue());
+            } else {
+                organizationAttribute.setValues(attributeRequest.getValues());
+                organizationAttribute.setIsMultivalued(true);
+                organizationAttribute.setValue(null);
+            }
+            attributes.add(organizationAttribute);
+        }
     }
 
     private Organization getOrganizationFromDataBase(SourceAdapterOrganizationRequest org, StringBuilder
@@ -639,7 +659,7 @@ public class SourceAdapterImpl implements SourceAdapter {
         organizationSearchBean.setDeepCopy(false);
         List<Organization> organization = organizationDataService.findBeans(organizationSearchBean, requestorId, 0, 2);
         if (CollectionUtils.isEmpty(organization)) {
-            warnings.append(getWarning("No such organization name=" + org.getName() + ". Organization Type=" + org.getOrganizationTypeId() + " Skip this!"));
+            warnings.append(getWarning("No such organization name=" + org.getName() + ". Organization Type=" + org.getOrganizationTypeId() + (org.isAddIfNotExistsInOpenIAM() ? " Will be added to database" : " Skip this")));
             return null;
         }
         if (organization.size() > 1) {
