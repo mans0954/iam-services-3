@@ -3,6 +3,7 @@ package org.openiam.bpm.response;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -19,6 +20,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.mule.util.concurrent.DaemonThreadFactory;
 import org.openiam.bpm.util.ActivitiConstants;
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
+import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.provision.dto.ProvisionUser;
 import org.springframework.validation.beanvalidation.CustomValidatorBean;
 
@@ -89,21 +92,25 @@ public class TaskWrapper implements Serializable {
 	}
 	
 	public TaskWrapper(final Task task, final RuntimeService runtimeService) {
-		id = task.getId();
-		name = task.getName();
-		owner = task.getOwner();
-		priority = task.getPriority();
-		processDefinitionId = task.getProcessDefinitionId();
-		processInstanceId = task.getProcessInstanceId();
-		taskDefinitionKey = task.getTaskDefinitionKey();
-		parentTaskId = task.getParentTaskId();
-		assignee = task.getAssignee();
-		createdTime = task.getCreateTime();
-		description = task.getDescription();
-		dueDate = task.getDueDate();
-		executionId = task.getExecutionId();
-		setCustomVariables(runtimeService);
+		this(task, runtimeService, null);
 	}
+
+    public TaskWrapper(final Task task, final RuntimeService runtimeService, LoginDataService login) {
+        id = task.getId();
+        name = task.getName();
+        owner = task.getOwner();
+        priority = task.getPriority();
+        processDefinitionId = task.getProcessDefinitionId();
+        processInstanceId = task.getProcessInstanceId();
+        taskDefinitionKey = task.getTaskDefinitionKey();
+        parentTaskId = task.getParentTaskId();
+        assignee = task.getAssignee();
+        createdTime = task.getCreateTime();
+        description = task.getDescription();
+        dueDate = task.getDueDate();
+        executionId = task.getExecutionId();
+        setCustomVariables(runtimeService,login);
+    }
 	
 	public TaskWrapper(final HistoricTaskInstance historyInstance) {
 		id = historyInstance.getId();
@@ -127,7 +134,7 @@ public class TaskWrapper implements Serializable {
 	 * sets the custom variable objects that were given to Activiti throughout this task
 	 * @param runtimeService
 	 */
-	private void setCustomVariables(final RuntimeService runtimeService) {
+	private void setCustomVariables(final RuntimeService runtimeService, LoginDataService loginService) {
 		if(StringUtils.isNotEmpty(executionId)) {
 			try {
 				final Map<String, Object> customVariables = runtimeService.getVariables(executionId);
@@ -135,6 +142,15 @@ public class TaskWrapper implements Serializable {
 					if(customVariables.containsKey(ActivitiConstants.REQUEST_METADATA_MAP.getName())) {
 						requestMetadataMap = (LinkedHashMap<String, String>)customVariables.get(ActivitiConstants.REQUEST_METADATA_MAP.getName());
 					}
+
+                    if(customVariables.containsKey(ActivitiConstants.REQUESTOR_NAME.getName())) {
+                        name = (String)customVariables.get(ActivitiConstants.REQUESTOR_NAME.getName());
+                    } else {
+                        if(customVariables.containsKey(ActivitiConstants.REQUESTOR.getName()) && loginService != null) {
+                            LoginEntity loginEntity = loginService.getPrimaryIdentity((String)customVariables.get(ActivitiConstants.REQUESTOR.getName()));
+                            name = loginEntity!=null ? loginEntity.getLogin():"";
+                        }
+                    }
 					
 					if(customVariables.containsKey(ActivitiConstants.EMPLOYEE_ID.getName())) {
 						employeeId = (String)customVariables.get(ActivitiConstants.EMPLOYEE_ID.getName());

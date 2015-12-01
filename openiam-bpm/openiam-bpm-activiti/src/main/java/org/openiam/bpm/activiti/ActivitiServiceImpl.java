@@ -48,6 +48,7 @@ import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
 import org.openiam.idm.srvc.audit.constant.AuditSource;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
@@ -110,6 +111,9 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
     private UserProfileService userProfileService;
     @Autowired
     private UserDataService userDataService;
+
+    @Autowired
+    private LoginDataService loginService;
 
     @Value("${org.openiam.activiti.membership.approver.association.groovy.script}")
     private String membershipApproverAssociationGroovyScript;
@@ -230,6 +234,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
             variables.put(ActivitiConstants.TASK_DESCRIPTION.getName(), taskDescription);
             variables.put(ActivitiConstants.REQUESTOR.getName(), request.getRequestorUserId());
             variables.put(ActivitiConstants.WORKFLOW_NAME.getName(), requestType.getKey());
+            variables.put(ActivitiConstants.REQUESTOR_NAME.getName(), request.getRequestorUserId());
             if (identifier.getCustomActivitiAttributes() != null) {
                 variables.putAll(identifier.getCustomActivitiAttributes());
             }
@@ -776,8 +781,8 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
         final List<Task> candidateTasks = taskService.createTaskQuery().taskCandidateUser(userId).listPage(from, size);
         Collections.sort(assignedTasks, taskCreatedTimeComparator);
         Collections.sort(candidateTasks, taskCreatedTimeComparator);
-        taskListWrapper.addAssignedTasks(assignedTasks, runtimeService);
-        taskListWrapper.addCandidateTasks(candidateTasks, runtimeService);
+        taskListWrapper.addAssignedTasks(assignedTasks, runtimeService, loginService);
+        taskListWrapper.addCandidateTasks(candidateTasks, runtimeService, loginService);
         return taskListWrapper;
     }
     @Override
@@ -788,7 +793,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
         final List<Task> taskList = taskService.createTaskQuery().processVariableValueEquals(ActivitiConstants.MEMBER_ASSOCIATION_ID.getName(), memberAssociationId).list();
         if(CollectionUtils.isNotEmpty(taskList)) {
             for(final Task task : taskList) {
-                memberAssociationTaskList.add(new TaskWrapper(task, runtimeService));
+                memberAssociationTaskList.add(new TaskWrapper(task, runtimeService,loginService));
             }
         }
         return memberAssociationTaskList;
@@ -801,7 +806,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
         TaskWrapper retVal = null;
         final List<Task> taskList = taskService.createTaskQuery().taskId(taskId).list();
         if (CollectionUtils.isNotEmpty(taskList)) {
-            retVal = new TaskWrapper(taskList.get(0), runtimeService);
+            retVal = new TaskWrapper(taskList.get(0), runtimeService,loginService);
         }
         return retVal;
     }
