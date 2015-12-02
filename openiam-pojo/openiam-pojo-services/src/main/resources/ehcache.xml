@@ -45,7 +45,7 @@
         eternal="false"
         timeToIdleSeconds="180"
         timeToLiveSeconds="28880"
-        overflowToDisk="true"
+        overflowToDisk="false"
         diskPersistent="false"
         diskExpiryThreadIntervalSeconds="180"
         memoryStoreEvictionPolicy="LRU"
@@ -70,21 +70,21 @@
 	    maxElementsInMemory="10000"
 	    eternal="false"
 	    timeToLiveSeconds="28880"
-	    overflowToDisk="true"
+	    overflowToDisk="false"
     />
 
 	<cache name="query.organization.findChildOrganization"
 	    maxElementsInMemory="1000"
 	    eternal="false"
 	    timeToLiveSeconds="28880"
-	    overflowToDisk="true"
+	    overflowToDisk="false"
     />
 
 	<cache name="query.organization.findOrganizationByClassification"
 	    maxElementsInMemory="1000"
 	    eternal="false"
 	    timeToLiveSeconds="28880"
-	    overflowToDisk="true"
+	    overflowToDisk="false"
     />         
      
     <cache name="org.openiam.idm.srvc.orgpolicy.dto.OrgPolicy"
@@ -97,7 +97,7 @@
     maxElementsInMemory="100"
     eternal="false"
     timeToLiveSeconds="28880"
-    overflowToDisk="true"
+    overflowToDisk="false"
     />
 
      
@@ -157,20 +157,20 @@
     maxElementsInMemory="10000"
     eternal="false"
     timeToLiveSeconds="28880"
-    overflowToDisk="true"
+    overflowToDisk="false"
     />
 
 	<cache name="query.role.findUsersRole"
     maxElementsInMemory="10000"
     eternal="false"
     timeToLiveSeconds="28880"
-    overflowToDisk="true"
+    overflowToDisk="false"
     />
 	<cache name="query.role.findIndirectUsersRole"
     maxElementsInMemory="10000"
     eternal="false"
     timeToLiveSeconds="28880"
-    overflowToDisk="true"
+    overflowToDisk="false"
     />
     
 
@@ -179,7 +179,7 @@
     maxElementsInMemory="10000"
     eternal="false"
     timeToLiveSeconds="28880"
-    overflowToDisk="true"
+    overflowToDisk="false"
     />
 
     <cache name="org.openiam.idm.srvc.res.dto.Resource"
@@ -215,13 +215,13 @@
     maxElementsInMemory="100"
     eternal="false"
     timeToLiveSeconds="28880"
-    overflowToDisk="true"
+    overflowToDisk="false"
     />
 	<cache name="query.iq.findQuestionByQuestionGroup"
     maxElementsInMemory="100"
     eternal="false"
     timeToLiveSeconds="28880"
-    overflowToDisk="true"
+    overflowToDisk="false"
     />
 
     <cache name="CoreBuilderCache"
