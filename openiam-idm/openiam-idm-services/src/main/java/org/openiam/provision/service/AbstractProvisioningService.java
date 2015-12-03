@@ -1072,6 +1072,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
         MetadataTypeEntity type = null;
         MetadataTypeEntity jobCode = null;
         MetadataTypeEntity employeeType = null;
+        MetadataTypeEntity userSubType = null;
         if (StringUtils.isNotBlank(pUser.getMdTypeId())) {
             type = metadataTypeDAO.findById(pUser.getMdTypeId());
         }
@@ -1080,6 +1081,10 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
         }
         if (StringUtils.isNotBlank(pUser.getEmployeeTypeId())) {
             employeeType = metadataTypeDAO.findById(pUser.getEmployeeTypeId());
+        }
+
+        if (StringUtils.isNotBlank(pUser.getUserSubTypeId())) {
+            userSubType = metadataTypeDAO.findById(pUser.getUserSubTypeId());
         }
 
         Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
@@ -1289,11 +1294,60 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             // ---------------------------------------------------------------------------------------------
         }
 
+        if (!StringUtils.equals(pUser.getPrefixLastName(), userEntity.getPrefixLastName())) {
+            // Audit Log -----------------------------------------------------------------------------------
+            IdmAuditLog auditLog = new IdmAuditLog();
+            auditLog.setRequestorUserId(pUser.getRequestorUserId());
+            auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
+            auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
+            auditLog.setAction(AuditAction.REPLACE_PROP.value());
+            auditLog.addCustomRecord("Prefix Last Name", "old='" + userEntity.getPrefixLastName() + "' new='" + pUser.getPrefixLastName() + "'");
+            parentLog.addChild(auditLog);
+            // ---------------------------------------------------------------------------------------------
+        }
+
+        if (!StringUtils.equals(pUser.getPartnerName(), userEntity.getPartnerName())) {
+            // Audit Log -----------------------------------------------------------------------------------
+            IdmAuditLog auditLog = new IdmAuditLog();
+            auditLog.setRequestorUserId(pUser.getRequestorUserId());
+            auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
+            auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
+            auditLog.setAction(AuditAction.REPLACE_PROP.value());
+            auditLog.addCustomRecord("Partner Name", "old='" + userEntity.getPartnerName() + "' new='" + pUser.getPartnerName() + "'");
+            parentLog.addChild(auditLog);
+            // ---------------------------------------------------------------------------------------------
+        }
+
+        if (!StringUtils.equals(pUser.getPrefixPartnerName(), userEntity.getPrefixPartnerName())) {
+            // Audit Log -----------------------------------------------------------------------------------
+            IdmAuditLog auditLog = new IdmAuditLog();
+            auditLog.setRequestorUserId(pUser.getRequestorUserId());
+            auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
+            auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
+            auditLog.setAction(AuditAction.REPLACE_PROP.value());
+            auditLog.addCustomRecord("Preffix Partner Name", "old='" + userEntity.getPrefixPartnerName() + "' new='" + pUser.getPrefixPartnerName() + "'");
+            parentLog.addChild(auditLog);
+            // ---------------------------------------------------------------------------------------------
+        }
+        if (StringUtils.isNotEmpty(pUser.getUserSubTypeId()) && (userEntity.getSubType() == null || !pUser.getUserSubTypeId().equals(userEntity.getSubType().getId()))) {
+            // Audit Log -----------------------------------------------------------------------------------
+            IdmAuditLog auditLog = new IdmAuditLog();
+            auditLog.setRequestorUserId(pUser.getRequestorUserId());
+            auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
+            auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
+            auditLog.setAction(AuditAction.REPLACE_PROP.value());
+            MetadataTypeEntity metadataType = metadataTypeDAO.findById(pUser.getUserSubTypeId());
+            auditLog.addCustomRecord("JobCode", "old='" + (userEntity.getSubType() != null ? userEntity.getSubType() : "N/A") + "' new='" + metadataType + "'");
+            parentLog.addChild(auditLog);
+            // ---------------------------------------------------------------------------------------------
+        }
+
         userEntity.updateUser(userDozerConverter.convertToEntity(pUser.getUser(), false));
         userEntity.setSecondaryStatus(pUser.getSecondaryStatus());
         userEntity.setType(type);
         userEntity.setJobCode(jobCode);
         userEntity.setEmployeeType(employeeType);
+        userEntity.setSubType(userSubType);
     }
 
     public void updateUserAttributes(final UserEntity userEntity, final ProvisionUser pUser, final IdmAuditLog parentLog) {
@@ -1994,7 +2048,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
         MetadataTypeEntity type = null;
         MetadataTypeEntity jobCode = null;
         MetadataTypeEntity employeeType = null;
-
+        MetadataTypeEntity subtype = null;
         if (StringUtils.isNotBlank(pUser.getMdTypeId())) {
             type = metadataTypeDAO.findById(pUser.getMdTypeId());
         }
@@ -2004,6 +2058,10 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
         if (StringUtils.isNotBlank(pUser.getEmployeeTypeId())) {
             employeeType = metadataTypeDAO.findById(pUser.getEmployeeTypeId());
         }
+        if (StringUtils.isNotBlank(pUser.getUserSubTypeId())) {
+            subtype = metadataTypeDAO.findById(pUser.getUserSubTypeId());
+        }
+
 
         Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
         if (login == null && StringUtils.isNotEmpty(pUser.getId())) {
@@ -2014,6 +2072,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
         userEntity.setType(type);
         userEntity.setJobCode(jobCode);
         userEntity.setEmployeeType(employeeType);
+        userEntity.setSubType(subtype);
     }
 
 

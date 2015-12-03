@@ -79,6 +79,10 @@
             <a>type.id</a>
             <b>mdTypeId</b>
         </field>
+        <field>
+            <a>subType.id</a>
+            <b>userSubTypeId</b>
+        </field>
         <field-exclude>
             <a>userNotes</a>
             <b>userNotes</b>

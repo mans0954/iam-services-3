@@ -219,6 +219,9 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         user.setDatePasswordChanged(datePasswordChanged);
         user.setDateITPolicyApproved(dateITPolicyApproved);
         user.setIsFromActivitiCreation(this.getIsFromActivitiCreation());
+        user.setPrefixLastName(this.getPrefixLastName());
+        user.setPartnerName(this.getPartnerName());
+        user.setPrefixPartnerName(this.getPrefixPartnerName());
         return user;
     }
 

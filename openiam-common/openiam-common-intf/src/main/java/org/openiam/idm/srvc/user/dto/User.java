@@ -14,6 +14,7 @@ import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.grp.dto.Group;
+import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.dto.OrganizationUserDTO;
 import org.openiam.idm.srvc.policy.dto.ResetPasswordTypeEnum;
@@ -22,6 +23,7 @@ import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.internationalization.Internationalized;
 
+import javax.persistence.Column;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.xml.bind.annotation.*;
@@ -93,7 +95,11 @@ import java.util.*;
         "supervisors",
         "subordinates",
         "isFromActivitiCreation",
-        "resetPasswordType"
+        "resetPasswordType",
+        "partnerName",
+        "prefixLastName",
+        "prefixPartnerName",
+        "userSubTypeId"
 })
 @XmlSeeAlso({
         Login.class,
@@ -244,7 +250,13 @@ public class User extends AbstractMetadataTypeDTO {
 
     private ResetPasswordTypeEnum resetPasswordType;
 
+    private String userSubTypeId;
+    private String partnerName;
+    private String prefixPartnerName;
+    private String prefixLastName;
+
     // Constructors
+
     /**
      * default constructor
      */
@@ -601,6 +613,38 @@ public class User extends AbstractMetadataTypeDTO {
      */
     public Set<Address> getAddresses() {
         return addresses;
+    }
+
+    public String getUserSubTypeId() {
+        return userSubTypeId;
+    }
+
+    public void setUserSubTypeId(String userSubTypeId) {
+        this.userSubTypeId = userSubTypeId;
+    }
+
+    public String getPartnerName() {
+        return partnerName;
+    }
+
+    public void setPartnerName(String partnerName) {
+        this.partnerName = partnerName;
+    }
+
+    public String getPrefixPartnerName() {
+        return prefixPartnerName;
+    }
+
+    public void setPrefixPartnerName(String prefixPartnerName) {
+        this.prefixPartnerName = prefixPartnerName;
+    }
+
+    public String getPrefixLastName() {
+        return prefixLastName;
+    }
+
+    public void setPrefixLastName(String prefixLastName) {
+        this.prefixLastName = prefixLastName;
     }
 
     /**

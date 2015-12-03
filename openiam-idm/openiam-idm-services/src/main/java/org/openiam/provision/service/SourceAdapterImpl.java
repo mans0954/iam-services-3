@@ -335,10 +335,10 @@ public class SourceAdapterImpl implements SourceAdapter {
             pUser.setLastName(getNULLValue(request.getLastName()));
         }
         if (request.getLastDate() != null) {
-            pUser.setLastDate("NULL".equals(request.getLastDate()) ? null : sdf.parse(request.getLastDate()));
+            pUser.setLastDate("null".equals(request.getLastDate()) ? null : sdf.parse(request.getLastDate()));
         }
         if (request.getStartDate() != null) {
-            pUser.setStartDate("NULL".equals(request.getStartDate()) ? null : sdf.parse(request.getStartDate()));
+            pUser.setStartDate("null".equals(request.getStartDate()) ? null : sdf.parse(request.getStartDate()));
         }
         if (StringUtils.isNotBlank(request.getMaidenName())) {
             pUser.setMaidenName(getNULLValue(request.getMaidenName()));
@@ -369,6 +369,24 @@ public class SourceAdapterImpl implements SourceAdapter {
         }
         if (StringUtils.isNotBlank(request.getUserTypeId())) {
             pUser.setUserTypeInd(getNULLValue(request.getUserTypeId()));
+        }
+        if (StringUtils.isNotBlank(request.getUserSubTypeId())) {
+            pUser.setUserSubTypeId(getNULLValue(request.getUserSubTypeId()));
+        }
+        if (StringUtils.isNotBlank(request.getPrefixLastName())) {
+            if (request.getPrefixLastName().length() > 10)
+                throw new Exception("Lenght of preffix last name must be not more than 10 characters");
+            pUser.setPrefixLastName(getNULLValue(request.getPrefixLastName()));
+        }
+        if (StringUtils.isNotBlank(request.getPartnerName())) {
+            if (request.getPartnerName().length() > 60)
+                throw new Exception("Lenght of Partner name must be not more than 60 characters");
+            pUser.setPartnerName(getNULLValue(request.getPartnerName()));
+        }
+        if (StringUtils.isNotBlank(request.getPrefixPartnerName())) {
+            if (request.getPrefixPartnerName().length() > 10)
+                throw new Exception("Lenght of preffix partner name must be not more than 10 characters");
+            pUser.setPrefixPartnerName(getNULLValue(request.getPrefixPartnerName()));
         }
     }
 
