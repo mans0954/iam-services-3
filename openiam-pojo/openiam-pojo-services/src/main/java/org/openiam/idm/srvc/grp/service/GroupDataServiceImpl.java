@@ -43,6 +43,7 @@ import org.openiam.idm.srvc.org.service.OrganizationDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
+import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.service.RoleDAO;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
@@ -979,5 +980,20 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
     private GroupDataService getProxyService() {
         GroupDataService service = (GroupDataService)ac.getBean("groupManager");
         return service;
+    }
+
+    @Override
+    @Transactional
+    public void removeRoleFromGroup(String roleId, String groupId) {
+        if (roleId != null && groupId != null) {
+            final RoleEntity role = roleDao.findById(roleId);
+            final GroupEntity group = groupDao.findById(groupId);
+            if (role != null && group != null) {
+                role.removeGroup(group.getId());
+                roleDao.save(role);
+                roleDao.evictCache();
+            }
+        }
+
     }
 }
