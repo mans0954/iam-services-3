@@ -65,9 +65,11 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
     private ResourceDataService resourceDataService;
 
     @Autowired
+    @Qualifier("managedSysService")
     private ManagedSystemWebService managedSysService;
 
     @Autowired
+    @Qualifier("provisionConnectorWebService")
     private ProvisionConnectorWebService connectorService;
 
     @Autowired

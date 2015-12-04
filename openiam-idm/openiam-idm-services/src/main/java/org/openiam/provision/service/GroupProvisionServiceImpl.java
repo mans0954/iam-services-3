@@ -108,6 +108,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
     private PlatformTransactionManager platformTransactionManager;
 
     @Autowired
+    @Qualifier("managedSysService")
     private ManagedSystemWebService managedSystemService;
 
     @Autowired
@@ -117,6 +118,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
     protected AttributeMapDozerConverter attributeMapDozerConverter;
 
     @Autowired
+    @Qualifier("groupWS")
     private GroupDataWebService groupDataWebService;
 
     @Autowired

@@ -7,16 +7,15 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.elasticsearch.common.lang3.StringUtils;
 import org.openiam.authmanager.common.model.AuthorizationMenu;
 import org.openiam.authmanager.model.MenuEntitlementType;
 import org.openiam.authmanager.service.AuthorizationManagerAdminWebService;
 import org.openiam.authmanager.service.AuthorizationManagerMenuWebService;
 import org.openiam.authmanager.ws.request.MenuEntitlementsRequest;
 import org.openiam.authmanager.ws.request.MenuRequest;
-import org.openiam.authmanager.ws.response.MenuSaveResponse;
 import org.openiam.base.KeyDTO;
 import org.openiam.base.Tuple;
 import org.openiam.base.ws.Response;

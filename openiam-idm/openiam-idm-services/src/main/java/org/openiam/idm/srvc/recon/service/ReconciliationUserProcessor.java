@@ -79,8 +79,10 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
     @Value("${iam.files.location}")
     private String absolutePath;
     @Autowired
+    @Qualifier("managedSysService")
     private ManagedSystemWebService managedSystemWebService;
     @Autowired
+    @Qualifier("provisionConnectorWebService")
     private ProvisionConnectorWebService connectorService;
     @Autowired
     private LoginDataWebService loginDataWebService;
@@ -102,6 +104,7 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
     @Qualifier("matchRuleFactory")
     private MatchRuleFactory matchRuleFactory;
     @Autowired
+    @Qualifier("groupWS")
     protected GroupDataWebService groupDataWebService;
     @Autowired
     @Qualifier("userManager")

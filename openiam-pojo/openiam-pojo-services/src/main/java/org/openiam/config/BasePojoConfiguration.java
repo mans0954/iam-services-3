@@ -5,20 +5,21 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
+import net.sf.ehcache.Ehcache;
+
 import org.dozer.DozerBeanMapper;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cache.ehcache.EhCacheFactoryBean;
 import org.springframework.cache.ehcache.EhCacheManagerFactoryBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import net.sf.ehcache.Ehcache;
 
 @Configuration
-@Import({BaseConfiguration.class, JMXConfig.class})
+@Import({BaseConfiguration.class, JMXConfig.class, ElasticSearchConfig.class})
 public class BasePojoConfiguration {
 	
 	@Value("${mail.host}")

@@ -9,6 +9,7 @@ import java.util.concurrent.Executors;
 import org.openiam.idm.util.CustomJacksonMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.config.PropertiesFactoryBean;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration;
@@ -31,8 +32,8 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.core.io.Resource;
 
-@ComponentScan("org.openiam")
 @Configuration
 @EnableAsync
 @EnableScheduling
@@ -60,6 +61,14 @@ public class BaseConfiguration implements SchedulingConfigurer {
 	
 	@Bean(name="authManagerCompilationPool")
 	public ThreadPoolTaskExecutor authManagerCompilationPool() {
+		final ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+		executor.setCorePoolSize(10);
+		return executor;
+	}
+	
+	/* this is for @Async stuff */
+	@Bean(name="taskExecutor")
+	public ThreadPoolTaskExecutor taskExecutor() {
 		final ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
 		executor.setCorePoolSize(10);
 		return executor;

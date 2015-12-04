@@ -16,10 +16,14 @@
 	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
 		<property name="locations">
   			<list>
-                <value>classpath:application.properties</value>
-                <value>classpath:openiam.esb.properties</value>
+                <value>classpath:securityconf.properties</value>
+				<value>classpath:openiam.esb.properties</value>
+				<value>classpath:notification.properties</value>
+				<value>classpath:application.properties</value>
+				<value>classpath:openiam.hibernate.properties</value>
 				<value>file:/data/openiam/conf/datasource.properties</value>
                 <value>file:/data/openiam/conf/service-urls.properties</value>
+                <value>file:/data/openiam/conf/securityconf.properties</value>
 			</list>
 		</property>
 		<property name="ignoreResourceNotFound" value="true" />

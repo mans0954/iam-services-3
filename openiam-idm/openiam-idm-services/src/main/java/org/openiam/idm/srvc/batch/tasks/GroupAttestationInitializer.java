@@ -33,6 +33,7 @@ public class GroupAttestationInitializer {
 	private static final Log LOG = LogFactory.getLog(GroupAttestationInitializer.class);
 
     @Autowired
+    @Qualifier("activitiBPMService")
     private ActivitiService activitiService;
     @Autowired
     private AuthorizationManagerAdminService adminService;

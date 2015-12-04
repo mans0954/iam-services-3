@@ -53,6 +53,7 @@ public class BaseProvisioningHelper {
     @Autowired
     protected LoginDAO loginDao;
     @Autowired
+    @Qualifier("managedSysService")
     protected ManagedSystemWebService managedSysService;
     @Autowired
     protected ManagedSystemService managedSysDaoService;
@@ -91,6 +92,7 @@ public class BaseProvisioningHelper {
     protected ScriptIntegration scriptRunner;
     
     @Autowired
+    @Qualifier("provisionConnectorWebService")
     protected ProvisionConnectorWebService connectorService;
 
     @Autowired

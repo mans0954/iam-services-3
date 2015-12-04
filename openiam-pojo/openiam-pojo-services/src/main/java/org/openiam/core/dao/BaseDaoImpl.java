@@ -86,7 +86,12 @@ implements BaseDao<T, PrimaryKey> {
         }
     }
 
-    protected Criteria getExampleCriteria(T t) {
+    @Override
+	public Class<T> getDomainClass() {
+		return domainClass;
+	}
+
+	protected Criteria getExampleCriteria(T t) {
         return getCriteria().add(Example.create(t));
     }
 
@@ -430,4 +435,20 @@ implements BaseDao<T, PrimaryKey> {
         }
         return orClause;
     }
+
+	@Override
+	public List<T> find(int from, int size) {
+		final Criteria criteria = getCriteria();
+		if (from > -1) {
+            criteria.setFirstResult(from);
+        }
+
+        if (size > -1) {
+            criteria.setMaxResults(size);
+        }
+
+        return (List<T>) criteria.list();
+	}
+    
+    
 }

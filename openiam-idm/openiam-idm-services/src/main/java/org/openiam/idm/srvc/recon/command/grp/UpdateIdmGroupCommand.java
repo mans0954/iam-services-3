@@ -28,6 +28,7 @@ public class UpdateIdmGroupCommand extends BaseReconciliationGroupCommand {
     private ObjectProvisionService<ProvisionGroup> provisionService;
 
     @Autowired
+    @Qualifier("groupWS")
     private GroupDataWebService groupDataService;
 
     @Autowired

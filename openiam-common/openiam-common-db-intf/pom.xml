@@ -178,6 +178,12 @@
         </dependency>
         
         <dependency>
+			<groupId>commons-beanutils</groupId>
+			<artifactId>commons-beanutils</artifactId>
+		</dependency>
+        
+        
+        <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
         </dependency>
@@ -194,10 +200,38 @@
 		</dependency>
 		
 		<dependency>
+            <groupId>org.elasticsearch</groupId>
+            <artifactId>elasticsearch</artifactId>
+        </dependency>
+		
+		<dependency>
             <groupId>org.openiam</groupId>
             <artifactId>openiam-common-intf</artifactId>
             <scope>compile</scope>
         </dependency>
+        
+        <dependency>
+		    <groupId>org.testng</groupId>
+			<artifactId>testng</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <scope>test</scope>
+        </dependency>
+        
+        <dependency>
+			<groupId>com.hazelcast</groupId>
+			<artifactId>hazelcast</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>com.hazelcast</groupId>
+			<artifactId>hazelcast-hibernate4</artifactId>
+			<scope>test</scope>
+		</dependency>
     </dependencies>
 
 </project>

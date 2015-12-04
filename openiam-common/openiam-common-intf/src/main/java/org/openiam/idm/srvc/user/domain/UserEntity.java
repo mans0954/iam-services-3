@@ -41,19 +41,12 @@ import org.openiam.am.srvc.domain.OAuthCodeEntity;
 import org.openiam.am.srvc.domain.OAuthUserClientXrefEntity;
 import org.openiam.base.BaseConstants;
 import org.openiam.base.domain.KeyEntity;
-import org.openiam.core.dao.lucene.LuceneLastUpdate;
 import org.openiam.core.domain.UserKey;
 import org.openiam.dozer.DozerDTOCorrespondence;
-import org.openiam.elasticsearch.annotation.ElasticsearchField;
 import org.openiam.elasticsearch.annotation.ElasticsearchFieldBridge;
-import org.openiam.elasticsearch.annotation.ElasticsearchFields;
-import org.openiam.elasticsearch.annotation.ElasticsearchIndex;
-import org.openiam.elasticsearch.annotation.ElasticsearchMapping;
 import org.openiam.elasticsearch.bridge.MetadataTypeBridge;
 import org.openiam.elasticsearch.constants.ESIndexName;
 import org.openiam.elasticsearch.constants.ESIndexType;
-import org.openiam.elasticsearch.constants.ElasticsearchStore;
-import org.openiam.elasticsearch.constants.Index;
 import org.openiam.idm.srvc.access.domain.AccessRightEntity;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
@@ -67,6 +60,10 @@ import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.internationalization.Internationalized;
+import org.springframework.data.elasticsearch.annotations.Document;
+import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldIndex;
+import org.springframework.data.elasticsearch.annotations.FieldType;
 
 //import org.hibernate.search.annotations.*;
 //import org.hibernate.search.annotations.Index;
@@ -78,8 +75,9 @@ import org.openiam.internationalization.Internationalized;
 //@Indexed
 @Internationalized
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-@ElasticsearchIndex(indexName = ESIndexName.USERS)
-@ElasticsearchMapping(typeName = ESIndexType.USER)
+//@ElasticsearchIndex(indexName = ESIndexName.USERS)
+//@ElasticsearchMapping(typeName = ESIndexType.USER)
+@Document(indexName = ESIndexName.USERS, type= ESIndexType.USER)
 @AttributeOverride(name = "id", column = @Column(name = "USER_ID"))
 public class UserEntity extends KeyEntity {
 
@@ -96,7 +94,8 @@ public class UserEntity extends KeyEntity {
     private String createdBy;
 
     @Column(name = "EMPLOYEE_ID", length = 32)
-    @ElasticsearchField(name = "employeeId", store = ElasticsearchStore.Yes, index = Index.Not_Analyzed)
+    //@ElasticsearchField(name = "employeeId", store = ElasticsearchStore.Yes, index = Index.Not_Analyzed)
+    @Field(type = FieldType.String, index = FieldIndex.analyzed, store= true)
     @Size(max = 32, message = "validator.user.employee.id.toolong")
     private String employeeId;
 
@@ -108,14 +107,19 @@ public class UserEntity extends KeyEntity {
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch= FetchType.LAZY)
     @JoinColumn(name = "EMPLOYEE_TYPE", insertable = true, updatable = true, nullable=true)
     @Internationalized
-    @ElasticsearchField(name = "employeeType", bridge=@ElasticsearchFieldBridge(impl = MetadataTypeBridge.class), store = ElasticsearchStore.Yes, index = Index.Not_Analyzed)
+    //@ElasticsearchField(name = "employeeType", bridge=@ElasticsearchFieldBridge(impl = MetadataTypeBridge.class), store = ElasticsearchStore.Yes, index = Index.Not_Analyzed)
 //    @IndexedEmbedded
+    @ElasticsearchFieldBridge(impl = MetadataTypeBridge.class)
+    @Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
     private MetadataTypeEntity employeeType;
 
     @Column(name = "FIRST_NAME", length = 50)
 //    @ElasticsearchField(name = "firstName", store = ElasticsearchStore.Yes, index = Index.Analyzed)
+    /*
     @ElasticsearchFields(fields = {@ElasticsearchField(name = "firstName", store = ElasticsearchStore.Yes, index = Index.Not_Analyzed),
                                    @ElasticsearchField(name = "firstNameTokenized", store = ElasticsearchStore.Yes, index = Index.Analyzed)})
+	*/
+    @Field(type = FieldType.String, index = FieldIndex.analyzed, store= true)
     @Size(max = 50, message = "validator.user.first.name.toolong")
     private String firstName;
 
@@ -126,19 +130,24 @@ public class UserEntity extends KeyEntity {
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch= FetchType.LAZY)
     @JoinColumn(name = "JOB_CODE", insertable = true, updatable = true, nullable=true)
     @Internationalized
-    @ElasticsearchField(name = "jobCode", bridge=@ElasticsearchFieldBridge(impl = MetadataTypeBridge.class), store = ElasticsearchStore.Yes, index = Index.Not_Analyzed)
+    //@ElasticsearchField(name = "jobCode", bridge=@ElasticsearchFieldBridge(impl = MetadataTypeBridge.class), store = ElasticsearchStore.Yes, index = Index.Not_Analyzed)
 //    @IndexedEmbedded
+    @ElasticsearchFieldBridge(impl = MetadataTypeBridge.class)
+    @Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
     private MetadataTypeEntity jobCode;
 
     @Column(name = "LAST_NAME", length = 50)
 //    @ElasticsearchField(name = "lastName", store = ElasticsearchStore.Yes, index = Index.Analyzed)
+    /*
     @ElasticsearchFields(fields = {@ElasticsearchField(name = "lastName", store = ElasticsearchStore.Yes, index = Index.Not_Analyzed),
                                    @ElasticsearchField(name = "lastNameTokenized", store = ElasticsearchStore.Yes, index = Index.Analyzed)})
+	*/
+    @Field(type = FieldType.String, index = FieldIndex.analyzed, store= true)
     @Size(max = 50, message = "validator.user.last.name.toolong")
     private String lastName;
 
     @Column(name = "LAST_UPDATE", length = 19)
-    @LuceneLastUpdate
+    //@LuceneLastUpdate
     private Date lastUpdate;
 
     @Column(name = "LAST_UPDATED_BY", length = 32)
@@ -156,7 +165,9 @@ public class UserEntity extends KeyEntity {
     @JoinColumn(name = "TYPE_ID", insertable = true, updatable = true, nullable=true)
     @Internationalized
 //    @IndexedEmbedded
-    @ElasticsearchField(name = "type", bridge=@ElasticsearchFieldBridge(impl = MetadataTypeBridge.class), store = ElasticsearchStore.Yes, index = Index.Not_Analyzed)
+    //@ElasticsearchField(name = "type", bridge=@ElasticsearchFieldBridge(impl = MetadataTypeBridge.class), store = ElasticsearchStore.Yes, index = Index.Not_Analyzed)
+    @Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
+    @ElasticsearchFieldBridge(impl = MetadataTypeBridge.class)
     protected MetadataTypeEntity type;
 
     @Column(name = "CLASSIFICATION", length = 20)
@@ -177,12 +188,14 @@ public class UserEntity extends KeyEntity {
 
     @Column(name = "STATUS", length = 40)
     @Enumerated(EnumType.STRING)
-    @ElasticsearchField(name = "userStatus", store = ElasticsearchStore.Yes, index = Index.Not_Analyzed)
+    //@ElasticsearchField(name = "userStatus", store = ElasticsearchStore.Yes, index = Index.Not_Analyzed)
+    @Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
     private UserStatusEnum status;
 
     @Column(name = "SECONDARY_STATUS", length = 40)
     @Enumerated(EnumType.STRING)
-    @ElasticsearchField(name = "accountStatus", store = ElasticsearchStore.Yes, index = Index.Not_Analyzed)
+    //@ElasticsearchField(name = "accountStatus", store = ElasticsearchStore.Yes, index = Index.Not_Analyzed)
+    @Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
     private UserStatusEnum secondaryStatus;
 
     @Column(name = "SUFFIX", length = 20)
@@ -221,8 +234,11 @@ public class UserEntity extends KeyEntity {
     @Column(name = "MAIDEN_NAME", length = 40)
     @Size(max = 40, message = "validator.user.maiden.name.toolong")
 //    @ElasticsearchField(name = "maidenName", store = ElasticsearchStore.Yes, index = Index.Analyzed)
+    /*
     @ElasticsearchFields(fields = {@ElasticsearchField(name = "maidenName", store = ElasticsearchStore.Yes, index = Index.Not_Analyzed),
                                    @ElasticsearchField(name = "maidenNameTokenized", store = ElasticsearchStore.Yes, index = Index.Analyzed)})
+	*/
+    @Field(type = FieldType.String, index = FieldIndex.analyzed, store= true)
     private String maidenName;
 
     @Column(name = "PASSWORD_THEME", length = 20)

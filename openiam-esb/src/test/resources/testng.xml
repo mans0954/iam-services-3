@@ -83,4 +83,13 @@
 			<class name="org.openiam.service.integration.authprovider.AuthProviderServiceTest" />
 		</classes>
 	</test>
+	
+	<test name="elasticache">
+		<classes>
+			<class name="org.openiam.elasticsearch.dao.EmailElasticSearchRepositoryTest" />
+			<class name="org.openiam.elasticsearch.dao.LoginElasticSearchRepositoryTest" />
+			<class name="org.openiam.elasticsearch.dao.PhoneElasticSearchRepositoryTest" />
+			<class name="org.openiam.elasticsearch.dao.UserElasticSearchRepositoryTest" />
+		</classes>
+	</test>
 </suite>

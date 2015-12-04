@@ -1,34 +1,39 @@
 package org.openiam.idm.srvc.continfo.domain;
 
+import java.util.Date;
+
+import javax.persistence.AttributeOverride;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import javax.validation.constraints.Size;
+
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Type;
 import org.openiam.base.domain.AbstractMetdataTypeEntity;
-import org.openiam.base.domain.KeyEntity;
-import org.openiam.core.dao.lucene.LuceneLastUpdate;
 import org.openiam.dozer.DozerDTOCorrespondence;
-import org.openiam.elasticsearch.annotation.*;
+import org.openiam.elasticsearch.annotation.ElasticsearchFieldBridge;
 import org.openiam.elasticsearch.bridge.UserBrigde;
 import org.openiam.elasticsearch.constants.ESIndexName;
 import org.openiam.elasticsearch.constants.ESIndexType;
-import org.openiam.elasticsearch.constants.ElasticsearchStore;
-import org.openiam.elasticsearch.constants.Index;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
-import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
-
-import javax.persistence.*;
-import javax.validation.constraints.Size;
-
-import java.util.Date;
+import org.springframework.data.elasticsearch.annotations.Document;
+import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldIndex;
+import org.springframework.data.elasticsearch.annotations.FieldType;
 
 @Entity
 @Table(name = "EMAIL_ADDRESS")
 @DozerDTOCorrespondence(EmailAddress.class)
 //@Indexed
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-@ElasticsearchIndex(indexName = ESIndexName.USERS)
-@ElasticsearchMapping(typeName = ESIndexType.EMAIL/*, parent = ESIndexType.USER*/)
+@Document(indexName = ESIndexName.EMAIL, type= ESIndexType.EMAIL)
 @AttributeOverride(name = "id", column = @Column(name = "EMAIL_ID"))
 public class EmailAddressEntity extends AbstractMetdataTypeEntity {
 
@@ -44,8 +49,11 @@ public class EmailAddressEntity extends AbstractMetdataTypeEntity {
 //        @Field(analyze = Analyze.YES),
 //        @Field(name = "emailAddress", analyze = Analyze.YES, store = Store.YES)
 //    })
+    /*
     @ElasticsearchFields(fields = {@ElasticsearchField(name = "emailAddress", store = ElasticsearchStore.Yes, index = Index.Not_Analyzed),
                                    @ElasticsearchField(name = "emailAddressTokenized", store = ElasticsearchStore.Yes, index = Index.Analyzed)})
+	*/
+    @Field(type = FieldType.String, index = FieldIndex.analyzed, store= true)
     @Column(name = "EMAIL_ADDRESS", length = 320)
     @Size(max = 320, message = "validator.email.toolong")
     protected String emailAddress;
@@ -56,7 +64,8 @@ public class EmailAddressEntity extends AbstractMetdataTypeEntity {
 
     @ManyToOne
     @JoinColumn(name = "PARENT_ID")
-    @ElasticsearchField(name = "userId", bridge=@ElasticsearchFieldBridge(impl = UserBrigde.class), store = ElasticsearchStore.Yes, index = Index.Not_Analyzed/*, mapToParent=true*/)
+    @Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
+    @ElasticsearchFieldBridge(impl = UserBrigde.class)
     private UserEntity parent;
 
     @Column(name = "NAME", length = 100)
@@ -64,7 +73,7 @@ public class EmailAddressEntity extends AbstractMetdataTypeEntity {
     private String name;
     
     @Column(name = "LAST_UPDATE", length = 19)
-    @LuceneLastUpdate
+    //@LuceneLastUpdate
     private Date lastUpdate;
     
     @Column(name="CREATE_DATE",length=19)
@@ -137,7 +146,7 @@ public class EmailAddressEntity extends AbstractMetdataTypeEntity {
 	public void setCreateDate(Date createDate) {
 		this.createDate = createDate;
 	}
-
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;

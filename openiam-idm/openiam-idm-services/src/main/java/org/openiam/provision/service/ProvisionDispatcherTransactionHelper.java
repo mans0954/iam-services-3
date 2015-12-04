@@ -89,12 +89,14 @@ public class ProvisionDispatcherTransactionHelper {
     private ResourceService resourceService;
 
     @Autowired
+    @Qualifier("defaultProvision")
     private ProvisionService provisionService;
 
     @Autowired
     private ResourceDozerConverter resourceDozerConverter;
 
     @Autowired
+    @Qualifier("managedSysService")
     private ManagedSystemWebService managedSystemWebService;
 
     @Autowired

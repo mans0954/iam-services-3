@@ -8,6 +8,7 @@ import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 /**
@@ -24,6 +25,7 @@ public class ValidateConnectionConfig {
     @Autowired
     protected ConnectorAdapter connectorAdapter;
     @Autowired
+    @Qualifier("managedSysService")
     protected ManagedSystemWebService managedSysService;
 
     Response testConnection(String managedSysId) {

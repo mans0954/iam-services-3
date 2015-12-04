@@ -32,6 +32,7 @@ public class CreateIdmGroupCommand  extends BaseReconciliationGroupCommand {
     private ObjectProvisionService<ProvisionGroup> provisionService;
 
     @Autowired
+    @Qualifier("groupWS")
     private GroupDataWebService groupDataWebService;
 
     @Autowired

@@ -1,32 +1,53 @@
 package org.openiam.idm.srvc.user.service;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.ListUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.Criteria;
-import org.hibernate.criterion.Restrictions;
 import org.openiam.authmanager.service.AuthorizationManagerService;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseConstants;
-import org.openiam.base.OrderConstants;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.SearchMode;
 import org.openiam.base.ws.SearchParam;
-import org.openiam.base.ws.SortParam;
 import org.openiam.core.dao.UserKeyDao;
-import org.openiam.dozer.converter.*;
+import org.openiam.dozer.converter.AddressDozerConverter;
+import org.openiam.dozer.converter.EmailAddressDozerConverter;
+import org.openiam.dozer.converter.PhoneDozerConverter;
+import org.openiam.dozer.converter.UserAttributeDozerConverter;
+import org.openiam.dozer.converter.UserDozerConverter;
+import org.openiam.elasticsearch.dao.EmailElasticSearchRepository;
+import org.openiam.elasticsearch.dao.LoginElasticSearchRepository;
+import org.openiam.elasticsearch.dao.PhoneElasticSearchRepository;
+import org.openiam.elasticsearch.dao.UserElasticSearchRepository;
 import org.openiam.exception.BasicDataServiceException;
-import org.openiam.idm.searchbeans.*;
+import org.openiam.idm.searchbeans.AddressSearchBean;
+import org.openiam.idm.searchbeans.DelegationFilterSearchBean;
+import org.openiam.idm.searchbeans.EmailSearchBean;
+import org.openiam.idm.searchbeans.MetadataElementSearchBean;
+import org.openiam.idm.searchbeans.PhoneSearchBean;
+import org.openiam.idm.searchbeans.PotentialSupSubSearchBean;
+import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.access.service.AccessRightDAO;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.auth.login.AuthStateDAO;
 import org.openiam.idm.srvc.auth.login.LoginDAO;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
-import org.openiam.idm.srvc.auth.login.lucene.LoginSearchDAO;
 import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
@@ -34,7 +55,9 @@ import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
-import org.openiam.idm.srvc.continfo.service.*;
+import org.openiam.idm.srvc.continfo.service.AddressDAO;
+import org.openiam.idm.srvc.continfo.service.EmailAddressDAO;
+import org.openiam.idm.srvc.continfo.service.PhoneDAO;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
 import org.openiam.idm.srvc.key.constant.KeyName;
@@ -46,22 +69,22 @@ import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
 import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
-import org.openiam.idm.srvc.mngsys.dto.ApproverAssociation;
 import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
-import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.service.OrganizationService;
 import org.openiam.idm.srvc.pswd.domain.PasswordHistoryEntity;
 import org.openiam.idm.srvc.pswd.service.PasswordHistoryDAO;
 import org.openiam.idm.srvc.pswd.service.UserIdentityAnswerDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
-import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.searchbean.converter.AddressSearchBeanConverter;
 import org.openiam.idm.srvc.searchbean.converter.EmailAddressSearchBeanConverter;
 import org.openiam.idm.srvc.searchbean.converter.PhoneSearchBeanConverter;
-import org.openiam.idm.srvc.user.dao.UserSearchDAO;
-import org.openiam.idm.srvc.user.domain.*;
+import org.openiam.idm.srvc.user.domain.SupervisorEntity;
+import org.openiam.idm.srvc.user.domain.SupervisorIDEntity;
+import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
+import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.idm.srvc.user.domain.UserNoteEntity;
 import org.openiam.idm.srvc.user.dto.DelegationFilterSearch;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
@@ -72,11 +95,10 @@ import org.openiam.util.AttributeUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.*;
 
 /**
  * Service interface that clients will access to gain information about users
@@ -112,21 +134,23 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
     protected SysConfiguration sysConfiguration;
 
     @Autowired
-    private UserSearchDAO userSearchDAO;
+    private UserElasticSearchRepository userRepo;
 
     @Autowired
-    private LoginSearchDAO loginSearchDAO;
-
+    private LoginElasticSearchRepository loginRepo;
+    
     @Autowired
     @Qualifier("groupDAO")
     private GroupDAO groupDAO;
+    
+    @Autowired
+    private EmailElasticSearchRepository emailElasticSearchRepo;
 
     @Autowired
-    private EmailSearchDAO emailSearchDAO;
-    @Autowired
     private ResourceDAO resourceDAO;
+    
     @Autowired
-    private PhoneSearchDAO phoneSearchDAO;
+    private PhoneElasticSearchRepository phoneRepository;
 
     @Autowired
     private UserKeyDao userKeyDao;
@@ -578,7 +602,7 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
         }
         List<String> idList = null;
         if(isSearchByPrimaryAttributes(searchBean)) {
-            idList = userSearchDAO.findIds(0, Integer.MAX_VALUE, null, searchBean);
+            idList = userRepo.findIds(searchBean, new PageRequest(0, Integer.MAX_VALUE));
         }
 
         if (idList!=null) {
@@ -617,20 +641,24 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
         }
 
         if (searchBean.getPrincipal() != null) {
-            nonEmptyListOfLists.add(loginSearchDAO.findUserIds(0, Integer.MAX_VALUE, searchBean.getPrincipal()));
+            nonEmptyListOfLists.add(loginRepo.findUserIds(searchBean.getPrincipal(), new PageRequest(0, Integer.MAX_VALUE)).getContent());
         }
 
         if (searchBean.getEmailAddressMatchToken() != null && searchBean.getEmailAddressMatchToken().isValid()) {
             final EmailSearchBean emailSearchBean = new EmailSearchBean();
             emailSearchBean.setEmailMatchToken(searchBean.getEmailAddressMatchToken());
-            nonEmptyListOfLists.add(emailSearchDAO.findUserIds(0, Integer.MAX_VALUE, emailSearchBean));
+            final List<String> userIds = emailElasticSearchRepo.findUserIds(emailSearchBean, new PageRequest(0, Integer.MAX_VALUE)).getContent();
+            												   //(emailSearchBean.getEmailMatchToken().getValue()).stream().map(e -> e.getId()).collect(Collectors.toList());
+            if(CollectionUtils.isNotEmpty(userIds)) {
+            	nonEmptyListOfLists.add(userIds);
+            }
         }
 
         if (StringUtils.isNotBlank(searchBean.getPhoneAreaCd()) || StringUtils.isNotBlank(searchBean.getPhoneNbr())) {
             final PhoneSearchBean phoneSearchBean = new PhoneSearchBean();
             phoneSearchBean.setPhoneAreaCd(StringUtils.trimToNull(searchBean.getPhoneAreaCd()));
             phoneSearchBean.setPhoneNbr(StringUtils.trimToNull(searchBean.getPhoneNbr()));
-            nonEmptyListOfLists.add(phoneSearchDAO.findUserIds(0, Integer.MAX_VALUE, phoneSearchBean));
+            nonEmptyListOfLists.add(phoneRepository.findUserIds(phoneSearchBean, new PageRequest(0, Integer.MAX_VALUE)).getContent());
         }
 
         // remove null or empty lists

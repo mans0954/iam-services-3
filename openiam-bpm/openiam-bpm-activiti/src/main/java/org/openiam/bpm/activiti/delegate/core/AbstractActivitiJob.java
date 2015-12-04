@@ -81,6 +81,7 @@ public abstract class AbstractActivitiJob implements JavaDelegate, TaskListener 
 	protected UserDataService userDataService;
 	
 	@Autowired
+	@Qualifier("groupWS")
 	protected GroupDataWebService groupDataService;
 	
 	@Autowired

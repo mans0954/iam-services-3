@@ -1,19 +1,6 @@
 package org.openiam.idm.srvc.loc.domain;
 
 
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.annotations.Type;
-import org.openiam.base.domain.KeyEntity;
-import org.openiam.core.dao.lucene.LuceneId;
-import org.openiam.dozer.DozerDTOCorrespondence;
-import org.openiam.elasticsearch.annotation.ElasticsearchIndex;
-import org.openiam.elasticsearch.annotation.ElasticsearchMapping;
-import org.openiam.elasticsearch.constants.ESIndexName;
-import org.openiam.elasticsearch.constants.ESIndexType;
-import org.openiam.idm.srvc.loc.dto.Location;
-import org.openiam.idm.srvc.org.domain.OrganizationEntity;
-
 import javax.persistence.AttributeOverride;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -24,14 +11,24 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.Size;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.Type;
+import org.openiam.base.domain.KeyEntity;
+import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.elasticsearch.constants.ESIndexName;
+import org.openiam.elasticsearch.constants.ESIndexType;
+import org.openiam.idm.srvc.loc.dto.Location;
+import org.openiam.idm.srvc.org.domain.OrganizationEntity;
+import org.springframework.data.elasticsearch.annotations.Document;
+
 
 @Entity
 @Table(name = "LOCATION")
 @DozerDTOCorrespondence(Location.class)
 @AttributeOverride(name = "id", column = @Column(name = "LOCATION_ID"))
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-@ElasticsearchIndex(indexName = ESIndexName.LOCATION)
-@ElasticsearchMapping(typeName = ESIndexType.LOCATION)
+@Document(indexName = ESIndexName.LOCATION, type= ESIndexType.LOCATION)
 public class LocationEntity extends KeyEntity {
 
 	@Column(name = "NAME", length = 100)

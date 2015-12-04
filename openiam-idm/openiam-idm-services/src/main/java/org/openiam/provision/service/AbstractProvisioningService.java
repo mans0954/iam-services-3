@@ -154,6 +154,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     @Autowired
     protected LoginDataService loginManager;
     @Autowired
+    @Qualifier("managedSysService")
     protected ManagedSystemWebService managedSysService;
 
     @Autowired
@@ -177,6 +178,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     @Autowired
     protected ConnectorAdapter connectorAdapter;
     @Autowired
+    @Qualifier("provisionConnectorWebService")
     protected ProvisionConnectorWebService provisionConnectorWebService;
     @Autowired
     protected ValidateConnectionConfig validateConnectionConfig;

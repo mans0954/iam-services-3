@@ -10,10 +10,12 @@ import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 public class DeleteGroupDelegate extends AbstractActivitiJob {
 
 	@Autowired
+	@Qualifier("groupWS")
 	private GroupDataWebService groupDataService;
 	
 	public DeleteGroupDelegate() {

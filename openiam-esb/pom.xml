@@ -218,7 +218,6 @@
             <groupId>org.apache.xbean</groupId>
             <artifactId>xbean-spring</artifactId>
         </dependency>
-<!-- Testing -->
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>

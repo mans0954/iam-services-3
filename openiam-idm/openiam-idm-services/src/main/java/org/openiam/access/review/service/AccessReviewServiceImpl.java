@@ -30,6 +30,7 @@ import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -50,10 +51,12 @@ public class AccessReviewServiceImpl implements AccessReviewService {
     @Autowired
     private ResourceDataService resourceService;
     @Autowired
+    @Qualifier("activitiBPMService")
     private ActivitiService activitiService;
     @Autowired
     protected SysConfiguration sysConfiguration;
     @Autowired
+    @Qualifier("accessRightWS")
     private AccessRightDataService accessRightDataService;
 
     @Override

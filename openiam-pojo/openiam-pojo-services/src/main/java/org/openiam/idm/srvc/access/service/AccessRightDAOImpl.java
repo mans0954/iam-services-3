@@ -1,9 +1,8 @@
 package org.openiam.idm.srvc.access.service;
 
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.elasticsearch.common.lang3.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Restrictions;
@@ -11,7 +10,6 @@ import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.searchbeans.AccessRightSearchBean;
 import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.access.domain.AccessRightEntity;
-import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.springframework.stereotype.Repository;
 
 @Repository

@@ -51,6 +51,7 @@ public class BuildUserPolicyMapHelper {
     private UserDataService userMgr;
 
     @Autowired
+    @Qualifier("managedSysService")
     private ManagedSystemWebService managedSysService;
 
     @Autowired

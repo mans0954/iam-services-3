@@ -88,6 +88,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 
     @Autowired
     private UserDataService userManager;
+    
     @Autowired
     @Qualifier("defaultProvision")
     private ProvisionService provisionService;

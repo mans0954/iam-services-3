@@ -18,37 +18,38 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
-import org.openiam.elasticsearch.annotation.ElasticsearchField;
 import org.openiam.elasticsearch.annotation.ElasticsearchFieldBridge;
-import org.openiam.elasticsearch.annotation.ElasticsearchIndex;
-import org.openiam.elasticsearch.annotation.ElasticsearchMapping;
 import org.openiam.elasticsearch.bridge.GroupBridge;
+import org.openiam.elasticsearch.bridge.RoleBridge;
 import org.openiam.elasticsearch.constants.ESIndexName;
 import org.openiam.elasticsearch.constants.ESIndexType;
-import org.openiam.elasticsearch.constants.ElasticsearchStore;
-import org.openiam.elasticsearch.constants.Index;
 import org.openiam.idm.srvc.access.domain.AccessRightEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.membership.domain.AbstractMembershipXrefEntity;
 import org.openiam.idm.srvc.membership.domain.GroupAwareMembershipXref;
 import org.openiam.idm.srvc.membership.domain.RoleAwareMembershipXref;
-import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.springframework.data.elasticsearch.annotations.Document;
+import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldIndex;
+import org.springframework.data.elasticsearch.annotations.FieldType;
 
 @Entity
 @Table(name = "GRP_ROLE")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @AttributeOverride(name = "id", column = @Column(name = "MEMBERSHIP_ID"))
-@ElasticsearchIndex(indexName = ESIndexName.ROLE_TO_GRP_XREF)
-@ElasticsearchMapping(typeName = ESIndexType.ROLE_TO_GRP_XREF)
+@Document(indexName = ESIndexName.ROLE_TO_GRP_XREF, type= ESIndexType.ROLE_TO_GRP_XREF)
 public class RoleToGroupMembershipXrefEntity extends AbstractMembershipXrefEntity<RoleEntity, GroupEntity> implements GroupAwareMembershipXref, RoleAwareMembershipXref {
 
 	@ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
 	@JoinColumn(name = "ROLE_ID", referencedColumnName = "ROLE_ID", insertable = true, updatable = false, nullable=false)
+	@Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
+    @ElasticsearchFieldBridge(impl = RoleBridge.class)
 	private RoleEntity entity;
 	    
 	@ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
 	@JoinColumn(name = "GRP_ID", referencedColumnName = "GRP_ID", insertable = true, updatable = false, nullable=false)
-	@ElasticsearchField(name = "memberEntityId", bridge=@ElasticsearchFieldBridge(impl = GroupBridge.class), store = ElasticsearchStore.Yes, index = Index.Not_Analyzed)
+	@Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
+    @ElasticsearchFieldBridge(impl = GroupBridge.class)
 	private GroupEntity memberEntity;
 	    
 	 /* this is eager.  If you're loading the XREF - it's to get the rights */

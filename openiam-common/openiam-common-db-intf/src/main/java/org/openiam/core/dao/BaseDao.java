@@ -19,6 +19,8 @@ public interface BaseDao<T, PrimaryKey extends Serializable> {
   List<T> findAll();
 
   List<PrimaryKey> getAllIds();
+  
+  Class<T> getDomainClass();
 
   Long countAll();
   
@@ -58,5 +60,5 @@ public interface BaseDao<T, PrimaryKey extends Serializable> {
   
   void flush();
   void clear();
-
+  List<T> find(int from, int size);
 }

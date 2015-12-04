@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 public class SaveGroupDelegate extends AbstractActivitiJob {
 
 	@Autowired
+	@Qualifier("groupWS")
 	private GroupDataWebService groupDataService;
 
     @Autowired
