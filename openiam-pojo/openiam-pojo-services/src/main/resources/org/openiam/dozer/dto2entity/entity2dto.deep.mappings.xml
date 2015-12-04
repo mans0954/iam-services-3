@@ -170,6 +170,10 @@
             <a>employeeType.id</a>
             <b>employeeTypeId</b>
         </field>
+        <field custom-converter="org.openiam.dozer.converter.DisplayNameDozerConverter" type="one-way">
+            <a>userAttributes</a>
+            <b>displayNameFormat</b>
+        </field>
     </mapping>
 
     <mapping>

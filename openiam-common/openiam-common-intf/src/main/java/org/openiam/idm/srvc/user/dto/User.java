@@ -99,7 +99,8 @@ import java.util.*;
         "partnerName",
         "prefixLastName",
         "prefixPartnerName",
-        "userSubTypeId"
+        "userSubTypeId", "displayNameFormat"
+
 })
 @XmlSeeAlso({
         Login.class,
@@ -254,7 +255,7 @@ public class User extends AbstractMetadataTypeDTO {
     private String partnerName;
     private String prefixPartnerName;
     private String prefixLastName;
-
+    private String displayNameFormat;
     // Constructors
 
     /**
@@ -279,6 +280,9 @@ public class User extends AbstractMetadataTypeDTO {
     }
 
     public String getDisplayName() {
+        if (StringUtils.isNotBlank(displayNameFormat)) {
+            return getDisplayName(displayNameFormat);
+        }
         String displayName = null;
         if (StringUtils.isNotBlank(firstName) && StringUtils.isNotBlank(lastName)) {
             displayName = String.format("%s %s", firstName, lastName);
@@ -287,6 +291,23 @@ public class User extends AbstractMetadataTypeDTO {
         } else if (StringUtils.isNotBlank(lastName)) {
             displayName = lastName;
         }
+        return displayName;
+    }
+
+    private String getDisplayName(String format) {
+        if (StringUtils.isBlank(format)) {
+            return "";
+        }
+        String displayName = format;
+        displayName = displayName.replace("${firstName}", StringUtils.isBlank(firstName) ? "" : firstName);
+        displayName = displayName.replace("${lastName}", StringUtils.isBlank(lastName) ? "" : lastName);
+        displayName = displayName.replace("${prefix}", StringUtils.isBlank(prefix) ? "" : prefix);
+        displayName = displayName.replace("${prefixLastName}", StringUtils.isBlank(prefixLastName) ? "" : prefixLastName);
+        displayName = displayName.replace("${suffix}", StringUtils.isBlank(suffix) ? "" : suffix);
+        displayName = displayName.replace("${middleInit}", StringUtils.isBlank(middleInit) ? "" : middleInit);
+        displayName = displayName.replace("${maidenName}", StringUtils.isBlank(maidenName) ? "" : maidenName);
+        displayName = displayName.replace("${nickname}", StringUtils.isBlank(nickname) ? "" : nickname);
+
         return displayName;
     }
 
@@ -1412,5 +1433,13 @@ public class User extends AbstractMetadataTypeDTO {
         result = 31 * result + (userOwnerId != null ? userOwnerId.hashCode() : 0);
         result = 31 * result + (login != null ? login.hashCode() : 0);
         return result;
+    }
+
+    public String getDisplayNameFormat() {
+        return displayNameFormat;
+    }
+
+    public void setDisplayNameFormat(String displayNameFormat) {
+        this.displayNameFormat = displayNameFormat;
     }
 }
