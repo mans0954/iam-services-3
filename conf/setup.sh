@@ -4,6 +4,7 @@ set -e
 set -x
 
 sudo mkdir -p /data/openiam/conf
+sudo mkdir -p /data/openiam/logs
 sudo mkdir -p /etc/chef
 sudo mkdir -p /opt/openiam/webapps
 sudo cp client.rb /etc/chef/client.rb
@@ -16,3 +17,4 @@ sudo chef-client -o openiam-properties::securityconf -j /etc/chef/attributes.jso
 sudo chef-client -o openiam-properties::service-urls -j /etc/chef/attributes.json
 sudo chef-client -o openiam-conf -j /etc/chef/attributes.json
 sudo chef-client -o openiam-hazelcast -j /etc/chef/attributes.json
+sudo chmod 777 /data/openiam/logs
