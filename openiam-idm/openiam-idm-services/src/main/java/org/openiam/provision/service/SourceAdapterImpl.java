@@ -403,7 +403,7 @@ public class SourceAdapterImpl implements SourceAdapter {
                 }
                 isFound = false;
                 for (Login l : pUser.getPrincipalList()) {
-                    if (l.getLogin().equals(loginRequest.getLogin())) {
+                    if (l.getManagedSysId().equals(loginRequest.getManagedSystemId())) {
                         if (AttributeOperationEnum.DELETE.equals(loginRequest.getOperation())) {
                             //delete
                             l.setOperation(AttributeOperationEnum.DELETE);
@@ -412,18 +412,18 @@ public class SourceAdapterImpl implements SourceAdapter {
                             populateLogin(loginRequest, l, AttributeOperationEnum.REPLACE);
                         } else if (AttributeOperationEnum.ADD.equals(loginRequest.getOperation())) {
                             //add
-                            warnings.append(this.getWarning("Can't ADD this login. Login have already existed for user=" + loginRequest.getLogin() + ". Skip it."));
+                            populateLogin(loginRequest, l, AttributeOperationEnum.REPLACE);
+                            warnings.append(this.getWarning("Can't ADD this login. Login for this managed system has already existed for user (Updating founded) =" + loginRequest.getLogin()));
                         }
                         isFound = true;
                         break;
                     }
                 }
                 if (!isFound) {
-                    if (!AttributeOperationEnum.ADD.equals(loginRequest.getOperation())) {
-                        warnings.append(this.getWarning("Can't replace this login. Login operation must be ADD=" + loginRequest.getLogin() + ". Skip it."));
-                        continue;
-                    } else {
-//add
+                    if (AttributeOperationEnum.ADD.equals(loginRequest.getOperation()) || AttributeOperationEnum.REPLACE.equals(loginRequest.getOperation())) {
+                        if (AttributeOperationEnum.REPLACE.equals(loginRequest.getOperation()))
+                            warnings.append(this.getWarning("Can't replace this login. (call ADD instead of REPLACE)=" + loginRequest.getLogin() + ". Skip it."));
+
                         Login l = new Login();
                         populateLogin(loginRequest, l, AttributeOperationEnum.ADD);
                         pUser.addPrincipal(l);
@@ -900,13 +900,13 @@ public class SourceAdapterImpl implements SourceAdapter {
                     }
                 }
                 if (!isFound) {
-                    if (!AttributeOperationEnum.ADD.equals(fromWS.getOperation())) {
-                        warnings.append(getWarning("Email not exists in OIAM and comes with not ADD operation. User Attribute=" + fromWS.getEmail()));
-                    } else {
-                        EmailAddress r = new EmailAddress();
-                        convertToEmailAddress(r, fromWS, AttributeOperationEnum.ADD);
-                        pUser.getEmailAddresses().add(r);
-                    }
+                    if (!AttributeOperationEnum.ADD.equals(fromWS.getOperation()))
+                        warnings.append(getWarning("Email not exists in OIAM and comes with not ADD operation. Adding... Email=" + fromWS.getEmail()));
+
+                    EmailAddress r = new EmailAddress();
+                    convertToEmailAddress(r, fromWS, AttributeOperationEnum.ADD);
+                    pUser.getEmailAddresses().add(r);
+
                 }
             }
         }
@@ -935,13 +935,12 @@ public class SourceAdapterImpl implements SourceAdapter {
                     }
                 } else {
                     UserAttribute attr = new UserAttribute(fromWS.getName(), fromWS.getValue());
-                    if (!AttributeOperationEnum.ADD.equals(fromWS.getOperation())) {
-                        warnings.append(getWarning("User Attribute not exists in OIAM, but comes with not ADD operation." +
+                    if (!AttributeOperationEnum.ADD.equals(fromWS.getOperation()))
+                        warnings.append(getWarning("User Attribute not exists in OIAM, but comes with not ADD operation. Adding... " +
                                 " User Attribute=" + fromWS.getName()));
-                    } else {
-                        attr.setOperation(AttributeOperationEnum.ADD);
-                        pUser.saveAttribute(attr);
-                    }
+
+                    attr.setOperation(AttributeOperationEnum.ADD);
+                    pUser.saveAttribute(attr);
                 }
             }
         }
