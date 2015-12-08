@@ -14,10 +14,10 @@ import java.util.Set;
 
 @XmlType(propOrder = {"newName", "addIfNotExistsInOpenIAM", "metadataTypeId", "organizationTypeId", "abbreviation", "alias", "classification", "description",
         "domainName", "internalOrgId", "ldapString",
-        "symbol", "status", "entityAttributes"})
+        "symbol", "status", "entityAttributes","attributeLookup"})
 @XmlAccessorType(XmlAccessType.FIELD)
 public class SourceAdapterOrganizationRequest extends SourceAdapterEntityRequest {
-
+    private SourceAdapterAttributeRequest attributeLookup;
     private String metadataTypeId;
     private String organizationTypeId;
     private String newName;
@@ -146,5 +146,22 @@ public class SourceAdapterOrganizationRequest extends SourceAdapterEntityRequest
 
     public void setAddIfNotExistsInOpenIAM(boolean addIfNotExistsInOpenIAM) {
         this.addIfNotExistsInOpenIAM = addIfNotExistsInOpenIAM;
+    }
+
+    public SourceAdapterAttributeRequest getAttributeLookup() {
+        return attributeLookup;
+    }
+
+    public void setAttributeLookup(SourceAdapterAttributeRequest attributeLookup) {
+        this.attributeLookup = attributeLookup;
+    }
+
+    @Override
+    public String toString() {
+        return "Search params {" +
+                "attributeLookup='" + attributeLookup + " or \'" +
+                ", organizationTypeId='" + organizationTypeId + '\'' +
+                ", name='" + this.getName() + '\'' +
+                '}';
     }
 }
