@@ -4,6 +4,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.Logger;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
@@ -25,6 +26,8 @@ import org.openiam.idm.srvc.grp.dto.GroupAttribute;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.lang.service.LanguageDataService;
+import org.openiam.idm.srvc.role.domain.RoleEntity;
+import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.internationalization.LocalizedServiceGet;
@@ -49,8 +52,13 @@ import java.util.*;
 @WebService(endpointInterface = "org.openiam.idm.srvc.grp.ws.GroupDataWebService", targetNamespace = "urn:idm.openiam.org/srvc/grp/service", portName = "GroupDataWebServicePort", serviceName = "GroupDataWebService")
 @Service("groupWS")
 public class GroupDataWebServiceImpl extends AbstractBaseService implements GroupDataWebService {
+
+    private static Logger LOG = Logger.getLogger(GroupDataWebServiceImpl.class);
     @Autowired
     private GroupDataService groupManager;
+
+    @Autowired
+    private RoleDataService roleDataService;
 
     @Autowired
     private UserDataService userManager;
@@ -651,5 +659,41 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     @Override
     public List<Group> findGroupsByAttributeValueLocalize(String attrName, String attrValue, final Language language) {
         return groupManager.findGroupsDtoByAttributeValueLocalize(attrName, attrValue, languageConverter.convertToEntity(language, false));
+    }
+
+    @Override
+    public Response removeRoleFromGroup(String roleId, String groupId, String requesterId) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        IdmAuditLog idmAuditLog = new IdmAuditLog();
+        idmAuditLog.setRequestorUserId(requesterId);
+        idmAuditLog.setAction(AuditAction.REMOVE_ROLE_FROM_GROUP.value());
+        GroupEntity groupEntity = groupManager.getGroup(groupId);
+        idmAuditLog.setTargetGroup(groupId, groupEntity.getName());
+        RoleEntity roleEntity = roleDataService.getRole(roleId);
+        idmAuditLog.setTargetRole(roleId, roleEntity.getName());
+        idmAuditLog.setAuditDescription(String.format("Remove role %s from group: %s", roleId, groupId));
+        try {
+            if(groupId == null || roleId == null) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "GroupId or RoleId  is null or empty");
+            }
+
+            groupManager.removeRoleFromGroup(roleId, groupId);
+            idmAuditLog.succeed();
+        } catch(BasicDataServiceException e) {
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(e.getCode());
+            idmAuditLog.setException(e);
+        } catch(Throwable e) {
+            LOG.error("Exception", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+            idmAuditLog.fail();
+            idmAuditLog.setException(e);
+        }finally {
+            auditLogService.enqueue(idmAuditLog);
+        }
+        return response;
     }
 }

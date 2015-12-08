@@ -26,6 +26,7 @@ import org.openiam.idm.srvc.meta.ws.MetadataWebService;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.org.dto.Organization;
+import org.openiam.idm.srvc.org.dto.OrganizationAttribute;
 import org.openiam.idm.srvc.org.dto.OrganizationUserDTO;
 import org.openiam.idm.srvc.org.service.OrganizationDataService;
 import org.openiam.idm.srvc.org.service.OrganizationDataServiceImpl;
@@ -48,9 +49,7 @@ import sun.rmi.runtime.Log;
 
 import javax.jws.WebService;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by zaporozhec on 10/29/15.
@@ -128,7 +127,7 @@ public class SourceAdapterImpl implements SourceAdapter {
             }
         } catch (Exception e) {
             response.setStatus(ResponseStatus.FAILURE);
-            response.setError(e.getCause().getMessage());
+            response.setError(e.getMessage());
             idmAuditLog.fail();
             idmAuditLog.setFailureReason(e.getMessage());
             idmAuditLog.setException(e);
@@ -336,10 +335,10 @@ public class SourceAdapterImpl implements SourceAdapter {
             pUser.setLastName(getNULLValue(request.getLastName()));
         }
         if (request.getLastDate() != null) {
-            pUser.setLastDate("NULL".equals(request.getLastDate()) ? null : sdf.parse(request.getLastDate()));
+            pUser.setLastDate("null".equals(request.getLastDate()) ? null : sdf.parse(request.getLastDate()));
         }
         if (request.getStartDate() != null) {
-            pUser.setStartDate("NULL".equals(request.getStartDate()) ? null : sdf.parse(request.getStartDate()));
+            pUser.setStartDate("null".equals(request.getStartDate()) ? null : sdf.parse(request.getStartDate()));
         }
         if (StringUtils.isNotBlank(request.getMaidenName())) {
             pUser.setMaidenName(getNULLValue(request.getMaidenName()));
@@ -371,6 +370,24 @@ public class SourceAdapterImpl implements SourceAdapter {
         if (StringUtils.isNotBlank(request.getUserTypeId())) {
             pUser.setUserTypeInd(getNULLValue(request.getUserTypeId()));
         }
+        if (StringUtils.isNotBlank(request.getUserSubTypeId())) {
+            pUser.setUserSubTypeId(getNULLValue(request.getUserSubTypeId()));
+        }
+        if (StringUtils.isNotBlank(request.getPrefixLastName())) {
+            if (request.getPrefixLastName().length() > 10)
+                throw new Exception("Lenght of preffix last name must be not more than 10 characters");
+            pUser.setPrefixLastName(getNULLValue(request.getPrefixLastName()));
+        }
+        if (StringUtils.isNotBlank(request.getPartnerName())) {
+            if (request.getPartnerName().length() > 60)
+                throw new Exception("Lenght of Partner name must be not more than 60 characters");
+            pUser.setPartnerName(getNULLValue(request.getPartnerName()));
+        }
+        if (StringUtils.isNotBlank(request.getPrefixPartnerName())) {
+            if (request.getPrefixPartnerName().length() > 10)
+                throw new Exception("Lenght of preffix partner name must be not more than 10 characters");
+            pUser.setPrefixPartnerName(getNULLValue(request.getPrefixPartnerName()));
+        }
     }
 
     private void fillPrincipals(ProvisionUser pUser, SourceAdapterRequest request, StringBuilder warnings, String requestorId) throws Exception {
@@ -386,7 +403,7 @@ public class SourceAdapterImpl implements SourceAdapter {
                 }
                 isFound = false;
                 for (Login l : pUser.getPrincipalList()) {
-                    if (l.getLogin().equals(loginRequest.getLogin())) {
+                    if (l.getManagedSysId().equals(loginRequest.getManagedSystemId())) {
                         if (AttributeOperationEnum.DELETE.equals(loginRequest.getOperation())) {
                             //delete
                             l.setOperation(AttributeOperationEnum.DELETE);
@@ -395,18 +412,18 @@ public class SourceAdapterImpl implements SourceAdapter {
                             populateLogin(loginRequest, l, AttributeOperationEnum.REPLACE);
                         } else if (AttributeOperationEnum.ADD.equals(loginRequest.getOperation())) {
                             //add
-                            warnings.append(this.getWarning("Can't ADD this login. Login have already existed for user=" + loginRequest.getLogin() + ". Skip it."));
+                            populateLogin(loginRequest, l, AttributeOperationEnum.REPLACE);
+                            warnings.append(this.getWarning("Can't ADD this login. Login for this managed system has already existed for user (Updating founded) =" + loginRequest.getLogin()));
                         }
                         isFound = true;
                         break;
                     }
                 }
                 if (!isFound) {
-                    if (!AttributeOperationEnum.ADD.equals(loginRequest.getOperation())) {
-                        warnings.append(this.getWarning("Can't replace this login. Login operation must be ADD=" + loginRequest.getLogin() + ". Skip it."));
-                        continue;
-                    } else {
-//add
+                    if (AttributeOperationEnum.ADD.equals(loginRequest.getOperation()) || AttributeOperationEnum.REPLACE.equals(loginRequest.getOperation())) {
+                        if (AttributeOperationEnum.REPLACE.equals(loginRequest.getOperation()))
+                            warnings.append(this.getWarning("Can't replace this login. (call ADD instead of REPLACE)=" + loginRequest.getLogin() + ". Skip it."));
+
                         Login l = new Login();
                         populateLogin(loginRequest, l, AttributeOperationEnum.ADD);
                         pUser.addPrincipal(l);
@@ -480,6 +497,7 @@ public class SourceAdapterImpl implements SourceAdapter {
             }
             List<OrganizationUserDTO> result = new ArrayList<OrganizationUserDTO>();
             for (SourceAdapterOrganizationRequest org : request.getOrganizations()) {
+                Organization organizationDB = null;
                 isFound = false;
                 if (org.getOperation() == null) {
                     warnings.append(getWarning("Incorrect operation for organization=" + org.getName() + " Skip this!"));
@@ -496,6 +514,12 @@ public class SourceAdapterImpl implements SourceAdapter {
                             }
                             case REPLACE: {
                                 organizationUserDTO.setMdTypeId(org.getMetadataTypeId());
+                                organizationDB = this.getOrganizationFromDataBase(org, warnings, requestorId);
+                                this.convertToOrganization(organizationDB, org, warnings);
+                                Response response = organizationDataService.saveOrganization(organizationDB, requestorId);
+                                if (response.isFailure()) {
+                                    warnings.append(getWarning("Organization doesn't added/updated to DataBase. " + response.getErrorCode() + ":" + response.getErrorText()));
+                                }
                             }
                             case DELETE: {
                                 organizationUserDTO.setOperation(org.getOperation());
@@ -513,22 +537,33 @@ public class SourceAdapterImpl implements SourceAdapter {
                     if (!AttributeOperationEnum.ADD.equals(org.getOperation())) {
                         warnings.append(getWarning("Incorrect operation for organization=" + org.getName() + " this organization is not entitled with user. Use ADD operation. Skip this!"));
                     } else {
-                        OrganizationSearchBean organizationSearchBean = new OrganizationSearchBean();
-                        organizationSearchBean.setName(org.getName());
-                        organizationSearchBean.setOrganizationTypeId(org.getOrganizationTypeId());
-                        organizationSearchBean.setDeepCopy(false);
-                        List<Organization> organization = organizationDataService.findBeans(organizationSearchBean, requestorId, 0, 2);
-                        if (CollectionUtils.isEmpty(organization)) {
-                            warnings.append(getWarning("No such organization name=" + org.getName() + ". Organization Type=" + org.getOrganizationTypeId() + " Skip this!"));
+                        organizationDB = this.getOrganizationFromDataBase(org, warnings, requestorId);
+                        if (organizationDB == null && !org.isAddIfNotExistsInOpenIAM()) {
                             break;
-                        }
-                        if (organization.size() > 1) {
-                            warnings.append(getWarning("Multiple associations with organization! name=" + org.getName() + ". Organization Type=" + org.getOrganizationTypeId() + " Skip this!"));
-                            break;
+                        } else {
+                            if (organizationDB == null) {
+                                organizationDB = new Organization();
+                            }
+                            this.convertToOrganization(organizationDB, org, warnings);
+                            if (StringUtils.isBlank(organizationDB.getId()) && CollectionUtils.isNotEmpty(organizationDB.getAttributes())) {
+                                Set<OrganizationAttribute> attributes = organizationDB.getAttributes();
+                                organizationDB.setAttributes(null);
+                                Response response = organizationDataService.saveOrganization(organizationDB, requestorId);
+                                if (response.isSuccess()) {
+                                    organizationDB.setId((String) response.getResponseValue());
+                                    organizationDB.setAttributes(attributes);
+                                }
+                            }
+                            Response response = organizationDataService.saveOrganization(organizationDB, requestorId);
+                            if (response.isSuccess()) {
+                                organizationDB.setId((String) response.getResponseValue());
+                                result.add(new OrganizationUserDTO(pUser.getId(), organizationDB.getId(), org.getMetadataTypeId(), AttributeOperationEnum.ADD));
+                            } else {
+                                warnings.append(getWarning("Organization doesn't added/updated to DataBase. " + response.getErrorCode() + ":" + response.getErrorText()));
+                                break;
+                            }
                         }
 
-                        Organization orgDB = organization.get(0);
-                        result.add(new OrganizationUserDTO(pUser.getId(), orgDB.getId(), org.getMetadataTypeId(), AttributeOperationEnum.ADD));
                     }
                 }
             }
@@ -536,12 +571,130 @@ public class SourceAdapterImpl implements SourceAdapter {
         }
     }
 
+    private void convertToOrganization(Organization organizationDB, SourceAdapterOrganizationRequest org, StringBuilder warnings) {
+        if (organizationDB == null || org == null) {
+            return;
+        }
+        if (StringUtils.isNotBlank(org.getAbbreviation())) {
+            organizationDB.setAbbreviation(org.getAbbreviation());
+        }
+        if (StringUtils.isNotBlank(org.getAlias())) {
+            organizationDB.setAlias(org.getAlias());
+        }
+        if (StringUtils.isNotBlank(org.getClassification())) {
+            organizationDB.setClassification(org.getClassification());
+        }
+        if (StringUtils.isNotBlank(org.getDescription())) {
+            organizationDB.setDescription(org.getDescription());
+        }
+        organizationDB.setName(StringUtils.isBlank(org.getNewName()) ? org.getName() : org.getNewName());
+        if (StringUtils.isNotBlank(org.getDomainName())) {
+            organizationDB.setDomainName(org.getDomainName());
+        }
+        if (StringUtils.isNotBlank(org.getInternalOrgId())) {
+            organizationDB.setInternalOrgId(org.getInternalOrgId());
+        }
+        if (StringUtils.isNotBlank(org.getLdapString())) {
+            organizationDB.setLdapStr(org.getLdapString());
+        }
+        if (StringUtils.isNotBlank(org.getOrganizationTypeId())) {
+            organizationDB.setOrganizationTypeId(org.getOrganizationTypeId());
+        }
+        if (StringUtils.isNotBlank(org.getStatus())) {
+            organizationDB.setStatus(org.getStatus());
+        }
+        if (StringUtils.isNotBlank(org.getSymbol())) {
+            organizationDB.setSymbol(org.getSymbol());
+        }
+
+
+        if (CollectionUtils.isEmpty(org.getEntityAttributes())) {
+            organizationDB.setAttributes(null);
+        } else {
+            for (SourceAdapterAttributeRequest attributeRequest : org.getEntityAttributes()) {
+                this.processAttribute(organizationDB.getAttributes(), attributeRequest, organizationDB.getId(), warnings);
+            }
+        }
+    }
+
+    private void processAttribute(Set<OrganizationAttribute> attributes, SourceAdapterAttributeRequest attributeRequest, String orgId, StringBuilder warnings) {
+        if (attributeRequest == null || StringUtils.isBlank(attributeRequest.getName())) {
+            return;
+        }
+        if (attributes == null) {
+            return;
+        }
+        boolean isFound = false;
+        Iterator<OrganizationAttribute> organizationAttributeIterator = attributes.iterator();
+        while (organizationAttributeIterator.hasNext()) {
+            OrganizationAttribute attribute = organizationAttributeIterator.next();
+            if (attribute.getName().equals(attributeRequest.getName())) {
+                isFound = true;
+                switch (attributeRequest.getOperation()) {
+                    case ADD:
+                    case REPLACE: {
+                        attribute.setName(StringUtils.isNotBlank(attributeRequest.getNewName()) ? attributeRequest.getNewName() : attributeRequest.getName());
+                        if (CollectionUtils.isEmpty(attributeRequest.getValues())) {
+                            attribute.setValues(null);
+                            attribute.setIsMultivalued(false);
+                            attribute.setValue(attributeRequest.getValue());
+                        } else {
+                            attribute.setValues(attributeRequest.getValues());
+                            attribute.setIsMultivalued(true);
+                            attribute.setValue(null);
+                        }
+                        break;
+                    }
+                    case DELETE:
+                        organizationAttributeIterator.remove();
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+        if (!isFound) {
+            OrganizationAttribute organizationAttribute = new OrganizationAttribute();
+            organizationAttribute.setName(StringUtils.isNotBlank(attributeRequest.getNewName()) ? attributeRequest.getNewName() : attributeRequest.getName());
+            if (CollectionUtils.isEmpty(attributeRequest.getValues())) {
+                organizationAttribute.setValues(null);
+                organizationAttribute.setIsMultivalued(false);
+                organizationAttribute.setValue(attributeRequest.getValue());
+            } else {
+                organizationAttribute.setValues(attributeRequest.getValues());
+                organizationAttribute.setIsMultivalued(true);
+                organizationAttribute.setValue(null);
+            }
+            attributes.add(organizationAttribute);
+        }
+    }
+
+    private Organization getOrganizationFromDataBase(SourceAdapterOrganizationRequest org, StringBuilder
+            warnings, String requestorId) {
+        OrganizationSearchBean organizationSearchBean = new OrganizationSearchBean();
+        organizationSearchBean.setName(org.getName());
+        organizationSearchBean.setOrganizationTypeId(org.getOrganizationTypeId());
+        organizationSearchBean.setDeepCopy(false);
+        List<Organization> organization = organizationDataService.findBeans(organizationSearchBean, requestorId, 0, 2);
+        if (CollectionUtils.isEmpty(organization)) {
+            warnings.append(getWarning("No such organization name=" + org.getName() + ". Organization Type=" + org.getOrganizationTypeId() + (org.isAddIfNotExistsInOpenIAM() ? " Will be added to database" : " Skip this")));
+            return null;
+        }
+        if (organization.size() > 1) {
+            warnings.append(getWarning("Multiple associations with organization! name=" + org.getName() + ". Organization Type=" + org.getOrganizationTypeId() + " Skip this!"));
+            return null;
+        }
+        return organization.get(0);
+    }
 
     private void fillSuperVisors(ProvisionUser pUser, SourceAdapterRequest request, StringBuilder warnings) throws
             Exception {
         if (CollectionUtils.isNotEmpty(request.getSupervisors())) {
             boolean isFound = false;
-            List<User> superiorsFromDB = userDataService.getSuperiors(pUser.getId(), 0, Integer.MAX_VALUE);
+            List<User> superiorsFromDB = null;
+            if (pUser.getId() != null) {
+                superiorsFromDB = userDataService.getSuperiors(pUser.getId(), 0, Integer.MAX_VALUE);
+            }
             if (CollectionUtils.isNotEmpty(superiorsFromDB)) {
                 pUser.setSuperiors(new HashSet<User>(superiorsFromDB));
             }
@@ -553,7 +706,7 @@ public class SourceAdapterImpl implements SourceAdapter {
                     continue;
                 }
                 User user = this.getUser(superUser, request);
-                if (user == null) {
+                if (user == null || user.getId() == null) {
                     break;
                 }
                 for (User supervisor : pUser.getSuperiors()) {
@@ -747,13 +900,13 @@ public class SourceAdapterImpl implements SourceAdapter {
                     }
                 }
                 if (!isFound) {
-                    if (!AttributeOperationEnum.ADD.equals(fromWS.getOperation())) {
-                        warnings.append(getWarning("Email not exists in OIAM and comes with not ADD operation. User Attribute=" + fromWS.getEmail()));
-                    } else {
-                        EmailAddress r = new EmailAddress();
-                        convertToEmailAddress(r, fromWS, AttributeOperationEnum.ADD);
-                        pUser.getEmailAddresses().add(r);
-                    }
+                    if (!AttributeOperationEnum.ADD.equals(fromWS.getOperation()))
+                        warnings.append(getWarning("Email not exists in OIAM and comes with not ADD operation. Adding... Email=" + fromWS.getEmail()));
+
+                    EmailAddress r = new EmailAddress();
+                    convertToEmailAddress(r, fromWS, AttributeOperationEnum.ADD);
+                    pUser.getEmailAddresses().add(r);
+
                 }
             }
         }
@@ -771,16 +924,23 @@ public class SourceAdapterImpl implements SourceAdapter {
                 if (a != null) {
                     a.setOperation(AttributeOperationEnum.ADD.equals(fromWS.getOperation()) ? AttributeOperationEnum.REPLACE : fromWS.getOperation());
                     a.setName(StringUtils.isBlank(fromWS.getNewName()) ? fromWS.getName() : fromWS.getNewName());
-                    a.setValue(getNULLValue(fromWS.getValue()));
+                    if (CollectionUtils.isNotEmpty(fromWS.getValues())) {
+                        a.setIsMultivalued(true);
+                        a.setValues(fromWS.getValues());
+                        a.setValue(null);
+                    } else {
+                        a.setValues(null);
+                        a.setIsMultivalued(false);
+                        a.setValue(getNULLValue(fromWS.getValue()));
+                    }
                 } else {
                     UserAttribute attr = new UserAttribute(fromWS.getName(), fromWS.getValue());
-                    if (!AttributeOperationEnum.ADD.equals(fromWS.getOperation())) {
-                        warnings.append(getWarning("User Attribute not exists in OIAM, but comes with not ADD operation." +
+                    if (!AttributeOperationEnum.ADD.equals(fromWS.getOperation()))
+                        warnings.append(getWarning("User Attribute not exists in OIAM, but comes with not ADD operation. Adding... " +
                                 " User Attribute=" + fromWS.getName()));
-                    } else {
-                        attr.setOperation(AttributeOperationEnum.ADD);
-                        pUser.saveAttribute(attr);
-                    }
+
+                    attr.setOperation(AttributeOperationEnum.ADD);
+                    pUser.saveAttribute(attr);
                 }
             }
         }
@@ -869,7 +1029,9 @@ public class SourceAdapterImpl implements SourceAdapter {
     }
 
     private User getUser(SourceAdapterKey keyPair, SourceAdapterRequest request) throws Exception {
-
+        if (keyPair == null && SourceAdapterOperationEnum.ADD.equals(request.getAction())) {
+            return new User();
+        }
         UserSearchBean searchBean = new UserSearchBean();
         SourceAdapterKeyEnum matchAttrName = keyPair.getName();
         String matchAttrValue = keyPair.getValue();

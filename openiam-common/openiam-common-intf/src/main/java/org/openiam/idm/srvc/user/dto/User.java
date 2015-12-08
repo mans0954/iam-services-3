@@ -14,6 +14,7 @@ import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.grp.dto.Group;
+import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.dto.OrganizationUserDTO;
 import org.openiam.idm.srvc.policy.dto.ResetPasswordTypeEnum;
@@ -22,6 +23,7 @@ import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.internationalization.Internationalized;
 
+import javax.persistence.Column;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.xml.bind.annotation.*;
@@ -93,7 +95,12 @@ import java.util.*;
         "supervisors",
         "subordinates",
         "isFromActivitiCreation",
-        "resetPasswordType"
+        "resetPasswordType",
+        "partnerName",
+        "prefixLastName",
+        "prefixPartnerName",
+        "userSubTypeId", "displayNameFormat"
+
 })
 @XmlSeeAlso({
         Login.class,
@@ -244,7 +251,13 @@ public class User extends AbstractMetadataTypeDTO {
 
     private ResetPasswordTypeEnum resetPasswordType;
 
+    private String userSubTypeId;
+    private String partnerName;
+    private String prefixPartnerName;
+    private String prefixLastName;
+    private String displayNameFormat;
     // Constructors
+
     /**
      * default constructor
      */
@@ -267,6 +280,9 @@ public class User extends AbstractMetadataTypeDTO {
     }
 
     public String getDisplayName() {
+        if (StringUtils.isNotBlank(displayNameFormat)) {
+            return getDisplayName(displayNameFormat);
+        }
         String displayName = null;
         if (StringUtils.isNotBlank(firstName) && StringUtils.isNotBlank(lastName)) {
             displayName = String.format("%s %s", firstName, lastName);
@@ -275,6 +291,23 @@ public class User extends AbstractMetadataTypeDTO {
         } else if (StringUtils.isNotBlank(lastName)) {
             displayName = lastName;
         }
+        return displayName;
+    }
+
+    private String getDisplayName(String format) {
+        if (StringUtils.isBlank(format)) {
+            return "";
+        }
+        String displayName = format;
+        displayName = displayName.replace("${firstName}", StringUtils.isBlank(firstName) ? "" : firstName);
+        displayName = displayName.replace("${lastName}", StringUtils.isBlank(lastName) ? "" : lastName);
+        displayName = displayName.replace("${prefix}", StringUtils.isBlank(prefix) ? "" : prefix);
+        displayName = displayName.replace("${prefixLastName}", StringUtils.isBlank(prefixLastName) ? "" : prefixLastName);
+        displayName = displayName.replace("${suffix}", StringUtils.isBlank(suffix) ? "" : suffix);
+        displayName = displayName.replace("${middleInit}", StringUtils.isBlank(middleInit) ? "" : middleInit);
+        displayName = displayName.replace("${maidenName}", StringUtils.isBlank(maidenName) ? "" : maidenName);
+        displayName = displayName.replace("${nickname}", StringUtils.isBlank(nickname) ? "" : nickname);
+
         return displayName;
     }
 
@@ -601,6 +634,38 @@ public class User extends AbstractMetadataTypeDTO {
      */
     public Set<Address> getAddresses() {
         return addresses;
+    }
+
+    public String getUserSubTypeId() {
+        return userSubTypeId;
+    }
+
+    public void setUserSubTypeId(String userSubTypeId) {
+        this.userSubTypeId = userSubTypeId;
+    }
+
+    public String getPartnerName() {
+        return partnerName;
+    }
+
+    public void setPartnerName(String partnerName) {
+        this.partnerName = partnerName;
+    }
+
+    public String getPrefixPartnerName() {
+        return prefixPartnerName;
+    }
+
+    public void setPrefixPartnerName(String prefixPartnerName) {
+        this.prefixPartnerName = prefixPartnerName;
+    }
+
+    public String getPrefixLastName() {
+        return prefixLastName;
+    }
+
+    public void setPrefixLastName(String prefixLastName) {
+        this.prefixLastName = prefixLastName;
     }
 
     /**
@@ -1368,5 +1433,13 @@ public class User extends AbstractMetadataTypeDTO {
         result = 31 * result + (userOwnerId != null ? userOwnerId.hashCode() : 0);
         result = 31 * result + (login != null ? login.hashCode() : 0);
         return result;
+    }
+
+    public String getDisplayNameFormat() {
+        return displayNameFormat;
+    }
+
+    public void setDisplayNameFormat(String displayNameFormat) {
+        this.displayNameFormat = displayNameFormat;
     }
 }

@@ -14,6 +14,7 @@ import org.openiam.idm.srvc.searchbean.converter.AuditLogSearchBeanConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -70,13 +71,29 @@ public class IdmAuditLogDAOImpl extends BaseDaoImpl<IdmAuditLogEntity, String> i
         return resultList;
     }
 
+    private Criteria buildCriteriaForInActions(Criteria criteria,AuditLogSearchBean auditLogSearchBean) {
+        if(auditLogSearchBean != null) {
+            if(auditLogSearchBean.getActions() != null) {
+                List<String> actions = new ArrayList<String>(auditLogSearchBean.getActions().length);
+                for(String action : auditLogSearchBean.getActions()) {
+                    if(StringUtils.isNotEmpty(action)) {
+                        actions.add(action);
+                    }
+                }
+                if(!actions.isEmpty())
+                    criteria.add(Restrictions.in("action",actions));
+            }
+        }
+        return criteria;
+    }
+
     @Override
     protected Criteria getExampleCriteria(SearchBean searchBean, boolean isCount) {
         Criteria criteria = super.getCriteria();
         if(searchBean != null && (searchBean instanceof AuditLogSearchBean)) {
             final AuditLogSearchBean auditSearch = (AuditLogSearchBean)searchBean;
             criteria = getExampleCriteria(converter.convert(auditSearch));
-
+            criteria = buildCriteriaForInActions(criteria,auditSearch);
             if(auditSearch.getFrom() != null && auditSearch.getTo() != null) {
                 criteria.add(Restrictions.between("timestamp", auditSearch.getFrom(), auditSearch.getTo()));
             } else if(auditSearch.getFrom() != null) {

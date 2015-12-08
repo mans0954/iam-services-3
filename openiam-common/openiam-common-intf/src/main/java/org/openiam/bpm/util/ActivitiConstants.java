@@ -9,6 +9,7 @@ public enum ActivitiConstants {
 	TASK_NAME("TaskName"),
 	TASK_DESCRIPTION("TaskDescription"),
 	REQUESTOR("TaskOwner"),
+    REQUESTOR_NAME("TaskOwnerName"),
 	EXECUTOR_ID("ExecutorId"),
 	APPROVER_ASSOCIATION_IDS("ApproverAssociationIds"),
 	ASSOCIATION_ID("AssociationId"),

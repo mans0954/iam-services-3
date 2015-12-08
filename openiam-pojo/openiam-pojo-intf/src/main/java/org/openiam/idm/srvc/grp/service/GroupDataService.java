@@ -123,4 +123,5 @@ public interface GroupDataService {
     public List<GroupEntity> findGroupsForOwner(GroupSearchBean searchBean, String requesterId, String ownerId, int from, int size, LanguageEntity languageEntity);
 
     public List<Group> findGroupsDtoForOwner(GroupSearchBean searchBean, String requesterId, String ownerId, int from, int size, Language language);
+    public void removeRoleFromGroup(String roleId, String groupId);
 }

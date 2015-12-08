@@ -34,7 +34,8 @@ import java.util.Set;
         "adminResourceId",
         "abbreviation",
         "uncoverParents",
-        "forCurrentUsersOnly"
+        "forCurrentUsersOnly",
+        "domainName"
 })
 public class OrganizationSearchBean extends EntitlementsSearchBean<Organization, String> implements SearchBean<Organization, String>,
         Serializable {
@@ -51,6 +52,7 @@ public class OrganizationSearchBean extends EntitlementsSearchBean<Organization,
     private String abbreviation;
     private Boolean uncoverParents = false;
     private boolean forCurrentUsersOnly = false;
+    private String domainName;
 
     public String getName() {
         return name;
@@ -221,6 +223,14 @@ public class OrganizationSearchBean extends EntitlementsSearchBean<Organization,
 
     public void setAbbreviation(String abbreviation) {
         this.abbreviation = abbreviation;
+    }
+
+    public String getDomainName() {
+        return domainName;
+    }
+
+    public void setDomainName(String domainName) {
+        this.domainName = domainName;
     }
 
     @Override

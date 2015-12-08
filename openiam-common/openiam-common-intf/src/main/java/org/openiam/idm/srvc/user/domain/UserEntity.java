@@ -290,6 +290,21 @@ public class UserEntity implements Serializable {
     @Enumerated(EnumType.STRING)
     private ResetPasswordTypeEnum resetPasswordType;
 
+    @ManyToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "SUB_TYPE_ID", insertable = true, updatable = true, nullable = true)
+    @Internationalized
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    protected MetadataTypeEntity subType;
+
+    @Column(name = "PARTNER_NAME", length = 60)
+    private String partnerName;
+
+    @Column(name = "PREFIX_PARTNER_NAME", length = 10)
+    private String prefixPartnerName;
+
+    @Column(name = "LASTNAME_PREFIX", length = 10)
+    private String prefixLastName;
+
     public UserEntity() {
     }
 
@@ -1045,7 +1060,27 @@ public class UserEntity implements Serializable {
                 this.dateITPolicyApproved = newUser.getDateITPolicyApproved();
             }
         }
-
+        if (newUser.getPrefixLastName() != null) {
+            if (newUser.getPrefixLastName().equals(BaseConstants.NULL_STRING)) {
+                this.prefixLastName = null;
+            } else {
+                this.prefixLastName = newUser.getPrefixLastName();
+            }
+        }
+        if (newUser.getPrefixPartnerName() != null) {
+            if (newUser.getPrefixPartnerName().equals(BaseConstants.NULL_STRING)) {
+                this.prefixPartnerName = null;
+            } else {
+                this.prefixPartnerName = newUser.getPrefixPartnerName();
+            }
+        }
+        if (newUser.getPartnerName() != null) {
+            if (newUser.getPartnerName().equals(BaseConstants.NULL_STRING)) {
+                this.partnerName = null;
+            } else {
+                this.partnerName = newUser.getPartnerName();
+            }
+        }
     }
 
     public Set<SupervisorEntity> getSupervisors() {
@@ -1078,6 +1113,38 @@ public class UserEntity implements Serializable {
 
     public void setResetPasswordType(ResetPasswordTypeEnum resetPasswordType) {
         this.resetPasswordType = resetPasswordType;
+    }
+
+    public MetadataTypeEntity getSubType() {
+        return subType;
+    }
+
+    public void setSubType(MetadataTypeEntity subType) {
+        this.subType = subType;
+    }
+
+    public String getPartnerName() {
+        return partnerName;
+    }
+
+    public void setPartnerName(String partnerName) {
+        this.partnerName = partnerName;
+    }
+
+    public String getPrefixPartnerName() {
+        return prefixPartnerName;
+    }
+
+    public void setPrefixPartnerName(String prefixPartnerName) {
+        this.prefixPartnerName = prefixPartnerName;
+    }
+
+    public String getPrefixLastName() {
+        return prefixLastName;
+    }
+
+    public void setPrefixLastName(String prefixLastName) {
+        this.prefixLastName = prefixLastName;
     }
 
     @Override

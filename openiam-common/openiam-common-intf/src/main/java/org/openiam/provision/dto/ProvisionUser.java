@@ -164,6 +164,10 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         this.setRequestorLogin(user.getRequestorLogin());
         this.setRequestorSessionID(user.getRequestorSessionID());
 
+        this.setPrefixLastName(user.getPrefixLastName());
+        this.setPrefixPartnerName(user.getPrefixPartnerName());
+        this.setPartnerName(user.getPartnerName());
+        this.setUserSubTypeId(user.getUserSubTypeId());
     }
 
     public User getUser() {
@@ -219,6 +223,10 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         user.setDatePasswordChanged(datePasswordChanged);
         user.setDateITPolicyApproved(dateITPolicyApproved);
         user.setIsFromActivitiCreation(this.getIsFromActivitiCreation());
+        user.setPrefixLastName(this.getPrefixLastName());
+        user.setPartnerName(this.getPartnerName());
+        user.setPrefixPartnerName(this.getPrefixPartnerName());
+        user.setUserSubTypeId(this.getUserSubTypeId());
         return user;
     }
 

@@ -15,7 +15,7 @@ import java.util.Set;
         "middleName", "prefix", "sex", "status", "secondaryStatus", "suffix",
         "title", "nickname", "maidenName", "userTypeId", "startDate", "lastDate",
         "userAttributes", "groups", "roles", "resources", "organizations", "emails", "addresses", "phones",
-        /*"subordinates",*/ "supervisors", "passwordRequest"})
+        /*"subordinates",*/ "supervisors", "passwordRequest","userSubTypeId","prefixPartnerName","prefixLastName","partnerName"})
 @XmlAccessorType(XmlAccessType.FIELD)
 public class SourceAdapterRequest {
     @XmlElement(required = true)
@@ -41,6 +41,10 @@ public class SourceAdapterRequest {
     private String suffix;
     private String nickname;
     private String maidenName;
+    private String userSubTypeId;
+    private String partnerName;
+    private String prefixPartnerName;
+    private String prefixLastName;
 
     @XmlElement(name = "skipWarnings")
     private boolean forceMode;
@@ -359,5 +363,37 @@ public class SourceAdapterRequest {
 
     public void setPasswordRequest(SourceAdapterPasswordRequest passwordRequest) {
         this.passwordRequest = passwordRequest;
+    }
+
+    public String getUserSubTypeId() {
+        return userSubTypeId;
+    }
+
+    public void setUserSubTypeId(String userSubTypeId) {
+        this.userSubTypeId = userSubTypeId;
+    }
+
+    public String getPartnerName() {
+        return partnerName;
+    }
+
+    public void setPartnerName(String partnerName) {
+        this.partnerName = partnerName;
+    }
+
+    public String getPrefixPartnerName() {
+        return prefixPartnerName;
+    }
+
+    public void setPrefixPartnerName(String prefixPartnerName) {
+        this.prefixPartnerName = prefixPartnerName;
+    }
+
+    public String getPrefixLastName() {
+        return prefixLastName;
+    }
+
+    public void setPrefixLastName(String prefixLastName) {
+        this.prefixLastName = prefixLastName;
     }
 }

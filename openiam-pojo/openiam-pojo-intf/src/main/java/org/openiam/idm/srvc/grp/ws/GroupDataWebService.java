@@ -416,4 +416,8 @@ public interface GroupDataWebService {
     public List<Group> findGroupsByAttributeValueLocalize(final @WebParam(name = "attrName", targetNamespace = "") String attrName,
                                                   final @WebParam(name = "attrValue", targetNamespace = "") String attrValue,
                                                   final @WebParam(name = "language", targetNamespace = "") Language language);
+    @WebMethod
+    Response removeRoleFromGroup(@WebParam(name = "roleId", targetNamespace = "") String roleId,
+                                 @WebParam(name = "groupId", targetNamespace = "") String groupId,
+                                 final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 }
