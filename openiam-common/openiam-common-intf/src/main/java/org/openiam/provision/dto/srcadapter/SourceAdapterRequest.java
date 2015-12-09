@@ -20,7 +20,6 @@ import java.util.Set;
 public class SourceAdapterRequest {
     @XmlElement(required = true)
     private SourceAdapterOperationEnum action;
-    @XmlElement(required = true)
     private SourceAdapterKey key;
     @XmlElement(required = true)
     private SourceAdapterKey requestor;
