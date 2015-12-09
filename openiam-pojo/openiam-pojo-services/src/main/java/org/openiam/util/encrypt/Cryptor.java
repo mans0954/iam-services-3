@@ -13,8 +13,6 @@ public interface Cryptor {
 
 	public abstract String encrypt(byte[] key,String input)  throws EncryptionException;
 
-	public abstract byte[] encryptTobyte(byte[] key, String input) throws EncryptionException;
-
 	public abstract String decrypt(byte[] key,String input)  throws EncryptionException;
 
 }

@@ -497,24 +497,24 @@ public class SourceAdapterImpl implements SourceAdapter {
             }
             List<OrganizationUserDTO> result = new ArrayList<OrganizationUserDTO>();
             for (SourceAdapterOrganizationRequest org : request.getOrganizations()) {
-                Organization organizationDB = null;
                 isFound = false;
                 if (org.getOperation() == null) {
                     warnings.append(getWarning("Incorrect operation for organization=" + org.getName() + " Skip this!"));
                     continue;
                 }
-
+                Organization organizationDB = this.getOrganizationFromDataBase(org, warnings, requestorId);
+                if (organizationDB == null) {
+                    break;
+                }
                 for (OrganizationUserDTO organizationUserDTO : pUser.getOrganizationUserDTOs()) {
-                    if (organizationUserDTO.getOrganization().getName().equals(org.getName()) && organizationUserDTO.getOrganization().getOrganizationTypeId().equals(org.getOrganizationTypeId())) {
+                    if (organizationUserDTO.getOrganization().getId().equals(organizationDB.getId())) {
                         isFound = true;
                         switch (org.getOperation()) {
                             case ADD: {
                                 warnings.append(getWarning("Incorrect operation ADD for organization=" + org.getName() + " Such organization has been already entitled with user. Skip this!"));
-                                break;
                             }
                             case REPLACE: {
                                 organizationUserDTO.setMdTypeId(org.getMetadataTypeId());
-                                organizationDB = this.getOrganizationFromDataBase(org, warnings, requestorId);
                                 this.convertToOrganization(organizationDB, org, warnings);
                                 Response response = organizationDataService.saveOrganization(organizationDB, requestorId);
                                 if (response.isFailure()) {
@@ -534,41 +534,54 @@ public class SourceAdapterImpl implements SourceAdapter {
                     }
                 }
                 if (!isFound) {
-                    if (!AttributeOperationEnum.ADD.equals(org.getOperation())) {
-                        warnings.append(getWarning("Incorrect operation for organization=" + org.getName() + " this organization is not entitled with user. Use ADD operation. Skip this!"));
+                    if (org.getOperation().equals(AttributeOperationEnum.DELETE)) {
+                        break;
+                    }
+                    org.setOperation(AttributeOperationEnum.ADD);
+                    if (organizationDB == null && !org.isAddIfNotExistsInOpenIAM()) {
+                        break;
                     } else {
-                        organizationDB = this.getOrganizationFromDataBase(org, warnings, requestorId);
-                        if (organizationDB == null && !org.isAddIfNotExistsInOpenIAM()) {
-                            break;
-                        } else {
-                            if (organizationDB == null) {
-                                organizationDB = new Organization();
-                            }
-                            this.convertToOrganization(organizationDB, org, warnings);
-                            if (StringUtils.isBlank(organizationDB.getId()) && CollectionUtils.isNotEmpty(organizationDB.getAttributes())) {
-                                Set<OrganizationAttribute> attributes = organizationDB.getAttributes();
-                                organizationDB.setAttributes(null);
-                                Response response = organizationDataService.saveOrganization(organizationDB, requestorId);
-                                if (response.isSuccess()) {
-                                    organizationDB.setId((String) response.getResponseValue());
-                                    organizationDB.setAttributes(attributes);
-                                }
-                            }
+                        if (organizationDB == null) {
+                            organizationDB = new Organization();
+                        }
+                        this.convertToOrganization(organizationDB, org, warnings);
+                        if (StringUtils.isBlank(organizationDB.getId()) && CollectionUtils.isNotEmpty(organizationDB.getAttributes())) {
+                            Set<OrganizationAttribute> attributes = organizationDB.getAttributes();
+                            organizationDB.setAttributes(null);
                             Response response = organizationDataService.saveOrganization(organizationDB, requestorId);
                             if (response.isSuccess()) {
                                 organizationDB.setId((String) response.getResponseValue());
-                                result.add(new OrganizationUserDTO(pUser.getId(), organizationDB.getId(), org.getMetadataTypeId(), AttributeOperationEnum.ADD));
-                            } else {
-                                warnings.append(getWarning("Organization doesn't added/updated to DataBase. " + response.getErrorCode() + ":" + response.getErrorText()));
-                                break;
+                                organizationDB.setAttributes(attributes);
                             }
                         }
-
+                        Response response = organizationDataService.saveOrganization(organizationDB, requestorId);
+                        if (response.isSuccess()) {
+                            organizationDB.setId((String) response.getResponseValue());
+                            result.add(new OrganizationUserDTO(pUser.getId(), organizationDB.getId(), org.getMetadataTypeId(), AttributeOperationEnum.ADD));
+                        } else {
+                            warnings.append(getWarning("Organization doesn't added/updated to DataBase. " + response.getErrorCode() + ":" + response.getErrorText()));
+                            break;
+                        }
                     }
                 }
             }
             pUser.getOrganizationUserDTOs().addAll(result);
         }
+    }
+
+    private List<Organization> findOrganization(SourceAdapterOrganizationRequest org, String requestodId) {
+        List<Organization> organization = null;
+        OrganizationSearchBean osb = new OrganizationSearchBean();
+        if (StringUtils.isNotBlank(org.getName()) && StringUtils.isNotBlank(org.getOrganizationTypeId())) {
+            osb.setName(org.getName());
+            osb.setOrganizationTypeId(org.getOrganizationTypeId());
+        } else if (org.getAttributeLookup() != null && StringUtils.isNotBlank(org.getAttributeLookup().getName()) && StringUtils.isNotBlank(org.getAttributeLookup().getValue())) {
+            osb.addAttribute(org.getAttributeLookup().getName(), org.getAttributeLookup().getValue());
+        }
+        osb.setDeepCopy(false);
+        organization = organizationDataService.findBeans(osb, requestodId, 0, Integer.MAX_VALUE);
+
+        return organization;
     }
 
     private void convertToOrganization(Organization organizationDB, SourceAdapterOrganizationRequest org, StringBuilder warnings) {
@@ -587,7 +600,10 @@ public class SourceAdapterImpl implements SourceAdapter {
         if (StringUtils.isNotBlank(org.getDescription())) {
             organizationDB.setDescription(org.getDescription());
         }
-        organizationDB.setName(StringUtils.isBlank(org.getNewName()) ? org.getName() : org.getNewName());
+
+        if (StringUtils.isNotBlank(org.getName()) || StringUtils.isNotBlank(org.getNewName()))
+            organizationDB.setName(StringUtils.isBlank(org.getNewName()) ? org.getName() : org.getNewName());
+
         if (StringUtils.isNotBlank(org.getDomainName())) {
             organizationDB.setDomainName(org.getDomainName());
         }
@@ -671,18 +687,14 @@ public class SourceAdapterImpl implements SourceAdapter {
 
     private Organization getOrganizationFromDataBase(SourceAdapterOrganizationRequest org, StringBuilder
             warnings, String requestorId) {
-        OrganizationSearchBean organizationSearchBean = new OrganizationSearchBean();
-        organizationSearchBean.setName(org.getName());
-        organizationSearchBean.setOrganizationTypeId(org.getOrganizationTypeId());
-        organizationSearchBean.setDeepCopy(false);
-        List<Organization> organization = organizationDataService.findBeans(organizationSearchBean, requestorId, 0, 2);
+        List<Organization> organization = this.findOrganization(org, requestorId);
         if (CollectionUtils.isEmpty(organization)) {
-            warnings.append(getWarning("No such organization name=" + org.getName() + ". Organization Type=" + org.getOrganizationTypeId() + (org.isAddIfNotExistsInOpenIAM() ? " Will be added to database" : " Skip this")));
+            warnings.append(getWarning("can't find org=" + org.toString()));
             return null;
         }
         if (organization.size() > 1) {
-            warnings.append(getWarning("Multiple associations with organization! name=" + org.getName() + ". Organization Type=" + org.getOrganizationTypeId() + " Skip this!"));
-            return null;
+            warnings.append(getWarning("Multiple associations with organization! " + org.toString()));
+            return organization.get(0);
         }
         return organization.get(0);
     }
@@ -702,11 +714,12 @@ public class SourceAdapterImpl implements SourceAdapter {
             for (SourceAdapterMemberhipKey superUser : request.getSupervisors()) {
                 isFound = false;
                 if (superUser.getOperation() == null) {
-                    warnings.append(getWarning("Incorrect operation for organization=" + superUser.getValue() + " Skip this!"));
+                    warnings.append(getWarning("Incorrect operation for SuperUser=" + superUser.getValue() + " Skip this!"));
                     continue;
                 }
                 User user = this.getUser(superUser, request);
                 if (user == null || user.getId() == null) {
+                    warnings.append(getWarning("No such manager in system=" + superUser.getValue() + " Skip this!"));
                     break;
                 }
                 for (User supervisor : pUser.getSuperiors()) {

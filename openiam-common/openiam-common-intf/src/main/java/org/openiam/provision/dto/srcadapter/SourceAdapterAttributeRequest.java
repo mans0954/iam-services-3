@@ -60,4 +60,15 @@ public class SourceAdapterAttributeRequest {
     public void setValues(List<String> values) {
         this.values = values;
     }
+
+    @Override
+    public String toString() {
+        final StringBuffer sb = new StringBuffer("SourceAdapterAttributeRequest{");
+        sb.append("name='").append(name).append('\'');
+        sb.append(", value='").append(value).append('\'');
+        if (values != null)
+            sb.append(", values=").append(values);
+        sb.append('}');
+        return sb.toString();
+    }
 }
