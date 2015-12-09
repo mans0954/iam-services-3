@@ -18,9 +18,4 @@ public class AESCryptor implements Cryptor {
 		return null;
 	}
 
-	public byte[] encryptTobyte(byte[] key,String input) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 }
