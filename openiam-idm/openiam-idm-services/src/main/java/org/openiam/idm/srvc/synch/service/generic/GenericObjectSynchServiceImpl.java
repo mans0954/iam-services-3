@@ -1,11 +1,13 @@
 package org.openiam.idm.srvc.synch.service.generic;
 
+import java.sql.Timestamp;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
@@ -15,8 +17,6 @@ import org.openiam.idm.srvc.synch.service.SynchConfigDataMappingDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
-import java.sql.Timestamp;
 
 /**
  * Implementation object for <code>GenericObjectSynchService</code> which is used to synchronize objects such as
@@ -42,7 +42,7 @@ public class GenericObjectSynchServiceImpl implements GenericObjectSynchService 
 
     public SyncResponse startSynchronization(SynchConfig config) {
         log.debug("- Generic Object Synchronization started..^^^^^^^^");
-        IdmAuditLog idmAuditLog = new IdmAuditLog();
+        IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
         idmAuditLog.setRequestorUserId(systemUserId);
         idmAuditLog.setAction(AuditAction.SYNCHRONIZATION.value());
         idmAuditLog.setAuditDescription("- Generic Object Synchronization started..^^^^^^^^");
@@ -83,10 +83,7 @@ public class GenericObjectSynchServiceImpl implements GenericObjectSynchService 
             resp.setErrorText(cnfe.getMessage());
             return resp;
         }catch(Exception e) {
-
-            e.printStackTrace();
-
-            log.error(e);
+            log.error("Error while performing operation", e);
             SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
             resp.setErrorText(e.getMessage());
             return resp;

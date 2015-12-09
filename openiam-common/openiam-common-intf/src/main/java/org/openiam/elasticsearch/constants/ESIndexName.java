@@ -7,6 +7,7 @@ package org.openiam.elasticsearch.constants;
 public class ESIndexName {
     public static final String USERS="users";
     public static final String EMAIL="email";
+    public static final String AUDIT_LOG="auditlog";
     public static final String PHONE = "phone";
     public static final String LOGIN = "login";
     //public static final String CONTACT_INFO="contacts";

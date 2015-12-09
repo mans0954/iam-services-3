@@ -3,7 +3,9 @@ package org.openiam.elasticsearch.dao;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.RandomStringUtils;
 import org.junit.runner.RunWith;
+import org.openiam.base.BaseIdentity;
 import org.openiam.base.domain.KeyEntity;
 import org.openiam.config.UnitTestConfig;
 import org.openiam.core.dao.BaseDao;
@@ -29,7 +31,7 @@ import org.testng.annotations.Test;
 @SpringApplicationConfiguration({UnitTestConfig.class})
 @Transactional
 @Rollback(true)
-public abstract class AbstractElasticSearchRepositoryTest<E extends KeyEntity, R extends OpeniamElasticSearchRepository, D extends BaseDao> 
+public abstract class AbstractElasticSearchRepositoryTest<E extends BaseIdentity, R extends OpeniamElasticSearchRepository, D extends BaseDao> 
 			  extends AbstractTransactionalTestNGSpringContextTests {
 
 	@Autowired
@@ -59,6 +61,10 @@ public abstract class AbstractElasticSearchRepositoryTest<E extends KeyEntity, R
     	return metadataTypeDAO.getByExample(searchBean);
     }
 	
+	protected String randomString() {
+		return RandomStringUtils.randomAlphanumeric(5);
+	}
+	
 	@Test
 	public void testReindex() {
 		Assert.assertTrue(reindexer.reindex(getRepository().getEntityClass()) > 0);
@@ -74,6 +80,6 @@ public abstract class AbstractElasticSearchRepositoryTest<E extends KeyEntity, R
 		final E repoEntity = (E)getRepository().findOne(dbEntity.getId());
 		Assert.assertNotNull(repoEntity);
 		Assert.assertNotNull(dbEntity);
-		Assert.assertEquals(dbEntity.getId(), repoEntity.getId());
+		Assert.assertEquals(repoEntity.getId(), dbEntity.getId());
 	}
 }

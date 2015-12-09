@@ -5,8 +5,7 @@ import org.openiam.base.ws.Response;
 import org.openiam.bpm.activiti.delegate.core.AbstractActivitiJob;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
-import org.openiam.idm.srvc.audit.constant.AuditSource;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +22,7 @@ public class SaveResourceDelegate extends AbstractActivitiJob {
     @Override
     public void execute(DelegateExecution execution) throws Exception {
         final Resource resource = getObjectVariable(execution, ActivitiConstants.RESOURCE, Resource.class);
-        final IdmAuditLog idmAuditLog = createNewAuditLog(execution);
+        final IdmAuditLogEntity idmAuditLog = createNewAuditLog(execution);
         if (resource.getId() == null) {
             idmAuditLog.setAction(AuditAction.ADD_RESOURCE.value());
             idmAuditLog.setAuditDescription("Create new resource");

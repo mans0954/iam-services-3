@@ -8,6 +8,7 @@ import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
  *
  * @author Suneet Shah
  */
+@Deprecated
 public interface IdmAuditLogDAO extends BaseDao<IdmAuditLogEntity, String> {
-    IdmAuditLogEntity findByRequesterId(String requesterId, String correlationID);
+
 }

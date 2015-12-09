@@ -9,7 +9,7 @@ import org.apache.commons.lang.StringUtils;
 import org.openiam.bpm.activiti.delegate.core.AbstractActivitiJob;
 import org.openiam.bpm.activiti.groovy.AbstractGroovyDelegate;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.script.ScriptIntegration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -28,7 +28,7 @@ public class GroovyScriptTaskListener extends AbstractActivitiJob {
 	
 	@Override
 	public void notify(DelegateTask delegateTask) {
-		final IdmAuditLog idmAuditLog = createNewAuditLog(delegateTask);
+		final IdmAuditLogEntity idmAuditLog = createNewAuditLog(delegateTask);
 		idmAuditLog.setAction(AuditAction.ACTIVITI_GROOVY_SCRIPT.value());
 		try {
 			if(scriptSrc == null) {

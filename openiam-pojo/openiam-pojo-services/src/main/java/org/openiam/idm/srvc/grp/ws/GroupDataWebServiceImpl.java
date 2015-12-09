@@ -1,5 +1,11 @@
 package org.openiam.idm.srvc.grp.ws;
 
+import java.util.List;
+import java.util.Set;
+
+import javax.jws.WebMethod;
+import javax.jws.WebService;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -7,15 +13,15 @@ import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.dozer.converter.LanguageDozerConverter;
-import org.openiam.exception.BasicDataServiceException;
 import org.openiam.dozer.converter.GroupAttributeDozerConverter;
 import org.openiam.dozer.converter.GroupDozerConverter;
+import org.openiam.dozer.converter.LanguageDozerConverter;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.exception.EsbErrorToken;
 import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.srvc.access.service.AccessRightProcessor;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
@@ -32,11 +38,6 @@ import org.openiam.util.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import javax.jws.WebMethod;
-import javax.jws.WebService;
-
-import java.util.*;
 
 /**
  * <code>GroupDataServiceImpl</code> provides a service to manage groups as well
@@ -281,7 +282,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     @Override
     public Response addUserToGroup(final String groupId, final String userId, final String requesterId, final Set<String> rightIds) {
         final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLog auditLog = new IdmAuditLog();
+        IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
         auditLog.setAction(AuditAction.ADD_USER_TO_GROUP.value());
         UserEntity user = userManager.getUser(userId);
         LoginEntity userPrimaryIdentity =  UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), user.getPrincipalList());
@@ -318,7 +319,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     @Override
     public Response removeUserFromGroup(final String groupId, final String userId, final String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
-        final IdmAuditLog auditLog = new IdmAuditLog();
+        final IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
         try {
             if (groupId == null || userId == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Group Id is null or empty");
@@ -356,7 +357,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     @Override
     public Response addAttribute(final GroupAttribute attribute, final String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLog auditLog = new IdmAuditLog();
+        IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
         auditLog.setAction(AuditAction.ADD_ATTRIBUTE_TO_GROUP.value());
         auditLog.setRequestorUserId(requesterId);
         try {
@@ -394,7 +395,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     @Override
     public Response removeAttribute(final String attributeId, final String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLog auditLog = new IdmAuditLog();
+        IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
         auditLog.setRequestorUserId(requesterId);
         auditLog.setAction(AuditAction.REMOVE_GROUP_ATTRIBUTE.value());
         try {
@@ -547,7 +548,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     @Override
     public Response addChildGroup(final String groupId, final String childGroupId, final String requesterId, final Set<String> rights) {
         final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLog auditLog = new IdmAuditLog();
+        IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
         auditLog.setAction(AuditAction.ADD_CHILD_GROUP.value());
         auditLog.setRequestorUserId(requesterId);
         auditLog.setAuditDescription(String.format("Add child group: %s to group: %s", childGroupId, groupId));
@@ -596,7 +597,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     @WebMethod
     public Response removeChildGroup(final String groupId, final String childGroupId, final String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLog auditLog = new IdmAuditLog();
+        IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
         auditLog.setAction(AuditAction.REMOVE_CHILD_GROUP.value());
         Group groupDto = groupManager.getGroupDTO(groupId);
         auditLog.setTargetGroup(groupId, groupDto.getName());

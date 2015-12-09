@@ -20,19 +20,12 @@ import java.util.List;
  * RDMBS implementation the DAO for IdmAudit
  * @author Suneet Shah
  */
+@Deprecated
 @Repository("idmAuditLogDAO")
 public class IdmAuditLogDAOImpl extends BaseDaoImpl<IdmAuditLogEntity, String> implements IdmAuditLogDAO {
 
     @Autowired
     private AuditLogSearchBeanConverter converter;
-
-
-    @Override
-    public IdmAuditLogEntity findByRequesterId(String requesterId, String correlationID) {
-        final Criteria criteria = super.getCriteria();
-        IdmAuditLogEntity auditLogEntity = (IdmAuditLogEntity)criteria.add(Restrictions.and(Restrictions.eq("userId",requesterId),Restrictions.eq("coorelationId",correlationID))).uniqueResult();
-        return auditLogEntity;
-    }
 
     @Override
     protected Criteria getExampleCriteria(final IdmAuditLogEntity entity) {

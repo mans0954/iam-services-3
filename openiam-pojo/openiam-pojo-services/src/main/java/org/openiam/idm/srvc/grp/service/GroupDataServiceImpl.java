@@ -27,7 +27,7 @@ import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.srvc.access.domain.AccessRightEntity;
 import org.openiam.idm.srvc.access.service.AccessRightDAO;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.auth.domain.IdentityEntity;
 import org.openiam.idm.srvc.auth.dto.IdentityTypeEnum;
@@ -528,23 +528,23 @@ public class GroupDataServiceImpl implements GroupDataService {
 
     private void auditLogRemoveAttribute(final GroupEntity group, final GroupAttributeEntity groupAttr, final String requesterId){
         // Audit Log -----------------------------------------------------------------------------------
-        IdmAuditLog auditLog = new IdmAuditLog();
+    	IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
         auditLog.setRequestorUserId(requesterId);
         auditLog.setTargetGroup(group.getId(), group.getName());
         auditLog.setTargetGroupAttribute(groupAttr.getId(), groupAttr.getName());
         auditLog.setAction(AuditAction.DELETE_ATTRIBUTE.value());
-        auditLog.addCustomRecord(groupAttr.getName(), groupAttr.getValue());
+        auditLog.put(groupAttr.getName(), groupAttr.getValue());
         auditLogService.enqueue(auditLog);
     }
 
     private void auditLogAddAttribute(final GroupEntity group, final GroupAttributeEntity groupAttr, final String requesterId){
         // Audit Log -----------------------------------------------------------------------------------
-        IdmAuditLog auditLog = new IdmAuditLog();
+    	IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
         auditLog.setRequestorUserId(requesterId);
         auditLog.setTargetGroup(group.getId(), group.getName());
         auditLog.setTargetGroupAttribute(groupAttr.getId(), groupAttr.getName());
         auditLog.setAction(AuditAction.ADD_ATTRIBUTE.value());
-        auditLog.addCustomRecord(groupAttr.getName(), groupAttr.getValue());
+        auditLog.put(groupAttr.getName(), groupAttr.getValue());
         auditLogService.enqueue(auditLog);
     }
 

@@ -20,6 +20,11 @@
  */
 package org.openiam.idm.srvc.audit.ws;
 
+import java.util.List;
+
+import javax.jws.WebParam;
+import javax.jws.WebService;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.Response;
@@ -27,15 +32,10 @@ import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.AuditLogSearchBean;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import javax.jws.WebParam;
-import javax.jws.WebService;
-
-import java.util.List;
 
 /**
  * @author suneet
@@ -51,7 +51,7 @@ public class IdmAuditLogWebDataServiceImpl implements IdmAuditLogWebDataService 
 	private static final Log LOG = LogFactory.getLog(IdmAuditLogWebDataServiceImpl.class);
 
     @Override
-    public Response addLog(IdmAuditLog record) {
+    public Response addLog(IdmAuditLogEntity record) {
         final Response resp = new Response(ResponseStatus.SUCCESS);
         try {
             if(record == null) {
@@ -72,14 +72,14 @@ public class IdmAuditLogWebDataServiceImpl implements IdmAuditLogWebDataService 
     }
 
     @Override
-	public Response addLogs(List<IdmAuditLog> events) {
+	public Response addLogs(List<IdmAuditLogEntity> events) {
 		final Response resp = new Response(ResponseStatus.SUCCESS);
     	try {
     		if(events == null) {
     			throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
     		}
     		
-    		for(final IdmAuditLog log : events) {
+    		for(final IdmAuditLogEntity log : events) {
     			auditLogService.enqueue(log);
     		}
     	} catch(BasicDataServiceException e) {
@@ -94,8 +94,8 @@ public class IdmAuditLogWebDataServiceImpl implements IdmAuditLogWebDataService 
 	}
 
 	@Override
-	public List<IdmAuditLog> findBeans(final AuditLogSearchBean searchBean, final int from, final int size) {
-		final List<IdmAuditLog> entityList = auditLogService.findBeans(searchBean, from, size);
+	public List<IdmAuditLogEntity> findBeans(final AuditLogSearchBean searchBean, final int from, final int size) {
+		final List<IdmAuditLogEntity> entityList = auditLogService.findBeans(searchBean, from, size);
 		return entityList;
 	}
 
@@ -111,8 +111,8 @@ public class IdmAuditLogWebDataServiceImpl implements IdmAuditLogWebDataService 
 	}
 
 	@Override
-	public IdmAuditLog getLogRecord(final String id) {
-		final IdmAuditLog entity = auditLogService.findById(id);
+	public IdmAuditLogEntity getLogRecord(final String id) {
+		final IdmAuditLogEntity entity = auditLogService.findById(id);
 		return entity;
 	}
 

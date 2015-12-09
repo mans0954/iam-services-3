@@ -22,7 +22,7 @@ import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.searchbeans.RoleSearchBean;
 import org.openiam.idm.srvc.access.service.AccessRightDAO;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
@@ -336,23 +336,23 @@ public class RoleDataServiceImpl implements RoleDataService {
 
     private void auditLogRemoveAttribute(final RoleEntity role, final RoleAttributeEntity roleAttr, final String requesterId){
         // Audit Log -----------------------------------------------------------------------------------
-        IdmAuditLog auditLog = new IdmAuditLog();
+    	IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
         auditLog.setRequestorUserId(requesterId);
         auditLog.setTargetRole(role.getId(), role.getName());
         auditLog.setTargetRoleAttribute(roleAttr.getId(), roleAttr.getName());
         auditLog.setAction(AuditAction.DELETE_ATTRIBUTE.value());
-        auditLog.addCustomRecord(roleAttr.getName(), roleAttr.getValue());
+        auditLog.put(roleAttr.getName(), roleAttr.getValue());
         auditLogService.enqueue(auditLog);
     }
 
     private void auditLogAddAttribute(final RoleEntity role, final RoleAttributeEntity roleAttr, final String requesterId){
         // Audit Log -----------------------------------------------------------------------------------
-        IdmAuditLog auditLog = new IdmAuditLog();
+    	IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
         auditLog.setRequestorUserId(requesterId);
         auditLog.setTargetRole(role.getId(), role.getName());
         auditLog.setTargetRoleAttribute(roleAttr.getId(), roleAttr.getName());
         auditLog.setAction(AuditAction.ADD_ATTRIBUTE.value());
-        auditLog.addCustomRecord(roleAttr.getName(), roleAttr.getValue());
+        auditLog.put(roleAttr.getName(), roleAttr.getValue());
         auditLogService.enqueue(auditLog);
     }
 

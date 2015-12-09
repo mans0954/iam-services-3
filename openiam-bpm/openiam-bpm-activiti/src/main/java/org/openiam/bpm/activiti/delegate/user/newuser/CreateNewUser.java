@@ -10,7 +10,7 @@ import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.exception.CustomActivitiException;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.auth.ws.LoginResponse;
 import org.openiam.idm.srvc.provision.NewUserModelToProvisionConverter;
 import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;
@@ -37,7 +37,7 @@ public class CreateNewUser extends AbstractEntitlementsDelegate {
 	@Override
 	public void execute(DelegateExecution execution) throws Exception {
 		final NewUserProfileRequestModel request = getObjectVariable(execution, ActivitiConstants.REQUEST, NewUserProfileRequestModel.class);
-		final IdmAuditLog idmAuditLog = createNewAuditLog(execution);
+		final IdmAuditLogEntity idmAuditLog = createNewAuditLog(execution);
         String requesterId = getRequestorId(execution);
         if(StringUtils.isNotBlank(requesterId)) {
             LoginResponse loginResponse = loginService.getPrimaryIdentity(requesterId);

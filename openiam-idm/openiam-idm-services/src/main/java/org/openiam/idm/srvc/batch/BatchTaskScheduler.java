@@ -13,7 +13,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.hazelcast.HazelcastConfiguration;
 import org.openiam.idm.searchbeans.BatchTaskSearchBean;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.batch.dao.BatchConfigDAO;
 import org.openiam.idm.srvc.batch.domain.BatchTaskEntity;
@@ -137,7 +137,7 @@ public class BatchTaskScheduler extends AbstractBaseService implements Initializ
 	        			if(CollectionUtils.isNotEmpty(batchList)) {
 	        				for(final BatchTaskEntity entity : batchList) {
 	        					schedule(entity);
-	        					final IdmAuditLog idmAuditLog = new IdmAuditLog();
+	        					final IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
 	        					auditLogService.enqueue(idmAuditLog);
 	        					batchDao.save(entity);
 	        				}

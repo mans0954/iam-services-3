@@ -9,6 +9,7 @@ import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -41,7 +42,7 @@ public class UpdateUser extends AbstractEntitlementsDelegate {
 		final UserProfileRequestModel profile = getObjectVariable(execution, ActivitiConstants.REQUEST, UserProfileRequestModel.class);
 		//final String userId = (String)execution.getVariable(ActivitiConstants.ASSOCIATION_ID);
 		
-		final IdmAuditLog idmAuditLog = createNewAuditLog(execution);
+		final IdmAuditLogEntity idmAuditLog = createNewAuditLog(execution);
         idmAuditLog.setAction(AuditAction.MODIFY_USER.value());
         idmAuditLog.addAttributeAsJson(AuditAttributeName.PROFILE, profile, customJacksonMapper);
 		try {

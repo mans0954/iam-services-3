@@ -5,8 +5,7 @@ import org.openiam.base.ws.Response;
 import org.openiam.bpm.activiti.delegate.core.AbstractActivitiJob;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
-import org.openiam.idm.srvc.audit.constant.AuditSource;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.ws.RoleDataWebService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +23,7 @@ public class DeleteRoleDelegate extends AbstractActivitiJob {
 	public void execute(DelegateExecution execution) throws Exception {
 		Response wsResponse = null;
 		final Role role = getObjectVariable(execution, ActivitiConstants.ROLE, Role.class);
-		final IdmAuditLog idmAuditLog = createNewAuditLog(execution);
+		final IdmAuditLogEntity idmAuditLog = createNewAuditLog(execution);
 		idmAuditLog.setAction(AuditAction.DELETE_ROLE.value());
 		try {
 	        if(role != null) {

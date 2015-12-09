@@ -14,6 +14,7 @@ import javax.transaction.Transactional;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.base.BaseIdentity;
 import org.openiam.core.dao.BaseDao;
 import org.openiam.elasticsearch.dao.OpeniamElasticSearchRepository;
 import org.openiam.elasticsearch.model.ElasticsearchReindexRequest;
@@ -47,13 +48,18 @@ public class ElasticSearchReindexer implements ApplicationContextAware, Elastics
     @Qualifier("transactionTemplate")
     private TransactionTemplate transactionTemplate;
 	
-	private Map<Class<?>, ElasticsearchRepository> repoMap = new HashMap<Class<?>, ElasticsearchRepository>();
+	private Map<Class<?>, OpeniamElasticSearchRepository> repoMap = new HashMap<Class<?>, OpeniamElasticSearchRepository>();
 	private Map<Class<?>, BaseDao> daoMap = new HashMap<Class<?>, BaseDao>();
+	private Map<Class<?>, AbstractElasticSearchRepository> customRepoImplMap = new HashMap<>();
 	
 	@PostConstruct
 	public void init() {
 		ctx.getBeansOfType(BaseDao.class).forEach((beanName, bean) -> {
 			daoMap.put(bean.getDomainClass(), bean);
+		});
+		
+		ctx.getBeansOfType(AbstractElasticSearchRepository.class).forEach((beanName, bean) -> {
+			customRepoImplMap.put(bean.getEntityClass(), bean);
 		});
 		
 		ctx.getBeansOfType(OpeniamElasticSearchRepository.class).forEach((beanName, bean) -> {
@@ -102,7 +108,7 @@ public class ElasticSearchReindexer implements ApplicationContextAware, Elastics
 
 			@Override
 			public Void doInTransaction(TransactionStatus arg0) {
-		    	final ElasticsearchRepository repo = repoMap.get(reindexRequest.getEntityClass());
+		    	final OpeniamElasticSearchRepository repo = repoMap.get(reindexRequest.getEntityClass());
 		    	if(repo != null && CollectionUtils.isNotEmpty(reindexRequest.getEntityIdList())) {
 			        if(reindexRequest.isSaveOrUpdate()){
 			        	reindex(reindexRequest.getEntityClass(), reindexRequest.getEntityIdList());
@@ -138,11 +144,22 @@ public class ElasticSearchReindexer implements ApplicationContextAware, Elastics
 		if(logger.isDebugEnabled()) {
 			logger.debug(String.format("Attempting to fully re-index: %s", clazz));
 		}
-		final ElasticsearchRepository repo = repoMap.get(clazz);
+		final OpeniamElasticSearchRepository repo = repoMap.get(clazz);
 		if(repo != null) {
-			repo.deleteAll();
+			boolean reindex = true;
+			if(customRepoImplMap.containsKey(clazz)) {
+				reindex = customRepoImplMap.get(clazz).allowReindex();
+			}
+			if(reindex) {
+				repo.deleteAll();
+				return reindex(clazz, null);
+			} else {
+				logger.warn(String.format("Reindex not allowed for %s", clazz));
+				return 0;
+			}
+		} else {
+			throw new RuntimeException(String.format("No elastic search repo found for %s", clazz));
 		}
-		return reindex(clazz, null);
 	}
 	
 	private int reindex(final Class<?> clazz, final Collection<String> ids) {
@@ -173,7 +190,12 @@ public class ElasticSearchReindexer implements ApplicationContextAware, Elastics
         			}
         			if(CollectionUtils.isNotEmpty(list)) {
         				//if(CollectionUtils.isEmpty(ids)) {
-        					repo.save(list); /* same as index */
+        				if(customRepoImplMap.containsKey(clazz)) {
+        					list.forEach(e -> {
+        						customRepoImplMap.get(clazz).prepare((BaseIdentity)e);
+        					});
+        				}
+        				repo.save(list); /* same as index */
         				//} else {
         					//repo.index(null);
         				//}

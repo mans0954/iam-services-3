@@ -42,7 +42,7 @@ import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.RoleSearchBean;
 import org.openiam.idm.srvc.access.service.AccessRightProcessor;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
@@ -172,7 +172,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
     @Override
 	public Response addGroupToRole(final String roleId, final String groupId, final String requesterId, final Set<String> rightIds) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLog idmAuditLog = new IdmAuditLog();
+		IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
         idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.ADD_GROUP_TO_ROLE.value());
         GroupEntity groupEntity = groupService.getGroup(groupId);
@@ -205,7 +205,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	@Override
 	public Response addUserToRole(final String roleId, final String userId, final String requesterId, final Set<String> rightIds) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
-        final IdmAuditLog idmAuditLog = new IdmAuditLog();
+        final IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
         idmAuditLog.setAction(AuditAction.ADD_USER_TO_ROLE.value());
         final UserEntity user = userDataService.getUser(userId);
         final LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), user.getPrincipalList());
@@ -280,7 +280,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	@Override
 	public Response removeGroupFromRole(String roleId, String groupId, String requesterId) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLog idmAuditLog = new IdmAuditLog();
+		IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
         idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.REMOVE_GROUP_FROM_ROLE.value());
         GroupEntity groupEntity = groupService.getGroup(groupId);
@@ -342,7 +342,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	@Override
 	public Response removeUserFromRole(String roleId, String userId, String requesterId) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLog idmAuditLog = new IdmAuditLog();
+		IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
         idmAuditLog.setAction(AuditAction.REMOVE_USER_FROM_ROLE.value());
         UserEntity userEntity = userDataService.getUser(userId);
         LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), userEntity.getPrincipalList());

@@ -2,10 +2,24 @@ package org.openiam.idm.srvc.audit.dto;
 
 // Generated Nov 30, 2007 3:01:45 AM by Hibernate Tools 3.2.0.b11
 
-import org.apache.commons.collections.CollectionUtils;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlType;
+
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.openiam.base.BaseObject;
+import org.openiam.base.KeyDTO;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
@@ -14,20 +28,18 @@ import org.openiam.idm.srvc.audit.constant.AuditTarget;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.util.CustomJacksonMapper;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlType;
-import java.io.Serializable;
-import java.util.*;
-
 /**
  * DTO object that is used log and retrieve audit information
  * Refactoring 6.12.2012
  * @author zaporozhec 
  */
+
+/**
+ * There is no longer any need for this class, as we are storing IdmAuditLogEntity in ElasticSearch
+ *
+ */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "IdmAuditLog", propOrder = {
-	"id",
 	"principal",
 	"managedSysId",
 	"userId",
@@ -43,12 +55,12 @@ import java.util.*;
 	"childLogs",
 	"correlationId",
 	"targets",
-	"parentLogs"
+	"parentId"
 })
+@Deprecated
 @DozerDTOCorrespondence(IdmAuditLogEntity.class)
-public class IdmAuditLog implements Serializable {
+public class IdmAuditLog extends KeyDTO {
 	
-    private String id;
     private String userId;
     private String principal;
     private String managedSysId;
@@ -64,20 +76,12 @@ public class IdmAuditLog implements Serializable {
     private Set<IdmAuditLogCustom> customRecords;
     private Set<AuditLogTarget> targets;
     private Set<IdmAuditLog> childLogs;
-    private Set<IdmAuditLog> parentLogs;
+    private String parentId = "null";
 
     public IdmAuditLog() {
         setTimestamp(new Date());
         setHash(RandomStringUtils.randomAlphabetic(30));
     }
-
-    public String getId() {
-		return id;
-	}
-
-	public void setId(String id) {
-		this.id = id;
-	}
 
 	public String getUserId() {
 		return userId;
@@ -190,6 +194,14 @@ public class IdmAuditLog implements Serializable {
 	public Set<IdmAuditLog> getChildLogs() {
 		return childLogs;
 	}
+	
+	public String getParentId() {
+		return parentId;
+	}
+
+	public void setParentId(String parentId) {
+		this.parentId = parentId;
+	}
 
     /**
      * Sorting by timestamp - DESC
@@ -220,32 +232,6 @@ public class IdmAuditLog implements Serializable {
 		this.targets = targets;
 	}
 	
-	public Set<IdmAuditLog> getParentLogs() {
-		return parentLogs;
-	}
-
-    /**
-     * Sorting by timestamp - DESC
-     * @return
-     */
-    public Collection<IdmAuditLog> getParentLogsSorted() {
-        if(parentLogs != null) {
-            List<IdmAuditLog> sortedItems = new ArrayList<IdmAuditLog>(parentLogs);
-            Collections.sort(sortedItems, new Comparator<IdmAuditLog>(){
-                @Override
-                public int compare(IdmAuditLog o1, IdmAuditLog o2) {
-                    return o2.getTimestamp().compareTo(o1.getTimestamp());
-                }
-            } );
-            return sortedItems;
-        }
-        return parentLogs;
-    }
-
-	public void setParentLogs(Set<IdmAuditLog> parentLogs) {
-		this.parentLogs = parentLogs;
-	}
-
 	public void addTarget(final String targetId, final String targetType, final String principal) {
 		if(targetId != null && targetType != null) {
 			if(this.targets == null) {
@@ -255,7 +241,7 @@ public class IdmAuditLog implements Serializable {
             target.setTargetId(targetId);
             target.setTargetType(targetType);
             target.setObjectPrincipal(principal);
-            target.setLogId(id);
+            target.setLogId(getId());
             this.targets.add(target);
         }
     }
@@ -270,15 +256,6 @@ public class IdmAuditLog implements Serializable {
             }
     		this.childLogs.add(entity);
     	}
-    }
-
-    public void addParent(final IdmAuditLog event) {
-        if(event != null) {
-            if(this.parentLogs == null) {
-                this.parentLogs = new HashSet<>();
-            }
-            this.parentLogs.add(event);
-        }
     }
 
     public void addCustomRecord(final String key, final String value) {
@@ -521,42 +498,39 @@ public class IdmAuditLog implements Serializable {
 	@Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = 1;
-        result = prime * result + ((id == null) ? 0 : id.hashCode());
+		int result = super.hashCode();
 		result = prime * result + ((action == null) ? 0 : action.hashCode());
 		result = prime * result
 				+ ((clientIP == null) ? 0 : clientIP.hashCode());
+		result = prime * result
+				+ ((correlationId == null) ? 0 : correlationId.hashCode());
 		result = prime * result + ((hash == null) ? 0 : hash.hashCode());
+		result = prime * result
+				+ ((managedSysId == null) ? 0 : managedSysId.hashCode());
 		result = prime * result + ((nodeIP == null) ? 0 : nodeIP.hashCode());
 		result = prime * result
+				+ ((principal == null) ? 0 : principal.hashCode());
+		result = prime * result
 				+ ((this.result == null) ? 0 : this.result.hashCode());
+		result = prime * result
+				+ ((sessionID == null) ? 0 : sessionID.hashCode());
 		result = prime * result + ((source == null) ? 0 : source.hashCode());
 		result = prime * result
 				+ ((timestamp == null) ? 0 : timestamp.hashCode());
 		result = prime * result + ((userId == null) ? 0 : userId.hashCode());
-		result = prime * result + ((principal == null) ? 0 : principal.hashCode());
-		result = prime * result + ((managedSysId == null) ? 0 : managedSysId.hashCode());
-		result = prime * result + ((sessionID == null) ? 0 : sessionID.hashCode());
-		result = prime * result + ((correlationId == null) ? 0 : correlationId.hashCode());
-
-        return result;
+		return result;
 	}
 
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (obj == null)
+		if (!super.equals(obj))
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
 		IdmAuditLog other = (IdmAuditLog) obj;
-        if (id == null) {
-            if (other.id != null)
-                return false;
-        } else if (!id.equals(other.id))
-            return false;
-        if (action == null) {
+		if (action == null) {
 			if (other.action != null)
 				return false;
 		} else if (!action.equals(other.action))
@@ -566,20 +540,40 @@ public class IdmAuditLog implements Serializable {
 				return false;
 		} else if (!clientIP.equals(other.clientIP))
 			return false;
+		if (correlationId == null) {
+			if (other.correlationId != null)
+				return false;
+		} else if (!correlationId.equals(other.correlationId))
+			return false;
 		if (hash == null) {
 			if (other.hash != null)
 				return false;
 		} else if (!hash.equals(other.hash))
+			return false;
+		if (managedSysId == null) {
+			if (other.managedSysId != null)
+				return false;
+		} else if (!managedSysId.equals(other.managedSysId))
 			return false;
 		if (nodeIP == null) {
 			if (other.nodeIP != null)
 				return false;
 		} else if (!nodeIP.equals(other.nodeIP))
 			return false;
+		if (principal == null) {
+			if (other.principal != null)
+				return false;
+		} else if (!principal.equals(other.principal))
+			return false;
 		if (result == null) {
 			if (other.result != null)
 				return false;
 		} else if (!result.equals(other.result))
+			return false;
+		if (sessionID == null) {
+			if (other.sessionID != null)
+				return false;
+		} else if (!sessionID.equals(other.sessionID))
 			return false;
 		if (source == null) {
 			if (other.source != null)
@@ -596,38 +590,17 @@ public class IdmAuditLog implements Serializable {
 				return false;
 		} else if (!userId.equals(other.userId))
 			return false;
-		if (principal == null) {
-			if (other.principal != null)
-				return false;
-		} else if (!principal.equals(other.principal))
-			return false;
-		
-		if (sessionID == null) {
-			if (other.sessionID != null)
-				return false;
-		} else if (!sessionID.equals(other.sessionID))
-			return false;
-		
-		if (managedSysId == null) {
-			if (other.managedSysId != null)
-				return false;
-		} else if (!managedSysId.equals(other.managedSysId))
-			return false;
-		
-		if (correlationId == null) {
-			if (other.correlationId != null)
-				return false;
-		} else if (!correlationId.equals(other.correlationId))
-			return false;
 		return true;
 	}
 
 	@Override
 	public String toString() {
-		return String
-				.format("IdmAuditLog [id=%s, userId=%s, principal=%s, timestamp=%s, source=%s, clientIP=%s, nodeIP=%s, action=%s, result=%s, hash=%s]",
-						id, userId, principal, timestamp, source, clientIP,
-						nodeIP, action, result, hash);
+		return "IdmAuditLog [userId=" + userId + ", principal=" + principal
+				+ ", managedSysId=" + managedSysId + ", timestamp=" + timestamp
+				+ ", source=" + source + ", clientIP=" + clientIP + ", nodeIP="
+				+ nodeIP + ", action=" + action + ", result=" + result
+				+ ", hash=" + hash + ", sessionID=" + sessionID
+				+ ", correlationId=" + correlationId + "]";
 	}
 
 	

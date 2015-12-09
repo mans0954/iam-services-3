@@ -7,9 +7,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
 import org.apache.commons.lang.StringUtils;
-import org.openiam.idm.srvc.audit.constant.AuditAction;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
-import org.openiam.idm.srvc.continfo.dto.Address;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "AuditLogSearchBean", propOrder = {
@@ -26,7 +24,7 @@ import org.openiam.idm.srvc.continfo.dto.Address;
     "secondaryTargetId",
     "secondaryTargetType"
 })
-public class AuditLogSearchBean extends AbstractSearchBean<IdmAuditLog, String> implements SearchBean<IdmAuditLog, String> {
+public class AuditLogSearchBean extends AbstractSearchBean<IdmAuditLogEntity, String> implements SearchBean<IdmAuditLogEntity, String> {
 
 	private String userId;
 	private Date from;

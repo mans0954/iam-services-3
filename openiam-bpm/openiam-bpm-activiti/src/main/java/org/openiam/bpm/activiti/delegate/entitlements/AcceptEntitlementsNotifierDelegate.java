@@ -2,23 +2,15 @@ package org.openiam.bpm.activiti.delegate.entitlements;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.activiti.engine.delegate.DelegateExecution;
-import org.apache.commons.collections.CollectionUtils;
 import org.openiam.bpm.activiti.delegate.core.AbstractNotificationDelegate;
-import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.bpm.util.ActivitiRequestType;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
-import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
-import org.openiam.idm.srvc.msg.dto.NotificationParam;
-import org.openiam.idm.srvc.msg.dto.NotificationRequest;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
-import org.openiam.idm.srvc.user.service.UserDAO;
-import org.springframework.beans.factory.annotation.Autowired;
 
 public class AcceptEntitlementsNotifierDelegate extends AbstractNotificationDelegate {
 	
@@ -87,7 +79,7 @@ public class AcceptEntitlementsNotifierDelegate extends AbstractNotificationDele
 
 	@Override
 	public void execute(DelegateExecution execution) throws Exception {
-		final IdmAuditLog idmAuditLog = createNewAuditLog(execution);
+		final IdmAuditLogEntity idmAuditLog = createNewAuditLog(execution);
         idmAuditLog.setAction(AuditAction.NOTIFICATION.value());
 		try {
 			final Set<String> userIds = new HashSet<String>();

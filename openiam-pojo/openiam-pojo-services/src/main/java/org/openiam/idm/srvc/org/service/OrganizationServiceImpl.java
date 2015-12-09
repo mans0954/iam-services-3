@@ -24,6 +24,7 @@ import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.srvc.access.service.AccessRightDAO;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
@@ -261,7 +262,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     public Organization save(final Organization organization, final String requestorId, final boolean skipPrePostProcessors) throws BasicDataServiceException {
 
         // Audit Log -----------------------------------------------------------------------------------
-        final IdmAuditLog idmAuditLog = new IdmAuditLog();
+        final IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
         idmAuditLog.setRequestorUserId(requestorId);
         if (StringUtils.isNotBlank(organization.getId())) {
             idmAuditLog.setAction(AuditAction.EDIT_ORG.value());
@@ -755,7 +756,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     public void deleteOrganization(String orgId, boolean skipPrePostProcessors) throws BasicDataServiceException {
 
         // Audit Log -----------------------------------------------------------------------------------
-        final IdmAuditLog idmAuditLog = new IdmAuditLog();
+        final IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
         idmAuditLog.setAction(AuditAction.DELETE_ORG.value());
 
         try {

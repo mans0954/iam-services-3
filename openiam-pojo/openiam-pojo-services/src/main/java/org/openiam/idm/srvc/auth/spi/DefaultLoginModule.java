@@ -20,36 +20,26 @@
  */
 package org.openiam.idm.srvc.auth.spi;
 
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.authmanager.model.UserEntitlementsMatrix;
 import org.openiam.base.ws.ResponseCode;
-import org.openiam.exception.AuthenticationException;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.auth.context.AuthenticationContext;
-import org.openiam.idm.srvc.auth.context.PasswordCredential;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
-import org.openiam.idm.srvc.auth.dto.LogoutRequest;
-import org.openiam.idm.srvc.auth.dto.SSOToken;
 import org.openiam.idm.srvc.auth.dto.Subject;
-import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
-import org.openiam.idm.srvc.auth.sso.SSOTokenFactory;
-import org.openiam.idm.srvc.auth.sso.SSOTokenModule;
-import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.policy.domain.PolicyEntity;
-import org.openiam.idm.srvc.policy.dto.Policy;
-import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
-import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.*;
 
 /**
  * DefaultLoginModule provides basic password based authentication using the OpenIAM repository.
@@ -76,7 +66,7 @@ public class DefaultLoginModule extends AbstractLoginModule {
     protected Subject doLogin(final AuthenticationContext context, final UserEntity user, final LoginEntity login) throws Exception {
         final String principal = context.getPrincipal();
         final String password = context.getPassword();
-        final IdmAuditLog newLoginEvent = context.getEvent();
+        final IdmAuditLogEntity newLoginEvent = context.getEvent();
 
         final Subject sub = new Subject();
 

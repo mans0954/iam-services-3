@@ -7,6 +7,7 @@ import org.openiam.bpm.activiti.delegate.entitlements.AbstractEntitlementsDelega
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
@@ -25,7 +26,7 @@ public class SendNewHireRequestDelegate extends AbstractEntitlementsDelegate {
     public void execute(DelegateExecution execution) throws Exception {
         profileModel = getObjectVariable(execution, ActivitiConstants.REQUEST, NewUserProfileRequestModel.class);
 
-        final IdmAuditLog idmAuditLog = createNewAuditLog(execution);
+        final IdmAuditLogEntity idmAuditLog = createNewAuditLog(execution);
         idmAuditLog.setAction(AuditAction.NOTIFICATION.value());
 		try {
 	        final Collection<String> candidateUserIds = activitiHelper.getCandidateUserIds(execution, null, profileModel.getSupervisorIds());
@@ -46,7 +47,7 @@ public class SendNewHireRequestDelegate extends AbstractEntitlementsDelegate {
 		}
     }
 
-    private void sendNotificationRequest(final UserEntity user, final DelegateExecution execution, final IdmAuditLog idmAuditLog) {
+    private void sendNotificationRequest(final UserEntity user, final DelegateExecution execution, final IdmAuditLogEntity idmAuditLog) {
         final NotificationRequest request = new NotificationRequest();
         request.setUserId(user.getId());
         request.setNotificationType(getNotificationType(execution));
@@ -56,7 +57,7 @@ public class SendNewHireRequestDelegate extends AbstractEntitlementsDelegate {
         request.getParamList().add(new NotificationParam("TARGET_USER", profileModel.getUser().getDisplayName()));
         request.getParamList().add(new NotificationParam("COMMENT", getComment(execution)));
         
-        final IdmAuditLog child = createNewAuditLog(execution);
+        final IdmAuditLogEntity child = createNewAuditLog(execution);
         child.setAction("Send Notification");
         child.setUserId(user.getId());
         child.addAttribute(AuditAttributeName.NOTIFICATION_TYPE, getNotificationType(execution));

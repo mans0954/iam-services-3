@@ -179,7 +179,7 @@
 		<artifactory.version>2.2.1</artifactory.version>
 		<slf4j.simple.version>1.6.1</slf4j.simple.version>
 		<googleauth.version>0.4.3</googleauth.version>
-        <jackson.version>2.4.3</jackson.version>
+        <jackson.version>2.6.3</jackson.version>
         <sqlserver.version>4.0</sqlserver.version>
         <oracle.version>11.2.0.1.0</oracle.version>
         <posgres.version>9.3-1102-jdbc41</posgres.version>

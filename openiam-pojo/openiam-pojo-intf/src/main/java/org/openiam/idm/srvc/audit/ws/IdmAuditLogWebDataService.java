@@ -1,13 +1,14 @@
 package org.openiam.idm.srvc.audit.ws;
 
-import org.openiam.base.ws.Response;
-import org.openiam.idm.searchbeans.AuditLogSearchBean;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import java.util.List;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
-import java.util.List;
+
+import org.openiam.base.ws.Response;
+import org.openiam.idm.searchbeans.AuditLogSearchBean;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 
 /**
  * Interface for  <code>IdmAuditLogDataService</code>. All audit logging activities
@@ -17,16 +18,16 @@ import java.util.List;
 public interface IdmAuditLogWebDataService {
     
 	@WebMethod
-	IdmAuditLog getLogRecord(final @WebParam(name = "id", targetNamespace = "") String id);
+	IdmAuditLogEntity getLogRecord(final @WebParam(name = "id", targetNamespace = "") String id);
 	
 	@WebMethod
-	Response addLogs(final List<IdmAuditLog> events);
+	Response addLogs(final List<IdmAuditLogEntity> events);
 
     @WebMethod
-	Response addLog(final IdmAuditLog record);
+	Response addLog(final IdmAuditLogEntity record);
 
 	@WebMethod
-	List<IdmAuditLog> findBeans(final @WebParam(name = "searchBean", targetNamespace = "") AuditLogSearchBean searchBean,
+	List<IdmAuditLogEntity> findBeans(final @WebParam(name = "searchBean", targetNamespace = "") AuditLogSearchBean searchBean,
 								final @WebParam(name = "from", targetNamespace = "") int from,
 								final @WebParam(name = "size", targetNamespace = "") int size);
     @WebMethod

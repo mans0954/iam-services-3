@@ -8,6 +8,7 @@ import org.openiam.bpm.activiti.delegate.core.AbstractActivitiJob;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditSource;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
@@ -26,7 +27,7 @@ public class DeleteResourceDelegate extends AbstractActivitiJob {
 	public void execute(DelegateExecution execution) throws Exception {
 		Response wsResponse = null;
 		final Resource resource = getObjectVariable(execution, ActivitiConstants.RESOURCE, Resource.class);
-		final IdmAuditLog idmAuditLog = createNewAuditLog(execution);
+		final IdmAuditLogEntity idmAuditLog = createNewAuditLog(execution);
 		idmAuditLog.setAction(AuditAction.DELETE_RESOURCE.value());
 		try {
 			if(resource != null) {

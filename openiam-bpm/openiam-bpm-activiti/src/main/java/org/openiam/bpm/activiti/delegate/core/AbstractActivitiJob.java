@@ -1,6 +1,12 @@
 package org.openiam.bpm.activiti.delegate.core;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 
 import org.activiti.engine.delegate.DelegateExecution;
 import org.activiti.engine.delegate.DelegateTask;
@@ -15,11 +21,9 @@ import org.openiam.bpm.activiti.ActivitiService;
 import org.openiam.bpm.activiti.model.ActivitiJSONStringWrapper;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.bpm.util.ActivitiRequestType;
-import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditSource;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
-import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.auth.ws.LoginDataWebService;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
@@ -27,7 +31,6 @@ import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
 import org.openiam.idm.srvc.msg.service.MailService;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.service.OrganizationDataService;
-import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.role.dto.Role;
@@ -37,7 +40,6 @@ import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.ws.UserDataWebService;
 import org.openiam.idm.util.CustomJacksonMapper;
-import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.provision.service.ProvisionService;
 import org.openiam.util.SpringContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -244,7 +246,7 @@ public abstract class AbstractActivitiJob implements JavaDelegate, TaskListener 
 		return getStringVariable(execution, ActivitiConstants.USER_NOTE);
 	}
 	
-	protected void addAuditLogChild(final DelegateExecution execution, final IdmAuditLog log) {
+	protected void addAuditLogChild(final DelegateExecution execution, final IdmAuditLogEntity log) {
 		final String auditLogId = getStringVariable(execution, ActivitiConstants.AUDIT_LOG_ID);
 		
 		final TransactionTemplate transactionTemplate = new TransactionTemplate(transactionManager);
@@ -254,19 +256,12 @@ public abstract class AbstractActivitiJob implements JavaDelegate, TaskListener 
 			@Override
 			public Void doInTransaction(TransactionStatus status) {
 				if(log != null) {
-					if(CollectionUtils.isNotEmpty(log.getChildLogs())) {
-        				for(final IdmAuditLog child : log.getChildLogs()) {
-        					child.addParent(log);
-        					log.addChild(child);
-        				}
-        			}
-					
-	        		IdmAuditLog parent = auditLogService.findById(auditLogId);
+					IdmAuditLogEntity parent = auditLogService.findById(auditLogId);
 	        		if(parent == null) {
                         auditLogService.save(log);
 	        			execution.setVariable(ActivitiConstants.AUDIT_LOG_ID.getName(), log.getId());
 	        		} else {
-	        			log.addParent(parent);
+	        			//log.addParent(parent);
 	        			parent.addChild(log);
                         parent = auditLogService.save(parent);
 	        		}
@@ -333,8 +328,8 @@ public abstract class AbstractActivitiJob implements JavaDelegate, TaskListener 
 		return retVal;
 	}
 	
-	protected IdmAuditLog createNewAuditLog(final DelegateExecution execution) {
-		IdmAuditLog idmAuditLog = new IdmAuditLog();
+	protected IdmAuditLogEntity createNewAuditLog(final DelegateExecution execution) {
+		IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
         idmAuditLog.setRequestorUserId(getRequestorId(execution));
         idmAuditLog.setAuditDescription(getTaskName(execution));
         idmAuditLog.setTaskDescription(getTaskDescription(execution));
@@ -346,9 +341,9 @@ public abstract class AbstractActivitiJob implements JavaDelegate, TaskListener 
         return idmAuditLog;
 	}
 	
-	protected IdmAuditLog createNewAuditLog(final DelegateTask delegateTask) {
+	protected IdmAuditLogEntity createNewAuditLog(final DelegateTask delegateTask) {
 		final DelegateExecution execution = delegateTask.getExecution();
-		final IdmAuditLog log = createNewAuditLog(execution);
+		final IdmAuditLogEntity log = createNewAuditLog(execution);
 		log.setActivitiTaskName(delegateTask.getName());
 		return log;
 	}

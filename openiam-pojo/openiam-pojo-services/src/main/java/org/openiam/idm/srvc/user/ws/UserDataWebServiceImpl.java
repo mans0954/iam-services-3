@@ -21,7 +21,10 @@
  */
 package org.openiam.idm.srvc.user.ws;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 
 import javax.jws.WebParam;
 import javax.jws.WebService;
@@ -34,7 +37,14 @@ import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.dozer.converter.*;
+import org.openiam.dozer.converter.AddressDozerConverter;
+import org.openiam.dozer.converter.EmailAddressDozerConverter;
+import org.openiam.dozer.converter.LanguageDozerConverter;
+import org.openiam.dozer.converter.PhoneDozerConverter;
+import org.openiam.dozer.converter.ProfilePictureDozerConverter;
+import org.openiam.dozer.converter.SupervisorDozerConverter;
+import org.openiam.dozer.converter.UserAttributeDozerConverter;
+import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.AddressSearchBean;
 import org.openiam.idm.searchbeans.EmailSearchBean;
@@ -43,7 +53,7 @@ import org.openiam.idm.searchbeans.PotentialSupSubSearchBean;
 import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.access.service.AccessRightProcessor;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
@@ -63,7 +73,12 @@ import org.openiam.idm.srvc.msg.service.MailTemplateParameters;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
-import org.openiam.idm.srvc.user.dto.*;
+import org.openiam.idm.srvc.user.dto.ProfilePicture;
+import org.openiam.idm.srvc.user.dto.Supervisor;
+import org.openiam.idm.srvc.user.dto.User;
+import org.openiam.idm.srvc.user.dto.UserAttribute;
+import org.openiam.idm.srvc.user.dto.UserProfileRequestModel;
+import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.service.UserProfileService;
 import org.openiam.util.UserUtils;
@@ -1187,7 +1202,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
     public Response saveProfilePicture(ProfilePicture pic, String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
 
-        IdmAuditLog idmAuditLog = new IdmAuditLog();
+        IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
         idmAuditLog.setRequestorUserId(requesterId);
         if (StringUtils.isBlank(pic.getId())) {
             idmAuditLog.setAction(AuditAction.ADD_PROFILE_PICTURE_FOR_USER.value());
@@ -1229,7 +1244,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
     public Response deleteProfilePictureById(String picId, String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
 
-        IdmAuditLog idmAuditLog = new IdmAuditLog();
+        IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
         idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.DELETE_PROFILE_PICTURE_FOR_USER.value());
         idmAuditLog.setAuditDescription(String.format("Delete profile picture with id: %s", picId));
@@ -1263,7 +1278,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
     public Response deleteProfilePictureByUserId(String userId, String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
 
-        IdmAuditLog idmAuditLog = new IdmAuditLog();
+        IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
         idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.DELETE_PROFILE_PICTURE_FOR_USER.value());
         UserEntity user = userDataService.getUser(userId);

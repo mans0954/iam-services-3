@@ -3,6 +3,7 @@ package org.openiam.elasticsearch.dao.impl;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -10,6 +11,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.elasticsearch.common.lang3.StringUtils;
+import org.openiam.base.BaseIdentity;
 import org.openiam.base.domain.KeyEntity;
 import org.openiam.base.ws.MatchType;
 import org.openiam.elasticsearch.dao.AbstractCustomElasticSearchRepository;
@@ -21,7 +23,7 @@ import org.springframework.data.elasticsearch.core.ElasticsearchTemplate;
 import org.springframework.data.elasticsearch.core.query.Criteria;
 import org.springframework.data.elasticsearch.core.query.CriteriaQuery;
 
-public abstract class AbstractElasticSearchRepository<T extends KeyEntity, ID extends Serializable, S extends SearchBean> 
+public abstract class AbstractElasticSearchRepository<T extends BaseIdentity, ID extends Serializable, S extends SearchBean> 
 implements AbstractCustomElasticSearchRepository<S, ID>{
 	
 	protected AbstractElasticSearchRepository() {
@@ -40,12 +42,36 @@ implements AbstractCustomElasticSearchRepository<S, ID>{
 	protected abstract CriteriaQuery getCriteria(final S searchBean);
 	protected abstract Class<T> getEntityClass();
 	
+	public boolean allowReindex() {
+		return true;
+	}
+	
+	public void prepare(final T entity) {
+		
+	}
+	
 	protected Criteria inCriteria(final String term, final Collection<String> values) {
 		return (CollectionUtils.isNotEmpty(values)) ? Criteria.where(term).in(values) : null;
 	}
 	
 	protected Criteria exactCriteria(final String term, final String value) {
 		return (StringUtils.isNotBlank(value)) ? Criteria.where(term).is(StringUtils.trimToNull(value)) : null;
+	}
+	
+	protected Criteria between(String term, final Date from, final Date to) {
+		return Criteria.where(term).between(from.getTime(), to.getTime());
+	}
+	
+	protected Criteria gt(final String term, final Date value) {
+		return Criteria.where(term).greaterThan(value.getTime());
+	}
+	
+	protected Criteria lt(final String term, final Date value) {
+		return Criteria.where(term).lessThan(value.getTime());
+	}
+	
+	protected Criteria eq(String term, final String value) {
+		return getWhereCriteria(term, value, MatchType.EXACT);
 	}
 
 	protected Criteria getWhereCriteria(String term, final String value, MatchType matchType) {

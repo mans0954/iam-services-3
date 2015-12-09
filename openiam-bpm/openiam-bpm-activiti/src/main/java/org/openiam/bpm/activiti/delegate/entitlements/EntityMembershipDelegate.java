@@ -15,6 +15,7 @@ import org.openiam.base.ws.Response;
 import org.openiam.bpm.util.ActivitiRequestType;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
@@ -62,7 +63,7 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
 		
 		AuditAction action = null;
 		
-		final IdmAuditLog idmAuditLog = createNewAuditLog(execution);
+		final IdmAuditLogEntity idmAuditLog = createNewAuditLog(execution);
 		try {
 			final ActivitiRequestType requestType = getRequestType(execution); 
 			if(requestType != null) {

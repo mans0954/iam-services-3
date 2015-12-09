@@ -2,20 +2,15 @@ package org.openiam.bpm.activiti.delegate.user.edit;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.activiti.engine.delegate.DelegateExecution;
 import org.apache.commons.collections.CollectionUtils;
-import org.openiam.bpm.activiti.delegate.entitlements.AbstractEntitlementsDelegate;
 import org.openiam.bpm.activiti.delegate.entitlements.AcceptEntitlementsNotifierDelegate;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
-import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
-import org.openiam.idm.srvc.user.service.UserDAO;
-import org.springframework.beans.factory.annotation.Autowired;
 
 public class AcceptEditUserNotifierDelegate extends AcceptEntitlementsNotifierDelegate {
 	
@@ -25,7 +20,7 @@ public class AcceptEditUserNotifierDelegate extends AcceptEntitlementsNotifierDe
 
 	@Override
 	public void execute(DelegateExecution execution) throws Exception {
-		final IdmAuditLog idmAuditLog = createNewAuditLog(execution);
+		final IdmAuditLogEntity idmAuditLog = createNewAuditLog(execution);
         idmAuditLog.setAction(AuditAction.NOTIFICATION.value());
 		try {
 			final Set<String> userIds = new HashSet<String>();

@@ -1,5 +1,14 @@
 package org.openiam.provision.service;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.annotation.PostConstruct;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -21,7 +30,7 @@ import org.openiam.dozer.converter.ResourceDozerConverter;
 import org.openiam.exception.EncryptionException;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
@@ -53,9 +62,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-
-import javax.annotation.PostConstruct;
-import java.util.*;
 
 /**
  * Created by Vitaly on 4/27/2015.
@@ -128,7 +134,7 @@ public class ProvisionDispatcherTransactionHelper {
 
         Login identity = data.getIdentity();
 
-        IdmAuditLog idmAuditLog = new IdmAuditLog();
+        IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
         idmAuditLog.setRequestorUserId(systemUserId);
         idmAuditLog.setAction(AuditAction.PROVISIONING_DISPATCHER.value());
         idmAuditLog.setTargetUser(identity.getUserId(), identity.getLogin());
@@ -341,10 +347,10 @@ public class ProvisionDispatcherTransactionHelper {
             saveChanges(identity, loginChanges);
 
         } finally {
-            IdmAuditLog parentAuditLog = StringUtils.isNotEmpty(data.getParentAuditLogId()) ? auditLogService.findById(data.getParentAuditLogId()) : null;
+        	IdmAuditLogEntity parentAuditLog = StringUtils.isNotEmpty(data.getParentAuditLogId()) ? auditLogService.findById(data.getParentAuditLogId()) : null;
             if (parentAuditLog != null) {
                 parentAuditLog.addChild(idmAuditLog);
-                idmAuditLog.addParent(parentAuditLog);
+                //idmAuditLog.addParent(parentAuditLog);
                 auditLogService.save(parentAuditLog);
             } else {
                 auditLogService.save(idmAuditLog);
@@ -409,7 +415,7 @@ public class ProvisionDispatcherTransactionHelper {
     }
 
 
-    private ObjectResponse deprovision(ProvisionDataContainer data, IdmAuditLog idmAuditLog) {
+    private ObjectResponse deprovision(ProvisionDataContainer data, IdmAuditLogEntity idmAuditLog) {
 
         String requestId = data.getRequestId();
         Login targetSysLogin = data.getIdentity();
@@ -505,7 +511,7 @@ public class ProvisionDispatcherTransactionHelper {
         }
     }
 
-    private ProvisionUserResponse provision(ProvisionDataContainer data, final IdmAuditLog idmAuditLog) {
+    private ProvisionUserResponse provision(ProvisionDataContainer data, final IdmAuditLogEntity idmAuditLog) {
 
         String requestId = data.getRequestId();
         ProvisionUserResponse response = new ProvisionUserResponse();
@@ -538,7 +544,7 @@ public class ProvisionDispatcherTransactionHelper {
             bindingMap.put(AbstractProvisioningService.USER_ATTRIBUTES, attributes);
             ExtensibleObject extUser = provisionSelectedResourceHelper.buildFromRules(managedSysId, bindingMap);
             try {
-                idmAuditLog.addCustomRecord("ATTRIBUTES", extUser.getAttributesAsJSON(hiddenAttrs));
+                idmAuditLog.put("ATTRIBUTES", extUser.getAttributesAsJSON(hiddenAttrs));
             } catch (Exception jge) {
                 log.error(jge);
             }

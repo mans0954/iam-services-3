@@ -35,6 +35,7 @@ import org.openiam.idm.parser.csv.UserSearchBeanCSVParser;
 import org.openiam.idm.searchbeans.ManualReconciliationSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
@@ -133,7 +134,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
 
 		ReconciliationConfig reconConfig = reconConfigService.getConfigById(config.getReconConfigId());
 
-		IdmAuditLog idmAuditLog = new IdmAuditLog();
+		IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
         idmAuditLog.setRequestorUserId(config.getRequesterId());
         idmAuditLog.setAction(AuditAction.RECONCILIATION.value());
         ManagedSysEntity managedSysEntity = managedSysService.getManagedSysById(config.getManagedSysId());
