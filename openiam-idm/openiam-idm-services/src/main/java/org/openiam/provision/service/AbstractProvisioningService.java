@@ -1540,7 +1540,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
                 if (operation == AttributeOperationEnum.ADD) {
                     RoleEntity roleEntity = roleDataService.getRole(r.getId());
                     if (userEntity.getRoles().contains(roleEntity)) {
-                        throw new IllegalArgumentException("Role with this name already exists");
+                        log.warn("Role with this name already exists. Name=" + roleEntity.getName());
+                        continue;
                     }
                     userEntity.getRoles().add(roleEntity);
                     // Audit Log ---------------------------------------------------
