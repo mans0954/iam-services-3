@@ -26,6 +26,7 @@ import org.springframework.data.elasticsearch.core.query.Criteria;
 import org.springframework.data.elasticsearch.core.query.CriteriaQuery;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
+import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -117,11 +118,6 @@ public class AuditLogElasticSearchRepositoryImpl extends AbstractElasticSearchRe
 		return IdmAuditLogEntity.class;
 	}
 
-	@Override
-	public boolean allowReindex() {
-		return true;
-	}
-	
 	@Override
 	public void prepare(final IdmAuditLogEntity entity) {
 		if(entity != null) {

@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -52,6 +53,10 @@ public class ElasticSearchReindexer implements ApplicationContextAware, Elastics
 	private Map<Class<?>, BaseDao> daoMap = new HashMap<Class<?>, BaseDao>();
 	private Map<Class<?>, AbstractElasticSearchRepository> customRepoImplMap = new HashMap<>();
 	
+	public Set<Class<?>> getIndexedClasses() {
+		return repoMap.keySet();
+	}
+	
 	@PostConstruct
 	public void init() {
 		ctx.getBeansOfType(BaseDao.class).forEach((beanName, bean) -> {
@@ -69,10 +74,13 @@ public class ElasticSearchReindexer implements ApplicationContextAware, Elastics
 
 				@Override
 				public Void doInTransaction(TransactionStatus arg0) {
-					//elasticSearchTemplate.deleteIndex(entityClass);
-					//if(!elasticSearchTemplate.indexExists(entityClass)) {
-					reindex(entityClass);
-					//}
+					boolean reindex = false;
+					if(customRepoImplMap.containsKey(entityClass)) {
+						reindex = customRepoImplMap.get(entityClass).allowReindex(bean);
+					}
+					if(reindex) {
+						reindex(entityClass);
+					}
 					return null;
 				}
 			});
@@ -139,24 +147,15 @@ public class ElasticSearchReindexer implements ApplicationContextAware, Elastics
 	@Transactional
 	/* returns the number of reindexed items */
 	public int reindex(final Class<?> clazz) {
-		elasticSearchTemplate.deleteIndex(clazz);
-		elasticSearchTemplate.createIndex(clazz);
 		if(logger.isDebugEnabled()) {
 			logger.debug(String.format("Attempting to fully re-index: %s", clazz));
 		}
 		final OpeniamElasticSearchRepository repo = repoMap.get(clazz);
 		if(repo != null) {
-			boolean reindex = true;
-			if(customRepoImplMap.containsKey(clazz)) {
-				reindex = customRepoImplMap.get(clazz).allowReindex();
-			}
-			if(reindex) {
-				repo.deleteAll();
-				return reindex(clazz, null);
-			} else {
-				logger.warn(String.format("Reindex not allowed for %s", clazz));
-				return 0;
-			}
+			elasticSearchTemplate.deleteIndex(clazz);
+			elasticSearchTemplate.createIndex(clazz);
+			repo.deleteAll();
+			return reindex(clazz, null);
 		} else {
 			throw new RuntimeException(String.format("No elastic search repo found for %s", clazz));
 		}

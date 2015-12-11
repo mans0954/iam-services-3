@@ -413,6 +413,12 @@ public class IdmAuditLogEntity extends KeyEntity {
     	addAttribute(AuditAttributeName.TASK_CLASS, clazz.getCanonicalName());
     }
     
+    public void setTargetClass(final Class<?> clazz) {
+    	if(clazz != null) {
+    		put(AuditAttributeName.TARGET_CLASS.name(), clazz.toString());
+    	}
+    }
+    
     public void setTaskDescription(final String value) {
     	addAttribute(AuditAttributeName.TASK_DESCSRIPTION, value);
     }

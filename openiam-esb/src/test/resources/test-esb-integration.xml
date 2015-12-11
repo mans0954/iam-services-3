@@ -346,5 +346,9 @@
 	 <jaxws:client id="authManagerAdminClient"
                   serviceClass="org.openiam.authmanager.service.AuthorizationManagerAdminWebService"
                   address="${openiam.service_host}${openiam.idm.ws.path}AuthorizationManagerAdminWebService" />
+                  
+	<jaxws:client id="elasticSearchServiceClient"
+                  serviceClass="org.openiam.elasticsearch.ws.ElasticSearchWebService"
+                  address="${openiam.service_host}${openiam.idm.ws.path}ElasticSearchWebService" />
 
 </beans>

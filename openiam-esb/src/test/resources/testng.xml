@@ -78,6 +78,12 @@
 		</classes>
 	</test>
 	
+	<test name="elasticsearch.integration">
+		<classes>
+			<class name="org.openiam.elasticsearch.integration.ElasticSearchIntegrationTest" />
+		</classes>
+	</test>
+	
 	<test name="auth.provider">
 		<classes>
 			<class name="org.openiam.service.integration.authprovider.AuthProviderServiceTest" />

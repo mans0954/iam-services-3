@@ -22,6 +22,7 @@ import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.core.ElasticsearchTemplate;
 import org.springframework.data.elasticsearch.core.query.Criteria;
 import org.springframework.data.elasticsearch.core.query.CriteriaQuery;
+import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 
 public abstract class AbstractElasticSearchRepository<T extends BaseIdentity, ID extends Serializable, S extends SearchBean> 
 implements AbstractCustomElasticSearchRepository<S, ID>{
@@ -42,8 +43,8 @@ implements AbstractCustomElasticSearchRepository<S, ID>{
 	protected abstract CriteriaQuery getCriteria(final S searchBean);
 	protected abstract Class<T> getEntityClass();
 	
-	public boolean allowReindex() {
-		return true;
+	public boolean allowReindex(final ElasticsearchRepository repo) {
+		return (repo != null) ? (repo.count() <= 0) : false;
 	}
 	
 	public void prepare(final T entity) {

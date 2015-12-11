@@ -33,6 +33,7 @@ public enum AuditAttributeName {
     ALL_RECONCILE_SITUATION,
     FAIL_COUNT,
     
+    TARGET_CLASS,
     NOTIFICATION_TYPE,
     TASK_NAME,
     TASK_DESCSRIPTION,
