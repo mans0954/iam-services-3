@@ -443,7 +443,7 @@ public class PasswordServiceImpl implements PasswordService {
         try {
             expirationDays = Integer.parseInt(expirationTime.getValue1());
         } catch (Throwable e) {
-            log.warn("Can't parse the '' policy attribute.  Either it's not an integer, or it doesn't exist.  Defaulting...", e);
+            log.warn("Can't parse the '' policy attribute.  Either it's not an integer, or it doesn't exist.  Defaulting...", e.getCause());
             expirationDays = 3;
         }
 

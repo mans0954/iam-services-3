@@ -97,9 +97,16 @@ public class SourceAdapterImpl implements SourceAdapter {
         }
         String requestorId = null;
         try {
-
             if (request.getAction() == null) {
-                throw new Exception("Can't process... 'action' is not defined!");
+                if (request.getKey() == null) {
+                    request.setAction(SourceAdapterOperationEnum.ADD);
+                } else {
+                    request.setAction(SourceAdapterOperationEnum.MODIFY);
+                }
+            } else if (request.getKey() == null) {
+                request.setAction(SourceAdapterOperationEnum.ADD);
+            } else {
+                request.setAction(SourceAdapterOperationEnum.MODIFY);
             }
 
             User requestor = this.getUser(request.getRequestor(), request);
