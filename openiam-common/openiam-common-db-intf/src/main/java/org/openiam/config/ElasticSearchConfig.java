@@ -40,18 +40,19 @@ public class ElasticSearchConfig {
 	public Client client() {
 		
 		Client client = null;
-		final NodeBuilder builder = NodeBuilder.nodeBuilder().clusterName(clusterName);
-		builder.settings(ImmutableSettings.builder().put("cluster.name", clusterName)
-													.put("path.data", hibernateSearchBase + "/" + DATA_DIR)
-													.put("path.work", hibernateSearchBase + "/" + WORK_DIR)
-													.put("path.logs", hibernateSearchBase + "/" + LOG_DIR).build());
 		if(StringUtils.equalsIgnoreCase(clientType, "embedded")) {
+			final NodeBuilder builder = NodeBuilder.nodeBuilder().clusterName(clusterName);
+			builder.settings(ImmutableSettings.builder().put("cluster.name", clusterName)
+														.put("path.data", hibernateSearchBase + "/" + DATA_DIR)
+														.put("path.work", hibernateSearchBase + "/" + WORK_DIR)
+														.put("path.logs", hibernateSearchBase + "/" + LOG_DIR).build());
 			client = builder.local(true).node().start().client();
 		} else { /* external */
-			client = builder.local(false).client(true).build().client();
-			if(!(client instanceof TransportClient)) {
-				throw new RuntimeException(String.format("Expected external elastic search to be of type: %s, but was: %s", TransportClient.class, client.getClass().getCanonicalName()));
-			}
+			client = new TransportClient(ImmutableSettings.builder().put("cluster.name", clusterName).build());
+			//client = builder.local(false).client(true).build().client();
+			//if(!(client instanceof TransportClient)) {
+			//	throw new RuntimeException(String.format("Expected external elastic search to be of type: %s, but was: %s", TransportClient.class, client.getClass().getCanonicalName()));
+			//}
 			for(String ip : StringUtils.split(esNodes, ",")) {
 				ip = StringUtils.trimToNull(ip);
 				if(ip != null) {
