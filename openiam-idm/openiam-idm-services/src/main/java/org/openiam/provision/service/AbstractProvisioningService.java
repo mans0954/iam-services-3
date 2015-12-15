@@ -1357,6 +1357,13 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
                     throw new IllegalArgumentException("Name can not be empty");
                 }
                 AttributeOperationEnum operation = entry.getValue().getOperation();
+
+                if (operation == AttributeOperationEnum.ADD && userEntity.getUserAttributes().containsKey(entry.getKey())) {
+                    log.warn("Attribute with this name alreday exists");
+                    entry.getValue().setOperation(AttributeOperationEnum.REPLACE);
+                    operation = AttributeOperationEnum.REPLACE;
+                }
+
                 if (operation == AttributeOperationEnum.DELETE) {
                     userEntity.getUserAttributes().remove(entry.getKey());
                     // Audit Log -----------------------------------------------------------------------------------
@@ -1369,10 +1376,6 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
                     parentLog.addChild(auditLog);
                     // ---------------------------------------------------------------------------------------------
                 } else if (operation == AttributeOperationEnum.ADD) {
-                    if (userEntity.getUserAttributes().containsKey(entry.getKey())) {
-                        throw new IllegalArgumentException("Attribute with this name alreday exists");
-                    }
-
                     UserAttributeEntity e = userAttributeDozerConverter.convertToEntity(entry.getValue(), true);
                     e.setUserId(userEntity.getId());
                     userEntity.getUserAttributes().put(entry.getKey(), e);
