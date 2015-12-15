@@ -17,10 +17,6 @@
 					"username" : "idmuser",
 					"password" : "idmuser"
 				}
-			},
-			"core" : {
-				"org.openiam.es.client" : "external",
-				"org.openiam.es.external.nodes" : "localhost:9300"
 			}
 		},
 		"service_urls_props" : {

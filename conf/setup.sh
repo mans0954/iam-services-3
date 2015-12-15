@@ -13,7 +13,6 @@ sudo cp attributes.json /etc/chef/attributes.json
 sudo chmod 777 /opt/openiam/webapps
 sudo chef-client -o openiamapp::java8
 sudo chef-client -o openiam-properties::datasource -j /etc/chef/attributes.json
-sudo chef-client -o openiam-elasticsearch -j /etc/chef/attributes.json
 sudo chef-client -o openiam-properties::securityconf -j /etc/chef/attributes.json
 sudo chef-client -o openiam-properties::service-urls -j /etc/chef/attributes.json
 sudo chef-client -o openiam-conf -j /etc/chef/attributes.json
