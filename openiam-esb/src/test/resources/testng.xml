@@ -90,7 +90,6 @@
 		</classes>
 	</test>
 	
-	<!--
 	<test name="elasticache">
 		<classes>
 			<class name="org.openiam.elasticsearch.dao.EmailElasticSearchRepositoryTest" />
@@ -99,5 +98,4 @@
 			<class name="org.openiam.elasticsearch.dao.UserElasticSearchRepositoryTest" />
 		</classes>
 	</test>
-	-->
 </suite>
