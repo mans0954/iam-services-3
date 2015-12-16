@@ -18,7 +18,7 @@ test:
   post:
     - sudo nohup bash -c "sudo java -Xms512m -Xmx1024m -XX:ReservedCodeCacheSize=64m -XX:MaxPermSize=256m -Dconfpath=/data/openiam -jar /home/ubuntu/iam-services/openiam-esb/target/openiam-esb.jar > /var/log/esb.log &"
     - sleep 300
-    - sudo mvn test -DskipTests=false -DargLine="-Xmx1024m" -s conf/settings.xml:
+    - mvn test -DskipTests=false -DargLine="-Xmx1024m" -s conf/settings.xml:
         timeout: 3600
     - mkdir -p $CIRCLE_TEST_REPORTS/junit/
     - find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} $CIRCLE_TEST_REPORTS/junit/ \;
