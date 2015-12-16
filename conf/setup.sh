@@ -18,3 +18,4 @@ sudo chef-client -o openiam-properties::service-urls -j /etc/chef/attributes.jso
 sudo chef-client -o openiam-conf -j /etc/chef/attributes.json
 sudo chef-client -o openiam-hazelcast -j /etc/chef/attributes.json
 sudo chmod 777 /data/openiam/logs
+sudo chown ubuntu /data/openiam/logs
