@@ -90,6 +90,8 @@
 		</classes>
 	</test>
 	
+	<!--
+	Container runs out of memory if we run these, since we have the ESB running simultaneously.  CircleCI is limited to 4G, which we exceed :(
 	<test name="elasticache">
 		<classes>
 			<class name="org.openiam.elasticsearch.dao.EmailElasticSearchRepositoryTest" />
@@ -98,4 +100,5 @@
 			<class name="org.openiam.elasticsearch.dao.UserElasticSearchRepositoryTest" />
 		</classes>
 	</test>
+	-->
 </suite>
