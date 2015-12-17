@@ -7,6 +7,7 @@ import javax.persistence.Table;
 
 import org.hibernate.annotations.*;
 import org.hibernate.annotations.Cache;
+import org.openiam.base.domain.AbstractKeyNameEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.report.dto.ReportCriteriaParamDto;
 
@@ -19,19 +20,15 @@ import org.openiam.idm.srvc.report.dto.ReportCriteriaParamDto;
 @Table(name = "REPORT_CRITERIA_PARAMETER")
 @DozerDTOCorrespondence(ReportCriteriaParamDto.class)
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class ReportCriteriaParamEntity {
-    @Id
-    @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name = "system-uuid", strategy = "uuid")
-    @Column(name = "RCP_ID")
-    private String id;
+@AttributeOverrides({
+	@AttributeOverride(name = "id", column = @Column(name = "RCP_ID")),
+	@AttributeOverride(name = "name", column = @Column(name = "PARAM_NAME"))
+})
+public class ReportCriteriaParamEntity extends AbstractKeyNameEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "REPORT_INFO_ID", referencedColumnName = "REPORT_INFO_ID", insertable = true, updatable = false)
     private ReportInfoEntity report;
-
-    @Column(name = "PARAM_NAME")
-    private String name;
 
     @Column(name = "CAPTION")
     private String caption;
@@ -153,56 +150,87 @@ public class ReportCriteriaParamEntity {
 	}
 
 	@Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + ((caption == null) ? 0 : caption.hashCode());
+		result = prime * result
+				+ ((displayOrder == null) ? 0 : displayOrder.hashCode());
+		result = prime * result + (isMultiple ? 1231 : 1237);
+		result = prime * result + (isRequired ? 1231 : 1237);
+		result = prime * result
+				+ ((metaType == null) ? 0 : metaType.hashCode());
+		result = prime * result + ((report == null) ? 0 : report.hashCode());
+		result = prime
+				* result
+				+ ((requestParameters == null) ? 0 : requestParameters
+						.hashCode());
+		result = prime * result + ((type == null) ? 0 : type.hashCode());
+		result = prime * result + ((value == null) ? 0 : value.hashCode());
+		return result;
+	}
 
-        ReportCriteriaParamEntity that = (ReportCriteriaParamEntity) o;
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ReportCriteriaParamEntity other = (ReportCriteriaParamEntity) obj;
+		if (caption == null) {
+			if (other.caption != null)
+				return false;
+		} else if (!caption.equals(other.caption))
+			return false;
+		if (displayOrder == null) {
+			if (other.displayOrder != null)
+				return false;
+		} else if (!displayOrder.equals(other.displayOrder))
+			return false;
+		if (isMultiple != other.isMultiple)
+			return false;
+		if (isRequired != other.isRequired)
+			return false;
+		if (metaType == null) {
+			if (other.metaType != null)
+				return false;
+		} else if (!metaType.equals(other.metaType))
+			return false;
+		if (report == null) {
+			if (other.report != null)
+				return false;
+		} else if (!report.equals(other.report))
+			return false;
+		if (requestParameters == null) {
+			if (other.requestParameters != null)
+				return false;
+		} else if (!requestParameters.equals(other.requestParameters))
+			return false;
+		if (type == null) {
+			if (other.type != null)
+				return false;
+		} else if (!type.equals(other.type))
+			return false;
+		if (value == null) {
+			if (other.value != null)
+				return false;
+		} else if (!value.equals(other.value))
+			return false;
+		return true;
+	}
 
-        if (isMultiple != that.isMultiple) return false;
-        if (isRequired != that.isRequired) return false;
-        if (id != null ? !id.equals(that.id) : that.id != null) return false;
-        if (name != null ? !name.equals(that.name) : that.name != null) return false;
-        if (caption != null ? !caption.equals(that.caption) : that.caption!= null) return false;
-        if (report != null ? !report.equals(that.report) : that.report != null) return false;
-        if (type != null ? !type.equals(that.type) : that.type != null) return false;
-        if (value != null ? !value.equals(that.value) : that.value != null) return false;
-        if (metaType != null ? !metaType.equals(that.metaType) : that.metaType != null) return false;
-		if (displayOrder != null ? !displayOrder.equals(that.displayOrder) : that.displayOrder != null) return false;
-        return !(requestParameters != null ? !requestParameters.equals(that.requestParameters) : that.requestParameters != null);
+	@Override
+	public String toString() {
+		return "ReportCriteriaParamEntity [report=" + report + ", caption="
+				+ caption + ", value=" + value + ", type=" + type
+				+ ", metaType=" + metaType + ", isMultiple=" + isMultiple
+				+ ", isRequired=" + isRequired + ", displayOrder="
+				+ displayOrder + ", requestParameters=" + requestParameters
+				+ "]";
+	}
 
-    }
-
-    @Override
-    public int hashCode() {
-        int result = id != null ? id.hashCode() : 0;
-        result = 31 * result + (report != null ? report.hashCode() : 0);
-        result = 31 * result + (name != null ? name.hashCode() : 0);
-        result = 31 * result + (caption != null ? caption.hashCode() : 0);
-        result = 31 * result + (value != null ? value.hashCode() : 0);
-        result = 31 * result + (type != null ? type.hashCode() : 0);
-        result = 31 * result + (metaType != null ? metaType.hashCode() : 0);
-        result = 31 * result + (isMultiple ? 1231 : 1237);
-        result = 31 * result + (isRequired ? 1231 : 1237);
-		result = 31 * result + (displayOrder != null ? displayOrder.hashCode() : 0);
-		result = 31 * result + (requestParameters != null ? requestParameters.hashCode() : 0);
-        return result;
-    }
-
-    @Override
-    public String toString() {
-        return "ReportCriteriaParamEntity{" +
-                "id='" + id + '\'' +
-                ", report=" + report +
-                ", name='" + name + '\'' +
-                ", caption='" + caption + '\'' +
-                ", value='" + value + '\'' +
-                ", type=" + type +
-                ", metaType=" + (metaType != null ? metaType.getId() : "null") +
-                ", isMultiple=" + isMultiple +
-				", isRequired=" + isRequired +
-				", displayOrder=" + displayOrder +
-				", requestParameters='" + requestParameters + '\'' +
-                '}';
-    }
+	
+	
 }

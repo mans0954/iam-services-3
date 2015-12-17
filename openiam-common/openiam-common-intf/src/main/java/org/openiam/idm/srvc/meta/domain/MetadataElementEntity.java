@@ -32,7 +32,7 @@ import org.openiam.internationalization.InternationalizedCollection;
 @Table(name = "METADATA_ELEMENT")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(MetadataElement.class)
-@AttributeOverride(name = "id", column = @Column(name = "METADATA_ID"))
+//@AttributeOverride(name = "id", column = @Column(name = "METADATA_ID"))
 @Internationalized
 @AttributeOverrides({
 	@AttributeOverride(name = "id", column = @Column(name = "METADATA_ID")),

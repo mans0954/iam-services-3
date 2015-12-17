@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.report.dto;
 
+import org.openiam.base.KeyNameDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.report.domain.ReportParamTypeEntity;
 
@@ -9,34 +10,14 @@ import javax.xml.bind.annotation.XmlType;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ReportParamTypeDto", propOrder = {
-        "id",
-        "name",
         "description"
 })
 @DozerDTOCorrespondence(ReportParamTypeEntity.class)
-public class ReportParamTypeDto {
+public class ReportParamTypeDto extends KeyNameDTO {
 
-    private String id;
-    private String name;
     private String description;
 
     public ReportParamTypeDto() {
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public String getDescription() {
@@ -47,33 +28,40 @@ public class ReportParamTypeDto {
         this.description = description;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result
+				+ ((description == null) ? 0 : description.hashCode());
+		return result;
+	}
 
-        ReportParamTypeDto that = (ReportParamTypeDto) o;
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ReportParamTypeDto other = (ReportParamTypeDto) obj;
+		if (description == null) {
+			if (other.description != null)
+				return false;
+		} else if (!description.equals(other.description))
+			return false;
+		return true;
+	}
 
-        if (description != null ? !description.equals(that.description) : that.description != null) return false;
-        if (id != null ? !id.equals(that.id) : that.id != null) return false;
-        return !(name != null ? !name.equals(that.name) : that.name != null);
+	@Override
+	public String toString() {
+		return "ReportParamTypeDto [description=" + description + ", name_="
+				+ name_ + ", id=" + id + ", objectState=" + objectState
+				+ ", requestorSessionID=" + requestorSessionID
+				+ ", requestorUserId=" + requestorUserId + ", requestorLogin="
+				+ requestorLogin + ", requestClientIP=" + requestClientIP + "]";
+	}
 
-    }
-
-    @Override
-    public int hashCode() {
-        int result = id != null ? id.hashCode() : 0;
-        result = 31 * result + (name != null ? name.hashCode() : 0);
-        result = 31 * result + (description != null ? description.hashCode() : 0);
-        return result;
-    }
-
-    @Override
-    public String toString() {
-        return "ReportParamTypeDto{" +
-                "id='" + id + '\'' +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                '}';
-    }
+   
 }

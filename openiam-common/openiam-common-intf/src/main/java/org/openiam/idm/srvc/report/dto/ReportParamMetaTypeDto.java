@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.report.dto;
 
+import org.openiam.base.KeyNameDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.report.domain.ReportCriteriaParamEntity;
 import org.openiam.idm.srvc.report.domain.ReportParamMetaTypeEntity;
@@ -15,15 +16,11 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ReportParamMetaTypeDto", propOrder = {
-        "id",
-        "name",
         "isMultiple"
 })
 @DozerDTOCorrespondence(ReportParamMetaTypeEntity.class)
-public class ReportParamMetaTypeDto {
+public class ReportParamMetaTypeDto extends KeyNameDTO {
 
-    private String id;
-    private String name;
     private Boolean isMultiple;
 
 
@@ -31,25 +28,9 @@ public class ReportParamMetaTypeDto {
     }
 
     public ReportParamMetaTypeDto(String id, String name, Boolean isMultiple) {
-        this.id = id;
-        this.name = name;
+        setId(id);
+        setName(name);
         this.isMultiple = isMultiple;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public Boolean getIsMultiple() {
@@ -60,31 +41,40 @@ public class ReportParamMetaTypeDto {
         this.isMultiple = isMultiple;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        ReportParamMetaTypeDto that = (ReportParamMetaTypeDto) o;
-
-        if (id != null ? !id.equals(that.id) : that.id != null) return false;
-        if (name != null ? !name.equals(that.name) : that.name != null) return false;
-        return !(isMultiple != null ? !isMultiple.equals(that.isMultiple) : that.isMultiple != null);
-
-    }
-
-    @Override
-    public int hashCode() {
-        int result = id != null ? id.hashCode() : 0;
-        result = 31 * result + (name != null ? name.hashCode() : 0);
-        result = 31 * result + (isMultiple != null ? isMultiple.hashCode() : 0);
-        return result;
-    }
-
-    @Override
-	public String toString() {
-		return "ReportCriteriaParamDto [id=" + id + ", name=" + name
-                + ", isMultiple=" + isMultiple + "]";
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result
+				+ ((isMultiple == null) ? 0 : isMultiple.hashCode());
+		return result;
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ReportParamMetaTypeDto other = (ReportParamMetaTypeDto) obj;
+		if (isMultiple == null) {
+			if (other.isMultiple != null)
+				return false;
+		} else if (!isMultiple.equals(other.isMultiple))
+			return false;
+		return true;
+	}
+
+	@Override
+	public String toString() {
+		return "ReportParamMetaTypeDto [isMultiple=" + isMultiple + ", name_="
+				+ name_ + ", id=" + id + ", objectState=" + objectState
+				+ ", requestorSessionID=" + requestorSessionID
+				+ ", requestorUserId=" + requestorUserId + ", requestorLogin="
+				+ requestorLogin + ", requestClientIP=" + requestClientIP + "]";
+	}
+
+    
 }
