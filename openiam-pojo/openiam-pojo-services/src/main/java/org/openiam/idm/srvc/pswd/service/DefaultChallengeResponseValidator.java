@@ -118,7 +118,7 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
         if (passwordPolicy != null) {
             PolicyAttribute countAttr = isEnterprise ? passwordPolicy.getAttribute("QUEST_COUNT") : passwordPolicy.getAttribute("CUSTOM_QUEST_COUNT");
             try {
-                count = Integer.valueOf(countAttr.getValue1());
+                count = countAttr.isRequired() ? Integer.valueOf(countAttr.getValue1()) : 0;
             } catch (Throwable e) {
                 log.warn("Cannot parse policy attribute value");
             }
