@@ -43,6 +43,7 @@ import org.openiam.provision.dto.*;
 import org.openiam.provision.dto.srcadapter.*;
 import org.openiam.provision.resp.PasswordResponse;
 import org.openiam.provision.resp.ProvisionUserResponse;
+import org.opensaml.xml.encryption.P;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import sun.rmi.runtime.Log;
@@ -315,7 +316,28 @@ public class SourceAdapterImpl implements SourceAdapter {
     }
 
     private ProvisionUser convertToProvisionUser(SourceAdapterRequest request, StringBuilder warnings, String requestorId) throws Exception {
-        User u = this.getUser(request.getKey(), request);
+        //shit for AKZO
+        User u = null;
+        if (StringUtils.isNotBlank(request.getEmployeeId())) {
+            UserSearchBean usb = new UserSearchBean();
+            SearchParam sp = new SearchParam();
+            sp.setMatchType(MatchType.EXACT);
+            sp.setValue(request.getEmployeeId());
+            usb.setEmployeeIdMatchToken(sp);
+            usb.setDeepCopy(true);
+            List<User> users = userDataService.findBeans(usb, 0, 2);
+            if (CollectionUtils.isNotEmpty(users)) {
+                if (users.size() == 1) {
+                    u = users.get(0);
+                    request.setAction(SourceAdapterOperationEnum.MODIFY);
+                } else {
+                    warnings.append(getWarning("More than 1 user with such employeeID"));
+                    throw new Exception("Ununique employeeID");
+                }
+            }
+        }
+        if (u == null)
+            u = this.getUser(request.getKey(), request);
         if (u == null)
             throw new Exception("Can't find user!");
         ProvisionUser pUser = new ProvisionUser(u);
