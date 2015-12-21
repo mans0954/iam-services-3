@@ -134,7 +134,7 @@ public class SourceAdapterImpl implements SourceAdapter {
             }
         } catch (Exception e) {
             response.setStatus(ResponseStatus.FAILURE);
-            response.setError(e.getMessage());
+            response.setError(e.toString());
             idmAuditLog.fail();
             idmAuditLog.setFailureReason(e.getMessage());
             idmAuditLog.setException(e);
@@ -315,7 +315,10 @@ public class SourceAdapterImpl implements SourceAdapter {
     }
 
     private ProvisionUser convertToProvisionUser(SourceAdapterRequest request, StringBuilder warnings, String requestorId) throws Exception {
-        ProvisionUser pUser = new ProvisionUser(this.getUser(request.getKey(), request));
+        User u = this.getUser(request.getKey(), request);
+        if (u == null)
+            throw new Exception("Can't find user!");
+        ProvisionUser pUser = new ProvisionUser(u);
         this.fillProperties(request, pUser);
         this.fillGroups(pUser, request, warnings, requestorId);
         this.fillRoles(pUser, request, warnings, requestorId);
@@ -327,7 +330,6 @@ public class SourceAdapterImpl implements SourceAdapter {
         fillOrganizations(pUser, request, warnings, requestorId);
         fillSuperVisors(pUser, request, warnings);
         fillPrincipals(pUser, request, warnings, requestorId);
-        //superiors
         return pUser;
     }
 
@@ -404,23 +406,14 @@ public class SourceAdapterImpl implements SourceAdapter {
                 pUser.setPrincipalList(new ArrayList<Login>());
             }
             for (SourceAdapterLoginRequest loginRequest : request.getLogins()) {
-                if (loginRequest.getOperation() == null) {
-                    warnings.append(getWarning("Incorrect operation for group=" + loginRequest.getLogin() + " Skip this!"));
-                    continue;
-                }
                 isFound = false;
                 for (Login l : pUser.getPrincipalList()) {
                     if (l.getManagedSysId().equals(loginRequest.getManagedSystemId())) {
                         if (AttributeOperationEnum.DELETE.equals(loginRequest.getOperation())) {
                             //delete
                             l.setOperation(AttributeOperationEnum.DELETE);
-                        } else if (AttributeOperationEnum.REPLACE.equals(loginRequest.getOperation())) {
-                            //replace
-                            populateLogin(loginRequest, l, AttributeOperationEnum.REPLACE);
-                        } else if (AttributeOperationEnum.ADD.equals(loginRequest.getOperation())) {
-                            //add
-                            populateLogin(loginRequest, l, AttributeOperationEnum.REPLACE);
-                            warnings.append(this.getWarning("Can't ADD this login. Login for this managed system has already existed for user (Updating founded) =" + loginRequest.getLogin()));
+                        } else {
+                            populateLogin(loginRequest, l, false);
                         }
                         isFound = true;
                         break;
@@ -432,7 +425,7 @@ public class SourceAdapterImpl implements SourceAdapter {
                             warnings.append(this.getWarning("Can't replace this login. (call ADD instead of REPLACE)=" + loginRequest.getLogin() + ". Skip it."));
 
                         Login l = new Login();
-                        populateLogin(loginRequest, l, AttributeOperationEnum.ADD);
+                        populateLogin(loginRequest, l, true);
                         pUser.addPrincipal(l);
                     }
                 }
@@ -440,8 +433,8 @@ public class SourceAdapterImpl implements SourceAdapter {
         }
     }
 
-    private static void populateLogin(SourceAdapterLoginRequest loginRequest, Login login, AttributeOperationEnum operation) {
-        login.setOperation(operation);
+    private static void populateLogin(SourceAdapterLoginRequest loginRequest, Login login, boolean isADD) {
+        login.setOperation(isADD ? AttributeOperationEnum.ADD : AttributeOperationEnum.REPLACE);
         login.setLogin(StringUtils.isBlank(loginRequest.getNewLogin()) ? loginRequest.getLogin() : loginRequest.getNewLogin());
         login.setManagedSysId(loginRequest.getManagedSystemId());
     }
@@ -454,12 +447,7 @@ public class SourceAdapterImpl implements SourceAdapter {
                 pUser.setGroups(new HashSet<Group>());
             }
             for (SourceAdapterEntityManagedSystemRequest group : request.getGroups()) {
-                if (group.getOperation() == null) {
-                    warnings.append(getWarning("Incorrect operation for group=" + group.getName() + " Skip this!"));
-                    continue;
-                }
                 if (AttributeOperationEnum.REPLACE.equals(group.getOperation())) {
-                    warnings.append(this.getWarning("'replace' operation not supported for groups entitlement. Skip it. Group Name=" + group.getName()));
                     continue;
                 }
                 isFound = false;
@@ -482,7 +470,7 @@ public class SourceAdapterImpl implements SourceAdapter {
                             warnings.append(this.getWarning("Not unique name. Skip it. Group Name=" + group.getName()));
                             continue;
                         } else {
-                            dbGroups.get(0).setOperation(group.getOperation());
+                            dbGroups.get(0).setOperation(AttributeOperationEnum.ADD);
                             pUser.addGroup(dbGroups.get(0));
                         }
                     } else {
@@ -505,10 +493,6 @@ public class SourceAdapterImpl implements SourceAdapter {
             List<OrganizationUserDTO> result = new ArrayList<OrganizationUserDTO>();
             for (SourceAdapterOrganizationRequest org : request.getOrganizations()) {
                 isFound = false;
-                if (org.getOperation() == null) {
-                    warnings.append(getWarning("Incorrect operation for organization=" + org.getName() + " Skip this!"));
-                    continue;
-                }
                 Organization organizationDB = this.getOrganizationFromDataBase(org, warnings, requestorId);
                 if (organizationDB == null) {
                     break;
@@ -516,10 +500,11 @@ public class SourceAdapterImpl implements SourceAdapter {
                 for (OrganizationUserDTO organizationUserDTO : pUser.getOrganizationUserDTOs()) {
                     if (organizationUserDTO.getOrganization().getId().equals(organizationDB.getId())) {
                         isFound = true;
+                        if (org.getOperation() == null) {
+                            org.setOperation(AttributeOperationEnum.REPLACE);
+                        }
                         switch (org.getOperation()) {
-                            case ADD: {
-                                warnings.append(getWarning("Incorrect operation ADD for organization=" + org.getName() + " Such organization has been already entitled with user. Skip this!"));
-                            }
+                            case ADD:
                             case REPLACE: {
                                 organizationUserDTO.setMdTypeId(org.getMetadataTypeId());
                                 this.convertToOrganization(organizationDB, org, warnings);
@@ -541,10 +526,10 @@ public class SourceAdapterImpl implements SourceAdapter {
                     }
                 }
                 if (!isFound) {
+                    org.setOperation(AttributeOperationEnum.ADD);
                     if (org.getOperation().equals(AttributeOperationEnum.DELETE)) {
                         break;
                     }
-                    org.setOperation(AttributeOperationEnum.ADD);
                     if (organizationDB == null && !org.isAddIfNotExistsInOpenIAM()) {
                         break;
                     } else {
@@ -587,7 +572,6 @@ public class SourceAdapterImpl implements SourceAdapter {
         }
         osb.setDeepCopy(false);
         organization = organizationDataService.findBeans(osb, requestodId, 0, Integer.MAX_VALUE);
-
         return organization;
     }
 
@@ -631,9 +615,7 @@ public class SourceAdapterImpl implements SourceAdapter {
         }
 
 
-        if (CollectionUtils.isEmpty(org.getEntityAttributes())) {
-            organizationDB.setAttributes(null);
-        } else {
+        if (CollectionUtils.isNotEmpty(org.getEntityAttributes())) {
             for (SourceAdapterAttributeRequest attributeRequest : org.getEntityAttributes()) {
                 this.processAttribute(organizationDB.getAttributes(), attributeRequest, organizationDB.getId(), warnings);
             }
@@ -653,6 +635,9 @@ public class SourceAdapterImpl implements SourceAdapter {
             OrganizationAttribute attribute = organizationAttributeIterator.next();
             if (attribute.getName().equals(attributeRequest.getName())) {
                 isFound = true;
+                if (attributeRequest.getOperation() == null) {
+                    attributeRequest.setOperation(AttributeOperationEnum.REPLACE);
+                }
                 switch (attributeRequest.getOperation()) {
                     case ADD:
                     case REPLACE: {
@@ -699,11 +684,18 @@ public class SourceAdapterImpl implements SourceAdapter {
             warnings.append(getWarning("can't find org=" + org.toString()));
             return null;
         }
+        Organization orgDB = null;
         if (organization.size() > 1) {
-            warnings.append(getWarning("Multiple associations with organization! " + org.toString()));
-            return organization.get(0);
+            orgDB = organization.get(0);
         }
-        return organization.get(0);
+        orgDB = organization.get(0);
+
+        if (orgDB != null && orgDB.getId() != null) {
+            List<OrganizationAttribute> organizationAttributes = organizationDataService.getOrganizationAttributes(orgDB.getId());
+            if (CollectionUtils.isNotEmpty(organizationAttributes))
+                orgDB.setAttributes(new HashSet<OrganizationAttribute>(organizationAttributes));
+        }
+        return orgDB;
     }
 
     private void fillSuperVisors(ProvisionUser pUser, SourceAdapterRequest request, StringBuilder warnings) throws
@@ -720,11 +712,10 @@ public class SourceAdapterImpl implements SourceAdapter {
             List<User> result = new ArrayList<User>();
             for (SourceAdapterMemberhipKey superUser : request.getSupervisors()) {
                 isFound = false;
-                if (superUser.getOperation() == null) {
-                    warnings.append(getWarning("Incorrect operation for SuperUser=" + superUser.getValue() + " Skip this!"));
-                    continue;
-                }
                 User user = this.getUser(superUser, request);
+                if (superUser.getOperation() == null) {
+                    superUser.setOperation(AttributeOperationEnum.ADD);
+                }
                 if (user == null || user.getId() == null) {
                     warnings.append(getWarning("No such manager in system=" + superUser.getValue() + " Skip this!"));
                     break;
@@ -733,14 +724,6 @@ public class SourceAdapterImpl implements SourceAdapter {
                     if (supervisor.getId().equals(user.getId())) {
                         isFound = true;
                         switch (superUser.getOperation()) {
-                            case ADD: {
-                                warnings.append(getWarning("Incorrect operation ADD for Supervisor=" + user.getName() + " Such Supervisor has been already entitled with user. Skip this!"));
-                                break;
-                            }
-                            case REPLACE: {
-                                warnings.append(getWarning("Operation replace not supported"));
-                                break;
-                            }
                             case DELETE: {
                                 supervisor.setOperation(superUser.getOperation());
                                 break;
@@ -754,12 +737,8 @@ public class SourceAdapterImpl implements SourceAdapter {
                     }
                 }
                 if (!isFound) {
-                    if (!AttributeOperationEnum.ADD.equals(superUser.getOperation())) {
-                        warnings.append(getWarning("Incorrect operation for User=[" + user.getDisplayName() + "] this supervisor is not entitled with user. Use ADD operation. Skip this!"));
-                    } else {
-                        user.setOperation(AttributeOperationEnum.ADD);
-                        result.add(user);
-                    }
+                    user.setOperation(AttributeOperationEnum.ADD);
+                    result.add(user);
                 }
             }
             pUser.getSuperiors().addAll(result);
@@ -776,15 +755,6 @@ public class SourceAdapterImpl implements SourceAdapter {
             }
 
             for (SourceAdapterEntityManagedSystemRequest role : request.getRoles()) {
-                if (role.getOperation() == null) {
-                    warnings.append(getWarning("Incorrect operation for role=" + role.getName() + " Skip this!"));
-                    continue;
-                }
-
-                if (AttributeOperationEnum.REPLACE.equals(role.getOperation())) {
-                    warnings.append(this.getWarning("'replace' operation not supported for Roles entitlement. Skip it. Role Name=" + role.getName()));
-                    continue;
-                }
                 isFound = false;
                 for (Role r : pUser.getRoles()) {
                     if ((r.getManagedSysId() == null || r.getManagedSysId().equals(role.getManagedSystemId())) && r.getName().equals(role.getName())) {
@@ -805,7 +775,7 @@ public class SourceAdapterImpl implements SourceAdapter {
                             warnings.append(this.getWarning("Not unique name. Skip it. Role Name=" + role.getName()));
                             continue;
                         } else {
-                            dbRoles.get(0).setOperation(role.getOperation());
+                            dbRoles.get(0).setOperation(AttributeOperationEnum.ADD);
                             pUser.addRole(dbRoles.get(0));
                         }
                     } else {
@@ -826,12 +796,7 @@ public class SourceAdapterImpl implements SourceAdapter {
             }
             for (SourceAdapterEntityRequest resource : request.getResources()) {
                 if (resource.getOperation() == null) {
-                    warnings.append(getWarning("Incorrect operation for Resource=" + resource.getName() + " Skip this!"));
-                    continue;
-                }
-                if (AttributeOperationEnum.REPLACE.equals(resource.getOperation())) {
-                    warnings.append(this.getWarning("'replace' operation not supported for Resource entitlement. Skip it. Role Name=" + resource.getName()));
-                    continue;
+                    resource.setOperation(AttributeOperationEnum.ADD);
                 }
                 isFound = false;
                 for (Resource r : pUser.getResources()) {
@@ -872,27 +837,22 @@ public class SourceAdapterImpl implements SourceAdapter {
                 pUser.setAddresses(new HashSet<Address>());
             }
             for (SourceAdapterAddressRequest fromWS : request.getAddresses()) {
-                if (fromWS.getOperation() == null) {
-                    warnings.append(getWarning("Incorrect operation for Address=" + fromWS.getTypeId() + " Skip this!"));
-                    continue;
-                }
                 isFound = false;
                 for (Address r : pUser.getAddresses()) {
                     if (r.getMetadataTypeId().equals(fromWS.getTypeId())) {
-                        convertToAddress(r, fromWS, AttributeOperationEnum.ADD.equals(fromWS.getOperation()) ?
-                                AttributeOperationEnum.REPLACE : fromWS.getOperation());
+                        if (AttributeOperationEnum.DELETE.equals(fromWS.getOperation())) {
+                            r.setOperation(AttributeOperationEnum.DELETE);
+                        } else {
+                            convertToAddress(r, fromWS);
+                        }
                         isFound = true;
                         break;
                     }
                 }
                 if (!isFound) {
-                    if (!AttributeOperationEnum.ADD.equals(fromWS.getOperation())) {
-                        warnings.append(getWarning("Email not exists in OIAM and comes with not ADD operation. Address Type=" + fromWS.getTypeId()));
-                    } else {
-                        Address r = new Address();
-                        convertToAddress(r, fromWS, AttributeOperationEnum.ADD);
-                        pUser.getAddresses().add(r);
-                    }
+                    Address r = new Address();
+                    convertToAddress(r, fromWS);
+                    pUser.getAddresses().add(r);
                 }
             }
         }
@@ -906,25 +866,21 @@ public class SourceAdapterImpl implements SourceAdapter {
                 pUser.setEmailAddresses(new HashSet<EmailAddress>());
             }
             for (SourceAdapterEmailRequest fromWS : request.getEmails()) {
-                if (fromWS.getOperation() == null) {
-                    warnings.append(getWarning("Incorrect operation for Email=" + fromWS.getEmail() + " Skip this!"));
-                    continue;
-                }
                 isFound = false;
                 for (EmailAddress r : pUser.getEmailAddresses()) {
                     if (r.getMetadataTypeId().equals(fromWS.getTypeId())) {
-                        convertToEmailAddress(r, fromWS, AttributeOperationEnum.ADD.equals(fromWS.getOperation()) ?
-                                AttributeOperationEnum.REPLACE : fromWS.getOperation());
+                        if (AttributeOperationEnum.DELETE.equals(fromWS.getOperation())) {
+                            r.setOperation(AttributeOperationEnum.DELETE);
+                        } else {
+                            convertToEmailAddress(r, fromWS);
+                        }
                         isFound = true;
                         break;
                     }
                 }
                 if (!isFound) {
-                    if (!AttributeOperationEnum.ADD.equals(fromWS.getOperation()))
-                        warnings.append(getWarning("Email not exists in OIAM and comes with not ADD operation. Adding... Email=" + fromWS.getEmail()));
-
                     EmailAddress r = new EmailAddress();
-                    convertToEmailAddress(r, fromWS, AttributeOperationEnum.ADD);
+                    convertToEmailAddress(r, fromWS);
                     pUser.getEmailAddresses().add(r);
 
                 }
@@ -936,13 +892,14 @@ public class SourceAdapterImpl implements SourceAdapter {
             warnings) throws Exception {
         if (CollectionUtils.isNotEmpty(request.getUserAttributes())) {
             for (SourceAdapterAttributeRequest fromWS : request.getUserAttributes()) {
-                if (fromWS.getOperation() == null) {
-                    warnings.append(getWarning("Incorrect operation for User Attribute=" + fromWS.getName() + " Skip this!"));
-                    continue;
-                }
                 UserAttribute a = pUser.getAttribute(fromWS.getName());
                 if (a != null) {
-                    a.setOperation(AttributeOperationEnum.ADD.equals(fromWS.getOperation()) ? AttributeOperationEnum.REPLACE : fromWS.getOperation());
+                    if (AttributeOperationEnum.DELETE.equals(fromWS.getOperation())) {
+                        pUser.setOperation(AttributeOperationEnum.DELETE);
+                        continue;
+                    }
+
+                    a.setOperation(AttributeOperationEnum.REPLACE);
                     a.setName(StringUtils.isBlank(fromWS.getNewName()) ? fromWS.getName() : fromWS.getNewName());
                     if (CollectionUtils.isNotEmpty(fromWS.getValues())) {
                         a.setIsMultivalued(true);
@@ -955,10 +912,6 @@ public class SourceAdapterImpl implements SourceAdapter {
                     }
                 } else {
                     UserAttribute attr = new UserAttribute(fromWS.getName(), fromWS.getValue());
-                    if (!AttributeOperationEnum.ADD.equals(fromWS.getOperation()))
-                        warnings.append(getWarning("User Attribute not exists in OIAM, but comes with not ADD operation. Adding... " +
-                                " User Attribute=" + fromWS.getName()));
-
                     attr.setOperation(AttributeOperationEnum.ADD);
                     pUser.saveAttribute(attr);
                 }
@@ -975,45 +928,46 @@ public class SourceAdapterImpl implements SourceAdapter {
                 pUser.setPhones(new HashSet<Phone>());
             }
             for (SourceAdapterPhoneRequest fromWS : request.getPhones()) {
-                if (fromWS.getOperation() == null) {
-                    warnings.append(getWarning("Incorrect operation for Phone=" + fromWS.getTypeId() + " Skip this!"));
-                    continue;
-                }
                 isFound = false;
                 for (Phone r : pUser.getPhones()) {
                     if (r.getMetadataTypeId().equals(fromWS.getTypeId())) {
-                        convertToPhone(r, fromWS, AttributeOperationEnum.ADD.equals(fromWS.getOperation()) ?
-                                AttributeOperationEnum.REPLACE : fromWS.getOperation());
+                        if (AttributeOperationEnum.DELETE.equals(fromWS.getOperation())) {
+                            r.setOperation(AttributeOperationEnum.DELETE);
+                        } else {
+                            convertToPhone(r, fromWS);
+                        }
                         isFound = true;
                         break;
                     }
                 }
                 if (!isFound) {
                     Phone r = new Phone();
-                    if (!AttributeOperationEnum.ADD.equals(fromWS.getOperation())) {
-                        warnings.append(getWarning("Phone not exists in OIAM and comes with not ADD operation." +
-                                " Phone Type=" + fromWS.getTypeId()));
-                    } else {
-                        convertToPhone(r, fromWS, AttributeOperationEnum.ADD);
-                        pUser.getPhones().add(r);
-                    }
+                    convertToPhone(r, fromWS);
+                    pUser.getPhones().add(r);
                 }
             }
         }
     }
 
     private static void convertToEmailAddress(EmailAddress r, SourceAdapterEmailRequest
-            address, AttributeOperationEnum operation) throws Exception {
-        r.setOperation(operation);
+            address) throws Exception {
+        if (StringUtils.isBlank(r.getEmailId())) {
+            r.setOperation(AttributeOperationEnum.ADD);
+        } else {
+            r.setOperation(AttributeOperationEnum.REPLACE);
+        }
         r.setMetadataTypeId(StringUtils.isBlank(address.getNewTypeId()) ? address.getTypeId() : address.getNewTypeId());
         r.setIsDefault(address.isPrimary());
         r.setIsActive(address.isActive());
         r.setEmailAddress(address.getEmail());
     }
 
-    private static void convertToAddress(Address r, SourceAdapterAddressRequest address, AttributeOperationEnum
-            operation) {
-        r.setOperation(operation);
+    private static void convertToAddress(Address r, SourceAdapterAddressRequest address) {
+        if (StringUtils.isNotBlank(r.getAddressId()))
+            r.setOperation(AttributeOperationEnum.REPLACE);
+        else {
+            r.setOperation(AttributeOperationEnum.ADD);
+        }
         r.setAddress1(getNULLValue(address.getAddress()));
         r.setBldgNumber(getNULLValue(address.getBldgNumber()));
         r.setSuite(getNULLValue(address.getSuite()));
@@ -1027,9 +981,12 @@ public class SourceAdapterImpl implements SourceAdapter {
         r.setCity(getNULLValue(address.getCity()));
     }
 
-    private static void convertToPhone(Phone r, SourceAdapterPhoneRequest address, AttributeOperationEnum
-            operation) {
-        r.setOperation(operation);
+    private static void convertToPhone(Phone r, SourceAdapterPhoneRequest address) {
+        if (StringUtils.isBlank(r.getPhoneId())) {
+            r.setOperation(AttributeOperationEnum.ADD);
+        } else {
+            r.setOperation(AttributeOperationEnum.REPLACE);
+        }
         r.setMetadataTypeId(StringUtils.isBlank(address.getNewTypeId()) ? address.getTypeId() : address.getNewTypeId());
         r.setIsDefault(address.isPrimary());
         r.setIsActive(address.isActive());
@@ -1050,15 +1007,31 @@ public class SourceAdapterImpl implements SourceAdapter {
 
     private User getUser(SourceAdapterKey keyPair, SourceAdapterRequest request) throws Exception {
         if (keyPair == null && SourceAdapterOperationEnum.ADD.equals(request.getAction())) {
+            //create
             return new User();
+        } else if (keyPair != null && keyPair.getName() == null && StringUtils.isBlank(keyPair.getValue())) {
+            request.setAction(SourceAdapterOperationEnum.ADD);
+            return new User();
+        } else if (keyPair != null && keyPair.getName() == null && StringUtils.isNotBlank(keyPair.getValue())) {
+            User u = null;
+            for (SourceAdapterKeyEnum keyEnum : SourceAdapterKeyEnum.values()) {
+                u = this.findByKey(keyEnum, keyPair.getValue(), request);
+                if (u != null) {
+                    break;
+                }
+            }
+            //try to find by all keys
+            return u;
+        } else if (keyPair != null && keyPair.getName() != null && StringUtils.isNotBlank(keyPair.getValue())) {
+            return this.findByKey(keyPair.getName(), keyPair.getValue(), request);
+        } else {
+            return null;
         }
+    }
+
+
+    private User findByKey(SourceAdapterKeyEnum matchAttrName, String matchAttrValue, SourceAdapterRequest request) throws Exception {
         UserSearchBean searchBean = new UserSearchBean();
-        SourceAdapterKeyEnum matchAttrName = keyPair.getName();
-        String matchAttrValue = keyPair.getValue();
-        if ((matchAttrName == null || StringUtils.isBlank(matchAttrValue)) &&
-                !SourceAdapterOperationEnum.ADD.equals(request.getAction())) {
-            throw new Exception("Match Key is empty");
-        }
         if (SourceAdapterKeyEnum.USERID.equals(matchAttrName)) {
             searchBean.setKey(matchAttrValue);
             searchBean.setUserId(matchAttrValue);
@@ -1082,8 +1055,7 @@ public class SourceAdapterImpl implements SourceAdapter {
         } else if (SourceAdapterOperationEnum.ADD.equals(request.getAction())) {
             return new User();
         } else {
-            throw new Exception("No user with such Identifier=" + matchAttrName + ":" + matchAttrValue);
+            return null;
         }
     }
-
 }
