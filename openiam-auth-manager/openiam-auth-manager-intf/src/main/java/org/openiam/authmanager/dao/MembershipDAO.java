@@ -36,34 +36,34 @@ public interface MembershipDAO {
 	public List<MembershipRightDTO> getOrg2OrgRights();
 	public List<MembershipRightDTO> getUser2OrgRights();
 	
-	public List<MembershipDTO> getResource2ResourceMembership();
-	public List<MembershipDTO> getUser2ResourceMembership();
+	public List<MembershipDTO> getResource2ResourceMembership(final Date date);
+	public List<MembershipDTO> getUser2ResourceMembership(final Date date);
 	
-	public List<MembershipDTO> getGroup2ResourceMembership();
-	public List<MembershipDTO> getGroup2GroupMembership();
-	public List<MembershipDTO> getUser2GroupMembership();
+	public List<MembershipDTO> getGroup2ResourceMembership(final Date date);
+	public List<MembershipDTO> getGroup2GroupMembership(final Date date);
+	public List<MembershipDTO> getUser2GroupMembership(final Date date);
 	
-	public List<MembershipDTO> getRole2ResourceMembership();
-	public List<MembershipDTO> getRole2GroupMembership();
-	public List<MembershipDTO> getRole2RoleMembership();
-	public List<MembershipDTO> getUser2RoleMembership();
+	public List<MembershipDTO> getRole2ResourceMembership(final Date date);
+	public List<MembershipDTO> getRole2GroupMembership(final Date date);
+	public List<MembershipDTO> getRole2RoleMembership(final Date date);
+	public List<MembershipDTO> getUser2RoleMembership(final Date date);
 	
-	public List<MembershipDTO> getOrg2ResourceMembership();
-	public List<MembershipDTO> getOrg2GroupMembership();
-	public List<MembershipDTO> getOrg2RoleMembership();
-	public List<MembershipDTO> getOrg2OrgMembership();
-	public List<MembershipDTO> getUser2OrgMembership();
+	public List<MembershipDTO> getOrg2ResourceMembership(final Date date);
+	public List<MembershipDTO> getOrg2GroupMembership(final Date date);
+	public List<MembershipDTO> getOrg2RoleMembership(final Date date);
+	public List<MembershipDTO> getOrg2OrgMembership(final Date date);
+	public List<MembershipDTO> getUser2OrgMembership(final Date date);
 	
 	public List<AuthorizationOrganization> getOrganizations();
 	public List<AuthorizationGroup> getGroups();
 	public List<AuthorizationRole> getRoles();
 	public List<AuthorizationResource> getResources();
 	public List<AuthorizationUser> getUsers(final Date date);
-	public InternalAuthroizationUser getUser(final String id);
+	public InternalAuthroizationUser getUser(final String id, final Date date);
 	
-	public List<String> getUsersForResource(final String resourceId);
-	public List<String> getUsersForResource(final String resourceId, final String rightId);
+	public List<String> getUsersForResource(final String resourceId, final Date date);
+	public List<String> getUsersForResource(final String resourceId, final String rightId, final Date date);
 	
-	public List<String> getUsersForGroup(final String groupId);
-	public List<String> getUsersForGroup(final String groupId, final String rightId);
+	public List<String> getUsersForGroup(final String groupId, final Date date);
+	public List<String> getUsersForGroup(final String groupId, final String rightId, final Date date);
 }

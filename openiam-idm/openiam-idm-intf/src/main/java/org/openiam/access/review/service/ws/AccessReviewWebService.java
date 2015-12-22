@@ -1,5 +1,7 @@
 package org.openiam.access.review.service.ws;
 
+import java.util.Date;
+
 import org.openiam.access.review.model.AccessViewFilterBean;
 import org.openiam.access.review.model.AccessViewResponse;
 import org.openiam.idm.srvc.lang.dto.Language;
@@ -16,6 +18,7 @@ public interface AccessReviewWebService {
     @WebMethod
     AccessViewResponse getAccessReviewTree(final @WebParam(name = "filter", targetNamespace = "") AccessViewFilterBean filter,
                                            final @WebParam(name = "viewType", targetNamespace = "") String viewType,
+                                           final @WebParam(name = "date", targetNamespace = "") Date date,
                                            final @WebParam(name = "language", targetNamespace = "") Language language);
     @WebMethod
     AccessViewResponse getAccessReviewSubTree(final @WebParam(name = "parentId", targetNamespace = "") String parentId,
@@ -23,5 +26,6 @@ public interface AccessReviewWebService {
                                               final @WebParam(name = "isRootOnly", targetNamespace = "") boolean isRootOnly,
                                               final @WebParam(name = "filter", targetNamespace = "") AccessViewFilterBean filter,
                                               final @WebParam(name = "viewType", targetNamespace = "") String viewType,
+                                              final @WebParam(name = "date", targetNamespace = "") Date date,
                                               final @WebParam(name = "language", targetNamespace = "") Language language);
 }

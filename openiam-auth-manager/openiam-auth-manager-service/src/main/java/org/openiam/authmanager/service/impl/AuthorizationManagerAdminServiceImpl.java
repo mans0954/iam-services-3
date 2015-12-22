@@ -38,11 +38,11 @@ public class AuthorizationManagerAdminServiceImpl extends AbstractAuthorizationM
 	private AuthorizationManagerDataProvider dataProvider;
 	
 	@Override
-	public ResourceEntitlementToken getNonCachedEntitlementsForUser(final String userId) {
+	public ResourceEntitlementToken getNonCachedEntitlementsForUser(final String userId, final Date date) {
 		final ResourceEntitlementToken retVal = new ResourceEntitlementToken();
 		if(userId != null) {
-			final AuthorizationManagerDataModel model = dataProvider.getModel();
-			final InternalAuthroizationUser user = membershipDAO.getUser(userId);
+			final AuthorizationManagerDataModel model = dataProvider.getModel(date);
+			final InternalAuthroizationUser user = membershipDAO.getUser(userId, date);
 			if(user != null) {
 				final AuthorizationUser entity = super.process(user, model.getTempGroupIdMap(), model.getTempRoleIdMap(), model.getTempResourceIdMap(), model.getTempOrganizationIdMap(), model.getTempAccessRightMap(), new AtomicInteger(0));
 
@@ -54,10 +54,10 @@ public class AuthorizationManagerAdminServiceImpl extends AbstractAuthorizationM
 	}
 
 	@Override
-	public ResourceEntitlementToken getNonCachedEntitlementsForGroup(final String groupId) {
+	public ResourceEntitlementToken getNonCachedEntitlementsForGroup(final String groupId, final Date date) {
 		final ResourceEntitlementToken retVal = new ResourceEntitlementToken();
 		if(groupId != null) {
-			final AuthorizationManagerDataModel model = dataProvider.getModel();
+			final AuthorizationManagerDataModel model = dataProvider.getModel(date);
 			if(model.getTempGroupIdMap().containsKey(groupId)) {
 				final AuthorizationGroup entity = model.getTempGroupIdMap().get(groupId);
 				entity.compile(model.getNumOfRights());
@@ -80,10 +80,10 @@ public class AuthorizationManagerAdminServiceImpl extends AbstractAuthorizationM
 	}
 
 	@Override
-	public ResourceEntitlementToken getNonCachedEntitlementsForRole(final String roleId) {
+	public ResourceEntitlementToken getNonCachedEntitlementsForRole(final String roleId, final Date date) {
 		final ResourceEntitlementToken retVal = new ResourceEntitlementToken();
 		if(roleId != null) {
-			final AuthorizationManagerDataModel model = dataProvider.getModel();
+			final AuthorizationManagerDataModel model = dataProvider.getModel(date);
 			if(model.getTempRoleIdMap().containsKey(roleId)) {
 				final AuthorizationRole entity = model.getTempRoleIdMap().get(roleId);
 				entity.compile(model.getNumOfRights());
@@ -106,10 +106,10 @@ public class AuthorizationManagerAdminServiceImpl extends AbstractAuthorizationM
 	}
 	
 	@Override
-	public ResourceEntitlementToken getNonCachedEntitlementsForOrganization(final String organizationId) {
+	public ResourceEntitlementToken getNonCachedEntitlementsForOrganization(final String organizationId, final Date date) {
 		final ResourceEntitlementToken retVal = new ResourceEntitlementToken();
 		if(organizationId != null) {
-			final AuthorizationManagerDataModel model = dataProvider.getModel();
+			final AuthorizationManagerDataModel model = dataProvider.getModel(date);
 			if(model.getTempOrganizationIdMap().containsKey(organizationId)) {
 				final AuthorizationOrganization entity = model.getTempOrganizationIdMap().get(organizationId);
 				entity.compile(model.getNumOfRights());
@@ -171,12 +171,12 @@ public class AuthorizationManagerAdminServiceImpl extends AbstractAuthorizationM
 	}
 
 	@Override
-	public UserEntitlementsMatrix getUserEntitlementsMatrix(final String userId) {
+	public UserEntitlementsMatrix getUserEntitlementsMatrix(final String userId, final Date date) {
 		
 		final UserEntitlementsMatrix matrix = new UserEntitlementsMatrix();
 		if(userId != null) {
-			final AuthorizationManagerDataModel model = dataProvider.getModel();
-			final InternalAuthroizationUser user = membershipDAO.getUser(userId);
+			final AuthorizationManagerDataModel model = dataProvider.getModel(date);
+			final InternalAuthroizationUser user = membershipDAO.getUser(userId, date);
 			if(user != null) {
 				final AuthorizationUser entity = super.process(user, model.getTempGroupIdMap(), model.getTempRoleIdMap(), model.getTempResourceIdMap(), model.getTempOrganizationIdMap(), model.getTempAccessRightMap(), new AtomicInteger(0));
 
@@ -276,8 +276,8 @@ public class AuthorizationManagerAdminServiceImpl extends AbstractAuthorizationM
 	}
 
 	@Override
-    public Set<String> getOwnerIdsForResource(String resourceId){
-        return getUserIdsForResource(resourceId, adminRightId);
+    public Set<String> getOwnerIdsForResource(final String resourceId, final Date date){
+        return getUserIdsForResource(resourceId, adminRightId, date);
     }
 
 	private Map<String, Map<String, Set<String>>> populateWithMemberEntityIdAsValue(final Map<String, Set<MembershipDTO>> entityMap,
@@ -321,72 +321,72 @@ public class AuthorizationManagerAdminServiceImpl extends AbstractAuthorizationM
 		return retval;
 	}
     
-    private Map<String, Map<String, Set<String>>> getResource2ResourceMap() {
-		final Map<String, Set<MembershipDTO>> entityMap = getMembershipMapByMemberEntityId(membershipDAO.getResource2ResourceMembership());
+    private Map<String, Map<String, Set<String>>> getResource2ResourceMap(final Date date) {
+		final Map<String, Set<MembershipDTO>> entityMap = getMembershipMapByMemberEntityId(membershipDAO.getResource2ResourceMembership(date));
 		final Map<String, Set<String>> rightMap = getRightMap(membershipDAO.getResource2ResourceRights());
 		return populateWithEntityIdAsValue(entityMap, rightMap);
     }
     
-    private Map<String, Map<String, Set<String>>> getResource2GroupMap() {
-    	final Map<String, Set<MembershipDTO>> entityMap = getMembershipMapByMemberEntityId(membershipDAO.getGroup2ResourceMembership());
+    private Map<String, Map<String, Set<String>>> getResource2GroupMap(final Date date) {
+    	final Map<String, Set<MembershipDTO>> entityMap = getMembershipMapByMemberEntityId(membershipDAO.getGroup2ResourceMembership(date));
     	final Map<String, Set<String>> rightMap = getRightMap(membershipDAO.getGroup2ResourceRights());
     	return populateWithEntityIdAsValue(entityMap, rightMap);
     }
     
-    private Map<String, Map<String, Set<String>>> getResource2RoleMap() {
-    	final Map<String, Set<MembershipDTO>> entityMap = getMembershipMapByMemberEntityId(membershipDAO.getRole2ResourceMembership());
+    private Map<String, Map<String, Set<String>>> getResource2RoleMap(final Date date) {
+    	final Map<String, Set<MembershipDTO>> entityMap = getMembershipMapByMemberEntityId(membershipDAO.getRole2ResourceMembership(date));
     	final Map<String, Set<String>> rightMap = getRightMap(membershipDAO.getRole2ResourceRights());
     	return populateWithEntityIdAsValue(entityMap, rightMap);
     }
     
-    private Map<String, Map<String, Set<String>>> getResource2OrgMap() {
-    	final Map<String, Set<MembershipDTO>> entityMap = getMembershipMapByMemberEntityId(membershipDAO.getOrg2ResourceMembership());
+    private Map<String, Map<String, Set<String>>> getResource2OrgMap(final Date date) {
+    	final Map<String, Set<MembershipDTO>> entityMap = getMembershipMapByMemberEntityId(membershipDAO.getOrg2ResourceMembership(date));
     	final Map<String, Set<String>> rightMap = getRightMap(membershipDAO.getOrg2ResourceRights());
     	return populateWithEntityIdAsValue(entityMap, rightMap);
     }
     
-    private Map<String, Map<String, Set<String>>> getGroup2GroupMap() {
-    	final Map<String, Set<MembershipDTO>> entityMap = getMembershipMapByMemberEntityId(membershipDAO.getGroup2GroupMembership());
+    private Map<String, Map<String, Set<String>>> getGroup2GroupMap(final Date date) {
+    	final Map<String, Set<MembershipDTO>> entityMap = getMembershipMapByMemberEntityId(membershipDAO.getGroup2GroupMembership(date));
     	final Map<String, Set<String>> rightMap = getRightMap(membershipDAO.getGroup2GroupRights());
     	return populateWithEntityIdAsValue(entityMap, rightMap);
     }
     
-    private Map<String, Map<String, Set<String>>> getGroup2RoleMap() {
-    	final Map<String, Set<MembershipDTO>> entityMap = getMembershipMapByMemberEntityId(membershipDAO.getRole2GroupMembership());
+    private Map<String, Map<String, Set<String>>> getGroup2RoleMap(final Date date) {
+    	final Map<String, Set<MembershipDTO>> entityMap = getMembershipMapByMemberEntityId(membershipDAO.getRole2GroupMembership(date));
     	final Map<String, Set<String>> rightMap = getRightMap(membershipDAO.getRole2GroupRights());
     	return populateWithEntityIdAsValue(entityMap, rightMap);
     }
     
-    private Map<String, Map<String, Set<String>>> getGroup2OrgMap() {
-    	final Map<String, Set<MembershipDTO>> entityMap = getMembershipMapByMemberEntityId(membershipDAO.getOrg2GroupMembership());
+    private Map<String, Map<String, Set<String>>> getGroup2OrgMap(final Date date) {
+    	final Map<String, Set<MembershipDTO>> entityMap = getMembershipMapByMemberEntityId(membershipDAO.getOrg2GroupMembership(date));
     	final Map<String, Set<String>> rightMap = getRightMap(membershipDAO.getOrg2GroupRights());
     	return populateWithEntityIdAsValue(entityMap, rightMap);
     }
     
-    private Map<String, Map<String, Set<String>>> getRole2RoleMap() {
-    	final Map<String, Set<MembershipDTO>> entityMap = getMembershipMapByMemberEntityId(membershipDAO.getRole2RoleMembership());
+    private Map<String, Map<String, Set<String>>> getRole2RoleMap(final Date date) {
+    	final Map<String, Set<MembershipDTO>> entityMap = getMembershipMapByMemberEntityId(membershipDAO.getRole2RoleMembership(date));
     	final Map<String, Set<String>> rightMap = getRightMap(membershipDAO.getRole2RoleRights());
     	return populateWithEntityIdAsValue(entityMap, rightMap);
     }
     
-    private Map<String, Map<String, Set<String>>> getRole2OrgMap() {
-    	final Map<String, Set<MembershipDTO>> entityMap = getMembershipMapByMemberEntityId(membershipDAO.getOrg2RoleMembership());
+    private Map<String, Map<String, Set<String>>> getRole2OrgMap(final Date date) {
+    	final Map<String, Set<MembershipDTO>> entityMap = getMembershipMapByMemberEntityId(membershipDAO.getOrg2RoleMembership(date));
     	final Map<String, Set<String>> rightMap = getRightMap(membershipDAO.getOrg2RoleRights());
     	return populateWithEntityIdAsValue(entityMap, rightMap);
     }
     
-    private Map<String, Map<String, Set<String>>> getOrg2OrgMap() {
-    	final Map<String, Set<MembershipDTO>> entityMap = getMembershipMapByMemberEntityId(membershipDAO.getOrg2OrgMembership());
+    private Map<String, Map<String, Set<String>>> getOrg2OrgMap(final Date date) {
+    	final Map<String, Set<MembershipDTO>> entityMap = getMembershipMapByMemberEntityId(membershipDAO.getOrg2OrgMembership(date));
     	final Map<String, Set<String>> rightMap = getRightMap(membershipDAO.getOrg2OrgRights());
     	return populateWithEntityIdAsValue(entityMap, rightMap);
     }
 
     @Override
-    public HashMap<String, SetStringResponse> getOwnerIdsForResourceSet(Set<String> resourceIdSet){
+    public HashMap<String, SetStringResponse> getOwnerIdsForResourceSet(final Set<String> resourceIdSet, final Date date){
     	final HashMap<String, SetStringResponse> retVal = new HashMap<String, SetStringResponse>();
     	if(CollectionUtils.isNotEmpty(resourceIdSet)) {
     		resourceIdSet.forEach(resourceId -> {
-    			final Set<String> userIds = getUserIdsForResource(resourceId, adminRightId);
+    			final Set<String> userIds = getUserIdsForResource(resourceId, adminRightId, date);
     			retVal.put(resourceId, new SetStringResponse(userIds));
     		});
     	}
@@ -394,16 +394,16 @@ public class AuthorizationManagerAdminServiceImpl extends AbstractAuthorizationM
     }
 
     @Override
-	public Set<String> getUserIdsEntitledForResource(String resourceId){
-		return getUserIdsForResource(resourceId, null);
+	public Set<String> getUserIdsEntitledForResource(final String resourceId, final Date date){
+		return getUserIdsForResource(resourceId, null, date);
 	}
 
 	@Override
-	public HashMap<String, SetStringResponse> getUserIdsEntitledForResourceSet(Set<String> resourceIdSet){
+	public HashMap<String, SetStringResponse> getUserIdsEntitledForResourceSet(final Set<String> resourceIdSet, final Date date){
 		final HashMap<String, SetStringResponse> retVal = new HashMap<String, SetStringResponse>();
     	if(CollectionUtils.isNotEmpty(resourceIdSet)) {
     		resourceIdSet.forEach(resourceId -> {
-    			final Set<String> userIds = getUserIdsForResource(resourceId, null);
+    			final Set<String> userIds = getUserIdsForResource(resourceId, null, date);
     			retVal.put(resourceId, new SetStringResponse(userIds));
     		});
     	}
@@ -411,16 +411,16 @@ public class AuthorizationManagerAdminServiceImpl extends AbstractAuthorizationM
 	}
 
 	@Override
-	public Set<String> getOwnerIdsForGroup(String groupId){
-		return getUserIdsForGroup(groupId, adminRightId);
+	public Set<String> getOwnerIdsForGroup(final String groupId, final Date date){
+		return getUserIdsForGroup(groupId, adminRightId, date);
 	}
 
 	@Override
-    public HashMap<String,SetStringResponse> getOwnerIdsForGroupSet(Set<String> groupIdSet){
+    public HashMap<String,SetStringResponse> getOwnerIdsForGroupSet(final Set<String> groupIdSet, final Date date){
 		final HashMap<String, SetStringResponse> retVal = new HashMap<String, SetStringResponse>();
     	if(CollectionUtils.isNotEmpty(groupIdSet)) {
     		groupIdSet.forEach(groupId -> {
-    			final Set<String> userIds = getOwnerIdsForGroup(groupId);
+    			final Set<String> userIds = getOwnerIdsForGroup(groupId, date);
     			retVal.put(groupId, new SetStringResponse(userIds));
     		});
     	}
@@ -450,22 +450,22 @@ public class AuthorizationManagerAdminServiceImpl extends AbstractAuthorizationM
     	return entityIds;
     }
     
-    private Set<String> getUserIdsForGroup(final String groupId, final String rightId){
+    private Set<String> getUserIdsForGroup(final String groupId, final String rightId, final Date date){
 		final Set<String> userIds = new HashSet<String>();
     	
-    	final Map<String, Map<String, Set<String>>> group2GroupMap = getGroup2GroupMap();
-    	final Map<String, Map<String, Set<String>>> group2RoleMap = getGroup2RoleMap();
-    	final Map<String, Map<String, Set<String>>> group2OrgMap = getGroup2OrgMap();
+    	final Map<String, Map<String, Set<String>>> group2GroupMap = getGroup2GroupMap(date);
+    	final Map<String, Map<String, Set<String>>> group2RoleMap = getGroup2RoleMap(date);
+    	final Map<String, Map<String, Set<String>>> group2OrgMap = getGroup2OrgMap(date);
 	   
-    	final Map<String, Map<String, Set<String>>> role2RoleMap = getRole2RoleMap();
-    	final Map<String, Map<String, Set<String>>> role2OrgMap = getRole2OrgMap();
+    	final Map<String, Map<String, Set<String>>> role2RoleMap = getRole2RoleMap(date);
+    	final Map<String, Map<String, Set<String>>> role2OrgMap = getRole2OrgMap(date);
 	   
-    	final Map<String, Map<String, Set<String>>> org2OrgMap = getOrg2OrgMap();
+    	final Map<String, Map<String, Set<String>>> org2OrgMap = getOrg2OrgMap(date);
     	
 		if(rightId != null) {
-			userIds.addAll(membershipDAO.getUsersForGroup(groupId, rightId));
+			userIds.addAll(membershipDAO.getUsersForGroup(groupId, rightId, date));
 		} else {
-			userIds.addAll(membershipDAO.getUsersForGroup(groupId));
+			userIds.addAll(membershipDAO.getUsersForGroup(groupId, date));
 		}
     	
     	if(StringUtils.isNotBlank(groupId)) {
@@ -542,26 +542,26 @@ public class AuthorizationManagerAdminServiceImpl extends AbstractAuthorizationM
     	return userIds;
 	}
     
-	private Set<String> getUserIdsForResource(final String resourceId, final String rightId){
-	   	  final Map<String, Map<String, Set<String>>> resource2ResourceMap = getResource2ResourceMap();
-	   	  final Map<String, Map<String, Set<String>>> resource2GroupMap = getResource2GroupMap();
-	   	  final Map<String, Map<String, Set<String>>> resource2RoleMap = getResource2RoleMap();
-	   	  final Map<String, Map<String, Set<String>>> resource2OrgMap = getResource2OrgMap();
+	private Set<String> getUserIdsForResource(final String resourceId, final String rightId, final Date date){
+	   	  final Map<String, Map<String, Set<String>>> resource2ResourceMap = getResource2ResourceMap(date);
+	   	  final Map<String, Map<String, Set<String>>> resource2GroupMap = getResource2GroupMap(date);
+	   	  final Map<String, Map<String, Set<String>>> resource2RoleMap = getResource2RoleMap(date);
+	   	  final Map<String, Map<String, Set<String>>> resource2OrgMap = getResource2OrgMap(date);
 	   
-	   	  final Map<String, Map<String, Set<String>>> group2GroupMap = getGroup2GroupMap();
-	   	  final Map<String, Map<String, Set<String>>> group2RoleMap = getGroup2RoleMap();
-	   	  final Map<String, Map<String, Set<String>>> group2OrgMap = getGroup2OrgMap();
+	   	  final Map<String, Map<String, Set<String>>> group2GroupMap = getGroup2GroupMap(date);
+	   	  final Map<String, Map<String, Set<String>>> group2RoleMap = getGroup2RoleMap(date);
+	   	  final Map<String, Map<String, Set<String>>> group2OrgMap = getGroup2OrgMap(date);
 	   
-	   	  final Map<String, Map<String, Set<String>>> role2RoleMap = getRole2RoleMap();
-	   	  final Map<String, Map<String, Set<String>>> role2OrgMap = getRole2OrgMap();
+	   	  final Map<String, Map<String, Set<String>>> role2RoleMap = getRole2RoleMap(date);
+	   	  final Map<String, Map<String, Set<String>>> role2OrgMap = getRole2OrgMap(date);
 	   
-	   	  final Map<String, Map<String, Set<String>>> org2OrgMap = getOrg2OrgMap();
+	   	  final Map<String, Map<String, Set<String>>> org2OrgMap = getOrg2OrgMap(date);
 	   	
 	   	  final Set<String> userIds = new HashSet<>();
 	   	  if(rightId != null) {
-	   		  userIds.addAll(membershipDAO.getUsersForResource(resourceId, rightId));
+	   		  userIds.addAll(membershipDAO.getUsersForResource(resourceId, rightId, date));
 	   	  } else {
-	   		  userIds.addAll(membershipDAO.getUsersForResource(resourceId));
+	   		  userIds.addAll(membershipDAO.getUsersForResource(resourceId, date));
 	   	  }
 
 	   	  if(StringUtils.isNotBlank(resourceId)) {

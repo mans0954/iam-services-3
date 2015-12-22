@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.res.service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -395,7 +396,12 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     @Override
     //@Transactional
     @CacheEvict(value = "resources", allEntries=true)
-    public Response addUserToResource(final String resourceId, final String userId, final String requesterId, final Set<String> rightIds) {
+    public Response addUserToResource(final String resourceId, 
+    								  final String userId, 
+    								  final String requesterId, 
+    								  final Set<String> rightIds,
+    								  final Date startDate,
+    								  final Date endDate) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity ();
         idmAuditLog.setRequestorUserId(requesterId);
@@ -412,7 +418,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "ResourceId or UserId is not set");
             }
 
-            userDataService.addUserToResource(userId, resourceId, rightIds);
+            userDataService.addUserToResource(userId, resourceId, rightIds, startDate, endDate);
             idmAuditLog.succeed();
         } catch (BasicDataServiceException e) {
             response.setErrorCode(e.getCode());
@@ -540,7 +546,12 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 
     @Override
     @CacheEvict(value = "resources", allEntries=true)
-    public Response addChildResource(final String resourceId, final String childResourceId, final String requesterId, final Set<String> rights) {
+    public Response addChildResource(final String resourceId, 
+    								 final String childResourceId, 
+    								 final String requesterId, 
+    								 final Set<String> rights,
+    								 final Date startDate,
+   								  	 final Date endDate) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity ();
         idmAuditLog.setRequestorUserId(requesterId);
@@ -554,7 +565,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
                         String.format("Add child resource: %s to resource: %s", childResourceId, resourceId));
         try {
             resourceService.validateResource2ResourceAddition(resourceId, childResourceId, rights);
-            resourceService.addChildResource(resourceId, childResourceId, rights);
+            resourceService.addChildResource(resourceId, childResourceId, rights, startDate, endDate);
             idmAuditLog.succeed();
         } catch (BasicDataServiceException e) {
             response.setResponseValue(e.getResponseValue());
@@ -618,7 +629,12 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 
     @Override
     @CacheEvict(value = "resources", allEntries=true)
-    public Response addGroupToResource(final String resourceId, final String groupId, final String requesterId, final Set<String> rightIds) {
+    public Response addGroupToResource(final String resourceId, 
+    								   final String groupId, 
+    								   final String requesterId, 
+    								   final Set<String> rightIds,
+    								   final Date startDate,
+     								   final Date endDate) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity ();
         idmAuditLog.setRequestorUserId(requesterId);
@@ -634,7 +650,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "GroupId or ResourceId is null");
             }
 
-            resourceService.addResourceGroup(resourceId, groupId, rightIds);
+            resourceService.addResourceGroup(resourceId, groupId, rightIds, startDate, endDate);
             idmAuditLog.succeed();
         } catch (BasicDataServiceException e) {
             response.setErrorCode(e.getCode());
@@ -699,7 +715,12 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 
     @Override
     @CacheEvict(value = "resources", allEntries=true)
-    public Response addRoleToResource(final String resourceId, final String roleId, final String requesterId, final Set<String> rightIds) {
+    public Response addRoleToResource(final String resourceId, 
+    								  final String roleId, 
+    								  final String requesterId, 
+    								  final Set<String> rightIds,
+    								  final Date startDate,
+    								  final Date endDate) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity ();
         idmAuditLog.setRequestorUserId(requesterId);
@@ -723,7 +744,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
             }
             idmAuditLog.setTargetResource(resourceId, resourceEntity.getName());
 
-            resourceService.addResourceToRole(resourceId, roleId, rightIds);
+            resourceService.addResourceToRole(resourceId, roleId, rightIds, startDate, endDate);
             idmAuditLog.succeed();
         } catch (BasicDataServiceException e) {
             response.setErrorCode(e.getCode());

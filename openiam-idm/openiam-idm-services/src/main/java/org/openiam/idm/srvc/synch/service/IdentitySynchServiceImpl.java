@@ -424,7 +424,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
                     final Role r = parseRole(config.getTargetRole());
                     if ("ADD".equalsIgnoreCase(config.getOperation())) {
                         // add to role
-                    	pUser.addRole(r, config.getRightIds());
+                    	pUser.addRole(r, config.getRightIds(), config.getStartDate(), config.getEndDate());
                     } else {
                     	pUser.removeRole(r.getId());
                     }
@@ -534,7 +534,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 
                 ProvisionUser pUser = new ProvisionUser(user);
 
-                pUser.addRole(rl, null);
+                pUser.addRole(rl, null, null, null);
                 provisionService.modifyUser(pUser);
 
             }

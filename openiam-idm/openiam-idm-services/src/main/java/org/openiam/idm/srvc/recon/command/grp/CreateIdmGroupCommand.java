@@ -72,7 +72,7 @@ public class CreateIdmGroupCommand  extends BaseReconciliationGroupCommand {
                         for(String memberPrincipal : pGroup.getMembersIds()) {
                             UserEntity user = userManager.getUserByPrincipal(memberPrincipal, mSysID, false);
                             if(user != null) {
-                                Response response = groupDataWebService.addUserToGroup(groupId, user.getId(), DEFAULT_REQUESTER_ID, null);
+                                Response response = groupDataWebService.addUserToGroup(groupId, user.getId(), DEFAULT_REQUESTER_ID, null, null, null);
                                 log.debug("User Member with principal = "+memberPrincipal+" was added to Group = "+identity.getIdentity() + " Managed Sys = "+identity.getManagedSysId() + ". \nResponse = "+response);
                             }
                         }

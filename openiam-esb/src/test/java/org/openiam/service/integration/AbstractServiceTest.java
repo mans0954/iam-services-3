@@ -2,6 +2,7 @@ package org.openiam.service.integration;
 
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -10,6 +11,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.junit.runner.RunWith;
 import org.openiam.am.srvc.dto.AuthLevelGrouping;
 import org.openiam.am.srvc.dto.AuthLevelGroupingContentProviderXref;
@@ -142,6 +144,16 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 	
 	@Autowired
 	private OpenIAMHttpClient httpClient;
+	
+	protected Date getMiddleDate(final Date startDate, final Date endDate) {
+		if(startDate != null) {
+			return DateUtils.addSeconds(new Date(), 10);
+		} else if(endDate != null) {
+			return DateUtils.addSeconds(new Date(), -10);
+		} else {
+			return null;
+		}
+	}
 	
 	protected Set<String> getRightIdsNotIn(final Set<String> rightIds) {
 		return accessRightServiceClient.findBeans(null, 0, Integer.MAX_VALUE, getDefaultLanguage())

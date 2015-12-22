@@ -1,5 +1,6 @@
 package org.openiam.service.integration.entitlements;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -29,8 +30,8 @@ public class Group2RoleEntitlementsTest extends AbstractEntitlementsTest<Group, 
 	}
 
 	@Override
-	protected Response addChildToParent(Group parent, Role child, final Set<String> rights) {
-		return roleServiceClient.addGroupToRole(child.getId(), parent.getId(), null, rights);
+	protected Response addChildToParent(final Group parent, final Role child, final Set<String> rights, final Date startDate, final Date endDate) {
+		return roleServiceClient.addGroupToRole(child.getId(), parent.getId(), null, rights, startDate, endDate);
 	}
 
 	@Override

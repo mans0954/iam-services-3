@@ -2512,7 +2512,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                         }
                                     }
                                     if (isModifiedGroup) {
-                                    	pUser.addGroup(group, ob.getRightIds());
+                                    	pUser.addGroup(group, ob.getRightIds(), ob.getStartDate(), ob.getEndDate());
                                         isEntitlementModified = true;
                                     }
                                     break;
@@ -2534,7 +2534,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                         }
                                     }
                                     if (isModifiedRole) {
-                                    	pUser.addRole(role, ob.getRightIds());
+                                    	pUser.addRole(role, ob.getRightIds(), ob.getStartDate(), ob.getEndDate());
                                         isEntitlementModified = true;
                                     }
                                     break;
@@ -2555,7 +2555,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                         }
                                     }
                                     if (isModifiedResource) {
-                                        pUser.addResource(resource, ob.getRightIds());
+                                        pUser.addResource(resource, ob.getRightIds(), ob.getStartDate(), ob.getEndDate());
                                         isEntitlementModified = true;
                                     }
                                     break;
@@ -2571,7 +2571,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                     } else {
                                         if (BulkOperationEnum.ADD_ENTITLEMENT.equals(ob.getOperation())) {
                                         	existingOrganizationIds.add(organization.getId());
-                                        	pUser.addAffiliation(organization, ob.getRightIds());
+                                        	pUser.addAffiliation(organization, ob.getRightIds(), ob.getStartDate(), ob.getEndDate());
                                             isModifiedOrg = true;
                                         }
                                     }

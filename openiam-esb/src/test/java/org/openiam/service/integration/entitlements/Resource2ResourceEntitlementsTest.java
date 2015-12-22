@@ -1,5 +1,6 @@
 package org.openiam.service.integration.entitlements;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -26,8 +27,8 @@ public class Resource2ResourceEntitlementsTest extends AbstractCircularEntitleme
 	}
 
 	@Override
-	protected Response addChildToParent(Resource parent, Resource child, final Set<String> rights) {
-		return resourceDataService.addChildResource(parent.getId(), child.getId(), null, rights);
+	protected Response addChildToParent(final Resource parent, final Resource child, final Set<String> rights, final Date startDate, final Date endDate) {
+		return resourceDataService.addChildResource(parent.getId(), child.getId(), null, rights, startDate, endDate);
 	}
 
 	@Override

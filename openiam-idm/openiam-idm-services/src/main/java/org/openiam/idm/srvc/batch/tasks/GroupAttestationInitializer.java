@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Set;
 
@@ -56,7 +57,7 @@ public class GroupAttestationInitializer {
         sw.start();
         final Set<String> groupIds = groupDataService.getGroupIdList();
         if(CollectionUtils.isNotEmpty(groupIds)) {
-            HashMap<String, SetStringResponse> groupOwnerMap = adminService.getOwnerIdsForGroupSet(groupIds);
+            HashMap<String, SetStringResponse> groupOwnerMap = adminService.getOwnerIdsForGroupSet(groupIds, new Date());
             if(groupOwnerMap!=null && !groupOwnerMap.isEmpty()){
                 for(final String groupId : groupOwnerMap.keySet()) {
                     SetStringResponse groupOwnerResponse = groupOwnerMap.get(groupId);

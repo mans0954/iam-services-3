@@ -21,6 +21,7 @@
  */
 package org.openiam.idm.srvc.role.ws;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -170,7 +171,12 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
     }
 
     @Override
-	public Response addGroupToRole(final String roleId, final String groupId, final String requesterId, final Set<String> rightIds) {
+	public Response addGroupToRole(final String roleId, 
+								   final String groupId, 
+								   final String requesterId, 
+								   final Set<String> rightIds,
+								   final Date startDate,
+								   final Date endDate) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
 		IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
         idmAuditLog.setRequestorUserId(requesterId);
@@ -182,7 +188,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
         idmAuditLog.setAuditDescription(String.format("Add group to  role: %s", roleId));
 		try {
 			roleDataService.validateGroup2RoleAddition(roleId, groupId);
-			roleDataService.addGroupToRole(roleId, groupId, rightIds);
+			roleDataService.addGroupToRole(roleId, groupId, rightIds, startDate, endDate);
             idmAuditLog.succeed();
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
@@ -203,7 +209,12 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	}
 
 	@Override
-	public Response addUserToRole(final String roleId, final String userId, final String requesterId, final Set<String> rightIds) {
+	public Response addUserToRole(final String roleId, 
+								  final String userId, 
+								  final String requesterId, 
+								  final Set<String> rightIds,
+								  final Date startDate,
+								  final Date endDate) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
         final IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
         idmAuditLog.setAction(AuditAction.ADD_USER_TO_ROLE.value());
@@ -219,7 +230,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "UserId or RoleId  is null or empty");
 			}
 			
-			roleDataService.addUserToRole(roleId, userId, rightIds);
+			roleDataService.addUserToRole(roleId, userId, rightIds, startDate, endDate);
             idmAuditLog.succeed();
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
@@ -464,14 +475,19 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	}
 
 	@Override
-	public Response addChildRole(final String roleId, final String childRoleId, String requesterId, final Set<String> rights) {
+	public Response addChildRole(final String roleId, 
+								final String childRoleId, 
+								final String requesterId, 
+								final Set<String> rights,
+								final Date startDate,
+								final Date endDate) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
 		try {
 			if(roleId == null || childRoleId == null) {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "RoleId or child roleId is null");
 			}
 			roleDataService.validateRole2RoleAddition(roleId, childRoleId, rights);
-			roleDataService.addChildRole(roleId, childRoleId, rights);
+			roleDataService.addChildRole(roleId, childRoleId, rights, startDate, endDate);
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());

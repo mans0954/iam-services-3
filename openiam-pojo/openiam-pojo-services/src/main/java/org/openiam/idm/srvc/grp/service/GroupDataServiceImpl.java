@@ -272,7 +272,7 @@ public class GroupDataServiceImpl implements GroupDataService {
                 foundGroupsId.add(grp.getId());
             }
         }
-        HashMap<String, SetStringResponse> ownersMap = authorizationManagerAdminService.getOwnerIdsForGroupSet(foundGroupsId);
+        HashMap<String, SetStringResponse> ownersMap = authorizationManagerAdminService.getOwnerIdsForGroupSet(foundGroupsId, new Date());
         for (GroupEntity grp: foundGroups){
             SetStringResponse idsResp = ownersMap.get(grp.getId());
             if(idsResp!=null && CollectionUtils.isNotEmpty(idsResp.getSetString()) && idsResp.getSetString().contains(ownerId)){
@@ -332,7 +332,7 @@ public class GroupDataServiceImpl implements GroupDataService {
                 if(mngSys != null) {
                 	group.setManagedSystem(managedSysDAO.findById(group.getManagedSystem().getId()));
                 	if(mngSys.getResource() != null){
-                		group.addResource(mngSys.getResource(), accessRightDAO.findAll());
+                		group.addResource(mngSys.getResource(), accessRightDAO.findAll(), null, null);
                 	}
                 }
 
@@ -405,7 +405,7 @@ public class GroupDataServiceImpl implements GroupDataService {
                     		dbGroup.getOrganizations().removeIf(e -> {
                     			return !incomingOrganizationIds.contains(e.getEntity().getId());
                     		});
-                    		dbGroup.addOrganization(xref.getEntity(), xref.getRights());
+                    		dbGroup.addOrganization(xref.getEntity(), xref.getRights(), null, null);
                     	});
                     }
                     
@@ -423,11 +423,11 @@ public class GroupDataServiceImpl implements GroupDataService {
             } else {
             	if(groupOwner != null) {
             		if("user".equals(groupOwner.getType())){
-            			group.addUser(userDAO.findById(groupOwner.getId()), accessRightDAO.findById(adminRightId));
+            			group.addUser(userDAO.findById(groupOwner.getId()), accessRightDAO.findById(adminRightId), null, null);
             		} else if("group".equals(groupOwner.getType())){
-            			group.addChildGroup(groupDao.findById(groupOwner.getId()), accessRightDAO.findById(adminRightId));
+            			group.addChildGroup(groupDao.findById(groupOwner.getId()), accessRightDAO.findById(adminRightId), null, null);
             		} else {
-            			group.addUser(userDAO.findById(requestorId), accessRightDAO.findById(adminRightId));
+            			group.addUser(userDAO.findById(requestorId), accessRightDAO.findById(adminRightId), null, null);
             		}
             	}
                 group.setCreatedBy(requestorId);
@@ -601,12 +601,12 @@ public class GroupDataServiceImpl implements GroupDataService {
 	}
 
 	@Override
-	public void addChildGroup(String groupId, String childGroupId, final Set<String> rights) {
+	public void addChildGroup(String groupId, String childGroupId, final Set<String> rights, final Date startDate, final Date endDate) {
 		if(groupId != null && childGroupId != null) {
 			final GroupEntity group = groupDao.findById(groupId);
 			final GroupEntity child = groupDao.findById(childGroupId);
 			if(group != null && child != null) {
-				group.addChildGroup(child, accessRightDAO.findByIds(rights));
+				group.addChildGroup(child, accessRightDAO.findByIds(rights), startDate, endDate);
 			}
 		}
 	}

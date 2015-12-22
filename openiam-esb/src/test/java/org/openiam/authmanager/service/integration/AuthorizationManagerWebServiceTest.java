@@ -134,11 +134,6 @@ public class AuthorizationManagerWebServiceTest extends AbstractAuthorizationMan
 	}
 	
 	
-	@Test
-	public void testUser2ResourceIndirectThroughOrganizationAndGroup() {
-		super.testUser2ResourceIndirectThroughOrganizationAndGroup();
-	}
-
 	@Override
 	protected boolean loginAfterUserCreation() {
 		return true;

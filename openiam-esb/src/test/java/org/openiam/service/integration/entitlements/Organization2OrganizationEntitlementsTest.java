@@ -1,5 +1,6 @@
 package org.openiam.service.integration.entitlements;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -28,8 +29,8 @@ public class Organization2OrganizationEntitlementsTest extends AbstractCircularE
 	}
 
 	@Override
-	protected Response addChildToParent(Organization parent, Organization child, final Set<String> rights) {
-		return organizationServiceClient.addChildOrganization(parent.getId(), child.getId(), rights);
+	protected Response addChildToParent(final Organization parent, final Organization child, final Set<String> rights, final Date startDate, final Date endDate) {
+		return organizationServiceClient.addChildOrganization(parent.getId(), child.getId(), rights, startDate, endDate);
 	}
 
 	@Override

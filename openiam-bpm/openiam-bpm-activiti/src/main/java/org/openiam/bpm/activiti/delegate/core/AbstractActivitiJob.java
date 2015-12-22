@@ -162,7 +162,7 @@ public abstract class AbstractActivitiJob implements JavaDelegate, TaskListener 
 	    		final Resource resource = getResource(resourceId);
 	    		if(resource != null) {
 	    			userIds.forEach(userId -> {
-	    				resourceDataService.addUserToResource(resourceId, userId, "WORKFLOW", rightIds);
+	    				resourceDataService.addUserToResource(resourceId, userId, "WORKFLOW", rightIds, null, null);
 	    			});
 	    		} else { /* fail silently, but log it! */
 	    			LOG.error(String.format("Can't find resource with id '%s'.  This resource should protect this workflow", resourceId));

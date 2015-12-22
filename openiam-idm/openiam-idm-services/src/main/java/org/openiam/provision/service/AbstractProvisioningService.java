@@ -1416,7 +1416,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
             	final AttributeOperationEnum operation = xref.getOperation();
                 if (operation == AttributeOperationEnum.ADD) {
                 	final GroupEntity groupEntity = groupManager.getGroupLocalize(xref.getEntityId(), null);
-                	userEntity.addGroup(groupEntity, accessRightDAO.findByIds(xref.getAccessRightIds()));
+                	userEntity.addGroup(groupEntity, accessRightDAO.findByIds(xref.getAccessRightIds()), xref.getStartDate(), xref.getEndDate());
                     // Audit Log ---------------------------------------------------
                     final IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
                     auditLog.setAction(AuditAction.ADD_GROUP.value());
@@ -1477,7 +1477,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                 final AttributeOperationEnum operation = xref.getOperation();
                 if (operation == AttributeOperationEnum.ADD) {
                     final RoleEntity roleEntity = roleDataService.getRoleLocalized(xref.getEntityId(), null, null);
-                    userEntity.addRole(roleEntity, accessRightDAO.findByIds(xref.getAccessRightIds()));
+                    userEntity.addRole(roleEntity, accessRightDAO.findByIds(xref.getAccessRightIds()), xref.getStartDate(), xref.getEndDate());
                     // Audit Log ---------------------------------------------------
                     final IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
                     auditLog.setAction(AuditAction.ADD_ROLE.value());
@@ -1529,7 +1529,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                 final AttributeOperationEnum operation = xref.getOperation();
                 final OrganizationEntity org = organizationService.getOrganizationLocalized(xref.getEntityId(), null);
                 if (operation == AttributeOperationEnum.ADD) {
-                    userEntity.addAffiliation(org, accessRightDAO.findByIds(xref.getAccessRightIds()));
+                    userEntity.addAffiliation(org, accessRightDAO.findByIds(xref.getAccessRightIds()), xref.getStartDate(), xref.getEndDate());
                     // Audit Log ---------------------------------------------------
                     final IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
                     auditLog.setAction(AuditAction.ADD_USER_TO_ORG.value());
@@ -1576,7 +1576,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                 } else if (operation == AttributeOperationEnum.ADD) {
                     final ResourceEntity resEntity = resourceService.findResourceById(resourceId);
                     //resEntity.addUser(userEntity, accessRightDAO.findByIds(xref.getAccessRightIds()));
-                    userEntity.addResource(resEntity, accessRightDAO.findByIds(xref.getAccessRightIds()));
+                    userEntity.addResource(resEntity, accessRightDAO.findByIds(xref.getAccessRightIds()), xref.getStartDate(), xref.getEndDate());
                     resourceSet.add(r);
                     // Audit Log ---------------------------------------------------
                     final IdmAuditLogEntity auditLog = new IdmAuditLogEntity();

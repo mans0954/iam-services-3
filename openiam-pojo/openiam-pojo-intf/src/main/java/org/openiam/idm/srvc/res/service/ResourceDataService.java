@@ -11,6 +11,7 @@ import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -137,7 +138,9 @@ public interface ResourceDataService {
     Response addUserToResource(final @WebParam(name = "resourceId", targetNamespace = "") String resourceId,
     						   final @WebParam(name = "userId", targetNamespace = "") String userId,
     						   final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
-    						   final @WebParam(name = "rightIds", targetNamespace = "") Set<String> rightIds);
+    						   final @WebParam(name = "rightIds", targetNamespace = "") Set<String> rightIds,
+    						   final @WebParam(name = "startDate", targetNamespace = "") Date startDate,
+    						   final @WebParam(name = "endDate", targetNamespace = "") Date endDate);
 
     /**
      * Disentitled a User from a Resource
@@ -289,7 +292,9 @@ public interface ResourceDataService {
     Response addChildResource(@WebParam(name = "resourceId", targetNamespace = "") final String resourceId,
     						  @WebParam(name = "memberResourceId", targetNamespace = "") final String memberResourceId,
     						  @WebParam(name = "requesterId", targetNamespace = "") final String requesterId,
-    						  @WebParam(name = "rights", targetNamespace = "") final Set<String> rights);
+    						  @WebParam(name = "rights", targetNamespace = "") final Set<String> rights,
+    						  final @WebParam(name = "startDate", targetNamespace = "") Date startDate,
+   						   	  final @WebParam(name = "endDate", targetNamespace = "") Date endDate);
 
     @WebMethod
     Response validateAddChildResource(@WebParam(name = "resourceId", targetNamespace = "") final String resourceId,
@@ -306,8 +311,8 @@ public interface ResourceDataService {
      */
     @WebMethod
     Response deleteChildResource(@WebParam(name = "resourceId", targetNamespace = "") final String resourceId,
-	    @WebParam(name = "memberResourceId", targetNamespace = "") final String memberResourceId,
-        final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+    							 @WebParam(name = "memberResourceId", targetNamespace = "") final String memberResourceId,
+    							 @WebParam(name = "requesterId", targetNamespace = "") final String requesterId);
 
     /**
      * Entitles a Group to a Resource
@@ -322,7 +327,9 @@ public interface ResourceDataService {
     Response addGroupToResource(final @WebParam(name = "resourceId", targetNamespace = "") String resourceId,
     							final @WebParam(name = "groupId", targetNamespace = "") String groupId,
     							final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
-    							final @WebParam(name = "rightIds", targetNamespace = "") Set<String> rightIds);
+    							final @WebParam(name = "rightIds", targetNamespace = "") Set<String> rightIds,
+    							final @WebParam(name = "startDate", targetNamespace = "") Date startDate,
+     						    final @WebParam(name = "endDate", targetNamespace = "") Date endDate);
 
     /**
      * Disentitles a Group from a Resource
@@ -351,7 +358,9 @@ public interface ResourceDataService {
     Response addRoleToResource(final @WebParam(name = "resourceId", targetNamespace = "") String resourceId,
     						   final @WebParam(name = "roleId", targetNamespace = "") String roleId,
     						   final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
-    						   final @WebParam(name = "rightIds", targetNamespace = "") Set<String> rightIds);
+    						   final @WebParam(name = "rightIds", targetNamespace = "") Set<String> rightIds,
+    						   final @WebParam(name = "startDate", targetNamespace = "") Date startDate,
+    						   final @WebParam(name = "endDate", targetNamespace = "") Date endDate);
 
     /**
      * Disentitles a Resource from a Role

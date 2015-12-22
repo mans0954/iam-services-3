@@ -1,6 +1,7 @@
 package org.openiam.idm.srvc.role.service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -157,12 +158,16 @@ public class RoleDataServiceImpl implements RoleDataService {
 	
 	@Override
     @Transactional
-	public void addGroupToRole(String roleId, String groupId, final Set<String> rightIds) {
+	public void addGroupToRole(final String roleId, 
+							   final String groupId, 
+							   final Set<String> rightIds,
+							   final Date startDate,
+							   final Date endDate) {
 		if(roleId != null && groupId != null) {
 			final RoleEntity role = roleDao.findById(roleId);
 			final GroupEntity group = groupDAO.findById(groupId);
 			if(role != null && group != null) {
-				role.addGroup(group, accessRightDAO.findByIds(rightIds));
+				role.addGroup(group, accessRightDAO.findByIds(rightIds), startDate, endDate);
 			}
 		}
 	}
@@ -186,11 +191,15 @@ public class RoleDataServiceImpl implements RoleDataService {
    
     @Override
     @Transactional
-	public void addUserToRole(String roleId, String userId, final Set<String> rightIds) {
+	public void addUserToRole(final String roleId, 
+							  final String userId, 
+							  final Set<String> rightIds,
+							  final Date startDate,
+							  final Date endDate) {
     	final UserEntity user = userDAO.findById(userId);
     	final RoleEntity role = roleDao.findById(roleId);
     	if(user != null && role != null) {
-    		user.addRole(role, accessRightDAO.findByIds(rightIds));
+    		user.addRole(role, accessRightDAO.findByIds(rightIds), startDate, endDate);
     	}
 	}
 	
@@ -241,7 +250,7 @@ public class RoleDataServiceImpl implements RoleDataService {
 			if(StringUtils.isBlank(role.getId())) {
 				roleDao.save(role);
 				role.addApproverAssociation(createDefaultApproverAssociations(role, requestorId));
-				role.addUser(userDAO.findById(requestorId), accessRightDAO.findById(adminRightId));
+				role.addUser(userDAO.findById(requestorId), accessRightDAO.findById(adminRightId), null, null);
                 addRequiredAttributes(role);
 			} else {
 				final RoleEntity dbRole = roleDao.findById(role.getId());
@@ -463,12 +472,16 @@ public class RoleDataServiceImpl implements RoleDataService {
 
 	@Override
     @Transactional
-	public void addChildRole(final String id, final String childRoleId, final Set<String> rights) {
+	public void addChildRole(final String id, 
+							 final String childRoleId, 
+							 final Set<String> rights,
+							 final Date startDate,
+							 final Date endDate) {
 		if(id != null && childRoleId != null && !id.equals(childRoleId)) {
 			final RoleEntity child = roleDao.findById(childRoleId);
 			final RoleEntity parent = roleDao.findById(id);
 			if(parent != null && child != null) {
-				parent.addChild(child, accessRightDAO.findByIds(rights));
+				parent.addChild(child, accessRightDAO.findByIds(rights), startDate, endDate);
 			}
 			roleDao.update(parent);
 		}

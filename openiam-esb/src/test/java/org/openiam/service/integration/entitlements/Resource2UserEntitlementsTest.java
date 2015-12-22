@@ -1,5 +1,6 @@
 package org.openiam.service.integration.entitlements;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -34,8 +35,8 @@ public class Resource2UserEntitlementsTest extends AbstractEntitlementsTest<Reso
 	}
 
 	@Override
-	protected Response addChildToParent(Resource parent, User child, final Set<String> rights) {
-		return resourceDataService.addUserToResource(parent.getId(), child.getId(), null, rights);
+	protected Response addChildToParent(final Resource parent, final User child, final Set<String> rights, final Date startDate, final Date endDate) {
+		return resourceDataService.addUserToResource(parent.getId(), child.getId(), null, rights, startDate, endDate);
 	}
 
 	@Override

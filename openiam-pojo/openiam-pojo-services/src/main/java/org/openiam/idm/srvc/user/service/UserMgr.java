@@ -2272,11 +2272,11 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
 
     @Override
     @Transactional
-    public void addUserToGroup(final String userId, final String groupId, final Set<String> rightIds) {
+    public void addUserToGroup(final String userId, final String groupId, final Set<String> rightIds, final Date startDate, final Date endDate) {
         final GroupEntity group = groupDAO.findById(groupId);
         final UserEntity user = userDao.findById(userId);
         if(group != null && user != null) {
-        	user.addGroup(group, accessRightDAO.findByIds(rightIds));
+        	user.addGroup(group, accessRightDAO.findByIds(rightIds), startDate, endDate);
         }
     }
 
@@ -2338,11 +2338,11 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
 
     @Override
     @Transactional
-    public void addUserToResource(final String userId, final String resourceId, final Set<String> rightIds) {
+    public void addUserToResource(final String userId, final String resourceId, final Set<String> rightIds, final Date startDate, final Date endDate) {
     	final ResourceEntity resource = resourceDAO.findById(resourceId);
     	final UserEntity user = userDao.findById(userId);
     	if(resource != null && user != null) {
-    		resource.addUser(user, accessRightDAO.findByIds(rightIds));
+    		resource.addUser(user, accessRightDAO.findByIds(rightIds), startDate, endDate);
     		resourceDAO.update(resource);
     		//user.addResource(resource, accessRightDAO.findByIds(rightIds));
     		//userDao.update(user);

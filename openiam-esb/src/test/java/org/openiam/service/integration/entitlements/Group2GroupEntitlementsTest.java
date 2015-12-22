@@ -1,5 +1,6 @@
 package org.openiam.service.integration.entitlements;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -27,8 +28,12 @@ public class Group2GroupEntitlementsTest extends AbstractCircularEntitlementTest
 	}
 
 	@Override
-	protected Response addChildToParent(Group parent, Group child, final Set<String> rights) {
-		return groupServiceClient.addChildGroup(parent.getId(), child.getId(), null, rights);
+	protected Response addChildToParent(final Group parent, 
+										final Group child, 
+										final Set<String> rights,
+										final Date startDate, 
+										final Date endDate) {
+		return groupServiceClient.addChildGroup(parent.getId(), child.getId(), null, rights, startDate, endDate);
 	}
 
 	@Override

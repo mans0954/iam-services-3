@@ -826,7 +826,7 @@ public class UserEntity extends KeyEntity {
 		}
     }
     
-    public void addGroup(final GroupEntity entity, final Collection<AccessRightEntity> rights) {
+    public void addGroup(final GroupEntity entity, final Collection<AccessRightEntity> rights, final Date startDate, final Date endDate) {
 		if(entity != null) {
 			if(this.groups == null) {
 				this.groups = new LinkedHashSet<UserToGroupMembershipXrefEntity>();
@@ -847,6 +847,8 @@ public class UserEntity extends KeyEntity {
 			if(rights != null) {
 				theXref.setRights(new HashSet<AccessRightEntity>(rights));
 			}
+			theXref.setStartDate(startDate);
+			theXref.setEndDate(endDate);
 			this.groups.add(theXref);
 		}
 	}
@@ -876,7 +878,7 @@ public class UserEntity extends KeyEntity {
 		}
     }
     
-    public void addRole(final RoleEntity entity, final Collection<AccessRightEntity> rights) {
+    public void addRole(final RoleEntity entity, final Collection<AccessRightEntity> rights, final Date startDate, final Date endDate) {
 		if(entity != null) {
 			if(this.roles == null) {
 				this.roles = new LinkedHashSet<UserToRoleMembershipXrefEntity>();
@@ -897,6 +899,8 @@ public class UserEntity extends KeyEntity {
 			if(rights != null) {
 				theXref.setRights(new HashSet<AccessRightEntity>(rights));
 			}
+			theXref.setStartDate(startDate);
+			theXref.setEndDate(endDate);
 			this.roles.add(theXref);
 		}
 	}
@@ -926,7 +930,7 @@ public class UserEntity extends KeyEntity {
 		}
     }
     
-    public void addAffiliation(final OrganizationEntity entity, final Collection<AccessRightEntity> rights) {
+    public void addAffiliation(final OrganizationEntity entity, final Collection<AccessRightEntity> rights, final Date startDate, final Date endDate) {
 		if(entity != null) {
 			if(this.affiliations == null) {
 				this.affiliations = new LinkedHashSet<UserToOrganizationMembershipXrefEntity>();
@@ -947,6 +951,8 @@ public class UserEntity extends KeyEntity {
 			if(rights != null) {
 				theXref.setRights(new HashSet<AccessRightEntity>(rights));
 			}
+			theXref.setStartDate(startDate);
+			theXref.setEndDate(endDate);
 			this.affiliations.add(theXref);
 		}
 	}
@@ -976,7 +982,7 @@ public class UserEntity extends KeyEntity {
 		}
     }
     
-    public void addResource(final ResourceEntity entity, final Collection<AccessRightEntity> rights) {
+    public void addResource(final ResourceEntity entity, final Collection<AccessRightEntity> rights, final Date startDate, final Date endDate) {
 		if(entity != null) {
 			if(this.resources == null) {
 				this.resources = new LinkedHashSet<UserToResourceMembershipXrefEntity>();
@@ -997,6 +1003,8 @@ public class UserEntity extends KeyEntity {
 			if(rights != null) {
 				theXref.setRights(new HashSet<AccessRightEntity>(rights));
 			}
+			theXref.setStartDate(startDate);
+			theXref.setEndDate(endDate);
 			this.resources.add(theXref);
 		}
 	}

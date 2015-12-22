@@ -1,5 +1,6 @@
 package org.openiam.service.integration.entitlements;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -30,8 +31,8 @@ public class Role2RoleEntitlementsTest extends AbstractCircularEntitlementTest<R
 	}
 
 	@Override
-	protected Response addChildToParent(Role parent, Role child, final Set<String> rights) {
-		return roleServiceClient.addChildRole(parent.getId(), child.getId(), null, rights);
+	protected Response addChildToParent(final Role parent, final Role child, final Set<String> rights, final Date startDate, final Date endDate) {
+		return roleServiceClient.addChildRole(parent.getId(), child.getId(), null, rights, startDate, endDate);
 	}
 
 	@Override

@@ -1,6 +1,7 @@
 package org.openiam.authmanager.service.integration;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -8,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.authmanager.common.model.AuthorizationMenu;
@@ -130,14 +132,25 @@ public class AuthorizationManagerMenuWebServiceTest extends AbstractServiceTest 
 	}
 	
 	@Test
-	public void testGetNonCachedMenuTreeForUserIndirectViaOrganization() {
+	public void testGetNonCachedMenuTreeForUserIndirectViaOrganizationNoRange() {
+		testGetNonCachedMenuTreeForUserIndirectViaOrganization(null, null);
+	}
+	
+	@Test
+	public void testGetNonCachedMenuTreeForUserIndirectViaOrganizationWithRange() {
+		final Date now = new Date();
+		final Date tomorrow = DateUtils.addDays(now, 1);
+		testGetNonCachedMenuTreeForUserIndirectViaOrganization(now, tomorrow);
+	}
+	
+	private void testGetNonCachedMenuTreeForUserIndirectViaOrganization(final Date startDate, final Date endDate) {
 		Tuple<AuthorizationMenu, AuthorizationMenu> tuple = null;
 		User user = null;
 		Organization organization = null;
 		try {
 			user = super.createUser();
 			organization = super.createOrganization();
-			organizationServiceClient.addUserToOrg(organization.getId(), user.getId(), null);
+			organizationServiceClient.addUserToOrg(organization.getId(), user.getId(), null, startDate, endDate);
 			assertAccess(organization.getId(), "organization", user);
 		} finally {
 			if(tuple != null && tuple.getKey() != null && tuple.getKey().getId() != null) {
@@ -153,7 +166,18 @@ public class AuthorizationManagerMenuWebServiceTest extends AbstractServiceTest 
 	}
 	
 	@Test
-	public void testGetNonCachedMenuTreeForUserIndirectViaChildInOrganization() {
+	public void testGetNonCachedMenuTreeForUserIndirectViaChildInOrganizationNoRange() {
+		testGetNonCachedMenuTreeForUserIndirectViaChildInOrganization(null, null);
+	}
+	
+	@Test
+	public void testGetNonCachedMenuTreeForUserIndirectViaChildInOrganizationWithRange() {
+		final Date now = new Date();
+		final Date tomorrow = DateUtils.addDays(now, 1);
+		testGetNonCachedMenuTreeForUserIndirectViaChildInOrganization(now, tomorrow);
+	}
+	
+	private void testGetNonCachedMenuTreeForUserIndirectViaChildInOrganization(final Date startDate, final Date endDate) {
 		Tuple<AuthorizationMenu, AuthorizationMenu> tuple = null;
 		User user = null;
 		Organization organization = null;
@@ -162,8 +186,8 @@ public class AuthorizationManagerMenuWebServiceTest extends AbstractServiceTest 
 			user = super.createUser();
 			organization = super.createOrganization();
 			child = super.createOrganization();
-			organizationServiceClient.addUserToOrg(child.getId(), user.getId(), null);
-			organizationServiceClient.addChildOrganization(organization.getId(), child.getId(), null);
+			organizationServiceClient.addUserToOrg(child.getId(), user.getId(), null, startDate, endDate);
+			organizationServiceClient.addChildOrganization(organization.getId(), child.getId(), null, startDate, endDate);
 			assertAccessIndirect(organization, child);
 		} finally {
 			if(tuple != null && tuple.getKey() != null && tuple.getKey().getId() != null) {
@@ -182,7 +206,18 @@ public class AuthorizationManagerMenuWebServiceTest extends AbstractServiceTest 
 	}
 	
 	@Test
-	public void testGetNonCachedMenuTreeForUserIndirectViaRoleInOrganization() {
+	public void testGetNonCachedMenuTreeForUserIndirectViaRoleInOrganizationNoRange() {
+		testGetNonCachedMenuTreeForUserIndirectViaRoleInOrganization(null, null);
+	}
+	
+	@Test
+	public void testGetNonCachedMenuTreeForUserIndirectViaRoleInOrganizationWithRange() {
+		final Date startDate = new Date();
+		final Date endDate = DateUtils.addDays(startDate, 1);
+		testGetNonCachedMenuTreeForUserIndirectViaRoleInOrganization(startDate, endDate);
+	}
+	
+	private void testGetNonCachedMenuTreeForUserIndirectViaRoleInOrganization(final Date startDate, final Date endDate) {
 		Tuple<AuthorizationMenu, AuthorizationMenu> tuple = null;
 		User user = null;
 		Organization organization = null;
@@ -191,8 +226,8 @@ public class AuthorizationManagerMenuWebServiceTest extends AbstractServiceTest 
 			user = super.createUser();
 			organization = super.createOrganization();
 			role = super.createRole();
-			organizationServiceClient.addUserToOrg(organization.getId(), user.getId(), null);
-			organizationServiceClient.addRoleToOrganization(organization.getId(), role.getId(), null);
+			organizationServiceClient.addUserToOrg(organization.getId(), user.getId(), null, startDate, endDate);
+			organizationServiceClient.addRoleToOrganization(organization.getId(), role.getId(), null, startDate, endDate);
 			assertAccessIndirect(role, organization);
 		} finally {
 			if(tuple != null && tuple.getKey() != null && tuple.getKey().getId() != null) {
@@ -211,7 +246,18 @@ public class AuthorizationManagerMenuWebServiceTest extends AbstractServiceTest 
 	}
 	
 	@Test
-	public void testGetNonCachedMenuTreeForUserIndirectViaGroupInOrganization() {
+	public void testGetNonCachedMenuTreeForUserIndirectViaGroupInOrganizationNoRange() {
+		testGetNonCachedMenuTreeForUserIndirectViaGroupInOrganization(null, null);
+	}
+	
+	@Test
+	public void testGetNonCachedMenuTreeForUserIndirectViaGroupInOrganizationWithRange() {
+		final Date startDate = new Date();
+		final Date endDate = DateUtils.addDays(startDate, 1);
+		testGetNonCachedMenuTreeForUserIndirectViaGroupInOrganization(startDate, endDate);
+	}
+	
+	private void testGetNonCachedMenuTreeForUserIndirectViaGroupInOrganization(final Date startDate, final Date endDate) {
 		Tuple<AuthorizationMenu, AuthorizationMenu> tuple = null;
 		User user = null;
 		Organization organization = null;
@@ -220,8 +266,8 @@ public class AuthorizationManagerMenuWebServiceTest extends AbstractServiceTest 
 			user = super.createUser();
 			organization = super.createOrganization();
 			group = super.createGroup();
-			organizationServiceClient.addUserToOrg(organization.getId(), user.getId(), null);
-			organizationServiceClient.addGroupToOrganization(organization.getId(), group.getId(), null);
+			organizationServiceClient.addUserToOrg(organization.getId(), user.getId(), null, startDate, endDate);
+			organizationServiceClient.addGroupToOrganization(organization.getId(), group.getId(), null, startDate, endDate);
 			assertAccessIndirect(group, organization);
 		} finally {
 			if(tuple != null && tuple.getKey() != null && tuple.getKey().getId() != null) {
@@ -240,7 +286,18 @@ public class AuthorizationManagerMenuWebServiceTest extends AbstractServiceTest 
 	}
 	
 	@Test
-	public void testGetNonCachedMenuTreeForUserIndirectViaChildInRole() {
+	public void testGetNonCachedMenuTreeForUserIndirectViaChildInRoleNoRange() {
+		testGetNonCachedMenuTreeForUserIndirectViaChildInRole(null, null);
+	}
+	
+	@Test
+	public void testGetNonCachedMenuTreeForUserIndirectViaChildInRoleWithRange() {
+		final Date startDate = new Date();
+		final Date endDate = DateUtils.addDays(startDate, 1);
+		testGetNonCachedMenuTreeForUserIndirectViaChildInRole(startDate, endDate);
+	}
+	
+	private void testGetNonCachedMenuTreeForUserIndirectViaChildInRole(final Date startDate, final Date endDate) {
 		Tuple<AuthorizationMenu, AuthorizationMenu> tuple = null;
 		User user = null;
 		Role role = null;
@@ -249,8 +306,8 @@ public class AuthorizationManagerMenuWebServiceTest extends AbstractServiceTest 
 			user = super.createUser();
 			role = super.createRole();
 			child = super.createRole();
-			roleServiceClient.addUserToRole(child.getId(), user.getId(), null, null);
-			roleServiceClient.addChildRole(role.getId(), child.getId(), null, null);
+			roleServiceClient.addUserToRole(child.getId(), user.getId(), null, null, startDate, endDate);
+			roleServiceClient.addChildRole(role.getId(), child.getId(), null, null, startDate, endDate);
 			assertAccessIndirect(role, child);
 		} finally {
 			if(tuple != null && tuple.getKey() != null && tuple.getKey().getId() != null) {
@@ -269,7 +326,18 @@ public class AuthorizationManagerMenuWebServiceTest extends AbstractServiceTest 
 	}
 	
 	@Test
-	public void testGetNonCachedMenuTreeForUserIndirectViaGroupInRole() {
+	public void testGetNonCachedMenuTreeForUserIndirectViaGroupInRoleNoRange() {
+		testGetNonCachedMenuTreeForUserIndirectViaGroupInRole(null, null);
+	}
+	
+	@Test
+	public void testGetNonCachedMenuTreeForUserIndirectViaGroupInRoleWithRange() {
+		final Date startDate = new Date();
+		final Date endDate = DateUtils.addDays(startDate, 1);
+		testGetNonCachedMenuTreeForUserIndirectViaGroupInRole(startDate, endDate);
+	}
+	
+	private void testGetNonCachedMenuTreeForUserIndirectViaGroupInRole(final Date startDate, final Date endDate) {
 		Tuple<AuthorizationMenu, AuthorizationMenu> tuple = null;
 		User user = null;
 		Role role = null;
@@ -278,8 +346,8 @@ public class AuthorizationManagerMenuWebServiceTest extends AbstractServiceTest 
 			user = super.createUser();
 			role = super.createRole();
 			group = super.createGroup();
-			roleServiceClient.addUserToRole(role.getId(), user.getId(), null, null);
-			roleServiceClient.addGroupToRole(role.getId(), group.getId(), null, null);
+			roleServiceClient.addUserToRole(role.getId(), user.getId(), null, null, startDate, endDate);
+			roleServiceClient.addGroupToRole(role.getId(), group.getId(), null, null, startDate, endDate);
 			assertAccessIndirect(group, role);
 		} finally {
 			if(tuple != null && tuple.getKey() != null && tuple.getKey().getId() != null) {
@@ -298,7 +366,18 @@ public class AuthorizationManagerMenuWebServiceTest extends AbstractServiceTest 
 	}
 	
 	@Test
-	public void testGetNonCachedMenuTreeForUserIndirectViaChildInGroup() {
+	public void testGetNonCachedMenuTreeForUserIndirectViaChildInGroupNoRange() {
+		testGetNonCachedMenuTreeForUserIndirectViaChildInGroup(null, null);
+	}
+	
+	@Test
+	public void testGetNonCachedMenuTreeForUserIndirectViaChildInGroupWithRange() {
+		final Date startDate = new Date();
+		final Date endDate = DateUtils.addDays(startDate, 1);
+		testGetNonCachedMenuTreeForUserIndirectViaChildInGroup(startDate, endDate);
+	}
+	
+	private void testGetNonCachedMenuTreeForUserIndirectViaChildInGroup(final Date startDate, final Date endDate) {
 		Tuple<AuthorizationMenu, AuthorizationMenu> tuple = null;
 		User user = null;
 		Group group = null;
@@ -307,8 +386,8 @@ public class AuthorizationManagerMenuWebServiceTest extends AbstractServiceTest 
 			user = super.createUser();
 			group = super.createGroup();
 			child = super.createGroup();
-			groupServiceClient.addUserToGroup(group.getId(), user.getId(), null, null);
-			groupServiceClient.addChildGroup(group.getId(), child.getId(), null, null);
+			groupServiceClient.addUserToGroup(group.getId(), user.getId(), null, null, startDate, endDate);
+			groupServiceClient.addChildGroup(group.getId(), child.getId(), null, null, startDate, endDate);
 			assertAccessIndirect(group, child);
 		} finally {
 			if(tuple != null && tuple.getKey() != null && tuple.getKey().getId() != null) {
@@ -327,14 +406,25 @@ public class AuthorizationManagerMenuWebServiceTest extends AbstractServiceTest 
 	}
 	
 	@Test
-	public void testGetNonCachedMenuTreeForUserIndirectViaRole() {
+	public void testGetNonCachedMenuTreeForUserIndirectViaRoleNoRange() {
+		testGetNonCachedMenuTreeForUserIndirectViaRole(null, null);
+	}
+	
+	@Test
+	public void testGetNonCachedMenuTreeForUserIndirectViaRoleWithRange() {
+		final Date startDate = new Date();
+		final Date endDate = DateUtils.addDays(startDate, 1);
+		testGetNonCachedMenuTreeForUserIndirectViaRole(startDate, endDate);
+	}
+	
+	private void testGetNonCachedMenuTreeForUserIndirectViaRole(final Date startDate, final Date endDate) {
 		Tuple<AuthorizationMenu, AuthorizationMenu> tuple = null;
 		User user = null;
 		Role entity = null;
 		try {
 			user = super.createUser();
 			entity = super.createRole();
-			roleServiceClient.addUserToRole(entity.getId(), user.getId(), getRequestorId(), null);
+			roleServiceClient.addUserToRole(entity.getId(), user.getId(), getRequestorId(), null, startDate, endDate);
 			assertAccess(entity.getId(), "role", user);
 		} finally {
 			if(tuple != null && tuple.getKey() != null && tuple.getKey().getId() != null) {
@@ -350,14 +440,25 @@ public class AuthorizationManagerMenuWebServiceTest extends AbstractServiceTest 
 	}
 	
 	@Test
-	public void testGetNonCachedMenuTreeForUserIndirectViaGroup() {
+	public void testGetNonCachedMenuTreeForUserIndirectViaGroupNoRange() {
+		testGetNonCachedMenuTreeForUserIndirectViaGroup(null, null);
+	}
+	
+	@Test
+	public void testGetNonCachedMenuTreeForUserIndirectViaGroupWithRange() {
+		final Date startDate = new Date();
+		final Date endDate = DateUtils.addDays(startDate, 1);
+		testGetNonCachedMenuTreeForUserIndirectViaGroup(startDate, endDate);
+	}
+	
+	private void testGetNonCachedMenuTreeForUserIndirectViaGroup(final Date startDate, final Date endDate) {
 		Tuple<AuthorizationMenu, AuthorizationMenu> tuple = null;
 		User user = null;
 		Group entity = null;
 		try {
 			user = super.createUser();
 			entity = super.createGroup();
-			groupServiceClient.addUserToGroup(entity.getId(), user.getId(), getRequestorId(), null);
+			groupServiceClient.addUserToGroup(entity.getId(), user.getId(), getRequestorId(), null, startDate, endDate);
 			assertAccess(entity.getId(), "group", user);
 		} finally {
 			if(tuple != null && tuple.getKey() != null && tuple.getKey().getId() != null) {

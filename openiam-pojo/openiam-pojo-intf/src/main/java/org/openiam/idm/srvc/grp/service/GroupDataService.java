@@ -10,6 +10,7 @@ import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -83,7 +84,7 @@ public interface GroupDataService {
      */
     public void removeAttribute(final String attributeId);
 
-    public void addChildGroup(final String groupId, final String childGroupId, final Set<String> rights);
+    public void addChildGroup(final String groupId, final String childGroupId, final Set<String> rights, final Date startDate, final Date endDate);
     public void removeChildGroup(final String groupId, final String childGroupId);
     
     public void validateGroup2GroupAddition(final String parentId, final String memberId, final Set<String> rights) throws BasicDataServiceException;

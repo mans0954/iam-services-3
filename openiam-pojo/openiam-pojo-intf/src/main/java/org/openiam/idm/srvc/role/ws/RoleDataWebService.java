@@ -11,6 +11,7 @@ import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -96,7 +97,9 @@ public interface RoleDataWebService {
     Response addGroupToRole(final @WebParam(name = "roleId", targetNamespace = "") String roleId,
                             final @WebParam(name = "groupId", targetNamespace = "") String groupId,
                             final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
-                            final @WebParam(name = "rightIds") Set<String> rightIds);
+                            final @WebParam(name = "rightIds") Set<String> rightIds,
+                            final @WebParam(name = "startDate", targetNamespace = "") Date startDate,
+                            final @WebParam(name = "endDate", targetNamespace = "") Date endDate);
     
     @WebMethod
     Response validateGroup2RoleAddition(@WebParam(name = "roleId", targetNamespace = "") String roleId,
@@ -125,7 +128,9 @@ public interface RoleDataWebService {
     Response addUserToRole(final @WebParam(name = "roleId", targetNamespace = "") String roleId,
     					   final @WebParam(name = "userId", targetNamespace = "")  String userId,
                            final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
-                           final @WebParam(name = "rightIds", targetNamespace = "") Set<String> rightIds);
+                           final @WebParam(name = "rightIds", targetNamespace = "") Set<String> rightIds,
+                           final @WebParam(name = "startDate", targetNamespace = "") Date startDate,
+                           final @WebParam(name = "endDate", targetNamespace = "") Date endDate);
 
     /**
      * Removes the association between a single role and role.
@@ -279,7 +284,9 @@ public interface RoleDataWebService {
     Response addChildRole(final @WebParam(name = "roleId", targetNamespace = "") String roleId,
                           final @WebParam(name = "parentRoleId", targetNamespace = "") String childRoleId,
                           final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
-                          final @WebParam(name = "rights", targetNamespace = "") Set<String> rights);
+                          final @WebParam(name = "rights", targetNamespace = "") Set<String> rights,
+                          final @WebParam(name = "startDate", targetNamespace = "") Date startDate,
+                          final @WebParam(name = "endDate", targetNamespace = "") Date endDate);
     
     @WebMethod
     Response canAddChildRole(final @WebParam(name = "roleId", targetNamespace = "") String roleId,

@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.membership.dto;
 
+import java.util.Date;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -16,10 +17,14 @@ import org.openiam.idm.srvc.access.dto.AccessRight;
 	"entityId",
 	"memberEntityId",
 	"rights",
+	"startDate",
+	"endDate",
 	"operation"
 })
 public class AbstractMembershipXref extends KeyDTO {
 
+	private Date startDate;
+	private Date endDate;
 	private String entityId;
 	private String memberEntityId;
 	private Set<AccessRight> rights;
@@ -54,15 +59,30 @@ public class AbstractMembershipXref extends KeyDTO {
 	public Set<String> getAccessRightIds() {
 		return (rights != null) ? rights.stream().map(e -> e.getId()).collect(Collectors.toSet()) : null;
 	}
+	public Date getStartDate() {
+		return startDate;
+	}
+	public void setStartDate(Date startDate) {
+		this.startDate = startDate;
+	}
+	public Date getEndDate() {
+		return endDate;
+	}
+	public void setEndDate(Date endDate) {
+		this.endDate = endDate;
+	}
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
+		result = prime * result + ((endDate == null) ? 0 : endDate.hashCode());
 		result = prime * result
 				+ ((entityId == null) ? 0 : entityId.hashCode());
 		result = prime * result
 				+ ((memberEntityId == null) ? 0 : memberEntityId.hashCode());
 		result = prime * result + ((rights == null) ? 0 : rights.hashCode());
+		result = prime * result
+				+ ((startDate == null) ? 0 : startDate.hashCode());
 		return result;
 	}
 	@Override
@@ -74,6 +94,11 @@ public class AbstractMembershipXref extends KeyDTO {
 		if (getClass() != obj.getClass())
 			return false;
 		AbstractMembershipXref other = (AbstractMembershipXref) obj;
+		if (endDate == null) {
+			if (other.endDate != null)
+				return false;
+		} else if (!endDate.equals(other.endDate))
+			return false;
 		if (entityId == null) {
 			if (other.entityId != null)
 				return false;
@@ -89,7 +114,22 @@ public class AbstractMembershipXref extends KeyDTO {
 				return false;
 		} else if (!rights.equals(other.rights))
 			return false;
+		if (startDate == null) {
+			if (other.startDate != null)
+				return false;
+		} else if (!startDate.equals(other.startDate))
+			return false;
 		return true;
+	}
+	@Override
+	public String toString() {
+		return "AbstractMembershipXref [startDate=" + startDate + ", endDate="
+				+ endDate + ", entityId=" + entityId + ", memberEntityId="
+				+ memberEntityId + ", rights=" + rights + ", operation="
+				+ operation + ", id=" + id + ", objectState=" + objectState
+				+ ", requestorSessionID=" + requestorSessionID
+				+ ", requestorUserId=" + requestorUserId + ", requestorLogin="
+				+ requestorLogin + ", requestClientIP=" + requestClientIP + "]";
 	}
 	
 	

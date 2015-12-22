@@ -48,6 +48,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -165,7 +166,7 @@ public class ResourceServiceImpl implements ResourceService {
             mergeAttribute(entity, dbObject);
 
         } else {
-            entity.addUser(userDAO.findById(requestorId), accessRightDAO.findById(adminRightId));
+            entity.addUser(userDAO.findById(requestorId), accessRightDAO.findById(adminRightId), null, null);
             resourceDao.save(entity);
 
             entity.addApproverAssociation(createDefaultApproverAssociations(entity, requestorId));
@@ -348,10 +349,14 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @Transactional
-    public void addChildResource(String parentResourceId, String childResourceId, final Set<String> rights) {
+    public void addChildResource(final String parentResourceId, 
+    							 final String childResourceId, 
+    							 final Set<String> rights,
+    							 final Date startDate,
+    							 final Date endDate) {
         final ResourceEntity parent = resourceDao.findById(parentResourceId);
         final ResourceEntity child = resourceDao.findById(childResourceId);
-        parent.addChildResource(child, accessRightDAO.findByIds(rights));
+        parent.addChildResource(child, accessRightDAO.findByIds(rights), startDate, endDate);
         resourceDao.save(parent);
     }
 
@@ -366,11 +371,15 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @Transactional
-    public void addResourceGroup(String resourceId, String groupId, final Set<String> rightIds) {
+    public void addResourceGroup(final String resourceId, 
+    							 final String groupId, 
+    							 final Set<String> rightIds,
+    							 final Date startDate,
+    							 final Date endDate) {
         final ResourceEntity resource = resourceDao.findById(resourceId);
         final GroupEntity group = groupDao.findById(groupId);
         if(resource != null && group != null) {
-        	group.addResource(resource, accessRightDAO.findByIds(rightIds));
+        	group.addResource(resource, accessRightDAO.findByIds(rightIds), startDate, endDate);
         }
     }
 
@@ -386,11 +395,15 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @Transactional
-    public void addResourceToRole(String resourceId, String roleId, final Set<String> rightIds) {
+    public void addResourceToRole(final String resourceId, 
+    							  final String roleId, 
+    							  final Set<String> rightIds,
+    							  final Date startDate,
+     							  final Date endDate) {
         final ResourceEntity resource = resourceDao.findById(resourceId);
         final RoleEntity role = roleDao.findById(roleId);
         if(resource != null & role != null) {
-        	role.addResource(resource, accessRightDAO.findByIds(rightIds));
+        	role.addResource(resource, accessRightDAO.findByIds(rightIds), startDate, endDate);
         	roleDao.save(role);
         }
     }

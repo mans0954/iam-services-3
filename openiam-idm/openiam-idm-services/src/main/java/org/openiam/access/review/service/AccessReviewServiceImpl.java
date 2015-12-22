@@ -60,10 +60,10 @@ public class AccessReviewServiceImpl implements AccessReviewService {
     private AccessRightDataService accessRightDataService;
 
     @Override
-    public AccessViewResponse getAccessReviewTree(AccessViewFilterBean filter, String viewType,final Language language) {
+    public AccessViewResponse getAccessReviewTree(AccessViewFilterBean filter, String viewType, final Date date, final Language language) {
         final StopWatch sw = new StopWatch();
         sw.start();
-        AccessReviewStrategy strategy = getAccessReviewStrategy(filter, viewType, language);
+        AccessReviewStrategy strategy = getAccessReviewStrategy(filter, viewType, date, language);
         List<TreeNode<AccessViewBean>> dataList = new ArrayList<>();
         List<TreeNode<AccessViewBean>> exceptionList = null;
         if(strategy!=null) {
@@ -81,8 +81,8 @@ public class AccessReviewServiceImpl implements AccessReviewService {
     }
 
     @Override
-    public AccessViewResponse getAccessReviewSubTree(String parentId, String parentBeanType, boolean isRootOnly, AccessViewFilterBean filter, String viewType, Language language) {
-        AccessViewResponse response = this.getAccessReviewTree(filter, viewType, language);
+    public AccessViewResponse getAccessReviewSubTree(String parentId, String parentBeanType, boolean isRootOnly, AccessViewFilterBean filter, String viewType,  final Date date, Language language) {
+        AccessViewResponse response = this.getAccessReviewTree(filter, viewType, date, language);
         List<TreeNode<AccessViewBean>> childrenList = new ArrayList<>();
         if(response==null)
             return AccessViewResponse.EMPTY_RESPONSE;
@@ -115,10 +115,10 @@ public class AccessReviewServiceImpl implements AccessReviewService {
         return new AccessViewResponse(childrenList, childrenList.size(), response.getExceptions());
     }
 
-    private AccessReviewStrategy getAccessReviewStrategy(AccessViewFilterBean filter, String viewType, Language language) {
+    private AccessReviewStrategy getAccessReviewStrategy(AccessViewFilterBean filter, String viewType, Date date, Language language) {
         final List<LoginEntity> loginList = loginDS.getLoginByUser(filter.getUserId());
         final List<AccessRight> accessRights = accessRightDataService.findBeans(new AccessRightSearchBean(), 0, Integer.MAX_VALUE, language);
-        UserEntitlementsMatrix userEntitlementsMatrix = adminService.getUserEntitlementsMatrix(filter.getUserId());
+        UserEntitlementsMatrix userEntitlementsMatrix = adminService.getUserEntitlementsMatrix(filter.getUserId(), date);
 
         AccessReviewData accessReviewData = new AccessReviewData();
         accessReviewData.setMatrix(userEntitlementsMatrix);

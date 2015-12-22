@@ -12,6 +12,7 @@ import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -141,17 +142,23 @@ public interface OrganizationDataService {
     @WebMethod
     public Response addUserToOrg(@WebParam(name = "orgId", targetNamespace = "") String orgId,
                                  @WebParam(name = "userId", targetNamespace = "") String userId,
-                                 @WebParam(name = "rightIds", targetNamespace = "") Set<String> rightIds);
+                                 @WebParam(name = "rightIds", targetNamespace = "") Set<String> rightIds,
+                                 @WebParam(name = "startDate", targetNamespace = "") Date startDate,
+                                 @WebParam(name = "endDate", targetNamespace = "") Date endDate);
 
     @WebMethod
     public Response addChildOrganization(@WebParam(name = "organizationId", targetNamespace = "") String organizationId,
                                          @WebParam(name = "childOrganizationId", targetNamespace = "") String childOrganizationId,
-                                         @WebParam(name = "rightIds", targetNamespace = "") Set<String> rightIds);
+                                         @WebParam(name = "rightIds", targetNamespace = "") Set<String> rightIds,
+                                         @WebParam(name = "startDate", targetNamespace = "") Date startDate,
+                                         @WebParam(name = "endDate", targetNamespace = "") Date endDate);
     
     @WebMethod
     public Response addGroupToOrganization(@WebParam(name = "organizationId", targetNamespace = "") String organizationId,
                                          @WebParam(name = "groupId", targetNamespace = "") String groupId,
-                                         @WebParam(name = "rightIds", targetNamespace = "") Set<String> rightIds);
+                                         @WebParam(name = "rightIds", targetNamespace = "") Set<String> rightIds,
+                                         @WebParam(name = "startDate", targetNamespace = "") Date startDate,
+                                         @WebParam(name = "endDate", targetNamespace = "") Date endDate);
     
     @WebMethod
     public Response removeGroupFromOrganization(@WebParam(name = "organizationId", targetNamespace = "") String organizationId,
@@ -161,7 +168,9 @@ public interface OrganizationDataService {
     @WebMethod
     public Response addRoleToOrganization(@WebParam(name = "organizationId", targetNamespace = "") String organizationId,
                                          @WebParam(name = "roleId", targetNamespace = "") String roleId,
-                                         @WebParam(name = "rightIds", targetNamespace = "") Set<String> rightIds);
+                                         @WebParam(name = "rightIds", targetNamespace = "") Set<String> rightIds,
+                                         @WebParam(name = "startDate", targetNamespace = "") Date startDate,
+                                         @WebParam(name = "endDate", targetNamespace = "") Date endDate);
     
     @WebMethod
     public Response removeRoleFromOrganization(@WebParam(name = "organizationId", targetNamespace = "") String organizationId,
@@ -170,7 +179,9 @@ public interface OrganizationDataService {
     @WebMethod
     public Response addResourceToOrganization(@WebParam(name = "organizationId", targetNamespace = "") String organizationId,
                                          	  @WebParam(name = "resourceId", targetNamespace = "") String resourceId,
-                                         	  @WebParam(name = "rightIds", targetNamespace = "") Set<String> rightIds);
+                                         	  @WebParam(name = "rightIds", targetNamespace = "") Set<String> rightIds,
+                                         	 @WebParam(name = "startDate", targetNamespace = "") Date startDate,
+                                             @WebParam(name = "endDate", targetNamespace = "") Date endDate);
     
     @WebMethod
     public Response removeResourceFromOrganization(@WebParam(name = "organizationId", targetNamespace = "") String organizationId,

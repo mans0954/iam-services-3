@@ -236,14 +236,18 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
 	}
 
     @Override
-    public Response addUserToOrg(final String orgId, final String userId, final Set<String> rightIds) {
+    public Response addUserToOrg(final String orgId, 
+    							 final String userId, 
+    							 final Set<String> rightIds,
+    							 final Date startDate,
+								 final Date endDate) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
             if (orgId == null || userId == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }
 
-            organizationService.addUserToOrg(orgId, userId, rightIds);
+            organizationService.addUserToOrg(orgId, userId, rightIds, startDate, endDate);
         } catch (BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
@@ -326,14 +330,18 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     }
 
     @Override
-    public Response addChildOrganization(final String organizationId, final String childOrganizationId, final Set<String> rightIds) {
+    public Response addChildOrganization(final String organizationId, 
+    									 final String childOrganizationId, 
+    									 final Set<String> rightIds,
+    									 final Date startDate,
+    									 final Date endDate) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
             if (organizationId == null || childOrganizationId == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }
             organizationService.validateOrg2OrgAddition(organizationId, childOrganizationId, rightIds);
-            organizationService.addChildOrganization(organizationId, childOrganizationId, rightIds);
+            organizationService.addChildOrganization(organizationId, childOrganizationId, rightIds, startDate, endDate);
         } catch (BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
@@ -346,13 +354,17 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     }
     
 	@Override
-	public Response addRoleToOrganization(final String organizationId, final String roleId, final Set<String> rightIds) {
+	public Response addRoleToOrganization(final String organizationId, 
+										  final String roleId, 
+										  final Set<String> rightIds,
+										  final Date startDate,
+	    								  final Date endDate) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
         try {
             if (organizationId == null || roleId == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }
-            organizationService.addRoleToOrganization(organizationId, roleId, rightIds);
+            organizationService.addRoleToOrganization(organizationId, roleId, rightIds, startDate, endDate);
         } catch (BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
@@ -384,13 +396,17 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
 	}
 	
 	@Override
-	public Response addResourceToOrganization(final String organizationId, final String resourceId, final Set<String> rightIds) {
+	public Response addResourceToOrganization(final String organizationId, 
+											  final String resourceId, 
+											  final Set<String> rightIds,
+											  final Date startDate,
+		    								  final Date endDate) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
         try {
             if (organizationId == null || resourceId == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }
-            organizationService.addResourceToOrganization(organizationId, resourceId, rightIds);
+            organizationService.addResourceToOrganization(organizationId, resourceId, rightIds, startDate, endDate);
         } catch (BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
@@ -422,13 +438,17 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
 	}
     
     @Override
-	public Response addGroupToOrganization(final String organizationId, final String groupId, final Set<String> rightIds) {
+	public Response addGroupToOrganization(final String organizationId, 
+										   final String groupId, 
+										   final Set<String> rightIds,
+										   final Date startDate,
+	    								   final Date endDate) {
     	final Response response = new Response(ResponseStatus.SUCCESS);
         try {
             if (organizationId == null || groupId == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }
-            organizationService.addGroupToOrganization(organizationId, groupId, rightIds);
+            organizationService.addGroupToOrganization(organizationId, groupId, rightIds, startDate, endDate);
         } catch (BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());

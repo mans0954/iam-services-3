@@ -1,5 +1,6 @@
 package org.openiam.service.integration.entitlements;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -29,8 +30,8 @@ public class Organization2UserEntitlementsTest extends AbstractEntitlementsTest<
 	}
 
 	@Override
-	protected Response addChildToParent(Organization parent, User child, final Set<String> rights) {
-		return organizationServiceClient.addUserToOrg(parent.getId(), child.getId(), rights);
+	protected Response addChildToParent(Organization parent, User child, final Set<String> rights, Date startDate, final Date endDate) {
+		return organizationServiceClient.addUserToOrg(parent.getId(), child.getId(), rights, startDate, endDate);
 	}
 
 	@Override

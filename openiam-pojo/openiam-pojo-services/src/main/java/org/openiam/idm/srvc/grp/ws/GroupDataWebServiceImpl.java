@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.grp.ws;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -280,7 +281,12 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     }
 
     @Override
-    public Response addUserToGroup(final String groupId, final String userId, final String requesterId, final Set<String> rightIds) {
+    public Response addUserToGroup(final String groupId, 
+    							   final String userId, 
+    							   final String requesterId, 
+    							   final Set<String> rightIds,
+    							   final Date startDate,
+    							   final Date endDate) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
         auditLog.setAction(AuditAction.ADD_USER_TO_GROUP.value());
@@ -296,7 +302,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Group Id is null or empty");
             }
 
-            userManager.addUserToGroup(userId, groupId, rightIds);
+            userManager.addUserToGroup(userId, groupId, rightIds, startDate, endDate);
             auditLog.succeed();
         } catch (BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);
@@ -546,7 +552,12 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     }
 
     @Override
-    public Response addChildGroup(final String groupId, final String childGroupId, final String requesterId, final Set<String> rights) {
+    public Response addChildGroup(final String groupId, 
+    							  final String childGroupId, 
+    							  final String requesterId, 
+    							  final Set<String> rights,
+    							  final Date startDate,
+   							   	  final Date endDate) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
         auditLog.setAction(AuditAction.ADD_CHILD_GROUP.value());
@@ -573,7 +584,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
             }
 
             groupManager.validateGroup2GroupAddition(groupId, childGroupId, rights);
-            groupManager.addChildGroup(groupId, childGroupId, rights);
+            groupManager.addChildGroup(groupId, childGroupId, rights, startDate, endDate);
             auditLog.succeed();
         } catch (BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);

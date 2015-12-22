@@ -257,7 +257,7 @@ public interface UserDataService {
 
     List<String> getUserIdsInGroup(String groupId, String requestrId);
 
-    void addUserToGroup(String userId, String groupId, Set<String> rightIds);
+    void addUserToGroup(String userId, String groupId, Set<String> rightIds, final Date startDate, final Date endDate);
 
     void removeUserFromGroup(String userId, String groupId);
 
@@ -265,7 +265,7 @@ public interface UserDataService {
 
     void removeUserFromResource(String userId, String resourceId);
     
-    void addUserToResource(String userId, String resourceId, Set<String> rightIds);
+    void addUserToResource(String userId, String resourceId, Set<String> rightIds, final Date startDate, final Date endDate);
 
     boolean isHasResource(String userId, String resourceId);
 

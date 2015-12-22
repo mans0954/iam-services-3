@@ -1,6 +1,6 @@
 package org.openiam.authmanager.service.impl;
 
-import java.sql.Date;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -172,7 +172,7 @@ public class AuthorizationManagerServiceImpl extends AbstractAuthorizationManage
 			
 			final StopWatch swDB = new StopWatch();
 			swDB.start();
-			final AuthorizationManagerDataModel model = dataProvider.getModel();
+			final AuthorizationManagerDataModel model = dataProvider.getModel(new Date());
 			swDB.stop();
 			if(log.isDebugEnabled()) {
 				log.debug(String.format("Time to fetch relationships from the database: %s ms", swDB.getTime()));
@@ -334,7 +334,7 @@ public class AuthorizationManagerServiceImpl extends AbstractAuthorizationManage
 	private AuthorizationUser fetchUser(final String userId) {
 		AuthorizationUser retVal = getCachedUser(userId);
 		if(retVal == null) {
-			final InternalAuthroizationUser user = membershipDAO.getUser(userId);
+			final InternalAuthroizationUser user = membershipDAO.getUser(userId, new Date());
 			retVal = process(user);
 		}
 		return retVal;
