@@ -45,4 +45,6 @@
 
     <jee:jndi-lookup id="metaElementQueue" jndi-name="${jms.queue.metaelem}" expected-type="javax.jms.Queue" />
 
+    <jee:jndi-lookup id="sourceAdapterQueue" jndi-name="${jms.queue.sareq}" expected-type="javax.jms.Queue" />
+
 </beans>
