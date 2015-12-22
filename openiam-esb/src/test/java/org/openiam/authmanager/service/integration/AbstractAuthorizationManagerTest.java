@@ -994,7 +994,6 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 		testGetResourcesForUser(null, endDate);
 	}
 	
-	@Test
 	public void testGetResourcesForUser(final Date startDate, final Date endDate) {
 		Resource entity = null;
 		try {
