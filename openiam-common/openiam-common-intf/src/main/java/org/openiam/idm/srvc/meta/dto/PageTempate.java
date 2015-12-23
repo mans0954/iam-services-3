@@ -23,14 +23,17 @@ import org.openiam.idm.srvc.meta.dto.MetadataElementPageTemplate;
 	propOrder = { 
 		"templateId",
         "pageElements",
-        "uiFields"
+        "uiFields",
+		"dataModel",
+		"customJS"
 })
 public class PageTempate implements Serializable{
 
 	private String templateId;
 	
 	private Map<String, TemplateUIField> uiFields;
-	
+	private Map dataModel;
+	private String customJS;
 	private TreeSet<PageElement> pageElements = new TreeSet<PageElement>(PageElementComparator.INSTANCE);
 	
 	public PageTempate() {}
@@ -122,6 +125,22 @@ public class PageTempate implements Serializable{
 		} else if (!templateId.equals(other.templateId))
 			return false;
 		return true;
+	}
+
+	public Map getDataModel() {
+		return dataModel;
+	}
+
+	public void setDataModel(Map dataModel) {
+		this.dataModel = dataModel;
+	}
+
+	public String getCustomJS() {
+		return customJS;
+	}
+
+	public void setCustomJS(String customJS) {
+		this.customJS = customJS;
 	}
 
 	@Override

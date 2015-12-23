@@ -26,7 +26,8 @@ import java.util.TreeSet;
         "required",
         "editable",
         "validValues",
-        "userValues"
+        "userValues",
+		"dataModelUrl"
 })
 public class PageElement implements Serializable {
 
@@ -38,6 +39,7 @@ public class PageElement implements Serializable {
 	private String attributeName;
 	private boolean required;
 	private boolean editable;
+	private String dataModelUrl;
 	
 	private TreeSet<PageElementValidValue> validValues =  new TreeSet<PageElementValidValue>(PageElementValidValueComparator.INSTANCE);
 	private Set<PageElementValue> userValues;
@@ -154,6 +156,14 @@ public class PageElement implements Serializable {
 			}
 			this.validValues.add(validValue);
 		}
+	}
+
+	public String getDataModelUrl() {
+		return dataModelUrl;
+	}
+
+	public void setDataModelUrl(String dataModelUrl) {
+		this.dataModelUrl = dataModelUrl;
 	}
 
 	@Override

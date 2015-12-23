@@ -31,7 +31,9 @@ import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.UserProfileRequestModel;
 import org.openiam.idm.srvc.user.service.UserAttributeDAO;
 import org.openiam.idm.srvc.user.service.UserDAO;
+import org.openiam.script.ScriptIntegration;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -89,6 +91,10 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 	
 	@Autowired
 	private AuthorizationManagerService authorizationManagerService;
+
+	@Autowired
+	@Qualifier("configurableGroovyScriptEngine")
+	protected ScriptIntegration scriptRunner;
 	
 	private static Logger LOG = Logger.getLogger(MetadataElementTemplateServiceImpl.class);
 
@@ -270,6 +276,26 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 				final String templateId = entity.getId();
 				template = new PageTempate();
 				template.setTemplateId(templateId);
+
+				if(StringUtils.isNotBlank(entity.getDataModelUrl())){
+					// set dynamic data model for this template
+					TemplateGlobalDataModel templateDataModelIntf = null;
+					final Map<String, Object> bindingMap = new HashMap<String, Object>();
+					try {
+						templateDataModelIntf = (TemplateGlobalDataModel)
+								scriptRunner.instantiateClass(bindingMap, entity.getDataModelUrl());
+					} catch (Throwable e) {
+						LOG.error(String.format("Can't instantiate '%s' - skip", entity.getDataModelUrl()), e);
+					}
+					if(templateDataModelIntf!=null){
+						template.setDataModel(templateDataModelIntf.getDataModel(request.getRequesterId()));
+					}
+				}
+
+				if(StringUtils.isNotBlank(entity.getCustomJS())){
+					template.setCustomJS(entity.getCustomJS());
+				}
+
 				if(CollectionUtils.isNotEmpty(entity.getMetadataElements())) {
 					for(final MetadataElementPageTemplateXrefEntity xref : entity.getMetadataElements()) {
 						final String elementId = xref.getId().getMetadataElementId();
@@ -287,28 +313,53 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 										final String displayName = (displayNameXref != null) ? displayNameXref.getValue() : null;
 										pageElement.setDisplayName(displayName);
 									}
-									pageElement.setDefaultValue(elementEntity.getStaticDefaultValue());
-									if(StringUtils.isBlank(pageElement.getDefaultValue())) {
-										//pageElement.setDefaultValue(getLanguageValue(targetLanguage, elementEntity.getDefaultValueLanguageMap()));
-										final Map<String, LanguageMappingEntity> defValLanguageMap = elementEntity.getDefaultValueLanguageMap();
-										final LanguageMappingEntity displayNameXref = (defValLanguageMap != null) ? defValLanguageMap.get(targetLanguage.getId()) : null;
-										final String defaultValue = (displayNameXref != null) ? displayNameXref.getValue() : null;
-										pageElement.setDefaultValue(defaultValue);
-									}
-									if(CollectionUtils.isNotEmpty(elementEntity.getValidValues())) {
-										for(final MetadataValidValueEntity validValueEntity : elementEntity.getValidValues()) {
-											final String validValueId = validValueEntity.getId();
-											final String value = validValueEntity.getUiValue();
-											//final String displayName = getLanguageValue(targetLanguage, validValueEntity.getLanguageMap());
-											//final String displayName =  validValueEntity.getDisplayName();
-											final LanguageMappingEntity displayNameXref = validValueEntity.getLanguageMap().get(targetLanguage.getId());
-											final String displayName = (displayNameXref != null) ? displayNameXref.getValue() : null;
-											final Integer displayOrder = validValueEntity.getDisplayOrder();
-											if(displayName != null && value != null) {
-												pageElement.addValidValue(new PageElementValidValue(validValueId, value, displayName, displayOrder));
+
+									if(StringUtils.isNotBlank(elementEntity.getDataModelUrl())){
+										// dynamic values
+										pageElement.setDataModelUrl(elementEntity.getDataModelUrl());
+										if(elementEntity.getDataModelUrl().endsWith(".groovy")){
+											final Map<String, Object> bindingMap = new HashMap<String, Object>();
+
+											FieldDataModel fieldDataModelIntf = null;
+											try {
+												fieldDataModelIntf = (FieldDataModel)
+														scriptRunner.instantiateClass(bindingMap, elementEntity.getDataModelUrl());
+											} catch (Throwable e) {
+												LOG.error(String.format("Can't instantiate '%s' - skip", elementEntity.getDataModelUrl()), e);
+											}
+
+											if(fieldDataModelIntf!=null){
+												pageElement.setDefaultValue(fieldDataModelIntf.getDefaultValue(request.getRequesterId()));
+												pageElement.setValidValues(fieldDataModelIntf.getDataModel(request.getRequesterId()));
+											}
+										}
+									} else {
+										// static values
+										pageElement.setDefaultValue(elementEntity.getStaticDefaultValue());
+										if(StringUtils.isBlank(pageElement.getDefaultValue())) {
+											//pageElement.setDefaultValue(getLanguageValue(targetLanguage, elementEntity.getDefaultValueLanguageMap()));
+											final Map<String, LanguageMappingEntity> defValLanguageMap = elementEntity.getDefaultValueLanguageMap();
+											final LanguageMappingEntity displayNameXref = (defValLanguageMap != null) ? defValLanguageMap.get(targetLanguage.getId()) : null;
+											final String defaultValue = (displayNameXref != null) ? displayNameXref.getValue() : null;
+											pageElement.setDefaultValue(defaultValue);
+										}
+										if(CollectionUtils.isNotEmpty(elementEntity.getValidValues())) {
+											for(final MetadataValidValueEntity validValueEntity : elementEntity.getValidValues()) {
+												final String validValueId = validValueEntity.getId();
+												final String value = validValueEntity.getUiValue();
+												//final String displayName = getLanguageValue(targetLanguage, validValueEntity.getLanguageMap());
+												//final String displayName =  validValueEntity.getDisplayName();
+												final LanguageMappingEntity displayNameXref = validValueEntity.getLanguageMap().get(targetLanguage.getId());
+												final String displayName = (displayNameXref != null) ? displayNameXref.getValue() : null;
+												final Integer displayOrder = validValueEntity.getDisplayOrder();
+												if(displayName != null && value != null) {
+													pageElement.addValidValue(new PageElementValidValue(validValueId, value, displayName, displayOrder));
+												}
 											}
 										}
 									}
+
+
 								}
 
 								

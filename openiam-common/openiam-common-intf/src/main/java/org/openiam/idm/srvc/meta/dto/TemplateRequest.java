@@ -12,7 +12,8 @@ import javax.xml.bind.annotation.XmlType;
 		"templateId",
 		"languageId",
 		"isAdminRequest",
-		"requestURI"
+		"requestURI",
+		"requesterId"
 })
 public class TemplateRequest {
 
@@ -22,6 +23,7 @@ public class TemplateRequest {
 	private String templateId;
 	private String requestURI;
 	private boolean isAdminRequest;
+	private String requesterId;
 	public String getUserId() {
 		return userId;
 	}
@@ -60,5 +62,11 @@ public class TemplateRequest {
 	public void setRequestURI(String requestURI) {
 		this.requestURI = requestURI;
 	}
-	
+	public String getRequesterId() {
+		return requesterId;
+	}
+
+	public void setRequesterId(String requesterId) {
+		this.requesterId = requesterId;
+	}
 }
