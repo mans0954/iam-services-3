@@ -128,7 +128,7 @@ public class SourceAdapterDispatcher implements Sweepable {
 
     @Override
     //TODO change when Spring 3.2.2 @Scheduled(fixedDelayString = "${org.openiam.metadata.threadsweep}")
-    @Scheduled(fixedDelay = 1000)
+    @Scheduled(fixedDelay = 10000)
     public void sweep() {
         jmsTemplate.browse(queue, new BrowserCallback<Object>() {
             @Override
@@ -166,7 +166,7 @@ public class SourceAdapterDispatcher implements Sweepable {
                         }
 
                     } finally {
-                        log.info(String.format("Done with metadataElement sweeper thread.  Took %s ms", sw.getTime()));
+                        log.info(String.format("Done with SourceAdapterRequest sweeper thread.  Took %s ms", sw.getTime()));
                     }
                     return null;
                 }
