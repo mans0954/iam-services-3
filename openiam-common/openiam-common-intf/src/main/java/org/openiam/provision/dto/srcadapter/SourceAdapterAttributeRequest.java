@@ -3,6 +3,7 @@ package org.openiam.provision.dto.srcadapter;
 import org.openiam.base.AttributeOperationEnum;
 
 import javax.xml.bind.annotation.*;
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -11,7 +12,7 @@ import java.util.List;
 
 @XmlType(propOrder = {"name", "newName", "value", "values", "operation"})
 @XmlAccessorType(XmlAccessType.FIELD)
-public class SourceAdapterAttributeRequest {
+public class SourceAdapterAttributeRequest  implements Serializable {
     private String name;
     private String newName;
     private String value;

@@ -3,12 +3,13 @@ package org.openiam.provision.dto.srcadapter;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
+import java.io.Serializable;
 
 /**
  * Created by zaporozhec on 10/29/15.
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-public class SourceAdapterKey {
+public class SourceAdapterKey  implements Serializable {
     @XmlElement(required = true)
     SourceAdapterKeyEnum name;
     @XmlElement(required = true)

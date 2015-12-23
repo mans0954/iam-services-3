@@ -5,6 +5,7 @@ import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.xml.bind.annotation.*;
+import java.io.Serializable;
 import java.util.Set;
 
 /**
@@ -15,9 +16,9 @@ import java.util.Set;
         "middleName", "prefix", "sex", "status", "secondaryStatus", "suffix",
         "title", "nickname", "maidenName", "userTypeId", "startDate", "lastDate",
         "userAttributes", "groups", "roles", "resources", "organizations", "emails", "addresses", "phones",
-        /*"subordinates",*/ "supervisors", "passwordRequest","userSubTypeId","prefixPartnerName","prefixLastName","partnerName"})
+        /*"subordinates",*/ "supervisors", "passwordRequest", "userSubTypeId", "prefixPartnerName", "prefixLastName", "partnerName"})
 @XmlAccessorType(XmlAccessType.FIELD)
-public class SourceAdapterRequest {
+public class SourceAdapterRequest implements Serializable {
     private SourceAdapterOperationEnum action;
     private SourceAdapterKey key;
     @XmlElement(required = true)

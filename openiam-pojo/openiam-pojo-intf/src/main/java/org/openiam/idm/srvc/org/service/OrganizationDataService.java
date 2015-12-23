@@ -7,6 +7,7 @@ import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.loc.dto.Location;
 import org.openiam.idm.srvc.org.dto.Organization;
+import org.openiam.idm.srvc.org.dto.OrganizationAttribute;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
@@ -234,4 +235,7 @@ public interface OrganizationDataService {
                                                         @WebParam(name = "size", targetNamespace = "") int size,
                                                         @WebParam(name = "requesterId", targetNamespace = "") final String requesterId,
                                                         @WebParam(name = "language", targetNamespace = "") final Language language);
+    @WebMethod
+    public List<OrganizationAttribute> getOrganizationAttributes(@WebParam(name = "orgId", targetNamespace = "") final String orgId);
+
 }

@@ -5,6 +5,7 @@ import org.openiam.base.AttributeOperationEnum;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+import java.io.Serializable;
 
 /**
  * Created by zaporozhec on 10/29/15.
@@ -12,7 +13,7 @@ import javax.xml.bind.annotation.XmlType;
 
 @XmlType(propOrder = {"managedSystemId", "password", "sendToUser", "activate"})
 @XmlAccessorType(XmlAccessType.FIELD)
-public class SourceAdapterPasswordRequest {
+public class SourceAdapterPasswordRequest  implements Serializable {
     private String managedSystemId;
     private String password;
     private boolean sendToUser;
