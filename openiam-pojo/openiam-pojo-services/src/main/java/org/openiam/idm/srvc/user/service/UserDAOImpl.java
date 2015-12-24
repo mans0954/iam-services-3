@@ -737,6 +737,78 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         return 0;
     }
 
+    @Override
+    public List<UserEntity> getUserByCreatedDate(Date fromDate, Date toDate) {
+        log.debug("--------- created fromdate ----------- : "+fromDate);
+        log.debug("--------- created todate ----------- : "+toDate);
+        if (fromDate != null && toDate != null) {
+            List<UserEntity> retVal = new ArrayList<UserEntity>();
+            final Criteria criteria = getCriteria().add(
+                    Restrictions.lt("createDate", toDate)).add(
+                    Restrictions.gt("createDate", fromDate));
+            return criteria.list();
+        } else if (fromDate != null ) {
+            List<UserEntity> retVal = new ArrayList<UserEntity>();
+            final Criteria criteria = getCriteria().add(
+                    Restrictions.gt("createDate", fromDate));
+            return criteria.list();
+        } else if (toDate != null ) {
+            List<UserEntity> retVal = new ArrayList<UserEntity>();
+            final Criteria criteria = getCriteria().add(
+                    Restrictions.lt("createDate", toDate));
+            return criteria.list();
+        } else
+            return null;
+    }
+
+    @Override
+    public List<UserEntity> getUserByDeletedDate(Date fromDate, Date toDate) {
+        log.debug("--------- deleted fromdate ----------- : "+fromDate);
+        log.debug("--------- deleted todate ----------- : "+toDate);
+        if (fromDate != null && toDate != null) {
+            List<UserEntity> retVal = new ArrayList<UserEntity>();
+            final Criteria criteria = getCriteria().add(
+                    Restrictions.lt("lastDate", toDate)).add(
+                    Restrictions.gt("lastDate", fromDate));
+            return criteria.list();
+        } else if (fromDate != null ) {
+            List<UserEntity> retVal = new ArrayList<UserEntity>();
+            final Criteria criteria = getCriteria().add(
+                    Restrictions.gt("lastDate", fromDate));
+            return criteria.list();
+        } else if (toDate != null ) {
+            List<UserEntity> retVal = new ArrayList<UserEntity>();
+            final Criteria criteria = getCriteria().add(
+                    Restrictions.lt("lastDate", toDate));
+            return criteria.list();
+        } else
+            return null;
+    }
+
+    @Override
+    public List<UserEntity> getUserByUpdatedDate(Date fromDate, Date toDate) {
+        log.debug("--------- updated user fromdate ----------- : "+fromDate);
+        log.debug("--------- updated user todate ----------- : "+toDate);
+        if (fromDate != null && toDate != null) {
+            List<UserEntity> retVal = new ArrayList<UserEntity>();
+            final Criteria criteria = getCriteria().add(
+                    Restrictions.lt("lastUpdate", toDate)).add(
+                    Restrictions.gt("lastUpdate", fromDate));
+            return criteria.list();
+        } else if (fromDate != null ) {
+            List<UserEntity> retVal = new ArrayList<UserEntity>();
+            final Criteria criteria = getCriteria().add(
+                    Restrictions.gt("lastUpdate", fromDate));
+            return criteria.list();
+        } else if (toDate != null ) {
+            List<UserEntity> retVal = new ArrayList<UserEntity>();
+            final Criteria criteria = getCriteria().add(
+                    Restrictions.lt("lastUpdate", toDate));
+            return criteria.list();
+        } else
+            return null;
+    }
+
     private Criterion createInClauseForIds(Criteria criteria, List<String> idCollection) {
         if (idCollection.size() <= MAX_IN_CLAUSE) {
             return Restrictions.in(getPKfieldName(), idCollection);

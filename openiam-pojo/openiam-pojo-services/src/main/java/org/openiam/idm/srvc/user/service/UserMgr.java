@@ -2724,6 +2724,28 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
         return userDozerConverter.convertToDTOList(userEntityList, true);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<User> getUserDtoByCreatedDate(Date fromDate, Date toDate) {
+        List<UserEntity> userEntityList = userDao.getUserByCreatedDate( fromDate, toDate );
+
+        return userDozerConverter.convertToDTOList(userEntityList, true);
+    }
+
+    @Override
+    public List<User> getUserDtoByDeletedDate(Date fromDate, Date toDate) {
+        List<UserEntity> userEntityList = userDao.getUserByDeletedDate( fromDate, toDate );
+
+        return userDozerConverter.convertToDTOList(userEntityList, true);
+    }
+
+    @Override
+    public List<User> getUserDtoByUpdatedDate(Date fromDate, Date toDate) {
+        List<UserEntity> userEntityList = userDao.getUserByUpdatedDate( fromDate, toDate );
+
+        return userDozerConverter.convertToDTOList(userEntityList, true);
+    }
+
     private UserDataService getProxyService() {
         UserDataService service = (UserDataService)ac.getBean("userManager");
         return service;
