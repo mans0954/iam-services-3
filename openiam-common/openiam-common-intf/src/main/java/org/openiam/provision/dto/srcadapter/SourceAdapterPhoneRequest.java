@@ -6,6 +6,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
+import java.io.Serializable;
 
 /**
  * Created by zaporozhec on 10/29/15.
@@ -13,7 +14,7 @@ import javax.xml.bind.annotation.XmlType;
 
 @XmlType(propOrder = {"phoneNumber", "newTypeId", "areaCode", "countryCode", "name", "primary", "active", "typeId", "operation"})
 @XmlAccessorType(XmlAccessType.FIELD)
-public class SourceAdapterPhoneRequest {
+public class SourceAdapterPhoneRequest  implements Serializable {
     private String phoneNumber;
     private String areaCode;
     private String countryCode;

@@ -67,7 +67,9 @@ import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.dto.Role;
+import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.idm.srvc.user.dto.Supervisor;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.*;
@@ -450,8 +452,9 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                 response.setErrorCode(ResponseCode.USER_NOT_FOUND);
                 return response;
             }
+            UserEntity u = userMgr.getUser(userId);
 
-            User usr = userDozerConverter.convertToDTO(userMgr.getUser(userId), true);
+            User usr = userDozerConverter.convertToDTO(u, true);
             if (usr == null) {
                 response.setStatus(ResponseStatus.FAILURE);
                 response.setErrorCode(ResponseCode.USER_NOT_FOUND);
@@ -466,6 +469,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
 
             ProvisionUser pUser = new ProvisionUser(usr);
             pUser.setRequestorUserId(requestorId);
+            fillUserSupervisor(pUser,usr,u);
             // SET PRE ATTRIBUTES FOR DEFAULT SYS SCRIPT
             bindingMap.put(TARGET_SYS_MANAGED_SYS_ID, managedSystemId);
             bindingMap.put(TARGET_SYSTEM_IDENTITY, login.getLogin());
@@ -754,6 +758,26 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
         response.setStatus(ResponseStatus.SUCCESS);
         return response;
 
+    }
+
+    private void fillUserSupervisor(ProvisionUser pUser, User usr, UserEntity u) {
+        if(u != null && usr != null ) {
+            int i = 0 ;
+            for(Supervisor s : usr.getSupervisors()) {
+                int j = 0;
+                for(SupervisorEntity supervisorEntity : u.getSupervisors()) {
+                    if(i == j) {
+                        s.setSupervisor(userDozerConverter.convertToDTO(supervisorEntity.getSupervisor(), true));
+                        if(pUser != null) {
+                            pUser.addSuperior(s.getSupervisor());
+                        }
+                        break;
+                    }
+                    j++;
+                }
+                i++;
+            }
+        }
     }
 
     @Override

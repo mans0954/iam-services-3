@@ -3,6 +3,7 @@ package org.openiam.provision.dto.srcadapter;
 import org.openiam.base.AttributeOperationEnum;
 
 import javax.xml.bind.annotation.*;
+import java.io.Serializable;
 import java.util.Set;
 
 /**
@@ -11,7 +12,7 @@ import java.util.Set;
 
 @XmlType(propOrder = {"email", "name", "primary", "active", "newTypeId", "typeId", "operation"})
 @XmlAccessorType(XmlAccessType.FIELD)
-public class SourceAdapterEmailRequest {
+public class SourceAdapterEmailRequest  implements Serializable {
     private String email;
     private String name;
     @XmlElement(name = "default")
