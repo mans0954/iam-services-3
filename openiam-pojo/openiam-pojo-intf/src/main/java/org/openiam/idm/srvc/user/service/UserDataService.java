@@ -337,9 +337,9 @@ public interface UserDataService {
 
     public List<User> getUserDtoByLastDate(Date lastDate);
 
-    public List<User> getUserDtoByCreatedDate(Date fromDate, Date toDate);
+    public List<User> getUserDtoByStartDate(Date fromDate, Date toDate);
 
-    public List<User> getUserDtoByDeletedDate(Date fromDate, Date toDate);
+    public List<User> getUserDtoByLastDate(Date fromDate, Date toDate);
 
     public List<User> getUserDtoByUpdatedDate(Date fromDate, Date toDate);
 

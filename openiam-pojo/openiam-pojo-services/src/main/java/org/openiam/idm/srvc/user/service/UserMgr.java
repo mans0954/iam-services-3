@@ -2726,15 +2726,15 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
 
     @Override
     @Transactional(readOnly = true)
-    public List<User> getUserDtoByCreatedDate(Date fromDate, Date toDate) {
-        List<UserEntity> userEntityList = userDao.getUserByCreatedDate( fromDate, toDate );
+    public List<User> getUserDtoByStartDate(Date fromDate, Date toDate) {
+        List<UserEntity> userEntityList = userDao.getUserByStartDate( fromDate, toDate );
 
         return userDozerConverter.convertToDTOList(userEntityList, true);
     }
 
     @Override
-    public List<User> getUserDtoByDeletedDate(Date fromDate, Date toDate) {
-        List<UserEntity> userEntityList = userDao.getUserByDeletedDate( fromDate, toDate );
+    public List<User> getUserDtoByLastDate(Date fromDate, Date toDate) {
+        List<UserEntity> userEntityList = userDao.getUserByLastDate( fromDate, toDate );
 
         return userDozerConverter.convertToDTOList(userEntityList, true);
     }

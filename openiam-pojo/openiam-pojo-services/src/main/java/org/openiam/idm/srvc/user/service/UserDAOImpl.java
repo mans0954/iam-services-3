@@ -738,31 +738,31 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
     }
 
     @Override
-    public List<UserEntity> getUserByCreatedDate(Date fromDate, Date toDate) {
+    public List<UserEntity> getUserByStartDate(Date fromDate, Date toDate) {
         log.debug("--------- created fromdate ----------- : "+fromDate);
         log.debug("--------- created todate ----------- : "+toDate);
         if (fromDate != null && toDate != null) {
             List<UserEntity> retVal = new ArrayList<UserEntity>();
             final Criteria criteria = getCriteria().add(
-                    Restrictions.lt("createDate", toDate)).add(
-                    Restrictions.gt("createDate", fromDate));
+                    Restrictions.lt("startDate", toDate)).add(
+                    Restrictions.gt("startDate", fromDate));
             return criteria.list();
         } else if (fromDate != null ) {
             List<UserEntity> retVal = new ArrayList<UserEntity>();
             final Criteria criteria = getCriteria().add(
-                    Restrictions.gt("createDate", fromDate));
+                    Restrictions.gt("startDate", fromDate));
             return criteria.list();
         } else if (toDate != null ) {
             List<UserEntity> retVal = new ArrayList<UserEntity>();
             final Criteria criteria = getCriteria().add(
-                    Restrictions.lt("createDate", toDate));
+                    Restrictions.lt("startDate", toDate));
             return criteria.list();
         } else
             return null;
     }
 
     @Override
-    public List<UserEntity> getUserByDeletedDate(Date fromDate, Date toDate) {
+    public List<UserEntity> getUserByLastDate(Date fromDate, Date toDate) {
         log.debug("--------- deleted fromdate ----------- : "+fromDate);
         log.debug("--------- deleted todate ----------- : "+toDate);
         if (fromDate != null && toDate != null) {

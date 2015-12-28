@@ -847,12 +847,12 @@ public interface UserDataWebService {
             @WebParam(name = "lastDate", targetNamespace = "") final Date lastDate);
 
     @WebMethod
-    public List<User> getUserByCreatedDate(
+    public List<User> getUserByStartDate(
             @WebParam(name = "fromDate", targetNamespace = "") final Date fromDate,
             @WebParam(name = "toDate", targetNamespace = "") final Date toDate);
 
     @WebMethod
-    public List<User> getUserByDeletedDate(
+    public List<User> getUserByLastDate(
             @WebParam(name = "fromDate", targetNamespace = "") final Date fromDate,
             @WebParam(name = "toDate", targetNamespace = "") final Date toDate);
 

@@ -1312,13 +1312,13 @@ public class UserDataWebServiceImpl implements UserDataWebService {
     }
 
     @Override
-    public List<User> getUserByCreatedDate(Date fromDate, Date toDate) {
-        return userManager.getUserDtoByCreatedDate(fromDate, toDate);
+    public List<User> getUserByStartDate(Date fromDate, Date toDate) {
+        return userManager.getUserDtoByStartDate(fromDate, toDate);
     }
 
     @Override
-    public List<User> getUserByDeletedDate(Date fromDate, Date toDate) {
-        return userManager.getUserDtoByDeletedDate(fromDate, toDate);
+    public List<User> getUserByLastDate(Date fromDate, Date toDate) {
+        return userManager.getUserDtoByLastDate(fromDate, toDate);
     }
 
     @Override
