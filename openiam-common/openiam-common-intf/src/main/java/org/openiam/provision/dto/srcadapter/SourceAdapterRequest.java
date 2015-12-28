@@ -18,7 +18,7 @@ import java.util.Set;
         "userAttributes", "groups", "roles", "resources", "organizations", "emails", "addresses", "phones",
         /*"subordinates",*/ "supervisors", "passwordRequest", "userSubTypeId", "prefixPartnerName", "prefixLastName", "partnerName"})
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlRootElement(name = "user")
+@XmlRootElement(name = "user",namespace = "http://www.openiam.org/service/provision/dto/srcadapter")
 public class SourceAdapterRequest implements Serializable {
     private SourceAdapterOperationEnum action;
     private SourceAdapterKey key;
