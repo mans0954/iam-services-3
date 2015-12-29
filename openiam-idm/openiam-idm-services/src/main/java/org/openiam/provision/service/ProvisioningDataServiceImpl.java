@@ -55,6 +55,9 @@ import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.dto.OrganizationUserDTO;
+import org.openiam.idm.srvc.policy.dto.PasswordPolicyAssocSearchBean;
+import org.openiam.idm.srvc.policy.dto.Policy;
+import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.prov.request.dto.BulkOperationEnum;
 import org.openiam.idm.srvc.prov.request.dto.BulkOperationRequest;
 import org.openiam.idm.srvc.prov.request.dto.OperationBean;
@@ -1956,6 +1959,25 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                     log.debug(" - Managed System Id = " + managedSysId);
                     log.debug(" - Resource Id = " + res.getId());
 
+                    //
+
+                    Integer pwdChangeCount = lg.getPasswordChangeCount();
+                    if(pwdChangeCount != null) {
+                        Policy policy = passwordPolicyProvider.getPasswordPolicyByUser(new PasswordPolicyAssocSearchBean(lg.getUserId(), managedSysId));
+                        String pwdChangeAllowed = getPolicyAttribute(policy.getPolicyAttributes(), "PASSWORD_CHANGE_ALLOWED");
+
+                        if(pwdChangeAllowed != null && pwdChangeCount >= Integer.valueOf(pwdChangeAllowed)) {
+                            idmAuditLog.fail();
+                            log.debug(ResponseCode.FAIL_PASSWORD_CHANGE_FREQUENCY);
+                            idmAuditLog.setFailureReason(ResponseCode.FAIL_PASSWORD_CHANGE_FREQUENCY);
+                            response.setStatus(ResponseStatus.FAILURE);
+                            response.setErrorCode(ResponseCode.FAIL_PASSWORD_CHANGE_FREQUENCY);
+                            return response;
+                        }
+                    }
+
+                    //
+
                     final boolean retval = loginManager.setPassword(lg.getLogin(), managedSysId,
                             encPassword, passwordSync.isPreventChangeCountIncrement());
 
@@ -2098,6 +2120,20 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
             }
             auditLogService.save(idmAuditLog); //SIA 2015-08-01
         }
+    }
+
+    private String getPolicyAttribute(Set<PolicyAttribute> attr, String name) {
+        assert name != null : "Name parameter is null";
+
+        log.debug("Attribute Set size=" + attr.size());
+
+        for (PolicyAttribute policyAtr : attr) {
+            if (policyAtr.getName().equalsIgnoreCase(name)) {
+                return policyAtr.getValue1();
+            }
+        }
+        return null;
+
     }
 
     /* ********* Helper Methods --------------- */
