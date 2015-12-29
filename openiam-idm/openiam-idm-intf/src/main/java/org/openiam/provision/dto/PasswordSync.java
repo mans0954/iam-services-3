@@ -48,7 +48,8 @@ import java.util.List;
         "preventChangeCountIncrement",
         "userActivateFlag",
         //skip validation
-        "resyncMode"
+        "resyncMode",
+        "resetPassword"
 })
 public class PasswordSync extends BaseObject {
 
@@ -68,6 +69,7 @@ public class PasswordSync extends BaseObject {
     private boolean preventChangeCountIncrement;
     private boolean userActivateFlag;
     private boolean resyncMode;
+    private boolean resetPassword;
 
     public PasswordSync() {
 
@@ -159,6 +161,14 @@ public class PasswordSync extends BaseObject {
 
     public void setResyncMode(boolean resyncMode) {
         this.resyncMode = resyncMode;
+    }
+
+    public boolean isResetPassword() {
+        return resetPassword;
+    }
+
+    public void setResetPassword(boolean resetPassword) {
+        this.resetPassword = resetPassword;
     }
 }
 
