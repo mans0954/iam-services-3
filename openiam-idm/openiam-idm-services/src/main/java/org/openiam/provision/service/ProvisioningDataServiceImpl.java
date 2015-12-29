@@ -119,9 +119,6 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
     @Value("${org.openiam.send.user.activation.link}")
     private Boolean sendActivationLink;
 
-    @Value("${org.openiam.send.admin.reset.password.link}")
-    private Boolean sendAdminResetPasswordLink;
-
     //---
 
     //----
