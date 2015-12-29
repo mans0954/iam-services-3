@@ -42,7 +42,6 @@ import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
-import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.service.OrganizationService;
 import org.openiam.idm.srvc.pswd.domain.PasswordHistoryEntity;
 import org.openiam.idm.srvc.pswd.service.PasswordHistoryDAO;
@@ -2726,8 +2725,8 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
 
     @Override
     @Transactional(readOnly = true)
-    public List<User> getUserDtoBetweenStartDate(Date fromDate, Date toDate) {
-        List<UserEntity> userEntityList = userDao.getUserBetweenStartDate( fromDate, toDate );
+    public List<User> getUserDtoBetweenCreateDate(Date fromDate, Date toDate) {
+        List<UserEntity> userEntityList = userDao.getUserBetweenCreateDate( fromDate, toDate );
         return userDozerConverter.convertToDTOList(userEntityList, true);
     }
 
