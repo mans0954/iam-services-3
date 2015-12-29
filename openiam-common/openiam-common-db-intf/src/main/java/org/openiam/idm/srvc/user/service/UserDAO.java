@@ -94,9 +94,9 @@ public interface UserDAO extends BaseDao<UserEntity, String> {
 
     public  int countByIds(List<String> idCollection);
 
-    public List<UserEntity> getUserByStartDate(Date fromDate,Date toDate);
+    public List<UserEntity> getUserBetweenStartDate(Date fromDate, Date toDate);
 
-    public List<UserEntity> getUserByLastDate(Date fromDate,Date toDate);
+    public List<UserEntity> getUserBetweenLastDate(Date fromDate, Date toDate);
 
-    public List<UserEntity> getUserByUpdatedDate(Date fromDate,Date toDate);
+    public List<UserEntity> getUserBetweenUpdatedDate(Date fromDate, Date toDate);
 }

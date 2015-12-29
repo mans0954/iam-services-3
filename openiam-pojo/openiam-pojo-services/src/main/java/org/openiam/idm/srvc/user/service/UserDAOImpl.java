@@ -738,70 +738,61 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
     }
 
     @Override
-    public List<UserEntity> getUserByStartDate(Date fromDate, Date toDate) {
-        log.debug("--------- created fromdate ----------- : "+fromDate);
-        log.debug("--------- created todate ----------- : "+toDate);
-        if (fromDate != null && toDate != null) {
-            List<UserEntity> retVal = new ArrayList<UserEntity>();
-            final Criteria criteria = getCriteria().add(
-                    Restrictions.lt("startDate", toDate)).add(
-                    Restrictions.gt("startDate", fromDate));
+    public List<UserEntity> getUserBetweenStartDate(Date fromDate, Date toDate) {
+        log.debug("--------- created startDate ----------- : " + fromDate);
+        log.debug("--------- created toDate ----------- : " + toDate);
+        if (fromDate != null && toDate != null ) {
+            final Criteria criteria = getCriteria()
+                    .add(Restrictions.ge("startDate",fromDate))
+                    .add(Restrictions.lt("startDate",toDate));
             return criteria.list();
-        } else if (fromDate != null ) {
-            List<UserEntity> retVal = new ArrayList<UserEntity>();
-            final Criteria criteria = getCriteria().add(
-                    Restrictions.gt("startDate", fromDate));
+        } else if(fromDate != null) {
+            final Criteria criteria = getCriteria()
+                    .add(Restrictions.ge("startDate",fromDate));
             return criteria.list();
-        } else if (toDate != null ) {
-            List<UserEntity> retVal = new ArrayList<UserEntity>();
-            final Criteria criteria = getCriteria().add(
-                    Restrictions.lt("startDate", toDate));
+        } else if(toDate != null) {
+            final Criteria criteria = getCriteria()
+                    .add(Restrictions.lt("startDate",toDate));
             return criteria.list();
         } else
             return null;
     }
 
     @Override
-    public List<UserEntity> getUserByLastDate(Date fromDate, Date toDate) {
-        log.debug("--------- deleted fromdate ----------- : "+fromDate);
-        log.debug("--------- deleted todate ----------- : "+toDate);
-        if (fromDate != null && toDate != null) {
-            List<UserEntity> retVal = new ArrayList<UserEntity>();
-            final Criteria criteria = getCriteria().add(
-                    Restrictions.lt("lastDate", toDate)).add(
-                    Restrictions.gt("lastDate", fromDate));
+    public List<UserEntity> getUserBetweenLastDate(Date fromDate, Date toDate) {
+        log.debug("--------- lastDate fromDate ----------- : " + fromDate);
+        log.debug("--------- lastDate toDate ----------- : " + toDate);
+        if (fromDate != null && toDate != null ) {
+            final Criteria criteria = getCriteria()
+                    .add(Restrictions.ge("lastDate",fromDate))
+                    .add(Restrictions.lt("lastDate",toDate));
             return criteria.list();
-        } else if (fromDate != null ) {
-            List<UserEntity> retVal = new ArrayList<UserEntity>();
-            final Criteria criteria = getCriteria().add(
-                    Restrictions.gt("lastDate", fromDate));
+        } else if(fromDate != null) {
+            final Criteria criteria = getCriteria()
+                    .add(Restrictions.ge("lastDate",fromDate));
             return criteria.list();
-        } else if (toDate != null ) {
-            List<UserEntity> retVal = new ArrayList<UserEntity>();
-            final Criteria criteria = getCriteria().add(
-                    Restrictions.lt("lastDate", toDate));
+        } else if(toDate != null) {
+            final Criteria criteria = getCriteria()
+                    .add(Restrictions.lt("lastDate",toDate));
             return criteria.list();
         } else
             return null;
     }
 
     @Override
-    public List<UserEntity> getUserByUpdatedDate(Date fromDate, Date toDate) {
+    public List<UserEntity> getUserBetweenUpdatedDate(Date fromDate, Date toDate) {
         log.debug("--------- updated user fromdate ----------- : "+fromDate);
         log.debug("--------- updated user todate ----------- : "+toDate);
         if (fromDate != null && toDate != null) {
-            List<UserEntity> retVal = new ArrayList<UserEntity>();
             final Criteria criteria = getCriteria().add(
                     Restrictions.lt("lastUpdate", toDate)).add(
                     Restrictions.gt("lastUpdate", fromDate));
             return criteria.list();
         } else if (fromDate != null ) {
-            List<UserEntity> retVal = new ArrayList<UserEntity>();
             final Criteria criteria = getCriteria().add(
                     Restrictions.gt("lastUpdate", fromDate));
             return criteria.list();
         } else if (toDate != null ) {
-            List<UserEntity> retVal = new ArrayList<UserEntity>();
             final Criteria criteria = getCriteria().add(
                     Restrictions.lt("lastUpdate", toDate));
             return criteria.list();

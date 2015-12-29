@@ -2726,22 +2726,23 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
 
     @Override
     @Transactional(readOnly = true)
-    public List<User> getUserDtoByStartDate(Date fromDate, Date toDate) {
-        List<UserEntity> userEntityList = userDao.getUserByStartDate( fromDate, toDate );
+    public List<User> getUserDtoBetweenStartDate(Date fromDate, Date toDate) {
+        List<UserEntity> userEntityList = userDao.getUserBetweenStartDate( fromDate, toDate );
+        return userDozerConverter.convertToDTOList(userEntityList, true);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<User> getUserDtoBetweenLastDate(Date fromDate, Date toDate) {
+        List<UserEntity> userEntityList = userDao.getUserBetweenLastDate( fromDate, toDate );
 
         return userDozerConverter.convertToDTOList(userEntityList, true);
     }
 
     @Override
-    public List<User> getUserDtoByLastDate(Date fromDate, Date toDate) {
-        List<UserEntity> userEntityList = userDao.getUserByLastDate( fromDate, toDate );
-
-        return userDozerConverter.convertToDTOList(userEntityList, true);
-    }
-
-    @Override
-    public List<User> getUserDtoByUpdatedDate(Date fromDate, Date toDate) {
-        List<UserEntity> userEntityList = userDao.getUserByUpdatedDate( fromDate, toDate );
+	@Transactional(readOnly = true)
+    public List<User> getUserDtoBetweenUpdatedDate(Date fromDate, Date toDate) {
+        List<UserEntity> userEntityList = userDao.getUserBetweenUpdatedDate( fromDate, toDate );
 
         return userDozerConverter.convertToDTOList(userEntityList, true);
     }
