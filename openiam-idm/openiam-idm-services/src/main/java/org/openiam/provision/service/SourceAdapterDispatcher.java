@@ -122,7 +122,7 @@ public class SourceAdapterDispatcher implements Sweepable {
     @Autowired
     protected AuditLogService auditLogService;
 
-    final static SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/YYYY");
+    final static SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
     final static String WARNING = "Warning! %s.\n";
 
     private static Logger log = Logger.getLogger(SourceAdapterDispatcher.class);
