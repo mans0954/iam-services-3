@@ -739,7 +739,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
 
     @Override
     public List<UserEntity> getUserBetweenCreateDate(Date fromDate, Date toDate) {
-        log.debug("--------- created startDate ----------- : " + fromDate);
+        log.debug("--------- created createDate ----------- : " + fromDate);
         log.debug("--------- created toDate ----------- : " + toDate);
         if (fromDate != null && toDate != null ) {
             final Criteria criteria = getCriteria()
@@ -753,6 +753,28 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         } else if(toDate != null) {
             final Criteria criteria = getCriteria()
                     .add(Restrictions.lt("createDate",toDate));
+            return criteria.list();
+        } else
+            return null;
+    }
+
+
+    @Override
+    public List<UserEntity> getUserBetweenStartDate(Date fromDate, Date toDate) {
+        log.debug("--------- created startDate ----------- : " + fromDate);
+        log.debug("--------- created toDate ----------- : " + toDate);
+        if (fromDate != null && toDate != null ) {
+            final Criteria criteria = getCriteria()
+                    .add(Restrictions.ge("startDate",fromDate))
+                    .add(Restrictions.lt("startDate",toDate));
+            return criteria.list();
+        } else if(fromDate != null) {
+            final Criteria criteria = getCriteria()
+                    .add(Restrictions.ge("startDate",fromDate));
+            return criteria.list();
+        } else if(toDate != null) {
+            final Criteria criteria = getCriteria()
+                    .add(Restrictions.lt("startDate",toDate));
             return criteria.list();
         } else
             return null;

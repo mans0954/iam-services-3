@@ -2732,6 +2732,13 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
 
     @Override
     @Transactional(readOnly = true)
+    public List<User> getUserDtoBetweenStartDate(Date fromDate, Date toDate) {
+        List<UserEntity> userEntityList = userDao.getUserBetweenStartDate( fromDate, toDate );
+        return userDozerConverter.convertToDTOList(userEntityList, true);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<User> getUserDtoBetweenLastDate(Date fromDate, Date toDate) {
         List<UserEntity> userEntityList = userDao.getUserBetweenLastDate( fromDate, toDate );
 

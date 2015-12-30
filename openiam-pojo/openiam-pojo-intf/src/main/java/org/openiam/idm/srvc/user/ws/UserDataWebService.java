@@ -881,6 +881,7 @@ public interface UserDataWebService {
      */
     @WebMethod
     public int getAllSuperiorsCount();
+    public List<User> getUserBetweenStartDate(Date fromDate, Date toDate);
 
 //    @WebMethod
 //    public Map<String, UserAttribute> getUserAttributesAsMap(@WebParam(name = "userId", targetNamespace = "") String userId);
