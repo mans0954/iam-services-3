@@ -974,13 +974,13 @@ public class User extends AbstractMetadataTypeDTO {
     		
     		if(theXref != null) {
     			theXref.setOperation(AttributeOperationEnum.DELETE);
-    		} else {
+    		}/* else {
     			theXref = new UserToResourceMembershipXref();
     			theXref.setEntityId(resourceId);
     			theXref.setMemberEntityId(getId());
     			theXref.setOperation(AttributeOperationEnum.DELETE);
     			//theXref.
-    		}
+    		}*/
     	}
     }
     
