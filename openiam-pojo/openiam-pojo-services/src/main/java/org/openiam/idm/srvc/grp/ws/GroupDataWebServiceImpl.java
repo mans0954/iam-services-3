@@ -301,6 +301,10 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
             if (groupId == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Group Id is null or empty");
             }
+            
+            if(startDate != null && endDate != null && startDate.after(endDate)) {
+            	throw new BasicDataServiceException(ResponseCode.ENTITLEMENTS_DATE_INVALID);
+            }
 
             userManager.addUserToGroup(userId, groupId, rightIds, startDate, endDate);
             auditLog.succeed();
@@ -565,6 +569,10 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
         auditLog.setAuditDescription(String.format("Add child group: %s to group: %s", childGroupId, groupId));
 
         try {
+        	if(startDate != null && endDate != null && startDate.after(endDate)) {
+            	throw new BasicDataServiceException(ResponseCode.ENTITLEMENTS_DATE_INVALID);
+            }
+        	
         	GroupEntity groupEntity = groupManager.getGroupLocalize(groupId, null);
         	GroupEntity groupEntityChild = groupManager.getGroupLocalize(childGroupId, null);
         	if(groupEntity == null || groupEntityChild == null) {
@@ -583,7 +591,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
                         "Cannot add group itself as child");
             }
 
-            groupManager.validateGroup2GroupAddition(groupId, childGroupId, rights);
+            groupManager.validateGroup2GroupAddition(groupId, childGroupId, rights, startDate, endDate);
             groupManager.addChildGroup(groupId, childGroupId, rights, startDate, endDate);
             auditLog.succeed();
         } catch (BasicDataServiceException e) {
@@ -685,10 +693,10 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     }
 
     @Override
-    public Response validateGroup2GroupAddition(String groupId, String childGroupId, final Set<String> rights) {
+    public Response validateGroup2GroupAddition(String groupId, String childGroupId, final Set<String> rights, final Date startDate, final Date endDate) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
-            groupManager.validateGroup2GroupAddition(groupId, childGroupId, rights);
+            groupManager.validateGroup2GroupAddition(groupId, childGroupId, rights, startDate, endDate);
         } catch (BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());

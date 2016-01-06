@@ -427,7 +427,7 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @Transactional
-    public void validateResource2ResourceAddition(final String parentId, final String memberId, final Set<String> rights)
+    public void validateResource2ResourceAddition(final String parentId, final String memberId, final Set<String> rights, final Date startDate, final Date endDate)
             throws BasicDataServiceException {
         if (StringUtils.isBlank(parentId) || StringUtils.isBlank(memberId)) {
             throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS,
@@ -439,6 +439,10 @@ public class ResourceServiceImpl implements ResourceService {
 
         if (parent == null || child == null) {
             throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+        }
+        
+        if(startDate != null && endDate != null && startDate.after(endDate)) {
+        	throw new BasicDataServiceException(ResponseCode.ENTITLEMENTS_DATE_INVALID);
         }
 
         if (causesCircularDependency(parent, child, new HashSet<ResourceEntity>())) {

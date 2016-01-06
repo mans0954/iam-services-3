@@ -648,7 +648,7 @@ public class GroupDataServiceImpl implements GroupDataService {
 
 	@Override
 	@Transactional
-	public void validateGroup2GroupAddition(String parentId, String memberId, final Set<String> rights) throws BasicDataServiceException {
+	public void validateGroup2GroupAddition(String parentId, String memberId, final Set<String> rights, final Date startDate, final Date endDate) throws BasicDataServiceException {
 		final GroupEntity parent = groupDao.findById(parentId);
 		final GroupEntity child = groupDao.findById(memberId);
 		
@@ -659,6 +659,10 @@ public class GroupDataServiceImpl implements GroupDataService {
 		if(causesCircularDependency(parent, child, new HashSet<GroupEntity>())) {
 			throw new BasicDataServiceException(ResponseCode.CIRCULAR_DEPENDENCY);
 		}
+		
+		if(startDate != null && endDate != null && startDate.after(endDate)) {
+        	throw new BasicDataServiceException(ResponseCode.ENTITLEMENTS_DATE_INVALID);
+        }
 		
 		/*
 		if(parent.hasChildGroup(child.getId())) {

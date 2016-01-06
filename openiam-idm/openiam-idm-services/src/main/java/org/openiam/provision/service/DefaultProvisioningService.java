@@ -34,6 +34,7 @@ import org.openiam.base.ws.ResponseStatus;
 import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.request.LookupRequest;
 import org.openiam.connector.type.response.*;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.exception.ObjectNotFoundException;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
@@ -970,6 +971,15 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         // make sure that our object as the attribute set that will be used for
         // audit logging
         checkAuditingAttributes(pUser);
+        
+        try {
+        	validateAuthorizationDateRanges(pUser);
+        } catch(BasicDataServiceException e) {
+        	resp.fail();
+        	resp.setErrorCode(e.getCode());
+        	resp.setErrorTokenList(e.getErrorTokenList());
+        	return resp;
+        }
 
         // dealing with principals
         if (!isAdd) {

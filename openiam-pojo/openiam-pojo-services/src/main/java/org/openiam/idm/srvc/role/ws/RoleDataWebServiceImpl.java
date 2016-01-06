@@ -187,6 +187,10 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
         idmAuditLog.setTargetRole(roleId, roleEntity.getName());
         idmAuditLog.setAuditDescription(String.format("Add group to  role: %s", roleId));
 		try {
+			if(startDate != null && endDate != null && startDate.after(endDate)) {
+            	throw new BasicDataServiceException(ResponseCode.ENTITLEMENTS_DATE_INVALID);
+            }
+			
 			roleDataService.validateGroup2RoleAddition(roleId, groupId);
 			roleDataService.addGroupToRole(roleId, groupId, rightIds, startDate, endDate);
             idmAuditLog.succeed();
@@ -229,6 +233,10 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 			if(roleId == null || userId == null) {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "UserId or RoleId  is null or empty");
 			}
+			
+			if(startDate != null && endDate != null && startDate.after(endDate)) {
+            	throw new BasicDataServiceException(ResponseCode.ENTITLEMENTS_DATE_INVALID);
+            }
 			
 			roleDataService.addUserToRole(roleId, userId, rightIds, startDate, endDate);
             idmAuditLog.succeed();
@@ -486,7 +494,11 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 			if(roleId == null || childRoleId == null) {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "RoleId or child roleId is null");
 			}
-			roleDataService.validateRole2RoleAddition(roleId, childRoleId, rights);
+			if(startDate != null && endDate != null && startDate.after(endDate)) {
+            	throw new BasicDataServiceException(ResponseCode.ENTITLEMENTS_DATE_INVALID);
+            }
+			
+			roleDataService.validateRole2RoleAddition(roleId, childRoleId, rights, startDate, endDate);
 			roleDataService.addChildRole(roleId, childRoleId, rights, startDate, endDate);
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
@@ -573,10 +585,10 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	}
 
 	@Override
-	public Response canAddChildRole(String roleId, String childRoleId, final Set<String> rights) {
+	public Response canAddChildRole(String roleId, String childRoleId, final Set<String> rights, final Date startDate, final Date endDate) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
 		try {
-			roleDataService.validateRole2RoleAddition(roleId, childRoleId, rights);
+			roleDataService.validateRole2RoleAddition(roleId, childRoleId, rights, startDate, endDate);
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());

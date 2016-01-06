@@ -401,7 +401,9 @@ public interface GroupDataWebService {
     @WebMethod
     public Response validateGroup2GroupAddition(final @WebParam(name = "groupId") String groupId, 
 			  									final @WebParam(name = "childGroupId") String childGroupId,
-			  									final @WebParam(name = "rights", targetNamespace = "") Set<String> rights);
+			  									final @WebParam(name = "rights", targetNamespace = "") Set<String> rights,
+			  									final @WebParam(name = "startDate", targetNamespace = "") Date startDate,
+			  		                            final @WebParam(name = "endDate", targetNamespace = "") Date endDate);
     
     /**
      * Remove Group specified by childGroupId from the membership list of Group specified by groupId

@@ -45,7 +45,7 @@ public interface ResourceService {
 	
     public void addResourceToRole(final String resourceId, final String roleId, final Set<String> rightIds, final Date startDate, final Date endDate);
     
-    public void validateResource2ResourceAddition(final String parentId, final String memberId, final Set<String> rights) throws BasicDataServiceException;
+    public void validateResource2ResourceAddition(final String parentId, final String memberId, final Set<String> rights, final Date startDate, final Date endDate) throws BasicDataServiceException;
     
     public boolean isMemberOfAnyEntity(final String resourceId);
     

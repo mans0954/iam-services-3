@@ -204,7 +204,9 @@ public interface OrganizationDataService {
 
     @WebMethod
     public Response canAddUserToOrganization(@WebParam(name = "organizationId", targetNamespace = "") String organizationId,
-                                            @WebParam(name = "userId", targetNamespace = "") String userId);
+                                            @WebParam(name = "userId", targetNamespace = "") String userId,
+                                            final @WebParam(name = "startDate", targetNamespace = "") Date startDate,
+                                            final @WebParam(name = "endDate", targetNamespace = "") Date endDate);
     
     @WebMethod
     public Response canRemoveUserToOrganization(@WebParam(name = "organizationId", targetNamespace = "") String organizationId,

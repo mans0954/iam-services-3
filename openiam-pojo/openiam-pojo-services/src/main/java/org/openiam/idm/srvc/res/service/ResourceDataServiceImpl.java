@@ -417,6 +417,10 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
             if (resourceId == null || userId == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "ResourceId or UserId is not set");
             }
+            
+            if(startDate != null && endDate != null && startDate.after(endDate)) {
+            	throw new BasicDataServiceException(ResponseCode.ENTITLEMENTS_DATE_INVALID);
+            }
 
             userDataService.addUserToResource(userId, resourceId, rightIds, startDate, endDate);
             idmAuditLog.succeed();
@@ -564,7 +568,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
         idmAuditLog.setAuditDescription(
                         String.format("Add child resource: %s to resource: %s", childResourceId, resourceId));
         try {
-            resourceService.validateResource2ResourceAddition(resourceId, childResourceId, rights);
+            resourceService.validateResource2ResourceAddition(resourceId, childResourceId, rights, startDate, endDate);
             resourceService.addChildResource(resourceId, childResourceId, rights, startDate, endDate);
             idmAuditLog.succeed();
         } catch (BasicDataServiceException e) {
@@ -649,6 +653,10 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
             if (StringUtils.isBlank(resourceId) || StringUtils.isBlank(groupId)) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "GroupId or ResourceId is null");
             }
+            
+            if(startDate != null && endDate != null && startDate.after(endDate)) {
+            	throw new BasicDataServiceException(ResponseCode.ENTITLEMENTS_DATE_INVALID);
+            }
 
             resourceService.addResourceGroup(resourceId, groupId, rightIds, startDate, endDate);
             idmAuditLog.succeed();
@@ -730,6 +738,10 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
         try {
             if (StringUtils.isBlank(resourceId) || StringUtils.isBlank(roleId)) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "RoleId or ResourceId is null");
+            }
+            
+            if(startDate != null && endDate != null && startDate.after(endDate)) {
+            	throw new BasicDataServiceException(ResponseCode.ENTITLEMENTS_DATE_INVALID);
             }
             
             final RoleEntity roleEntity = roleService.getRoleLocalized(roleId, requesterId, null);
@@ -922,10 +934,10 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     }
 
     @Override
-    public Response validateAddChildResource(String resourceId, String childResourceId, final Set<String> rights) {
+    public Response validateAddChildResource(String resourceId, String childResourceId, final Set<String> rights, final Date startDate, final Date endDate) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
-            resourceService.validateResource2ResourceAddition(resourceId, childResourceId, rights);
+            resourceService.validateResource2ResourceAddition(resourceId, childResourceId, rights, startDate, endDate);
         } catch (BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());

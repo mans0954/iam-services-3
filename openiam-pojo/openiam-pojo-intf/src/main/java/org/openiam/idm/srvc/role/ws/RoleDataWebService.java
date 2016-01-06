@@ -291,7 +291,9 @@ public interface RoleDataWebService {
     @WebMethod
     Response canAddChildRole(final @WebParam(name = "roleId", targetNamespace = "") String roleId,
                              final @WebParam(name = "parentRoleId", targetNamespace = "") String childRoleId,
-                             final @WebParam(name = "rights", targetNamespace = "") Set<String> rights);
+                             final @WebParam(name = "rights", targetNamespace = "") Set<String> rights,
+                             final @WebParam(name = "startDate", targetNamespace = "") Date startDate,
+                             final @WebParam(name = "endDate", targetNamespace = "") Date endDate);
 
     /**
      * Remove Role specified by childRoleId from the membership list of Group specified by roleId

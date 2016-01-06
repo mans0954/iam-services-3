@@ -112,7 +112,7 @@ public interface RoleDataService {
     public void addChildRole(final String roleId, final String childRoleId, final Set<String> rights, final Date startDate, final Date endDate);
     public void removeChildRole(final String roleId, final String childRoleId);
     
-    public void validateRole2RoleAddition(final String parentId, final String memberId, final Set<String> rights) throws BasicDataServiceException;
+    public void validateRole2RoleAddition(final String parentId, final String memberId, final Set<String> rights, final Date startDate, final Date endDate) throws BasicDataServiceException;
     
     public Role getRoleDTO(final String roleId);
 

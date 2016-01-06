@@ -246,6 +246,9 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
             if (orgId == null || userId == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }
+            if(startDate != null && endDate != null && startDate.after(endDate)) {
+            	throw new BasicDataServiceException(ResponseCode.ENTITLEMENTS_DATE_INVALID);
+            }
 
             organizationService.addUserToOrg(orgId, userId, rightIds, startDate, endDate);
         } catch (BasicDataServiceException e) {
@@ -340,6 +343,9 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
             if (organizationId == null || childOrganizationId == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }
+            if(startDate != null && endDate != null && startDate.after(endDate)) {
+            	throw new BasicDataServiceException(ResponseCode.ENTITLEMENTS_DATE_INVALID);
+            }
             organizationService.validateOrg2OrgAddition(organizationId, childOrganizationId, rightIds);
             organizationService.addChildOrganization(organizationId, childOrganizationId, rightIds, startDate, endDate);
         } catch (BasicDataServiceException e) {
@@ -363,6 +369,9 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
         try {
             if (organizationId == null || roleId == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+            }
+            if(startDate != null && endDate != null && startDate.after(endDate)) {
+            	throw new BasicDataServiceException(ResponseCode.ENTITLEMENTS_DATE_INVALID);
             }
             organizationService.addRoleToOrganization(organizationId, roleId, rightIds, startDate, endDate);
         } catch (BasicDataServiceException e) {
@@ -406,6 +415,9 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
             if (organizationId == null || resourceId == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }
+            if(startDate != null && endDate != null && startDate.after(endDate)) {
+            	throw new BasicDataServiceException(ResponseCode.ENTITLEMENTS_DATE_INVALID);
+            }
             organizationService.addResourceToOrganization(organizationId, resourceId, rightIds, startDate, endDate);
         } catch (BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);
@@ -447,6 +459,9 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
         try {
             if (organizationId == null || groupId == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+            }
+            if(startDate != null && endDate != null && startDate.after(endDate)) {
+            	throw new BasicDataServiceException(ResponseCode.ENTITLEMENTS_DATE_INVALID);
             }
             organizationService.addGroupToOrganization(organizationId, groupId, rightIds, startDate, endDate);
         } catch (BasicDataServiceException e) {
@@ -544,13 +559,16 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
 	}
 
 	@Override
-	public Response canAddUserToOrganization(final String organizationId, final String userId) {
+	public Response canAddUserToOrganization(final String organizationId, final String userId, final Date startDate, final Date endDate) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
 		try {
 			if (organizationId == null || userId == null) {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 			}
 
+			if(startDate != null && endDate != null && startDate.after(endDate)) {
+            	throw new BasicDataServiceException(ResponseCode.ENTITLEMENTS_DATE_INVALID);
+            }
 
 			if (userDataService.isHasOrganization(userId, organizationId)) {
 				throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS);

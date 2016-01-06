@@ -521,7 +521,7 @@ public class RoleDataServiceImpl implements RoleDataService {
     
 	@Override
 	@Transactional
-	public void validateRole2RoleAddition(final String parentId, final String memberId, final Set<String> rights) throws BasicDataServiceException {
+	public void validateRole2RoleAddition(final String parentId, final String memberId, final Set<String> rights, final Date startDate, final Date endDate) throws BasicDataServiceException {
 		final RoleEntity parent = roleDao.findById(parentId);
 		final RoleEntity child = roleDao.findById(memberId);
 		
@@ -533,11 +533,9 @@ public class RoleDataServiceImpl implements RoleDataService {
 			throw new BasicDataServiceException(ResponseCode.CIRCULAR_DEPENDENCY);
 		}
 		
-		/*
-		if(parent.hasChild(child)) {
-			throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS);
-		}
-		*/
+		if(startDate != null && endDate != null && startDate.after(endDate)) {
+        	throw new BasicDataServiceException(ResponseCode.ENTITLEMENTS_DATE_INVALID);
+        }
 		
 		if(StringUtils.equals(parentId, memberId)) {
 			throw new BasicDataServiceException(ResponseCode.CANT_ADD_YOURSELF_AS_CHILD);

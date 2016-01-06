@@ -87,7 +87,7 @@ public interface GroupDataService {
     public void addChildGroup(final String groupId, final String childGroupId, final Set<String> rights, final Date startDate, final Date endDate);
     public void removeChildGroup(final String groupId, final String childGroupId);
     
-    public void validateGroup2GroupAddition(final String parentId, final String memberId, final Set<String> rights) throws BasicDataServiceException;
+    public void validateGroup2GroupAddition(final String parentId, final String memberId, final Set<String> rights, final Date startDate, final Date endDate) throws BasicDataServiceException;
     
     public Group getGroupDTO(final String groupId);
     public List<GroupEntity> findGroupsByAttributeValue(String attrName, String attrValue);

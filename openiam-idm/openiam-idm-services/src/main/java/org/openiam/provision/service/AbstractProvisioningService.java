@@ -45,6 +45,7 @@ import org.openiam.dozer.converter.RoleDozerConverter;
 import org.openiam.dozer.converter.SupervisorDozerConverter;
 import org.openiam.dozer.converter.UserAttributeDozerConverter;
 import org.openiam.dozer.converter.UserDozerConverter;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.exception.ObjectNotFoundException;
 import org.openiam.idm.srvc.access.service.AccessRightDAO;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
@@ -66,6 +67,7 @@ import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
+import org.openiam.idm.srvc.membership.dto.AbstractMembershipXref;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
@@ -334,6 +336,33 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         if (pUser.getCreatedBy() == null || pUser.getCreatedBy().isEmpty()) {
             pUser.setCreatedBy("NA");
         }
+    }
+    
+    protected void validateAuthorizationDateRanges(final ProvisionUser pUser) throws BasicDataServiceException {
+    	final List<AbstractMembershipXref> xrefs = new LinkedList<AbstractMembershipXref>();
+    	if(pUser != null) {
+    		if(CollectionUtils.isNotEmpty(pUser.getResources())) {
+    			xrefs.addAll(pUser.getResources());
+    		}
+    		
+    		if(CollectionUtils.isNotEmpty(pUser.getRoles())) {
+    			xrefs.addAll(pUser.getRoles());
+    		}
+    		
+    		if(CollectionUtils.isNotEmpty(pUser.getGroups())) {
+    			xrefs.addAll(pUser.getGroups());
+    		}
+    		
+    		if(CollectionUtils.isNotEmpty(pUser.getAffiliations())) {
+    			xrefs.addAll(pUser.getAffiliations());
+    		}
+    	}
+    	
+    	for(final AbstractMembershipXref xref : xrefs) {
+    		if(xref.getStartDate() != null && xref.getEndDate() != null && xref.getStartDate().after(xref.getEndDate())) {
+    			throw new BasicDataServiceException(ResponseCode.ENTITLEMENTS_DATE_INVALID);
+    		}
+    	};
     }
 
     protected void sendResetPasswordToUser(LoginEntity identity, String password) {
