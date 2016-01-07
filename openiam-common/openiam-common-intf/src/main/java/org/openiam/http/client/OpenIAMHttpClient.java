@@ -25,13 +25,19 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLContextBuilder;
 import org.apache.http.conn.ssl.SSLContexts;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.conn.ssl.TrustStrategy;
+import org.apache.http.conn.ssl.X509HostnameVerifier;
 import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.BasicHttpContext;
 import org.springframework.beans.factory.annotation.Value;
@@ -48,7 +54,9 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocket;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
@@ -58,13 +66,13 @@ public final class OpenIAMHttpClient {
 	private static final Log LOG = LogFactory.getLog(OpenIAMHttpClient.class);
 	
 	@Value("${org.openiam.http.client.max.per.route}")
-	private int maxNumOfConnectionsPerHost;
+	private int maxNumOfConnectionsPerHost = 100;
 	
 	@Value("${org.openiam.http.client.max.total}")
-	private int maxNumOfTotalConnections;
+	private int maxNumOfTotalConnections = 100;
 	
 	@Value("${org.openiam.http.client.timeout}")
-	private int timeout;
+	private int timeout = 30000;
 	
 	private HttpClient client;
 	
@@ -82,27 +90,70 @@ public final class OpenIAMHttpClient {
         }
     }
 	
+	private static class DefaultX509HostnameVerifier implements X509HostnameVerifier {
+
+		@Override
+		public boolean verify(String hostname, SSLSession session) {
+			// TODO Auto-generated method stub
+			return true;
+		}
+
+		@Override
+		public void verify(String host, SSLSocket ssl) throws IOException {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void verify(String host, X509Certificate cert)
+				throws SSLException {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void verify(String host, String[] cns, String[] subjectAlts)
+				throws SSLException {
+			// TODO Auto-generated method stub
+			
+		}
+		
+	}
+	
 	public OpenIAMHttpClient() throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException {
 		/*
-		SSLContext sslContext = SSLContexts.custom()
-		        .loadTrustMaterial(null, new TrustStrategy() {
-
-		            @Override
-		            public boolean isTrusted(final X509Certificate[] chain, final String authType) throws CertificateException {
-		                return true;
-		            }
-		        })
-		        .useTLS()
+		 * This logic is required to accept self-signed certificates.
+		 * See http://stackoverflow.com/questions/19517538/ignoring-ssl-certificate-in-apache-httpclient-4-3
+		 * 
+		 * There are cases when (i.e. SMSGlobal) where an invalid certificate will cause an execption, and we need
+		 * to ignore it.  Perhaps we should wrap this with a property
+		 */
+		final SSLContextBuilder builder = SSLContexts.custom();
+		builder.loadTrustMaterial(null, new TrustStrategy() {
+		    @Override
+		    public boolean isTrusted(X509Certificate[] chain, String authType)
+		            throws CertificateException {
+		        return true;
+		    }
+		});
+		final SSLContext sslContext = builder.build();
+		final SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslContext, new DefaultX509HostnameVerifier());
+		
+		final Registry<ConnectionSocketFactory> socketFactoryRegistry = RegistryBuilder
+		        .<ConnectionSocketFactory> create().register("https", sslsf)
 		        .build();
-		*/
+		
+		final PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
+		
+		final SSLContextBuilder sslBuilder = new SSLContextBuilder();
+		sslBuilder.loadTrustMaterial(null, new TrustSelfSignedStrategy());
 		client = HttpClients.custom()
 				.setMaxConnPerRoute(maxNumOfConnectionsPerHost)
 				.setMaxConnTotal(maxNumOfTotalConnections)
 				.setRetryHandler(new DefaultHttpRequestRetryHandler(3, false))
-				.setSSLSocketFactory(new SSLConnectionSocketFactory(SSLContexts.custom()
-                    .loadTrustMaterial(null, new TrustSelfSignedStrategy())
-                    .build()
-                )).build();
+				//.setSSLSocketFactory(new SSLConnectionSocketFactory(sslBuilder.build()))
+				.setConnectionManager(cm)
+				.build();
 	}
 	
 	public String doPost(final URL url, final Map<String, String> headers, final Map<String, String> params, final Credentials credentials) throws IOException, AuthenticationException {
