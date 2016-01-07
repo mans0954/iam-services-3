@@ -27,11 +27,14 @@ import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.dto.GroupOwner;
+import org.openiam.idm.srvc.grp.dto.GroupRequestModel;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.lang.service.LanguageDAO;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
+import org.openiam.idm.srvc.meta.dto.PageTemplateAttributeToken;
 import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
+import org.openiam.idm.srvc.meta.service.MetadataElementTemplateService;
 import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
@@ -45,6 +48,7 @@ import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.service.RoleDAO;
+import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.user.service.UserDAO;
@@ -134,6 +138,9 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
 
     @Autowired
     private LanguageDozerConverter languageConverter;
+
+    @Autowired
+    private MetadataElementTemplateService pageTemplateService;
 
     private ApplicationContext ac;
 
@@ -994,6 +1001,40 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
                 roleDao.evictCache();
             }
         }
+    }
 
+    @Override
+    @Transactional
+    public void saveGroupRequest(final GroupRequestModel request) throws Exception {
+
+        validateGroupRequest(request);
+
+        final GroupEntity groupEntity = groupDozerConverter.convertToEntity(request.getTargetObject(), true);
+        final PageTemplateAttributeToken token = pageTemplateService.getAttributesFromTemplate(request);
+
+        if(token != null) {
+            if(CollectionUtils.isNotEmpty(token.getSaveList())) {
+                for(final GroupAttributeEntity entity : (List<GroupAttributeEntity>)token.getSaveList()) {
+                    groupEntity.addAttribute(entity);
+                }
+            }
+            if(CollectionUtils.isNotEmpty(token.getUpdateList())) {
+                for(final GroupAttributeEntity entity : (List<GroupAttributeEntity>)token.getUpdateList()) {
+                    groupEntity.addAttribute(entity);
+                }
+            }
+
+            if(CollectionUtils.isNotEmpty(token.getDeleteList())) {
+                for(final GroupAttributeEntity entity : (List<GroupAttributeEntity>)token.getDeleteList()) {
+                    groupEntity.removeAttribute(entity.getId());
+                }
+            }
+        }
+        this.saveGroup(groupEntity, request.getTargetObject().getOwner(), request.getRequesterId());
+        request.getTargetObject().setId(groupEntity.getId()) ;
+    }
+
+    public void validateGroupRequest(final GroupRequestModel request) throws Exception {
+        pageTemplateService.validate(request);
     }
 }

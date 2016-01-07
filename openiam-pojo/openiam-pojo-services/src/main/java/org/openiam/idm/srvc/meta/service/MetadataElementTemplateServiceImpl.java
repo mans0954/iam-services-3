@@ -10,6 +10,8 @@ import org.openiam.am.srvc.dao.URIPatternDao;
 import org.openiam.am.srvc.domain.URIPatternEntity;
 import org.openiam.authmanager.common.model.AuthorizationResource;
 import org.openiam.authmanager.service.AuthorizationManagerService;
+import org.openiam.base.BaseRequestModel;
+import org.openiam.base.domain.AbstractAttributeEntity;
 import org.openiam.base.service.AbstractLanguageService;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.idm.searchbeans.MetadataElementPageTemplateSearchBean;
@@ -95,7 +97,10 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 	@Autowired
 	@Qualifier("configurableGroovyScriptEngine")
 	protected ScriptIntegration scriptRunner;
-	
+
+	@Autowired
+	private TemplateObjectHelper templateObjectHelper;
+
 	private static Logger LOG = Logger.getLogger(MetadataElementTemplateServiceImpl.class);
 
 	@Override
@@ -258,21 +263,27 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 		final LanguageEntity targetLanguage = getLanguage(request.getLanguageId());
 		boolean isAdminRequest = request.isAdminRequest();
 		
-		final String userId = StringUtils.trimToNull(request.getUserId());
+		final String objectId = StringUtils.trimToNull(request.getTargetObjectId());
 		PageTempate template = null;
 		if(entity != null) {
-			final Map<String, UserAttributeEntity> attributeName2UserAttributeMap = new HashMap<String, UserAttributeEntity>();
-			if(userId != null) {
-				final List<UserAttributeEntity> attributeList = attributeDAO.findUserAttributesLocalized(userId);
-				for(final UserAttributeEntity attribute : attributeList) {
-					attributeName2UserAttributeMap.put(attribute.getName(), attribute);
-				}
+			Map<String, AbstractAttributeEntity> attributeName2AttributeMap = new HashMap<>();
+			TemplateObjectProvider templateProvider = templateObjectHelper.getProvider(entity.getTemplateType().getId());
+			if(templateProvider!=null){
+				attributeName2AttributeMap = templateProvider.getAttributeName2ObjectAttributeMap(objectId);
 			}
+
+//			final Map<String, UserAttributeEntity> attributeName2UserAttributeMap = new HashMap<String, UserAttributeEntity>();
+//			if(objectId != null) {
+//				final List<UserAttributeEntity> attributeList = attributeDAO.findUserAttributesLocalized(userId);
+//				for(final UserAttributeEntity attribute : attributeList) {
+//					attributeName2UserAttributeMap.put(attribute.getName(), attribute);
+//				}
+//			}
 			
 			/*
 			 * If the user is unknown (self registration), the template is public, it's an admin request, or if the user is entitled to the template, create one
 			 */
-			if(entity.isPublic() || isAdminRequest || isEntitled(userId, entity.getResource().getId())) {
+			if(entity.isPublic() || isAdminRequest || isEntitled(request.getRequesterId(), entity.getResource().getId())) {
 				final String templateId = entity.getId();
 				template = new PageTempate();
 				template.setTemplateId(templateId);
@@ -303,7 +314,7 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 						
 						final MetadataElementEntity elementEntity = getElement(elementId, targetLanguage);//elementDAO.findById(elementId);
 						if(elementEntity != null) {
-							if(elementEntity.getIsPublic() || isAdminRequest || isEntitled(userId, elementEntity.getResource().getId())) {
+							if(elementEntity.getIsPublic() || isAdminRequest || isEntitled(request.getRequesterId(), elementEntity.getResource().getId())) {
 								final PageElement pageElement = new PageElement(elementEntity, order);
 								
 								if(targetLanguage != null) {
@@ -364,7 +375,7 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 
 								
 								template.addElement(pageElement);
-								final UserAttributeEntity attribute = attributeName2UserAttributeMap.get(elementEntity.getAttributeName());
+								final AbstractAttributeEntity attribute = attributeName2AttributeMap.get(elementEntity.getAttributeName());
 								if(attribute != null) {
 									if (!attribute.getIsMultivalued()) {
 											pageElement.addUserValue(new PageElementValue(attribute.getId(), attribute.getValue()));
@@ -438,13 +449,13 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 	}
 	
 	@Override
-	public void validate(UserProfileRequestModel request) throws PageTemplateException {
+	public void validate(BaseRequestModel request) throws Exception {
 		final PageTempate pageTemplate = request.getPageTemplate();
-		final String userId = (request.getUser() != null) ? request.getUser().getId() : null;
+		final String objectId = (request.getTargetObject() != null) ? request.getTargetObject().getId() : null;
 		final LanguageEntity targetLanguage = getLanguage(request.getLanguageId());
 	
 		if(pageTemplate != null) {
-			if(request.getUser() == null || targetLanguage == null) {
+			if(request.getTargetObject() == null || targetLanguage == null) {
 				throw new PageTemplateException(ResponseCode.INVALID_ARGUMENTS);
 			}
 		
@@ -454,25 +465,37 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 			}
 			
 			/* only allow access if the user is entitled to the template */
-			if(!isEntitled(userId, template)) {
-				throw new PageTemplateException(ResponseCode.UNAUTHORIZED);
-			}
+			// TODO: confirm with LEV. not sure if we use it
+//			if(!isEntitled(userId, template)) {
+//				throw new PageTemplateException(ResponseCode.UNAUTHORIZED);
+//			}
 				
 			/* get element map from template */
-			final Map<String, MetadataElementEntity> elementMap = getMetadataElementMap(template);
-			
 			/* create user attribute maps for fast access */
-			final List<UserAttributeEntity> attributes = attributeDAO.findUserAttributes(userId, elementMap.keySet());
-			final Map<String, List<UserAttributeEntity>> metadataId2UserAttributeMap = new HashMap<String, List<UserAttributeEntity>>();
-			if(CollectionUtils.isNotEmpty(attributes)) {
-				for(final UserAttributeEntity attribute : attributes) {
-					final String elementId = attribute.getElement().getId();
-					if(!metadataId2UserAttributeMap.containsKey(elementId)) {
-						metadataId2UserAttributeMap.put(elementId, new LinkedList<UserAttributeEntity>());
-					}
-					metadataId2UserAttributeMap.get(elementId).add(attribute);
-				}
+			TemplateObjectProvider templateProvider = templateObjectHelper.getProvider(template.getTemplateType().getId());
+			if(templateProvider==null){
+				throw new PageTemplateException(ResponseCode.INVALID_ARGUMENTS);
 			}
+			final Map<String, MetadataElementEntity> elementMap = getMetadataElementMap(template);
+
+			templateProvider.isValid(request.getTargetObject());
+
+//			final Map<String, List<AbstractAttributeEntity>> metadataId2UserAttributeMap = attributeProvider.getObjectAttributeMap(objectId, elementMap.keySet());
+
+
+
+			/* create user attribute maps for fast access */
+//			final List<UserAttributeEntity> attributes = attributeDAO.findUserAttributes(userId, elementMap.keySet());
+//			final Map<String, List<UserAttributeEntity>> metadataId2UserAttributeMap = new HashMap<String, List<UserAttributeEntity>>();
+//			if(CollectionUtils.isNotEmpty(attributes)) {
+//				for(final UserAttributeEntity attribute : attributes) {
+//					final String elementId = attribute.getElement().getId();
+//					if(!metadataId2UserAttributeMap.containsKey(elementId)) {
+//						metadataId2UserAttributeMap.put(elementId, new LinkedList<UserAttributeEntity>());
+//					}
+//					metadataId2UserAttributeMap.get(elementId).add(attribute);
+//				}
+//			}
 			
 			/* loop through all elements sent in the request */
 			if(CollectionUtils.isNotEmpty(pageTemplate.getPageElements())) {
@@ -481,7 +504,7 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 					if(elementId != null && elementMap.containsKey(elementId)) {
 						MetadataElementEntity element = elementMap.get(elementId);
 						/* if the user is entitled to the element, do CRUD logic on the attributes */
-						if(isEntitled(userId, element)) {
+//						if(isEntitled(userId, element)) {
 							boolean isMultiSelect = element.getMetadataType() != null && StringUtils.equals(element.getMetadataType().getId(), "MULTI_SELECT");
 							int numRequiredViolations = 0;
 							
@@ -520,27 +543,27 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 									}
 								}
 							}
-						}
+//						}
 					}
 				}
 			}
 		}
 	}
 	
-	private PageTemplateAttributeToken getAttributesFromTokenInternal(final UserProfileRequestModel request) throws PageTemplateException {
-		final PageTemplateAttributeToken token = new PageTemplateAttributeToken();
+	private PageTemplateAttributeToken getAttributesFromTokenInternal(final BaseRequestModel request) throws PageTemplateException {
+		PageTemplateAttributeToken token = new PageTemplateAttributeToken();
 		
 		/* sets to hold persistent and new attributes */
-		final List<UserAttributeEntity> deleteList = new LinkedList<UserAttributeEntity>();
-		final List<UserAttributeEntity> updateList = new LinkedList<UserAttributeEntity>();
-		final List<UserAttributeEntity> saveList = new LinkedList<UserAttributeEntity>();
+		final List<AbstractAttributeEntity> deleteList = new LinkedList<AbstractAttributeEntity>();
+		final List<AbstractAttributeEntity> updateList = new LinkedList<AbstractAttributeEntity>();
+		final List<AbstractAttributeEntity> saveList = new LinkedList<AbstractAttributeEntity>();
 		
 		final PageTempate pageTemplate = request.getPageTemplate();
-		final String userId = request.getUser().getId();
+		final String objectId = request.getTargetObject().getId();
 		final LanguageEntity targetLanguage = getLanguage(request.getLanguageId());
 		
 		if(pageTemplate != null) {
-			if(request.getUser() == null || targetLanguage == null) {
+			if(request.getTargetObject() == null || targetLanguage == null) {
 				throw new PageTemplateException(ResponseCode.INVALID_ARGUMENTS);
 			}
 		
@@ -550,123 +573,124 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 			}
 			
 			/* only allow access if the user is entitled to the template */
-			if(!isEntitled(userId, template)) {
-				throw new PageTemplateException(ResponseCode.UNAUTHORIZED);
-			}
+//			if(!isEntitled(userId, template)) {
+//				throw new PageTemplateException(ResponseCode.UNAUTHORIZED);
+//			}
 				
 			/* get element map from template */
 			final Map<String, MetadataElementEntity> elementMap = getMetadataElementMap(template);
-			
-			/* create user attribute maps for fast access */
-			final List<UserAttributeEntity> attributes = attributeDAO.findUserAttributesLocalized(userId);
-			final Map<String, UserAttributeEntity> attributeName2UserAttributeMap = new HashMap<String, UserAttributeEntity>();
-			if(CollectionUtils.isNotEmpty(attributes)) {
-				for(final UserAttributeEntity attribute : attributes) {
-					attributeName2UserAttributeMap.put(attribute.getName(), attribute);
-				}
-			}
-			
-			final UserEntity user = (userId != null) ? userDAO.findById(userId) : new UserEntity();
-			final String userTypeId = user.getType() != null ? user.getType().getId() : null;
-			
-			/* loop through all elements sent in the request */
-			if(CollectionUtils.isNotEmpty(pageTemplate.getPageElements())) {
-				for(final PageElement pageElement : pageTemplate.getPageElements()) {
-					final String elementId = pageElement.getElementId();
-					if(elementId != null && elementMap.containsKey(elementId)) {
-						MetadataElementEntity element = elementMap.get(elementId);
-						/* if the user is entitled to the element, do CRUD logic on the attributes */
-						if(isEntitled(userId, element)) {
-							if(CollectionUtils.isEmpty(pageElement.getUserValues())) { /* none sent - signals delete */
-								if(attributeName2UserAttributeMap.containsKey(pageElement.getAttributeName())) {
-									deleteList.add(attributeName2UserAttributeMap.get(pageElement.getAttributeName()));
-								}
-							} else { /* attributes sent - figure out weather to save or update */
-								
-								List<String> values = new ArrayList<>();
-								boolean isMultiSelect = element.getMetadataType() != null && StringUtils.equals(element.getMetadataType().getId(), "MULTI_SELECT");
-								int numRequiredViolations = 0;
-								for(final PageElementValue elementValue : pageElement.getUserValues()) {
-									boolean indexViolatesRequiredFlag = pageElement.isEditable() && pageElement.isRequired() && StringUtils.isBlank(elementValue.getValue());
-									if(indexViolatesRequiredFlag) {
-										numRequiredViolations++;
+
+			Map<String, AbstractAttributeEntity> attributeName2AttributeMap = new HashMap<>();
+			TemplateObjectProvider templateProvider = templateObjectHelper.getProvider(template.getTemplateType().getId());
+			if(templateProvider!=null){
+//				return templateProvider.getAttributesFromToken(pageTemplate, objectId, elementMap, targetLanguage);
+
+				attributeName2AttributeMap = templateProvider.getAttributeName2ObjectAttributeMap(objectId);
+
+
+				final Object entity = templateProvider.getEntity(objectId);
+				final String userTypeId = templateProvider.getObjectMetadataTypeId(entity);
+
+				/* loop through all elements sent in the request */
+				if(CollectionUtils.isNotEmpty(pageTemplate.getPageElements())) {
+					for(final PageElement pageElement : pageTemplate.getPageElements()) {
+						final String elementId = pageElement.getElementId();
+						if(elementId != null && elementMap.containsKey(elementId)) {
+							MetadataElementEntity element = elementMap.get(elementId);
+							/* if the user is entitled to the element, do CRUD logic on the attributes */
+//							if(isEntitled(userId, element)) {
+								if(CollectionUtils.isEmpty(pageElement.getUserValues())) { /* none sent - signals delete */
+									if(attributeName2AttributeMap.containsKey(pageElement.getAttributeName())) {
+										deleteList.add(attributeName2AttributeMap.get(pageElement.getAttributeName()));
 									}
-									
-									if(isMultiSelect) {
-										if(numRequiredViolations == pageElement.getUserValues().size()) {
-											final PageTemplateException exception =  new PageTemplateException(ResponseCode.REQUIRED);
-											exception.setElementName(getElementName(element, targetLanguage));
-											throw exception;
+								} else { /* attributes sent - figure out weather to save or update */
+
+									List<String> values = new ArrayList<>();
+									boolean isMultiSelect = element.getMetadataType() != null && StringUtils.equals(element.getMetadataType().getId(), "MULTI_SELECT");
+									int numRequiredViolations = 0;
+									for(final PageElementValue elementValue : pageElement.getUserValues()) {
+//										boolean indexViolatesRequiredFlag = pageElement.isEditable() && pageElement.isRequired() && StringUtils.isBlank(elementValue.getValue());
+//										if(indexViolatesRequiredFlag) {
+//											numRequiredViolations++;
+//										}
+//										if(isMultiSelect) {
+//											if(numRequiredViolations == pageElement.getUserValues().size()) {
+//												final PageTemplateException exception =  new PageTemplateException(ResponseCode.REQUIRED);
+//												exception.setElementName(getElementName(element, targetLanguage));
+//												throw exception;
+//											}
+//										} else {
+//											if(indexViolatesRequiredFlag) {
+//												final PageTemplateException exception =  new PageTemplateException(ResponseCode.REQUIRED);
+//												exception.setElementName(getElementName(element, targetLanguage));
+//												throw exception;
+//											}
+//										}
+//
+//										if(!isValid(elementValue, element, targetLanguage)) {
+//											final PageTemplateException exception =  new PageTemplateException(ResponseCode.INVALID_VALUE);
+//											exception.setCurrentValue(elementValue.getValue());
+//											exception.setElementName(getElementName(element, targetLanguage));
+//											throw exception;
+//										}
+
+										if(StringUtils.isNotBlank(elementValue.getValue())) {
+											values.add(elementValue.getValue());
 										}
-									} else {
-										if(indexViolatesRequiredFlag) {
-											final PageTemplateException exception =  new PageTemplateException(ResponseCode.REQUIRED);
-											exception.setElementName(getElementName(element, targetLanguage));
-											throw exception;
+									}
+
+									AbstractAttributeEntity attribute = attributeName2AttributeMap.get(pageElement.getAttributeName());
+									if(CollectionUtils.isEmpty(values)) {
+										if (attribute != null) {
+											/* the value is empty - signals delete */
+											deleteList.add(attribute);
 										}
-									}
-									
-									if(!isValid(elementValue, element, targetLanguage)) {
-										final PageTemplateException exception =  new PageTemplateException(ResponseCode.INVALID_VALUE);
-										exception.setCurrentValue(elementValue.getValue());
-										exception.setElementName(getElementName(element, targetLanguage));
-										throw exception;
-									}
-									
-									if(StringUtils.isNotBlank(elementValue.getValue())) {
-										values.add(elementValue.getValue());
-									}
-								}
-										
-								UserAttributeEntity attribute = attributeName2UserAttributeMap.get(pageElement.getAttributeName());
-								if(CollectionUtils.isEmpty(values)) {
-									if (attribute != null) {
-										/* the value is empty - signals delete */
-										deleteList.add(attribute);
-									}
-								} else { /* if the value is not empty, it's a possible update */
-									if (attribute == null) { /* add new attribute */
-										UserAttributeEntity userAttribute = new UserAttributeEntity();
-										userAttribute.setName(element.getAttributeName());
-											userAttribute.setUserId(user.getId());
-										final MetadataElementEntity metadataElement = getMetadataElement(userTypeId, element);
-										userAttribute.setElement(metadataElement);
-										userAttribute.setIsMultivalued(isMultiSelect);
-										if (isMultiSelect) {
-											userAttribute.setValues(values);
-										} else {
-											userAttribute.setValue(values.get(0));
-										}
-											saveList.add(userAttribute);
-									} else { /* update, if possible */
-										final MetadataElementEntity metadataElement = getMetadataElement(userTypeId, element);
-										boolean isChanged = (metadataElement == null) ? attribute.getElement() != null
-												: metadataElement.equals(attribute.getElement());
-										attribute.setElement(metadataElement);
-										if (isMultiSelect) {
-											/* only update if the values changed - optimization */
-											if(!attribute.getIsMultivalued() || !values.equals(attribute.getValues())) {
-												attribute.setIsMultivalued(true);
+									} else { /* if the value is not empty, it's a possible update */
+										if (attribute == null) { /* add new attribute */
+											attribute = templateProvider.getNewAttributeInstance(element.getAttributeName(), entity);
+//											UserAttributeEntity userAttribute = new UserAttributeEntity();
+//											userAttribute.setName(element.getAttributeName());
+//												userAttribute.setUserId(user.getId());
+											final MetadataElementEntity metadataElement = getMetadataElement(userTypeId, element);
+											attribute.setElement(metadataElement);
+											attribute.setIsMultivalued(isMultiSelect);
+											if (isMultiSelect) {
 												attribute.setValues(values);
-												isChanged = true;
-										}
-										} else {
-												/* only update if the value changed - optimization */
-											if(attribute.getIsMultivalued() || !StringUtils.equals(attribute.getValue(), values.get(0))) {
-												attribute.setIsMultivalued(false);
+											} else {
 												attribute.setValue(values.get(0));
-												isChanged = true;
+											}
+												saveList.add(attribute);
+										} else { /* update, if possible */
+											final MetadataElementEntity metadataElement = getMetadataElement(userTypeId, element);
+											boolean isChanged = (metadataElement == null) ? attribute.getElement() != null
+													: metadataElement.equals(attribute.getElement());
+											attribute.setElement(metadataElement);
+											if (isMultiSelect) {
+												/* only update if the values changed - optimization */
+												if(!attribute.getIsMultivalued() || !values.equals(attribute.getValues())) {
+													attribute.setIsMultivalued(true);
+													attribute.setValues(values);
+													isChanged = true;
+												}
+											} else {
+													/* only update if the value changed - optimization */
+												if(attribute.getIsMultivalued() || !StringUtils.equals(attribute.getValue(), values.get(0))) {
+													attribute.setIsMultivalued(false);
+													attribute.setValue(values.get(0));
+													isChanged = true;
 												}
 											}
-										if (isChanged) {
-											updateList.add(attribute);
+											if (isChanged) {
+												updateList.add(attribute);
+											}
 										}
 									}
 								}
-							}
+//							}
 						}
 					}
 				}
+
 			}
 		}
 		token.setSaveList(saveList);
@@ -675,26 +699,9 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 		return token;
 	}
 	
-    private MetadataElementEntity getMetadataElement(String typeId, MetadataElementEntity element) {
-        if (typeId != null) {
-            MetadataElementSearchBean searchBean = new MetadataElementSearchBean();
-            searchBean.setAttributeName(element.getAttributeName());
-
-            Set<String> ids = new HashSet<String>();
-            ids.add(typeId);
-            searchBean.setTypeIdSet(ids);
-
-            List<MetadataElementEntity> list = elementDAO.getByExample(searchBean, 0, Integer.MAX_VALUE);
-            if (list.size() > 0) {
-                return list.get(0);
-            }
-        }
-        return element;
-    }
-
 	@Override
 	@Transactional(readOnly = true)
-	public PageTemplateAttributeToken getAttributesFromTemplate(final UserProfileRequestModel request) {
+	public PageTemplateAttributeToken getAttributesFromTemplate(final BaseRequestModel request) {
 		PageTemplateAttributeToken token = null;
 		try {
 			token = getAttributesFromTokenInternal(request);
@@ -712,19 +719,19 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 		final PageTemplateAttributeToken token = getAttributesFromTokenInternal(request);
 		if(token != null) {
 			if(CollectionUtils.isNotEmpty(token.getSaveList())) {
-				for(final UserAttributeEntity entity : token.getSaveList()) {
+				for(final UserAttributeEntity entity : (List<UserAttributeEntity>)token.getSaveList()) {
 					attributeDAO.save(entity);
 				}
 			}
 			
 			if(CollectionUtils.isNotEmpty(token.getUpdateList())) {
-				for(final UserAttributeEntity entity : token.getUpdateList()) {
+				for(final UserAttributeEntity entity : (List<UserAttributeEntity>)token.getUpdateList()) {
 					attributeDAO.update(entity);
 				}
 			}
 			
 			if(CollectionUtils.isNotEmpty(token.getDeleteList())) {
-				for(final UserAttributeEntity entity : token.getDeleteList()) {
+				for(final UserAttributeEntity entity : (List<UserAttributeEntity>)token.getDeleteList()) {
 					attributeDAO.delete(entity);
 				}
 			}
@@ -813,4 +820,20 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
     public Integer countUIFields(final MetadataTemplateTypeFieldSearchBean searchBean){
         return uiFieldDAO.count(searchBean);
     }
+
+	protected MetadataElementEntity getMetadataElement(String typeId, MetadataElementEntity element) {
+		if (typeId != null) {
+			MetadataElementSearchBean searchBean = new MetadataElementSearchBean();
+			searchBean.setAttributeName(element.getAttributeName());
+
+			Set<String> ids = new HashSet<String>();
+			ids.add(typeId);
+			searchBean.setTypeIdSet(ids);
+			List<MetadataElementEntity> list = elementDAO.getByExample(searchBean, 0, Integer.MAX_VALUE);
+			if (list.size() > 0) {
+				return list.get(0);
+			}
+		}
+		return element;
+	}
 }
