@@ -16,6 +16,9 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
+import org.apache.http.auth.AuthenticationException;
+import org.apache.http.auth.Credentials;
+import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
@@ -26,9 +29,11 @@ import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLContexts;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.conn.ssl.TrustStrategy;
+import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.protocol.BasicHttpContext;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -100,7 +105,7 @@ public final class OpenIAMHttpClient {
                 )).build();
 	}
 	
-	public String doPost(final URL url, final Map<String, String> headers, final Map<String, String> params) throws IOException {
+	public String doPost(final URL url, final Map<String, String> headers, final Map<String, String> params, final Credentials credentials) throws IOException, AuthenticationException {
 		final RequestConfig config = RequestConfig.custom()
 				.setConnectionRequestTimeout(timeout)
 				.setSocketTimeout(timeout)
@@ -123,6 +128,11 @@ public final class OpenIAMHttpClient {
 			}
 			httpPost.setEntity(new UrlEncodedFormEntity(postParameters));
 		}
+		
+		if(credentials instanceof UsernamePasswordCredentials) {
+			httpPost.addHeader(new BasicScheme().authenticate(credentials, httpPost, new BasicHttpContext()));
+		}
+		
 		final HttpResponse response = client.execute(httpPost);
 		if(response == null) {
 			return null;
