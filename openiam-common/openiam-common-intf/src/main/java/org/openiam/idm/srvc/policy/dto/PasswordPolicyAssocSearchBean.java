@@ -24,6 +24,13 @@ public class PasswordPolicyAssocSearchBean implements java.io.Serializable {
     private String userId;
     private String managedSystemId;
 
+    public PasswordPolicyAssocSearchBean() {}
+
+    public PasswordPolicyAssocSearchBean(String userId, String managedSystemId) {
+        this.userId = userId;
+        this.managedSystemId = managedSystemId;
+    }
+
     public String getUserId() {
         return userId;
     }

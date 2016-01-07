@@ -1,6 +1,7 @@
 package org.openiam.jaas.module;
 
 import org.apache.log4j.Logger;
+import org.openiam.idm.srvc.auth.dto.SSOToken;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.jaas.config.JaasConfiguration;
 import org.openiam.jaas.credential.TokenCredential;
@@ -13,6 +14,10 @@ import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.login.LoginException;
 import javax.security.auth.spi.LoginModule;
+import javax.security.jacc.PolicyContext;
+import javax.security.jacc.PolicyContextException;
+import javax.servlet.http.HttpServletRequest;
+
 import java.security.Principal;
 import java.util.Iterator;
 import java.util.List;
@@ -42,9 +47,9 @@ public abstract class AbstractLoginModule implements LoginModule {
     /** <p>User Name.</p> */
     protected String username;
     /** <p>User Password.</p> */
-    protected String password;
+    //protected String password;
 
-    protected org.openiam.idm.srvc.auth.dto.Subject iamSubject = null;
+    protected SSOToken ssoToken = null;
 
     public AbstractLoginModule() {
         log.debug(this.getClass().getSimpleName() + ": default constructor called.");
@@ -59,6 +64,18 @@ public abstract class AbstractLoginModule implements LoginModule {
         this.sharedState = sharedState;
         this.options = options;
     }
+    
+    protected HttpServletRequest getHttpServletRequest() {
+        /** The JACC PolicyContext key for the current Subject */
+        HttpServletRequest request = null;
+        try {
+        	request = (HttpServletRequest) PolicyContext.getContext("javax.servlet.http.HttpServletRequest");
+        } catch (PolicyContextException e) {
+        	log.error("Exception in getHttpRequestInfo(): ", e);
+        	throw new RuntimeException(e);
+        }
+        return request;
+      }
 
     @Override
     public boolean login() throws LoginException {
@@ -70,15 +87,16 @@ public abstract class AbstractLoginModule implements LoginModule {
                                      "to garner authentication information from the user");
         }
         gatheringUserInfo();
-        return processLogin();
+        return true;
+        //return processLogin();
     }
 
     @Override
     public boolean commit() throws LoginException {
         log.debug("Commit called.");
-        if (iamSubject != null) {
+        if (ssoToken != null) {
             log.debug("iamsubject is not null");
-            convertToJAASSubject(iamSubject);
+            convertToJAASSubject(ssoToken);
         }
         this.commitSuccess = true;
         return true;
@@ -100,14 +118,14 @@ public abstract class AbstractLoginModule implements LoginModule {
         return(true);
     }
 
-    private void convertToJAASSubject(org.openiam.idm.srvc.auth.dto.Subject iamSubject) {
+    private void convertToJAASSubject(SSOToken ssoToken) {
         log.debug("Subject assignment operation callled.");
 
-        if (iamSubject != null) {
+        if (ssoToken != null) {
             System.out.println("Setting subject in commit");
             // add principals
-            Principal pUserId = new UserUID(iamSubject.getUserId());
-            Principal pIdentity = new UserIdentity(iamSubject.getPrincipal());
+            Principal pUserId = new UserUID(ssoToken.getUserId());
+            Principal pIdentity = new UserIdentity(ssoToken.getPrincipal());
             subject.getPrincipals().add(pUserId);
             subject.getPrincipals().add(pIdentity);
 
@@ -121,13 +139,14 @@ public abstract class AbstractLoginModule implements LoginModule {
                 }
             }
             */
-            if(iamSubject.getSsoToken()!=null && iamSubject.getSsoToken().getToken()!=null && !iamSubject.getSsoToken().getToken().isEmpty())
-                subject.getPublicCredentials().add(new TokenCredential(iamSubject.getUserId(), iamSubject.getSsoToken().getToken()));
+            if(ssoToken.getToken()!=null && !ssoToken.getToken().isEmpty())
+                subject.getPublicCredentials().add(new TokenCredential(ssoToken.getUserId(), ssoToken.getToken()));
         }
     }
 
     protected void cleanData(){
-        ((AbstractCalbackHandler)callbackHandler).clean();
+    	//callbackHandler.c
+        //((AbstractCalbackHandler)callbackHandler).clean();
         if(subject!=null){
             // remove the principals the login module added
             Iterator it = subject.getPrincipals(UserUID.class).iterator();
@@ -159,7 +178,7 @@ public abstract class AbstractLoginModule implements LoginModule {
         }
     }
 
-    protected abstract boolean processLogin()throws LoginException;
+    //protected abstract boolean processLogin()throws LoginException;
     protected abstract void gatheringUserInfo() throws LoginException;
 
 }

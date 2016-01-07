@@ -64,6 +64,7 @@ import org.openiam.provision.resp.PasswordResponse;
 import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.thread.Sweepable;
 import org.openiam.util.AttributeUtil;
+import org.openiam.util.MuleContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jms.core.BrowserCallback;
@@ -77,6 +78,18 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.jms.*;
 import javax.jms.Queue;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Marshaller;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
+import java.beans.XMLEncoder;
+import java.io.ByteArrayOutputStream;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -109,7 +122,7 @@ public class SourceAdapterDispatcher implements Sweepable {
     @Autowired
     protected AuditLogService auditLogService;
 
-    final static SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/YYYY");
+    final static SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
     final static String WARNING = "Warning! %s.\n";
 
     private static Logger log = Logger.getLogger(SourceAdapterDispatcher.class);
@@ -128,7 +141,7 @@ public class SourceAdapterDispatcher implements Sweepable {
 
     @Override
     //TODO change when Spring 3.2.2 @Scheduled(fixedDelayString = "${org.openiam.metadata.threadsweep}")
-    @Scheduled(fixedDelay = 1000)
+    @Scheduled(fixedDelay = 10000)
     public void sweep() {
         jmsTemplate.browse(queue, new BrowserCallback<Object>() {
             @Override
@@ -166,7 +179,7 @@ public class SourceAdapterDispatcher implements Sweepable {
                         }
 
                     } finally {
-                        log.info(String.format("Done with metadataElement sweeper thread.  Took %s ms", sw.getTime()));
+                        log.info(String.format("Done with SourceAdapterRequest sweeper thread.  Took %s ms", sw.getTime()));
                     }
                     return null;
                 }
@@ -175,8 +188,14 @@ public class SourceAdapterDispatcher implements Sweepable {
     }
 
     private void process(SourceAdapterRequest request) {
+//        MuleContextProvider.getCtx().getDefaultMessageReceiverThreadingProfile().get
         StringBuilder warnings = new StringBuilder();
         IdmAuditLog idmAuditLog = new IdmAuditLog();
+        try {
+            idmAuditLog.addCustomRecord("Request XML", this.write(request));
+        } catch (Exception e) {
+            log.error("Can't serialize request to XML");
+        }
         long time = System.currentTimeMillis();
         if (request.isForceMode()) {
             idmAuditLog.addCustomRecord("Skip Warnings", "true");
@@ -1104,4 +1123,41 @@ public class SourceAdapterDispatcher implements Sweepable {
         }
     }
 
+    public static String write(SourceAdapterRequest request) throws Exception {
+//        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+//        XMLEncoder xmlEncoder = new XMLEncoder(baos);
+//        xmlEncoder.writeObject(request);
+//        xmlEncoder.close();
+
+
+        //Write it
+        JAXBContext ctx = JAXBContext.newInstance(SourceAdapterRequest.class);
+
+        Marshaller m = ctx.createMarshaller();
+        m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+
+        StringWriter sw = new StringWriter();
+        m.marshal(request, sw);
+        sw.close();
+
+        return prettyFormat(sw.toString(), 7);
+    }
+
+    public static String prettyFormat(String input, int indent) {
+        try {
+            Source xmlInput = new StreamSource(new StringReader(input));
+            StringWriter stringWriter = new StringWriter();
+            StreamResult xmlOutput = new StreamResult(stringWriter);
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+//            transformerFactory.setAttribute("indent-number", indent);
+
+            Transformer transformer = transformerFactory.newTransformer();
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", String.valueOf(indent));
+            transformer.transform(xmlInput, xmlOutput);
+            return xmlOutput.getWriter().toString();
+        } catch (Exception e) {
+            throw new RuntimeException(e); // simple exception handling, please review it
+        }
+    }
 }

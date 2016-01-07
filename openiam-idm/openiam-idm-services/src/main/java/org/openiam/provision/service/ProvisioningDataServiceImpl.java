@@ -55,6 +55,9 @@ import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.dto.OrganizationUserDTO;
+import org.openiam.idm.srvc.policy.dto.PasswordPolicyAssocSearchBean;
+import org.openiam.idm.srvc.policy.dto.Policy;
+import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.prov.request.dto.BulkOperationEnum;
 import org.openiam.idm.srvc.prov.request.dto.BulkOperationRequest;
 import org.openiam.idm.srvc.prov.request.dto.OperationBean;
@@ -67,7 +70,9 @@ import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.dto.Role;
+import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.idm.srvc.user.dto.Supervisor;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.*;
@@ -91,7 +96,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import javax.jws.WebParam;
 import java.io.IOException;
 import java.util.*;
 
@@ -116,9 +120,6 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
 
     @Value("${org.openiam.send.user.activation.link}")
     private Boolean sendActivationLink;
-
-    @Value("${org.openiam.send.admin.reset.password.link}")
-    private Boolean sendAdminResetPasswordLink;
 
     //---
 
@@ -289,6 +290,11 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
 
     @CacheEvict(value = "resources", allEntries = true)
     private ProvisionUserResponse modifyUser(final ProvisionUser pUser, final IdmAuditLog auditLog) {
+        return modifyUser(pUser, auditLog, null);
+    }
+
+    @CacheEvict(value = "resources", allEntries = true)
+    private ProvisionUserResponse modifyUser(final ProvisionUser pUser, final IdmAuditLog auditLog, final AuditAction auditAction) {
         final List<ProvisionDataContainer> dataList = new LinkedList<ProvisionDataContainer>();
         TransactionTemplate transactionTemplate = new TransactionTemplate(platformTransactionManager);
 
@@ -302,7 +308,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                     IdmAuditLog idmAuditLog = new IdmAuditLog();
                     idmAuditLog.setRequestorUserId(pUser.getRequestorUserId());
                     idmAuditLog.setRequestorPrincipal(pUser.getRequestorLogin());
-                    idmAuditLog.setAction(AuditAction.MODIFY_USER.value());
+                    idmAuditLog.setAction(auditAction != null ? auditAction.value() : AuditAction.MODIFY_USER.value());
                     LoginEntity loginEntity = loginManager.getByUserIdManagedSys(pUser.getId(), sysConfiguration.getDefaultManagedSysId());
                     idmAuditLog.setTargetUser(pUser.getId(), loginEntity.getLogin());
                     idmAuditLog.setAuditDescription("Provisioning modify user: " + pUser.getId()
@@ -450,8 +456,9 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                 response.setErrorCode(ResponseCode.USER_NOT_FOUND);
                 return response;
             }
+            UserEntity u = userMgr.getUser(userId);
 
-            User usr = userDozerConverter.convertToDTO(userMgr.getUser(userId), true);
+            User usr = userDozerConverter.convertToDTO(u, true);
             if (usr == null) {
                 response.setStatus(ResponseStatus.FAILURE);
                 response.setErrorCode(ResponseCode.USER_NOT_FOUND);
@@ -466,6 +473,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
 
             ProvisionUser pUser = new ProvisionUser(usr);
             pUser.setRequestorUserId(requestorId);
+            fillUserSupervisor(pUser, usr, u);
             // SET PRE ATTRIBUTES FOR DEFAULT SYS SCRIPT
             bindingMap.put(TARGET_SYS_MANAGED_SYS_ID, managedSystemId);
             bindingMap.put(TARGET_SYSTEM_IDENTITY, login.getLogin());
@@ -754,6 +762,26 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
         response.setStatus(ResponseStatus.SUCCESS);
         return response;
 
+    }
+
+    private void fillUserSupervisor(ProvisionUser pUser, User usr, UserEntity u) {
+        if (u != null && usr != null) {
+            int i = 0;
+            for (Supervisor s : usr.getSupervisors()) {
+                int j = 0;
+                for (SupervisorEntity supervisorEntity : u.getSupervisors()) {
+                    if (i == j) {
+                        s.setSupervisor(userDozerConverter.convertToDTO(supervisorEntity.getSupervisor(), true));
+                        if (pUser != null) {
+                            pUser.addSuperior(s.getSupervisor());
+                        }
+                        break;
+                    }
+                    j++;
+                }
+                i++;
+            }
+        }
     }
 
     @Override
@@ -1935,6 +1963,25 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                     log.debug(" - Managed System Id = " + managedSysId);
                     log.debug(" - Resource Id = " + res.getId());
 
+                    //
+
+                    Integer pwdChangeCount = lg.getPasswordChangeCount();
+                    if (pwdChangeCount != null) {
+                        Policy policy = passwordPolicyProvider.getPasswordPolicyByUser(new PasswordPolicyAssocSearchBean(lg.getUserId(), managedSysId));
+                        String pwdChangeAllowed = getPolicyAttribute(policy.getPolicyAttributes(), "PASSWORD_CHANGE_ALLOWED");
+
+                        if (pwdChangeAllowed != null && pwdChangeCount >= Integer.valueOf(pwdChangeAllowed)) {
+                            idmAuditLog.fail();
+                            log.debug(ResponseCode.FAIL_PASSWORD_CHANGE_FREQUENCY);
+                            idmAuditLog.setFailureReason(ResponseCode.FAIL_PASSWORD_CHANGE_FREQUENCY);
+                            response.setStatus(ResponseStatus.FAILURE);
+                            response.setErrorCode(ResponseCode.FAIL_PASSWORD_CHANGE_FREQUENCY);
+                            return response;
+                        }
+                    }
+
+                    //
+
                     final boolean retval = loginManager.setPassword(lg.getLogin(), managedSysId,
                             encPassword, passwordSync.isPreventChangeCountIncrement());
 
@@ -2077,6 +2124,20 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
             }
             auditLogService.save(idmAuditLog); //SIA 2015-08-01
         }
+    }
+
+    private String getPolicyAttribute(Set<PolicyAttribute> attr, String name) {
+        assert name != null : "Name parameter is null";
+
+        log.debug("Attribute Set size=" + attr.size());
+
+        for (PolicyAttribute policyAtr : attr) {
+            if (policyAtr.getName().equalsIgnoreCase(name)) {
+                return policyAtr.getValue1();
+            }
+        }
+        return null;
+
     }
 
     /* ********* Helper Methods --------------- */
@@ -2461,8 +2522,6 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                         pUser.setRequestorUserId(requestorId);
                         pUser.setRequestorLogin(lRequestor.getLogin());
 
-                        boolean isEntitlementModified = false;
-
                         Set<Group> existingGroups = pUser.getGroups();
                         pUser.setGroups(new HashSet<Group>());
 
@@ -2477,12 +2536,15 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
 
                         Response res = new Response(ResponseStatus.FAILURE);
                         for (OperationBean ob : bulkRequest.getOperations()) {
+
+                            AuditAction auditAction = null;
+
                             switch (ob.getObjectType()) {
                                 case USER:
                                     switch (ob.getOperation()) {
                                         case ACTIVATE_USER:
                                             pUser.setStatus(UserStatusEnum.ACTIVE);
-                                            res = modifyUser(pUser, idmAuditLog);
+                                            res = modifyUser(pUser, idmAuditLog, AuditAction.USER_ACTIVE);
                                             break;
                                         case DEACTIVATE_USER:
                                             res = deleteByUserWithSkipManagedSysList(
@@ -2580,76 +2642,69 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                                     }
                                     break;
                                 case GROUP:
-                                    boolean isModifiedGroup = false;
                                     Group group = groupDozerConverter.convertToDTO(
                                             groupManager.getGroup(ob.getObjectId(), requestorId), false);
                                     if (existingGroups.contains(group)) {
                                         if (BulkOperationEnum.DELETE_ENTITLEMENT.equals(ob.getOperation())) {
                                             existingGroups.remove(group);
                                             group.setOperation(AttributeOperationEnum.DELETE);
-                                            isModifiedGroup = true;
+                                            auditAction = AuditAction.REMOVE_USER_FROM_GROUP;
                                         }
                                     } else {
                                         if (BulkOperationEnum.ADD_ENTITLEMENT.equals(ob.getOperation())) {
                                             if ((group.getMaxUserNumber() == null) || (userMgr.getNumOfUsersForGroup(group.getId(), requestorId) < group.getMaxUserNumber())) {
                                                 existingGroups.add(group);
                                                 group.setOperation(AttributeOperationEnum.ADD);
-                                                isModifiedGroup = true;
+                                                auditAction = AuditAction.ADD_USER_TO_GROUP;
                                             } else {
                                                 exceedMaxUserCountForGroup.add(userId);
                                             }
                                         }
                                     }
-                                    if (isModifiedGroup) {
+                                    if (auditAction != null) {
                                         pUser.getGroups().add(group);
-                                        isEntitlementModified = true;
                                     }
                                     break;
                                 case ROLE:
-                                    boolean isModifiedRole = false;
                                     Role role = roleDozerConverter.convertToDTO(
                                             roleDataService.getRole(ob.getObjectId(), requestorId), false);
                                     if (existingRoles.contains(role)) {
                                         if (BulkOperationEnum.DELETE_ENTITLEMENT.equals(ob.getOperation())) {
                                             existingRoles.remove(role);
                                             role.setOperation(AttributeOperationEnum.DELETE);
-                                            isModifiedRole = true;
+                                            auditAction = AuditAction.REMOVE_USER_FROM_ROLE;
                                         }
                                     } else {
                                         if (BulkOperationEnum.ADD_ENTITLEMENT.equals(ob.getOperation())) {
                                             existingRoles.add(role);
                                             role.setOperation(AttributeOperationEnum.ADD);
-                                            isModifiedRole = true;
+                                            auditAction = AuditAction.ADD_USER_TO_ROLE;
                                         }
                                     }
-                                    if (isModifiedRole) {
+                                    if (auditAction != null) {
                                         pUser.getRoles().add(role);
-                                        isEntitlementModified = true;
                                     }
                                     break;
                                 case RESOURCE:
-                                    boolean isModifiedResource = false;
                                     Resource resource = resourceService.getResourceDTO(ob.getObjectId());
                                     if (existingResources.contains(resource)) {
                                         if (BulkOperationEnum.DELETE_ENTITLEMENT.equals(ob.getOperation())) {
                                             existingResources.remove(resource);
                                             resource.setOperation(AttributeOperationEnum.DELETE);
-                                            isModifiedResource = true;
+                                            auditAction = AuditAction.REMOVE_USER_FROM_RESOURCE;
                                         }
                                     } else {
                                         if (BulkOperationEnum.ADD_ENTITLEMENT.equals(ob.getOperation())) {
                                             existingResources.add(resource);
                                             resource.setOperation(AttributeOperationEnum.ADD);
-                                            isModifiedResource = true;
+                                            auditAction = AuditAction.ADD_USER_TO_RESOURCE;
                                         }
                                     }
-                                    if (isModifiedResource) {
+                                    if (auditAction != null) {
                                         pUser.getResources().add(resource);
-                                        isEntitlementModified = true;
                                     }
                                     break;
                                 case ORGANIZATION:
-                                    boolean isModifiedOrg = false;
 //                                    Organization organization = organizationService.getOrganizationDTO(ob.getObjectId(), null);
                                     Iterator<OrganizationUserDTO> organizationUserDTOIterator = existingOrganizations.iterator();
                                     boolean toDelete = false;
@@ -2668,7 +2723,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                                             existingOrganizations.remove(retVal);
                                             retVal.setOperation(AttributeOperationEnum.DELETE);
                                             pUser.getOrganizationUserDTOs().add(retVal);
-                                            isModifiedOrg = true;
+                                            auditAction = AuditAction.REMOVE_USER_FROM_ORG;
                                         }
                                     } else {
                                         if (BulkOperationEnum.ADD_ENTITLEMENT.equals(ob.getOperation())) {
@@ -2680,22 +2735,19 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                                             existingOrganizations.add(organizationUserDTO);
                                             organizationUserDTO.setOperation(AttributeOperationEnum.ADD);
                                             pUser.getOrganizationUserDTOs().add(organizationUserDTO);
-                                            isModifiedOrg = true;
+                                            auditAction = AuditAction.ADD_USER_TO_ORG;
                                         }
                                     }
-                                    if (isModifiedOrg) {
-                                        isEntitlementModified = true;
-                                    }
+
                                     break;
                             }
-                        }
-                        if (isEntitlementModified) {
-                            res = modifyUser(pUser, idmAuditLog);
-                            if (res.isFailure()) {
-                                failedUserIds.add(userId);
+                            if (auditAction != null) {
+                                res = modifyUser(pUser, idmAuditLog, auditAction);
+                                if (res.isFailure()) {
+                                    failedUserIds.add(userId);
+                                }
                             }
                         }
-
                     }
                 }
 

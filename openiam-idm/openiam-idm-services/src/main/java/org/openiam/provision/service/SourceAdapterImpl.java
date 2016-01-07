@@ -2,6 +2,7 @@ package org.openiam.provision.service;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.mule.api.annotations.param.Payload;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.MatchType;

@@ -93,4 +93,11 @@ public interface UserDAO extends BaseDao<UserEntity, String> {
     public  List<UserEntity> findByIds(List<String> idCollection, UserSearchBean searchBean, int from, int size);
 
     public  int countByIds(List<String> idCollection);
+
+    public List<UserEntity> getUserBetweenCreateDate(Date fromDate, Date toDate);
+
+    public List<UserEntity> getUserBetweenLastDate(Date fromDate, Date toDate);
+
+    public List<UserEntity> getUserBetweenUpdatedDate(Date fromDate, Date toDate);
+    public List<UserEntity> getUserBetweenStartDate(Date fromDate, Date toDate);
 }

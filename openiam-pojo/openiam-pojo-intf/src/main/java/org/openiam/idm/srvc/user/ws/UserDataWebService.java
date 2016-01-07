@@ -846,6 +846,21 @@ public interface UserDataWebService {
     public List<User> getUserByLastDate(
             @WebParam(name = "lastDate", targetNamespace = "") final Date lastDate);
 
+    @WebMethod
+    public List<User> getUserBetweenCreateDate(
+            @WebParam(name = "fromDate", targetNamespace = "") final Date fromDate,
+            @WebParam(name = "toDate", targetNamespace = "") final Date toDate);
+
+    @WebMethod
+    public List<User> getUserBetweenLastDate(
+            @WebParam(name = "fromDate", targetNamespace = "") final Date fromDate,
+            @WebParam(name = "toDate", targetNamespace = "") final Date toDate);
+
+    @WebMethod
+    public List<User> getUserBetweenUpdatedDate(
+            @WebParam(name = "fromDate", targetNamespace = "") final Date fromDate,
+            @WebParam(name = "toDate", targetNamespace = "") final Date toDate);
+
     /**
      * returns a paged List of all Supervisors in the system
      *
@@ -866,6 +881,7 @@ public interface UserDataWebService {
      */
     @WebMethod
     public int getAllSuperiorsCount();
+    public List<User> getUserBetweenStartDate(Date fromDate, Date toDate);
 
 //    @WebMethod
 //    public Map<String, UserAttribute> getUserAttributesAsMap(@WebParam(name = "userId", targetNamespace = "") String userId);

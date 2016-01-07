@@ -337,4 +337,11 @@ public interface UserDataService {
 
     public List<User> getUserDtoByLastDate(Date lastDate);
 
+    public List<User> getUserDtoBetweenCreateDate(Date fromDate, Date toDate);
+
+    public List<User> getUserDtoBetweenLastDate(Date fromDate, Date toDate);
+
+    public List<User> getUserDtoBetweenUpdatedDate(Date fromDate, Date toDate);
+    public List<User> getUserDtoBetweenStartDate(Date fromDate, Date toDate);
+
 }

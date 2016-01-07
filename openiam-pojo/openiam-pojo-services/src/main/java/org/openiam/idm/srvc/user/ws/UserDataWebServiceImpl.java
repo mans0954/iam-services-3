@@ -58,10 +58,6 @@ import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.idm.srvc.msg.service.MailService;
 import org.openiam.idm.srvc.msg.service.MailTemplateParameters;
-import org.openiam.idm.srvc.org.domain.OrganizationEntity;
-import org.openiam.idm.srvc.org.domain.OrganizationUserEntity;
-import org.openiam.idm.srvc.org.dto.Organization;
-import org.openiam.idm.srvc.org.dto.OrganizationUserDTO;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -72,7 +68,6 @@ import org.openiam.util.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author suneet
@@ -1309,6 +1304,27 @@ public class UserDataWebServiceImpl implements UserDataWebService {
             log.error(e.getMessage(), e);
         }
         return resultList;
+    }
+
+    @Override
+    public List<User> getUserBetweenCreateDate(Date fromDate, Date toDate) {
+        return userManager.getUserDtoBetweenCreateDate(fromDate, toDate);
+    }
+
+    @Override
+    public List<User> getUserBetweenStartDate(Date fromDate, Date toDate) {
+        return userManager.getUserDtoBetweenStartDate(fromDate, toDate);
+    }
+
+
+    @Override
+    public List<User> getUserBetweenLastDate(Date fromDate, Date toDate) {
+        return userManager.getUserDtoBetweenLastDate(fromDate, toDate);
+    }
+
+    @Override
+    public List<User> getUserBetweenUpdatedDate(Date fromDate, Date toDate) {
+        return userManager.getUserDtoBetweenUpdatedDate(fromDate, toDate);
     }
 
     @Override
