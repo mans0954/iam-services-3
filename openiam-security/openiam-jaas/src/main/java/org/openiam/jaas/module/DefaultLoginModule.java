@@ -68,11 +68,6 @@ public class DefaultLoginModule extends AbstractLoginModule {
 
     @Override
     protected void gatheringUserInfo() throws LoginException{
-    	/*
-        Callback[] callbacks = new Callback[]{new NameCallback("user name:"),
-                                              new PasswordCallback("password:", false),
-                                              new TokenCallback("token:", false)};
-		*/
         System.out.println("Callback array has been set.");
         System.out.println("Callback hanlder =" + callbackHandler);
 
@@ -80,68 +75,74 @@ public class DefaultLoginModule extends AbstractLoginModule {
         	final HttpServletRequest request = getHttpServletRequest();
         	String authToken = request.getHeader(AUTH_TOKEN_HEADER);
         	if(authToken == null || authToken.trim().isEmpty()) {
-        		throw new RuntimeException(String.format("%s header did not have a value", AUTH_TOKEN_HEADER));
-        	}
-        	
-        	authToken = decode(authToken);
-        	final String[] tokenSplit = authToken.split("\\|");
-        	//userId = tokenSplit[0];
-        	username = tokenSplit[1];
-        	token = tokenSplit[2];
-        	
-        	/*
-        	if(token == null || token.trim().isEmpty()) {
-        		if(request.getCookies() != null) {
-        			for(final Cookie cookie : request.getCookies()) {
-        				if(cookie.getName() != null && cookie.getName().equalsIgnoreCase("OPENIAM_AUTH_TOKEN")) {
-        					token = cookie.getValue();
-        				}
-        			}
-        		}
-        	}
-        	*/
-        	System.out.println("Split token" + Arrays.toString(tokenSplit));
-        	System.out.println(String.format("authToken: %s", authToken));
-        	System.out.println(String.format("Token: %s", token));
-        	System.out.println(String.format("Username: %s", username));
-        	final Response wsResponse = ServiceLookupHelper.getAuthenticationService().renewToken(username, token, AuthenticationConstants.OPENIAM_TOKEN);
-        	if(wsResponse.isFailure()) {
-        		throw new LoginException(String.format("Cannot renew token: %s", wsResponse));
-        	}
-        	ssoToken = ((SSOToken)wsResponse.getResponseValue());
-        	userId = ssoToken.getUserId();
-        	
-        	/*
-            callbackHandler.handle(callbacks);
-            //get user principal
-            username = ((NameCallback)callbacks[0]).getName();
-            //get user password
-            password = new String(((PasswordCallback)callbacks[1]).getPassword());
-            ((PasswordCallback)callbacks[1]).clearPassword();
-            //get user token and Id
-            token = new String(((TokenCallback)callbacks[2]).getSecurityToken());
-            userId =  ((TokenCallback)callbacks[2]).getUserId();
+        		Callback[] callbacks = new Callback[]{new NameCallback("user name:"),
+                        							  new PasswordCallback("password:", false)};
+        		callbackHandler.handle(callbacks);
+                //get user principal
+                username = ((NameCallback)callbacks[0]).getName();
+                //get user password
+                final String password = new String(((PasswordCallback)callbacks[1]).getPassword());
+                ((PasswordCallback)callbacks[1]).clearPassword();
+                final AuthenticationRequest authenticatedRequest = new AuthenticationRequest();
+                authenticatedRequest.setPassword(password);
+    			authenticatedRequest.setPrincipal(username);
+    			
+    			try {
+    				authenticatedRequest.setNodeIP(InetAddress.getLocalHost().getHostAddress());
+    			} catch (UnknownHostException e) {
+    				
+    			}
+    			AuthenticationResponse resp = ServiceLookupHelper.getAuthenticationService().login(authenticatedRequest);
 
-            */
+    			int resultCode = resp.getAuthErrorCode();
+    			
+    			switch (resultCode) {
+	                case AuthenticationConstants.RESULT_INVALID_DOMAIN:
+	                    throw new FailedLoginException("RESULT_INVALID_DOMAIN");
+	                case AuthenticationConstants.RESULT_INVALID_LOGIN:
+	                    throw new FailedLoginException("RESULT_INVALID_LOGIN");
+	                case AuthenticationConstants.RESULT_INVALID_PASSWORD:
+	                    throw new FailedLoginException("RESULT_INVALID_PASSWORD");
+	                case AuthenticationConstants.RESULT_INVALID_USER_STATUS:
+	                    throw new FailedLoginException("RESULT_INVALID_USER_STATUS");
+	                case AuthenticationConstants.RESULT_LOGIN_DISABLED:
+	                    throw new FailedLoginException("RESULT_LOGIN_DISABLED");
+	                case AuthenticationConstants.RESULT_LOGIN_LOCKED:
+	                    throw new FailedLoginException("RESULT_LOGIN_LOCKED");
+	                case AuthenticationConstants.RESULT_PASSWORD_EXPIRED:
+	                    throw new FailedLoginException("RESULT_PASSWORD_EXPIRED");
+	                case AuthenticationConstants.RESULT_INVALID_TOKEN:
+	                    throw new FailedLoginException("RESULT_INVALID_TOKEN");
+	                case AuthenticationConstants.RESULT_SERVICE_NOT_FOUND:
+	                    throw new FailedLoginException("INVALID");
+	            }
+    			
+    			ssoToken = resp.getSubject().getSsoToken();
+    			username = ssoToken.getPrincipal();
+    			
+    			
+        		//throw new RuntimeException(String.format("%s header did not have a value", AUTH_TOKEN_HEADER));
+        	} else {
+	        	
+	        	authToken = decode(authToken);
+	        	final String[] tokenSplit = authToken.split("\\|");
+	        	username = tokenSplit[1];
+	        	token = tokenSplit[2];
+	        	
+	        	System.out.println("Split token" + Arrays.toString(tokenSplit));
+	        	System.out.println(String.format("authToken: %s", authToken));
+	        	System.out.println(String.format("Token: %s", token));
+	        	System.out.println(String.format("Username: %s", username));
+	        	final Response wsResponse = ServiceLookupHelper.getAuthenticationService().renewToken(username, token, AuthenticationConstants.OPENIAM_TOKEN);
+	        	if(wsResponse.isFailure()) {
+	        		throw new LoginException(String.format("Cannot renew token: %s", wsResponse));
+	        	}
+	        	ssoToken = ((SSOToken)wsResponse.getResponseValue());
+        	}
+        	userId = ssoToken.getUserId();
         } catch(Throwable e) {
         	log.warn("Error while getting authentication information", e);
         	throw new LoginException("Exception while getting authentiction information");
-        	/*
-        	throw new LoginException("Error: " + uce.getCallback().toString() +
-                    " not available to garner authentication information " +
-                    "from the user");
-			*/
-        /*
-        } catch (IOException ioe) {
-            throw new LoginException(ioe.toString());
-        } catch (UnsupportedCallbackException uce) {
-            System.out.println("UnsupportedCallbackException - ");
-            log.error("Error in gatheringUserInfo", uce);
-
-            throw new LoginException("Error: " + uce.getCallback().toString() +
-                                     " not available to garner authentication information " +
-                                     "from the user");
-		*/
         }
     }
 
