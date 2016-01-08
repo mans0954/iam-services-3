@@ -272,14 +272,6 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 				attributeName2AttributeMap = templateProvider.getAttributeName2ObjectAttributeMap(objectId);
 			}
 
-//			final Map<String, UserAttributeEntity> attributeName2UserAttributeMap = new HashMap<String, UserAttributeEntity>();
-//			if(objectId != null) {
-//				final List<UserAttributeEntity> attributeList = attributeDAO.findUserAttributesLocalized(userId);
-//				for(final UserAttributeEntity attribute : attributeList) {
-//					attributeName2UserAttributeMap.put(attribute.getName(), attribute);
-//				}
-//			}
-			
 			/*
 			 * If the user is unknown (self registration), the template is public, it's an admin request, or if the user is entitled to the template, create one
 			 */
@@ -480,23 +472,6 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 
 			templateProvider.isValid(request.getTargetObject());
 
-//			final Map<String, List<AbstractAttributeEntity>> metadataId2UserAttributeMap = attributeProvider.getObjectAttributeMap(objectId, elementMap.keySet());
-
-
-
-			/* create user attribute maps for fast access */
-//			final List<UserAttributeEntity> attributes = attributeDAO.findUserAttributes(userId, elementMap.keySet());
-//			final Map<String, List<UserAttributeEntity>> metadataId2UserAttributeMap = new HashMap<String, List<UserAttributeEntity>>();
-//			if(CollectionUtils.isNotEmpty(attributes)) {
-//				for(final UserAttributeEntity attribute : attributes) {
-//					final String elementId = attribute.getElement().getId();
-//					if(!metadataId2UserAttributeMap.containsKey(elementId)) {
-//						metadataId2UserAttributeMap.put(elementId, new LinkedList<UserAttributeEntity>());
-//					}
-//					metadataId2UserAttributeMap.get(elementId).add(attribute);
-//				}
-//			}
-			
 			/* loop through all elements sent in the request */
 			if(CollectionUtils.isNotEmpty(pageTemplate.getPageElements())) {
 				for(final PageElement pageElement : pageTemplate.getPageElements()) {
@@ -609,31 +584,6 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 									boolean isMultiSelect = element.getMetadataType() != null && StringUtils.equals(element.getMetadataType().getId(), "MULTI_SELECT");
 									int numRequiredViolations = 0;
 									for(final PageElementValue elementValue : pageElement.getUserValues()) {
-//										boolean indexViolatesRequiredFlag = pageElement.isEditable() && pageElement.isRequired() && StringUtils.isBlank(elementValue.getValue());
-//										if(indexViolatesRequiredFlag) {
-//											numRequiredViolations++;
-//										}
-//										if(isMultiSelect) {
-//											if(numRequiredViolations == pageElement.getUserValues().size()) {
-//												final PageTemplateException exception =  new PageTemplateException(ResponseCode.REQUIRED);
-//												exception.setElementName(getElementName(element, targetLanguage));
-//												throw exception;
-//											}
-//										} else {
-//											if(indexViolatesRequiredFlag) {
-//												final PageTemplateException exception =  new PageTemplateException(ResponseCode.REQUIRED);
-//												exception.setElementName(getElementName(element, targetLanguage));
-//												throw exception;
-//											}
-//										}
-//
-//										if(!isValid(elementValue, element, targetLanguage)) {
-//											final PageTemplateException exception =  new PageTemplateException(ResponseCode.INVALID_VALUE);
-//											exception.setCurrentValue(elementValue.getValue());
-//											exception.setElementName(getElementName(element, targetLanguage));
-//											throw exception;
-//										}
-
 										if(StringUtils.isNotBlank(elementValue.getValue())) {
 											values.add(elementValue.getValue());
 										}
@@ -648,9 +598,6 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 									} else { /* if the value is not empty, it's a possible update */
 										if (attribute == null) { /* add new attribute */
 											attribute = templateProvider.getNewAttributeInstance(element.getAttributeName(), entity);
-//											UserAttributeEntity userAttribute = new UserAttributeEntity();
-//											userAttribute.setName(element.getAttributeName());
-//												userAttribute.setUserId(user.getId());
 											final MetadataElementEntity metadataElement = getMetadataElement(userTypeId, element);
 											attribute.setElement(metadataElement);
 											attribute.setIsMultivalued(isMultiSelect);
