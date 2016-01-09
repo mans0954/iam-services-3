@@ -96,6 +96,8 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 	private static final Log LOG = LogFactory.getLog(URIFederationServiceImpl.class);
 	private ApplicationContext ctx;
 
+	private Map<String, ContentProvider> contentProviderCache;
+	private Map<String, URIPattern> uriPatternCache;
 	private ContentProviderTree contentProviderTree;
 	
 	private Map<String, AuthLevelGrouping> groupingMap;
@@ -219,6 +221,8 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 	@Scheduled(fixedRateString="${org.openiam.am.uri.federation.threadsweep}", initialDelay=0)
 	public void sweep() {
 		try {
+			final Map<String, ContentProvider> tempContentProviderMap = new HashMap<String, ContentProvider>();
+			final Map<String, URIPattern> tempURIPatternMap = new HashMap<String, URIPattern>();
 			LOG.info("Attemtping to refresh Content Provider Cache...");
 			final ContentProviderTree tempTree = new ContentProviderTree();
 			
@@ -232,12 +236,13 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 						if(CollectionUtils.isNotEmpty(cpEntity.getGroupingXrefs())) {
 							/* convert the content provider to a DTO */
 							final ContentProvider cp = cpDozerConverter.convertToDTO(cpEntity, true);
+							tempContentProviderMap.put(cp.getId(), cp);
 							if(CollectionUtils.isNotEmpty(cp.getPatternSet())) {
 								
 								/* process the URI patterns, but converting any subcollections to DTOs manually, since our Dozer converter will only go 2 levels deep */
 								final Map<String, URIPattern> uriPatternMap = new LinkedHashMap<String, URIPattern>();
 								for(final URIPattern pattern : cp.getPatternSet()) {
-								
+									tempURIPatternMap.put(pattern.getId(), pattern);
 									uriPatternMap.put(pattern.getId(), pattern);
 									if(CollectionUtils.isNotEmpty(pattern.getMetaEntitySet())) {
 										
@@ -314,6 +319,8 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 			synchronized(this) {
 				contentProviderTree = tempTree;
 				groupingMap = tempGroupingMap;
+				contentProviderCache = tempContentProviderMap;
+				uriPatternCache = tempURIPatternMap;
 			}
 		} catch(Throwable e) {
 			LOG.error("Can't refresh content provider cache", e);
@@ -722,5 +729,15 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 	public void setApplicationContext(final ApplicationContext ctx)
 			throws BeansException {
 		this.ctx = ctx;
+	}
+
+	@Override
+	public ContentProvider getCachedContentProvider(String providerId) {
+		return contentProviderCache.get(providerId);
+	}
+
+	@Override
+	public URIPattern getCachedURIPattern(String patternId) {
+		return uriPatternCache.get(patternId);
 	}
 }

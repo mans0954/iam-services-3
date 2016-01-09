@@ -9,6 +9,8 @@ import javax.jws.WebService;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.am.srvc.dto.ContentProvider;
+import org.openiam.am.srvc.dto.URIPattern;
 import org.openiam.am.srvc.service.URIFederationService;
 import org.openiam.am.srvc.uriauth.dto.SSOLoginResponse;
 import org.openiam.am.srvc.uriauth.dto.URIFederationResponse;
@@ -102,5 +104,15 @@ public class URIFederationWebServiceImpl implements URIFederationWebService {
 	@Override
 	public void sweep() {
 		((Sweepable)uriFederationService).sweep();
+	}
+
+	@Override
+	public ContentProvider getCachedContentProvider(String providerId) {
+		return uriFederationService.getCachedContentProvider(providerId);
+	}
+
+	@Override
+	public URIPattern getCachedURIPattern(String patternId) {
+		return uriFederationService.getCachedURIPattern(patternId);
 	}
 }

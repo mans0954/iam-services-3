@@ -10,7 +10,9 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -38,7 +40,8 @@ import java.util.Set;
         "supportsTOTP",
 		"oAuthTokens",
 		"readOnly",
-		"attributeId2ValueMap"
+		"attributeId2ValueMap",
+		"lastModified"
 })
 @DozerDTOCorrespondence(AuthProviderEntity.class)
 public class AuthProvider extends KeyNameDTO {
@@ -64,6 +67,7 @@ public class AuthProvider extends KeyNameDTO {
     private Set<AuthProviderAttribute> attributes;
     private Map<String, AuthResourceAttributeMap> resourceAttributeMap=new HashMap<String, AuthResourceAttributeMap>(0);
     private Resource resource;
+    private Date lastModified;
 
 	private Set<OAuthToken> oAuthTokens;
     @XmlTransient
@@ -285,6 +289,14 @@ public class AuthProvider extends KeyNameDTO {
 	public void setReadOnly(boolean readOnly) {
 		this.readOnly = readOnly;
 	}
+	
+	public Date getLastModified() {
+		return lastModified;
+	}
+
+	public void setLastModified(Date lastModified) {
+		this.lastModified = lastModified;
+	}
 
 	@Override
 	public int hashCode() {
@@ -314,6 +326,7 @@ public class AuthProvider extends KeyNameDTO {
 		result = prime * result + ((smsOTPGroovyScript == null) ? 0 : smsOTPGroovyScript.hashCode());
 		result = prime * result + ((passwordPolicyId == null) ? 0 : passwordPolicyId.hashCode());
 		result = prime * result + ((authnPolicyId == null) ? 0 : authnPolicyId.hashCode());
+		result = prime * result + ((lastModified == null) ? 0 : lastModified.hashCode());
 		return result;
 	}
 
@@ -393,7 +406,13 @@ public class AuthProvider extends KeyNameDTO {
 			if (other.authnPolicyId != null)
 				return false;
 		} else if (!authnPolicyId.equals(other.authnPolicyId))
-			return false;		
+			return false;	
+		
+		if (lastModified == null) {
+			if (other.lastModified != null)
+				return false;
+		} else if (!lastModified.equals(other.lastModified))
+			return false;
 		return true;
 	}
 
