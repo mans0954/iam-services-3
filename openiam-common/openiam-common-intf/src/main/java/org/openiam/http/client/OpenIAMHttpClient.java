@@ -28,6 +28,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLContextBuilder;
 import org.apache.http.conn.ssl.SSLContexts;
@@ -140,7 +141,9 @@ public final class OpenIAMHttpClient {
 		final SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslContext, new DefaultX509HostnameVerifier());
 		
 		final Registry<ConnectionSocketFactory> socketFactoryRegistry = RegistryBuilder
-		        .<ConnectionSocketFactory> create().register("https", sslsf)
+		        .<ConnectionSocketFactory> create()
+		        .register("https", sslsf)
+		        .register("http", new PlainConnectionSocketFactory())
 		        .build();
 		
 		final PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
