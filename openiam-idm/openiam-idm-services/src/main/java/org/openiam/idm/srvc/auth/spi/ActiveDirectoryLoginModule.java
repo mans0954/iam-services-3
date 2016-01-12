@@ -29,11 +29,9 @@ import org.openiam.idm.srvc.auth.context.AuthenticationContext;
 import org.openiam.idm.srvc.auth.context.PasswordCredential;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.AuthenticationRequest;
-import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.Subject;
 import org.openiam.idm.srvc.auth.service.AuthCredentialsValidator;
 import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
-import org.openiam.idm.srvc.auth.ws.LoginResponse;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
@@ -45,6 +43,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import javax.naming.ldap.LdapContext;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -93,8 +92,8 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
         String principal = cred.getPrincipal();
         String password = cred.getPassword();
 
-        String authPolicyId = (String)authContext.getAuthParam().get(AuthenticationRequest.AUTH_POLICY_ID);
-        if(StringUtils.isEmpty(authPolicyId)) {
+        String authPolicyId = (String) authContext.getAuthParam().get(AuthenticationRequest.AUTH_POLICY_ID);
+        if (StringUtils.isEmpty(authPolicyId)) {
             authPolicyId = sysConfiguration.getDefaultAuthPolicyId();
         }
         log.debug("Authentication policyid=" + authPolicyId);
@@ -129,6 +128,9 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
         // Find user in target system
         List<ExtensibleAttribute> attrs = new ArrayList<ExtensibleAttribute>();
         attrs.add(new ExtensibleAttribute("distinguishedName", null));
+        attrs.add(new ExtensibleAttribute("Enabled", null));
+        attrs.add(new ExtensibleAttribute("AccountExpirationDate", null));
+        attrs.add(new ExtensibleAttribute("ChangePasswordAtLogon", null));
         LookupUserResponse resp = provisionService.getTargetSystemUser(principal, managedSysId, attrs);
         log.debug("Lookup for user identity =" + principal + " in target system = " + mSys.getName() + ". Result = " + resp.getStatus() + ", " + resp.getErrorCode());
 
@@ -156,12 +158,11 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
         try {
             Map<String, Object> params = new HashMap<String, Object>();
             params.put("distinguishedName", distinguishedName);
-            authenticationUtils.getCredentialsValidator().execute(user, lg, AuthCredentialsValidator.NEW, params);
+            validateFromAD(resp, lg, AuthCredentialsValidator.NEW, params);
 
         } catch (AuthenticationException ae) {
             // we should validate password before change password
             if (AuthenticationConstants.RESULT_PASSWORD_EXPIRED == ae.getErrorCode() ||
-                    AuthenticationConstants.RESULT_PASSWORD_EXPIRED == ae.getErrorCode() ||
                     AuthenticationConstants.RESULT_SUCCESS_PASSWORD_EXP == ae.getErrorCode()) {
                 changePassword = ae;
 
@@ -233,6 +234,7 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
             }
         }
 
+
         log.debug("-login successful");
         // good login - reset the counters
 
@@ -279,6 +281,69 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
         setResultCode(lg, subj, curDate, passwordPolicy);
 
         return subj;
+    }
+
+
+    private void validateFromAD(LookupUserResponse resp, LoginEntity login, int operation, Map<String, Object> bindingMap) throws AuthenticationException {
+        boolean enabled = false;
+        Date accExpDate = null;
+        boolean changePsswdAtLogon = false;
+        if (resp.isSuccess()) {
+            for (ExtensibleAttribute a : resp.getAttrList()) {
+                switch (a.getName()) {
+                    case "Enabled":
+                        enabled = StringUtils.equalsIgnoreCase("True", a.getValue());
+                        break;
+                    case "AccountExpirationDate":
+                        if (StringUtils.isNotBlank(a.getValue())) {
+                            Date maxDate = new Date(253402225200000L); // Dec, 31, 9999
+                            if ("0".equals(a.getValue())) { // never expires
+                                accExpDate = maxDate;
+                            } else {
+                                try {
+                                    SimpleDateFormat sdf = new SimpleDateFormat("M/d/yyyy h:mm:ss a");
+                                    accExpDate = sdf.parse(a.getValue());
+                                    if (accExpDate.after(maxDate)) {
+                                        accExpDate = maxDate;
+                                    }
+                                } catch (Exception e) {
+                                    log.error(e);
+                                }
+                            }
+                        }
+                        break;
+                    case "ChangePasswordAtLogon":
+                        changePsswdAtLogon = StringUtils.equalsIgnoreCase("True", a.getValue());
+                        break;
+                }
+            }
+        } else {
+            throw new AuthenticationException(
+                    AuthenticationConstants.RESULT_SERVICE_NOT_FOUND);
+        }
+
+        if (!enabled) {
+            throw new AuthenticationException(
+                    AuthenticationConstants.RESULT_LOGIN_DISABLED);
+        }
+
+        if (accExpDate != null) {
+            if (operation == AuthCredentialsValidator.NEW) {
+                login.setPwdExp(accExpDate);
+            }
+            Date curDate = new Date();
+            if (curDate.after(accExpDate)) {
+                throw new AuthenticationException(
+                        AuthenticationConstants.RESULT_LOGIN_DISABLED);
+            }
+        }
+        if (operation == AuthCredentialsValidator.NEW) {
+            if (changePsswdAtLogon) {
+                throw new AuthenticationException(
+                        AuthenticationConstants.RESULT_PASSWORD_EXPIRED);
+            }
+        }
+
     }
 
 }
