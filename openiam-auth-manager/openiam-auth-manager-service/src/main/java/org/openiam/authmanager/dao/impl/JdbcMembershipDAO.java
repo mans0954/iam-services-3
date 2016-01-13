@@ -61,26 +61,26 @@ public class JdbcMembershipDAO extends AbstractJDBCDao implements MembershipDAO 
 													  "	resmr.ACCESS_RIGHT_ID AS RESOURCE_ID_RIGHT, " + 
 													  "	orgmr.ACCESS_RIGHT_ID AS COMPANY_ID_RIGHT " + 
 													  "		FROM " + 
-													  "	openiam.LOGIN l " +  	
-													  "	LEFT JOIN openiam.USER_GRP gm " +  		
+													  "	%s.LOGIN l " +  	
+													  "	LEFT JOIN %s.USER_GRP gm " +  		
 													  "		ON l.USER_ID=gm.USER_ID " +
 													  "		AND (" + getDateCondition("gm") + ")" + 
-													  "	LEFT JOIN openiam.USER_ROLE rm " +  		
+													  "	LEFT JOIN %s.USER_ROLE rm " +  		
 													  "		ON l.USER_ID=rm.USER_ID " +
 													  "		AND (" + getDateCondition("rm") + ")" +
-													  "	LEFT JOIN openiam.RESOURCE_USER resm " +  	
+													  "	LEFT JOIN %s.RESOURCE_USER resm " +  	
 													  "		ON l.USER_ID=resm.USER_ID " + 
 													  "		AND (" + getDateCondition("resm") + ")" +
-													  "	LEFT JOIN openiam.USER_AFFILIATION orgm " + 
+													  "	LEFT JOIN %s.USER_AFFILIATION orgm " + 
 													  "		ON l.USER_ID=orgm.USER_ID " +
 													  "		AND (" + getDateCondition("orgm") + ")" +
-													  "	LEFT JOIN openiam.USER_GRP_MEMBERSHIP_RIGHTS gmr " +  		
+													  "	LEFT JOIN %s.USER_GRP_MEMBERSHIP_RIGHTS gmr " +  		
 													  "		ON gm.MEMBERSHIP_ID=gmr.MEMBERSHIP_ID " + 
-													  "	LEFT JOIN openiam.USER_ROLE_MEMBERSHIP_RIGHTS rmr " +  		
+													  "	LEFT JOIN %s.USER_ROLE_MEMBERSHIP_RIGHTS rmr " +  		
 													  "		ON rm.MEMBERSHIP_ID=rmr.MEMBERSHIP_ID " + 
-													  "	LEFT JOIN openiam.USER_RES_MEMBERSHIP_RIGHTS resmr " +  		
+													  "	LEFT JOIN %s.USER_RES_MEMBERSHIP_RIGHTS resmr " +  		
 													  "		ON resm.MEMBERSHIP_ID=resmr.MEMBERSHIP_ID " + 
-													  "	LEFT JOIN openiam.USER_AFFILIATION_RIGHTS orgmr " + 	
+													  "	LEFT JOIN %s.USER_AFFILIATION_RIGHTS orgmr " + 	
 													  "		ON orgm.MEMBERSHIP_ID=orgmr.MEMBERSHIP_ID " + 
 													  "	WHERE l.USER_ID=?;";
 	
@@ -95,22 +95,22 @@ public class JdbcMembershipDAO extends AbstractJDBCDao implements MembershipDAO 
 													  "	resmr.ACCESS_RIGHT_ID AS RESOURCE_ID_RIGHT, " + 
 													  "	orgmr.ACCESS_RIGHT_ID AS COMPANY_ID_RIGHT " + 
 													  "		FROM " + 
-													  "	openiam.LOGIN l " +  	
-													  "	LEFT JOIN openiam.USER_GRP gm " +  		
+													  "	%s.LOGIN l " +  	
+													  "	LEFT JOIN %s.USER_GRP gm " +  		
 													  "		ON l.USER_ID=gm.USER_ID " + 
-													  "	LEFT JOIN openiam.USER_ROLE rm " +  		
+													  "	LEFT JOIN %s.USER_ROLE rm " +  		
 													  "		ON l.USER_ID=rm.USER_ID " + 
-													  "	LEFT JOIN openiam.RESOURCE_USER resm " +  		
+													  "	LEFT JOIN %s.RESOURCE_USER resm " +  		
 													  "		ON l.USER_ID=resm.USER_ID " + 
-													  "	LEFT JOIN openiam.USER_AFFILIATION orgm " + 
+													  "	LEFT JOIN %s.USER_AFFILIATION orgm " + 
 													  "		ON l.USER_ID=orgm.USER_ID " + 
-													  "	LEFT JOIN openiam.USER_GRP_MEMBERSHIP_RIGHTS gmr " +  		
+													  "	LEFT JOIN %s.USER_GRP_MEMBERSHIP_RIGHTS gmr " +  		
 													  "		ON gm.MEMBERSHIP_ID=gmr.MEMBERSHIP_ID " + 
-													  "	LEFT JOIN openiam.USER_ROLE_MEMBERSHIP_RIGHTS rmr " +  		
+													  "	LEFT JOIN %s.USER_ROLE_MEMBERSHIP_RIGHTS rmr " +  		
 													  "		ON rm.MEMBERSHIP_ID=rmr.MEMBERSHIP_ID " + 
-													  "	LEFT JOIN openiam.USER_RES_MEMBERSHIP_RIGHTS resmr " +  		
+													  "	LEFT JOIN %s.USER_RES_MEMBERSHIP_RIGHTS resmr " +  		
 													  "		ON resm.MEMBERSHIP_ID=resmr.MEMBERSHIP_ID " + 
-													  "	LEFT JOIN openiam.USER_AFFILIATION_RIGHTS orgmr " + 	
+													  "	LEFT JOIN %s.USER_AFFILIATION_RIGHTS orgmr " + 	
 													  "		ON orgm.MEMBERSHIP_ID=orgmr.MEMBERSHIP_ID " + 
 													  "	WHERE l.USER_ID=?;";
 
@@ -202,6 +202,7 @@ public class JdbcMembershipDAO extends AbstractJDBCDao implements MembershipDAO 
 	@Override
 	protected void initSqlStatements() {
 		final String schemaName = getSchemaName();
+		GET_FULLY_POPULATED_USER_RS_RANGE = String.format(GET_FULLY_POPULATED_USER_RS_RANGE, schemaName, schemaName, schemaName, schemaName, schemaName, schemaName, schemaName, schemaName, schemaName);
 		GET_FULLY_POPULATED_USER_RS_LIST = String.format(GET_FULLY_POPULATED_USER_RS_LIST, schemaName, schemaName, schemaName, schemaName, schemaName, schemaName, schemaName, schemaName, schemaName);
 		GET_USERS = String.format(GET_USERS, schemaName);
 		GET_USER_IDS_FOR_RESOURCE_WITH_RIGHT = String.format(GET_USER_IDS_FOR_RESOURCE_WITH_RIGHT, schemaName, schemaName);
