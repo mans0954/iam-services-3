@@ -1,5 +1,6 @@
 package org.openiam.idm.searchbeans;
 
+import org.apache.commons.lang.StringUtils;
 import org.openiam.base.ws.SortParam;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -60,6 +61,19 @@ public abstract class AbstractSearchBean<T, KeyType> {
      * @return
      */
     public abstract String getCacheUniqueBeanKey();
+
+	protected String getSortKeyForCache(){
+		StringBuilder sb = new StringBuilder();
+		if (sortBy != null) {
+			for (SortParam sort : sortBy) {
+				if (sort.getSortBy() != null)
+					sb.append(sort.getSortBy().toString());
+				if (sort.getOrderBy() != null)
+					sb.append(sort.getOrderBy().toString());
+			}
+		}
+		return StringUtils.isNotBlank(sb.toString()) ? sb.toString() : "";
+	}
 
 	@Override
 	public boolean equals(Object obj) {

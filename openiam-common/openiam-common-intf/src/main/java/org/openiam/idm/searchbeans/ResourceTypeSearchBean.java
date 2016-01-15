@@ -10,7 +10,7 @@ import org.openiam.idm.srvc.res.dto.ResourceType;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ResourceTypeSearchBean", propOrder = { "searchable", "description", "provisionResource", "processName","supportsHierarchy" })
-public class ResourceTypeSearchBean extends AbstractSearchBean<ResourceType, String> implements
+public class ResourceTypeSearchBean extends AbstractLanguageSearchBean<ResourceType, String> implements
         SearchBean<ResourceType, String>, Serializable {
 
     private Boolean searchable;
@@ -68,6 +68,7 @@ public class ResourceTypeSearchBean extends AbstractSearchBean<ResourceType, Str
                 .append(searchable != null ? searchable.booleanValue() : "")
                 .append(description != null ? description.hashCode() : "")
                 .append(getKey() != null ? getKey() : "")
+                .append(getSortKeyForCache())
                 .toString();
     }
 }
