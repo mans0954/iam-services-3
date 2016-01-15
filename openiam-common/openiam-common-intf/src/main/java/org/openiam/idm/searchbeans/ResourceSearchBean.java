@@ -174,6 +174,7 @@ public class ResourceSearchBean extends EntitlementsSearchBean<Resource, String>
                 .append(userIdSet != null ? userIdSet.toString().hashCode() : "")
                 .append(getParentIdSet() != null ? getParentIdSet().toString().hashCode() : "")
                 .append(getChildIdSet() != null ? getChildIdSet().toString().hashCode() : "")
+				.append(getSortKeyForCache())
                 .toString();
     }
 }

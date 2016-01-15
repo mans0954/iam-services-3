@@ -83,7 +83,10 @@ public class MetadataTypeEntity extends KeyEntity {
     @ContainedIn
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<UserEntity> userEntitySet;
-    
+
+	@OneToMany(mappedBy = "referenceId")
+	private Set<LanguageMappingEntity> languageMappings;
+
     @Transient
     private String displayName;
 
@@ -186,7 +189,15 @@ public class MetadataTypeEntity extends KeyEntity {
         this.userEntitySet = userEntitySet;
     }
 
-    @Override
+	public Set<LanguageMappingEntity> getLanguageMappings() {
+		return languageMappings;
+	}
+
+	public void setLanguageMappings(Set<LanguageMappingEntity> languageMappings) {
+		this.languageMappings = languageMappings;
+	}
+
+	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;

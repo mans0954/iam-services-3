@@ -114,6 +114,9 @@ public class MetadataElementEntity extends KeyEntity {
 
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "element", fetch = FetchType.LAZY)
     private Set<ResourcePropEntity> resourceAttributes;
+
+	@OneToMany(mappedBy = "referenceId")
+	private Set<LanguageMappingEntity> languageMappings;
     
 	public String getDisplayName() {
 		return displayName;
@@ -298,7 +301,15 @@ public class MetadataElementEntity extends KeyEntity {
 		this.isPublic = isPublic;
 	}
 
-    @Override
+	public Set<LanguageMappingEntity> getLanguageMappings() {
+		return languageMappings;
+	}
+
+	public void setLanguageMappings(Set<LanguageMappingEntity> languageMappings) {
+		this.languageMappings = languageMappings;
+	}
+
+	@Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
