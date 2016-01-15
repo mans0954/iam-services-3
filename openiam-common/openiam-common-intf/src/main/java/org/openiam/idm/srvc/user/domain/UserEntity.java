@@ -63,13 +63,13 @@ public class UserEntity implements Serializable {
     @Column(name = "CREATED_BY", length = 32)
     private String createdBy;
 
-    @Column(name = "EMPLOYEE_ID", length = 32)
+    @Column(name = "EMPLOYEE_ID", length = 100)
     @Fields({
             @Field(index = Index.TOKENIZED),
             @Field(name = "employeeId", index = Index.TOKENIZED, store = Store.YES),
             @Field(name = "employeeIdUntokenized", index = Index.UN_TOKENIZED, store = Store.YES)
     })
-    @Size(max = 32, message = "validator.user.employee.id.toolong")
+    @Size(max = 100, message = "validator.user.employee.id.toolong")
     private String employeeId;
 
     @ManyToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
