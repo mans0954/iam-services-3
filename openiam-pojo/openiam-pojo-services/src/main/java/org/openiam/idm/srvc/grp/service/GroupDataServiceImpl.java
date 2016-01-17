@@ -39,6 +39,7 @@ import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
+import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
 import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
@@ -141,7 +142,8 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
 
     @Autowired
     private MetadataElementTemplateService pageTemplateService;
-
+    @Autowired
+    private ApproverAssociationDAO approverAssociationDao;
     private ApplicationContext ac;
 
 
@@ -474,6 +476,44 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
         List<GroupEntity> finalizedGroups = getGroupListForOwner(searchBean, requesterId, ownerId, getDefaultLanguage());
         return finalizedGroups.size();
     }
+    @Override
+    @Transactional(readOnly = true)
+    public List<GroupOwner> getOwnersBeansForGroup(String groupId){
+        List<GroupOwner> result = new ArrayList<>();
+
+        if(StringUtils.isNotBlank(groupId)){
+            GroupEntity groupEntity = groupDao.findById(groupId);
+            result = getOwnersBeansForGroup(groupEntity);
+        }
+        return result;
+    }
+    private List<GroupOwner> getOwnersBeansForGroup(GroupEntity groupEntity){
+        List<GroupOwner> result = new ArrayList<>();
+
+        if(groupEntity!=null){
+            ResourceEntity adminResource = groupEntity.getAdminResource();
+            if(adminResource!=null){
+                if(CollectionUtils.isNotEmpty(adminResource.getUsers())){
+                    for (UserEntity usr: adminResource.getUsers()){
+                        GroupOwner owner = new GroupOwner();
+                        owner.setType("user");
+                        owner.setId(usr.getId());
+                        result.add(owner);
+                    }
+                }
+                if(CollectionUtils.isNotEmpty(adminResource.getGroups())){
+                    for (GroupEntity grp: adminResource.getGroups()){
+                        GroupOwner owner = new GroupOwner();
+                        owner.setType("group");
+                        owner.setId(owner.getId());
+                        owner.setName(grp.getName());
+                        result.add(owner);
+                    }
+                }
+            }
+        }
+        return result;
+    }
 
     private List<GroupEntity> getGroupListForOwner(GroupSearchBean searchBean, String requesterId, String ownerId, LanguageEntity languageEntity){
         List<GroupEntity> foundGroups = findBeansLocalize(searchBean, requesterId, -1, -1, languageEntity);
@@ -549,7 +589,6 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
 	public void saveGroup(final GroupEntity group, final String requestorId) throws BasicDataServiceException {
         saveGroup(group, null, requestorId);
 	}
-
     @Override
     @Transactional
     public void saveGroup(final GroupEntity group, final GroupOwner groupOwner, final String requestorId) throws BasicDataServiceException{
@@ -605,7 +644,6 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
             } else {
                 group.setRisk(null);
             }
-
             if(StringUtils.isNotBlank(group.getId())) {
                 final GroupEntity dbGroup = groupDao.findById(group.getId());
                 if(dbGroup != null) {
@@ -613,7 +651,7 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
 
                     mergeAttribute(group, dbGroup, requestorId);
                     group.setChildGroups(dbGroup.getChildGroups());
-                    group.setParentGroups(dbGroup.getParentGroups());
+                    mergeParent(group, dbGroup, requestorId);
                     group.setResources(dbGroup.getResources());
                     group.setRoles(dbGroup.getRoles());
                     group.setUsers(dbGroup.getUsers());
@@ -624,11 +662,11 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
                         group.setAdminResource(getNewAdminResource(group, groupOwner, requestorId));
                     }
                     group.getAdminResource().setCoorelatedName(group.getName());
+                    mergeGroupOwner(group, groupOwner, requestorId);
                 } else {
                     return;
                 }
                 groupDao.merge(group);
-
             } else {
                 if(CollectionUtils.isNotEmpty(group.getParentGroups())) {
                     Set<String> ids = new HashSet<>();
@@ -680,16 +718,30 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
         }
     }
 
+    private void mergeGroupOwner(GroupEntity group, GroupOwner groupOwner, String requestorId) {
+        // get data from DB
+        List<GroupOwner> owners = getOwnersBeansForGroup(group);
+        if(owners==null || !owners.contains(groupOwner)) {
+            // get admin resource
+            ResourceEntity adminResource = group.getAdminResource();
+            // clean users and groups
+            adminResource.getUsers().clear();
+            adminResource.getGroups().clear();
+            // add new Owner;
+            addOwner(adminResource, groupOwner, requestorId);
+        }
+    }
+
     private ApproverAssociationEntity createDefaultApproverAssociations(final GroupEntity entity, final String requestorId) {
-		final ApproverAssociationEntity association = new ApproverAssociationEntity();
-		association.setAssociationEntityId(entity.getId());
-		association.setAssociationType(AssociationType.GROUP);
-		association.setApproverLevel(Integer.valueOf(0));
-		association.setApproverEntityId(requestorId);
-		association.setApproverEntityType(AssociationType.USER);
-		return association;
-	}
-	
+        final ApproverAssociationEntity association = new ApproverAssociationEntity();
+        association.setAssociationEntityId(entity.getId());
+        association.setAssociationType(AssociationType.GROUP);
+        association.setApproverLevel(Integer.valueOf(0));
+        association.setApproverEntityId(requestorId);
+        association.setApproverEntityType(AssociationType.USER);
+        return association;
+    }
+
 	private ResourceEntity getNewAdminResource(final GroupEntity entity, final GroupOwner groupOwner, final String requestorId) {
 		final ResourceEntity adminResource = new ResourceEntity();
 		adminResource.setName(String.format("GRP_ADMIN_%s_%s", entity.getName(), RandomStringUtils.randomAlphanumeric(2)));
@@ -697,6 +749,11 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
 
 		adminResource.setCoorelatedName(entity.getName());
 
+        addOwner(adminResource, groupOwner,requestorId);
+		return adminResource;
+	}
+
+    private void addOwner(ResourceEntity adminResource, GroupOwner groupOwner, final String requestorId){
         if(groupOwner!=null && StringUtils.isNotBlank(groupOwner.getId())){
             if("user".equals(groupOwner.getType())){
                 adminResource.addUser(userDAO.findById(groupOwner.getId()));
@@ -708,10 +765,52 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
         } else {
             adminResource.addUser(userDAO.findById(requestorId));
         }
+    }
 
+    private void mergeParent(final GroupEntity bean, final GroupEntity dbObject, final String requesterId) {
+        Set<GroupEntity> beanParents = (bean.getParentGroups() != null) ? bean.getParentGroups() : new HashSet<GroupEntity>();
+        Set<GroupEntity> dbParents = (dbObject.getParentGroups() != null) ? dbObject.getParentGroups() : new HashSet<GroupEntity>();
 
-		return adminResource;
-	}
+        /* update */
+        Iterator<GroupEntity> dbIterator = dbParents.iterator();
+        while(dbIterator.hasNext()) {
+            final GroupEntity dbParent = dbIterator.next();
+
+            boolean contains = false;
+            for (final GroupEntity beanParent : beanParents) {
+                if (StringUtils.equals(dbParent.getId(), beanParent.getId())) {
+                    contains = true;
+                    break;
+                }
+            }
+            /* remove */
+            if(!contains) {
+                auditLogRemoveParent(bean, dbParent, requesterId);
+                dbIterator.remove();
+            }
+        }
+
+        /* add */
+        final Set<String> toAddIds = new HashSet<>();
+        for (final GroupEntity beanParent : beanParents) {
+            boolean contains = false;
+            dbIterator = dbParents.iterator();
+            while(dbIterator.hasNext()) {
+                final GroupEntity dbParent = dbIterator.next();
+                if (StringUtils.equals(dbParent.getId(), beanParent.getId())) {
+                    contains = true;
+                }
+            }
+
+            if (!contains) {
+                toAddIds.add(beanParent.getId());
+            }
+        }
+        if(CollectionUtils.isNotEmpty(toAddIds)){
+            dbParents.addAll(groupDao.findByIds(toAddIds));
+        }
+        bean.setParentGroups(dbParents);
+    }
 	
 	private void mergeAttribute(final GroupEntity bean, final GroupEntity dbObject, final String requesterId) {
 		Set<GroupAttributeEntity> beanProps = (bean.getAttributes() != null) ? bean.getAttributes() : new HashSet<GroupAttributeEntity>();
@@ -764,6 +863,17 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
         
         bean.setAttributes(dbProps);
 	}
+
+    private void auditLogRemoveParent(final GroupEntity group, final GroupEntity parent, final String requesterId){
+        // Audit Log -----------------------------------------------------------------------------------
+        IdmAuditLog auditLog = new IdmAuditLog();
+        auditLog.setRequestorUserId(requesterId);
+        auditLog.setTargetGroup(group.getId(), group.getName());
+        auditLog.setAction(AuditAction.REMOVE_PARENT_GROUP.value());
+        auditLog.addCustomRecord(parent.getName(), parent.getId());
+        auditLogService.enqueue(auditLog);
+    }
+
 
     private void auditLogRemoveAttribute(final GroupEntity group, final GroupAttributeEntity groupAttr, final String requesterId){
         // Audit Log -----------------------------------------------------------------------------------
@@ -1027,6 +1137,11 @@ public class GroupDataServiceImpl implements GroupDataService, ApplicationContex
             if(CollectionUtils.isNotEmpty(token.getDeleteList())) {
                 for(final GroupAttributeEntity entity : (List<GroupAttributeEntity>)token.getDeleteList()) {
                     groupEntity.removeAttribute(entity.getId());
+                }
+            }
+            if(CollectionUtils.isNotEmpty(token.getNonChangedList())) {
+                for(final GroupAttributeEntity entity : (List<GroupAttributeEntity>)token.getNonChangedList()) {
+                    groupEntity.addAttribute(entity);
                 }
             }
         }

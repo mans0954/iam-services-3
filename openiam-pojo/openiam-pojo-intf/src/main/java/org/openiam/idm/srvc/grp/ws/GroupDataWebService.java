@@ -4,6 +4,7 @@ import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.dto.GroupAttribute;
+import org.openiam.idm.srvc.grp.dto.GroupOwner;
 import org.openiam.idm.srvc.grp.dto.GroupRequestModel;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
@@ -426,4 +427,6 @@ public interface GroupDataWebService {
     public SaveTemplateProfileResponse saveGroupRequest(final @WebParam(name = "request", targetNamespace = "")  GroupRequestModel request);
     @WebMethod
     public SaveTemplateProfileResponse validateGroupRequest(final @WebParam(name = "request", targetNamespace = "")  GroupRequestModel request);
+    @WebMethod
+    List<GroupOwner> getOwnersBeansForGroup(final @WebParam(name = "groupId", targetNamespace = "") String groupId);
 }

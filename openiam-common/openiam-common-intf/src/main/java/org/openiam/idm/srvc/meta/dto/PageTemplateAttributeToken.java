@@ -11,6 +11,7 @@ public class PageTemplateAttributeToken {
 	private List<? extends AbstractAttributeEntity> deleteList;
 	private List<? extends AbstractAttributeEntity> updateList;
 	private List<? extends AbstractAttributeEntity> saveList;
+	private List<? extends AbstractAttributeEntity> nonChangedList;
 	public List<? extends AbstractAttributeEntity> getDeleteList() {
 		return deleteList;
 	}
@@ -29,6 +30,12 @@ public class PageTemplateAttributeToken {
 	public void setSaveList(List<? extends AbstractAttributeEntity> saveList) {
 		this.saveList = saveList;
 	}
-	
-	
+
+	public List<? extends AbstractAttributeEntity> getNonChangedList() {
+		return nonChangedList;
+	}
+
+	public void setNonChangedList(List<? extends AbstractAttributeEntity> nonChangedList) {
+		this.nonChangedList = nonChangedList;
+	}
 }

@@ -12,6 +12,7 @@ import java.util.TreeSet;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
 import org.openiam.am.srvc.dto.URIPattern;
@@ -24,7 +25,7 @@ import org.openiam.idm.srvc.meta.dto.MetadataElementPageTemplate;
 		"templateId",
         "pageElements",
         "uiFields",
-		"dataModel",
+		"jsonDataModel",
 		"customJS"
 })
 public class PageTempate implements Serializable{
@@ -32,7 +33,9 @@ public class PageTempate implements Serializable{
 	private String templateId;
 	
 	private Map<String, TemplateUIField> uiFields;
-	private Map dataModel;
+	private String jsonDataModel;
+	@XmlTransient
+	private Map objectDataModel;
 	private String customJS;
 	private TreeSet<PageElement> pageElements = new TreeSet<PageElement>(PageElementComparator.INSTANCE);
 	
@@ -127,12 +130,20 @@ public class PageTempate implements Serializable{
 		return true;
 	}
 
-	public Map getDataModel() {
-		return dataModel;
+	public String getJsonDataModel() {
+		return jsonDataModel;
 	}
 
-	public void setDataModel(Map dataModel) {
-		this.dataModel = dataModel;
+	public void setJsonDataModel(String jsonDataModel) {
+		this.jsonDataModel = jsonDataModel;
+	}
+
+	public Map getObjectDataModel() {
+		return objectDataModel;
+	}
+
+	public void setObjectDataModel(Map objectDataModel) {
+		this.objectDataModel = objectDataModel;
 	}
 
 	public String getCustomJS() {

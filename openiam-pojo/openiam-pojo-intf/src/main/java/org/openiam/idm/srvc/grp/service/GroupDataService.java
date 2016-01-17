@@ -128,4 +128,5 @@ public interface GroupDataService {
 
     public void saveGroupRequest(final GroupRequestModel request) throws Exception;
     public void validateGroupRequest(final GroupRequestModel request) throws Exception;
+    public List<GroupOwner> getOwnersBeansForGroup(String groupId);
 }

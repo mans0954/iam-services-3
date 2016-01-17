@@ -1,11 +1,16 @@
 package org.openiam.idm.srvc.meta.service;
 
+import java.io.IOException;
 import java.util.*;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.StopWatch;
 import org.apache.log4j.Logger;
+import org.codehaus.jackson.JsonGenerationException;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.openiam.am.srvc.dao.URIPatternDao;
 import org.openiam.am.srvc.domain.URIPatternEntity;
 import org.openiam.authmanager.common.model.AuthorizationResource;
@@ -100,6 +105,11 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 
 	@Autowired
 	private TemplateObjectHelper templateObjectHelper;
+
+
+	@Autowired
+	@Qualifier("customJacksonMapper")
+	protected ObjectMapper jacksonMapper;
 
 	private static Logger LOG = Logger.getLogger(MetadataElementTemplateServiceImpl.class);
 
@@ -290,9 +300,20 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 					} catch (Throwable e) {
 						LOG.error(String.format("Can't instantiate '%s' - skip", entity.getDataModelUrl()), e);
 					}
+					StopWatch w = new StopWatch();
+					w.start();
 					if(templateDataModelIntf!=null){
-						template.setDataModel(templateDataModelIntf.getDataModel(request.getRequesterId()));
+						String model=null;
+						try {
+							model=jacksonMapper.writeValueAsString(templateDataModelIntf.getDataModel(request.getRequesterId()));
+						} catch (IOException e) {
+							LOG.warn("Cannot get data model. Set it to null by default");
+							model=null;
+						}
+						template.setJsonDataModel(model);
 					}
+					w.stop();
+					LOG.info(String.format("=== Get data model for template took: %f sec", w.getTime()/1000.0));
 				}
 
 				if(StringUtils.isNotBlank(entity.getCustomJS())){
@@ -532,6 +553,7 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 		final List<AbstractAttributeEntity> deleteList = new LinkedList<AbstractAttributeEntity>();
 		final List<AbstractAttributeEntity> updateList = new LinkedList<AbstractAttributeEntity>();
 		final List<AbstractAttributeEntity> saveList = new LinkedList<AbstractAttributeEntity>();
+		final List<AbstractAttributeEntity> nonChangedList = new LinkedList<AbstractAttributeEntity>();
 		
 		final PageTempate pageTemplate = request.getPageTemplate();
 		final String objectId = request.getTargetObject().getId();
@@ -629,6 +651,8 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 											}
 											if (isChanged) {
 												updateList.add(attribute);
+											} else {
+												nonChangedList.add(attribute);
 											}
 										}
 									}
@@ -643,6 +667,7 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 		token.setSaveList(saveList);
 		token.setUpdateList(updateList);
 		token.setDeleteList(deleteList);
+		token.setNonChangedList(nonChangedList);
 		return token;
 	}
 	

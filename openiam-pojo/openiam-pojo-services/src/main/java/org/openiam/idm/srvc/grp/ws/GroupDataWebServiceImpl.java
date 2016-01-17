@@ -23,6 +23,7 @@ import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.dto.GroupAttribute;
+import org.openiam.idm.srvc.grp.dto.GroupOwner;
 import org.openiam.idm.srvc.grp.dto.GroupRequestModel;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.lang.dto.Language;
@@ -734,5 +735,9 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
             response.addErrorToken(new EsbErrorToken(e.getMessage()));
         }
         return response;
+    }
+
+    public List<GroupOwner> getOwnersBeansForGroup(final @WebParam(name = "groupId", targetNamespace = "") String groupId){
+        return groupManager.getOwnersBeansForGroup(groupId);
     }
 }
