@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	version="2.4"
-	xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee   http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
+         version="2.4"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee   http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
 
     <!-- Listener that flushes the JavaBeans Introspector cache on web app shutdown. Register this listener in your web.xml to guarantee proper release of the web app class loader and the classes that it holds.-->
     <listener>
         <listener-class>org.springframework.web.util.IntrospectorCleanupListener</listener-class>
     </listener>
     <filter>
-		<filter-name>OpenSessionInViewFilter</filter-name>
-		<filter-class>org.springframework.orm.hibernate3.support.OpenSessionInViewFilter</filter-class>
-	</filter>
+        <filter-name>OpenSessionInViewFilter</filter-name>
+        <filter-class>org.springframework.orm.hibernate3.support.OpenSessionInViewFilter</filter-class>
+    </filter>
 
-	<filter-mapping>
-		<filter-name>OpenSessionInViewFilter</filter-name>
-		<url-pattern>/idmsrvc/*</url-pattern>
-	</filter-mapping>
+    <filter-mapping>
+        <filter-name>OpenSessionInViewFilter</filter-name>
+        <url-pattern>/idmsrvc/*</url-pattern>
+    </filter-mapping>
     <!--
     <context-param>
 		<param-name>contextConfigLocation</param-name>
@@ -24,16 +24,16 @@
    -->
 
     <context-param>
-		<param-name>contextConfigLocation</param-name>
-		<param-value>classpath:applicationContext.xml,
-					 classpath:am-service-Context.xml,
-					 classpath:idmservice-Context.xml,
-					 classpath:idmservice-nonmule-Context.xml,
-					 classpath:connector-coreContext.xml,
-					 classpath:bpm-context.xml,
-                     classpath:authorizationManagerContext.xml
-		</param-value>
-	</context-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>classpath:applicationContext.xml,
+            classpath:am-service-Context.xml,
+            classpath:idmservice-Context.xml,
+            classpath:idmservice-nonmule-Context.xml,
+            classpath:connector-coreContext.xml,
+            classpath:bpm-context.xml,
+            classpath:authorizationManagerContext.xml
+        </param-value>
+    </context-param>
 
     <!--
 	<context-param>
@@ -42,52 +42,67 @@
 	</context-param>
     -->
 
-	<context-param>
-		<param-name>org.mule.config</param-name>
-		<param-value>main-mule-config.xml</param-value>
-	</context-param>
+    <context-param>
+        <param-name>org.mule.config</param-name>
+        <param-value>main-mule-config.xml</param-value>
+    </context-param>
 
 
+    <listener>
+        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+    </listener>
 
 
-	<listener>
-		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
-	</listener>
+    <listener>
+        <listener-class>org.mule.config.builders.MuleXmlBuilderContextListener</listener-class>
+    </listener>
 
+    <servlet>
+        <servlet-name>muleServlet</servlet-name>
+        <servlet-class>org.mule.transport.servlet.MuleReceiverServlet</servlet-class>
+    </servlet>
 
-	<listener>
-		<listener-class>org.mule.config.builders.MuleXmlBuilderContextListener</listener-class>
-	</listener>
+    <servlet-mapping>
+        <servlet-name>muleServlet</servlet-name>
+        <url-pattern>/idmsrvc/*</url-pattern>
+    </servlet-mapping>
 
-	<servlet>
-		<servlet-name>muleServlet</servlet-name>
-		<servlet-class>org.mule.transport.servlet.MuleReceiverServlet</servlet-class>
-	</servlet>
+    <servlet>
+        <servlet-name>AuthorizationManagerHessianServlet</servlet-name>
+        <servlet-class>org.openiam.authmanager.web.AuthorizationManagerHessianServlet</servlet-class>
+        <!--
+     <init-param>
+           <param-name>home-class</param-name>
+           <param-value>example.BasicService</param-value>
+     </init-param>
+     <init-param>
+           <param-name>home-api</param-name>
+           <param-value>example.Basic</param-value>
+     </init-param>
+     -->
+    </servlet>
 
-	<servlet-mapping>
-		<servlet-name>muleServlet</servlet-name>
-		<url-pattern>/idmsrvc/*</url-pattern>
-	</servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>AuthorizationManagerHessianServlet</servlet-name>
+        <url-pattern>/iamauthmgr</url-pattern>
+    </servlet-mapping>
 
-  	<servlet>
-   		<servlet-name>AuthorizationManagerHessianServlet</servlet-name>
-   		<servlet-class>org.openiam.authmanager.web.AuthorizationManagerHessianServlet</servlet-class>
-   		<!--
-    	<init-param>
-      		<param-name>home-class</param-name>
-      		<param-value>example.BasicService</param-value>
-    	</init-param>
-    	<init-param>
-      		<param-name>home-api</param-name>
-      		<param-value>example.Basic</param-value>
-    	</init-param>
-    	-->
-  	</servlet>
+    <servlet>
+        <servlet-name>CXFServlet</servlet-name>
+        <servlet-class>
+            org.apache.cxf.transport.servlet.CXFServlet
+        </servlet-class>
+        <init-param>
+            <param-name>config-location</param-name>
+            <param-value>classpath:idmservice-Context.xml</param-value>
+        </init-param>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
 
-  	<servlet-mapping>
-  		<servlet-name>AuthorizationManagerHessianServlet</servlet-name>
-    	<url-pattern>/iamauthmgr</url-pattern>
-  	</servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>CXFServlet</servlet-name>
+        <url-pattern>/source/*</url-pattern>
+    </servlet-mapping>
 
 
 </web-app>

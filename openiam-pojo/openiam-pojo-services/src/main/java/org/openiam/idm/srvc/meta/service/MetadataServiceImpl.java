@@ -153,8 +153,7 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 		if(searchBean.hasMultipleKeys()) {
 			retVal = metadataTypeDao.findByIds(searchBean.getKeys());
 		} else {
-			final MetadataTypeEntity entity = metadataTypeSearchBeanConverter.convert(searchBean);
-			retVal = metadataTypeDao.getByExample(entity, from, size);
+			retVal = metadataTypeDao.getByExample(searchBean, from, size);
 		}
         return (retVal != null) ? metaDataTypeDozerConverter.convertToDTOList(retVal,true) : null;
 	}

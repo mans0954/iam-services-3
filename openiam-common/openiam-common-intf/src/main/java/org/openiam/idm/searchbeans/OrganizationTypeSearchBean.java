@@ -17,7 +17,7 @@ import java.util.Set;
 	"childIds",
     "excludeIds"
 })
-public class OrganizationTypeSearchBean extends AbstractSearchBean<OrganizationType, String> implements SearchBean<OrganizationType, String> {
+public class OrganizationTypeSearchBean extends AbstractLanguageSearchBean<OrganizationType, String> implements SearchBean<OrganizationType, String> {
 
 	private Set<String> keySet;
 	private Set<String> parentIds;
@@ -101,6 +101,7 @@ public class OrganizationTypeSearchBean extends AbstractSearchBean<OrganizationT
                 .append(childIds != null ? childIds.toString().hashCode() : "")
                 .append(excludeIds != null ? excludeIds.toString().hashCode() : "")
                 .append(getKey() != null ? getKey() : "")
+				.append(getSortKeyForCache())
                 .toString();
     }
 }

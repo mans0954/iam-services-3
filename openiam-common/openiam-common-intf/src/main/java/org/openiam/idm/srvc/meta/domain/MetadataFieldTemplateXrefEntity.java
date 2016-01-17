@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.meta.domain;
 
 import java.io.Serializable;
 import java.util.Map;
+import java.util.Set;
 
 import javax.persistence.AttributeOverride;
 import javax.persistence.CascadeType;
@@ -64,7 +65,7 @@ public class MetadataFieldTemplateXrefEntity extends KeyEntity {
 	@Transient
 	@InternationalizedCollection
     private Map<String, LanguageMappingEntity> languageMap;
-	
+
 	public MetadataTemplateTypeFieldEntity getField() {
 		return field;
 	}
@@ -112,8 +113,7 @@ public class MetadataFieldTemplateXrefEntity extends KeyEntity {
 	public void setLanguageMap(Map<String, LanguageMappingEntity> languageMap) {
 		this.languageMap = languageMap;
 	}
-	
-	
+
 	public String getDisplayName(final LanguageEntity language) {
 		String name = null;
 		if(language != null) {

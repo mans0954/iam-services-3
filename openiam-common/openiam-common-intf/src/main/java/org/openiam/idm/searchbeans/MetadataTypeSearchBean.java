@@ -1,27 +1,27 @@
 package org.openiam.idm.searchbeans;
 
-import java.util.HashSet;
-import java.util.Set;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.openiam.base.ws.SortParam;
+import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
+import org.openiam.idm.srvc.meta.dto.MetadataType;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
-import org.openiam.idm.srvc.meta.dto.MetadataType;
+import java.util.HashSet;
+import java.util.Set;
 
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "MetadataTypeSearchBean", propOrder = { 
-	"active",
-	"syncManagedSys", 
-	"grouping", 
-	"keySet",
-	"name",
-	"categoryIds"
+@XmlType(name = "MetadataTypeSearchBean", propOrder = {
+        "active",
+        "syncManagedSys",
+        "grouping",
+        "keySet",
+        "name",
+        "categoryIds"
 })
-public class MetadataTypeSearchBean extends AbstractSearchBean<MetadataType, String> implements SearchBean<MetadataType, String> {
+public class MetadataTypeSearchBean extends AbstractLanguageSearchBean<MetadataType, String> implements SearchBean<MetadataType, String> {
 
     private Set<String> keySet;
     private Boolean active;
@@ -47,12 +47,12 @@ public class MetadataTypeSearchBean extends AbstractSearchBean<MetadataType, Str
     }
 
     public MetadataTypeGrouping getGrouping() {
-		return grouping;
-	}
+        return grouping;
+    }
 
-	public void setGrouping(MetadataTypeGrouping grouping) {
-		this.grouping = grouping;
-	}
+    public void setGrouping(MetadataTypeGrouping grouping) {
+        this.grouping = grouping;
+    }
 
     @Override
     public void setKey(final String key) {
@@ -80,35 +80,34 @@ public class MetadataTypeSearchBean extends AbstractSearchBean<MetadataType, Str
     public void setKeys(final Set<String> keySet) {
         this.keySet = keySet;
     }
-    
-    
+
 
     public String getName() {
-		return name;
-	}
+        return name;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
-	
-	public void addCategoryId(final String id) {
-		if(StringUtils.isNotBlank(id)) {
-			if(this.categoryIds == null) {
-				this.categoryIds = new HashSet<>();
-			}
-			this.categoryIds.add(id);
-		}
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	public Set<String> getCategoryIds() {
-		return categoryIds;
-	}
+    public void addCategoryId(final String id) {
+        if (StringUtils.isNotBlank(id)) {
+            if (this.categoryIds == null) {
+                this.categoryIds = new HashSet<>();
+            }
+            this.categoryIds.add(id);
+        }
+    }
 
-	public void setCategoryIds(Set<String> categoryIds) {
-		this.categoryIds = categoryIds;
-	}
+    public Set<String> getCategoryIds() {
+        return categoryIds;
+    }
 
-	@Override
+    public void setCategoryIds(Set<String> categoryIds) {
+        this.categoryIds = categoryIds;
+    }
+
+    @Override
     public String getKey() {
         return (CollectionUtils.isNotEmpty(keySet)) ? keySet.iterator().next()
                 : null;
@@ -124,6 +123,7 @@ public class MetadataTypeSearchBean extends AbstractSearchBean<MetadataType, Str
                 .append(getKeys() != null ? getKeys().toString().hashCode() : "")
                 .append(grouping != null ? grouping.toString().hashCode() : "")
                 .append(getKey() != null ? getKey() : "")
+                .append(getSortKeyForCache())
                 .toString();
     }
 }
