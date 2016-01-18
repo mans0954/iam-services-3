@@ -76,4 +76,17 @@ public class RenewTokenTest extends AbstractTestNGSpringContextTests {
             }
         }
     }
+    
+    @Test
+    public void testKerberosAuthentication() {
+    	final AuthenticationRequest request = new AuthenticationRequest();
+    	request.setPrincipal("snelson");
+    	request.setKerberosAuth(true);
+    	request.setAuthPolicyId(null);
+    	final AuthenticationResponse response = authServiceClient.login(request);
+    	Assert.assertNotNull(response);
+    	Assert.assertTrue(response.getStatus().equals(ResponseStatus.SUCCESS));
+    	Assert.assertNotNull(response.getSubject());
+    	Assert.assertNotNull(response.getSubject().getSsoToken());
+    }
 }

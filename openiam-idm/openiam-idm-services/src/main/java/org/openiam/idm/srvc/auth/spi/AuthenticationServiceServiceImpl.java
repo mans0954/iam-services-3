@@ -212,7 +212,7 @@ public class AuthenticationServiceServiceImpl implements AuthenticationServiceSe
 
                 }
 
-                if (StringUtils.isBlank(password)) {
+                if (!request.isKerberosAuth() && StringUtils.isBlank(password)) {
 
                     log.debug("Invalid password");
                     /*
@@ -313,6 +313,8 @@ public class AuthenticationServiceServiceImpl implements AuthenticationServiceSe
                     .createCredentialObject(AuthenticationConstants.AUTHN_TYPE_PASSWORD);
             cred.setCredentials(principal, password);
             ctx.setCredential(AuthenticationConstants.AUTHN_TYPE_PASSWORD, cred);
+            /* skip password checking if this is a call from kerberos */
+            ctx.setSkipPasswordCheck(request.isKerberosAuth());
 
             Map<String, Object> authParamMap = new HashMap<String, Object>();
             authParamMap.put("AUTH_SYS_ID", sysConfiguration.getDefaultManagedSysId());

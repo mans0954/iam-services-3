@@ -88,6 +88,8 @@ public class DefaultLoginModule extends AbstractLoginModule {
         PasswordCredential cred = (PasswordCredential) authContext.getCredential();
         String principal = cred.getPrincipal();
         String password = cred.getPassword();
+        
+        final boolean skipPasswordCheck = authContext.isSkipPasswordCheck();
 
         // checking if Login exists in OpenIAM
        LoginEntity lg = loginManager.getLoginByManagedSys(principal, sysConfiguration.getDefaultManagedSysId());
@@ -126,7 +128,7 @@ public class DefaultLoginModule extends AbstractLoginModule {
         }
 
         // checking if provided Password is not empty
-        if (StringUtils.isEmpty(password)) {
+        if (!skipPasswordCheck && StringUtils.isEmpty(password)) {
             throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_PASSWORD);
         }
 
@@ -138,63 +140,64 @@ public class DefaultLoginModule extends AbstractLoginModule {
         }
 
         // checking passwords are equal
-        String encryptPswd = encryptPassword(lg.getUserId(), password);
-        if (!StringUtils.equals(lg.getPassword(), encryptPswd)) {
-            // get the authentication lock out policy
-            String attrValue = getPolicyAttribute(authPolicy.getPolicyAttributes(), "FAILED_AUTH_COUNT");
-
-            // if failed auth count is part of the polices, then do the
-            // following processing
-            if (StringUtils.isNotBlank(attrValue)) {
-
-                int authFailCount = Integer.parseInt(attrValue);
-                // increment the auth fail counter
-                int failCount = 0;
-                if (lg.getAuthFailCount() != null) {
-                    failCount = lg.getAuthFailCount().intValue();
-                }
-                failCount++;
-                lg.setAuthFailCount(failCount);
-                lg.setLastAuthAttempt(new Date(System.currentTimeMillis()));
-                if (failCount >= authFailCount) {
-                    // lock the record and save the record.
-                    lg.setIsLocked(1);
-                    loginManager.updateLogin(lg);
-                    // set the flag on the primary user record
-                    user.setSecondaryStatus(UserStatusEnum.LOCKED);
-                    userManager.updateUser(user);
-                    throw new AuthenticationException(
-                            AuthenticationConstants.RESULT_LOGIN_LOCKED);
-
-                } else {
-                    // update the counter save the record
-                    loginManager.updateLogin(lg);
-                    throw new AuthenticationException(
-                            AuthenticationConstants.RESULT_INVALID_PASSWORD);
-                }
-
-            } else {
-                log.error("No auth fail password policy value found");
-                throw new AuthenticationException(
-                        AuthenticationConstants.RESULT_INVALID_CONFIGURATION);
-
-            }
-
+        if(!skipPasswordCheck) {
+	        String encryptPswd = encryptPassword(lg.getUserId(), password);
+	        if (!StringUtils.equals(lg.getPassword(), encryptPswd)) {
+	            // get the authentication lock out policy
+	            String attrValue = getPolicyAttribute(authPolicy.getPolicyAttributes(), "FAILED_AUTH_COUNT");
+	
+	            // if failed auth count is part of the polices, then do the
+	            // following processing
+	            if (StringUtils.isNotBlank(attrValue)) {
+	
+	                int authFailCount = Integer.parseInt(attrValue);
+	                // increment the auth fail counter
+	                int failCount = 0;
+	                if (lg.getAuthFailCount() != null) {
+	                    failCount = lg.getAuthFailCount().intValue();
+	                }
+	                failCount++;
+	                lg.setAuthFailCount(failCount);
+	                lg.setLastAuthAttempt(new Date(System.currentTimeMillis()));
+	                if (failCount >= authFailCount) {
+	                    // lock the record and save the record.
+	                    lg.setIsLocked(1);
+	                    loginManager.updateLogin(lg);
+	                    // set the flag on the primary user record
+	                    user.setSecondaryStatus(UserStatusEnum.LOCKED);
+	                    userManager.updateUser(user);
+	                    throw new AuthenticationException(
+	                            AuthenticationConstants.RESULT_LOGIN_LOCKED);
+	
+	                } else {
+	                    // update the counter save the record
+	                    loginManager.updateLogin(lg);
+	                    throw new AuthenticationException(
+	                            AuthenticationConstants.RESULT_INVALID_PASSWORD);
+	                }
+	
+	            } else {
+	                log.error("No auth fail password policy value found");
+	                throw new AuthenticationException(
+	                        AuthenticationConstants.RESULT_INVALID_CONFIGURATION);
+	
+	            }
+	
+	        }
+	
+	        // now we can change password
+	        if (changePassword != null) {
+	            throw changePassword;
+	        }
+	
+	        Integer daysToExp = getDaysToPasswordExpiration(lg, curDate, passwordPolicy);
+	        if (daysToExp != null) {
+	            subj.setDaysToPwdExp(0);
+	            if (daysToExp > -1) {
+	                subj.setDaysToPwdExp(daysToExp);
+	            }
+	        }
         }
-
-        // now we can change password
-        if (changePassword != null) {
-            throw changePassword;
-        }
-
-        Integer daysToExp = getDaysToPasswordExpiration(lg, curDate, passwordPolicy);
-        if (daysToExp != null) {
-            subj.setDaysToPwdExp(0);
-            if (daysToExp > -1) {
-                subj.setDaysToPwdExp(daysToExp);
-            }
-        }
-
 
         log.debug("-login successful");
         // good login - reset the counters
