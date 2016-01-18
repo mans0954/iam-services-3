@@ -65,6 +65,7 @@ public class URIFederationWebServiceImpl implements URIFederationWebService {
 		try {
 			final AuthenticationRequest loginRequest = uriFederationService.createAuthenticationRequest(principal, proxyURI, getMethod(method));
 			loginRequest.setLanguageId("1"); //set default
+			loginRequest.setKerberosAuth(true);
 			final AuthenticationResponse loginResponse = authenticationService.login(loginRequest);
 			if(ResponseStatus.SUCCESS.equals(loginResponse.getStatus())) {
 				final Subject subject = loginResponse.getSubject();

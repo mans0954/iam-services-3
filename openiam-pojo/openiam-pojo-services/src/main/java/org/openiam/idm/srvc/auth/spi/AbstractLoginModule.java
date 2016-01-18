@@ -200,7 +200,7 @@ public abstract class AbstractLoginModule implements AuthenticationModule {
             throw new BasicDataServiceException(ResponseCode.INVALID_PRINCIPAL);
         }
 
-        if (StringUtils.isBlank(password)) {
+        if (StringUtils.isBlank(password) && !context.isKerberosAuth()) {
             newLoginEvent.setFailureReason("Invalid Password");
             throw new BasicDataServiceException(ResponseCode.INVALID_PASSWORD);
         }
@@ -372,8 +372,10 @@ public abstract class AbstractLoginModule implements AuthenticationModule {
 
     }
 
-    protected void setResultCode(LoginEntity lg, Subject sub, Date curDate, PolicyEntity pwdPolicy) throws BasicDataServiceException {
-        if (lg.getFirstTimeLogin() == 1) {
+    protected void setResultCode(LoginEntity lg, Subject sub, Date curDate, PolicyEntity pwdPolicy, final boolean skipPasswordCheck) throws BasicDataServiceException {
+    	if(skipPasswordCheck) {
+    		sub.setResultCode(ResponseCode.RESULT_SUCCESS);
+    	} else if (lg.getFirstTimeLogin() == 1) {
             sub.setResultCode(ResponseCode.RESULT_SUCCESS_FIRST_TIME);
         } else if (lg.getPwdExp() != null) {
             if ((curDate.after(lg.getPwdExp()) && curDate.before(lg.getGracePeriod()))) {

@@ -214,7 +214,7 @@ public class AbstractSocialLoginModule<Profile extends AbstractSocialProfile> ex
         sub.setUserId(login.getUserId());
         sub.setPrincipal(principal);
         sub.setSsoToken(token(login.getUserId(), tokenType, tokenLife, tokenParam));
-        setResultCode(login, sub, curDate, policy);
+        setResultCode(login, sub, curDate, policy, false);
 
         newLoginEvent.setSuccessReason("Successful authentication into Default Login Module");
         return sub;

@@ -73,6 +73,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.DependsOn;
@@ -139,6 +140,9 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
     @Autowired
     @Qualifier("transactionTemplate")
     private TransactionTemplate transactionTemplate;
+    
+    @Value("${org.openiam.auth.level.kerberos.id}")
+    private String kerberosAuthId;
 	
 	@Override
 	public void afterPropertiesSet() throws Exception {
@@ -358,13 +362,17 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 				LOG.error(String.format("Primary identity not found for principal '%s', proxyURI: '%s", principal, proxyURI));
 				throw new BasicDataServiceException(ResponseCode.IDENTITY_NOT_FOUND);
 			}
-				
-			final AuthenticationRequest request = new AuthenticationRequest();
-			request.setPrincipal(primaryLogin.getLogin());
 			
 			final URIPatternSearchResult patternNode = cpNode.getURIPattern(uri, method);
 			final URIPattern uriPattern = patternNode.getPattern();
 			final URIPatternMethod uriMethod = patternNode.getMethod();
+			
+			final List<AuthLevelGrouping> groupingList = getGroupingList(cp, uriPattern);
+			final boolean isKerberosAuth = groupingList.stream().filter(e -> e.getId().equals(kerberosAuthId)).count() > 0;
+				
+			final AuthenticationRequest request = new AuthenticationRequest();
+			request.setPrincipal(primaryLogin.getLogin());
+			request.setKerberosAuth(isKerberosAuth);
 			
 			if(uriPattern != null) {
 				request.setPatternId(uriPattern.getId());
@@ -540,7 +548,7 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 		ContentProvider cp = null;
 		URIPattern uriPattern = null;
 		URIPatternMethod uriMethod = null;
-		final List<AuthLevelGrouping> groupingList = new LinkedList<AuthLevelGrouping>();
+		List<AuthLevelGrouping> groupingList = new LinkedList<AuthLevelGrouping>();
 		try {
 			final URI uri = new URI(proxyURI);
 			final ContentProviderNode cpNode = contentProviderTree.find(uri);
@@ -596,6 +604,7 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 					throw new BasicDataServiceException(ResponseCode.URI_FEDERATION_PATTERN_NOT_FOUND);
 				}
 				
+				groupingList = getGroupingList(cp, uriPattern);
 				if(uriPattern != null && CollectionUtils.isNotEmpty(uriPattern.getGroupingXrefs())) {
 					for(final AuthLevelGroupingURIPatternXref xref : uriPattern.getOrderedGroupingXrefs()) {
 						final String groupingId = xref.getId().getGroupingId();
@@ -719,6 +728,30 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 			}
 		}
 		return response;
+	}
+	
+	private List<AuthLevelGrouping> getGroupingList(final ContentProvider cp, final URIPattern uriPattern) {
+		final List<AuthLevelGrouping> groupingList = new LinkedList<AuthLevelGrouping>();
+		if(uriPattern != null && CollectionUtils.isNotEmpty(uriPattern.getGroupingXrefs())) {
+			for(final AuthLevelGroupingURIPatternXref xref : uriPattern.getOrderedGroupingXrefs()) {
+				final String groupingId = xref.getId().getGroupingId();
+				final AuthLevelGrouping grouping = groupingMap.get(groupingId);
+				if(grouping != null) {
+					groupingList.add(grouping);
+				}
+			}
+		} else {
+			if(CollectionUtils.isNotEmpty(cp.getGroupingXrefs())) {
+				for(final AuthLevelGroupingContentProviderXref xref : cp.getOrderedGroupingXrefs()) {
+					final String groupingId = xref.getId().getGroupingId();
+					final AuthLevelGrouping grouping = groupingMap.get(groupingId);
+					if(grouping != null) {
+						groupingList.add(grouping);
+					}
+				}
+			}
+		}
+		return groupingList;
 	}
 	
 	private boolean isEntitled(final String userId, final String resourceId) {
