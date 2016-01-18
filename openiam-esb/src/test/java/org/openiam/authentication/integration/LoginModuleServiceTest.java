@@ -89,6 +89,11 @@ public class LoginModuleServiceTest extends AbstractServiceTest {
 		Assert.assertNotNull(authResponse);
 		Assert.assertTrue(authResponse.isFailure());
 		
+		request.setPassword("foobar");
+		authResponse = authServiceClient.login(request);
+		Assert.assertNotNull(authResponse);
+		Assert.assertTrue(authResponse.isFailure());
+		
 		request.setPassword(password);
 		authResponse = authServiceClient.login(request);
 		Assert.assertNotNull(authResponse);
