@@ -110,28 +110,6 @@ public class DefaultLoginModule extends AbstractLoginModule {
             throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_CONFIGURATION);
         }
 
-
-        AuthenticationException changePassword = null;
-        try {
-            authenticationUtils.getCredentialsValidator().execute(user, lg, AuthCredentialsValidator.NEW, new HashMap<String, Object>());
-
-        } catch (AuthenticationException ae) {
-            // we should validate password before change password
-            if (AuthenticationConstants.RESULT_PASSWORD_CHANGE_AFTER_RESET == ae.getErrorCode() ||
-                    AuthenticationConstants.RESULT_PASSWORD_EXPIRED == ae.getErrorCode() ||
-                    AuthenticationConstants.RESULT_SUCCESS_PASSWORD_EXP == ae.getErrorCode()) {
-                changePassword = ae;
-
-            } else {
-                throw ae;
-            }
-        }
-
-        // checking if provided Password is not empty
-        if (!skipPasswordCheck && StringUtils.isEmpty(password)) {
-            throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_PASSWORD);
-        }
-
         log.debug("Authentication policyid=" + sysConfiguration.getDefaultAuthPolicyId());
         Policy authPolicy = policyDataService.getPolicy(sysConfiguration.getDefaultAuthPolicyId());
         if (authPolicy == null) {
@@ -141,6 +119,28 @@ public class DefaultLoginModule extends AbstractLoginModule {
 
         // checking passwords are equal
         if(!skipPasswordCheck) {
+        	
+            AuthenticationException changePassword = null;
+            try {
+                authenticationUtils.getCredentialsValidator().execute(user, lg, AuthCredentialsValidator.NEW, new HashMap<String, Object>());
+
+            } catch (AuthenticationException ae) {
+                // we should validate password before change password
+                if (AuthenticationConstants.RESULT_PASSWORD_CHANGE_AFTER_RESET == ae.getErrorCode() ||
+                        AuthenticationConstants.RESULT_PASSWORD_EXPIRED == ae.getErrorCode() ||
+                        AuthenticationConstants.RESULT_SUCCESS_PASSWORD_EXP == ae.getErrorCode()) {
+                    changePassword = ae;
+
+                } else {
+                    throw ae;
+                }
+            }
+
+            // checking if provided Password is not empty
+            if (StringUtils.isEmpty(password)) {
+                throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_PASSWORD);
+            }
+        	
 	        String encryptPswd = encryptPassword(lg.getUserId(), password);
 	        if (!StringUtils.equals(lg.getPassword(), encryptPswd)) {
 	            // get the authentication lock out policy
@@ -242,7 +242,7 @@ public class DefaultLoginModule extends AbstractLoginModule {
         subj.setUserId(lg.getUserId());
         subj.setPrincipal(principal);
         subj.setSsoToken(token(lg.getUserId(), tokenParam));
-        setResultCode(lg, subj, curDate, passwordPolicy);
+        setResultCode(lg, subj, curDate, passwordPolicy, skipPasswordCheck);
 
         return subj;
     }

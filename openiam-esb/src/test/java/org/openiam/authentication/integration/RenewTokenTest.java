@@ -4,6 +4,7 @@ import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.idm.srvc.auth.dto.AuthenticationRequest;
 import org.openiam.idm.srvc.auth.dto.SSOToken;
+import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
 import org.openiam.idm.srvc.auth.service.AuthenticationService;
 import org.openiam.idm.srvc.auth.ws.AuthenticationResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,18 +76,5 @@ public class RenewTokenTest extends AbstractTestNGSpringContextTests {
                 System.out.println("thread: "+threadId+"; principal = " + ssoToken.getPrincipal());
             }
         }
-    }
-    
-    @Test
-    public void testKerberosAuthentication() {
-    	final AuthenticationRequest request = new AuthenticationRequest();
-    	request.setPrincipal("snelson");
-    	request.setKerberosAuth(true);
-    	request.setAuthPolicyId(null);
-    	final AuthenticationResponse response = authServiceClient.login(request);
-    	Assert.assertNotNull(response);
-    	Assert.assertTrue(response.getStatus().equals(ResponseStatus.SUCCESS));
-    	Assert.assertNotNull(response.getSubject());
-    	Assert.assertNotNull(response.getSubject().getSsoToken());
     }
 }

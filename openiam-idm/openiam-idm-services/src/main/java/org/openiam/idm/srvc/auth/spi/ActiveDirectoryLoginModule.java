@@ -288,7 +288,7 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
         subj.setUserId(lg.getUserId());
         subj.setPrincipal(principal);
         subj.setSsoToken(token(lg.getUserId(), tokenParam));
-        setResultCode(lg, subj, curDate, passwordPolicy);
+        setResultCode(lg, subj, curDate, passwordPolicy, false);
 
         return subj;
     }
