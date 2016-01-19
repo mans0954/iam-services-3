@@ -29,6 +29,7 @@ import org.openiam.idm.srvc.org.service.OrganizationService;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.service.RoleDataService;
+import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;
 import org.openiam.idm.srvc.user.dto.User;
@@ -183,7 +184,7 @@ public class NewUserModelToProvisionConverter {
             final HashMap<String, UserAttribute> userAttributes = new HashMap<String, UserAttribute>();
             final PageTemplateAttributeToken token = templateService.getAttributesFromTemplate(request);
             if (token != null && CollectionUtils.isNotEmpty(token.getSaveList())) {
-                final List<UserAttribute> userAttributeList = userAttributeDozerConverter.convertToDTOList(token.getSaveList(), true);
+                final List<UserAttribute> userAttributeList = userAttributeDozerConverter.convertToDTOList(((List<UserAttributeEntity>)token.getSaveList()), true);
                 for (final UserAttribute attribute : userAttributeList) {
                     if (attribute != null) {
                         attribute.setOperation(AttributeOperationEnum.ADD);

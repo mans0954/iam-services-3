@@ -6,6 +6,7 @@ import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.dto.GroupOwner;
+import org.openiam.idm.srvc.grp.dto.GroupRequestModel;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
@@ -124,4 +125,8 @@ public interface GroupDataService {
 
     public List<Group> findGroupsDtoForOwner(GroupSearchBean searchBean, String requesterId, String ownerId, int from, int size, Language language);
     public void removeRoleFromGroup(String roleId, String groupId);
+
+    public void saveGroupRequest(final GroupRequestModel request) throws Exception;
+    public void validateGroupRequest(final GroupRequestModel request) throws Exception;
+    public List<GroupOwner> getOwnersBeansForGroup(String groupId);
 }

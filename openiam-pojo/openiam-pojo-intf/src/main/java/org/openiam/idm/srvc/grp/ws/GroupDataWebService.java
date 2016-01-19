@@ -4,7 +4,10 @@ import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.dto.GroupAttribute;
+import org.openiam.idm.srvc.grp.dto.GroupOwner;
+import org.openiam.idm.srvc.grp.dto.GroupRequestModel;
 import org.openiam.idm.srvc.lang.dto.Language;
+import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
@@ -420,4 +423,10 @@ public interface GroupDataWebService {
     Response removeRoleFromGroup(@WebParam(name = "roleId", targetNamespace = "") String roleId,
                                  @WebParam(name = "groupId", targetNamespace = "") String groupId,
                                  final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+    @WebMethod
+    public SaveTemplateProfileResponse saveGroupRequest(final @WebParam(name = "request", targetNamespace = "")  GroupRequestModel request);
+    @WebMethod
+    public SaveTemplateProfileResponse validateGroupRequest(final @WebParam(name = "request", targetNamespace = "")  GroupRequestModel request);
+    @WebMethod
+    List<GroupOwner> getOwnersBeansForGroup(final @WebParam(name = "groupId", targetNamespace = "") String groupId);
 }
