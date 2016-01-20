@@ -184,94 +184,94 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
             log.debug("AD_LOGIN_MODULE Validator throws=" + AuthenticationConstants.RESULT_INVALID_PASSWORD);
             throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_PASSWORD);
         }
+        if (!authContext.isSkipPasswordCheck()) {
+            // try to login to AD with this user
+            LdapContext ldapCtx = connect(distinguishedName, password, mSys);
 
-        // try to login to AD with this user
-        LdapContext ldapCtx = connect(distinguishedName, password, mSys);
+            if (ldapCtx == null) {
+                log.debug("AD_LOGIN_MODULE. COntext is null for dn=" + distinguishedName);
+                // get the authentication lock out policy
+                String attrValue = getPolicyAttribute(authPolicy.getPolicyAttributes(), "FAILED_AUTH_COUNT");
 
-        if (ldapCtx == null) {
-            log.debug("AD_LOGIN_MODULE. COntext is null for dn=" + distinguishedName);
-            // get the authentication lock out policy
-            String attrValue = getPolicyAttribute(authPolicy.getPolicyAttributes(), "FAILED_AUTH_COUNT");
+                // if failed auth count is part of the polices, then do the
+                // following processing
+                if (StringUtils.isNotBlank(attrValue)) {
 
-            // if failed auth count is part of the polices, then do the
-            // following processing
-            if (StringUtils.isNotBlank(attrValue)) {
+                    int authFailCount = Integer.parseInt(attrValue);
+                    // increment the auth fail counter
+                    int failCount = 0;
+                    if (lg.getAuthFailCount() != null) {
+                        failCount = lg.getAuthFailCount().intValue();
+                    }
+                    failCount++;
+                    lg.setAuthFailCount(failCount);
+                    lg.setLastAuthAttempt(new Date(System.currentTimeMillis()));
+                    if (failCount >= authFailCount) {
+                        // lock the record and save the record.
+                        lg.setIsLocked(1);
+                        loginManager.updateLogin(lg);
 
-                int authFailCount = Integer.parseInt(attrValue);
-                // increment the auth fail counter
-                int failCount = 0;
-                if (lg.getAuthFailCount() != null) {
-                    failCount = lg.getAuthFailCount().intValue();
-                }
-                failCount++;
-                lg.setAuthFailCount(failCount);
-                lg.setLastAuthAttempt(new Date(System.currentTimeMillis()));
-                if (failCount >= authFailCount) {
-                    // lock the record and save the record.
-                    lg.setIsLocked(1);
-                    loginManager.updateLogin(lg);
+                        // set the flag on the primary user record
+                        user.setSecondaryStatus(UserStatusEnum.LOCKED);
+                        userManager.updateUser(user);
 
-                    // set the flag on the primary user record
-                    user.setSecondaryStatus(UserStatusEnum.LOCKED);
-                    userManager.updateUser(user);
+                        throw new AuthenticationException(AuthenticationConstants.RESULT_LOGIN_LOCKED);
 
-                    throw new AuthenticationException(AuthenticationConstants.RESULT_LOGIN_LOCKED);
+                    } else {
+                        // update the counter save the record
+                        loginManager.updateLogin(lg);
+
+                        throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_PASSWORD);
+                    }
 
                 } else {
-                    // update the counter save the record
-                    loginManager.updateLogin(lg);
+                    log.error("No auth fail password policy value found");
+                    throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_CONFIGURATION);
 
-                    throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_PASSWORD);
                 }
+            }
 
-            } else {
-                log.error("No auth fail password policy value found");
-                throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_CONFIGURATION);
+            // now we can change password
+            if (changePassword != null) {
+                throw changePassword;
+            }
 
+            Integer daysToExp = getDaysToPasswordExpiration(lg, curDate, passwordPolicy);
+            if (daysToExp != null) {
+                subj.setDaysToPwdExp(0);
+                if (daysToExp > -1) {
+                    subj.setDaysToPwdExp(daysToExp);
+                }
+            }
+
+
+            log.debug("-login successful");
+            // good login - reset the counters
+
+            lg.setLastAuthAttempt(curDate);
+
+            // move the current login to prev login fields
+            lg.setPrevLogin(lg.getLastLogin());
+            lg.setPrevLoginIP(lg.getLastLoginIP());
+
+            // assign values to the current login
+            lg.setLastLogin(curDate);
+            lg.setLastLoginIP(authContext.getClientIP());
+
+            lg.setAuthFailCount(0);
+            lg.setChallengeResponseFailCount(0);
+            lg.setFirstTimeLogin(0);
+            log.debug("-Good Authn: Login object updated.");
+            loginManager.updateLogin(lg);
+
+            // check the user status
+            if (UserStatusEnum.PENDING_INITIAL_LOGIN.equals(user.getStatus()) ||
+                    // after the start date
+                    UserStatusEnum.PENDING_START_DATE.equals(user.getStatus())) {
+                user.setStatus(UserStatusEnum.ACTIVE);
+                userManager.updateUser(user);
             }
         }
-
-        // now we can change password
-        if (changePassword != null) {
-            throw changePassword;
-        }
-
-        Integer daysToExp = getDaysToPasswordExpiration(lg, curDate, passwordPolicy);
-        if (daysToExp != null) {
-            subj.setDaysToPwdExp(0);
-            if (daysToExp > -1) {
-                subj.setDaysToPwdExp(daysToExp);
-            }
-        }
-
-
-        log.debug("-login successful");
-        // good login - reset the counters
-
-        lg.setLastAuthAttempt(curDate);
-
-        // move the current login to prev login fields
-        lg.setPrevLogin(lg.getLastLogin());
-        lg.setPrevLoginIP(lg.getLastLoginIP());
-
-        // assign values to the current login
-        lg.setLastLogin(curDate);
-        lg.setLastLoginIP(authContext.getClientIP());
-
-        lg.setAuthFailCount(0);
-        lg.setChallengeResponseFailCount(0);
-        lg.setFirstTimeLogin(0);
-        log.debug("-Good Authn: Login object updated.");
-        loginManager.updateLogin(lg);
-
-        // check the user status
-        if (UserStatusEnum.PENDING_INITIAL_LOGIN.equals(user.getStatus()) ||
-                // after the start date
-                UserStatusEnum.PENDING_START_DATE.equals(user.getStatus())) {
-            user.setStatus(UserStatusEnum.ACTIVE);
-            userManager.updateUser(user);
-        }
-
         // Successful login
         log.debug("-Populating subject after authentication");
 

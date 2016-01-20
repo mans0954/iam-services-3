@@ -282,7 +282,6 @@ public class AuthenticationServiceServiceImpl implements AuthenticationServiceSe
                     } catch (ScriptEngineException e) {
                         log.error("Can't execute script", e);
                     }
-
                 }
 
                 if (modSel.getModuleType() == LoginModuleSelector.MODULE_TYPE_LOGIN_MODULE) {
