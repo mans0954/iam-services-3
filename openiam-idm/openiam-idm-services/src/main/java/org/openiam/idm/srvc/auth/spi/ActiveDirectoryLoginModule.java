@@ -306,7 +306,7 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
                         break;
                     case "AccountExpirationDate":
                         if (StringUtils.isNotBlank(a.getValue())) {
-                            Date maxDate = new Date(253402225200000L); // Dec, 31, 9999
+                            Date maxDate = new Date(221876910000000L); // Dec, 31, 9999
                             if ("0".equals(a.getValue())) { // never expires
                                 accExpDate = maxDate;
                             } else {
