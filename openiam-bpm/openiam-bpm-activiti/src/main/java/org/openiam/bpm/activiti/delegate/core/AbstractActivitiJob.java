@@ -2,6 +2,7 @@ package org.openiam.bpm.activiti.delegate.core;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -233,14 +234,17 @@ public abstract class AbstractActivitiJob implements JavaDelegate, TaskListener 
 	}
 	
 	protected Set<String> getAccessRights(final DelegateExecution execution) {
-		return getObjectVariable(execution, ActivitiConstants.ACCESS_RIGHTS, Set.class);
+		final Object obj = execution.getVariable(ActivitiConstants.ACCESS_RIGHTS.getName());
+		return (obj != null && obj instanceof Set) ? (Set<String>)obj : null;
 	}
 
 	protected Date getStartDate(final DelegateExecution execution) {
-		return getObjectVariable(execution, ActivitiConstants.START_DATE, Date.class);
+		final Object obj = execution.getVariable(ActivitiConstants.START_DATE.getName());
+		return (obj != null && obj instanceof Date) ? (Date)obj : null;
 	}
 	protected Date getEndDate(final DelegateExecution execution) {
-		return getObjectVariable(execution, ActivitiConstants.END_DATE, Date.class);
+		final Object obj = execution.getVariable(ActivitiConstants.END_DATE.getName());
+		return (obj != null && obj instanceof Date) ? (Date)obj : null;
 	}
 	protected String getUserNotes(final DelegateExecution execution) {
 		return getStringVariable(execution, ActivitiConstants.USER_NOTE);

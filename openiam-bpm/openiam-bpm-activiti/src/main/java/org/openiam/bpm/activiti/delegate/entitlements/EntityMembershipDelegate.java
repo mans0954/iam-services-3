@@ -78,11 +78,11 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
 						break;
 					case ADD_ROLE_TO_GROUP:
 						action = AuditAction.ADD_ROLE_TO_GROUP;
-						response = roleDataService.addGroupToRole(memberAssociationId, associationId, systemUserId, rights, startDate, endDate);
+						response = roleDataService.addGroupToRole(associationId, memberAssociationId, systemUserId, rights, startDate, endDate);
 						break;
 					case REMOVE_ROLE_FROM_GROUP:
 						action = AuditAction.REMOVE_ROLE_FROM_GROUP;
-						response = roleDataService.removeGroupFromRole(memberAssociationId, associationId, systemUserId);
+						response = roleDataService.removeGroupFromRole(associationId, memberAssociationId, systemUserId);
 						break;
 					case ENTITLE_RESOURCE_TO_GROUP:
 						action = AuditAction.ADD_GROUP_TO_RESOURCE;
@@ -297,7 +297,7 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
 								response = provisionService.modifyUser(pUser);
 							}
 						} else {	
-							response = organizationDataService.addUserToOrg(associationId, memberAssociationId, rights, startDate, endDate);
+							response = organizationDataService.addUserToOrg(associationId, memberAssociationId, systemUserId, rights, startDate, endDate);
 						}
 						break;
 					case REMOVE_USER_FROM_ORG:
@@ -311,7 +311,7 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
 								response = provisionService.modifyUser(pUser);
 							}
 						} else {	
-							response = organizationDataService.removeUserFromOrg(associationId, memberAssociationId);
+							response = organizationDataService.removeUserFromOrg(associationId, memberAssociationId, systemUserId);
 						}
 						break;
 					default:

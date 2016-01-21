@@ -391,13 +391,17 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     }
 
     private ApproverAssociationEntity createDefaultApproverAssociations(final OrganizationEntity entity, final String requestorId) {
-		final ApproverAssociationEntity association = new ApproverAssociationEntity();
-		association.setAssociationEntityId(entity.getId());
-		association.setAssociationType(AssociationType.ORGANIZATION);
-		association.setApproverLevel(Integer.valueOf(0));
-		association.setApproverEntityId(requestorId);
-		association.setApproverEntityType(AssociationType.USER);
-		return association;
+    	if(requestorId != null) {
+			final ApproverAssociationEntity association = new ApproverAssociationEntity();
+			association.setAssociationEntityId(entity.getId());
+			association.setAssociationType(AssociationType.ORGANIZATION);
+			association.setApproverLevel(Integer.valueOf(0));
+			association.setApproverEntityId(requestorId);
+			association.setApproverEntityType(AssociationType.USER);
+			return association;
+    	} else {
+    		return null;
+    	}
 	}
 
     /*

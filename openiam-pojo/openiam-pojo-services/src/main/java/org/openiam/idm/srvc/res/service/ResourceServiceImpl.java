@@ -197,13 +197,17 @@ public class ResourceServiceImpl implements ResourceService {
 
     private ApproverAssociationEntity createDefaultApproverAssociations(final ResourceEntity entity,
                                                                         final String requestorId) {
-        final ApproverAssociationEntity association = new ApproverAssociationEntity();
-        association.setAssociationEntityId(entity.getId());
-        association.setAssociationType(AssociationType.RESOURCE);
-        association.setApproverLevel(Integer.valueOf(0));
-        association.setApproverEntityId(requestorId);
-        association.setApproverEntityType(AssociationType.USER);
-        return association;
+    	if(requestorId != null) {
+	        final ApproverAssociationEntity association = new ApproverAssociationEntity();
+	        association.setAssociationEntityId(entity.getId());
+	        association.setAssociationType(AssociationType.RESOURCE);
+	        association.setApproverLevel(Integer.valueOf(0));
+	        association.setApproverEntityId(requestorId);
+	        association.setApproverEntityType(AssociationType.USER);
+	        return association;
+    	} else {
+    		return null;
+    	}
     }
 
     private void mergeAttribute(final ResourceEntity bean, final ResourceEntity dbObject) {

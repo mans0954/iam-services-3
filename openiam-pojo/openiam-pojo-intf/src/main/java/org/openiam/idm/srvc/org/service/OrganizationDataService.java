@@ -142,6 +142,7 @@ public interface OrganizationDataService {
     @WebMethod
     public Response addUserToOrg(@WebParam(name = "orgId", targetNamespace = "") String orgId,
                                  @WebParam(name = "userId", targetNamespace = "") String userId,
+                                 final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
                                  @WebParam(name = "rightIds", targetNamespace = "") Set<String> rightIds,
                                  @WebParam(name = "startDate", targetNamespace = "") Date startDate,
                                  @WebParam(name = "endDate", targetNamespace = "") Date endDate);
@@ -149,6 +150,7 @@ public interface OrganizationDataService {
     @WebMethod
     public Response addChildOrganization(@WebParam(name = "organizationId", targetNamespace = "") String organizationId,
                                          @WebParam(name = "childOrganizationId", targetNamespace = "") String childOrganizationId,
+                                         final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
                                          @WebParam(name = "rightIds", targetNamespace = "") Set<String> rightIds,
                                          @WebParam(name = "startDate", targetNamespace = "") Date startDate,
                                          @WebParam(name = "endDate", targetNamespace = "") Date endDate);
@@ -156,51 +158,61 @@ public interface OrganizationDataService {
     @WebMethod
     public Response addGroupToOrganization(@WebParam(name = "organizationId", targetNamespace = "") String organizationId,
                                          @WebParam(name = "groupId", targetNamespace = "") String groupId,
+                                         final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
                                          @WebParam(name = "rightIds", targetNamespace = "") Set<String> rightIds,
                                          @WebParam(name = "startDate", targetNamespace = "") Date startDate,
                                          @WebParam(name = "endDate", targetNamespace = "") Date endDate);
     
     @WebMethod
     public Response removeGroupFromOrganization(@WebParam(name = "organizationId", targetNamespace = "") String organizationId,
-                                         		@WebParam(name = "groupId", targetNamespace = "") String groupId);
+                                         		@WebParam(name = "groupId", targetNamespace = "") String groupId,
+                                         		final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
     
     
     @WebMethod
     public Response addRoleToOrganization(@WebParam(name = "organizationId", targetNamespace = "") String organizationId,
                                          @WebParam(name = "roleId", targetNamespace = "") String roleId,
+                                         final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
                                          @WebParam(name = "rightIds", targetNamespace = "") Set<String> rightIds,
                                          @WebParam(name = "startDate", targetNamespace = "") Date startDate,
                                          @WebParam(name = "endDate", targetNamespace = "") Date endDate);
     
     @WebMethod
     public Response removeRoleFromOrganization(@WebParam(name = "organizationId", targetNamespace = "") String organizationId,
-                                         		@WebParam(name = "roleId", targetNamespace = "") String roleId);
+                                         		@WebParam(name = "roleId", targetNamespace = "") String roleId,
+                                         		final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     @WebMethod
     public Response addResourceToOrganization(@WebParam(name = "organizationId", targetNamespace = "") String organizationId,
                                          	  @WebParam(name = "resourceId", targetNamespace = "") String resourceId,
+                                         	 final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
                                          	  @WebParam(name = "rightIds", targetNamespace = "") Set<String> rightIds,
                                          	 @WebParam(name = "startDate", targetNamespace = "") Date startDate,
                                              @WebParam(name = "endDate", targetNamespace = "") Date endDate);
     
     @WebMethod
     public Response removeResourceFromOrganization(@WebParam(name = "organizationId", targetNamespace = "") String organizationId,
-                                         		  @WebParam(name = "resourceId", targetNamespace = "") String resourceId);
+                                         		  @WebParam(name = "resourceId", targetNamespace = "") String resourceId,
+                                         		 final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     @WebMethod
-    public Response deleteOrganization(@WebParam(name = "orgId", targetNamespace = "") String orgId);
+    public Response deleteOrganization(@WebParam(name = "orgId", targetNamespace = "") String orgId,
+    							 	   @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     @WebMethod
     public Response deleteOrganizationWithSkipPrePostProcessors(final @WebParam(name = "orgId", targetNamespace = "") String orgId,
-                                       final @WebParam(name = "skipPrePostProcessors", targetNamespace = "") boolean skipPrePostProcessors);
+                                       							final @WebParam(name = "skipPrePostProcessors", targetNamespace = "") boolean skipPrePostProcessors,
+                                       							final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     @WebMethod
     public Response removeUserFromOrg(@WebParam(name = "orgId", targetNamespace = "") String orgId,
-                                      @WebParam(name = "userId", targetNamespace = "") String userId);
+                                      @WebParam(name = "userId", targetNamespace = "") String userId,
+                                      final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     @WebMethod
     public Response removeChildOrganization(@WebParam(name = "organizationId", targetNamespace = "") String organizationId,
-                                            @WebParam(name = "childOrganizationId", targetNamespace = "") String childOrganizationId);
+                                            @WebParam(name = "childOrganizationId", targetNamespace = "") String childOrganizationId,
+                                            final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     @WebMethod
     public Response canAddUserToOrganization(@WebParam(name = "organizationId", targetNamespace = "") String organizationId,

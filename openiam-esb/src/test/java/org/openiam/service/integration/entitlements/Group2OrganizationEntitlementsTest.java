@@ -29,23 +29,23 @@ public class Group2OrganizationEntitlementsTest extends AbstractEntitlementsTest
 	}
 
 	@Override
-	protected Response addChildToParent(final Organization parent, final Group child, final Set<String> rights, final Date startDate, final Date endDate) {
-		return organizationServiceClient.addGroupToOrganization(parent.getId(), child.getId(), rights, startDate, endDate);
+	protected Response addChildToParent(final Organization parent, final Group child, final String requestorId, final Set<String> rights, final Date startDate, final Date endDate) {
+		return organizationServiceClient.addGroupToOrganization(parent.getId(), child.getId(), requestorId, rights, startDate, endDate);
 	}
 
 	@Override
-	protected Response removeChildFromParent(Organization parent, Group child) {
-		return organizationServiceClient.removeGroupFromOrganization(parent.getId(), child.getId());
+	protected Response removeChildFromParent(Organization parent, Group child, final String requestorId) {
+		return organizationServiceClient.removeGroupFromOrganization(parent.getId(), child.getId(), requestorId);
 	}
 
 	@Override
-	protected Response deleteParent(Organization parent) {
-		return organizationServiceClient.deleteOrganization(parent.getId());
+	protected Response deleteParent(Organization parent, final String requestorId) {
+		return organizationServiceClient.deleteOrganization(parent.getId(), requestorId);
 	}
 
 	@Override
-	protected Response deleteChild(Group child) {
-		return groupServiceClient.deleteGroup(child.getId(), "3000");
+	protected Response deleteChild(Group child, final String requestorId) {
+		return groupServiceClient.deleteGroup(child.getId(), requestorId);
 	}
 
 	@Override

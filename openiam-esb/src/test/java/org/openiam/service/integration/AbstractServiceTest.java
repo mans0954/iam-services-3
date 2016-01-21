@@ -2,6 +2,7 @@ package org.openiam.service.integration;
 
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -41,6 +42,8 @@ import org.openiam.idm.srvc.lang.service.LanguageWebService;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.meta.ws.MetadataWebService;
+import org.openiam.idm.srvc.mngsys.domain.AssociationType;
+import org.openiam.idm.srvc.mngsys.dto.ApproverAssociation;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.service.OrganizationDataService;
@@ -166,12 +169,18 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 	protected Set<String> getRightIds() {
 		final List<AccessRight> rights = accessRightServiceClient.findBeans(null, 0, Integer.MAX_VALUE, getDefaultLanguage());
 		final Set<String> rightIds = rights.subList(0, rights.size() / 2).stream().map(e -> e.getId()).collect(Collectors.toSet());
+		rightIds.removeAll(rightsToIgnore());
 		return rightIds;
+	}
+	
+	protected Set<String> rightsToIgnore() {
+		return Collections.EMPTY_SET;
 	}
 	
 	protected Set<String> getAllRightIds() {
 		final List<AccessRight> rights = accessRightServiceClient.findBeans(null, 0, Integer.MAX_VALUE, getDefaultLanguage());
 		final Set<String> rightIds = rights.stream().map(e -> e.getId()).collect(Collectors.toSet());
+		rightIds.removeAll(rightsToIgnore());
 		return rightIds;
 	}
 
@@ -317,9 +326,21 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 	protected Group createGroup() {
 		Group group = new Group();
 		group.setName(getRandomName());
-		final Response wsResponse = groupServiceClient.saveGroup(group, null);
+		Response wsResponse = groupServiceClient.saveGroup(group, null);
 		Assert.assertTrue(wsResponse.isSuccess(), String.format("Could not save %s.  Reason: %s", group, wsResponse));
 		group = groupServiceClient.getGroup((String)wsResponse.getResponseValue(), null);
+		
+		if(user != null) {
+			final ApproverAssociation association = new ApproverAssociation();
+			association.setApproverEntityId(user.getId());
+			association.setApproverEntityType(AssociationType.USER);
+			association.setAssociationEntityId(group.getId());
+			association.setAssociationType(AssociationType.GROUP);
+			association.setTestRequest(true);
+			wsResponse = managedSysServiceClient.saveApproverAssociation(association);
+			Assert.assertNotNull(wsResponse);
+			Assert.assertTrue(wsResponse.isSuccess());
+		}
 		return group;
 	}
 	
@@ -327,9 +348,21 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 		Organization organization = new Organization();
 		organization.setOrganizationTypeId(organizationTypeClient.findBeans(null, 0, 1, null).get(0).getId());
 		organization.setName(getRandomName());
-		final Response wsResponse = organizationServiceClient.saveOrganization(organization, null);
+		Response wsResponse = organizationServiceClient.saveOrganization(organization, null);
 		Assert.assertTrue(wsResponse.isSuccess(), String.format("Could not save %s.  Reason: %s", organization, wsResponse));
 		organization = organizationServiceClient.getOrganizationLocalized((String)wsResponse.getResponseValue(), null, getDefaultLanguage());
+		
+		if(user != null) {
+			final ApproverAssociation association = new ApproverAssociation();
+			association.setApproverEntityId(user.getId());
+			association.setApproverEntityType(AssociationType.USER);
+			association.setAssociationEntityId(organization.getId());
+			association.setAssociationType(AssociationType.ORGANIZATION);
+			association.setTestRequest(true);
+			wsResponse = managedSysServiceClient.saveApproverAssociation(association);
+			Assert.assertNotNull(wsResponse);
+			Assert.assertTrue(wsResponse.isSuccess());
+		}
 		return organization;
 	}
 	
@@ -339,18 +372,42 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
 		resourceTypeSearchBean.setSupportsHierarchy(true);
 		resource.setResourceType(resourceDataService.findResourceTypes(resourceTypeSearchBean, 0, 1, null).get(0));
 		resource.setName(getRandomName());
-		final Response wsResponse = resourceDataService.saveResource(resource, null);
+		Response wsResponse = resourceDataService.saveResource(resource, null);
 		Assert.assertTrue(wsResponse.isSuccess(), String.format("Could not save %s.  Reason: %s", resource, wsResponse));
 		resource = resourceDataService.getResource((String)wsResponse.getResponseValue(), getDefaultLanguage());
+		
+		if(user != null) {
+			final ApproverAssociation association = new ApproverAssociation();
+			association.setApproverEntityId(user.getId());
+			association.setApproverEntityType(AssociationType.USER);
+			association.setAssociationEntityId(resource.getId());
+			association.setAssociationType(AssociationType.RESOURCE);
+			association.setTestRequest(true);
+			wsResponse = managedSysServiceClient.saveApproverAssociation(association);
+			Assert.assertNotNull(wsResponse);
+			Assert.assertTrue(wsResponse.isSuccess());
+		}
 		return resource;
 	}
 	
 	protected Role createRole() {
 		Role role = new Role();
 		role.setName(getRandomName());
-		final Response wsResponse = roleServiceClient.saveRole(role, null);
+		Response wsResponse = roleServiceClient.saveRole(role, null);
 		Assert.assertTrue(wsResponse.isSuccess(), String.format("Could not save %s.  Reason: %s", role, wsResponse));
 		role = roleServiceClient.getRoleLocalized((String)wsResponse.getResponseValue(), null, getDefaultLanguage());
+		
+		if(user != null) {
+			final ApproverAssociation association = new ApproverAssociation();
+			association.setApproverEntityId(user.getId());
+			association.setApproverEntityType(AssociationType.USER);
+			association.setAssociationEntityId(role.getId());
+			association.setAssociationType(AssociationType.ROLE);
+			association.setTestRequest(true);
+			wsResponse = managedSysServiceClient.saveApproverAssociation(association);
+			Assert.assertNotNull(wsResponse);
+			Assert.assertTrue(wsResponse.isSuccess());
+		}
 		return role;
 	}
 	

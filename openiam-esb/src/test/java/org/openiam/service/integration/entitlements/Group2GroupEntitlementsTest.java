@@ -30,6 +30,7 @@ public class Group2GroupEntitlementsTest extends AbstractCircularEntitlementTest
 	@Override
 	protected Response addChildToParent(final Group parent, 
 										final Group child, 
+										final String requestorId,
 										final Set<String> rights,
 										final Date startDate, 
 										final Date endDate) {
@@ -37,17 +38,17 @@ public class Group2GroupEntitlementsTest extends AbstractCircularEntitlementTest
 	}
 
 	@Override
-	protected Response removeChildFromParent(Group parent, Group child) {
+	protected Response removeChildFromParent(Group parent, Group child, final String requestorId) {
 		return groupServiceClient.removeChildGroup(parent.getId(), child.getId(), null);
 	}
 
 	@Override
-	protected Response deleteParent(Group parent) {
+	protected Response deleteParent(Group parent, final String requestorId) {
 		return groupServiceClient.deleteGroup(parent.getId(), null);
 	}
 
 	@Override
-	protected Response deleteChild(Group child) {
+	protected Response deleteChild(Group child, final String requestorId) {
 		return groupServiceClient.deleteGroup(child.getId(), null);
 	}
 

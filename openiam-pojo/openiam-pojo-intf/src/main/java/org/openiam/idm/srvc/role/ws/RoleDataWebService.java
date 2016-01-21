@@ -282,7 +282,7 @@ public interface RoleDataWebService {
      */
     @WebMethod
     Response addChildRole(final @WebParam(name = "roleId", targetNamespace = "") String roleId,
-                          final @WebParam(name = "parentRoleId", targetNamespace = "") String childRoleId,
+                          final @WebParam(name = "childRoleId", targetNamespace = "") String childRoleId,
                           final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
                           final @WebParam(name = "rights", targetNamespace = "") Set<String> rights,
                           final @WebParam(name = "startDate", targetNamespace = "") Date startDate,
@@ -290,7 +290,7 @@ public interface RoleDataWebService {
     
     @WebMethod
     Response canAddChildRole(final @WebParam(name = "roleId", targetNamespace = "") String roleId,
-                             final @WebParam(name = "parentRoleId", targetNamespace = "") String childRoleId,
+                             final @WebParam(name = "childRoleId", targetNamespace = "") String childRoleId,
                              final @WebParam(name = "rights", targetNamespace = "") Set<String> rights,
                              final @WebParam(name = "startDate", targetNamespace = "") Date startDate,
                              final @WebParam(name = "endDate", targetNamespace = "") Date endDate);
@@ -303,7 +303,7 @@ public interface RoleDataWebService {
      */
     @WebMethod
     Response removeChildRole(final @WebParam(name = "roleId", targetNamespace = "") String roleId,
-                             final @WebParam(name = "parentRoleId", targetNamespace = "") String childRoleId,
+                             final @WebParam(name = "childRoleId", targetNamespace = "") String childRoleId,
                              final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     /**

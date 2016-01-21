@@ -238,6 +238,7 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     @Override
     public Response addUserToOrg(final String orgId, 
     							 final String userId, 
+    							 final String requestorId,
     							 final Set<String> rightIds,
     							 final Date startDate,
 								 final Date endDate) {
@@ -263,7 +264,7 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     }
 
     @Override
-    public Response removeUserFromOrg(String orgId, String userId) {
+    public Response removeUserFromOrg(String orgId, String userId, final String requestorId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
             if (orgId == null || userId == null) {
@@ -313,7 +314,7 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     }
 
     @Override
-    public Response removeChildOrganization(final String organizationId, final String childOrganizationId) {
+    public Response removeChildOrganization(final String organizationId, final String childOrganizationId, final String requestorId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
             if (organizationId == null || childOrganizationId == null) {
@@ -335,6 +336,7 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     @Override
     public Response addChildOrganization(final String organizationId, 
     									 final String childOrganizationId, 
+    									 final String requestorId,
     									 final Set<String> rightIds,
     									 final Date startDate,
     									 final Date endDate) {
@@ -362,6 +364,7 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
 	@Override
 	public Response addRoleToOrganization(final String organizationId, 
 										  final String roleId, 
+										  final String requestorId,
 										  final Set<String> rightIds,
 										  final Date startDate,
 	    								  final Date endDate) {
@@ -386,7 +389,7 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
 	}
 
 	@Override
-	public Response removeRoleFromOrganization(final String organizationId, final String roleId) {
+	public Response removeRoleFromOrganization(final String organizationId, final String roleId, final String requestorId) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
         try {
             if (organizationId == null || roleId == null) {
@@ -407,6 +410,7 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
 	@Override
 	public Response addResourceToOrganization(final String organizationId, 
 											  final String resourceId, 
+											  final String requestorId,
 											  final Set<String> rightIds,
 											  final Date startDate,
 		    								  final Date endDate) {
@@ -431,7 +435,7 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
 	}
 
 	@Override
-	public Response removeResourceFromOrganization(final String organizationId, final String resourceId) {
+	public Response removeResourceFromOrganization(final String organizationId, final String resourceId, final String requestorId) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
         try {
             if (organizationId == null || resourceId == null) {
@@ -452,6 +456,7 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     @Override
 	public Response addGroupToOrganization(final String organizationId, 
 										   final String groupId, 
+										   final String requestorId,
 										   final Set<String> rightIds,
 										   final Date startDate,
 	    								   final Date endDate) {
@@ -476,7 +481,7 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
 	}
 
 	@Override
-	public Response removeGroupFromOrganization(final String organizationId, final String groupId) {
+	public Response removeGroupFromOrganization(final String organizationId, final String groupId, final String requestorId) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
         try {
             if (organizationId == null || groupId == null) {
@@ -495,12 +500,12 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
 	}
 
     @Override
-    public Response deleteOrganization(final String orgId) {
-        return deleteOrganizationWithSkipPrePostProcessors(orgId, false);
+    public Response deleteOrganization(final String orgId, final String requestorId) {
+        return deleteOrganizationWithSkipPrePostProcessors(orgId, false, requestorId);
     }
 
     @Override
-    public Response deleteOrganizationWithSkipPrePostProcessors(final String orgId, final boolean skipPrePostProcessors) {
+    public Response deleteOrganizationWithSkipPrePostProcessors(final String orgId, final boolean skipPrePostProcessors, final String requestorId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
             organizationService.deleteOrganization(orgId, skipPrePostProcessors);

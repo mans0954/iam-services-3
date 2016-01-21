@@ -34,6 +34,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.activiti.model.dto.TaskSearchBean;
+import org.openiam.authmanager.service.AuthorizationManagerService;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
@@ -134,6 +135,9 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 	private UserProfileService userProfileService;
     @Autowired
     private UserDataService userDataService;
+    
+    @Autowired
+	private AuthorizationManagerService authManagerService;
 
     @Value("${org.openiam.activiti.membership.approver.association.groovy.script}")
     private String membershipApproverAssociationGroovyScript;
@@ -147,6 +151,9 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
     @Autowired
     @Qualifier("configurableGroovyScriptEngine")
     protected ScriptIntegration scriptRunner;
+    
+    @Value("${org.openiam.ui.admin.right.id}")
+	private String adminRightId;
 	
     @Autowired
     private MetadataElementTemplateService pageTemplateService;
@@ -604,8 +611,9 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 	@Override
 	@Transactional
 	public BasicWorkflowResponse initiateWorkflow(final GenericWorkflowRequest request) {
+		final String requestorId = request.getRequestorUserId();
 		IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
-        idmAuditLog.setRequestorUserId(request.getRequestorUserId());
+        idmAuditLog.setRequestorUserId(requestorId);
         //idmAuditLog.setAction(AuditAction.INITIATE_WORKFLOW.value());
         idmAuditLog.setAction(request.getActivitiRequestType());
         idmAuditLog.setBaseObject(request);
@@ -709,6 +717,46 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			if(identifier.getCustomActivitiAttributes() != null) {
 				variables.putAll(identifier.getCustomActivitiAttributes());
 			}
+			
+            boolean isAdmin = false;
+            if((request.getAssociationId() != null) && (request.getAssociationType() != null)) {
+            	switch(request.getAssociationType()) {
+            		case GROUP:
+            			isAdmin = authManagerService.isMemberOfGroup(requestorId, request.getAssociationId(), adminRightId);
+            			break;
+            		case ORGANIZATION:
+            			isAdmin = authManagerService.isMemberOfOrganization(requestorId, request.getAssociationId(), adminRightId);
+            			break;
+            		case RESOURCE:
+            			isAdmin = authManagerService.isEntitled(requestorId, request.getAssociationId(), adminRightId);
+            			break;
+            		case ROLE:
+            			isAdmin = authManagerService.isMemberOfRole(requestorId, request.getAssociationId(), adminRightId);
+            			break;
+            		default:
+            			break;
+            	}
+            }
+            
+            if((request.getMemberAssociationId() != null) && (request.getMemberAssociationType() != null)) {
+            	switch(request.getMemberAssociationType()) {
+	        		case GROUP:
+	        			isAdmin = authManagerService.isMemberOfGroup(requestorId, request.getMemberAssociationId(), adminRightId);
+	        			break;
+	        		case ORGANIZATION:
+	        			isAdmin = authManagerService.isMemberOfOrganization(requestorId, request.getMemberAssociationId(), adminRightId);
+	        			break;
+	        		case RESOURCE:
+	        			isAdmin = authManagerService.isEntitled(requestorId, request.getMemberAssociationId(), adminRightId);
+	        			break;
+	        		case ROLE:
+	        			isAdmin = authManagerService.isMemberOfRole(requestorId, request.getMemberAssociationId(), adminRightId);
+	        			break;
+	        		default:
+	        			break;
+	        	}
+            }
+            variables.put(ActivitiConstants.IS_ADMIN.getName(), isAdmin);
 
             idmAuditLog = auditLogService.save(idmAuditLog);
             variables.put(ActivitiConstants.AUDIT_LOG_ID.getName(), idmAuditLog.getId());
@@ -824,7 +872,9 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			final Task task = taskService.createTaskQuery().taskId(assignedTask.getId()).list().get(0);
             
 			taskService.setVariablesLocal(assignedTask.getId(), variables);
-			taskService.addComment(assignedTask.getId(), task.getProcessInstanceId(), request.getComment());
+			if(org.apache.commons.lang3.StringUtils.isNotBlank(request.getComment())) {
+				taskService.addComment(assignedTask.getId(), task.getProcessInstanceId(), request.getComment());
+			}
         	taskService.complete(assignedTask.getId(), variables);
         	response.succeed();
             idmAuditLog.succeed();

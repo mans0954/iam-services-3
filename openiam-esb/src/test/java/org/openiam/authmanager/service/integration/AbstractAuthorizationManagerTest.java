@@ -50,11 +50,10 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 		"https://www.google.com/openiam/selfservice.html"
 	};
 	
-	private User user = null;
-	private Group group = null;
-	private Role role = null;
-	private Organization organization = null;
-	private Resource resource = null;
+	protected Group group = null;
+	protected Role role = null;
+	protected Organization organization = null;
+	protected Resource resource = null;
 	
 	@BeforeClass
 	public void _init() {
@@ -96,7 +95,7 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 		userServiceClient.removeUser(user.getId());
 		groupServiceClient.deleteGroup(group.getId(), null);
 		roleServiceClient.removeRole(role.getId(), null);
-		organizationServiceClient.deleteOrganization(organization.getId());
+		organizationServiceClient.deleteOrganization(organization.getId(), null);
 		resourceDataService.deleteResource(resource.getId(), null);
 	}
 	
@@ -115,7 +114,6 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 	@Test
 	public void testUser2ResourceDirectWithRightsStartDate() {
 		final Date startDate = new Date();
-		final Date endDate = DateUtils.addDays(startDate, 1);
 		doUser2ResourceAddition(user.getId(), resource.getId(), getRightIds(), startDate, null);
 	}
 	
@@ -127,11 +125,11 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 	}
 	
 	private void doUser2ResourceAddition(final String userId, final String resourceId, final Set<String> rightIds, final Date startDate, final Date endDate) {
-		Response response = resourceDataService.addUserToResource(resourceId, userId, getRequestorId(), rightIds, startDate, endDate);
+		Response response = doAddUserToResource(resourceId, userId, getRequestorId(), rightIds, startDate, endDate);
 		assertSuccess(response);
 		refreshAuthorizationManager();
 		checkUser2ResourceEntitlement(userId, resourceId, rightIds, true);
-		response = resourceDataService.removeUserFromResource(resourceId, userId, getRequestorId());
+		response = doRemoveUserFromResource(resourceId, userId, getRequestorId());
 		assertSuccess(response);
 		refreshAuthorizationManager();
 		checkUser2ResourceEntitlement(userId, resourceId, rightIds, false);
@@ -157,7 +155,6 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 	@Test
 	public void testUser2RoleDirectWithRightsStartDate() {
 		final Date startDate = new Date();
-		final Date endDate = DateUtils.addDays(startDate, 1);
 		doUser2RoleAddition(user.getId(), role.getId(), getRightIds(), startDate, null);
 	}
 	
@@ -169,11 +166,11 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 	}
 	
 	private void doUser2RoleAddition(final String userId, final String roleId, final Set<String> rightIds, final Date startDate, final Date endDate) {
-		Response response = roleServiceClient.addUserToRole(roleId, userId, getRequestorId(), rightIds, startDate, endDate);
+		Response response = doAddUserToRole(roleId, userId, getRequestorId(), rightIds, startDate, endDate);
 		assertSuccess(response);
 		refreshAuthorizationManager();
 		checkUser2RoleMembership(userId, roleId, rightIds, true);
-		response = roleServiceClient.removeUserFromRole(roleId, userId, getRequestorId());
+		response = doRemoveUserFromRole(roleId, userId, getRequestorId());
 		assertSuccess(response);
 		refreshAuthorizationManager();
 		checkUser2RoleMembership(userId, roleId, rightIds, false);
@@ -199,7 +196,6 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 	@Test
 	public void testUser2OrganizationDirectWithRightsStartDate() {
 		final Date startDate = new Date();
-		final Date endDate = DateUtils.addDays(startDate, 1);
 		doUser2OrganizationAddition(user, organization, getRightIds(), startDate, null);
 	}
 	
@@ -229,7 +225,6 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 	@Test
 	public void testUser2ResourceIndirectStartDate() {
 		final Date startDate = new Date();
-		final Date endDate = DateUtils.addDays(startDate, 1);
 		testUser2ResourceIndirect(startDate, null);
 	}
 	
@@ -242,7 +237,7 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 	
 	private void testUser2ResourceIndirect(final Date startDate, final Date endDate) {
 		final Set<Resource> entitiesToDelete = new HashSet<Resource>();
-		assertSuccess(resourceDataService.addUserToResource(resource.getId(), user.getId(), getRequestorId(), null, startDate, endDate));
+		assertSuccess(doAddUserToResource(resource.getId(), user.getId(), getRequestorId(), null, startDate, endDate));
 		getAllRightIds().forEach(right -> {
 			final Resource parent = super.createResource();
 			Assert.assertNotNull(parent);
@@ -253,13 +248,13 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 			checkUser2ResourceEntitlement(user.getId(), parent.getId(), null, true);
 		});
 		entitiesToDelete.forEach(e -> {
-			assertSuccess(resourceDataService.deleteResource(e.getId(), getRequestorId()));
+			assertSuccess(doDeleteResource(e, getRequestorId()));
 		});
 		refreshAuthorizationManager();
 		entitiesToDelete.forEach(e -> {
 			checkUser2ResourceEntitlement(user.getId(), e.getId(), null, false);
 		});
-		assertSuccess(resourceDataService.removeUserFromResource(resource.getId(), user.getId(), getRequestorId()));
+		assertSuccess(doRemoveUserFromResource(resource.getId(), user.getId(), getRequestorId()));
 		refreshAuthorizationManager();
 		checkUser2ResourceEntitlement(user.getId(), resource.getId(), null, false);
 	}
@@ -279,7 +274,6 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 	@Test
 	public void testUser2ResourceIndirectThroughGroupStartDate() {
 		final Date startDate = new Date();
-		final Date endDate = DateUtils.addDays(startDate, 1);
 		testUser2ResourceIndirectThroughGroup(startDate, null);
 	}
 	
@@ -291,15 +285,15 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 	}
 	
 	private void testUser2ResourceIndirectThroughGroup(final Date startDate, final Date endDate) {
-		assertSuccess(groupServiceClient.addUserToGroup(group.getId(), user.getId(), getRequestorId(), null, startDate, endDate));
-		assertSuccess(resourceDataService.addGroupToResource(resource.getId(), group.getId(), getRequestorId(), getRightIds(), startDate, endDate));
+		assertSuccess(doAddUserToGroup(group.getId(), user.getId(), getRequestorId(), null, startDate, endDate));
+		assertSuccess(doAddGroupToResource(resource.getId(), group.getId(), getRequestorId(), getRightIds(), startDate, endDate));
 		refreshAuthorizationManager();
 		checkUser2ResourceEntitlement(user.getId(), resource.getId(), getRightIds(), true);
 		checkUser2ResourceEntitlement(user.getId(), resource.getId(), null, true);
 		
 		
-		assertSuccess(groupServiceClient.removeUserFromGroup(group.getId(), user.getId(), getRequestorId()));
-		assertSuccess(resourceDataService.removeGroupToResource(resource.getId(), group.getId(), getRequestorId()));
+		assertSuccess(doRemoveUserFromGroup(group.getId(), user.getId(), getRequestorId()));
+		assertSuccess(doRemoveGroupToResource(resource.getId(), group.getId(), getRequestorId()));
 		refreshAuthorizationManager();
 		checkUser2ResourceEntitlement(user.getId(), resource.getId(), null, false);
 	}
@@ -319,7 +313,6 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 	@Test
 	public void testUser2ResourceIndirectThroughRoleStartDate() {
 		final Date startDate = new Date();
-		final Date endDate = DateUtils.addDays(startDate, 1);
 		testUser2ResourceIndirectThroughRole(startDate, null);
 	}
 	
@@ -331,15 +324,15 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 	}
 	
 	private void testUser2ResourceIndirectThroughRole(final Date startDate, final Date endDate) {
-		assertSuccess(roleServiceClient.addUserToRole(role.getId(), user.getId(), getRequestorId(), null, startDate, endDate));
-		assertSuccess(resourceDataService.addRoleToResource(resource.getId(), role.getId(), getRequestorId(), getRightIds(), startDate, endDate));
+		assertSuccess(doAddUserToRole(role.getId(), user.getId(), getRequestorId(), null, startDate, endDate));
+		assertSuccess(doAddRoleToResource(resource.getId(), role.getId(), getRequestorId(), getRightIds(), startDate, endDate));
 		refreshAuthorizationManager();
 		checkUser2ResourceEntitlement(user.getId(), resource.getId(), getRightIds(), true);
 		checkUser2ResourceEntitlement(user.getId(), resource.getId(), null, true);
 		
 		
-		assertSuccess(roleServiceClient.removeUserFromRole(role.getId(), user.getId(), getRequestorId()));
-		assertSuccess(resourceDataService.removeRoleToResource(resource.getId(), role.getId(), getRequestorId()));
+		assertSuccess(doRemoveUserFromRole(role.getId(), user.getId(), getRequestorId()));
+		assertSuccess(doRemoveRoleToResource(resource.getId(), role.getId(), getRequestorId()));
 		refreshAuthorizationManager();
 		checkUser2ResourceEntitlement(user.getId(), resource.getId(), null, false);
 	}
@@ -359,7 +352,6 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 	@Test
 	public void testUser2ResourceIndirectThroughRoleAndGroupStartDate() {
 		final Date startDate = new Date();
-		final Date endDate = DateUtils.addDays(startDate, 1);
 		testUser2ResourceIndirectThroughRoleAndGroup(startDate, null);
 	}
 	
@@ -372,16 +364,16 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 	
 	
 	private void testUser2ResourceIndirectThroughRoleAndGroup(final Date startDate, final Date endDate) {
-		assertSuccess(roleServiceClient.addUserToRole(role.getId(), user.getId(), getRequestorId(), null, startDate, endDate));
-		assertSuccess(roleServiceClient.addGroupToRole(role.getId(), group.getId(), getRequestorId(), getRightIds(), startDate, endDate));
-		assertSuccess(resourceDataService.addGroupToResource(resource.getId(), group.getId(), getRequestorId(), getRightIds(), startDate, endDate));
+		assertSuccess(doAddUserToRole(role.getId(), user.getId(), getRequestorId(), null, startDate, endDate));
+		assertSuccess(doAddGroupToRole(role.getId(), group.getId(), getRequestorId(), getRightIds(), startDate, endDate));
+		assertSuccess(doAddGroupToResource(resource.getId(), group.getId(), getRequestorId(), getRightIds(), startDate, endDate));
 		refreshAuthorizationManager();
 		checkUser2ResourceEntitlement(user.getId(), resource.getId(), getRightIds(), true);
 		checkUser2ResourceEntitlement(user.getId(), resource.getId(), null, true);
 		
-		assertSuccess(roleServiceClient.removeUserFromRole(role.getId(), user.getId(), getRequestorId()));
-		assertSuccess(roleServiceClient.removeGroupFromRole(role.getId(), group.getId(), getRequestorId()));
-		assertSuccess(resourceDataService.removeGroupToResource(resource.getId(), group.getId(), getRequestorId()));
+		assertSuccess(doRemoveUserFromRole(role.getId(), user.getId(), getRequestorId()));
+		assertSuccess(doRemoveGroupFromRole(role.getId(), group.getId(), getRequestorId()));
+		assertSuccess(doRemoveGroupToResource(resource.getId(), group.getId(), getRequestorId()));
 		refreshAuthorizationManager();
 		checkUser2ResourceEntitlement(user.getId(), resource.getId(), null, false);
 	}
@@ -401,7 +393,6 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 	@Test
 	public void testUser2ResourceIndirectThroughOrganizationStartDate() {
 		final Date startDate = new Date();
-		final Date endDate = DateUtils.addDays(startDate, 1);
 		testUser2ResourceIndirectThroughOrganization(startDate, null);
 	}
 	
@@ -413,14 +404,14 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 	}
 	
 	private void testUser2ResourceIndirectThroughOrganization(final Date startDate, final Date endDate) {
-		assertSuccess(organizationServiceClient.addUserToOrg(organization.getId(), user.getId(), null, startDate, endDate));
-		assertSuccess(organizationServiceClient.addResourceToOrganization(organization.getId(), resource.getId(), getRightIds(), startDate, endDate));
+		assertSuccess(doAddUserToOrg(organization.getId(), user.getId(), getRequestorId(), null, startDate, endDate));
+		assertSuccess(doAddResourceToOrganization(organization.getId(), resource.getId(), getRequestorId(), getRightIds(), startDate, endDate));
 		refreshAuthorizationManager();
 		checkUser2ResourceEntitlement(user.getId(), resource.getId(), getRightIds(), true);
 		checkUser2ResourceEntitlement(user.getId(), resource.getId(), null, true);
 		
-		assertSuccess(organizationServiceClient.removeUserFromOrg(organization.getId(), user.getId()));
-		assertSuccess(organizationServiceClient.removeResourceFromOrganization(organization.getId(), resource.getId()));
+		assertSuccess(doRemoveUserFromOrg(organization.getId(), user.getId(), getRequestorId()));
+		assertSuccess(doRemoveResourceFromOrganization(organization.getId(), resource.getId(), getRequestorId()));
 		refreshAuthorizationManager();
 		checkUser2ResourceEntitlement(user.getId(), resource.getId(), null, false);
 	}
@@ -440,7 +431,6 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 	@Test
 	public void testUser2ResourceIndirectThroughOrganizationAndRoleStartDate() {
 		final Date startDate = new Date();
-		final Date endDate = DateUtils.addDays(startDate, 1);
 		testUser2ResourceIndirectThroughOrganizationAndRole(startDate, null);
 	}
 	
@@ -452,16 +442,16 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 	}
 	
 	private void testUser2ResourceIndirectThroughOrganizationAndRole(final Date startDate, final Date endDate) {
-		assertSuccess(organizationServiceClient.addUserToOrg(organization.getId(), user.getId(), null, startDate, endDate));
-		assertSuccess(organizationServiceClient.addRoleToOrganization(organization.getId(), role.getId(), null, startDate, endDate));
-		assertSuccess(resourceDataService.addRoleToResource(resource.getId(), role.getId(), getRequestorId(), getRightIds(), startDate, endDate));
+		assertSuccess(doAddUserToOrg(organization.getId(), user.getId(), getRequestorId(), null, startDate, endDate));
+		assertSuccess(doAddRoleToOrganization(organization.getId(), role.getId(), getRequestorId(), null, startDate, endDate));
+		assertSuccess(doAddRoleToResource(resource.getId(), role.getId(), getRequestorId(), getRightIds(), startDate, endDate));
 		refreshAuthorizationManager();
 		checkUser2ResourceEntitlement(user.getId(), resource.getId(), getRightIds(), true);
 		checkUser2ResourceEntitlement(user.getId(), resource.getId(), null, true);
 		
-		assertSuccess(organizationServiceClient.removeUserFromOrg(organization.getId(), user.getId()));
-		assertSuccess(organizationServiceClient.removeRoleFromOrganization(organization.getId(), role.getId()));
-		assertSuccess(resourceDataService.removeRoleToResource(resource.getId(), role.getId(), getRequestorId()));
+		assertSuccess(doRemoveUserFromOrg(organization.getId(), user.getId(), getRequestorId()));
+		assertSuccess(doRemoveRoleFromOrganization(organization.getId(), role.getId(), getRequestorId()));
+		assertSuccess(doRemoveRoleToResource(resource.getId(), role.getId(), getRequestorId()));
 		refreshAuthorizationManager();
 		checkUser2ResourceEntitlement(user.getId(), resource.getId(), null, false);
 		
@@ -482,7 +472,6 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 	@Test
 	public void testUser2ResourceIndirectThroughOrganizationAndGroupStartDate() {
 		final Date startDate = new Date();
-		final Date endDate = DateUtils.addDays(startDate, 1);
 		testUser2ResourceIndirectThroughOrganizationAndGroup(startDate, null);
 	}
 	
@@ -494,16 +483,16 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 	}
 	
 	private void testUser2ResourceIndirectThroughOrganizationAndGroup(final Date startDate, final Date endDate) {
-		assertSuccess(organizationServiceClient.addUserToOrg(organization.getId(), user.getId(), null, startDate, endDate));
-		assertSuccess(organizationServiceClient.addGroupToOrganization(organization.getId(), group.getId(), null, startDate, endDate));
-		assertSuccess(resourceDataService.addGroupToResource(resource.getId(), group.getId(), getRequestorId(), getRightIds(), startDate, endDate));
+		assertSuccess(doAddUserToOrg(organization.getId(), user.getId(), getRequestorId(), null, startDate, endDate));
+		assertSuccess(doAddGroupToOrganization(organization.getId(), group.getId(), getRequestorId(), null, startDate, endDate));
+		assertSuccess(doAddGroupToResource(resource.getId(), group.getId(), getRequestorId(), getRightIds(), startDate, endDate));
 		refreshAuthorizationManager();
 		checkUser2ResourceEntitlement(user.getId(), resource.getId(), getRightIds(), true);
 		checkUser2ResourceEntitlement(user.getId(), resource.getId(), null, true);
 		
-		assertSuccess(organizationServiceClient.removeUserFromOrg(organization.getId(), user.getId()));
-		assertSuccess(organizationServiceClient.removeGroupFromOrganization(organization.getId(), group.getId()));
-		assertSuccess(resourceDataService.removeGroupToResource(resource.getId(), group.getId(), getRequestorId()));
+		assertSuccess(doRemoveUserFromOrg(organization.getId(), user.getId(), getRequestorId()));
+		assertSuccess(doRemoveGroupFromOrganization(organization.getId(), group.getId(), getRequestorId()));
+		assertSuccess(doRemoveGroupToResource(resource.getId(), group.getId(), getRequestorId()));
 		refreshAuthorizationManager();
 		checkUser2ResourceEntitlement(user.getId(), resource.getId(), null, false);
 	}
@@ -523,7 +512,6 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 	@Test
 	public void testUser2ResourceIndirectThroughOrganizationAndRoleAndGroupStartDate() {
 		final Date startDate = new Date();
-		final Date endDate = DateUtils.addDays(startDate, 1);
 		testUser2ResourceIndirectThroughOrganizationAndRoleAndGroup(startDate, null);
 	}
 	
@@ -535,18 +523,18 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 	}
 	
 	private void testUser2ResourceIndirectThroughOrganizationAndRoleAndGroup(final Date startDate, final Date endDate) {
-		assertSuccess(organizationServiceClient.addUserToOrg(organization.getId(), user.getId(), null, startDate, endDate));
-		assertSuccess(organizationServiceClient.addRoleToOrganization(organization.getId(), role.getId(), null, startDate, endDate));
-		assertSuccess(roleServiceClient.addGroupToRole(role.getId(), group.getId(), getRequestorId(), null, startDate, endDate));
-		assertSuccess(resourceDataService.addGroupToResource(resource.getId(), group.getId(), getRequestorId(), getRightIds(), startDate, endDate));
+		assertSuccess(doAddUserToOrg(organization.getId(), user.getId(), getRequestorId(), null, startDate, endDate));
+		assertSuccess(doAddRoleToOrganization(organization.getId(), role.getId(), getRequestorId(), null, startDate, endDate));
+		assertSuccess(doAddGroupToRole(role.getId(), group.getId(), getRequestorId(), null, startDate, endDate));
+		assertSuccess(doAddGroupToResource(resource.getId(), group.getId(), getRequestorId(), getRightIds(), startDate, endDate));
 		refreshAuthorizationManager();
 		checkUser2ResourceEntitlement(user.getId(), resource.getId(), getRightIds(), true);
 		checkUser2ResourceEntitlement(user.getId(), resource.getId(), null, true);
 		
-		assertSuccess(organizationServiceClient.removeUserFromOrg(organization.getId(), user.getId()));
-		assertSuccess(organizationServiceClient.removeRoleFromOrganization(organization.getId(), role.getId()));
-		assertSuccess(roleServiceClient.removeGroupFromRole(role.getId(), group.getId(), getRequestorId()));
-		assertSuccess(resourceDataService.removeGroupToResource(resource.getId(), group.getId(), getRequestorId()));
+		assertSuccess(doRemoveUserFromOrg(organization.getId(), user.getId(), getRequestorId()));
+		assertSuccess(doRemoveRoleFromOrganization(organization.getId(), role.getId(), getRequestorId()));
+		assertSuccess(doRemoveGroupFromRole(role.getId(), group.getId(), getRequestorId()));
+		assertSuccess(doRemoveGroupToResource(resource.getId(), group.getId(), getRequestorId()));
 		refreshAuthorizationManager();
 		checkUser2ResourceEntitlement(user.getId(), resource.getId(), null, false);
 	}
@@ -566,7 +554,6 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 	@Test
 	public void testUser2GroupIndirectStartDate() {
 		final Date startDate = new Date();
-		final Date endDate = DateUtils.addDays(startDate, 1);
 		testUser2GroupIndirect(startDate, null);
 	}
 	
@@ -579,7 +566,7 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 	
 	private void testUser2GroupIndirect(final Date startDate, final Date endDate) {
 		final Set<Group> entitiesToDelete = new HashSet<Group>();
-		assertSuccess(groupServiceClient.addUserToGroup(group.getId(), user.getId(), getRequestorId(), null, startDate, endDate));
+		assertSuccess(doAddUserToGroup(group.getId(), user.getId(), getRequestorId(), null, startDate, endDate));
 		getAllRightIds().forEach(right -> {
 			final Group parent = super.createGroup();
 			Assert.assertNotNull(parent);
@@ -590,13 +577,13 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 			checkUser2GroupMembership(user.getId(), parent.getId(), null, true);
 		});
 		entitiesToDelete.forEach(e -> {
-			assertSuccess(groupServiceClient.deleteGroup(e.getId(), getRequestorId()));
+			assertSuccess(doDeleteGroup(e, getRequestorId()));
 		});
 		refreshAuthorizationManager();
 		entitiesToDelete.forEach(e -> {
 			checkUser2GroupMembership(user.getId(), e.getId(), null, false);
 		});
-		assertSuccess(groupServiceClient.removeUserFromGroup(group.getId(), user.getId(), getRequestorId()));
+		assertSuccess(doRemoveUserFromGroup(group.getId(), user.getId(), getRequestorId()));
 		refreshAuthorizationManager();
 		checkUser2GroupMembership(user.getId(), group.getId(), null, false);
 	}
@@ -616,7 +603,6 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 	@Test
 	public void testUser2GroupIndirectThroughRoleStartDate() {
 		final Date startDate = new Date();
-		final Date endDate = DateUtils.addDays(startDate, 1);
 		testUser2GroupIndirectThroughRole(startDate, null);
 	}
 	
@@ -628,20 +614,20 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 	}
 	
 	private void testUser2GroupIndirectThroughRole(final Date startDate, final Date endDate) {
-		assertSuccess(roleServiceClient.addUserToRole(role.getId(), user.getId(), getRequestorId(), null, startDate, endDate));
-		assertSuccess(roleServiceClient.addGroupToRole(role.getId(), group.getId(), getRequestorId(), getRightIds(), startDate, endDate));
+		assertSuccess(doAddUserToRole(role.getId(), user.getId(), getRequestorId(), null, startDate, endDate));
+		assertSuccess(doAddGroupToRole(role.getId(), group.getId(), getRequestorId(), getRightIds(), startDate, endDate));
 		refreshAuthorizationManager();
 		checkUser2RoleMembership(user.getId(), role.getId(), null, true);
 		checkUser2GroupMembership(user.getId(), group.getId(), null, true);
 		checkUser2GroupMembership(user.getId(), group.getId(), getRightIds(), true);
 		
 		
-		assertSuccess(roleServiceClient.removeGroupFromRole(role.getId(), group.getId(), getRequestorId()));
+		assertSuccess(doRemoveGroupFromRole(role.getId(), group.getId(), getRequestorId()));
 		refreshAuthorizationManager();
 		checkUser2GroupMembership(user.getId(), group.getId(), null, false);
 		checkUser2RoleMembership(user.getId(), role.getId(), null, true);
 		
-		assertSuccess(roleServiceClient.removeUserFromRole(role.getId(), user.getId(), getRequestorId()));
+		assertSuccess(doRemoveUserFromRole(role.getId(), user.getId(), getRequestorId()));
 		refreshAuthorizationManager();
 		checkUser2RoleMembership(user.getId(), role.getId(), null, false);
 	}
@@ -661,7 +647,6 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 	@Test
 	public void testUser2GroupIndirectThroughOrganizationStartDate() {
 		final Date startDate = new Date();
-		final Date endDate = DateUtils.addDays(startDate, 1);
 		testUser2GroupIndirectThroughOrganization(startDate, null);
 	}
 	
@@ -673,19 +658,19 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 	}
 	
 	private void testUser2GroupIndirectThroughOrganization(final Date startDate, final Date endDate) {
-		assertSuccess(organizationServiceClient.addUserToOrg(organization.getId(), user.getId(), null, startDate, endDate));
-		assertSuccess(organizationServiceClient.addGroupToOrganization(organization.getId(), group.getId(), getRightIds(), startDate, endDate));
+		assertSuccess(doAddUserToOrg(organization.getId(), user.getId(), getRequestorId(), null, startDate, endDate));
+		assertSuccess(doAddGroupToOrganization(organization.getId(), group.getId(), getRequestorId(), getRightIds(), startDate, endDate));
 		refreshAuthorizationManager();
 		checkUser2OrganizationMembership(user.getId(), organization.getId(), null, true);
 		checkUser2GroupMembership(user.getId(), group.getId(), null, true);
 		checkUser2GroupMembership(user.getId(), group.getId(), getRightIds(), true);
 		
-		assertSuccess(organizationServiceClient.removeGroupFromOrganization(organization.getId(), group.getId()));
+		assertSuccess(doRemoveGroupFromOrganization(organization.getId(), group.getId(), getRequestorId()));
 		refreshAuthorizationManager();
 		checkUser2GroupMembership(user.getId(), group.getId(), null, false);
 		checkUser2OrganizationMembership(user.getId(), organization.getId(), null, true);
 		
-		assertSuccess(organizationServiceClient.removeUserFromOrg(organization.getId(), user.getId()));
+		assertSuccess(doRemoveUserFromOrg(organization.getId(), user.getId(), getRequestorId()));
 		refreshAuthorizationManager();
 		checkUser2OrganizationMembership(user.getId(), organization.getId(), null, false);
 	}
@@ -705,7 +690,6 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 	@Test
 	public void testUser2GroupIndirectThroughOrganizationAndRoleStartDate() {
 		final Date startDate = new Date();
-		final Date endDate = DateUtils.addDays(startDate, 1);
 		testUser2GroupIndirectThroughOrganizationAndRole(startDate, null);
 	}
 	
@@ -717,16 +701,16 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 	}
 	
 	private void testUser2GroupIndirectThroughOrganizationAndRole(final Date startDate, final Date endDate) {
-		assertSuccess(organizationServiceClient.addUserToOrg(organization.getId(), user.getId(), null, startDate, endDate));
-		assertSuccess(organizationServiceClient.addRoleToOrganization(organization.getId(), role.getId(), null, startDate, endDate));
-		assertSuccess(roleServiceClient.addGroupToRole(role.getId(), group.getId(), getRequestorId(), getRightIds(), startDate, endDate));
+		assertSuccess(doAddUserToOrg(organization.getId(), user.getId(), getRequestorId(), null, startDate, endDate));
+		assertSuccess(doAddRoleToOrganization(organization.getId(), role.getId(), getRequestorId(), null, startDate, endDate));
+		assertSuccess(doAddGroupToRole(role.getId(), group.getId(), getRequestorId(), getRightIds(), startDate, endDate));
 		refreshAuthorizationManager();
 		checkUser2GroupMembership(user.getId(), group.getId(), null, true);
 		checkUser2GroupMembership(user.getId(), group.getId(), getRightIds(), true);
 		
-		assertSuccess(organizationServiceClient.removeUserFromOrg(organization.getId(), user.getId()));
-		assertSuccess(organizationServiceClient.removeRoleFromOrganization(organization.getId(), role.getId()));
-		assertSuccess(roleServiceClient.removeGroupFromRole(role.getId(), group.getId(), getRequestorId()));
+		assertSuccess(doRemoveUserFromOrg(organization.getId(), user.getId(), getRequestorId()));
+		assertSuccess(doRemoveRoleFromOrganization(organization.getId(), role.getId(), getRequestorId()));
+		assertSuccess(doRemoveGroupFromRole(role.getId(), group.getId(), getRequestorId()));
 		refreshAuthorizationManager();
 		checkUser2GroupMembership(user.getId(), group.getId(), null, false);
 	}
@@ -746,7 +730,6 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 	@Test
 	public void testUser2RoleIndirectStartDate() {
 		final Date startDate = new Date();
-		final Date endDate = DateUtils.addDays(startDate, 1);
 		testUser2RoleIndirect(startDate, null);
 	}
 	
@@ -759,7 +742,7 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 	
 	private void testUser2RoleIndirect(final Date startDate, final Date endDate) {
 		final Set<Role> entitiesToDelete = new HashSet<Role>();
-		assertSuccess(roleServiceClient.addUserToRole(role.getId(), user.getId(), getRequestorId(), null, startDate, endDate));
+		assertSuccess(doAddUserToRole(role.getId(), user.getId(), getRequestorId(), null, startDate, endDate));
 		getAllRightIds().forEach(right -> {
 			final Role parent = super.createRole();
 			Assert.assertNotNull(parent);
@@ -770,13 +753,13 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 			checkUser2RoleMembership(user.getId(), parent.getId(), null, true);
 		});
 		entitiesToDelete.forEach(e -> {
-			assertSuccess(roleServiceClient.removeRole(e.getId(), getRequestorId()));
+			assertSuccess(doRemoveRole(e, getRequestorId()));
 		});
 		refreshAuthorizationManager();
 		entitiesToDelete.forEach(e -> {
 			checkUser2RoleMembership(user.getId(), e.getId(), null, false);
 		});
-		assertSuccess(roleServiceClient.removeUserFromRole(role.getId(), user.getId(), getRequestorId()));
+		assertSuccess(doRemoveUserFromRole(role.getId(), user.getId(), getRequestorId()));
 		refreshAuthorizationManager();
 		checkUser2RoleMembership(user.getId(), role.getId(), null, false);
 	}
@@ -796,7 +779,6 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 	@Test
 	public void testUser2RoleIndirectCompiledStartDate() {
 		final Date startDate = new Date();
-		final Date endDate = DateUtils.addDays(startDate, 1);
 		testUser2RoleIndirectCompiled(startDate, null);
 	}
 	
@@ -813,7 +795,7 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 			final Role child = super.createRole();
 			Assert.assertNotNull(child);
 			entitiesToDelete.add(child);
-			assertSuccess(roleServiceClient.addUserToRole(child.getId(), user.getId(), getRequestorId(), null, startDate, endDate));
+			assertSuccess(doAddUserToRole(child.getId(), user.getId(), getRequestorId(), null, startDate, endDate));
 			doRole2RoleAddition(role, child, toArray(right), startDate, endDate);
 		});
 		refreshAuthorizationManager();
@@ -821,8 +803,8 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 		checkUser2RoleMembership(user.getId(), role.getId(), null, true);
 		
 		entitiesToDelete.forEach(e -> {
-			assertSuccess(roleServiceClient.removeUserFromRole(e.getId(), user.getId(), getRequestorId()));
-			assertSuccess(roleServiceClient.removeRole(e.getId(), getRequestorId()));
+			assertSuccess(doRemoveUserFromRole(e.getId(), user.getId(), getRequestorId()));
+			assertSuccess(doRemoveRole(e, getRequestorId()));
 		});
 		refreshAuthorizationManager();
 		entitiesToDelete.forEach(e -> {
@@ -845,7 +827,6 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 	@Test
 	public void testUser2RoleIndirectThroughOrganizationStartDate() {
 		final Date startDate = new Date();
-		final Date endDate = DateUtils.addDays(startDate, 1);
 		testUser2RoleIndirectThroughOrganization(startDate, null);
 	}
 	
@@ -857,16 +838,16 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 	}
 	
 	private void testUser2RoleIndirectThroughOrganization(final Date startDate, final Date endDate) {
-		Response response = organizationServiceClient.addUserToOrg(organization.getId(), user.getId(), null, startDate, endDate);
+		Response response = doAddUserToOrg(organization.getId(), user.getId(), getRequestorId(), null, startDate, endDate);
 		assertSuccess(response);
-		response = organizationServiceClient.addRoleToOrganization(organization.getId(), role.getId(), getRightIds(), startDate, endDate);
+		response = doAddRoleToOrganization(organization.getId(), role.getId(), getRequestorId(), getRightIds(), startDate, endDate);
 		assertSuccess(response);
 		refreshAuthorizationManager();
 		checkUser2RoleMembership(user.getId(), role.getId(), getRightIds(), true);
 		
-		response = organizationServiceClient.removeUserFromOrg(organization.getId(), user.getId());
+		response = doRemoveUserFromOrg(organization.getId(), user.getId(), getRequestorId());
 		assertSuccess(response);
-		response = organizationServiceClient.removeRoleFromOrganization(organization.getId(), role.getId());
+		response = doRemoveRoleFromOrganization(organization.getId(), role.getId(), getRequestorId());
 		assertSuccess(response);
 		refreshAuthorizationManager();
 		checkUser2RoleMembership(user.getId(), role.getId(), null, false);
@@ -888,7 +869,6 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 	@Test
 	public void testUser2OrganizationIndirectStartDate() {
 		final Date startDate = new Date();
-		final Date endDate = DateUtils.addDays(startDate, 1);
 		testUser2OrganizationIndirect(startDate, null);
 	}
 	
@@ -901,7 +881,7 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 	
 	private void testUser2OrganizationIndirect(final Date startDate, final Date endDate) {
 		final Set<Organization> organizationsToDelete = new HashSet<Organization>();
-		assertSuccess(organizationServiceClient.addUserToOrg(organization.getId(), user.getId(), null, startDate, endDate));
+		assertSuccess(doAddUserToOrg(organization.getId(), user.getId(), getRequestorId(), null, startDate, endDate));
 		getAllRightIds().forEach(right -> {
 			final Organization parent = super.createOrganization();
 			Assert.assertNotNull(parent);
@@ -912,7 +892,7 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 			checkUser2OrganizationMembership(user.getId(), parent.getId(), null, true);
 		});
 		organizationsToDelete.forEach(org -> {
-			assertSuccess(organizationServiceClient.deleteOrganization(org.getId()));
+			assertSuccess(doRemoveOrganization(org, getRequestorId()));
 		});
 		refreshAuthorizationManager();
 		organizationsToDelete.forEach(org -> {
@@ -935,7 +915,6 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 	@Test
 	public void testUser2OrganizationIndirectCompiledStartDate() {
 		final Date startDate = new Date();
-		final Date endDate = DateUtils.addDays(startDate, 1);
 		testUser2OrganizationIndirectCompiled(startDate, null);
 	}
 	
@@ -952,7 +931,7 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 			final Organization child = super.createOrganization();
 			Assert.assertNotNull(child);
 			organizationsToDelete.add(child);
-			assertSuccess(organizationServiceClient.addUserToOrg(child.getId(), user.getId(), null, startDate, endDate));
+			assertSuccess(doAddUserToOrg(child.getId(), user.getId(), getRequestorId(), null, startDate, endDate));
 			doOrg2OrgAddition(organization, child, toArray(right), startDate, endDate);
 		});
 		refreshAuthorizationManager();
@@ -960,7 +939,7 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 		checkUser2OrganizationMembership(user.getId(), organization.getId(), null, true);
 		
 		organizationsToDelete.forEach(org -> {
-			assertSuccess(organizationServiceClient.deleteOrganization(org.getId()));
+			assertSuccess(doRemoveOrganization(org, getRequestorId()));
 		});
 		refreshAuthorizationManager();
 		organizationsToDelete.forEach(org -> {
@@ -983,7 +962,6 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 	@Test
 	public void testGetResourcesForUserStartDate() {
 		final Date startDate = new Date();
-		final Date endDate = DateUtils.addDays(startDate, 1);
 		testGetResourcesForUser(startDate, null);
 	}
 	
@@ -998,15 +976,15 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 		Resource entity = null;
 		try {
 			entity = super.createResource();
-			assertSuccess(resourceDataService.addChildResource(entity.getId(), resource.getId(), getRequestorId(), getRightIds(), startDate, endDate));
-			assertSuccess(resourceDataService.addUserToResource(resource.getId(), user.getId(), getRequestorId(), null, startDate, endDate));
+			assertSuccess(doAddChildResource(entity.getId(), resource.getId(), getRequestorId(), getRightIds(), startDate, endDate));
+			assertSuccess(doAddUserToResource(resource.getId(), user.getId(), getRequestorId(), null, startDate, endDate));
 			refreshAuthorizationManager();
 			checkUser2ResourceCollection(user.getId(), resource.getId(), null, true);
 			checkUser2ResourceCollection(user.getId(), entity.getId(), getRightIds(), true);
 		} finally {
 			if(entity != null) {
-				assertSuccess(resourceDataService.deleteResource(entity.getId(), getRequestorId()));
-				assertSuccess(resourceDataService.removeUserFromResource(resource.getId(), user.getId(), getRequestorId()));
+				assertSuccess(doDeleteResource(entity, getRequestorId()));
+				assertSuccess(doRemoveUserFromResource(resource.getId(), user.getId(), getRequestorId()));
 				refreshAuthorizationManager();
 			}
 		}
@@ -1027,7 +1005,6 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 	@Test
 	public void testGetGroupsForUserStartDate() {
 		final Date startDate = new Date();
-		final Date endDate = DateUtils.addDays(startDate, 1);
 		testGetGroupsForUser(startDate, null);
 	}
 	
@@ -1042,15 +1019,15 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 		Group entity = null;
 		try {
 			entity = super.createGroup();
-			assertSuccess(groupServiceClient.addChildGroup(entity.getId(), group.getId(), getRequestorId(), getRightIds(), startDate, endDate));
-			assertSuccess(groupServiceClient.addUserToGroup(group.getId(), user.getId(), getRequestorId(), null, startDate, endDate));
+			assertSuccess(doAddChildGroup(entity.getId(), group.getId(), getRequestorId(), getRightIds(), startDate, endDate));
+			assertSuccess(doAddUserToGroup(group.getId(), user.getId(), getRequestorId(), null, startDate, endDate));
 			refreshAuthorizationManager();
 			checkUser2GroupCollection(user.getId(), group.getId(), null, true);
 			checkUser2GroupCollection(user.getId(), entity.getId(), getRightIds(), true);
 		} finally {
 			if(entity != null) {
-				assertSuccess(groupServiceClient.deleteGroup(entity.getId(), getRequestorId()));
-				assertSuccess(groupServiceClient.removeUserFromGroup(group.getId(), user.getId(), getRequestorId()));
+				assertSuccess(doDeleteGroup(entity, getRequestorId()));
+				assertSuccess(doRemoveUserFromGroup(group.getId(), user.getId(), getRequestorId()));
 				refreshAuthorizationManager();
 			}
 		}
@@ -1071,7 +1048,6 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 	@Test
 	public void testGetRolesForUserStartDate() {
 		final Date startDate = new Date();
-		final Date endDate = DateUtils.addDays(startDate, 1);
 		testGetRolesForUser(startDate, null);
 	}
 	
@@ -1086,15 +1062,15 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 		Role entity = null;
 		try {
 			entity = super.createRole();
-			assertSuccess(roleServiceClient.addChildRole(entity.getId(), role.getId(), getRequestorId(), getRightIds(), startDate, endDate));
-			assertSuccess(roleServiceClient.addUserToRole(role.getId(), user.getId(), getRequestorId(), null, startDate, endDate));
+			assertSuccess(doAddChildRole(entity.getId(), role.getId(), getRequestorId(), getRightIds(), startDate, endDate));
+			assertSuccess(doAddUserToRole(role.getId(), user.getId(), getRequestorId(), null, startDate, endDate));
 			refreshAuthorizationManager();
 			checkUser2RoleCollection(user.getId(), role.getId(), null, true);
 			checkUser2RoleCollection(user.getId(), entity.getId(), getRightIds(), true);
 		} finally {
 			if(entity != null) {
-				assertSuccess(roleServiceClient.removeRole(entity.getId(), getRequestorId()));
-				assertSuccess(roleServiceClient.removeUserFromRole(role.getId(), user.getId(), getRequestorId()));
+				assertSuccess(doRemoveRole(entity, getRequestorId()));
+				assertSuccess(doRemoveUserFromRole(role.getId(), user.getId(), getRequestorId()));
 				refreshAuthorizationManager();
 			}
 		}
@@ -1115,7 +1091,6 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 	@Test
 	public void testGetOrgsForUserStartDate() {
 		final Date startDate = new Date();
-		final Date endDate = DateUtils.addDays(startDate, 1);
 		testGetOrgsForUser(startDate, null);
 	}
 	
@@ -1130,15 +1105,15 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 		Organization entity = null;
 		try {
 			entity = super.createOrganization();
-			assertSuccess(organizationServiceClient.addChildOrganization(entity.getId(), organization.getId(), getRightIds(), startDate, endDate));
-			assertSuccess(organizationServiceClient.addUserToOrg(organization.getId(), user.getId(), null, startDate, endDate));
+			assertSuccess(doAddChildOrganization(entity.getId(), organization.getId(), getRequestorId(), getRightIds(), startDate, endDate));
+			assertSuccess(doAddUserToOrg(organization.getId(), user.getId(), getRequestorId(), null, startDate, endDate));
 			refreshAuthorizationManager();
 			checkUser2OrgCollection(user.getId(), organization.getId(), null, true);
 			checkUser2OrgCollection(user.getId(), entity.getId(), getRightIds(), true);
 		} finally {
 			if(entity != null) {
-				assertSuccess(organizationServiceClient.deleteOrganization(entity.getId()));
-				assertSuccess(organizationServiceClient.removeUserFromOrg(organization.getId(), user.getId()));
+				assertSuccess(doRemoveOrganization(entity, getRequestorId()));
+				assertSuccess(doRemoveUserFromOrg(organization.getId(), user.getId(), getRequestorId()));
 				refreshAuthorizationManager();
 			}
 		}
@@ -1146,33 +1121,33 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 	
 	
 	private void doUser2OrganizationAddition(final User user, final Organization organization, final Set<String> rightIds, final Date startDate, final Date endDate) {
-		Response response = organizationServiceClient.addUserToOrg(organization.getId(), user.getId(), rightIds, startDate, endDate);
+		Response response = doAddUserToOrg(organization.getId(), user.getId(), getRequestorId(), rightIds, startDate, endDate);
 		assertSuccess(response);
 		refreshAuthorizationManager();
 		checkUser2OrganizationMembership(user.getId(), organization.getId(), rightIds, true);
-		response = organizationServiceClient.removeUserFromOrg(organization.getId(), user.getId());
+		response = doRemoveUserFromOrg(organization.getId(), user.getId(), getRequestorId());
 		assertSuccess(response);
 		refreshAuthorizationManager();
 		checkUser2OrganizationMembership(user.getId(), organization.getId(), rightIds, false);
 	}
 	
 	private void doResource2ResourceAddition(final Resource resource, final Resource child, final Set<String> rightIds, final Date startDate, final Date endDate) {
-		final Response response = resourceDataService.addChildResource(resource.getId(), child.getId(), getRequestorId(), rightIds, startDate, endDate);
+		final Response response = doAddChildResource(resource.getId(), child.getId(), getRequestorId(), rightIds, startDate, endDate);
 		assertSuccess(response);
 	}
 	
 	private void doGroup2GroupAddition(final Group group, final Group child, final Set<String> rightIds, final Date startDate, final Date endDate) {
-		final Response response = groupServiceClient.addChildGroup(group.getId(), child.getId(), getRequestorId(), rightIds, startDate, endDate);
+		final Response response = doAddChildGroup(group.getId(), child.getId(), getRequestorId(), rightIds, startDate, endDate);
 		assertSuccess(response);
 	}
 	
 	private void doRole2RoleAddition(final Role role, final Role child, final Set<String> rightIds, final Date startDate, final Date endDate) {
-		final Response response = roleServiceClient.addChildRole(role.getId(), child.getId(), getRequestorId(), rightIds, startDate, endDate);
+		final Response response = doAddChildRole(role.getId(), child.getId(), getRequestorId(), rightIds, startDate, endDate);
 		assertSuccess(response);
 	}
 	
 	private void doOrg2OrgAddition(final Organization organization, final Organization child, final Set<String> rightIds, final Date startDate, final Date endDate) {
-		final Response response = organizationServiceClient.addChildOrganization(organization.getId(), child.getId(), rightIds, startDate, endDate);
+		final Response response = doAddChildOrganization(organization.getId(), child.getId(), getRequestorId(), rightIds, startDate, endDate);
 		assertSuccess(response);
 	}
 	
@@ -1191,7 +1166,6 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 	@Test
 	public void testUser2GroupDirectStartDate() {
 		final Date startDate = new Date();
-		final Date endDate = DateUtils.addDays(startDate, 1);
 		doUser2GroupAddition(user.getId(), group.getId(), null, startDate, null);
 	}
 	
@@ -1217,7 +1191,6 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 	@Test
 	public void testUser2GroupDirectWithRightsStartDate() {
 		final Date startDate = new Date();
-		final Date endDate = DateUtils.addDays(startDate, 1);
 		doUser2GroupAddition(user.getId(), group.getId(), getRightIds(), startDate, null);
 	}
 	
@@ -1229,11 +1202,11 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 	}
 	
 	private void doUser2GroupAddition(final String userId, final String groupId, final Set<String> rightIds, final Date startDate, final Date endDate) {
-		Response response = groupServiceClient.addUserToGroup(groupId, userId, getRequestorId(), rightIds, startDate, endDate);
+		Response response = doAddUserToGroup(groupId, userId, getRequestorId(), rightIds, startDate, endDate);
 		assertSuccess(response);
 		refreshAuthorizationManager();
 		checkUser2GroupMembership(userId, groupId, rightIds, true);
-		response = groupServiceClient.removeUserFromGroup(groupId, userId, getRequestorId());
+		response = doRemoveUserFromGroup(groupId, userId, getRequestorId());
 		assertSuccess(response);
 		refreshAuthorizationManager();
 		checkUser2GroupMembership(userId, groupId, rightIds, false);
@@ -1249,4 +1222,33 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractServiceTe
 	protected abstract void checkUser2OrganizationMembership(final String userId, final String organizationId, final Set<String> rightIds, final boolean isAddition);
 	protected abstract void checkUserURLEntitlements(final String userId, final String url);
 	protected abstract boolean loginAfterUserCreation();
+	
+	protected abstract Response doAddUserToResource(final String resourceId, final String userId, final String requestorId, final Set<String> rightIds, final Date startDate, final Date endDate);
+	protected abstract Response doRemoveUserFromResource(final String resourceId, final String userId, final String requestorId);
+	protected abstract Response doDeleteResource(final Resource resource, final String requestorId);
+	protected abstract Response doAddGroupToResource(final String resourceId, final String groupId, final String requestorId, final Set<String> rightIds, final Date startDate, final Date endDate);
+	protected abstract Response doAddRoleToResource(final String resourceId, final String roleId, final String requestorId, final Set<String> rightIds, final Date startDate, final Date endDate);
+	protected abstract Response doAddUserToRole(final String roleId, final String userId, final String requestorId, final Set<String> rightIds, final Date startDate, final Date endDate);
+	protected abstract Response doAddChildRole(final String roleId, final String childRoleId, final String requestorId, final Set<String> rightIds, final Date startDate, final Date endDate);
+	protected abstract Response doRemoveUserFromRole(final String roleId, final String userId, final String requestorId);
+	protected abstract Response doAddUserToGroup(final String groupId, final String userId, final String requestorId, final Set<String> rightIds, final Date startDate, final Date endDate);
+	protected abstract Response doRemoveUserFromGroup(final String groupId, final String userId, final String requestorId);
+	protected abstract Response doAddChildGroup(final String groupId, final String childGroupId, final String requestorId, final Set<String> rightIds, final Date startDate, final Date endDate);
+	protected abstract Response doAddChildOrganization(final String organizationId, final String childOrganizationId, final String requestorId, final Set<String> rightIds, final Date startDate, final Date endDate);
+	protected abstract Response doAddChildResource(final String resourceId, final String childResourceId, final String requestorId, final Set<String> rightIds, final Date startDate, final Date endDate);
+	protected abstract Response doDeleteGroup(final Group group, final String requestorId);
+	protected abstract Response doAddGroupToRole(final String roleId, final String groupId, final String requestorId, final Set<String> rightIds, final Date startDate, final Date endDate);
+	protected abstract Response doRemoveGroupFromRole(final String roleId, final String groupId, final String requestorId);
+	protected abstract Response doAddUserToOrg(final String organizationId, final String userId, final String requestorId, final Set<String> rightIds, final Date startDate, final Date endDate);
+	protected abstract Response doRemoveUserFromOrg(final String organizationId, final String userId, final String requestorId);
+	protected abstract Response doAddResourceToOrganization(final String organizationId, final String resourceId, final String requestorId, final Set<String> rightIds, final Date startDate, final Date endDate);
+	protected abstract Response doRemoveResourceFromOrganization(final String organizationid, final String resourceId, final String requestorId);
+	protected abstract Response doRemoveRoleToResource(final String resourceId, final String roleId, final String requestorId);
+	protected abstract Response doAddRoleToOrganization(final String organizationId, final String roleId, final String requestorId, final Set<String> rightIds, final Date startDate, final Date endDate);
+	protected abstract Response doRemoveGroupToResource(final String resourceId, final String groupId, final String requestorId);
+	protected abstract Response doRemoveRoleFromOrganization(final String organizationId, final String roleId, final String requestorId);
+	protected abstract Response doRemoveRole(final Role role, final String requestorId);
+	protected abstract Response doRemoveOrganization(final Organization organization, final String requestorId);
+	protected abstract Response doAddGroupToOrganization(final String organizationId, final String groupId, final String requestorId, final Set<String> rightIds, final Date startDate, final Date endDate);
+	protected abstract Response doRemoveGroupFromOrganization(final String organizationId, final String groupId, final String requestorId);
 }

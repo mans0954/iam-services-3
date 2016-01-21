@@ -465,13 +465,17 @@ public class GroupDataServiceImpl implements GroupDataService {
     }
 
     private ApproverAssociationEntity createDefaultApproverAssociations(final GroupEntity entity, final String requestorId) {
-		final ApproverAssociationEntity association = new ApproverAssociationEntity();
-		association.setAssociationEntityId(entity.getId());
-		association.setAssociationType(AssociationType.GROUP);
-		association.setApproverLevel(Integer.valueOf(0));
-		association.setApproverEntityId(requestorId);
-		association.setApproverEntityType(AssociationType.USER);
-		return association;
+    	if(requestorId != null) {
+			final ApproverAssociationEntity association = new ApproverAssociationEntity();
+			association.setAssociationEntityId(entity.getId());
+			association.setAssociationType(AssociationType.GROUP);
+			association.setApproverLevel(Integer.valueOf(0));
+			association.setApproverEntityId(requestorId);
+			association.setApproverEntityType(AssociationType.USER);
+			return association;
+    	} else {
+    		return null;
+    	}
 	}
 	
 	private void mergeAttribute(final GroupEntity bean, final GroupEntity dbObject, final String requesterId) {

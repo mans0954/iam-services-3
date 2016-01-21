@@ -51,26 +51,26 @@ public abstract class AbstractCircularEntitlementTest<Parent extends KeyDTO> ext
 			entity1 = createParent();
 			entity2 = createParent();
 			entity3 = createParent();
-			doAddChildToParent(entity1, entity2, null, startDate, endDate);
-			doAddChildToParent(entity2, entity3, null, startDate, endDate);
-			doAddChildToParent(entity1, entity3, null, startDate, endDate);
-			response = addChildToParent(entity3, entity1, null, startDate, endDate);
+			doAddChildToParent(entity1, entity2, getRequestorId(), null, startDate, endDate);
+			doAddChildToParent(entity2, entity3, getRequestorId(), null, startDate, endDate);
+			doAddChildToParent(entity1, entity3, getRequestorId(), null, startDate, endDate);
+			response = addChildToParent(entity3, entity1, getRequestorId(), null, startDate, endDate);
 			Assert.assertTrue(response.isFailure(), "Adding a child should have triggered a circular dependency");
 			Assert.assertEquals(ResponseCode.CIRCULAR_DEPENDENCY, response.getErrorCode());
-			response = addChildToParent(entity3, entity2, null, startDate, endDate);
+			response = addChildToParent(entity3, entity2, getRequestorId(), null, startDate, endDate);
 			Assert.assertTrue(response.isFailure(), "Adding a child should have triggered a circular dependency");
 			Assert.assertEquals(ResponseCode.CIRCULAR_DEPENDENCY, response.getErrorCode());
 		} finally {
 			if(entity1 != null) {
-				response = deleteParent(entity1);
+				response = deleteParent(entity1, getRequestorId());
 				Assert.assertTrue(response.isSuccess(), String.format("Could not delete parent.  %s", response));
 			}
 			if(entity2 != null) {
-				response = deleteParent(entity2);
+				response = deleteParent(entity2, getRequestorId());
 				Assert.assertTrue(response.isSuccess(), String.format("Could not delete child.  %s", response));
 			}
 			if(entity3 != null) {
-				response = deleteParent(entity3);
+				response = deleteParent(entity3, getRequestorId());
 				Assert.assertTrue(response.isSuccess(), String.format("Could not delete child.  %s", response));
 			}
 		}
@@ -82,12 +82,12 @@ public abstract class AbstractCircularEntitlementTest<Parent extends KeyDTO> ext
 		Response response = null;
 		try {
 			entity1 = createParent();
-			response = addChildToParent(entity1, entity1, null, null, null);
+			response = addChildToParent(entity1, entity1, getRequestorId(), null, null, null);
 			Assert.assertTrue(response.isFailure(), "Adding a child to itself should have failed");
 			Assert.assertEquals(ResponseCode.CANT_ADD_YOURSELF_AS_CHILD, response.getErrorCode());
 		} finally {
 			if(entity1 != null) {
-				response = deleteParent(entity1);
+				response = deleteParent(entity1, getRequestorId());
 				Assert.assertTrue(response.isSuccess(), String.format("Could not delete parent.  %s", response));
 			}
 		}

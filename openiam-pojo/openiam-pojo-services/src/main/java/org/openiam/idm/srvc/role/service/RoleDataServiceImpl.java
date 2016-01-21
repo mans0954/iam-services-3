@@ -374,13 +374,17 @@ public class RoleDataServiceImpl implements RoleDataService {
     }
 	
 	private ApproverAssociationEntity createDefaultApproverAssociations(final RoleEntity entity, final String requestorId) {
-		final ApproverAssociationEntity association = new ApproverAssociationEntity();
-		association.setAssociationEntityId(entity.getId());
-		association.setAssociationType(AssociationType.ROLE);
-		association.setApproverLevel(Integer.valueOf(0));
-		association.setApproverEntityId(requestorId);
-		association.setApproverEntityType(AssociationType.USER);
-		return association;
+		if(requestorId != null) {
+			final ApproverAssociationEntity association = new ApproverAssociationEntity();
+			association.setAssociationEntityId(entity.getId());
+			association.setAssociationType(AssociationType.ROLE);
+			association.setApproverLevel(Integer.valueOf(0));
+			association.setApproverEntityId(requestorId);
+			association.setApproverEntityType(AssociationType.USER);
+			return association;
+		} else {
+			return null;
+		}
 	}
 	
 	/*

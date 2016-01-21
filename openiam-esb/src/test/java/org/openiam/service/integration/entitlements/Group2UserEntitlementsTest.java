@@ -31,22 +31,22 @@ public class Group2UserEntitlementsTest extends AbstractEntitlementsTest<Group, 
 	}
 
 	@Override
-	protected Response addChildToParent(final Group parent, final User child, final Set<String> rights, final Date startDate, final Date endDate) {
+	protected Response addChildToParent(final Group parent, final User child, final String requestorId, final Set<String> rights, final Date startDate, final Date endDate) {
 		return groupServiceClient.addUserToGroup(parent.getId(), child.getId(), null, rights, startDate, endDate);
 	}
 
 	@Override
-	protected Response removeChildFromParent(Group parent, User child) {
+	protected Response removeChildFromParent(Group parent, User child, final String requestorId) {
 		return groupServiceClient.removeUserFromGroup(parent.getId(), child.getId(), null);
 	}
 
 	@Override
-	protected Response deleteParent(Group parent) {
+	protected Response deleteParent(Group parent, final String requestorId) {
 		return groupServiceClient.deleteGroup(parent.getId(), null);
 	}
 
 	@Override
-	protected Response deleteChild(User child) {
+	protected Response deleteChild(User child, final String requestorId) {
 		return userServiceClient.removeUser(child.getId());
 	}
 

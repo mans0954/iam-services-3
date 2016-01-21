@@ -27,22 +27,22 @@ public class Resource2ResourceEntitlementsTest extends AbstractCircularEntitleme
 	}
 
 	@Override
-	protected Response addChildToParent(final Resource parent, final Resource child, final Set<String> rights, final Date startDate, final Date endDate) {
+	protected Response addChildToParent(final Resource parent, final Resource child, final String requestorId, final Set<String> rights, final Date startDate, final Date endDate) {
 		return resourceDataService.addChildResource(parent.getId(), child.getId(), null, rights, startDate, endDate);
 	}
 
 	@Override
-	protected Response removeChildFromParent(Resource parent, Resource child) {
+	protected Response removeChildFromParent(Resource parent, Resource child, final String requestorId) {
 		return resourceDataService.deleteChildResource(parent.getId(), child.getId(), null);
 	}
 
 	@Override
-	protected Response deleteParent(Resource parent) {
+	protected Response deleteParent(Resource parent, final String requestorId) {
 		return resourceDataService.deleteResource(parent.getId(), null);
 	}
 
 	@Override
-	protected Response deleteChild(Resource child) {
+	protected Response deleteChild(Resource child, final String requestorId) {
 		return resourceDataService.deleteResource(child.getId(), null);
 	}
 
