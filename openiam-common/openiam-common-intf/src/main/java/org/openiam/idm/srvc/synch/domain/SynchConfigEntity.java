@@ -593,7 +593,6 @@ public class SynchConfigEntity implements Serializable {
             return false;
         if (synchFrequency != null ? !synchFrequency.equals(that.synchFrequency) : that.synchFrequency != null)
             return false;
-        if (synchReviews != null ? !synchReviews.equals(that.synchReviews) : that.synchReviews != null) return false;
         if (synchType != null ? !synchType.equals(that.synchType) : that.synchType != null) return false;
         if (transformationRule != null ? !transformationRule.equals(that.transformationRule) : that.transformationRule != null)
             return false;
@@ -655,7 +654,6 @@ public class SynchConfigEntity implements Serializable {
         result = 31 * result + (wsNameSpace != null ? wsNameSpace.hashCode() : 0);
         result = 31 * result + (wsOperation != null ? wsOperation.hashCode() : 0);
         result = 31 * result + (wsAttributes != null ? wsAttributes.hashCode() : 0);
-        result = 31 * result + (synchReviews != null ? synchReviews.hashCode() : 0);
         return result;
     }
 }

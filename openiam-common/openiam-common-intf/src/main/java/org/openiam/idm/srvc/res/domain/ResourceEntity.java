@@ -411,8 +411,6 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
 
         if (isPublic != that.isPublic) return false;
         if (URL != null ? !URL.equals(that.URL) : that.URL != null) return false;
-        if (adminResource != null ? !adminResource.equals(that.adminResource) : that.adminResource != null)
-            return false;
         if (coorelatedName != null ? !coorelatedName.equals(that.coorelatedName) : that.coorelatedName != null)
             return false;
         if (description != null ? !description.equals(that.description) : that.description != null) return false;
@@ -438,7 +436,6 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
         result = 31 * result + (minAuthLevel != null ? minAuthLevel.hashCode() : 0);
         result = 31 * result + (isPublic ? 1 : 0);
         result = 31 * result + (coorelatedName != null ? coorelatedName.hashCode() : 0);
-        result = 31 * result + (adminResource != null ? adminResource.hashCode() : 0);
         result = 31 * result + (displayName != null ? displayName.hashCode() : 0);
         return result;
     }

@@ -381,8 +381,6 @@ public class OrganizationEntity extends AbstractMetdataTypeEntity {
         int result = super.hashCode();
         result = prime * result
                 + ((abbreviation == null) ? 0 : abbreviation.hashCode());
-        result = prime * result
-                + ((adminResource == null) ? 0 : adminResource.hashCode());
         result = prime * result + ((alias == null) ? 0 : alias.hashCode());
         result = prime * result
                 + ((createDate == null) ? 0 : createDate.hashCode());
@@ -422,11 +420,6 @@ public class OrganizationEntity extends AbstractMetdataTypeEntity {
             if (other.abbreviation != null)
                 return false;
         } else if (!abbreviation.equals(other.abbreviation))
-            return false;
-        if (adminResource == null) {
-            if (other.adminResource != null)
-                return false;
-        } else if (!adminResource.equals(other.adminResource))
             return false;
         if (alias == null) {
             if (other.alias != null)
