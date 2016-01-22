@@ -179,12 +179,12 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
 
         }
 
-        // checking if provided Password is not empty
-        if (StringUtils.isEmpty(password)) {
-            log.debug("AD_LOGIN_MODULE Validator throws=" + AuthenticationConstants.RESULT_INVALID_PASSWORD);
-            throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_PASSWORD);
-        }
         if (!authContext.isSkipPasswordCheck()) {
+            // checking if provided Password is not empty
+            if (StringUtils.isEmpty(password)) {
+                log.debug("AD_LOGIN_MODULE checking if provided Password is not empty throws=" + AuthenticationConstants.RESULT_INVALID_PASSWORD);
+                throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_PASSWORD);
+            }
             // try to login to AD with this user
             LdapContext ldapCtx = connect(distinguishedName, password, mSys);
 
