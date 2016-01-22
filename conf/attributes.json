@@ -21,7 +21,7 @@
 		},
 		"service_urls_props" : {
 			"openiam.service_base" : "localhost:9080"
-		}
-	},
-	"mariadb" : "true" 
+		},
+		"db_type" : "mariadb"
+	} 
 }
