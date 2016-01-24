@@ -6,6 +6,7 @@ import org.openiam.base.ws.SortParam;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -46,6 +47,15 @@ public abstract class AbstractSearchBean<T, KeyType> {
     public void setSortBy(List<SortParam> sortBy) {
         this.sortBy = sortBy;
     }
+
+	public void addSortParam(SortParam sortParam){
+		if(sortParam!=null && StringUtils.isNotBlank(sortParam.getSortBy())) {
+			if (this.sortBy == null) {
+				this.sortBy = new ArrayList<>();
+			}
+			this.sortBy.add(sortParam);
+		}
+	}
 
     @Override
 	public int hashCode() {

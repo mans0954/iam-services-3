@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.mngsys.service;
 
 import org.openiam.am.srvc.domain.AuthProviderEntity;
 import org.openiam.idm.searchbeans.AttributeMapSearchBean;
+import org.openiam.idm.searchbeans.ManagedSysSearchBean;
 import org.openiam.idm.srvc.mngsys.domain.*;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
@@ -10,10 +11,10 @@ import java.util.List;
 
 public interface ManagedSystemService {
 
-    List<ManagedSysEntity> getManagedSystemsByExample(ManagedSysEntity example,
+    List<ManagedSysEntity> getManagedSystemsByExample(ManagedSysSearchBean searchBean,
             Integer from, Integer size);
 
-    Integer getManagedSystemsCountByExample(ManagedSysEntity example);
+    Integer getManagedSystemsCountByExample(ManagedSysSearchBean searchBean);
 
     void addManagedSys(ManagedSysDto entity);
 

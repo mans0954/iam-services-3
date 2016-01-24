@@ -25,7 +25,7 @@ public class MetadataTemplateTypeFieldEntityDAOImpl extends BaseDaoImpl<Metadata
     }
 
     @Override
-    protected Criteria getExampleCriteria(SearchBean searchBean, boolean isCount) {
+    protected Criteria getExampleCriteria(SearchBean searchBean) {
         final Criteria criteria = getCriteria();
         if (searchBean != null && searchBean instanceof MetadataTemplateTypeFieldSearchBean) {
             final MetadataTemplateTypeFieldSearchBean bean = (MetadataTemplateTypeFieldSearchBean) searchBean;

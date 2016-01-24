@@ -35,7 +35,7 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
     }
 
     @Override
-    protected Criteria getExampleCriteria(final SearchBean searchBean, boolean isCount) {
+    protected Criteria getExampleCriteria(final SearchBean searchBean) {
         Criteria criteria = getCriteria();
         if(searchBean != null && searchBean instanceof GroupSearchBean) {
             final GroupSearchBean groupSearchBean = (GroupSearchBean)searchBean;
