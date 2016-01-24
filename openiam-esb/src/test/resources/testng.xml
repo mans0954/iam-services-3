@@ -27,6 +27,7 @@
 			
 			<class name="org.openiam.authmanager.service.integration.AuthorizationManagerWebServiceTest"/>
 			<class name="org.openiam.authmanager.service.integration.AuthorizationManagerHessianClientTest"/>
+			<class name="org.openiam.authmanager.service.integration.ActivitiAuthorizationManagerWebServiceTest"/>
             <!--
 			<class name="org.openiam.authmanager.service.integration.AuthorizationManagerMenuWebServiceTest" />
             -->
@@ -87,6 +88,7 @@
 	<test name="auth.provider">
 		<classes>
 			<class name="org.openiam.service.integration.authprovider.AuthProviderServiceTest" />
+			<class name="org.openiam.service.integration.authprovider.OAuthServiceTest" />
 		</classes>
 	</test>
 	

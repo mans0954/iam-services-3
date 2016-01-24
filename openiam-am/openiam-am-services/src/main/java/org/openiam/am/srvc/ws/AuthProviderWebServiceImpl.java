@@ -321,4 +321,11 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService, Appli
 			throws BeansException {
 		this.ctx = ctx;
 	}
+
+	@Override
+	@Transactional(readOnly=true)
+	public AuthProvider getAuthProvider(String providerId) {
+		final AuthProviderEntity entity = authProviderService.getAuthProvider(providerId);
+		return authProviderDozerConverter.convertToDTO(entity, true);
+	}
 }
