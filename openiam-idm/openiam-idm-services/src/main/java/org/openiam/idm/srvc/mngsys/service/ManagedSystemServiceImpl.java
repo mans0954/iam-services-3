@@ -1,10 +1,13 @@
 package org.openiam.idm.srvc.mngsys.service;
 
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.*;
+import java.util.Map;
+import java.util.Optional;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -23,18 +26,28 @@ import org.openiam.idm.searchbeans.AttributeMapSearchBean;
 import org.openiam.idm.searchbeans.MngSysPolicySearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
-import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
-import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
-import org.openiam.idm.srvc.meta.dto.MetadataType;
-import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
+import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
+import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
+import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
 import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
 import org.openiam.idm.srvc.mngsys.bean.AttributeMapBean;
 import org.openiam.idm.srvc.mngsys.bean.MngSysPolicyBean;
-import org.openiam.idm.srvc.mngsys.domain.*;
-import org.openiam.idm.srvc.mngsys.dto.*;
-import org.openiam.idm.srvc.mngsys.searchbeans.converter.ManagedSystemSearchBeanConverter;
+import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
+import org.openiam.idm.srvc.mngsys.domain.AssociationType;
+import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
+import org.openiam.idm.srvc.mngsys.domain.DefaultReconciliationAttributeMapEntity;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysRuleEntity;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
+import org.openiam.idm.srvc.mngsys.domain.MngSysPolicyEntity;
+import org.openiam.idm.srvc.mngsys.domain.ReconciliationResourceAttributeMapEntity;
+import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
+import org.openiam.idm.srvc.mngsys.dto.MngSysPolicyDto;
+import org.openiam.idm.srvc.msg.dto.ManagedSysSearchBean;
 import org.openiam.idm.srvc.policy.domain.PolicyEntity;
 import org.openiam.idm.srvc.policy.service.PolicyDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
@@ -61,9 +74,6 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
 
     @Autowired
     private MngSysPolicyDAO mngSysPolicyDAO;
-
-    @Autowired
-    private ManagedSystemSearchBeanConverter managedSystemSearchBeanConverter;
 
     @Autowired
     private MngSysPolicyDozerConverter mngSysPolicyDozerConverter;
@@ -137,16 +147,9 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     @Transactional(readOnly = true)
     public List<ManagedSysDto> getManagedSystemsByExample(
             ManagedSysSearchBean searchBean, Integer from, Integer size) {
-        final ManagedSysEntity managedSysEntity = managedSystemSearchBeanConverter.convert(searchBean);
-        List<ManagedSysEntity> sysEntities = managedSysDAO.getByExample(managedSysEntity, from, size);
+        List<ManagedSysEntity> sysEntities = managedSysDAO.getByExample(searchBean, from, size);
         List<ManagedSysDto> managedSysDtos = managedSysDozerConverter.convertToDTOList(sysEntities, false);
         return managedSysDtos;
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Integer getManagedSystemsCountByExample(ManagedSysEntity example) {
-        return managedSysDAO.count(example);
     }
 
     @Override
@@ -726,4 +729,9 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
             managedSysDAO.merge(entity);
         }
     }
+
+	@Override
+	public int count(ManagedSysSearchBean searchBean) {
+		return managedSysDAO.count(searchBean);
+	}
 }

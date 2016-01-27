@@ -91,10 +91,6 @@ implements BaseDao<T, PrimaryKey> {
 		return domainClass;
 	}
 
-	protected Criteria getExampleCriteria(T t) {
-        return getCriteria().add(Example.create(t));
-    }
-
     protected Criteria getExampleCriteria(final SearchBean searchBean) {
         throw new UnsupportedOperationException("Method must be overridden");
     }
@@ -152,21 +148,6 @@ implements BaseDao<T, PrimaryKey> {
     }
 
     @Override
-    @LocalizedDatabaseGet
-    public List<T> getByExample(T t, int startAt, int size) {
-        final Criteria criteria = getExampleCriteria(t);
-        if (startAt > -1) {
-            criteria.setFirstResult(startAt);
-        }
-
-        if (size > -1) {
-            criteria.setMaxResults(size);
-        }
-
-        return (List<T>) criteria.list();
-    }
-
-    @Override
     public List<String> getIDsByExample(SearchBean searchBean, int from, int size) {
         final Criteria criteria = getExampleCriteria(searchBean);
         if (from > -1) {
@@ -212,23 +193,6 @@ implements BaseDao<T, PrimaryKey> {
             }
         }
          return (List<T>) criteria.list();
-    }
-
-    @Override
-    @LocalizedDatabaseGet
-    public List<T> getByExample(T t) {
-        return getByExample(t, -1, -1);
-    }
-
-    @Override
-    public List<T> getByExampleNoLocalize(SearchBean searchBean, int from, int size) {
-        return this.getByExample(searchBean, from, size);
-    }
-
-    @Override
-    public int count(T t) {
-        return ((Number) getExampleCriteria(t).setProjection(rowCount())
-                .uniqueResult()).intValue();
     }
 
     protected Criteria getCriteria() {

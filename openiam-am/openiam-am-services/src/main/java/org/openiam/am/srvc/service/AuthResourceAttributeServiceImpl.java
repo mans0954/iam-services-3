@@ -11,6 +11,7 @@ import org.openiam.am.srvc.domain.AuthProviderEntity;
 import org.openiam.am.srvc.domain.AuthResourceAMAttributeEntity;
 import org.openiam.am.srvc.domain.AuthResourceAttributeMapEntity;
 import org.openiam.am.srvc.dto.SSOAttribute;
+import org.openiam.am.srvc.searchbeans.AuthResourceAttributeMapSearchBean;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.auth.service.AuthAttributeProcessor;
@@ -74,10 +75,9 @@ public class AuthResourceAttributeServiceImpl implements AuthResourceAttributeSe
 
     @Override
     public List<AuthResourceAttributeMapEntity> getAttributeMapList(String providerId) {
-        AuthResourceAttributeMapEntity entity = new AuthResourceAttributeMapEntity();
-        entity.setProvider(new AuthProviderEntity());
-        entity.getProvider().setId(providerId);
-        return authResourceAttributeMapDao.getByExample(entity);
+        final AuthResourceAttributeMapSearchBean sb = new AuthResourceAttributeMapSearchBean();
+        sb.setProviderId(providerId);
+        return authResourceAttributeMapDao.getByExample(sb);
     }
 
     @Override

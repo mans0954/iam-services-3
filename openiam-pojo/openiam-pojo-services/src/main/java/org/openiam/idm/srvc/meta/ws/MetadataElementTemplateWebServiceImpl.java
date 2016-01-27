@@ -4,22 +4,20 @@ import java.util.List;
 
 import javax.jws.WebService;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.exception.BasicDataServiceException;
 import org.openiam.dozer.converter.LanguageDozerConverter;
 import org.openiam.dozer.converter.MetadataElementTemplateDozerConverter;
 import org.openiam.dozer.converter.MetadataTemplateTypeDozerConverter;
 import org.openiam.dozer.converter.MetadataTemplateTypeFieldDozerConverter;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.MetadataElementPageTemplateSearchBean;
 import org.openiam.idm.searchbeans.MetadataTemplateTypeFieldSearchBean;
 import org.openiam.idm.searchbeans.MetadataTemplateTypeSearchBean;
-import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTemplateTypeEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTemplateTypeFieldEntity;
@@ -29,8 +27,6 @@ import org.openiam.idm.srvc.meta.dto.MetadataTemplateTypeField;
 import org.openiam.idm.srvc.meta.dto.PageTempate;
 import org.openiam.idm.srvc.meta.dto.TemplateRequest;
 import org.openiam.idm.srvc.meta.service.MetadataElementTemplateService;
-import org.openiam.idm.srvc.searchbean.converter.MetadataElementTemplateSearchBeanConverter;
-import org.openiam.idm.srvc.searchbean.converter.MetadataTemplateTypeSearchBeanConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -53,9 +49,6 @@ public class MetadataElementTemplateWebServiceImpl implements MetadataElementTem
 	
 	@Autowired
 	private MetadataTemplateTypeDozerConverter templateTypeDozerConverter;
-	
-	@Autowired
-	private MetadataTemplateTypeSearchBeanConverter templateTypeSearchBeanConverter;
 	
 	@Autowired
 	private MetadataTemplateTypeFieldDozerConverter uiFieldDozerConverter;
@@ -136,8 +129,7 @@ public class MetadataElementTemplateWebServiceImpl implements MetadataElementTem
 	@Override
     @Transactional(readOnly = true)
 	public List<MetadataTemplateType> findTemplateTypes(final MetadataTemplateTypeSearchBean searchBean, final int from, final int size) {
-		final MetadataTemplateTypeEntity entity = templateTypeSearchBeanConverter.convert(searchBean);
-		final List<MetadataTemplateTypeEntity> entityList = templateService.findTemplateTypes(entity, from, size);
+		final List<MetadataTemplateTypeEntity> entityList = templateService.findTemplateTypes(searchBean, from, size);
 		return (entityList != null) ? templateTypeDozerConverter.convertToDTOList(entityList, (searchBean != null) ? searchBean.isDeepCopy() : false) : null;
 	}
 

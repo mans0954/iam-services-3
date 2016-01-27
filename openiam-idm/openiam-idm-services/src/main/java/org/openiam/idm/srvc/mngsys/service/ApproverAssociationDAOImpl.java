@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.mngsys.service;
 
 import java.util.Collections;
 import java.util.List;
+
 import javax.naming.InitialContext;
 
 import org.apache.commons.lang.StringUtils;
@@ -16,6 +17,8 @@ import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
+import org.openiam.idm.searchbeans.SearchBean;
+import org.openiam.idm.srvc.mngsys.bean.ApproverAssocationSearchBean;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.dto.ApproverAssociation;
@@ -27,43 +30,49 @@ public class ApproverAssociationDAOImpl extends BaseDaoImpl<ApproverAssociationE
 
 	private static final Log log = LogFactory.getLog(ApproverAssociationDAOImpl.class);
 	
+	
+	
+	
 	@Override
-	protected Criteria getExampleCriteria(ApproverAssociationEntity entity) {
+	protected Criteria getExampleCriteria(SearchBean searchBean) {
 		final Criteria criteria = getCriteria();
-		if(StringUtils.isNotBlank(entity.getId())) {
-			criteria.add(Restrictions.eq("id", entity.getId()));
-		} else {
-			if(entity.getAssociationType() != null) {
-				criteria.add(Restrictions.eq("associationType", entity.getAssociationType()));
+		if(searchBean != null && searchBean instanceof ApproverAssocationSearchBean) {
+			final ApproverAssocationSearchBean sb = (ApproverAssocationSearchBean)searchBean;
+			if(StringUtils.isNotBlank(sb.getKey())) {
+				criteria.add(Restrictions.eq("id", sb.getKey()));
+			} else {
+				if(sb.getAssociationType() != null) {
+					criteria.add(Restrictions.eq("associationType", sb.getAssociationType()));
+				}
+				if(StringUtils.isNotBlank(sb.getAssociationEntityId())) {
+					criteria.add(Restrictions.eq("associationEntityId", sb.getAssociationEntityId()));
+				}
+				if(StringUtils.isNotBlank(sb.getRequestType())) {
+					criteria.add(Restrictions.eq("requestType", sb.getRequestType()));
+				}
+				if(StringUtils.isNotBlank(sb.getOnApproveEntityId())) {
+					criteria.add(Restrictions.eq("onApproveEntityId", sb.getOnApproveEntityId()));
+				}
+				if(sb.getOnApproveEntityType() != null) {
+					criteria.add(Restrictions.eq("onApproveEntityType", sb.getOnApproveEntityType()));
+				}
+				if(StringUtils.isNotBlank(sb.getOnRejectEntityId())) {
+					criteria.add(Restrictions.eq("onRejectEntityId", sb.getOnRejectEntityId()));
+				}
+				if(sb.getOnRejectEntityType() != null) {
+					criteria.add(Restrictions.eq("onRejectEntityType", sb.getOnRejectEntityType()));
+				}
+				if(StringUtils.isNotBlank(sb.getApproverEntityId())) {
+					criteria.add(Restrictions.eq("approverEntityId", sb.getApproverEntityId()));
+				}
+				if(sb.getApproverEntityType() != null) {
+					criteria.add(Restrictions.eq("approverEntityType", sb.getApproverEntityType()));
+				}
+				if(sb.getApproverLevel() != null) {
+					criteria.add(Restrictions.eq("approverLevel", sb.getApproverLevel()));
+				}
+				criteria.addOrder(Order.asc("approverLevel"));
 			}
-			if(StringUtils.isNotBlank(entity.getAssociationEntityId())) {
-				criteria.add(Restrictions.eq("associationEntityId", entity.getAssociationEntityId()));
-			}
-			if(StringUtils.isNotBlank(entity.getRequestType())) {
-				criteria.add(Restrictions.eq("requestType", entity.getRequestType()));
-			}
-			if(StringUtils.isNotBlank(entity.getOnApproveEntityId())) {
-				criteria.add(Restrictions.eq("onApproveEntityId", entity.getOnApproveEntityId()));
-			}
-			if(entity.getOnApproveEntityType() != null) {
-				criteria.add(Restrictions.eq("onApproveEntityType", entity.getOnApproveEntityType()));
-			}
-			if(StringUtils.isNotBlank(entity.getOnRejectEntityId())) {
-				criteria.add(Restrictions.eq("onRejectEntityId", entity.getOnRejectEntityId()));
-			}
-			if(entity.getOnRejectEntityType() != null) {
-				criteria.add(Restrictions.eq("onRejectEntityType", entity.getOnRejectEntityType()));
-			}
-			if(StringUtils.isNotBlank(entity.getApproverEntityId())) {
-				criteria.add(Restrictions.eq("approverEntityId", entity.getApproverEntityId()));
-			}
-			if(entity.getApproverEntityType() != null) {
-				criteria.add(Restrictions.eq("approverEntityType", entity.getApproverEntityType()));
-			}
-			if(entity.getApproverLevel() != null) {
-				criteria.add(Restrictions.eq("approverLevel", entity.getApproverLevel()));
-			}
-			criteria.addOrder(Order.asc("approverLevel"));
 		}
 		return criteria;
 	}
@@ -76,10 +85,10 @@ public class ApproverAssociationDAOImpl extends BaseDaoImpl<ApproverAssociationE
 	@Override
 	public List<ApproverAssociationEntity> getByAssociation(final String associationId, final AssociationType associationType) {
 		if(StringUtils.isNotBlank(associationId) && associationType != null) {
-			final ApproverAssociationEntity example = new ApproverAssociationEntity();
-			example.setAssociationEntityId(associationId);
-			example.setAssociationType(associationType);
-			return getByExample(example);
+			final ApproverAssocationSearchBean sb = new ApproverAssocationSearchBean();
+			sb.setAssociationEntityId(associationId);
+			sb.setAssociationType(associationType);
+			return getByExample(sb);
 		} else {
 			return Collections.EMPTY_LIST;
 		}
@@ -89,10 +98,10 @@ public class ApproverAssociationDAOImpl extends BaseDaoImpl<ApproverAssociationE
 	public List<ApproverAssociationEntity> getByApprover(String associationId,
 			AssociationType associationType) {
 		if(StringUtils.isNotBlank(associationId) && associationType != null) {
-			final ApproverAssociationEntity example = new ApproverAssociationEntity();
-			example.setApproverEntityId(associationId);
-			example.setApproverEntityType(associationType);
-			return getByExample(example);
+			final ApproverAssocationSearchBean sb = new ApproverAssocationSearchBean();
+			sb.setApproverEntityId(associationId);
+			sb.setApproverEntityType(associationType);
+			return getByExample(sb);
 		} else {
 			return Collections.EMPTY_LIST;
 		}

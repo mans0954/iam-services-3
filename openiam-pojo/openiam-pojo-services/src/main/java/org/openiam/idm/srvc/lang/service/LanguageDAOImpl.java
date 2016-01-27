@@ -18,6 +18,8 @@ package org.openiam.idm.srvc.lang.service;
  *  along with OpenIAM.  If not, see <http://www.gnu.org/licenses/>. *
  */
 
+import java.util.List;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -27,12 +29,8 @@ import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.searchbeans.LanguageSearchBean;
 import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
-import org.openiam.idm.srvc.searchbean.converter.LanguageSearchBeanConverter;
 import org.openiam.internationalization.LocalizedDatabaseGet;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
-
-import java.util.List;
 
 /**
  * DAO to manage the list of languages.
@@ -44,30 +42,18 @@ import java.util.List;
 public class LanguageDAOImpl extends BaseDaoImpl<LanguageEntity, String> implements LanguageDAO {
     private static final Log log = LogFactory.getLog(LanguageDAOImpl.class);
 
-    @Autowired
-    private LanguageSearchBeanConverter converter;
-
-    @Override
-    protected Criteria getExampleCriteria(final LanguageEntity t) {
-        final Criteria criteria = getCriteria();
-        if (t != null) {
-            if (!StringUtils.isEmpty(t.getId())) {
-                criteria.add(Restrictions.eq("id", t.getId()));
-            } else {
-                if (StringUtils.isNotBlank(t.getLanguageCode())) {
-                    criteria.add(Restrictions.eq("languageCode", t.getLanguageCode()));
-                }
-            }
-        }
-        return criteria;
-    }
-
     @Override
     protected Criteria getExampleCriteria(final SearchBean searchBean) {
         Criteria criteria = getCriteria();
         if (searchBean != null && (searchBean instanceof LanguageSearchBean)) {
             final LanguageSearchBean sb = (LanguageSearchBean) searchBean;
-            criteria = getExampleCriteria(converter.convert(sb));
+            if (!StringUtils.isEmpty(sb.getKey())) {
+                criteria.add(Restrictions.eq("id", sb.getKey()));
+            } else {
+                if (StringUtils.isNotBlank(sb.getCode())) {
+                    criteria.add(Restrictions.eq("languageCode", sb.getCode()));
+                }
+            }
         }
         return criteria;
     }

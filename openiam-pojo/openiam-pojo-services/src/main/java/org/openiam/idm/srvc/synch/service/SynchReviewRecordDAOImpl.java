@@ -26,12 +26,6 @@ public class SynchReviewRecordDAOImpl extends BaseDaoImpl<SynchReviewRecordEntit
     }
 
     @Override
-    protected Criteria getExampleCriteria(SynchReviewRecordEntity review) {
-        Example example = Example.create(review);
-        return getCriteria().add(example);
-    }
-
-    @Override
     protected Criteria getExampleCriteria(final SearchBean searchBean) {
         final Criteria criteria = getCriteria();
         return criteria;

@@ -1,29 +1,23 @@
 package org.openiam.idm.srvc.mngsys.ws;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.openiam.dozer.converter.MetaDataTypeDozerConverter;
-import org.openiam.dozer.converter.ProvisionConnectorConverter;
-import org.openiam.exception.BasicDataServiceException;
+import java.util.Collections;
+import java.util.List;
 
-import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
-import org.openiam.idm.srvc.meta.dto.MetadataType;
-import org.openiam.idm.srvc.mngsys.domain.ProvisionConnectorEntity;
-import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
-import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorSearchBean;
-import org.openiam.idm.srvc.mngsys.searchbeans.converter.ProvisionConnectorSearchBeanConverter;
-import org.openiam.idm.srvc.mngsys.service.ProvisionConnectorService;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import javax.jws.WebParam;
 import javax.jws.WebService;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.Response;
-import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.dozer.converter.MetaDataTypeDozerConverter;
+import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
+import org.openiam.idm.srvc.meta.dto.MetadataType;
+import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
+import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorSearchBean;
+import org.openiam.idm.srvc.mngsys.service.ProvisionConnectorService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 

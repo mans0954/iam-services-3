@@ -7,6 +7,8 @@ import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.am.srvc.domain.URIPatternEntity;
 import org.openiam.core.dao.BaseDaoImpl;
+import org.openiam.idm.searchbeans.MetadataElementPageTemplateSearchBean;
+import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateEntity;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.springframework.stereotype.Repository;
@@ -18,45 +20,45 @@ import java.util.Set;
 @Repository("metadataElementPageTemplateDAO")
 public class MetadataElementPageTemplateDAOImpl extends BaseDaoImpl<MetadataElementPageTemplateEntity, String> implements MetadataElementPageTemplateDAO {
 
+	
+	
 	@Override
-	protected Criteria getExampleCriteria(final MetadataElementPageTemplateEntity entity) {
+	protected Criteria getExampleCriteria(SearchBean searchBean) {
 		final Criteria criteria = getCriteria();
-		if(StringUtils.isNotBlank(entity.getId())) {
-			criteria.add(Restrictions.eq(getPKfieldName(), entity.getId()));
-		} else {
+		if(searchBean != null && searchBean instanceof MetadataElementPageTemplateSearchBean) {
+			final MetadataElementPageTemplateSearchBean sb = (MetadataElementPageTemplateSearchBean)searchBean;
+			if(StringUtils.isNotBlank(sb.getKey())) {
+				criteria.add(Restrictions.eq(getPKfieldName(), sb.getKey()));
+			} else {
+				if (StringUtils.isNotEmpty(sb.getName())) {
+	                String name = sb.getName();
+	                MatchMode matchMode = null;
+	                if (StringUtils.indexOf(name, "*") == 0) {
+	                    matchMode = MatchMode.END;
+	                    name = name.substring(1);
+	                }
+	                if (StringUtils.isNotEmpty(name) && StringUtils.indexOf(name, "*") == name.length() - 1) {
+	                    name = name.substring(0, name.length() - 1);
+	                    matchMode = (matchMode == MatchMode.END) ? MatchMode.ANYWHERE : MatchMode.START;
+	                }
 
-            if (StringUtils.isNotEmpty(entity.getName())) {
-                String name = entity.getName();
-                MatchMode matchMode = null;
-                if (StringUtils.indexOf(name, "*") == 0) {
-                    matchMode = MatchMode.END;
-                    name = name.substring(1);
-                }
-                if (StringUtils.isNotEmpty(name) && StringUtils.indexOf(name, "*") == name.length() - 1) {
-                    name = name.substring(0, name.length() - 1);
-                    matchMode = (matchMode == MatchMode.END) ? MatchMode.ANYWHERE : MatchMode.START;
-                }
-
-                if (StringUtils.isNotEmpty(name)) {
-                    if (matchMode != null) {
-                        criteria.add(Restrictions.ilike("name", name, matchMode));
-                    } else {
-                        criteria.add(Restrictions.eq("name", name));
-                    }
-                }
-            }
-			
-			if(CollectionUtils.isNotEmpty(entity.getUriPatterns())) {
-				final Set<String> patternIdSet = new HashSet<String>();
-				for(final URIPatternEntity pattern : entity.getUriPatterns()) {
-					patternIdSet.add(pattern.getId());
+	                if (StringUtils.isNotEmpty(name)) {
+	                    if (matchMode != null) {
+	                        criteria.add(Restrictions.ilike("name", name, matchMode));
+	                    } else {
+	                        criteria.add(Restrictions.eq("name", name));
+	                    }
+	                }
+	            }
+				
+				if(CollectionUtils.isNotEmpty(sb.getPatternIds())) {
+					criteria.createAlias("uriPatterns", "patterns").add( Restrictions.in("patterns.id", sb.getPatternIds()));
 				}
-				criteria.createAlias("uriPatterns", "patterns").add( Restrictions.in("patterns.id", patternIdSet));
+				
+				if(StringUtils.isNotEmpty(sb.getResourceId())) {
+	            	criteria.add(Restrictions.eq("resource.id", sb.getResourceId()));
+	            }
 			}
-			
-			if(entity.getResource() != null && StringUtils.isNotEmpty(entity.getResource().getId())) {
-            	criteria.add(Restrictions.eq("resource.id", entity.getResource().getId()));
-            }
 		}
 		return criteria;
 	}
@@ -68,11 +70,9 @@ public class MetadataElementPageTemplateDAOImpl extends BaseDaoImpl<MetadataElem
 
 	@Override
 	public List<MetadataElementPageTemplateEntity> getByResourceId(final String resourceId) {
-		final MetadataElementPageTemplateEntity entity = new MetadataElementPageTemplateEntity();
-		final ResourceEntity resource = new ResourceEntity();
-		resource.setId(resourceId);
-		entity.setResource(resource);
-		return getByExample(entity);
+		final MetadataElementPageTemplateSearchBean sb = new MetadataElementPageTemplateSearchBean();
+		sb.setResourceId(resourceId);
+		return getByExample(sb);
 	}
 
 }

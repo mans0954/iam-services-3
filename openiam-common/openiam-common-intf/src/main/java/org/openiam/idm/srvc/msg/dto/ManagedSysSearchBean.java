@@ -1,6 +1,7 @@
-package org.openiam.idm.srvc.mngsys.dto;
+package org.openiam.idm.srvc.msg.dto;
 
 import org.openiam.idm.searchbeans.AbstractSearchBean;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -12,7 +13,7 @@ import javax.xml.bind.annotation.XmlType;
         "name",
         "resourceId"
 })
-public class ManagedSysSearchBean extends AbstractSearchBean<ProvisionConnectorDto, String> {
+public class ManagedSysSearchBean extends AbstractSearchBean<ManagedSysDto, String> {
     private String name;
     private String resourceId;
 

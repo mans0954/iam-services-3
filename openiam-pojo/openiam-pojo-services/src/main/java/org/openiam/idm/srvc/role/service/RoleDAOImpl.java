@@ -15,7 +15,6 @@ import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.DetachedCriteria;
-import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.criterion.Subqueries;
@@ -29,7 +28,6 @@ import org.openiam.idm.searchbeans.RoleSearchBean;
 import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.role.domain.RoleAttributeEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
-import org.openiam.idm.srvc.searchbean.converter.RoleSearchBeanConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -40,9 +38,6 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
 	private SysConfiguration sysConfig;
 
 	private static final Log log = LogFactory.getLog(RoleDAOImpl.class);
-
-    @Autowired
-    private RoleSearchBeanConverter roleSearchBeanConverter;
     
     /*
     @Override
@@ -66,9 +61,6 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
         if(searchBean != null && searchBean instanceof RoleSearchBean) {
             final RoleSearchBean roleSearchBean = (RoleSearchBean)searchBean;
 
-            final RoleEntity exampleEnity = roleSearchBeanConverter.convert(roleSearchBean);
-            criteria = this.getExampleCriteria(exampleEnity);
-
             if(roleSearchBean.hasMultipleKeys()) {
                 criteria.add(Restrictions.in(getPKfieldName(), roleSearchBean.getKeys()));
             }else if(StringUtils.isNotBlank(roleSearchBean.getKey())) {
@@ -90,6 +82,18 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
                     criteria.add(Subqueries.propertyIn("id", crit));
                 }
             }
+            
+            Criterion c = getStringCriterion("name", roleSearchBean.getName(), sysConfig.isCaseInSensitiveDatabase());
+			if(c != null) {
+				criteria.add(c);
+			}
+            if(StringUtils.isNotBlank(roleSearchBean.getManagedSysId())){
+                criteria.add(Restrictions.eq("managedSystem.id", roleSearchBean.getManagedSysId()));
+            }
+            c = getStringCriterion("description", roleSearchBean.getDescription(), false);
+            if(c != null) {
+				criteria.add(c);
+			}
 
             if(StringUtils.isNotBlank(roleSearchBean.getType())){
                 criteria.add(Restrictions.eq("type.id", roleSearchBean.getType()));
@@ -134,28 +138,6 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
         return criteria;
     }
 
-	@Override
-	protected Criteria getExampleCriteria(final RoleEntity entity) {
-		final Criteria criteria = super.getCriteria();
-		if(entity != null) {
-			if(StringUtils.isNotBlank(entity.getId())) {
-				criteria.add(Restrictions.eq(getPKfieldName(), entity.getId()));
-			} else {
-				Criterion c = getStringCriterion("name", entity.getName(), sysConfig.isCaseInSensitiveDatabase());
-				if(c != null) {
-					criteria.add(c);
-				}
-                if(entity.getManagedSystem()!=null && StringUtils.isNotBlank(entity.getManagedSystem().getId())){
-                    criteria.add(Restrictions.eq("managedSystem.id", entity.getManagedSystem().getId()));
-                }
-                c = getStringCriterion("description", entity.getDescription(), false);
-                if(c != null) {
-					criteria.add(c);
-				}
-			}
-		}
-		return criteria;
-	}
     protected void setOderByCriteria(Criteria criteria, AbstractSearchBean sb) {
         List<SortParam> sortParamList = sb.getSortBy();
         for (SortParam sort: sortParamList){
@@ -166,20 +148,6 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
                 criteria.addOrder(createOrder(sort.getSortBy(), sort.getOrderBy()));
             }
         }
-    }
-
-    @Override
-    public List<RoleEntity> getByExample(RoleEntity t, int startAt, int size) {
-        final Criteria criteria = getExampleCriteria(t);
-        if (startAt > -1) {
-            criteria.setFirstResult(startAt);
-        }
-
-        if (size > -1) {
-            criteria.setMaxResults(size);
-        }
-
-        return (List<RoleEntity>) criteria.list();
     }
 
     @Override

@@ -1,6 +1,13 @@
 package org.openiam.idm.srvc.meta.service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
@@ -9,24 +16,35 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.am.srvc.dao.URIPatternDao;
 import org.openiam.am.srvc.domain.URIPatternEntity;
-import org.openiam.authmanager.common.model.AuthorizationResource;
 import org.openiam.authmanager.service.AuthorizationManagerService;
 import org.openiam.base.service.AbstractLanguageService;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.idm.searchbeans.MetadataElementPageTemplateSearchBean;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.searchbeans.MetadataTemplateTypeFieldSearchBean;
+import org.openiam.idm.searchbeans.MetadataTemplateTypeSearchBean;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
 import org.openiam.idm.srvc.lang.service.LanguageDAO;
-import org.openiam.idm.srvc.meta.domain.*;
+import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
+import org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateEntity;
+import org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateXrefEntity;
+import org.openiam.idm.srvc.meta.domain.MetadataFieldTemplateXrefEntity;
+import org.openiam.idm.srvc.meta.domain.MetadataTemplateTypeEntity;
+import org.openiam.idm.srvc.meta.domain.MetadataTemplateTypeFieldEntity;
+import org.openiam.idm.srvc.meta.domain.MetadataValidValueEntity;
 import org.openiam.idm.srvc.meta.domain.pk.MetadataElementPageTemplateXrefIdEntity;
-import org.openiam.idm.srvc.meta.dto.*;
+import org.openiam.idm.srvc.meta.dto.PageElement;
+import org.openiam.idm.srvc.meta.dto.PageElementValidValue;
+import org.openiam.idm.srvc.meta.dto.PageElementValue;
+import org.openiam.idm.srvc.meta.dto.PageTempate;
+import org.openiam.idm.srvc.meta.dto.PageTemplateAttributeToken;
+import org.openiam.idm.srvc.meta.dto.TemplateRequest;
+import org.openiam.idm.srvc.meta.dto.TemplateUIField;
 import org.openiam.idm.srvc.meta.exception.PageTemplateException;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
-import org.openiam.idm.srvc.searchbean.converter.MetadataElementTemplateSearchBeanConverter;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.UserProfileRequestModel;
@@ -80,9 +98,6 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 	private MetadataFieldTemplateXrefDAO uiFieldXrefDAO;
 	
 	@Autowired
-	private MetadataElementTemplateSearchBeanConverter templateSearchBeanConverter;
-	
-	@Autowired
 	private MetadataService metadataService;
 
 	@Value("${org.openiam.resource.type.ui.template}")
@@ -99,8 +114,7 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 		if(searchBean.hasMultipleKeys()) {
 			retVal = pageTemplateDAO.findByIds(searchBean.getKeys());
 		} else {
-			final MetadataElementPageTemplateEntity entity = templateSearchBeanConverter.convert(searchBean);
-			retVal = pageTemplateDAO.getByExample(entity, from, size);
+			retVal = pageTemplateDAO.getByExample(searchBean, from, size);
 		}
 		return retVal;
 	}
@@ -111,8 +125,7 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 		if(searchBean.hasMultipleKeys()) {
 			count = pageTemplateDAO.findByIds(searchBean.getKeys()).size();
 		} else {
-			final MetadataElementPageTemplateEntity entity = templateSearchBeanConverter.convert(searchBean);
-			count = pageTemplateDAO.count(entity);
+			count = pageTemplateDAO.count(searchBean);
 		}
 		return count;
 	}
@@ -758,8 +771,8 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 
 	@Override
 	public List<MetadataTemplateTypeEntity> findTemplateTypes(
-			MetadataTemplateTypeEntity entity, int from, int size) {
-		return templateTypeDAO.getByExample(entity, from, size);
+			MetadataTemplateTypeSearchBean searchBean, int from, int size) {
+		return templateTypeDAO.getByExample(searchBean, from, size);
 	}
 
 	@Override

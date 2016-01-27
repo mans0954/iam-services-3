@@ -45,13 +45,11 @@ import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.mngsys.dto.DefaultReconciliationAttributeMap;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysRuleDto;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSysSearchBean;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.mngsys.dto.MngSysPolicyDto;
-import org.openiam.idm.srvc.mngsys.searchbeans.converter.ApproverAssocationSearchBeanConverter;
-import org.openiam.idm.srvc.mngsys.searchbeans.converter.ManagedSystemSearchBeanConverter;
 import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
+import org.openiam.idm.srvc.msg.dto.ManagedSysSearchBean;
 import org.openiam.idm.util.SSLCert;
 import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -101,9 +99,6 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     private ManagedSystemObjectMatchDozerConverter managedSystemObjectMatchDozerConverter;
 
     @Autowired
-    private ManagedSystemSearchBeanConverter managedSystemSearchBeanConverter;
-
-    @Autowired
     private ApproverAssociationDozerConverter approverAssociationDozerConverter;
 
     @Autowired
@@ -122,18 +117,12 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     @Qualifier("cryptor")
     private Cryptor cryptor;
 
-    @Autowired
-    private ApproverAssocationSearchBeanConverter approverSearchBeanConverter;
-
     boolean encrypt = true; // default encryption setting
 
     @Override
-    public Integer getManagedSystemsCount(
+    public int getManagedSystemsCount(
             @WebParam(name = "searchBean", targetNamespace = "") ManagedSysSearchBean searchBean) {
-        ManagedSysEntity managedSysEntity = managedSystemSearchBeanConverter
-                .convert(searchBean);
-        return managedSystemService
-                .getManagedSystemsCountByExample(managedSysEntity);
+        return managedSystemService.count(searchBean);
     }
 
     @Override
@@ -320,8 +309,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     @Transactional(readOnly = true)
     public List<ApproverAssociation> getApproverAssociations(
             ApproverAssocationSearchBean searchBean, int from, int size) {
-        final ApproverAssociationEntity entity = approverSearchBeanConverter.convert(searchBean);
-        final List<ApproverAssociationEntity> entityList = approverAssociationDao.getByExample(entity, from, size);
+        final List<ApproverAssociationEntity> entityList = approverAssociationDao.getByExample(searchBean, from, size);
         return (entityList != null) ? approverAssociationDozerConverter.convertToDTOList(entityList, searchBean.isDeepCopy()) : null;
     }
     

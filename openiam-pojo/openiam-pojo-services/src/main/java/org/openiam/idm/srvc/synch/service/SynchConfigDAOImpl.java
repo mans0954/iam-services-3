@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.synch.service;
 
 import java.sql.Timestamp;
 import java.util.List;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
@@ -10,7 +11,9 @@ import org.hibernate.criterion.Example;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
+import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.synch.domain.SynchConfigEntity;
+import org.openiam.idm.srvc.synch.dto.SynchConfigSearchBean;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -114,16 +117,24 @@ public class SynchConfigDAOImpl extends BaseDaoImpl<SynchConfigEntity, String> i
     protected String getPKfieldName() {
         return "id";
     }
+    
+    
 
     @Override
-    protected Criteria getExampleCriteria(SynchConfigEntity config) {
-        Example example = Example.create(config);
-        example.excludeProperty("usePolicyMap"); // exclude boolean properties
-        example.excludeProperty("useTransformationScript");
-        example.excludeProperty("policyMapBeforeTransformation");
-        example.excludeProperty("useSystemPath");
-        example.excludeProperty("searchScope");
-        return getCriteria().add(example);
-    }
-
+	protected Criteria getExampleCriteria(SearchBean searchBean) {
+		final Criteria criteria = getCriteria();
+		if(searchBean != null && searchBean instanceof SynchConfigSearchBean) {
+			final SynchConfigSearchBean sb = (SynchConfigSearchBean)searchBean;
+			if(sb.isExcludeBooleanProperties()) {
+				 final Example example = Example.create(new SynchConfigEntity());
+				 example.excludeProperty("usePolicyMap"); // exclude boolean properties
+				 example.excludeProperty("useTransformationScript");
+				 example.excludeProperty("policyMapBeforeTransformation");
+				 example.excludeProperty("useSystemPath");
+				 example.excludeProperty("searchScope");
+				 criteria.add(example);
+			}
+		}
+		return criteria;
+	}
 }

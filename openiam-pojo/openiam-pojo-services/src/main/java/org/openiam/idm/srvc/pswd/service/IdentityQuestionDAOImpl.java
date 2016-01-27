@@ -6,6 +6,8 @@ import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
+import org.openiam.idm.searchbeans.IdentityQuestionSearchBean;
+import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.pswd.domain.IdentityQuestionEntity;
 import org.springframework.stereotype.Repository;
 
@@ -17,14 +19,19 @@ public class IdentityQuestionDAOImpl extends BaseDaoImpl<IdentityQuestionEntity,
 
 	private static final Log log = LogFactory.getLog(IdentityQuestionDAOImpl.class);
 	
+	
+	
 	@Override
-	protected Criteria getExampleCriteria(final IdentityQuestionEntity example) {
+	protected Criteria getExampleCriteria(SearchBean searchBean) {
 		final Criteria criteria = getCriteria();
-		if (example.getActive() !=null){
-			criteria.add(Restrictions.eq("active", example.getActive()));
-		}
-		if(example.getIdentityQuestGrp() != null) {
-			criteria.add(Restrictions.eq("identityQuestGrp.id", example.getIdentityQuestGrp().getId()));
+		if(searchBean != null && searchBean instanceof IdentityQuestionSearchBean) {
+			final IdentityQuestionSearchBean sb = (IdentityQuestionSearchBean)searchBean;
+			if (sb.getActive() !=null){
+				criteria.add(Restrictions.eq("active", sb.getActive()));
+			}
+			if(StringUtils.isNotBlank(sb.getGroupId())) {
+				criteria.add(Restrictions.eq("identityQuestGrp.id", sb.getGroupId()));
+			}
 		}
 		return criteria;
 	}

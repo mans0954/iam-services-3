@@ -9,11 +9,13 @@ import javax.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "SynchConfigSearchBean", propOrder = {
         "name",
-        "synchType"
+        "synchType",
+        "excludeBooleanProperties"
 })
 public class SynchConfigSearchBean extends AbstractSearchBean<SynchConfig, String> {
     private String name;
     private String synchType;
+    private boolean excludeBooleanProperties;
 
     public String getName() {
         return name;
@@ -31,4 +33,13 @@ public class SynchConfigSearchBean extends AbstractSearchBean<SynchConfig, Strin
         this.synchType = synchType;
     }
 
+	public boolean isExcludeBooleanProperties() {
+		return excludeBooleanProperties;
+	}
+
+	public void setExcludeBooleanProperties(boolean excludeBooleanProperties) {
+		this.excludeBooleanProperties = excludeBooleanProperties;
+	}
+
+    
 }

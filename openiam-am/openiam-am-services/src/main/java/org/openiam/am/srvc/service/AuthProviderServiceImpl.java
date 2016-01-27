@@ -36,6 +36,7 @@ import org.openiam.am.srvc.dto.AuthProviderAttribute;
 import org.openiam.am.srvc.dto.OAuthCode;
 import org.openiam.am.srvc.dto.OAuthToken;
 import org.openiam.am.srvc.dto.OAuthUserClientXref;
+import org.openiam.am.srvc.searchbeans.AuthAttributeSearchBean;
 import org.openiam.am.srvc.searchbeans.AuthProviderSearchBean;
 import org.openiam.authmanager.common.model.ResourceAuthorizationRight;
 import org.openiam.authmanager.service.AuthorizationManagerService;
@@ -144,7 +145,7 @@ public class AuthProviderServiceImpl implements AuthProviderService {
     */
     @Override
     @Transactional(readOnly=true)
-    public List<AuthAttributeEntity> findAuthAttributeBeans(AuthAttributeEntity searchBean, Integer size,
+    public List<AuthAttributeEntity> findAuthAttributeBeans(AuthAttributeSearchBean searchBean, Integer size,
                                                             Integer from) {
         return authAttributeDao.getByExample(searchBean, from, size);
     }

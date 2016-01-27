@@ -11,7 +11,9 @@ import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
+import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
+import org.openiam.idm.srvc.lang.dto.LanguageMappingSearchBean;
 import org.springframework.stereotype.Repository;
 
 @Repository("languageMappingDAO")
@@ -20,23 +22,24 @@ public class LanguageMappingDAOImpl extends BaseDaoImpl<LanguageMappingEntity, S
 	
 	
 	@Override
-	protected Criteria getExampleCriteria(final LanguageMappingEntity example) {
+	protected Criteria getExampleCriteria(SearchBean searchBean) {
 		final Criteria criteria = getCriteria();
-		if(example != null) {
-			if(StringUtils.isNotBlank(example.getId())) {
-				criteria.add(Restrictions.eq(getPKfieldName(), example.getId()));
+		if(searchBean != null && searchBean instanceof LanguageMappingSearchBean) {
+			final LanguageMappingSearchBean sb = (LanguageMappingSearchBean)searchBean;
+			if(StringUtils.isNotBlank(sb.getKey())) {
+				criteria.add(Restrictions.eq(getPKfieldName(), sb.getKey()));
 			} else {
-				if(StringUtils.isNotBlank(example.getLanguageId())) {
-					criteria.add(Restrictions.eq("languageId", example.getLanguageId()));
+				if(StringUtils.isNotBlank(sb.getLanguageId())) {
+					criteria.add(Restrictions.eq("languageId", sb.getLanguageId()));
 				}
-				if(StringUtils.isNotBlank(example.getReferenceId())) {
-					criteria.add(Restrictions.eq("referenceId", example.getReferenceId()));
+				if(StringUtils.isNotBlank(sb.getReferenceId())) {
+					criteria.add(Restrictions.eq("referenceId", sb.getReferenceId()));
 				}
-				if(StringUtils.isNotBlank(example.getReferenceType())) {
-					criteria.add(Restrictions.eq("referenceType", example.getReferenceType()));
+				if(StringUtils.isNotBlank(sb.getReferenceType())) {
+					criteria.add(Restrictions.eq("referenceType", sb.getReferenceType()));
 				}
-				if(StringUtils.isNotBlank(example.getValue())) {
-					criteria.add(Restrictions.eq("value", example.getValue()));
+				if(StringUtils.isNotBlank(sb.getValue())) {
+					criteria.add(Restrictions.eq("value", sb.getValue()));
 				}
 			}
 		}
@@ -50,10 +53,10 @@ public class LanguageMappingDAOImpl extends BaseDaoImpl<LanguageMappingEntity, S
 
 	@Override
 	public List<LanguageMappingEntity> getByReferenceIdAndType(final String referenceId, final String referenceType) {
-		final LanguageMappingEntity example = new LanguageMappingEntity();
-		example.setReferenceId(referenceId);
-		example.setReferenceType(referenceType);
-		return getByExample(example);
+		final LanguageMappingSearchBean sb = new LanguageMappingSearchBean();
+		sb.setReferenceId(referenceId);
+		sb.setReferenceType(referenceType);
+		return getByExample(sb);
 	}
 
 	@Override

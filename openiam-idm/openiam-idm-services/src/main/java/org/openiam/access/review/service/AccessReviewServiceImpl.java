@@ -1,5 +1,11 @@
 package org.openiam.access.review.service;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.time.StopWatch;
 import org.openiam.access.review.constant.AccessReviewConstant;
@@ -21,10 +27,7 @@ import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSysSearchBean;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
-import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.res.dto.ResourceType;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.slf4j.Logger;
@@ -32,8 +35,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-
-import java.util.*;
 
 /**
  * Created by alexander on 21.11.14.

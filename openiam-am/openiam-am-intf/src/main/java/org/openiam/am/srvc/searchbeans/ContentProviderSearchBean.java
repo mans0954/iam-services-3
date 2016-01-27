@@ -12,7 +12,8 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "ContentProviderSearchBean", propOrder = {
         "domainPattern",
         "authProviderId",
-        "isSSL"
+        "isSSL",
+        "resourceId"
 })
 public class ContentProviderSearchBean extends AbstractKeyNameSearchBean<ContentProvider, String> {
 
@@ -20,7 +21,7 @@ public class ContentProviderSearchBean extends AbstractKeyNameSearchBean<Content
     private String domainPattern;
     private String authProviderId;
     private Boolean isSSL;
-    //private String managedSysId;
+    private String resourceId;
 
     public String getDomainPattern() {
         return domainPattern;
@@ -47,6 +48,16 @@ public class ContentProviderSearchBean extends AbstractKeyNameSearchBean<Content
     public void setSSL(Boolean SSL) {
         isSSL = SSL;
     }
+    
+    
+
+	public String getResourceId() {
+		return resourceId;
+	}
+
+	public void setResourceId(String resourceId) {
+		this.resourceId = resourceId;
+	}
 
 	@Override
 	public int hashCode() {

@@ -220,12 +220,11 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
             final LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), userEntity.getPrincipalList());
             newLogoutEvent.addTarget(userId, AuditTarget.USER.value(), primaryIdentity.getLogin());
 
-            final AuthStateEntity example = new AuthStateEntity();
             final AuthStateId id = new AuthStateId();
             id.setUserId(userId);
-            example.setId(id);
-
-            final List<AuthStateEntity> authStateList = authStateDao.getByExample(example);
+            final AuthStateSearchBean sb = new AuthStateSearchBean();
+            sb.setKey(id);
+            final List<AuthStateEntity> authStateList = authStateDao.getByExample(sb);
 
             if (CollectionUtils.isEmpty(authStateList)) {
                 final String errorMessage = String.format("Cannot find AuthState object for User: %s", userId);

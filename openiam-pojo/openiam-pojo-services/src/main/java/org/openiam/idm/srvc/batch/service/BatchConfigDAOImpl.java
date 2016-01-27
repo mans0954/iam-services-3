@@ -25,20 +25,6 @@ public class BatchConfigDAOImpl extends BaseDaoImpl<BatchTaskEntity, String> imp
 
 	private static final Log log = LogFactory.getLog(BatchConfigDAOImpl.class);
 
-	@Override
-	protected Criteria getExampleCriteria(BatchTaskEntity entity) {
-		final Criteria criteria = getCriteria();
-		if(entity != null) {
-			if(StringUtils.isNotBlank(entity.getId())) {
-				criteria.add(Restrictions.eq(getPKfieldName(), entity.getId()));
-			} else {
-				if(StringUtils.isNotBlank(entity.getName())) {
-					criteria.add(Restrictions.eq("name", entity.getName()));
-				}
-			}
-		}
-		return criteria;
-	}
 
     @Override
     protected Criteria getExampleCriteria(final SearchBean searchBean) {

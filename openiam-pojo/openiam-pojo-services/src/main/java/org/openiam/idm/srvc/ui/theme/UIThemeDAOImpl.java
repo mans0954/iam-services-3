@@ -23,15 +23,6 @@ public class UIThemeDAOImpl extends BaseDaoImpl<UIThemeEntity, String> implement
 	}
 	
 	@Override
-	protected Criteria getExampleCriteria(UIThemeEntity entity) {
-		final Criteria criteria = getCriteria();
-		if(entity != null) {
-			
-		}
-		return criteria;
-	}
-	
-	@Override
 	protected String getPKfieldName() {
 		return "id";
 	}

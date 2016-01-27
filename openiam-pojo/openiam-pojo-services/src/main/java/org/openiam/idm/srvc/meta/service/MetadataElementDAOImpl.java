@@ -44,6 +44,10 @@ public class MetadataElementDAOImpl extends BaseDaoImpl<MetadataElementEntity, S
 				criteria.add(Restrictions.in("id", metaSearchBean.getKeys()));
 			} else {
 				setAttributeNameCriteria(criteria, metaSearchBean.getAttributeName());	
+				if(StringUtils.isNotBlank(metaSearchBean.getDataType())) {
+					criteria.add(Restrictions.eq("dataType", metaSearchBean.getDataType()));
+				}
+				
 				if(CollectionUtils.isNotEmpty(metaSearchBean.getTypeIdSet())) {
 					criteria.add(Restrictions.in("metadataType.id", metaSearchBean.getTypeIdSet()));
 				}
@@ -64,41 +68,11 @@ public class MetadataElementDAOImpl extends BaseDaoImpl<MetadataElementEntity, S
 					templateIdSet.add(metaSearchBean.getTemplateId());
 					setTemplateCriteria(criteria, templateIdSet);
 				}
-			}
-		}
-		return criteria;
-	}
-
-	@Override
-	protected Criteria getExampleCriteria(final MetadataElementEntity entity) {
-		final Criteria criteria = getCriteria();
-		if(StringUtils.isNotBlank(entity.getId())) {
-			criteria.add(Restrictions.eq("id", entity.getId()));
-		} else {
-			setAttributeNameCriteria(criteria, entity.getAttributeName());			
-			if(StringUtils.isNotBlank(entity.getDataType())) {
-				criteria.add(Restrictions.eq("dataType", entity.getDataType()));
-			}
-			
-			if(entity.getMetadataType() != null && StringUtils.isNotBlank(entity.getMetadataType().getId())) {
-				final String metadataTypeId = entity.getMetadataType().getId();
-				criteria.add(Restrictions.eq("metadataType.id", metadataTypeId));
-			}
-			
-			if(CollectionUtils.isNotEmpty(entity.getTemplateSet())) {
-				final Set<String> templateIdSet = new HashSet<String>();
-				for(final MetadataElementPageTemplateXrefEntity xref : entity.getTemplateSet()) {
-					if(xref.getTemplate() != null && StringUtils.isNotBlank(xref.getTemplate().getId())) {
-						templateIdSet.add(xref.getTemplate().getId());
-					}
-				}
 				
-				setTemplateCriteria(criteria, templateIdSet);
+				if(StringUtils.isNotBlank(metaSearchBean.getResourceId())) {
+					criteria.add(Restrictions.eq("resource.id", metaSearchBean.getResourceId()));
+				}
 			}
-			
-			if(entity.getResource() != null && StringUtils.isNotEmpty(entity.getResource().getId())) {
-            	criteria.add(Restrictions.eq("resource.id", entity.getResource().getId()));
-            }
 		}
 		return criteria;
 	}
@@ -141,11 +115,9 @@ public class MetadataElementDAOImpl extends BaseDaoImpl<MetadataElementEntity, S
 
 	@Override
 	public List<MetadataElementEntity> getByResourceId(String resourceId) {
-		final MetadataElementEntity entity = new MetadataElementEntity();
-		final ResourceEntity resource = new ResourceEntity();
-		resource.setId(resourceId);
-		entity.setResource(resource);
-		return getByExample(entity);
+		final MetadataElementSearchBean sb = new MetadataElementSearchBean();
+		sb.setResourceId(resourceId);
+		return getByExample(sb);
 	}
 
 }

@@ -26,7 +26,6 @@ import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.srvc.access.service.AccessRightDAO;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
@@ -49,7 +48,6 @@ import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.service.RoleDAO;
-import org.openiam.idm.srvc.searchbean.converter.LocationSearchBeanConverter;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.user.service.UserDAO;
@@ -82,9 +80,6 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     private LocationDozerConverter locationDozerConverter;
     @Autowired
     private LocationDAO locationDao;
-
-    @Autowired
-    private LocationSearchBeanConverter locationSearchBeanConverter;
 
 	@Autowired
 	private MetadataElementDAO metadataDAO;
@@ -1192,7 +1187,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
         if (searchBean == null)
             throw new NullPointerException("searchBean is null");
 
-        return locationDao.count(locationSearchBeanConverter.convert(searchBean));
+        return locationDao.count(searchBean);
     }
 
     @Override
@@ -1219,7 +1214,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
         if (searchBean == null)
             throw new NullPointerException("searchBean is null");
 
-        return locationDao.getByExample(locationSearchBeanConverter.convert(searchBean), from, size);
+        return locationDao.getByExample(searchBean, from, size);
     }
 
     @Override

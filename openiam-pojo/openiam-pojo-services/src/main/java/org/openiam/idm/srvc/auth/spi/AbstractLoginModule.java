@@ -47,6 +47,7 @@ import org.openiam.base.ws.ResponseCode;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.exception.EncryptionException;
 import org.openiam.exception.LogoutException;
+import org.openiam.idm.searchbeans.AuthStateSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditTarget;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.auth.context.AuthenticationContext;
@@ -146,12 +147,11 @@ public abstract class AbstractLoginModule implements AuthenticationModule {
         final LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(managedSystem.getId(), userEntity.getPrincipalList());
         auditLog.addTarget(request.getUserId(), AuditTarget.USER.value(), primaryIdentity.getLogin());
 
-        final AuthStateEntity example = new AuthStateEntity();
         final AuthStateId id = new AuthStateId();
         id.setUserId(request.getUserId());
-        example.setId(id);
-
-        final List<AuthStateEntity> authStateList = authStateDAO.getByExample(example);
+        final AuthStateSearchBean sb = new AuthStateSearchBean();
+        sb.setKey(id);
+        final List<AuthStateEntity> authStateList = authStateDAO.getByExample(sb);
 
         if (CollectionUtils.isEmpty(authStateList)) {
             final String errorMessage = String.format("Cannot find AuthState object for User: %s", request.getUserId());

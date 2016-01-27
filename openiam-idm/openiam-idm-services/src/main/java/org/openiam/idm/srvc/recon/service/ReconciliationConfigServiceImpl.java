@@ -233,7 +233,10 @@ public class ReconciliationConfigServiceImpl implements ReconciliationConfigServ
         if (resourceId == null) {
             throw new IllegalArgumentException("resourceId parameter is null");
         }
-        List<ReconciliationConfigEntity> result = reconConfigDao.findByResourceId(resourceId);
+        
+        final ReconConfigSearchBean sb = new ReconConfigSearchBean();
+        sb.setResourceId(resourceId);
+        List<ReconciliationConfigEntity> result = reconConfigDao.getByExample(sb);
         if (result == null)
             return new LinkedList<ReconciliationConfig>();
         else

@@ -8,9 +8,10 @@ import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
+import org.openiam.idm.searchbeans.AddressSearchBean;
+import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.springframework.stereotype.Repository;
-
 
 import javax.annotation.PostConstruct;
 
@@ -26,29 +27,24 @@ public class AddressDAOImpl extends BaseDaoImpl<AddressEntity, String> implement
 	public void initSQL() {
 		DELETE_BY_USER_ID = String.format(DELETE_BY_USER_ID, domainClass.getSimpleName());
 	}
-
-    @Override
-    protected Criteria getExampleCriteria(AddressEntity address){
-        final Criteria criteria = getCriteria();
-        if (StringUtils.isNotBlank(address.getId())) {
-            criteria.add(Restrictions.eq(getPKfieldName(), address.getId()));
-        } else {
-
-            if (address.getParent() != null) {
-                if (StringUtils.isNotBlank(address.getParent().getId())) {
-                    criteria.add(Restrictions.eq("parent.id", address.getParent().getId()));
-                }
-            }
-
-            if (address.getType() != null) {
-                if (StringUtils.isNotBlank(address.getType().getId())) {
-                    criteria.add(Restrictions.eq("type.id", address.getType().getId()));
-                }
-            }
-        }
-        return criteria;
-    }
 	
+	@Override
+	protected Criteria getExampleCriteria(final SearchBean searchBean) {
+		final Criteria criteria = getCriteria();
+		if(searchBean != null && searchBean instanceof AddressSearchBean) {
+			final AddressSearchBean sb = (AddressSearchBean)searchBean;
+			
+			if (StringUtils.isNotBlank(sb.getParentId())) {
+                criteria.add(Restrictions.eq("parent.id", sb.getParentId()));
+            }
+			
+			if (StringUtils.isNotBlank(sb.getMetadataTypeId())) {
+                criteria.add(Restrictions.eq("type.id", sb.getMetadataTypeId()));
+            }
+		}
+		return criteria;
+	}
+
     @Override
     public void removeByUserId(final String userId) {
     	final Query qry = getSession().createQuery(DELETE_BY_USER_ID);

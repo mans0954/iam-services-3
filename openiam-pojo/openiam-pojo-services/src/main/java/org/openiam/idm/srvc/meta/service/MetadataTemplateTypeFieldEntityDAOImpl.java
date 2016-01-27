@@ -44,25 +44,6 @@ public class MetadataTemplateTypeFieldEntityDAOImpl extends BaseDaoImpl<Metadata
 		}
 		return criteria;
 	}
-
-	@Override
-	 protected Criteria getExampleCriteria(final MetadataTemplateTypeFieldEntity entity) {
-		 final Criteria criteria = getCriteria();
-		 if(entity != null) {
-			 if(StringUtils.isNotBlank(entity.getId())) {
-				 criteria.add(Restrictions.eq(getPKfieldName(), entity.getId()));
-			 } else {
-				 if(entity.getTemplateType() != null && StringUtils.isNotBlank(entity.getTemplateType().getId())) {
-					 criteria.add(Restrictions.eq("templateType.id", entity.getTemplateType().getId()));
-				 }
-				 
-				 if(StringUtils.isNotBlank(entity.getName())) {
-					 criteria.add(Restrictions.eq("name", entity.getName()));
-				 }
-			 }
-		 }
-		 return criteria;
-	 }
 	
 	@Override
 	protected String getPKfieldName() {

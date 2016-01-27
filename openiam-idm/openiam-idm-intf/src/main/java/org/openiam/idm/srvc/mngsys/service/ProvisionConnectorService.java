@@ -9,13 +9,9 @@ import java.util.List;
 
 public interface ProvisionConnectorService {
 
-    List<ProvisionConnectorDto> getProvisionConnectorsByExample(ProvisionConnectorEntity example, Integer from, Integer size);
-
     List<ProvisionConnectorDto> getProvisionConnectorsByExample(ProvisionConnectorSearchBean searchBean, Integer from, Integer size);
 
-    Integer getProvisionConnectorsCountByExample(ProvisionConnectorEntity example);
-
-    Integer getProvisionConnectorsCountByExample(ProvisionConnectorSearchBean searchBean);
+    int getProvisionConnectorsCountByExample(ProvisionConnectorSearchBean searchBean);
 
     List<MetadataTypeEntity> getProvisionConnectorsMetadataTypes();
 

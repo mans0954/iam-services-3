@@ -10,7 +10,9 @@ import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
+import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
+import org.openiam.idm.srvc.msg.dto.ManagedSysSearchBean;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -25,15 +27,17 @@ public class ManagedSysDAOImpl extends BaseDaoImpl<ManagedSysEntity, String> imp
 
 	
 	
+	
     @Override
-	protected Criteria getExampleCriteria(ManagedSysEntity example) {
+	protected Criteria getExampleCriteria(SearchBean searchBean) {
 		final Criteria criteria = getCriteria();
-		if(example != null) {
-			if(StringUtils.isNotBlank(example.getId())) {
-				criteria.add(Restrictions.eq(getPKfieldName(), example.getId()));
+		if(searchBean != null && searchBean instanceof ManagedSysSearchBean) {
+			final ManagedSysSearchBean sb = (ManagedSysSearchBean)searchBean;
+			if(StringUtils.isNotBlank(sb.getKey())) {
+				criteria.add(Restrictions.eq(getPKfieldName(), sb.getKey()));
 			} else {
-				if(StringUtils.isNotBlank(example.getName())) {
-					String name = example.getName();
+				if(StringUtils.isNotBlank(sb.getName())) {
+					String name = sb.getName();
 					MatchMode matchMode = null;
 					if (StringUtils.indexOf(name, "*") == 0) {
 						matchMode = MatchMode.END;
@@ -52,8 +56,8 @@ public class ManagedSysDAOImpl extends BaseDaoImpl<ManagedSysEntity, String> imp
 						}
 					}
 				}
-				if(example.getResource()!=null && StringUtils.isNotBlank(example.getResource().getId())){
-					criteria.add(Restrictions.eq("resource.id", example.getResource().getId()));
+				if(StringUtils.isNotBlank(sb.getResourceId())){
+					criteria.add(Restrictions.eq("resource.id", sb.getResourceId()));
 				}
 			}
 		}

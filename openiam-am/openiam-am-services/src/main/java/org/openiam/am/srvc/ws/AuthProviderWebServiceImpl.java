@@ -1,5 +1,11 @@
 package org.openiam.am.srvc.ws;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.jws.WebService;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -7,9 +13,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.am.srvc.domain.AuthAttributeEntity;
 import org.openiam.am.srvc.domain.AuthProviderEntity;
 import org.openiam.am.srvc.domain.AuthProviderTypeEntity;
-import org.openiam.am.srvc.domain.ContentProviderEntity;
 import org.openiam.am.srvc.dozer.converter.AuthAttributeDozerConverter;
-import org.openiam.am.srvc.dozer.converter.AuthProviderAttributeDozerConverter;
 import org.openiam.am.srvc.dozer.converter.AuthProviderDozerConverter;
 import org.openiam.am.srvc.dozer.converter.AuthProviderTypeDozerConverter;
 import org.openiam.am.srvc.dto.AuthAttribute;
@@ -18,8 +22,6 @@ import org.openiam.am.srvc.dto.AuthProviderAttribute;
 import org.openiam.am.srvc.dto.AuthProviderType;
 import org.openiam.am.srvc.searchbeans.AuthAttributeSearchBean;
 import org.openiam.am.srvc.searchbeans.AuthProviderSearchBean;
-import org.openiam.am.srvc.searchbeans.converter.AuthAttributeSearchBeanConverter;
-import org.openiam.am.srvc.searchbeans.converter.AuthProviderSearchBeanConverter;
 import org.openiam.am.srvc.service.AuthProviderService;
 import org.openiam.am.srvc.service.ContentProviderService;
 import org.openiam.base.ws.Response;
@@ -27,15 +29,10 @@ import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.exception.EsbErrorToken;
-import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.auth.spi.AbstractSMSOTPModule;
 import org.openiam.idm.srvc.auth.spi.AbstractScriptableLoginModule;
-import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.meta.service.MetadataService;
-import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
-import org.openiam.idm.srvc.policy.domain.PolicyAttributeEntity;
-import org.openiam.idm.srvc.policy.domain.PolicyEntity;
 import org.openiam.script.ScriptIntegration;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,10 +41,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import javax.jws.WebService;
-
-import java.util.*;
 
 @Service("authProviderWS")
 @WebService(endpointInterface = "org.openiam.am.srvc.ws.AuthProviderWebService",
@@ -62,8 +55,6 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService, Appli
     @Autowired
     private AuthProviderService authProviderService;
 
-    @Autowired
-    private AuthAttributeSearchBeanConverter authAttributeSearchBeanConverter;
     @Autowired
     private AuthProviderTypeDozerConverter authProviderTypeDozerConverter;
     @Autowired
@@ -88,8 +79,7 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService, Appli
     @Transactional(readOnly = true)
     public List<AuthAttribute> findAuthAttributeBeans(AuthAttributeSearchBean searchBean, int from, int size) {
 
-        final AuthAttributeEntity entity = authAttributeSearchBeanConverter.convert(searchBean);
-        final List<AuthAttributeEntity> attributeList = authProviderService.findAuthAttributeBeans(entity, size, from);
+        final List<AuthAttributeEntity> attributeList = authProviderService.findAuthAttributeBeans(searchBean, size, from);
         return authAttributeDozerConverter.convertToDTOList(attributeList, (searchBean != null) ? searchBean.isDeepCopy() : false);
     }
 
@@ -252,12 +242,9 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService, Appli
     
 
     private void validateAndSyncProviderAttributes(AuthProvider provider) throws BasicDataServiceException{
-        final AuthAttributeEntity example = new AuthAttributeEntity();
-        if(StringUtils.isNotBlank(provider.getProviderType())) {
-        	example.setType(new AuthProviderTypeEntity());
-        	example.getType().setId(provider.getProviderType());
-        }
-        final List<AuthAttributeEntity> attributeEntityList = authProviderService.findAuthAttributeBeans(example, Integer.MAX_VALUE,0);
+    	final AuthAttributeSearchBean sb = new AuthAttributeSearchBean();
+        sb.setProviderType(provider.getProviderType());
+        final List<AuthAttributeEntity> attributeEntityList = authProviderService.findAuthAttributeBeans(sb, Integer.MAX_VALUE,0);
 //        Set<String> newAttributesIds = new HashSet<String>();
         final Map<String, AuthProviderAttribute> attributeMap = new HashMap<String, AuthProviderAttribute>();
 

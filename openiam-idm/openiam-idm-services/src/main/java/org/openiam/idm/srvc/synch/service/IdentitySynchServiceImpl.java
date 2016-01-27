@@ -61,6 +61,7 @@ import org.openiam.idm.srvc.synch.domain.SynchReviewEntity;
 import org.openiam.idm.srvc.synch.dto.BulkMigrationConfig;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
+import org.openiam.idm.srvc.synch.dto.SynchConfigSearchBean;
 import org.openiam.idm.srvc.synch.dto.SynchReview;
 import org.openiam.idm.srvc.synch.srcadapter.AdapterFactory;
 import org.openiam.idm.srvc.user.dto.User;
@@ -548,13 +549,13 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 
     @Override
     @Transactional(readOnly = true)
-    public Integer getSynchConfigCountByExample(SynchConfigEntity example) {
+    public int count(SynchConfigSearchBean example) {
         return synchConfigDao.count(example);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<SynchConfigEntity> getSynchConfigsByExample(SynchConfigEntity example, Integer from, Integer size) {
+    public List<SynchConfigEntity> findBeans(SynchConfigSearchBean example, Integer from, Integer size) {
         return synchConfigDao.getByExample(example, from, size);
     }
 

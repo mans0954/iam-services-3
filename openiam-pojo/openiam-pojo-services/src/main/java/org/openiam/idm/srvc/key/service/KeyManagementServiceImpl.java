@@ -17,6 +17,7 @@ import org.openiam.core.dao.UserKeyDao;
 import org.openiam.core.domain.UserKey;
 import org.openiam.exception.EncryptionException;
 import org.openiam.hazelcast.HazelcastConfiguration;
+import org.openiam.idm.searchbeans.IdentityAnswerSearchBean;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDAO;
@@ -310,9 +311,9 @@ public class KeyManagementServiceImpl extends AbstractBaseService implements Key
         userList.add(user);
         List<LoginEntity> lgList = loginDAO.findUser(user.getId());
         List<UserKey> keyList = userKeyDao.getByUserId(user.getId());
-        UserIdentityAnswerEntity example = new UserIdentityAnswerEntity();
-        example.setUserId(user.getId());
-        List<UserIdentityAnswerEntity> answersList = userIdentityAnswerDAO.getByExample(example);
+        IdentityAnswerSearchBean sb = new IdentityAnswerSearchBean();
+        sb.setUserId(user.getId());
+        List<UserIdentityAnswerEntity> answersList = userIdentityAnswerDAO.getByExample(sb);
 
         List<PasswordHistoryEntity> pwdList = new ArrayList<PasswordHistoryEntity>();
         for (LoginEntity lg : lgList) {
@@ -789,7 +790,7 @@ public class KeyManagementServiceImpl extends AbstractBaseService implements Key
             Set<UserIdentityAnswerEntity> answerList = new HashSet<UserIdentityAnswerEntity>();
             int pageNum = 0;
             do {
-                answerList.addAll(userIdentityAnswerDAO.getByExample(new UserIdentityAnswerEntity(),
+                answerList.addAll(userIdentityAnswerDAO.getByExample(new IdentityAnswerSearchBean(),
                                                                      pageNum * FETCH_COUNT, FETCH_COUNT));
                 fetchedDataCount = (long) answerList.size();
                 pageNum++;

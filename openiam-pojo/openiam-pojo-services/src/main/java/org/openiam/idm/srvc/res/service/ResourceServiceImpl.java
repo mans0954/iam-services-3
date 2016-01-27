@@ -294,8 +294,9 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @Transactional(readOnly = true)
+    @LocalizedServiceGet
     public List<ResourceEntity> findBeans(final ResourceSearchBean searchBean, final int from, final int size, final LanguageEntity language) {
-        return resourceDao.getByExampleNoLocalize(searchBean, from, size);
+    	return resourceDao.getByExample(searchBean, from, size);
     }
 
     @Override

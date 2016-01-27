@@ -18,7 +18,8 @@ import java.util.Set;
         "defaultAuthProvider",
         "contentProviderIds",
         "uriPatternIds",
-        "linkableToContentProvider"
+        "linkableToContentProvider",
+        "resourceId"
 })
 public class AuthProviderSearchBean extends AbstractKeyNameSearchBean<AuthProvider, String> {
     private String managedSysId;
@@ -27,6 +28,7 @@ public class AuthProviderSearchBean extends AbstractKeyNameSearchBean<AuthProvid
     private Boolean linkableToContentProvider;
     private Set<String> contentProviderIds;
     private Set<String> uriPatternIds;
+    private String resourceId;
 
     public String getManagedSysId() {
         return managedSysId;
@@ -86,6 +88,14 @@ public class AuthProviderSearchBean extends AbstractKeyNameSearchBean<AuthProvid
 
 	public void setLinkableToContentProvider(Boolean linkableToContentProvider) {
 		this.linkableToContentProvider = linkableToContentProvider;
+	}
+
+	public String getResourceId() {
+		return resourceId;
+	}
+
+	public void setResourceId(String resourceId) {
+		this.resourceId = resourceId;
 	}
     
     

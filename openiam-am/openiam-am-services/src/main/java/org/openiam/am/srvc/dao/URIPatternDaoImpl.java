@@ -9,19 +9,13 @@ import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.am.srvc.domain.URIPatternEntity;
 import org.openiam.am.srvc.searchbeans.URIPatternSearchBean;
-import org.openiam.am.srvc.searchbeans.converter.URIPatternSearchBeanConverter;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.searchbeans.SearchBean;
-import org.openiam.idm.srvc.res.domain.ResourceEntity;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 public class URIPatternDaoImpl extends BaseDaoImpl<URIPatternEntity, String> implements URIPatternDao {
-	
-    @Autowired
-    private URIPatternSearchBeanConverter uriPatternSearchBeanConverter;
 
 	@Override
 	protected String getPKfieldName() {
@@ -33,7 +27,25 @@ public class URIPatternDaoImpl extends BaseDaoImpl<URIPatternEntity, String> imp
 		Criteria criteria = this.getCriteria();
 		if(searchBean != null && searchBean instanceof URIPatternSearchBean) {
 			final URIPatternSearchBean sb = (URIPatternSearchBean)searchBean;
-			criteria = getExampleCriteria(uriPatternSearchBeanConverter.convert(sb));
+			
+			if(StringUtils.isNotEmpty(sb.getContentProviderId())){
+                criteria.createAlias("contentProvider", "p");
+                criteria.add(Restrictions.eq("p.id", sb.getContentProviderId()));
+            }
+            if(StringUtils.isNotBlank(sb.getAuthProviderId())) {
+                criteria.add(Restrictions.eq("authProvider.id", sb.getAuthProviderId()));
+            }
+
+            if(StringUtils.isNotEmpty(sb.getPattern())){
+                MatchMode matchMode = MatchMode.ANYWHERE;
+                criteria.add(Restrictions.ilike("pattern", sb.getPattern(), MatchMode.ANYWHERE));
+//                criteria.add(Restrictions.eq("pattern", entity.getPattern()));
+            }
+            
+            if(StringUtils.isNotEmpty(sb.getResourceId())) {
+            	criteria.add(Restrictions.eq("resource.id", sb.getResourceId()));
+            }
+
 			if(sb.getShowOnApplicationPage() != null) {
             	criteria.add(Restrictions.eq("showOnApplicationPage", sb.getShowOnApplicationPage()));
             }
@@ -41,33 +53,6 @@ public class URIPatternDaoImpl extends BaseDaoImpl<URIPatternEntity, String> imp
 		return criteria;
 	}
 	
-    @Override
-    protected Criteria getExampleCriteria(final URIPatternEntity entity) {
-        final Criteria criteria = getCriteria();
-        if (StringUtils.isNotBlank(entity.getId())) {
-            criteria.add(Restrictions.eq(getPKfieldName(), entity.getId()));
-        } else {
-            if(entity.getContentProvider()!=null && StringUtils.isNotEmpty(entity.getContentProvider().getId())){
-                criteria.createAlias("contentProvider", "p");
-                criteria.add(Restrictions.eq("p.id", entity.getContentProvider().getId()));
-            }
-            if(entity.getAuthProvider() != null && StringUtils.isNotBlank(entity.getAuthProvider().getId())) {
-                criteria.add(Restrictions.eq("authProvider.id", entity.getAuthProvider().getId()));
-            }
-
-            if(entity.getPattern()!=null && StringUtils.isNotEmpty(entity.getPattern())){
-                MatchMode matchMode = MatchMode.ANYWHERE;
-                criteria.add(Restrictions.ilike("pattern", entity.getPattern(), MatchMode.ANYWHERE));
-//                criteria.add(Restrictions.eq("pattern", entity.getPattern()));
-            }
-            
-            if(entity.getResource() != null && StringUtils.isNotEmpty(entity.getResource().getId())) {
-            	criteria.add(Restrictions.eq("resource.id", entity.getResource().getId()));
-            }
-        }
-        return criteria;
-    }
-
     @Override
     @Transactional
     public void deleteByProvider(String providerId) {
@@ -85,11 +70,9 @@ public class URIPatternDaoImpl extends BaseDaoImpl<URIPatternEntity, String> imp
     }
 	@Override
 	public List<URIPatternEntity> getByResourceId(String resourceId) {
-		final URIPatternEntity entity = new URIPatternEntity();
-		final ResourceEntity resource = new ResourceEntity();
-		resource.setId(resourceId);
-		entity.setResource(resource);
-		return getByExample(entity);
+		final URIPatternSearchBean sb = new URIPatternSearchBean();
+		sb.setResourceId(resourceId);
+		return getByExample(sb);
 	}
 	@Override
 	public List<URIPatternEntity> getURIPatternsForContentProviderMatchingPattern(

@@ -9,6 +9,8 @@ import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
+import org.openiam.idm.searchbeans.PhoneSearchBean;
+import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
 import org.springframework.stereotype.Repository;
 
@@ -28,29 +30,28 @@ public class PhoneDAOImpl extends BaseDaoImpl<PhoneEntity, String> implements Ph
 	public void initSQL() {
 		DELETE_BY_USER_ID = String.format(DELETE_BY_USER_ID, domainClass.getSimpleName());
 	}
+	
+	
 
     @Override
-    protected Criteria getExampleCriteria(PhoneEntity phone){
-        final Criteria criteria = getCriteria();
-        if (StringUtils.isNotBlank(phone.getId())) {
-            criteria.add(Restrictions.eq(getPKfieldName(), phone.getId()));
-        } else {
+	protected Criteria getExampleCriteria(SearchBean searchBean) {
+		final Criteria criteria = getCriteria();
+		if(searchBean != null && searchBean instanceof PhoneSearchBean) {
+			final PhoneSearchBean sb = (PhoneSearchBean)searchBean;
+			if (StringUtils.isNotBlank(sb.getKey())) {
+	            criteria.add(Restrictions.eq(getPKfieldName(), sb.getKey()));
+	        } else {
+	            if (StringUtils.isNotBlank(sb.getParentId())) {
+	            	criteria.add(Restrictions.eq("parent.id", sb.getParentId()));
+	            }
 
-            if (phone.getParent() != null) {
-                if (StringUtils.isNotBlank(phone.getParent().getId())) {
-                    criteria.add(Restrictions.eq("parent.id", phone.getParent().getId()));
-                }
-            }
-
-            if (phone.getType() != null) {
-                if (StringUtils.isNotBlank(phone.getType().getId())) {
-                    criteria.add(Restrictions.eq("type.id", phone.getType().getId()));
-                }
-            }
-
-        }
-        return criteria;
-    }
+	            if (StringUtils.isNotBlank(sb.getMetadataTypeId())) {
+	            	criteria.add(Restrictions.eq("type.id", sb.getMetadataTypeId()));
+	            }
+	        }
+		}
+		return criteria;
+	}
 
     @Override
     public void removeByUserId(final String userId) {

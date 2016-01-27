@@ -8,7 +8,6 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.DetachedCriteria;
-import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.criterion.Subqueries;
@@ -21,14 +20,11 @@ import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
-import org.openiam.idm.srvc.searchbean.converter.GroupSearchBeanConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 @Repository("groupDAO")
 public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements GroupDAO {
-    @Autowired
-    private GroupSearchBeanConverter groupSearchBeanConverter;
     
     @Autowired
     private SysConfiguration sysConfig;
@@ -42,69 +38,80 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
     protected Criteria getExampleCriteria(final SearchBean searchBean) {
         Criteria criteria = getCriteria();
         if(searchBean != null && searchBean instanceof GroupSearchBean) {
-            final GroupSearchBean groupSearchBean = (GroupSearchBean)searchBean;
+            final GroupSearchBean sb = (GroupSearchBean)searchBean;
 
-            final GroupEntity exampleEnity = groupSearchBeanConverter.convert(groupSearchBean);
-            criteria = this.getExampleCriteria(exampleEnity);
-
-            if(groupSearchBean.hasMultipleKeys()) {
-                criteria.add(Restrictions.in(getPKfieldName(), groupSearchBean.getKeys()));
-            }else if(StringUtils.isNotBlank(groupSearchBean.getKey())) {
-                criteria.add(Restrictions.eq(getPKfieldName(), groupSearchBean.getKey()));
-            }
-            
-            if(CollectionUtils.isNotEmpty(groupSearchBean.getRoleIdSet())){    
-                criteria.createAlias("roles", "roleXrefs")
-						.createAlias("roleXrefs.entity", "role").add(
-						Restrictions.in("role.id", groupSearchBean.getRoleIdSet()));
-            }
-            
-            if(CollectionUtils.isNotEmpty(groupSearchBean.getChildIdSet())) {
-            	criteria.createAlias("childGroups", "childXrefs")
-						.createAlias("childXrefs.memberEntity", "child").add(
-						Restrictions.in("child.id", groupSearchBean.getChildIdSet()));
-			}
-			
-			if(CollectionUtils.isNotEmpty(groupSearchBean.getParentIdSet())) {
-				criteria.createAlias("parentGroups", "parentXrefs")
-						.createAlias("parentXrefs.entity", "parent").add(
-						Restrictions.in("parent.id", groupSearchBean.getParentIdSet()));
-			}
-
-            if(CollectionUtils.isNotEmpty(groupSearchBean.getOrganizationIdSet())){    
-                criteria.createAlias("organizations", "organizationXrefs")
-						.createAlias("organizationXrefs.entity", "organization").add(
-						Restrictions.in("organization.id", groupSearchBean.getOrganizationIdSet()));
-            }
-            if(CollectionUtils.isNotEmpty(groupSearchBean.getResourceIdSet())) {
-            	criteria.createAlias("resources", "resourceXrefs")
-						.createAlias("resourceXrefs.memberEntity", "resource").add(
-						Restrictions.in("resource.id", groupSearchBean.getResourceIdSet()));
-			}
-            if(CollectionUtils.isNotEmpty(groupSearchBean.getUserIdSet())){
-            	criteria.createAlias("users", "userXrefs")
-						.createAlias("userXrefs.memberEntity", "user").add(
-								Restrictions.in("user.id", groupSearchBean.getUserIdSet()));
-            }
-
-            if(CollectionUtils.isNotEmpty(groupSearchBean.getAttributes())) {
-                for(final Tuple<String, String> attribute : groupSearchBean.getAttributes()) {
-                    DetachedCriteria crit = DetachedCriteria.forClass(GroupAttributeEntity.class);
-                    if(StringUtils.isNotBlank(attribute.getKey()) && StringUtils.isNotBlank(attribute.getValue())) {
-                        crit.add(Restrictions.and(Restrictions.eq("name", attribute.getKey()),
-                                Restrictions.eq("value", attribute.getValue())));
-                    } else if(StringUtils.isNotBlank(attribute.getKey())) {
-                        crit.add(Restrictions.eq("name", attribute.getKey()));
-                    } else if(StringUtils.isNotBlank(attribute.getValue())) {
-                        crit.add(Restrictions.eq("value", attribute.getValue()));
-                    }
-                    crit.setProjection(Projections.property("group.id"));
-                    criteria.add(Subqueries.propertyIn("id", crit));
+            if(sb.hasMultipleKeys()) {
+                criteria.add(Restrictions.in(getPKfieldName(), sb.getKeys()));
+            }else if(StringUtils.isNotBlank(sb.getKey())) {
+                criteria.add(Restrictions.eq(getPKfieldName(), sb.getKey()));
+            } else {
+    			if (StringUtils.isNotEmpty(sb.getName())) {
+    				criteria.add(getStringCriterion("name", sb.getName(), sysConfig.isCaseInSensitiveDatabase()));
                 }
-            }
+    			
+    			if(StringUtils.isNotBlank(sb.getManagedSysId())) {
+    				criteria.add(Restrictions.eq("managedSystem.id", sb.getManagedSysId()));
+    			}
 
-            if(StringUtils.isNotBlank(groupSearchBean.getType())){
-                criteria.add(Restrictions.eq("type.id", groupSearchBean.getType()));
+	            if(sb.hasMultipleKeys()) {
+	                criteria.add(Restrictions.in(getPKfieldName(), sb.getKeys()));
+	            }else if(StringUtils.isNotBlank(sb.getKey())) {
+	                criteria.add(Restrictions.eq(getPKfieldName(), sb.getKey()));
+	            }
+	            
+	            if(CollectionUtils.isNotEmpty(sb.getRoleIdSet())){    
+	                criteria.createAlias("roles", "roleXrefs")
+							.createAlias("roleXrefs.entity", "role").add(
+							Restrictions.in("role.id", sb.getRoleIdSet()));
+	            }
+	            
+	            if(CollectionUtils.isNotEmpty(sb.getChildIdSet())) {
+	            	criteria.createAlias("childGroups", "childXrefs")
+							.createAlias("childXrefs.memberEntity", "child").add(
+							Restrictions.in("child.id", sb.getChildIdSet()));
+				}
+				
+				if(CollectionUtils.isNotEmpty(sb.getParentIdSet())) {
+					criteria.createAlias("parentGroups", "parentXrefs")
+							.createAlias("parentXrefs.entity", "parent").add(
+							Restrictions.in("parent.id", sb.getParentIdSet()));
+				}
+	
+	            if(CollectionUtils.isNotEmpty(sb.getOrganizationIdSet())){    
+	                criteria.createAlias("organizations", "organizationXrefs")
+							.createAlias("organizationXrefs.entity", "organization").add(
+							Restrictions.in("organization.id", sb.getOrganizationIdSet()));
+	            }
+	            if(CollectionUtils.isNotEmpty(sb.getResourceIdSet())) {
+	            	criteria.createAlias("resources", "resourceXrefs")
+							.createAlias("resourceXrefs.memberEntity", "resource").add(
+							Restrictions.in("resource.id", sb.getResourceIdSet()));
+				}
+	            if(CollectionUtils.isNotEmpty(sb.getUserIdSet())){
+	            	criteria.createAlias("users", "userXrefs")
+							.createAlias("userXrefs.memberEntity", "user").add(
+									Restrictions.in("user.id", sb.getUserIdSet()));
+	            }
+	
+	            if(CollectionUtils.isNotEmpty(sb.getAttributes())) {
+	                for(final Tuple<String, String> attribute : sb.getAttributes()) {
+	                    DetachedCriteria crit = DetachedCriteria.forClass(GroupAttributeEntity.class);
+	                    if(StringUtils.isNotBlank(attribute.getKey()) && StringUtils.isNotBlank(attribute.getValue())) {
+	                        crit.add(Restrictions.and(Restrictions.eq("name", attribute.getKey()),
+	                                Restrictions.eq("value", attribute.getValue())));
+	                    } else if(StringUtils.isNotBlank(attribute.getKey())) {
+	                        crit.add(Restrictions.eq("name", attribute.getKey()));
+	                    } else if(StringUtils.isNotBlank(attribute.getValue())) {
+	                        crit.add(Restrictions.eq("value", attribute.getValue()));
+	                    }
+	                    crit.setProjection(Projections.property("group.id"));
+	                    criteria.add(Subqueries.propertyIn("id", crit));
+	                }
+	            }
+	
+	            if(StringUtils.isNotBlank(sb.getType())){
+	                criteria.add(Restrictions.eq("type.id", sb.getType()));
+	            }
             }
 		}
         return criteria;
@@ -117,23 +124,6 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
     public List<GroupEntity> getByExample(final SearchBean searchBean, int from, int size) {
         return super.getByExample(searchBean, from, size);
      }
-
-	@Override
-	protected Criteria getExampleCriteria(GroupEntity group) {
-		final Criteria criteria = getCriteria();
-		if(StringUtils.isNotBlank(group.getId())) {
-			criteria.add(Restrictions.eq(getPKfieldName(), group.getId()));
-		} else {
-			if (StringUtils.isNotEmpty(group.getName())) {
-				criteria.add(getStringCriterion("name", group.getName(), sysConfig.isCaseInSensitiveDatabase()));
-            }
-			
-			if(group.getManagedSystem() != null && StringUtils.isNotBlank(group.getManagedSystem().getId())) {
-				criteria.add(Restrictions.eq("managedSystem.id", group.getManagedSystem().getId()));
-			}
-		}
-		return criteria;
-	}
 
     protected void setOderByCriteria(Criteria criteria, AbstractSearchBean sb) {
         List<SortParam> sortParamList = sb.getSortBy();

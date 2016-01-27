@@ -21,6 +21,9 @@
  */
 package org.openiam.idm.srvc.pswd.service;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -40,16 +43,10 @@ import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.pswd.domain.IdentityQuestionEntity;
 import org.openiam.idm.srvc.pswd.domain.UserIdentityAnswerEntity;
-import org.openiam.idm.srvc.searchbean.converter.IdentityAnswerSearchBeanConverter;
-import org.openiam.idm.srvc.searchbean.converter.IdentityQuestionSearchBeanConverter;
-import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * Default implementation of the challenge response validator. This implementation uses the information stored in the OpenIAM repository
@@ -73,12 +70,6 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
 
     @Autowired
     private IdentityQuestGroupDAO questionGroupDAO;
-
-    @Autowired
-    private IdentityAnswerSearchBeanConverter answerSearchBeanConverter;
-
-    @Autowired
-    private IdentityQuestionSearchBeanConverter questionSearchBeanConverter;
 
     @Autowired
     private UserDAO userDAO;
@@ -198,9 +189,9 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
             throw new NullPointerException("UserId is null");
         }
 
-        final UserIdentityAnswerEntity example = new UserIdentityAnswerEntity();
-        example.setUserId(userId);
-        return answerDAO.getByExample(example);
+        final IdentityAnswerSearchBean sb = new IdentityAnswerSearchBean();
+        sb.setUserId(userId);
+        return answerDAO.getByExample(sb);
     }
 
     @Override
@@ -213,15 +204,14 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
                 resultList.add(entity);
             }
         } else {
-            resultList = questionDAO.getByExample(questionSearchBeanConverter.convert(searchBean), from, size);
+            resultList = questionDAO.getByExample(searchBean, from, size);
         }
         return resultList;
     }
 
     @Override
     public Integer count(final IdentityQuestionSearchBean searchBean) {
-        final IdentityQuestionEntity entity = questionSearchBeanConverter.convert(searchBean);
-        return questionDAO.count(entity);
+        return questionDAO.count(searchBean);
     }
 
     @Override
@@ -235,7 +225,7 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
                 resultList.add(entity);
             }
         } else {
-            resultList = answerDAO.getByExample(answerSearchBeanConverter.convert(searchBean), from, size);
+            resultList = answerDAO.getByExample(searchBean, from, size);
         }
         return decryptAnswers(resultList, requesterId);
     }
