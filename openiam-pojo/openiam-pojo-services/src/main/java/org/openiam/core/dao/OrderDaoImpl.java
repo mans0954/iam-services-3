@@ -38,7 +38,7 @@ public abstract class OrderDaoImpl<T, PrimaryKey extends Serializable> extends B
 
                     criteria.addOrder(createOrder("lm.value", sort.getOrderBy()));
                 }
-            } else if ("description".equals(sort.getSortBy())) {
+            } else if ("description".equals(sort.getSortBy()) || "name".equals(sort.getSortBy())) {
                 if (sb instanceof MetadataElementSearchBean) {
                     criteria.createAlias("metadataType", "mt", Criteria.LEFT_JOIN);
                     criteria.addOrder(createOrder("mt.description", sort.getOrderBy()));
