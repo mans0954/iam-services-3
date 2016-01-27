@@ -73,21 +73,13 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
                             + "'! ");
         }
     }
-
-    protected Criteria getExampleCriteria(T t, boolean isCount) {
-        return getCriteria().add(Example.create(t));
-    }
-
+    @Deprecated
     protected Criteria getExampleCriteria(T t) {
-        return getExampleCriteria(t, false);
+        return getCriteria().add(Example.create(t));
     }
 
 
     protected Criteria getExampleCriteria(final SearchBean searchBean) {
-        return getExampleCriteria(searchBean, false);
-    }
-
-    protected Criteria getExampleCriteria(final SearchBean searchBean, boolean isCount) {
         throw new UnsupportedOperationException("Method must be overridden");
     }
 
@@ -104,7 +96,7 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
 
     @Override
     public int count(final SearchBean searchBean) {
-        return ((Number) getExampleCriteria(searchBean, true).setProjection(rowCount())
+        return ((Number) getExampleCriteria(searchBean).setProjection(rowCount())
                 .uniqueResult()).intValue();
     }
 
@@ -120,6 +112,7 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
 
     @Override
     @LocalizedDatabaseGet
+    @Deprecated
     public List<T> getByExample(T t, int startAt, int size) {
         final Criteria criteria = getExampleCriteria(t);
         if (startAt > -1) {
@@ -132,7 +125,7 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
         criteria.setCacheable(this.cachable());
         return (List<T>) criteria.list();
     }
-
+    @Deprecated
     public List<T> getByExampleNoLocalize(T t, int startAt, int size) {
         final Criteria criteria = getExampleCriteria(t);
         if (startAt > -1) {
@@ -181,12 +174,6 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
 
         if (searchBean instanceof AbstractSearchBean) {
             AbstractSearchBean sb = (AbstractSearchBean) searchBean;
-//            if (StringUtils.isNotBlank(sb.getSortBy())) {
-//                criteria.addOrder(sb.getOrderBy().equals(OrderConstants.DESC) ?
-//                        Order.desc(sb.getSortBy()) :
-//                        Order.asc(sb.getSortBy()));
-//            }
-
             if (CollectionUtils.isNotEmpty(sb.getSortBy())) {
                 this.setOderByCriteria(criteria, sb);
             }
@@ -197,10 +184,11 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
 
     @Override
     @LocalizedDatabaseGet
+    @Deprecated
     public List<T> getByExample(T t) {
         return getByExample(t, -1, -1);
     }
-
+    @Deprecated
     public List<T> getByExampleNoLocalize(T t) {
         return getByExample(t, -1, -1);
     }
@@ -211,8 +199,9 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
     }
 
     @Override
+    @Deprecated
     public int count(T t) {
-        return ((Number) getExampleCriteria(t, true).setProjection(rowCount())
+        return ((Number) getExampleCriteria(t).setProjection(rowCount())
                 .uniqueResult()).intValue();
     }
 

@@ -30,7 +30,7 @@ public class AuthStateDAOImpl extends BaseDaoImpl<AuthStateEntity, AuthStateId> 
 	}
 	
 	@Override
-	protected Criteria getExampleCriteria(SearchBean searchBean, boolean isCount) {
+	protected Criteria getExampleCriteria(SearchBean searchBean) {
 		Criteria criteria = getCriteria();
 		if(searchBean != null && searchBean instanceof AuthStateSearchBean) {
 			final AuthStateSearchBean authStateSearchBean = (AuthStateSearchBean)searchBean;

@@ -42,7 +42,7 @@ public class SynchReviewDAOImpl extends BaseDaoImpl<SynchReviewEntity, String> i
     }
 
     @Override
-    protected Criteria getExampleCriteria(final SearchBean searchBean, boolean isCount) {
+    protected Criteria getExampleCriteria(final SearchBean searchBean) {
         final Criteria criteria = getCriteria();
         if(searchBean != null && (searchBean instanceof SynchReviewSearchBean)) {
             final SynchReviewSearchBean sb = (SynchReviewSearchBean)searchBean;

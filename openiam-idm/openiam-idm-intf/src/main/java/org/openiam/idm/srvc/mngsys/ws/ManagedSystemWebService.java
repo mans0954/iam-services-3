@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.mngsys.ws;
 
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.AttributeMapSearchBean;
+import org.openiam.idm.searchbeans.ManagedSysSearchBean;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.dto.*;
 
