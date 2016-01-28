@@ -5,10 +5,12 @@ import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
+import org.elasticsearch.common.lang3.StringUtils;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.idm.searchbeans.LoginSearchBean;
 import org.openiam.idm.srvc.auth.dto.Login;
+import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.property.ws.PropertyValueWebService;
 import org.openiam.property.domain.PropertyType;
 import org.openiam.property.domain.PropertyValueEntity;
@@ -31,6 +33,13 @@ public class PropertyValueServiceTest extends AbstractServiceTest {
 				Assert.assertTrue(MapUtils.isNotEmpty(dto.getInternationalizedValues()));
 			}
 		});
+	}
+	
+	@Test(threadPoolSize = 20, invocationCount = 100000, enabled=false)
+	public void stressTest() {
+		final Language language = new Language();
+		language.setId("1");;
+		Assert.assertTrue(StringUtils.isNotBlank(propertyValuerServiceClient.getCachedValue("org.openiam.ui.user.fullname.compose.rule", language)));
 	}
 	
 	@Test
