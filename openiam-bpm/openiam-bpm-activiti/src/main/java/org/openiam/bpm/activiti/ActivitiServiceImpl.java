@@ -17,6 +17,7 @@ import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.history.HistoricTaskInstanceQuery;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
+import org.activiti.engine.task.TaskQuery;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -766,10 +767,34 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
     }
 
     @Override
+    public int getNumOfAssignedTasksWithFilter(String userId, Date fromDate, Date toDate) {
+        TaskQuery query = taskService.createTaskQuery();
+        if(fromDate != null) {
+            query.taskCreatedAfter(fromDate);
+        }
+        if(toDate != null) {
+            query.taskCreatedBefore(toDate);
+        }
+        return (int)query.taskAssignee(userId).count();
+    }
+
+    @Override
     @WebMethod
     @Transactional
     public int getNumOfCandidateTasks(String userId) {
         return (int) taskService.createTaskQuery().taskCandidateUser(userId).count();
+    }
+
+    @Override
+    public int getNumOfCandidateTasksWithFilter(String userId, Date fromDate, Date toDate) {
+        TaskQuery query = taskService.createTaskQuery();
+        if(fromDate != null) {
+            query.taskCreatedAfter(fromDate);
+        }
+        if(toDate != null) {
+            query.taskCreatedBefore(toDate);
+        }
+        return (int)query.taskCandidateUser(userId).count();
     }
 
     @Override
@@ -785,6 +810,23 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
         taskListWrapper.addCandidateTasks(candidateTasks, runtimeService, loginService);
         return taskListWrapper;
     }
+
+    @Override
+    public TaskListWrapper getTasksForUserWithFilter(String userId, int from, int size, Date fromDate, Date toDate) {
+        final TaskListWrapper taskListWrapper = new TaskListWrapper();
+        TaskQuery query = taskService.createTaskQuery();
+        if(fromDate != null) {
+            query.taskCreatedAfter(fromDate);
+        }
+        if(toDate != null) {
+            query.taskCreatedBefore(toDate);
+        }
+        final List<Task> assignedTasks = query.taskAssignee(userId).list();
+        Collections.sort(assignedTasks, taskCreatedTimeComparator);
+        taskListWrapper.addAssignedTasks(assignedTasks, runtimeService, loginService);
+        return taskListWrapper;
+    }
+
     @Override
     @WebMethod
     @Transactional
