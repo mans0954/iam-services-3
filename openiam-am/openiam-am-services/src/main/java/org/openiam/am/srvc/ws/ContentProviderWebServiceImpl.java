@@ -110,6 +110,9 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
     @Qualifier("configurableGroovyScriptEngine")
     private ScriptIntegration scriptRunner;
     
+    @Value("${org.openiam.pattern.meta.type.cookie}")
+    private String cookieMetadataType;
+    
 	@Override
     @Transactional(readOnly = true)
 	public AuthLevelAttribute getAuthLevelAttribute(String id) {
@@ -600,6 +603,14 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
             			}
             		}
             		
+        			/* cookies require a path */
+    				if(StringUtils.equals(meta.getMetaType().getId(), cookieMetadataType)) {
+    					if(StringUtils.isBlank(meta.getCookiePath())) {
+    						response.addFieldMapping("metaName", meta.getName());
+    						throw new BasicDataServiceException(ResponseCode.COOKIE_PATH_REQUIRED);
+    					}
+    				}
+            		
             		if(CollectionUtils.isNotEmpty(meta.getMetaValueSet())) {
             			for(final URIPatternMetaValue value : meta.getMetaValueSet()) {
             				if (StringUtils.isBlank(value.getName())) {
@@ -683,9 +694,18 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
                     			if(StringUtils.isEmpty(meta.getContentType())) {
                     				response.addFieldMapping("method", method.getMethod().toString());
                     				response.addFieldMapping("metaName", meta.getName());
-                        			throw new  BasicDataServiceException(ResponseCode.PATTERN_METHOD_META_CONTENT_TYPE_MISSING);
+                        			throw new  BasicDataServiceException(ResponseCode.COOKIE_PATH_REQUIRED_ON_METHOD);
                     			}
                     		}
+            				
+            				/* cookies require a path */
+            				if(StringUtils.equals(meta.getMetaType().getId(), cookieMetadataType)) {
+            					if(StringUtils.isBlank(meta.getCookiePath())) {
+            						response.addFieldMapping("method", method.getMethod().toString());
+                    				response.addFieldMapping("metaName", meta.getName());
+            						throw new BasicDataServiceException(ResponseCode.COOKIE_PATH_REQUIRED);
+            					}
+            				}
             				
             				if(CollectionUtils.isNotEmpty(meta.getMetaValueSet())) {
                     			for(final URIPatternMethodMetaValue value : meta.getMetaValueSet()) {

@@ -17,7 +17,8 @@ import org.openiam.am.srvc.dto.URIPatternMetaType;
 @XmlType(name = "URIPatternRuleToken", propOrder = {
 	"metaType",
 	"valueList",
-	"contentType"
+	"contentType",
+	"cookiePath"
 })
 public class URIPatternRuleToken implements Serializable {
 	
@@ -27,6 +28,7 @@ public class URIPatternRuleToken implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private URIPatternMetaType metaType;
 	private String contentType;
+	private String cookiePath;
 	private List<URIPatternRuleValue> valueList;
 	
 	private URIPatternRuleToken() {}
@@ -35,6 +37,7 @@ public class URIPatternRuleToken implements Serializable {
 		this();
 		this.metaType = metaType;
 		this.contentType = meta.getContentType();
+		this.cookiePath = meta.getCookiePath();
 	}
 	
 	public void addValue(final String key, final String value, final boolean propagate, final boolean propagateOnError, final boolean fetchedValue) {
@@ -61,12 +64,20 @@ public class URIPatternRuleToken implements Serializable {
 	public void setContentType(String contentType) {
 		this.contentType = contentType;
 	}
-	
+
+	public String getCookiePath() {
+		return cookiePath;
+	}
+
+	public void setCookiePath(String cookiePath) {
+		this.cookiePath = cookiePath;
+	}
+
 	@Override
 	public String toString() {
 		return "URIPatternRuleToken [metaType=" + metaType + ", contentType="
-				+ contentType + ", valueList=" + valueList + "]";
+				+ contentType + ", cookiePath=" + cookiePath + "]";
 	}
-
+	
 	
 }

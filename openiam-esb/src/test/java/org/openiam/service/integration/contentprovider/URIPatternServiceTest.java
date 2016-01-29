@@ -190,6 +190,7 @@ public class URIPatternServiceTest extends AbstractContentProviderServiceTest<UR
 					final URIPatternMethodMeta meta = new URIPatternMethodMeta();
 					meta.setName(getRandomName());
 					meta.setContentType(getRandomName());
+					meta.setCookiePath(getRandomName());
 					meta.setMetaType(metaTypes.get(i % metaTypes.size()));
 					
 					final Set<URIPatternMethodMetaValue> metaValueSet = new HashSet<URIPatternMethodMetaValue>();

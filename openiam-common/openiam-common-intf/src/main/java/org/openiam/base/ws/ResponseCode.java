@@ -82,6 +82,12 @@ public enum ResponseCode {
 
     @XmlEnumValue("circularDependency")
     CIRCULAR_DEPENDENCY("circularDependency"),
+    
+    @XmlEnumValue("cookiePathRequired")
+    COOKIE_PATH_REQUIRED("cookiePathRequired"),
+    
+    @XmlEnumValue("cookiePathRequiredOnMethod")
+    COOKIE_PATH_REQUIRED_ON_METHOD("cookiePathRequiredOnMethod"),
 
     @XmlEnumValue("objectNotFound")
     OBJECT_NOT_FOUND("objectNotFound"),
