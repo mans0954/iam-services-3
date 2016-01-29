@@ -10,6 +10,8 @@ import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
+import org.openiam.idm.searchbeans.ManagedSysSearchBean;
+import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.springframework.stereotype.Repository;
 
@@ -28,17 +30,15 @@ public class ManagedSysDAOImpl extends BaseDaoImpl<ManagedSysEntity, String> imp
 
 
     @Override
-    protected Criteria getExampleCriteria(ManagedSysEntity example, boolean isCount) {
+    protected Criteria getExampleCriteria(SearchBean searchBean) {
         final Criteria criteria = getCriteria();
-        if (!isCount) {
-            criteria.addOrder(Order.asc("name"));
-        }
-        if (example != null) {
-            if (StringUtils.isNotBlank(example.getId())) {
-                criteria.add(Restrictions.eq(getPKfieldName(), example.getId()));
+        if (searchBean != null && searchBean instanceof ManagedSysSearchBean) {
+            final ManagedSysSearchBean managedSysSearchBean = (ManagedSysSearchBean) searchBean;
+            if (StringUtils.isNotBlank(managedSysSearchBean.getKey())) {
+                criteria.add(Restrictions.eq(getPKfieldName(), managedSysSearchBean.getKey()));
             } else {
-                if (StringUtils.isNotBlank(example.getName())) {
-                    String name = example.getName();
+                if (StringUtils.isNotBlank(managedSysSearchBean.getName())) {
+                    String name = managedSysSearchBean.getName();
                     MatchMode matchMode = null;
                     if (StringUtils.indexOf(name, "*") == 0) {
                         matchMode = MatchMode.END;
@@ -64,6 +64,7 @@ public class ManagedSysDAOImpl extends BaseDaoImpl<ManagedSysEntity, String> imp
 
     @SuppressWarnings(value = "unchecked")
     @Override
+    @Deprecated
     public List<ManagedSysEntity> findbyConnectorId(String connectorId) {
         Criteria criteria = getCriteria().add(Restrictions.eq("connectorId", connectorId)).addOrder(Order.asc("name")).addOrder(Order.asc(getPKfieldName()));
         return (List<ManagedSysEntity>) criteria.list();
@@ -77,6 +78,7 @@ public class ManagedSysDAOImpl extends BaseDaoImpl<ManagedSysEntity, String> imp
 
     @Override
     @SuppressWarnings(value = "unchecked")
+    @Deprecated
     public List<ManagedSysEntity> findAllManagedSys() {
         Criteria criteria = getCriteria().addOrder(Order.asc("name"));
         return (List<ManagedSysEntity>) criteria.list();
@@ -87,6 +89,7 @@ public class ManagedSysDAOImpl extends BaseDaoImpl<ManagedSysEntity, String> imp
      */
     @Override
     @SuppressWarnings(value = "unchecked")
+    @Deprecated
     public ManagedSysEntity findByName(String name) {
         Criteria criteria = getCriteria().add(Restrictions.eq("name", name)).addOrder(Order.asc("name")).addOrder(Order.asc(getPKfieldName()));
         List<ManagedSysEntity> results = (List<ManagedSysEntity>) criteria.list();
@@ -101,6 +104,7 @@ public class ManagedSysDAOImpl extends BaseDaoImpl<ManagedSysEntity, String> imp
 
     @Override
     @SuppressWarnings(value = "unchecked")
+    @Deprecated
     public ManagedSysEntity findByResource(String resourceId, String status) {
         Criteria criteria = getCriteria()
                 .add(Restrictions.eq("resourceId", resourceId))
@@ -121,6 +125,7 @@ public class ManagedSysDAOImpl extends BaseDaoImpl<ManagedSysEntity, String> imp
 
     @Override
     @SuppressWarnings(value = "unchecked")
+    @Deprecated
     public String findIdByResource(String resourceId, String status) {
         Criteria criteria = getCriteria()
                 .add(Restrictions.eq("resourceId", resourceId))
@@ -145,6 +150,7 @@ public class ManagedSysDAOImpl extends BaseDaoImpl<ManagedSysEntity, String> imp
     }
 
     @Override
+    @Deprecated
     public List<ManagedSysEntity> findByResource(String resourceId) {
         return getCriteria()
                 .add(Restrictions.eq("resourceId", resourceId))

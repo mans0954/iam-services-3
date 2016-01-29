@@ -23,7 +23,7 @@ import java.util.Set;
         "userIdSet",
         "organizationIdSet"
 })
-public abstract class EntitlementsSearchBean<T, KeyType> extends AbstractSearchBean<T, KeyType> {
+public abstract class EntitlementsSearchBean<T, KeyType> extends AbstractLanguageSearchBean<T, KeyType> {
     private Set<String> parentIdSet;
     private Set<String> childIdSet;
 

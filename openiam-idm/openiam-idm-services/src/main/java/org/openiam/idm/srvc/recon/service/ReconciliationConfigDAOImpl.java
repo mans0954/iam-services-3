@@ -34,7 +34,7 @@ public class ReconciliationConfigDAOImpl extends
     }
 
     @Override
-    protected Criteria getExampleCriteria(SearchBean searchBean, boolean isCount) {
+    protected Criteria getExampleCriteria(SearchBean searchBean) {
         Criteria criteria = getCriteria();
         if(searchBean != null && searchBean instanceof ReconConfigSearchBean) {
             final ReconConfigSearchBean reconSearchBean = (ReconConfigSearchBean)searchBean;

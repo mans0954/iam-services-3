@@ -50,7 +50,7 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
 
 
     @Override
-    protected Criteria getExampleCriteria(final SearchBean searchBean, boolean isCount) {
+    protected Criteria getExampleCriteria(final SearchBean searchBean) {
         Criteria criteria = getCriteria();
         if (searchBean != null && searchBean instanceof RoleSearchBean) {
             final RoleSearchBean roleSearchBean = (RoleSearchBean) searchBean;
@@ -233,6 +233,7 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
     }
 
     @Override
+    @Deprecated
     public List<RoleEntity> getByExample(RoleEntity t, int startAt, int size) {
         final Criteria criteria = getExampleCriteria(t);
         if (startAt > -1) {

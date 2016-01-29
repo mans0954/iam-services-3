@@ -2003,6 +2003,11 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
         } else {
             newUserEntity.setType(null);
         }
+        if (newUserEntity.getSubType() != null && StringUtils.isNotBlank(newUserEntity.getSubType().getId())) {
+            newUserEntity.setSubType(metadataTypeDAO.findById(newUserEntity.getSubType().getId()));
+        } else {
+            newUserEntity.setSubType(null);
+        }
 
         this.addUser(newUserEntity);
 
@@ -2340,6 +2345,12 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
             } else {
                 origUserEntity.setAlternateContactId(newUserEntity.getAlternateContactId());
             }
+        }
+
+        if (newUserEntity.getSubType() != null && StringUtils.isNotBlank(newUserEntity.getSubType().getId())) {
+            origUserEntity.setSubType(metadataTypeDAO.findById(newUserEntity.getSubType().getId()));
+        } else {
+            origUserEntity.setSubType(null);
         }
     }
 

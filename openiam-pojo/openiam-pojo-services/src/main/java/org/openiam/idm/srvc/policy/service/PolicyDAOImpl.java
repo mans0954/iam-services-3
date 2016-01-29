@@ -74,7 +74,7 @@ public class PolicyDAOImpl extends BaseDaoImpl<PolicyEntity, String> implements
     }
 
     @Override
-    protected Criteria getExampleCriteria(final SearchBean searchBean, boolean isCount) {
+    protected Criteria getExampleCriteria(final SearchBean searchBean) {
         final Criteria criteria = getCriteria();
         if (searchBean instanceof PolicySearchBean) {
             PolicySearchBean sb = (PolicySearchBean) searchBean;

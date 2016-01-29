@@ -1,10 +1,12 @@
 package org.openiam.idm.searchbeans;
 
+import org.apache.commons.lang.StringUtils;
 import org.openiam.base.ws.SortParam;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -46,6 +48,15 @@ public abstract class AbstractSearchBean<T, KeyType> {
         this.sortBy = sortBy;
     }
 
+	public void addSortParam(SortParam sortParam){
+		if(sortParam!=null && StringUtils.isNotBlank(sortParam.getSortBy())) {
+			if (this.sortBy == null) {
+				this.sortBy = new ArrayList<>();
+			}
+			this.sortBy.add(sortParam);
+		}
+	}
+
     @Override
 	public int hashCode() {
 		final int prime = 31;
@@ -60,6 +71,19 @@ public abstract class AbstractSearchBean<T, KeyType> {
      * @return
      */
     public abstract String getCacheUniqueBeanKey();
+
+	protected String getSortKeyForCache(){
+		StringBuilder sb = new StringBuilder();
+		if (sortBy != null) {
+			for (SortParam sort : sortBy) {
+				if (sort.getSortBy() != null)
+					sb.append(sort.getSortBy().toString());
+				if (sort.getOrderBy() != null)
+					sb.append(sort.getOrderBy().toString());
+			}
+		}
+		return StringUtils.isNotBlank(sb.toString()) ? sb.toString() : "";
+	}
 
 	@Override
 	public boolean equals(Object obj) {

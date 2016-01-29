@@ -9,6 +9,7 @@ import org.openiam.bpm.activiti.delegate.core.AbstractActivitiJob;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.dto.GroupAttribute;
+import org.openiam.idm.srvc.grp.dto.GroupRequestModel;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
@@ -32,18 +33,18 @@ public class GroupDisplayMapper extends AbstractActivitiJob {
 	@Override
 	public void execute(DelegateExecution execution) throws Exception {
 		final LinkedHashMap<String, String> metadataMap = new LinkedHashMap<String, String>();
-		final Group group = getObjectVariable(execution, ActivitiConstants.GROUP, Group.class);
-		if(StringUtils.isNotBlank(group.getName())) {
-			metadataMap.put("Name", group.getName());
+		final GroupRequestModel groupRequestModel = getObjectVariable(execution, ActivitiConstants.GROUP, GroupRequestModel.class);
+		if(StringUtils.isNotBlank(groupRequestModel.getTargetObject().getName())) {
+			metadataMap.put("Name", groupRequestModel.getTargetObject().getName());
 		}
 		
-		if(StringUtils.isNotBlank(group.getDescription())) {
-			metadataMap.put("Description", group.getDescription());
+		if(StringUtils.isNotBlank(groupRequestModel.getTargetObject().getDescription())) {
+			metadataMap.put("Description", groupRequestModel.getTargetObject().getDescription());
 		}
 		
-		if(CollectionUtils.isNotEmpty(group.getOrganizations())) {
+		if(CollectionUtils.isNotEmpty(groupRequestModel.getTargetObject().getOrganizations())) {
 			StringBuilder nameBuilder = new StringBuilder();
-			for(Organization org : group.getOrganizations()){
+			for(Organization org : groupRequestModel.getTargetObject().getOrganizations()){
 				final OrganizationEntity entity = organizationService.getOrganization(org.getId(), null);
 				if(entity != null) {
 					if(nameBuilder.length()>0)
@@ -56,15 +57,15 @@ public class GroupDisplayMapper extends AbstractActivitiJob {
 			}
 		}
 		
-		if(StringUtils.isNotBlank(group.getManagedSysId())) {
-			final ManagedSysEntity entity = managedSysService.getManagedSysById(group.getManagedSysId());
+		if(StringUtils.isNotBlank(groupRequestModel.getTargetObject().getManagedSysId())) {
+			final ManagedSysEntity entity = managedSysService.getManagedSysById(groupRequestModel.getTargetObject().getManagedSysId());
 			if(entity != null) {
 				metadataMap.put("Managed System", entity.getName());
 			}
 		}
 		
-		if(CollectionUtils.isNotEmpty(group.getAttributes())) {
-			for(final GroupAttribute prop : group.getAttributes()) {
+		if(CollectionUtils.isNotEmpty(groupRequestModel.getTargetObject().getAttributes())) {
+			for(final GroupAttribute prop : groupRequestModel.getTargetObject().getAttributes()) {
 				if(StringUtils.isNotBlank(prop.getName()) && StringUtils.isNotBlank(prop.getValue())) {
 					metadataMap.put(prop.getName(), prop.getValue());
 				}

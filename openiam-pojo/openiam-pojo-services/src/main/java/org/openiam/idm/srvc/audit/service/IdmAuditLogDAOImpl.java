@@ -88,7 +88,7 @@ public class IdmAuditLogDAOImpl extends BaseDaoImpl<IdmAuditLogEntity, String> i
     }
 
     @Override
-    protected Criteria getExampleCriteria(SearchBean searchBean, boolean isCount) {
+    protected Criteria getExampleCriteria(SearchBean searchBean) {
         Criteria criteria = super.getCriteria();
         if(searchBean != null && (searchBean instanceof AuditLogSearchBean)) {
             final AuditLogSearchBean auditSearch = (AuditLogSearchBean)searchBean;

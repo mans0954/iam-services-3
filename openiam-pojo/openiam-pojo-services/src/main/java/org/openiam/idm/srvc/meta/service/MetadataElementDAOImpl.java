@@ -6,7 +6,7 @@ import org.hibernate.Criteria;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
-import org.openiam.core.dao.BaseDaoImpl;
+import org.openiam.core.dao.OrderDaoImpl;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
@@ -22,7 +22,9 @@ import java.util.Set;
  * DAO Implementation for MetadataElement
  */
 @Repository("metadataElementDAO")
-public class MetadataElementDAOImpl extends BaseDaoImpl<MetadataElementEntity, String> implements MetadataElementDAO {
+public class MetadataElementDAOImpl extends OrderDaoImpl<MetadataElementEntity, String> implements MetadataElementDAO {
+
+
     @Override
     protected boolean cachable() {
         return true;
@@ -39,7 +41,7 @@ public class MetadataElementDAOImpl extends BaseDaoImpl<MetadataElementEntity, S
     }
 
     @Override
-    protected Criteria getExampleCriteria(final SearchBean searchBean, boolean isCount) {
+    protected Criteria getExampleCriteria(final SearchBean searchBean) {
         final Criteria criteria = getCriteria();
         if (searchBean != null && searchBean instanceof MetadataElementSearchBean) {
             final MetadataElementSearchBean metaSearchBean = (MetadataElementSearchBean) searchBean;
@@ -152,6 +154,10 @@ public class MetadataElementDAOImpl extends BaseDaoImpl<MetadataElementEntity, S
         resource.setId(resourceId);
         entity.setResource(resource);
         return getByExample(entity);
+    }
+
+    protected String getReferenceType() {
+        return "MetadataElementEntity.languageMap";
     }
 
 }

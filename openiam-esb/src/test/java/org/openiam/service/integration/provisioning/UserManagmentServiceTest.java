@@ -403,27 +403,6 @@ public class UserManagmentServiceTest extends AbstractUserManagementServiceTest 
     }
 
     @Test(groups ={"COMPLETE_USER"}, dependsOnMethods = {"completeUserDeleteMVAttributeWithMetadata"})
-    public void completeUserAddExistedAttribute() throws Exception {
-        User user = getAndAssert(getUserId());
-
-        MetadataElement elem = defaultUserAttributes.get(DRIVERS_LICENSE);
-        final UserAttribute userAttribute = new UserAttribute();
-        userAttribute.setOperation(AttributeOperationEnum.ADD);
-        userAttribute.setName(elem.getAttributeName());
-        userAttribute.setValue(getRandomName());
-        userAttribute.setMetadataId(elem.getId());
-
-        user.getUserAttributes().put(userAttribute.getName(), userAttribute);
-
-        final Response response = save(user);
-        Assert.assertTrue(response.isFailure(), "Attribute with the same name can be added");
-        Assert.assertNotNull(response.getErrorCode(), String.format("Error code must not be null"));
-        // TODO: need to assert with error code when it is added
-    }
-
-
-
-    @Test(groups ={"COMPLETE_USER"}, dependsOnMethods = {"completeUserAddExistedAttribute"})
     public void completeUserDeleteRequiredAttribute() throws Exception {
         User user = getAndAssert(getUserId());
 
@@ -446,7 +425,7 @@ public class UserManagmentServiceTest extends AbstractUserManagementServiceTest 
         Assert.assertNotNull(dbUserAttribute, "User Attribute is deleted");
     }
 
-    @Test(groups ={"COMPLETE_USER"}, dependsOnMethods = {"completeUserDeleteRequiredAttribute"})
+    @Test(groups ={"COMPLETE_USER"}, dependsOnMethods = {"completeUserDeleteMVAttributeWithMetadata"})
     public void completeUserAddRole() throws Exception {
         User user = getAndAssert(getUserId());
 

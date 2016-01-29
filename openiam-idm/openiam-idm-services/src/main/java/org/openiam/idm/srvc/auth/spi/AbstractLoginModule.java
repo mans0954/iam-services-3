@@ -158,8 +158,10 @@ public abstract class AbstractLoginModule implements LoginModule {
         return null;
     }
 
-    public void setResultCode(LoginEntity lg, Subject sub, Date curDate, Policy pwdPolicy) throws AuthenticationException {
-        if (lg.getFirstTimeLogin() == 1) {
+    public void setResultCode(LoginEntity lg, Subject sub, Date curDate, Policy pwdPolicy, final boolean skipPasswordCheck) throws AuthenticationException {
+    	if(skipPasswordCheck) {
+    		sub.setResultCode(AuthenticationConstants.RESULT_SUCCESS);
+    	} else if (lg.getFirstTimeLogin() == 1) {
             sub.setResultCode(AuthenticationConstants.RESULT_SUCCESS_FIRST_TIME);
         } else if (lg.getPwdExp() != null) {
             if ((curDate.after(lg.getPwdExp()) && curDate.before(lg.getGracePeriod()))) {

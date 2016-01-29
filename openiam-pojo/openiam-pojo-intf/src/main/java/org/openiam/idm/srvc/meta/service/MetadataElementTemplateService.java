@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.meta.service;
 
 import java.util.List;
 
+import org.openiam.base.BaseRequestModel;
 import org.openiam.idm.searchbeans.MetadataElementPageTemplateSearchBean;
 import org.openiam.idm.searchbeans.MetadataTemplateTypeFieldSearchBean;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
@@ -20,10 +21,10 @@ public interface MetadataElementTemplateService {
 	public int count(final MetadataElementPageTemplateSearchBean searchBean);
 	public void save(final MetadataElementPageTemplateEntity template);
 	public void delete(final String id);
-	public PageTemplateAttributeToken getAttributesFromTemplate(final UserProfileRequestModel request);
+	public PageTemplateAttributeToken getAttributesFromTemplate(final BaseRequestModel request);
 	public PageTempate getTemplate(final TemplateRequest request);
 	public void saveTemplate(final UserProfileRequestModel request) throws PageTemplateException;
-	public void validate(final UserProfileRequestModel request) throws PageTemplateException;
+	public void validate(final BaseRequestModel request) throws Exception;
 	public MetadataTemplateTypeEntity getTemplateType(final String id);
 	public List<MetadataTemplateTypeEntity> findTemplateTypes(final MetadataTemplateTypeEntity entity, final int from, final int size);
 	public List<MetadataTemplateTypeFieldEntity> findUIFields(final MetadataTemplateTypeFieldSearchBean searchBean, final int from, final int size);

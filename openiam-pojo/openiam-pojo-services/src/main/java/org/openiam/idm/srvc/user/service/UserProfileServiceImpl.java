@@ -161,18 +161,18 @@ public class UserProfileServiceImpl implements UserProfileService {
         final PageTemplateAttributeToken token = pageTemplateService.getAttributesFromTemplate(request);
         if(token != null) {
         	if(CollectionUtils.isNotEmpty(token.getSaveList())) {
-        		for(final UserAttributeEntity entity : token.getSaveList()) {
+        		for(final UserAttributeEntity entity : (List<UserAttributeEntity>)token.getSaveList()) {
         			dbEntity.addUserAttribute(entity);
         		}
         	}
         	if(CollectionUtils.isNotEmpty(token.getUpdateList())) {
-        		for(final UserAttributeEntity entity : token.getUpdateList()) {
+        		for(final UserAttributeEntity entity : (List<UserAttributeEntity>)token.getUpdateList()) {
         			dbEntity.updateUserAttribute(entity);
         		}
         	}
         	
         	if(CollectionUtils.isNotEmpty(token.getDeleteList())) {
-        		for(final UserAttributeEntity entity : token.getDeleteList()) {
+        		for(final UserAttributeEntity entity : (List<UserAttributeEntity>)token.getDeleteList()) {
         			dbEntity.removeUserAttribute(entity.getId());
         		}
         	}

@@ -224,7 +224,7 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
                 resultList.add(entity);
             }
         } else {
-            resultList = questionDAO.getByExample(questionSearchBeanConverter.convert(searchBean), from, size);
+            resultList = questionDAO.getByExample(searchBean, from, size);
         }
         return resultList;
     }

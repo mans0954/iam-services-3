@@ -5,7 +5,7 @@ import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
-import org.openiam.core.dao.BaseDaoImpl;
+import org.openiam.core.dao.OrderDaoImpl;
 import org.openiam.dozer.converter.OrgType2OrgTypeXrefConverter;
 import org.openiam.idm.searchbeans.OrganizationTypeSearchBean;
 import org.openiam.idm.searchbeans.SearchBean;
@@ -18,7 +18,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public class OrganizationTypeDAOImpl extends BaseDaoImpl<OrganizationTypeEntity, String> implements OrganizationTypeDAO {
+public class OrganizationTypeDAOImpl extends OrderDaoImpl<OrganizationTypeEntity, String> implements OrganizationTypeDAO {
     @Autowired
     private OrgType2OrgTypeXrefConverter orgType2OrgTypeXrefConverter;
 
@@ -26,7 +26,7 @@ public class OrganizationTypeDAOImpl extends BaseDaoImpl<OrganizationTypeEntity,
 	private OrganizationTypeSearchBeanConverter converter;
 	
 	 @Override
-	 protected Criteria getExampleCriteria(final SearchBean searchBean, boolean isCount) {
+	 protected Criteria getExampleCriteria(final SearchBean searchBean) {
 		 Criteria criteria = getCriteria();
 		 if(searchBean instanceof OrganizationTypeSearchBean) {
 			 final OrganizationTypeSearchBean typeSearchBean = (OrganizationTypeSearchBean)searchBean;
@@ -84,5 +84,9 @@ public class OrganizationTypeDAOImpl extends BaseDaoImpl<OrganizationTypeEntity,
         criteria.setProjection(Projections.property(getPKfieldName()));
         return criteria.list();
     }
+
+	protected String getReferenceType() {
+		return "OrganizationTypeEntity.displayNameMap";
+	}
 
 }

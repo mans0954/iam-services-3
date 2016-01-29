@@ -6,7 +6,7 @@ import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Restrictions;
-import org.openiam.core.dao.BaseDaoImpl;
+import org.openiam.core.dao.OrderDaoImpl;
 import org.openiam.idm.searchbeans.ResourceTypeSearchBean;
 import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
@@ -18,7 +18,7 @@ import org.springframework.stereotype.Repository;
  * DAO Implementation for ResourceType
  */
 @Repository("resourceTypeDAO")
-public class ResourceTypeDAOImpl extends BaseDaoImpl<ResourceTypeEntity, String> implements ResourceTypeDAO {
+public class ResourceTypeDAOImpl extends OrderDaoImpl<ResourceTypeEntity, String> implements ResourceTypeDAO {
 
 
     @Autowired
@@ -30,7 +30,7 @@ public class ResourceTypeDAOImpl extends BaseDaoImpl<ResourceTypeEntity, String>
     }
 
     @Override
-    protected Criteria getExampleCriteria(SearchBean searchBean, boolean isCount) {
+    protected Criteria getExampleCriteria(SearchBean searchBean) {
         Criteria criteria = null;
         if (searchBean != null && searchBean instanceof ResourceTypeSearchBean) {
             final ResourceTypeSearchBean resourceTypeSearchBean = (ResourceTypeSearchBean) searchBean;
@@ -83,6 +83,10 @@ public class ResourceTypeDAOImpl extends BaseDaoImpl<ResourceTypeEntity, String>
     @Override
     protected String getPKfieldName() {
         return "id";
+    }
+
+    protected String getReferenceType() {
+        return "ResourceTypeEntity.displayNameMap";
     }
 
 }
