@@ -18,6 +18,9 @@ import org.openiam.core.dao.UserKeyDao;
 import org.openiam.dozer.converter.*;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.*;
+import org.openiam.idm.srvc.audit.constant.AuditAction;
+import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.auth.login.AuthStateDAO;
@@ -166,6 +169,8 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
     @Autowired
     private SupervisorDozerConverter supervisorDozerConverter;
 
+    @Autowired
+    protected AuditLogService auditLogService;
 
     @Value("${org.openiam.organization.type.id}")
     private String organizationTypeId;
@@ -2759,7 +2764,17 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
     @Override
 	@Transactional(readOnly = true)
     public List<User> getUserDtoBetweenUpdatedDate(Date fromDate, Date toDate) {
-        List<UserEntity> userEntityList = userDao.getUserBetweenUpdatedDate( fromDate, toDate );
+        AuditLogSearchBean searchBean = new AuditLogSearchBean();
+        String actions[] = {AuditAction.USER_PRINCIPAL_CHANGED.value(), AuditAction.USER_REHIRED.value(), AuditAction.USER_PRIMARY_EMAIL_CHANGED.value()};
+        searchBean.setActions(actions);
+        searchBean.setFrom(fromDate);
+        searchBean.setTo(toDate);
+        List<IdmAuditLog> auditLogs = auditLogService.findBeans(searchBean, -1, -1);
+        Set<String> userIds = new HashSet<String>();
+        for(IdmAuditLog log : auditLogs) {
+            userIds.add(log.getUserId());
+        }
+        List<UserEntity> userEntityList = userDao.getUserByIds( userIds );
 
         return userDozerConverter.convertToDTOList(userEntityList, true);
     }

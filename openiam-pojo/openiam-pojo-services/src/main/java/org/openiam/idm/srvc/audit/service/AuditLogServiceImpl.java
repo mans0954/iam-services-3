@@ -238,6 +238,17 @@ public class AuditLogServiceImpl implements AuditLogService {
     }
 
     @Override
+    public List<IdmAuditLog> findBeans(AuditLogSearchBean searchBean) {
+        List<IdmAuditLogEntity> idmAuditLogEntities = null;
+        logDAO.getByExample(searchBean);
+        List<IdmAuditLog> idmAuditLogs = new LinkedList<>();
+        if(idmAuditLogEntities != null) {
+            idmAuditLogs = auditLogDozerConverter.convertToDTOList(idmAuditLogEntities, false);
+        }
+        return idmAuditLogs;
+    }
+
+    @Override
 	@Transactional(readOnly=true)
 	public int count(AuditLogSearchBean searchBean) {
 		return logDAO.count(searchBean);
