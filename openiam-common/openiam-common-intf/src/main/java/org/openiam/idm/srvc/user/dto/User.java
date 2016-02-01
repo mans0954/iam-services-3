@@ -18,6 +18,7 @@ import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.grp.domain.GroupToResourceMembershipXrefEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
+import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.role.dto.Role;
@@ -726,6 +727,21 @@ public class User extends AbstractMetadataTypeDTO {
             }
         }
         return null;
+    }
+    
+    public Phone getPhoneByMetadataType(final MetadataType metadataType) {
+    	Phone retVal = null;
+    	if(metadataType != null) {
+        	if(CollectionUtils.isNotEmpty(this.getPhones())) {
+        		for(final Phone phone : this.getPhones()) {
+        			if(StringUtils.equals(phone.getMdTypeId(), metadataType.getId())) {
+        				retVal = phone;
+        				break;
+        			}
+        		}
+        	}
+        }
+    	return retVal;
     }
 
     public Address getAddressById(String id) {

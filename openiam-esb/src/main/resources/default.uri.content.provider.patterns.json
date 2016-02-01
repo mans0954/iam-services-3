@@ -25,6 +25,19 @@
 			"cacheTTL" : 30
 		},
 		{
+			"pattern" : "/idp/validateEmailToken.html",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "NONE"
+					}
+				}
+			],
+			"cacheable" : true,
+			"cacheTTL" : 30
+		},
+		{
 			"pattern" : "/selfservice/selfRegistration.html",
 			"isPublic" : true,
 			"groupingXrefs" : [
