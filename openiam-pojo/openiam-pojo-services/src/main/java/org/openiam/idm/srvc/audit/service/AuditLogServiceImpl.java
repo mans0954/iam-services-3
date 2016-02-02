@@ -237,16 +237,6 @@ public class AuditLogServiceImpl implements AuditLogService {
         return logDAO.getIDsByExample(searchBean, from, size);
     }
 
-    @Override
-    public List<IdmAuditLog> findBeans(AuditLogSearchBean searchBean) {
-        List<IdmAuditLogEntity> idmAuditLogEntities = null;
-        logDAO.getByExample(searchBean);
-        List<IdmAuditLog> idmAuditLogs = new LinkedList<>();
-        if(idmAuditLogEntities != null) {
-            idmAuditLogs = auditLogDozerConverter.convertToDTOList(idmAuditLogEntities, false);
-        }
-        return idmAuditLogs;
-    }
 
     @Override
 	@Transactional(readOnly=true)
