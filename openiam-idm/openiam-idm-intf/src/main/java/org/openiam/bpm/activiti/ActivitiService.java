@@ -1,5 +1,6 @@
 package org.openiam.bpm.activiti;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -45,14 +46,27 @@ public interface ActivitiService {
 	
 	@WebMethod
 	public TaskListWrapper getTasksForUser(final String userId, final int from, final int size);
+
+    @WebMethod
+    public TaskListWrapper getTasksForCandidateUserWithFilter(final String userId, final int from, final int size, String description, Date fromDate, Date toDate);
+
+    @WebMethod
+    public TaskListWrapper getTasksForAssignedUserWithFilter(final String userId, final int from, final int size, String description, Date fromDate, Date toDate);
+
     @WebMethod
     public List<TaskWrapper> getTasksForMemberAssociation(String memberAssociationId);
 	
 	@WebMethod
 	public int getNumOfAssignedTasks(final String userId);
+
+    @WebMethod
+    public int getNumOfAssignedTasksWithFilter(final String userId, String description, Date fromDate, Date toDate);
 	
 	@WebMethod
 	public int getNumOfCandidateTasks(final String userId);
+
+    @WebMethod
+    public int getNumOfCandidateTasksWithFilter(final String userId, String description, Date fromDate, Date toDate);
 	
 	@WebMethod
 	public TaskWrapper getTask(final String taskId);
