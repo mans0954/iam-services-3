@@ -88,6 +88,7 @@ import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
+import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.*;
 import org.openiam.provision.resp.ProvisionUserResponse;
@@ -138,6 +139,15 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
     public static final String USER = "user";
     public static final String USER_ATTRIBUTES = "userAttributes";
     public static final String GROUP = "group";
+
+    @Value("${openiam.audit.default.email.change}")
+    protected String saveEmailChange;
+
+    @Value("${openiam.audit.rehire}")
+    protected String saveRehireChange;
+
+    @Value("${openiam.audit.default.principal.change}")
+    protected String savePrincipalChange;
 
     @Value("${org.openiam.idm.system.user.id}")
     protected String systemUserId;
@@ -794,6 +804,14 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
                     if (CollectionUtils.isNotEmpty(entities)) {
                         for (EmailAddressEntity en : entities) {
                             if (StringUtils.equals(en.getEmailId(), e.getEmailId())) {
+                                Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
+                                if(en.getMetadataType().getId().equalsIgnoreCase("PRIMARY_EMAIL")) {
+                                    IdmAuditLog auditLog = new IdmAuditLog();
+                                    auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
+                                    auditLog.setAction(AuditAction.USER_PRIMARY_EMAIL_CHANGED.value());
+                                    auditLog.setAuditDescription("Primary Email changed: " + en.toString() + "\n to:" + e.toString());
+                                    parentLog.addChild(auditLog);
+                                }
                                 userEntity.getEmailAddresses().remove(en);
                                 userMgr.evict(en);
                                 EmailAddressEntity entity = emailAddressDozerConverter.convertToEntity(e, false);
@@ -805,7 +823,6 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
                                 // Audit Log
                                 //--------------------------------------------------
                                 IdmAuditLog auditLog = new IdmAuditLog();
-                                Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
                                 auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
                                 auditLog.setAction(AuditAction.REPLACE_EMAIL.value());
                                 auditLog.setAuditDescription("REPLACE Email: " + en.toString() + "\n to:" + e.toString());
@@ -1251,6 +1268,13 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
         }
         if (pUser.getStatus() != null && !pUser.getStatus().equals(userEntity.getStatus())) {
             // Audit Log -----------------------------------------------------------------------------------
+            if(pUser.getStatus() == UserStatusEnum.ACTIVE && userEntity.getStatus() == UserStatusEnum.DISABLED) {
+                IdmAuditLog auditLog = new IdmAuditLog();
+                auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
+                auditLog.setAction(AuditAction.USER_REHIRED.value());
+                auditLog.setAuditDescription(pUser.getDisplayName()+" User rehired");
+                parentLog.addChild(auditLog);
+            }
             IdmAuditLog auditLog = new IdmAuditLog();
             auditLog.setRequestorUserId(pUser.getRequestorUserId());
             auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
@@ -1776,6 +1800,13 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
 
                                 if (!en.getLogin().equals(e.getLogin())) {
                                     e.setOrigPrincipalName(en.getLogin());
+                                    if(en.getManagedSysId().equalsIgnoreCase("0")) {
+                                        IdmAuditLog auditLog = new IdmAuditLog();
+                                        auditLog.setTargetUser(userEntity.getId(), en.getLogin() != null ? en.getLogin() : StringUtils.EMPTY);
+                                        auditLog.setAction(AuditAction.USER_PRINCIPAL_CHANGED.value());
+                                        auditLog.setAuditDescription("User Principal changed for "+pUser.getDisplayName());
+                                        parentLog.addChild(auditLog);
+                                    }
                                 }
                                 String logOld = en.toString();
                                 en.copyProperties(e);
