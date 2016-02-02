@@ -274,9 +274,6 @@ public class LocationEntity {
             return false;
         if (!locationId.equals(that.locationId)) return false;
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
-        if (organization != null ? !organization.equals(that.organization) : that.organization != null) return false;
-        if (organizationId != null ? !organizationId.equals(that.organizationId) : that.organizationId != null)
-            return false;
         if (postalCd != null ? !postalCd.equals(that.postalCd) : that.postalCd != null) return false;
         if (sensitiveLocation != null ? !sensitiveLocation.equals(that.sensitiveLocation) : that.sensitiveLocation != null)
             return false;
@@ -301,11 +298,9 @@ public class LocationEntity {
         result = 31 * result + (city != null ? city.hashCode() : 0);
         result = 31 * result + (state != null ? state.hashCode() : 0);
         result = 31 * result + (postalCd != null ? postalCd.hashCode() : 0);
-        result = 31 * result + (organizationId != null ? organizationId.hashCode() : 0);
         result = 31 * result + (internalLocationId != null ? internalLocationId.hashCode() : 0);
         result = 31 * result + (isActive ? 1 : 0);
         result = 31 * result + (sensitiveLocation != null ? sensitiveLocation.hashCode() : 0);
-        result = 31 * result + (organization != null ? organization.hashCode() : 0);
         return result;
     }
 }
