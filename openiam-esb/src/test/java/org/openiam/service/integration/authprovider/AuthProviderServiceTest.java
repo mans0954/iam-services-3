@@ -10,7 +10,6 @@ import java.util.Set;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
-import org.junit.Assert;
 import org.openiam.am.srvc.constants.AuthAttributeDataType;
 import org.openiam.am.srvc.constants.SsoAttributeType;
 import org.openiam.am.srvc.domain.AuthProviderEntity;
@@ -28,6 +27,7 @@ import org.openiam.idm.srvc.policy.service.PolicyDataService;
 import org.openiam.service.integration.AbstractKeyNameServiceTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.testng.Assert;
 import org.testng.annotations.Test;
 
 public class AuthProviderServiceTest extends AbstractKeyNameServiceTest<AuthProvider, AuthProviderSearchBean> {
@@ -69,6 +69,29 @@ public class AuthProviderServiceTest extends AbstractKeyNameServiceTest<AuthProv
 			resourceAttributeMap.put(attribute1.getName(), attribute1);
 		}
 		return resourceAttributeMap;
+	}
+	
+	@Test
+	public void testGetAttributes() {
+		AuthProvider instance = super.createBean();
+		try {
+			Response wsResponse = saveAndAssert(instance);
+			instance = get((String)wsResponse.getResponseValue());
+			Assert.assertNotNull(instance);
+			Assert.assertTrue(CollectionUtils.isNotEmpty(instance.getAttributes()));
+			Assert.assertTrue(MapUtils.isNotEmpty(instance.getAttributeMap()));
+			//Assert.assertTrue(MapUtils.isNotEmpty(instance.getResourceAttributeMap()));
+			
+			instance = get(instance.getId());
+			Assert.assertNotNull(instance);
+			Assert.assertTrue(CollectionUtils.isNotEmpty(instance.getAttributes()));
+			Assert.assertTrue(MapUtils.isNotEmpty(instance.getAttributeMap()));
+			//Assert.assertTrue(MapUtils.isNotEmpty(instance.getResourceAttributeMap()));
+		} finally {
+			if(instance != null && instance.getId() != null) {
+				deleteAndAssert(instance);
+	    	}
+		}
 	}
 	
 	@Test

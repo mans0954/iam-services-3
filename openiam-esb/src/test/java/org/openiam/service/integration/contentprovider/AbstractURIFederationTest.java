@@ -101,6 +101,7 @@ public abstract class AbstractURIFederationTest extends AbstractServiceTest {
 			meta.setContentType(getRandomName());
 			meta.setName(getRandomName());
 			meta.setMetaType(type);
+			meta.setCookiePath("/foobaer");
 			
 			final Set<URIPatternMethodMetaValue> metaValueSet = new HashSet<URIPatternMethodMetaValue>();
 			for(int i = 0; i < 4; i++) {
@@ -130,6 +131,7 @@ public abstract class AbstractURIFederationTest extends AbstractServiceTest {
 			meta.setContentType(getRandomName());
 			meta.setName(getRandomName());
 			meta.setMetaType(type);
+			meta.setCookiePath("/foobar");
 			
 			final Set<URIPatternMetaValue> metaValueSet = new HashSet<URIPatternMetaValue>();
 			for(int i = 0; i < 4; i++) {
