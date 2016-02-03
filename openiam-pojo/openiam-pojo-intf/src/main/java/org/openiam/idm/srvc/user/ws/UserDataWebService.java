@@ -9,6 +9,7 @@ import javax.jws.WebParam;
 import javax.jws.WebService;
 
 import org.openiam.base.ws.Response;
+import org.openiam.idm.searchbeans.AuditLogSearchBean;
 import org.openiam.idm.searchbeans.EmailSearchBean;
 import org.openiam.idm.searchbeans.PotentialSupSubSearchBean;
 import org.openiam.idm.searchbeans.UserSearchBean;
@@ -857,9 +858,8 @@ public interface UserDataWebService {
             @WebParam(name = "toDate", targetNamespace = "") final Date toDate);
 
     @WebMethod
-    public List<User> getUserBetweenUpdatedDate(
-            @WebParam(name = "fromDate", targetNamespace = "") final Date fromDate,
-            @WebParam(name = "toDate", targetNamespace = "") final Date toDate);
+    public List<User> getUserDtoBySearchBean(
+            @WebParam(name = "searchBean", targetNamespace = "") final AuditLogSearchBean searchBean);
 
     /**
      * returns a paged List of all Supervisors in the system

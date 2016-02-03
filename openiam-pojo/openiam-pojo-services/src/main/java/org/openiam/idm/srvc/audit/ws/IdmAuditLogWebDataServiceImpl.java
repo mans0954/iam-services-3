@@ -93,7 +93,7 @@ public class IdmAuditLogWebDataServiceImpl implements IdmAuditLogWebDataService 
 
 	@Override
 	public List<IdmAuditLog> findBeans(final AuditLogSearchBean searchBean, final int from, final int size) {
-		final List<IdmAuditLog> entityList = auditLogService.findBeans(searchBean, from, size);
+		final List<IdmAuditLog> entityList = auditLogService.findBeans(searchBean, from, size, false);
 		return entityList;
 	}
 

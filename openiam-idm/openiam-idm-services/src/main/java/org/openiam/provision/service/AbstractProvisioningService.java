@@ -805,8 +805,13 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
                         for (EmailAddressEntity en : entities) {
                             if (StringUtils.equals(en.getEmailId(), e.getEmailId())) {
                                 Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
+                                log.debug("--------------- Primary Email : "+en.getMetadataType().getId()+" ---------------------------");
+                                log.debug("--------------- saveEmailChange : "+saveEmailChange+" ----------------------");
                                 if(en.getMetadataType().getId().equalsIgnoreCase("PRIMARY_EMAIL") && saveEmailChange.equalsIgnoreCase("true")) {
+                                    log.debug(" adding email changed log ");
                                     IdmAuditLog auditLog = new IdmAuditLog();
+                                    auditLog.setUserId(parentLog.getUserId());
+                                    auditLog.setPrincipal(parentLog.getPrincipal());
                                     auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
                                     auditLog.setAction(AuditAction.USER_PRIMARY_EMAIL_CHANGED.value());
                                     auditLog.setAuditDescription("Primary Email changed: " + en.toString() + "\n to:" + e.toString());
@@ -1268,13 +1273,6 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
         }
         if (pUser.getStatus() != null && !pUser.getStatus().equals(userEntity.getStatus())) {
             // Audit Log -----------------------------------------------------------------------------------
-            if(pUser.getStatus() == UserStatusEnum.ACTIVE && userEntity.getStatus() == UserStatusEnum.DISABLED && saveRehireChange.equalsIgnoreCase("true")) {
-                IdmAuditLog auditLog = new IdmAuditLog();
-                auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
-                auditLog.setAction(AuditAction.USER_REHIRED.value());
-                auditLog.setAuditDescription(pUser.getDisplayName()+" User rehired");
-                parentLog.addChild(auditLog);
-            }
             IdmAuditLog auditLog = new IdmAuditLog();
             auditLog.setRequestorUserId(pUser.getRequestorUserId());
             auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
@@ -1286,6 +1284,15 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
         }
         if (pUser.getSecondaryStatus() != null && !pUser.getSecondaryStatus().equals(userEntity.getSecondaryStatus())) {
             // Audit Log -----------------------------------------------------------------------------------
+            if(pUser.getSecondaryStatus() == null && userEntity.getSecondaryStatus() == UserStatusEnum.DISABLED && saveRehireChange.equalsIgnoreCase("true")) {
+                IdmAuditLog auditLog = new IdmAuditLog();
+                auditLog.setUserId(parentLog.getUserId());
+                auditLog.setPrincipal(parentLog.getPrincipal());
+                auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
+                auditLog.setAction(AuditAction.USER_REHIRED.value());
+                auditLog.setAuditDescription(pUser.getDisplayName()+" User rehired");
+                parentLog.addChild(auditLog);
+            }
             IdmAuditLog auditLog = new IdmAuditLog();
             auditLog.setRequestorUserId(pUser.getRequestorUserId());
             auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
@@ -1800,8 +1807,14 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
 
                                 if (!en.getLogin().equals(e.getLogin())) {
                                     e.setOrigPrincipalName(en.getLogin());
-                                    if(en.getManagedSysId().equalsIgnoreCase("0") && savePrincipalChange.equalsIgnoreCase("true")) {
+                                    log.debug("--------------- en.getManagedSysId() : "+en.getManagedSysId()+" ---------------");
+                                    log.debug("--------------- savePrincipalChange : "+savePrincipalChange+" ---------------");
+                                    if(savePrincipalChange.equalsIgnoreCase("true")) {
+                                        log.debug("-------------- changing AD User principal ----------");
                                         IdmAuditLog auditLog = new IdmAuditLog();
+                                        auditLog.setUserId(parentLog.getUserId());
+                                        auditLog.setPrincipal(parentLog.getPrincipal());
+                                        auditLog.setManagedSysId(en.getManagedSysId());
                                         auditLog.setTargetUser(userEntity.getId(), en.getLogin() != null ? en.getLogin() : StringUtils.EMPTY);
                                         auditLog.setAction(AuditAction.USER_PRINCIPAL_CHANGED.value());
                                         auditLog.setAuditDescription("User Principal changed for "+pUser.getDisplayName());

@@ -117,6 +117,9 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
 
     @Value("${org.openiam.debug.hidden.attributes}")
     private String hiddenAttributes;
+    
+    @Value("${openiam.audit.rehire}")
+    protected String saveRehireChange;
 
     @Value("${org.openiam.send.user.activation.link}")
     private Boolean sendActivationLink;
@@ -318,9 +321,9 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                         idmAuditLog.addParent(auditLog);
 //                        auditLogService.save(auditLog);
                     }
-                    idmAuditLog = auditLogService.save(idmAuditLog);
-                    ProvisionUserResponse tmpRes = addModifyUser(pUser, false, dataList, idmAuditLog);
                     //idmAuditLog = auditLogService.save(idmAuditLog);
+                    ProvisionUserResponse tmpRes = addModifyUser(pUser, false, dataList, idmAuditLog);
+                    idmAuditLog = auditLogService.save(idmAuditLog);
                     return tmpRes;
                 }
             });
@@ -3105,6 +3108,14 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                 // enable an account that was previously disabled.
                 idmAuditLog.setAction(AuditAction.PROVISIONING_ENABLE.value());
                 usr.setSecondaryStatus(null);
+                if(saveRehireChange.equalsIgnoreCase("true")) {
+                    IdmAuditLog childAuditLog = new IdmAuditLog();
+                    childAuditLog.setUserId(usr.getId());
+                    childAuditLog.setTargetUser(usr.getId(), org.mule.util.StringUtils.EMPTY);
+                    childAuditLog.setAction(AuditAction.USER_REHIRED.value());
+                    childAuditLog.setAuditDescription(usr.getDisplayName() + " User rehired");
+                    idmAuditLog.addChild(childAuditLog);
+                }
             }
             userMgr.updateUserWithDependent(usr, false);
 

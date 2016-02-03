@@ -19,6 +19,7 @@ import org.openiam.dozer.converter.*;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.*;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
+import org.openiam.idm.srvc.audit.dto.AuditLogTarget;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
@@ -2749,7 +2750,7 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
     @Override
     @Transactional(readOnly = true)
     public List<User> getUserDtoBetweenStartDate(Date fromDate, Date toDate) {
-        List<UserEntity> userEntityList = userDao.getUserBetweenStartDate( fromDate, toDate );
+        List<UserEntity> userEntityList = userDao.getUserBetweenStartDate(fromDate, toDate);
         return userDozerConverter.convertToDTOList(userEntityList, true);
     }
 
@@ -2763,18 +2764,23 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
 
     @Override
 	@Transactional(readOnly = true)
-    public List<User> getUserDtoBetweenUpdatedDate(Date fromDate, Date toDate) {
-        AuditLogSearchBean searchBean = new AuditLogSearchBean();
-        String actions[] = {AuditAction.USER_PRINCIPAL_CHANGED.value(), AuditAction.USER_REHIRED.value(), AuditAction.USER_PRIMARY_EMAIL_CHANGED.value()};
-        searchBean.setActions(actions);
-        searchBean.setFrom(fromDate);
-        searchBean.setTo(toDate);
-        List<IdmAuditLog> auditLogs = auditLogService.findBeans(searchBean, -1, -1);
+    public List<User> getUserDtoBySearchBean(AuditLogSearchBean searchBean) {
+        List<IdmAuditLog> auditLogs = auditLogService.findBeans(searchBean, -1, -1, true);
         Set<String> userIds = new HashSet<String>();
-        for(IdmAuditLog log : auditLogs) {
-            userIds.add(log.getUserId());
+        for (IdmAuditLog log : auditLogs) {
+            String userId = null;
+            Set<AuditLogTarget> targets = log.getTargets();
+            if(targets != null) {
+                for (AuditLogTarget target : targets) {
+                    if (target.getTargetType().equalsIgnoreCase("user")) {
+                        userId = target.getTargetId();
+                        break;
+                    }
+                }
+            }
+            userIds.add(userId);
         }
-        List<UserEntity> userEntityList = userDao.getUserByIds( userIds );
+        List<UserEntity> userEntityList = userDao.getUserByIds(userIds);
 
         return userDozerConverter.convertToDTOList(userEntityList, true);
     }

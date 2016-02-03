@@ -35,11 +35,7 @@ import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.dozer.converter.*;
 import org.openiam.exception.BasicDataServiceException;
-import org.openiam.idm.searchbeans.AddressSearchBean;
-import org.openiam.idm.searchbeans.EmailSearchBean;
-import org.openiam.idm.searchbeans.PhoneSearchBean;
-import org.openiam.idm.searchbeans.PotentialSupSubSearchBean;
-import org.openiam.idm.searchbeans.UserSearchBean;
+import org.openiam.idm.searchbeans.*;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
@@ -1323,8 +1319,8 @@ public class UserDataWebServiceImpl implements UserDataWebService {
     }
 
     @Override
-    public List<User> getUserBetweenUpdatedDate(Date fromDate, Date toDate) {
-        return userManager.getUserDtoBetweenUpdatedDate(fromDate, toDate);
+    public List<User> getUserDtoBySearchBean(AuditLogSearchBean searchBean) {
+        return userManager.getUserDtoBySearchBean(searchBean);
     }
 
     @Override

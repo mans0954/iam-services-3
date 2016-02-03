@@ -13,7 +13,7 @@ public interface AuditLogService {
 
     public void enqueue(final IdmAuditLog idmAuditLog);
     
-    public List<IdmAuditLog> findBeans(final AuditLogSearchBean searchBean, final int from, final int size);
+    public List<IdmAuditLog> findBeans(final AuditLogSearchBean searchBean, final int from, final int size, final boolean isDeep);
     public List<String> findIDs(final AuditLogSearchBean searchBean, final int from, final int size);
 
     public int count(final AuditLogSearchBean searchBean);
