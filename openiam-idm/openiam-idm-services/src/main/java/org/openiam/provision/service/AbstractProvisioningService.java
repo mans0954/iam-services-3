@@ -1858,6 +1858,15 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
         ManagedSysDto mSys = managedSysDozerConverter.convertToDTO(
                 managedSystemService.getManagedSysById(managedSysId), true);
 
+        log.info("********************MANAGED SYSTEM DTO ****************");
+        log.info("  NAME=" + mSys.getName());
+        log.info("  HOST URL=" + mSys.getHostUrl());
+        log.info(" PORT=" + mSys.getPort());
+        log.info(" BASE DN=" + mSys.getSearchScope());
+        log.info(" USER ID" + mSys.getUserId());
+        log.info(" ADD HANDLER" + mSys.getAddHandler());
+
+
         List<AttributeMapEntity> attrMapEntities = managedSystemService
                 .getAttributeMapsByManagedSysId(managedSysId);
         List<AttributeMap> attrMap = attributeMapDozerConverter.convertToDTOList(attrMapEntities, false);     //need to check if  attr.getDataType().getValue() works
