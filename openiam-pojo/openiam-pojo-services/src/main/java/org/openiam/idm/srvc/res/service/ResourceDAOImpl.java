@@ -46,7 +46,7 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
     }
 
     @Override
-	protected Criteria getExampleCriteria(SearchBean searchBean, boolean isCount) {
+	protected Criteria getExampleCriteria(SearchBean searchBean) {
 		Criteria criteria = getCriteria();
 		if(searchBean != null && searchBean instanceof ResourceSearchBean) {
 			final ResourceSearchBean resourceSearchBean = (ResourceSearchBean)searchBean;

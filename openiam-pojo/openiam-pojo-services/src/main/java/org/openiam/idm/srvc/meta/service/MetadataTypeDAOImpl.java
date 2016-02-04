@@ -31,11 +31,9 @@ public class MetadataTypeDAOImpl extends BaseDaoImpl<MetadataTypeEntity, String>
     }
 
     @Override
-    protected Criteria getExampleCriteria(final MetadataTypeEntity entity, boolean isCount) {
+    protected Criteria getExampleCriteria(final MetadataTypeEntity entity) {
         final Criteria criteria = getCriteria();
-        if (!isCount) {
-            criteria.addOrder(Order.asc("description")); //SIA 2015-08-01
-        }
+
         if (StringUtils.isNotBlank(entity.getId())) {
             criteria.add(Restrictions.eq(getPKfieldName(), entity.getId()));
         } else {

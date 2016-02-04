@@ -6,9 +6,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.am.srvc.dao.AuthProviderDao;
 import org.openiam.am.srvc.domain.AuthProviderEntity;
+import org.openiam.base.OrderConstants;
+import org.openiam.base.ws.SortParam;
 import org.openiam.dozer.converter.ManagedSysDozerConverter;
 import org.openiam.dozer.converter.ManagedSystemObjectMatchDozerConverter;
 import org.openiam.idm.searchbeans.AttributeMapSearchBean;
+import org.openiam.idm.searchbeans.ManagedSysSearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
 import org.openiam.idm.srvc.key.constant.KeyName;
@@ -97,21 +100,28 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ManagedSysEntity> getManagedSystemsByExample(
-            ManagedSysEntity example, Integer from, Integer size) {
-        return managedSysDAO.getByExample(example, from, size);
+    public List<ManagedSysEntity> getManagedSystemsByExample(ManagedSysSearchBean searchBean, Integer from, Integer size) {
+        addDefaultSortParam(searchBean);
+        return managedSysDAO.getByExample(searchBean, from, size);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Integer getManagedSystemsCountByExample(ManagedSysEntity example) {
-        return managedSysDAO.count(example);
+    public Integer getManagedSystemsCountByExample(ManagedSysSearchBean searchBean) {
+        return managedSysDAO.count(searchBean);
     }
 
     @Override
     @Transactional(readOnly = true)
     public String getManagedSysIdByResource(String id, String status) {
-        return managedSysDAO.findIdByResource(id, status);
+        ManagedSysSearchBean searchBean = getDefaultSearchBean();
+        searchBean.setResourceId(id);
+        searchBean.setStatus(status);
+        List<ManagedSysEntity> managedSysEntities = managedSysDAO.getByExample(searchBean);
+        if (CollectionUtils.isNotEmpty(managedSysEntities)) {
+            return managedSysEntities.get(0).getId();
+        }
+        return null;
     }
 
     @Override
@@ -123,19 +133,16 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     @Override
     @Transactional(readOnly = true)
     public List<ManagedSysEntity> getManagedSysByConnectorId(String connectorId) {
-        return managedSysDAO.findbyConnectorId(connectorId);
+        ManagedSysSearchBean searchBean = getDefaultSearchBean();
+        searchBean.setConnectorId(connectorId);
+        return managedSysDAO.getByExample(searchBean);
     }
-
-//    @Override
-//    @Transactional(readOnly = true)
-//    public List<ManagedSysEntity> getManagedSysByDomain(String domainId) {
-//        return managedSysDAO.findbyDomain(domainId);
-//    }
 
     @Override
     @Transactional(readOnly = true)
     public List<ManagedSysEntity> getAllManagedSys() {
-        return managedSysDAO.findAllManagedSys();
+        ManagedSysSearchBean searchBean = getDefaultSearchBean();
+        return managedSysDAO.getByExample(searchBean);
     }
 
     @Override
@@ -491,5 +498,18 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     @Transactional(readOnly = true)
     public List<ManagedSysEntity> getAllManagedSysNames() {
         return managedSysDAO.findAllManagedSysNames();
+    }
+
+    private ManagedSysSearchBean getDefaultSearchBean() {
+        ManagedSysSearchBean searchBean = new ManagedSysSearchBean();
+        addDefaultSortParam(searchBean);
+        return searchBean;
+    }
+
+    private void addDefaultSortParam(ManagedSysSearchBean searchBean) {
+        SortParam sort = new SortParam();
+        sort.setSortBy("name");
+        sort.setOrderBy(OrderConstants.ASC);
+        searchBean.addSortParam(sort);
     }
 }

@@ -18,7 +18,7 @@ public class UIThemeDAOImpl extends BaseDaoImpl<UIThemeEntity, String> implement
     }
 
     @Override
-    protected Criteria getExampleCriteria(final SearchBean searchBean, boolean isCount) {
+    protected Criteria getExampleCriteria(final SearchBean searchBean) {
         Criteria criteria = getCriteria();
         if (searchBean != null && (searchBean instanceof UIThemeSearchBean)) {
             final UIThemeSearchBean uiThemeSearchBean = (UIThemeSearchBean) searchBean;

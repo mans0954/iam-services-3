@@ -50,12 +50,16 @@ public interface BaseDao<T, PrimaryKey extends Serializable> {
 
     void evict(T t);
 
+    @Deprecated
     List<T> getByExample(T t, int startAt, int size);
 
+    @Deprecated
     List<T> getByExampleNoLocalize(T t, int startAt, int size);
 
+    @Deprecated
     List<T> getByExample(T t);
 
+    @Deprecated
     List<T> getByExampleNoLocalize(T t);
 
     List<T> getByExample(SearchBean searchBean);
@@ -68,6 +72,7 @@ public interface BaseDao<T, PrimaryKey extends Serializable> {
 
     int count(SearchBean searchBean);
 
+    @Deprecated
     int count(T t);
 
     void flush();
