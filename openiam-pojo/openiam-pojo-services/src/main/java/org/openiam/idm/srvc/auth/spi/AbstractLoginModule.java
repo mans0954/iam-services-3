@@ -288,6 +288,10 @@ public abstract class AbstractLoginModule implements AuthenticationModule {
             event.addWarning(warning);
             managedSystem = managedSysDAO.findById(sysConfiguration.getDefaultManagedSysId());
         }
+        event.setManagedSysId(managedSystem.getId());
+        if(authProvider != null) {
+        	event.setAuthProviderId(authProvider.getId());
+        }
         return managedSystem;
     }
 

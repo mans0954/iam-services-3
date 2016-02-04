@@ -42,7 +42,22 @@ public class AuditLogElasticSearchRepositoryImpl extends AbstractElasticSearchRe
 	protected CriteriaQuery getCriteria(final AuditLogSearchBean searchBean) {
 		CriteriaQuery query = null;
 		if(searchBean != null) {
-			//entity.setId(StringUtils.trimToNull(searchBean.getKey()));
+
+			if(StringUtils.isNotBlank(searchBean.getContentProviderId())) {
+				final Criteria criteria = eq("contentProviderId", searchBean.getContentProviderId());
+				query = (query != null) ? query.addCriteria(criteria) : new CriteriaQuery(criteria);
+			}
+			
+			if(StringUtils.isNotBlank(searchBean.getAuthProviderId())) {
+				final Criteria criteria = eq("authProviderId", searchBean.getAuthProviderId());
+				query = (query != null) ? query.addCriteria(criteria) : new CriteriaQuery(criteria);
+			}
+			
+			if(StringUtils.isNotBlank(searchBean.getUriPatternId())) {
+				final Criteria criteria = eq("uriPatternId", searchBean.getUriPatternId());
+				query = (query != null) ? query.addCriteria(criteria) : new CriteriaQuery(criteria);
+			}
+			
             if(StringUtils.isNotEmpty(searchBean.getAction())) {
             	final Criteria criteria = eq("action", searchBean.getAction());
             	query = (query != null) ? query.addCriteria(criteria) : new CriteriaQuery(criteria);

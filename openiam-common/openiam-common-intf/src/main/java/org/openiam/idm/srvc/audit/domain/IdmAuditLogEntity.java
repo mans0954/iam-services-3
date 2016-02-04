@@ -118,6 +118,18 @@ public class IdmAuditLogEntity extends KeyEntity {
     @Column(name="CORRELATION_ID", length=32)
     private String correlationId;
 	
+	@Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
+	@Transient
+	private String authProviderId;
+	
+	@Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
+	@Transient
+	private String contentProviderId;
+	
+	@Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
+	@Transient
+	private String uriPatternId;
+	
 	@Transient
 	private Map<String, String> attributes;
     
@@ -634,7 +646,32 @@ public class IdmAuditLogEntity extends KeyEntity {
         addAttribute(AuditAttributeName.FAILURE_REASON, value);
     }
 
+    
 	
+
+	public String getAuthProviderId() {
+		return authProviderId;
+	}
+
+	public void setAuthProviderId(String authProviderId) {
+		this.authProviderId = authProviderId;
+	}
+
+	public String getContentProviderId() {
+		return contentProviderId;
+	}
+
+	public void setContentProviderId(String contentProviderId) {
+		this.contentProviderId = contentProviderId;
+	}
+
+	public String getUriPatternId() {
+		return uriPatternId;
+	}
+
+	public void setUriPatternId(String uriPatternId) {
+		this.uriPatternId = uriPatternId;
+	}
 
 	@Override
 	public int hashCode() {
@@ -659,6 +696,9 @@ public class IdmAuditLogEntity extends KeyEntity {
 		result = prime * result
 				+ ((timestamp == null) ? 0 : timestamp.hashCode());
 		result = prime * result + ((userId == null) ? 0 : userId.hashCode());
+		result = prime * result + ((authProviderId == null) ? 0 : authProviderId.hashCode());
+		result = prime * result + ((contentProviderId == null) ? 0 : contentProviderId.hashCode());
+		result = prime * result + ((uriPatternId == null) ? 0 : uriPatternId.hashCode());
 		return result;
 	}
 
@@ -730,6 +770,24 @@ public class IdmAuditLogEntity extends KeyEntity {
 			if (other.userId != null)
 				return false;
 		} else if (!userId.equals(other.userId))
+			return false;
+		
+		if (authProviderId == null) {
+			if (other.authProviderId != null)
+				return false;
+		} else if (!authProviderId.equals(other.authProviderId))
+			return false;
+		
+		if (contentProviderId == null) {
+			if (other.contentProviderId != null)
+				return false;
+		} else if (!contentProviderId.equals(other.contentProviderId))
+			return false;
+		
+		if (uriPatternId == null) {
+			if (other.uriPatternId != null)
+				return false;
+		} else if (!uriPatternId.equals(other.uriPatternId))
 			return false;
 		return true;
 	}

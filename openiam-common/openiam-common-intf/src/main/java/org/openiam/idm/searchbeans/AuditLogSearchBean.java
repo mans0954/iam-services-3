@@ -1,6 +1,8 @@
 package org.openiam.idm.searchbeans;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -22,10 +24,16 @@ import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
     "parentId",
     "result",
     "secondaryTargetId",
-    "secondaryTargetType"
+    "secondaryTargetType",
+    "authProviderId",
+    "contentProviderId",
+    "uriPatternId"
 })
 public class AuditLogSearchBean extends AbstractSearchBean<IdmAuditLogEntity, String> implements SearchBean<IdmAuditLogEntity, String> {
 
+	private String authProviderId;
+    private String contentProviderId;
+    private String uriPatternId;
 	private String userId;
 	private Date from;
 	private Date to;
@@ -138,4 +146,29 @@ public class AuditLogSearchBean extends AbstractSearchBean<IdmAuditLogEntity, St
         this.result = result;
     }
 
+	public String getAuthProviderId() {
+		return authProviderId;
+	}
+
+	public void setAuthProviderId(String authProviderId) {
+		this.authProviderId = authProviderId;
+	}
+
+	public String getContentProviderId() {
+		return contentProviderId;
+	}
+
+	public void setContentProviderId(String contentProviderId) {
+		this.contentProviderId = contentProviderId;
+	}
+
+	public String getUriPatternId() {
+		return uriPatternId;
+	}
+
+	public void setUriPatternId(String uriPatternId) {
+		this.uriPatternId = uriPatternId;
+	}
+
+    
 }

@@ -79,12 +79,20 @@ public class AuthProviderServiceTest extends AbstractKeyNameServiceTest<AuthProv
 			instance = get((String)wsResponse.getResponseValue());
 			Assert.assertNotNull(instance);
 			Assert.assertTrue(CollectionUtils.isNotEmpty(instance.getAttributes()));
+			instance.getAttributes().forEach(e -> {
+				Assert.assertTrue(StringUtils.isNotBlank(e.getId()));
+				Assert.assertTrue(StringUtils.isNotBlank(e.getProviderId()));
+			});
 			Assert.assertTrue(MapUtils.isNotEmpty(instance.getAttributeMap()));
 			//Assert.assertTrue(MapUtils.isNotEmpty(instance.getResourceAttributeMap()));
 			
 			instance = get(instance.getId());
 			Assert.assertNotNull(instance);
 			Assert.assertTrue(CollectionUtils.isNotEmpty(instance.getAttributes()));
+			instance.getAttributes().forEach(e -> {
+				Assert.assertTrue(StringUtils.isNotBlank(e.getId()));
+				Assert.assertTrue(StringUtils.isNotBlank(e.getProviderId()));
+			});
 			Assert.assertTrue(MapUtils.isNotEmpty(instance.getAttributeMap()));
 			//Assert.assertTrue(MapUtils.isNotEmpty(instance.getResourceAttributeMap()));
 		} finally {
