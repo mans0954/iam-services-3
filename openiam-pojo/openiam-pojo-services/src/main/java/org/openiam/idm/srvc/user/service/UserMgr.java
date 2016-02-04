@@ -758,9 +758,11 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
     @Override
     @Transactional(readOnly = true)
     public List<User> findBeansDto(UserSearchBean searchBean, int from, int size) throws BasicDataServiceException {
+        log.debug("current thread: " + Thread.currentThread().getId());
         List<UserEntity> entityList = null;
         if (StringUtils.isNotBlank(searchBean.getKey())) {
             final UserEntity entity = userDao.findById(searchBean.getKey());
+            log.debug("UserDao findById: " + entity);
             if (entity != null) {
                 entityList = new ArrayList<UserEntity>(1);
                 entityList.add(entity);
