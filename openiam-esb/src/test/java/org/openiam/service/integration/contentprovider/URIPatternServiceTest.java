@@ -190,7 +190,7 @@ public class URIPatternServiceTest extends AbstractContentProviderServiceTest<UR
 					final URIPatternMethodMeta meta = new URIPatternMethodMeta();
 					meta.setName(getRandomName());
 					meta.setContentType(getRandomName());
-					meta.setCookiePath(getRandomName());
+					meta.setCookiePath("/foobar");
 					meta.setMetaType(metaTypes.get(i % metaTypes.size()));
 					
 					final Set<URIPatternMethodMetaValue> metaValueSet = new HashSet<URIPatternMethodMetaValue>();
@@ -244,6 +244,7 @@ public class URIPatternServiceTest extends AbstractContentProviderServiceTest<UR
 				final URIPatternMeta generated = new URIPatternMeta();
 				generated.setContentType(getRandomName());
 				generated.setName(getRandomName());
+				generated.setCookiePath("/foobar");
 				generated.setMetaType(metaTypes.get(idx++ % (metaTypes.size() -1 )));
 				final Set<URIPatternMetaValue> metaValueSet = new HashSet<URIPatternMetaValue>();
 				for(int j = 0; j < 10; j++) {
