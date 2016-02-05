@@ -17,6 +17,7 @@ import org.apache.commons.lang.time.StopWatch;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.authmanager.common.model.AuthorizationMenu;
+import org.openiam.authmanager.dao.MembershipDAO;
 import org.openiam.authmanager.dao.ResourcePropDAO;
 import org.openiam.authmanager.model.MenuEntitlementType;
 import org.openiam.authmanager.model.ResourceEntitlementToken;
@@ -38,6 +39,7 @@ import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.service.RoleDAO;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDAO;
+import org.openiam.membership.MembershipDTO;
 import org.openiam.thread.Sweepable;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
@@ -92,6 +94,9 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
 	
 	@Autowired
 	private LanguageMappingDAO languageMappingDAO;
+	
+	@Autowired
+	private MembershipDAO membershipDAO;
 	
 	@Autowired
 	private AuthorizationManagerAdminService authManagerAdminService;
@@ -279,23 +284,20 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
 	
 	private Map<String, AuthorizationMenu> createMenuTrees(final Map<String, AuthorizationMenu> menuMap) {
 		
-		final List<ResourceEntity> resources = resourceDAOHibernate.findAll();
+		final List<MembershipDTO> resource2ResourceMap = membershipDAO.getResource2ResourceMembership(new Date());
+		
 		
 		final Map<String, String> childResource2ParentResourceMap = new HashMap<String, String>();
 		final Map<String, Set<String>> parentResource2ChildResourceMap = new HashMap<String, Set<String>>();
-		resources.forEach(resource -> {
-			if(CollectionUtils.isNotEmpty(resource.getChildResources())) {
-				resource.getChildResources().forEach(xref -> {
-					final String resourceId = xref.getEntity().getId();
-					final String memberResourceId = xref.getMemberEntity().getId();
-				
-					if(!parentResource2ChildResourceMap.containsKey(resourceId)) {
-						parentResource2ChildResourceMap.put(resourceId, new HashSet<String>());
-					}
-					childResource2ParentResourceMap.put(memberResourceId, resourceId);
-					parentResource2ChildResourceMap.get(resourceId).add(memberResourceId);
-				});
+		resource2ResourceMap.forEach(resource -> {
+			final String resourceId = resource.getEntityId();
+			final String memberResourceId = resource.getMemberEntityId();
+		
+			if(!parentResource2ChildResourceMap.containsKey(resourceId)) {
+				parentResource2ChildResourceMap.put(resourceId, new HashSet<String>());
 			}
+			childResource2ParentResourceMap.put(memberResourceId, resourceId);
+			parentResource2ChildResourceMap.get(resourceId).add(memberResourceId);
 		});
 		
 		/* create a HashMap structure that mimicks a tree */
