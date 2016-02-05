@@ -113,7 +113,7 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
 
     @Override
     public ReconciliationResponse startReconciliation(ReconciliationConfig config, IdmAuditLogEntity idmAuditLog) throws IOException, ScriptEngineException {
-        log.debug("Reconciliation started for configId=" + config.getReconConfigId() + " - resource="
+        log.debug("Reconciliation started for configId=" + config.getId() + " - resource="
                 + config.getResourceId());
 
         Resource res = resourceDataService.getResource(config.getResourceId(), null);
@@ -167,7 +167,7 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
         }
 
 		// checking for STOP status
-		if (processReconciliationStop(config.getReconConfigId(), idmAuditLog)) {
+		if (processReconciliationStop(config.getId(), idmAuditLog)) {
 			return new ReconciliationResponse(ResponseStatus.SUCCESS);
 		}
 
@@ -186,7 +186,7 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
                 }
                 // checking for STOPING status for every 10 users
                 if (counter % BATCH_STOPPING_STEP == 0) {
-					if (processReconciliationStop(config.getReconConfigId(), idmAuditLog)) {
+					if (processReconciliationStop(config.getId(), idmAuditLog)) {
 						return new ReconciliationResponse(ResponseStatus.SUCCESS);
 					}
                 }
@@ -215,7 +215,7 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
         idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION,
                 "Starting processing from target system: " + mSys.getName() + " to Repository");
 
-		if (processReconciliationStop(config.getReconConfigId(), idmAuditLog)) {
+		if (processReconciliationStop(config.getId(), idmAuditLog)) {
 			return new ReconciliationResponse(ResponseStatus.SUCCESS);
 		}
 
@@ -226,7 +226,7 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
         idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION,
                 "Reconciliation from target system: " + mSys.getName() + " to Repository is complete.");
 
-		ReconciliationConfig reconConfig = reconConfigService.getConfigById(config.getReconConfigId());
+		ReconciliationConfig reconConfig = reconConfigService.getConfigById(config.getId());
 		reconConfig.setLastExecTime(new Date());
 		reconConfig.setExecStatus(ReconExecStatusOptions.FINISHED);
 		reconConfigService.updateConfig(reconConfig);
@@ -303,7 +303,7 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
 
                     // checking for STOPPING status every 10 users
                     if (counter % BATCH_STOPPING_STEP == 0) {
-						if (processReconciliationStop(config.getReconConfigId(), idmAuditLog)) {
+						if (processReconciliationStop(config.getId(), idmAuditLog)) {
 							return new ReconciliationResponse(ResponseStatus.SUCCESS);
 						}
                     }

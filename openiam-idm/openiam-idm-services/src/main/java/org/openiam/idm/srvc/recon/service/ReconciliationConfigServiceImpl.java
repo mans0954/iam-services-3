@@ -132,10 +132,10 @@ public class ReconciliationConfigServiceImpl implements ReconciliationConfigServ
         if (!CollectionUtils.isEmpty(config.getSituationSet())) {
             sitSet = new HashSet<>(config.getSituationSet());
         }
-        config.setReconConfigId(null);
+        config.setId(null);
         ReconciliationConfig result = reconConfigDozerMapper.convertToDTO(
                 reconConfigDao.add(reconConfigDozerMapper.convertToEntity(config, false)), false);
-        saveSituationSet(sitSet, result.getReconConfigId());
+        saveSituationSet(sitSet, result.getId());
         result.setSituationSet(sitSet);
         return result;
     }
@@ -147,10 +147,10 @@ public class ReconciliationConfigServiceImpl implements ReconciliationConfigServ
                 if (StringUtils.isEmpty(s.getReconConfigId())) {
                     s.setReconConfigId(configId);
                 }
-                if (StringUtils.isEmpty(s.getReconSituationId())) {
-                    s.setReconSituationId(null);
-                    s.setReconSituationId(reconSituationDAO.add(reconSituationDozerMapper.convertToEntity(s, false))
-                            .getReconSituationId());
+                if (StringUtils.isEmpty(s.getId())) {
+                    s.setId(null);
+                    s.setId(reconSituationDAO.add(reconSituationDozerMapper.convertToEntity(s, false))
+                            .getId());
                 } else {
                     reconSituationDAO.update(reconSituationDozerMapper.convertToEntity(s, false));
                 }
@@ -168,14 +168,14 @@ public class ReconciliationConfigServiceImpl implements ReconciliationConfigServ
 
         for (ReconciliationSituation s : config.getSituationSet()) {
             if (StringUtils.isEmpty(s.getReconConfigId())) {
-                s.setReconConfigId(configEntity.getReconConfigId());
+                s.setReconConfigId(configEntity.getId());
             }
             ReconciliationSituationEntity situationEntity;
-            if (StringUtils.isEmpty(s.getReconSituationId())) {
+            if (StringUtils.isEmpty(s.getId())) {
                 situationEntity = reconSituationDozerMapper.convertToEntity(s, false);
                 reconSituationDAO.save(situationEntity);
             } else {
-                situationEntity = reconSituationDAO.findById(s.getReconSituationId());
+                situationEntity = reconSituationDAO.findById(s.getId());
                 situationEntity.setScript(s.getScript());
                 situationEntity.setSituation(s.getSituation());
                 situationEntity.setSituationResp(s.getSituationResp());

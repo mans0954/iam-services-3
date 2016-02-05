@@ -66,7 +66,7 @@ public class ReconciliationConfigDAOImpl extends
 
     @Override
     protected String getPKfieldName() {
-        return "reconConfigId";
+        return "id";
     }
 
 }

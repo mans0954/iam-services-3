@@ -53,7 +53,7 @@ public class AttributeMapBean {
                 this.defaultAttributePolicyId = null;
             } else if (attributeMap.getReconResAttribute().getDefaultAttributePolicy() != null) {
                 this.policyType = "DEFAULT_IDM";
-                this.defaultAttributePolicyId = attributeMap.getReconResAttribute().getDefaultAttributePolicy().getDefaultAttributeMapId();
+                this.defaultAttributePolicyId = attributeMap.getReconResAttribute().getDefaultAttributePolicy().getId();
                 this.attributePolicyId = null;
             }
         }

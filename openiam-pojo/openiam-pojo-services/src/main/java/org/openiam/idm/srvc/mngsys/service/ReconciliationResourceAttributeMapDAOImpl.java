@@ -17,7 +17,7 @@ public class ReconciliationResourceAttributeMapDAOImpl extends
 
     @Override
     protected String getPKfieldName() {
-        return "reconciliationResourceAttributeMapId";
+        return "id";
     }
 
 }

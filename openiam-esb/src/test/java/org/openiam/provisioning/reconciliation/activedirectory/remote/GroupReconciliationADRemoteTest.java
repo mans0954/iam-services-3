@@ -200,9 +200,9 @@ public class GroupReconciliationADRemoteTest extends AbstractTestNGSpringContext
             Assert.assertTrue(reconciliationConfigResponse.isSuccess());
             Assert.assertNotNull(reconciliationConfigResponse.getConfig());
             reconciliationConfig = reconciliationConfigResponse.getConfig();
-            deleteReconConfigIdsList.add(reconciliationConfig.getReconConfigId());
+            deleteReconConfigIdsList.add(reconciliationConfig.getId());
 
-            reconciliationConfigResponse = reconciliationWebService.getConfigById(reconciliationConfig.getReconConfigId());
+            reconciliationConfigResponse = reconciliationWebService.getConfigById(reconciliationConfig.getId());
             Assert.assertTrue(reconciliationConfigResponse.isSuccess());
             ReconciliationConfig reconciliationConfig1 = reconciliationConfigResponse.getConfig();
             Assert.assertNotNull(reconciliationConfig1);

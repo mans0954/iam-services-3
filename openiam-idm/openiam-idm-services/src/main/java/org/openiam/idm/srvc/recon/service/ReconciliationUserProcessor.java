@@ -167,14 +167,14 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
 
         if (connector.getServiceUrl().contains("CSV")) {
             idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "CSV Processing started for configId="
-                    + config.getReconConfigId() + " - resource=" + config.getResourceId());
+                    + config.getId() + " - resource=" + config.getResourceId());
 
             // reconciliation into TargetSystem directional
             log.debug("Start recon");
             connectorAdapter.reconcileResource(mSys, config);
             log.debug("end recon");
             idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "CSV Processing finished for configId="
-                    + config.getReconConfigId() + " - resource=" + config.getResourceId());
+                    + config.getId() + " - resource=" + config.getResourceId());
             return new ReconciliationResponse(ResponseStatus.SUCCESS);
         }
         ReconciliationResultBean resultBean = new ReconciliationResultBean();
@@ -208,7 +208,7 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
             searchBean = new UserSearchBean();
         }
         // checking for STOP status
-		if (processReconciliationStop(config.getReconConfigId(), idmAuditLog)) {
+		if (processReconciliationStop(config.getId(), idmAuditLog)) {
             return new ReconciliationResponse(ResponseStatus.SUCCESS);
         }
 
@@ -245,7 +245,7 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
             if (identity.getUserId() != null) {
                 // checking for STOPING status for every 10 users
                 if (counter % BATCH_STOPPING_STEP == 0) {
-					if (processReconciliationStop(config.getReconConfigId(), idmAuditLog)) {
+					if (processReconciliationStop(config.getId(), idmAuditLog)) {
                         return new ReconciliationResponse(ResponseStatus.SUCCESS);
                     }
                 }
@@ -274,7 +274,7 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
                 "Starting processing from target system: " + mSys.getName() + " to Repository");
         // auditLogService.enqueue(auditBuilder);
         // checking for STOPPING status
-		if (processReconciliationStop(config.getReconConfigId(), idmAuditLog)) {
+		if (processReconciliationStop(config.getId(), idmAuditLog)) {
             return new ReconciliationResponse(ResponseStatus.SUCCESS);
         }
         processingTargetToIDM(config, mSys, situations, connector, keyField, baseDnField,
@@ -286,7 +286,7 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
 
         this.saveReconciliationResults(config.getResourceId(), resultBean);
 
-		ReconciliationConfig reconConfig = reconConfigService.getConfigById(config.getReconConfigId());
+		ReconciliationConfig reconConfig = reconConfigService.getConfigById(config.getId());
 		reconConfig.setLastExecTime(new Date());
         reconConfig.setExecStatus(ReconExecStatusOptions.FINISHED);
 		reconConfigService.updateConfig(reconConfig);
@@ -368,7 +368,7 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
 
                     // checking for STOPPING status every 10 users
                     if (counter % BATCH_STOPPING_STEP == 0) {
-						if (processReconciliationStop(config.getReconConfigId(), idmAuditLog)) {
+						if (processReconciliationStop(config.getId(), idmAuditLog)) {
 							return new ReconciliationResponse(ResponseStatus.SUCCESS);
                         }
                     }

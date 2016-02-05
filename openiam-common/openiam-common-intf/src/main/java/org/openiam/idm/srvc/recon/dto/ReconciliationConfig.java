@@ -7,24 +7,24 @@ import javax.persistence.Transient;
 import javax.xml.bind.annotation.*;
 
 import org.apache.commons.lang.StringUtils;
+import org.openiam.base.KeyNameDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.recon.domain.ReconciliationConfigEntity;
 // Generated May 29, 2010 8:20:09 PM by Hibernate Tools 3.2.2.GA
 
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "ReconciliationConfig", propOrder = { "reconConfigId",
+@XmlType(name = "ReconciliationConfig", propOrder = {
         "resourceId", "managedSysId", "frequency", "status", "situationSet", "reportPath",
         "separator", "endOfLine", "notificationEmailAddress","manualReconciliationFlag",
         "targetSystemMatchScript","targetSystemSearchFilter","matchScript","searchFilter","updatedSince",
         "customIdentityMatchScript","scriptHandler","matchFieldName",
         "customMatchAttr","matchSrcFieldName","lastExecTime","execStatus","requesterId",
-        "customProcessorScript","reconType", "name","preProcessor","postProcessor"})
+        "customProcessorScript","reconType","preProcessor","postProcessor"})
 
 @DozerDTOCorrespondence(ReconciliationConfigEntity.class)
-public class ReconciliationConfig implements MatchConfig, java.io.Serializable {
+public class ReconciliationConfig extends KeyNameDTO implements MatchConfig {
 
     private static final long serialVersionUID = 431603790346613674L;
-    private String reconConfigId;
     private String resourceId;
     private String managedSysId;
     private String frequency;
@@ -73,7 +73,6 @@ public class ReconciliationConfig implements MatchConfig, java.io.Serializable {
     private String customProcessorScript;
 
     private String reconType;
-    private String name;
 
     public String getPreProcessor() {
         return preProcessor;
@@ -89,14 +88,6 @@ public class ReconciliationConfig implements MatchConfig, java.io.Serializable {
 
     public void setPostProcessor(String postProcessor) {
         this.postProcessor = postProcessor;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public boolean getUseCustomScript() {
@@ -132,31 +123,6 @@ public class ReconciliationConfig implements MatchConfig, java.io.Serializable {
     }
 
     public ReconciliationConfig() {
-    }
-
-    public ReconciliationConfig(String reconConfigId) {
-        this.reconConfigId = reconConfigId;
-    }
-
-    public ReconciliationConfig(String name,
-                                String reconConfigId, String resourceId, String managedSysId,
-                                String mode, String frequency, String status,
-                                Integer attributeLevelCheck, Integer updateChangedAttribute,
-                                String reconType) {
-        this.reconConfigId = reconConfigId;
-        this.resourceId = resourceId;
-        this.managedSysId = managedSysId;
-        this.frequency = frequency;
-        this.status = status;
-        this.name = name;
-    }
-
-    public String getReconConfigId() {
-        return this.reconConfigId;
-    }
-
-    public void setReconConfigId(String reconConfigId) {
-        this.reconConfigId = reconConfigId;
     }
 
     public String getResourceId() {
@@ -342,78 +308,241 @@ public class ReconciliationConfig implements MatchConfig, java.io.Serializable {
         this.reconType = reconType;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime
+				* result
+				+ ((customIdentityMatchScript == null) ? 0
+						: customIdentityMatchScript.hashCode());
+		result = prime * result
+				+ ((customMatchAttr == null) ? 0 : customMatchAttr.hashCode());
+		result = prime
+				* result
+				+ ((customProcessorScript == null) ? 0 : customProcessorScript
+						.hashCode());
+		result = prime * result
+				+ ((endOfLine == null) ? 0 : endOfLine.hashCode());
+		result = prime * result
+				+ ((execStatus == null) ? 0 : execStatus.hashCode());
+		result = prime * result
+				+ ((frequency == null) ? 0 : frequency.hashCode());
+		result = prime * result
+				+ ((lastExecTime == null) ? 0 : lastExecTime.hashCode());
+		result = prime * result
+				+ ((managedSysId == null) ? 0 : managedSysId.hashCode());
+		result = prime * result + (manualReconciliationFlag ? 1231 : 1237);
+		result = prime * result
+				+ ((matchFieldName == null) ? 0 : matchFieldName.hashCode());
+		result = prime * result
+				+ ((matchScript == null) ? 0 : matchScript.hashCode());
+		result = prime
+				* result
+				+ ((matchSrcFieldName == null) ? 0 : matchSrcFieldName
+						.hashCode());
+		result = prime
+				* result
+				+ ((notificationEmailAddress == null) ? 0
+						: notificationEmailAddress.hashCode());
+		result = prime * result
+				+ ((postProcessor == null) ? 0 : postProcessor.hashCode());
+		result = prime * result
+				+ ((preProcessor == null) ? 0 : preProcessor.hashCode());
+		result = prime * result
+				+ ((reconType == null) ? 0 : reconType.hashCode());
+		result = prime * result
+				+ ((reportPath == null) ? 0 : reportPath.hashCode());
+		result = prime * result
+				+ ((requesterId == null) ? 0 : requesterId.hashCode());
+		result = prime * result
+				+ ((resourceId == null) ? 0 : resourceId.hashCode());
+		result = prime * result
+				+ ((scriptHandler == null) ? 0 : scriptHandler.hashCode());
+		result = prime * result
+				+ ((searchFilter == null) ? 0 : searchFilter.hashCode());
+		result = prime * result
+				+ ((separator == null) ? 0 : separator.hashCode());
+		result = prime * result + ((status == null) ? 0 : status.hashCode());
+		result = prime
+				* result
+				+ ((targetSystemMatchScript == null) ? 0
+						: targetSystemMatchScript.hashCode());
+		result = prime
+				* result
+				+ ((targetSystemSearchFilter == null) ? 0
+						: targetSystemSearchFilter.hashCode());
+		result = prime * result
+				+ ((updatedSince == null) ? 0 : updatedSince.hashCode());
+		result = prime * result + (useCustomScript ? 1231 : 1237);
+		return result;
+	}
 
-        ReconciliationConfig that = (ReconciliationConfig) o;
-        if (name != null ? !name.equals(that.name) : that.name != null)
-            return false;
-        if (customIdentityMatchScript != null ? !customIdentityMatchScript.equals(that.customIdentityMatchScript) : that.customIdentityMatchScript != null)
-            return false;
-        if (customMatchAttr != null ? !customMatchAttr.equals(that.customMatchAttr) : that.customMatchAttr != null)
-            return false;
-        if (customProcessorScript != null ? !customProcessorScript.equals(that.customProcessorScript) : that.customProcessorScript != null)
-            return false;
-        if (managedSysId != null ? !managedSysId.equals(that.managedSysId) : that.managedSysId != null) return false;
-        if (matchFieldName != null ? !matchFieldName.equals(that.matchFieldName) : that.matchFieldName != null)
-            return false;
-        if (matchScript != null ? !matchScript.equals(that.matchScript) : that.matchScript != null) return false;
-        if (matchSrcFieldName != null ? !matchSrcFieldName.equals(that.matchSrcFieldName) : that.matchSrcFieldName != null)
-            return false;
-        if (reconConfigId != null ? !reconConfigId.equals(that.reconConfigId) : that.reconConfigId != null)
-            return false;
-        if (reconType != null ? !reconType.equals(that.reconType) : that.reconType != null) return false;
-        if (resourceId != null ? !resourceId.equals(that.resourceId) : that.resourceId != null) return false;
-        if (searchFilter != null ? !searchFilter.equals(that.searchFilter) : that.searchFilter != null) return false;
-        if (targetSystemMatchScript != null ? !targetSystemMatchScript.equals(that.targetSystemMatchScript) : that.targetSystemMatchScript != null)
-            return false;
-        return !(targetSystemSearchFilter != null ? !targetSystemSearchFilter.equals(that.targetSystemSearchFilter) : that.targetSystemSearchFilter != null);
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ReconciliationConfig other = (ReconciliationConfig) obj;
+		if (customIdentityMatchScript == null) {
+			if (other.customIdentityMatchScript != null)
+				return false;
+		} else if (!customIdentityMatchScript
+				.equals(other.customIdentityMatchScript))
+			return false;
+		if (customMatchAttr == null) {
+			if (other.customMatchAttr != null)
+				return false;
+		} else if (!customMatchAttr.equals(other.customMatchAttr))
+			return false;
+		if (customProcessorScript == null) {
+			if (other.customProcessorScript != null)
+				return false;
+		} else if (!customProcessorScript.equals(other.customProcessorScript))
+			return false;
+		if (endOfLine == null) {
+			if (other.endOfLine != null)
+				return false;
+		} else if (!endOfLine.equals(other.endOfLine))
+			return false;
+		if (execStatus != other.execStatus)
+			return false;
+		if (frequency == null) {
+			if (other.frequency != null)
+				return false;
+		} else if (!frequency.equals(other.frequency))
+			return false;
+		if (lastExecTime == null) {
+			if (other.lastExecTime != null)
+				return false;
+		} else if (!lastExecTime.equals(other.lastExecTime))
+			return false;
+		if (managedSysId == null) {
+			if (other.managedSysId != null)
+				return false;
+		} else if (!managedSysId.equals(other.managedSysId))
+			return false;
+		if (manualReconciliationFlag != other.manualReconciliationFlag)
+			return false;
+		if (matchFieldName == null) {
+			if (other.matchFieldName != null)
+				return false;
+		} else if (!matchFieldName.equals(other.matchFieldName))
+			return false;
+		if (matchScript == null) {
+			if (other.matchScript != null)
+				return false;
+		} else if (!matchScript.equals(other.matchScript))
+			return false;
+		if (matchSrcFieldName == null) {
+			if (other.matchSrcFieldName != null)
+				return false;
+		} else if (!matchSrcFieldName.equals(other.matchSrcFieldName))
+			return false;
+		if (notificationEmailAddress == null) {
+			if (other.notificationEmailAddress != null)
+				return false;
+		} else if (!notificationEmailAddress
+				.equals(other.notificationEmailAddress))
+			return false;
+		if (postProcessor == null) {
+			if (other.postProcessor != null)
+				return false;
+		} else if (!postProcessor.equals(other.postProcessor))
+			return false;
+		if (preProcessor == null) {
+			if (other.preProcessor != null)
+				return false;
+		} else if (!preProcessor.equals(other.preProcessor))
+			return false;
+		if (reconType == null) {
+			if (other.reconType != null)
+				return false;
+		} else if (!reconType.equals(other.reconType))
+			return false;
+		if (reportPath == null) {
+			if (other.reportPath != null)
+				return false;
+		} else if (!reportPath.equals(other.reportPath))
+			return false;
+		if (requesterId == null) {
+			if (other.requesterId != null)
+				return false;
+		} else if (!requesterId.equals(other.requesterId))
+			return false;
+		if (resourceId == null) {
+			if (other.resourceId != null)
+				return false;
+		} else if (!resourceId.equals(other.resourceId))
+			return false;
+		if (scriptHandler == null) {
+			if (other.scriptHandler != null)
+				return false;
+		} else if (!scriptHandler.equals(other.scriptHandler))
+			return false;
+		if (searchFilter == null) {
+			if (other.searchFilter != null)
+				return false;
+		} else if (!searchFilter.equals(other.searchFilter))
+			return false;
+		if (separator == null) {
+			if (other.separator != null)
+				return false;
+		} else if (!separator.equals(other.separator))
+			return false;
+		if (status == null) {
+			if (other.status != null)
+				return false;
+		} else if (!status.equals(other.status))
+			return false;
+		if (targetSystemMatchScript == null) {
+			if (other.targetSystemMatchScript != null)
+				return false;
+		} else if (!targetSystemMatchScript
+				.equals(other.targetSystemMatchScript))
+			return false;
+		if (targetSystemSearchFilter == null) {
+			if (other.targetSystemSearchFilter != null)
+				return false;
+		} else if (!targetSystemSearchFilter
+				.equals(other.targetSystemSearchFilter))
+			return false;
+		if (updatedSince == null) {
+			if (other.updatedSince != null)
+				return false;
+		} else if (!updatedSince.equals(other.updatedSince))
+			return false;
+		if (useCustomScript != other.useCustomScript)
+			return false;
+		return true;
+	}
 
-    }
+	@Override
+	public String toString() {
+		return "ReconciliationConfig [resourceId=" + resourceId
+				+ ", managedSysId=" + managedSysId + ", frequency=" + frequency
+				+ ", status=" + status + ", separator=" + separator
+				+ ", endOfLine=" + endOfLine + ", notificationEmailAddress="
+				+ notificationEmailAddress + ", targetSystemMatchScript="
+				+ targetSystemMatchScript + ", targetSystemSearchFilter="
+				+ targetSystemSearchFilter + ", matchScript=" + matchScript
+				+ ", searchFilter=" + searchFilter + ", updatedSince="
+				+ updatedSince + ", customIdentityMatchScript="
+				+ customIdentityMatchScript + ", manualReconciliationFlag="
+				+ manualReconciliationFlag + ", matchFieldName="
+				+ matchFieldName + ", customMatchAttr=" + customMatchAttr
+				+ ", matchSrcFieldName=" + matchSrcFieldName
+				+ ", scriptHandler=" + scriptHandler + ", lastExecTime="
+				+ lastExecTime + ", execStatus=" + execStatus
+				+ ", requesterId=" + requesterId + ", preProcessor="
+				+ preProcessor + ", postProcessor=" + postProcessor
+				+ ", useCustomScript=" + useCustomScript + ", reportPath="
+				+ reportPath + ", customProcessorScript="
+				+ customProcessorScript + ", reconType=" + reconType + "]";
+	}
 
-    @Override
-    public int hashCode() {
-        int result = reconConfigId != null ? reconConfigId.hashCode() : 0;
-        result = 31 * result + (name != null ? name.hashCode() : 0);
-        result = 31 * result + (resourceId != null ? resourceId.hashCode() : 0);
-        result = 31 * result + (managedSysId != null ? managedSysId.hashCode() : 0);
-        result = 31 * result + (targetSystemMatchScript != null ? targetSystemMatchScript.hashCode() : 0);
-        result = 31 * result + (targetSystemSearchFilter != null ? targetSystemSearchFilter.hashCode() : 0);
-        result = 31 * result + (matchScript != null ? matchScript.hashCode() : 0);
-        result = 31 * result + (searchFilter != null ? searchFilter.hashCode() : 0);
-        result = 31 * result + (customIdentityMatchScript != null ? customIdentityMatchScript.hashCode() : 0);
-        result = 31 * result + (matchFieldName != null ? matchFieldName.hashCode() : 0);
-        result = 31 * result + (customMatchAttr != null ? customMatchAttr.hashCode() : 0);
-        result = 31 * result + (matchSrcFieldName != null ? matchSrcFieldName.hashCode() : 0);
-        result = 31 * result + (customProcessorScript != null ? customProcessorScript.hashCode() : 0);
-        result = 31 * result + (reconType != null ? reconType.hashCode() : 0);
-        return result;
-    }
-
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder();
-        sb.append("ReconciliationConfig");
-        sb.append("{reconType='").append(reconType).append('\'');
-        sb.append(", name='").append(name).append('\'');
-        sb.append(", customProcessorScript='").append(customProcessorScript).append('\'');
-        sb.append(", reconConfigId='").append(reconConfigId).append('\'');
-        sb.append(", resourceId='").append(resourceId).append('\'');
-        sb.append(", managedSysId='").append(managedSysId).append('\'');
-        sb.append(", targetSystemMatchScript='").append(targetSystemMatchScript).append('\'');
-        sb.append(", targetSystemSearchFilter='").append(targetSystemSearchFilter).append('\'');
-        sb.append(", matchScript='").append(matchScript).append('\'');
-        sb.append(", searchFilter='").append(searchFilter).append('\'');
-        sb.append(", updatedSince=").append(updatedSince);
-        sb.append(", customIdentityMatchScript='").append(customIdentityMatchScript).append('\'');
-        sb.append(", matchFieldName='").append(matchFieldName).append('\'');
-        sb.append(", customMatchAttr='").append(customMatchAttr).append('\'');
-        sb.append(", matchSrcFieldName='").append(matchSrcFieldName).append('\'');
-        sb.append(", lastExecTime=").append(lastExecTime);
-        sb.append(", execStatus=").append(execStatus);
-        sb.append('}');
-        return sb.toString();
-    }
+    
 }

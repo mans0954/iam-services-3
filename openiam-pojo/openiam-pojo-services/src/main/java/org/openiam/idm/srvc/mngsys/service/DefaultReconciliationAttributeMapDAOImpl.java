@@ -22,7 +22,7 @@ public class DefaultReconciliationAttributeMapDAOImpl extends
 
     @Override
     protected String getPKfieldName() {
-        return "defaultAttributeMapId";
+        return "id";
     }
 
     @Override

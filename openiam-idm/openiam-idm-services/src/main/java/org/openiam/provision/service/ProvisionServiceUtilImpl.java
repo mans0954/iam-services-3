@@ -45,8 +45,7 @@ public class ProvisionServiceUtilImpl implements ProvisionServiceUtil {
                 objectMap.put(AmAttributes.Login, tmpMap.get("lg"));
             if (tmpMap.get("user") != null)
                 objectMap.put(AmAttributes.User, tmpMap.get("user"));
-            output = authAttributeProcessor.process(attr.getReconResAttribute().getDefaultAttributePolicy()
-                    .getDefaultAttributeMapId(), objectMap);
+            output = authAttributeProcessor.process(attr.getReconResAttribute().getDefaultAttributePolicy().getId(), objectMap);
         }
         return output;
     }
@@ -70,8 +69,7 @@ public class ProvisionServiceUtilImpl implements ProvisionServiceUtil {
                 ProvisionUser pUser = (ProvisionUser) bindingMap.get("pUser");
                 Attribute attribute = (Attribute) bindingMap.get("attribute");
                 if (attribute.getValue() != null)
-                    authAttributeProcessor.process(attr.getReconResAttribute().getDefaultAttributePolicy()
-                            .getDefaultAttributeMapId(), pUser, attribute.getValue());
+                    authAttributeProcessor.process(attr.getReconResAttribute().getDefaultAttributePolicy().getId(), pUser, attribute.getValue());
             }
         }
     }

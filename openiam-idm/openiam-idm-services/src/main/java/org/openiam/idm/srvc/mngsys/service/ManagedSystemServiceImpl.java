@@ -352,10 +352,10 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
         } else if (entity.getDefaultAttributePolicy() != null) {
             entity.setDefaultAttributePolicy(defaultReconciliationAttributeMapDAO
                     .findById(entity.getDefaultAttributePolicy()
-                            .getDefaultAttributeMapId()));
+                            .getId()));
             entity.setAttributePolicy(null);
         }
-        if (entity.getReconciliationResourceAttributeMapId() == null) {
+        if (entity.getId() == null) {
             return reconciliationResourceAttributeMapDAO.add(entity);
         } else {
             reconciliationResourceAttributeMapDAO.update(entity);
@@ -386,7 +386,7 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
                 PolicyEntity policy = policyDAO.findById(rram.getAttributePolicy().getId());
                 rram.setAttributePolicy(policy);
             } else if (rram.getDefaultAttributePolicy() != null) {
-                DefaultReconciliationAttributeMapEntity drame = defaultReconciliationAttributeMapDAO.findById(rram.getDefaultAttributePolicy().getDefaultAttributeMapId());
+                DefaultReconciliationAttributeMapEntity drame = defaultReconciliationAttributeMapDAO.findById(rram.getDefaultAttributePolicy().getId());
                 rram.setDefaultAttributePolicy(drame);
             } else {
                 throw new BasicDataServiceException(ResponseCode.VALUE_REQUIRED);
@@ -553,7 +553,7 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
                             }
                             if ("DEFAULT_IDM".equals(attrBean.getPolicyType())) {
                                 if (reconAttr.getDefaultAttributePolicy() == null ||
-                                        !StringUtils.equals(reconAttr.getDefaultAttributePolicy().getDefaultAttributeMapId(),attrBean.getDefaultAttributePolicyId())) {
+                                        !StringUtils.equals(reconAttr.getDefaultAttributePolicy().getId(),attrBean.getDefaultAttributePolicyId())) {
                                     DefaultReconciliationAttributeMapEntity defRecon = defaultReconciliationAttributeMapDAO.findById(attrBean.getDefaultAttributePolicyId());
                                     reconAttr.setDefaultAttributePolicy(defRecon);
                                     reconAttr.setAttributePolicy(null);
