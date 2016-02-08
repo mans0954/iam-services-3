@@ -1284,15 +1284,6 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
         }
         if (pUser.getSecondaryStatus() != null && !pUser.getSecondaryStatus().equals(userEntity.getSecondaryStatus())) {
             // Audit Log -----------------------------------------------------------------------------------
-            if(pUser.getSecondaryStatus() == null && userEntity.getSecondaryStatus() == UserStatusEnum.DISABLED && saveRehireChange.equalsIgnoreCase("true")) {
-                IdmAuditLog auditLog = new IdmAuditLog();
-                auditLog.setUserId(parentLog.getUserId());
-                auditLog.setPrincipal(parentLog.getPrincipal());
-                auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
-                auditLog.setAction(AuditAction.USER_REHIRED.value());
-                auditLog.setAuditDescription(pUser.getDisplayName()+" User rehired");
-                parentLog.addChild(auditLog);
-            }
             IdmAuditLog auditLog = new IdmAuditLog();
             auditLog.setRequestorUserId(pUser.getRequestorUserId());
             auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
@@ -1373,6 +1364,15 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             // ---------------------------------------------------------------------------------------------
         }
 
+        if((( pUser.getSecondaryStatus() == null && userEntity.getSecondaryStatus() == UserStatusEnum.DISABLED) || (pUser.getStatus() == UserStatusEnum.ACTIVE && userEntity.getStatus() == UserStatusEnum.INACTIVE )) && saveRehireChange.equalsIgnoreCase("true")) {
+            IdmAuditLog auditLog = new IdmAuditLog();
+            auditLog.setUserId(parentLog.getUserId());
+            auditLog.setPrincipal(parentLog.getPrincipal());
+            auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
+            auditLog.setAction(AuditAction.USER_REHIRED.value());
+            auditLog.setAuditDescription(pUser.getDisplayName()+" User rehired");
+            parentLog.addChild(auditLog);
+        }
         userEntity.updateUser(userDozerConverter.convertToEntity(pUser.getUser(), false));
         userEntity.setSecondaryStatus(pUser.getSecondaryStatus());
         userEntity.setType(type);
