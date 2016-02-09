@@ -1623,7 +1623,11 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
         } else {
             userIds = getUserIds(searchBean);
         }
-        userIds.removeAll(userDao.getAllAttachedSupSubIds(searchBean.getTargetUserIds()));
+        if(CollectionUtils.isNotEmpty(userIds)) {
+        	/* the userIds list at this point is immutable, so any modifications will throw an exception */
+        	userIds = new ArrayList<String>(userIds);
+        	userIds.removeAll(userDao.getAllAttachedSupSubIds(searchBean.getTargetUserIds()));
+        }
         return userDao.findByIds(userIds);
     }
 
