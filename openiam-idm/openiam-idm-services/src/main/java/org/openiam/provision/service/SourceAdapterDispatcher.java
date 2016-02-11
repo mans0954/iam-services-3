@@ -165,7 +165,6 @@ public class SourceAdapterDispatcher implements Sweepable {
                                 public Boolean doInTransaction(TransactionStatus status) {
                                     process(request);
                                     /*
-                                     ** Whoever wrote this code has some serious mental issues **
                                     try {
                                         // to give other threads chance to be executed
                                         Thread.sleep(100);
