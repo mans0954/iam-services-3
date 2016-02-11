@@ -3104,6 +3104,14 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
             if (operation) {
                 idmAuditLog.setAction(AuditAction.PROVISIONING_DISABLE.value());
                 usr.setSecondaryStatus(UserStatusEnum.DISABLED);
+                if(saveRehireChange.equalsIgnoreCase("true")) {
+                    IdmAuditLog childAuditLog = new IdmAuditLog();
+                    childAuditLog.setUserId(usr.getId());
+                    childAuditLog.setTargetUser(usr.getId(), org.mule.util.StringUtils.EMPTY);
+                    childAuditLog.setAction(AuditAction.USER_LEAVER.value());
+                    childAuditLog.setAuditDescription(usr.getDisplayName() + " User disabled");
+                    idmAuditLog.addChild(childAuditLog);
+                }
             } else {
                 // enable an account that was previously disabled.
                 idmAuditLog.setAction(AuditAction.PROVISIONING_ENABLE.value());

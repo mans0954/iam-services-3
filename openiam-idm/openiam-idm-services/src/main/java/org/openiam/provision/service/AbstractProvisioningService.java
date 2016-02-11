@@ -1364,7 +1364,9 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             // ---------------------------------------------------------------------------------------------
         }
 
-        if((( pUser.getSecondaryStatus() == null && userEntity.getSecondaryStatus() == UserStatusEnum.DISABLED) || (pUser.getStatus() == UserStatusEnum.ACTIVE && userEntity.getStatus() == UserStatusEnum.INACTIVE )) && saveRehireChange.equalsIgnoreCase("true")) {
+        if((( pUser.getSecondaryStatus() == null && userEntity.getSecondaryStatus() == UserStatusEnum.DISABLED)
+                || (pUser.getStatus() == UserStatusEnum.ACTIVE && userEntity.getStatus() == UserStatusEnum.INACTIVE )
+                || (pUser.getStatus() == UserStatusEnum.ACTIVE && userEntity.getStatus() == UserStatusEnum.DELETED )) && saveRehireChange.equalsIgnoreCase("true")) {
             IdmAuditLog auditLog = new IdmAuditLog();
             auditLog.setUserId(parentLog.getUserId());
             auditLog.setPrincipal(parentLog.getPrincipal());
@@ -1373,6 +1375,37 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             auditLog.setAuditDescription(pUser.getDisplayName()+" User rehired");
             parentLog.addChild(auditLog);
         }
+
+        if(pUser.getStatus() == UserStatusEnum.INACTIVE && saveRehireChange.equalsIgnoreCase("true")) {
+            IdmAuditLog auditLog = new IdmAuditLog();
+            auditLog.setUserId(parentLog.getUserId());
+            auditLog.setPrincipal(parentLog.getPrincipal());
+            auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
+            auditLog.setAction(AuditAction.USER_LEAVER.value());
+            auditLog.setAuditDescription(pUser.getDisplayName()+" User inactived");
+            parentLog.addChild(auditLog);
+        }
+
+        if(pUser.getSecondaryStatus() == UserStatusEnum.DISABLED && saveRehireChange.equalsIgnoreCase("true")) {
+            IdmAuditLog auditLog = new IdmAuditLog();
+            auditLog.setUserId(parentLog.getUserId());
+            auditLog.setPrincipal(parentLog.getPrincipal());
+            auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
+            auditLog.setAction(AuditAction.USER_LEAVER.value());
+            auditLog.setAuditDescription(pUser.getDisplayName()+" User disabled");
+            parentLog.addChild(auditLog);
+        }
+
+        if(pUser.getStatus() == UserStatusEnum.DELETED && saveRehireChange.equalsIgnoreCase("true")) {
+            IdmAuditLog auditLog = new IdmAuditLog();
+            auditLog.setUserId(parentLog.getUserId());
+            auditLog.setPrincipal(parentLog.getPrincipal());
+            auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
+            auditLog.setAction(AuditAction.USER_LEAVER.value());
+            auditLog.setAuditDescription(pUser.getDisplayName()+" User deleted");
+            parentLog.addChild(auditLog);
+        }
+
         userEntity.updateUser(userDozerConverter.convertToEntity(pUser.getUser(), false));
         userEntity.setSecondaryStatus(pUser.getSecondaryStatus());
         userEntity.setType(type);
