@@ -41,11 +41,15 @@ public class SourceAdapterIntegrationTest extends AbstractServiceTest {
 		request.setMaidenName(getRandomName());
 		request.setMiddleName(getRandomName());
 		request.setNickname(getRandomName());
-		request.setPrefix(getRandomName());
+		request.setPrefix(getRandomName(2));
 		request.setPrefixLastName(getRandomName());
-		request.setSuffix(getRandomName());
+		request.setSuffix(getRandomName(2));
 		request.setTitle(getRandomName());
-		//request.setRequestor(requestor);
+		
+		final SourceAdapterKey requestor = new SourceAdapterKey();
+		requestor.setValue("3000");
+		requestor.setName(SourceAdapterKeyEnum.USERID);
+		request.setRequestor(requestor);
 		final Set<SourceAdapterMemberhipKey> supervisors = new HashSet<SourceAdapterMemberhipKey>();
 		final SourceAdapterMemberhipKey supervisor = new SourceAdapterMemberhipKey();
 		supervisor.setName(SourceAdapterKeyEnum.USERID);
