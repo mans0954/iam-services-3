@@ -164,14 +164,14 @@ public class SourceAdapterDispatcher implements Sweepable {
                                 @Override
                                 public Boolean doInTransaction(TransactionStatus status) {
                                     process(request);
-                                    /*
+
+                                    //stupid
                                     try {
                                         // to give other threads chance to be executed
                                         Thread.sleep(100);
                                     } catch (InterruptedException e1) {
                                         log.warn(e1.getMessage());
                                     }
-									*/
                                     return true;
                                 }
                             });
