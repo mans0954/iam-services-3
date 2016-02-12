@@ -185,9 +185,9 @@ public class SourceAdapterDispatcher implements Runnable {
 //    @Qualifier(value = "sourceAdapterQueue")
 //    private Queue queue;
 //
-    @Autowired
-    @Qualifier("transactionManager")
-    private PlatformTransactionManager platformTransactionManager;
+//    @Autowired
+//    @Qualifier("transactionManager")
+//    private PlatformTransactionManager platformTransactionManager;
 //    private final Object mutex = new Object();
 
 //    @Override
