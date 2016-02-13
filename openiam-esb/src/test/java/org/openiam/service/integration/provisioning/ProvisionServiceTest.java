@@ -15,6 +15,7 @@ import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
 import org.openiam.idm.srvc.provision.NewUserModelToProvisionConverter;
+import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.ProvisionUser;
@@ -36,7 +37,7 @@ public class ProvisionServiceTest extends AbstractServiceTest {
 	@Qualifier("loginServiceClient")
 	private LoginDataWebService loginServiceClient;
 	
-	@Test(threadPoolSize = 1, invocationCount = 1)
+	@Test(threadPoolSize = 1, invocationCount = 6000)
 	public void stressTestForAkzo() throws Exception {
 		final ProvisionUser pUser = getPUser();
 		final ProvisionUserResponse pResponse = provisionService.addUser(pUser);
@@ -138,6 +139,11 @@ public class ProvisionServiceTest extends AbstractServiceTest {
 		login.setLogin(getRandomName());
 		loginList.add(login);
 		user.setPrincipalList(loginList);
+		
+		final Role role = new Role();
+		role.setOperation(AttributeOperationEnum.ADD);
+		role.setId("0000000052d694500152d6d771210079");
+		user.addRole(role);
 		
 		final ProvisionUser pUser = new ProvisionUser(user);
 		return pUser;
