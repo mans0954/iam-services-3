@@ -1134,13 +1134,13 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
         resourceSet.addAll(getResourcesForRoles(roleSet));
         resourceSet.addAll(getResourcesForGroups(groupSet));
 
-        List<Organization> orgs = orgManager.getOrganizationsForUserLocalized(pUser.getId(), null, 0, 100, null);
+        /*List<Organization> orgs = orgManager.getOrganizationsForUserLocalized(pUser.getId(), null, 0, 100, null);
         for (Organization org : orgs) {
             Resource res = resourceDataService.getResource(org.getAdminResourceId(), null);
             if (res != null) {
                 resourceSet.add(res);
             }
-        }
+        }*/
 
 
         // Set of resources that are to be removed based on roles that are to be
