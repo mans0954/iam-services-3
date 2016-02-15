@@ -1273,7 +1273,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                     }
                 }
                 if (!resFound) {
-                    deleteResourceSet.add(resourceService.getResourceDTO(resId));
+                    deleteResourceSet.add(resourceService.getResourceDTO(resId, false));
                 }
             }
 
@@ -2689,7 +2689,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                                     }
                                     break;
                                 case RESOURCE:
-                                    Resource resource = resourceService.getResourceDTO(ob.getObjectId());
+                                    Resource resource = resourceService.getResourceDTO(ob.getObjectId(), false);
                                     if (existingResources.contains(resource)) {
                                         if (BulkOperationEnum.DELETE_ENTITLEMENT.equals(ob.getOperation())) {
                                             existingResources.remove(resource);

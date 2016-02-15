@@ -101,6 +101,8 @@ public interface ResourceService {
     public void validateResource2ResourceAddition(final String parentId, final String memberId) throws BasicDataServiceException;
     
     public Resource getResourceDTO(final String resourceId);
+
+	public Resource getResourceDTO(String resourceId, boolean isDeepCopy);
     
     public void validateResourceDeletion(final String resourceId) throws BasicDataServiceException;
     
