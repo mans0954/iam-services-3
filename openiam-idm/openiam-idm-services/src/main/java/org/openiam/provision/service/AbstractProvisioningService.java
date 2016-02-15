@@ -180,10 +180,6 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
     @Autowired
     protected SysConfiguration sysConfiguration;
     @Autowired
-    protected ResourceDataService resourceDataService;
-    @Autowired
-    protected OrganizationDataService orgManager;
-    @Autowired
     protected OrganizationService organizationService;
     @Autowired
     protected PasswordService passwordManager;
