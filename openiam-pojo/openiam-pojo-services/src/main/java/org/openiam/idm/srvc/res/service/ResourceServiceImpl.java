@@ -869,8 +869,15 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     @Override
     @Transactional(readOnly = true)
     public Resource getResourceDTO(String resourceId) {
-        return resourceConverter.convertToDTO(resourceDao.findById(resourceId), true);
+        return getResourceDTO(resourceId, true);
     }
+
+    @Override
+        @Transactional(readOnly = true)
+        public Resource getResourceDTO(String resourceId, boolean isDeepCopy) {
+        return resourceConverter.convertToDTO(resourceDao.findById(resourceId), isDeepCopy);
+    }
+
 
     @Override
     public List<ResourceTypeEntity> findResourceTypes(final ResourceTypeSearchBean searchBean, int from, int size) {

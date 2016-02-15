@@ -70,6 +70,10 @@
             <a>displayNameMap</a>
             <b>displayNameMap</b>
         </field-exclude>
+        <field-exclude>
+            <a>roles</a>
+            <b>roles</b>
+        </field-exclude>
     </mapping>
 
     <mapping>
