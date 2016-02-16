@@ -6,10 +6,7 @@ import org.apache.commons.lang.time.StopWatch;
 import org.apache.log4j.Logger;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.SysConfiguration;
-import org.openiam.base.ws.MatchType;
-import org.openiam.base.ws.Response;
-import org.openiam.base.ws.ResponseStatus;
-import org.openiam.base.ws.SearchParam;
+import org.openiam.base.ws.*;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.hibernate.HibernateUtils;
 import org.openiam.idm.searchbeans.*;
@@ -50,6 +47,7 @@ import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.service.RoleAttributeDAO;
 import org.openiam.idm.srvc.role.service.RoleDAO;
 import org.openiam.idm.srvc.role.ws.RoleDataWebService;
+import org.openiam.idm.srvc.synch.dto.SyncResponse;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
@@ -76,6 +74,7 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import javax.annotation.PostConstruct;
 import javax.jms.*;
 import javax.jms.Queue;
 import javax.xml.bind.JAXBContext;
@@ -92,14 +91,15 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.*;
 
 /**
  * Created by: Alexander Duckardt
  * Date: 7/22/14.
  */
 @Component("sourceAdapterDispatcher")
-public class SourceAdapterDispatcher implements Sweepable {
-
+public class SourceAdapterDispatcher implements Runnable {
+    protected final long SHUTDOWN_TIME = 5000;
     @Autowired
     private ProvisioningDataService provisioningDataService;
     @Autowired
@@ -127,65 +127,117 @@ public class SourceAdapterDispatcher implements Sweepable {
 
     private static Logger log = Logger.getLogger(SourceAdapterDispatcher.class);
 
-    @Autowired
-    private JmsTemplate jmsTemplate;
+    private BlockingQueue<SourceAdapterRequest> requestQueue = new LinkedBlockingQueue<SourceAdapterRequest>();
 
-    @Autowired
-    @Qualifier(value = "sourceAdapterQueue")
-    private Queue queue;
+    private volatile boolean terminate = false;
 
-    @Autowired
-    @Qualifier("transactionManager")
-    private PlatformTransactionManager platformTransactionManager;
-    private final Object mutex = new Object();
-
-    @Override
-    //TODO change when Spring 3.2.2 @Scheduled(fixedDelayString = "${org.openiam.metadata.threadsweep}")
-    @Scheduled(fixedDelay = 10000)
-    public void sweep() {
-        jmsTemplate.browse(queue, new BrowserCallback<Object>() {
-            @Override
-            public Object doInJms(Session session, QueueBrowser browser) throws JMSException {
-                synchronized (mutex) {
-
-                    final StopWatch sw = new StopWatch();
-                    sw.start();
-                    try {
-                        log.info("Starting SourceAdapterRequest sweeper thread");
-
-                        Enumeration e = browser.getEnumeration();
-
-                        while (e.hasMoreElements()) {
-                            final SourceAdapterRequest request = (SourceAdapterRequest) ((ObjectMessage) jmsTemplate.receive(queue)).getObject();
-
-                            TransactionTemplate transactionTemplate = new TransactionTemplate(platformTransactionManager);
-                            transactionTemplate.setPropagationBehavior(TransactionTemplate.PROPAGATION_REQUIRED);
-                            Boolean result = transactionTemplate.execute(new TransactionCallback<Boolean>() {
-                                @Override
-                                public Boolean doInTransaction(TransactionStatus status) {
-                                    process(request);
-                                    try {
-                                        // to give other threads chance to be executed
-                                        Thread.sleep(100);
-                                    } catch (InterruptedException e1) {
-                                        log.warn(e1.getMessage());
-                                    }
-
-                                    return true;
-                                }
-                            });
-
-                            e.nextElement();
-                        }
-
-                    } finally {
-                        log.info(String.format("Done with SourceAdapterRequest sweeper thread.  Took %s ms", sw.getTime()));
+    private synchronized void setTerminate(boolean terminate){
+        this.terminate=terminate;
+    }
+    private synchronized boolean getTerminate(){
+        return this.terminate;
+    }
+    @PostConstruct
+    public void init(){
+        final ExecutorService executorService = Executors.newCachedThreadPool();
+        executorService.submit(this);
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            public void run() {
+                setTerminate(true);
+                executorService.shutdown();
+                try {
+                    if (!executorService.awaitTermination(SHUTDOWN_TIME, TimeUnit.MILLISECONDS)) { //optional *
+                        log.warn("Executor did not terminate in the specified time. Killing...."); //optional *
+                        executorService.shutdownNow(); //optional **
                     }
-                    return null;
+                } catch (InterruptedException e) {
+                    log.error(e);
                 }
             }
         });
     }
+
+    public void pushToQueue(SourceAdapterRequest request) {
+        requestQueue.add(request);
+    }
+
+    public SourceAdapterRequest pullFromQueue() throws InterruptedException {
+        return requestQueue.take();
+    }
+
+    public void run(){
+        try {
+            SourceAdapterRequest request=null;
+            while (!getTerminate() && (request = pullFromQueue()) != null) {
+                process(request);
+                // keep this due to existed in old code
+                Thread.sleep(100);
+            }
+        } catch (InterruptedException e) {
+            log.error(e.getMessage(), e);
+        }
+
+    }
+//    @Autowired
+//    private JmsTemplate jmsTemplate;
+//
+//    @Autowired
+//    @Qualifier(value = "sourceAdapterQueue")
+//    private Queue queue;
+//
+//    @Autowired
+//    @Qualifier("transactionManager")
+//    private PlatformTransactionManager platformTransactionManager;
+//    private final Object mutex = new Object();
+
+//    @Override
+//    //TODO change when Spring 3.2.2 @Scheduled(fixedDelayString = "${org.openiam.metadata.threadsweep}")
+//    @Scheduled(fixedDelay = 10000)
+//    public void sweep() {
+//        jmsTemplate.browse(queue, new BrowserCallback<Object>() {
+//            @Override
+//            public Object doInJms(Session session, QueueBrowser browser) throws JMSException {
+//                synchronized (mutex) {
+//
+//                    final StopWatch sw = new StopWatch();
+//                    sw.start();
+//                    try {
+//                        log.info("Starting SourceAdapterRequest sweeper thread");
+//
+//                        Enumeration e = browser.getEnumeration();
+//
+//                        while (e.hasMoreElements()) {
+//                            final SourceAdapterRequest request = (SourceAdapterRequest) ((ObjectMessage) jmsTemplate.receive(queue)).getObject();
+//
+//                            TransactionTemplate transactionTemplate = new TransactionTemplate(platformTransactionManager);
+//                            transactionTemplate.setPropagationBehavior(TransactionTemplate.PROPAGATION_REQUIRED);
+//                            Boolean result = transactionTemplate.execute(new TransactionCallback<Boolean>() {
+//                                @Override
+//                                public Boolean doInTransaction(TransactionStatus status) {
+//                                    process(request);
+//
+//                                    //stupid
+//                                    try {
+//                                        // to give other threads chance to be executed
+//                                        Thread.sleep(100);
+//                                    } catch (InterruptedException e1) {
+//                                        log.warn(e1.getMessage());
+//                                    }
+//                                    return true;
+//                                }
+//                            });
+//
+//                            e.nextElement();
+//                        }
+//
+//                    } finally {
+//                        log.info(String.format("Done with SourceAdapterRequest sweeper thread.  Took %s ms", sw.getTime()));
+//                    }
+//                    return null;
+//                }
+//            }
+//        });
+//    }
 
     private void process(SourceAdapterRequest request) {
 //        MuleContextProvider.getCtx().getDefaultMessageReceiverThreadingProfile().get

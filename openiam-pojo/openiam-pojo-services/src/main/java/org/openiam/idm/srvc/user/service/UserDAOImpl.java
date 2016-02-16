@@ -781,6 +781,16 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
     }
 
     @Override
+    public List<UserEntity> getUserByIds(Set<String> ids) {
+        if(ids != null && !ids.isEmpty()) {
+            final Criteria criteria = getCriteria()
+                    .add(Restrictions.in("id", ids));
+            return criteria.list();
+        }
+        return new ArrayList<UserEntity>(0);
+    }
+
+    @Override
     public List<UserEntity> getUserBetweenLastDate(Date fromDate, Date toDate) {
         log.debug("--------- lastDate fromDate ----------- : " + fromDate);
         log.debug("--------- lastDate toDate ----------- : " + toDate);

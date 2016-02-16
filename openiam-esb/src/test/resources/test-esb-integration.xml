@@ -342,5 +342,7 @@
                   serviceClass="org.openiam.idm.srvc.grp.ws.GroupDataWebService"
                   address="${openiam.service_host}${openiam.idm.ws.path}GroupDataWebService" />
 
-
+    <jaxws:client id="sourceAdapterClient"
+                  serviceClass="org.openiam.provision.service.SourceAdapter"
+                  address="${openiam.service_host}/openiam-esb/source/SourceAdapterService" />
 </beans>

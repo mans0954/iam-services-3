@@ -222,11 +222,11 @@ public class AuditLogServiceImpl implements AuditLogService {
 	@Override
 	@Transactional(readOnly=true)
 	public List<IdmAuditLog> findBeans(AuditLogSearchBean searchBean,
-			int from, int size) {
+			int from, int size, boolean isDeep) {
 		List<IdmAuditLogEntity> idmAuditLogEntities = logDAO.getByExampleNoLocalize(searchBean, from, size);
         List<IdmAuditLog> idmAuditLogs = new LinkedList<>();
         if(idmAuditLogEntities != null) {
-           idmAuditLogs = auditLogDozerConverter.convertToDTOList(idmAuditLogEntities, false);
+           idmAuditLogs = auditLogDozerConverter.convertToDTOList(idmAuditLogEntities, isDeep);
         }
         return idmAuditLogs;
 	}
@@ -236,6 +236,7 @@ public class AuditLogServiceImpl implements AuditLogService {
     public List<String> findIDs(AuditLogSearchBean searchBean, int from, int size) {
         return logDAO.getIDsByExample(searchBean, from, size);
     }
+
 
     @Override
 	@Transactional(readOnly=true)

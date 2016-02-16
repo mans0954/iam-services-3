@@ -196,6 +196,7 @@
         maxElementsInMemory="1000"
         eternal="false"
         overflowToDisk="false" 
+        timeToLiveSeconds="300"
      />
     <cache name="org.openiam.idm.srvc.policy.dto.Policy.policyAttributes"
         maxElementsInMemory="2000"
@@ -237,6 +238,12 @@
             overflowToDisk="false"
             memoryStoreEvictionPolicy="LRU"
         />
+	<cache name="policies"
+            maxElementsInMemory="100000"
+            eternal="false"
+            overflowToDisk="false"
+            memoryStoreEvictionPolicy="LRU"
+        />
     <cache name="metadataTypes"
            maxElementsInMemory="100000"
            eternal="false"
@@ -269,6 +276,13 @@
            overflowToDisk="false"
            memoryStoreEvictionPolicy="LRU"
             />
+	<cache name="managedSysAttributeMaps"
+           maxElementsInMemory="100000"
+           eternal="false"
+           overflowToDisk="false"
+           memoryStoreEvictionPolicy="LRU"
+           timeToLiveSeconds="300"
+	/>
     <cache name="managedSysObjectParam"
            maxElementsInMemory="100000"
            eternal="false"

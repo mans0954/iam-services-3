@@ -88,6 +88,7 @@ import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
+import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.*;
 import org.openiam.provision.resp.ProvisionUserResponse;
@@ -139,6 +140,15 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
     public static final String USER_ATTRIBUTES = "userAttributes";
     public static final String GROUP = "group";
 
+    @Value("${openiam.audit.default.email.change}")
+    protected String saveEmailChange;
+
+    @Value("${openiam.audit.rehire}")
+    protected String saveRehireChange;
+
+    @Value("${openiam.audit.default.principal.change}")
+    protected String savePrincipalChange;
+
     @Value("${org.openiam.idm.system.user.id}")
     protected String systemUserId;
     @Autowired
@@ -159,20 +169,14 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
     @Autowired
     protected LoginDataService loginManager;
     @Autowired
-    protected ManagedSystemWebService managedSysService;
+    protected ManagedSystemWebService managedSysDataService;
 
-    @Autowired
-    protected ManagedSystemService managedSysDataService;
     @Autowired
     protected RoleDataService roleDataService;
     @Autowired
     protected GroupDataService groupManager;
     @Autowired
     protected SysConfiguration sysConfiguration;
-    @Autowired
-    protected ResourceDataService resourceDataService;
-    @Autowired
-    protected OrganizationDataService orgManager;
     @Autowired
     protected OrganizationService organizationService;
     @Autowired
@@ -794,6 +798,19 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
                     if (CollectionUtils.isNotEmpty(entities)) {
                         for (EmailAddressEntity en : entities) {
                             if (StringUtils.equals(en.getEmailId(), e.getEmailId())) {
+                                Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
+                                log.debug("--------------- Primary Email : "+en.getMetadataType().getId()+" ---------------------------");
+                                log.debug("--------------- saveEmailChange : "+saveEmailChange+" ----------------------");
+                                if(en.getMetadataType().getId().equalsIgnoreCase("PRIMARY_EMAIL") && saveEmailChange.equalsIgnoreCase("true")) {
+                                    log.debug(" adding email changed log ");
+                                    IdmAuditLog auditLog = new IdmAuditLog();
+                                    auditLog.setUserId(parentLog.getUserId());
+                                    auditLog.setPrincipal(parentLog.getPrincipal());
+                                    auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
+                                    auditLog.setAction(AuditAction.USER_PRIMARY_EMAIL_CHANGED.value());
+                                    auditLog.setAuditDescription("Primary Email changed: " + en.toString() + "\n to:" + e.toString());
+                                    parentLog.addChild(auditLog);
+                                }
                                 userEntity.getEmailAddresses().remove(en);
                                 userMgr.evict(en);
                                 EmailAddressEntity entity = emailAddressDozerConverter.convertToEntity(e, false);
@@ -805,7 +822,6 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
                                 // Audit Log
                                 //--------------------------------------------------
                                 IdmAuditLog auditLog = new IdmAuditLog();
-                                Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
                                 auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
                                 auditLog.setAction(AuditAction.REPLACE_EMAIL.value());
                                 auditLog.setAuditDescription("REPLACE Email: " + en.toString() + "\n to:" + e.toString());
@@ -1342,6 +1358,48 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             // ---------------------------------------------------------------------------------------------
         }
 
+        if((( pUser.getSecondaryStatus() == null && userEntity.getSecondaryStatus() == UserStatusEnum.DISABLED)
+                || (pUser.getStatus() == UserStatusEnum.ACTIVE && userEntity.getStatus() == UserStatusEnum.INACTIVE )
+                || (pUser.getStatus() == UserStatusEnum.ACTIVE && userEntity.getStatus() == UserStatusEnum.DELETED )) && saveRehireChange.equalsIgnoreCase("true")) {
+            IdmAuditLog auditLog = new IdmAuditLog();
+            auditLog.setUserId(parentLog.getUserId());
+            auditLog.setPrincipal(parentLog.getPrincipal());
+            auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
+            auditLog.setAction(AuditAction.USER_REHIRED.value());
+            auditLog.setAuditDescription(pUser.getDisplayName()+" User rehired");
+            parentLog.addChild(auditLog);
+        }
+
+        if(pUser.getStatus() == UserStatusEnum.INACTIVE && saveRehireChange.equalsIgnoreCase("true")) {
+            IdmAuditLog auditLog = new IdmAuditLog();
+            auditLog.setUserId(parentLog.getUserId());
+            auditLog.setPrincipal(parentLog.getPrincipal());
+            auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
+            auditLog.setAction(AuditAction.USER_LEAVER.value());
+            auditLog.setAuditDescription(pUser.getDisplayName()+" User inactived");
+            parentLog.addChild(auditLog);
+        }
+
+        if(pUser.getSecondaryStatus() == UserStatusEnum.DISABLED && saveRehireChange.equalsIgnoreCase("true")) {
+            IdmAuditLog auditLog = new IdmAuditLog();
+            auditLog.setUserId(parentLog.getUserId());
+            auditLog.setPrincipal(parentLog.getPrincipal());
+            auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
+            auditLog.setAction(AuditAction.USER_LEAVER.value());
+            auditLog.setAuditDescription(pUser.getDisplayName()+" User disabled");
+            parentLog.addChild(auditLog);
+        }
+
+        if(pUser.getStatus() == UserStatusEnum.DELETED && saveRehireChange.equalsIgnoreCase("true")) {
+            IdmAuditLog auditLog = new IdmAuditLog();
+            auditLog.setUserId(parentLog.getUserId());
+            auditLog.setPrincipal(parentLog.getPrincipal());
+            auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
+            auditLog.setAction(AuditAction.USER_LEAVER.value());
+            auditLog.setAuditDescription(pUser.getDisplayName()+" User deleted");
+            parentLog.addChild(auditLog);
+        }
+
         userEntity.updateUser(userDozerConverter.convertToEntity(pUser.getUser(), false));
         userEntity.setSecondaryStatus(pUser.getSecondaryStatus());
         userEntity.setType(type);
@@ -1776,6 +1834,19 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
 
                                 if (!en.getLogin().equals(e.getLogin())) {
                                     e.setOrigPrincipalName(en.getLogin());
+                                    log.debug("--------------- en.getManagedSysId() : "+en.getManagedSysId()+" ---------------");
+                                    log.debug("--------------- savePrincipalChange : "+savePrincipalChange+" ---------------");
+                                    if(savePrincipalChange.equalsIgnoreCase("true")) {
+                                        log.debug("-------------- changing AD User principal ----------");
+                                        IdmAuditLog auditLog = new IdmAuditLog();
+                                        auditLog.setUserId(parentLog.getUserId());
+                                        auditLog.setPrincipal(parentLog.getPrincipal());
+                                        auditLog.setManagedSysId(en.getManagedSysId());
+                                        auditLog.setTargetUser(userEntity.getId(), en.getLogin() != null ? en.getLogin() : StringUtils.EMPTY);
+                                        auditLog.setAction(AuditAction.USER_PRINCIPAL_CHANGED.value());
+                                        auditLog.setAuditDescription("User Principal changed for "+pUser.getDisplayName());
+                                        parentLog.addChild(auditLog);
+                                    }
                                 }
                                 String logOld = en.toString();
                                 en.copyProperties(e);
@@ -1811,12 +1882,19 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             response.setError(ErrorCode.INVALID_MANAGED_SYS_ID);
             return response;
         }
-        ManagedSysDto mSys = managedSysDozerConverter.convertToDTO(
-                managedSystemService.getManagedSysById(managedSysId), true);
+        final ManagedSysEntity mSys = managedSystemService.getManagedSysById(managedSysId);
+        final ManagedSysDto mSysDto = managedSysDozerConverter.convertToDTO(mSys, false);
 
-        List<AttributeMapEntity> attrMapEntities = managedSystemService
-                .getAttributeMapsByManagedSysId(managedSysId);
-        List<AttributeMap> attrMap = attributeMapDozerConverter.convertToDTOList(attrMapEntities, false);     //need to check if  attr.getDataType().getValue() works
+        log.info("********************MANAGED SYSTEM DTO ****************");
+        log.info("  NAME=" + mSys.getName());
+        log.info("  HOST URL=" + mSys.getHostUrl());
+        log.info(" PORT=" + mSys.getPort());
+        log.info(" BASE DN=" + mSys.getSearchScope());
+        log.info(" USER ID" + mSys.getUserId());
+        log.info(" ADD HANDLER" + mSys.getAddHandler());
+
+
+        List<AttributeMap> attrMap = managedSysDataService.getAttributeMapsByManagedSysId(managedSysId);
         for (AttributeMap attr : attrMap) {
             if (PolicyMapObjectTypeOptions.PRINCIPAL.name().equalsIgnoreCase(attr.getMapForObjectType())) {
                 extUser.setPrincipalFieldName(attr.getAttributeName());
@@ -1830,7 +1908,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
         userReq.setRequestID(requestId);
         userReq.setTargetID(managedSysId);
         userReq.setHostLoginId(mSys.getUserId());
-        String passwordDecoded = managedSysDataService.getDecryptedPassword(mSys);
+        String passwordDecoded = managedSystemService.getDecryptedPassword(mSysDto);
 
         userReq.setHostLoginPassword(passwordDecoded);
         userReq.setHostUrl(mSys.getHostUrl());
@@ -1852,8 +1930,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
         userReq.setExtensibleObject(extUser);
         userReq.setScriptHandler(mSys.getAddHandler());
 
-        response = isAdd ? connectorAdapter.addRequest(mSys, userReq, MuleContextProvider.getCtx())
-                : connectorAdapter.modifyRequest(mSys, userReq, MuleContextProvider.getCtx());
+        response = isAdd ? connectorAdapter.addRequest(mSysDto, userReq, MuleContextProvider.getCtx())
+                : connectorAdapter.modifyRequest(mSysDto, userReq, MuleContextProvider.getCtx());
         idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, (isAdd ? "ADD IDENTITY = "
                 : "MODIFY IDENTITY = ") + response.getStatus() + " details:" + response.getErrorMsgAsStr());
 
@@ -1895,7 +1973,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
 
         ExtensibleUser extensibleUser = buildPolicyMapHelper.buildMngSysAttributes(mLg, ProvOperationEnum.DELETE.name());
         request.setExtensibleObject(extensibleUser);
-        String passwordDecoded = managedSysDataService.getDecryptedPassword(mSys);
+        String passwordDecoded = managedSystemService.getDecryptedPassword(mSys);
 
         request.setHostLoginPassword(passwordDecoded);
         request.setHostUrl(mSys.getHostUrl());
@@ -1921,7 +1999,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
         req.setTargetID(login.getManagedSysId());
         req.setHostLoginId(mSys.getUserId());
         req.setExtensibleObject(extensibleUser);
-        String passwordDecoded = managedSysDataService.getDecryptedPassword(mSys);
+        String passwordDecoded = managedSystemService.getDecryptedPassword(mSys);
 
         req.setHostLoginPassword(passwordDecoded);
         req.setHostUrl(mSys.getHostUrl());
@@ -2013,7 +2091,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
         resumeReq.setHostLoginId(mSys.getUserId());
         resumeReq.setExtensibleObject(extensibleUser);
 
-        String passwordDecoded = managedSysDataService.getDecryptedPassword(mSys);
+        String passwordDecoded = managedSystemService.getDecryptedPassword(mSys);
 
         resumeReq.setHostLoginPassword(passwordDecoded);
         resumeReq.setHostUrl(mSys.getHostUrl());

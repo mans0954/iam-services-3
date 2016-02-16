@@ -77,12 +77,12 @@ public class SourceAdapterImpl implements SourceAdapter {
 //    private ResourceDataService resourceDataService;
 //    @Autowired
 //    private OrganizationDataService organizationDataService;
-    @Autowired
-    private JmsTemplate jmsTemplate;
-
-    @Autowired
-    @Qualifier(value = "sourceAdapterQueue")
-    private javax.jms.Queue queue;
+//    @Autowired
+//    private JmsTemplate jmsTemplate;
+//
+//    @Autowired
+//    @Qualifier(value = "sourceAdapterQueue")
+//    private javax.jms.Queue queue;
 
 
     @Autowired
@@ -94,15 +94,18 @@ public class SourceAdapterImpl implements SourceAdapter {
 
     @Autowired
     protected AuditLogService auditLogService;
+    @Autowired
+    @Qualifier("sourceAdapterDispatcher")
+    private SourceAdapterDispatcher sourceAdapterDispatcher;
 
-    private void send(final SourceAdapterRequest request) {
-        jmsTemplate.send(queue, new MessageCreator() {
-            public javax.jms.Message createMessage(Session session) throws JMSException {
-                javax.jms.Message message = session.createObjectMessage(request);
-                return message;
-            }
-        });
-    }
+//    private void send(final SourceAdapterRequest request) {
+//        jmsTemplate.send(queue, new MessageCreator() {
+//            public javax.jms.Message createMessage(Session session) throws JMSException {
+//                javax.jms.Message message = session.createObjectMessage(request);
+//                return message;
+//            }
+//        });
+//    }
 
 
 //    final static SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/YYYY");
@@ -114,7 +117,7 @@ public class SourceAdapterImpl implements SourceAdapter {
         SourceAdapterResponse response = new SourceAdapterResponse();
         response.setStatus(ResponseStatus.SUCCESS);
         long time = System.currentTimeMillis();
-        send(request);
+        sourceAdapterDispatcher.pushToQueue(request);
         response.setError("Processing time= " + (System.currentTimeMillis() - time) + "ms");
         return response;
     }

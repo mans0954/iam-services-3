@@ -100,4 +100,5 @@ public interface UserDAO extends BaseDao<UserEntity, String> {
 
     public List<UserEntity> getUserBetweenUpdatedDate(Date fromDate, Date toDate);
     public List<UserEntity> getUserBetweenStartDate(Date fromDate, Date toDate);
+    public List<UserEntity> getUserByIds(Set<String> ids);
 }
