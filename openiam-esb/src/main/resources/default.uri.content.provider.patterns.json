@@ -312,6 +312,61 @@
 					}
 				}
 			]
-		}
+		},
+		{
+			"pattern" : "/idp/forgetPasswordOptions.html",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "NONE"
+					}
+				}
+			]
+		},
+		{
+			"pattern" : "/idp/validateSmsToken.html",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "NONE"
+					}
+				}
+			]
+		},
+		{
+			"pattern" : "/idp/sendSmsToken.html",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "NONE"
+					}
+				}
+			]
+		},
+		{
+			"pattern" : "/idp/smsToken.html",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "NONE"
+					}
+				}
+			]
+		},
+		{
+			"pattern" : "/idp/userByLogin.html",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "NONE"
+					}
+				}
+			]
+		},
 	]
 }
