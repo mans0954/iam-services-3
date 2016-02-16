@@ -169,10 +169,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
     @Autowired
     protected LoginDataService loginManager;
     @Autowired
-    protected ManagedSystemWebService managedSysService;
+    protected ManagedSystemWebService managedSysDataService;
 
-    @Autowired
-    protected ManagedSystemService managedSysDataService;
     @Autowired
     protected RoleDataService roleDataService;
     @Autowired
@@ -1884,8 +1882,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             response.setError(ErrorCode.INVALID_MANAGED_SYS_ID);
             return response;
         }
-        ManagedSysDto mSys = managedSysDozerConverter.convertToDTO(
-                managedSystemService.getManagedSysById(managedSysId), true);
+        final ManagedSysEntity mSys = managedSystemService.getManagedSysById(managedSysId);
+        final ManagedSysDto mSysDto = managedSysDozerConverter.convertToDTO(mSys, false);
 
         log.info("********************MANAGED SYSTEM DTO ****************");
         log.info("  NAME=" + mSys.getName());
@@ -1896,9 +1894,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
         log.info(" ADD HANDLER" + mSys.getAddHandler());
 
 
-        List<AttributeMapEntity> attrMapEntities = managedSystemService
-                .getAttributeMapsByManagedSysId(managedSysId);
-        List<AttributeMap> attrMap = attributeMapDozerConverter.convertToDTOList(attrMapEntities, false);     //need to check if  attr.getDataType().getValue() works
+        List<AttributeMap> attrMap = managedSysDataService.getAttributeMapsByManagedSysId(managedSysId);
         for (AttributeMap attr : attrMap) {
             if (PolicyMapObjectTypeOptions.PRINCIPAL.name().equalsIgnoreCase(attr.getMapForObjectType())) {
                 extUser.setPrincipalFieldName(attr.getAttributeName());
@@ -1912,7 +1908,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
         userReq.setRequestID(requestId);
         userReq.setTargetID(managedSysId);
         userReq.setHostLoginId(mSys.getUserId());
-        String passwordDecoded = managedSysDataService.getDecryptedPassword(mSys);
+        String passwordDecoded = managedSystemService.getDecryptedPassword(mSysDto);
 
         userReq.setHostLoginPassword(passwordDecoded);
         userReq.setHostUrl(mSys.getHostUrl());
@@ -1934,8 +1930,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
         userReq.setExtensibleObject(extUser);
         userReq.setScriptHandler(mSys.getAddHandler());
 
-        response = isAdd ? connectorAdapter.addRequest(mSys, userReq, MuleContextProvider.getCtx())
-                : connectorAdapter.modifyRequest(mSys, userReq, MuleContextProvider.getCtx());
+        response = isAdd ? connectorAdapter.addRequest(mSysDto, userReq, MuleContextProvider.getCtx())
+                : connectorAdapter.modifyRequest(mSysDto, userReq, MuleContextProvider.getCtx());
         idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, (isAdd ? "ADD IDENTITY = "
                 : "MODIFY IDENTITY = ") + response.getStatus() + " details:" + response.getErrorMsgAsStr());
 
@@ -1977,7 +1973,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
 
         ExtensibleUser extensibleUser = buildPolicyMapHelper.buildMngSysAttributes(mLg, ProvOperationEnum.DELETE.name());
         request.setExtensibleObject(extensibleUser);
-        String passwordDecoded = managedSysDataService.getDecryptedPassword(mSys);
+        String passwordDecoded = managedSystemService.getDecryptedPassword(mSys);
 
         request.setHostLoginPassword(passwordDecoded);
         request.setHostUrl(mSys.getHostUrl());
@@ -2003,7 +1999,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
         req.setTargetID(login.getManagedSysId());
         req.setHostLoginId(mSys.getUserId());
         req.setExtensibleObject(extensibleUser);
-        String passwordDecoded = managedSysDataService.getDecryptedPassword(mSys);
+        String passwordDecoded = managedSystemService.getDecryptedPassword(mSys);
 
         req.setHostLoginPassword(passwordDecoded);
         req.setHostUrl(mSys.getHostUrl());
@@ -2095,7 +2091,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
         resumeReq.setHostLoginId(mSys.getUserId());
         resumeReq.setExtensibleObject(extensibleUser);
 
-        String passwordDecoded = managedSysDataService.getDecryptedPassword(mSys);
+        String passwordDecoded = managedSystemService.getDecryptedPassword(mSys);
 
         resumeReq.setHostLoginPassword(passwordDecoded);
         resumeReq.setHostUrl(mSys.getHostUrl());

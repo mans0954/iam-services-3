@@ -171,7 +171,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
         for (String roleId : roles) {
             ResourceSearchBean rsb = new ResourceSearchBean();
             rsb.setDeepCopy(false);
-            List<Resource> resources = resourceDataService.getResourcesForRoleNoLocalized(roleId, -1, -1, rsb);
+            List<Resource> resources = resourceService.getResourcesForRoleNoLocalized(roleId, -1, -1, rsb);
             for (Resource res : resources) {
                 resourceIds.add(res.getId());
             }
@@ -185,7 +185,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
         for (String groupId : groups) {
             ResourceSearchBean rsb = new ResourceSearchBean();
             rsb.setDeepCopy(false);
-            List<Resource> resources = resourceDataService.getResourcesForGroupNoLocalized(groupId, -1, -1, rsb);
+            List<Resource> resources = resourceService.getResourcesForGroupNoLocalized(groupId, -1, -1, rsb);
             for (Resource res : resources) {
                 resourceIds.add(res.getId());
             }
@@ -200,7 +200,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
             ResourceSearchBean rsb = new ResourceSearchBean();
             rsb.setDeepCopy(false);
             rsb.setResourceTypeId(ResourceSearchBean.TYPE_MANAGED_SYS);
-            List<Resource> resources = resourceDataService.getResourcesForRoleNoLocalized(roleId, -1, -1, rsb);
+            List<Resource> resources = resourceService.getResourcesForRoleNoLocalized(roleId, -1, -1, rsb);
             for (Resource res : resources) {
                 resourceIds.add(res.getId());
             }
@@ -214,7 +214,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
         for (String groupId : groupList) {
             ResourceSearchBean rsb = new ResourceSearchBean();
             rsb.setDeepCopy(false);
-            List<Resource> resources = resourceDataService.getResourcesForGroupNoLocalized(groupId, -1, -1, rsb);
+            List<Resource> resources = resourceService.getResourcesForGroupNoLocalized(groupId, -1, -1, rsb);
             for (Resource res : resources) {
                 resourceIds.add(res.getId());
             }
@@ -264,7 +264,8 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
 
                     ProvisionUserResponse tmpRes = addModifyUser(pUser, true, dataList, idmAuditLog);
 
-                    idmAuditLog = auditLogService.save(idmAuditLog);
+                    auditLogService.enqueue(idmAuditLog);
+                    //idmAuditLog = auditLogService.save(idmAuditLog);
                     return tmpRes;
                 }
             });
@@ -507,12 +508,12 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                 // terminate that identity
 
                 // call delete on the connector
-                ManagedSysDto mSys = managedSysService.getManagedSys(managedSystemId);
+                ManagedSysDto mSys = managedSysDataService.getManagedSys(managedSystemId);
 
                 idmAuditLogChild.setTargetManagedSys(mSys.getId(), mSys.getName());
 
                 ManagedSystemObjectMatch matchObj = null;
-                ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(mSys.getId(), ManagedSystemObjectMatch.USER);
+                ManagedSystemObjectMatch[] matchObjAry = managedSysDataService.managedSysObjectParam(mSys.getId(), ManagedSystemObjectMatch.USER);
                 if (matchObjAry != null && matchObjAry.length > 0) {
                     matchObj = matchObjAry[0];
                     bindingMap.put(MATCH_PARAM, matchObj);
@@ -528,7 +529,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
 
                         if (status == UserStatusEnum.REMOVE) {
                             // pre-processing
-                            Resource res = resourceDataService.getResource(resourceId, null);
+                            Resource res = resourceService.getResourceDTO(resourceId, true);
 
                             bindingMap.put("IDENTITY", login);
                             bindingMap.put("RESOURCE", res);
@@ -625,11 +626,11 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                             // identity.
                             if (!l.getManagedSysId().equals(sysConfiguration.getDefaultManagedSysId())) {
 
-                                ManagedSysDto mSys = managedSysService.getManagedSys(l.getManagedSysId());
+                                ManagedSysDto mSys = managedSysDataService.getManagedSys(l.getManagedSysId());
                                 idmAuditLogChild.setTargetManagedSys(mSys.getId(), mSys.getName());
 
                                 ManagedSystemObjectMatch matchObj = null;
-                                ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(
+                                ManagedSystemObjectMatch[] matchObjAry = managedSysDataService.managedSysObjectParam(
                                         mSys.getId(), ManagedSystemObjectMatch.USER);
                                 if (matchObjAry != null && matchObjAry.length > 0) {
                                     matchObj = matchObjAry[0];
@@ -658,7 +659,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
 
                                         if (resourceId != null) {
                                             processedResources.add(resourceId);
-                                            resource = resourceDataService.getResource(resourceId, null);
+                                            resource = resourceService.getResourceDTO(resourceId, true);
                                             if (resource != null) {
                                                 bindingMap.put(TARGET_SYS_RES, resource);
 
@@ -869,7 +870,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
             if (userLogin != null) {
                 if (userLogin.getManagedSysId() != null && !userLogin.getManagedSysId().equals("0")) {
                     final String managedSysId = userLogin.getManagedSysId();
-                    final ManagedSysDto managedSys = managedSysService.getManagedSys(managedSysId);
+                    final ManagedSysDto managedSys = managedSysDataService.getManagedSys(managedSysId);
                     final Login login = loginDozerConverter.convertToDTO(userLogin, false);
                     boolean isSuspend = AccountLockEnum.LOCKED.equals(operation) || AccountLockEnum.LOCKED_ADMIN.equals(operation);
                     ResponseType responsetype = suspend(requestorId, login, managedSys,
@@ -896,11 +897,12 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
         final Login primLogin = loginDozerConverter.convertToDTO(lg, false);
         if (CollectionUtils.isNotEmpty(roleList)) {
             for (final RoleEntity role : roleList) {
-                final List<Resource> resourceList = resourceDataService.getResourcesForRoleNoLocalized(role.getId(), 0,
-                        Integer.MAX_VALUE, new ResourceSearchBean());
+            	final ResourceSearchBean rsb = new ResourceSearchBean();
+            	rsb.setDeepCopy(false);
+                final List<Resource> resourceList = resourceService.getResourcesForRoleNoLocalized(role.getId(), 0, Integer.MAX_VALUE, rsb);
                 if (CollectionUtils.isNotEmpty(resourceList)) {
                     for (final Resource resource : resourceList) {
-                        ManagedSysDto managedSys = managedSysService.getManagedSysByResource(resource.getId());
+                        ManagedSysDto managedSys = managedSysDataService.getManagedSysByResource(resource.getId());
                         if (managedSys != null) {
                             boolean isSuspend = AccountLockEnum.LOCKED.equals(operation) || AccountLockEnum.LOCKED_ADMIN.equals(operation);
                             ResponseType responsetype = suspend(requestorId, primLogin, managedSys,
@@ -1344,7 +1346,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                             // do check if provisioning user has source resource
                             // => we should skip it from double provisioning
                             // reconciliation case
-                            ManagedSysDto managedSys = managedSysService.getManagedSys(pUser.getSrcSystemId());
+                            ManagedSysDto managedSys = managedSysDataService.getManagedSys(pUser.getSrcSystemId());
                             if (res.getId().equalsIgnoreCase(managedSys.getResourceId())) {
                                 continue;
                             }
@@ -1360,7 +1362,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                         }
 
                         // Additional operation is required for managed system with property ON_DELETE = DISABLE
-                        String onDeleteProp = resourceDataService.getResourcePropValueByName(res.getId(), "ON_DELETE");
+                        String onDeleteProp = resourceService.getResourcePropValueByName(res.getId(), "ON_DELETE");
                         if (onDeleteProp != null && "DISABLE".equalsIgnoreCase(onDeleteProp)) {
                             ProvisionDataContainer enableData = provisionSelectedResourceHelper.provisionResource(res, userEntity, pUser, bindingMap,
                                     primaryIdentity, requestId, true);
@@ -1758,10 +1760,10 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
             response.setPrincipalName(principalName);
             // get the connector for the managedSystem
 
-            ManagedSysDto mSys = managedSysService.getManagedSys(managedSysId);
+            ManagedSysDto mSys = managedSysDataService.getManagedSys(managedSysId);
             ResourceEntity res = resourceService.findResourceById(mSys.getResourceId());
             ManagedSystemObjectMatch matchObj = null;
-            ManagedSystemObjectMatch[] objList = managedSysService.managedSysObjectParam(managedSysId,
+            ManagedSystemObjectMatch[] objList = managedSysDataService.managedSysObjectParam(managedSysId,
                     ManagedSystemObjectMatch.USER);
             if (objList != null && objList.length > 0) {
                 matchObj = objList[0];
@@ -1788,7 +1790,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
             if (matchObj != null && StringUtils.isNotEmpty(matchObj.getSearchBaseDn())) {
                 reqType.setBaseDN(matchObj.getSearchBaseDn());
             }
-            String passwordDecoded = managedSysDataService.getDecryptedPassword(mSys);
+            String passwordDecoded = managedSystemService.getDecryptedPassword(mSys);
             reqType.setHostLoginPassword(passwordDecoded);
             reqType.setHostUrl(mSys.getHostUrl());
             reqType.setScriptHandler(mSys.getLookupHandler());
@@ -2267,7 +2269,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
     }
 
     private LookupAttributeResponse lookupAttributes(String mSysId, String execMode) {
-        ManagedSysDto mSys = managedSysService.getManagedSys(mSysId);
+        ManagedSysDto mSys = managedSysDataService.getManagedSys(mSysId);
         if (mSys != null) {
             LookupRequest lookupRequest = new LookupRequest();
             lookupRequest.setExecutionMode(execMode);
@@ -3165,7 +3167,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                     if (!StringUtils.equalsIgnoreCase(lg.getManagedSysId(), sysConfiguration.getDefaultManagedSysId())) {
                         String managedSysId = lg.getManagedSysId();
                         // update the target system
-                        ManagedSysDto mSys = managedSysService
+                        ManagedSysDto mSys = managedSysDataService
                                 .getManagedSys(managedSysId);
 
                         final ResourceEntity res = resourceService.findResourceById(mSys.getResourceId());

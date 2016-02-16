@@ -183,6 +183,7 @@ public class ProvisionServiceTest extends AbstractServiceTest {
 			}
 		}
 		
+		/*
 		final OrganizationSearchBean orgSearchBean = new OrganizationSearchBean();
 		final List<Organization> orgs = organizationServiceClient.findBeans(orgSearchBean, null, 0, Integer.MAX_VALUE);
 		if(CollectionUtils.isNotEmpty(orgs)) {
@@ -205,6 +206,7 @@ public class ProvisionServiceTest extends AbstractServiceTest {
 			userAttributes.put(attribute.getName(), attribute);
 		}
 		user.setUserAttributes(userAttributes);
+		*/
 		
 		final ProvisionUser pUser = new ProvisionUser(user);
 		return pUser;
