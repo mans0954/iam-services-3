@@ -98,7 +98,7 @@ public class GroupReconciliationADRemoteTest extends AbstractTestNGSpringContext
             // Save Connector
             provisionConnectorWebServiceClient.addProvisionConnector(connectorDto);
             ProvisionConnectorSearchBean provisionConnectorSearchBean = new ProvisionConnectorSearchBean();
-            provisionConnectorSearchBean.setConnectorName("TEST-GROUP-POWERSHELL-AD-CONNECTOR");
+            provisionConnectorSearchBean.setName("TEST-GROUP-POWERSHELL-AD-CONNECTOR");
             List<ProvisionConnectorDto> provisionConnectorDtoList = provisionConnectorWebServiceClient.getProvisionConnectors(provisionConnectorSearchBean, 0, 10);
             Assert.assertNotNull(provisionConnectorDtoList);
             Assert.assertEquals(provisionConnectorDtoList.size(), 1);

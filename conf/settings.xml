@@ -5,7 +5,7 @@
     <server>
       <id>central</id>
       <username>sysadmin</username>
-      <password>${env.ARTIFACTORY_PASSWORD}</password>
+      <password>${env.OPENIAM_ARTIFACTORY_PASSWORD}</password>
     </server>
   </servers>
   <profiles>

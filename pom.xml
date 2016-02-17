@@ -966,7 +966,7 @@
                             <publisher>
                                 <contextUrl>{{ARTIFACTORY_CONTEXT_URL|"https://openiam.artifactoryonline.com/openiam"}}</contextUrl>
                                 <username>sysadmin</username>
-                                <password>${env.ARTIFACTORY_PASSWORD}</password>
+                                <password>${env.OPENIAM_ARTIFACTORY_PASSWORD}</password>
                                 <repoKey>libs-releases-local</repoKey>
                                 <snapshotRepoKey>libs-snapshot-local</snapshotRepoKey>
                             </publisher>
@@ -1096,7 +1096,7 @@
 		<repository>
 	        <id>openiamRepo</id>
 	        <name>openiam-releases</name>
-	        <url>http://openiam.artifactoryonline.com/openiam/repo/</url>
+	        <url>https://openiam.artifactoryonline.com/openiam/repo/</url>
 	    </repository>
 	</repositories>
 </project>
