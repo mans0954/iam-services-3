@@ -324,7 +324,8 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                     }
                     //idmAuditLog = auditLogService.save(idmAuditLog);
                     ProvisionUserResponse tmpRes = addModifyUser(pUser, false, dataList, idmAuditLog);
-                    idmAuditLog = auditLogService.save(idmAuditLog);
+                    auditLogService.enqueue(idmAuditLog);
+                    //idmAuditLog = auditLogService.save(idmAuditLog);
                     return tmpRes;
                 }
             });
