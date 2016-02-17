@@ -873,6 +873,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     }
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "resources", key = "{ #resourceId, #isDeepCopy}")
     public Resource getResourceDTO(String resourceId, boolean isDeepCopy) {
         return resourceConverter.convertToDTO(resourceDao.findById(resourceId), isDeepCopy);
     }
