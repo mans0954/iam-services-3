@@ -256,7 +256,7 @@ public abstract class AbstractLoginModule implements LoginModule {
         String hostUrl = managedSys.getHostUrl();
         if (managedSys.getPort() > 0) {
             hostUrl = hostUrl + ":" + String.valueOf(managedSys.getPort());
-            if (!hostUrl.startsWith("ldap://")) {
+            if (!hostUrl.startsWith("ldap")) {
                 hostUrl = "ldap://" + hostUrl;
             }
         }
