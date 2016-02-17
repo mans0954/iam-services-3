@@ -1033,6 +1033,12 @@ public class SourceAdapterDispatcher implements Runnable {
                 }
             }
         }
+        //Mark that user created from source adapter.
+        if (StringUtils.isBlank(pUser.getId())){
+            UserAttribute attr = new UserAttribute("USER_CREATION_SOURCE", "SOURCE_ADAPTER");
+            attr.setOperation(AttributeOperationEnum.ADD);
+            pUser.saveAttribute(attr);
+        }
     }
 
 
