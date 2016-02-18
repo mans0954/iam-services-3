@@ -263,7 +263,9 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
                     pUser.setSkipPreprocessor(true);
                     pUser.setSkipPostProcessor(true);
                     retval = transformScript.execute(rowObj, pUser);
-                    log.debug("Transform result=" + retval);
+                    if(log.isDebugEnabled()) {
+                        log.debug("Transform result=" + retval);
+                    }
                 }
                 log.info(" - Execute complete transform script");
             }
