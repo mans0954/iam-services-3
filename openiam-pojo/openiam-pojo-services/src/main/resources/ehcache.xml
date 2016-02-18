@@ -297,5 +297,71 @@
            memoryStoreEvictionPolicy="LRU"
             />
 
+    <cache name="ResourceEntity"
+           maxElementsInMemory="100000"
+           eternal="false"
+           overflowToDisk="false"
+           memoryStoreEvictionPolicy="LRU"
+    />
+    <cache name="GroupEntity"
+           maxElementsInMemory="100000"
+           eternal="false"
+           overflowToDisk="true"
+           memoryStoreEvictionPolicy="LRU"
+    />
+    <cache name="RoleEntity"
+           maxElementsInMemory="100000"
+           eternal="false"
+           overflowToDisk="false"
+           memoryStoreEvictionPolicy="LRU"
+    />
+    <cache name="OrganizationEntity"
+           maxElementsInMemory="100000"
+           eternal="false"
+           overflowToDisk="false"
+           memoryStoreEvictionPolicy="LRU"
+    />
+    <cache name="LocationEntity"
+           maxElementsInMemory="100000"
+           eternal="false"
+           overflowToDisk="false"
+           memoryStoreEvictionPolicy="LRU"
+    />
+    <cache name="LanguageMappingEntity"
+           maxElementsInMemory="100000"
+           eternal="false"
+           overflowToDisk="false"
+           memoryStoreEvictionPolicy="LRU"
+    />
+    <cache name="UserEntity"
+           maxElementsInMemory="100000"
+           eternal="false"
+           overflowToDisk="true"
+           memoryStoreEvictionPolicy="LRU"
+    />
+    <cache name="LoginEntity"
+           maxElementsInMemory="100000"
+           eternal="false"
+           overflowToDisk="true"
+           memoryStoreEvictionPolicy="LRU"
+    />
+    <cache name="UserAttributeEntity"
+           maxElementsInMemory="100000"
+           eternal="false"
+           overflowToDisk="true"
+           memoryStoreEvictionPolicy="LRU"
+    />
+    <cache name="UserKeyEntity"
+           maxElementsInMemory="100000"
+           eternal="false"
+           overflowToDisk="true"
+           memoryStoreEvictionPolicy="LRU"
+    />
+    <cache name="ManagedSysEntity"
+           maxElementsInMemory="100000"
+           eternal="false"
+           overflowToDisk="true"
+           memoryStoreEvictionPolicy="LRU"
+    />
 
 </ehcache>
