@@ -156,16 +156,22 @@ public class AuthenticationWebServiceImpl extends AbstractBaseService implements
         try {
             if (loginEntities != null && !loginEntities.isEmpty()) {
                 LoginEntity login = loginEntities.get(0);
+                System.out.println("validateSMSOtp:login.getSmsResetToken()" + login.getSmsResetToken());//TODO: Kept of debugging only
                 if (login.getSmsResetToken() != null && login.getSmsResetToken().equals(request.getOtpCode()) && new Date().before(login.getSmsResetTokenExp())) {
                     response.succeed();
                 } else {
+                    System.out.println("validateSMSOtp:seems like otp didnt match" + login);//TODO: Kept of debugging only
                     response.fail();
                 }
             } else {
                 response.fail();
+                System.out.println("validateSMSOtp:Seem no user found");//TODO: Kept of debugging only
+
             }
         } catch (Exception e) {
             event.fail();
+            e.printStackTrace();//TODO: Kept of debugging only
+            response.setErrorText(e.getMessage());
         } finally {
             auditLogService.save(event);
         }

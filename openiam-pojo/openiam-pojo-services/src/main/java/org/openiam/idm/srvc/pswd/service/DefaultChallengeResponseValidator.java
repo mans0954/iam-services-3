@@ -96,6 +96,10 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
     public boolean isResponseValid(String userId, List<UserIdentityAnswerEntity> newAnswerList, int requiredCorrectAns, boolean isEnterprise)
             throws Exception {
         final int correctAns = getNumOfCorrectAnswers(userId, newAnswerList, isEnterprise);
+        log.debug("DefaultChallengeResponseValidator:isEnterprise" + isEnterprise);
+        log.debug("DefaultChallengeResponseValidator:requiredCorrectAns=" + requiredCorrectAns);
+        log.debug("DefaultChallengeResponseValidator:correctAns=" + correctAns);
+
         if (correctAns >= requiredCorrectAns) {
             return true;
         }
