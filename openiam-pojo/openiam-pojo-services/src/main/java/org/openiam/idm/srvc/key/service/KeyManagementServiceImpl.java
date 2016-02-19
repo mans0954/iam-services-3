@@ -188,7 +188,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         List<UserEntity> userList = new ArrayList<UserEntity>();
         userList.add(user);
         List<LoginEntity> lgList = loginDAO.findUser(user.getId());
-        List<UserKey> keyList = userKeyDao.getByUserId(user.getId());
+//        List<UserKey> keyList = userKeyDao.getByUserId(user.getId());
         UserIdentityAnswerEntity example = new UserIdentityAnswerEntity();
         example.setUserId(user.getId());
         List<UserIdentityAnswerEntity> answersList = userIdentityAnswerDAO.getByExample(example);
@@ -197,15 +197,19 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         for (LoginEntity lg : lgList) {
             pwdList.addAll(passwordHistoryDao.getPasswordHistoryByLoginId(lg.getLoginId(), 0, Integer.MAX_VALUE));
         }
-        HashMap<String, List<ManagedSysEntity>> managedSysMap = getManagedSysMap();
+        List<ManagedSysEntity> managedSysList = null;
+        if(systemUserId.equals(user.getId())){
+            managedSysList = getManagedSysMap().get(user.getId());
+        }
+
         List<UserKey> newUserKeyList = new ArrayList<UserKey>();
 
         UserSecurityWrapper usw = new UserSecurityWrapper();
         usw.setUserId(user.getId());
         usw.setLoginList(lgList);
-        usw.setManagedSysList(managedSysMap.get(user.getId()));
+        usw.setManagedSysList(managedSysList);
         usw.setPasswordHistoryList(pwdList);
-        usw.setUserKeyList(keyList);
+//        usw.setUserKeyList(keyList);
         usw.setUserIdentityAnswerList(answersList);
 
         encryptUserData(masterKey, usw, newUserKeyList);

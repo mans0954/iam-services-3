@@ -9,7 +9,7 @@
          user.home - User's home directory
          user.dir - User's current working directory
          java.io.tmpdir - Default temp file path -->
-    <diskStore path="java.io.tmpdir"/>
+    <diskStore path="java.io.tmpdir/ehcache"/>
 
 
     <!--Default Cache configuration. These will applied to caches programmatically created through
@@ -336,25 +336,25 @@
     <cache name="UserEntity"
            maxElementsInMemory="100000"
            eternal="false"
-           overflowToDisk="true"
+           overflowToDisk="false"
            memoryStoreEvictionPolicy="LRU"
     />
     <cache name="LoginEntity"
            maxElementsInMemory="100000"
            eternal="false"
-           overflowToDisk="true"
+           overflowToDisk="false"
            memoryStoreEvictionPolicy="LRU"
     />
     <cache name="UserAttributeEntity"
            maxElementsInMemory="100000"
            eternal="false"
-           overflowToDisk="true"
+           overflowToDisk="false"
            memoryStoreEvictionPolicy="LRU"
     />
     <cache name="UserKeyEntity"
            maxElementsInMemory="100000"
            eternal="false"
-           overflowToDisk="true"
+           overflowToDisk="false"
            memoryStoreEvictionPolicy="LRU"
     />
     <cache name="ManagedSysEntity"
