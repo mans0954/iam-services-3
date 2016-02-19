@@ -16,7 +16,9 @@ public abstract class AbstractLookupLdapCommand<ExtObject extends ExtensibleObje
 
     @Override
     public SearchResponse execute(LookupRequest<ExtObject> lookupRequest) throws ConnectorDataException {
-        log.debug("LOOKUP operation called.");
+    	if(log.isDebugEnabled()) {
+    		log.debug("LOOKUP operation called.");
+    	}
         boolean found = false;
         SearchResponse respType = new SearchResponse();
 
@@ -31,10 +33,14 @@ public abstract class AbstractLookupLdapCommand<ExtObject extends ExtensibleObje
 //            log.debug("LOOKUP successful");
             if (found) {
                 respType.setStatus(StatusCodeType.SUCCESS);
-                log.debug("LOOKUP successful with results.");
+                if(log.isDebugEnabled()) {
+                	log.debug("LOOKUP successful with results.");
+                }
             } else {
                 respType.setStatus(StatusCodeType.FAILURE);
-                log.debug("LOOKUP successful without results.");
+                if(log.isDebugEnabled()) {
+                	log.debug("LOOKUP successful without results.");
+                }
                 // SIA - 20150702
 //                throw new ConnectorDataException(ErrorCode.NO_RESULTS_RETURNED);
             }

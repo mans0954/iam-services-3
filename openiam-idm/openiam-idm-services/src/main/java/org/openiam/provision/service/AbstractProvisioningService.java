@@ -445,11 +445,14 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
         List<AttributeMapEntity> amEList = managedSystemService.getResourceAttributeMaps(defaultManagedSys.getResourceId());
         List<AttributeMap> policyAttrMap = (amEList == null) ? null : attributeMapDozerConverter.convertToDTOList(amEList, true);
 
-        log.debug("Building primary identity. ");
+        if(log.isDebugEnabled()) {
+        	log.debug("Building primary identity. ");
+        }
 
         if (policyAttrMap != null) {
-
-            log.debug("- policyAttrMap IS NOT null");
+        	if(log.isDebugEnabled()) {
+        		log.debug("- policyAttrMap IS NOT null");
+        	}
 
             Login primaryIdentity = new Login();
             primaryIdentity.setOperation(AttributeOperationEnum.ADD);
@@ -496,7 +499,9 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             return primaryIdentity;
 
         } else {
-            log.debug("- policyAttrMap IS null");
+        	if(log.isDebugEnabled()) {
+        		log.debug("- policyAttrMap IS null");
+        	}
             return null;
         }
     }
@@ -529,12 +534,16 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
 
     protected void buildPrimaryIDPassword(Login primaryIdentity, Map<String, Object> bindingMap,
                                           ScriptIntegration se) {
-        log.debug("setPrimaryIDPassword() ");
+    	if(log.isDebugEnabled()) {
+    		log.debug("setPrimaryIDPassword() ");
+    	}
         ManagedSysEntity defaultManagedSys = managedSystemService.getManagedSysById(sysConfiguration.getDefaultManagedSysId());
         List<AttributeMapEntity> amEList = managedSystemService.getResourceAttributeMaps(defaultManagedSys.getResourceId());
         List<AttributeMap> policyAttrMap = (amEList == null) ? null : attributeMapDozerConverter.convertToDTOList(amEList, true);
         if (policyAttrMap != null) {
-            log.debug("- policyAttrMap IS NOT null");
+        	if(log.isDebugEnabled()) {
+        		log.debug("- policyAttrMap IS NOT null");
+        	}
             try {
                 for (AttributeMap attr : policyAttrMap) {
                     String output = (String) ProvisionServiceUtil.getOutputFromAttrMap(attr, bindingMap, se);
@@ -551,7 +560,9 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
                 log.error(e);
             }
         } else {
-            log.debug("- policyAttrMap IS null");
+        	if(log.isDebugEnabled()) {
+        		log.debug("- policyAttrMap IS null");
+        	}
         }
     }
 
@@ -799,10 +810,14 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
                         for (EmailAddressEntity en : entities) {
                             if (StringUtils.equals(en.getEmailId(), e.getEmailId())) {
                                 Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
-                                log.debug("--------------- Primary Email : "+en.getMetadataType().getId()+" ---------------------------");
-                                log.debug("--------------- saveEmailChange : "+saveEmailChange+" ----------------------");
+                                if(log.isDebugEnabled()) {
+	                                log.debug("--------------- Primary Email : "+en.getMetadataType().getId()+" ---------------------------");
+	                                log.debug("--------------- saveEmailChange : "+saveEmailChange+" ----------------------");
+                                }
                                 if(en.getMetadataType().getId().equalsIgnoreCase("PRIMARY_EMAIL") && saveEmailChange.equalsIgnoreCase("true")) {
-                                    log.debug(" adding email changed log ");
+                                	if(log.isDebugEnabled()) {
+                                		log.debug(" adding email changed log ");
+                                	}
                                     IdmAuditLog auditLog = new IdmAuditLog();
                                     auditLog.setUserId(parentLog.getUserId());
                                     auditLog.setPrincipal(parentLog.getPrincipal());
@@ -1834,10 +1849,14 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
 
                                 if (!en.getLogin().equals(e.getLogin())) {
                                     e.setOrigPrincipalName(en.getLogin());
-                                    log.debug("--------------- en.getManagedSysId() : "+en.getManagedSysId()+" ---------------");
-                                    log.debug("--------------- savePrincipalChange : "+savePrincipalChange+" ---------------");
+                                    if(log.isDebugEnabled()) {
+	                                    log.debug("--------------- en.getManagedSysId() : "+en.getManagedSysId()+" ---------------");
+	                                    log.debug("--------------- savePrincipalChange : "+savePrincipalChange+" ---------------");
+                                    }
                                     if(savePrincipalChange.equalsIgnoreCase("true")) {
-                                        log.debug("-------------- changing AD User principal ----------");
+                                    	if(log.isDebugEnabled()) {
+                                    		log.debug("-------------- changing AD User principal ----------");
+                                    	}
                                         IdmAuditLog auditLog = new IdmAuditLog();
                                         auditLog.setUserId(parentLog.getUserId());
                                         auditLog.setPrincipal(parentLog.getPrincipal());
@@ -2012,7 +2031,9 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
 
         req.setScriptHandler(mSys.getPasswordHandler());
 
-        log.debug("Reset password request will be sent for user login " + login.getLogin());
+        if(log.isDebugEnabled()) {
+        	log.debug("Reset password request will be sent for user login " + login.getLogin());
+        }
         return connectorAdapter.resetPasswordRequest(mSys, req, MuleContextProvider.getCtx());
 
     }
@@ -2095,8 +2116,9 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
 
         resumeReq.setHostLoginPassword(passwordDecoded);
         resumeReq.setHostUrl(mSys.getHostUrl());
-
-        log.debug((operation ? "Suspend" : "Resume") + " request will be sent for user login " + login.getLogin());
+        if(log.isDebugEnabled()) {
+        	log.debug((operation ? "Suspend" : "Resume") + " request will be sent for user login " + login.getLogin());
+        }
         return operation ? connectorAdapter.suspendRequest(mSys, resumeReq, MuleContextProvider.getCtx()) :
                 connectorAdapter.resumeRequest(mSys, resumeReq, MuleContextProvider.getCtx());
     }

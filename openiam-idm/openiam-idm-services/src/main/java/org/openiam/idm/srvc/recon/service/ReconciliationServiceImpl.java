@@ -158,9 +158,10 @@ public class ReconciliationServiceImpl implements ReconciliationService {
 		boolean reconFailed = false;
 		ReconciliationResponse reconciliationResponse = null;
         try {
-            log.debug("Reconciliation started for configId=" + config.getReconConfigId() + " - resource="
-                    + config.getResourceId());
-
+        	if(log.isDebugEnabled()) {
+	            log.debug("Reconciliation started for configId=" + config.getReconConfigId() + " - resource="
+	                    + config.getResourceId());
+        	}
 			reconConfigService.updateExecStatus(reconConfig.getReconConfigId(), ReconExecStatusOptions.STARTED);
 
 			Map<String, Object> bindingMap = new HashMap<String, Object>();

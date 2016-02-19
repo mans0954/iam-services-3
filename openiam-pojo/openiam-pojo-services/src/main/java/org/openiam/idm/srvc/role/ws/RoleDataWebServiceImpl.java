@@ -147,7 +147,9 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 		}
 
 		//final RoleEntity nameEntity = roleDataService.getRoleByName(role.getName(), null);
-		LOG.debug("Validating role "+role.getName()+" of managed system "+role.getManagedSysId());
+		if(LOG.isDebugEnabled()) {
+			LOG.debug("Validating role "+role.getName()+" of managed system "+role.getManagedSysId());
+		}
 		//final RoleEntity found = roleDataService.geRoleByNameAndManagedSys(role.getName(), role.getManagedSysId(), null);
 		RoleSearchBean roleSearchBean = new RoleSearchBean();
 		roleSearchBean.setName(role.getName());

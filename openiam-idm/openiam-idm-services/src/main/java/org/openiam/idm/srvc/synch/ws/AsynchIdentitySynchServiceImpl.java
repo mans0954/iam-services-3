@@ -63,7 +63,9 @@ public class AsynchIdentitySynchServiceImpl implements AsynchIdentitySynchServic
 
         //	MuleMessage msg = null;
 
-        log.debug("A-START SYNCH CALLED...................");
+    	if(log.isDebugEnabled()) {
+    		log.debug("A-START SYNCH CALLED...................");
+    	}
         try {
 
             Map<String, String> msgPropMap = new HashMap<String, String>();
@@ -75,17 +77,23 @@ public class AsynchIdentitySynchServiceImpl implements AsynchIdentitySynchServic
             client.sendAsync("vm://synchronizationMessage", (SynchConfig) config, msgPropMap);
 
         } catch (Exception e) {
-            log.debug("EXCEPTION:AsynchIdentitySynchService:startSynchronization");
+        	if(log.isDebugEnabled()) {
+        		log.debug("EXCEPTION:AsynchIdentitySynchService:startSynchronization");
+        	}
             log.error(e);
             //e.printStackTrace();
         }
-        log.debug("A-START SYNCH END ---------------------");
+        if(log.isDebugEnabled()) {
+        	log.debug("A-START SYNCH END ---------------------");
+        }
     }
 
     @Override
     public void executeSynchReview(
             SynchReviewRequest synchReviewRequest) {
-        log.debug("START SYNCH REVIEW CALLED...................");
+    	if(log.isDebugEnabled()) {
+    		log.debug("START SYNCH REVIEW CALLED...................");
+    	}
         try {
 
             Map<String, String> msgPropMap = new HashMap<String, String>();
@@ -97,11 +105,15 @@ public class AsynchIdentitySynchServiceImpl implements AsynchIdentitySynchServic
             client.sendAsync("vm://synchronizationReviewMessage", (SynchReviewRequest) synchReviewRequest, msgPropMap);
 
         } catch (Exception e) {
-            log.debug("EXCEPTION:AsynchIdentitySynchService:executeSynchReview");
+        	if(log.isDebugEnabled()) {
+        		log.debug("EXCEPTION:AsynchIdentitySynchService:executeSynchReview");
+        	}
             log.error(e);
             //e.printStackTrace();
         }
-        log.debug("FINISHED SYNCH REVIEW ---------------------");
+        if(log.isDebugEnabled()) {
+        	log.debug("FINISHED SYNCH REVIEW ---------------------");
+        }
 
     }
 
@@ -118,7 +130,9 @@ public class AsynchIdentitySynchServiceImpl implements AsynchIdentitySynchServic
             client.sendAsync("vm://bulkUserMigrationMessage", (BulkMigrationConfig) config, msgPropMap);
 
         } catch (Exception e) {
-            log.debug("EXCEPTION:AsynchIdentitySynchService:bulkUserMigration");
+        	if(log.isDebugEnabled()) {
+        		log.debug("EXCEPTION:AsynchIdentitySynchService:bulkUserMigration");
+        	}
             log.error(e);
         }
     }
@@ -136,7 +150,9 @@ public class AsynchIdentitySynchServiceImpl implements AsynchIdentitySynchServic
             client.sendAsync("vm://resynchRoleMessage", roleId, msgPropMap);
 
         } catch (Exception e) {
-            log.debug("EXCEPTION:AsynchIdentitySynchService:resynchRole");
+        	if(log.isDebugEnabled()) {
+        		log.debug("EXCEPTION:AsynchIdentitySynchService:resynchRole");
+        	}
             log.error(e);
         }
     }

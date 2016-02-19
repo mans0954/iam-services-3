@@ -299,7 +299,9 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 					entity.setElementAttributes(dbEntity.getElementAttributes());
 				}
 			}
-			log.debug("METADATA_TYPE SAVE : " + entity.toString());
+			if(log.isDebugEnabled()) {
+				log.debug("METADATA_TYPE SAVE : " + entity.toString());
+			}
 
 			if(StringUtils.isBlank(entity.getId())) {
 				metadataTypeDao.save(entity);

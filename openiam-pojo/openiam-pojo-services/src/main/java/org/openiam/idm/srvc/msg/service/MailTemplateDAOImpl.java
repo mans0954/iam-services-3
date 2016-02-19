@@ -21,10 +21,8 @@ public class MailTemplateDAOImpl implements MailTemplateDAO {
 
     @Override
     public MailTemplateEntity add(MailTemplateEntity transientInstance) {
-        log.debug("persisting MailTemplateEntity instance");
         try {
             sessionFactory.getCurrentSession().persist(transientInstance);
-            log.debug("persist successful");
             return transientInstance;
         } catch (HibernateException re) {
             log.error("persist failed", re);
@@ -34,10 +32,8 @@ public class MailTemplateDAOImpl implements MailTemplateDAO {
 
     @Override
     public void remove(MailTemplateEntity persistentInstance) {
-        log.debug("deleting MailTemplateEntity instance");
         try {
             sessionFactory.getCurrentSession().delete(persistentInstance);
-            log.debug("delete successful");
         } catch (RuntimeException re) {
             log.error("delete failed", re);
             throw re;
@@ -46,11 +42,9 @@ public class MailTemplateDAOImpl implements MailTemplateDAO {
 
     @Override
     public MailTemplateEntity update(MailTemplateEntity detachedInstance) {
-        log.debug("merging MailTemplateEntity instance");
         try {
             MailTemplateEntity result = (MailTemplateEntity) sessionFactory
                     .getCurrentSession().merge(detachedInstance);
-            log.debug("merge successful");
             return result;
         } catch (RuntimeException re) {
             log.error("merge failed", re);
@@ -60,16 +54,10 @@ public class MailTemplateDAOImpl implements MailTemplateDAO {
 
     @Override
     public MailTemplateEntity findById(String id) {
-        log.debug("getting MailTemplateEntity instance with id: " + id);
         try {
             MailTemplateEntity instance = (MailTemplateEntity) sessionFactory
                     .getCurrentSession()
                     .get(MailTemplateEntity.class,id);
-            if (instance == null) {
-                log.debug("get successful, no instance found");
-            } else {
-                log.debug("get successful, instance found");
-            }
             return instance;
         } catch (RuntimeException re) {
             log.error("get failed", re);

@@ -120,7 +120,9 @@ public class LdapAdapterForGenericObject implements SourceAdapter {
         System.setProperty("javax.net.ssl.trustStore", keystore);
 
         String hostUrl = config.getSrcHost(); // managedSys.getHostUrl();
-        log.debug("Directory host url:" + hostUrl);
+        if(log.isDebugEnabled()) {
+        	log.debug("Directory host url:" + hostUrl);
+        }
 
         envDC.put(Context.PROVIDER_URL, hostUrl);
         envDC.put(Context.INITIAL_CONTEXT_FACTORY,

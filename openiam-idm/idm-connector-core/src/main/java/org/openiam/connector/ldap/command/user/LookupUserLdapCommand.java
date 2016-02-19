@@ -66,7 +66,9 @@ public class LookupUserLdapCommand extends AbstractLookupLdapCommand<ExtensibleU
                 }
             }
 
-            log.debug("looking up identity: " + identity);
+            if(log.isDebugEnabled()) {
+            	log.debug("looking up identity: " + identity);
+            }
 
             List<String> attrList = new ArrayList<String>();
             ExtensibleObject object = lookupRequest.getExtensibleObject();
@@ -76,7 +78,9 @@ public class LookupUserLdapCommand extends AbstractLookupLdapCommand<ExtensibleU
                     attrList.add(ea.getName());
                 }
             } else {
-                log.debug("Resource id = " + resourceId);
+            	if(log.isDebugEnabled()) {
+            		log.debug("Resource id = " + resourceId);
+            	}
                 List<AttributeMapEntity> attrMap = managedSysService.getResourceAttributeMaps(resourceId);
                 if (attrMap != null) {
                     attrList = getAttributeNameList(attrMap);
@@ -87,14 +91,18 @@ public class LookupUserLdapCommand extends AbstractLookupLdapCommand<ExtensibleU
 
                 String[] attrAry = new String[attrList.size()];
                 attrList.toArray(attrAry);
-                log.debug("Attribute array=" + attrAry);
+                if(log.isDebugEnabled()) {
+                	log.debug("Attribute array=" + attrAry);
+                }
 
                 NamingEnumeration results = null;
                 try {
                     results = lookupSearch(managedSys, matchObj, ldapctx, identity, attrAry, objectBaseDN);
                 } catch (NameNotFoundException nnfe) {
-                    log.debug("results=NULL");
-                    log.debug(" results has more elements=0");
+                	if(log.isDebugEnabled()) {
+	                    log.debug("results=NULL");
+	                    log.debug(" results has more elements=0");
+                	}
                     return false;
                 }
 

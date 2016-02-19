@@ -739,8 +739,10 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
 
     @Override
     public List<UserEntity> getUserBetweenCreateDate(Date fromDate, Date toDate) {
-        log.debug("--------- created createDate ----------- : " + fromDate);
-        log.debug("--------- created toDate ----------- : " + toDate);
+    	if(log.isDebugEnabled()) {
+	        log.debug("--------- created createDate ----------- : " + fromDate);
+	        log.debug("--------- created toDate ----------- : " + toDate);
+    	}
         if (fromDate != null && toDate != null ) {
             final Criteria criteria = getCriteria()
                     .add(Restrictions.ge("createDate",fromDate))
@@ -761,8 +763,10 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
 
     @Override
     public List<UserEntity> getUserBetweenStartDate(Date fromDate, Date toDate) {
-        log.debug("--------- created startDate ----------- : " + fromDate);
-        log.debug("--------- created toDate ----------- : " + toDate);
+    	if(log.isDebugEnabled()) {
+	        log.debug("--------- created startDate ----------- : " + fromDate);
+	        log.debug("--------- created toDate ----------- : " + toDate);
+    	}
         if (fromDate != null && toDate != null ) {
             final Criteria criteria = getCriteria()
                     .add(Restrictions.ge("startDate",fromDate))
@@ -792,8 +796,10 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
 
     @Override
     public List<UserEntity> getUserBetweenLastDate(Date fromDate, Date toDate) {
-        log.debug("--------- lastDate fromDate ----------- : " + fromDate);
-        log.debug("--------- lastDate toDate ----------- : " + toDate);
+    	if(log.isDebugEnabled()) {
+	        log.debug("--------- lastDate fromDate ----------- : " + fromDate);
+	        log.debug("--------- lastDate toDate ----------- : " + toDate);
+    	}
         if (fromDate != null && toDate != null ) {
             final Criteria criteria = getCriteria()
                     .add(Restrictions.ge("lastDate",fromDate))
@@ -813,8 +819,10 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
 
     @Override
     public List<UserEntity> getUserBetweenUpdatedDate(Date fromDate, Date toDate) {
-        log.debug("--------- updated user fromdate ----------- : "+fromDate);
-        log.debug("--------- updated user todate ----------- : "+toDate);
+    	if(log.isDebugEnabled()) {
+	        log.debug("--------- updated user fromdate ----------- : "+fromDate);
+	        log.debug("--------- updated user todate ----------- : "+toDate);
+    	}
         if (fromDate != null && toDate != null) {
             final Criteria criteria = getCriteria().add(
                     Restrictions.lt("lastUpdate", toDate)).add(

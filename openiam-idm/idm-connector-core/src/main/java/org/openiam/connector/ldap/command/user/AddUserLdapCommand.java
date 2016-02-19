@@ -58,12 +58,13 @@ public class AddUserLdapCommand extends AbstractCrudLdapCommand<ExtensibleUser> 
 				objectBaseDN = matchObj.getBaseDn();
             }
 
-            log.debug("baseDN=" + objectBaseDN);
-            log.debug("ID field=" + matchObj.getKeyField());
-            log.debug("Group Membership enabled? " + groupMembershipEnabled);
-
-            log.debug("Checking if the identity exists: " + identity);
-
+			if(log.isDebugEnabled()) {
+	            log.debug("baseDN=" + objectBaseDN);
+	            log.debug("ID field=" + matchObj.getKeyField());
+	            log.debug("Group Membership enabled? " + groupMembershipEnabled);
+	
+	            log.debug("Checking if the identity exists: " + identity);
+			}
             BasicAttributes basicAttr = getBasicAttributes(addRequestType.getExtensibleObject(), matchObj.getKeyField(),
 					targetMembershipList, groupMembershipEnabled, supervisorMembershipList, supervisorMembershipEnabled);
 
@@ -77,7 +78,9 @@ public class AddUserLdapCommand extends AbstractCrudLdapCommand<ExtensibleUser> 
 				identityDN = buildIdentityDn(keyFieldValue, OU, matchObj);
 			}
 
-			log.debug("Creating user in LDAP: " + identityDN);
+			if(log.isDebugEnabled()) {
+				log.debug("Creating user in LDAP: " + identityDN);
+			}
             ldapctx.createSubcontext(identityDN, basicAttr);
 
             if (groupMembershipEnabled) {

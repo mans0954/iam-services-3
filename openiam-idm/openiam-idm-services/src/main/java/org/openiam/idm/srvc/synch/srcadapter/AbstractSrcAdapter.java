@@ -99,7 +99,9 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
             List<TransformScript> transformScripts,
             MatchObjectRule matchRule) {
 
-        log.debug("SynchReview startSynch CALLED.^^^^^^^^");
+    	if(log.isDebugEnabled()) {
+    		log.debug("SynchReview startSynch CALLED.^^^^^^^^");
+    	}
         final SynchReviewService synchReviewService = (SynchReviewService)SpringContextProvider.getBean("synchReviewService");
         final LineObject rowHeader = genHeaderFromRecord(synchReviewService.getHeaderReviewRecord(sourceReview.getSynchReviewId()));
         try {
@@ -117,7 +119,9 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
                 }
             }
         }
-        log.debug("SYNCH REVIEW SYNCHRONIZATION COMPLETE^^^^^^^^");
+        if(log.isDebugEnabled()) {
+        	log.debug("SYNCH REVIEW SYNCHRONIZATION COMPLETE^^^^^^^^");
+        }
         return new SyncResponse(ResponseStatus.SUCCESS);
     }
 
@@ -141,8 +145,9 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
             log.error(me.getMessage());
         }
         long endTime = System.currentTimeMillis();
-        log.debug("--AddUser:SynchAdapter execution time="
-                + (endTime - startTime));
+        if(log.isDebugEnabled()) {
+        	log.debug("--AddUser:SynchAdapter execution time="+ (endTime - startTime));
+        }
     }
 
     public void modifyUser(ProvisionUser pUser) {
@@ -164,8 +169,9 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
             log.error(me.getMessage());
         }
         long endTime = System.currentTimeMillis();
-        log.debug("--ModifyUser:SynchAdapter execution time="
-                + (endTime - startTime));
+        if(log.isDebugEnabled()) {
+        	log.debug("--ModifyUser:SynchAdapter execution time=" + (endTime - startTime));
+        }
     }
 
     /**

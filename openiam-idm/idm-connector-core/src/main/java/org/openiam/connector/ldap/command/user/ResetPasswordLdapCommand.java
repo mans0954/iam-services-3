@@ -66,12 +66,16 @@ public class ResetPasswordLdapCommand extends AbstractLdapCommand<PasswordReques
 
             NamingEnumeration results = null;
             try {
-                log.debug("Looking for user with identity=" +  identity + " in " +  objectBaseDN);
+            	if(log.isDebugEnabled()) {
+            		log.debug("Looking for user with identity=" +  identity + " in " +  objectBaseDN);
+            	}
                 results = lookupSearch(managedSys, matchObj, ldapctx, identity, null, objectBaseDN);
 
             } catch (NameNotFoundException nnfe) {
-                log.debug("results=NULL");
-                log.debug(" results has more elements=0");
+            	if(log.isDebugEnabled()) {
+	                log.debug("results=NULL");
+	                log.debug(" results has more elements=0");
+            	}
                 respType.setStatus(StatusCodeType.FAILURE);
                 return respType;
             }
@@ -97,16 +101,22 @@ public class ResetPasswordLdapCommand extends AbstractLdapCommand<PasswordReques
             }
 
             if (StringUtils.isNotEmpty(identityDN)) {
-                log.debug("New password will be reset for user " + identityDN);
+            	if(log.isDebugEnabled()) {
+            		log.debug("New password will be reset for user " + identityDN);
+            	}
                 Directory dirSpecificImp = DirectorySpecificImplFactory.create(config.getManagedSys().getHandler5());
                 ModificationItem[] mods = dirSpecificImp.resetPassword(passwordRequest);
                 ldapctx.modifyAttributes(identityDN, mods);
-                log.debug("New password has been reset for user " + identityDN);
+                if(log.isDebugEnabled()) {
+                	log.debug("New password has been reset for user " + identityDN);
+                }
             }
 
         } catch (NamingException ne) {
             log.error(ne.getMessage(), ne);
-            log.debug("Returning response object from reset password with Status of Failure...");
+            if(log.isDebugEnabled()) {
+            	log.debug("Returning response object from reset password with Status of Failure...");
+            }
             ConnectorDataException ex =null;
             if (ne instanceof OperationNotSupportedException) {
                 ex = new ConnectorDataException(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION,ne.getMessage());

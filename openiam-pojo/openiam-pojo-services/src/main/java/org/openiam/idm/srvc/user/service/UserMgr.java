@@ -1958,13 +1958,17 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
             // update supervisor
             List<UserEntity> supervisorList = this.getSuperiors(newUserEntity.getId(), 0, Integer.MAX_VALUE);
             for (UserEntity s : supervisorList) {
-                log.debug("looking to match supervisor ids = " + s.getId() + " " + supervisorId);
+            	if(log.isDebugEnabled()) {
+            		log.debug("looking to match supervisor ids = " + s.getId() + " " + supervisorId);
+            	}
                 if (s.getId().equalsIgnoreCase(supervisorId)) {
                     break;
                 }
                 // this.removeSupervisor(s.getOrgStructureId());
             }
-            log.debug("adding supervisor: " + supervisorId);
+            if(log.isDebugEnabled()) {
+            	log.debug("adding supervisor: " + supervisorId);
+            }
             this.addSuperior(supervisorId, newUserEntity.getId());
         }
         return userId;

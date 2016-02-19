@@ -187,7 +187,9 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 
         SyncResponse syncResponse = new SyncResponse(ResponseStatus.SUCCESS);
 
-        log.debug("-startSynchronization CALLED.^^^^^^^^");
+        if(log.isDebugEnabled()) {
+        	log.debug("-startSynchronization CALLED.^^^^^^^^");
+        }
 
         IdmAuditLog idmAuditLog = new IdmAuditLog();
         idmAuditLog.setRequestorUserId(systemUserId);
@@ -222,7 +224,9 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 
             String preScriptUrl = config.getPreSyncScript();
             if (StringUtils.isNotBlank(preScriptUrl)) {
-                log.debug("-PRE synchronization script CALLED.^^^^^^^^");
+            	if(log.isDebugEnabled()) {
+            		log.debug("-PRE synchronization script CALLED.^^^^^^^^");
+            	}
                 Map<String, Object> bindingMap = new HashMap<String, Object>();
                 bindingMap.put("config", configDTO);
                 if (reviewDTO != null) {
@@ -236,7 +240,9 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
                         syncResponse.setErrorCode(ResponseCode.SYNCHRONIZATION_PRE_SRIPT_FAILURE);
                         return syncResponse;
                     }
-                    log.debug("-PRE synchronization script COMPLETE.^^^^^^^^");
+                    if(log.isDebugEnabled()) {
+                    	log.debug("-PRE synchronization script COMPLETE.^^^^^^^^");
+                    }
                     if (ret == SyncConstants.SKIP) {
                         return syncResponse;
 
@@ -258,7 +264,9 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
             SourceAdapter adapt = adapterFactory.create(configDTO);
             syncResponse = adapt.startSynch(configDTO, review, resultReview);
 			
- 			log.debug("SyncReponse updateTime value=" + newLastExecTime);
+            if(log.isDebugEnabled()) {
+            	log.debug("SyncReponse updateTime value=" + newLastExecTime);
+            }
             idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "SyncReponse updateTime value=" + newLastExecTime);
 
             if (syncResponse.getLastRecordTime() == null) {
@@ -272,12 +280,16 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 				synchConfigDao.updateLastRecProcessed(config.getSynchConfigId(),syncResponse.getLastRecProcessed() );
 			}
 
-		    log.debug("-startSynchronization COMPLETE.^^^^^^^^");
+            if(log.isDebugEnabled()) {
+            	log.debug("-startSynchronization COMPLETE.^^^^^^^^");
+            }
             idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "-startSynchronization COMPLETE.^^^^^^^^");
 
             String postScriptUrl = config.getPostSyncScript();
             if (StringUtils.isNotBlank(postScriptUrl)) {
-                log.debug("-POST synchronization script CALLED.^^^^^^^^");
+            	if(log.isDebugEnabled()) {
+            		log.debug("-POST synchronization script CALLED.^^^^^^^^");
+            	}
                 Map<String, Object> bindingMap = new HashMap<String, Object>();
                 bindingMap.put("config", synchConfigDozerConverter.convertToDTO(config, false));
                 try {
@@ -287,7 +299,9 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
                         syncResponse.setErrorCode(ResponseCode.SYNCHRONIZATION_POST_SRIPT_FAILURE);
                         return syncResponse;
                     }
-                    log.debug("-POST synchronization script COMPLETE.^^^^^^^^");
+                    if(log.isDebugEnabled()) {
+                    	log.debug("-POST synchronization script COMPLETE.^^^^^^^^");
+                    }
                 } catch(Exception e) {
                     log.error(e);
                 }
@@ -390,8 +404,9 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 
             // all the provisioning service
             for ( User user :  searchResult) {
-
-                log.debug("Migrating user: " + user.getId() + " " + user.getLastName());
+            	if(log.isDebugEnabled()) {
+            		log.debug("Migrating user: " + user.getId() + " " + user.getLastName());
+            	}
 
                 ProvisionUser pUser = new ProvisionUser(user);
 
@@ -459,7 +474,9 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
             client.sendAsync("vm://provisionServiceModifyMessage", pUser, msgPropMap);
 
         } catch (Exception e) {
-            log.debug("EXCEPTION:bulkUserMigration");
+        	if(log.isDebugEnabled()) {
+        		log.debug("EXCEPTION:bulkUserMigration");
+        	}
             log.error(e);
         }
     }
@@ -512,7 +529,9 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 
         Response resp = new Response(ResponseStatus.SUCCESS);
         try {
-            log.debug("Resynch Role: " + roleId );
+        	if(log.isDebugEnabled()) {
+        		log.debug("Resynch Role: " + roleId );
+        	}
 
             final UserSearchBean searchBean = new UserSearchBean();
             searchBean.addRoleId(roleId);
@@ -531,8 +550,9 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 
             // all the provisioning service
             for ( User user :  searchResult) {
-
-                log.debug("Updating the user since this role's configuration has changed.: " + user.getId() + " " + user.getLastName());
+            	if(log.isDebugEnabled()) {
+            		log.debug("Updating the user since this role's configuration has changed.: " + user.getId() + " " + user.getLastName());
+            	}
 
                 ProvisionUser pUser = new ProvisionUser(user);
 

@@ -637,9 +637,11 @@ public class ProvisionDispatcherTransactionHelper {
 
         String identity = mLg.getLogin();
         MuleContext muleContext = MuleContextProvider.getCtx();
-        log.debug("Getting the current attributes in the target system for =" + identity);
+        if(log.isDebugEnabled()) {
+        	log.debug("Getting the current attributes in the target system for =" + identity);
 
-        log.debug("- IsRename: " + mLg.getOrigPrincipalName());
+        	log.debug("- IsRename: " + mLg.getOrigPrincipalName());
+        }
 
         if (mLg.getOrigPrincipalName() != null && !mLg.getOrigPrincipalName().isEmpty()) {
             identity = mLg.getOrigPrincipalName();
@@ -701,7 +703,9 @@ public class ProvisionDispatcherTransactionHelper {
                     curValueMap.put(attr.getName(), attr);
                 }
             } else {
-                log.debug(" - NO attributes found in target system lookup ");
+            	if(log.isDebugEnabled()) {
+            		log.debug(" - NO attributes found in target system lookup ");
+            	}
             }
             return true;
         }

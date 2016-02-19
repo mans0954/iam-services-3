@@ -188,7 +188,9 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements Lo
     @Override
     public int bulkUnlock(UserStatusEnum status, int autoUnlockTime) {
 
-        log.debug("bulkUnlock operation in LoginDAO called.");
+    	if(log.isDebugEnabled()) {
+    		log.debug("bulkUnlock operation in LoginDAO called.");
+    	}
         Session session = getSession();
 
         String userQry = " UPDATE org.openiam.idm.srvc.user.domain.UserEntity u  "
@@ -208,32 +210,40 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements Lo
         Query qry = session.createQuery(userQry);
 
         Date policyTime = new Date(System.currentTimeMillis());
-
-        log.debug("Auto unlock time:" + autoUnlockTime);
-
+        if(log.isDebugEnabled()) {
+        	log.debug("Auto unlock time:" + autoUnlockTime);
+        }
         Calendar c = Calendar.getInstance();
         c.setTime(policyTime);
         c.add(Calendar.MINUTE, (-1 * autoUnlockTime));
         policyTime.setTime(c.getTimeInMillis());
 
-        log.debug("Policy time=" + policyTime.toString());
+        if(log.isDebugEnabled()) {
+        	log.debug("Policy time=" + policyTime.toString());
+        }
 
         int statusParam = 0;
         if (status.equals(UserStatusEnum.LOCKED)) {
             statusParam = 1;
             // qry.setInteger("status", 1);
-            log.debug("status=1");
+            if(log.isDebugEnabled()) {
+            	log.debug("status=1");
+            }
         } else {
             statusParam = 2;
             // qry.setInteger("status", 2);
-            log.debug("status=2");
+            if(log.isDebugEnabled()) {
+            	log.debug("status=2");
+            }
         }
 
         qry.setInteger("status", statusParam);
         qry.setTimestamp("policyTime", policyTime);
         int rowCount = qry.executeUpdate();
 
-        log.debug("Bulk unlock updated:" + rowCount);
+        if(log.isDebugEnabled()) {
+        	log.debug("Bulk unlock updated:" + rowCount);
+        }
 
         if (rowCount > 0) {
 
@@ -256,10 +266,11 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements Lo
     @Override
     public List<LoginEntity> findInactiveUsers(int startDays, int endDays,
                                                String managedSysId) {
-        log.debug("findInactiveUsers called.");
-        log.debug("Start days=" + startDays);
-        log.debug("End days=" + endDays);
-
+    	if(log.isDebugEnabled()) {
+	        log.debug("findInactiveUsers called.");
+	        log.debug("Start days=" + startDays);
+	        log.debug("End days=" + endDays);
+    	}
         boolean start = false;
         long curTimeMillis = System.currentTimeMillis();
         Date startDate = new Date(curTimeMillis);
@@ -277,9 +288,9 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements Lo
             c.setTime(startDate);
             c.add(Calendar.DAY_OF_YEAR, (-1 * startDays));
             startDate.setTime(c.getTimeInMillis());
-
-            log.debug("starDate = " + startDate.toString());
-
+            if(log.isDebugEnabled()) {
+            	log.debug("starDate = " + startDate.toString());
+            }
         }
         if (endDays != 0) {
             if (start) {
@@ -291,9 +302,9 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements Lo
             c.setTime(endDate);
             c.add(Calendar.DAY_OF_YEAR, (-1 * endDays));
             endDate.setTime(c.getTimeInMillis());
-
-            log.debug("endDate = " + endDate.toString());
-
+            if(log.isDebugEnabled()) {
+            	log.debug("endDate = " + endDate.toString());
+            }
         }
 
         Session session = getSession();
@@ -322,9 +333,10 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements Lo
      */
     @Override
     public List<LoginEntity> findUserNearPswdExp(int daysToExpiration) {
-        log.debug("findUserNearPswdExp: findUserNearPswdExp called.");
-        log.debug("days to password Expiration=" + daysToExpiration);
-
+    	if(log.isDebugEnabled()) {
+	        log.debug("findUserNearPswdExp: findUserNearPswdExp called.");
+	        log.debug("days to password Expiration=" + daysToExpiration);
+    	}
         Date expDate = new java.sql.Date(System.currentTimeMillis());
         Date endDate = new java.sql.Date(expDate.getTime());
 
@@ -339,9 +351,10 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements Lo
             c.add(Calendar.DAY_OF_YEAR, 1);
             endDate.setTime(c.getTimeInMillis());
 
-            log.debug("dates between : " + expDate.toString() + " "
-                    + endDate.toString());
-
+            if(log.isDebugEnabled()) {
+	            log.debug("dates between : " + expDate.toString() + " "
+	                    + endDate.toString());
+            }
         }
 
         String sql = new String(
@@ -363,8 +376,9 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements Lo
 
     @Override
     public List<LoginEntity> findUserPswdExpYesterday() {
-        log.debug("findUserPswdExpToday: findUserNearPswdExp called.");
-
+    	if(log.isDebugEnabled()) {
+    		log.debug("findUserPswdExpToday: findUserNearPswdExp called.");
+    	}
         java.sql.Date expDate = new java.sql.Date(System.currentTimeMillis());
         java.sql.Date endDate = new java.sql.Date(expDate.getTime());
 
@@ -376,9 +390,10 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements Lo
         c.add(Calendar.DAY_OF_YEAR, 1);
         endDate.setTime(c.getTimeInMillis());
 
-        log.debug("dates between : " + expDate.toString() + " "
-                + endDate.toString());
-
+        if(log.isDebugEnabled()) {
+	        log.debug("dates between : " + expDate.toString() + " "
+	                + endDate.toString());
+        }
         String sql = new String(
                 " from org.openiam.idm.srvc.auth.domain.LoginEntity l where "
                         + " l.pwdExp BETWEEN :startDate and :endDate");
@@ -404,7 +419,9 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements Lo
      */
     @Override
     public int bulkResetPasswordChangeCount() {
-        log.debug("bulkResetPasswordChangeCount operation in LoginDAO called.");
+    	if(log.isDebugEnabled()) {
+    		log.debug("bulkResetPasswordChangeCount operation in LoginDAO called.");
+    	}
         Session session = getSession();
 
         String loginQry = " UPDATE org.openiam.idm.srvc.auth.domain.LoginEntity l  "

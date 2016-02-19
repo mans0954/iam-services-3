@@ -66,7 +66,9 @@ public class SequenceGenDAOImpl implements SequenceGenDAO {
     
      
     public SequenceGen findById( java.lang.String id) throws DataException {
-        log.debug("getting SequenceGen instance with id: " + id);
+    	if(log.isDebugEnabled()) {
+    		log.debug("getting SequenceGen instance with id: " + id);
+    	}
         try { 
         	SequenceGen s = new SequenceGen(id);
         	SequenceGen seq =  (SequenceGen)hibernateTemplate

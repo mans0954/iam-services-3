@@ -13,10 +13,8 @@ public class SynchConfigDataMappingDAOImpl extends BaseDaoImpl<SynchConfigDataMa
 			.getLog(SynchConfigDataMappingDAOImpl.class);
 
 	public SynchConfigDataMappingEntity add(SynchConfigDataMappingEntity transientInstance) {
-		log.debug("persisting SynchConfig instance");
 		try {
             getSession().persist(transientInstance);
-			log.debug("persist successful");
 			return transientInstance;
 		} catch (RuntimeException re) {
 			log.error("persist failed", re);
@@ -25,10 +23,8 @@ public class SynchConfigDataMappingDAOImpl extends BaseDaoImpl<SynchConfigDataMa
 	}
 
 	public void remove(SynchConfigDataMappingEntity persistentInstance) {
-		log.debug("deleting SynchConfigDataMapping instance");
 		try {
 			getSession().delete(persistentInstance);
-			log.debug("delete successful");
 		} catch (RuntimeException re) {
 			log.error("delete failed", re);
 			throw re;
@@ -37,10 +33,8 @@ public class SynchConfigDataMappingDAOImpl extends BaseDaoImpl<SynchConfigDataMa
 
     @Override
 	public SynchConfigDataMappingEntity merge(SynchConfigDataMappingEntity detachedInstance) {
-		log.debug("merging SynchConfigDataMapping instance");
 		try {
             SynchConfigDataMappingEntity ret = (SynchConfigDataMappingEntity) getSession().merge(detachedInstance);
-			log.debug("merge successful");
             return ret;
 
 		} catch (RuntimeException re) {
@@ -50,15 +44,9 @@ public class SynchConfigDataMappingDAOImpl extends BaseDaoImpl<SynchConfigDataMa
 	}
 
 	public SynchConfigDataMappingEntity findById(java.lang.String id) {
-		log.debug("getting SynchConfigDataMapping instance with id: " + id);
 		try {
             SynchConfigDataMappingEntity instance = (SynchConfigDataMappingEntity) getSession()
                     .get(SynchConfigDataMappingEntity.class, id);
-			if (instance == null) {
-				log.debug("get successful, no instance found");
-			} else {
-				log.debug("get successful, instance found");
-			}
 			return instance;
 		} catch (RuntimeException re) {
 			log.error("get failed", re);

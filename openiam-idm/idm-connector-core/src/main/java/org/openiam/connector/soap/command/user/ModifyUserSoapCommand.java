@@ -44,11 +44,14 @@ public class ModifyUserSoapCommand extends
 			HashMap<String, String> attributes = new HashMap<String, String>();
 			attributes.put("login", crudRequest.getObjectIdentity());
 			if (obj == null) {
-				log.debug("Object: not provided, just identity, seems it is delete operation");
+				if(log.isDebugEnabled()) {
+					log.debug("Object: not provided, just identity, seems it is delete operation");
+				}
 			} else {
-				log.debug("Object:" + obj.getName() + " - operation="
-						+ obj.getOperation());
-
+				if(log.isDebugEnabled()) {
+					log.debug("Object:" + obj.getName() + " - operation="
+							+ obj.getOperation());
+				}
 				// Extract attributes
 				for (ExtensibleAttribute att : obj.getAttributes()) {
 					if (att != null) {
