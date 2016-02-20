@@ -17,6 +17,7 @@ import org.openiam.idm.srvc.org.service.OrganizationTypeDataService;
 import org.openiam.service.integration.AbstractAttributeServiceTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.testng.annotations.Test;
 
 public class OrganizationServiceTest extends AbstractAttributeServiceTest<Organization, OrganizationSearchBean, OrganizationAttribute> {
 	
@@ -110,5 +111,14 @@ public class OrganizationServiceTest extends AbstractAttributeServiceTest<Organi
 		searchBean.setName(name);
 	}
 
+	@Test
+	public void testHibernateCache() {
+		Organization instance = newInstance();
+		instance.setName(getRandomName());
+		Response response = save(instance);
 
+		final String id = (String)response.getResponseValue();
+		instance = get(id);
+		instance = get(id);
+	}
 }
