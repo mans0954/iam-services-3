@@ -215,7 +215,7 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
         if (id == null) {
             return null;
         }
-        return (T) getCriteria().add(eq(getPKfieldName(), id)).uniqueResult(); //this.getSession().get(domainClass, id);
+        return (T) getCriteria().add(eq(getPKfieldName(), id)).setCacheable(cachable()).uniqueResult(); //this.getSession().get(domainClass, id);
     }
 
     @SuppressWarnings({"unchecked"})
@@ -223,7 +223,7 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
         if (id == null) {
             return null;
         }
-        return (T) getCriteria().add(eq(getPKfieldName(), id)).uniqueResult(); //this.getSession().get(domainClass, id);
+        return (T) getCriteria().add(eq(getPKfieldName(), id)).setCacheable(cachable()).uniqueResult(); //this.getSession().get(domainClass, id);
     }
 
     /**
