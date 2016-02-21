@@ -27,10 +27,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.idm.srvc.key.constant.KeyName;
+import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.pswd.domain.PasswordHistoryEntity;
 import org.openiam.idm.srvc.pswd.dto.Password;
 import org.openiam.idm.srvc.pswd.dto.PasswordRule;
+import org.openiam.idm.srvc.pswd.service.PasswordHistoryDAO;
+import org.openiam.util.encrypt.Cryptor;
 
 import java.util.List;
 
@@ -42,6 +45,9 @@ import java.util.List;
 public class PasswordHistoryRule extends AbstractPasswordRule {
 
     private static final Log log = LogFactory.getLog(PasswordHistoryRule.class);
+    protected PasswordHistoryDAO passwordHistoryDao;
+    protected Cryptor cryptor;
+    protected KeyManagementService keyManagementService;
 
     @Override
     public String getAttributeName() {
@@ -61,6 +67,12 @@ public class PasswordHistoryRule extends AbstractPasswordRule {
 
         if (enabled) {
             log.info("password history rule is enabled.");
+
+            if(StringUtils.isBlank(user.getId()) || StringUtils.isBlank(lg.getLogin())){
+                // new user skip validation
+                return;
+            }
+
             Password pswd = new Password();
             pswd.setManagedSysId(lg.getManagedSysId());
             pswd.setPrincipal(lg.getLogin());
@@ -129,5 +141,29 @@ public class PasswordHistoryRule extends AbstractPasswordRule {
         } else {
             return null;
         }
+    }
+
+    public PasswordHistoryDAO getPasswordHistoryDao() {
+        return passwordHistoryDao;
+    }
+
+    public void setPasswordHistoryDao(PasswordHistoryDAO passwordHistoryDao) {
+        this.passwordHistoryDao = passwordHistoryDao;
+    }
+
+    public Cryptor getCryptor() {
+        return cryptor;
+    }
+
+    public void setCryptor(Cryptor cryptor) {
+        this.cryptor = cryptor;
+    }
+
+    public KeyManagementService getKeyManagementService() {
+        return keyManagementService;
+    }
+
+    public void setKeyManagementService(KeyManagementService keyManagementService) {
+        this.keyManagementService = keyManagementService;
     }
 }

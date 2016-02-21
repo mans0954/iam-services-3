@@ -110,15 +110,19 @@ public class PasswordValidatorImpl implements PasswordValidator {
     @Override
     public void validateForUser(Policy pswdPolicy, Password password, UserEntity user, LoginEntity login)
             throws ObjectNotFoundException, IOException, PasswordRuleException {
-        final List<AbstractPasswordRule> rules = getRules(pswdPolicy, password, user, login);
-        if (CollectionUtils.isNotEmpty(rules)) {
-            for (final AbstractPasswordRule rule : rules) {
+        validateForUser(pswdPolicy, password, user, login, null);
+    }
+    public void validateForUser(Policy policy, Password password, UserEntity usr, LoginEntity lg, List<AbstractPasswordRule> pwdRules) throws ObjectNotFoundException, IOException, PasswordRuleException{
+        if(CollectionUtils.isEmpty(pwdRules)){
+            pwdRules = getRules(policy, password, usr, lg);
+        }
+        if (CollectionUtils.isNotEmpty(pwdRules)) {
+            for (final AbstractPasswordRule rule : pwdRules) {
                 rule.validate();
                 log.info(String.format("Passed validation for: %s", rule));
             }
         }
     }
-
 
     @Override
     public List<PasswordRule> getPasswordRules(final Policy policy, final Password password) throws ObjectNotFoundException, IOException {
@@ -130,21 +134,26 @@ public class PasswordValidatorImpl implements PasswordValidator {
     @Override
     public List<PasswordRule> getPasswordRules(final Policy pswdPolicy, final Password password, final UserEntity user, final LoginEntity login)
             throws ObjectNotFoundException, IOException {
-        final List<PasswordRule> exceptions = new LinkedList<>();
         final List<AbstractPasswordRule> rules = getRules(pswdPolicy, password, user, login);
+        return getPasswordRules(rules);
+    }
+
+    public List<PasswordRule> getPasswordRules(List<AbstractPasswordRule> rules)throws ObjectNotFoundException, IOException{
+        final List<PasswordRule> pwdRules = new LinkedList<>();
         if (CollectionUtils.isNotEmpty(rules)) {
             for (final AbstractPasswordRule rule : rules) {
-                final PasswordRule ex = rule.createRule();
-                if (ex != null) {
-                    exceptions.add(ex);
+                final PasswordRule pr = rule.createRule();
+                if (pr != null) {
+                    pwdRules.add(pr);
                 }
                 log.info(String.format("Passed validation for: %s", rule));
             }
         }
-        return exceptions;
+        return pwdRules;
     }
 
-    private List<AbstractPasswordRule> getRules(Policy pswdPolicy, Password password, UserEntity user, LoginEntity login)
+    @Override
+    public List<AbstractPasswordRule> getRules(Policy pswdPolicy, Password password, UserEntity user, LoginEntity login)
             throws ObjectNotFoundException, IOException {
         final List<AbstractPasswordRule> rules = new LinkedList<>();
 
@@ -200,9 +209,14 @@ public class PasswordValidatorImpl implements PasswordValidator {
                         rule.setUser(usr);
                         rule.setLg(lg);
                         rule.setPolicy(pswdPolicy);
-                        rule.setPasswordHistoryDao(passwordHistoryDao);
-                        rule.setCryptor(cryptor);
-                        rule.setKeyManagementService(keyManagementService);
+
+                        if(rule instanceof PasswordHistoryRule){
+                            PasswordHistoryRule pwdHistRule = (PasswordHistoryRule)rule;
+                            pwdHistRule.setPasswordHistoryDao(passwordHistoryDao);
+                            pwdHistRule.setCryptor(cryptor);
+                            pwdHistRule.setKeyManagementService(keyManagementService);
+                        }
+
                         rules.add(rule);
                     }
                 }
