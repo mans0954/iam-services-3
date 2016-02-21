@@ -114,11 +114,17 @@ public class OrganizationServiceTest extends AbstractAttributeServiceTest<Organi
 	@Test
 	public void testHibernateCache() {
 		Organization instance = newInstance();
-		instance.setName(getRandomName());
-		Response response = save(instance);
-
-		final String id = (String)response.getResponseValue();
-		instance = get(id);
-		instance = get(id);
+		try {
+			instance.setName(getRandomName());
+			Response response = save(instance);
+	
+			final String id = (String)response.getResponseValue();
+			instance = get(id);
+			instance = get(id);
+		} catch(Throwable e) {
+			if(instance != null) {
+				delete(instance);
+			}
+		}
 	}
 }
