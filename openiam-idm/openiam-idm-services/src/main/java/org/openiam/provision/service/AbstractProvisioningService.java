@@ -1829,7 +1829,6 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
                         entity.setPassword(loginManager.encryptPassword(userEntity.getId(), e.getPassword()));
                     } catch (Exception ee) {
                         log.error(ee);
-                        ee.printStackTrace();
                     }
                     // Audit Log ---------------------------------------------------
                     IdmAuditLog auditLog = new IdmAuditLog();
@@ -2154,16 +2153,16 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
         MetadataTypeEntity employeeType = null;
         MetadataTypeEntity subtype = null;
         if (StringUtils.isNotBlank(pUser.getMdTypeId())) {
-            type = metadataTypeDAO.findById(pUser.getMdTypeId());
+            type = metadataTypeDAO.findByIdNoLocalized(pUser.getMdTypeId());
         }
         if (StringUtils.isNotBlank(pUser.getJobCodeId())) {
-            jobCode = metadataTypeDAO.findById(pUser.getJobCodeId());
+            jobCode = metadataTypeDAO.findByIdNoLocalized(pUser.getJobCodeId());
         }
         if (StringUtils.isNotBlank(pUser.getEmployeeTypeId())) {
-            employeeType = metadataTypeDAO.findById(pUser.getEmployeeTypeId());
+            employeeType = metadataTypeDAO.findByIdNoLocalized(pUser.getEmployeeTypeId());
         }
         if (StringUtils.isNotBlank(pUser.getUserSubTypeId())) {
-            subtype = metadataTypeDAO.findById(pUser.getUserSubTypeId());
+            subtype = metadataTypeDAO.findByIdNoLocalized(pUser.getUserSubTypeId());
         }
 
 
@@ -2188,13 +2187,13 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
         MetadataTypeEntity employeeType = null;
 
         if (StringUtils.isNotBlank(pUser.getMdTypeId())) {
-            type = metadataTypeDAO.findById(pUser.getMdTypeId());
+            type = metadataTypeDAO.findByIdNoLocalized(pUser.getMdTypeId());
         }
         if (StringUtils.isNotBlank(pUser.getJobCodeId())) {
-            jobCode = metadataTypeDAO.findById(pUser.getJobCodeId());
+            jobCode = metadataTypeDAO.findByIdNoLocalized(pUser.getJobCodeId());
         }
         if (StringUtils.isNotBlank(pUser.getEmployeeTypeId())) {
-            employeeType = metadataTypeDAO.findById(pUser.getEmployeeTypeId());
+            employeeType = metadataTypeDAO.findByIdNoLocalized(pUser.getEmployeeTypeId());
         }
 
         Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
@@ -2325,7 +2324,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
             auditLog.setTargetUser(tgId, strLogin);
             auditLog.setAction(AuditAction.REPLACE_PROP.value());
-            MetadataTypeEntity metadataType = metadataTypeDAO.findById(pUser.getEmployeeTypeId());
+            MetadataTypeEntity metadataType = metadataTypeDAO.findByIdNoLocalized(pUser.getEmployeeTypeId());
             auditLog.addCustomRecord("EmployeeType", "New='" + metadataType.getDescription() + "'");
             parentLog.addChild(auditLog);
             // ---------------------------------------------------------------------------------------------
@@ -2353,7 +2352,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
             auditLog.setTargetUser(tgId, strLogin);
             auditLog.setAction(AuditAction.REPLACE_PROP.value());
-            MetadataTypeEntity metadataType = metadataTypeDAO.findById(pUser.getJobCodeId());
+            MetadataTypeEntity metadataType = metadataTypeDAO.findByIdNoLocalized(pUser.getJobCodeId());
             auditLog.addCustomRecord("JobCode", "New='" + metadataType.getDescription() + "'");
             parentLog.addChild(auditLog);
             // ---------------------------------------------------------------------------------------------
@@ -2417,7 +2416,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
             auditLog.setTargetUser(tgId, strLogin);
             auditLog.setAction(AuditAction.REPLACE_PROP.value());
-            MetadataTypeEntity metadataType = metadataTypeDAO.findById(pUser.getSuffix());
+            MetadataTypeEntity metadataType = metadataTypeDAO.findByIdNoLocalized(pUser.getSuffix());
             auditLog.addCustomRecord("Suffix", "New='" + pUser.getSuffix() + "'");
             parentLog.addChild(auditLog);
             // ---------------------------------------------------------------------------------------------
@@ -2430,7 +2429,6 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
             auditLog.setTargetUser(tgId, strLogin);
             auditLog.setAction(AuditAction.REPLACE_PROP.value());
-            MetadataTypeEntity metadataType = metadataTypeDAO.findById(pUser.getTitle());
             auditLog.addCustomRecord("Title", "New='" + pUser.getTitle() + "'");
             parentLog.addChild(auditLog);
             // ---------------------------------------------------------------------------------------------

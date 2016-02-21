@@ -448,5 +448,13 @@
            timeToLiveSeconds="1600"
            timeToIdleSeconds="800"
     />
+    <cache name="MetadataTypeEntity"
+           maxElementsInMemory="10000"
+           eternal="false"
+           overflowToDisk="true"
+           memoryStoreEvictionPolicy="LRU"
+           timeToLiveSeconds="1600"
+           timeToIdleSeconds="800"
+    />
 
 </ehcache>

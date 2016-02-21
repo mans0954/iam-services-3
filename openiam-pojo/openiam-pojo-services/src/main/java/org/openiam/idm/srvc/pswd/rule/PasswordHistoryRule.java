@@ -56,9 +56,9 @@ public class PasswordHistoryRule extends AbstractPasswordRule {
 
     @Override
     public void validate(PolicyAttribute attribute) throws PasswordRuleException {
-
-        log.info("PasswordHistoryRule called.");
-
+        if(log.isInfoEnabled()) {
+            log.info("PasswordHistoryRule called.");
+        }
         boolean enabled = false;
 
         if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
@@ -66,8 +66,9 @@ public class PasswordHistoryRule extends AbstractPasswordRule {
         }
 
         if (enabled) {
-            log.info("password history rule is enabled.");
-
+            if(log.isInfoEnabled()) {
+                log.info("password history rule is enabled.");
+            }
             if(StringUtils.isBlank(user.getId()) || StringUtils.isBlank(lg.getLogin())){
                 // new user skip validation
                 return;
@@ -86,15 +87,18 @@ public class PasswordHistoryRule extends AbstractPasswordRule {
             }
             // check the list.
             String userId = (user == null) ? lg.getUserId() : user.getId();
-
-            log.info("Found " + historyList.size() + " passwords in the history");
+            if(log.isInfoEnabled()) {
+                log.info("Found " + historyList.size() + " passwords in the history");
+            }
             for (PasswordHistoryEntity hist : historyList) {
                 String pwd = hist.getPassword();
                 String decrypt = null;
                 try {
                     decrypt = cryptor.decrypt(keyManagementService.getUserKey(userId, KeyName.password.name()), pwd);
                     if (StringUtils.equals(pswd.getPassword(), decrypt)) {
-                        log.info("matching password found.");
+                        if(log.isInfoEnabled()) {
+                            log.info("matching password found.");
+                        }
                         throw new PasswordRuleException(ResponseCode.FAIL_HISTORY_RULE);
                     }
                 } catch (PasswordRuleException e) {
