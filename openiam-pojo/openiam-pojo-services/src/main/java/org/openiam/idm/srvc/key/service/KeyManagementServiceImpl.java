@@ -129,25 +129,34 @@ public class KeyManagementServiceImpl implements KeyManagementService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void generateMasterKey() throws Exception {
-        log.warn("Start generating new master key...");
-
-        log.warn("Loading user data ...");
+        if(log.isDebugEnabled()) {
+            log.debug("Start generating new master key...");
+            log.debug("Loading user data ...");
+        }
 
         HashMap<String, UserSecurityWrapper> userSecurityMap = getSecurityMap();
         List<UserKey> newUserKeyList = new ArrayList<UserKey>();
-
-        log.warn("Try to get old salt ...");
+        if(log.isDebugEnabled()) {
+            log.debug("Try to get old salt ...");
+        }
         byte[] oldMasterKey = this.getPrimaryKey(JksManager.KEYSTORE_ALIAS, this.keyPassword);
         if (oldMasterKey != null && oldMasterKey.length > 0) {
-            log.warn("OLD MASTER KEY IS: " + jksManager.encodeKey(oldMasterKey));
-            log.warn("Decrypting user data ...");
+            if(log.isDebugEnabled()) {
+                log.debug("OLD MASTER KEY IS: " + jksManager.encodeKey(oldMasterKey));
+                log.debug("Decrypting user data ...");
+            }
             decryptData(oldMasterKey, userSecurityMap);
-            log.warn("Decrypting user data finished successfully");
+            if(log.isDebugEnabled()) {
+                log.debug("Decrypting user data finished successfully");
+            }
         } else {
-            log.warn("OLD MASTER KEY IS NULL");
+            if(log.isDebugEnabled()) {
+                log.debug("OLD MASTER KEY IS NULL");
+            }
         }
-
-        log.warn(" Generation of new master key ...");
+        if(log.isDebugEnabled()) {
+            log.debug(" Generation of new master key ...");
+        }
 //        jksManager.generateMasterKey(this.jksPassword.toCharArray(), this.keyPassword.toCharArray());
 //
 //        byte[] masterKey = this.getPrimaryKey(JksManager.KEYSTORE_ALIAS, this.keyPassword);
@@ -155,17 +164,23 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         if (masterKey == null || masterKey.length == 0) {
             throw new NullPointerException("Cannot get master key to encrypt user keys");
         }
+        if(log.isDebugEnabled()) {
+            log.debug("NEW MASTER KEY IS: " + jksManager.encodeKey(masterKey));
 
-        log.warn("NEW MASTER KEY IS: " + jksManager.encodeKey(masterKey));
-
-        log.warn("Ecrypting user data ...");
+            log.debug("Ecrypting user data ...");
+        }
         encryptData(masterKey, userSecurityMap, newUserKeyList);
-        log.warn("Ecrypting user data finished successfully");
+        if(log.isDebugEnabled()) {
+            log.debug("Ecrypting user data finished successfully");
 
-        log.warn("Refreshing user keys...");
+
+            log.debug("Refreshing user keys...");
+        }
         userKeyDao.deleteAll();
         addUserKeys(newUserKeyList);
-        log.warn("End generating new master key...");
+        if(log.isDebugEnabled()) {
+            log.debug("End generating new master key...");
+        }
     }
 
     @Override
@@ -187,15 +202,17 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         }
         List<UserEntity> userList = new ArrayList<UserEntity>();
         userList.add(user);
-        List<LoginEntity> lgList = loginDAO.findUser(user.getId());
+//        List<LoginEntity> lgList = loginDAO.findUser(user.getId());
+        List<LoginEntity> lgList = user.getPrincipalList();
 //        List<UserKey> keyList = userKeyDao.getByUserId(user.getId());
-        UserIdentityAnswerEntity example = new UserIdentityAnswerEntity();
-        example.setUserId(user.getId());
-        List<UserIdentityAnswerEntity> answersList = userIdentityAnswerDAO.getByExample(example);
+//        UserIdentityAnswerEntity example = new UserIdentityAnswerEntity();
+//        example.setUserId(user.getId());
+//        List<UserIdentityAnswerEntity> answersList = userIdentityAnswerDAO.getByExample(example);
 
         List<PasswordHistoryEntity> pwdList = new ArrayList<PasswordHistoryEntity>();
         for (LoginEntity lg : lgList) {
-            pwdList.addAll(passwordHistoryDao.getPasswordHistoryByLoginId(lg.getLoginId(), 0, Integer.MAX_VALUE));
+//            pwdList.addAll(passwordHistoryDao.getPasswordHistoryByLoginId(lg.getLoginId(), 0, Integer.MAX_VALUE));
+            pwdList.addAll(lg.getPasswordHistory());
         }
         List<ManagedSysEntity> managedSysList = null;
         if(systemUserId.equals(user.getId())){
@@ -210,11 +227,11 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         usw.setManagedSysList(managedSysList);
         usw.setPasswordHistoryList(pwdList);
 //        usw.setUserKeyList(keyList);
-        usw.setUserIdentityAnswerList(answersList);
+//        usw.setUserIdentityAnswerList(answersList);
 
         encryptUserData(masterKey, usw, newUserKeyList);
-        // replace user key for given user
-        userKeyDao.deleteByUserId(user.getId());
+        // replace user key for given user. DON'T NECESSARY TO DELETE DUE TO IT IS CALLED FOR NEW USER
+//        userKeyDao.deleteByUserId(user.getId());
         addUserKeys(newUserKeyList);
         return 2L;
     }
@@ -327,7 +344,9 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         if(dataKey!=null && dataKey.length>0){
             return encrypt(dataKey, data);
         }
-        log.warn("Data Key is null. Skipping ecryption...");
+        if(log.isDebugEnabled()) {
+            log.debug("Data Key is null. Skipping ecryption...");
+        }
         return null;
     }
     @Override
@@ -340,7 +359,9 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         if(dataKey!=null && dataKey.length>0){
             return decrypt(dataKey, encryptedData);
         }
-        log.warn("Data Key is null. Skipping decryption...");
+        if(log.isDebugEnabled()) {
+            log.debug("Data Key is null. Skipping decryption...");
+        }
         return null;
     }
     @Override
@@ -388,7 +409,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         uk.setUserId(userSecurityWrapper.getUserId());
         newUserKeyList.add(uk);
 
-        // log.warn("NEW USER KEYS ARE: [USER_ID: " + user.getUserId() +
+        // log.debug("NEW USER KEYS ARE: [USER_ID: " + user.getUserId() +
         // "; PWD_KEY: " + jksManager.encodeKey(pwdKey) + "; TKN_KEY: "
         // + jksManager.encodeKey(tokenKey) + "]");
 
@@ -397,13 +418,15 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         encryptUserChallengeResponses(answerKey, userSecurityWrapper);
 
 
-        // log.warn("Printing ecrypted data...");
+        // log.debug("Printing ecrypted data...");
         // printUserData(user, pwdHistoryMap, managedSysMap);
     }
 
     @Transactional(rollbackFor = Exception.class)
     private void encryptUserChallengeResponses(byte[] key, UserSecurityWrapper userSecurityWrapper)throws Exception {
-        log.warn("Encrypt user ChallengeResponses ...");
+        if(log.isDebugEnabled()) {
+            log.debug("Encrypt user ChallengeResponses ...");
+        }
         if (userSecurityWrapper.getUserIdentityAnswerList() != null && !userSecurityWrapper.getUserIdentityAnswerList().isEmpty()) {
             for (UserIdentityAnswerEntity answer : userSecurityWrapper.getUserIdentityAnswerList()) {
                 if(StringUtils.hasText(answer.getQuestionAnswer()))
@@ -412,12 +435,16 @@ public class KeyManagementServiceImpl implements KeyManagementService {
                     userIdentityAnswerDAO.update(answer);
             }
         }
-        log.warn("Encrypt user ChallengeResponses FINISHED...");
+        if(log.isDebugEnabled()) {
+            log.debug("Encrypt user ChallengeResponses FINISHED...");
+        }
     }
 
     @Transactional(rollbackFor = Exception.class)
     private void encryptUserPasswords(byte[] key, UserSecurityWrapper userSecurityWrapper) throws Exception {
-        log.warn("Encrypt user passwords ...");
+        if(log.isDebugEnabled()) {
+            log.debug("Encrypt user passwords ...");
+        }
         if (userSecurityWrapper.getLoginList() != null && !userSecurityWrapper.getLoginList().isEmpty()) {
             for (LoginEntity login : userSecurityWrapper.getLoginList()) {
                 if(StringUtils.hasText(login.getPassword())){
@@ -426,7 +453,9 @@ public class KeyManagementServiceImpl implements KeyManagementService {
                 }
             }
         }
-        log.warn("Encrypt user passwords history...");
+        if(log.isDebugEnabled()) {
+            log.debug("Encrypt user passwords history...");
+        }
         if (userSecurityWrapper.getPasswordHistoryList() != null && !userSecurityWrapper.getPasswordHistoryList().isEmpty()) {
             for (PasswordHistoryEntity pwd : userSecurityWrapper.getPasswordHistoryList()) {
                 if(StringUtils.hasText(pwd.getPassword())){
@@ -437,7 +466,9 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         }
 
         if (userSecurityWrapper.getManagedSysList() != null && !userSecurityWrapper.getManagedSysList().isEmpty()) {
-            log.warn("Encrypt manages sys...");
+            if(log.isDebugEnabled()) {
+                log.debug("Encrypt manages sys...");
+            }
             for (ManagedSysEntity ms : userSecurityWrapper.getManagedSysList()) {
                 if (ms.getPswd() != null) {
                     ms.setPswd(this.encrypt(key, ms.getPswd()));
@@ -445,7 +476,9 @@ public class KeyManagementServiceImpl implements KeyManagementService {
                 managedSysDAO.save(ms);
             }
         }
-        log.warn("Encrypt user passwords FINISHED...");
+        if(log.isDebugEnabled()) {
+            log.debug("Encrypt user passwords FINISHED...");
+        }
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -470,7 +503,9 @@ public class KeyManagementServiceImpl implements KeyManagementService {
 
     @Transactional(rollbackFor = Exception.class)
     private void decryptSecurityDataForUser(byte[] masterKey, UserSecurityWrapper userSecurityWrapper) throws Exception {
-        log.warn("Decrypting user data ...");
+        if(log.isDebugEnabled()) {
+            log.debug("Decrypting user data ...");
+        }
         for (UserKey uk : userSecurityWrapper.getUserKeyList()) {
             byte[] key = jksManager.decodeKey(this.decrypt(masterKey, uk.getKey()));
             if (KeyName.password.name().equals(uk.getName())) {
@@ -479,12 +514,16 @@ public class KeyManagementServiceImpl implements KeyManagementService {
                 decryptUserChallengeResponse(key, userSecurityWrapper);
             }
         }
-        log.warn("Decrypting user data FINISHED...");
+        if(log.isDebugEnabled()) {
+            log.debug("Decrypting user data FINISHED...");
+        }
     }
 
     @Transactional(rollbackFor = Exception.class)
     private void decryptUserChallengeResponse(byte[] key, UserSecurityWrapper userSecurityWrapper) throws Exception {
-        log.warn("Decrypting user ChallengeResponses ...");
+        if(log.isDebugEnabled()) {
+            log.debug("Decrypting user ChallengeResponses ...");
+        }
         if (userSecurityWrapper.getUserIdentityAnswerList() != null && !userSecurityWrapper.getUserIdentityAnswerList().isEmpty()) {
             for (UserIdentityAnswerEntity answer : userSecurityWrapper.getUserIdentityAnswerList()) {
                 if(answer.getIsEncrypted()){
@@ -493,12 +532,16 @@ public class KeyManagementServiceImpl implements KeyManagementService {
                 }
             }
         }
-        log.warn("Decrypting user ChallengeResponses FINISHED...");
+        if(log.isDebugEnabled()) {
+            log.debug("Decrypting user ChallengeResponses FINISHED...");
+        }
     }
 
     @Transactional(rollbackFor = Exception.class)
     private void decryptUserPasswords(byte[] key, UserSecurityWrapper userSecurityWrapper) throws Exception {
-        log.warn("Decrypting user passwords ...");
+        if(log.isDebugEnabled()) {
+            log.debug("Decrypting user passwords ...");
+        }
         if (userSecurityWrapper.getLoginList() != null && !userSecurityWrapper.getLoginList().isEmpty()) {
             for (LoginEntity login : userSecurityWrapper.getLoginList()) {
                 if(StringUtils.hasText(login.getPassword()))
@@ -506,7 +549,9 @@ public class KeyManagementServiceImpl implements KeyManagementService {
             }
         }
         if (userSecurityWrapper.getPasswordHistoryList() != null && !userSecurityWrapper.getPasswordHistoryList().isEmpty()) {
-            log.warn("Decrypting user passwords history ...");
+            if(log.isDebugEnabled()) {
+                log.debug("Decrypting user passwords history ...");
+            }
             for (PasswordHistoryEntity pwd : userSecurityWrapper.getPasswordHistoryList()) {
                 if(StringUtils.hasText(pwd.getPassword()))
                     pwd.setPassword(this.decrypt(key, pwd.getPassword()));
@@ -514,14 +559,18 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         }
 
         if (userSecurityWrapper.getManagedSysList() != null && !userSecurityWrapper.getManagedSysList().isEmpty()) {
-            log.warn("Decrypting manages sys ...");
+            if(log.isDebugEnabled()) {
+                log.debug("Decrypting manages sys ...");
+            }
             for (ManagedSysEntity ms : userSecurityWrapper.getManagedSysList()) {
                 if (ms.getPswd() != null) {
                     ms.setPswd(this.decrypt(key, ms.getPswd()));
                 }
             }
         }
-        log.warn("Decrypting user passwords FINISHED...");
+        if(log.isDebugEnabled()) {
+            log.debug("Decrypting user passwords FINISHED...");
+        }
     }
 
     private void printUserData(User user, HashMap<String, List<PasswordHistory>> pwdHistoryMap, HashMap<String, List<ManagedSysDto>> managedSysMap) {
@@ -533,7 +582,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
             }
         }
         msg.append("]");
-        log.warn(msg.toString());
+        log.debug(msg.toString());
         msg.setLength(0);
 
         msg.append("PWD HISTORY LIST FOR USER_ID(" + user.getId() + ") [\n");
@@ -543,7 +592,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
             }
         }
         msg.append("]");
-        log.warn(msg.toString());
+        log.debug(msg.toString());
         msg.setLength(0);
 
         msg.append("MANAGED SYS LIST FOR USER_ID(" + user.getId() + ") [\n");
@@ -557,7 +606,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
             }
         }
         msg.append("]");
-        log.warn(msg.toString());
+        log.debug(msg.toString());
         msg.setLength(0);
     }
 

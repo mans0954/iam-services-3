@@ -44,7 +44,7 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
     }
 
     protected boolean cachable() {
-        return false;
+        return true;
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -223,7 +223,7 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
         if (id == null) {
             return null;
         }
-        return (T) getCriteria().add(eq(getPKfieldName(), id)).setCacheable(true).uniqueResult(); //this.getSession().get(domainClass, id);
+        return (T) getCriteria().add(eq(getPKfieldName(), id)).uniqueResult(); //this.getSession().get(domainClass, id);
     }
 
     /**

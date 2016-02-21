@@ -174,7 +174,9 @@ public abstract class GenericLdapAdapter extends AbstractSrcAdapter {
                         pageRowCount++;
                         totalRecords++;
                         recordsInOUCounter++;
-                        System.out.println("LAST LDAP SYNC COUNTERS: TotalRecords="+totalRecords+"");
+                        if(log.isDebugEnabled()) {
+                            log.debug("LAST LDAP SYNC COUNTERS: TotalRecords="+totalRecords+"");
+                        }
                         SearchResult sr = (SearchResult) results.nextElement();
                         if(log.isDebugEnabled()) {
                             log.debug("SearchResultElement   : " + sr.getName());
@@ -255,7 +257,9 @@ public abstract class GenericLdapAdapter extends AbstractSrcAdapter {
                 processLineObject(rowObj, config, resultReview, validationScript, transformScripts, matchRule);
                 Thread.sleep(100);
             }
-            System.out.println("EXECUTION TIME: "+(System.currentTimeMillis()-startTime));
+            if(log.isDebugEnabled()) {
+                log.debug("EXECUTION TIME: "+(System.currentTimeMillis()-startTime));
+            }
 
         } catch (ClassNotFoundException cnfe) {
             log.error(cnfe);

@@ -55,7 +55,7 @@ public class SyncServiceTest extends AbstractServiceTest {
         config.setSrcPassword("OpenIAM4u!!");
         config.setSrcHost("ldap://104.196.44.120");
         config.setQuery("(&(objectClass=user)(sAMAccountName=*))");
-        config.setBaseDn("DC=dev,DC=local");
+        config.setBaseDn("OU=Test,DC=dev,DC=local");
         config.setSynchType("FULL");
         config.setProcessRule("USER");
         //TODO: need to make this configurable

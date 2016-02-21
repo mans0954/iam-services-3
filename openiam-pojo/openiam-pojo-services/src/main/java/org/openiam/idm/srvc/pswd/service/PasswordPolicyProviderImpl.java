@@ -14,8 +14,10 @@ import org.openiam.idm.srvc.policy.service.PolicyObjectAssocDAO;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -40,12 +42,15 @@ public class PasswordPolicyProviderImpl implements PasswordPolicyProvider {
     @Autowired
     protected org.openiam.idm.srvc.role.service.RoleDAO roleDAO;
     @Autowired
-    protected UserDataService userManager;
+    protected UserDAO userDAO;
 
 
     @Override
     public Policy getPasswordPolicyByUser(PasswordPolicyAssocSearchBean searchBean) {
-        UserEntity user = userManager.getUser(searchBean.getUserId());
+        UserEntity user = null;
+        if(StringUtils.isNotBlank(searchBean.getUserId())){
+            user = userDAO.findById(searchBean.getUserId());
+        }
         if(user != null) {
             return getPasswordPolicyByUser(user, searchBean.getManagedSystemId());
         } else {
