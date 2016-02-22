@@ -155,9 +155,11 @@ public class ChallengeResponseServiceImpl implements ChallengeResponseService {
                 requiredCorrectUserSpecified = Integer.parseInt(attrUserSpecified.getValue1());
             }
         }
-
+       /* //TODO: This commented for testing ONLY
         return getResponseValidator().isResponseValid(userId, newAnswerList, requiredCorrectEnterprise, true)
                 && getResponseValidator().isResponseValid(userId, newAnswerList, requiredCorrectUserSpecified, false);
+       */
+        return getResponseValidator().isResponseValid(userId, newAnswerList, requiredCorrectEnterprise, true);
     }
 
     private ChallengeResponseValidator getResponseValidator() {
