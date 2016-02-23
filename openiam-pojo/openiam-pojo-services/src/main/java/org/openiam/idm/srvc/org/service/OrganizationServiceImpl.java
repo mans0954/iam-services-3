@@ -315,7 +315,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
         }
         sw.stop();
         if(log.isDebugEnabled()) {
-        	log.warn(String.format("FINISH TIME = %s", sw.getTime()));
+        	log.debug(String.format("FINISH TIME = %s", sw.getTime()));
         }
         return organizationDozerConverter.convertToDTOList(organizationEntityList, searchBean.isDeepCopy());
     }
