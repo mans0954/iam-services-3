@@ -3,6 +3,7 @@ package org.openiam.idm.srvc.org.service;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.StopWatch;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.ResponseCode;
@@ -52,6 +53,9 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Service;
@@ -153,14 +157,14 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
-    public OrganizationEntity getOrganizationLocalized(String orgId, final LanguageEntity langauge) {
-        return getOrganizationLocalized(orgId, null, langauge);
+    public OrganizationEntity getOrganizationLocalized(String orgId, final LanguageEntity language) {
+        return getOrganizationLocalized(orgId, null, language);
     }
 
     @Override
     @Transactional(readOnly = true)
     @LocalizedServiceGet
-    public OrganizationEntity getOrganizationLocalized(String orgId, String requesterId, final LanguageEntity langauge) {
+    public OrganizationEntity getOrganizationLocalized(String orgId, String requesterId, final LanguageEntity language) {
         if (DelegationFilterHelper.isAllowed(orgId, getDelegationFilter(requesterId))) {
             return orgDao.findById(orgId);
         }
@@ -170,10 +174,10 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     @Override
     @Transactional(readOnly = true)
     @LocalizedServiceGet
-    public Organization getOrganizationLocalizedDto(String orgId, String requesterId, final LanguageEntity langauge) {
+    public Organization getOrganizationLocalizedDto(String orgId, String requesterId, final LanguageEntity language) {
         //OrganizationService bean = (OrganizationService)ac.getBean("organizationService");
 
-        OrganizationEntity organizationEntity = this.getProxyService().getOrganizationLocalized(orgId, requesterId, langauge);
+        OrganizationEntity organizationEntity = this.getProxyService().getOrganizationLocalized(orgId, requesterId, language);
 
         if (organizationEntity != null) {
             return organizationDozerConverter.convertToDTO(organizationEntity, true);
@@ -184,7 +188,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
-    public OrganizationEntity getOrganizationByName(final String name, String requesterId, final LanguageEntity langauge) {
+    public OrganizationEntity getOrganizationByName(final String name, String requesterId, final LanguageEntity language) {
         final OrganizationSearchBean searchBean = new OrganizationSearchBean();
         searchBean.setName(name);
         final List<OrganizationEntity> foundList = this.findBeans(searchBean, requesterId, 0, 1, null);
@@ -200,7 +204,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
-    public List<OrganizationEntity> getOrganizationsForUser(String userId, String requesterId, final int from, final int size, final LanguageEntity langauge) {
+    public List<OrganizationEntity> getOrganizationsForUser(String userId, String requesterId, final int from, final int size, final LanguageEntity language) {
         return orgDao.getOrganizationsForUser(userId, getDelegationFilter(requesterId), from, size);
     }
 
@@ -240,7 +244,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
-    public List<Organization> getUserAffiliationsByType(String userId, String typeId, String requesterId, final int from, final int size, final LanguageEntity langauge) {
+    public List<Organization> getUserAffiliationsByType(String userId, String typeId, String requesterId, final int from, final int size, final LanguageEntity language) {
         List<OrganizationEntity> organizationEntityList = orgDao.getUserAffiliationsByType(userId, typeId, getDelegationFilter(requesterId), from, size);
         return organizationDozerConverter.convertToDTOList(organizationEntityList, false);
     }
@@ -249,16 +253,16 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
-    public List<Organization> getOrganizationsDtoForUser(String userId, String requesterId, final int from, final int size, final LanguageEntity langauge) {
+    public List<Organization> getOrganizationsDtoForUser(String userId, String requesterId, final int from, final int size, final LanguageEntity language) {
         //List<OrganizationEntity> organizationEntityList = orgDao.getOrganizationsForUser(userId, getDelegationFilter(requesterId), from, size);
-        List<OrganizationEntity> organizationEntityList = this.getProxyService().getOrganizationsForUser(userId, requesterId, from, size, langauge);
+        List<OrganizationEntity> organizationEntityList = this.getProxyService().getOrganizationsForUser(userId, requesterId, from, size, language);
         return organizationDozerConverter.convertToDTOList(organizationEntityList, false);
     }
 
     @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
-    public List<OrganizationEntity> findBeans(final OrganizationSearchBean searchBean, String requesterId, int from, int size, final LanguageEntity langauge) {
+    public List<OrganizationEntity> findBeans(final OrganizationSearchBean searchBean, String requesterId, int from, int size, final LanguageEntity language) {
         final boolean isUncoverParents = Boolean.TRUE.equals(searchBean.getUncoverParents());
         Set<String> filter = getDelegationFilter(requesterId, isUncoverParents);
         if (StringUtils.isBlank(searchBean.getKey()))
@@ -269,10 +273,20 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
         return orgDao.getByExample(searchBean, from, size);
     }
 
+    /**
+     * We cache the results of this method, as it has a heavy memory footprint when called many (thousands of) times
+     * We cache *only* if the findInCache parameter is true
+     * The proper @EvictCache annotations are present on methods which perform CRUD on organizations.
+     * 
+     * We have no 'key' parameter set for @Cacheable, as the default implementation will use a composite key of
+     * all parameter, which is what we want in this case.  
+     * See <a href="http://docs.spring.io/spring/docs/current/spring-framework-reference/html/cache.html">here</a>
+     */
     @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
-    public List<Organization> findBeansDto(final OrganizationSearchBean searchBean, String requesterId, int from, int size, final LanguageEntity langauge) {
+    @Cacheable(value = "organizations", key = "{ #searchBean,#requesterId,#from,#size,#language}", condition="#searchBean.findInCache")
+    public List<Organization> findBeansDto(final OrganizationSearchBean searchBean, String requesterId, int from, int size, final LanguageEntity language) {
         /*final boolean isUncoverParents = Boolean.TRUE.equals(searchBean.getUncoverParents());
         Set<String> filter = getDelegationFilter(requesterId, isUncoverParents);
         if (StringUtils.isBlank(searchBean.getKey()))
@@ -282,10 +296,10 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
         }*/
 
         // Temporary solution
-        long time;
-        log.warn("START TIME =" + (time = System.currentTimeMillis()));
+        final StopWatch sw = new StopWatch();
+        sw.start();
         //List<OrganizationEntity> organizationEntityList = orgDao.getByExample(searchBean, from, size);
-        List<OrganizationEntity> organizationEntityList = this.getProxyService().findBeans(searchBean, requesterId, from, size, langauge);
+        List<OrganizationEntity> organizationEntityList = this.getProxyService().findBeans(searchBean, requesterId, from, size, language);
         if (CollectionUtils.isNotEmpty(organizationEntityList) && searchBean.isDeepCopy() && searchBean.isForCurrentUsersOnly() && CollectionUtils.isNotEmpty(searchBean.getUserIdSet())) {
             OrganizationUserEntity organizationUserEntity = null;
             Iterator<OrganizationUserEntity> organizationUserEntityIterator = null;
@@ -299,39 +313,42 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
                 }
             }
         }
-        log.warn("FINISH TIME =" + (System.currentTimeMillis() - time));
+        sw.stop();
+        if(log.isDebugEnabled()) {
+        	log.warn(String.format("FINISH TIME = %s", sw.getTime()));
+        }
         return organizationDozerConverter.convertToDTOList(organizationEntityList, searchBean.isDeepCopy());
     }
 
     @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
-    public List<OrganizationEntity> getParentOrganizations(String orgId, String requesterId, int from, int size, final LanguageEntity langauge) {
+    public List<OrganizationEntity> getParentOrganizations(String orgId, String requesterId, int from, int size, final LanguageEntity language) {
         return orgDao.getParentOrganizations(orgId, getDelegationFilter(requesterId), from, size);
     }
 
     @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
-    public List<Organization> getParentOrganizationsDto(String orgId, String requesterId, int from, int size, final LanguageEntity langauge) {
+    public List<Organization> getParentOrganizationsDto(String orgId, String requesterId, int from, int size, final LanguageEntity language) {
         //List<OrganizationEntity> organizationEntityList = orgDao.getParentOrganizations(orgId, getDelegationFilter(requesterId), from, size);
-        List<OrganizationEntity> organizationEntityList = this.getProxyService().getParentOrganizations(orgId, requesterId, from, size, langauge);
+        List<OrganizationEntity> organizationEntityList = this.getProxyService().getParentOrganizations(orgId, requesterId, from, size, language);
         return organizationDozerConverter.convertToDTOList(organizationEntityList, false);
     }
 
     @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
-    public List<OrganizationEntity> getChildOrganizations(String orgId, String requesterId, int from, int size, final LanguageEntity langauge) {
+    public List<OrganizationEntity> getChildOrganizations(String orgId, String requesterId, int from, int size, final LanguageEntity language) {
         return orgDao.getChildOrganizations(orgId, getDelegationFilter(requesterId), from, size);
     }
 
     @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
-    public List<Organization> getChildOrganizationsDto(String orgId, String requesterId, int from, int size, final LanguageEntity langauge) {
+    public List<Organization> getChildOrganizationsDto(String orgId, String requesterId, int from, int size, final LanguageEntity language) {
         //List<OrganizationEntity> organizationEntityList = orgDao.getChildOrganizations(orgId, getDelegationFilter(requesterId), from, size);
-        List<OrganizationEntity> organizationEntityList = this.getProxyService().getChildOrganizations(orgId, requesterId, from, size, langauge);
+        List<OrganizationEntity> organizationEntityList = this.getProxyService().getChildOrganizations(orgId, requesterId, from, size, language);
         return organizationDozerConverter.convertToDTOList(organizationEntityList, false);
     }
 
@@ -402,6 +419,9 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
 
     @Override
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "organizations", allEntries = true)
+    })
     public void removeAttribute(String attributeId) {
         final OrganizationAttributeEntity entity = orgAttrDao.findById(attributeId);
         if (entity != null) {
@@ -411,12 +431,18 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
 
     @Override
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "organizations", allEntries = true)
+    })
     public Organization save(final Organization organization, final String requestorId) throws BasicDataServiceException {
         return save(organization, requestorId, false);
     }
 
     @Override
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "organizations", allEntries = true)
+    })
     public Organization save(final Organization organization, final String requestorId, final boolean skipPrePostProcessors) throws BasicDataServiceException {
 
         // Audit Log -----------------------------------------------------------------------------------
@@ -862,6 +888,9 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
 
     @Override
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "organizations", allEntries = true)
+    })
     public void save(OrganizationAttributeEntity attribute) {
         attribute.setElement(metadataDAO.findById(attribute.getElement().getId()));
         attribute.setOrganization(orgDao.findById(attribute.getOrganization().getId()));
@@ -875,6 +904,9 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
 
     @Override
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "organizations", allEntries = true)
+    })
     public void removeChildOrganization(String organizationId, String childOrganizationId) {
         final OrganizationEntity parent = orgDao.findById(organizationId);
         final OrganizationEntity child = orgDao.findById(childOrganizationId);
@@ -886,6 +918,9 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
 
     @Override
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "organizations", allEntries = true)
+    })
     public void addChildOrganization(String organizationId, String childOrganizationId) {
         final OrganizationEntity parent = orgDao.findById(organizationId);
         final OrganizationEntity child = orgDao.findById(childOrganizationId);
@@ -897,12 +932,18 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
 
     @Override
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "organizations", allEntries = true)
+    })
     public void deleteOrganization(String orgId) throws BasicDataServiceException {
         deleteOrganization(orgId, false);
     }
 
     @Override
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "organizations", allEntries = true)
+    })
     public void deleteOrganization(String orgId, boolean skipPrePostProcessors) throws BasicDataServiceException {
 
         // Audit Log -----------------------------------------------------------------------------------
@@ -999,7 +1040,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
-    public List<OrganizationEntity> getAllowedParentOrganizationsForType(final String orgTypeId, String requesterId, final LanguageEntity langauge) {
+    public List<OrganizationEntity> getAllowedParentOrganizationsForType(final String orgTypeId, String requesterId, final LanguageEntity language) {
         Set<String> filterData = null;
         Set<String> allowedOrgTypes = null;
         Map<String, UserAttribute> requesterAttributes = null;
@@ -1016,7 +1057,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
-    public List<Organization> getAllowedParentOrganizationsDtoForType(final String orgTypeId, String requesterId, final LanguageEntity langauge) {
+    public List<Organization> getAllowedParentOrganizationsDtoForType(final String orgTypeId, String requesterId, final LanguageEntity language) {
         Set<String> filterData = null;
         Set<String> allowedOrgTypes = null;
         Map<String, UserAttribute> requesterAttributes = null;
@@ -1041,8 +1082,8 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
-    public Organization getOrganizationDTO(String orgId, final LanguageEntity langauge) {
-        return organizationDozerConverter.convertToDTO(getOrganizationLocalized(orgId, langauge), true);
+    public Organization getOrganizationDTO(String orgId, final LanguageEntity language) {
+        return organizationDozerConverter.convertToDTO(getOrganizationLocalized(orgId, language), true);
     }
 
 //    @Override
@@ -1077,14 +1118,14 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     @Override
     @Transactional(readOnly = true)
     @LocalizedServiceGet
-    public List<OrganizationEntity> findOrganizationsByAttributeValue(final String attrName, String attrValue, final LanguageEntity langauge) {
+    public List<OrganizationEntity> findOrganizationsByAttributeValue(final String attrName, String attrValue, final LanguageEntity language) {
         return orgDao.findOrganizationsByAttributeValue(attrName, attrValue);
     }
 
     @Override
     @Transactional(readOnly = true)
     @LocalizedServiceGet
-    public List<Organization> findOrganizationsDtoByAttributeValue(final String attrName, String attrValue, final LanguageEntity langauge) {
+    public List<Organization> findOrganizationsDtoByAttributeValue(final String attrName, String attrValue, final LanguageEntity language) {
         List<OrganizationEntity> organizationEntityList = orgDao.findOrganizationsByAttributeValue(attrName, attrValue);
         return organizationDozerConverter.convertToDTOList(organizationEntityList, true);
     }

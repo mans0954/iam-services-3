@@ -4,6 +4,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.time.StopWatch;
+import org.junit.Assert;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
@@ -20,6 +23,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.testng.annotations.Test;
 
 public class OrganizationServiceTest extends AbstractAttributeServiceTest<Organization, OrganizationSearchBean, OrganizationAttribute> {
+	
+	private static final int CACHE_IMPROVEMENT_FACTOR = 2;
 	
 	@Autowired
 	@Qualifier("organizationServiceClient")
@@ -126,5 +131,76 @@ public class OrganizationServiceTest extends AbstractAttributeServiceTest<Organi
 				delete(instance);
 			}
 		}
+	}
+	
+	/**
+	 * assumes that find() calls organizationService.findBeansDto, at some point
+	 * @throws Exception 
+	 */
+	@Test
+	public void testOrganizationCache() throws Exception {
+		final String typeId = "DEPARTMENT";
+		OrganizationSearchBean sb = new OrganizationSearchBean();
+		sb.setFindInCache(true);
+		sb.setDeepCopy(true);
+		sb.setOrganizationTypeId(typeId);
+		
+		final StopWatch sw = new StopWatch();
+		sw.start();
+		List<Organization> orgs = find(sb, 0, Integer.MAX_VALUE);
+		sw.stop();
+		long time = sw.getTime();
+		
+		/* flush cache */
+		Assert.assertTrue(CollectionUtils.isNotEmpty(orgs));
+		final Organization org = get(orgs.get(0).getId());
+		saveAndAssert(org);
+		
+		/* cache miss */
+		sw.reset();
+		sw.start();
+		orgs = find(sb, 0, Integer.MAX_VALUE);
+		sw.stop();
+		time = sw.getTime();
+		
+		/* cache hits */
+		for(int i = 0; i < 100; i++) {
+			sw.reset();
+			sw.start();
+			orgs = find(sb, 0, Integer.MAX_VALUE);
+			sw.stop();
+			Assert.assertTrue(String.format("Cache hit took %s, cache miss took %s.  Cache hit should have been much faster", time, sw.getTime()), (time / CACHE_IMPROVEMENT_FACTOR) > sw.getTime());
+		}
+		
+		//repeat
+		
+		/* flush cache */
+		saveAndAssert(org);
+		
+		/* cache miss */
+		sw.reset();
+		sw.start();
+		orgs = find(sb, 0, Integer.MAX_VALUE);
+		sw.stop();
+		time = sw.getTime();
+		
+		/* cache hits */
+		for(int i = 0; i < 100; i++) {
+			sw.reset();
+			sw.start();
+			orgs = find(sb, 0, Integer.MAX_VALUE);
+			sw.stop();
+			Assert.assertTrue(String.format("Cache hit took %s, cache miss took %s.  Cache hit should have been much faster", time, sw.getTime()), (time / CACHE_IMPROVEMENT_FACTOR) > sw.getTime());
+		}
+		
+		long lastCacheHitTime = sw.getTime();
+		
+		sb.setFindInCache(false);
+		
+		sw.reset();
+		sw.start();
+		orgs = find(sb, 0, Integer.MAX_VALUE);
+		sw.stop();
+		Assert.assertTrue(String.format("  Cache hit should have been much faster.  Cache miss time should have taken much longer", lastCacheHitTime, sw.getTime()), sw.getTime() > lastCacheHitTime * CACHE_IMPROVEMENT_FACTOR);
 	}
 }
