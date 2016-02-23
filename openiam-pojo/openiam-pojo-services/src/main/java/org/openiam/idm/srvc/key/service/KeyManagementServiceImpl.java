@@ -24,11 +24,15 @@ import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.PostConstruct;
+
 import java.util.*;
 
 /**
@@ -97,6 +101,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
     }
 
     @Override
+    @Cacheable(value = "userkeys", key = "{ #userId, #keyName}")
     public byte[] getUserKey(String userId, String keyName) throws EncryptionException {
 
         byte[] masterKey = new byte[0];
@@ -120,6 +125,9 @@ public class KeyManagementServiceImpl implements KeyManagementService {
     }
 
     @Transactional(rollbackFor = Exception.class)
+    @Caching(evict = {
+            @CacheEvict(value = "userkeys", allEntries = true)
+    })
     public void initKeyManagement() throws Exception{
         this.generateMasterKey();
         this.generateCookieKey();
@@ -128,6 +136,9 @@ public class KeyManagementServiceImpl implements KeyManagementService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    @Caching(evict = {
+            @CacheEvict(value = "userkeys", allEntries = true)
+    })
     public void generateMasterKey() throws Exception {
         if(log.isDebugEnabled()) {
             log.debug("Start generating new master key...");
