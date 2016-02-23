@@ -22,6 +22,7 @@
 package org.openiam.provision.service;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -74,6 +75,7 @@ import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.Supervisor;
 import org.openiam.idm.srvc.user.dto.User;
+import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.*;
 import org.openiam.provision.resp.LookupUserResponse;
@@ -987,7 +989,12 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
         bindingMap.put("sendActivationLink", sendActivationLink);
         bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, null);
         bindingMap.put(TARGET_SYSTEM_IDENTITY, null);
-        bindingMap.put(USER_ATTRIBUTES, userMgr.getUserAttributesDto(pUser.getId()));
+        
+        Map<String, UserAttribute> userAttributes = Collections.EMPTY_MAP; 
+        if(MapUtils.isNotEmpty(pUser.getUserAttributes())) {
+        	userAttributes = pUser.getUserAttributes();
+        }
+        bindingMap.put(USER_ATTRIBUTES, userAttributes);
 
         if (!isAdd) {
             ProvisionUser u = new ProvisionUser(userDozerConverter.convertToDTO(userEntity, true));
