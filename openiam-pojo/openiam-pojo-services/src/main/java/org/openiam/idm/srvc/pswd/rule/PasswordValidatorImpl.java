@@ -37,7 +37,9 @@ import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.policy.domain.PolicyDefParamEntity;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
+import org.openiam.idm.srvc.policy.dto.PolicyDefParam;
 import org.openiam.idm.srvc.policy.service.PolicyDefParamDAO;
+import org.openiam.idm.srvc.policy.service.PolicyService;
 import org.openiam.idm.srvc.pswd.dto.Password;
 import org.openiam.idm.srvc.pswd.dto.PasswordRule;
 import org.openiam.idm.srvc.pswd.service.PasswordHistoryDAO;
@@ -68,6 +70,9 @@ public class PasswordValidatorImpl implements PasswordValidator {
 
     @Autowired
     protected PasswordHistoryDAO passwordHistoryDao;
+
+    @Autowired
+    protected PolicyService policyService;
 
     @Autowired
     @Qualifier("cryptor")
@@ -165,7 +170,7 @@ public class PasswordValidatorImpl implements PasswordValidator {
         // securityDomain.getPasswordPolicyId() ) ;
         // get the list of rules for password validation
 
-        final List<PolicyDefParamEntity> defParam = policyDefParamDao.findPolicyDefParamByGroup(pswdPolicy.getPolicyDefId(), "PSWD_COMPOSITION");
+        final List<PolicyDefParam> defParam = policyService.findPolicyDefParamByGroup(pswdPolicy.getPolicyDefId(), "PSWD_COMPOSITION");
 
         // get the user object for the principal if they are null
         LoginEntity lg = login;
@@ -179,7 +184,7 @@ public class PasswordValidatorImpl implements PasswordValidator {
 
         // for each rule
         if (defParam != null) {
-            for (PolicyDefParamEntity param : defParam) {
+            for (PolicyDefParam param : defParam) {
                 // check if this is parameter that is the policy that we need to
                 // check
                 if (policyToCheck(param.getDefParamId(), pswdPolicy)) {

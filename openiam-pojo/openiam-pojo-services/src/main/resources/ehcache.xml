@@ -456,6 +456,23 @@
            timeToLiveSeconds="1600"
            timeToIdleSeconds="800"
     />
+    <cache name="policyObjectAssoc"
+           maxElementsInMemory="1000"
+           eternal="false"
+           overflowToDisk="false"
+           memoryStoreEvictionPolicy="LRU"
+           timeToLiveSeconds="1600"
+           timeToIdleSeconds="800"
+    />
+    <cache name="policyDefParams"
+           maxElementsInMemory="1000"
+           eternal="false"
+           overflowToDisk="false"
+           memoryStoreEvictionPolicy="LRU"
+           timeToLiveSeconds="1600"
+           timeToIdleSeconds="800"
+    />
+
     <cache name="MetadataTypeEntity"
            maxElementsInMemory="10000"
            eternal="false"

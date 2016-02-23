@@ -2083,10 +2083,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
 
         try {
             PasswordValidationResponse valCode = passwordManager.isPasswordValidForUserAndPolicy(
-                    password, userDozerConverter.convertToEntity(
-                            user.getUser(), true),
-                    loginDozerConverter.convertToEntity(
-                            primaryLogin, true), passwordPolicy);
+                    password, userDozerConverter.convertToEntity(user.getUser(), false),
+                    loginDozerConverter.convertToEntity(primaryLogin, false), passwordPolicy);
             if (valCode == null || !valCode.isSuccess()) {
                 resp.setStatus(ResponseStatus.FAILURE);
                 resp.setErrorCode(ResponseCode.FAIL_NEQ_PASSWORD);

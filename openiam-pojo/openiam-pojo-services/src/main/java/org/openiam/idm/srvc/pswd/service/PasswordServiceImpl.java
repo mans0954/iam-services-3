@@ -192,8 +192,7 @@ public class PasswordServiceImpl implements PasswordService {
     }
 
     @Override
-    public PasswordValidationResponse isPasswordValidForUserAndPolicy(
-            Password pswd, UserEntity user, LoginEntity lg, Policy policy)
+    public PasswordValidationResponse isPasswordValidForUserAndPolicy(Password pswd, UserEntity user, LoginEntity lg, Policy policy)
             throws ObjectNotFoundException {
         final PasswordValidationResponse retVal = new PasswordValidationResponse(ResponseStatus.SUCCESS);
         Policy pswdPolicy = policy;

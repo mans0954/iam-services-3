@@ -9,8 +9,10 @@ import org.openiam.idm.srvc.org.service.OrganizationDAO;
 import org.openiam.idm.srvc.policy.domain.PolicyObjectAssocEntity;
 import org.openiam.idm.srvc.policy.dto.PasswordPolicyAssocSearchBean;
 import org.openiam.idm.srvc.policy.dto.Policy;
+import org.openiam.idm.srvc.policy.dto.PolicyObjectAssoc;
 import org.openiam.idm.srvc.policy.service.PolicyDataService;
 import org.openiam.idm.srvc.policy.service.PolicyObjectAssocDAO;
+import org.openiam.idm.srvc.policy.service.PolicyService;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -34,9 +36,7 @@ public class PasswordPolicyProviderImpl implements PasswordPolicyProvider {
     private static final Log log = LogFactory.getLog(PasswordServiceImpl.class);
 
     @Autowired
-    private PolicyObjectAssocDAO policyObjectAssocDao;
-    @Autowired
-    private PolicyDataService policyDataService;
+    private PolicyService policyDataService;
     @Autowired
     protected OrganizationDAO organizationDAO;
     @Autowired
@@ -65,11 +65,11 @@ public class PasswordPolicyProviderImpl implements PasswordPolicyProvider {
         // Find a password policy for this user
         // order of search, type, classification, domain, global
 
-        PolicyObjectAssocEntity policyAssocEntity = null;
+        PolicyObjectAssoc policyAssocEntity = null;
 
         log.info("Looking for associate by managedSystemId.");
         if (StringUtils.isNotBlank(managedSystemId)) {
-            policyAssocEntity = policyObjectAssocDao.findAssociationByLevel(
+            policyAssocEntity = policyDataService.findAssociationByLevel(
                     "MANAGED_SYSTEM", managedSystemId);
             log.info(String.format("Association found: %s", policyAssocEntity));
             if (policyAssocEntity != null) {
@@ -80,7 +80,7 @@ public class PasswordPolicyProviderImpl implements PasswordPolicyProvider {
         log.info("Looking for associate by metadata type.");
         log.info(String.format("User type =%s", user.getId()));
         if (user.getType() != null) {
-            policyAssocEntity = policyObjectAssocDao.findAssociationByLevel(
+            policyAssocEntity = policyDataService.findAssociationByLevel(
                     "USER_TYPE", user.getType().getId());
             log.info(String.format("Association found: %s", policyAssocEntity));
             if (policyAssocEntity != null) {
@@ -96,7 +96,7 @@ public class PasswordPolicyProviderImpl implements PasswordPolicyProvider {
             if (CollectionUtils.isNotEmpty(orgEntity)) {
                 for (OrganizationEntity organization : orgEntity) {
                     log.info("Looking for associate by organization.");
-                    policyAssocEntity = policyObjectAssocDao
+                    policyAssocEntity = policyDataService
                             .findAssociationByLevel("ORGANIZATION",
                                     organization.getId());
                     log.info(String.format("Association found: %s", policyAssocEntity));
@@ -114,7 +114,7 @@ public class PasswordPolicyProviderImpl implements PasswordPolicyProvider {
             if (CollectionUtils.isNotEmpty(roles)) {
                 for (RoleEntity role : roles) {
                     log.info("Looking for associate by roles.");
-                    policyAssocEntity = policyObjectAssocDao
+                    policyAssocEntity = policyDataService
                             .findAssociationByLevel("ROLE",
                                     role.getId());
                     log.info(String.format("Association found: %s", policyAssocEntity));
@@ -134,7 +134,7 @@ public class PasswordPolicyProviderImpl implements PasswordPolicyProvider {
         return getGlobalPasswordPolicy();
     }
 
-    private Policy getPolicy(PolicyObjectAssocEntity policyAssoc) {
+    private Policy getPolicy(PolicyObjectAssoc policyAssoc) {
         log.info("Retreiving policyId=" + policyAssoc.getPolicyId());
         return policyDataService.getPolicy(policyAssoc.getPolicyId());
     }
@@ -148,8 +148,7 @@ public class PasswordPolicyProviderImpl implements PasswordPolicyProvider {
     @Override
     public Policy getGlobalPasswordPolicy() {
         log.info("Fetching global association password policy.");
-        PolicyObjectAssocEntity policyAssocEntity = policyObjectAssocDao
-                .findAssociationByLevel("GLOBAL", "GLOBAL");
+        PolicyObjectAssoc policyAssocEntity = policyDataService.findAssociationByLevel("GLOBAL", "GLOBAL");
         log.info(String.format("Association found: %s", policyAssocEntity));
         if (policyAssocEntity == null) {
             return null;
