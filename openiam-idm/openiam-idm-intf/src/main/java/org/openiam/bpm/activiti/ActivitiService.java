@@ -51,7 +51,7 @@ public interface ActivitiService {
     public TaskListWrapper getTasksForCandidateUserWithFilter(final String userId, final int from, final int size, String description, Date fromDate, Date toDate);
 
     @WebMethod
-    public TaskListWrapper getTasksForAssignedUserWithFilter(final String userId, final int from, final int size, String description, Date fromDate, Date toDate);
+    public TaskListWrapper getTasksForAssignedUserWithFilter(final String userId, final int from, final int size, String description, String requesterId, Date fromDate, Date toDate);
 
     @WebMethod
     public List<TaskWrapper> getTasksForMemberAssociation(String memberAssociationId);
@@ -60,7 +60,7 @@ public interface ActivitiService {
 	public int getNumOfAssignedTasks(final String userId);
 
     @WebMethod
-    public int getNumOfAssignedTasksWithFilter(final String userId, String description, Date fromDate, Date toDate);
+    public int getNumOfAssignedTasksWithFilter(final String userId, String description, String requesterId, Date fromDate, Date toDate);
 	
 	@WebMethod
 	public int getNumOfCandidateTasks(final String userId);

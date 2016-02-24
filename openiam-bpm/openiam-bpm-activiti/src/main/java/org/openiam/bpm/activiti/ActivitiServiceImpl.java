@@ -767,7 +767,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
     }
 
     @Override
-    public int getNumOfAssignedTasksWithFilter(String userId, String description, Date fromDate, Date toDate) {
+    public int getNumOfAssignedTasksWithFilter(String userId, String description, String requesterId, Date fromDate, Date toDate) {
         TaskQuery query = taskService.createTaskQuery();
         if(fromDate != null) {
             query.taskCreatedAfter(fromDate);
@@ -784,6 +784,20 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
                 List<TaskWrapper> taskWrappers = new ArrayList<TaskWrapper>();
                 for (TaskWrapper wrapper : taskListWrapper.getAssignedTasks()) {
                     if (wrapper.getDescription().toLowerCase().contains(description)) {
+                        taskWrappers.add(wrapper);
+                    }
+                }
+                return taskWrappers.size();
+            }
+            return 0;
+        } else if(requesterId != null ) {
+            List<Task> assignedTasks = query.taskAssignee(userId).list();
+            if(assignedTasks != null && assignedTasks.size() > 0) {
+                TaskListWrapper taskListWrapper = new TaskListWrapper();
+                taskListWrapper.addAssignedTasks(assignedTasks, runtimeService, loginService);
+                List<TaskWrapper> taskWrappers = new ArrayList<TaskWrapper>();
+                for (TaskWrapper wrapper : taskListWrapper.getAssignedTasks()) {
+                    if (wrapper.getOwner().equals(requesterId)) {
                         taskWrappers.add(wrapper);
                     }
                 }
@@ -873,7 +887,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
     }
 
     @Override
-    public TaskListWrapper getTasksForAssignedUserWithFilter(String userId, int from, int size, String description, Date fromDate, Date toDate) {
+    public TaskListWrapper getTasksForAssignedUserWithFilter(String userId, int from, int size, String description, String requesterId, Date fromDate, Date toDate) {
         final TaskListWrapper taskListWrapper = new TaskListWrapper();
         TaskQuery query = taskService.createTaskQuery();
         if(fromDate != null) {
@@ -897,7 +911,20 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
             } else {
                 taskListWrapper.setAssignedTasks(results.subList(from, results.size()));
             }
+        } else if(requesterId != null && taskListWrapper.getAssignedTasks() != null){
+            List<TaskWrapper> results = new ArrayList<TaskWrapper>();
+            for(TaskWrapper wrapper : taskListWrapper.getAssignedTasks()) {
+                if(wrapper.getOwner().equals(requesterId)) {
+                    results.add(wrapper);
+                }
+            }
+            if(from+size < results.size()) {
+                taskListWrapper.setAssignedTasks(results.subList(from, from + size));
+            } else {
+                taskListWrapper.setAssignedTasks(results.subList(from, results.size()));
+            }
         }
+
         return taskListWrapper;
     }
 
