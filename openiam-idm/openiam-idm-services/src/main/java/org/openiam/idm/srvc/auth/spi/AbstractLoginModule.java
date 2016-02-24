@@ -215,8 +215,9 @@ public abstract class AbstractLoginModule implements LoginModule {
     }
 
     protected SSOToken token(String userId, Map tokenParam) throws Exception {
-
-        log.debug("Generating Security Token");
+    	if(log.isDebugEnabled()) {
+    		log.debug("Generating Security Token");
+    	}
 
         tokenParam.put("USER_ID", userId);
 
@@ -249,25 +250,30 @@ public abstract class AbstractLoginModule implements LoginModule {
         }
 
         if (managedSys == null) {
-            log.debug("ManagedSys is null");
+        	if(log.isDebugEnabled()) {
+        		log.debug("ManagedSys is null");
+        	}
             return null;
         }
 
         String hostUrl = managedSys.getHostUrl();
         if (managedSys.getPort() > 0) {
             hostUrl = hostUrl + ":" + String.valueOf(managedSys.getPort());
-            if (!hostUrl.startsWith("ldap://")) {
+            if (!hostUrl.startsWith("ldap")) {
                 hostUrl = "ldap://" + hostUrl;
             }
         }
 
-        log.debug("connect: Connecting to target system: " + managedSys.getId());
-        log.debug("connect: Managed System object : " + managedSys);
-
-        log.info(" directory login = " + managedSys.getUserId());
-        log.info(" directory login passwrd= *****");
-        log.info(" javax.net.ssl.trustStore= " + System.getProperty("javax.net.ssl.trustStore"));
-        log.info(" javax.net.ssl.keyStorePassword= " + System.getProperty("javax.net.ssl.keyStorePassword"));
+        if(log.isDebugEnabled()) {
+	        log.debug("connect: Connecting to target system: " + managedSys.getId());
+	        log.debug("connect: Managed System object : " + managedSys);
+        }
+        if(log.isInfoEnabled()) {
+	        log.info(" directory login = " + managedSys.getUserId());
+	        log.info(" directory login passwrd= *****");
+	        log.info(" javax.net.ssl.trustStore= " + System.getProperty("javax.net.ssl.trustStore"));
+	        log.info(" javax.net.ssl.keyStorePassword= " + System.getProperty("javax.net.ssl.keyStorePassword"));
+        }
 
         Hashtable<String, String> envDC = new Hashtable();
         envDC.put(Context.PROVIDER_URL, hostUrl);

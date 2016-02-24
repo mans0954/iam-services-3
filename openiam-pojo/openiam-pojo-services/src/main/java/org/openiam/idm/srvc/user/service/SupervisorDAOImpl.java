@@ -20,7 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Data Access Object implementation for domain model class Supervisor.
- * 
+ *
  * @see org.openiam.idm.srvc.user.dto.Supervisor
  */
 @Repository("supervisorDAO")
@@ -30,9 +30,14 @@ public class SupervisorDAOImpl extends BaseDaoImpl<SupervisorEntity, SupervisorI
         return "id";
     }
 
+    @Override
+    protected boolean cachable() {
+        return false;
+    }
+
     @Transactional
     public void deleteById(SupervisorIDEntity id) {
-        Query qry = getSession().createQuery("delete "+this.domainClass.getName()+ " s where s.id = :pk ");
+        Query qry = getSession().createQuery("delete " + this.domainClass.getName() + " s where s.id = :pk ");
         qry.setParameter("pk", id);
         qry.executeUpdate();
     }
@@ -40,13 +45,13 @@ public class SupervisorDAOImpl extends BaseDaoImpl<SupervisorEntity, SupervisorI
     /**
      * Returns a list of Supervisor objects that represents the employees or
      * users for this supervisor
-     * 
+     *
      * @param supervisorId
      * @return
      */
     public List<SupervisorEntity> findEmployees(String supervisorId) {
         Criteria criteria = getCriteria().createAlias("supervisor", "s").add(Restrictions.eq("s.id", supervisorId))
-                        .addOrder(Order.asc("supervisor.id"));
+                .addOrder(Order.asc("supervisor.id"));
 
         List<SupervisorEntity> results = (List<SupervisorEntity>) criteria.list();
 
@@ -82,7 +87,7 @@ public class SupervisorDAOImpl extends BaseDaoImpl<SupervisorEntity, SupervisorI
 
     public SupervisorEntity findPrimarySupervisor(String employeeId) {
         Criteria criteria = getCriteria().createAlias("employee", "e").add(Restrictions.eq("e.id", employeeId))
-                        .add(Restrictions.eq("isPrimarySuper", 1)).addOrder(Order.asc("supervisor"));
+                .add(Restrictions.eq("isPrimarySuper", 1)).addOrder(Order.asc("supervisor"));
 
         SupervisorEntity supr = (SupervisorEntity) criteria.uniqueResult();
         if (supr == null)
@@ -98,7 +103,7 @@ public class SupervisorDAOImpl extends BaseDaoImpl<SupervisorEntity, SupervisorI
 
     public SupervisorEntity findSupervisor(String superiorId, String subordinateId) {
         Criteria criteria = getCriteria().add(Restrictions.eq("supervisor.id", superiorId))
-                        .add(Restrictions.eq("employee.id", subordinateId));
+                .add(Restrictions.eq("employee.id", subordinateId));
 
         SupervisorEntity supr = (SupervisorEntity) criteria.uniqueResult();
         if (supr == null)

@@ -1252,10 +1252,14 @@ public class User extends AbstractMetadataTypeDTO {
 
         // check the attributes
         if (newUser.getUserAttributes() != null) {
-            log.debug("UserAttributes are NOT NULL in newUser object");
+        	if(log.isDebugEnabled()) {
+        		log.debug("UserAttributes are NOT NULL in newUser object");
+        	}
             updateAttributes(newUser.getUserAttributes());
         } else {
-            log.debug("UserAttributes are NULL in newUser");
+        	if(log.isDebugEnabled()) {
+        		log.debug("UserAttributes are NULL in newUser");
+        	}
         }
     }
 
@@ -1270,18 +1274,26 @@ public class User extends AbstractMetadataTypeDTO {
             UserAttribute origAttr = userAttributes.get(s);
             UserAttribute newAttr = attrMap.get(s);
             if (newAttr.getOperation() == AttributeOperationEnum.NO_CHANGE) {
-                log.debug("- updateAttributes: key=" + " " + s + " = NO_CHANGE");
+            	if(log.isDebugEnabled()) {
+            		log.debug("- updateAttributes: key=" + " " + s + " = NO_CHANGE");
+            	}
 
             } else if (newAttr.getOperation() == AttributeOperationEnum.ADD) {
-                log.debug("- updateAttributes: key=" + " " + s + " = ADD");
+            	if(log.isDebugEnabled()) {
+            		log.debug("- updateAttributes: key=" + " " + s + " = ADD");
+            	}
                 userAttributes.put(newAttr.getName(), newAttr);
 
             } else if (newAttr.getOperation() == AttributeOperationEnum.DELETE) {
-                log.debug("- updateAttributes: key=" + " " + s + " = DELETE");
+            	if(log.isDebugEnabled()) {
+            		log.debug("- updateAttributes: key=" + " " + s + " = DELETE");
+            	}
                 userAttributes.remove(origAttr.getName());
 
             } else if (newAttr.getOperation() == AttributeOperationEnum.REPLACE) {
-                log.debug("- updateAttributes: key=" + " " + s + " = REPLACE");
+            	if(log.isDebugEnabled()) {
+            		log.debug("- updateAttributes: key=" + " " + s + " = REPLACE");
+            	}
                 origAttr.setOperation(AttributeOperationEnum.REPLACE);
                 origAttr.setValue(newAttr.getValue());
                 userAttributes.put(origAttr.getName(), origAttr);
@@ -1290,11 +1302,15 @@ public class User extends AbstractMetadataTypeDTO {
                 // Operation Attribute was not set
                 if (origAttr == null && newAttr != null) {
                     // new attribute
-                    log.debug("- updateAttributes: key=" + " " + s + " = DETERMINED ADD");
+                	if(log.isDebugEnabled()) {
+                		log.debug("- updateAttributes: key=" + " " + s + " = DETERMINED ADD");
+                	}
                     newAttr.setOperation(AttributeOperationEnum.ADD);
                     userAttributes.put(newAttr.getName(), newAttr);
                 } else {
-                    log.debug("- updateAttributes: key=" + " " + s + " = DETERMINED REPLACE");
+                	if(log.isDebugEnabled()) {
+                		log.debug("- updateAttributes: key=" + " " + s + " = DETERMINED REPLACE");
+                	}
                     origAttr.setOperation(AttributeOperationEnum.REPLACE);
                     origAttr.setValue(newAttr.getValue());
                     userAttributes.put(origAttr.getName(), origAttr);

@@ -32,24 +32,38 @@ public abstract class AbstractLanguageSearchBean<T, KeyType> extends AbstractSea
         this.referenceType = referenceType;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result
+				+ ((languageId == null) ? 0 : languageId.hashCode());
+		result = prime * result
+				+ ((referenceType == null) ? 0 : referenceType.hashCode());
+		return result;
+	}
 
-        AbstractLanguageSearchBean<?, ?> that = (AbstractLanguageSearchBean<?, ?>) o;
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		AbstractLanguageSearchBean other = (AbstractLanguageSearchBean) obj;
+		if (languageId == null) {
+			if (other.languageId != null)
+				return false;
+		} else if (!languageId.equals(other.languageId))
+			return false;
+		if (referenceType == null) {
+			if (other.referenceType != null)
+				return false;
+		} else if (!referenceType.equals(other.referenceType))
+			return false;
+		return true;
+	}
 
-        if (languageId != null ? !languageId.equals(that.languageId) : that.languageId != null) return false;
-        return !(referenceType != null ? !referenceType.equals(that.referenceType) : that.referenceType != null);
 
-    }
-
-    @Override
-    public int hashCode() {
-        int result = super.hashCode();
-        result = 31 * result + (languageId != null ? languageId.hashCode() : 0);
-        result = 31 * result + (referenceType != null ? referenceType.hashCode() : 0);
-        return result;
-    }
 }

@@ -480,16 +480,18 @@ public class LoginDataServiceImpl implements LoginDataService {
         }
         login.setLastUpdate(new Date(System.currentTimeMillis()));
 
-        log.debug("Updating Identity" + login);
+        if(log.isDebugEnabled()) {
+        	log.debug("Updating Identity" + login);
+        }
         loginDao.merge(login);
     }
 
 
     private PolicyAttribute getPolicyAttributeDto(Set<PolicyAttribute> attr, String name) {
         assert name != null : "Name parameter is null";
-
-        log.debug("Attribute Set size=" + attr.size());
-
+        if(log.isDebugEnabled()) {
+        	log.debug("Attribute Set size=" + attr.size());
+        }
         for (PolicyAttribute policyAtr : attr) {
             if (policyAtr.getName().equalsIgnoreCase(name)) {
                 return policyAtr;
@@ -502,7 +504,9 @@ public class LoginDataServiceImpl implements LoginDataService {
     private String getPolicyAttribute(Set<PolicyAttribute> attr, String name) {
         assert name != null : "Name parameter is null";
 
-        log.debug("Attribute Set size=" + attr.size());
+        if(log.isDebugEnabled()) {
+        	log.debug("Attribute Set size=" + attr.size());
+        }
 
         for (PolicyAttribute policyAtr : attr) {
             if (policyAtr.getName().equalsIgnoreCase(name)) {

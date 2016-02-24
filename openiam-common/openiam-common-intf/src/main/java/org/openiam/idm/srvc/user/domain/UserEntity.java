@@ -41,7 +41,7 @@ import java.util.Map.Entry;
 @DozerDTOCorrespondence(User.class)
 @Indexed
 @Internationalized
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "UserEntity")
 public class UserEntity implements Serializable {
     @Id
     @GeneratedValue(generator = "system-uuid")

@@ -314,11 +314,15 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
                 bindingMap.put(AbstractProvisioningService.MATCH_PARAM, matchObj);
             }
             try {
-                log.debug(" - Building principal Name for: " + managedSys.getId());
+            	if(log.isDebugEnabled()) {
+            		log.debug(" - Building principal Name for: " + managedSys.getId());
+            	}
                 String newIdentity = ProvisionServiceUtil.buildGroupPrincipalName(attrMap, scriptRunner, bindingMap);
 
                 if (StringUtils.isBlank(newIdentity)) {
-                    log.debug("Primary identity not found...");
+                	if(log.isDebugEnabled()) {
+                		log.debug("Primary identity not found...");
+                	}
                     response.setStatus(ResponseStatus.FAILURE);
                     response.setErrorCode(ResponseCode.IDENTITY_NOT_FOUND);
                     return response;
@@ -631,7 +635,9 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
         if (mSys.getSkipGroupProvision()) {
             resp.setStatus(StatusCodeType.FAILURE);
             resp.setError(ErrorCode.SKIP_PROVISIONING);
-            log.debug("GroupProvision:requestAddModify skipped: SkipGroupProvision flag TRUE");
+            if(log.isDebugEnabled()) {
+            	log.debug("GroupProvision:requestAddModify skipped: SkipGroupProvision flag TRUE");
+            }
             return resp;
         }
         CrudRequest<ExtensibleObject> userReq = new CrudRequest<>();
@@ -679,9 +685,11 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
 
         String identity = identityDto.getIdentity();
         MuleContext muleContext = MuleContextProvider.getCtx();
-        log.debug("Getting the current attributes in the target system for =" + identity);
+        if(log.isDebugEnabled()) {
+        	log.debug("Getting the current attributes in the target system for =" + identity);
 
-        log.debug("- IsRename: " + identityDto.getOrigPrincipalName());
+        	log.debug("- IsRename: " + identityDto.getOrigPrincipalName());
+        }
 
         if (identityDto.getOrigPrincipalName() != null && !identityDto.getOrigPrincipalName().isEmpty()) {
             identity = identityDto.getOrigPrincipalName();
@@ -743,7 +751,9 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
                     curValueMap.put(obj.getName(), obj);
                 }
             } else {
-                log.debug(" - NO attributes found in target system lookup ");
+            	if(log.isDebugEnabled()) {
+            		log.debug(" - NO attributes found in target system lookup ");
+            	}
             }
             return true;
         }
@@ -758,8 +768,9 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
         ExtensibleGroup extensibleObject = new ExtensibleGroup();
 
         if (attrMap != null) {
-
-            log.debug("buildFromRules: attrMap IS NOT null");
+        	if(log.isDebugEnabled()) {
+        		log.debug("buildFromRules: attrMap IS NOT null");
+        	}
 
             for (AttributeMap attr : attrMap) {
 
@@ -783,11 +794,12 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
                             log.error("Error in script = '", mpe);
                             continue;
                         }
-
-                        log.debug("buildFromRules: OBJECTTYPE="+objectType+", ATTRIBUTE=" + attr.getAttributeName() +
-                                ", SCRIPT OUTPUT=" +
-                                (hiddenAttributes.toLowerCase().contains(","+attr.getAttributeName().toLowerCase()+",")
-                                        ? "******" : output));
+                        if(log.isDebugEnabled()) {
+	                        log.debug("buildFromRules: OBJECTTYPE="+objectType+", ATTRIBUTE=" + attr.getAttributeName() +
+	                                ", SCRIPT OUTPUT=" +
+	                                (hiddenAttributes.toLowerCase().contains(","+attr.getAttributeName().toLowerCase()+",")
+	                                        ? "******" : output));
+                        }
 
                         if (output != null) {
                             ExtensibleAttribute newAttr;
@@ -847,8 +859,9 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
                                 newAttr.setObjectType(objectType);
 
                                 extensibleObject.getAttributes().add(newAttr);
-
-                                log.debug("buildFromRules: added attribute to extGroup:" + attr.getAttributeName());
+                                if(log.isDebugEnabled()) {
+                                	log.debug("buildFromRules: added attribute to extGroup:" + attr.getAttributeName());
+                                }
                             }
                         }
                     } else if (PolicyMapObjectTypeOptions.GROUP_PRINCIPAL.name().equalsIgnoreCase(objectType)) {
@@ -867,8 +880,9 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
 
     @Override
     public Response delete(String managedSystemId, String groupId, UserStatusEnum status, String requesterId) {
-
-        log.debug("----deleteGroup called.------");
+    	if(log.isDebugEnabled()) {
+    		log.debug("----deleteGroup called.------");
+    	}
 
         Response response = new Response(ResponseStatus.SUCCESS);
 
@@ -989,9 +1003,10 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
             bindingMap.put(AbstractProvisioningService.MATCH_PARAM, matchObj);
         }
 
-        log.debug("Deleting identity: " + identity.getIdentity());
-        log.debug(" - managed sys id: " + mSys.getId());
-
+        if(log.isDebugEnabled()) {
+	        log.debug("Deleting identity: " + identity.getIdentity());
+	        log.debug(" - managed sys id: " + mSys.getId());
+        }
         // pre-processing
         String resourceId = mSys.getResourceId();
         Resource res = resourceDataService.getResource(resourceId, null);
@@ -1059,7 +1074,9 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
         if (mSys.getSkipGroupProvision()) {
             resp.setStatus(StatusCodeType.FAILURE);
             resp.setError(ErrorCode.SKIP_PROVISIONING);
-            log.debug("GroupProvision:requestDelete skipped: SkipGroupProvision flag TRUE");
+            if(log.isDebugEnabled()) {
+            	log.debug("GroupProvision:requestDelete skipped: SkipGroupProvision flag TRUE");
+            }
             return resp;
         }
         CrudRequest<ExtensibleGroup> request = new CrudRequest<>();
@@ -1099,7 +1116,9 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
         idmAuditLog.setRequestorUserId(systemUserId);
         idmAuditLog.setAction(AuditAction.PROVISIONING_LOOKUP.value());
 
-        log.debug("getTargetSystemUser called. for = " + principalName);
+        if(log.isDebugEnabled()) {
+        	log.debug("getTargetSystemUser called. for = " + principalName);
+        }
 
         LookupObjectResponse response = new LookupObjectResponse(ResponseStatus.SUCCESS);
         try {
@@ -1116,8 +1135,9 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
             }
 
             // do the lookup
-
-            log.debug("Calling lookupRequest ");
+            if(log.isDebugEnabled()) {
+            	log.debug("Calling lookupRequest ");
+            }
 
             LookupRequest<ExtensibleGroup> reqType = new LookupRequest<>();
             String requestId = "R" + UUIDGen.getUUID();

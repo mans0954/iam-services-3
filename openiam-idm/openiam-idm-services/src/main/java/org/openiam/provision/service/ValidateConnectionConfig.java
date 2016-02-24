@@ -32,12 +32,15 @@ public class ValidateConnectionConfig {
 
         ManagedSysDto mSys = managedSysService.getManagedSys(managedSysId);
 
-        log.debug("Testing connection with localConnector");
+        if(log.isDebugEnabled()) {
+        	log.debug("Testing connection with localConnector");
+        }
 
         ResponseType localResp = connectorAdapter.testConnection(mSys, muleContext);
         if (localResp.getStatus() == StatusCodeType.FAILURE) {
-
-            log.debug("Test connection failed.");
+        	if(log.isDebugEnabled()) {
+        		log.debug("Test connection failed.");
+        	}
 
             resp.setStatus(org.openiam.base.ws.ResponseStatus.FAILURE);
             resp.setErrorText(localResp.getErrorMsgAsStr());

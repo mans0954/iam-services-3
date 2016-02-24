@@ -258,7 +258,9 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
 			urlCache = tempUrlCache;
 		}
 		sw.stop();
-		log.debug(String.format("Done creating menu trees. Took: %s ms", sw.getTime()));
+		if(log.isDebugEnabled()) {
+			log.debug(String.format("Done creating menu trees. Took: %s ms", sw.getTime()));
+		}
 	}
 	
 	private Map<String, AuthorizationMenu> createMenuTrees(final Map<String, AuthorizationMenu> menuMap) {

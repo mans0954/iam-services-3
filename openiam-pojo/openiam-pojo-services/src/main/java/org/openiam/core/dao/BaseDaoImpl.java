@@ -44,7 +44,7 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
     }
 
     protected boolean cachable() {
-        return false;
+        return true;
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -215,7 +215,7 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
         if (id == null) {
             return null;
         }
-        return (T) getCriteria().add(eq(getPKfieldName(), id)).uniqueResult(); //this.getSession().get(domainClass, id);
+        return (T) getCriteria().add(eq(getPKfieldName(), id)).setCacheable(cachable()).uniqueResult(); //this.getSession().get(domainClass, id);
     }
 
     @SuppressWarnings({"unchecked"})
@@ -223,7 +223,7 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
         if (id == null) {
             return null;
         }
-        return (T) getCriteria().add(eq(getPKfieldName(), id)).setCacheable(true).uniqueResult(); //this.getSession().get(domainClass, id);
+        return (T) getCriteria().add(eq(getPKfieldName(), id)).setCacheable(cachable()).uniqueResult(); //this.getSession().get(domainClass, id);
     }
 
     /**
@@ -392,10 +392,8 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
 
     @Transactional
     public void attachDirty(T t) {
-        log.debug("attaching dirty instance");
         try {
             this.save(t);
-            log.debug("attach successful");
         } catch (RuntimeException re) {
             log.error("attach failed", re);
             throw re;
@@ -403,11 +401,9 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
     }
 
     public void attachClean(T t) {
-        log.debug("attaching clean instance");
         try {
             getSession()
                     .buildLockRequest(LockOptions.NONE).lock(t);
-            log.debug("attach successful");
         } catch (RuntimeException re) {
             log.error("attach failed", re);
             throw re;
@@ -415,10 +411,8 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
     }
 
     public void evict(T t) {
-        log.debug("evicting instance");
         try {
             getSession().evict(t);
-            log.debug("evict successful");
         } catch (RuntimeException re) {
             log.error("evict failed", re);
             throw re;

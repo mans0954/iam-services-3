@@ -103,9 +103,10 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
 
     @Override
     public ReconciliationResponse startReconciliation(ReconciliationConfig config, IdmAuditLog idmAuditLog) throws IOException, ScriptEngineException {
-        log.debug("Reconciliation started for configId=" + config.getReconConfigId() + " - resource="
-                + config.getResourceId());
-
+    	if(log.isDebugEnabled()) {
+	        log.debug("Reconciliation started for configId=" + config.getReconConfigId() + " - resource="
+	                + config.getResourceId());
+    	}
         Resource res = resourceDataService.getResource(config.getResourceId(), null);
 
         ManagedSysDto mSys = managedSysService.getManagedSysByResource(res.getId());
@@ -118,9 +119,10 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
         idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION,
                 "Reconciliation for target system: " + mSys.getName() + " is started..." + new Date());
 
-        log.debug("ManagedSysId = " + mSys.getId());
-        log.debug("Getting identities for managedSys");
-
+        if(log.isDebugEnabled()) {
+	        log.debug("ManagedSysId = " + mSys.getId());
+	        log.debug("Getting identities for managedSys");
+        }
         // have situations
         Map<String, ReconciliationSituation> situations = new HashMap<String, ReconciliationSituation>();
         for (ReconciliationSituation situation : config.getSituationSet()) {
@@ -258,7 +260,9 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
             log.error("SearchQuery not defined for this reconciliation config.");
             return new ReconciliationResponse(ResponseStatus.FAILURE);
         }
-        log.debug("processingTargetToIDM: mSys=" + mSys);
+        if(log.isDebugEnabled()) {
+        	log.debug("processingTargetToIDM: mSys=" + mSys);
+        }
         SearchRequest<ExtensibleGroup> searchRequest = new SearchRequest<>();
         String requestId = "R" + UUIDGen.getUUID();
         searchRequest.setRequestID(requestId);
@@ -274,7 +278,9 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
         searchRequest.setExtensibleObject(new ExtensibleGroup());
         SearchResponse searchResponse;
 
-        log.debug("Calling reconcileResource with Local connector");
+        if(log.isDebugEnabled()) {
+        	log.debug("Calling reconcileResource with Local connector");
+        }
         searchResponse = connectorAdapter.search(searchRequest, connector, MuleContextProvider.getCtx());
 
         if (searchResponse != null && searchResponse.getStatus() == StatusCodeType.SUCCESS) {
@@ -314,7 +320,9 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
                 }
             }
         } else {
-            log.debug(searchResponse.getErrorMessage());
+        	if(log.isDebugEnabled()) {
+        		log.debug(searchResponse.getErrorMessage());
+        	}
             idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "Error: " + searchResponse);
         }
         return new ReconciliationResponse(ResponseStatus.SUCCESS);
@@ -330,7 +338,9 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
                 BaseReconciliationCommand.OPENIAM_MANAGED_SYS_ID);
         IdentityDto identitySys = identityService.getIdentityByManagedSys(group.getId(), mSys.getId());
 
-        log.debug("Reconciliation for group: " + group);
+        if(log.isDebugEnabled()) {
+        	log.debug("Reconciliation for group: " + group);
+        }
 
         List<ExtensibleAttribute> requestedExtensibleAttributes = new ArrayList<ExtensibleAttribute>();
 
@@ -345,13 +355,18 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
         boolean userFoundInTargetSystem = false;
         if (identitySys != null) {
             String principal = identitySys.getIdentity();
-            log.debug("looking up identity in resource: " + principal);
+            if(log.isDebugEnabled()) {
+            	log.debug("looking up identity in resource: " + principal);
+            }
             idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "looking up identity in resource: " + principal);
 
             LookupObjectResponse lookupResp = provisionService.getTargetSystemObject(principal, mSys.getId(),
                     requestedExtensibleAttributes);
 
-            log.debug("Lookup status for " + principal + " =" + lookupResp.getStatus());
+            if(log.isDebugEnabled()) {
+            	log.debug("Lookup status for " + principal + " =" + lookupResp.getStatus());
+            }
+            
             idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION,
                     "Lookup status for " + principal + " =" + lookupResp.getStatus());
             userFoundInTargetSystem = lookupResp.getStatus() == ResponseStatus.SUCCESS;
@@ -368,7 +383,9 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
                 ReconciliationSituation situation = situations.get(ReconciliationCommand.IDM_DELETED__SYS_EXISTS);
                 ReconciliationObjectCommand<Group> command = commandFactory.createGroupCommand(situation.getSituationResp(), situation, mSys.getId());
                 if (command != null) {
-                    log.debug("Call command for: Record in resource but deleted in IDM");
+                	if(log.isDebugEnabled()) {
+                		log.debug("Call command for: Record in resource but deleted in IDM");
+                	}
                     ProvisionGroup provisionGroup = new ProvisionGroup(group);
                     provisionGroup.setParentAuditLogId(idmAuditLog.getId());
                     provisionGroup.setSrcSystemId(mSys.getId());
@@ -382,7 +399,9 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
                 ReconciliationSituation situation = situations.get(ReconciliationCommand.IDM_EXISTS__SYS_EXISTS);
                 ReconciliationObjectCommand<Group> command = commandFactory.createGroupCommand(situation.getSituationResp(), situation, mSys.getId());
                 if (command != null) {
-                    log.debug("Call command for: Record in resource and in IDM");
+                	if(log.isDebugEnabled()) {
+                		log.debug("Call command for: Record in resource and in IDM");
+                	}
                     ProvisionGroup provisionGroup = new ProvisionGroup(group);
                     provisionGroup.setParentAuditLogId(idmAuditLog.getId());
                     provisionGroup.setSrcSystemId(mSys.getId());
@@ -401,7 +420,9 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
                 ReconciliationSituation situation = situations.get(ReconciliationCommand.IDM_EXISTS__SYS_NOT_EXISTS);
                 ReconciliationObjectCommand<Group> command = commandFactory.createGroupCommand(situation.getSituationResp(), situation, mSys.getId());
                 if (command != null) {
-                    log.debug("Call command for: Record in resource and in IDM");
+                	if(log.isDebugEnabled()) {
+                		log.debug("Call command for: Record in resource and in IDM");
+                	}
                     ProvisionGroup provisionGroup = new ProvisionGroup(group);
                     provisionGroup.setParentAuditLogId(idmAuditLog.getId());
                     provisionGroup.setSrcSystemId(mSys.getId());
@@ -485,7 +506,9 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
                     newGroup.setSrcSystemId(mSys.getId());
 
                     IdentityDto identityDto = new IdentityDto(IdentityTypeEnum.GROUP, mSys.getId(), targetGroupPrincipal, newGroup.getId());
-                    log.debug("Call command for Match Not Found");
+                    if(log.isDebugEnabled()) {
+                    	log.debug("Call command for Match Not Found");
+                    }
                     idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "SYS_EXISTS__IDM_NOT_EXISTS for group= "
                             + targetGroupPrincipal);
 

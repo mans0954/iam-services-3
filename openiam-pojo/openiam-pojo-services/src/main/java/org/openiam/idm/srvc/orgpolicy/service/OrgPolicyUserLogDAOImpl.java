@@ -44,10 +44,8 @@ public class OrgPolicyUserLogDAOImpl implements OrgPolicyUserLogDAO {
 	}
 
 	public OrgPolicyUserLog add(OrgPolicyUserLog transientInstance) {
-		log.debug("persisting OrgPolicyUserLog instance");
 		try {
 			sessionFactory.getCurrentSession().persist(transientInstance);
-			log.debug("persist successful");
 			return transientInstance;
 		} catch (HibernateException re) {
 			log.error("persist failed", re);
@@ -58,10 +56,8 @@ public class OrgPolicyUserLogDAOImpl implements OrgPolicyUserLogDAO {
 
 
 	public void remove(OrgPolicyUserLog persistentInstance) {
-		log.debug("deleting OrgPolicyUserLog instance");
 		try {
 			sessionFactory.getCurrentSession().delete(persistentInstance);
-			log.debug("delete successful");
 		} catch (RuntimeException re) {
 			log.error("delete failed", re);
 			throw re;
@@ -69,11 +65,9 @@ public class OrgPolicyUserLogDAOImpl implements OrgPolicyUserLogDAO {
 	}
 
 	public OrgPolicyUserLog update(OrgPolicyUserLog detachedInstance) {
-		log.debug("merging OrgPolicyUserLog instance");
 		try {
 			OrgPolicyUserLog result = (OrgPolicyUserLog) sessionFactory
 					.getCurrentSession().merge(detachedInstance);
-			log.debug("merge successful");
 			return result;
 		} catch (RuntimeException re) {
 			log.error("merge failed", re);
@@ -82,17 +76,11 @@ public class OrgPolicyUserLogDAOImpl implements OrgPolicyUserLogDAO {
 	}
 
 	public OrgPolicyUserLog findById(java.lang.String id) {
-		log.debug("getting OrgPolicyUserLog instance with id: " + id);
 		try {
 			OrgPolicyUserLog instance = (OrgPolicyUserLog) sessionFactory
 					.getCurrentSession()
 					.get("org.openiam.idm.srvc.orgpolicy.dto.OrgPolicyUserLog",
 							id);
-			if (instance == null) {
-				log.debug("get successful, no instance found");
-			} else {
-				log.debug("get successful, instance found");
-			}
 			return instance;
 		} catch (RuntimeException re) {
 			log.error("get failed", re);

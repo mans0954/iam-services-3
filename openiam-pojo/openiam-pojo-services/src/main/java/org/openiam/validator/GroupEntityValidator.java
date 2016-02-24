@@ -33,7 +33,9 @@ public class GroupEntityValidator extends AbstractEntityValidator {
         }
 
         //final GroupEntity found = groupManager.getGroupByName(group.getName(), null);
-        log.debug("Validating group " + group.getName() + " of managed system " + group.getManagedSystem().getId());
+        if(log.isDebugEnabled()) {
+        	log.debug("Validating group " + group.getName() + " of managed system " + group.getManagedSystem().getId());
+        }
         //final GroupEntity found = groupManager.getGroupByNameAndManagedSys(group.getName(), group.getManagedSysId(), null);
         GroupSearchBean groupSearchBean = new GroupSearchBean();
         groupSearchBean.setName(group.getName());

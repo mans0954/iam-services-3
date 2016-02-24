@@ -110,7 +110,9 @@ public class DefaultLoginModule extends AbstractLoginModule {
             throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_CONFIGURATION);
         }
 
-        log.debug("Authentication policyid=" + sysConfiguration.getDefaultAuthPolicyId());
+        if(log.isDebugEnabled()) {
+        	log.debug("Authentication policyid=" + sysConfiguration.getDefaultAuthPolicyId());
+        }
         Policy authPolicy = policyDataService.getPolicy(sysConfiguration.getDefaultAuthPolicyId());
         if (authPolicy == null) {
             log.error("No auth policy found");
@@ -199,7 +201,9 @@ public class DefaultLoginModule extends AbstractLoginModule {
 	        }
         }
 
-        log.debug("-login successful");
+        if(log.isDebugEnabled()) {
+        	log.debug("-login successful");
+        }
         // good login - reset the counters
 
         lg.setLastAuthAttempt(curDate);
@@ -215,7 +219,9 @@ public class DefaultLoginModule extends AbstractLoginModule {
         lg.setAuthFailCount(0);
         lg.setChallengeResponseFailCount(0);
         lg.setFirstTimeLogin(0);
-        log.debug("-Good Authn: Login object updated.");
+        if(log.isDebugEnabled()) {
+        	log.debug("-Good Authn: Login object updated.");
+        }
         loginManager.updateLogin(lg);
 
         // check the user status
@@ -227,7 +233,9 @@ public class DefaultLoginModule extends AbstractLoginModule {
         }
 
         // Successful login
-        log.debug("-Populating subject after authentication");
+        if(log.isDebugEnabled()) {
+        	log.debug("-Populating subject after authentication");
+        }
 
         String tokenType = getPolicyAttribute(authPolicy.getPolicyAttributes(), "TOKEN_TYPE");
         String tokenLife = getPolicyAttribute(authPolicy.getPolicyAttributes(), "TOKEN_LIFE");

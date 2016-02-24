@@ -88,7 +88,9 @@ public class LDAPLoginModule extends AbstractLoginModule {
         if(StringUtils.isEmpty(authPolicyId)) {
             authPolicyId = sysConfiguration.getDefaultAuthPolicyId();
         }
-        log.debug("Authentication policyid=" + authPolicyId);
+        if(log.isDebugEnabled()) {
+        	log.debug("Authentication policyid=" + authPolicyId);
+        }
         Policy authPolicy = policyDataService.getPolicy(authPolicyId);
         if (authPolicy == null) {
             log.error("No auth policy found");
@@ -122,7 +124,9 @@ public class LDAPLoginModule extends AbstractLoginModule {
         List<ExtensibleAttribute> attrs = new ArrayList<ExtensibleAttribute>();
         attrs.add(new ExtensibleAttribute("distinguishedName", null));
         LookupUserResponse resp = provisionService.getTargetSystemUser(principal, managedSysId, attrs);
-        log.debug("Lookup for user identity =" + principal + " in target system = " + mSys.getName() + ". Result = " + resp.getStatus() + ", " + resp.getErrorCode());
+        if(log.isDebugEnabled()) {
+        	log.debug("Lookup for user identity =" + principal + " in target system = " + mSys.getName() + ". Result = " + resp.getStatus() + ", " + resp.getErrorCode());
+        }
 
         if (resp.isFailure()) {
             throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_LOGIN);
@@ -224,7 +228,9 @@ public class LDAPLoginModule extends AbstractLoginModule {
             }
         }
 
-        log.debug("-login successful");
+        if(log.isDebugEnabled()) {
+        	log.debug("-login successful");
+        }
         // good login - reset the counters
 
         lg.setLastAuthAttempt(curDate);
@@ -239,7 +245,9 @@ public class LDAPLoginModule extends AbstractLoginModule {
 
         lg.setAuthFailCount(0);
         lg.setFirstTimeLogin(0);
-        log.debug("-Good Authn: Login object updated.");
+        if(log.isDebugEnabled()) {
+        	log.debug("-Good Authn: Login object updated.");
+        }
         loginManager.updateLogin(lg);
 
         // check the user status
@@ -251,7 +259,9 @@ public class LDAPLoginModule extends AbstractLoginModule {
         }
 
         // Successful login
-        log.debug("-Populating subject after authentication");
+        if(log.isDebugEnabled()) {
+        	log.debug("-Populating subject after authentication");
+        }
 
         String tokenType = getPolicyAttribute(authPolicy.getPolicyAttributes(), "TOKEN_TYPE");
         String tokenLife = getPolicyAttribute(authPolicy.getPolicyAttributes(), "TOKEN_LIFE");

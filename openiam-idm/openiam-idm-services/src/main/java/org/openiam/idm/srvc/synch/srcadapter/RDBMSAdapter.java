@@ -75,8 +75,9 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
 
     @Override
     public SyncResponse startSynch(final SynchConfig config, SynchReviewEntity sourceReview, final SynchReviewEntity resultReview) {
-
-        log.debug("RDBMS SYNCH STARTED ^^^^^^^^");
+    	if(log.isDebugEnabled()) {
+    		log.debug("RDBMS SYNCH STARTED ^^^^^^^^");
+    	}
 
         SyncResponse res = new SyncResponse(ResponseStatus.SUCCESS);
         SynchReview review = null;
@@ -135,9 +136,10 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
                 }
             }
 
-            log.debug("-SYNCH SQL=" + sql.toString());
-            log.debug("-last processed record =" + lastExec);
-
+            if(log.isDebugEnabled()) {
+	            log.debug("-SYNCH SQL=" + sql.toString());
+	            log.debug("-last processed record =" + lastExec);
+            }
             PreparedStatement ps = con.prepareStatement(sql.toString());
             if (config.getSynchType().equalsIgnoreCase("INCREMENTAL") && (lastExec != null)) {
                 ps.setTimestamp(1, new Timestamp(lastExec.getTime()));
@@ -157,7 +159,9 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
             }
 
             // test
-            log.debug("Result set contains following number of columns : " + rowHeader.getColumnMap().size());
+            if(log.isDebugEnabled()) {
+            	log.debug("Result set contains following number of columns : " + rowHeader.getColumnMap().size());
+            }
 
             // Multithreading
             int allRowsCount = results.size();
@@ -168,7 +172,9 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
                 if (remains != 0) {
                     threadCoount++;
                 }
-                log.debug("Thread count = " + threadCoount + "; Rows in one thread = " + rowsInOneExecutors + "; Remains rows = " + remains);
+                if(log.isDebugEnabled()) {
+                	log.debug("Thread count = " + threadCoount + "; Rows in one thread = " + rowsInOneExecutors + "; Remains rows = " + remains);
+                }
                 System.out.println("Thread count = " + threadCoount + "; Rows in one thread = " + rowsInOneExecutors + "; Remains rows = " + remains);
                 List<Future> threadResults = new LinkedList<Future>();
                 // store the latest processed record by thread indx
@@ -234,7 +240,9 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
 //            auditLogProvider.persist(auditBuilder);
             SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.FILE_EXCEPTION);
-            log.debug("RDBMS SYNCHRONIZATION COMPLETE WITH ERRORS ^^^^^^^^");
+            if(log.isDebugEnabled()) {
+            	log.debug("RDBMS SYNCHRONIZATION COMPLETE WITH ERRORS ^^^^^^^^");
+            }
             return resp;
         } catch (IOException io) {
             io.printStackTrace();
@@ -244,7 +252,9 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
 			*/
             SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.IO_EXCEPTION);
-            log.debug("RDBMS SYNCHRONIZATION COMPLETE WITH ERRORS ^^^^^^^^");
+            if(log.isDebugEnabled()) {
+            	log.debug("RDBMS SYNCHRONIZATION COMPLETE WITH ERRORS ^^^^^^^^");
+            }
             return resp;
 
         } catch (SQLException se) {
@@ -275,7 +285,9 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
             closeConnection();
         }
 
-        log.debug("RDBMS SYNCH COMPLETE.^^^^^^^^");
+        if(log.isDebugEnabled()) {
+        	log.debug("RDBMS SYNCH COMPLETE.^^^^^^^^");
+        }
         return new SyncResponse(ResponseStatus.SUCCESS);
 
     }
@@ -283,16 +295,19 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
     private Timestamp proccess(SynchConfig config, SynchReviewEntity review, ProvisionService provService, List<LineObject> part, final ValidationScript validationScript, final List<TransformScript> transformScripts, MatchObjectRule matchRule, SynchReviewEntity resultReview, int ctr) throws ClassNotFoundException {
         Timestamp mostRecentRecord = null;
         for (LineObject rowObj : part) {
-            log.debug("-RDBMS ADAPTER: SYNCHRONIZING  RECORD # ---" + ctr++);
-            log.debug(" - Record update time=" + rowObj.getLastUpdate());
-
+        	if(log.isDebugEnabled()) {
+	            log.debug("-RDBMS ADAPTER: SYNCHRONIZING  RECORD # ---" + ctr++);
+	            log.debug(" - Record update time=" + rowObj.getLastUpdate());
+        	}
             if (mostRecentRecord == null) {
                 mostRecentRecord = rowObj.getLastUpdate();
 
             } else {
                 // if current record is newer than what we saved, then update the most recent record value
                 if (mostRecentRecord.before(rowObj.getLastUpdate())) {
-                    log.debug("- MostRecentRecord value updated to=" + rowObj.getLastUpdate());
+                	if(log.isDebugEnabled()) {
+                		log.debug("- MostRecentRecord value updated to=" + rowObj.getLastUpdate());
+                	}
                     mostRecentRecord.setTime(rowObj.getLastUpdate().getTime());
                 }
             }

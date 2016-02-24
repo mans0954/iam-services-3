@@ -58,7 +58,9 @@ public class AsynchGenericObjectSynchServiceImpl implements AsynchGenericObjectS
 
 
     public void startSynchronization(SynchConfig config) {
-        log.debug("A-START SYNCH CALLED...................");
+    	if(log.isDebugEnabled()) {
+    		log.debug("A-START SYNCH CALLED...................");
+    	}
 
         try {
 
@@ -73,11 +75,15 @@ public class AsynchGenericObjectSynchServiceImpl implements AsynchGenericObjectS
 
 
         } catch (Exception e) {
-            log.debug("EXCEPTION:AsynchIdentitySynchService");
+        	if(log.isDebugEnabled()) {
+        		log.debug("EXCEPTION:AsynchIdentitySynchService");
+        	}
             log.error(e);
             //e.printStackTrace();
         }
-        log.debug("A-START SYNCH END ---------------------");
+        if(log.isDebugEnabled()) {
+        	log.debug("A-START SYNCH END ---------------------");
+        }
     }
 
 }

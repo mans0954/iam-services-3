@@ -53,41 +53,41 @@ public interface OrganizationService {
 
     public void fireUpdateOrgMap();
 
-    public Organization getOrganizationDTO(final String orgId, final LanguageEntity langauge);
+    public Organization getOrganizationDTO(final String orgId, final LanguageEntity language);
 
-    public OrganizationEntity getOrganizationLocalized(String orgId, final LanguageEntity langauge);
+    public OrganizationEntity getOrganizationLocalized(String orgId, final LanguageEntity language);
 
-    public OrganizationEntity getOrganizationLocalized(final String orgId, String requesterId, final LanguageEntity langauge);
+    public OrganizationEntity getOrganizationLocalized(final String orgId, String requesterId, final LanguageEntity language);
 
-    public Organization getOrganizationLocalizedDto(String orgId, String requesterId, final LanguageEntity langauge);
+    public Organization getOrganizationLocalizedDto(String orgId, String requesterId, final LanguageEntity language);
 
-    public OrganizationEntity getOrganizationByName(final String name, String requesterId, final LanguageEntity langauge);
+    public OrganizationEntity getOrganizationByName(final String name, String requesterId, final LanguageEntity language);
 
-    public List<OrganizationEntity> getOrganizationsForUser(String userId, String requesterId, final int from, final int size, final LanguageEntity langauge);
+    public List<OrganizationEntity> getOrganizationsForUser(String userId, String requesterId, final int from, final int size, final LanguageEntity language);
 
     public List<Location> getLocationListByPageForUser(String userId, Integer from, Integer size);
 
-    public List<Organization> getOrganizationsDtoForUser(String userId, String requesterId, final int from, final int size, final LanguageEntity langauge);
+    public List<Organization> getOrganizationsDtoForUser(String userId, String requesterId, final int from, final int size, final LanguageEntity language);
 
-    public List<OrganizationEntity> getParentOrganizations(final String orgId, String requesterId, final int from, final int size, final LanguageEntity langauge);
+    public List<OrganizationEntity> getParentOrganizations(final String orgId, String requesterId, final int from, final int size, final LanguageEntity language);
 
-    public List<Organization> getParentOrganizationsDto(String orgId, String requesterId, int from, int size, final LanguageEntity langauge);
+    public List<Organization> getParentOrganizationsDto(String orgId, String requesterId, int from, int size, final LanguageEntity language);
 
-    public List<OrganizationEntity> getChildOrganizations(final String orgId, String requesterId, final int from, final int size, final LanguageEntity langauge);
+    public List<OrganizationEntity> getChildOrganizations(final String orgId, String requesterId, final int from, final int size, final LanguageEntity language);
 
-    public List<Organization> getChildOrganizationsDto(String orgId, String requesterId, int from, int size, final LanguageEntity langauge);
+    public List<Organization> getChildOrganizationsDto(String orgId, String requesterId, int from, int size, final LanguageEntity language);
 
-    public List<OrganizationEntity> findBeans(final OrganizationSearchBean searchBean, String requesterId, final int from, final int size, final LanguageEntity langauge);
+    public List<OrganizationEntity> findBeans(final OrganizationSearchBean searchBean, String requesterId, final int from, final int size, final LanguageEntity language);
 
-    public List<Organization> findBeansDto(final OrganizationSearchBean searchBean, String requesterId, int from, int size, final LanguageEntity langauge);
+    public List<Organization> findBeansDto(final OrganizationSearchBean searchBean, String requesterId, int from, int size, final LanguageEntity language);
 
-    public List<OrganizationEntity> getAllowedParentOrganizationsForType(final String orgTypeId, String requesterId, final LanguageEntity langauge);
+    public List<OrganizationEntity> getAllowedParentOrganizationsForType(final String orgTypeId, String requesterId, final LanguageEntity language);
 
-    public List<Organization> getAllowedParentOrganizationsDtoForType(final String orgTypeId, String requesterId, final LanguageEntity langauge);
+    public List<Organization> getAllowedParentOrganizationsDtoForType(final String orgTypeId, String requesterId, final LanguageEntity language);
 
-    public List<OrganizationEntity> findOrganizationsByAttributeValue(final String attrName, String attrValue, final LanguageEntity langauge);
+    public List<OrganizationEntity> findOrganizationsByAttributeValue(final String attrName, String attrValue, final LanguageEntity language);
 
-    public List<Organization> findOrganizationsDtoByAttributeValue(final String attrName, String attrValue, final LanguageEntity langauge);
+    public List<Organization> findOrganizationsDtoByAttributeValue(final String attrName, String attrValue, final LanguageEntity language);
 
     public int getNumOfOrganizationsForUser(final String userId, final String requesterId);
 
@@ -163,7 +163,7 @@ public interface OrganizationService {
 
     public List<LocationEntity> getLocationListByOrganizationId(Set<String> orgsId);
 
-    public List<Organization> getUserAffiliationsByType(String userId, String typeId, String requesterId, final int from, final int size, final LanguageEntity langauge);
+    public List<Organization> getUserAffiliationsByType(String userId, String typeId, String requesterId, final int from, final int size, final LanguageEntity language);
 
     public List<OrganizationAttribute> getOrgAttributesDtoList(String orgId);
 }

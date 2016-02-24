@@ -92,11 +92,15 @@ public class ProvisionDispatcher implements Sweepable {
         if (extObject == null) {
             return null;
         }
-        log.debug("updateAttributeList: Updating operations on attributes being passed to connectors");
+        if(log.isDebugEnabled()) {
+        	log.debug("updateAttributeList: Updating operations on attributes being passed to connectors");
+        }
 
         List<ExtensibleAttribute> extAttrList = extObject.getAttributes();
         if (extAttrList == null) {
-            log.debug("Extended object attributes is null");
+        	if(log.isDebugEnabled()) {
+        		log.debug("Extended object attributes is null");
+        	}
             return null;
         }
 
@@ -113,16 +117,24 @@ public class ProvisionDispatcher implements Sweepable {
                     ExtensibleAttribute curAttr = currentValueMap.get(nm);
                     attr.setOperation(AttributeOperationEnum.NO_CHANGE.getValue());
                     if (attr.valuesAreEqual(curAttr)) {
-                        log.debug("- Op = 0 - AttrName = " + nm);
+                    	if(log.isDebugEnabled()) {
+                    		log.debug("- Op = 0 - AttrName = " + nm);
+                    	}
                         attr.setOperation(AttributeOperationEnum.NO_CHANGE.getValue());
                     } else if (curAttr == null || !curAttr.containsAnyValue()) {
-                        log.debug("- Op = 1 - AttrName = " + nm);
+                    	if(log.isDebugEnabled()) {
+                    		log.debug("- Op = 1 - AttrName = " + nm);
+                    	}
                         attr.setOperation(AttributeOperationEnum.ADD.getValue());
                     } else if (!attr.containsAnyValue() && curAttr.containsAnyValue()) {
-                        log.debug("- Op = 3 - AttrName = " + nm);
+                    	if(log.isDebugEnabled()) {
+                    		log.debug("- Op = 3 - AttrName = " + nm);
+                    	}
                         attr.setOperation(AttributeOperationEnum.DELETE.getValue());
                     } else if (attr.containsAnyValue() && curAttr.containsAnyValue()) {
-                        log.debug("- Op = 2 - AttrName = " + nm);
+                    	if(log.isDebugEnabled()) {
+                    		log.debug("- Op = 2 - AttrName = " + nm);
+                    	}
                         attr.setOperation(AttributeOperationEnum.REPLACE.getValue());
                     }
                 }

@@ -131,14 +131,16 @@ public class SourceAdapterDispatcher implements Runnable {
 
     private volatile boolean terminate = false;
 
-    private synchronized void setTerminate(boolean terminate){
-        this.terminate=terminate;
+    private synchronized void setTerminate(boolean terminate) {
+        this.terminate = terminate;
     }
-    private synchronized boolean getTerminate(){
+
+    private synchronized boolean getTerminate() {
         return this.terminate;
     }
+
     @PostConstruct
-    public void init(){
+    public void init() {
         final ExecutorService executorService = Executors.newCachedThreadPool();
         executorService.submit(this);
         Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -165,9 +167,9 @@ public class SourceAdapterDispatcher implements Runnable {
         return requestQueue.take();
     }
 
-    public void run(){
+    public void run() {
         try {
-            SourceAdapterRequest request=null;
+            SourceAdapterRequest request = null;
             while (!getTerminate() && (request = pullFromQueue()) != null) {
                 process(request);
                 // keep this due to existed in old code
@@ -827,6 +829,10 @@ public class SourceAdapterDispatcher implements Runnable {
             }
             List<User> result = new ArrayList<User>();
             for (SourceAdapterMemberhipKey superUser : request.getSupervisors()) {
+                if (superUser.getValue() == null || "NULL".equalsIgnoreCase(superUser.getValue())) {
+                    warnings.append(this.getWarning("Supervisor has NULL identifier value."));
+                    continue;
+                }
                 isFound = false;
                 User user = this.getUser(superUser, request);
                 if (superUser.getOperation() == null) {
@@ -834,6 +840,17 @@ public class SourceAdapterDispatcher implements Runnable {
                 }
                 if (user == null || user.getId() == null) {
                     warnings.append(getWarning("No such manager in system=" + superUser.getValue() + " Skip this!"));
+                    String value = superUser.getName() + "=" + superUser.getValue();
+                    UserAttribute supervisorDetails = user.getAttribute("SUPERVISOR_DETAILS");
+                    if (supervisorDetails == null) {
+                        supervisorDetails = new UserAttribute();
+                        supervisorDetails.setName("SUPERVISOR_DETAILS");
+                        supervisorDetails.setOperation(AttributeOperationEnum.ADD);
+                        pUser.saveAttribute(supervisorDetails);
+                    } else {
+                        supervisorDetails.setOperation(AttributeOperationEnum.REPLACE);
+                    }
+                    supervisorDetails.setValue(value);
                     break;
                 }
                 for (User supervisor : pUser.getSuperiors()) {
@@ -1032,6 +1049,12 @@ public class SourceAdapterDispatcher implements Runnable {
                     pUser.saveAttribute(attr);
                 }
             }
+        }
+        //Mark that user created from source adapter.
+        if (StringUtils.isBlank(pUser.getId())) {
+            UserAttribute attr = new UserAttribute("USER_CREATION_SOURCE", "SOURCE_ADAPTER");
+            attr.setOperation(AttributeOperationEnum.ADD);
+            pUser.saveAttribute(attr);
         }
     }
 

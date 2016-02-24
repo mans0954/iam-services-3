@@ -16,7 +16,7 @@ import java.util.*;
 
 @Entity
 @Table(name = "MANAGED_SYS")
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "ManagedSysEntity")
 @DozerDTOCorrespondence(ManagedSysDto.class)
 public class ManagedSysEntity implements Serializable {
     private static final long serialVersionUID = -648884785253890053L;

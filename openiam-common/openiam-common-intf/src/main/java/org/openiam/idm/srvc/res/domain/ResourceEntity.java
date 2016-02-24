@@ -29,7 +29,7 @@ import java.util.Set;
 
 @Entity
 @Table(name = "RES")
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "ResourceEntity")
 @DozerDTOCorrespondence(Resource.class)
 @AttributeOverride(name = "id", column = @Column(name = "RESOURCE_ID"))
 @Internationalized

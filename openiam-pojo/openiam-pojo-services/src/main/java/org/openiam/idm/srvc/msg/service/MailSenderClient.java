@@ -137,7 +137,9 @@ public class MailSenderClient {
 
             } else {
                 Transport.send(message);
-                log.debug("Message successfully sent.");
+                if(log.isDebugEnabled()) {
+                	log.debug("Message successfully sent.");
+                }
             }
         } catch (Throwable e) {
             log.error("Exception while sending mail", e);

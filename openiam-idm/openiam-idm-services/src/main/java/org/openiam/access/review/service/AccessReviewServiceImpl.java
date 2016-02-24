@@ -58,10 +58,14 @@ public class AccessReviewServiceImpl implements AccessReviewService {
             dataList = strategy.buildView();
             exceptionList = strategy.getExceptionsList();
 
-            log.debug("========ACCESS VIEW TREE============");
+            if(log.isDebugEnabled()) {
+            	log.debug("========ACCESS VIEW TREE============");
+            }
             TreeNode<AccessViewBean> rootElement = new TreeNode<>(new AccessViewBean());
             rootElement.add(dataList);
-            log.debug(rootElement.toString());
+            if(log.isDebugEnabled()) {
+            	log.debug(rootElement.toString());
+            }
         }
         sw.stop();
         log.info(String.format("Done building access review tree. Took: %s ms", sw.getTime()));

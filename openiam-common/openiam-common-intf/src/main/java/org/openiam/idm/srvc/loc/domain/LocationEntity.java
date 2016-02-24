@@ -1,8 +1,8 @@
 package org.openiam.idm.srvc.loc.domain;
 
 
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Type;
+import org.hibernate.annotations.*;
+import org.hibernate.annotations.Cache;
 import org.hibernate.search.annotations.DocumentId;
 import org.hibernate.search.annotations.Indexed;
 import org.openiam.core.dao.lucene.LuceneId;
@@ -11,11 +11,15 @@ import org.openiam.idm.srvc.loc.dto.Location;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 
 import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import javax.validation.constraints.Size;
 
 
 @Entity
 @Table(name = "LOCATION")
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "LocationEntity")
 @DozerDTOCorrespondence(Location.class)
 @Indexed
 public class LocationEntity {

@@ -42,7 +42,9 @@ public abstract class AbstractLinuxCommand<Request extends RequestType, Response
 
     protected SSHAgent getSSHAgent(String targetId)
             throws ConnectorDataException {
-        log.debug("Getting SSH for managed sys with id=" + targetId);
+    	if(log.isDebugEnabled()) {
+    		log.debug("Getting SSH for managed sys with id=" + targetId);
+    	}
         return getSSHAgent(managedSysService.getManagedSysById(targetId));
     }
 
@@ -66,7 +68,9 @@ public abstract class AbstractLinuxCommand<Request extends RequestType, Response
             String managedSysId = managedSys.getId();
             if (!(managedSys.getResourceId() == null || managedSys
                     .getResourceId().length() == 0)) {
-                log.debug("ManagedSys found; Name=" + managedSys.getName());
+            	if(log.isDebugEnabled()) {
+            		log.debug("ManagedSys found; Name=" + managedSys.getName());
+            	}
 
                 if ((ssh = sshConnectionFactory.getSSH(managedSysId)) == null) {
                     File f = null;
@@ -140,7 +144,9 @@ public abstract class AbstractLinuxCommand<Request extends RequestType, Response
         LinuxGroup group = null;
 
         if (StringUtils.hasText(name)) {
-            log.debug("Object: group" + name);
+        	if(log.isDebugEnabled()) {
+        		log.debug("Object: group" + name);
+        	}
             group = new LinuxGroup(name);
         } else {
             log.error("Login name for Linux user not specified");
