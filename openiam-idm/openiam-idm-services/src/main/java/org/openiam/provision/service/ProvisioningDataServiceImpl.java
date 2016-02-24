@@ -29,9 +29,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseObject;
 import org.openiam.base.id.UUIDGen;
-import org.openiam.base.ws.Response;
-import org.openiam.base.ws.ResponseCode;
-import org.openiam.base.ws.ResponseStatus;
+import org.openiam.base.ws.*;
 import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.request.LookupRequest;
 import org.openiam.connector.type.response.LookupAttributeResponse;
@@ -39,6 +37,7 @@ import org.openiam.connector.type.response.ObjectResponse;
 import org.openiam.connector.type.response.ResponseType;
 import org.openiam.connector.type.response.SearchResponse;
 import org.openiam.exception.ObjectNotFoundException;
+import org.openiam.idm.searchbeans.LoginSearchBean;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
@@ -1088,15 +1087,18 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                 }
             }
             // validate that this identity does not already exist
-            LoginEntity dupPrincipal = loginManager.getLoginByManagedSys(primaryLogin.getLogin(),
-                    primaryLogin.getManagedSysId());
+            LoginSearchBean lsb = new LoginSearchBean();
+            lsb.setUseLucene(false);
+            lsb.setManagedSysId(primaryLogin.getManagedSysId());
+            lsb.setLoginMatchToken(new SearchParam(primaryLogin.getLogin(), MatchType.EXACT));
+            Integer loginCounts = loginManager.count(lsb);
 
-            if (dupPrincipal != null) {
+            if (loginCounts != null && loginCounts>0) {
                 // identity exists
                 auditLog.fail();
-                auditLog.setFailureReason(ResponseCode.DUPLICATE_PRINCIPAL + ": " + dupPrincipal);
+                auditLog.setFailureReason(ResponseCode.DUPLICATE_PRINCIPAL + ": " + primaryLogin);
                 auditLog.addAttribute(AuditAttributeName.DESCRIPTION, ResponseCode.DUPLICATE_PRINCIPAL + ": "
-                        + dupPrincipal.getLogin());
+                        + primaryLogin.getLogin());
                 resp.setStatus(ResponseStatus.FAILURE);
                 resp.setErrorCode(ResponseCode.DUPLICATE_PRINCIPAL);
                 return resp;

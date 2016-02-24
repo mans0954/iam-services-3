@@ -1,11 +1,11 @@
 package org.openiam.provision.service;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mule.api.MuleException;
 import org.mule.module.client.MuleClient;
-import org.mule.util.StringUtils;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.Response;
@@ -23,6 +23,7 @@ import org.openiam.connector.type.response.ResponseType;
 import org.openiam.connector.type.response.SearchResponse;
 import org.openiam.dozer.converter.*;
 import org.openiam.exception.ObjectNotFoundException;
+import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
 import org.openiam.idm.srvc.audit.constant.AuditConstants;
@@ -46,6 +47,7 @@ import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
+import org.openiam.idm.srvc.meta.service.MetadataService;
 import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
@@ -257,6 +259,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
     protected AuditLogService auditLogService;
     @Autowired
     protected MetadataTypeDAO metadataTypeDAO;
+    @Autowired
+    protected MetadataService metadataService;
 
     @Autowired
     private ManagedSystemObjectMatchDozerConverter managedSystemObjectMatchDozerConverter;
@@ -2150,19 +2154,37 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
         MetadataTypeEntity jobCode = null;
         MetadataTypeEntity employeeType = null;
         MetadataTypeEntity subtype = null;
-        if (StringUtils.isNotBlank(pUser.getMdTypeId())) {
-            type = metadataTypeDAO.findByIdNoLocalized(pUser.getMdTypeId());
+
+        MetadataTypeSearchBean sb = new MetadataTypeSearchBean();
+        if(StringUtils.isNotBlank(pUser.getMdTypeId())){
+            sb.addKey(pUser.getMdTypeId());
         }
-        if (StringUtils.isNotBlank(pUser.getJobCodeId())) {
-            jobCode = metadataTypeDAO.findByIdNoLocalized(pUser.getJobCodeId());
+        if(StringUtils.isNotBlank(pUser.getJobCodeId())){
+            sb.addKey(pUser.getJobCodeId());
         }
-        if (StringUtils.isNotBlank(pUser.getEmployeeTypeId())) {
-            employeeType = metadataTypeDAO.findByIdNoLocalized(pUser.getEmployeeTypeId());
+        if(StringUtils.isNotBlank(pUser.getEmployeeTypeId())){
+            sb.addKey(pUser.getEmployeeTypeId());
         }
-        if (StringUtils.isNotBlank(pUser.getUserSubTypeId())) {
-            subtype = metadataTypeDAO.findByIdNoLocalized(pUser.getUserSubTypeId());
+        if(StringUtils.isNotBlank(pUser.getUserSubTypeId())){
+            sb.addKey(pUser.getUserSubTypeId());
         }
 
+
+        List<MetadataTypeEntity> metaDataTypes = metadataService.findEntityBeans(sb, -1, -1, null);
+
+        if(CollectionUtils.isNotEmpty(metaDataTypes)){
+            for(MetadataTypeEntity typeEntity: metaDataTypes){
+                if(typeEntity.getId().equals(pUser.getMdTypeId())){
+                    type = typeEntity;
+                } else if(typeEntity.getId().equals(pUser.getJobCodeId())){
+                    jobCode = typeEntity;
+                }else if(typeEntity.getId().equals(pUser.getEmployeeTypeId())){
+                    employeeType = typeEntity;
+                }else if(typeEntity.getId().equals(pUser.getUserSubTypeId())){
+                    subtype = typeEntity;
+                }
+            }
+        }
 
         Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
         if (login == null && StringUtils.isNotEmpty(pUser.getId())) {
@@ -2183,15 +2205,36 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
         MetadataTypeEntity type = null;
         MetadataTypeEntity jobCode = null;
         MetadataTypeEntity employeeType = null;
+        MetadataTypeEntity subtype = null;
 
-        if (StringUtils.isNotBlank(pUser.getMdTypeId())) {
-            type = metadataTypeDAO.findByIdNoLocalized(pUser.getMdTypeId());
+        MetadataTypeSearchBean sb = new MetadataTypeSearchBean();
+        if(StringUtils.isNotBlank(pUser.getMdTypeId())){
+            sb.addKey(pUser.getMdTypeId());
         }
-        if (StringUtils.isNotBlank(pUser.getJobCodeId())) {
-            jobCode = metadataTypeDAO.findByIdNoLocalized(pUser.getJobCodeId());
+        if(StringUtils.isNotBlank(pUser.getJobCodeId())){
+            sb.addKey(pUser.getJobCodeId());
         }
-        if (StringUtils.isNotBlank(pUser.getEmployeeTypeId())) {
-            employeeType = metadataTypeDAO.findByIdNoLocalized(pUser.getEmployeeTypeId());
+        if(StringUtils.isNotBlank(pUser.getEmployeeTypeId())){
+            sb.addKey(pUser.getEmployeeTypeId());
+        }
+        if(StringUtils.isNotBlank(pUser.getUserSubTypeId())){
+            sb.addKey(pUser.getUserSubTypeId());
+        }
+
+        List<MetadataTypeEntity> metaDataTypes = metadataService.findEntityBeans(sb, -1, -1, null);
+
+        if(CollectionUtils.isNotEmpty(metaDataTypes)){
+            for(MetadataTypeEntity typeEntity: metaDataTypes){
+                if(typeEntity.getId().equals(pUser.getMdTypeId())){
+                    type = typeEntity;
+                } else if(typeEntity.getId().equals(pUser.getJobCodeId())){
+                    jobCode = typeEntity;
+                }else if(typeEntity.getId().equals(pUser.getEmployeeTypeId())){
+                    employeeType = typeEntity;
+                }else if(typeEntity.getId().equals(pUser.getUserSubTypeId())){
+                    subtype = typeEntity;
+                }
+            }
         }
 
         Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
@@ -2322,8 +2365,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
             auditLog.setTargetUser(tgId, strLogin);
             auditLog.setAction(AuditAction.REPLACE_PROP.value());
-            MetadataTypeEntity metadataType = metadataTypeDAO.findByIdNoLocalized(pUser.getEmployeeTypeId());
-            auditLog.addCustomRecord("EmployeeType", "New='" + metadataType.getDescription() + "'");
+//            MetadataTypeEntity metadataType = metadataTypeDAO.findByIdNoLocalized(pUser.getEmployeeTypeId());
+            auditLog.addCustomRecord("EmployeeType", "New='" + employeeType.getDescription() + "'");
             parentLog.addChild(auditLog);
             // ---------------------------------------------------------------------------------------------
         }
@@ -2350,8 +2393,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
             auditLog.setTargetUser(tgId, strLogin);
             auditLog.setAction(AuditAction.REPLACE_PROP.value());
-            MetadataTypeEntity metadataType = metadataTypeDAO.findByIdNoLocalized(pUser.getJobCodeId());
-            auditLog.addCustomRecord("JobCode", "New='" + metadataType.getDescription() + "'");
+//            MetadataTypeEntity metadataType = metadataTypeDAO.findByIdNoLocalized(pUser.getJobCodeId());
+            auditLog.addCustomRecord("JobCode", "New='" + jobCode.getDescription() + "'");
             parentLog.addChild(auditLog);
             // ---------------------------------------------------------------------------------------------
         }

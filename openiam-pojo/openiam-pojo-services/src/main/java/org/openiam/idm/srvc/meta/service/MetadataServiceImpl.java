@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.core.MessageCreator;
 import org.springframework.stereotype.Service;
@@ -158,6 +159,20 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
         return (retVal != null) ? metaDataTypeDozerConverter.convertToDTOList(retVal,true) : null;
 	}
 
+	@Override
+	@LocalizedServiceGet
+	@Transactional(readOnly=true)
+	@Cacheable(value="metadataTypeEntities", key="{ #searchBean.cacheUniqueBeanKey, #from, #size,#language}")
+	public List<MetadataTypeEntity> findEntityBeans(final MetadataTypeSearchBean searchBean, final int from, final int size, final Language language){
+		List<MetadataTypeEntity> retVal = null;
+		if(searchBean.hasMultipleKeys()) {
+			retVal = metadataTypeDao.findByIds(searchBean.getKeys());
+		} else {
+			retVal = metadataTypeDao.getByExample(searchBean, from, size);
+		}
+		return retVal;
+	}
+
     @Override
     @Cacheable(value="metadataTypes", key="{ #searchBean.cacheUniqueBeanKey, #from, #size }")
     public List<MetadataType> findBeansNoLocalize(MetadataTypeSearchBean searchBean, int from, int size) {
@@ -173,7 +188,9 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 
     @Override
 	@Transactional
-    @CacheEvict(value = "metadataElements", allEntries=true)
+	@Caching(evict = {
+			@CacheEvict(value = "metadataElements", allEntries=true),
+	})
 	public String save(MetadataElement element) {
 		if(element != null) {
             MetadataElementEntity entity = metaDataElementDozerConverter.convertToEntity(element,true);
@@ -289,7 +306,10 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 	
 	@Override
 	@Transactional
-    @CacheEvict(value = "metadataTypes", allEntries=true)
+	@Caching(evict = {
+			@CacheEvict(value = "metadataTypes", allEntries=true),
+			@CacheEvict(value = "metadataTypeEntities", allEntries=true)
+	})
 	public String save(MetadataTypeEntity entity) {
 		if(entity != null) {
 			if(StringUtils.isNotBlank(entity.getId())) {
@@ -339,7 +359,10 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 
 	@Override
 	@Transactional
-    @CacheEvict(value = "metadataTypes", allEntries=true)
+	@Caching(evict = {
+			@CacheEvict(value = "metadataTypes", allEntries=true),
+			@CacheEvict(value = "metadataTypeEntities", allEntries=true)
+	})
 	public void deleteMetdataType(String id) {
 		final MetadataTypeEntity entity = metadataTypeDao.findById(id);
 		if(entity != null) {

@@ -22,11 +22,14 @@ import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.util.encrypt.Cryptor;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -39,7 +42,7 @@ import java.util.*;
  * Created by: Alexander Duckardt Date: 09.10.12
  */
 @Service("keyManagementService")
-public class KeyManagementServiceImpl implements KeyManagementService {
+public class KeyManagementServiceImpl implements KeyManagementService, ApplicationContextAware {
     protected final Log log = LogFactory.getLog(this.getClass());
     private static final char[] HEX_CHARS = "0123456789abcdef".toCharArray();
     private static final int FETCH_COUNT = 1000;
@@ -74,6 +77,12 @@ public class KeyManagementServiceImpl implements KeyManagementService {
     @Autowired
     private UserIdentityAnswerDAO userIdentityAnswerDAO;
 
+    private ApplicationContext ac;
+
+    public void setApplicationContext(final ApplicationContext ac) throws BeansException {
+        this.ac = ac;
+    }
+
     @PostConstruct
     public void init() {
         if (!StringUtils.hasText(this.jksFile)) {
@@ -97,26 +106,35 @@ public class KeyManagementServiceImpl implements KeyManagementService {
 
     @Override
     public byte[] getSystemUserKey(String keyName) throws EncryptionException {
-        return getUserKey(systemUserId, keyName);
+        return getProxyService().getUserKey(systemUserId, keyName);
     }
 
     @Override
     @Cacheable(value = "userkeys", key = "{ #userId, #keyName}")
     public byte[] getUserKey(String userId, String keyName) throws EncryptionException {
+        System.out.println(String.format("==== GET USER KEY FOR PWD: {userID:%s, keyName:%s} ", userId, keyName));
+        try {
+            UserKey uk = userKeyDao.getByUserIdKeyName(userId, keyName);
+            return this.getUserKey(uk);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw new EncryptionException(e);
+        }
+    }
+
+    @Override
+    @Cacheable(value = "userkeys", key = "{ #uk.userId, #uk.name}")
+    public byte[] getUserKey(UserKey uk) throws EncryptionException {
+        if (uk == null) {
+            return null;
+        }
 
         byte[] masterKey = new byte[0];
         try {
             masterKey = getPrimaryKey(JksManager.KEYSTORE_ALIAS, this.keyPassword);
-
             if (masterKey == null || masterKey.length == 0) {
                 throw new IllegalAccessException("Cannot get master key to decrypt user keys");
             }
-
-            UserKey uk = userKeyDao.getByUserIdKeyName(userId, keyName);
-            if (uk == null) {
-                return null;
-            }
-
             return jksManager.decodeKey(this.decrypt(masterKey, uk.getKey()));
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -322,7 +340,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
     public String encryptData(String userId, String data)throws Exception{
         byte[] dataKey = null;
         if(StringUtils.hasText(userId)){
-            dataKey = getUserKey(userId, KeyName.dataKey.name());
+            dataKey = getProxyService().getUserKey(userId, KeyName.dataKey.name());
         } else {
             dataKey = this.getCommonKey();
         }
@@ -338,7 +356,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
     public String decryptData(String userId, String encryptedData)throws Exception{
         byte[] dataKey = null;
         if(StringUtils.hasText(userId)){
-            dataKey = getUserKey(userId, KeyName.dataKey.name());
+            dataKey = getProxyService().getUserKey(userId, KeyName.dataKey.name());
         } else {
             dataKey = this.getCommonKey();
         }
@@ -351,9 +369,12 @@ public class KeyManagementServiceImpl implements KeyManagementService {
     }
     @Override
     public String encrypt(String userId, KeyName keyName, String data)throws Exception{
-        byte[] dataKey = getUserKey(userId, keyName.name());
-        if(dataKey!=null && dataKey.length>0){
-            return encrypt(dataKey, data);
+        return encrypt(getProxyService().getUserKey(userId, keyName.name()), data);
+    }
+    @Override
+    public String encrypt(byte[] key, String data)throws Exception{
+        if(key!=null && key.length>0){
+            return cryptor.encrypt(key, data);
         }
         if(log.isDebugEnabled()) {
             log.debug("Data Key is null. Skipping ecryption...");
@@ -361,23 +382,18 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         return null;
     }
     @Override
-    public String encrypt(byte[] key, String data)throws Exception{
-        return cryptor.encrypt(key, data);
+    public String decrypt(String userId, KeyName keyName, String encryptedData)throws Exception{
+        return decrypt(getProxyService().getUserKey(userId, keyName.name()), encryptedData);
     }
     @Override
-    public String decrypt(String userId, KeyName keyName, String encryptedData)throws Exception{
-        byte[] dataKey = getUserKey(userId, keyName.name());
-        if(dataKey!=null && dataKey.length>0){
-            return decrypt(dataKey, encryptedData);
+    public String decrypt(byte[] key, String encryptedData)throws Exception{
+        if(key!=null && key.length>0){
+            return cryptor.decrypt(key, encryptedData);
         }
         if(log.isDebugEnabled()) {
             log.debug("Data Key is null. Skipping decryption...");
         }
         return null;
-    }
-    @Override
-    public String decrypt(byte[] key, String encryptedData)throws Exception{
-        return cryptor.decrypt(key, encryptedData);
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -626,6 +642,17 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         if (newUserKeyList != null && !newUserKeyList.isEmpty()) {
             for (UserKey uk : newUserKeyList) {
                 userKeyDao.save(uk);
+                addToCache(uk);
+            }
+        }
+    }
+    //  precache users keys to avoid database hit
+    private void addToCache(UserKey uk){
+        try {
+            byte[] key = getProxyService().getUserKey(uk);
+        } catch (EncryptionException e) {
+            if(log.isWarnEnabled()){
+                log.warn("Cannot add to cache");
             }
         }
     }
@@ -801,5 +828,10 @@ public class KeyManagementServiceImpl implements KeyManagementService {
             }
         }
         return pwdHistoryMap;
+    }
+
+    private KeyManagementService getProxyService() {
+        KeyManagementService service = (KeyManagementService)ac.getBean("keyManagementService");
+        return service;
     }
 }
