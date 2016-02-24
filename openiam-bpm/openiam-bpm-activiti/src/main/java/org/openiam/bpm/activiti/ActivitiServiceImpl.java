@@ -797,8 +797,10 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
                 taskListWrapper.addAssignedTasks(assignedTasks, runtimeService, loginService);
                 List<TaskWrapper> taskWrappers = new ArrayList<TaskWrapper>();
                 for (TaskWrapper wrapper : taskListWrapper.getAssignedTasks()) {
-                    if (wrapper.getOwner().equals(requesterId)) {
-                        taskWrappers.add(wrapper);
+                    if (wrapper.getOwner() != null) {
+                        if (wrapper.getOwner().equals(requesterId)) {
+                            taskWrappers.add(wrapper);
+                        }
                     }
                 }
                 return taskWrappers.size();
