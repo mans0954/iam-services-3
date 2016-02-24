@@ -284,7 +284,9 @@ public class User extends AbstractMetadataTypeDTO {
             return getDisplayName(displayNameFormat);
         }
         String displayName = null;
-        if (StringUtils.isNotBlank(firstName) && StringUtils.isNotBlank(lastName)) {
+        if (StringUtils.isNotBlank(firstName) && StringUtils.isNotBlank(lastName) && StringUtils.isNotBlank(prefixLastName)) {
+            displayName = String.format("%s %s %s", firstName, prefixLastName, lastName);
+        } else if (StringUtils.isNotBlank(firstName) && StringUtils.isNotBlank(lastName)) {
             displayName = String.format("%s %s", firstName, lastName);
         } else if (StringUtils.isNotBlank(firstName)) {
             displayName = firstName;
