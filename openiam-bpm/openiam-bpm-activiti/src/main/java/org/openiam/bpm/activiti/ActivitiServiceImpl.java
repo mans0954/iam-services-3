@@ -914,8 +914,10 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
         } else if(requesterId != null && taskListWrapper.getAssignedTasks() != null){
             List<TaskWrapper> results = new ArrayList<TaskWrapper>();
             for(TaskWrapper wrapper : taskListWrapper.getAssignedTasks()) {
-                if(wrapper.getOwner().equals(requesterId)) {
-                    results.add(wrapper);
+                if (wrapper.getOwner() != null) { // owner id null in self registration case
+                    if (wrapper.getOwner().equals(requesterId)) {
+                        results.add(wrapper);
+                    }
                 }
             }
             if(from+size < results.size()) {
