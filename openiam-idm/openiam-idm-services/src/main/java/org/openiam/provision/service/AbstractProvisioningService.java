@@ -24,6 +24,7 @@ import org.openiam.connector.type.response.SearchResponse;
 import org.openiam.dozer.converter.*;
 import org.openiam.exception.ObjectNotFoundException;
 import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
+import org.openiam.idm.searchbeans.RoleSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
 import org.openiam.idm.srvc.audit.constant.AuditConstants;
@@ -107,6 +108,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 
 import javax.annotation.PostConstruct;
+
 import java.util.*;
 
 /**
@@ -1614,61 +1616,90 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
 
     public void updateRoles(final UserEntity userEntity, final ProvisionUser pUser,
                             final Set<Role> roleSet, final Set<Role> deleteRoleSet, final IdmAuditLog parentLog) {
-        if (CollectionUtils.isNotEmpty(pUser.getRoles())) {
-            for (Role r : pUser.getRoles()) {
-                AttributeOperationEnum operation = r.getOperation();
-                if (operation == AttributeOperationEnum.ADD) {
-                    RoleEntity roleEntity = roleDataService.getRole(r.getId());
-                    if (userEntity.getRoles().contains(roleEntity)) {
-                        log.warn("Role with this name already exists. Name=" + roleEntity.getName());
-                        continue;
-                    }
-                    userEntity.getRoles().add(roleEntity);
-                    // Audit Log ---------------------------------------------------
-                    IdmAuditLog auditLog = new IdmAuditLog();
-                    auditLog.setRequestorUserId(pUser.getRequestorUserId()); //SIA 2015-08-01
-                    auditLog.setAction(AuditAction.ADD_USER_TO_ROLE.value());
-                    Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
-                    String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
-                    auditLog.setTargetUser(pUser.getId(), loginStr);
-                    auditLog.setTargetRole(r.getId(), r.getName());
-                    auditLog.addCustomRecord("ROLE", r.getName());
-                    parentLog.addChild(auditLog);
-                    //--------------------------------------------------------------
-                } else if (operation == AttributeOperationEnum.DELETE) {
-                    RoleEntity re = roleDataService.getRole(r.getId());
-                    userEntity.getRoles().remove(re);
-                    Role dr = roleDozerConverter.convertToDTO(re, false);
-                    dr.setOperation(operation);
-                    deleteRoleSet.add(dr);
-                    // Audit Log ---------------------------------------------------
-                    IdmAuditLog auditLog = new IdmAuditLog();
-                    auditLog.setRequestorUserId(pUser.getRequestorUserId()); //SIA 2015-08-01
-                    auditLog.setAction(AuditAction.REMOVE_USER_FROM_ROLE.value());
-                    Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
-                    String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
-                    auditLog.setTargetUser(pUser.getId(), loginStr);
-                    auditLog.setTargetRole(r.getId(), r.getName());
-                    auditLog.addCustomRecord("ROLE", r.getName());
-                    parentLog.addChild(auditLog);
-                    //-----------------------------------------------------------------
-                } else if (operation == AttributeOperationEnum.REPLACE) {
-                    throw new UnsupportedOperationException("Operation 'REPLACE' is not supported for roles");
-                }
-            }
-        }
-        if (CollectionUtils.isNotEmpty(userEntity.getRoles())) {
-            for (RoleEntity ure : userEntity.getRoles()) {
-                Role ar = roleDozerConverter.convertToDTO(ure, false);
-                for (Role r : pUser.getRoles()) {
-                    if (StringUtils.equals(r.getId(), ar.getId())) {
-                        ar.setOperation(r.getOperation()); // get operation value from pUser
-                        break;
-                    }
-                }
-                roleSet.add(ar);
-            }
-        }
+    	/*
+    	 * Lev Bornovalov - for performance improvements, we will first fetch the objects via batch call
+    	 */
+    	final Set<String> roleIdsToFetch = new HashSet<String>();
+    	for (final Role r : pUser.getRoles()) {
+    		if(StringUtils.isNotEmpty(r.getId())) {
+    			roleIdsToFetch.add(r.getId());
+    		}
+    	}
+    	if(CollectionUtils.isNotEmpty(roleIdsToFetch)) {
+	    	final RoleSearchBean sb = new RoleSearchBean();
+	    	sb.setKeys(roleIdsToFetch);
+	    	final List<RoleEntity> entityList = roleDataService.findBeans(sb, null, 0, Integer.MAX_VALUE);
+	    	final Map<String, RoleEntity> roleEntityMap = new HashMap<String, RoleEntity>();
+	    	if(CollectionUtils.isNotEmpty(entityList)) {
+	    		for(final RoleEntity entity : entityList) {
+	    			roleEntityMap.put(entity.getId(), entity);
+	    		}
+	    	}
+	    	
+	    	final List<Role> dtoList = roleDozerConverter.convertToDTOList(entityList, false);
+	    	final Map<String, Role> roleDtoMap = new HashMap<String, Role>();
+	    	if(CollectionUtils.isNotEmpty(dtoList)) {
+	    		for(final Role entity : dtoList) {
+	    			roleDtoMap.put(entity.getId(), entity);
+	    		}
+	    	}
+	    	
+	        if (CollectionUtils.isNotEmpty(pUser.getRoles())) {
+	            for (final Role r : pUser.getRoles()) {
+	            	final AttributeOperationEnum operation = r.getOperation();
+	                if (operation == AttributeOperationEnum.ADD) {
+	                    final RoleEntity roleEntity = roleEntityMap.get(r.getId());
+	                    if (userEntity.getRoles().contains(roleEntity)) {
+	                        log.warn("Role with this name already exists. Name=" + roleEntity.getName());
+	                        continue;
+	                    }
+	                    userEntity.getRoles().add(roleEntity);
+	                    // Audit Log ---------------------------------------------------
+	                    final IdmAuditLog auditLog = new IdmAuditLog();
+	                    auditLog.setRequestorUserId(pUser.getRequestorUserId()); //SIA 2015-08-01
+	                    auditLog.setAction(AuditAction.ADD_USER_TO_ROLE.value());
+	                    final Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
+	                    final String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
+	                    auditLog.setTargetUser(pUser.getId(), loginStr);
+	                    auditLog.setTargetRole(r.getId(), r.getName());
+	                    auditLog.addCustomRecord("ROLE", r.getName());
+	                    parentLog.addChild(auditLog);
+	                    //--------------------------------------------------------------
+	                } else if (operation == AttributeOperationEnum.DELETE) {
+	                    final RoleEntity re = roleEntityMap.get(r.getId());
+	                    userEntity.getRoles().remove(re);
+	                    final Role dr = roleDtoMap.get(r.getId());
+	                    dr.setOperation(operation);
+	                    deleteRoleSet.add(dr);
+	                    // Audit Log ---------------------------------------------------
+	                    final IdmAuditLog auditLog = new IdmAuditLog();
+	                    auditLog.setRequestorUserId(pUser.getRequestorUserId()); //SIA 2015-08-01
+	                    auditLog.setAction(AuditAction.REMOVE_USER_FROM_ROLE.value());
+	                    final Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
+	                    final String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
+	                    auditLog.setTargetUser(pUser.getId(), loginStr);
+	                    auditLog.setTargetRole(r.getId(), r.getName());
+	                    auditLog.addCustomRecord("ROLE", r.getName());
+	                    parentLog.addChild(auditLog);
+	                    //-----------------------------------------------------------------
+	                } else if (operation == AttributeOperationEnum.REPLACE) {
+	                    throw new UnsupportedOperationException("Operation 'REPLACE' is not supported for roles");
+	                }
+	            }
+	        }
+	        if (CollectionUtils.isNotEmpty(userEntity.getRoles())) {
+	            for (final RoleEntity ure : userEntity.getRoles()) {
+	            	final Role ar = roleDozerConverter.convertToDTO(ure, false);
+	                for (final Role r : pUser.getRoles()) {
+	                    if (StringUtils.equals(r.getId(), ar.getId())) {
+	                        ar.setOperation(r.getOperation()); // get operation value from pUser
+	                        break;
+	                    }
+	                }
+	                roleSet.add(ar);
+	            }
+	        }
+    	}
     }
 
     /* User Org Affiliation */
