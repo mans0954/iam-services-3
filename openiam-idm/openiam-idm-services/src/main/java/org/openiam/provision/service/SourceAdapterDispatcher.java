@@ -829,6 +829,10 @@ public class SourceAdapterDispatcher implements Runnable {
             }
             List<User> result = new ArrayList<User>();
             for (SourceAdapterMemberhipKey superUser : request.getSupervisors()) {
+                if (superUser.getValue() == null || "NULL".equalsIgnoreCase(superUser.getValue())) {
+                    warnings.append(this.getWarning("Supervisor has NULL identifier value."));
+                    continue;
+                }
                 isFound = false;
                 User user = this.getUser(superUser, request);
                 if (superUser.getOperation() == null) {
