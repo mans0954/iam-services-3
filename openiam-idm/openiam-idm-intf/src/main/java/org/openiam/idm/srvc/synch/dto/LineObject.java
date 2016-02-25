@@ -88,4 +88,8 @@ public class LineObject implements Cloneable {
     public void setLastUpdate(Timestamp lastUpdate) {
         this.lastUpdate = lastUpdate;
     }
+
+    public boolean isEmpty(){
+        return columnMap.isEmpty() && lastUpdate==null;
+    }
 }

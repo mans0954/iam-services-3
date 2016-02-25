@@ -130,15 +130,15 @@ public class SynchReviewEntity implements Serializable {
         this.skipRecordValid = skipRecordValid;
     }
 
-    public List<SynchReviewRecordEntity> getReviewRecords() {
+    public synchronized List<SynchReviewRecordEntity> getReviewRecords() {
         return reviewRecords;
     }
 
-    public void setReviewRecords(List<SynchReviewRecordEntity> reviewRecords) {
+    public synchronized void setReviewRecords(List<SynchReviewRecordEntity> reviewRecords) {
         this.reviewRecords = reviewRecords;
     }
 
-    public void addRecord(SynchReviewRecordEntity record) {
+    public synchronized void addRecord(SynchReviewRecordEntity record) {
         if (record != null) {
             if (reviewRecords == null) {
                 reviewRecords = new ArrayList<SynchReviewRecordEntity>();

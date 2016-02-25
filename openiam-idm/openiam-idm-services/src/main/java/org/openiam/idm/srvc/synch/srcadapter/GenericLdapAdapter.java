@@ -3,6 +3,7 @@ package org.openiam.idm.srvc.synch.srcadapter;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.StopWatch;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.Response;
@@ -17,8 +18,10 @@ import org.openiam.idm.srvc.synch.dto.SynchReview;
 import org.openiam.idm.srvc.synch.service.MatchObjectRule;
 import org.openiam.idm.srvc.synch.service.TransformScript;
 import org.openiam.idm.srvc.synch.service.ValidationScript;
+import org.openiam.provision.dto.srcadapter.SourceAdapterRequest;
 import org.springframework.beans.factory.annotation.Value;
 
+import javax.annotation.PostConstruct;
 import javax.naming.Context;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
@@ -30,7 +33,9 @@ import javax.naming.ldap.*;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.sql.Timestamp;
 import java.util.*;
+import java.util.concurrent.*;
 
 public abstract class GenericLdapAdapter extends AbstractSrcAdapter {
 
@@ -51,13 +56,33 @@ public abstract class GenericLdapAdapter extends AbstractSrcAdapter {
 
     private static final Log log = LogFactory.getLog(LdapAdapter.class);
 
+    final ExecutorService executorService = Executors.newCachedThreadPool();
+//    private final LdapAdapterNotifier notifier = new LdapAdapterNotifier();
+    @PostConstruct
+    public void init(){
+        final ExecutorService executorService = Executors.newCachedThreadPool();
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            public void run() {
+                executorService.shutdown();
+                try {
+                    if (!executorService.awaitTermination(SHUTDOWN_TIME, TimeUnit.MILLISECONDS)) { //optional *
+                        log.warn("Executor did not terminate in the specified time. Killing...."); //optional *
+                        executorService.shutdownNow(); //optional **
+                    }
+                } catch (InterruptedException e) {
+                    log.error(e);
+                }
+            }
+        });
+    }
+
     @Override
     public SyncResponse startSynch(final SynchConfig config) {
         return startSynch(config, null, null);
     }
 
     @Override
-    public SyncResponse startSynch(SynchConfig config, SynchReviewEntity sourceReview, SynchReviewEntity resultReview) {
+    public SyncResponse startSynch(final SynchConfig config, final SynchReviewEntity sourceReview, final SynchReviewEntity resultReview) {
 
         LineObject lineHeader = null;
         double mostRecentRecord = 0L;
@@ -133,9 +158,16 @@ public abstract class GenericLdapAdapter extends AbstractSrcAdapter {
             int totalRecords = 0;
             long startTime = System.currentTimeMillis();
 
+
+            // prepare threads
+            //TODO: multiply threads
+//            ProcessThread thread = new ProcessThread(config, resultReview, validationScript, transformScripts, matchRule);
+//            this.executorService.submit(thread);
+//            List<Future> threadResults = new LinkedList<Future>();
+//            threadResults.add(threadResult);
             //Cash for records from LDAP
             // we need it to same LDAP connection
-            List<LineObject> processingData = new LinkedList<LineObject>();
+//            List<LineObject> processingData = new LinkedList<LineObject>();
             for (String baseou : ouByParent) {
                 int recordsInOUCounter = 0;
                 if(log.isDebugEnabled()) {
@@ -161,9 +193,12 @@ public abstract class GenericLdapAdapter extends AbstractSrcAdapter {
                 int pageCounter = 0;
                 int pageRowCount = 0;
                 NamingEnumeration results = null;
+                final LdapAdapterNotifier notifier = new LdapAdapterNotifier();
                 do {
+                    final List<LineObject> processingData = new LinkedList<LineObject>();
                     pageCounter++;
                     pageRowCount = 0;
+                    log.warn(String.format(" ===== LDAP SYNCHRONIZATION:PAGE:%d",pageCounter));
                     try{
                         results = ctx.search(baseou, config.getQuery(), searchCtls);
                     } catch(ServiceUnavailableException sux){
@@ -231,11 +266,37 @@ public abstract class GenericLdapAdapter extends AbstractSrcAdapter {
                             lineHeader = rowObj; // get first row
                         }
                         processingData.add(rowObj);
-
+                        // start processing row
+                        //thread.pushToQueue(rowObj);
                     }
                     if(log.isDebugEnabled()) {
                         log.debug("LDAP Search PAGE RESULT: Page=" + pageCounter + ", rows= " + pageRowCount + " have been processed.");
                     }
+
+//                    StopWatch isw = new StopWatch();
+//                    isw.start();
+//                    for (LineObject rowObj : processingData) {
+//                        processLineObject(rowObj, config, resultReview, validationScript, transformScripts, matchRule);
+//                        Thread.sleep(100);
+//                    }
+//                    isw.stop();
+//                    log.warn(String.format(" ===== LDAP SYNCHRONIZATION: PROCESS DATA in %.3f sec; Rows: %d", Thread.currentThread().getId(), isw.getTime()/1000.0, processingData.size()));
+                    // wait awhile. auditlog should complete its work
+//                    Thread.sleep(100000);
+                    this.executorService.submit(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                proccess(config, resultReview, validationScript, transformScripts, matchRule, processingData);
+                                notifier.doNotify();
+                            }  catch (InterruptedException e) {
+                                log.error("Error during processing data page", e);
+                            }
+                        }
+                    });
+//                    thread.pushToQueue(addEmptyRow()); // shows that data page ended
+                    notifier.doWait();
+
                     Control[] controls = ctx.getResponseControls();
                     if (controls != null) {
                         for (Control c : controls) {
@@ -248,15 +309,18 @@ public abstract class GenericLdapAdapter extends AbstractSrcAdapter {
                     }
                     ctx.setRequestControls(new Control[]{new PagedResultsControl(PAGE_SIZE, cookie, Control.CRITICAL)});
                 } while (cookie != null);
+                // stop thread
+//                thread.setTerminate(true);
+//                thread.pushToQueue(addEmptyRow());
 
                 if(log.isDebugEnabled()) {
                     log.debug("Search ldap result OU=" + baseou + " found = " + recordsInOUCounter + " records.");
                 }
             }
-            for (LineObject rowObj : processingData) {
-                processLineObject(rowObj, config, resultReview, validationScript, transformScripts, matchRule);
-                Thread.sleep(100);
-            }
+//            for (LineObject rowObj : processingData) {
+//                processLineObject(rowObj, config, resultReview, validationScript, transformScripts, matchRule);
+//                Thread.sleep(100);
+//            }
             if(log.isDebugEnabled()) {
                 log.debug("EXECUTION TIME: "+(System.currentTimeMillis()-startTime));
             }
@@ -293,10 +357,13 @@ public abstract class GenericLdapAdapter extends AbstractSrcAdapter {
             resp.setErrorText(eioex.toString());
             return resp;
 
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-
-        } finally {
+        } /*catch (InterruptedException ie){
+            log.error(ie);
+            SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
+            resp.setErrorCode(ResponseCode.INTERNAL_ERROR);
+            resp.setErrorText(ie.toString());
+            return resp;
+        } */finally {
             if (resultReview != null) {
                 if (CollectionUtils.isNotEmpty(resultReview.getReviewRecords())) { // add header row
                     resultReview.addRecord(generateSynchReviewRecord(lineHeader, true));
@@ -312,6 +379,28 @@ public abstract class GenericLdapAdapter extends AbstractSrcAdapter {
         resp.setLastRecProcessed(lastRecProcessed);
         return resp;
 
+    }
+
+    private void proccess(SynchConfig config, SynchReviewEntity resultReview, ValidationScript validationScript, List<TransformScript> transformScripts, MatchObjectRule matchRule, List<LineObject> processingData) throws InterruptedException {
+        StopWatch isw = new StopWatch();
+        isw.start();
+        int count =0;
+        try {
+            if (CollectionUtils.isNotEmpty(processingData)) {
+                for (LineObject rowObj : processingData) {
+                    processLineObject(rowObj, config, resultReview, validationScript, transformScripts, matchRule);
+                    count++;
+                    Thread.sleep(100);
+                }
+            }
+        }finally {
+            isw.stop();
+            log.warn(String.format(" ===== LDAP SYNCHRONIZATION: PROCESS DATA in %.3f sec; Rows: %d", isw.getTime()/1000.0, count));
+        }
+    }
+
+    private LineObject addEmptyRow() {
+        return new LineObject();
     }
 
     abstract protected String[] getDirAttrIds();
@@ -440,5 +529,67 @@ public abstract class GenericLdapAdapter extends AbstractSrcAdapter {
 
         return lrt;
     }
+
+//    private class ProcessThread implements Runnable {
+//        private BlockingQueue<LineObject> dataQueue = new LinkedBlockingQueue<LineObject>();
+//        private volatile boolean terminate = false;
+//
+//        SynchConfig config;
+//        SynchReviewEntity resultReview;
+//        ValidationScript validationScript;
+//        List<TransformScript> transformScripts;
+//        MatchObjectRule matchRule;
+//
+//        private synchronized void setTerminate(boolean terminate){
+//            this.terminate=terminate;
+//        }
+//        private synchronized boolean getTerminate(){
+//            return this.terminate;
+//        }
+//        public void pushToQueue(LineObject data) {
+//            dataQueue.add(data);
+//        }
+//
+//        public LineObject pullFromQueue() throws InterruptedException {
+//            return dataQueue.take();
+//        }
+//        public ProcessThread(SynchConfig config,
+//                             SynchReviewEntity resultReview,
+//                             ValidationScript validationScript,
+//                             List<TransformScript> transformScripts,
+//                             MatchObjectRule matchRule){
+//            this.config = config;
+//            this.resultReview=resultReview;
+//            this.validationScript=validationScript;
+//            this.transformScripts=transformScripts;
+//            this.matchRule=matchRule;
+//        }
+//
+//        @Override
+//        public void run() {
+//            int count=0;
+//            StopWatch isw = new StopWatch();
+//            isw.start();
+//            try {
+//                LineObject rowObj=null;
+//                while (!getTerminate() && (rowObj = pullFromQueue()) != null) {
+//                    if(rowObj.isEmpty()){
+//                        notifier.doNotify();
+//                        continue;
+//                    }
+//                    processLineObject(rowObj, config, resultReview, validationScript, transformScripts, matchRule);
+//                    count++;
+//                    log.warn(String.format(" =================================================================== LDAP SYNCHRONIZATION: DATA PROCESSED:  %d", count));
+//                    // keep this due to existed in old code
+//                    Thread.sleep(100);
+//                }
+//            } catch (InterruptedException e) {
+//                log.error(e.getMessage(), e);
+//            } finally {
+//                isw.stop();
+//                log.info(String.format(" =================================================================== LDAP SYNCHRONIZATION: Thread: %l; PROCESS DATA in %.3f sec; Rows: %d", Thread.currentThread().getId(), isw.getTime()/1000.0, count));
+//            }
+//        }
+//    }
 
 }
