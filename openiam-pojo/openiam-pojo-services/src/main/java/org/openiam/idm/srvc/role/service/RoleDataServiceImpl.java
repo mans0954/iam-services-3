@@ -43,6 +43,9 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Service;
@@ -164,6 +167,9 @@ public class RoleDataServiceImpl implements RoleDataService, ApplicationContextA
 
     @Override
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "roleEntities", allEntries=true),
+    })
     public void removeRole(String roleId) {
         if (roleId != null) {
             final RoleEntity roleEntity = roleDao.findById(roleId);
@@ -287,6 +293,9 @@ public class RoleDataServiceImpl implements RoleDataService, ApplicationContextA
 
     @Override
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "roleEntities", allEntries=true),
+    })
     public void saveRole(final RoleEntity role, final String requestorId) throws BasicDataServiceException {
         if (role != null && entityValidator.isValid(role)) {
             if (role.getManagedSystem() != null && role.getManagedSystem().getId() != null) {
@@ -552,6 +561,7 @@ public class RoleDataServiceImpl implements RoleDataService, ApplicationContextA
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value="roleEntities", key="{ #searchBean.cacheUniqueBeanKey, #requesterId, #from, #size}")
     public List<RoleEntity> findBeans(RoleSearchBean searchBean, final String requesterId, int from, int size) {
         Set<String> filter = getDelegationFilter(requesterId);
         if (StringUtils.isBlank(searchBean.getKey()))

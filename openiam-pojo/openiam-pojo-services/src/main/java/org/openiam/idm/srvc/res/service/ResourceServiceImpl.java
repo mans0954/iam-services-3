@@ -634,6 +634,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "resources", key = "{ #roleId, #from, #size, #searchBean.cacheUniqueBeanKey}")
     public List<Resource> getResourcesForRoleNoLocalized(String roleId, int from, int size, ResourceSearchBean searchBean) {
         List<ResourceEntity> resourceEntities = resourceDao.getResourcesForRoleNoLocalized(roleId, from, size, searchBean);
         return resourceConverter.convertToDTOList(resourceEntities, searchBean.isDeepCopy());
@@ -663,6 +664,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "resources", key = "{ #groupId, #from, #size, #searchBean.cacheUniqueBeanKey}")
     public List<Resource> getResourcesForGroupNoLocalized(String groupId, int from, int size, ResourceSearchBean searchBean) {
         List<ResourceEntity> resourceEntities = resourceDao.getResourcesForGroupNoLocalized(groupId, from, size, searchBean);
         return resourceConverter.convertToDTOList(resourceEntities, searchBean.isDeepCopy());

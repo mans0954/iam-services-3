@@ -2266,6 +2266,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                     ResourceSearchBean resourceSearchBean = new ResourceSearchBean();
                     resourceSearchBean.setDeepCopy(false);
                     resourceSearchBean.setResourceTypeId(ResourceSearchBean.TYPE_MANAGED_SYS);
+                    //findBeansLocalizedDto
                     List<Resource> resources = resourceService.getResourcesForRoleNoLocalized(rl.getId(), 0, Integer.MAX_VALUE, resourceSearchBean);
                     if (CollectionUtils.isNotEmpty(resources)) {
                         for (Resource r : resources) {

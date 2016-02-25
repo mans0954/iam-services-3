@@ -123,15 +123,8 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 	@LocalizedServiceGet
 	@Transactional(readOnly=true)
     @Cacheable(value="metadataElements", key="{ #searchBean.cacheUniqueBeanKey, #from, #size, #language}")
-   // @Cacheable(value="metadataElements")
 	public List<MetadataElement> findBeans(final MetadataElementSearchBean searchBean, final int from, final int size, final Language language) {
-		List<MetadataElementEntity> retVal = null;
-		if(searchBean.hasMultipleKeys()) {
-			retVal = metadataElementDao.findByIds(searchBean.getKeys());
-		} else {
-			retVal = metadataElementDao.getByExample(searchBean, from, size);
-		}
-
+		List<MetadataElementEntity> retVal = findEntityBeans(searchBean, from,size);
         return (retVal != null) ? metaDataElementDozerConverter.convertToDTOList(retVal,true) : null;
 	}
 
@@ -144,6 +137,16 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
     public List<MetadataElement> findBeans(MetadataElementSearchBean searchBean, int from, int size) {
        return this.findBeans(searchBean, from, size, null);
     }
+	@Cacheable(value="metadataElementEntities",  key="{ #searchBean.cacheUniqueBeanKey, #from, #size }")
+	public List<MetadataElementEntity> findEntityBeans(final MetadataElementSearchBean searchBean, final int from, final int size){
+		List<MetadataElementEntity> retVal = null;
+		if(searchBean.hasMultipleKeys()) {
+			retVal = metadataElementDao.findByIds(searchBean.getKeys());
+		} else {
+			retVal = metadataElementDao.getByExample(searchBean, from, size);
+		}
+		return retVal;
+	}
 
     @Override
     @LocalizedServiceGet
@@ -190,6 +193,7 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 	@Transactional
 	@Caching(evict = {
 			@CacheEvict(value = "metadataElements", allEntries=true),
+			@CacheEvict(value = "metadataElementEntities", allEntries=true)
 	})
 	public String save(MetadataElement element) {
 		if(element != null) {
@@ -335,7 +339,10 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 	
 	@Override
 	@Transactional
-    @CacheEvict(value = "metadataElements", allEntries=true)
+	@Caching(evict = {
+			@CacheEvict(value = "metadataElements", allEntries=true),
+			@CacheEvict(value = "metadataElementEntities", allEntries=true)
+	})
 	public void deleteMetdataElement(String id) {
 		final MetadataElementEntity entity = metadataElementDao.findById(id);
 		if(entity != null) {
