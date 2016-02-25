@@ -42,6 +42,7 @@ import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
+import org.openiam.idm.srvc.meta.service.MetadataService;
 import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
@@ -171,6 +172,9 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
     private SupervisorDozerConverter supervisorDozerConverter;
 
     @Autowired
+    private MetadataService metadataService;
+
+    @Autowired
     protected AuditLogService auditLogService;
 
     @Value("${org.openiam.organization.type.id}")
@@ -280,7 +284,7 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
         if (user != null && user.getType() != null && StringUtils.isNotBlank(user.getType().getId())) {
             MetadataElementSearchBean sb = new MetadataElementSearchBean();
             sb.addTypeId(user.getType().getId());
-            List<MetadataElementEntity> elementList = metadataElementDAO.getByExampleNoLocalize(sb, -1, -1);
+            List<MetadataElementEntity> elementList = metadataService.findEntityBeans(sb, -1, -1);
             if (CollectionUtils.isNotEmpty(elementList)) {
                 for (MetadataElementEntity element : elementList) {
                     if (element.isRequired()) {

@@ -71,6 +71,7 @@ import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
+import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.Supervisor;
 import org.openiam.idm.srvc.user.dto.User;
@@ -990,8 +991,11 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
         bindingMap.put(TARGET_SYSTEM_IDENTITY, null);
         
         Map<String, UserAttribute> userAttributes = Collections.EMPTY_MAP; 
-        if(MapUtils.isNotEmpty(pUser.getUserAttributes())) {
-        	userAttributes = pUser.getUserAttributes();
+        if(MapUtils.isNotEmpty(userEntity.getUserAttributes())) {
+        	for(final String key : userEntity.getUserAttributes().keySet()) {
+        		final UserAttributeEntity entity = userEntity.getUserAttributes().get(key);
+        		userAttributes.put(entity.getId(), userAttributeDozerConverter.convertToDTO(entity, false));
+        	}
         }
         bindingMap.put(USER_ATTRIBUTES, userAttributes);
 
@@ -2262,6 +2266,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                     ResourceSearchBean resourceSearchBean = new ResourceSearchBean();
                     resourceSearchBean.setDeepCopy(false);
                     resourceSearchBean.setResourceTypeId(ResourceSearchBean.TYPE_MANAGED_SYS);
+                    //findBeansLocalizedDto
                     List<Resource> resources = resourceService.getResourcesForRoleNoLocalized(rl.getId(), 0, Integer.MAX_VALUE, resourceSearchBean);
                     if (CollectionUtils.isNotEmpty(resources)) {
                         for (Resource r : resources) {

@@ -301,6 +301,14 @@
            timeToLiveSeconds="1600"
            timeToIdleSeconds="800"
             />
+    <cache name="metadataElementEntities"
+           maxElementsInMemory="100000"
+           eternal="false"
+           overflowToDisk="false"
+           memoryStoreEvictionPolicy="LRU"
+           timeToLiveSeconds="1600"
+           timeToIdleSeconds="800"
+    />
 	<cache name="organizations"
            maxElementsInMemory="1000"
            eternal="false"
@@ -489,7 +497,7 @@
            timeToLiveSeconds="1600"
            timeToIdleSeconds="800"
     />
-    
+
     <cache name="userkeys"
            maxElementsInMemory="100000"
            eternal="false"
@@ -497,6 +505,14 @@
            memoryStoreEvictionPolicy="LRU"
            timeToLiveSeconds="86400"
            timeToIdleSeconds="86400"
+    />
+    <cache name="roleEntities"
+           maxElementsInMemory="100000"
+           eternal="false"
+           overflowToDisk="false"
+           memoryStoreEvictionPolicy="LRU"
+           timeToLiveSeconds="1600"
+           timeToIdleSeconds="800"
     />
 
 </ehcache>
