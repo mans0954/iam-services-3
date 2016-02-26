@@ -1251,6 +1251,7 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
                 .findById(val.getMetadataType().getId()) : null;
 
         if (entity != null && metadataType != null) {
+            entity.setCountryCd(val.getCountryCd());
             entity.setAreaCd(val.getAreaCd());
             entity.setName(val.getName());
             entity.setIsActive(val.getIsActive());
