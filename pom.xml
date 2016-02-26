@@ -171,6 +171,7 @@
 		<maven.build.timestamp.format>yyyy/MM/dd HH:mm Z</maven.build.timestamp.format>
 		<maven.war.plugin.version>2.2</maven.war.plugin.version>
 		<javaee.web.api.version>6.0</javaee.web.api.version>
+		<log4jdbc.version>1.16</log4jdbc.version>
 		<skipTests>true</skipTests>
 	</properties>
 
@@ -602,6 +603,11 @@
 				<groupId>c3p0</groupId>
 				<artifactId>c3p0</artifactId>
 				<version>${c3p0.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.bgee.log4jdbc-log4j2</groupId>
+            	<artifactId>log4jdbc-log4j2-jdbc4</artifactId>
+				<version>${log4jdbc.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>javassist</groupId>
