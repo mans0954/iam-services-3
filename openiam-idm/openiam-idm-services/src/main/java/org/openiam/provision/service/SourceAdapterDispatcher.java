@@ -448,6 +448,7 @@ public class SourceAdapterDispatcher implements Runnable {
         fillOrganizations(pUser, request, warnings, requestorId);
         fillSuperVisors(pUser, request, warnings);
         fillPrincipals(pUser, request, warnings, requestorId);
+        fillAlternativeContact(pUser, request, warnings);
         return pUser;
     }
 
@@ -814,6 +815,24 @@ public class SourceAdapterDispatcher implements Runnable {
                 orgDB.setAttributes(new HashSet<OrganizationAttribute>(organizationAttributes));
         }
         return orgDB;
+    }
+
+    private void fillAlternativeContact(ProvisionUser pUser, SourceAdapterRequest request, StringBuilder warnings) throws
+            Exception {
+        SourceAdapterKey alternativeContact = request.getAlternativeContact();
+        if (alternativeContact == null || alternativeContact.getName() == null || StringUtils.isBlank(alternativeContact.getValue())) {
+            return;
+        }
+        if ("null".equalsIgnoreCase(alternativeContact.getValue())) {
+            pUser.setAlternateContactId(null);
+            return;
+        }
+
+        User alternativeUser = this.getUser(alternativeContact, request);
+        if (alternativeUser != null) {
+            pUser.setAlternateContactId(alternativeUser.getId());
+        }
+
     }
 
     private void fillSuperVisors(ProvisionUser pUser, SourceAdapterRequest request, StringBuilder warnings) throws
