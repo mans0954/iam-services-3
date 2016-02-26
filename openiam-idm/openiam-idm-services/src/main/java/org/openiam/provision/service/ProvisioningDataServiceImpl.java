@@ -990,7 +990,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
         bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, null);
         bindingMap.put(TARGET_SYSTEM_IDENTITY, null);
         
-        Map<String, UserAttribute> userAttributes = Collections.EMPTY_MAP; 
+        final Map<String, UserAttribute> userAttributes = new HashMap<String, UserAttribute>();
         if(MapUtils.isNotEmpty(userEntity.getUserAttributes())) {
         	for(final String key : userEntity.getUserAttributes().keySet()) {
         		final UserAttributeEntity entity = userEntity.getUserAttributes().get(key);
