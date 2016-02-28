@@ -20,10 +20,10 @@
     
     <!--<jee:jndi-lookup jndi-name="${datasource.activiti.jndi.name}" id="bpmDataSource" />-->
 	<bean id="bpmDataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
-		<property name="driverClassName" value="com.microsoft.sqlserver.jdbc.SQLServerDriver" />
-		<property name="url" value="jdbc:sqlserver://192.168.0.15:1684;databaseName=activiti" />
-		<property name="username" value="sa" />
-		<property name="password" value="openiam" />
+		<property name="driverClassName" value="${activiti.db.driverClassName}" />
+		<property name="url" value="${activiti.db.connection.string}" />
+		<property name="username" value="${activiti.db.username}" />
+		<property name="password" value="${activiti.db.password}" />
 	</bean>
     <!--
 	<bean id="bpmDataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close">

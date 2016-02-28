@@ -292,10 +292,10 @@
                      <!--id="dataSource"/>-->
 
     <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
-        <property name="driverClassName" value="com.microsoft.sqlserver.jdbc.SQLServerDriver" />
-        <property name="url" value="jdbc:sqlserver://192.168.0.15:1684;databaseName=openiam" />
-        <property name="username" value="sa" />
-        <property name="password" value="openiam" />
+        <property name="driverClassName" value="${openiam.db.driverClassName}" />
+        <property name="url" value="${openiam.db.connection.string}" />
+        <property name="username" value="${openiam.db.username}" />
+        <property name="password" value="${openiam.db.password}" />
     </bean>
 
     <bean id="exporter" class="org.springframework.jmx.export.MBeanExporter"
