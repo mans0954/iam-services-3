@@ -18,7 +18,13 @@
 	
 	<bean id="springContextProvider" class="org.openiam.util.SpringContextProvider" />
     
-    <jee:jndi-lookup jndi-name="${datasource.activiti.jndi.name}" id="bpmDataSource" />
+    <!--<jee:jndi-lookup jndi-name="${datasource.activiti.jndi.name}" id="bpmDataSource" />-->
+	<bean id="bpmDataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+		<property name="driverClassName" value="com.microsoft.sqlserver.jdbc.SQLServerDriver" />
+		<property name="url" value="jdbc:sqlserver://192.168.0.15:1684;databaseName=activiti" />
+		<property name="username" value="sa" />
+		<property name="password" value="openiam" />
+	</bean>
     <!--
 	<bean id="bpmDataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close">
 		<property name="driverClass" value="${org.openiam.bpm.activiti.jdbc.driver}" />
