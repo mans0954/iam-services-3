@@ -288,8 +288,15 @@
         <property name="sessionFactory" ref="sessionFactory"/>
     </bean>
 
-    <jee:jndi-lookup jndi-name="${datasource.jndi.name}"
-                     id="dataSource"/>
+    <!--<jee:jndi-lookup jndi-name="${datasource.jndi.name}"-->
+                     <!--id="dataSource"/>-->
+
+    <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="${openiam.db.driverClassName}" />
+        <property name="url" value="${openiam.db.connection.string}" />
+        <property name="username" value="${openiam.db.username}" />
+        <property name="password" value="${openiam.db.password}" />
+    </bean>
 
     <bean id="exporter" class="org.springframework.jmx.export.MBeanExporter"
           lazy-init="false">
