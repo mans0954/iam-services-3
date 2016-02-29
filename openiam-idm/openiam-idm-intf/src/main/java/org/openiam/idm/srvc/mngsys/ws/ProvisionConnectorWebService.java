@@ -30,7 +30,7 @@ public interface ProvisionConnectorWebService {
      * @return
      */
     @WebMethod
-    Integer getProvisionConnectorsCount(@WebParam(name = "searchBean", targetNamespace = "") ProvisionConnectorSearchBean searchBean);
+    int getProvisionConnectorsCount(@WebParam(name = "searchBean", targetNamespace = "") ProvisionConnectorSearchBean searchBean);
 
     @WebMethod
     List<MetadataType> getProvisionConnectorsTypes();
@@ -41,14 +41,21 @@ public interface ProvisionConnectorWebService {
      */
     @WebMethod
     List<ProvisionConnectorDto> getProvisionConnectors(@WebParam(name = "searchBean", targetNamespace = "")ProvisionConnectorSearchBean searchBean,
-                                                      @WebParam(name = "size", targetNamespace = "")Integer size,
-                                                      @WebParam(name = "from", targetNamespace = "")Integer from);
+                                                      @WebParam(name = "from", targetNamespace = "")int from,
+                                                      @WebParam(name = "size", targetNamespace = "") int size);
+    
+    @WebMethod
+    Response save(
+            @WebParam(name = "con", targetNamespace = "")
+            ProvisionConnectorDto con);
+    
     /**
      * Adds a new connector to the system
      * @param con
      */
     @WebMethod
-    void addProvisionConnector(
+    @Deprecated
+    Response addProvisionConnector(
             @WebParam(name = "con", targetNamespace = "")
             ProvisionConnectorDto con);
     /**
@@ -56,7 +63,8 @@ public interface ProvisionConnectorWebService {
      * @param con
      */
     @WebMethod
-    void updateProvisionConnector(
+    @Deprecated
+    Response updateProvisionConnector(
             @WebParam(name = "con", targetNamespace = "")
             ProvisionConnectorDto con);
     /**

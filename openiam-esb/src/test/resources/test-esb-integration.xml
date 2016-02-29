@@ -350,5 +350,9 @@
 	<jaxws:client id="elasticSearchServiceClient"
                   serviceClass="org.openiam.elasticsearch.ws.ElasticSearchWebService"
                   address="${openiam.service_host}${openiam.idm.ws.path}ElasticSearchWebService" />
+                  
+    <jaxws:client id="connectorServiceClient"
+                  serviceClass="org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService"
+                  address="${openiam.service_host}${openiam.idm.ws.path}ConnectorWebService" />
 
 </beans>
