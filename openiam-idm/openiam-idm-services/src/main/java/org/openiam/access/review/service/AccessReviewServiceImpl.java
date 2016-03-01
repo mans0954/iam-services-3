@@ -1,6 +1,7 @@
 package org.openiam.access.review.service;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.comparators.BooleanComparator;
 import org.apache.commons.lang.time.StopWatch;
 import org.openiam.access.review.constant.AccessReviewConstant;
 import org.openiam.access.review.constant.AccessReviewData;
@@ -23,6 +24,7 @@ import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -46,6 +48,8 @@ public class AccessReviewServiceImpl implements AccessReviewService {
     private ActivitiService activitiService;
     @Autowired
     protected SysConfiguration sysConfiguration;
+    @Value("${org.openiam.attestation.exclude.menus}")
+    private Boolean excludeMenus;
 
     @Override
     public AccessViewResponse getAccessReviewTree(AccessViewFilterBean filter, String viewType,final Language language) {
@@ -112,6 +116,7 @@ public class AccessReviewServiceImpl implements AccessReviewService {
         accessReviewData.setDefaultManagedSysId(sysConfiguration.getDefaultManagedSysId());
         accessReviewData.setMaxHierarchyLevel(filter.getMaxHierarchyLevel());
         accessReviewData.setWorkflowsMaps(activitiService.getTasksForMemberAssociation(filter.getUserId()));
+        accessReviewData.setExcludeMenus(this.excludeMenus);
 
         AccessReviewStrategy strategy = null;
         if(AccessReviewConstant.ROLE_VIEW.equals(viewType)){

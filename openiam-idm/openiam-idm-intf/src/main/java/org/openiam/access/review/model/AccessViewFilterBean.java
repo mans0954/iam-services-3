@@ -22,13 +22,15 @@ import java.io.Serializable;
         "showRolesFlag",
         "showGroupsFlag",
         "showManagesSysFlag",
-        "compiledFlag"
+        "compiledFlag",
+        "isAttestationRequest"
 })
 public class AccessViewFilterBean implements Serializable {
     private String userId;
     private String name;
     private String description;
     private String risk;
+    private boolean isAttestationRequest=false;
     private Integer maxHierarchyLevel = 10;
     private Boolean showExceptionsFlag=false;
     private Boolean showRolesFlag=false;
@@ -126,5 +128,13 @@ public class AccessViewFilterBean implements Serializable {
 
     public boolean isEmpty(){
         return StringUtils.isBlank(this.name) && StringUtils.isBlank(this.description);
+    }
+
+    public boolean isAttestationRequest() {
+        return isAttestationRequest;
+    }
+
+    public void setAttestationRequest(boolean attestationRequest) {
+        isAttestationRequest = attestationRequest;
     }
 }
