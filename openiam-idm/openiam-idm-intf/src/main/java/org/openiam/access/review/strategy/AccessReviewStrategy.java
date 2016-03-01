@@ -115,7 +115,7 @@ public abstract class AccessReviewStrategy {
 
         if(accessReviewData.getFilter().isAttestationRequest() && accessReviewData.isExcludeMenus()){
             if("MENU_ITEM".equals(thisResource.getResourceTypeId())){
-                return false;
+                return true;
             }
         }
 
