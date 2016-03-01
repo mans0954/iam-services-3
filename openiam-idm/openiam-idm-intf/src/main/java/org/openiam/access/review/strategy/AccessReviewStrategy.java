@@ -112,6 +112,13 @@ public abstract class AccessReviewStrategy {
         AuthorizationResource thisResource = accessReviewData.getMatrix().getResourceMap().get(bean.getId());
 
         boolean result = false;
+
+        if(accessReviewData.getFilter().isAttestationRequest() && accessReviewData.isExcludeMenus()){
+            if("MENU_ITEM".equals(thisResource.getResourceTypeId())){
+                return false;
+            }
+        }
+
         if(accessReviewData.isHasParent(thisResource)){
             // get parent resource
             String resId = accessReviewData.getMatrix().getChildResToParentResMap().get(thisResource.getId()).iterator().next();
