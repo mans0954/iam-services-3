@@ -19,6 +19,6 @@ test:
     - ls -al
 deployment:
   development:
-  	branch: development
+    branch: development
     commands:
-      - /bin/sh conf/deploy.sh
+       - /bin/sh conf/deploy.sh
