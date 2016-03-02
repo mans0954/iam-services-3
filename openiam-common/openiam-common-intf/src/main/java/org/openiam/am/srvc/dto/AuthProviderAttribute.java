@@ -133,5 +133,17 @@ public class AuthProviderAttribute extends KeyDTO {
 		return true;
 	}
 
+	@Override
+	public String toString() {
+		return "AuthProviderAttribute [providerId=" + providerId
+				+ ", attributeId=" + attributeId + ", attributeName="
+				+ attributeName + ", value=" + value + ", defaultValue="
+				+ defaultValue + ", dataType=" + dataType + ", id=" + id
+				+ ", objectState=" + objectState + ", requestorSessionID="
+				+ requestorSessionID + ", requestorUserId=" + requestorUserId
+				+ ", requestorLogin=" + requestorLogin + ", requestClientIP="
+				+ requestClientIP + "]";
+	}
+
     
 }
