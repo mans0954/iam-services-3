@@ -1,10 +1,7 @@
 package org.openiam.bpm.response;
 
 import java.io.Serializable;
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -49,7 +46,8 @@ import org.springframework.validation.beanvalidation.CustomValidatorBean;
     "associationType",
     "associationId",
     "memberAssociationId",
-    "memberAssociationType"
+    "memberAssociationType",
+	"attestationManagedSysFilter"
 })
 public class TaskWrapper implements Serializable {
 	
@@ -86,6 +84,7 @@ public class TaskWrapper implements Serializable {
     private String associationId;
     private String memberAssociationType;
     private String memberAssociationId;
+	private List<String> attestationManagedSysFilter;
 
 	public TaskWrapper() {
 		
@@ -184,6 +183,9 @@ public class TaskWrapper implements Serializable {
                     if(customVariables.containsKey(ActivitiConstants.MEMBER_ASSOCIATION_ID.getName())) {
                         memberAssociationId = (String)customVariables.get(ActivitiConstants.MEMBER_ASSOCIATION_ID.getName());
                     }
+					if(customVariables.containsKey(ActivitiConstants.ATTESTATION_MANAGED_SYS_RESOURCES.getName())) {
+						attestationManagedSysFilter = (List<String>)customVariables.get(ActivitiConstants.ATTESTATION_MANAGED_SYS_RESOURCES.getName());
+					}
 				}
 			} catch(ActivitiException e) {
 				LOG.warn(String.format("Could not fetch variables for Execution ID: %s.  Changes are that the task is completed.", executionId));
@@ -385,7 +387,11 @@ public class TaskWrapper implements Serializable {
         return memberAssociationId;
     }
 
-    @Override
+	public List<String> getAttestationManagedSysFilter() {
+		return attestationManagedSysFilter;
+	}
+
+	@Override
 	public String toString() {
 		return String
 				.format("TaskWrapper [id=%s, name=%s, owner=%s, priority=%s, processDefinitionId=%s, processInstanceId=%s, taskDefinitionKey=%s, parentTaskId=%s, assignee=%s, createdTime=%s, description=%s, dueDate=%s, executionId=%s]",

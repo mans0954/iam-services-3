@@ -2,6 +2,7 @@ package org.openiam.access.review.service;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.comparators.BooleanComparator;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.StopWatch;
 import org.openiam.access.review.constant.AccessReviewConstant;
 import org.openiam.access.review.constant.AccessReviewData;
@@ -14,6 +15,7 @@ import org.openiam.authmanager.service.AuthorizationManagerAdminService;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.TreeNode;
 import org.openiam.bpm.activiti.ActivitiService;
+import org.openiam.bpm.response.TaskWrapper;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.lang.dto.Language;
@@ -105,6 +107,13 @@ public class AccessReviewServiceImpl implements AccessReviewService {
     private AccessReviewStrategy getAccessReviewStrategy(AccessViewFilterBean filter, String viewType, Language language) {
         final List<LoginEntity> loginList = loginDS.getLoginByUser(filter.getUserId());
         UserEntitlementsMatrix userEntitlementsMatrix = adminService.getUserEntitlementsMatrix(filter.getUserId());
+
+        if(StringUtils.isNotBlank(filter.getAttestationTaskId())){
+            TaskWrapper attestationTask = activitiService.getTask(filter.getAttestationTaskId());
+            if(attestationTask!=null){
+                filter.setAttestationManagedSysFilter(new HashSet<String>(attestationTask.getAttestationManagedSysFilter()));
+            }
+        }
 
         AccessReviewData accessReviewData = new AccessReviewData();
         accessReviewData.setMatrix(userEntitlementsMatrix);
