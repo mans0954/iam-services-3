@@ -83,6 +83,10 @@ public class UserProfileServiceImpl implements UserProfileService {
 
 	@Override
 	public void saveUserProfile(UserProfileRequestModel request) throws Exception {
+
+		if (request.getUser() == null)
+			throw new BasicDataServiceException(ResponseCode.USER_NOT_FOUND);
+
 		final UserEntity userEntity = userDozerConverter.convertToEntity(request.getUser(), true);
 		entityValidator.isValid(userEntity);
         pageTemplateService.validate(request);
