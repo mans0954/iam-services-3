@@ -783,7 +783,6 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
             setDefaultLogin(entityList);
         }
 
-
         return userDozerConverter.convertToDTOList(entityList, searchBean.isDeepCopy());
     }
 
@@ -2797,6 +2796,12 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
     private UserDataService getProxyService() {
         UserDataService service = (UserDataService)ac.getBean("userManager");
         return service;
+    }
+
+    @Override
+    public List<Supervisor> findSupervisors(SupervisorSearchBean sb) {
+        List<SupervisorEntity> supers = supervisorDao.getByExample(sb);
+        return supervisorDozerConverter.convertToDTOList(supers, true);
     }
 
 }

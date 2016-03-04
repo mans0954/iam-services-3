@@ -42,7 +42,7 @@ public class Supervisor implements java.io.Serializable {
 //        this.supervisor = supervisor;
 //        this.employee = employee;
 //    }
-
+//
 //    public Supervisor(String orgStructureId, User supervisor, User employee) {
 //        this.orgStructureId = orgStructureId;
 //        this.supervisor = supervisor;
@@ -68,6 +68,14 @@ public class Supervisor implements java.io.Serializable {
 //        this.status = status;
 //        this.comments = comments;
 //    }
+
+    public SupervisorID getId() {
+        return id;
+    }
+
+    public void setId(SupervisorID id) {
+        this.id = id;
+    }
 
     public User getEmployee() {
         return employee;
