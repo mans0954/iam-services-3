@@ -13,6 +13,7 @@ import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.meta.dto.PageTempate;
+import org.openiam.idm.srvc.org.dto.OrganizationUserDTO;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "UserProfileRequestModel", 
@@ -20,13 +21,17 @@ import org.openiam.idm.srvc.meta.dto.PageTempate;
 		"user",
         "emails",
         "phones",
-        "addresses"
+        "addresses",
+		"supervisors",
+		"organizationsUser"
 })
 public class UserProfileRequestModel extends BaseRequestModel<User> {
 
 	private List<EmailAddress> emails;
 	private List<Phone> phones;
 	private List<Address> addresses;
+	private List<User> supervisors;
+	private List<OrganizationUserDTO> organizationsUser;
 	private User user;
 
 	public UserProfileRequestModel() {
@@ -70,6 +75,21 @@ public class UserProfileRequestModel extends BaseRequestModel<User> {
 		this.addresses = addresses;
 	}
 
+	public List<User> getSupervisors() {
+		return supervisors;
+	}
+
+	public void setSupervisors(List<User> supervisors) {
+		this.supervisors = supervisors;
+	}
+
+	public List<OrganizationUserDTO> getOrganizationsUser() {
+		return organizationsUser;
+	}
+
+	public void setOrganizationsUser(List<OrganizationUserDTO> organizationsUser) {
+		this.organizationsUser = organizationsUser;
+	}
 
 	@Override
 	public int hashCode() {

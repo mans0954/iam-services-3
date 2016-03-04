@@ -1312,7 +1312,6 @@ public class UserDataWebServiceImpl implements UserDataWebService {
         return userManager.getUserDtoBetweenStartDate(fromDate, toDate);
     }
 
-
     @Override
     public List<User> getUserBetweenLastDate(Date fromDate, Date toDate) {
         return userManager.getUserDtoBetweenLastDate(fromDate, toDate);
@@ -1347,4 +1346,9 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 //    public Map<String, UserAttribute> getUserAttributesAsMap(@WebParam(name = "userId", targetNamespace = "") String userId){
 //        return userManager.getUserAttributesDto(userId);
 //    }
+
+    @Override
+    public List<Supervisor> findSupervisors(SupervisorSearchBean supervisorSearchBean) {
+        return userManager.findSupervisors(supervisorSearchBean);
+    }
 }

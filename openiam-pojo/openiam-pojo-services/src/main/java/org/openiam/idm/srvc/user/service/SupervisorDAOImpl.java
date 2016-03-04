@@ -7,12 +7,17 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
+import org.openiam.idm.searchbeans.MetadataElementSearchBean;
+import org.openiam.idm.searchbeans.SearchBean;
+import org.openiam.idm.searchbeans.SupervisorSearchBean;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.SupervisorIDEntity;
 import org.springframework.stereotype.Repository;
@@ -40,6 +45,21 @@ public class SupervisorDAOImpl extends BaseDaoImpl<SupervisorEntity, SupervisorI
         Query qry = getSession().createQuery("delete " + this.domainClass.getName() + " s where s.id = :pk ");
         qry.setParameter("pk", id);
         qry.executeUpdate();
+    }
+
+    @Override
+    protected Criteria getExampleCriteria(final SearchBean searchBean) {
+        final Criteria criteria = getCriteria();
+        if (searchBean != null && searchBean instanceof SupervisorSearchBean) {
+            final SupervisorSearchBean sb = (SupervisorSearchBean) searchBean;
+
+            if(sb.getEmployee() != null && StringUtils.isNotBlank(sb.getEmployee().getId())) {
+                criteria.createAlias("employee", "e").add(Restrictions.eq("e.id", sb.getEmployee().getId()));
+            }
+        }
+
+        criteria.setCacheable(cachable());
+        return criteria;
     }
 
     /**
