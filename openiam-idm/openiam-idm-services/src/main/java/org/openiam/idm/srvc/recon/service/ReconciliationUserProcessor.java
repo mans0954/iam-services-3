@@ -157,7 +157,7 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
             if(log.isDebugEnabled()) {
             	log.debug("Start recon");
             }
-            connectorAdapter.reconcileResource(mSys, config, MuleContextProvider.getCtx());
+            connectorAdapter.reconcileResource(mSys, config);
             if(log.isDebugEnabled()) {
             	log.debug("end recon");
             }
@@ -342,7 +342,7 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
         if(log.isDebugEnabled()) {
         	log.debug("Calling reconcileResource with Local connector");
         }
-        searchResponse = connectorAdapter.search(searchRequest, connector, MuleContextProvider.getCtx());
+        searchResponse = connectorAdapter.search(searchRequest, connector);
 
         if (searchResponse != null && searchResponse.getStatus() == StatusCodeType.SUCCESS) {
             List<ObjectValue> usersFromRemoteSys = searchResponse.getObjectList();

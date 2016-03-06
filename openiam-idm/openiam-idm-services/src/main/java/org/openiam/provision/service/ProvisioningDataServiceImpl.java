@@ -1862,7 +1862,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                 }
             }
 
-            SearchResponse responseType = connectorAdapter.lookupRequest(mSys, reqType, MuleContextProvider.getCtx());
+            SearchResponse responseType = connectorAdapter.lookupRequest(mSys, reqType);
 
             final String postProcessScript = getResourceProperty(res, "POST_PROCESS");
             if (postProcessScript != null && !postProcessScript.isEmpty()) {
@@ -2356,8 +2356,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
             lookupRequest.setHostLoginId(mSys.getUserId());
             lookupRequest.setHostLoginPassword(mSys.getDecryptPassword());
             lookupRequest.setScriptHandler(mSys.getAttributeNamesHandler());
-            return connectorAdapter.lookupAttributes(mSys.getConnectorId(), lookupRequest,
-                    MuleContextProvider.getCtx());
+            return connectorAdapter.lookupAttributes(mSys.getConnectorId(), lookupRequest);
         }
         return null;
     }

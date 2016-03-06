@@ -59,7 +59,7 @@ public class DeleteResourceGroupCommand extends BaseReconciliationGroupCommand {
             if(log.isDebugEnabled()) {
             	log.debug("Calling delete local connector");
             }
-            connectorAdapter.deleteRequest(mSys, request,  MuleContextProvider.getCtx());
+            connectorAdapter.deleteRequest(mSys, request);
 
             return true;
         }

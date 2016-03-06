@@ -660,8 +660,8 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
         userReq.setExtensibleObject(extensibleObject);
         userReq.setScriptHandler(mSys.getAddHandler());
 
-        resp = isAdd ? connectorAdapter.addRequest(mSys, userReq, MuleContextProvider.getCtx())
-                : connectorAdapter.modifyRequest(mSys, userReq, MuleContextProvider.getCtx());
+        resp = isAdd ? connectorAdapter.addRequest(mSys, userReq)
+                : connectorAdapter.modifyRequest(mSys, userReq);
         /*auditBuilderDispatcherChild.addAttribute(AuditAttributeName.DESCRIPTION, (isAdd ? "ADD IDENTITY = "
                 : "MODIFY IDENTITY = ") + resp.getStatus() + " details:" + resp.getErrorMsgAsStr());*/
         return resp;
@@ -729,7 +729,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
                 }
             }
         }
-        SearchResponse lookupSearchResponse = connectorAdapter.lookupRequest(mSys, reqType, muleContext);
+        SearchResponse lookupSearchResponse = connectorAdapter.lookupRequest(mSys, reqType);
 //POST processor
         ResourceProp postProcessProp = res.getResourceProperty("GROUP_POST_PROCESS");
         String postProcessScript = postProcessProp != null ? postProcessProp.getValue() : null;
@@ -1104,7 +1104,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
 
         request.setScriptHandler(mSys.getDeleteHandler());
 
-        resp = connectorAdapter.deleteRequest(mSys, request, MuleContextProvider.getCtx());
+        resp = connectorAdapter.deleteRequest(mSys, request);
 
         return resp;
     }
@@ -1170,7 +1170,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
             reqType.setHostUrl(mSys.getHostUrl());
             reqType.setScriptHandler(mSys.getLookupHandler());
 
-            SearchResponse responseType = connectorAdapter.lookupRequest(mSys, reqType, MuleContextProvider.getCtx());
+            SearchResponse responseType = connectorAdapter.lookupRequest(mSys, reqType);
             if (responseType.getStatus() == StatusCodeType.FAILURE || responseType.getObjectList().size() == 0) {
                 response.setStatus(ResponseStatus.FAILURE);
                 return response;

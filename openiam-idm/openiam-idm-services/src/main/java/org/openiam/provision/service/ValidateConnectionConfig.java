@@ -36,7 +36,7 @@ public class ValidateConnectionConfig {
         	log.debug("Testing connection with localConnector");
         }
 
-        ResponseType localResp = connectorAdapter.testConnection(mSys, muleContext);
+        ResponseType localResp = connectorAdapter.testConnection(mSys);
         if (localResp.getStatus() == StatusCodeType.FAILURE) {
         	if(log.isDebugEnabled()) {
         		log.debug("Test connection failed.");

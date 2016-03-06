@@ -276,8 +276,7 @@ public class ProvisionDispatcherTransactionHelper {
                 suspendReq.setHostUrl(mSys.getHostUrl());
 
                 try {
-                    ResponseType resp = connectorAdapter.suspendRequest(mSys, suspendReq,
-                            MuleContextProvider.getCtx());
+                    ResponseType resp = connectorAdapter.suspendRequest(mSys, suspendReq);
                     if (StatusCodeType.SUCCESS.equals(resp.getStatus())) {
                         loginChanges.setProvStatus(ProvLoginStatusEnum.DISABLED);
                     } else {
@@ -328,8 +327,7 @@ public class ProvisionDispatcherTransactionHelper {
                 suspendReq.setHostUrl(mSys.getHostUrl());
 
                 try {
-                    ResponseType resp = connectorAdapter.resumeRequest(mSys, suspendReq,
-                            MuleContextProvider.getCtx());
+                    ResponseType resp = connectorAdapter.resumeRequest(mSys, suspendReq);
                     if (StatusCodeType.SUCCESS.equals(resp.getStatus())) {
                         loginChanges.setProvStatus(ProvLoginStatusEnum.ENABLED);
                     } else {
@@ -452,7 +450,7 @@ public class ProvisionDispatcherTransactionHelper {
         request.setScriptHandler(mSys.getDeleteHandler());
         request.setExtensibleObject(extensibleUser);
 
-        return connectorAdapter.deleteRequest(mSys, request, MuleContextProvider.getCtx());
+        return connectorAdapter.deleteRequest(mSys, request);
 
     }
 
@@ -682,7 +680,7 @@ public class ProvisionDispatcherTransactionHelper {
             }
         }
 
-        SearchResponse lookupSearchResponse = connectorAdapter.lookupRequest(mSys, reqType, muleContext);
+        SearchResponse lookupSearchResponse = connectorAdapter.lookupRequest(mSys, reqType);
 //POST processor
 //        ResourceProp postProcessProp = res.getResourceProperty("POST_PROCESS");
 //       = postProcessProp != null ? postProcessProp.getValue() : null;

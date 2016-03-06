@@ -1983,8 +1983,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
         userReq.setExtensibleObject(extUser);
         userReq.setScriptHandler(mSys.getAddHandler());
 
-        response = isAdd ? connectorAdapter.addRequest(mSysDto, userReq, MuleContextProvider.getCtx())
-                : connectorAdapter.modifyRequest(mSysDto, userReq, MuleContextProvider.getCtx());
+        response = isAdd ? connectorAdapter.addRequest(mSysDto, userReq)
+                : connectorAdapter.modifyRequest(mSysDto, userReq);
         idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, (isAdd ? "ADD IDENTITY = "
                 : "MODIFY IDENTITY = ") + response.getStatus() + " details:" + response.getErrorMsgAsStr());
 
@@ -2037,7 +2037,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
 
         request.setScriptHandler(mSys.getDeleteHandler());
 
-        ObjectResponse resp = connectorAdapter.deleteRequest(mSys, request, MuleContextProvider.getCtx());
+        ObjectResponse resp = connectorAdapter.deleteRequest(mSys, request);
 
         return resp;
     }
@@ -2068,7 +2068,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
         if(log.isDebugEnabled()) {
         	log.debug("Reset password request will be sent for user login " + login.getLogin());
         }
-        return connectorAdapter.resetPasswordRequest(mSys, req, MuleContextProvider.getCtx());
+        return connectorAdapter.resetPasswordRequest(mSys, req);
 
     }
 
@@ -2151,8 +2151,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
         if(log.isDebugEnabled()) {
         	log.debug((operation ? "Suspend" : "Resume") + " request will be sent for user login " + login.getLogin());
         }
-        return operation ? connectorAdapter.suspendRequest(mSys, resumeReq, MuleContextProvider.getCtx()) :
-                connectorAdapter.resumeRequest(mSys, resumeReq, MuleContextProvider.getCtx());
+        return operation ? connectorAdapter.suspendRequest(mSys, resumeReq) :
+                connectorAdapter.resumeRequest(mSys, resumeReq);
     }
 
 

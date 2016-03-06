@@ -56,7 +56,7 @@ public class DeleteResourceAccountUserCommand extends BaseReconciliationUserComm
             request.setHostLoginPassword(mSys.getDecryptPassword());
             request.setHostUrl(mSys.getHostUrl());
             request.setScriptHandler(mSys.getDeleteHandler());
-            connectorAdapter.deleteRequest(mSys, request, MuleContextProvider.getCtx());
+            connectorAdapter.deleteRequest(mSys, request);
 
             return true;
         }

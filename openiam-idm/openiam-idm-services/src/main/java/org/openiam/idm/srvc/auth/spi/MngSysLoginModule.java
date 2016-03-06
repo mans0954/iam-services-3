@@ -146,7 +146,7 @@ public class MngSysLoginModule extends AbstractLoginModule {
         passwRequest.setOperation("TEST_PASSWORD");
         passwRequest.setScriptHandler(mSys.getPasswordHandler());
         passwRequest.setExtensibleObject(new ExtensibleUser());
-        ResponseType responseType = connectorAdapter.validatePassword(mSys, passwRequest, MuleContextProvider.getCtx());
+        ResponseType responseType = connectorAdapter.validatePassword(mSys, passwRequest);
 
         if (StatusCodeType.FAILURE.equals(responseType.getStatus())) {
             // get the authentication lock out policy

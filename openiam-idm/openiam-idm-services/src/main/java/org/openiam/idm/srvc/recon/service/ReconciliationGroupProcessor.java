@@ -281,7 +281,7 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
         if(log.isDebugEnabled()) {
         	log.debug("Calling reconcileResource with Local connector");
         }
-        searchResponse = connectorAdapter.search(searchRequest, connector, MuleContextProvider.getCtx());
+        searchResponse = connectorAdapter.search(searchRequest, connector);
 
         if (searchResponse != null && searchResponse.getStatus() == StatusCodeType.SUCCESS) {
             List<ObjectValue> groupsFromRemoteSys = searchResponse.getObjectList();
