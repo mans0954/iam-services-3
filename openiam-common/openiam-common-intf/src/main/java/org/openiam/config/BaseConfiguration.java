@@ -1,48 +1,47 @@
 package org.openiam.config;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
+import org.openiam.hazelcast.HazelcastConfiguration;
 import org.openiam.idm.util.CustomJacksonMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.beans.factory.config.PropertiesFactoryBean;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration;
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.ImportResource;
-import org.springframework.core.task.TaskExecutor;
-import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.SchedulingConfigurer;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.core.io.Resource;
+
+import com.hazelcast.spring.cache.HazelcastCacheManager;
 
 @Configuration
 @EnableAsync
 @EnableScheduling
-//@EnableCaching
+@EnableCaching
 @EnableTransactionManagement
 @EnableAspectJAutoProxy
 @EnableAutoConfiguration(exclude={DataSourceAutoConfiguration.class, DataSourceTransactionManagerAutoConfiguration.class})
 @ImportResource({"classpath:environmentContext.xml", "classpath:databaseContext.xml"})
 public class BaseConfiguration implements SchedulingConfigurer {
+	
+	@Autowired
+	private HazelcastConfiguration hazelcastConfig;
 	
 	@Autowired
 	private CustomJacksonMapper mapper;
@@ -107,4 +106,32 @@ public class BaseConfiguration implements SchedulingConfigurer {
 		e.setQueueCapacity(queueCapacity);
 		return e;
 	}
+	
+	/**
+	 * See http://docs.hazelcast.org/docs/3.5/manual/html/springintegration.html
+	 * @return
+	 */
+	 @Bean
+	 public CacheManager cacheManager() {
+		 return new HazelcastCacheManager(hazelcastConfig.getHazelcastInstance());
+	 }
+	
+	 /*
+
+	 @Bean
+	 public KeyGenerator keyGenerator() {
+		 return null;
+	 }
+
+	@Override
+	public CacheResolver cacheResolver() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public CacheErrorHandler errorHandler() {
+		return new SimpleCacheErrorHandler();
+	}
+	*/
 }

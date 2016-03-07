@@ -54,4 +54,8 @@ public class HazelcastConfiguration {
 	public ITopic getTopic(final String name) {
 		return hzInstance.getTopic(name);
 	}
+	
+	public HazelcastInstance getHazelcastInstance() {
+		return hzInstance;
+	}
 }

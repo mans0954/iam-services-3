@@ -11,7 +11,6 @@ import org.dozer.DozerBeanMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.ehcache.EhCacheManagerFactoryBean;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.io.ClassPathResource;
@@ -83,18 +82,5 @@ public class BasePojoConfiguration {
 		final List<String> mappingFiles = new ArrayList<String>(Arrays.asList(mappingFile));
 		final DozerBeanMapper mapper = new DozerBeanMapper(mappingFiles);
 		return mapper;
-	}
-	
-	@Bean(name="auditCacheManager")
-	public EhCacheManagerFactoryBean auditCacheManager() {
-		final EhCacheManagerFactoryBean bean = new EhCacheManagerFactoryBean();
-		bean.setShared(true);
-		bean.setConfigLocation(new ClassPathResource("audit.ehcache.xml"));
-		return bean;
-	}
-	
-	@Bean(name="auditLogBuilderCache")
-	public Ehcache auditLogBuilderCache() {
-		return auditCacheManager().getObject().getCache("AuditLogBuilderCache");
 	}
 }
