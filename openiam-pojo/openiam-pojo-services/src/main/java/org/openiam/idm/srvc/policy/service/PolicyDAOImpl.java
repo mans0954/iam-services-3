@@ -34,7 +34,6 @@ public class PolicyDAOImpl extends BaseDaoImpl<PolicyEntity, String> implements
     @SuppressWarnings("unchecked")
     @Override
     public List<PolicyEntity> findAllPolicies(String policyDefId, int startAt, int size) {
-        log.debug("finding all PolicyEntities instances");
         try {
 
             Criteria cr = this.getCriteria()
@@ -58,7 +57,6 @@ public class PolicyDAOImpl extends BaseDaoImpl<PolicyEntity, String> implements
     @Override
     public List<PolicyEntity> findPolicyByName(String policyDefId,
                                                String policyName) {
-        log.debug("finding Policy instance by name");
         try {
             Criteria cr = this.getCriteria().add(
                     Restrictions.and(
@@ -76,7 +74,6 @@ public class PolicyDAOImpl extends BaseDaoImpl<PolicyEntity, String> implements
     @Override
     protected Criteria getExampleCriteria(final SearchBean searchBean) {
         final Criteria criteria = getCriteria();
-        criteria.addOrder(Order.asc("name")); //SIA 2015-08-01 Order by name
         if (searchBean instanceof PolicySearchBean) {
             PolicySearchBean sb = (PolicySearchBean) searchBean;
             if (StringUtils.isNotBlank(sb.getPolicyDefId())) {

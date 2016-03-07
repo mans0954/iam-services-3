@@ -17,6 +17,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.am.srvc.dto.AuthLevelGrouping;
 import org.openiam.am.srvc.dto.AuthLevelGroupingURIPatternXref;
@@ -24,6 +25,7 @@ import org.openiam.dozer.DozerDTOCorrespondence;
 
 @Entity
 @Table(name = "AUTH_LEVEL_GROUPING")
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(AuthLevelGrouping.class)
 public class AuthLevelGroupingEntity implements Serializable {
 
@@ -38,15 +40,19 @@ public class AuthLevelGroupingEntity implements Serializable {
 	
 	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name="AUTH_LEVEL_ID", referencedColumnName = "AUTH_LEVEL_ID", insertable=true, updatable=true, nullable=false)
+    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	private AuthLevelEntity authLevel;
 	
 	@OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "grouping")
+    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	private Set<AuthLevelAttributeEntity> attributes;
 	
-	@OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "grouping", fetch = FetchType.LAZY)
+	@OneToMany(orphanRemoval = true, cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, mappedBy = "grouping", fetch = FetchType.LAZY)
+    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	private Set<AuthLevelGroupingURIPatternXrefEntity> patternXrefs;
 	
 	@OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "grouping", fetch = FetchType.LAZY)
+    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	private Set<AuthLevelGroupingContentProviderXrefEntity> contentProviderXrefs;
 	
 	public AuthLevelGroupingEntity() {

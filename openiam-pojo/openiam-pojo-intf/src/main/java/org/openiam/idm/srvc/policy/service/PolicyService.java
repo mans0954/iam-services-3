@@ -21,6 +21,7 @@ public interface PolicyService {
 	public List<Policy> findBeans(final PolicySearchBean searchBean, int from, int size);
 	public List<PolicyDefParam> findPolicyDefParamByGroup(final String policyDefId, final String pswdGroup);
     List<PolicyObjectAssoc> getAssociationsForPolicy(String policyId);
+	public PolicyObjectAssoc findAssociationByLevel(String level, String value);
     String savePolicyAssoc(PolicyObjectAssoc poa);
     ITPolicy findITPolicy();
     void resetITPolicy();

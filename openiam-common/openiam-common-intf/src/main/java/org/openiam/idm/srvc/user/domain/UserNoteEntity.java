@@ -9,6 +9,9 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlSchemaType;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.user.dto.UserNote;
@@ -16,6 +19,7 @@ import org.openiam.idm.srvc.user.dto.UserNote;
 @Entity
 @Table(name = "USER_NOTE")
 @DozerDTOCorrespondence(UserNote.class)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class UserNoteEntity {
     @Id
     @GeneratedValue(generator = "system-uuid")
@@ -39,6 +43,7 @@ public class UserNoteEntity {
 
     @ManyToOne
     @JoinColumn(name="USER_ID", referencedColumnName = "USER_ID", insertable = false, updatable = false)
+//    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private UserEntity user;
 
     public UserNoteEntity() {

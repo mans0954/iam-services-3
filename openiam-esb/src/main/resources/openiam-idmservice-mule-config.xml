@@ -69,6 +69,20 @@
 		</service>
 	</model>
 
+    <!--<model name="SourceAdapterServiceModel">-->
+        <!--<service name="SourceAdapterService">-->
+            <!--<inbound>-->
+                <!--<inbound-endpoint address="${webservice.path}SourceAdapterService"-->
+                                  <!--exchange-pattern="request-response">-->
+                    <!--<cxf:jaxws-service />-->
+                <!--</inbound-endpoint>-->
+            <!--</inbound>-->
+            <!--<component>-->
+                <!--<spring-object bean="sourceAdapter" />-->
+            <!--</component>-->
+        <!--</service>-->
+    <!--</model>-->
+
     <model name="GroupProvisionServiceModel">
         <service name="GroupProvisionService">
             <inbound>

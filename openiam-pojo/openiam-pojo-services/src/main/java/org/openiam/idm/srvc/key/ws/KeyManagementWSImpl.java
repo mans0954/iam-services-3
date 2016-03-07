@@ -25,7 +25,9 @@ public class KeyManagementWSImpl implements KeyManagementWS {
 
     @Override
     public Response initKeyManagement(){
-        log.debug("Got initKeyManagement request. ");
+    	if(log.isDebugEnabled()) {
+    		log.debug("Got initKeyManagement request. ");
+    	}
         Response resp = new Response(ResponseStatus.SUCCESS);
         try {
             keyManagementService.initKeyManagement();
@@ -42,7 +44,9 @@ public class KeyManagementWSImpl implements KeyManagementWS {
 
     @Override
     public Response generateMasterKey() {
-        log.debug("Got generateMasterKey request. ");
+    	if(log.isDebugEnabled()) {
+    		log.debug("Got generateMasterKey request. ");
+    	}
         Response resp = new Response(ResponseStatus.SUCCESS);
         try {
             keyManagementService.generateMasterKey();
@@ -59,7 +63,9 @@ public class KeyManagementWSImpl implements KeyManagementWS {
 
     @Override
     public Response migrateData(String secretKey) {
-        log.debug("Got migrateData request. ");
+    	if(log.isDebugEnabled()) {
+    		log.debug("Got migrateData request. ");
+    	}
         Response resp = new Response(ResponseStatus.SUCCESS);
         try {
             keyManagementService.migrateData(secretKey);

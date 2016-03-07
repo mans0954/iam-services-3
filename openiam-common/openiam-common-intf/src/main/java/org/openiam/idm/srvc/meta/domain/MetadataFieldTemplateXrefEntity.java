@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.meta.domain;
 
 import java.io.Serializable;
 import java.util.Map;
+import java.util.Set;
 
 import javax.persistence.AttributeOverride;
 import javax.persistence.CascadeType;
@@ -19,11 +20,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.Where;
+import org.hibernate.annotations.*;
 import org.openiam.base.domain.KeyEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
@@ -37,14 +34,17 @@ import org.openiam.internationalization.InternationalizedCollection;
 @DozerDTOCorrespondence(MetadataFieldTemplateXref.class)
 @AttributeOverride(name = "id", column = @Column(name = "XREF_ID"))
 @Internationalized
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class MetadataFieldTemplateXrefEntity extends KeyEntity {
 
 	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name="UI_FIELD_ID", referencedColumnName = "UI_FIELD_ID", insertable = true, updatable = true)
+    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	private MetadataTemplateTypeFieldEntity field;
 	
 	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name="TEMPLATE_ID", referencedColumnName = "ID", insertable = true, updatable = true)
+    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	private MetadataElementPageTemplateEntity template;
 	
 	@Column(name = "IS_REQUIRED")
@@ -65,7 +65,7 @@ public class MetadataFieldTemplateXrefEntity extends KeyEntity {
 	@Transient
 	@InternationalizedCollection
     private Map<String, LanguageMappingEntity> languageMap;
-	
+
 	public MetadataTemplateTypeFieldEntity getField() {
 		return field;
 	}
@@ -113,8 +113,7 @@ public class MetadataFieldTemplateXrefEntity extends KeyEntity {
 	public void setLanguageMap(Map<String, LanguageMappingEntity> languageMap) {
 		this.languageMap = languageMap;
 	}
-	
-	
+
 	public String getDisplayName(final LanguageEntity language) {
 		String name = null;
 		if(language != null) {

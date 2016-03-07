@@ -17,6 +17,7 @@ import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.history.HistoricTaskInstanceQuery;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
+import org.activiti.engine.task.TaskQuery;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -48,6 +49,7 @@ import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
 import org.openiam.idm.srvc.audit.constant.AuditSource;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
@@ -110,6 +112,9 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
     private UserProfileService userProfileService;
     @Autowired
     private UserDataService userDataService;
+
+    @Autowired
+    private LoginDataService loginService;
 
     @Value("${org.openiam.activiti.membership.approver.association.groovy.script}")
     private String membershipApproverAssociationGroovyScript;
@@ -230,6 +235,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
             variables.put(ActivitiConstants.TASK_DESCRIPTION.getName(), taskDescription);
             variables.put(ActivitiConstants.REQUESTOR.getName(), request.getRequestorUserId());
             variables.put(ActivitiConstants.WORKFLOW_NAME.getName(), requestType.getKey());
+            variables.put(ActivitiConstants.REQUESTOR_NAME.getName(), request.getRequestorUserId());
             if (identifier.getCustomActivitiAttributes() != null) {
                 variables.putAll(identifier.getCustomActivitiAttributes());
             }
@@ -761,10 +767,82 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
     }
 
     @Override
+    public int getNumOfAssignedTasksWithFilter(String userId, String description, String requesterId, Date fromDate, Date toDate) {
+        TaskQuery query = taskService.createTaskQuery();
+        if(fromDate != null) {
+            query.taskCreatedAfter(fromDate);
+        }
+        if(toDate != null) {
+            query.taskCreatedBefore(toDate);
+        }
+        if(description != null ) {
+            description = description.toLowerCase();
+            List<Task> assignedTasks = query.taskAssignee(userId).list();
+            if(assignedTasks != null && assignedTasks.size() > 0) {
+                TaskListWrapper taskListWrapper = new TaskListWrapper();
+                taskListWrapper.addAssignedTasks(assignedTasks, runtimeService, loginService);
+                List<TaskWrapper> taskWrappers = new ArrayList<TaskWrapper>();
+                for (TaskWrapper wrapper : taskListWrapper.getAssignedTasks()) {
+                    if (wrapper.getDescription().toLowerCase().contains(description)) {
+                        taskWrappers.add(wrapper);
+                    }
+                }
+                return taskWrappers.size();
+            }
+            return 0;
+        } else if(requesterId != null ) {
+            List<Task> assignedTasks = query.taskAssignee(userId).list();
+            if(assignedTasks != null && assignedTasks.size() > 0) {
+                TaskListWrapper taskListWrapper = new TaskListWrapper();
+                taskListWrapper.addAssignedTasks(assignedTasks, runtimeService, loginService);
+                List<TaskWrapper> taskWrappers = new ArrayList<TaskWrapper>();
+                for (TaskWrapper wrapper : taskListWrapper.getAssignedTasks()) {
+                    if (wrapper.getOwner() != null) {
+                        if (wrapper.getOwner().equals(requesterId)) {
+                            taskWrappers.add(wrapper);
+                        }
+                    }
+                }
+                return taskWrappers.size();
+            }
+            return 0;
+        }
+        return (int)query.taskAssignee(userId).count();
+    }
+
+    @Override
     @WebMethod
     @Transactional
     public int getNumOfCandidateTasks(String userId) {
         return (int) taskService.createTaskQuery().taskCandidateUser(userId).count();
+    }
+
+    @Override
+    public int getNumOfCandidateTasksWithFilter(String userId, String description, Date fromDate, Date toDate) {
+        TaskQuery query = taskService.createTaskQuery();
+        if(fromDate != null) {
+            query.taskCreatedAfter(fromDate);
+        }
+        if(toDate != null) {
+            query.taskCreatedBefore(toDate);
+        }
+        if(description != null) {
+            description = description.toLowerCase();
+            List<Task> candidateTasks = query.taskCandidateUser(userId).list();
+            if(candidateTasks != null && candidateTasks.size() > 0) {
+                TaskListWrapper taskListWrapper = new TaskListWrapper();
+                taskListWrapper.addCandidateTasks(candidateTasks, runtimeService, loginService);
+                List<TaskWrapper> taskWrappers = new ArrayList<TaskWrapper>();
+                for (TaskWrapper wrapper : taskListWrapper.getCandidateTasks()) {
+                    if (wrapper.getDescription().toLowerCase().contains(description)) {
+                        taskWrappers.add(wrapper);
+                    }
+                }
+                return taskWrappers.size();
+            }
+            return 0;
+        }
+        return (int)query.taskCandidateUser(userId).count();
     }
 
     @Override
@@ -776,10 +854,84 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
         final List<Task> candidateTasks = taskService.createTaskQuery().taskCandidateUser(userId).listPage(from, size);
         Collections.sort(assignedTasks, taskCreatedTimeComparator);
         Collections.sort(candidateTasks, taskCreatedTimeComparator);
-        taskListWrapper.addAssignedTasks(assignedTasks, runtimeService);
-        taskListWrapper.addCandidateTasks(candidateTasks, runtimeService);
+        taskListWrapper.addAssignedTasks(assignedTasks, runtimeService, loginService);
+        taskListWrapper.addCandidateTasks(candidateTasks, runtimeService, loginService);
         return taskListWrapper;
     }
+
+    @Override
+    public TaskListWrapper getTasksForCandidateUserWithFilter(String userId, int from, int size, String description, Date fromDate, Date toDate) {
+        final TaskListWrapper taskListWrapper = new TaskListWrapper();
+        TaskQuery query = taskService.createTaskQuery();
+        if(fromDate != null) {
+            query.taskCreatedAfter(fromDate);
+        }
+        if(toDate != null) {
+            query.taskCreatedBefore(toDate);
+        }
+        final List<Task> candidateTasks = query.taskCandidateUser(userId).list();
+        Collections.sort(candidateTasks, taskCreatedTimeComparator);
+        taskListWrapper.addCandidateTasks(candidateTasks, runtimeService, loginService);
+        if(description != null && taskListWrapper.getCandidateTasks() != null){
+            List<TaskWrapper> results = new ArrayList<TaskWrapper>();
+            for(TaskWrapper wrapper : taskListWrapper.getCandidateTasks()) {
+                if(wrapper.getDescription().toLowerCase().contains(description.toLowerCase())) {
+                    results.add(wrapper);
+                }
+            }
+            if(from+size < results.size()) {
+                taskListWrapper.setCandidateTasks(results.subList(from, from + size));
+            } else {
+                taskListWrapper.setCandidateTasks(results.subList(from, results.size()));
+            }
+        }
+        return taskListWrapper;
+    }
+
+    @Override
+    public TaskListWrapper getTasksForAssignedUserWithFilter(String userId, int from, int size, String description, String requesterId, Date fromDate, Date toDate) {
+        final TaskListWrapper taskListWrapper = new TaskListWrapper();
+        TaskQuery query = taskService.createTaskQuery();
+        if(fromDate != null) {
+            query.taskCreatedAfter(fromDate);
+        }
+        if(toDate != null) {
+            query.taskCreatedBefore(toDate);
+        }
+        final List<Task> assignedTasks = query.taskAssignee(userId).list();
+        Collections.sort(assignedTasks, taskCreatedTimeComparator);
+        taskListWrapper.addAssignedTasks(assignedTasks, runtimeService, loginService);
+        if(description != null && taskListWrapper.getAssignedTasks() != null){
+            List<TaskWrapper> results = new ArrayList<TaskWrapper>();
+            for(TaskWrapper wrapper : taskListWrapper.getAssignedTasks()) {
+                if(wrapper.getDescription().toLowerCase().contains(description.toLowerCase())) {
+                    results.add(wrapper);
+                }
+            }
+            if(from+size < results.size()) {
+                taskListWrapper.setAssignedTasks(results.subList(from, from + size));
+            } else {
+                taskListWrapper.setAssignedTasks(results.subList(from, results.size()));
+            }
+        } else if(requesterId != null && taskListWrapper.getAssignedTasks() != null){
+            List<TaskWrapper> results = new ArrayList<TaskWrapper>();
+            for(TaskWrapper wrapper : taskListWrapper.getAssignedTasks()) {
+                if (wrapper.getOwner() != null) { // owner id null in self registration case
+                    if (wrapper.getOwner().equals(requesterId)) {
+                        results.add(wrapper);
+                    }
+                }
+            }
+            if(from+size < results.size()) {
+                taskListWrapper.setAssignedTasks(results.subList(from, from + size));
+            } else {
+                taskListWrapper.setAssignedTasks(results.subList(from, results.size()));
+            }
+        }
+
+        return taskListWrapper;
+    }
+
     @Override
     @WebMethod
     @Transactional
@@ -788,7 +940,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
         final List<Task> taskList = taskService.createTaskQuery().processVariableValueEquals(ActivitiConstants.MEMBER_ASSOCIATION_ID.getName(), memberAssociationId).list();
         if(CollectionUtils.isNotEmpty(taskList)) {
             for(final Task task : taskList) {
-                memberAssociationTaskList.add(new TaskWrapper(task, runtimeService));
+                memberAssociationTaskList.add(new TaskWrapper(task, runtimeService,loginService));
             }
         }
         return memberAssociationTaskList;
@@ -801,7 +953,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
         TaskWrapper retVal = null;
         final List<Task> taskList = taskService.createTaskQuery().taskId(taskId).list();
         if (CollectionUtils.isNotEmpty(taskList)) {
-            retVal = new TaskWrapper(taskList.get(0), runtimeService);
+            retVal = new TaskWrapper(taskList.get(0), runtimeService,loginService);
         }
         return retVal;
     }

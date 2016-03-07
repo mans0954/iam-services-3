@@ -112,6 +112,14 @@ public abstract class AccessReviewStrategy {
         AuthorizationResource thisResource = accessReviewData.getMatrix().getResourceMap().get(bean.getId());
 
         boolean result = false;
+        boolean isAttestationrequest = StringUtils.isNotBlank(accessReviewData.getFilter().getAttestationTaskId());
+
+        if(isAttestationrequest && accessReviewData.isExcludeMenus()){
+            if("MENU_ITEM".equals(thisResource.getResourceTypeId())){
+                return true;
+            }
+        }
+
         if(accessReviewData.isHasParent(thisResource)){
             // get parent resource
             String resId = accessReviewData.getMatrix().getChildResToParentResMap().get(thisResource.getId()).iterator().next();
@@ -119,6 +127,15 @@ public abstract class AccessReviewStrategy {
             AccessViewBean parentBean = EntitlementsStrategy.createBean(parentResource);
 
             result = !accessReviewData.isElementInUse(parentBean);
+        } else{
+            // if isAttestation request and managed sys for attestation is set
+            // then this parent resource (in tree) must be one of the provided managed_sys
+            // otherwise skip it (return true)
+            if(isAttestationrequest && CollectionUtils.isNotEmpty(accessReviewData.getFilter().getAttestationManagedSysFilter())){
+                if(!accessReviewData.getFilter().getAttestationManagedSysFilter().contains(bean.getId())){
+                    return true;
+                }
+            }
         }
 
         return result || checkResourceId(bean.getId());

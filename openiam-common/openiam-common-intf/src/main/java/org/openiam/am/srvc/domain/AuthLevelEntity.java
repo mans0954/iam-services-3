@@ -1,5 +1,6 @@
 package org.openiam.am.srvc.domain;
 
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.openiam.am.srvc.dto.AuthLevel;
@@ -12,6 +13,7 @@ import java.io.Serializable;
 @Entity
 @Table(name = "AUTH_LEVEL")
 @DozerDTOCorrespondence(AuthLevel.class)
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class AuthLevelEntity implements Serializable {
 
 	/**

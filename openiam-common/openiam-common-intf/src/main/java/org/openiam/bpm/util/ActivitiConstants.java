@@ -9,6 +9,7 @@ public enum ActivitiConstants {
 	TASK_NAME("TaskName"),
 	TASK_DESCRIPTION("TaskDescription"),
 	REQUESTOR("TaskOwner"),
+    REQUESTOR_NAME("TaskOwnerName"),
 	EXECUTOR_ID("ExecutorId"),
 	APPROVER_ASSOCIATION_IDS("ApproverAssociationIds"),
 	ASSOCIATION_ID("AssociationId"),
@@ -39,7 +40,8 @@ public enum ActivitiConstants {
 	
 	IS_REQUESTOR_ONLY_APROVER("IsRequestorOnlyApprover"),
 	IS_REQUESTOR_CANDIDATE("IsRequestorCandidate"),
-	CANDIDATE_USER_IDS("CandidateUserIds");
+	CANDIDATE_USER_IDS("CandidateUserIds"),
+	ATTESTATION_MANAGED_SYS_RESOURCES("ATTESTATION_MANAGED_SYS_RESOURCES"),;
 	
 	private String name;
 	

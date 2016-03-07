@@ -1,22 +1,39 @@
 package org.openiam.idm.srvc.pswd.service;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.Restrictions;
-import org.openiam.core.dao.BaseDaoImpl;
+import org.openiam.core.dao.OrderDaoImpl;
+import org.openiam.idm.searchbeans.IdentityQuestionSearchBean;
+import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.pswd.domain.IdentityQuestionEntity;
+import org.openiam.idm.srvc.searchbean.converter.IdentityQuestionSearchBeanConverter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 /**
  * DAO implementation object for the domain model class IdentityQuestion.
  */
 @Repository("identityQuestDAO")
-public class IdentityQuestionDAOImpl extends BaseDaoImpl<IdentityQuestionEntity, String> implements IdentityQuestionDAO {
+public class IdentityQuestionDAOImpl extends OrderDaoImpl<IdentityQuestionEntity, String> implements IdentityQuestionDAO {
 
 	private static final Log log = LogFactory.getLog(IdentityQuestionDAOImpl.class);
-	
+
+	@Autowired
+	private IdentityQuestionSearchBeanConverter questionSearchBeanConverter;
+
+	@Override
+	protected Criteria getExampleCriteria(final SearchBean searchBean) {
+		Criteria criteria = getCriteria();
+		if (searchBean != null && searchBean instanceof IdentityQuestionSearchBean) {
+			final IdentityQuestionSearchBean identityQuestionSearchBean = (IdentityQuestionSearchBean) searchBean;
+			final  IdentityQuestionEntity entity = questionSearchBeanConverter.convert(identityQuestionSearchBean);
+			criteria = this.getExampleCriteria(entity);
+		}
+		return criteria;
+	}
+
 	@Override
 	protected Criteria getExampleCriteria(final IdentityQuestionEntity example) {
 		final Criteria criteria = getCriteria();
@@ -32,5 +49,9 @@ public class IdentityQuestionDAOImpl extends BaseDaoImpl<IdentityQuestionEntity,
 	@Override
 	protected String getPKfieldName() {
 		return "id";
+	}
+
+	protected String getReferenceType() {
+		return "IdentityQuestionEntity.displayNameMap";
 	}
 }

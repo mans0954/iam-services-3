@@ -219,7 +219,7 @@ public class TestPageTemplateService extends AbstractTestNGSpringContextTests {
 	@Test
 	public void testEquality() {
 		final TemplateRequest request = new TemplateRequest();
-		request.setUserId(userId);
+		request.setTargetObjectId(userId);
 		request.setLanguageId(languageId);
 		request.setPatternId(pattern.getId());
 		final PageTempate tempalteByPattern = templateWebService.getTemplate(request);
@@ -236,7 +236,7 @@ public class TestPageTemplateService extends AbstractTestNGSpringContextTests {
 	@Test
 	public void testTextCorrectness() {
 		final TemplateRequest request = new TemplateRequest();
-		request.setUserId(userId);
+		request.setTargetObjectId(userId);
 		request.setLanguageId(languageId);
 		request.setPatternId(pattern.getId());
 		final PageTempate template = templateWebService.getTemplate(request);

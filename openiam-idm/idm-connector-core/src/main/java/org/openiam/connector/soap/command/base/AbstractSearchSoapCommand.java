@@ -48,7 +48,9 @@ public abstract class AbstractSearchSoapCommand<ExtObject extends ExtensibleObje
 				response.setStatus(StatusCodeType.SUCCESS);
 			} else {
 				response.setStatus(StatusCodeType.FAILURE);
-				log.debug("LOOKUP successful without results.");
+				if(log.isDebugEnabled()) {
+					log.debug("LOOKUP successful without results.");
+				}
 				// throw new
 				// ConnectorDataException(ErrorCode.NO_RESULTS_RETURNED);
 			}

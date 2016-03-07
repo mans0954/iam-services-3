@@ -23,6 +23,7 @@ import org.openiam.idm.srvc.loc.dto.Location;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationUserEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
+import org.openiam.idm.srvc.org.dto.OrganizationAttribute;
 import org.openiam.idm.srvc.org.dto.OrganizationUserDTO;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDataService;
@@ -116,7 +117,11 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     @Override
     @Deprecated
     public List<Organization> findBeans(final OrganizationSearchBean searchBean, final String requesterId, final int from, final int size) {
-        return this.findBeansLocalized(searchBean, requesterId, from, size, getDefaultLanguage());
+    	/* 
+    	 * Although we are backwards compatible, we pass in a null Language, in order to
+    	 * maintain performance when calling this WS from groovy 
+    	 */
+        return this.findBeansLocalized(searchBean, requesterId, from, size, null);
     }
 
     @Override
@@ -547,6 +552,10 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     @Override
     public List<Organization> getUserAffiliationsByType(final String userId, final String typeId, int from, int size, final String requesterId, final Language language) {
         return organizationService.getUserAffiliationsByType(userId, typeId, requesterId, from, size, languageConverter.convertToEntity(language, false));
+    }
+
+    public List<OrganizationAttribute> getOrganizationAttributes(@WebParam(name = "orgId", targetNamespace = "") final String orgId){
+        return organizationService.getOrgAttributesDtoList(orgId);
     }
 
 }

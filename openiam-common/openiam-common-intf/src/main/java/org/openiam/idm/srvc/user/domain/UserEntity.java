@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.user.domain;
 
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.annotations.*;
+import org.hibernate.annotations.Cache;
 import org.hibernate.search.annotations.*;
 import org.hibernate.search.annotations.Index;
 import org.openiam.base.BaseConstants;
@@ -17,6 +18,7 @@ import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationUserEntity;
+import org.openiam.idm.srvc.policy.dto.ResetPasswordTypeEnum;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.user.dto.User;
@@ -29,6 +31,7 @@ import javax.persistence.Entity;
 import javax.persistence.MapKey;
 import javax.persistence.Table;
 import javax.validation.constraints.Size;
+import java.io.Serializable;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -38,7 +41,8 @@ import java.util.Map.Entry;
 @DozerDTOCorrespondence(User.class)
 @Indexed
 @Internationalized
-public class UserEntity {
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "UserEntity")
+public class UserEntity implements Serializable {
     @Id
     @GeneratedValue(generator = "system-uuid")
     @GenericGenerator(name = "system-uuid", strategy = "uuid")
@@ -59,24 +63,20 @@ public class UserEntity {
     @Column(name = "CREATED_BY", length = 32)
     private String createdBy;
 
-    @Column(name = "EMPLOYEE_ID", length = 32)
+    @Column(name = "EMPLOYEE_ID", length = 100)
     @Fields({
             @Field(index = Index.TOKENIZED),
             @Field(name = "employeeId", index = Index.TOKENIZED, store = Store.YES),
             @Field(name = "employeeIdUntokenized", index = Index.UN_TOKENIZED, store = Store.YES)
     })
-    @Size(max = 32, message = "validator.user.employee.id.toolong")
+    @Size(max = 100, message = "validator.user.employee.id.toolong")
     private String employeeId;
-
-//    @Column(name = "EMPLOYEE_TYPE", length = 20)
-//    @Size(max = 20, message = "validator.user.employee.type.toolong")
-//    @Field(index=Index.UN_TOKENIZED, name="employeeType", store=Store.YES)
-//    private String employeeType;
 
     @ManyToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
     @JoinColumn(name = "EMPLOYEE_TYPE", insertable = true, updatable = true, nullable = true)
     @Internationalized
     @IndexedEmbedded
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private MetadataTypeEntity employeeType;
 
     @Column(name = "FIRST_NAME", length = 50)
@@ -88,14 +88,11 @@ public class UserEntity {
     @Size(max = 50, message = "validator.user.first.name.toolong")
     private String firstName;
 
-//    @Column(name = "JOB_CODE", length = 50)
-//    @Size(max = 50, message = "validator.user.job.code.toolong")
-//    private String jobCode;
-
     @ManyToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
     @JoinColumn(name = "JOB_CODE", insertable = true, updatable = true, nullable = true)
     @Internationalized
     @IndexedEmbedded
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private MetadataTypeEntity jobCode;
 
     @Column(name = "LAST_NAME", length = 50)
@@ -126,6 +123,7 @@ public class UserEntity {
     @JoinColumn(name = "TYPE_ID", insertable = true, updatable = true, nullable = true)
     @Internationalized
     @IndexedEmbedded
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     protected MetadataTypeEntity type;
 
     @Column(name = "CLASSIFICATION", length = 20)
@@ -184,7 +182,7 @@ public class UserEntity {
     private Date claimDate;
 
     @Column(name = "NICKNAME", length = 40)
-    @Fields ({
+    @Fields({
             @Field(index = Index.TOKENIZED),
             @Field(name = "nickName", index = Index.TOKENIZED, store = Store.YES),
             @Field(name = "nickNameUntokenized", index = Index.UN_TOKENIZED, store = Store.YES)
@@ -224,30 +222,35 @@ public class UserEntity {
     private Date dateITPolicyApproved;
 
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "user", fetch = FetchType.LAZY)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<UserNoteEntity> userNotes = new HashSet<UserNoteEntity>(0);
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @MapKeyColumn(name = "name")
     @JoinColumn(name = "USER_ID")
     @Fetch(FetchMode.SUBSELECT)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Map<String, UserAttributeEntity> userAttributes = new HashMap<String, UserAttributeEntity>(0);
 
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "parent", fetch = FetchType.LAZY)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<AddressEntity> addresses = new HashSet<AddressEntity>(0);
 
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "parent", fetch = FetchType.LAZY)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<PhoneEntity> phones = new HashSet<PhoneEntity>(0);
 
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "parent", fetch = FetchType.LAZY)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<EmailAddressEntity> emailAddresses = new HashSet<EmailAddressEntity>(0);
 
     @Column(name = "SYSTEM_FLAG", length = 1)
     private String systemFlag;
 
-    //@IndexedEmbedded(prefix="principal.", depth=1)
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "USER_ID", referencedColumnName = "USER_ID")
     @Fetch(FetchMode.SUBSELECT)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private List<LoginEntity> principalList = new LinkedList<LoginEntity>();
 
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "user", fetch = FetchType.LAZY)
@@ -263,29 +266,44 @@ public class UserEntity {
     @Fetch(FetchMode.SUBSELECT)
     private Set<RoleEntity> roles = new HashSet<RoleEntity>(0);
 
-//    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
-//    @JoinTable(name = "USER_AFFILIATION", joinColumns = { @JoinColumn(name = "USER_ID") }, inverseJoinColumns = { @JoinColumn(name = "COMPANY_ID") })
-//    @Fetch(FetchMode.SUBSELECT)
-//	private Set<OrganizationEntity> affiliations = new HashSet<OrganizationEntity>(0);
-
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "primaryKey.user", fetch = FetchType.LAZY)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     public Set<OrganizationUserEntity> organizationUser;
 
     @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
     @JoinTable(name = "RESOURCE_USER", joinColumns = {@JoinColumn(name = "USER_ID")}, inverseJoinColumns = {@JoinColumn(name = "RESOURCE_ID")})
-    @Fetch(FetchMode.SUBSELECT)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<ResourceEntity> resources = new HashSet<ResourceEntity>(0);
 
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "employee", fetch = FetchType.LAZY)
-    // @Fetch(FetchMode.SUBSELECT)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<SupervisorEntity> supervisors;
 
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "supervisor", fetch = FetchType.LAZY)
-    // @Fetch(FetchMode.SUBSELECT)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<SupervisorEntity> subordinates;
 
     @Transient
     private String defaultLogin;
+
+    @Column(name = "RESET_PASSWORD_TYPE", length = 20)
+    @Enumerated(EnumType.STRING)
+    private ResetPasswordTypeEnum resetPasswordType;
+
+    @ManyToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "SUB_TYPE_ID", insertable = true, updatable = true, nullable = true)
+    @Internationalized
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    protected MetadataTypeEntity subType;
+
+    @Column(name = "PARTNER_NAME", length = 60)
+    private String partnerName;
+
+    @Column(name = "PREFIX_PARTNER_NAME", length = 10)
+    private String prefixPartnerName;
+
+    @Column(name = "LASTNAME_PREFIX", length = 10)
+    private String prefixLastName;
 
     public UserEntity() {
     }
@@ -1042,7 +1060,27 @@ public class UserEntity {
                 this.dateITPolicyApproved = newUser.getDateITPolicyApproved();
             }
         }
-
+        if (newUser.getPrefixLastName() != null) {
+            if (newUser.getPrefixLastName().equals(BaseConstants.NULL_STRING)) {
+                this.prefixLastName = null;
+            } else {
+                this.prefixLastName = newUser.getPrefixLastName();
+            }
+        }
+        if (newUser.getPrefixPartnerName() != null) {
+            if (newUser.getPrefixPartnerName().equals(BaseConstants.NULL_STRING)) {
+                this.prefixPartnerName = null;
+            } else {
+                this.prefixPartnerName = newUser.getPrefixPartnerName();
+            }
+        }
+        if (newUser.getPartnerName() != null) {
+            if (newUser.getPartnerName().equals(BaseConstants.NULL_STRING)) {
+                this.partnerName = null;
+            } else {
+                this.partnerName = newUser.getPartnerName();
+            }
+        }
     }
 
     public Set<SupervisorEntity> getSupervisors() {
@@ -1069,6 +1107,45 @@ public class UserEntity {
         this.claimDate = claimDate;
     }
 
+    public ResetPasswordTypeEnum getResetPasswordType() {
+        return resetPasswordType;
+    }
+
+    public void setResetPasswordType(ResetPasswordTypeEnum resetPasswordType) {
+        this.resetPasswordType = resetPasswordType;
+    }
+
+    public MetadataTypeEntity getSubType() {
+        return subType;
+    }
+
+    public void setSubType(MetadataTypeEntity subType) {
+        this.subType = subType;
+    }
+
+    public String getPartnerName() {
+        return partnerName;
+    }
+
+    public void setPartnerName(String partnerName) {
+        this.partnerName = partnerName;
+    }
+
+    public String getPrefixPartnerName() {
+        return prefixPartnerName;
+    }
+
+    public void setPrefixPartnerName(String prefixPartnerName) {
+        this.prefixPartnerName = prefixPartnerName;
+    }
+
+    public String getPrefixLastName() {
+        return prefixLastName;
+    }
+
+    public void setPrefixLastName(String prefixLastName) {
+        this.prefixLastName = prefixLastName;
+    }
 
     @Override
     public boolean equals(Object o) {

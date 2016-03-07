@@ -63,8 +63,9 @@ public class ActiveDirectoryImpl implements Directory {
     }
 
     public ModificationItem[] suspend(SuspendResumeRequest request) {
-
-        log.debug("suspending AD user.");
+    	if(log.isDebugEnabled()) {
+    		log.debug("suspending AD user.");
+    	}
 
         ModificationItem[] mods = new ModificationItem[1];
 
@@ -75,8 +76,9 @@ public class ActiveDirectoryImpl implements Directory {
     }
 
     public ModificationItem[] resume(SuspendResumeRequest request) {
-
-        log.debug("Enabling AD user.");
+    	if(log.isDebugEnabled()) {
+    		log.debug("Enabling AD user.");
+    	}
 
         ModificationItem[] mods = new ModificationItem[1];
 
@@ -134,7 +136,9 @@ public class ActiveDirectoryImpl implements Directory {
 
             for (String s : currentSupervisorMembershipList) {
                 try {
-                    log.debug("Removing supervisor: " + s + " from " + identityDN);
+                	if(log.isDebugEnabled()) {
+                		log.debug("Removing supervisor: " + s + " from " + identityDN);
+                	}
                     ModificationItem mods[] = new ModificationItem[1];
                     mods[0] = new ModificationItem(DirContext.REMOVE_ATTRIBUTE, new BasicAttribute("manager", s));
                     ldapctx.modifyAttributes(identityDN, mods);
@@ -152,8 +156,10 @@ public class ActiveDirectoryImpl implements Directory {
 
         List<String> currentMembershipList = userMembershipList(managedSys, identity, matchObj, ldapctx);
 
-        log.debug("- Current Active Dir group membership:" + currentMembershipList);
-        log.debug("- Target Active Dir group membership:"  + targetMembershipList);
+        if(log.isDebugEnabled()) {
+	        log.debug("- Current Active Dir group membership:" + currentMembershipList);
+	        log.debug("- Target Active Dir group membership:"  + targetMembershipList);
+        }
 
         if (targetMembershipList == null && currentMembershipList != null) {
             // remove all associations
@@ -209,13 +215,17 @@ public class ActiveDirectoryImpl implements Directory {
 
         List<String> currentSupervisorMembershipList = userSupervisorMembershipList(managedSys, identity, matchObj, ldapctx);
 
-        log.debug("Current ldap supervisor membership:" + currentSupervisorMembershipList);
+        if(log.isDebugEnabled()) {
+        	log.debug("Current ldap supervisor membership:" + currentSupervisorMembershipList);
+        }
 
         if (supervisorMembershipList == null && currentSupervisorMembershipList != null) {
 
             for (String s : currentSupervisorMembershipList) {
                 try {
-                    log.debug("Removing supervisor: " + s + " from " + identityDN);
+                	if(log.isDebugEnabled()) {
+                		log.debug("Removing supervisor: " + s + " from " + identityDN);
+                	}
                     ModificationItem mods[] = new ModificationItem[1];
                     mods[0] = new ModificationItem(DirContext.REMOVE_ATTRIBUTE, new BasicAttribute("manager", s));
                     ldapctx.modifyAttributes(identityDN, mods);

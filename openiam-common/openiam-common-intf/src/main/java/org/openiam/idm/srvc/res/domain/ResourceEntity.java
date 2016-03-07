@@ -29,8 +29,7 @@ import java.util.Set;
 
 @Entity
 @Table(name = "RES")
-@Cacheable
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "ResourceEntity")
 @DozerDTOCorrespondence(Resource.class)
 @AttributeOverride(name = "id", column = @Column(name = "RESOURCE_ID"))
 @Internationalized
@@ -39,6 +38,7 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "RESOURCE_TYPE_ID")
     @Internationalized
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private ResourceTypeEntity resourceType;
 
     @Column(name = "NAME", length = 255)
@@ -79,6 +79,7 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
     //@JoinColumn(name = "RESOURCE_ID")
     @Fetch(FetchMode.SUBSELECT)
     @Internationalized
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<ResourcePropEntity> resourceProps = new HashSet<ResourcePropEntity>(0); // defined as a Set in Hibernate map
 
     @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
@@ -87,8 +88,8 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
 
     @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinTable(name = "RESOURCE_GROUP",
-            joinColumns = { @JoinColumn(name = "RESOURCE_ID") },
-            inverseJoinColumns = { @JoinColumn(name = "GRP_ID") })
+            joinColumns = {@JoinColumn(name = "RESOURCE_ID")},
+            inverseJoinColumns = {@JoinColumn(name = "GRP_ID")})
     private Set<GroupEntity> groups;
 
     @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
@@ -110,6 +111,7 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
 	private ResourceEntity adminResource;
 	
 	@OneToMany(cascade = {CascadeType.ALL}, fetch = FetchType.LAZY, mappedBy="associationEntityId", orphanRemoval=true)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	@Where(clause="ASSOCIATION_TYPE='RESOURCE'")
 	private Set<ApproverAssociationEntity> approverAssociations;
 	
@@ -120,6 +122,9 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
     
     @Transient
     private String displayName;
+
+    @OneToMany(mappedBy = "referenceId")
+    private Set<LanguageMappingEntity> languageMappings;
 
     public ResourceRisk getRisk() {
         return risk;
@@ -398,6 +403,13 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
 		this.coorelatedName = coorelatedName;
 	}
 
+    public Set<LanguageMappingEntity> getLanguageMappings() {
+        return languageMappings;
+    }
+
+    public void setLanguageMappings(Set<LanguageMappingEntity> languageMappings) {
+        this.languageMappings = languageMappings;
+    }
 
     @Override
     public boolean equals(Object o) {

@@ -1,9 +1,12 @@
 package org.openiam.idm.srvc.res.domain;
 
 import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Type;
+import org.hibernate.annotations.*;
+import org.hibernate.annotations.Cache;
 import org.openiam.base.domain.AbstractAttributeEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
@@ -11,15 +14,19 @@ import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.internationalization.Internationalized;
 
+import java.util.List;
+
 @Entity
 @Table(name="RESOURCE_PROP")
 @AttributeOverride(name = "id", column = @Column(name = "RESOURCE_PROP_ID"))
 @DozerDTOCorrespondence(ResourceProp.class)
 @Internationalized
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class ResourcePropEntity extends AbstractAttributeEntity {
    
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "RESOURCE_ID", referencedColumnName = "RESOURCE_ID", insertable = true, updatable = false)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private ResourceEntity resource;
     @Column(name = "IS_MULTIVALUED", nullable = false)
     @Type(type = "yes_no")
@@ -36,12 +43,19 @@ public class ResourcePropEntity extends AbstractAttributeEntity {
 		this.resource = resource;
 	}
 	
-	public Boolean getIsMultivalued() {
+	public boolean getIsMultivalued() {
 		return isMultivalued;
 	}
 
-	public void setIsMultivalued(Boolean isMultivalued) {
+	public void setIsMultivalued(boolean isMultivalued) {
 		this.isMultivalued = isMultivalued;
+	}
+
+	@Override
+	public List<String> getValues() {
+		return null;
+	}
+	public void setValues(List<String> values) {
 	}
 
 	@Override

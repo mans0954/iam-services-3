@@ -27,9 +27,11 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.base.SysConfiguration;
 import org.openiam.exception.AuthenticationException;
 import org.openiam.exception.EncryptionException;
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.SSOToken;
 import org.openiam.idm.srvc.auth.dto.Subject;
+import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
 import org.openiam.idm.srvc.auth.service.AuthenticationUtils;
 import org.openiam.idm.srvc.auth.sso.SSOTokenFactory;
@@ -81,13 +83,8 @@ public abstract class AbstractLoginModule implements LoginModule {
     protected ManagedSystemWebService managedSystemWebService;
 
     @Autowired
-    @Qualifier("loginWS")
-    protected LoginDataWebService loginManager;
-
-    @Autowired
-    @Qualifier("userWS")
-    protected UserDataWebService userDataWebService;
-
+    @Qualifier("loginManager")
+    protected LoginDataService loginManager;
     @Autowired
     @Qualifier("userManager")
     protected UserDataService userManager;
@@ -148,8 +145,23 @@ public abstract class AbstractLoginModule implements LoginModule {
         return null;
     }
 
-    public void setResultCode(Login lg, Subject sub, Date curDate, Policy pwdPolicy) throws AuthenticationException {
-        if (lg.getFirstTimeLogin() == 1) {
+    public String encryptPassword(String userId, String decPassword)
+            throws Exception {
+        if (decPassword != null) {
+            try {
+                return cryptor.encrypt(keyManagementService.getUserKey(userId,
+                        KeyName.password.name()), decPassword);
+            } catch (EncryptionException e) {
+                return null;
+            }
+        }
+        return null;
+    }
+
+    public void setResultCode(LoginEntity lg, Subject sub, Date curDate, Policy pwdPolicy, final boolean skipPasswordCheck) throws AuthenticationException {
+    	if(skipPasswordCheck) {
+    		sub.setResultCode(AuthenticationConstants.RESULT_SUCCESS);
+    	} else if (lg.getFirstTimeLogin() == 1) {
             sub.setResultCode(AuthenticationConstants.RESULT_SUCCESS_FIRST_TIME);
         } else if (lg.getPwdExp() != null) {
             if ((curDate.after(lg.getPwdExp()) && curDate.before(lg.getGracePeriod()))) {
@@ -174,7 +186,7 @@ public abstract class AbstractLoginModule implements LoginModule {
 
     }
 
-    public Integer getDaysToPasswordExpiration(Login lg, Date curDate, Policy pwdPolicy) {
+    public Integer getDaysToPasswordExpiration(LoginEntity lg, Date curDate, Policy pwdPolicy) {
         if (pwdPolicy != null && StringUtils.isBlank(pwdPolicy.getAttribute("PWD_EXPIRATION").getValue1())) {
             return null;
         }
@@ -203,8 +215,9 @@ public abstract class AbstractLoginModule implements LoginModule {
     }
 
     protected SSOToken token(String userId, Map tokenParam) throws Exception {
-
-        log.debug("Generating Security Token");
+    	if(log.isDebugEnabled()) {
+    		log.debug("Generating Security Token");
+    	}
 
         tokenParam.put("USER_ID", userId);
 
@@ -231,33 +244,41 @@ public abstract class AbstractLoginModule implements LoginModule {
 
     public LdapContext connect(String userName, String password, ManagedSysDto managedSys) throws NamingException {
 
-        if (keystore != null && !keystore.isEmpty())  {
+        if (keystore != null && !keystore.isEmpty()) {
             System.setProperty("javax.net.ssl.trustStore", keystore);
             System.setProperty("javax.net.ssl.keyStorePassword", keystorePasswd);
         }
 
         if (managedSys == null) {
-            log.debug("ManagedSys is null");
+        	if(log.isDebugEnabled()) {
+        		log.debug("ManagedSys is null");
+        	}
             return null;
         }
 
         String hostUrl = managedSys.getHostUrl();
-        if (managedSys.getPort() > 0 ) {
+        if (managedSys.getPort() > 0) {
             hostUrl = hostUrl + ":" + String.valueOf(managedSys.getPort());
+            if (!hostUrl.startsWith("ldap")) {
+                hostUrl = "ldap://" + hostUrl;
+            }
         }
 
-        log.debug("connect: Connecting to target system: " + managedSys.getId() );
-        log.debug("connect: Managed System object : " + managedSys);
-
-        log.info(" directory login = " + managedSys.getUserId() );
-        log.info(" directory login passwrd= *****" );
-        log.info(" javax.net.ssl.trustStore= " + System.getProperty("javax.net.ssl.trustStore"));
-        log.info(" javax.net.ssl.keyStorePassword= " + System.getProperty("javax.net.ssl.keyStorePassword"));
+        if(log.isDebugEnabled()) {
+	        log.debug("connect: Connecting to target system: " + managedSys.getId());
+	        log.debug("connect: Managed System object : " + managedSys);
+        }
+        if(log.isInfoEnabled()) {
+	        log.info(" directory login = " + managedSys.getUserId());
+	        log.info(" directory login passwrd= *****");
+	        log.info(" javax.net.ssl.trustStore= " + System.getProperty("javax.net.ssl.trustStore"));
+	        log.info(" javax.net.ssl.keyStorePassword= " + System.getProperty("javax.net.ssl.keyStorePassword"));
+        }
 
         Hashtable<String, String> envDC = new Hashtable();
         envDC.put(Context.PROVIDER_URL, hostUrl);
         envDC.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
-        envDC.put(Context.SECURITY_AUTHENTICATION, "simple" ); // simple
+        envDC.put(Context.SECURITY_AUTHENTICATION, "simple"); // simple
         envDC.put(Context.SECURITY_PRINCIPAL, userName);
         envDC.put(Context.SECURITY_CREDENTIALS, password);
 
@@ -275,7 +296,7 @@ public abstract class AbstractLoginModule implements LoginModule {
         } catch (CommunicationException ce) {
             log.error("Throw communication exception.", ce);
 
-        } catch(NamingException ne) {
+        } catch (NamingException ne) {
             log.error(ne.toString(), ne);
 
         } catch (Throwable e) {

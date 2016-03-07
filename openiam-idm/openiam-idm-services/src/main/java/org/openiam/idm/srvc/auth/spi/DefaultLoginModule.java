@@ -27,6 +27,7 @@ import org.openiam.dozer.converter.PasswordHistoryDozerConverter;
 import org.openiam.exception.AuthenticationException;
 import org.openiam.idm.srvc.auth.context.AuthenticationContext;
 import org.openiam.idm.srvc.auth.context.PasswordCredential;
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.Subject;
 import org.openiam.idm.srvc.auth.service.AuthCredentialsValidator;
@@ -87,17 +88,15 @@ public class DefaultLoginModule extends AbstractLoginModule {
         PasswordCredential cred = (PasswordCredential) authContext.getCredential();
         String principal = cred.getPrincipal();
         String password = cred.getPassword();
+        
+        final boolean skipPasswordCheck = authContext.isSkipPasswordCheck();
 
         // checking if Login exists in OpenIAM
-        LoginResponse lgResp = loginManager.getLoginByManagedSys(principal, sysConfiguration.getDefaultManagedSysId());
-        Login lg = lgResp.getPrincipal();
+       LoginEntity lg = loginManager.getLoginByManagedSys(principal, sysConfiguration.getDefaultManagedSysId());
         if (lg == null) {
             throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_LOGIN);
         }
         principal = lg.getLogin();
-
-        Set<PasswordHistory> phSet = passwordManager.getPasswordHistory(lg.getLoginId(), 0, Integer.MAX_VALUE);
-        lg.setPasswordHistory(phSet);
 
         // checking if User is valid
         UserEntity user = userManager.getUser(lg.getUserId());
@@ -106,34 +105,14 @@ public class DefaultLoginModule extends AbstractLoginModule {
         }
 
         // checking password policy
-        Policy passwordPolicy = passwordManager.getPasswordPolicy(principal, lg.getManagedSysId());
+        Policy passwordPolicy = passwordManager.getPasswordPolicy(lg);
         if (passwordPolicy == null) {
             throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_CONFIGURATION);
         }
 
-
-        AuthenticationException changePassword = null;
-        try {
-            authenticationUtils.getCredentialsValidator().execute(user, lg, AuthCredentialsValidator.NEW, new HashMap<String, Object>());
-
-        } catch (AuthenticationException ae) {
-            // we should validate password before change password
-            if (AuthenticationConstants.RESULT_PASSWORD_CHANGE_AFTER_RESET == ae.getErrorCode() ||
-                    AuthenticationConstants.RESULT_PASSWORD_EXPIRED == ae.getErrorCode() ||
-                    AuthenticationConstants.RESULT_SUCCESS_PASSWORD_EXP == ae.getErrorCode()) {
-                changePassword = ae;
-
-            } else {
-                throw ae;
-            }
+        if(log.isDebugEnabled()) {
+        	log.debug("Authentication policyid=" + sysConfiguration.getDefaultAuthPolicyId());
         }
-
-        // checking if provided Password is not empty
-        if (StringUtils.isEmpty(password)) {
-            throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_PASSWORD);
-        }
-
-        log.debug("Authentication policyid=" + sysConfiguration.getDefaultAuthPolicyId());
         Policy authPolicy = policyDataService.getPolicy(sysConfiguration.getDefaultAuthPolicyId());
         if (authPolicy == null) {
             log.error("No auth policy found");
@@ -141,68 +120,90 @@ public class DefaultLoginModule extends AbstractLoginModule {
         }
 
         // checking passwords are equal
-        String decryptPswd = decryptPassword(lg.getUserId(), lg.getPassword());
-        if (!StringUtils.equals(decryptPswd, password)) {
-            // get the authentication lock out policy
-            String attrValue = getPolicyAttribute(authPolicy.getPolicyAttributes(), "FAILED_AUTH_COUNT");
+        if(!skipPasswordCheck) {
+        	
+            AuthenticationException changePassword = null;
+            try {
+                authenticationUtils.getCredentialsValidator().execute(user, lg, AuthCredentialsValidator.NEW, new HashMap<String, Object>());
 
-            // if failed auth count is part of the polices, then do the
-            // following processing
-            if (StringUtils.isNotBlank(attrValue)) {
-
-                int authFailCount = Integer.parseInt(attrValue);
-                // increment the auth fail counter
-                int failCount = 0;
-                if (lg.getAuthFailCount() != null) {
-                    failCount = lg.getAuthFailCount().intValue();
-                }
-                failCount++;
-                lg.setAuthFailCount(failCount);
-                lg.setLastAuthAttempt(new Date(System.currentTimeMillis()));
-                if (failCount >= authFailCount) {
-                    // lock the record and save the record.
-                    lg.setIsLocked(1);
-                    loginManager.saveLogin(lg);
-
-                    // set the flag on the primary user record
-                    user.setSecondaryStatus(UserStatusEnum.LOCKED);
-                    userManager.updateUser(user);
-
-                    throw new AuthenticationException(
-                            AuthenticationConstants.RESULT_LOGIN_LOCKED);
+            } catch (AuthenticationException ae) {
+                // we should validate password before change password
+                if (AuthenticationConstants.RESULT_PASSWORD_CHANGE_AFTER_RESET == ae.getErrorCode() ||
+                        AuthenticationConstants.RESULT_PASSWORD_EXPIRED == ae.getErrorCode() ||
+                        AuthenticationConstants.RESULT_SUCCESS_PASSWORD_EXP == ae.getErrorCode()) {
+                    changePassword = ae;
 
                 } else {
-                    // update the counter save the record
-                    loginManager.saveLogin(lg);
-
-                    throw new AuthenticationException(
-                            AuthenticationConstants.RESULT_INVALID_PASSWORD);
+                    throw ae;
                 }
-
-            } else {
-                log.error("No auth fail password policy value found");
-                throw new AuthenticationException(
-                        AuthenticationConstants.RESULT_INVALID_CONFIGURATION);
-
             }
 
-        }
-
-        // now we can change password
-        if (changePassword != null) {
-            throw changePassword;
-        }
-
-        Integer daysToExp = getDaysToPasswordExpiration(lg, curDate, passwordPolicy);
-        if (daysToExp != null) {
-            subj.setDaysToPwdExp(0);
-            if (daysToExp > -1) {
-                subj.setDaysToPwdExp(daysToExp);
+            // checking if provided Password is not empty
+            if (StringUtils.isEmpty(password)) {
+                throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_PASSWORD);
             }
+        	
+	        String encryptPswd = encryptPassword(lg.getUserId(), password);
+	        if (!StringUtils.equals(lg.getPassword(), encryptPswd)) {
+	            // get the authentication lock out policy
+	            String attrValue = getPolicyAttribute(authPolicy.getPolicyAttributes(), "FAILED_AUTH_COUNT");
+	
+	            // if failed auth count is part of the polices, then do the
+	            // following processing
+	            if (StringUtils.isNotBlank(attrValue)) {
+	
+	                int authFailCount = Integer.parseInt(attrValue);
+	                // increment the auth fail counter
+	                int failCount = 0;
+	                if (lg.getAuthFailCount() != null) {
+	                    failCount = lg.getAuthFailCount().intValue();
+	                }
+	                failCount++;
+	                lg.setAuthFailCount(failCount);
+	                lg.setLastAuthAttempt(new Date(System.currentTimeMillis()));
+	                if (failCount >= authFailCount) {
+	                    // lock the record and save the record.
+	                    lg.setIsLocked(1);
+	                    loginManager.updateLogin(lg);
+	                    // set the flag on the primary user record
+	                    user.setSecondaryStatus(UserStatusEnum.LOCKED);
+	                    userManager.updateUser(user);
+	                    throw new AuthenticationException(
+	                            AuthenticationConstants.RESULT_LOGIN_LOCKED);
+	
+	                } else {
+	                    // update the counter save the record
+	                    loginManager.updateLogin(lg);
+	                    throw new AuthenticationException(
+	                            AuthenticationConstants.RESULT_INVALID_PASSWORD);
+	                }
+	
+	            } else {
+	                log.error("No auth fail password policy value found");
+	                throw new AuthenticationException(
+	                        AuthenticationConstants.RESULT_INVALID_CONFIGURATION);
+	
+	            }
+	
+	        }
+	
+	        // now we can change password
+	        if (changePassword != null) {
+	            throw changePassword;
+	        }
+	
+	        Integer daysToExp = getDaysToPasswordExpiration(lg, curDate, passwordPolicy);
+	        if (daysToExp != null) {
+	            subj.setDaysToPwdExp(0);
+	            if (daysToExp > -1) {
+	                subj.setDaysToPwdExp(daysToExp);
+	            }
+	        }
         }
 
-
-        log.debug("-login successful");
+        if(log.isDebugEnabled()) {
+        	log.debug("-login successful");
+        }
         // good login - reset the counters
 
         lg.setLastAuthAttempt(curDate);
@@ -216,9 +217,12 @@ public class DefaultLoginModule extends AbstractLoginModule {
         lg.setLastLoginIP(authContext.getClientIP());
 
         lg.setAuthFailCount(0);
+        lg.setChallengeResponseFailCount(0);
         lg.setFirstTimeLogin(0);
-        log.debug("-Good Authn: Login object updated.");
-        loginManager.saveLogin(lg);
+        if(log.isDebugEnabled()) {
+        	log.debug("-Good Authn: Login object updated.");
+        }
+        loginManager.updateLogin(lg);
 
         // check the user status
         if (UserStatusEnum.PENDING_INITIAL_LOGIN.equals(user.getStatus()) ||
@@ -229,7 +233,9 @@ public class DefaultLoginModule extends AbstractLoginModule {
         }
 
         // Successful login
-        log.debug("-Populating subject after authentication");
+        if(log.isDebugEnabled()) {
+        	log.debug("-Populating subject after authentication");
+        }
 
         String tokenType = getPolicyAttribute(authPolicy.getPolicyAttributes(), "TOKEN_TYPE");
         String tokenLife = getPolicyAttribute(authPolicy.getPolicyAttributes(), "TOKEN_LIFE");
@@ -244,7 +250,7 @@ public class DefaultLoginModule extends AbstractLoginModule {
         subj.setUserId(lg.getUserId());
         subj.setPrincipal(principal);
         subj.setSsoToken(token(lg.getUserId(), tokenParam));
-        setResultCode(lg, subj, curDate, passwordPolicy);
+        setResultCode(lg, subj, curDate, passwordPolicy, skipPasswordCheck);
 
         return subj;
     }

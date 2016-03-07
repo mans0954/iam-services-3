@@ -17,10 +17,14 @@ import java.util.List;
 @Repository
 public class ContentProviderDaoImpl extends BaseDaoImpl<ContentProviderEntity, String> implements ContentProviderDao {
 
-	@Override
-	protected String getPKfieldName() {
-		return "id";
-	}
+    protected boolean cachable() {
+        return true;
+    }
+
+    @Override
+    protected String getPKfieldName() {
+        return "id";
+    }
 
     @Override
     protected Criteria getExampleCriteria(final ContentProviderEntity entity) {
@@ -53,15 +57,16 @@ public class ContentProviderDaoImpl extends BaseDaoImpl<ContentProviderEntity, S
                 criteria.add(Restrictions.eq("domainPattern", entity.getDomainPattern()));
             }
 
-            if(entity.getResource() != null && StringUtils.isNotEmpty(entity.getResource().getId())) {
-            	criteria.add(Restrictions.eq("resource.id", entity.getResource().getId()));
+            if (entity.getResource() != null && StringUtils.isNotEmpty(entity.getResource().getId())) {
+                criteria.add(Restrictions.eq("resource.id", entity.getResource().getId()));
             }
         }
+        criteria.setCacheable(this.cachable());
         return criteria;
     }
 
     @Override
-    public List<ContentProviderEntity> getProviderByDomainPattern(String domainPattern, Boolean isSSL){
+    public List<ContentProviderEntity> getProviderByDomainPattern(String domainPattern, Boolean isSSL) {
         final Criteria criteria = getCriteria();
         if (StringUtils.isNotEmpty(domainPattern)) {
             criteria.add(Restrictions.eq("domainPattern", domainPattern));
@@ -72,27 +77,29 @@ public class ContentProviderDaoImpl extends BaseDaoImpl<ContentProviderEntity, S
         }
         */
 
-        if(isSSL==null)
+        if (isSSL == null)
             criteria.add(Restrictions.isNull("isSSL"));
         else
             criteria.add(Restrictions.eq("isSSL", isSSL));
+        criteria.setCacheable(this.cachable());
         return criteria.list();
     }
+
 
     @Override
     @Transactional
     public void deleteById(String providerId) {
-        Query qry = getSession().createQuery("delete "+this.domainClass.getName()+ " p where p.id=:providerId ");
+        Query qry = getSession().createQuery("delete " + this.domainClass.getName() + " p where p.id=:providerId ");
         qry.setString("providerId", providerId);
         qry.executeUpdate();
     }
 
-	@Override
-	public List<ContentProviderEntity> getByResourceId(String resourceId) {
-		final ContentProviderEntity entity = new ContentProviderEntity();
-		final ResourceEntity resource = new ResourceEntity();
-		resource.setId(resourceId);
-		entity.setResource(resource);
-		return getByExample(entity);
-	}
+    @Override
+    public List<ContentProviderEntity> getByResourceId(String resourceId) {
+        final ContentProviderEntity entity = new ContentProviderEntity();
+        final ResourceEntity resource = new ResourceEntity();
+        resource.setId(resourceId);
+        entity.setResource(resource);
+        return getByExample(entity);
+    }
 }

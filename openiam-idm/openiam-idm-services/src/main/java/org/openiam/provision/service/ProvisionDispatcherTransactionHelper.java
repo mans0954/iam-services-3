@@ -159,6 +159,7 @@ public class ProvisionDispatcherTransactionHelper {
                     if (StatusCodeType.SUCCESS.equals(statusCodeType)) {
                         loginChanges.setProvStatus(ProvLoginStatusEnum.DELETED);
                         loginChanges.setAuthFailCount(0);
+                        loginChanges.setChallengeResponseFailCount(0);
                         loginChanges.setPasswordChangeCount(0);
                         loginChanges.setIsLocked(0);
 
@@ -275,8 +276,7 @@ public class ProvisionDispatcherTransactionHelper {
                 suspendReq.setHostUrl(mSys.getHostUrl());
 
                 try {
-                    ResponseType resp = connectorAdapter.suspendRequest(mSys, suspendReq,
-                            MuleContextProvider.getCtx());
+                    ResponseType resp = connectorAdapter.suspendRequest(mSys, suspendReq);
                     if (StatusCodeType.SUCCESS.equals(resp.getStatus())) {
                         loginChanges.setProvStatus(ProvLoginStatusEnum.DISABLED);
                     } else {
@@ -327,8 +327,7 @@ public class ProvisionDispatcherTransactionHelper {
                 suspendReq.setHostUrl(mSys.getHostUrl());
 
                 try {
-                    ResponseType resp = connectorAdapter.resumeRequest(mSys, suspendReq,
-                            MuleContextProvider.getCtx());
+                    ResponseType resp = connectorAdapter.resumeRequest(mSys, suspendReq);
                     if (StatusCodeType.SUCCESS.equals(resp.getStatus())) {
                         loginChanges.setProvStatus(ProvLoginStatusEnum.ENABLED);
                     } else {
@@ -451,7 +450,7 @@ public class ProvisionDispatcherTransactionHelper {
         request.setScriptHandler(mSys.getDeleteHandler());
         request.setExtensibleObject(extensibleUser);
 
-        return connectorAdapter.deleteRequest(mSys, request, MuleContextProvider.getCtx());
+        return connectorAdapter.deleteRequest(mSys, request);
 
     }
 
@@ -521,9 +520,7 @@ public class ProvisionDispatcherTransactionHelper {
         String requestId = data.getRequestId();
         ProvisionUserResponse response = new ProvisionUserResponse();
 
-        ResourceEntity resEntity = resourceService.findResourceById(data.getResourceId());
-        Resource res = resourceDozerConverter.convertToDTO(resEntity, true);
-        ManagedSysDto mSys = managedSystemWebService.getManagedSysByResource(res.getId());
+        ManagedSysDto mSys = managedSystemWebService.getManagedSysByResource(data.getResourceId());
         String managedSysId = (mSys != null) ? mSys.getId() : null;
         ProvisionUser targetSysProvUser = data.getProvUser();
         idmAuditLog.setTargetManagedSys(mSys.getId(), mSys.getName());
@@ -537,12 +534,15 @@ public class ProvisionDispatcherTransactionHelper {
                 matchObj = objArr[0];
             }
 
+            String preProcessScript = resourceService.getResourcePropValueByName(data.getResourceId(),"PRE_PROCESS");
+            String postProcessScript = resourceService.getResourcePropValueByName(data.getResourceId(),"POST_PROCESS");
+
             // get the attributes at the target system
             // this lookup only for getting attributes from the
             // system
             Map<String, ExtensibleAttribute> currentValueMap = new HashMap<>();
             boolean targetSystemUserExists = getCurrentObjectAtTargetSystem(requestId, targetSysLogin, provisionSelectedResourceHelper.buildEmptyAttributesExtensibleUser(managedSysId), mSys,
-                    matchObj, currentValueMap, res);
+                    matchObj, currentValueMap, preProcessScript,postProcessScript);
             bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_USER_EXISTS, targetSystemUserExists);
             bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_ATTRIBUTES, currentValueMap);
             Map<String, UserAttribute> attributes = userDataService.getUserAttributesDto(targetSysProvUser.getId());
@@ -557,8 +557,8 @@ public class ProvisionDispatcherTransactionHelper {
             boolean connectorSuccess = false;
 
             // pre-processing
-            ResourceProp preProcessProp = res.getResourceProperty("PRE_PROCESS");
-            String preProcessScript = preProcessProp != null ? preProcessProp.getValue() : null;
+
+
             if (StringUtils.isNotBlank(preProcessScript)) {
                 PreProcessor ppScript = createPreProcessScript(preProcessScript, bindingMap);
                 if (ppScript != null) {
@@ -600,8 +600,8 @@ public class ProvisionDispatcherTransactionHelper {
             }
 
             // post processing
-            ResourceProp postProcessProp = res.getResourceProperty("POST_PROCESS");
-            String postProcessScript = postProcessProp != null ? postProcessProp.getValue() : null;
+
+
             if (StringUtils.isNotBlank(postProcessScript)) {
                 PostProcessor ppScript = createPostProcessScript(postProcessScript, bindingMap);
                 if (ppScript != null) {
@@ -632,13 +632,15 @@ public class ProvisionDispatcherTransactionHelper {
     }
 
     private boolean getCurrentObjectAtTargetSystem(String requestId, Login mLg, ExtensibleUser extUser,
-                                                   ManagedSysDto mSys, ManagedSystemObjectMatch matchObj, Map<String, ExtensibleAttribute> curValueMap, Resource res) {
+                                                   ManagedSysDto mSys, ManagedSystemObjectMatch matchObj, Map<String, ExtensibleAttribute> curValueMap,String preProcessScript,   String postProcessScript) {
 
         String identity = mLg.getLogin();
         MuleContext muleContext = MuleContextProvider.getCtx();
-        log.debug("Getting the current attributes in the target system for =" + identity);
+        if(log.isDebugEnabled()) {
+        	log.debug("Getting the current attributes in the target system for =" + identity);
 
-        log.debug("- IsRename: " + mLg.getOrigPrincipalName());
+        	log.debug("- IsRename: " + mLg.getOrigPrincipalName());
+        }
 
         if (mLg.getOrigPrincipalName() != null && !mLg.getOrigPrincipalName().isEmpty()) {
             identity = mLg.getOrigPrincipalName();
@@ -665,8 +667,8 @@ public class ProvisionDispatcherTransactionHelper {
         reqType.setScriptHandler(mSys.getLookupHandler());
 //PRE processor
         Map<String, Object> bindingMap = new HashMap<>();
-        ResourceProp preProcessProp = res.getResourceProperty("PRE_PROCESS");
-        String preProcessScript = preProcessProp != null ? preProcessProp.getValue() : null;
+//        ResourceProp preProcessProp = res.getResourceProperty("PRE_PROCESS");
+//        String preProcessScript = preProcessProp != null ? preProcessProp.getValue() : null;
         if (StringUtils.isNotBlank(preProcessScript)) {
             PreProcessor ppScript = createPreProcessScript(preProcessScript, bindingMap);
             if (ppScript != null) {
@@ -678,10 +680,10 @@ public class ProvisionDispatcherTransactionHelper {
             }
         }
 
-        SearchResponse lookupSearchResponse = connectorAdapter.lookupRequest(mSys, reqType, muleContext);
+        SearchResponse lookupSearchResponse = connectorAdapter.lookupRequest(mSys, reqType);
 //POST processor
-        ResourceProp postProcessProp = res.getResourceProperty("POST_PROCESS");
-        String postProcessScript = postProcessProp != null ? postProcessProp.getValue() : null;
+//        ResourceProp postProcessProp = res.getResourceProperty("POST_PROCESS");
+//       = postProcessProp != null ? postProcessProp.getValue() : null;
         if (StringUtils.isNotBlank(postProcessScript)) {
             PostProcessor ppScript = createPostProcessScript(postProcessScript, bindingMap);
             if (ppScript != null) {
@@ -700,7 +702,9 @@ public class ProvisionDispatcherTransactionHelper {
                     curValueMap.put(attr.getName(), attr);
                 }
             } else {
-                log.debug(" - NO attributes found in target system lookup ");
+            	if(log.isDebugEnabled()) {
+            		log.debug(" - NO attributes found in target system lookup ");
+            	}
             }
             return true;
         }

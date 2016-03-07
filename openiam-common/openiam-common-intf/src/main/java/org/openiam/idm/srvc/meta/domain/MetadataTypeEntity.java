@@ -24,8 +24,7 @@ import java.util.Set;
 
 @Entity
 @Table(name = "METADATA_TYPE")
-@Cacheable
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region="MetadataTypeEntity")
 @DozerDTOCorrespondence(MetadataType.class)
 @AttributeOverride(name = "id", column = @Column(name = "TYPE_ID"))
 @Internationalized
@@ -60,6 +59,7 @@ public class MetadataTypeEntity extends KeyEntity {
     @JoinColumn(name = "TYPE_ID", referencedColumnName = "TYPE_ID")
     @MapKeyColumn(name = "ATTRIBUTE_NAME")
     @Fetch(FetchMode.SUBSELECT)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Map<String, MetadataElementEntity> elementAttributes = new HashMap<String, MetadataElementEntity>(0);
     /*
      * @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, fetch =
@@ -72,6 +72,7 @@ public class MetadataTypeEntity extends KeyEntity {
     @ManyToMany(cascade = { CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH }, fetch = FetchType.LAZY)
     @JoinTable(name = "CATEGORY_TYPE", joinColumns = { @JoinColumn(name = "TYPE_ID") }, inverseJoinColumns = { @JoinColumn(name = "CATEGORY_ID") })
     @Fetch(FetchMode.SUBSELECT)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<CategoryEntity> categories = new HashSet<CategoryEntity>(0);
     
     @Transient
@@ -80,8 +81,12 @@ public class MetadataTypeEntity extends KeyEntity {
 
     @OneToMany(mappedBy = "employeeType")
     @ContainedIn
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<UserEntity> userEntitySet;
-    
+
+	@OneToMany(mappedBy = "referenceId")
+	private Set<LanguageMappingEntity> languageMappings;
+
     @Transient
     private String displayName;
 
@@ -184,7 +189,15 @@ public class MetadataTypeEntity extends KeyEntity {
         this.userEntitySet = userEntitySet;
     }
 
-    @Override
+	public Set<LanguageMappingEntity> getLanguageMappings() {
+		return languageMappings;
+	}
+
+	public void setLanguageMappings(Set<LanguageMappingEntity> languageMappings) {
+		this.languageMappings = languageMappings;
+	}
+
+	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;

@@ -37,7 +37,9 @@ public class ModifyUserOracleCommand extends AbstractModifyOracleCommand<Extensi
 
         String origIdentity = null;
         if (StringUtils.isNotBlank(crudRequest.getObjectIdentity())) {
-            log.debug("Modify user:" + crudRequest.getObjectIdentity());
+        	if(log.isDebugEnabled()) {
+        		log.debug("Modify user:" + crudRequest.getObjectIdentity());
+        	}
             for (ExtensibleAttribute att : obj.getAttributes()) {
                 if ("ORIG_IDENTITY".equals(att.getName())) {
                     origIdentity = att.getValue();

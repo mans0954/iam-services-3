@@ -70,6 +70,10 @@
             <a>displayNameMap</a>
             <b>displayNameMap</b>
         </field-exclude>
+        <field-exclude>
+            <a>roles</a>
+            <b>roles</b>
+        </field-exclude>
     </mapping>
 
     <mapping>
@@ -78,6 +82,10 @@
         <field>
             <a>type.id</a>
             <b>mdTypeId</b>
+        </field>
+        <field>
+            <a>subType.id</a>
+            <b>userSubTypeId</b>
         </field>
         <field-exclude>
             <a>userNotes</a>
@@ -138,6 +146,12 @@
         <field>
             <a>employeeType.id</a>
             <b>employeeTypeId</b>
+        </field>
+        <field custom-converter="org.openiam.dozer.converter.DisplayNameDozerConverter" type="one-way">
+            <a>userAttributes</a>
+            <b>displayNameFormat</b>
+            <a-hint>java.util.HashMap</a-hint>
+            <b-hint>java.lang.String</b-hint>
         </field>
     </mapping>
 

@@ -147,7 +147,9 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 		}
 
 		//final RoleEntity nameEntity = roleDataService.getRoleByName(role.getName(), null);
-		LOG.debug("Validating role "+role.getName()+" of managed system "+role.getManagedSysId());
+		if(LOG.isDebugEnabled()) {
+			LOG.debug("Validating role "+role.getName()+" of managed system "+role.getManagedSysId());
+		}
 		//final RoleEntity found = roleDataService.geRoleByNameAndManagedSys(role.getName(), role.getManagedSysId(), null);
 		RoleSearchBean roleSearchBean = new RoleSearchBean();
 		roleSearchBean.setName(role.getName());
@@ -190,7 +192,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
         idmAuditLog.setTargetGroup(groupId, groupEntity.getName());
         RoleEntity roleEntity = roleDataService.getRole(roleId);
         idmAuditLog.setTargetRole(roleId, roleEntity.getName());
-        idmAuditLog.setAuditDescription(String.format("Add group to  role: %s", roleId));
+        idmAuditLog.setAuditDescription(String.format("Add group to role: %s", roleEntity.getName()));
 		try {
 			roleDataService.validateGroup2RoleAddition(roleId, groupId);
 			roleDataService.addGroupToRole(roleId, groupId);

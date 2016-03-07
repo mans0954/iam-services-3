@@ -1,7 +1,7 @@
 package org.openiam.idm.srvc.mngsys.searchbeans.converter;
 
+import org.openiam.idm.searchbeans.ManagedSysSearchBean;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSysSearchBean;
 import org.openiam.idm.srvc.searchbean.converter.SearchBeanConverter;
 import org.springframework.stereotype.Component;
 

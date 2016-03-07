@@ -23,6 +23,7 @@ import org.openiam.idm.srvc.auth.domain.AuthStateId;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.*;
 import org.openiam.idm.srvc.auth.login.AuthStateDAO;
+import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.auth.service.AuthCredentialsValidator;
 import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
 import org.openiam.idm.srvc.auth.service.AuthenticationServiceService;
@@ -94,8 +95,8 @@ public class AuthenticationServiceServiceImpl implements AuthenticationServiceSe
     private String defaultLoginModule;
 
     @Autowired
-    @Qualifier("loginWS")
-    protected LoginDataWebService loginManager;
+    @Qualifier("loginManager")
+    protected LoginDataService loginManager;
 
     @Value("${org.openiam.core.login.authentication.context.class}")
     private String authContextClass;
@@ -174,7 +175,7 @@ public class AuthenticationServiceServiceImpl implements AuthenticationServiceSe
             String loginModName = null;
             LoginModuleSelector modSel = new LoginModuleSelector();
 
-            Login lg = null;
+            LoginEntity lg = null;
 
             newLoginEvent.setManagedSysId(sysConfiguration.getDefaultManagedSysId());
 
@@ -211,10 +212,11 @@ public class AuthenticationServiceServiceImpl implements AuthenticationServiceSe
 
                 }
 
-                if (StringUtils.isBlank(password)) {
-
-                    log.debug("Invalid password");
-	                /*
+                if (!request.isKerberosAuth() && StringUtils.isBlank(password)) {
+                	if(log.isDebugEnabled()) {
+                		log.debug("Invalid password");
+                	}
+                    /*
 	                log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
 	                        "INVALID PASSWORD", secDomainId, null, principal, null,
 	                        null, clientIP, nodeIP);
@@ -229,8 +231,7 @@ public class AuthenticationServiceServiceImpl implements AuthenticationServiceSe
 
                 }
 
-                LoginResponse lgResp = loginManager.getLoginByManagedSys(principal, sysConfiguration.getDefaultManagedSysId());
-                lg = lgResp.getPrincipal();
+                lg = loginManager.getLoginByManagedSys(principal, sysConfiguration.getDefaultManagedSysId());
 
                 if (lg == null) {
                     newLoginEvent.fail();
@@ -258,16 +259,18 @@ public class AuthenticationServiceServiceImpl implements AuthenticationServiceSe
 
             AuthenticationContext ctx = null;
             try {
-
-                log.debug("Creating authentication context");
+            	if(log.isDebugEnabled()) {
+            		log.debug("Creating authentication context");
+            	}
 
                 ctx = AuthContextFactory.createContext(authContextClass);
 
                 PolicyAttributeEntity selPolicy = authPolicy
                         .getAttribute("LOGIN_MODULE_SEL_POLCY");
                 if (selPolicy != null && StringUtils.isNotBlank(selPolicy.getValue1())) {
-
-                    log.debug("Calling policy selection rule");
+                	if(log.isDebugEnabled()) {
+                		log.debug("Calling policy selection rule");
+                	}
 
                     Map<String, Object> bindingMap = new HashMap<String, Object>();
                     bindingMap.put("principal", principal);
@@ -282,7 +285,6 @@ public class AuthenticationServiceServiceImpl implements AuthenticationServiceSe
                     } catch (ScriptEngineException e) {
                         log.error("Can't execute script", e);
                     }
-
                 }
 
                 if (modSel.getModuleType() == LoginModuleSelector.MODULE_TYPE_LOGIN_MODULE) {
@@ -313,10 +315,12 @@ public class AuthenticationServiceServiceImpl implements AuthenticationServiceSe
                     .createCredentialObject(AuthenticationConstants.AUTHN_TYPE_PASSWORD);
             cred.setCredentials(principal, password);
             ctx.setCredential(AuthenticationConstants.AUTHN_TYPE_PASSWORD, cred);
+            /* skip password checking if this is a call from kerberos */
+            ctx.setSkipPasswordCheck(request.isKerberosAuth());
 
             Map<String, Object> authParamMap = new HashMap<String, Object>();
             authParamMap.put("AUTH_SYS_ID", sysConfiguration.getDefaultManagedSysId());
-            authParamMap.put(AuthenticationRequest.AUTH_POLICY_ID,authPolicyId);
+            authParamMap.put(AuthenticationRequest.AUTH_POLICY_ID, authPolicyId);
             ctx.setAuthParam(authParamMap);
             ctx.setLoginModule(loginModName);
 
@@ -388,8 +392,9 @@ public class AuthenticationServiceServiceImpl implements AuthenticationServiceSe
 
             updateAuthState(sub);
             //populateSubject(sub.getUserId(), sub);
-
-            log.debug("*** PasswordAuth complete...Returning response object");
+            if(log.isDebugEnabled()) {
+            	log.debug("*** PasswordAuth complete...Returning response object");
+            }
 
             newLoginEvent.succeed();
             authResp.setSubject(sub);
@@ -403,7 +408,9 @@ public class AuthenticationServiceServiceImpl implements AuthenticationServiceSe
     @Override
     @Transactional
     public Response renewToken(String principal, String token, String tokenType) {
-        log.debug("RenewToken called.");
+    	if(log.isDebugEnabled()) {
+    		log.debug("RenewToken called.");
+    	}
 
         Response resp = new Response(ResponseStatus.SUCCESS);
 
@@ -414,12 +421,11 @@ public class AuthenticationServiceServiceImpl implements AuthenticationServiceSe
         String tokenLife = getPolicyAttribute(plcy.getPolicyAttributes(), "TOKEN_LIFE");
         String tokenIssuer = getPolicyAttribute(plcy.getPolicyAttributes(), "TOKEN_ISSUER");
         String managedSyId = getPolicyAttribute(plcy.getPolicyAttributes(), "MANAGED_SYS_ID");
-        if (StringUtils.isBlank(managedSyId)){
+        if (StringUtils.isBlank(managedSyId)) {
             managedSyId = sysConfiguration.getDefaultManagedSysId();
         }
         // get the userId of this token
-        LoginResponse lgResp = loginManager.getLoginByManagedSys(principal, managedSyId);
-        Login lg = lgResp.getPrincipal();
+        LoginEntity lg = loginManager.getLoginByManagedSys(principal, managedSyId);
 
         if (lg == null) {
             resp.setStatus(ResponseStatus.FAILURE);
@@ -441,7 +447,9 @@ public class AuthenticationServiceServiceImpl implements AuthenticationServiceSe
         try {
             validator.execute(user, lg, AuthCredentialsValidator.RENEW, new HashMap<String, Object>());
         } catch (AuthenticationException ae) {
-            log.debug("RenewToken: user status failed for userId = " + lg.getUserId());
+        	if(log.isDebugEnabled()) {
+        		log.debug("RenewToken: user status failed for userId = " + lg.getUserId());
+        	}
             resp.setStatus(ResponseStatus.FAILURE);
             return resp;
         }

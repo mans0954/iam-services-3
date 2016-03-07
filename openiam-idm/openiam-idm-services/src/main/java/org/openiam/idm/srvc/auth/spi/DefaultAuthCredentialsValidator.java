@@ -5,6 +5,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.exception.AuthenticationException;
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.service.AuthCredentialsValidator;
 import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
@@ -30,7 +31,7 @@ public class DefaultAuthCredentialsValidator implements AuthCredentialsValidator
 
     private static final Log log = LogFactory.getLog(DefaultAuthCredentialsValidator.class);
 
-    public void execute(UserEntity user, Login lg, int operation, Map<String, Object> bindingMap) throws AuthenticationException {
+    public void execute(UserEntity user, LoginEntity lg, int operation, Map<String, Object> bindingMap) throws AuthenticationException {
 
         Date curDate = new Date(System.currentTimeMillis());
 
@@ -50,11 +51,15 @@ public class DefaultAuthCredentialsValidator implements AuthCredentialsValidator
         }
 
         // check the secondary status
-        log.debug("-Secondary status=" + user.getSecondaryStatus());
+        if(log.isDebugEnabled()) {
+        	log.debug("-Secondary status=" + user.getSecondaryStatus());
+        }
         if (user.getSecondaryStatus() != null) {
             if (UserStatusEnum.LOCKED.equals(user.getSecondaryStatus())
                     || UserStatusEnum.LOCKED_ADMIN.equals(user.getSecondaryStatus())) {
-                log.debug("User is locked. throw exception.");
+            	if(log.isDebugEnabled()) {
+            		log.debug("User is locked. throw exception.");
+            	}
                 throw new AuthenticationException(
                         AuthenticationConstants.RESULT_LOGIN_LOCKED);
             }
@@ -66,7 +71,9 @@ public class DefaultAuthCredentialsValidator implements AuthCredentialsValidator
 
         // checking if User Password is valid
         // validate the password expiration rules
-        log.debug("Validating the state of the password - expired or not");
+        if(log.isDebugEnabled()) {
+        	log.debug("Validating the state of the password - expired or not");
+        }
         int pswdResult = passwordExpired(lg, curDate);
         if (pswdResult == AuthenticationConstants.RESULT_PASSWORD_EXPIRED) {
             throw new AuthenticationException(AuthenticationConstants.RESULT_PASSWORD_EXPIRED);
@@ -86,11 +93,15 @@ public class DefaultAuthCredentialsValidator implements AuthCredentialsValidator
         if (UserStatusEnum.PENDING_START_DATE.equals(user.getStatus())) {
             if (user.getStartDate() != null
                     && curDate.before(user.getStartDate())) {
-                log.debug("UserStatus= PENDING_START_DATE and user start date="
+            	if(log.isDebugEnabled()) {
+            		log.debug("UserStatus= PENDING_START_DATE and user start date="
                         + user.getStartDate());
+            	}
                 return false;
             } else {
-                log.debug("UserStatus= PENDING_START_DATE and user start date=null");
+            	if(log.isDebugEnabled()) {
+            		log.debug("UserStatus= PENDING_START_DATE and user start date=null");
+            	}
                 return false;
             }
         }
@@ -105,17 +116,19 @@ public class DefaultAuthCredentialsValidator implements AuthCredentialsValidator
      * @param lg
      * @return
      */
-    private int passwordExpired(Login lg, Date curDate) {
-        log.debug("passwordExpired Called.");
-        log.debug("- Password Exp =" + lg.getPwdExp());
-        log.debug("- Password Grace Period =" + lg.getGracePeriod());
-
+    private int passwordExpired(LoginEntity lg, Date curDate) {
+    	if(log.isDebugEnabled()) {
+	        log.debug("passwordExpired Called.");
+	        log.debug("- Password Exp =" + lg.getPwdExp());
+	        log.debug("- Password Grace Period =" + lg.getGracePeriod());
+    	}
         if (lg.getGracePeriod() == null) {
             // set an early date
             Date gracePeriodDate = getGracePeriodDate(lg, curDate);
-            log.debug("Calculated the gracePeriod Date to be: "
-                    + gracePeriodDate);
-
+            if(log.isDebugEnabled()) {
+	            log.debug("Calculated the gracePeriod Date to be: "
+	                    + gracePeriodDate);
+            }
             if (gracePeriodDate == null) {
                 lg.setGracePeriod(new Date(0));
             } else {
@@ -137,7 +150,7 @@ public class DefaultAuthCredentialsValidator implements AuthCredentialsValidator
         return AuthenticationConstants.RESULT_SUCCESS_PASSWORD_EXP;
     }
 
-    private Date getGracePeriodDate(Login lg, Date curDate) {
+    private Date getGracePeriodDate(LoginEntity lg, Date curDate) {
 
         Date pwdExpDate = lg.getPwdExp();
 
@@ -158,17 +171,20 @@ public class DefaultAuthCredentialsValidator implements AuthCredentialsValidator
 		*/
         String gracePeriod = getPolicyAttribute(plcy.getPolicyAttributes(),
                 "PWD_EXP_GRACE");
-
-        log.debug("Grace period policy value= " + gracePeriod);
-
+        if(log.isDebugEnabled()) {
+        	log.debug("Grace period policy value= " + gracePeriod);
+        }
         Calendar cal = Calendar.getInstance();
         cal.setTime(pwdExpDate);
 
-        log.debug("Password Expiration date =" + pwdExpDate);
-
+        if(log.isDebugEnabled()) {
+        	log.debug("Password Expiration date =" + pwdExpDate);
+        }
         if (gracePeriod != null && !gracePeriod.isEmpty()) {
             cal.add(Calendar.DATE, Integer.parseInt(gracePeriod));
-            log.debug("Calculated grace period date=" + cal.getTime());
+            if(log.isDebugEnabled()) {
+            	log.debug("Calculated grace period date=" + cal.getTime());
+            }
             return cal.getTime();
         }
         return null;

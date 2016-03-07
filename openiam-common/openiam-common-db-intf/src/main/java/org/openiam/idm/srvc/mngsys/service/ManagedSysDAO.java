@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface ManagedSysDAO extends BaseDao<ManagedSysEntity, String> {
 
-
+    @Deprecated
     List<ManagedSysEntity> findbyConnectorId(String connectorId);
 
 //	 /**
@@ -16,7 +16,7 @@ public interface ManagedSysDAO extends BaseDao<ManagedSysEntity, String> {
 //	  * @return
 //	  */
 //	 List<ManagedSysEntity> findbyDomain(String domainId);
-
+@Deprecated
     List<ManagedSysEntity> findAllManagedSys();
 
     /**
@@ -26,6 +26,7 @@ public interface ManagedSysDAO extends BaseDao<ManagedSysEntity, String> {
      * @param name
      * @return
      */
+    @Deprecated
     ManagedSysEntity findByName(String name);
 
     /**
@@ -35,6 +36,7 @@ public interface ManagedSysDAO extends BaseDao<ManagedSysEntity, String> {
      * @param status
      * @return
      */
+    @Deprecated
     ManagedSysEntity findByResource(String resourceId, String status);
 
     /**
@@ -44,8 +46,9 @@ public interface ManagedSysDAO extends BaseDao<ManagedSysEntity, String> {
      * @param status
      * @return
      */
+    @Deprecated
     String findIdByResource(String resourceId, String status);
-
+    @Deprecated
     List<ManagedSysEntity> findByResource(String resourceId);
 
     /**

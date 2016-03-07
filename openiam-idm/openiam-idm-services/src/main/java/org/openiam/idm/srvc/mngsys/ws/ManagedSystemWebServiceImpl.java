@@ -11,6 +11,7 @@ import org.openiam.base.ws.ResponseStatus;
 import org.openiam.dozer.converter.*;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.AttributeMapSearchBean;
+import org.openiam.idm.searchbeans.ManagedSysSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
@@ -76,9 +77,6 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     private ManagedSystemObjectMatchDozerConverter managedSystemObjectMatchDozerConverter;
 
     @Autowired
-    private ManagedSystemSearchBeanConverter managedSystemSearchBeanConverter;
-
-    @Autowired
     private ApproverAssociationDozerConverter approverAssociationDozerConverter;
 
     @Autowired
@@ -105,10 +103,8 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     @Override
     public Integer getManagedSystemsCount(
             @WebParam(name = "searchBean", targetNamespace = "") ManagedSysSearchBean searchBean) {
-        ManagedSysEntity managedSysEntity = managedSystemSearchBeanConverter
-                .convert(searchBean);
         return managedSystemService
-                .getManagedSystemsCountByExample(managedSysEntity);
+                .getManagedSystemsCountByExample(searchBean);
     }
 
     @Override
@@ -139,6 +135,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "managedSysAttributeMaps", key = "{#managedSysId}")
     public List<AttributeMap> getAttributeMapsByManagedSysId(final String managedSysId) {
         List<AttributeMapEntity> attributeMaps = managedSystemService.getAttributeMapsByManagedSysId(managedSysId);
         return attributeMapDozerConverter.convertToDTOList(attributeMaps, true);
@@ -150,8 +147,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
             @WebParam(name = "searchBean", targetNamespace = "") ManagedSysSearchBean searchBean,
             @WebParam(name = "size", targetNamespace = "") Integer size,
             @WebParam(name = "from", targetNamespace = "") Integer from) {
-        final ManagedSysEntity managedSysEntity = managedSystemSearchBeanConverter.convert(searchBean);
-        final List<ManagedSysEntity> sysEntities = managedSystemService.getManagedSystemsByExample(managedSysEntity, from, size);
+        final List<ManagedSysEntity> sysEntities = managedSystemService.getManagedSystemsByExample(searchBean, from, size);
         return managedSysDozerConverter.convertToDTOList(sysEntities, false);
     }
 

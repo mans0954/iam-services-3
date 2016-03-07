@@ -1,5 +1,7 @@
 package org.openiam.idm.srvc.org.domain;
 
+import org.hibernate.annotations.*;
+import org.hibernate.annotations.Cache;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.org.dto.OrganizationUserDTO;
@@ -7,6 +9,9 @@ import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.internationalization.Internationalized;
 
 import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -21,6 +26,7 @@ import java.util.Date;
         @AssociationOverride(name = "primaryKey.organization",
                 joinColumns = @JoinColumn(name = "COMPANY_ID", referencedColumnName = "COMPANY_ID"))})
 @DozerDTOCorrespondence(OrganizationUserDTO.class)
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class OrganizationUserEntity implements Serializable {
 
     public OrganizationUserEntity(String userId, String organizationId, String metadayTypeId) {

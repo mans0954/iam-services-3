@@ -44,7 +44,9 @@ public class RoleTask implements Sweepable {
         });
 
         sw.stop();
-        log.debug(String.format("Done roles HierarchyCache rebuild. Took: %s ms", sw.getTime()));
+        if(log.isDebugEnabled()) {
+        	log.debug(String.format("Done roles HierarchyCache rebuild. Took: %s ms", sw.getTime()));
+        }
     }
 
 }

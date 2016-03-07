@@ -8,6 +8,7 @@ import org.hibernate.HibernateException;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.srvc.policy.domain.PolicyObjectAssocEntity;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
 
 /**

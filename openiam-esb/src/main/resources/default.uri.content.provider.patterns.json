@@ -290,6 +290,28 @@
 					}
 				}
 			]
+		},
+		{
+			"pattern" : "/selfservice/editGroup.html",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "PASSWORD_AUTH"
+					}
+				}
+			]
+		},
+		{
+			"pattern" : "/webconsole/editGroup.html",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "PASSWORD_AUTH"
+					}
+				}
+			]
 		}
 	]
 }

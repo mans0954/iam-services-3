@@ -8,34 +8,54 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.MatchMode;
-import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
-import org.openiam.core.dao.BaseDaoImpl;
+import org.openiam.core.dao.OrderDaoImpl;
+import org.openiam.idm.searchbeans.*;
 import org.openiam.idm.srvc.cat.domain.CategoryEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
+import org.openiam.idm.srvc.searchbean.converter.MetadataTypeSearchBeanConverter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 /**
  * DAO implementation for MetadataType
  */
 @Repository("metadataTypeDAO")
-public class MetadataTypeDAOImpl extends BaseDaoImpl<MetadataTypeEntity, String> implements MetadataTypeDAO {
+public class MetadataTypeDAOImpl extends OrderDaoImpl<MetadataTypeEntity, String> implements MetadataTypeDAO {
+
+    @Autowired
+    private MetadataTypeSearchBeanConverter metadataTypeSearchBeanConverter;
+
+    protected boolean cachable() {
+        return true;
+    }
 
     @Override
     public MetadataTypeEntity findByNameGrouping(String name, MetadataTypeGrouping grouping) {
-        return (MetadataTypeEntity) getCriteria().add(Restrictions.eq("description", name)).add(Restrictions.eq("grouping", grouping)).uniqueResult();
+        return (MetadataTypeEntity) getCriteria().setCacheable(cachable()).add(Restrictions.eq("description", name)).add(Restrictions.eq("grouping", grouping)).uniqueResult();
+    }
+
+    @Override
+    protected Criteria getExampleCriteria(final SearchBean searchBean) {
+        Criteria criteria = getCriteria();
+        if (searchBean != null && searchBean instanceof MetadataTypeSearchBean) {
+            final MetadataTypeSearchBean metadataTypeSearchBean = (MetadataTypeSearchBean) searchBean;
+            final MetadataTypeEntity entity = metadataTypeSearchBeanConverter.convert(metadataTypeSearchBean);
+            criteria = this.getExampleCriteria(entity);
+        }
+        return criteria;
     }
 
     @Override
     protected Criteria getExampleCriteria(final MetadataTypeEntity entity) {
         final Criteria criteria = getCriteria();
-        criteria.addOrder(Order.asc("description")); //SIA 2015-08-01
+
         if (StringUtils.isNotBlank(entity.getId())) {
             criteria.add(Restrictions.eq(getPKfieldName(), entity.getId()));
         } else {
             /*
-		    if (StringUtils.isNotBlank(entity.getDescription())) {
+            if (StringUtils.isNotBlank(entity.getDescription())) {
 		    	criteria.add(Restrictions.eq("description", entity.getDescription()));
 		    }
 		    */
@@ -74,13 +94,14 @@ public class MetadataTypeDAOImpl extends BaseDaoImpl<MetadataTypeEntity, String>
                 criteria.createAlias("categories", "category").add(Restrictions.in("category.id", categoryIds));
             }
         }
+        criteria.setCacheable(cachable());
         return criteria;
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public List<MetadataTypeEntity> findTypesInCategory(String categoryId) {
-        final Criteria criteria = getCriteria().createAlias("categories", "category").add(
+        final Criteria criteria = getCriteria().setCacheable(cachable()).createAlias("categories", "category").add(
                 Restrictions.eq("category.id", categoryId));
         return criteria.list();
     }
@@ -90,4 +111,7 @@ public class MetadataTypeDAOImpl extends BaseDaoImpl<MetadataTypeEntity, String>
         return "id";
     }
 
+    protected String getReferenceType() {
+        return "MetadataTypeEntity.displayNameMap";
+    }
 }

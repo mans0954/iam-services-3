@@ -29,9 +29,10 @@ public class DisableIdmAccountUserCommand extends BaseReconciliationUserCommand 
 
 	@Override
 	public boolean execute(ReconciliationSituation config, String principal, String mSysID, User user, List<ExtensibleAttribute> attributes) {
-		log.debug("Entering DisableIdmAccountUserCommand");
-		log.debug("Disable account for user: " + user.getId());
-
+		if(log.isDebugEnabled()) {
+			log.debug("Entering DisableIdmAccountUserCommand");
+			log.debug("Disable account for user: " + user.getId());
+		}
 		List<Login> principleList = user.getPrincipalList();
         for(Login l : principleList){
             if(l.getManagedSysId().equals(mSysID)){

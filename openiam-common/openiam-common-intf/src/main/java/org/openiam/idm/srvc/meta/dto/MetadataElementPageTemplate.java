@@ -23,7 +23,9 @@ import java.util.Set;
         "metadataElements",
         "uriPatterns",
         "isPublic",
-        "fieldXrefs"
+        "fieldXrefs",
+		"dataModelUrl",
+		"customJS"
 })
 @DozerDTOCorrespondence(MetadataElementPageTemplateEntity.class)
 public class MetadataElementPageTemplate extends KeyDTO {
@@ -34,6 +36,9 @@ public class MetadataElementPageTemplate extends KeyDTO {
 	private Set<URIPattern> uriPatterns;
 	private Set<MetadataElementPageTemplateXref> metadataElements;
 	private boolean isPublic = true;
+	private String dataModelUrl;
+	private String customJS;
+
 	private Set<MetadataFieldTemplateXref> fieldXrefs;
 	
 	public String getName() {
@@ -51,6 +56,23 @@ public class MetadataElementPageTemplate extends KeyDTO {
 	public Set<MetadataElementPageTemplateXref> getMetadataElements() {
 		return metadataElements;
 	}
+
+	public String getDataModelUrl() {
+		return dataModelUrl;
+	}
+
+	public void setDataModelUrl(String dataModelUrl) {
+		this.dataModelUrl = dataModelUrl;
+	}
+
+	public String getCustomJS() {
+		return customJS;
+	}
+
+	public void setCustomJS(String customJS) {
+		this.customJS = customJS;
+	}
+
 	public void setMetadataElements(Set<MetadataElementPageTemplateXref> metadataElements) {
 		this.metadataElements = metadataElements;
 	}
@@ -141,6 +163,14 @@ public class MetadataElementPageTemplate extends KeyDTO {
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result
 				+ ((resourceId == null) ? 0 : resourceId.hashCode());
+		result = prime
+				* result
+				+ ((dataModelUrl == null) ? 0
+				: dataModelUrl.hashCode());
+		result = prime
+				* result
+				+ ((customJS == null) ? 0
+				: customJS.hashCode());
 		return result;
 	}
 	@Override
@@ -179,6 +209,16 @@ public class MetadataElementPageTemplate extends KeyDTO {
 			if (other.resourceId != null)
 				return false;
 		} else if (!resourceId.equals(other.resourceId))
+			return false;
+		if (dataModelUrl == null) {
+			if (other.dataModelUrl != null)
+				return false;
+		} else if (!dataModelUrl.equals(other.dataModelUrl))
+			return false;
+		if (customJS == null) {
+			if (other.customJS != null)
+				return false;
+		} else if (!customJS.equals(other.customJS))
 			return false;
 		return true;
 	}

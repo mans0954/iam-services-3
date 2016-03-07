@@ -57,6 +57,7 @@ public class AuthenticationContextImpl implements Serializable, AuthenticationCo
 
     protected String clientIP;
     protected String nodeIP;
+    protected boolean skipPasswordCheck;
 
 
 	
@@ -66,6 +67,16 @@ public class AuthenticationContextImpl implements Serializable, AuthenticationCo
 
 	public void AuthenticationContext() {
 		
+	}
+	
+	@Override
+	public void setSkipPasswordCheck(boolean skipPasswordCheck) {
+		this.skipPasswordCheck = skipPasswordCheck;
+	}
+
+	@Override
+	public boolean isSkipPasswordCheck() {
+		return skipPasswordCheck;
 	}
 	
 	/**

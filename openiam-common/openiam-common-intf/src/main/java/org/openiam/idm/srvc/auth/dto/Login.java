@@ -50,7 +50,8 @@ import java.util.*;
         "pswdResetTokenExp",
         "loginId",
         "lastUpdate",
-        "passwordHistory"
+        "passwordHistory",
+        "challengeResponseFailCount"
 })
 @XmlSeeAlso({
         Subject.class,
@@ -73,7 +74,7 @@ public class Login implements java.io.Serializable {
     protected String password;
 
     protected String pwdEquivalentToken;
-
+    private Integer challengeResponseFailCount = new Integer(0);
     @XmlSchemaType(name = "dateTime")
     private Date pwdChanged;
 
@@ -450,6 +451,14 @@ public class Login implements java.io.Serializable {
         if(lowerCaseLogin != null) {
             this.lowerCaseLogin = lowerCaseLogin.toLowerCase();
         }
+    }
+
+    public Integer getChallengeResponseFailCount() {
+        return challengeResponseFailCount;
+    }
+
+    public void setChallengeResponseFailCount(Integer challengeResponseFailCount) {
+        this.challengeResponseFailCount = challengeResponseFailCount;
     }
 
     public LoginStatusEnum getInitialStatus() {

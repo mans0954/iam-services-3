@@ -7,26 +7,28 @@ import javax.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "TemplateRequest", 
 	propOrder = { 
-		"userId",
+		"targetObjectId",
 		"patternId",
 		"templateId",
 		"languageId",
 		"isAdminRequest",
-		"requestURI"
+		"requestURI",
+		"requesterId"
 })
 public class TemplateRequest {
 
-	private String userId;
+	private String targetObjectId;
 	private String languageId;
 	private String patternId;
 	private String templateId;
 	private String requestURI;
 	private boolean isAdminRequest;
-	public String getUserId() {
-		return userId;
+	private String requesterId;
+	public String getTargetObjectId() {
+		return targetObjectId;
 	}
-	public void setUserId(String userId) {
-		this.userId = userId;
+	public void setTargetObjectId(String targetObjectId) {
+		this.targetObjectId = targetObjectId;
 	}
 	
 	public String getPatternId() {
@@ -60,5 +62,11 @@ public class TemplateRequest {
 	public void setRequestURI(String requestURI) {
 		this.requestURI = requestURI;
 	}
-	
+	public String getRequesterId() {
+		return requesterId;
+	}
+
+	public void setRequesterId(String requesterId) {
+		this.requesterId = requesterId;
+	}
 }

@@ -32,7 +32,6 @@ import org.openiam.idm.srvc.user.dto.User;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import java.util.Collection;
 import java.util.HashSet;
@@ -149,6 +148,7 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         groups = user.getGroups();
         organizationUserDTOs = user.getOrganizationUserDTOs();
         resources = user.getResources();
+        setResetPasswordType(user.getResetPasswordType());
         setPassword(user.getPassword());
         setLogin(user.getLogin());
         if (user instanceof ProvisionUser) {
@@ -163,6 +163,10 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         this.setRequestorLogin(user.getRequestorLogin());
         this.setRequestorSessionID(user.getRequestorSessionID());
 
+        this.setPrefixLastName(user.getPrefixLastName());
+        this.setPrefixPartnerName(user.getPrefixPartnerName());
+        this.setPartnerName(user.getPartnerName());
+        this.setUserSubTypeId(user.getUserSubTypeId());
     }
 
     public User getUser() {
@@ -218,6 +222,10 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         user.setDatePasswordChanged(datePasswordChanged);
         user.setDateITPolicyApproved(dateITPolicyApproved);
         user.setIsFromActivitiCreation(this.getIsFromActivitiCreation());
+        user.setPrefixLastName(this.getPrefixLastName());
+        user.setPartnerName(this.getPartnerName());
+        user.setPrefixPartnerName(this.getPrefixPartnerName());
+        user.setUserSubTypeId(this.getUserSubTypeId());
         return user;
     }
 

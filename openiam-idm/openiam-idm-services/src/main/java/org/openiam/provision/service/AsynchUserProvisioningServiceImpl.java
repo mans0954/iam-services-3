@@ -61,8 +61,9 @@ public class AsynchUserProvisioningServiceImpl implements AsynchUserProvisionSer
       */
     @Override
     public void addUser(ProvisionUser user) {
-        log.debug("START PROVISIONING - ADD USER CALLED...................");
-
+    	if(log.isDebugEnabled()) {
+    		log.debug("START PROVISIONING - ADD USER CALLED...................");
+    	}
 		try {
 
 			Map<String,String> msgPropMap =  new HashMap<String,String>();
@@ -75,12 +76,15 @@ public class AsynchUserProvisioningServiceImpl implements AsynchUserProvisionSer
 			client.sendAsync("vm://provisionServiceAddMessage", (ProvisionUser)user, msgPropMap);
 
 		}catch(Exception e) {
-			log.debug("EXCEPTION:AsynchIdentitySynchService");
+			if(log.isDebugEnabled()) {
+				log.debug("EXCEPTION:AsynchIdentitySynchService");
+			}
 			log.error(e);
 			//e.printStackTrace();
 		}
-		log.debug("END PROVISIONING - ADD USER ---------------------");
-
+		if(log.isDebugEnabled()) {
+			log.debug("END PROVISIONING - ADD USER ---------------------");
+		}
     }
 
 
@@ -89,7 +93,9 @@ public class AsynchUserProvisioningServiceImpl implements AsynchUserProvisionSer
       */
     @Override
     public void modifyUser(ProvisionUser user) {
-            log.debug("START PROVISIONING - MODIFY USER CALLED...................");
+    	if(log.isDebugEnabled()) {
+    		log.debug("START PROVISIONING - MODIFY USER CALLED...................");
+    	}
 
             try {
 
@@ -103,18 +109,23 @@ public class AsynchUserProvisioningServiceImpl implements AsynchUserProvisionSer
                 client.sendAsync("vm://provisionServiceModifyMessage", (ProvisionUser)user, msgPropMap);
 
             }catch(Exception e) {
-                log.debug("EXCEPTION:AsynchIdentitySynchService");
+            	if(log.isDebugEnabled()) {
+            		log.debug("EXCEPTION:AsynchIdentitySynchService");
+            	}
                 log.error(e);
                 //e.printStackTrace();
             }
-            log.debug("END PROVISIONING - MODIFY USER ---------------------");
-
+            if(log.isDebugEnabled()) {
+            	log.debug("END PROVISIONING - MODIFY USER ---------------------");
+            }
 
     }
 
     @Override
     public void startBulkOperation(BulkOperationRequest bulkRequest) {
-        log.debug("START BULK OPERATION CALLED...................");
+    	if(log.isDebugEnabled()) {
+    		log.debug("START BULK OPERATION CALLED...................");
+    	}
 
         try {
 
@@ -127,11 +138,15 @@ public class AsynchUserProvisioningServiceImpl implements AsynchUserProvisionSer
             client.sendAsync("vm://provisionServiceBulkOperationMessage", bulkRequest, msgPropMap);
 
         }catch(Exception e) {
-            log.debug("EXCEPTION:AsynchIdentitySynchService");
+        	if(log.isDebugEnabled()) {
+        		log.debug("EXCEPTION:AsynchIdentitySynchService");
+        	}
             log.error(e);
             //e.printStackTrace();
         }
-        log.debug("END BULK OPERATION CALLED ---------------------");
+        if(log.isDebugEnabled()) {
+        	log.debug("END BULK OPERATION CALLED ---------------------");
+        }
     }
 
 }

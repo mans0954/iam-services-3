@@ -337,4 +337,12 @@ public interface UserDataService {
 
     public List<User> getUserDtoByLastDate(Date lastDate);
 
+    public List<User> getUserDtoBetweenCreateDate(Date fromDate, Date toDate);
+
+    public List<User> getUserDtoBetweenLastDate(Date fromDate, Date toDate);
+
+    public List<User> getUserDtoBySearchBean(AuditLogSearchBean searchBean);
+    public List<User> getUserDtoBetweenStartDate(Date fromDate, Date toDate);
+
+    public List<Supervisor> findSupervisors(SupervisorSearchBean sb);
 }

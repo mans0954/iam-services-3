@@ -1,11 +1,11 @@
 package org.openiam.provision.service;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mule.api.MuleException;
 import org.mule.module.client.MuleClient;
-import org.mule.util.StringUtils;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.Response;
@@ -23,6 +23,8 @@ import org.openiam.connector.type.response.ResponseType;
 import org.openiam.connector.type.response.SearchResponse;
 import org.openiam.dozer.converter.*;
 import org.openiam.exception.ObjectNotFoundException;
+import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
+import org.openiam.idm.searchbeans.RoleSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
 import org.openiam.idm.srvc.audit.constant.AuditConstants;
@@ -46,6 +48,7 @@ import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
+import org.openiam.idm.srvc.meta.service.MetadataService;
 import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
@@ -88,6 +91,7 @@ import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
+import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.*;
 import org.openiam.provision.resp.ProvisionUserResponse;
@@ -104,6 +108,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 
 import javax.annotation.PostConstruct;
+
 import java.util.*;
 
 /**
@@ -139,6 +144,15 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
     public static final String USER_ATTRIBUTES = "userAttributes";
     public static final String GROUP = "group";
 
+    @Value("${openiam.audit.default.email.change}")
+    protected String saveEmailChange;
+
+    @Value("${openiam.audit.rehire}")
+    protected String saveRehireChange;
+
+    @Value("${openiam.audit.default.principal.change}")
+    protected String savePrincipalChange;
+
     @Value("${org.openiam.idm.system.user.id}")
     protected String systemUserId;
     @Autowired
@@ -159,20 +173,14 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
     @Autowired
     protected LoginDataService loginManager;
     @Autowired
-    protected ManagedSystemWebService managedSysService;
+    protected ManagedSystemWebService managedSysDataService;
 
-    @Autowired
-    protected ManagedSystemService managedSysDataService;
     @Autowired
     protected RoleDataService roleDataService;
     @Autowired
     protected GroupDataService groupManager;
     @Autowired
     protected SysConfiguration sysConfiguration;
-    @Autowired
-    protected ResourceDataService resourceDataService;
-    @Autowired
-    protected OrganizationDataService orgManager;
     @Autowired
     protected OrganizationService organizationService;
     @Autowired
@@ -253,6 +261,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
     protected AuditLogService auditLogService;
     @Autowired
     protected MetadataTypeDAO metadataTypeDAO;
+    @Autowired
+    protected MetadataService metadataService;
 
     @Autowired
     private ManagedSystemObjectMatchDozerConverter managedSystemObjectMatchDozerConverter;
@@ -441,11 +451,14 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
         List<AttributeMapEntity> amEList = managedSystemService.getResourceAttributeMaps(defaultManagedSys.getResourceId());
         List<AttributeMap> policyAttrMap = (amEList == null) ? null : attributeMapDozerConverter.convertToDTOList(amEList, true);
 
-        log.debug("Building primary identity. ");
+        if(log.isDebugEnabled()) {
+        	log.debug("Building primary identity. ");
+        }
 
         if (policyAttrMap != null) {
-
-            log.debug("- policyAttrMap IS NOT null");
+        	if(log.isDebugEnabled()) {
+        		log.debug("- policyAttrMap IS NOT null");
+        	}
 
             Login primaryIdentity = new Login();
             primaryIdentity.setOperation(AttributeOperationEnum.ADD);
@@ -492,7 +505,9 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             return primaryIdentity;
 
         } else {
-            log.debug("- policyAttrMap IS null");
+        	if(log.isDebugEnabled()) {
+        		log.debug("- policyAttrMap IS null");
+        	}
             return null;
         }
     }
@@ -525,12 +540,16 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
 
     protected void buildPrimaryIDPassword(Login primaryIdentity, Map<String, Object> bindingMap,
                                           ScriptIntegration se) {
-        log.debug("setPrimaryIDPassword() ");
+    	if(log.isDebugEnabled()) {
+    		log.debug("setPrimaryIDPassword() ");
+    	}
         ManagedSysEntity defaultManagedSys = managedSystemService.getManagedSysById(sysConfiguration.getDefaultManagedSysId());
         List<AttributeMapEntity> amEList = managedSystemService.getResourceAttributeMaps(defaultManagedSys.getResourceId());
         List<AttributeMap> policyAttrMap = (amEList == null) ? null : attributeMapDozerConverter.convertToDTOList(amEList, true);
         if (policyAttrMap != null) {
-            log.debug("- policyAttrMap IS NOT null");
+        	if(log.isDebugEnabled()) {
+        		log.debug("- policyAttrMap IS NOT null");
+        	}
             try {
                 for (AttributeMap attr : policyAttrMap) {
                     String output = (String) ProvisionServiceUtil.getOutputFromAttrMap(attr, bindingMap, se);
@@ -547,7 +566,9 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
                 log.error(e);
             }
         } else {
-            log.debug("- policyAttrMap IS null");
+        	if(log.isDebugEnabled()) {
+        		log.debug("- policyAttrMap IS null");
+        	}
         }
     }
 
@@ -794,6 +815,23 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
                     if (CollectionUtils.isNotEmpty(entities)) {
                         for (EmailAddressEntity en : entities) {
                             if (StringUtils.equals(en.getEmailId(), e.getEmailId())) {
+                                Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
+                                if(log.isDebugEnabled()) {
+	                                log.debug("--------------- Primary Email : "+en.getMetadataType().getId()+" ---------------------------");
+	                                log.debug("--------------- saveEmailChange : "+saveEmailChange+" ----------------------");
+                                }
+                                if(en.getMetadataType().getId().equalsIgnoreCase("PRIMARY_EMAIL") && saveEmailChange.equalsIgnoreCase("true")) {
+                                	if(log.isDebugEnabled()) {
+                                		log.debug(" adding email changed log ");
+                                	}
+                                    IdmAuditLog auditLog = new IdmAuditLog();
+                                    auditLog.setUserId(parentLog.getUserId());
+                                    auditLog.setPrincipal(parentLog.getPrincipal());
+                                    auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
+                                    auditLog.setAction(AuditAction.USER_PRIMARY_EMAIL_CHANGED.value());
+                                    auditLog.setAuditDescription("Primary Email changed: " + en.toString() + "\n to:" + e.toString());
+                                    parentLog.addChild(auditLog);
+                                }
                                 userEntity.getEmailAddresses().remove(en);
                                 userMgr.evict(en);
                                 EmailAddressEntity entity = emailAddressDozerConverter.convertToEntity(e, false);
@@ -805,7 +843,6 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
                                 // Audit Log
                                 //--------------------------------------------------
                                 IdmAuditLog auditLog = new IdmAuditLog();
-                                Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
                                 auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
                                 auditLog.setAction(AuditAction.REPLACE_EMAIL.value());
                                 auditLog.setAuditDescription("REPLACE Email: " + en.toString() + "\n to:" + e.toString());
@@ -1072,6 +1109,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
         MetadataTypeEntity type = null;
         MetadataTypeEntity jobCode = null;
         MetadataTypeEntity employeeType = null;
+        MetadataTypeEntity userSubType = null;
         if (StringUtils.isNotBlank(pUser.getMdTypeId())) {
             type = metadataTypeDAO.findById(pUser.getMdTypeId());
         }
@@ -1080,6 +1118,10 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
         }
         if (StringUtils.isNotBlank(pUser.getEmployeeTypeId())) {
             employeeType = metadataTypeDAO.findById(pUser.getEmployeeTypeId());
+        }
+
+        if (StringUtils.isNotBlank(pUser.getUserSubTypeId())) {
+            userSubType = metadataTypeDAO.findById(pUser.getUserSubTypeId());
         }
 
         Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
@@ -1289,11 +1331,102 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             // ---------------------------------------------------------------------------------------------
         }
 
+        if (!StringUtils.equals(pUser.getPrefixLastName(), userEntity.getPrefixLastName())) {
+            // Audit Log -----------------------------------------------------------------------------------
+            IdmAuditLog auditLog = new IdmAuditLog();
+            auditLog.setRequestorUserId(pUser.getRequestorUserId());
+            auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
+            auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
+            auditLog.setAction(AuditAction.REPLACE_PROP.value());
+            auditLog.addCustomRecord("Prefix Last Name", "old='" + userEntity.getPrefixLastName() + "' new='" + pUser.getPrefixLastName() + "'");
+            parentLog.addChild(auditLog);
+            // ---------------------------------------------------------------------------------------------
+        }
+
+        if (!StringUtils.equals(pUser.getPartnerName(), userEntity.getPartnerName())) {
+            // Audit Log -----------------------------------------------------------------------------------
+            IdmAuditLog auditLog = new IdmAuditLog();
+            auditLog.setRequestorUserId(pUser.getRequestorUserId());
+            auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
+            auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
+            auditLog.setAction(AuditAction.REPLACE_PROP.value());
+            auditLog.addCustomRecord("Partner Name", "old='" + userEntity.getPartnerName() + "' new='" + pUser.getPartnerName() + "'");
+            parentLog.addChild(auditLog);
+            // ---------------------------------------------------------------------------------------------
+        }
+
+        if (!StringUtils.equals(pUser.getPrefixPartnerName(), userEntity.getPrefixPartnerName())) {
+            // Audit Log -----------------------------------------------------------------------------------
+            IdmAuditLog auditLog = new IdmAuditLog();
+            auditLog.setRequestorUserId(pUser.getRequestorUserId());
+            auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
+            auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
+            auditLog.setAction(AuditAction.REPLACE_PROP.value());
+            auditLog.addCustomRecord("Preffix Partner Name", "old='" + userEntity.getPrefixPartnerName() + "' new='" + pUser.getPrefixPartnerName() + "'");
+            parentLog.addChild(auditLog);
+            // ---------------------------------------------------------------------------------------------
+        }
+        if (StringUtils.isNotEmpty(pUser.getUserSubTypeId()) && (userEntity.getSubType() == null || !pUser.getUserSubTypeId().equals(userEntity.getSubType().getId()))) {
+            // Audit Log -----------------------------------------------------------------------------------
+            IdmAuditLog auditLog = new IdmAuditLog();
+            auditLog.setRequestorUserId(pUser.getRequestorUserId());
+            auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
+            auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
+            auditLog.setAction(AuditAction.REPLACE_PROP.value());
+            MetadataTypeEntity metadataType = metadataTypeDAO.findById(pUser.getUserSubTypeId());
+            auditLog.addCustomRecord("JobCode", "old='" + (userEntity.getSubType() != null ? userEntity.getSubType() : "N/A") + "' new='" + metadataType + "'");
+            parentLog.addChild(auditLog);
+            // ---------------------------------------------------------------------------------------------
+        }
+
+        if((( pUser.getSecondaryStatus() == null && userEntity.getSecondaryStatus() == UserStatusEnum.DISABLED)
+                || (pUser.getStatus() == UserStatusEnum.ACTIVE && userEntity.getStatus() == UserStatusEnum.INACTIVE )
+                || (pUser.getStatus() == UserStatusEnum.ACTIVE && userEntity.getStatus() == UserStatusEnum.DELETED )) && saveRehireChange.equalsIgnoreCase("true")) {
+            IdmAuditLog auditLog = new IdmAuditLog();
+            auditLog.setUserId(parentLog.getUserId());
+            auditLog.setPrincipal(parentLog.getPrincipal());
+            auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
+            auditLog.setAction(AuditAction.USER_REHIRED.value());
+            auditLog.setAuditDescription(pUser.getDisplayName()+" User rehired");
+            parentLog.addChild(auditLog);
+        }
+
+        if(pUser.getStatus() == UserStatusEnum.INACTIVE && saveRehireChange.equalsIgnoreCase("true")) {
+            IdmAuditLog auditLog = new IdmAuditLog();
+            auditLog.setUserId(parentLog.getUserId());
+            auditLog.setPrincipal(parentLog.getPrincipal());
+            auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
+            auditLog.setAction(AuditAction.USER_LEAVER.value());
+            auditLog.setAuditDescription(pUser.getDisplayName()+" User inactived");
+            parentLog.addChild(auditLog);
+        }
+
+        if(pUser.getSecondaryStatus() == UserStatusEnum.DISABLED && saveRehireChange.equalsIgnoreCase("true")) {
+            IdmAuditLog auditLog = new IdmAuditLog();
+            auditLog.setUserId(parentLog.getUserId());
+            auditLog.setPrincipal(parentLog.getPrincipal());
+            auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
+            auditLog.setAction(AuditAction.USER_LEAVER.value());
+            auditLog.setAuditDescription(pUser.getDisplayName()+" User disabled");
+            parentLog.addChild(auditLog);
+        }
+
+        if(pUser.getStatus() == UserStatusEnum.DELETED && saveRehireChange.equalsIgnoreCase("true")) {
+            IdmAuditLog auditLog = new IdmAuditLog();
+            auditLog.setUserId(parentLog.getUserId());
+            auditLog.setPrincipal(parentLog.getPrincipal());
+            auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
+            auditLog.setAction(AuditAction.USER_LEAVER.value());
+            auditLog.setAuditDescription(pUser.getDisplayName()+" User deleted");
+            parentLog.addChild(auditLog);
+        }
+
         userEntity.updateUser(userDozerConverter.convertToEntity(pUser.getUser(), false));
         userEntity.setSecondaryStatus(pUser.getSecondaryStatus());
         userEntity.setType(type);
         userEntity.setJobCode(jobCode);
         userEntity.setEmployeeType(employeeType);
+        userEntity.setSubType(userSubType);
     }
 
     public void updateUserAttributes(final UserEntity userEntity, final ProvisionUser pUser, final IdmAuditLog parentLog) {
@@ -1303,6 +1436,13 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
                     throw new IllegalArgumentException("Name can not be empty");
                 }
                 AttributeOperationEnum operation = entry.getValue().getOperation();
+
+                if (operation == AttributeOperationEnum.ADD && userEntity.getUserAttributes().containsKey(entry.getKey())) {
+                    log.warn("Attribute with this name alreday exists");
+                    entry.getValue().setOperation(AttributeOperationEnum.REPLACE);
+                    operation = AttributeOperationEnum.REPLACE;
+                }
+
                 if (operation == AttributeOperationEnum.DELETE) {
                     userEntity.getUserAttributes().remove(entry.getKey());
                     // Audit Log -----------------------------------------------------------------------------------
@@ -1315,10 +1455,6 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
                     parentLog.addChild(auditLog);
                     // ---------------------------------------------------------------------------------------------
                 } else if (operation == AttributeOperationEnum.ADD) {
-                    if (userEntity.getUserAttributes().containsKey(entry.getKey())) {
-                        throw new IllegalArgumentException("Attribute with this name alreday exists");
-                    }
-
                     UserAttributeEntity e = userAttributeDozerConverter.convertToEntity(entry.getValue(), true);
                     e.setUserId(userEntity.getId());
                     userEntity.getUserAttributes().put(entry.getKey(), e);
@@ -1381,7 +1517,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
                                 auditLog.setTargetUser(se.getId(), login != null ? loginSupervisor.getLogin() : StringUtils.EMPTY);
                                 auditLog.setAction(AuditAction.DELETE_SUPERVISOR.value());
 
-                                auditLog.addCustomRecord("SUPERVISOR", loginSupervisor.getLogin());
+                                auditLog.addCustomRecord("SUPERVISOR", loginSupervisor != null ? loginSupervisor.getLogin() : se.getId());
                                 parentLog.addChild(auditLog);
                                 // -------------------------------------------------
                             }
@@ -1401,9 +1537,9 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
                     String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
                     Login loginSupervisor = UserUtils.getUserManagedSysIdentity(sysConfiguration.getDefaultManagedSysId(), se.getPrincipalList());
                     auditLog.setTargetUser(userEntity.getId(), loginStr);
-                    auditLog.setTargetUser(se.getId(), login != null ? loginSupervisor.getLogin() : StringUtils.EMPTY);
+                    auditLog.setTargetUser(se.getId(), loginSupervisor != null ? loginSupervisor.getLogin() : StringUtils.EMPTY);
                     auditLog.setAction(AuditAction.ADD_SUPERVISOR.value());
-                    auditLog.addCustomRecord("SUPERVISOR", loginSupervisor.getLogin());
+                    auditLog.addCustomRecord("SUPERVISOR", loginSupervisor != null ? loginSupervisor.getLogin() : se.getId());
                     parentLog.addChild(auditLog);
                     // -------------------------------------------------
 
@@ -1421,7 +1557,6 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
                 AttributeOperationEnum operation = g.getOperation();
                 if (operation == AttributeOperationEnum.ADD) {
                     GroupEntity groupEntity = groupManager.getGroup(g.getId());
-                    userEntity.getGroups().add(groupEntity);
                     // Audit Log ---------------------------------------------------
                     IdmAuditLog auditLog = new IdmAuditLog();
                     auditLog.setRequestorUserId(pUser.getRequestorUserId()); //SIA 2015-08-01
@@ -1432,6 +1567,14 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
                     auditLog.setTargetGroup(g.getId(), g.getName());
                     auditLog.addCustomRecord("GROUP", g.getName());
                     parentLog.addChild(auditLog);
+                    if (groupEntity != null) {
+                        if ((groupEntity.getMaxUserNumber() == null) || (userMgr.getNumOfUsersForGroup(groupEntity.getId(), pUser.getRequestorUserId()) < groupEntity.getMaxUserNumber())) {
+                            userEntity.getGroups().add(groupEntity);
+                        } else {
+                            auditLog.fail();
+                            auditLog.setFailureReason("Group's limit of user count exceeded");
+                        }
+                    }
                     //--------------------------------------------------------------
 
                 } else if (operation == AttributeOperationEnum.DELETE) {
@@ -1473,60 +1616,90 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
 
     public void updateRoles(final UserEntity userEntity, final ProvisionUser pUser,
                             final Set<Role> roleSet, final Set<Role> deleteRoleSet, final IdmAuditLog parentLog) {
-        if (CollectionUtils.isNotEmpty(pUser.getRoles())) {
-            for (Role r : pUser.getRoles()) {
-                AttributeOperationEnum operation = r.getOperation();
-                if (operation == AttributeOperationEnum.ADD) {
-                    RoleEntity roleEntity = roleDataService.getRole(r.getId());
-                    if (userEntity.getRoles().contains(roleEntity)) {
-                        throw new IllegalArgumentException("Role with this name already exists");
-                    }
-                    userEntity.getRoles().add(roleEntity);
-                    // Audit Log ---------------------------------------------------
-                    IdmAuditLog auditLog = new IdmAuditLog();
-                    auditLog.setRequestorUserId(pUser.getRequestorUserId()); //SIA 2015-08-01
-                    auditLog.setAction(AuditAction.ADD_USER_TO_ROLE.value());
-                    Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
-                    String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
-                    auditLog.setTargetUser(pUser.getId(), loginStr);
-                    auditLog.setTargetRole(r.getId(), r.getName());
-                    auditLog.addCustomRecord("ROLE", r.getName());
-                    parentLog.addChild(auditLog);
-                    //--------------------------------------------------------------
-                } else if (operation == AttributeOperationEnum.DELETE) {
-                    RoleEntity re = roleDataService.getRole(r.getId());
-                    userEntity.getRoles().remove(re);
-                    Role dr = roleDozerConverter.convertToDTO(re, false);
-                    dr.setOperation(operation);
-                    deleteRoleSet.add(dr);
-                    // Audit Log ---------------------------------------------------
-                    IdmAuditLog auditLog = new IdmAuditLog();
-                    auditLog.setRequestorUserId(pUser.getRequestorUserId()); //SIA 2015-08-01
-                    auditLog.setAction(AuditAction.REMOVE_USER_FROM_ROLE.value());
-                    Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
-                    String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
-                    auditLog.setTargetUser(pUser.getId(), loginStr);
-                    auditLog.setTargetRole(r.getId(), r.getName());
-                    auditLog.addCustomRecord("ROLE", r.getName());
-                    parentLog.addChild(auditLog);
-                    //-----------------------------------------------------------------
-                } else if (operation == AttributeOperationEnum.REPLACE) {
-                    throw new UnsupportedOperationException("Operation 'REPLACE' is not supported for roles");
-                }
-            }
-        }
-        if (CollectionUtils.isNotEmpty(userEntity.getRoles())) {
-            for (RoleEntity ure : userEntity.getRoles()) {
-                Role ar = roleDozerConverter.convertToDTO(ure, false);
-                for (Role r : pUser.getRoles()) {
-                    if (StringUtils.equals(r.getId(), ar.getId())) {
-                        ar.setOperation(r.getOperation()); // get operation value from pUser
-                        break;
-                    }
-                }
-                roleSet.add(ar);
-            }
-        }
+    	/*
+    	 * Lev Bornovalov - for performance improvements, we will first fetch the objects via batch call
+    	 */
+    	final Set<String> roleIdsToFetch = new HashSet<String>();
+    	for (final Role r : pUser.getRoles()) {
+    		if(StringUtils.isNotEmpty(r.getId())) {
+    			roleIdsToFetch.add(r.getId());
+    		}
+    	}
+    	if(CollectionUtils.isNotEmpty(roleIdsToFetch)) {
+	    	final RoleSearchBean sb = new RoleSearchBean();
+	    	sb.setKeys(roleIdsToFetch);
+	    	final List<RoleEntity> entityList = roleDataService.findBeans(sb, null, 0, Integer.MAX_VALUE);
+	    	final Map<String, RoleEntity> roleEntityMap = new HashMap<String, RoleEntity>();
+	    	if(CollectionUtils.isNotEmpty(entityList)) {
+	    		for(final RoleEntity entity : entityList) {
+	    			roleEntityMap.put(entity.getId(), entity);
+	    		}
+	    	}
+	    	
+	    	final List<Role> dtoList = roleDozerConverter.convertToDTOList(entityList, false);
+	    	final Map<String, Role> roleDtoMap = new HashMap<String, Role>();
+	    	if(CollectionUtils.isNotEmpty(dtoList)) {
+	    		for(final Role entity : dtoList) {
+	    			roleDtoMap.put(entity.getId(), entity);
+	    		}
+	    	}
+	    	
+	        if (CollectionUtils.isNotEmpty(pUser.getRoles())) {
+	            for (final Role r : pUser.getRoles()) {
+	            	final AttributeOperationEnum operation = r.getOperation();
+	                if (operation == AttributeOperationEnum.ADD) {
+	                    final RoleEntity roleEntity = roleEntityMap.get(r.getId());
+	                    if (userEntity.getRoles().contains(roleEntity)) {
+	                        log.warn("Role with this name already exists. Name=" + roleEntity.getName());
+	                        continue;
+	                    }
+	                    userEntity.getRoles().add(roleEntity);
+	                    // Audit Log ---------------------------------------------------
+	                    final IdmAuditLog auditLog = new IdmAuditLog();
+	                    auditLog.setRequestorUserId(pUser.getRequestorUserId()); //SIA 2015-08-01
+	                    auditLog.setAction(AuditAction.ADD_USER_TO_ROLE.value());
+	                    final Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
+	                    final String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
+	                    auditLog.setTargetUser(pUser.getId(), loginStr);
+	                    auditLog.setTargetRole(r.getId(), r.getName());
+	                    auditLog.addCustomRecord("ROLE", r.getName());
+	                    parentLog.addChild(auditLog);
+	                    //--------------------------------------------------------------
+	                } else if (operation == AttributeOperationEnum.DELETE) {
+	                    final RoleEntity re = roleEntityMap.get(r.getId());
+	                    userEntity.getRoles().remove(re);
+	                    final Role dr = roleDtoMap.get(r.getId());
+	                    dr.setOperation(operation);
+	                    deleteRoleSet.add(dr);
+	                    // Audit Log ---------------------------------------------------
+	                    final IdmAuditLog auditLog = new IdmAuditLog();
+	                    auditLog.setRequestorUserId(pUser.getRequestorUserId()); //SIA 2015-08-01
+	                    auditLog.setAction(AuditAction.REMOVE_USER_FROM_ROLE.value());
+	                    final Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
+	                    final String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
+	                    auditLog.setTargetUser(pUser.getId(), loginStr);
+	                    auditLog.setTargetRole(r.getId(), r.getName());
+	                    auditLog.addCustomRecord("ROLE", r.getName());
+	                    parentLog.addChild(auditLog);
+	                    //-----------------------------------------------------------------
+	                } else if (operation == AttributeOperationEnum.REPLACE) {
+	                    throw new UnsupportedOperationException("Operation 'REPLACE' is not supported for roles");
+	                }
+	            }
+	        }
+	        if (CollectionUtils.isNotEmpty(userEntity.getRoles())) {
+	            for (final RoleEntity ure : userEntity.getRoles()) {
+	            	final Role ar = roleDozerConverter.convertToDTO(ure, false);
+	                for (final Role r : pUser.getRoles()) {
+	                    if (StringUtils.equals(r.getId(), ar.getId())) {
+	                        ar.setOperation(r.getOperation()); // get operation value from pUser
+	                        break;
+	                    }
+	                }
+	                roleSet.add(ar);
+	            }
+	        }
+    	}
     }
 
     /* User Org Affiliation */
@@ -1691,7 +1864,6 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
                         entity.setPassword(loginManager.encryptPassword(userEntity.getId(), e.getPassword()));
                     } catch (Exception ee) {
                         log.error(ee);
-                        ee.printStackTrace();
                     }
                     // Audit Log ---------------------------------------------------
                     IdmAuditLog auditLog = new IdmAuditLog();
@@ -1711,6 +1883,23 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
 
                                 if (!en.getLogin().equals(e.getLogin())) {
                                     e.setOrigPrincipalName(en.getLogin());
+                                    if(log.isDebugEnabled()) {
+	                                    log.debug("--------------- en.getManagedSysId() : "+en.getManagedSysId()+" ---------------");
+	                                    log.debug("--------------- savePrincipalChange : "+savePrincipalChange+" ---------------");
+                                    }
+                                    if(savePrincipalChange.equalsIgnoreCase("true")) {
+                                    	if(log.isDebugEnabled()) {
+                                    		log.debug("-------------- changing AD User principal ----------");
+                                    	}
+                                        IdmAuditLog auditLog = new IdmAuditLog();
+                                        auditLog.setUserId(parentLog.getUserId());
+                                        auditLog.setPrincipal(parentLog.getPrincipal());
+                                        auditLog.setManagedSysId(en.getManagedSysId());
+                                        auditLog.setTargetUser(userEntity.getId(), en.getLogin() != null ? en.getLogin() : StringUtils.EMPTY);
+                                        auditLog.setAction(AuditAction.USER_PRINCIPAL_CHANGED.value());
+                                        auditLog.setAuditDescription("User Principal changed for "+pUser.getDisplayName());
+                                        parentLog.addChild(auditLog);
+                                    }
                                 }
                                 String logOld = en.toString();
                                 en.copyProperties(e);
@@ -1746,12 +1935,19 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             response.setError(ErrorCode.INVALID_MANAGED_SYS_ID);
             return response;
         }
-        ManagedSysDto mSys = managedSysDozerConverter.convertToDTO(
-                managedSystemService.getManagedSysById(managedSysId), true);
+        final ManagedSysEntity mSys = managedSystemService.getManagedSysById(managedSysId);
+        final ManagedSysDto mSysDto = managedSysDozerConverter.convertToDTO(mSys, false);
 
-        List<AttributeMapEntity> attrMapEntities = managedSystemService
-                .getAttributeMapsByManagedSysId(managedSysId);
-        List<AttributeMap> attrMap = attributeMapDozerConverter.convertToDTOList(attrMapEntities, false);     //need to check if  attr.getDataType().getValue() works
+        log.info("********************MANAGED SYSTEM DTO ****************");
+        log.info("  NAME=" + mSys.getName());
+        log.info("  HOST URL=" + mSys.getHostUrl());
+        log.info(" PORT=" + mSys.getPort());
+        log.info(" BASE DN=" + mSys.getSearchScope());
+        log.info(" USER ID" + mSys.getUserId());
+        log.info(" ADD HANDLER" + mSys.getAddHandler());
+
+
+        List<AttributeMap> attrMap = managedSysDataService.getAttributeMapsByManagedSysId(managedSysId);
         for (AttributeMap attr : attrMap) {
             if (PolicyMapObjectTypeOptions.PRINCIPAL.name().equalsIgnoreCase(attr.getMapForObjectType())) {
                 extUser.setPrincipalFieldName(attr.getAttributeName());
@@ -1765,7 +1961,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
         userReq.setRequestID(requestId);
         userReq.setTargetID(managedSysId);
         userReq.setHostLoginId(mSys.getUserId());
-        String passwordDecoded = managedSysDataService.getDecryptedPassword(mSys);
+        String passwordDecoded = managedSystemService.getDecryptedPassword(mSysDto);
 
         userReq.setHostLoginPassword(passwordDecoded);
         userReq.setHostUrl(mSys.getHostUrl());
@@ -1787,8 +1983,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
         userReq.setExtensibleObject(extUser);
         userReq.setScriptHandler(mSys.getAddHandler());
 
-        response = isAdd ? connectorAdapter.addRequest(mSys, userReq, MuleContextProvider.getCtx())
-                : connectorAdapter.modifyRequest(mSys, userReq, MuleContextProvider.getCtx());
+        response = isAdd ? connectorAdapter.addRequest(mSysDto, userReq)
+                : connectorAdapter.modifyRequest(mSysDto, userReq);
         idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, (isAdd ? "ADD IDENTITY = "
                 : "MODIFY IDENTITY = ") + response.getStatus() + " details:" + response.getErrorMsgAsStr());
 
@@ -1830,7 +2026,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
 
         ExtensibleUser extensibleUser = buildPolicyMapHelper.buildMngSysAttributes(mLg, ProvOperationEnum.DELETE.name());
         request.setExtensibleObject(extensibleUser);
-        String passwordDecoded = managedSysDataService.getDecryptedPassword(mSys);
+        String passwordDecoded = managedSystemService.getDecryptedPassword(mSys);
 
         request.setHostLoginPassword(passwordDecoded);
         request.setHostUrl(mSys.getHostUrl());
@@ -1841,7 +2037,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
 
         request.setScriptHandler(mSys.getDeleteHandler());
 
-        ObjectResponse resp = connectorAdapter.deleteRequest(mSys, request, MuleContextProvider.getCtx());
+        ObjectResponse resp = connectorAdapter.deleteRequest(mSys, request);
 
         return resp;
     }
@@ -1856,7 +2052,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
         req.setTargetID(login.getManagedSysId());
         req.setHostLoginId(mSys.getUserId());
         req.setExtensibleObject(extensibleUser);
-        String passwordDecoded = managedSysDataService.getDecryptedPassword(mSys);
+        String passwordDecoded = managedSystemService.getDecryptedPassword(mSys);
 
         req.setHostLoginPassword(passwordDecoded);
         req.setHostUrl(mSys.getHostUrl());
@@ -1869,8 +2065,10 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
 
         req.setScriptHandler(mSys.getPasswordHandler());
 
-        log.debug("Reset password request will be sent for user login " + login.getLogin());
-        return connectorAdapter.resetPasswordRequest(mSys, req, MuleContextProvider.getCtx());
+        if(log.isDebugEnabled()) {
+        	log.debug("Reset password request will be sent for user login " + login.getLogin());
+        }
+        return connectorAdapter.resetPasswordRequest(mSys, req);
 
     }
 
@@ -1920,10 +2118,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
 
         try {
             PasswordValidationResponse valCode = passwordManager.isPasswordValidForUserAndPolicy(
-                    password, userDozerConverter.convertToEntity(
-                            user.getUser(), true),
-                    loginDozerConverter.convertToEntity(
-                            primaryLogin, true), passwordPolicy);
+                    password, userDozerConverter.convertToEntity(user.getUser(), false),
+                    loginDozerConverter.convertToEntity(primaryLogin, false), passwordPolicy);
             if (valCode == null || !valCode.isSuccess()) {
                 resp.setStatus(ResponseStatus.FAILURE);
                 resp.setErrorCode(ResponseCode.FAIL_NEQ_PASSWORD);
@@ -1948,14 +2144,15 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
         resumeReq.setHostLoginId(mSys.getUserId());
         resumeReq.setExtensibleObject(extensibleUser);
 
-        String passwordDecoded = managedSysDataService.getDecryptedPassword(mSys);
+        String passwordDecoded = managedSystemService.getDecryptedPassword(mSys);
 
         resumeReq.setHostLoginPassword(passwordDecoded);
         resumeReq.setHostUrl(mSys.getHostUrl());
-
-        log.debug((operation ? "Suspend" : "Resume") + " request will be sent for user login " + login.getLogin());
-        return operation ? connectorAdapter.suspendRequest(mSys, resumeReq, MuleContextProvider.getCtx()) :
-                connectorAdapter.resumeRequest(mSys, resumeReq, MuleContextProvider.getCtx());
+        if(log.isDebugEnabled()) {
+        	log.debug((operation ? "Suspend" : "Resume") + " request will be sent for user login " + login.getLogin());
+        }
+        return operation ? connectorAdapter.suspendRequest(mSys, resumeReq) :
+                connectorAdapter.resumeRequest(mSys, resumeReq);
     }
 
 
@@ -1987,15 +2184,37 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
         MetadataTypeEntity type = null;
         MetadataTypeEntity jobCode = null;
         MetadataTypeEntity employeeType = null;
+        MetadataTypeEntity subtype = null;
 
-        if (StringUtils.isNotBlank(pUser.getMdTypeId())) {
-            type = metadataTypeDAO.findById(pUser.getMdTypeId());
+        MetadataTypeSearchBean sb = new MetadataTypeSearchBean();
+        if(StringUtils.isNotBlank(pUser.getMdTypeId())){
+            sb.addKey(pUser.getMdTypeId());
         }
-        if (StringUtils.isNotBlank(pUser.getJobCodeId())) {
-            jobCode = metadataTypeDAO.findById(pUser.getJobCodeId());
+        if(StringUtils.isNotBlank(pUser.getJobCodeId())){
+            sb.addKey(pUser.getJobCodeId());
         }
-        if (StringUtils.isNotBlank(pUser.getEmployeeTypeId())) {
-            employeeType = metadataTypeDAO.findById(pUser.getEmployeeTypeId());
+        if(StringUtils.isNotBlank(pUser.getEmployeeTypeId())){
+            sb.addKey(pUser.getEmployeeTypeId());
+        }
+        if(StringUtils.isNotBlank(pUser.getUserSubTypeId())){
+            sb.addKey(pUser.getUserSubTypeId());
+        }
+
+
+        List<MetadataTypeEntity> metaDataTypes = metadataService.findEntityBeans(sb, -1, -1, null);
+
+        if(CollectionUtils.isNotEmpty(metaDataTypes)){
+            for(MetadataTypeEntity typeEntity: metaDataTypes){
+                if(typeEntity.getId().equals(pUser.getMdTypeId())){
+                    type = typeEntity;
+                } else if(typeEntity.getId().equals(pUser.getJobCodeId())){
+                    jobCode = typeEntity;
+                }else if(typeEntity.getId().equals(pUser.getEmployeeTypeId())){
+                    employeeType = typeEntity;
+                }else if(typeEntity.getId().equals(pUser.getUserSubTypeId())){
+                    subtype = typeEntity;
+                }
+            }
         }
 
         Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
@@ -2007,6 +2226,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
         userEntity.setType(type);
         userEntity.setJobCode(jobCode);
         userEntity.setEmployeeType(employeeType);
+        userEntity.setSubType(subtype);
     }
 
 
@@ -2016,15 +2236,36 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
         MetadataTypeEntity type = null;
         MetadataTypeEntity jobCode = null;
         MetadataTypeEntity employeeType = null;
+        MetadataTypeEntity subtype = null;
 
-        if (StringUtils.isNotBlank(pUser.getMdTypeId())) {
-            type = metadataTypeDAO.findById(pUser.getMdTypeId());
+        MetadataTypeSearchBean sb = new MetadataTypeSearchBean();
+        if(StringUtils.isNotBlank(pUser.getMdTypeId())){
+            sb.addKey(pUser.getMdTypeId());
         }
-        if (StringUtils.isNotBlank(pUser.getJobCodeId())) {
-            jobCode = metadataTypeDAO.findById(pUser.getJobCodeId());
+        if(StringUtils.isNotBlank(pUser.getJobCodeId())){
+            sb.addKey(pUser.getJobCodeId());
         }
-        if (StringUtils.isNotBlank(pUser.getEmployeeTypeId())) {
-            employeeType = metadataTypeDAO.findById(pUser.getEmployeeTypeId());
+        if(StringUtils.isNotBlank(pUser.getEmployeeTypeId())){
+            sb.addKey(pUser.getEmployeeTypeId());
+        }
+        if(StringUtils.isNotBlank(pUser.getUserSubTypeId())){
+            sb.addKey(pUser.getUserSubTypeId());
+        }
+
+        List<MetadataTypeEntity> metaDataTypes = metadataService.findEntityBeans(sb, -1, -1, null);
+
+        if(CollectionUtils.isNotEmpty(metaDataTypes)){
+            for(MetadataTypeEntity typeEntity: metaDataTypes){
+                if(typeEntity.getId().equals(pUser.getMdTypeId())){
+                    type = typeEntity;
+                } else if(typeEntity.getId().equals(pUser.getJobCodeId())){
+                    jobCode = typeEntity;
+                }else if(typeEntity.getId().equals(pUser.getEmployeeTypeId())){
+                    employeeType = typeEntity;
+                }else if(typeEntity.getId().equals(pUser.getUserSubTypeId())){
+                    subtype = typeEntity;
+                }
+            }
         }
 
         Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
@@ -2155,8 +2396,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
             auditLog.setTargetUser(tgId, strLogin);
             auditLog.setAction(AuditAction.REPLACE_PROP.value());
-            MetadataTypeEntity metadataType = metadataTypeDAO.findById(pUser.getEmployeeTypeId());
-            auditLog.addCustomRecord("EmployeeType", "New='" + metadataType.getDescription() + "'");
+//            MetadataTypeEntity metadataType = metadataTypeDAO.findByIdNoLocalized(pUser.getEmployeeTypeId());
+            auditLog.addCustomRecord("EmployeeType", "New='" + employeeType.getDescription() + "'");
             parentLog.addChild(auditLog);
             // ---------------------------------------------------------------------------------------------
         }
@@ -2183,8 +2424,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
             auditLog.setTargetUser(tgId, strLogin);
             auditLog.setAction(AuditAction.REPLACE_PROP.value());
-            MetadataTypeEntity metadataType = metadataTypeDAO.findById(pUser.getJobCodeId());
-            auditLog.addCustomRecord("JobCode", "New='" + metadataType.getDescription() + "'");
+//            MetadataTypeEntity metadataType = metadataTypeDAO.findByIdNoLocalized(pUser.getJobCodeId());
+            auditLog.addCustomRecord("JobCode", "New='" + jobCode.getDescription() + "'");
             parentLog.addChild(auditLog);
             // ---------------------------------------------------------------------------------------------
         }
@@ -2247,7 +2488,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
             auditLog.setTargetUser(tgId, strLogin);
             auditLog.setAction(AuditAction.REPLACE_PROP.value());
-            MetadataTypeEntity metadataType = metadataTypeDAO.findById(pUser.getSuffix());
+            MetadataTypeEntity metadataType = metadataTypeDAO.findByIdNoLocalized(pUser.getSuffix());
             auditLog.addCustomRecord("Suffix", "New='" + pUser.getSuffix() + "'");
             parentLog.addChild(auditLog);
             // ---------------------------------------------------------------------------------------------
@@ -2260,7 +2501,6 @@ public abstract class AbstractProvisioningService extends AbstractBaseService {
             auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
             auditLog.setTargetUser(tgId, strLogin);
             auditLog.setAction(AuditAction.REPLACE_PROP.value());
-            MetadataTypeEntity metadataType = metadataTypeDAO.findById(pUser.getTitle());
             auditLog.addCustomRecord("Title", "New='" + pUser.getTitle() + "'");
             parentLog.addChild(auditLog);
             // ---------------------------------------------------------------------------------------------

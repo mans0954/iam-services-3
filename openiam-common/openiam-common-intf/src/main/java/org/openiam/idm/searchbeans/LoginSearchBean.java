@@ -16,7 +16,7 @@ import java.io.Serializable;
  *
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "GroupSearchBean", propOrder = {
+@XmlType(name = "LoginSearchBean", propOrder = {
 	"login",
 	"managedSysId",
 	"userId",

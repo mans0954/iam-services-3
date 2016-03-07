@@ -19,8 +19,10 @@ public class DoNothingUserCommand extends BaseReconciliationUserCommand {
 
     @Override
     public boolean execute(ReconciliationSituation config, String principal, String mSysID, User user, List<ExtensibleAttribute> attributes) {
-        log.debug("Entering DoNothingCommand");
-        log.debug("Do nothing for user: " + user.getId());
+    	if(log.isDebugEnabled()) {
+	        log.debug("Entering DoNothingCommand");
+	        log.debug("Do nothing for user: " + user.getId());
+    	}
 		ProvisionUser pUser = new ProvisionUser(user);
 		pUser.setSrcSystemId(mSysID);
 		try {

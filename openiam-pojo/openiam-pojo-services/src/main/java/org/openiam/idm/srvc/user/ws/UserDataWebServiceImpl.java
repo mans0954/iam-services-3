@@ -35,11 +35,7 @@ import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.dozer.converter.*;
 import org.openiam.exception.BasicDataServiceException;
-import org.openiam.idm.searchbeans.AddressSearchBean;
-import org.openiam.idm.searchbeans.EmailSearchBean;
-import org.openiam.idm.searchbeans.PhoneSearchBean;
-import org.openiam.idm.searchbeans.PotentialSupSubSearchBean;
-import org.openiam.idm.searchbeans.UserSearchBean;
+import org.openiam.idm.searchbeans.*;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
@@ -58,10 +54,6 @@ import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.idm.srvc.msg.service.MailService;
 import org.openiam.idm.srvc.msg.service.MailTemplateParameters;
-import org.openiam.idm.srvc.org.domain.OrganizationEntity;
-import org.openiam.idm.srvc.org.domain.OrganizationUserEntity;
-import org.openiam.idm.srvc.org.dto.Organization;
-import org.openiam.idm.srvc.org.dto.OrganizationUserDTO;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -72,7 +64,6 @@ import org.openiam.util.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author suneet
@@ -1312,6 +1303,26 @@ public class UserDataWebServiceImpl implements UserDataWebService {
     }
 
     @Override
+    public List<User> getUserBetweenCreateDate(Date fromDate, Date toDate) {
+        return userManager.getUserDtoBetweenCreateDate(fromDate, toDate);
+    }
+
+    @Override
+    public List<User> getUserBetweenStartDate(Date fromDate, Date toDate) {
+        return userManager.getUserDtoBetweenStartDate(fromDate, toDate);
+    }
+
+    @Override
+    public List<User> getUserBetweenLastDate(Date fromDate, Date toDate) {
+        return userManager.getUserDtoBetweenLastDate(fromDate, toDate);
+    }
+
+    @Override
+    public List<User> getUserDtoBySearchBean(AuditLogSearchBean searchBean) {
+        return userManager.getUserDtoBySearchBean(searchBean);
+    }
+
+    @Override
     //@Transactional(readOnly = true)
     public List<User> getAllSuperiors(@WebParam(name = "from", targetNamespace = "") Integer from,
                                       @WebParam(name = "size", targetNamespace = "") Integer size) {
@@ -1335,4 +1346,9 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 //    public Map<String, UserAttribute> getUserAttributesAsMap(@WebParam(name = "userId", targetNamespace = "") String userId){
 //        return userManager.getUserAttributesDto(userId);
 //    }
+
+    @Override
+    public List<Supervisor> findSupervisors(SupervisorSearchBean supervisorSearchBean) {
+        return userManager.findSupervisors(supervisorSearchBean);
+    }
 }

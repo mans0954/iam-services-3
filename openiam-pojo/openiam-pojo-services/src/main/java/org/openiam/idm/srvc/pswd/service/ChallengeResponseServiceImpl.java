@@ -45,13 +45,13 @@ public class ChallengeResponseServiceImpl implements ChallengeResponseService {
     private KeyManagementService keyManagementService;
 
     @Override
-    public Integer getNumOfRequiredQuestions(String userId) {
-        return getResponseValidator().getNumOfRequiredQuestions(userId);
+    public Integer getNumOfRequiredQuestions(String userId, boolean isEnterprise) {
+        return getResponseValidator().getNumOfRequiredQuestions(userId, isEnterprise);
     }
 
     @Override
-    public Integer getNumOfCorrectAnswers(String userId) {
-        return getResponseValidator().getNumOfCorrectAnswers(userId);
+    public Integer getNumOfCorrectAnswers(String userId, boolean isEnterprise) {
+        return getResponseValidator().getNumOfCorrectAnswers(userId, isEnterprise);
     }
 
     @Override
@@ -137,18 +137,27 @@ public class ChallengeResponseServiceImpl implements ChallengeResponseService {
 
     @Override
     public boolean isResponseValid(String userId, List<UserIdentityAnswerEntity> newAnswerList) throws Exception {
-        int requiredCorrect = newAnswerList.size();
+        int requiredCorrectEnterprise = 0;
+        int requiredCorrectUserSpecified = 0;
         PasswordPolicyAssocSearchBean searchBean = new PasswordPolicyAssocSearchBean();
         searchBean.setUserId(userId);
         final Policy policy = passwordMgr.getPasswordPolicyForUser(searchBean);
-        final PolicyAttribute attr = policy.getAttribute("QUEST_ANSWER_CORRECT");
-
-        if (attr != null) {
-            if (StringUtils.isNotBlank(attr.getValue1())) {
-                requiredCorrect = Integer.parseInt(attr.getValue1());
+        final PolicyAttribute attrEnterprise = policy.getAttribute("QUEST_ANSWER_CORRECT");
+        final PolicyAttribute attrUserSpecified = policy.getAttribute("CUSTOM_QUEST_ANSWER_COUNT");
+        if (attrEnterprise != null) {
+            if (StringUtils.isNotBlank(attrEnterprise.getValue1())) {
+                requiredCorrectEnterprise = Integer.parseInt(attrEnterprise.getValue1());
             }
         }
-        return getResponseValidator().isResponseValid(userId, newAnswerList, requiredCorrect);
+
+        if (attrUserSpecified != null) {
+            if (StringUtils.isNotBlank(attrUserSpecified.getValue1())) {
+                requiredCorrectUserSpecified = Integer.parseInt(attrUserSpecified.getValue1());
+            }
+        }
+
+        return getResponseValidator().isResponseValid(userId, newAnswerList, requiredCorrectEnterprise, true)
+                && getResponseValidator().isResponseValid(userId, newAnswerList, requiredCorrectUserSpecified, false);
     }
 
     private ChallengeResponseValidator getResponseValidator() {

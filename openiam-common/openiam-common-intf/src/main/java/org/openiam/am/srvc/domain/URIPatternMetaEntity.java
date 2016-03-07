@@ -1,15 +1,19 @@
 package org.openiam.am.srvc.domain;
 
-import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.*;
 import org.openiam.am.srvc.dto.URIPatternMeta;
 import org.openiam.dozer.DozerDTOCorrespondence;
 
 import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import java.io.Serializable;
 import java.util.Set;
 
 @Entity
 @Table(name = "URI_PATTERN_META")
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(URIPatternMeta.class)
 public class URIPatternMetaEntity implements Serializable {
 

@@ -44,7 +44,8 @@ import java.util.Set;
         "userAttributes",
         "organizationAttributes",
         "isPublic",
-        "displayName"
+        "displayName",
+		"dataModelUrl"
 })
 @DozerDTOCorrespondence(MetadataElementEntity.class)
 @Internationalized
@@ -71,6 +72,7 @@ public class MetadataElement extends KeyDTO implements Serializable {
     private boolean isPublic = true;
     private Set<OrganizationAttribute> organizationAttributes;
     private String displayName;
+	private String dataModelUrl;
 
     public MetadataElement() {
     }
@@ -257,6 +259,14 @@ public class MetadataElement extends KeyDTO implements Serializable {
 		this.metadataTypeName = metadataTypeName;
 	}
 
+	public String getDataModelUrl() {
+		return dataModelUrl;
+	}
+
+	public void setDataModelUrl(String dataModelUrl) {
+		this.dataModelUrl = dataModelUrl;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -278,6 +288,7 @@ public class MetadataElement extends KeyDTO implements Serializable {
 		result = prime * result + (required ? 1231 : 1237);
 		result = prime * result + (selfEditable ? 1231 : 1237);
 		result = prime * result + (isPublic ? 1231 : 1237);
+		result = prime * result + ((dataModelUrl == null) ?0 : dataModelUrl.hashCode());
 		return result;
 	}
 
@@ -332,6 +343,11 @@ public class MetadataElement extends KeyDTO implements Serializable {
 		if (selfEditable != other.selfEditable)
 			return false;
 		if (isPublic != other.isPublic)
+			return false;
+		if (dataModelUrl == null) {
+			if (other.dataModelUrl != null)
+				return false;
+		} else if (!dataModelUrl.equals(other.dataModelUrl))
 			return false;
 		return true;
 	}

@@ -27,6 +27,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.exception.AuthenticationException;
 import org.openiam.idm.srvc.auth.context.AuthenticationContext;
 import org.openiam.idm.srvc.auth.context.PasswordCredential;
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.AuthenticationRequest;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.Subject;
@@ -87,7 +88,9 @@ public class LDAPLoginModule extends AbstractLoginModule {
         if(StringUtils.isEmpty(authPolicyId)) {
             authPolicyId = sysConfiguration.getDefaultAuthPolicyId();
         }
-        log.debug("Authentication policyid=" + authPolicyId);
+        if(log.isDebugEnabled()) {
+        	log.debug("Authentication policyid=" + authPolicyId);
+        }
         Policy authPolicy = policyDataService.getPolicy(authPolicyId);
         if (authPolicy == null) {
             log.error("No auth policy found");
@@ -105,8 +108,7 @@ public class LDAPLoginModule extends AbstractLoginModule {
         String managedSysId = mSys.getId();
 
         // checking if Login exists in OpenIAM
-        LoginResponse lgResp = loginManager.getLoginByManagedSys(principal, managedSysId);
-        Login lg = lgResp.getPrincipal();
+        LoginEntity lg = loginManager.getLoginByManagedSys(principal, managedSysId);
         if (lg == null) {
             throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_LOGIN);
         }
@@ -122,7 +124,9 @@ public class LDAPLoginModule extends AbstractLoginModule {
         List<ExtensibleAttribute> attrs = new ArrayList<ExtensibleAttribute>();
         attrs.add(new ExtensibleAttribute("distinguishedName", null));
         LookupUserResponse resp = provisionService.getTargetSystemUser(principal, managedSysId, attrs);
-        log.debug("Lookup for user identity =" + principal + " in target system = " + mSys.getName() + ". Result = " + resp.getStatus() + ", " + resp.getErrorCode());
+        if(log.isDebugEnabled()) {
+        	log.debug("Lookup for user identity =" + principal + " in target system = " + mSys.getName() + ". Result = " + resp.getStatus() + ", " + resp.getErrorCode());
+        }
 
         if (resp.isFailure()) {
             throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_LOGIN);
@@ -189,7 +193,7 @@ public class LDAPLoginModule extends AbstractLoginModule {
                 if (failCount >= authFailCount) {
                     // lock the record and save the record.
                     lg.setIsLocked(1);
-                    loginManager.saveLogin(lg);
+                    loginManager.updateLogin(lg);
 
                     // set the flag on the primary user record
                     user.setSecondaryStatus(UserStatusEnum.LOCKED);
@@ -199,7 +203,7 @@ public class LDAPLoginModule extends AbstractLoginModule {
 
                 } else {
                     // update the counter save the record
-                    loginManager.saveLogin(lg);
+                    loginManager.updateLogin(lg);
 
                     throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_PASSWORD);
                 }
@@ -224,7 +228,9 @@ public class LDAPLoginModule extends AbstractLoginModule {
             }
         }
 
-        log.debug("-login successful");
+        if(log.isDebugEnabled()) {
+        	log.debug("-login successful");
+        }
         // good login - reset the counters
 
         lg.setLastAuthAttempt(curDate);
@@ -239,8 +245,10 @@ public class LDAPLoginModule extends AbstractLoginModule {
 
         lg.setAuthFailCount(0);
         lg.setFirstTimeLogin(0);
-        log.debug("-Good Authn: Login object updated.");
-        loginManager.saveLogin(lg);
+        if(log.isDebugEnabled()) {
+        	log.debug("-Good Authn: Login object updated.");
+        }
+        loginManager.updateLogin(lg);
 
         // check the user status
         if (UserStatusEnum.PENDING_INITIAL_LOGIN.equals(user.getStatus()) ||
@@ -251,7 +259,9 @@ public class LDAPLoginModule extends AbstractLoginModule {
         }
 
         // Successful login
-        log.debug("-Populating subject after authentication");
+        if(log.isDebugEnabled()) {
+        	log.debug("-Populating subject after authentication");
+        }
 
         String tokenType = getPolicyAttribute(authPolicy.getPolicyAttributes(), "TOKEN_TYPE");
         String tokenLife = getPolicyAttribute(authPolicy.getPolicyAttributes(), "TOKEN_LIFE");
@@ -266,7 +276,7 @@ public class LDAPLoginModule extends AbstractLoginModule {
         subj.setUserId(lg.getUserId());
         subj.setPrincipal(principal);
         subj.setSsoToken(token(lg.getUserId(), tokenParam));
-        setResultCode(lg, subj, curDate, passwordPolicy);
+        setResultCode(lg, subj, curDate, passwordPolicy, false);
 
         return subj;
     }

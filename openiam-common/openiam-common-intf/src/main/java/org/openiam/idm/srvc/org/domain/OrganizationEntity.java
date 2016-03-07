@@ -22,8 +22,7 @@ import java.util.*;
 
 @Entity
 @Table(name = "COMPANY")
-@Cacheable
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "OrganizationEntity")
 @DozerDTOCorrespondence(Organization.class)
 @AttributeOverride(name = "id", column = @Column(name = "COMPANY_ID"))
 @Internationalized
@@ -37,6 +36,7 @@ public class OrganizationEntity extends AbstractMetdataTypeEntity {
     @OrderBy("name asc")
 //    @Fetch(FetchMode.SUBSELECT)
     @Internationalized
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<OrganizationAttributeEntity> attributes;
 
     @Column(name = "CREATE_DATE", length = 19)
@@ -75,6 +75,7 @@ public class OrganizationEntity extends AbstractMetdataTypeEntity {
     @ManyToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "ORG_TYPE_ID", referencedColumnName = "ORG_TYPE_ID", insertable = true, updatable = true)
     @Internationalized
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private OrganizationTypeEntity organizationType;
 
     @Column(name = "ABBREVIATION", length = 20)
@@ -89,21 +90,18 @@ public class OrganizationEntity extends AbstractMetdataTypeEntity {
     @JoinTable(name = "COMPANY_TO_COMPANY_MEMBERSHIP",
             joinColumns = {@JoinColumn(name = "MEMBER_COMPANY_ID")},
             inverseJoinColumns = {@JoinColumn(name = "COMPANY_ID")})
-//    @Fetch(FetchMode.SUBSELECT)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<OrganizationEntity> parentOrganizations;
 
     @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
     @JoinTable(name = "COMPANY_TO_COMPANY_MEMBERSHIP",
             joinColumns = {@JoinColumn(name = "COMPANY_ID")},
             inverseJoinColumns = {@JoinColumn(name = "MEMBER_COMPANY_ID")})
-//    @Fetch(FetchMode.SUBSELECT)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<OrganizationEntity> childOrganizations;
 
-    //    	@ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
-//    @JoinTable(name = "USER_AFFILIATION", joinColumns = { @JoinColumn(name = "COMPANY_ID") }, inverseJoinColumns = { @JoinColumn(name = "USER_ID") })
-//	private Set<UserEntity> users;
-//
     @OneToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY, mappedBy = "primaryKey.organization")
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     public Set<OrganizationUserEntity> organizationUser;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.ALL})
@@ -117,6 +115,9 @@ public class OrganizationEntity extends AbstractMetdataTypeEntity {
     @Column(name = "IS_SELECTABLE")
     @Type(type = "yes_no")
     private boolean selectable = true;
+
+    @Column(name = "CLASSIFICATION")
+    private String classification;
 
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "organization", fetch = FetchType.LAZY)
     @OrderBy("name asc")
@@ -364,6 +365,14 @@ public class OrganizationEntity extends AbstractMetdataTypeEntity {
 
     public void setGroups(Set<GroupEntity> groups) {
         this.groups = groups;
+    }
+
+    public String getClassification() {
+        return classification;
+    }
+
+    public void setClassification(String classification) {
+        this.classification = classification;
     }
 
     @Override

@@ -1,10 +1,14 @@
 package org.openiam.idm.srvc.user.domain;
 
+import org.hibernate.annotations.*;
+import org.hibernate.annotations.Cache;
 import org.openiam.base.domain.AbstractKeyNameEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.user.dto.ProfilePicture;
 
 import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import java.util.Arrays;
 
 @Entity
@@ -14,6 +18,7 @@ import java.util.Arrays;
     @AttributeOverride(name = "name", column = @Column(name="NAME", length=256))
 })
 @DozerDTOCorrespondence(ProfilePicture.class)
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class ProfilePictureEntity extends AbstractKeyNameEntity {
 
     @Lob
@@ -22,6 +27,7 @@ public class ProfilePictureEntity extends AbstractKeyNameEntity {
 
     @OneToOne(optional = false, orphanRemoval = true)
     @JoinColumn(name = "USER_ID", unique = true, updatable = false, nullable = false)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private UserEntity user;
 
     @Override

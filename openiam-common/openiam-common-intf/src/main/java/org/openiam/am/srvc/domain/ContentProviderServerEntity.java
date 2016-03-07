@@ -1,5 +1,6 @@
 package org.openiam.am.srvc.domain;
 
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.am.srvc.dto.ContentProviderServer;
 import org.openiam.dozer.DozerDTOCorrespondence;
@@ -9,6 +10,7 @@ import javax.persistence.*;
 @Entity
 @Table(name = "CONTENT_PROVIDER_SERVER")
 @DozerDTOCorrespondence(ContentProviderServer.class)
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class ContentProviderServerEntity {
 
 	@Id
@@ -19,6 +21,7 @@ public class ContentProviderServerEntity {
 	
 	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name="CONTENT_PROVIDER_ID", referencedColumnName = "CONTENT_PROVIDER_ID")
+    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	private ContentProviderEntity contentProvider;
 	
 	@Column(name = "SERVER_URL", length = 100, nullable = false)

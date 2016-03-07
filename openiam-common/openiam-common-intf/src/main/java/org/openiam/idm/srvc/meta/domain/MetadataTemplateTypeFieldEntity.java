@@ -14,15 +14,13 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Type;
+import org.hibernate.annotations.*;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.meta.dto.MetadataTemplateTypeField;
 
 @Entity
 @Table(name = "UI_TEMPLATE_FIELDS")
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(MetadataTemplateTypeField.class)
 public class MetadataTemplateTypeFieldEntity implements Serializable {
 
@@ -41,6 +39,7 @@ public class MetadataTemplateTypeFieldEntity implements Serializable {
 	@ManyToOne(fetch=FetchType.EAGER)
     @JoinColumn(name = "TEMPLATE_TYPE_ID", insertable=true, updatable=false, nullable=false)
     @Fetch(FetchMode.JOIN)
+    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	private MetadataTemplateTypeEntity templateType;
 	
     @Column(name = "IS_REQUIRED")
@@ -48,6 +47,7 @@ public class MetadataTemplateTypeFieldEntity implements Serializable {
 	private boolean required;
     
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "field", fetch = FetchType.LAZY)
+    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<MetadataFieldTemplateXrefEntity> fieldXrefs;
 
 	public String getId() {

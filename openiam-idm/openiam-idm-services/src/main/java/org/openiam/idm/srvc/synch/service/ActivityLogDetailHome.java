@@ -32,10 +32,8 @@ public class ActivityLogDetailHome {
 	}
 
 	public void persist(ActivityLogDetail transientInstance) {
-		log.debug("persisting ActivityLogDetail instance");
 		try {
 			sessionFactory.getCurrentSession().persist(transientInstance);
-			log.debug("persist successful");
 		} catch (RuntimeException re) {
 			log.error("persist failed", re);
 			throw re;
@@ -43,10 +41,8 @@ public class ActivityLogDetailHome {
 	}
 
 	public void attachDirty(ActivityLogDetail instance) {
-		log.debug("attaching dirty ActivityLogDetail instance");
 		try {
 			sessionFactory.getCurrentSession().saveOrUpdate(instance);
-			log.debug("attach successful");
 		} catch (RuntimeException re) {
 			log.error("attach failed", re);
 			throw re;
@@ -54,10 +50,8 @@ public class ActivityLogDetailHome {
 	}
 
 	public void attachClean(ActivityLogDetail instance) {
-		log.debug("attaching clean ActivityLogDetail instance");
 		try {
 			sessionFactory.getCurrentSession().lock(instance, LockMode.NONE);
-			log.debug("attach successful");
 		} catch (RuntimeException re) {
 			log.error("attach failed", re);
 			throw re;
@@ -65,10 +59,8 @@ public class ActivityLogDetailHome {
 	}
 
 	public void delete(ActivityLogDetail persistentInstance) {
-		log.debug("deleting ActivityLogDetail instance");
 		try {
 			sessionFactory.getCurrentSession().delete(persistentInstance);
-			log.debug("delete successful");
 		} catch (RuntimeException re) {
 			log.error("delete failed", re);
 			throw re;
@@ -76,11 +68,9 @@ public class ActivityLogDetailHome {
 	}
 
 	public ActivityLogDetail merge(ActivityLogDetail detachedInstance) {
-		log.debug("merging ActivityLogDetail instance");
 		try {
 			ActivityLogDetail result = (ActivityLogDetail) sessionFactory
 					.getCurrentSession().merge(detachedInstance);
-			log.debug("merge successful");
 			return result;
 		} catch (RuntimeException re) {
 			log.error("merge failed", re);
@@ -89,17 +79,11 @@ public class ActivityLogDetailHome {
 	}
 
 	public ActivityLogDetail findById(java.lang.String id) {
-		log.debug("getting ActivityLogDetail instance with id: " + id);
 		try {
 			ActivityLogDetail instance = (ActivityLogDetail) sessionFactory
 					.getCurrentSession()
 					.get("org.openiam.idm.srvc.pswd.service.ActivityLogDetail",
 							id);
-			if (instance == null) {
-				log.debug("get successful, no instance found");
-			} else {
-				log.debug("get successful, instance found");
-			}
 			return instance;
 		} catch (RuntimeException re) {
 			log.error("get failed", re);
@@ -108,15 +92,12 @@ public class ActivityLogDetailHome {
 	}
 
 	public List<ActivityLogDetail> findByExample(ActivityLogDetail instance) {
-		log.debug("finding ActivityLogDetail instance by example");
 		try {
 			List<ActivityLogDetail> results = (List<ActivityLogDetail>) sessionFactory
 					.getCurrentSession()
 					.createCriteria(
 							"org.openiam.idm.srvc.pswd.service.ActivityLogDetail")
 					.add(create(instance)).list();
-			log.debug("find by example successful, result size: "
-					+ results.size());
 			return results;
 		} catch (RuntimeException re) {
 			log.error("find by example failed", re);

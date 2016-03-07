@@ -37,16 +37,17 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
     protected final Class<T> domainClass;
 
     protected static final int MAX_IN_CLAUSE = 1000;
-	@Autowired
-	public void setTemplate(final @Qualifier("hibernateTemplate") HibernateTemplate hibernateTemplate) {
-		super.setHibernateTemplate(hibernateTemplate);
-	}
-	
-	protected boolean cachable() {
-		return false;
-	}
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @Autowired
+    public void setTemplate(final @Qualifier("hibernateTemplate") HibernateTemplate hibernateTemplate) {
+        super.setHibernateTemplate(hibernateTemplate);
+    }
+
+    protected boolean cachable() {
+        return true;
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public BaseDaoImpl() {
         Type t = getClass().getGenericSuperclass();
         Type arg;
@@ -72,33 +73,36 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
                             + "'! ");
         }
     }
-
+    @Deprecated
     protected Criteria getExampleCriteria(T t) {
         return getCriteria().add(Example.create(t));
     }
 
+
     protected Criteria getExampleCriteria(final SearchBean searchBean) {
         throw new UnsupportedOperationException("Method must be overridden");
     }
+
     protected void setOderByCriteria(Criteria criteria, AbstractSearchBean sb) {
         List<SortParam> sortParamList = sb.getSortBy();
-        for (SortParam sort: sortParamList){
+        for (SortParam sort : sortParamList) {
             criteria.addOrder(createOrder(sort.getSortBy(), sort.getOrderBy()));
         }
     }
-    protected Order createOrder(String field, OrderConstants orderDir){
+
+    protected Order createOrder(String field, OrderConstants orderDir) {
         return orderDir.equals(OrderConstants.DESC) ? Order.desc(field) : Order.asc(field);
     }
 
     @Override
     public int count(final SearchBean searchBean) {
-    	 return ((Number) getExampleCriteria(searchBean).setProjection(rowCount())
-                 .uniqueResult()).intValue();
+        return ((Number) getExampleCriteria(searchBean).setProjection(rowCount())
+                .uniqueResult()).intValue();
     }
 
     @Override
     public void flush() {
-    	getSession().flush();
+        getSession().flush();
     }
 
     @Override
@@ -108,6 +112,7 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
 
     @Override
     @LocalizedDatabaseGet
+    @Deprecated
     public List<T> getByExample(T t, int startAt, int size) {
         final Criteria criteria = getExampleCriteria(t);
         if (startAt > -1) {
@@ -117,10 +122,10 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
         if (size > -1) {
             criteria.setMaxResults(size);
         }
-
+        criteria.setCacheable(this.cachable());
         return (List<T>) criteria.list();
     }
-
+    @Deprecated
     public List<T> getByExampleNoLocalize(T t, int startAt, int size) {
         final Criteria criteria = getExampleCriteria(t);
         if (startAt > -1) {
@@ -130,7 +135,7 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
         if (size > -1) {
             criteria.setMaxResults(size);
         }
-
+        criteria.setCacheable(this.cachable());
         return (List<T>) criteria.list();
     }
 
@@ -144,50 +149,46 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
         if (size > -1) {
             criteria.setMaxResults(size);
         }
-
+        criteria.setCacheable(this.cachable());
         criteria.setProjection(Projections.id());
-        return (List<String>)criteria.list();
+        return (List<String>) criteria.list();
     }
 
     @Override
     @LocalizedDatabaseGet
     public List<T> getByExample(final SearchBean searchBean) {
-    	return getByExample(searchBean, -1, -1);
+        return getByExample(searchBean, -1, -1);
     }
 
     @Override
     @LocalizedDatabaseGet
     public List<T> getByExample(final SearchBean searchBean, int from, int size) {
-    	 final Criteria criteria = getExampleCriteria(searchBean);
-         if (from > -1) {
-             criteria.setFirstResult(from);
-         }
+        final Criteria criteria = getExampleCriteria(searchBean);
+        if (from > -1) {
+            criteria.setFirstResult(from);
+        }
 
-         if (size > -1) {
-             criteria.setMaxResults(size);
-         }
+        if (size > -1) {
+            criteria.setMaxResults(size);
+        }
 
         if (searchBean instanceof AbstractSearchBean) {
-            AbstractSearchBean sb = (AbstractSearchBean)searchBean;
-//            if (StringUtils.isNotBlank(sb.getSortBy())) {
-//                criteria.addOrder(sb.getOrderBy().equals(OrderConstants.DESC) ?
-//                        Order.desc(sb.getSortBy()) :
-//                        Order.asc(sb.getSortBy()));
-//            }
-
-            if(CollectionUtils.isNotEmpty(sb.getSortBy())){
+            AbstractSearchBean sb = (AbstractSearchBean) searchBean;
+            if (CollectionUtils.isNotEmpty(sb.getSortBy())) {
                 this.setOderByCriteria(criteria, sb);
             }
         }
-         return (List<T>) criteria.list();
+        criteria.setCacheable(this.cachable());
+        return (List<T>) criteria.list();
     }
 
     @Override
     @LocalizedDatabaseGet
+    @Deprecated
     public List<T> getByExample(T t) {
         return getByExample(t, -1, -1);
     }
-
+    @Deprecated
     public List<T> getByExampleNoLocalize(T t) {
         return getByExample(t, -1, -1);
     }
@@ -198,6 +199,7 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
     }
 
     @Override
+    @Deprecated
     public int count(T t) {
         return ((Number) getExampleCriteria(t).setProjection(rowCount())
                 .uniqueResult()).intValue();
@@ -207,50 +209,51 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
         return getSession().createCriteria(domainClass).setCacheable(cachable());//.setCacheRegion("org.hibernate.cache.StandardQueryCache");
     }
 
-    @SuppressWarnings({ "unchecked" })
+    @SuppressWarnings({"unchecked"})
     @LocalizedDatabaseGet
     public T findById(PrimaryKey id) {
         if (id == null) {
             return null;
         }
-        return (T) getCriteria().add(eq(getPKfieldName(), id)).uniqueResult(); //this.getSession().get(domainClass, id);
+        return (T) getCriteria().add(eq(getPKfieldName(), id)).setCacheable(cachable()).uniqueResult(); //this.getSession().get(domainClass, id);
     }
 
-    @SuppressWarnings({ "unchecked" })
-    public T findByIdNoLocalized(PrimaryKey id, String ... fetchFields) {
+    @SuppressWarnings({"unchecked"})
+    public T findByIdNoLocalized(PrimaryKey id, String... fetchFields) {
         if (id == null) {
             return null;
         }
-        return (T) getCriteria().add(eq(getPKfieldName(), id)).uniqueResult(); //this.getSession().get(domainClass, id);
+        return (T) getCriteria().add(eq(getPKfieldName(), id)).setCacheable(cachable()).uniqueResult(); //this.getSession().get(domainClass, id);
     }
-    
+
     /**
      * So... the reason for this method, is that findById was returning a non-intialized object.  WHen setting attributes on Resources,
      * Groups, Roles, etc, this casued a TransientObjectException.  The only thing that fixed that, was by calling this method,
      * which calles Session.get.  According to the Hibernate docs, 'get' never returns a non-initialized object.
      * Consider removing this in 3.2
+     *
      * @param id
      * @return
      */
     @LocalizedDatabaseGet
     public T findInitializedObjectById(PrimaryKey id) {
-    	final Object o = this.getSession().get(domainClass, id);
-    	return (o != null) ? (T)o : null;
+        final Object o = this.getSession().get(domainClass, id);
+        return (o != null) ? (T) o : null;
     }
 
     @SuppressWarnings("unchecked")
     @LocalizedDatabaseGet
     public List<T> findByIds(Collection<PrimaryKey> idCollection) {
-        return findByIds(idCollection,-1,-1);
+        return findByIds(idCollection, -1, -1);
     }
 
     @SuppressWarnings("unchecked")
     @LocalizedDatabaseGet
-    public List<T> findByIds(Collection<PrimaryKey> idCollection,  final int from, final int size) {
+    public List<T> findByIds(Collection<PrimaryKey> idCollection, final int from, final int size) {
         if (CollectionUtils.isEmpty(idCollection)) {
             return (List<T>) Collections.EMPTY_LIST;
         }
-        final Criteria criteria = getCriteria().add( createInClauseForList(new ArrayList<PrimaryKey>(idCollection)));
+        final Criteria criteria = getCriteria().add(createInClauseForList(new ArrayList<PrimaryKey>(idCollection)));
 
         if (from > -1) {
             criteria.setFirstResult(from);
@@ -259,10 +262,11 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
         if (size > -1) {
             criteria.setMaxResults(size);
         }
+        criteria.setCacheable(this.cachable());
         return criteria.list();
     }
 
-    @SuppressWarnings({ "unchecked" })
+    @SuppressWarnings({"unchecked"})
     @LocalizedDatabaseGet
     public T findById(PrimaryKey id, String... fetchFields) {
         if (id == null) {
@@ -275,18 +279,19 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
                 criteria.setFetchMode(field, FetchMode.JOIN);
             }
         }
+        criteria.setCacheable(this.cachable());
         return (T) criteria.uniqueResult();
     }
 
     protected abstract String getPKfieldName();
 
-    @SuppressWarnings({ "unchecked" })
+    @SuppressWarnings({"unchecked"})
     @LocalizedDatabaseGet
     public List<T> findAll() {
-        return getCriteria().list();
+        return getCriteria().setCacheable(this.cachable()).list();
     }
 
-    public List<PrimaryKey> getAllIds(){
+    public List<PrimaryKey> getAllIds() {
         Criteria criteria = getCriteria().setProjection(id());
         return criteria.list();
     }
@@ -295,37 +300,42 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
         return ((Number) getCriteria().setProjection(rowCount())
                 .uniqueResult()).longValue();
     }
+
     @Transactional
-    @LocalizedDatabaseOperation(saveOrUpdate=true)
+    @LocalizedDatabaseOperation(saveOrUpdate = true)
     public void save(T entity) {
-    	if(entity != null) {
-    		getSession().saveOrUpdate(entity);
-    	}
+        if (entity != null) {
+            getSession().saveOrUpdate(entity);
+        }
     }
+
     @Transactional
-    @LocalizedDatabaseOperation(saveOrUpdate=true)
+    @LocalizedDatabaseOperation(saveOrUpdate = true)
     public void refresh(T entity) {
-        if(entity != null) {
+        if (entity != null) {
             getSession().refresh(entity);
         }
     }
+
     @Transactional
-    @LocalizedDatabaseOperation(saveOrUpdate=true)
-    public  T add(T entity){
-        if(entity!=null){
-        	getSession().persist(entity);
+    @LocalizedDatabaseOperation(saveOrUpdate = true)
+    public T add(T entity) {
+        if (entity != null) {
+            getSession().persist(entity);
         }
         return entity;
     }
+
     @Transactional
-    @LocalizedDatabaseOperation(delete=true)
+    @LocalizedDatabaseOperation(delete = true)
     public void delete(T entity) {
-    	if(entity != null) {
-    		getSession().delete(entity);
-    	}
+        if (entity != null) {
+            getSession().delete(entity);
+        }
     }
+
     @Transactional
-    @LocalizedDatabaseOperation(saveOrUpdate=true)
+    @LocalizedDatabaseOperation(saveOrUpdate = true)
     public void save(Collection<T> entities) {
         if (entities == null || entities.isEmpty()) {
             return;
@@ -338,20 +348,20 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
 
     @Override
     @Transactional
-    @LocalizedDatabaseOperation(saveOrUpdate=true)
+    @LocalizedDatabaseOperation(saveOrUpdate = true)
     public void update(T t) {
-    	if(t != null) {
-    		getSession().update(t);
-    	}
+        if (t != null) {
+            getSession().update(t);
+        }
     }
 
     @Override
     @Transactional
-    @LocalizedDatabaseOperation(saveOrUpdate=true)
+    @LocalizedDatabaseOperation(saveOrUpdate = true)
     public T merge(T t) {
         try {
-            if(t != null) {
-                return (T)getSession().merge(t);
+            if (t != null) {
+                return (T) getSession().merge(t);
             }
         } catch (RuntimeException re) {
             log.error("merge failed", re);
@@ -364,7 +374,7 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
     @Transactional
     public void persist(T t) {
         try {
-            if(t != null) {
+            if (t != null) {
                 getSession().persist(t);
             }
         } catch (RuntimeException re) {
@@ -375,16 +385,15 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
 
     @Transactional
     public void deleteAll() throws Exception {
-    	getSession()
+        getSession()
                 .createQuery("delete from " + this.domainClass.getName())
                 .executeUpdate();
     }
+
     @Transactional
     public void attachDirty(T t) {
-        log.debug("attaching dirty instance");
         try {
             this.save(t);
-            log.debug("attach successful");
         } catch (RuntimeException re) {
             log.error("attach failed", re);
             throw re;
@@ -392,11 +401,9 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
     }
 
     public void attachClean(T t) {
-        log.debug("attaching clean instance");
         try {
-        	getSession()
+            getSession()
                     .buildLockRequest(LockOptions.NONE).lock(t);
-            log.debug("attach successful");
         } catch (RuntimeException re) {
             log.error("attach failed", re);
             throw re;
@@ -404,10 +411,8 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
     }
 
     public void evict(T t) {
-        log.debug("evicting instance");
         try {
             getSession().evict(t);
-            log.debug("evict successful");
         } catch (RuntimeException re) {
             log.error("evict failed", re);
             throw re;
@@ -429,4 +434,13 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
         }
         return orClause;
     }
+
+    public void evictCache() {
+        this.getSession().getSessionFactory().getCache().evictDefaultQueryRegion();
+    }
+
+    public void evictCollectionRegions() {
+        this.getSession().getSessionFactory().getCache().evictCollectionRegions();
+    }
+
 }
