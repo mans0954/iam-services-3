@@ -1,6 +1,7 @@
 package org.openiam.authmanager.service.impl;
 
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -16,6 +17,7 @@ import org.apache.commons.lang.time.StopWatch;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.authmanager.common.model.AuthorizationMenu;
+import org.openiam.authmanager.dao.MembershipDAO;
 import org.openiam.authmanager.dao.ResourcePropDAO;
 import org.openiam.authmanager.model.MenuEntitlementType;
 import org.openiam.authmanager.model.ResourceEntitlementToken;
@@ -37,6 +39,7 @@ import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.service.RoleDAO;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDAO;
+import org.openiam.membership.MembershipDTO;
 import org.openiam.thread.Sweepable;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
@@ -91,6 +94,9 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
 	
 	@Autowired
 	private LanguageMappingDAO languageMappingDAO;
+	
+	@Autowired
+	private MembershipDAO membershipDAO;
 	
 	@Autowired
 	private AuthorizationManagerAdminService authManagerAdminService;
@@ -162,15 +168,16 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
 	public AuthorizationMenu getNonCachedMenuTree(String menuId, String principalId, String principalType) {
 		final AuthorizationMenu menu = getMenuTree(menuId);
 		ResourceEntitlementToken token = null;
+		final Date now = new Date();
 		if(menu != null) {
 			if(StringUtils.equalsIgnoreCase("user", principalType)) {
-				token = authManagerAdminService.getNonCachedEntitlementsForUser(principalId);
+				token = authManagerAdminService.getNonCachedEntitlementsForUser(principalId, now);
 			} else if(StringUtils.equalsIgnoreCase("group", principalType)) {
-				token = authManagerAdminService.getNonCachedEntitlementsForGroup(principalId);
+				token = authManagerAdminService.getNonCachedEntitlementsForGroup(principalId, now);
 			} else if(StringUtils.equalsIgnoreCase("role", principalType)) {
-				token = authManagerAdminService.getNonCachedEntitlementsForRole(principalId);
+				token = authManagerAdminService.getNonCachedEntitlementsForRole(principalId, now);
 			} else if(StringUtils.equalsIgnoreCase("organization", principalType)) {
-				token = authManagerAdminService.getNonCachedEntitlementsForOrganization(principalId);
+				token = authManagerAdminService.getNonCachedEntitlementsForOrganization(principalId, now);
 			}
 		}
 		
@@ -277,23 +284,20 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
 	
 	private Map<String, AuthorizationMenu> createMenuTrees(final Map<String, AuthorizationMenu> menuMap) {
 		
-		final List<ResourceEntity> resources = resourceDAOHibernate.findAll();
+		final List<MembershipDTO> resource2ResourceMap = membershipDAO.getResource2ResourceMembership(new Date());
+		
 		
 		final Map<String, String> childResource2ParentResourceMap = new HashMap<String, String>();
 		final Map<String, Set<String>> parentResource2ChildResourceMap = new HashMap<String, Set<String>>();
-		resources.forEach(resource -> {
-			if(CollectionUtils.isNotEmpty(resource.getChildResources())) {
-				resource.getChildResources().forEach(xref -> {
-					final String resourceId = xref.getEntity().getId();
-					final String memberResourceId = xref.getMemberEntity().getId();
-				
-					if(!parentResource2ChildResourceMap.containsKey(resourceId)) {
-						parentResource2ChildResourceMap.put(resourceId, new HashSet<String>());
-					}
-					childResource2ParentResourceMap.put(memberResourceId, resourceId);
-					parentResource2ChildResourceMap.get(resourceId).add(memberResourceId);
-				});
+		resource2ResourceMap.forEach(resource -> {
+			final String resourceId = resource.getEntityId();
+			final String memberResourceId = resource.getMemberEntityId();
+		
+			if(!parentResource2ChildResourceMap.containsKey(resourceId)) {
+				parentResource2ChildResourceMap.put(resourceId, new HashSet<String>());
 			}
+			childResource2ParentResourceMap.put(memberResourceId, resourceId);
+			parentResource2ChildResourceMap.get(resourceId).add(memberResourceId);
 		});
 		
 		/* create a HashMap structure that mimicks a tree */
@@ -566,7 +570,7 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
             if(CollectionUtils.isNotEmpty(menuEntitlementsRequest.getNewlyEntitled())) {
             	final List<ResourceEntity> resourceEntities = resourceDAOHibernate.findByIds(menuEntitlementsRequest.getNewlyEntitled());
                 for(final ResourceEntity resourceEntity : resourceEntities) {
-                	resourceEntity.addUser(userEntity);
+                	resourceEntity.addUser(userEntity, null, null);
                 }
 
             }
@@ -583,7 +587,7 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
             if(CollectionUtils.isNotEmpty(menuEntitlementsRequest.getNewlyEntitled())) {
             	final List<ResourceEntity> resourceEntities = resourceDAOHibernate.findByIds(menuEntitlementsRequest.getNewlyEntitled());
                 for(final ResourceEntity resource : resourceEntities) {
-                    groupEntity.addResource(resource, null);
+                    groupEntity.addResource(resource, null, null, null);
                 }
 
             }
@@ -601,7 +605,7 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
             if(CollectionUtils.isNotEmpty(menuEntitlementsRequest.getNewlyEntitled())) {
             	final List<ResourceEntity> resourceEntities = resourceDAOHibernate.findByIds(menuEntitlementsRequest.getNewlyEntitled());
                 for(final ResourceEntity resource : resourceEntities) {
-                	role.addResource(resource, null);
+                	role.addResource(resource, null, null, null);
                 }
             }
         } else if(StringUtils.equalsIgnoreCase("organization", principalType)) {
@@ -617,7 +621,7 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
         	 if(CollectionUtils.isNotEmpty(menuEntitlementsRequest.getNewlyEntitled())) {
                  final List<ResourceEntity> resourceEntities = resourceDAOHibernate.findByIds(menuEntitlementsRequest.getNewlyEntitled());
                  for(final ResourceEntity resource : resourceEntities) {
-                	 organization.addResource(resource, null);
+                	 organization.addResource(resource, null, null, null);
                  }
         	 }
         }

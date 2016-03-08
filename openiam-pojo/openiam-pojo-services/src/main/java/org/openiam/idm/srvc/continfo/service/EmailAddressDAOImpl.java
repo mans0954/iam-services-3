@@ -11,8 +11,10 @@ import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Restrictions;
+import org.openiam.base.ws.SearchParam;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.searchbeans.EmailSearchBean;
+import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
@@ -33,52 +35,70 @@ public class EmailAddressDAOImpl extends BaseDaoImpl<EmailAddressEntity, String>
 	public void initSQL() {
 		DELETE_BY_USER_ID = String.format(DELETE_BY_USER_ID, domainClass.getSimpleName());
 	}
+	
+	
 
     @Override
-    protected Criteria getExampleCriteria(final EmailAddressEntity email) {
-        final Criteria criteria = getCriteria();
-        if (StringUtils.isNotBlank(email.getId())) {
-            criteria.add(Restrictions.eq(getPKfieldName(), email.getId()));
-        } else {
-            if (StringUtils.isNotEmpty(email.getName())) {
-                String emailName = email.getName();
-                MatchMode matchMode = null;
-                if (StringUtils.indexOf(emailName, "*") == 0) {
-                    matchMode = MatchMode.END;
-                    emailName = emailName.substring(1);
-                }
-                if (StringUtils.isNotEmpty(emailName) && StringUtils.indexOf(emailName, "*") == emailName.length() - 1) {
-                    emailName = emailName.substring(0, emailName.length() - 1);
-                    matchMode = (matchMode == MatchMode.END) ? MatchMode.ANYWHERE : MatchMode.START;
+	protected Criteria getExampleCriteria(SearchBean searchBean) {
+		final Criteria criteria = getCriteria();
+		if(searchBean != null && searchBean instanceof EmailSearchBean) {
+			final EmailSearchBean sb = (EmailSearchBean)searchBean;
+			
+			if (StringUtils.isNotBlank(sb.getKey())) {
+	            criteria.add(Restrictions.eq(getPKfieldName(), sb.getKey()));
+	        } else {
+	            if (StringUtils.isNotEmpty(sb.getName())) {
+	                String emailName = sb.getName();
+	                MatchMode matchMode = null;
+	                if (StringUtils.indexOf(emailName, "*") == 0) {
+	                    matchMode = MatchMode.END;
+	                    emailName = emailName.substring(1);
+	                }
+	                if (StringUtils.isNotEmpty(emailName) && StringUtils.indexOf(emailName, "*") == emailName.length() - 1) {
+	                    emailName = emailName.substring(0, emailName.length() - 1);
+	                    matchMode = (matchMode == MatchMode.END) ? MatchMode.ANYWHERE : MatchMode.START;
+	                }
+
+	                if (StringUtils.isNotEmpty(emailName)) {
+	                    if (matchMode != null) {
+	                        criteria.add(Restrictions.ilike("name", emailName, matchMode));
+	                    } else {
+	                        criteria.add(Restrictions.eq("name", emailName));
+	                    }
+	                }
+	            }
+
+                if (StringUtils.isNotBlank(sb.getParentId())) {
+                    criteria.add(Restrictions.eq("parent.id", sb.getParentId()));
                 }
 
-                if (StringUtils.isNotEmpty(emailName)) {
-                    if (matchMode != null) {
-                        criteria.add(Restrictions.ilike("name", emailName, matchMode));
-                    } else {
-                        criteria.add(Restrictions.eq("name", emailName));
-                    }
+                if (StringUtils.isNotBlank(sb.getMetadataTypeId())) {
+                    criteria.add(Restrictions.eq("type.id", sb.getMetadataTypeId()));
                 }
-            }
-
-            if (email.getParent() != null) {
-                if (StringUtils.isNotBlank(email.getParent().getId())) {
-                    criteria.add(Restrictions.eq("parent.id", email.getParent().getId()));
-                }
-            }
-
-            if (email.getType() != null) {
-                if (StringUtils.isNotBlank(email.getType().getId())) {
-                    criteria.add(Restrictions.eq("type.id", email.getType().getId()));
-                }
-            }
-            
-            if(StringUtils.isNotBlank(email.getEmailAddress())) {
-            	criteria.add(Restrictions.eq("emailAddress", email.getEmailAddress()));
-            }
-        }
-        return criteria;
-    }
+	            
+	            if(sb.getEmailMatchToken() != null && sb.getEmailMatchToken().getMatchType() != null) {
+	            	final String emailAddress = sb.getEmailMatchToken().getValue();
+	            	switch(sb.getEmailMatchToken().getMatchType()) {
+	            		case CONTAINS:
+	            			criteria.add(Restrictions.like("emailAddress", emailAddress));
+	            			break;
+	            		case END_WITH:
+	            			criteria.add(Restrictions.like("emailAddress", emailAddress, MatchMode.END));
+	            			break;
+	            		case EXACT:
+	            			criteria.add(Restrictions.eq("emailAddress", emailAddress));
+	            			break;
+	            		case STARTS_WITH:
+	            			criteria.add(Restrictions.like("emailAddress", emailAddress, MatchMode.START));
+	            			break;
+	            		default:
+	            			break;
+	            	}
+	            }
+	        }
+		}
+		return criteria;
+	}
 
     @Override
     public void removeByUserId(final String userId) {

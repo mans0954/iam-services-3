@@ -16,7 +16,8 @@ import org.openiam.idm.srvc.res.dto.ResourceType;
 				"description", 
 				"provisionResource", 
 				"processName",
-				"supportsHierarchy"
+				"supportsHierarchy",
+				"selectAll"
 		}
 )
 public class ResourceTypeSearchBean extends AbstractSearchBean<ResourceType, String> implements
@@ -27,6 +28,7 @@ public class ResourceTypeSearchBean extends AbstractSearchBean<ResourceType, Str
     private Integer provisionResource;
     private String processName;
     private Boolean supportsHierarchy;
+    private Boolean selectAll;
 
     public ResourceTypeSearchBean() {
     }
@@ -69,6 +71,14 @@ public class ResourceTypeSearchBean extends AbstractSearchBean<ResourceType, Str
 
 	public void setSupportsHierarchy(Boolean supportsHierarchy) {
 		this.supportsHierarchy = supportsHierarchy;
+	}
+
+	public Boolean getSelectAll() {
+		return selectAll;
+	}
+
+	public void setSelectAll(Boolean selectAll) {
+		this.selectAll = selectAll;
 	}
     
     

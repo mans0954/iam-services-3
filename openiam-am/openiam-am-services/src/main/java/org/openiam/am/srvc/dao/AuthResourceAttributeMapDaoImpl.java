@@ -6,7 +6,9 @@ import org.hibernate.Query;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.am.srvc.domain.AuthResourceAttributeMapEntity;
+import org.openiam.am.srvc.searchbeans.AuthResourceAttributeMapSearchBean;
 import org.openiam.core.dao.BaseDaoImpl;
+import org.openiam.idm.searchbeans.SearchBean;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,43 +20,48 @@ public class AuthResourceAttributeMapDaoImpl extends BaseDaoImpl<AuthResourceAtt
     protected String getPKfieldName() {
         return "id";
     }
+    
+    
 
     @Override
-    protected Criteria getExampleCriteria(final AuthResourceAttributeMapEntity attribute) {
-        final Criteria criteria = getCriteria();
-        if (StringUtils.isNotBlank(attribute.getId())) {
-            criteria.add(Restrictions.eq(getPKfieldName(), attribute.getId()));
-        } else {
-            if (attribute.getProvider() != null && StringUtils.isNotEmpty(attribute.getProvider().getId())) {
-                criteria.add(Restrictions.eq("provider.id", attribute.getProvider().getId()));
-            }
+	protected Criteria getExampleCriteria(SearchBean searchBean) {
+		final Criteria criteria = getCriteria();
+		if(searchBean != null && searchBean instanceof AuthResourceAttributeMapSearchBean) {
+			final AuthResourceAttributeMapSearchBean sb = (AuthResourceAttributeMapSearchBean)searchBean;
+			if (StringUtils.isNotBlank(sb.getKey())) {
+	            criteria.add(Restrictions.eq(getPKfieldName(), sb.getKey()));
+	        } else {
+	            if (StringUtils.isNotEmpty(sb.getProviderId())) {
+	                criteria.add(Restrictions.eq("provider.id", sb.getProviderId()));
+	            }
 
-            if (StringUtils.isNotEmpty(attribute.getName())) {
-                String targetAttributeName = attribute.getName();
-                MatchMode matchMode = null;
-                if (StringUtils.indexOf(targetAttributeName, "*") == 0) {
-                    matchMode = MatchMode.END;
-                    targetAttributeName = targetAttributeName.substring(1);
-                }
-                if (StringUtils.isNotEmpty(targetAttributeName) && StringUtils.indexOf(targetAttributeName, "*") == targetAttributeName.length() - 1) {
-                    targetAttributeName = targetAttributeName.substring(0, targetAttributeName.length() - 1);
-                    matchMode = (matchMode == MatchMode.END) ? MatchMode.ANYWHERE : MatchMode.START;
-                }
+	            if (StringUtils.isNotEmpty(sb.getName())) {
+	                String targetAttributeName = sb.getName();
+	                MatchMode matchMode = null;
+	                if (StringUtils.indexOf(targetAttributeName, "*") == 0) {
+	                    matchMode = MatchMode.END;
+	                    targetAttributeName = targetAttributeName.substring(1);
+	                }
+	                if (StringUtils.isNotEmpty(targetAttributeName) && StringUtils.indexOf(targetAttributeName, "*") == targetAttributeName.length() - 1) {
+	                    targetAttributeName = targetAttributeName.substring(0, targetAttributeName.length() - 1);
+	                    matchMode = (matchMode == MatchMode.END) ? MatchMode.ANYWHERE : MatchMode.START;
+	                }
 
-                if (StringUtils.isNotEmpty(targetAttributeName)) {
-                    if (matchMode != null) {
-                        criteria.add(Restrictions.ilike("name", targetAttributeName, matchMode));
-                    } else {
-                        criteria.add(Restrictions.eq("name", targetAttributeName));
-                    }
-                }
-            }
+	                if (StringUtils.isNotEmpty(targetAttributeName)) {
+	                    if (matchMode != null) {
+	                        criteria.add(Restrictions.ilike("name", targetAttributeName, matchMode));
+	                    } else {
+	                        criteria.add(Restrictions.eq("name", targetAttributeName));
+	                    }
+	                }
+	            }
 
-            if (attribute.getAmAttribute() != null && StringUtils.isNotEmpty(attribute.getAmAttribute().getId())) {
-                criteria.add(Restrictions.eq("amAttribute.id", attribute.getAmAttribute().getId()));
-            }
+	            if (StringUtils.isNotEmpty(sb.getAmAttributeId())) {
+	                criteria.add(Restrictions.eq("amAttribute.id", sb.getAmAttributeId()));
+	            }
 
-        }
-        return criteria;
-    }
+	        }
+		}
+		return criteria;
+	}
 }

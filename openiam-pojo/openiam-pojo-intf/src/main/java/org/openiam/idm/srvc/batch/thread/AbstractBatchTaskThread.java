@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.batch.domain.BatchTaskEntity;
 import org.openiam.idm.srvc.batch.domain.BatchTaskScheduleEntity;
@@ -33,7 +33,7 @@ public abstract class AbstractBatchTaskThread implements Runnable {
     }
 
     protected void logSuccess() {
-        IdmAuditLog idmAuditLog = new IdmAuditLog();
+    	IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
         idmAuditLog.setRequestorUserId(systemUserId);
         idmAuditLog.setAction(AuditAction.BATCH_TASK_EXECUTE.value());
         idmAuditLog.setAuditDescription(entity.getName());
@@ -44,7 +44,7 @@ public abstract class AbstractBatchTaskThread implements Runnable {
     }
 
     protected void logFail(Throwable e) {
-        IdmAuditLog idmAuditLog = new IdmAuditLog();
+    	IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
         idmAuditLog.setRequestorUserId(systemUserId);
         idmAuditLog.setAction(AuditAction.BATCH_TASK_EXECUTE.value());
         idmAuditLog.setAuditDescription(entity.getName());

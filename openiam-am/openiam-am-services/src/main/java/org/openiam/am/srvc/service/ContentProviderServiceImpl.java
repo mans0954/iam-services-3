@@ -17,7 +17,6 @@ import org.openiam.am.srvc.dao.AuthLevelGroupingDao;
 import org.openiam.am.srvc.dao.AuthProviderDao;
 import org.openiam.am.srvc.dao.AuthResourceAMAttributeDao;
 import org.openiam.am.srvc.dao.ContentProviderDao;
-import org.openiam.am.srvc.dao.ContentProviderServerDao;
 import org.openiam.am.srvc.dao.URIPatternDao;
 import org.openiam.am.srvc.dao.URIPatternMetaTypeDao;
 import org.openiam.am.srvc.domain.AbstractMetaValueEntity;
@@ -51,7 +50,6 @@ import org.openiam.am.srvc.model.MetadataTemplateFieldJSONWrapper;
 import org.openiam.am.srvc.model.URIPatternJSONWrapper;
 import org.openiam.am.srvc.searchbeans.ContentProviderSearchBean;
 import org.openiam.am.srvc.searchbeans.URIPatternSearchBean;
-import org.openiam.am.srvc.searchbeans.converter.ContentProviderSearchBeanConverter;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
@@ -93,13 +91,9 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
     private MetadataElementTemplateService templateService;
 
     @Autowired
-    private ContentProviderSearchBeanConverter contentProviderSearchBeanConverter;
-    @Autowired
     private ContentProviderDozerConverter contentProviderDozerConverter;
     @Autowired
     private ContentProviderDao contentProviderDao;
-    @Autowired
-    private ContentProviderServerDao contentProviderServerDao;
     
     @Autowired
     private AuthProviderDao authProviderDAO;
@@ -180,15 +174,13 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
     @Override
     @Transactional(readOnly = true)
     public int getNumOfContentProviders(ContentProviderSearchBean cpsb) {
-        ContentProviderEntity example = contentProviderSearchBeanConverter.convert(cpsb);
-        return contentProviderDao.count(example);
+        return contentProviderDao.count(cpsb);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<ContentProvider> findBeans(ContentProviderSearchBean cpsb, Integer from, Integer size) {
-        ContentProviderEntity example = contentProviderSearchBeanConverter.convert(cpsb);
-        List<ContentProviderEntity> contentProviderEntities =  contentProviderDao.getByExample(example, from, size);
+        List<ContentProviderEntity> contentProviderEntities =  contentProviderDao.getByExample(cpsb, from, size);
         return contentProviderEntities != null ? contentProviderDozerConverter.convertToDTOList(contentProviderEntities, cpsb.isDeepCopy()) : null;
     }
 

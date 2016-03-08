@@ -12,13 +12,15 @@ import javax.xml.bind.annotation.XmlType;
         "pattern",
         "contentProviderId",
         "authProviderId",
-        "showOnApplicationPage"
+        "showOnApplicationPage",
+        "resourceId"
 })
 public class URIPatternSearchBean extends AbstractSearchBean<URIPattern, String> {
     private String pattern;
     private String contentProviderId;
     private String authProviderId;
     private Boolean showOnApplicationPage;
+    private String resourceId;
 
     public String getPattern() {
         return pattern;
@@ -50,6 +52,14 @@ public class URIPatternSearchBean extends AbstractSearchBean<URIPattern, String>
 
 	public void setShowOnApplicationPage(Boolean showOnApplicationPage) {
 		this.showOnApplicationPage = showOnApplicationPage;
+	}
+
+	public String getResourceId() {
+		return resourceId;
+	}
+
+	public void setResourceId(String resourceId) {
+		this.resourceId = resourceId;
 	}
     
     

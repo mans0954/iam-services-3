@@ -1,0 +1,22 @@
+#!/bin/sh
+
+### BEGIN INIT INFO
+# Provides: esb
+# Required-Start: $local_fs $remote_fs $network $syslog
+# Required-Stop: $local_fs $remote_fs $network $syslog
+# Default-Start: 2 3 4 5
+# Default-Stop: 0 1 6
+# Short-Description: Management of JBoss AS v7.x
+### END INIT INFO
+# chkconfig: 2345 65 35
+
+case "$1" in
+start)
+echo "Starting ESB..."
+sudo -u ubuntu java -Xms512m -Xmx1024m -XX:ReservedCodeCacheSize=64m -XX:MaxPermSize=256m -Dconfpath=/data/openiam -jar /home/ubuntu/iam-services/openiam-esb/target/openiam-esb.jar &> /var/log/esb.log &
+;;
+*)
+echo "Usage: /etc/init.d/esb {start}"
+exit 1
+;; esac
+exit 0

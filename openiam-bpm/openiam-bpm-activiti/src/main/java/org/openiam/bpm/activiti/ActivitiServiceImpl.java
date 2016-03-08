@@ -5,12 +5,10 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.jws.WebMethod;
 import javax.jws.WebService;
@@ -23,12 +21,10 @@ import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
 import org.activiti.engine.history.HistoricActivityInstance;
 import org.activiti.engine.history.HistoricActivityInstanceQuery;
-import org.activiti.engine.history.HistoricDetail;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.history.HistoricTaskInstanceQuery;
 import org.activiti.engine.history.HistoricVariableInstance;
-import org.activiti.engine.runtime.Execution;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
 import org.activiti.engine.task.TaskQuery;
@@ -38,17 +34,11 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.activiti.model.dto.TaskSearchBean;
-import org.openiam.base.BaseIdentity;
+import org.openiam.authmanager.service.AuthorizationManagerService;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.bpm.activiti.delegate.core.ActivitiHelper;
-import org.openiam.dozer.converter.AddressDozerConverter;
-import org.openiam.dozer.converter.EmailAddressDozerConverter;
-import org.openiam.dozer.converter.PhoneDozerConverter;
-import org.openiam.dozer.converter.UserDozerConverter;
-import org.openiam.exception.BasicDataServiceException;
-import org.openiam.exception.CustomActivitiException;
 import org.openiam.bpm.activiti.groovy.DefaultEditUserApproverAssociationIdentifier;
 import org.openiam.bpm.activiti.groovy.DefaultGenericWorkflowRequestApproverAssociationIdentifier;
 import org.openiam.bpm.activiti.groovy.DefaultNewHireRequestApproverAssociationIdentifier;
@@ -67,11 +57,17 @@ import org.openiam.bpm.response.TaskListWrapper;
 import org.openiam.bpm.response.TaskWrapper;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.bpm.util.ActivitiRequestType;
+import org.openiam.dozer.converter.AddressDozerConverter;
+import org.openiam.dozer.converter.EmailAddressDozerConverter;
+import org.openiam.dozer.converter.PhoneDozerConverter;
+import org.openiam.dozer.converter.UserDozerConverter;
+import org.openiam.exception.BasicDataServiceException;
+import org.openiam.exception.CustomActivitiException;
 import org.openiam.idm.srvc.access.service.AccessRightDAO;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
 import org.openiam.idm.srvc.audit.constant.AuditSource;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
@@ -86,7 +82,6 @@ import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.service.ResourceService;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
-import org.openiam.idm.srvc.synch.service.generic.ObjectAdapterMap;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;
 import org.openiam.idm.srvc.user.dto.User;
@@ -97,15 +92,12 @@ import org.openiam.idm.util.CustomJacksonMapper;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.util.SystemInfoWebService;
 import org.openiam.validator.EntityValidator;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;import org.springframework.util.ReflectionUtils;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ReflectionUtils;
 
 
 @Component("activitiBPMService")
@@ -143,6 +135,9 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 	private UserProfileService userProfileService;
     @Autowired
     private UserDataService userDataService;
+    
+    @Autowired
+	private AuthorizationManagerService authManagerService;
 
     @Value("${org.openiam.activiti.membership.approver.association.groovy.script}")
     private String membershipApproverAssociationGroovyScript;
@@ -156,6 +151,9 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
     @Autowired
     @Qualifier("configurableGroovyScriptEngine")
     protected ScriptIntegration scriptRunner;
+    
+    @Value("${org.openiam.ui.admin.right.id}")
+	private String adminRightId;
 	
     @Autowired
     private MetadataElementTemplateService pageTemplateService;
@@ -210,8 +208,8 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 		resource.setResourceType(resourceTypeDAO.findById(workflowResourceType));
 		resource.setName(String.format("%s_%s", name, System.currentTimeMillis()));
 		resource.setCoorelatedName(String.format("Resource protecting workflow '%s'", name));
-		resource.addUser(user, accessRightDAO.findAll());
-		resource.addChildResource(workflowMasterResource, null);
+		resource.addUser(user, accessRightDAO.findAll(), null, null);
+		resource.addChildResource(workflowMasterResource, null, null, null);
 		
 		resourceService.save(resource, requestor);
 		return resource;
@@ -223,7 +221,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 	public SaveTemplateProfileResponse initiateNewHireRequest(final NewUserProfileRequestModel request) {
 		log.info("Initializing workflow");
 		final SaveTemplateProfileResponse response = new SaveTemplateProfileResponse();
-		IdmAuditLog idmAuditLog = new IdmAuditLog();
+		IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
         idmAuditLog.setAction(AuditAction.NEW_USER_WORKFLOW.value());
         idmAuditLog.setBaseObject(request);
         idmAuditLog.setRequestorUserId(request.getRequestorUserId());
@@ -305,7 +303,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			}
 			
             for(Map.Entry<String,Object> varEntry : variables.entrySet()) {
-                idmAuditLog.addCustomRecord(varEntry.getKey(), (varEntry.getValue() != null) ? varEntry.getValue().toString() : null);
+                idmAuditLog.put(varEntry.getKey(), (varEntry.getValue() != null) ? varEntry.getValue().toString() : null);
             }
 
             idmAuditLog = auditLogService.save(idmAuditLog);
@@ -386,7 +384,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 	@WebMethod
 	@Transactional
 	public Response claimRequest(final ActivitiClaimRequest request) {
-		final IdmAuditLog idmAuditLog = new IdmAuditLog();
+		final IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
         idmAuditLog.setAction(AuditAction.CLAIM_REQUEST.value());
         idmAuditLog.setBaseObject(request);
         idmAuditLog.setRequestorUserId(request.getRequestorUserId());
@@ -449,10 +447,10 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
             response.setErrorText(e.getMessage());
         } finally {
             if (parentAuditLogId != null) {
-                IdmAuditLog parent = auditLogService.findById(parentAuditLogId);
+            	IdmAuditLogEntity parent = auditLogService.findById(parentAuditLogId);
                 if (parent != null) {
                     parent.addChild(idmAuditLog);
-                    idmAuditLog.addParent(parent);
+                    //idmAuditLog.addParent(parent);
                     parent = auditLogService.save(parent);
                 }
             }
@@ -466,7 +464,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 	public SaveTemplateProfileResponse initiateEditUserWorkflow(final UserProfileRequestModel request) {
 		final SaveTemplateProfileResponse response = new SaveTemplateProfileResponse();
 		
-		IdmAuditLog idmAuditLog = new IdmAuditLog();
+		IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
         idmAuditLog.setAction(AuditAction.EDIT_USER_WORKFLOW.value());
         idmAuditLog.setBaseObject(request);
         idmAuditLog.setRequestorUserId(request.getRequestorUserId());
@@ -536,7 +534,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			
             idmAuditLog = auditLogService.findById(idmAuditLog.getId());
             for(Map.Entry<String,Object> varEntry : variables.entrySet()) {
-                idmAuditLog.addCustomRecord(varEntry.getKey(), (varEntry.getValue() != null) ? varEntry.getValue().toString() : null);
+                idmAuditLog.put(varEntry.getKey(), (varEntry.getValue() != null) ? varEntry.getValue().toString() : null);
             }
 
             idmAuditLog.setTargetTask(processInstance.getId(), description);
@@ -613,8 +611,9 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 	@Override
 	@Transactional
 	public BasicWorkflowResponse initiateWorkflow(final GenericWorkflowRequest request) {
-		IdmAuditLog idmAuditLog = new IdmAuditLog();
-        idmAuditLog.setRequestorUserId(request.getRequestorUserId());
+		final String requestorId = request.getRequestorUserId();
+		IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
+        idmAuditLog.setRequestorUserId(requestorId);
         //idmAuditLog.setAction(AuditAction.INITIATE_WORKFLOW.value());
         idmAuditLog.setAction(request.getActivitiRequestType());
         idmAuditLog.setBaseObject(request);
@@ -718,6 +717,46 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			if(identifier.getCustomActivitiAttributes() != null) {
 				variables.putAll(identifier.getCustomActivitiAttributes());
 			}
+			
+            boolean isAdmin = false;
+            if((request.getAssociationId() != null) && (request.getAssociationType() != null)) {
+            	switch(request.getAssociationType()) {
+            		case GROUP:
+            			isAdmin = authManagerService.isMemberOfGroup(requestorId, request.getAssociationId(), adminRightId);
+            			break;
+            		case ORGANIZATION:
+            			isAdmin = authManagerService.isMemberOfOrganization(requestorId, request.getAssociationId(), adminRightId);
+            			break;
+            		case RESOURCE:
+            			isAdmin = authManagerService.isEntitled(requestorId, request.getAssociationId(), adminRightId);
+            			break;
+            		case ROLE:
+            			isAdmin = authManagerService.isMemberOfRole(requestorId, request.getAssociationId(), adminRightId);
+            			break;
+            		default:
+            			break;
+            	}
+            }
+            
+            if((request.getMemberAssociationId() != null) && (request.getMemberAssociationType() != null)) {
+            	switch(request.getMemberAssociationType()) {
+	        		case GROUP:
+	        			isAdmin = authManagerService.isMemberOfGroup(requestorId, request.getMemberAssociationId(), adminRightId);
+	        			break;
+	        		case ORGANIZATION:
+	        			isAdmin = authManagerService.isMemberOfOrganization(requestorId, request.getMemberAssociationId(), adminRightId);
+	        			break;
+	        		case RESOURCE:
+	        			isAdmin = authManagerService.isEntitled(requestorId, request.getMemberAssociationId(), adminRightId);
+	        			break;
+	        		case ROLE:
+	        			isAdmin = authManagerService.isMemberOfRole(requestorId, request.getMemberAssociationId(), adminRightId);
+	        			break;
+	        		default:
+	        			break;
+	        	}
+            }
+            variables.put(ActivitiConstants.IS_ADMIN.getName(), isAdmin);
 
             idmAuditLog = auditLogService.save(idmAuditLog);
             variables.put(ActivitiConstants.AUDIT_LOG_ID.getName(), idmAuditLog.getId());
@@ -730,7 +769,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			idmAuditLog = auditLogService.findById(idmAuditLog.getId());
             idmAuditLog.setTargetTask(processInstance.getId(), request.getName());
             for (Map.Entry<String, Object> varEntry : variables.entrySet()) {
-                idmAuditLog.addCustomRecord(varEntry.getKey(), (varEntry.getValue() != null) ? varEntry.getValue().toString() : null);
+                idmAuditLog.put(varEntry.getKey(), (varEntry.getValue() != null) ? varEntry.getValue().toString() : null);
             }
 
 			response.succeed();
@@ -800,7 +839,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
     @WebMethod
     public Response makeDecision(final ActivitiRequestDecision request) {
         final Response response = new Response();
-        final IdmAuditLog idmAuditLog = new IdmAuditLog();
+        final IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
         idmAuditLog.setRequestorUserId(request.getRequestorUserId());
         idmAuditLog.setAction(AuditAction.COMPLETE_WORKFLOW.value());
         idmAuditLog.setBaseObject(request);
@@ -821,7 +860,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 
             idmAuditLog.setTargetTask(assignedTask.getId(), assignedTask.getName());
             for(Map.Entry<String,Object> varEntry : variables.entrySet()) {
-                idmAuditLog.addCustomRecord(varEntry.getKey(), (varEntry.getValue() != null) ? varEntry.getValue().toString() : null);
+                idmAuditLog.put(varEntry.getKey(), (varEntry.getValue() != null) ? varEntry.getValue().toString() : null);
             }
             
             
@@ -833,7 +872,9 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			final Task task = taskService.createTaskQuery().taskId(assignedTask.getId()).list().get(0);
             
 			taskService.setVariablesLocal(assignedTask.getId(), variables);
-			taskService.addComment(assignedTask.getId(), task.getProcessInstanceId(), request.getComment());
+			if(org.apache.commons.lang3.StringUtils.isNotBlank(request.getComment())) {
+				taskService.addComment(assignedTask.getId(), task.getProcessInstanceId(), request.getComment());
+			}
         	taskService.complete(assignedTask.getId(), variables);
         	response.succeed();
             idmAuditLog.succeed();
@@ -864,10 +905,10 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
             response.setErrorText(e.getMessage());
         } finally {
             if (parentAuditLogId != null) {
-                IdmAuditLog parent = auditLogService.findById(parentAuditLogId);
+            	IdmAuditLogEntity parent = auditLogService.findById(parentAuditLogId);
                 if (parent != null) {
                     parent.addChild(idmAuditLog);
-                    idmAuditLog.addParent(parent);
+                    //idmAuditLog.addParent(parent);
                     parent = auditLogService.save(parent);
                 }
             }
@@ -1234,7 +1275,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
     @Transactional
     public Response deleteTask(String taskId, final String userId) {
     	final Response response = new Response(ResponseStatus.SUCCESS);
-        final IdmAuditLog idmAuditLog = new IdmAuditLog();
+        final IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
         idmAuditLog.setRequestorUserId(userId);
         idmAuditLog.setAction(AuditAction.TERMINATED_WORKFLOW.value());
         idmAuditLog.setSource(AuditSource.WORKFLOW.value());
@@ -1277,10 +1318,10 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
             idmAuditLog.fail();
         } finally {
             if (parentAuditLogId != null) {
-                IdmAuditLog parent = auditLogService.findById(parentAuditLogId);
+            	IdmAuditLogEntity parent = auditLogService.findById(parentAuditLogId);
                 if (parent != null) {
                     parent.addChild(idmAuditLog);
-                    idmAuditLog.addParent(parent);
+                    //idmAuditLog.addParent(parent);
                     parent = auditLogService.save(parent);
                 }
             }
@@ -1313,7 +1354,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 	@Transactional
 	public Response unclaimTask(String taskId, String userId) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
-        final IdmAuditLog idmAuditLog = new IdmAuditLog();
+        final IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
         idmAuditLog.setRequestorUserId(userId);
         idmAuditLog.setAction(AuditAction.UNCLAIM_TASK.value());
         idmAuditLog.setSource(AuditSource.WORKFLOW.value());
@@ -1348,10 +1389,10 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
             idmAuditLog.fail();
         } finally {
             if (parentAuditLogId != null) {
-                IdmAuditLog parent = auditLogService.findById(parentAuditLogId);
+            	IdmAuditLogEntity parent = auditLogService.findById(parentAuditLogId);
                 if (parent != null) {
                     parent.addChild(idmAuditLog);
-                    idmAuditLog.addParent(parent);
+                    //idmAuditLog.addParent(parent);
                     parent = auditLogService.save(parent);
                 }
             }
@@ -1378,7 +1419,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 	@Transactional
 	public Response deleteTasksForUser(final String userId) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
-        final IdmAuditLog idmAuditLog = new IdmAuditLog();
+        final IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
         idmAuditLog.setRequestorUserId(userId);
         idmAuditLog.setAction(AuditAction.DELETE_ALL_USER_TASKS.value());
         idmAuditLog.setSource(AuditSource.WORKFLOW.value());
@@ -1417,9 +1458,9 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
             idmAuditLog.fail();
 		} finally {
 			if(parentAuditLogId != null) {
-				IdmAuditLog parent = auditLogService.findById(parentAuditLogId);
+				IdmAuditLogEntity parent = auditLogService.findById(parentAuditLogId);
 				parent.addChild(idmAuditLog);
-				idmAuditLog.addParent(parent);
+				//idmAuditLog.addParent(parent);
                 parent = auditLogService.save(parent);
 			}
         }

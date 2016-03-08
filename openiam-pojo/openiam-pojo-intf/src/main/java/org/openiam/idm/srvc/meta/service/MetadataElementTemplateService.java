@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.openiam.idm.searchbeans.MetadataElementPageTemplateSearchBean;
 import org.openiam.idm.searchbeans.MetadataTemplateTypeFieldSearchBean;
+import org.openiam.idm.searchbeans.MetadataTemplateTypeSearchBean;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTemplateTypeEntity;
@@ -25,7 +26,7 @@ public interface MetadataElementTemplateService {
 	void saveTemplate(final UserProfileRequestModel request) throws PageTemplateException;
 	void validate(final UserProfileRequestModel request) throws PageTemplateException;
 	MetadataTemplateTypeEntity getTemplateType(final String id);
-	List<MetadataTemplateTypeEntity> findTemplateTypes(final MetadataTemplateTypeEntity entity, final int from, final int size);
+	List<MetadataTemplateTypeEntity> findTemplateTypes(final MetadataTemplateTypeSearchBean searchBean, final int from, final int size);
 	List<MetadataTemplateTypeFieldEntity> findUIFields(final MetadataTemplateTypeFieldSearchBean searchBean, final int from, final int size);
     Integer countUIFields(final MetadataTemplateTypeFieldSearchBean searchBean);
 }

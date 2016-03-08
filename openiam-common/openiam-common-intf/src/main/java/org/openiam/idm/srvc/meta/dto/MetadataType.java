@@ -182,8 +182,12 @@ public class MetadataType extends KeyNameDTO {
 	public String toString() {
 		return "MetadataType [active=" + active + ", syncManagedSys="
 				+ syncManagedSys + ", grouping=" + grouping + ", binary="
-				+ binary + ", sensitive=" + sensitive + "]";
+				+ binary + ", sensitive=" + sensitive + ", usedForSMSOTP="
+				+ usedForSMSOTP + ", displayNameMap=" + displayNameMap
+				+ ", displayName=" + displayName + ", name_=" + name_ + ", id="
+				+ id + "]";
 	}
 
+	
 	
 }

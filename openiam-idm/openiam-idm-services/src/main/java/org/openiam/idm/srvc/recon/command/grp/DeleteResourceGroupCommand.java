@@ -39,6 +39,7 @@ public class DeleteResourceGroupCommand extends BaseReconciliationGroupCommand {
     private ObjectProvisionService<ProvisionGroup> provisionService;
 
     @Autowired
+    @Qualifier("managedSysService")
     private ManagedSystemWebService managedSysService;
 
     @Autowired

@@ -18,6 +18,7 @@ import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.grp.domain.GroupToResourceMembershipXrefEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
+import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.role.dto.Role;
@@ -99,7 +100,9 @@ import java.util.stream.Collectors;
         "supervisors",
         "subordinates",
         "isFromActivitiCreation",
-        "accessRightIds"
+        "accessRightIds",
+        "accessRightStartDate",
+        "accessRightEndDate"
 })
 @XmlSeeAlso({
         Login.class,
@@ -253,6 +256,9 @@ public class User extends AbstractMetadataTypeDTO {
 
     @XmlTransient
     private Set<OAuthCodeEntity> oAuthCodes;
+    
+    private Date accessRightStartDate;
+    private Date accessRightEndDate;
 
     /**
      * default constructor
@@ -317,7 +323,7 @@ public class User extends AbstractMetadataTypeDTO {
 
     @Deprecated
     public void addAffiliation(final Organization org) {
-        addAffiliation(org, null);
+        addAffiliation(org, null, null, null);
     }
 
     @Deprecated
@@ -347,11 +353,11 @@ public class User extends AbstractMetadataTypeDTO {
     	}
     }
 
-    public void addAffiliation(final Organization organization, final Set<String> rights) {
-    	addAffiliationWithRights(organization, toAccessRightSet(rights));
+    public void addAffiliation(final Organization organization, final Set<String> rights, final Date startDate, final Date endDate) {
+    	addAffiliationWithRights(organization, toAccessRightSet(rights), startDate, endDate);
     }
     
-    public void addAffiliationWithRights(final Organization organization, final Set<AccessRight> rights) {
+    public void addAffiliationWithRights(final Organization organization, final Set<AccessRight> rights, final Date startDate, final Date endDate) {
     	if (organization != null) {
             if (affiliations == null) {
             	affiliations = new HashSet<UserToOrganizationMembershipXref>();
@@ -375,6 +381,8 @@ public class User extends AbstractMetadataTypeDTO {
 			if(rights != null) {
 				theXref.setRights(rights);
 			}
+			theXref.setStartDate(startDate);
+			theXref.setEndDate(endDate);
 			this.affiliations.add(theXref);
         }
     }
@@ -720,6 +728,21 @@ public class User extends AbstractMetadataTypeDTO {
         }
         return null;
     }
+    
+    public Phone getPhoneByMetadataType(final MetadataType metadataType) {
+    	Phone retVal = null;
+    	if(metadataType != null) {
+        	if(CollectionUtils.isNotEmpty(this.getPhones())) {
+        		for(final Phone phone : this.getPhones()) {
+        			if(StringUtils.equals(phone.getMdTypeId(), metadataType.getId())) {
+        				retVal = phone;
+        				break;
+        			}
+        		}
+        	}
+        }
+    	return retVal;
+    }
 
     public Address getAddressById(String id) {
         Iterator<Address> addressIt = addresses.iterator();
@@ -778,11 +801,11 @@ public class User extends AbstractMetadataTypeDTO {
     	}
     }
 
-    public void addRole(final Role role, final Set<String> rights) {
-    	addRoleWithRights(role, toAccessRightSet(rights));
+    public void addRole(final Role role, final Set<String> rights, final Date startDate, final Date endDate) {
+    	addRoleWithRights(role, toAccessRightSet(rights), startDate, endDate);
     }
     
-    public void addRoleWithRights(final Role role, final Set<AccessRight> rights) {
+    public void addRoleWithRights(final Role role, final Set<AccessRight> rights, final Date startDate, final Date endDate) {
     	if (role != null) {
             if (roles == null) {
             	roles = new HashSet<UserToRoleMembershipXref>();
@@ -806,13 +829,15 @@ public class User extends AbstractMetadataTypeDTO {
 			if(rights != null) {
 				theXref.setRights(rights);
 			}
+			theXref.setStartDate(startDate);
+			theXref.setEndDate(endDate);
 			this.roles.add(theXref);
         }
     }
     
     @Deprecated
     public void addRole(final Role role) {
-    	addRole(role, null);
+    	addRole(role, null, null, null);
     }
 
     public void setRoles(Set<UserToRoleMembershipXref> roles) {
@@ -875,14 +900,14 @@ public class User extends AbstractMetadataTypeDTO {
      */
     @Deprecated
     public void addGroup(final Group group) {
-    	addGroup(group, null);
+    	addGroup(group, null, null, null);
     }
     
-    public void addGroup(final Group group, final Set<String> rights) {
-    	addGroupWithRights(group, toAccessRightSet(rights));
+    public void addGroup(final Group group, final Set<String> rights, final Date startDate, final Date endDate) {
+    	addGroupWithRights(group, toAccessRightSet(rights), startDate, endDate);
     }
     
-    public void addGroupWithRights(final Group group, final Set<AccessRight> rights) {
+    public void addGroupWithRights(final Group group, final Set<AccessRight> rights, final Date startDate, final Date endDate) {
     	if (group != null) {
             if (groups == null) {
             	groups = new HashSet<UserToGroupMembershipXref>();
@@ -906,6 +931,8 @@ public class User extends AbstractMetadataTypeDTO {
 			if(rights != null) {
 				theXref.setRights(rights);
 			}
+			theXref.setStartDate(startDate);
+			theXref.setEndDate(endDate);
 			this.groups.add(theXref);
         }
     }
@@ -916,10 +943,10 @@ public class User extends AbstractMetadataTypeDTO {
      */
     @Deprecated
     public void addResource(final Resource resource) {
-    	addResource(resource, null);
+    	addResource(resource, null, null, null);
     }
     
-    public void addResourceWithRights(final Resource resource, final Set<AccessRight> rights) {
+    public void addResourceWithRights(final Resource resource, final Set<AccessRight> rights, final Date startDate, final Date endDate) {
     	if (resource != null) {
             if (resources == null) {
                 resources = new HashSet<UserToResourceMembershipXref>();
@@ -943,6 +970,8 @@ public class User extends AbstractMetadataTypeDTO {
 			if(rights != null) {
 				theXref.setRights(rights);
 			}
+			theXref.setStartDate(startDate);
+			theXref.setEndDate(endDate);
 			this.resources.add(theXref);
         }
     }
@@ -961,7 +990,13 @@ public class User extends AbstractMetadataTypeDTO {
     		
     		if(theXref != null) {
     			theXref.setOperation(AttributeOperationEnum.DELETE);
-    		}
+    		}/* else {
+    			theXref = new UserToResourceMembershipXref();
+    			theXref.setEntityId(resourceId);
+    			theXref.setMemberEntityId(getId());
+    			theXref.setOperation(AttributeOperationEnum.DELETE);
+    			//theXref.
+    		}*/
     	}
     }
     
@@ -971,8 +1006,8 @@ public class User extends AbstractMetadataTypeDTO {
     	}
     }
     
-    public void addResource(final Resource resource, final Set<String> rights) {
-    	addResourceWithRights(resource, toAccessRightSet(rights));
+    public void addResource(final Resource resource, final Set<String> rights, final Date startDate, final Date endDate) {
+    	addResourceWithRights(resource, toAccessRightSet(rights), startDate, endDate);
     }
     
     private Set<AccessRight> toAccessRightSet(final Set<String> rights) {
@@ -1506,7 +1541,23 @@ public class User extends AbstractMetadataTypeDTO {
         this.oAuthCodes = oAuthCodes;
     }
 
-    @Override
+    public Date getAccessRightStartDate() {
+		return accessRightStartDate;
+	}
+
+	public void setAccessRightStartDate(Date accessRightStartDate) {
+		this.accessRightStartDate = accessRightStartDate;
+	}
+
+	public Date getAccessRightEndDate() {
+		return accessRightEndDate;
+	}
+
+	public void setAccessRightEndDate(Date accessRightEndDate) {
+		this.accessRightEndDate = accessRightEndDate;
+	}
+
+	@Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;

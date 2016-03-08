@@ -13,7 +13,7 @@ public class AttributeMapUtil {
             return a.getReconResAttribute().getAttributePolicy().getName();
         if (a.getReconResAttribute().getDefaultAttributePolicy() != null)
             return a.getReconResAttribute().getDefaultAttributePolicy()
-                    .getDefaultAttributeMapName();
+                    .getName();
         return null;
     }
 
@@ -26,7 +26,7 @@ public class AttributeMapUtil {
 			return a.getReconResAttribute().getAttributePolicy().getName();
 		if (a.getReconResAttribute().getDefaultAttributePolicy() != null)
 			return a.getReconResAttribute().getDefaultAttributePolicy()
-					.getDefaultAttributeMapName();
+					.getName();
 		return null;
 	}
 }

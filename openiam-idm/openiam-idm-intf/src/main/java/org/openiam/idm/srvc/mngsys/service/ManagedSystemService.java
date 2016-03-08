@@ -1,22 +1,32 @@
 package org.openiam.idm.srvc.mngsys.service;
 
+import java.util.List;
+
 import org.openiam.am.srvc.domain.AuthProviderEntity;
-import org.openiam.base.ws.Response;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.AttributeMapSearchBean;
 import org.openiam.idm.searchbeans.MngSysPolicySearchBean;
 import org.openiam.idm.srvc.mngsys.bean.MngSysPolicyBean;
-import org.openiam.idm.srvc.mngsys.domain.*;
-import org.openiam.idm.srvc.mngsys.dto.*;
-
-import java.util.List;
+import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
+import org.openiam.idm.srvc.mngsys.domain.AssociationType;
+import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
+import org.openiam.idm.srvc.mngsys.domain.DefaultReconciliationAttributeMapEntity;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysRuleEntity;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
+import org.openiam.idm.srvc.mngsys.domain.MngSysPolicyEntity;
+import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
+import org.openiam.idm.srvc.mngsys.dto.MngSysPolicyDto;
+import org.openiam.idm.srvc.msg.dto.ManagedSysSearchBean;
 
 public interface ManagedSystemService {
+	
+	int count(final ManagedSysSearchBean searchBean);
 
     List<ManagedSysDto> getManagedSystemsByExample(ManagedSysSearchBean example,
                                                       Integer from, Integer size);
-
-    Integer getManagedSystemsCountByExample(ManagedSysEntity example);
 
     ManagedSysEntity getManagedSysById(String id);
 

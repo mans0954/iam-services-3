@@ -1,5 +1,7 @@
 package org.openiam.bpm.activiti.delegate.group.attestation;
 
+import java.util.Collection;
+
 import org.activiti.engine.delegate.DelegateExecution;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.time.StopWatch;
@@ -7,16 +9,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.bpm.activiti.delegate.entitlements.AbstractEntitlementsDelegate;
 import org.openiam.bpm.util.ActivitiConstants;
-import org.openiam.bpm.util.ActivitiRequestType;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
-import org.openiam.idm.srvc.grp.domain.GroupEntity;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.idm.srvc.user.domain.UserEntity;
-
-import java.util.Collection;
 
 public class SendAttestationRequestDelegate extends AbstractEntitlementsDelegate {
 	
@@ -28,7 +26,7 @@ public class SendAttestationRequestDelegate extends AbstractEntitlementsDelegate
 
 	@Override
 	public void execute(DelegateExecution execution) throws Exception {
-		final IdmAuditLog idmAuditLog = createNewAuditLog(execution);
+		final IdmAuditLogEntity idmAuditLog = createNewAuditLog(execution);
         idmAuditLog.setAction(AuditAction.NOTIFICATION.value());
 		try {
 			final StopWatch sw = new StopWatch();

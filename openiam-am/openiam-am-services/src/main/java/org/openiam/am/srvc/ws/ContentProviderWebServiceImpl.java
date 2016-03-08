@@ -1,5 +1,14 @@
 package org.openiam.am.srvc.ws;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.jws.WebParam;
+import javax.jws.WebService;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -12,12 +21,35 @@ import org.openiam.am.srvc.domain.AuthProviderEntity;
 import org.openiam.am.srvc.domain.AuthProviderTypeEntity;
 import org.openiam.am.srvc.domain.ContentProviderEntity;
 import org.openiam.am.srvc.domain.URIPatternEntity;
-import org.openiam.am.srvc.dozer.converter.*;
-import org.openiam.am.srvc.dto.*;
+import org.openiam.am.srvc.dozer.converter.AuthLevelAttributeDozerConverter;
+import org.openiam.am.srvc.dozer.converter.AuthLevelDozerConverter;
+import org.openiam.am.srvc.dozer.converter.AuthLevelGroupingDozerConverter;
+import org.openiam.am.srvc.dozer.converter.ContentProviderDozerConverter;
+import org.openiam.am.srvc.dozer.converter.ContentProviderServerDoserConverter;
+import org.openiam.am.srvc.dozer.converter.URIPatternDozerConverter;
+import org.openiam.am.srvc.dozer.converter.URIPatternMetaDozerConverter;
+import org.openiam.am.srvc.dozer.converter.URIPatternMetaTypeDozerConverter;
+import org.openiam.am.srvc.dto.AuthLevel;
+import org.openiam.am.srvc.dto.AuthLevelAttribute;
+import org.openiam.am.srvc.dto.AuthLevelGrouping;
+import org.openiam.am.srvc.dto.ContentProvider;
+import org.openiam.am.srvc.dto.ContentProviderServer;
+import org.openiam.am.srvc.dto.PatternMatchMode;
+import org.openiam.am.srvc.dto.URIPattern;
+import org.openiam.am.srvc.dto.URIPatternErrorMapping;
+import org.openiam.am.srvc.dto.URIPatternMeta;
+import org.openiam.am.srvc.dto.URIPatternMetaType;
+import org.openiam.am.srvc.dto.URIPatternMetaValue;
+import org.openiam.am.srvc.dto.URIPatternMethod;
+import org.openiam.am.srvc.dto.URIPatternMethodMeta;
+import org.openiam.am.srvc.dto.URIPatternMethodMetaValue;
+import org.openiam.am.srvc.dto.URIPatternMethodParameter;
+import org.openiam.am.srvc.dto.URIPatternParameter;
+import org.openiam.am.srvc.dto.URIPatternServer;
+import org.openiam.am.srvc.dto.URIPatternSubstitution;
 import org.openiam.am.srvc.groovy.AbstractRedirectURLGroovyProcessor;
 import org.openiam.am.srvc.searchbeans.ContentProviderSearchBean;
 import org.openiam.am.srvc.searchbeans.URIPatternSearchBean;
-import org.openiam.am.srvc.searchbeans.converter.ContentProviderSearchBeanConverter;
 import org.openiam.am.srvc.service.AuthProviderService;
 import org.openiam.am.srvc.service.ContentProviderService;
 import org.openiam.am.srvc.uriauth.exception.InvalidPatternException;
@@ -35,15 +67,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.jws.WebParam;
-import javax.jws.WebService;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 @Service("contentProviderWS")
 @WebService(endpointInterface = "org.openiam.am.srvc.ws.ContentProviderWebService",
             targetNamespace = "urn:idm.openiam.org/srvc/am/service", portName = "ContentProviderWebServicePort",
@@ -54,8 +77,6 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
     private ContentProviderService contentProviderService;
     @Autowired
     private ContentProviderDozerConverter contentProviderDozerConverter;
-    @Autowired
-    private ContentProviderSearchBeanConverter contentProviderSearchBeanConverter;
 
     @Autowired
     private AuthLevelDozerConverter authLevelDozerConverter;
@@ -88,6 +109,9 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
     @Autowired
     @Qualifier("configurableGroovyScriptEngine")
     private ScriptIntegration scriptRunner;
+    
+    @Value("${org.openiam.pattern.meta.type.cookie}")
+    private String cookieMetadataType;
     
 	@Override
     @Transactional(readOnly = true)
@@ -579,6 +603,14 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
             			}
             		}
             		
+        			/* cookies require a path */
+    				if(StringUtils.equals(meta.getMetaType().getId(), cookieMetadataType)) {
+    					if(StringUtils.isBlank(meta.getCookiePath())) {
+    						response.addFieldMapping("metaName", meta.getName());
+    						throw new BasicDataServiceException(ResponseCode.COOKIE_PATH_REQUIRED);
+    					}
+    				}
+            		
             		if(CollectionUtils.isNotEmpty(meta.getMetaValueSet())) {
             			for(final URIPatternMetaValue value : meta.getMetaValueSet()) {
             				if (StringUtils.isBlank(value.getName())) {
@@ -662,9 +694,18 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
                     			if(StringUtils.isEmpty(meta.getContentType())) {
                     				response.addFieldMapping("method", method.getMethod().toString());
                     				response.addFieldMapping("metaName", meta.getName());
-                        			throw new  BasicDataServiceException(ResponseCode.PATTERN_METHOD_META_CONTENT_TYPE_MISSING);
+                        			throw new  BasicDataServiceException(ResponseCode.COOKIE_PATH_REQUIRED_ON_METHOD);
                     			}
                     		}
+            				
+            				/* cookies require a path */
+            				if(StringUtils.equals(meta.getMetaType().getId(), cookieMetadataType)) {
+            					if(StringUtils.isBlank(meta.getCookiePath())) {
+            						response.addFieldMapping("method", method.getMethod().toString());
+                    				response.addFieldMapping("metaName", meta.getName());
+            						throw new BasicDataServiceException(ResponseCode.COOKIE_PATH_REQUIRED);
+            					}
+            				}
             				
             				if(CollectionUtils.isNotEmpty(meta.getMetaValueSet())) {
                     			for(final URIPatternMethodMetaValue value : meta.getMetaValueSet()) {

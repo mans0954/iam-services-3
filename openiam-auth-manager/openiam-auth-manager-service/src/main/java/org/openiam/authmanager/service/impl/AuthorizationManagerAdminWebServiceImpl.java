@@ -1,17 +1,18 @@
 package org.openiam.authmanager.service.impl;
 
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Set;
+
+import javax.jws.WebMethod;
+import javax.jws.WebService;
+
 import org.openiam.authmanager.common.SetStringResponse;
 import org.openiam.authmanager.model.UserEntitlementsMatrix;
 import org.openiam.authmanager.service.AuthorizationManagerAdminService;
 import org.openiam.authmanager.service.AuthorizationManagerAdminWebService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import javax.jws.WebMethod;
-import javax.jws.WebParam;
-import javax.jws.WebService;
-import java.util.HashMap;
-import java.util.Set;
 
 @Service("authorizationManagerAdminWebService")
 @WebService(endpointInterface = "org.openiam.authmanager.service.AuthorizationManagerAdminWebService", 
@@ -25,27 +26,27 @@ public class AuthorizationManagerAdminWebServiceImpl implements AuthorizationMan
 	
 	@Override
     @WebMethod
-	public UserEntitlementsMatrix getUserEntitlementsMatrix(@WebParam(name = "entityId", targetNamespace = "") final String entityId) {
-		return authManagerAdminService.getUserEntitlementsMatrix(entityId);
+	public UserEntitlementsMatrix getUserEntitlementsMatrix(final String entityId, final Date date) {
+		return authManagerAdminService.getUserEntitlementsMatrix(entityId, date);
 	}
     @Override
     @WebMethod
-    public Set<String> getOwnerIdsForResource(@WebParam(name = "resourceId", targetNamespace = "") String resourceId){
-        return authManagerAdminService.getOwnerIdsForResource(resourceId);
+    public Set<String> getOwnerIdsForResource(final String resourceId, final Date date){
+        return authManagerAdminService.getOwnerIdsForResource(resourceId, date);
     }
     @Override
     @WebMethod
-    public HashMap<String, SetStringResponse> getOwnerIdsForResourceSet(@WebParam(name = "resourceIdSet", targetNamespace = "") Set<String> resourceIdSet){
-        return authManagerAdminService.getOwnerIdsForResourceSet(resourceIdSet);
+    public HashMap<String, SetStringResponse> getOwnerIdsForResourceSet(final Set<String> resourceIdSet, final Date date){
+        return authManagerAdminService.getOwnerIdsForResourceSet(resourceIdSet, date);
     }
     @Override
     @WebMethod
-    public Set<String> getOwnerIdsForGroup(String groupId){
-        return authManagerAdminService.getOwnerIdsForGroup(groupId);
+    public Set<String> getOwnerIdsForGroup(String groupId, final Date date){
+        return authManagerAdminService.getOwnerIdsForGroup(groupId, date);
     }
     @Override
     @WebMethod
-    public HashMap<String, SetStringResponse> getOwnerIdsForGroupSet(@WebParam(name = "groupIdSet", targetNamespace = "") Set<String> groupIdSet){
-        return authManagerAdminService.getOwnerIdsForGroupSet(groupIdSet);
+    public HashMap<String, SetStringResponse> getOwnerIdsForGroupSet(final Set<String> groupIdSet, final Date date){
+        return authManagerAdminService.getOwnerIdsForGroupSet(groupIdSet, date);
     }
 }

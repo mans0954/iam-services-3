@@ -56,7 +56,7 @@ public class ReconciliationWebServiceImpl implements ReconciliationWebService {
         ReconciliationConfigResponse response = new ReconciliationConfigResponse(
                 ResponseStatus.SUCCESS);
         ReconciliationConfig cfg = reconConfigService.addConfig(config);
-        if (cfg == null || cfg.getReconConfigId() == null) {
+        if (cfg == null || cfg.getId() == null) {
             response.setStatus(ResponseStatus.FAILURE);
         } else {
             response.setConfig(cfg);
@@ -137,7 +137,7 @@ public class ReconciliationWebServiceImpl implements ReconciliationWebService {
         ReconciliationConfigResponse response = new ReconciliationConfigResponse(
                 ResponseStatus.SUCCESS);
         ReconciliationConfig cfg = reconConfigService.getConfigById(configId);
-        if (cfg == null || cfg.getReconConfigId() == null) {
+        if (cfg == null || cfg.getId() == null) {
             response.setStatus(ResponseStatus.FAILURE);
         } else {
             response.setConfig(cfg);

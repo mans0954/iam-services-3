@@ -9,6 +9,8 @@ import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
+import org.openiam.idm.searchbeans.IdentityAnswerSearchBean;
+import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.pswd.domain.UserIdentityAnswerEntity;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,15 +28,20 @@ public class UserIdentityAnswerDAOImpl extends BaseDaoImpl<UserIdentityAnswerEnt
 		DELETE_BY_QUESTION_ID = String.format(DELETE_BY_QUESTION_ID, domainClass.getSimpleName());
         DELETE_BY_USER_ID = String.format(DELETE_BY_USER_ID, domainClass.getSimpleName());
 	}
+	
+	
 
 	@Override
-	protected Criteria getExampleCriteria(final UserIdentityAnswerEntity example) {
+	protected Criteria getExampleCriteria(SearchBean searchBean) {
 		final Criteria criteria = getCriteria();
-		if(StringUtils.isNotBlank(example.getUserId())) {
-			criteria.add(Restrictions.eq("userId", example.getUserId()));
-		}
-		if(example.getIdentityQuestion() != null) {
-			criteria.add(Restrictions.eq("identityQuestion.id", example.getIdentityQuestion().getId()));
+		if(searchBean != null && searchBean instanceof IdentityAnswerSearchBean) {
+			final IdentityAnswerSearchBean sb = (IdentityAnswerSearchBean)searchBean;
+			if(StringUtils.isNotBlank(sb.getUserId())) {
+				criteria.add(Restrictions.eq("userId", sb.getUserId()));
+			}
+			if(sb.getQuestionId() != null) {
+				criteria.add(Restrictions.eq("identityQuestion.id", sb.getQuestionId()));
+			}
 		}
 		return criteria;
 	}

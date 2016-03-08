@@ -1,6 +1,15 @@
 package org.openiam.idm.srvc.auth.spi;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
@@ -12,7 +21,7 @@ import org.openiam.base.ws.ResponseCode;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
 import org.openiam.idm.searchbeans.RoleSearchBean;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.auth.context.AuthenticationContext;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.SSOToken;
@@ -21,7 +30,6 @@ import org.openiam.idm.srvc.auth.spi.social.AbstractSocialProfile;
 import org.openiam.idm.srvc.auth.sso.SSOTokenFactory;
 import org.openiam.idm.srvc.auth.sso.SSOTokenModule;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
-import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.meta.service.MetadataService;
@@ -37,9 +45,7 @@ import org.openiam.idm.srvc.user.service.UserDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.util.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Created by alexander on 01.04.15.
@@ -99,7 +105,7 @@ public class AbstractSocialLoginModule<Profile extends AbstractSocialProfile> ex
     @Override
     protected void validate(AuthenticationContext context) throws Exception {
         final String profileInfo = context.getSocialUserProfile();
-        final IdmAuditLog newLoginEvent = context.getEvent();
+        final IdmAuditLogEntity newLoginEvent = context.getEvent();
 
         if (StringUtils.isBlank(profileInfo)) {
             newLoginEvent.setFailureReason("Invalid profile info");
@@ -115,7 +121,7 @@ public class AbstractSocialLoginModule<Profile extends AbstractSocialProfile> ex
 
     @Override
     protected LoginEntity getLogin(AuthenticationContext context) throws Exception {
-        final IdmAuditLog newLoginEvent = context.getEvent();
+        final IdmAuditLogEntity newLoginEvent = context.getEvent();
         final String profileInfo = context.getSocialUserProfile();
         Profile profile = jsonMapper.readValue(profileInfo, loginModuleClass);
         String principal = profile.getEmail();
@@ -137,7 +143,7 @@ public class AbstractSocialLoginModule<Profile extends AbstractSocialProfile> ex
 
     @Override
     protected UserEntity getUser(AuthenticationContext context, LoginEntity login) throws Exception {
-        final IdmAuditLog newLoginEvent = context.getEvent();
+        final IdmAuditLogEntity newLoginEvent = context.getEvent();
         final String userId = login.getUserId();
         newLoginEvent.setRequestorUserId(userId);
         newLoginEvent.setTargetUser(userId, login.getLogin());
@@ -151,7 +157,7 @@ public class AbstractSocialLoginModule<Profile extends AbstractSocialProfile> ex
         Profile profile = jsonMapper.readValue(profileInfo, loginModuleClass);
         String principal = profile.getEmail();
 
-        final IdmAuditLog newLoginEvent = context.getEvent();
+        final IdmAuditLogEntity newLoginEvent = context.getEvent();
 
         final Subject sub = new Subject();
 
@@ -208,7 +214,7 @@ public class AbstractSocialLoginModule<Profile extends AbstractSocialProfile> ex
         sub.setUserId(login.getUserId());
         sub.setPrincipal(principal);
         sub.setSsoToken(token(login.getUserId(), tokenType, tokenLife, tokenParam));
-        setResultCode(login, sub, curDate, policy);
+        setResultCode(login, sub, curDate, policy, false);
 
         newLoginEvent.setSuccessReason("Successful authentication into Default Login Module");
         return sub;
@@ -263,7 +269,7 @@ public class AbstractSocialLoginModule<Profile extends AbstractSocialProfile> ex
 
             List<RoleEntity> roleList = roleDao.getByExample(roleSearchBean);
             if(CollectionUtils.isNotEmpty(roleList)){
-            	userEntity.addRole(roleList.get(0), null);
+            	userEntity.addRole(roleList.get(0), null, null, null);
             }
         }
     }

@@ -58,22 +58,9 @@ public class BatchServiceImpl implements BatchService, ApplicationContextAware {
 
     @Override
     @Transactional(readOnly=true)
-    public List<BatchTaskEntity> findBeans(BatchTaskEntity entity, int from,
-            int size) {
-        return batchDao.getByExample(entity, from, size);
-    }
-    @Override
-    @Transactional(readOnly=true)
     public List<BatchTaskEntity> findBeans(BatchTaskSearchBean searchBean, int from,
                                            int size) {
         return batchDao.getByExample(searchBean, from, size);
-    }
-
-
-    @Override
-    @Transactional(readOnly=true)
-    public int count(BatchTaskEntity entity) {
-        return batchDao.count(entity);
     }
 
     @Override
@@ -254,6 +241,11 @@ public class BatchServiceImpl implements BatchService, ApplicationContextAware {
 		searchBean.setNextScheduledRunTo(date);
 		searchBean.setCompleted(false);
 		return getSchedulesForTask(searchBean, 0, Integer.MAX_VALUE);
+	}
+
+	@Override
+	public int count(BatchTaskSearchBean searchBean) {
+		return batchDao.count(searchBean);
 	}
 
 

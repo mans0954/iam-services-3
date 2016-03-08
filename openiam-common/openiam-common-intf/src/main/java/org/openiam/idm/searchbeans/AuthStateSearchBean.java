@@ -12,11 +12,13 @@ import org.openiam.idm.srvc.res.dto.Resource;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "AuthStateSearchBean", propOrder = {
-	"onlyActive"
+	"onlyActive",
+	"aa"
 })
 public class AuthStateSearchBean extends AbstractSearchBean<AuthStateEntity, AuthStateId> implements SearchBean<AuthStateEntity, AuthStateId>, Serializable {
 
 	private boolean onlyActive;
+	private String aa;
 	
 	public AuthStateSearchBean() {
 		
@@ -28,6 +30,16 @@ public class AuthStateSearchBean extends AbstractSearchBean<AuthStateEntity, Aut
 
 	public void setOnlyActive(boolean onlyActive) {
 		this.onlyActive = onlyActive;
+	}
+	
+	
+
+	public String getAa() {
+		return aa;
+	}
+
+	public void setAa(String aa) {
+		this.aa = aa;
 	}
 
 	@Override

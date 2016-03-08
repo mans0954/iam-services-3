@@ -9,6 +9,7 @@ import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.dto.RoleAttribute;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -48,20 +49,6 @@ public interface RoleDataService {
     /** * Attribute Methods ****** */
 
     /**
-     * Adds an attribute to the Role object.
-     *
-     * @param attribute
-     */
-    //public void saveAttribute(RoleAttributeEntity attribute);
-
-    /**
-     * Removes a RoleAttribute specified by the attribute.
-     *
-     * @param roleAttributeId
-     */
-    //public void removeAttribute(final String roleAttributeId);
-
-    /**
      * This method adds particular roleId to a particular group.<br>
      * For example:
      * <p/>
@@ -72,7 +59,7 @@ public interface RoleDataService {
      * @param groupId  The group for which the roleId is to be added .
      * @param roleId The roleId which is to be added to the group.
      */
-    public void addGroupToRole(String roleId, String groupId, Set<String> rightIds);
+    public void addGroupToRole(String roleId, String groupId, Set<String> rightIds, final Date startDate, final Date endDate);
     
     public void validateGroup2RoleAddition(String roleId, String groupId) throws BasicDataServiceException;
 
@@ -97,7 +84,7 @@ public interface RoleDataService {
      * @param roleId   The roleId to which the user will be associated.
      * @param userId   The userId to which the roleId is to be added .
      */
-    public void addUserToRole(String roleId, String userId, Set<String> rightIds);
+    public void addUserToRole(String roleId, String userId, Set<String> rightIds, final Date startDate, final Date endDate);
 
     /**
      * This method removes a particular user directly to a role.
@@ -106,15 +93,6 @@ public interface RoleDataService {
      * @param userId
      */
     public void removeUserFromRole(String roleId, String userId);
-
-//    /**
-//     * Return an array of users that are in a particular role
-//     *
-//     * @param roleId
-//     * @return
-//     */
-//    public List<UserEntity> getUsersInRole(final String roleId, final String requesterId, final int from, final int size);
-
 
     /**
      * Returns a list of roles that a user belongs to. Roles can be hierarchical and this operation traverses the tree to roles that are in the
@@ -131,10 +109,10 @@ public interface RoleDataService {
 
     public List<RoleEntity> findRolesByAttributeValue(String attrName, String attrValue);
     
-    public void addChildRole(final String roleId, final String childRoleId, final Set<String> rights);
+    public void addChildRole(final String roleId, final String childRoleId, final Set<String> rights, final Date startDate, final Date endDate);
     public void removeChildRole(final String roleId, final String childRoleId);
     
-    public void validateRole2RoleAddition(final String parentId, final String memberId, final Set<String> rights) throws BasicDataServiceException;
+    public void validateRole2RoleAddition(final String parentId, final String memberId, final Set<String> rights, final Date startDate, final Date endDate) throws BasicDataServiceException;
     
     public Role getRoleDTO(final String roleId);
 

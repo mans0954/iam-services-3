@@ -20,51 +20,55 @@
  */
 package org.openiam.idm.srvc.auth.spi;
 
-import com.sun.jndi.ldap.LdapCtxFactory;
+import java.math.BigDecimal;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
+
+import javax.naming.CommunicationException;
+import javax.naming.Context;
+import javax.naming.NamingException;
+import javax.naming.ldap.LdapContext;
+import javax.resource.spi.IllegalStateException;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.http.entity.ContentProducer;
 import org.openiam.am.srvc.dao.AuthProviderDao;
-import org.openiam.am.srvc.dao.ContentProviderDao;
 import org.openiam.am.srvc.dao.URIPatternDao;
 import org.openiam.am.srvc.domain.AuthProviderEntity;
 import org.openiam.am.srvc.domain.AuthProviderTypeEntity;
 import org.openiam.am.srvc.domain.ContentProviderEntity;
 import org.openiam.am.srvc.domain.URIPatternEntity;
-import org.openiam.am.srvc.dto.ContentProvider;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.ResponseCode;
-import org.openiam.exception.AuthenticationException;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.exception.EncryptionException;
 import org.openiam.exception.LogoutException;
+import org.openiam.idm.searchbeans.AuthStateSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditTarget;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.auth.context.AuthenticationContext;
 import org.openiam.idm.srvc.auth.domain.AuthStateEntity;
 import org.openiam.idm.srvc.auth.domain.AuthStateId;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
-import org.openiam.idm.srvc.auth.dto.AuthenticationRequest;
 import org.openiam.idm.srvc.auth.dto.LogoutRequest;
 import org.openiam.idm.srvc.auth.dto.SSOToken;
 import org.openiam.idm.srvc.auth.dto.Subject;
 import org.openiam.idm.srvc.auth.login.AuthStateDAO;
 import org.openiam.idm.srvc.auth.login.LoginDAO;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
-import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
 import org.openiam.idm.srvc.auth.service.AuthenticationModule;
 import org.openiam.idm.srvc.auth.sso.SSOTokenFactory;
 import org.openiam.idm.srvc.auth.sso.SSOTokenModule;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
 import org.openiam.idm.srvc.policy.domain.PolicyAttributeEntity;
 import org.openiam.idm.srvc.policy.domain.PolicyEntity;
-import org.openiam.idm.srvc.policy.dto.Policy;
-import org.openiam.idm.srvc.policy.service.PolicyDataService;
 import org.openiam.idm.srvc.pswd.service.PasswordService;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -79,14 +83,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-import java.math.BigDecimal;
-import java.util.*;
-
-import javax.naming.CommunicationException;
-import javax.naming.Context;
-import javax.naming.NamingException;
-import javax.naming.ldap.LdapContext;
-import javax.resource.spi.IllegalStateException;
+import com.sun.jndi.ldap.LdapCtxFactory;
 
 /**
  * @author suneet
@@ -144,18 +141,17 @@ public abstract class AbstractLoginModule implements AuthenticationModule {
     private URIPatternDao uriPatternDAO;
 
     @Transactional
-    public void logout(final LogoutRequest request, final IdmAuditLog auditLog) throws Exception {
+    public void logout(final LogoutRequest request, final IdmAuditLogEntity auditLog) throws Exception {
         final UserEntity userEntity = userDAO.findById(request.getUserId());
         final ManagedSysEntity managedSystem = getManagedSystem(request, auditLog);
         final LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(managedSystem.getId(), userEntity.getPrincipalList());
         auditLog.addTarget(request.getUserId(), AuditTarget.USER.value(), primaryIdentity.getLogin());
 
-        final AuthStateEntity example = new AuthStateEntity();
         final AuthStateId id = new AuthStateId();
         id.setUserId(request.getUserId());
-        example.setId(id);
-
-        final List<AuthStateEntity> authStateList = authStateDAO.getByExample(example);
+        final AuthStateSearchBean sb = new AuthStateSearchBean();
+        sb.setKey(id);
+        final List<AuthStateEntity> authStateList = authStateDAO.getByExample(sb);
 
         if (CollectionUtils.isEmpty(authStateList)) {
             final String errorMessage = String.format("Cannot find AuthState object for User: %s", request.getUserId());
@@ -197,14 +193,14 @@ public abstract class AbstractLoginModule implements AuthenticationModule {
 
         final String principal = context.getPrincipal();
         final String password = context.getPassword();
-        final IdmAuditLog newLoginEvent = context.getEvent();
+        final IdmAuditLogEntity newLoginEvent = context.getEvent();
 
         if (StringUtils.isBlank(principal)) {
             newLoginEvent.setFailureReason("Invalid Principal");
             throw new BasicDataServiceException(ResponseCode.INVALID_PRINCIPAL);
         }
 
-        if (StringUtils.isBlank(password)) {
+        if (StringUtils.isBlank(password) && !context.isKerberosAuth()) {
             newLoginEvent.setFailureReason("Invalid Password");
             throw new BasicDataServiceException(ResponseCode.INVALID_PASSWORD);
         }
@@ -220,7 +216,7 @@ public abstract class AbstractLoginModule implements AuthenticationModule {
     }
 
     protected LoginEntity getLogin(final AuthenticationContext context) throws Exception {
-        final IdmAuditLog newLoginEvent = context.getEvent();
+        final IdmAuditLogEntity newLoginEvent = context.getEvent();
         final String principal = context.getPrincipal();
         final ManagedSysEntity managedSystem = getManagedSystem(context);
         final LoginEntity lg = loginManager.getLoginByManagedSys(principal, managedSystem.getId());
@@ -232,7 +228,7 @@ public abstract class AbstractLoginModule implements AuthenticationModule {
     }
 
     protected UserEntity getUser(final AuthenticationContext context, final LoginEntity login) throws Exception {
-        final IdmAuditLog newLoginEvent = context.getEvent();
+        final IdmAuditLogEntity newLoginEvent = context.getEvent();
         final String userId = login.getUserId();
         newLoginEvent.setRequestorUserId(userId);
         newLoginEvent.setTargetUser(userId, login.getLogin());
@@ -242,7 +238,7 @@ public abstract class AbstractLoginModule implements AuthenticationModule {
 
     protected abstract Subject doLogin(final AuthenticationContext context, final UserEntity user, final LoginEntity login) throws Exception;
 
-    protected void doLogout(final LogoutRequest request, final IdmAuditLog auditLog) throws Exception {
+    protected void doLogout(final LogoutRequest request, final IdmAuditLogEntity auditLog) throws Exception {
 
     }
 
@@ -254,7 +250,7 @@ public abstract class AbstractLoginModule implements AuthenticationModule {
     protected KeyManagementService keyManagementService;
     private static final Log log = LogFactory.getLog(AbstractLoginModule.class);
 
-    protected ManagedSysEntity getManagedSystem(final LogoutRequest request, final IdmAuditLog event) {
+    protected ManagedSysEntity getManagedSystem(final LogoutRequest request, final IdmAuditLogEntity event) {
         final String patternId = request.getPatternId();
         ManagedSysEntity managedSystem = null;
         if (patternId == null) {
@@ -284,13 +280,17 @@ public abstract class AbstractLoginModule implements AuthenticationModule {
     }
 
     protected ManagedSysEntity getManagedSystem(final AuthenticationContext context, final AuthProviderEntity authProvider) {
-        final IdmAuditLog event = context.getEvent();
+        final IdmAuditLogEntity event = context.getEvent();
         ManagedSysEntity managedSystem = (authProvider != null) ? authProvider.getManagedSystem() : null;
         if (managedSystem == null) {
             final String warning = String.format("Auth provider %s does not have a managed system corresopnding to it.  Using default: %s", authProvider.getId(), sysConfiguration.getDefaultManagedSysId());
             log.warn(warning);
             event.addWarning(warning);
             managedSystem = managedSysDAO.findById(sysConfiguration.getDefaultManagedSysId());
+        }
+        event.setManagedSysId(managedSystem.getId());
+        if(authProvider != null) {
+        	event.setAuthProviderId(authProvider.getId());
         }
         return managedSystem;
     }
@@ -376,8 +376,10 @@ public abstract class AbstractLoginModule implements AuthenticationModule {
 
     }
 
-    protected void setResultCode(LoginEntity lg, Subject sub, Date curDate, PolicyEntity pwdPolicy) throws BasicDataServiceException {
-        if (lg.getFirstTimeLogin() == 1) {
+    protected void setResultCode(LoginEntity lg, Subject sub, Date curDate, PolicyEntity pwdPolicy, final boolean skipPasswordCheck) throws BasicDataServiceException {
+    	if(skipPasswordCheck) {
+    		sub.setResultCode(ResponseCode.RESULT_SUCCESS);
+    	} else if (lg.getFirstTimeLogin() == 1) {
             sub.setResultCode(ResponseCode.RESULT_SUCCESS_FIRST_TIME);
         } else if (lg.getPwdExp() != null) {
             if ((curDate.after(lg.getPwdExp()) && curDate.before(lg.getGracePeriod()))) {

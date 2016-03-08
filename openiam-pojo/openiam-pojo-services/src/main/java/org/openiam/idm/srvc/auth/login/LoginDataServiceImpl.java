@@ -9,13 +9,13 @@ import org.openiam.am.srvc.domain.AuthProviderEntity;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.dozer.converter.LoginDozerConverter;
+import org.openiam.elasticsearch.dao.LoginElasticSearchRepository;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.exception.EncryptionException;
 import org.openiam.idm.searchbeans.LoginSearchBean;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
-import org.openiam.idm.srvc.auth.login.lucene.LoginSearchDAO;
 import org.openiam.idm.srvc.continfo.service.EmailAddressDAO;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
@@ -36,6 +36,7 @@ import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,7 +52,7 @@ public class LoginDataServiceImpl implements LoginDataService {
     protected LoginDAO loginDao;
 
     @Autowired
-    private LoginSearchDAO loginSearchDAO;
+    private LoginElasticSearchRepository loginRepo;
 
     @Autowired
     protected UserDAO userDao;
@@ -188,7 +189,7 @@ public class LoginDataServiceImpl implements LoginDataService {
     @Override
     @Transactional(readOnly = true)
     public Integer count(LoginSearchBean searchBean) {
-        return loginSearchDAO.count(searchBean);
+        return loginRepo.count(searchBean);
     }
 
     @Override
@@ -202,7 +203,7 @@ public class LoginDataServiceImpl implements LoginDataService {
                 retVal.add(entity);
             }
         } else {
-        	final List<String> ids = loginSearchDAO.findIds(from, size, null, searchBean);
+        	final List<String> ids = loginRepo.findIds(searchBean, new PageRequest(Math.floorDiv(from, size), size));
         	if(CollectionUtils.isNotEmpty(ids)) {
         		retVal = loginDao.findByIds(ids);
         	}

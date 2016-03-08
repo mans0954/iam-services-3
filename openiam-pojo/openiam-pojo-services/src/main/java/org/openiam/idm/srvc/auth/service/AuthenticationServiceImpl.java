@@ -27,7 +27,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.jws.WebService;
 
@@ -36,32 +35,26 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.am.srvc.dao.AuthProviderDao;
-import org.openiam.am.srvc.dao.ContentProviderDao;
 import org.openiam.am.srvc.dao.URIPatternDao;
 import org.openiam.am.srvc.domain.AuthProviderEntity;
-import org.openiam.am.srvc.domain.AuthProviderTypeEntity;
 import org.openiam.am.srvc.domain.ContentProviderEntity;
 import org.openiam.am.srvc.domain.URIPatternEntity;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.exception.AuthenticationException;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.exception.LogoutException;
-import org.openiam.exception.ScriptEngineException;
 import org.openiam.idm.searchbeans.AuthStateSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
 import org.openiam.idm.srvc.audit.constant.AuditTarget;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.auth.context.AuthenticationContext;
-import org.openiam.idm.srvc.auth.context.PasswordCredential;
 import org.openiam.idm.srvc.auth.domain.AuthStateEntity;
 import org.openiam.idm.srvc.auth.domain.AuthStateId;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.AuthenticationRequest;
-import org.openiam.idm.srvc.auth.dto.LoginModuleSelector;
 import org.openiam.idm.srvc.auth.dto.LogoutRequest;
 import org.openiam.idm.srvc.auth.dto.OTPRequestType;
 import org.openiam.idm.srvc.auth.dto.OTPServiceRequest;
@@ -83,7 +76,6 @@ import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.policy.domain.PolicyAttributeEntity;
 import org.openiam.idm.srvc.policy.domain.PolicyEntity;
-import org.openiam.idm.srvc.policy.service.PolicyDAO;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDataService;
@@ -96,12 +88,10 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedResource;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -154,7 +144,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 
     private static final Log log = LogFactory.getLog(AuthenticationServiceImpl.class);
 
-    private AuthProviderEntity getAuthProvider(final String patternId, final IdmAuditLog event) throws BasicDataServiceException {
+    private AuthProviderEntity getAuthProvider(final String patternId, final IdmAuditLogEntity event) throws BasicDataServiceException {
         AuthProviderEntity authProvider = null;
         if (StringUtils.isNotBlank(patternId)) {
             final URIPatternEntity uriPattern = uriPatternDAO.findById(patternId);
@@ -193,7 +183,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
     public Response globalLogoutRequest(final LogoutRequest request) {
         final String userId = request.getUserId();
         final String patternId = request.getPatternId();
-        final IdmAuditLog newLogoutEvent = new IdmAuditLog();
+        final IdmAuditLogEntity newLogoutEvent = new IdmAuditLogEntity();
         newLogoutEvent.setUserId(userId);
         newLogoutEvent.setAction(AuditAction.LOGOUT.value());
         final Response authResp = new Response(ResponseStatus.SUCCESS);
@@ -230,12 +220,11 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
             final LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), userEntity.getPrincipalList());
             newLogoutEvent.addTarget(userId, AuditTarget.USER.value(), primaryIdentity.getLogin());
 
-            final AuthStateEntity example = new AuthStateEntity();
             final AuthStateId id = new AuthStateId();
             id.setUserId(userId);
-            example.setId(id);
-
-            final List<AuthStateEntity> authStateList = authStateDao.getByExample(example);
+            final AuthStateSearchBean sb = new AuthStateSearchBean();
+            sb.setKey(id);
+            final List<AuthStateEntity> authStateList = authStateDao.getByExample(sb);
 
             if (CollectionUtils.isEmpty(authStateList)) {
                 final String errorMessage = String.format("Cannot find AuthState object for User: %s", userId);
@@ -284,7 +273,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
     @Override
     @Transactional
     public AuthenticationResponse login(final AuthenticationRequest request) {
-        final IdmAuditLog newLoginEvent = new IdmAuditLog();
+        final IdmAuditLogEntity newLoginEvent = new IdmAuditLogEntity();
         newLoginEvent.setUserId(null);
         newLoginEvent.setAction(AuditAction.LOGIN.value());
 
@@ -299,7 +288,10 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
             }
 
             final AuthProviderEntity authProvider = getAuthProvider(request.getPatternId(), newLoginEvent);
-
+            if(authProvider != null) {
+            	newLoginEvent.setAuthProviderId(authProvider.getId());
+            }
+            
             final AuthenticationContext authenticationContext = new AuthenticationContext(request);
             authenticationContext.setAuthProviderId(authProvider.getId());
             authenticationContext.setEvent(newLoginEvent);
@@ -590,10 +582,10 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
     @Override
     @Transactional
     public Response getOTPSecretKey(OTPServiceRequest request) {
-        final IdmAuditLog event = new IdmAuditLog();
+        final IdmAuditLogEntity event = new IdmAuditLogEntity();
         event.setUserId(null);
         event.setAction(AuditAction.GET_QR_CODE.value());
-        event.addAttribute(AuditAttributeName.URI_PATTERN_ID, request.getPatternId());
+        event.setUriPatternId(request.getPatternId());
         event.addAttributeAsJson(AuditAttributeName.PHONE, request.getPhone(), jacksonMapper);
         event.setUserId(request.getUserId());
 
@@ -602,15 +594,23 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
         final Response response = new Response();
         try {
             final AuthProviderEntity authProvider = getAuthProvider(request.getPatternId(), event);
-            final ManagedSysEntity managedSystem = (authProvider != null) ? authProvider.getManagedSystem() : null;
             if (authProvider == null) {
                 throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_FOUND_FOR_CONTENT_PROVIDER);
             }
+            event.setAuthProviderId(authProvider.getId());
+            
+            final ManagedSysEntity managedSystem = authProvider.getManagedSystem();
+            if(managedSystem == null) {
+            	throw new BasicDataServiceException(ResponseCode.MANAGED_SYSTEM_NOT_SET);
+            }
+            event.setManagedSysId(managedSystem.getId());
+            
             final LoginEntity login = getLogin(userId, managedSystem.getId());
 
             if (login == null) {
                 throw new BasicDataServiceException(ResponseCode.PRINCIPAL_NOT_FOUND);
             }
+            event.setPrincipal(login.getLogin());
 
             if (request.getRequestType() == null) {
                 throw new BasicDataServiceException(ResponseCode.OTP_TYPE_MISSING);
@@ -642,10 +642,10 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
     @Override
     @Transactional
     public Response sendOTPToken(final OTPServiceRequest request) {
-        final IdmAuditLog event = new IdmAuditLog();
+        final IdmAuditLogEntity event = new IdmAuditLogEntity();
         event.setUserId(null);
         event.setAction(AuditAction.SEND_SMS_OTP_TOKEN.value());
-        event.addAttribute(AuditAttributeName.URI_PATTERN_ID, request.getPatternId());
+        event.setUriPatternId(request.getPatternId());
         event.addAttributeAsJson(AuditAttributeName.PHONE, request.getPhone(), jacksonMapper);
         event.setUserId(request.getUserId());
 
@@ -654,10 +654,16 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
         final String userId = request.getUserId();
         try {
             final AuthProviderEntity authProvider = getAuthProvider(request.getPatternId(), event);
-            final ManagedSysEntity managedSystem = (authProvider != null) ? authProvider.getManagedSystem() : null;
             if (authProvider == null) {
                 throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_FOUND_FOR_CONTENT_PROVIDER);
             }
+            event.setAuthProviderId(authProvider.getId());
+            
+            final ManagedSysEntity managedSystem = authProvider.getManagedSystem();
+            if(managedSystem == null) {
+            	throw new BasicDataServiceException(ResponseCode.MANAGED_SYSTEM_NOT_SET);
+            }
+            event.setManagedSysId(managedSystem.getId());
 
             if (request.getRequestType() == null) {
                 throw new BasicDataServiceException(ResponseCode.OTP_TYPE_MISSING);
@@ -725,10 +731,10 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 
     @Override
     public Response confirmOTPToken(final OTPServiceRequest request) {
-        final IdmAuditLog event = new IdmAuditLog();
-        event.setUserId(null);
+        final IdmAuditLogEntity event = new IdmAuditLogEntity();
+        event.setUserId(request.getUserId());
         event.setAction(AuditAction.CONFIRM_SMS_OTP_TOKEN.value());
-        event.addAttribute(AuditAttributeName.URI_PATTERN_ID, request.getPatternId());
+        event.setUriPatternId(request.getPatternId());
         event.addAttributeAsJson(AuditAttributeName.PHONE, request.getPhone(), jacksonMapper);
         event.setUserId(request.getUserId());
 
@@ -736,15 +742,21 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
         final String userId = request.getUserId();
         try {
             final AuthProviderEntity authProvider = getAuthProvider(request.getPatternId(), event);
-            final ManagedSysEntity managedSystem = (authProvider != null) ? authProvider.getManagedSystem() : null;
             if (authProvider == null) {
                 throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_FOUND_FOR_CONTENT_PROVIDER);
             }
+            event.setAuthProviderId(authProvider.getId());
+            final ManagedSysEntity managedSystem = authProvider.getManagedSystem();
+            if(managedSystem == null) {
+            	throw new BasicDataServiceException(ResponseCode.MANAGED_SYSTEM_NOT_SET);
+            }
+            event.setManagedSysId(managedSystem.getId());
             final LoginEntity login = getLogin(userId, managedSystem.getId());
 
             if (login == null) {
                 throw new BasicDataServiceException(ResponseCode.PRINCIPAL_NOT_FOUND);
             }
+            event.setPrincipal(login.getLogin());
 
             if (request.getRequestType() == null) {
                 throw new BasicDataServiceException(ResponseCode.OTP_TYPE_MISSING);
@@ -803,10 +815,10 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
     @Override
     @Transactional
     public Response clearOTPActiveStatus(final OTPServiceRequest request) {
-        final IdmAuditLog event = new IdmAuditLog();
+        final IdmAuditLogEntity event = new IdmAuditLogEntity();
         event.setUserId(null);
         event.setAction(AuditAction.CLEAR_SMS_OTP_STATUS.value());
-        event.addAttribute(AuditAttributeName.URI_PATTERN_ID, request.getPatternId());
+        event.setUriPatternId(request.getPatternId());
         event.setUserId(request.getUserId());
 
         final Response response = new Response();
@@ -816,12 +828,15 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
             if (authProvider == null) {
                 throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_FOUND_FOR_CONTENT_PROVIDER);
             }
+            event.setAuthProviderId(authProvider.getId());
 
             final LoginEntity login = getLogin(request.getUserId(), managedSystem.getId());
 
             if (login == null) {
                 throw new BasicDataServiceException(ResponseCode.PRINCIPAL_NOT_FOUND);
             }
+            event.setPrincipal(login.getLogin());
+            event.setManagedSysId(managedSystem.getId());
 
             login.setSmsActive(false);
             login.setToptActive(false);
@@ -850,29 +865,36 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 
     @Override
     public boolean isOTPActive(final OTPServiceRequest request) {
-        final IdmAuditLog event = new IdmAuditLog();
+        final IdmAuditLogEntity event = new IdmAuditLogEntity();
         event.setUserId(null);
         event.setAction(AuditAction.GET_SMS_OTP_STATUS.value());
-        event.addAttribute(AuditAttributeName.URI_PATTERN_ID, request.getPatternId());
+        event.setUriPatternId(request.getPatternId());
         event.setUserId(request.getUserId());
 
         boolean retVal = false;
         try {
             final AuthProviderEntity authProvider = getAuthProvider(request.getPatternId(), event);
-            final ManagedSysEntity managedSystem = (authProvider != null) ? authProvider.getManagedSystem() : null;
             if (authProvider == null) {
                 throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_FOUND_FOR_CONTENT_PROVIDER);
             }
+            event.setAuthProviderId(authProvider.getId());
 
             if (request.getRequestType() == null) {
                 throw new BasicDataServiceException(ResponseCode.OTP_TYPE_MISSING);
             }
+            
+            final ManagedSysEntity managedSystem = authProvider.getManagedSystem();
+            if(managedSystem == null) {
+            	throw new BasicDataServiceException(ResponseCode.MANAGED_SYSTEM_NOT_SET);
+            }
+            event.setManagedSysId(managedSystem.getId());
 
             final LoginEntity login = getLogin(request.getUserId(), managedSystem.getId());
 
             if (login == null) {
                 throw new BasicDataServiceException(ResponseCode.PRINCIPAL_NOT_FOUND);
             }
+            event.setPrincipal(login.getLogin());
 
             switch (request.getRequestType()) {
                 case SMS:

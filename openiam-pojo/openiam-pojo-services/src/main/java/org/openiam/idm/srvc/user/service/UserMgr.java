@@ -1,32 +1,53 @@
 package org.openiam.idm.srvc.user.service;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.ListUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.Criteria;
-import org.hibernate.criterion.Restrictions;
 import org.openiam.authmanager.service.AuthorizationManagerService;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseConstants;
-import org.openiam.base.OrderConstants;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.SearchMode;
 import org.openiam.base.ws.SearchParam;
-import org.openiam.base.ws.SortParam;
 import org.openiam.core.dao.UserKeyDao;
-import org.openiam.dozer.converter.*;
+import org.openiam.dozer.converter.AddressDozerConverter;
+import org.openiam.dozer.converter.EmailAddressDozerConverter;
+import org.openiam.dozer.converter.PhoneDozerConverter;
+import org.openiam.dozer.converter.UserAttributeDozerConverter;
+import org.openiam.dozer.converter.UserDozerConverter;
+import org.openiam.elasticsearch.dao.EmailElasticSearchRepository;
+import org.openiam.elasticsearch.dao.LoginElasticSearchRepository;
+import org.openiam.elasticsearch.dao.PhoneElasticSearchRepository;
+import org.openiam.elasticsearch.dao.UserElasticSearchRepository;
 import org.openiam.exception.BasicDataServiceException;
-import org.openiam.idm.searchbeans.*;
+import org.openiam.idm.searchbeans.AddressSearchBean;
+import org.openiam.idm.searchbeans.DelegationFilterSearchBean;
+import org.openiam.idm.searchbeans.EmailSearchBean;
+import org.openiam.idm.searchbeans.MetadataElementSearchBean;
+import org.openiam.idm.searchbeans.PhoneSearchBean;
+import org.openiam.idm.searchbeans.PotentialSupSubSearchBean;
+import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.access.service.AccessRightDAO;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.auth.login.AuthStateDAO;
 import org.openiam.idm.srvc.auth.login.LoginDAO;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
-import org.openiam.idm.srvc.auth.login.lucene.LoginSearchDAO;
 import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
@@ -34,7 +55,9 @@ import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
-import org.openiam.idm.srvc.continfo.service.*;
+import org.openiam.idm.srvc.continfo.service.AddressDAO;
+import org.openiam.idm.srvc.continfo.service.EmailAddressDAO;
+import org.openiam.idm.srvc.continfo.service.PhoneDAO;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
 import org.openiam.idm.srvc.key.constant.KeyName;
@@ -46,22 +69,19 @@ import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
 import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
-import org.openiam.idm.srvc.mngsys.dto.ApproverAssociation;
 import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
-import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.service.OrganizationService;
 import org.openiam.idm.srvc.pswd.domain.PasswordHistoryEntity;
 import org.openiam.idm.srvc.pswd.service.PasswordHistoryDAO;
 import org.openiam.idm.srvc.pswd.service.UserIdentityAnswerDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
-import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.service.RoleDataService;
-import org.openiam.idm.srvc.searchbean.converter.AddressSearchBeanConverter;
-import org.openiam.idm.srvc.searchbean.converter.EmailAddressSearchBeanConverter;
-import org.openiam.idm.srvc.searchbean.converter.PhoneSearchBeanConverter;
-import org.openiam.idm.srvc.user.dao.UserSearchDAO;
-import org.openiam.idm.srvc.user.domain.*;
+import org.openiam.idm.srvc.user.domain.SupervisorEntity;
+import org.openiam.idm.srvc.user.domain.SupervisorIDEntity;
+import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
+import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.idm.srvc.user.domain.UserNoteEntity;
 import org.openiam.idm.srvc.user.dto.DelegationFilterSearch;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
@@ -72,11 +92,10 @@ import org.openiam.util.AttributeUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.*;
 
 /**
  * Service interface that clients will access to gain information about users
@@ -112,21 +131,23 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
     protected SysConfiguration sysConfiguration;
 
     @Autowired
-    private UserSearchDAO userSearchDAO;
+    private UserElasticSearchRepository userRepo;
 
     @Autowired
-    private LoginSearchDAO loginSearchDAO;
-
+    private LoginElasticSearchRepository loginRepo;
+    
     @Autowired
     @Qualifier("groupDAO")
     private GroupDAO groupDAO;
+    
+    @Autowired
+    private EmailElasticSearchRepository emailElasticSearchRepo;
 
     @Autowired
-    private EmailSearchDAO emailSearchDAO;
-    @Autowired
     private ResourceDAO resourceDAO;
+    
     @Autowired
-    private PhoneSearchDAO phoneSearchDAO;
+    private PhoneElasticSearchRepository phoneRepository;
 
     @Autowired
     private UserKeyDao userKeyDao;
@@ -135,12 +156,6 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
     private KeyManagementService keyManagementService;
     @Autowired
     private LoginDataService loginManager;
-    @Autowired
-    private EmailAddressSearchBeanConverter emailAddressSearchBeanConverter;
-    @Autowired
-    private AddressSearchBeanConverter addressSearchBeanConverter;
-    @Autowired
-    private PhoneSearchBeanConverter phoneSearchBeanConverter;
 
     @Autowired
     private UserAttributeDozerConverter userAttributeDozerConverter;
@@ -578,7 +593,7 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
         }
         List<String> idList = null;
         if(isSearchByPrimaryAttributes(searchBean)) {
-            idList = userSearchDAO.findIds(0, Integer.MAX_VALUE, null, searchBean);
+            idList = userRepo.findIds(searchBean, new PageRequest(0, Integer.MAX_VALUE));
         }
 
         if (idList!=null) {
@@ -617,20 +632,24 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
         }
 
         if (searchBean.getPrincipal() != null) {
-            nonEmptyListOfLists.add(loginSearchDAO.findUserIds(0, Integer.MAX_VALUE, searchBean.getPrincipal()));
+            nonEmptyListOfLists.add(loginRepo.findUserIds(searchBean.getPrincipal(), new PageRequest(0, Integer.MAX_VALUE)).getContent());
         }
 
         if (searchBean.getEmailAddressMatchToken() != null && searchBean.getEmailAddressMatchToken().isValid()) {
             final EmailSearchBean emailSearchBean = new EmailSearchBean();
             emailSearchBean.setEmailMatchToken(searchBean.getEmailAddressMatchToken());
-            nonEmptyListOfLists.add(emailSearchDAO.findUserIds(0, Integer.MAX_VALUE, emailSearchBean));
+            final List<String> userIds = emailElasticSearchRepo.findUserIds(emailSearchBean, new PageRequest(0, Integer.MAX_VALUE)).getContent();
+            												   //(emailSearchBean.getEmailMatchToken().getValue()).stream().map(e -> e.getId()).collect(Collectors.toList());
+            if(CollectionUtils.isNotEmpty(userIds)) {
+            	nonEmptyListOfLists.add(userIds);
+            }
         }
 
         if (StringUtils.isNotBlank(searchBean.getPhoneAreaCd()) || StringUtils.isNotBlank(searchBean.getPhoneNbr())) {
             final PhoneSearchBean phoneSearchBean = new PhoneSearchBean();
             phoneSearchBean.setPhoneAreaCd(StringUtils.trimToNull(searchBean.getPhoneAreaCd()));
             phoneSearchBean.setPhoneNbr(StringUtils.trimToNull(searchBean.getPhoneNbr()));
-            nonEmptyListOfLists.add(phoneSearchDAO.findUserIds(0, Integer.MAX_VALUE, phoneSearchBean));
+            nonEmptyListOfLists.add(phoneRepository.findUserIds(phoneSearchBean, new PageRequest(0, Integer.MAX_VALUE)).getContent());
         }
 
         // remove null or empty lists
@@ -921,10 +940,9 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
             throw new NullPointerException("MetadataType for the address is not defined.");
         }
 
-        AddressEntity example = new AddressEntity();
-        example.setParent(val.getParent());
-
-        List<AddressEntity> entityList = addressDao.getByExample(example);
+        final AddressSearchBean sb = new AddressSearchBean();
+        sb.setParentId(val.getParent().getId());
+        List<AddressEntity> entityList = addressDao.getByExample(sb);
         if (CollectionUtils.isNotEmpty(entityList))
             for (AddressEntity a : entityList) {
                 if ((a.getId() != null && !a.getId().equals(val.getId()))
@@ -1009,9 +1027,9 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
 
         if(entity != null) {
 	        if (entity.getIsDefault()) {
-	            AddressEntity example = new AddressEntity();
-	            example.setParent(entity.getParent());
-	            List<AddressEntity> addresses = addressDao.getByExample(example);
+	            final AddressSearchBean sb = new AddressSearchBean();
+	            sb.setParentId(entity.getParent().getId());
+	            List<AddressEntity> addresses = addressDao.getByExample(sb);
 	
 	            AddressEntity defaultAddress = getAddressByDefaultFlag(addresses, false);
 	            if (defaultAddress != null) {
@@ -1072,7 +1090,7 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
         if (searchBean == null)
             throw new NullPointerException("searchBean is null");
 
-        return addressDao.getByExample(addressSearchBeanConverter.convert(searchBean), from, size);
+        return addressDao.getByExample(searchBean, from ,size);
     }
     
     @Override
@@ -1146,10 +1164,10 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
 			}
         }
 
-        PhoneEntity example = new PhoneEntity();
-        example.setParent(val.getParent());
+        PhoneSearchBean sb = new PhoneSearchBean();
+        sb.setParentId(val.getParent().getId());
 
-        List<PhoneEntity> entityList = phoneDao.getByExample(example);
+        List<PhoneEntity> entityList = phoneDao.getByExample(sb);
         if (CollectionUtils.isNotEmpty(entityList)) {
             for (PhoneEntity ph : entityList) {
                 if ((ph.getId() != null && !ph.getId().equals(val.getId()))
@@ -1200,9 +1218,9 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
 
         if(entity != null) {
 	        if (entity.getIsDefault()) {
-	            PhoneEntity example = new PhoneEntity();
-	            example.setParent(entity.getParent());
-	            List<PhoneEntity> phones = phoneDao.getByExample(example);
+	            PhoneSearchBean sb = new PhoneSearchBean();
+	            sb.setParentId(entity.getParent().getId());
+	            List<PhoneEntity> phones = phoneDao.getByExample(sb);
 	
 	            PhoneEntity defaultPhone = getPhoneByDefaultFlag(phones, false);
 	            if (defaultPhone != null) {
@@ -1262,7 +1280,7 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
     public List<PhoneEntity> getPhoneList(PhoneSearchBean searchBean, Integer size, Integer from) {
         if (searchBean == null)
             throw new NullPointerException("searchBean is null");
-        return phoneDao.getByExample(phoneSearchBeanConverter.convert(searchBean), from, size);
+        return phoneDao.getByExample(searchBean, from, size);
     }
 
     @Override
@@ -1277,10 +1295,10 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
             throw new NullPointerException("MetadataType for the email address is not defined.");
         }
 
-        EmailAddressEntity example = new EmailAddressEntity();
-        example.setParent(val.getParent());
+        final EmailSearchBean sb = new EmailSearchBean();
+        sb.setParentId(val.getParent().getId());
 
-        List<EmailAddressEntity> entityList = emailAddressDao.getByExample(example);
+        List<EmailAddressEntity> entityList = emailAddressDao.getByExample(sb);
         if (CollectionUtils.isNotEmpty(entityList))
             for (EmailAddressEntity ea : entityList) {
                 if ((ea.getId() != null && !ea.getId().equals(val.getId()))
@@ -1365,9 +1383,9 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
         
         if(entity != null) {
 	        if (entity.getIsDefault()) {
-	            EmailAddressEntity example = new EmailAddressEntity();
-	            example.setParent(entity.getParent());
-	            List<EmailAddressEntity> emailList = emailAddressDao.getByExample(example);
+	            final EmailSearchBean sb = new EmailSearchBean();
+	            sb.setParentId(entity.getParent().getId());
+	            List<EmailAddressEntity> emailList = emailAddressDao.getByExample(sb);
 	
 	            EmailAddressEntity defaultEmail = getEmailAddressByDefaultFlag(emailList, false);
 	            if (defaultEmail != null) {
@@ -1428,7 +1446,7 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
         if (searchBean == null)
             throw new NullPointerException("searchBean is null");
 
-        return emailAddressDao.getByExample(emailAddressSearchBeanConverter.convert(searchBean), from, size);
+        return emailAddressDao.getByExample(searchBean, from, size);
     }
 
     @Override
@@ -1605,7 +1623,11 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
         } else {
             userIds = getUserIds(searchBean);
         }
-        userIds.removeAll(userDao.getAllAttachedSupSubIds(searchBean.getTargetUserIds()));
+        if(CollectionUtils.isNotEmpty(userIds)) {
+        	/* the userIds list at this point is immutable, so any modifications will throw an exception */
+        	userIds = new ArrayList<String>(userIds);
+        	userIds.removeAll(userDao.getAllAttachedSupSubIds(searchBean.getTargetUserIds()));
+        }
         return userDao.findByIds(userIds);
     }
 
@@ -1799,7 +1821,7 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
         EmailSearchBean searchBean = new EmailSearchBean();
         searchBean.setParentId(userId);
         // searchBean.setParentType(ContactConstants.PARENT_TYPE_USER);
-        return emailAddressDao.count(emailAddressSearchBeanConverter.convert(searchBean));
+        return emailAddressDao.count(searchBean);
     }
 
     @Transactional(readOnly = true)
@@ -1807,7 +1829,7 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
         AddressSearchBean searchBean = new AddressSearchBean();
         searchBean.setParentId(userId);
         // searchBean.setParentType(ContactConstants.PARENT_TYPE_USER);
-        return addressDao.count(addressSearchBeanConverter.convert(searchBean));
+        return addressDao.count(searchBean);
     }
 
     @Transactional(readOnly = true)
@@ -1815,7 +1837,7 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
         PhoneSearchBean searchBean = new PhoneSearchBean();
         searchBean.setParentId(userId);
         // searchBean.setParentType(ContactConstants.PARENT_TYPE_USER);
-        return phoneDao.count(phoneSearchBeanConverter.convert(searchBean));
+        return phoneDao.count(searchBean);
     }
 
     @Transactional
@@ -2008,9 +2030,9 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
     private void updateDefaultFlagForPhone(PhoneEntity targetEntity, boolean newDefaultValue, UserEntity parent) {
         // update default flag
         // 1. get all default phone for user and iterate them
-        PhoneEntity example = new PhoneEntity();
-        example.setParent(parent);
-        List<PhoneEntity> phones = phoneDao.getByExample(example);
+        final PhoneSearchBean sb = new PhoneSearchBean();
+        sb.setParentId(parent.getId());
+        List<PhoneEntity> phones = phoneDao.getByExample(sb);
 
         PhoneEntity defaultPhone = getPhoneByDefaultFlag(phones, true);
 
@@ -2045,9 +2067,9 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
     private void updateDefaultFlagForAddress(AddressEntity targetEntity, boolean newDefaultValue, UserEntity parent) {
         // update default flag
         // 1. get all default phone for user and iterate them
-        AddressEntity example = new AddressEntity();
-        example.setParent(parent);
-        List<AddressEntity> addresses = addressDao.getByExample(example);
+        final AddressSearchBean sb = new AddressSearchBean();
+        sb.setParentId(parent.getId());
+        List<AddressEntity> addresses = addressDao.getByExample(sb);
 
         AddressEntity defaultAddress = getAddressByDefaultFlag(addresses, true);
 
@@ -2110,9 +2132,9 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
     private void updateDefaultFlagForEmail(EmailAddressEntity targetEntity, boolean newDefaultValue, UserEntity parent) {
         // update default flag
         // 1. get all default phone for user and iterate them
-        EmailAddressEntity example = new EmailAddressEntity();
-        example.setParent(parent);
-        List<EmailAddressEntity> emailList = emailAddressDao.getByExample(example);
+        final EmailSearchBean sb = new EmailSearchBean();
+        sb.setParentId(parent.getId());
+        List<EmailAddressEntity> emailList = emailAddressDao.getByExample(sb);
 
         EmailAddressEntity defaultEmail = getEmailAddressByDefaultFlag(emailList, true);
 
@@ -2244,11 +2266,11 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
 
     @Override
     @Transactional
-    public void addUserToGroup(final String userId, final String groupId, final Set<String> rightIds) {
+    public void addUserToGroup(final String userId, final String groupId, final Set<String> rightIds, final Date startDate, final Date endDate) {
         final GroupEntity group = groupDAO.findById(groupId);
         final UserEntity user = userDao.findById(userId);
         if(group != null && user != null) {
-        	user.addGroup(group, accessRightDAO.findByIds(rightIds));
+        	user.addGroup(group, accessRightDAO.findByIds(rightIds), startDate, endDate);
         }
     }
 
@@ -2310,11 +2332,11 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
 
     @Override
     @Transactional
-    public void addUserToResource(final String userId, final String resourceId, final Set<String> rightIds) {
+    public void addUserToResource(final String userId, final String resourceId, final Set<String> rightIds, final Date startDate, final Date endDate) {
     	final ResourceEntity resource = resourceDAO.findById(resourceId);
     	final UserEntity user = userDao.findById(userId);
     	if(resource != null && user != null) {
-    		resource.addUser(user, accessRightDAO.findByIds(rightIds));
+    		resource.addUser(user, accessRightDAO.findByIds(rightIds), startDate, endDate);
     		resourceDAO.update(resource);
     		//user.addResource(resource, accessRightDAO.findByIds(rightIds));
     		//userDao.update(user);

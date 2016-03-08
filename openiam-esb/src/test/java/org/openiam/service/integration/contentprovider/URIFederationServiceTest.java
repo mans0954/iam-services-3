@@ -116,7 +116,7 @@ public class URIFederationServiceTest extends AbstractURIFederationTest {
 		URIFederationResponse response = uriFederationServiceClient.federateProxyURI(userId, "http://www.example.com", null);
 		assertResponseCode(response, ResponseCode.URI_FEDERATION_NOT_ENTITLED_TO_CONTENT_PROVIDER);
 		
-		Response entitlementsResponse = resourceDataService.addUserToResource(cp.getResourceId(), userId, null, null);
+		Response entitlementsResponse = resourceDataService.addUserToResource(cp.getResourceId(), userId, null, null, null, null);
 		Assert.assertTrue(entitlementsResponse.isSuccess());
 		
 		authorizationManagerServiceClient.refreshCache();
@@ -155,7 +155,7 @@ public class URIFederationServiceTest extends AbstractURIFederationTest {
 		assertResponseCode(response, ResponseCode.URI_FEDERATION_NOT_ENTITLED_TO_PATTERN);
 		
 		cp.getPatternSet().forEach(pattern -> {
-			final Response entResponse = resourceDataService.addUserToResource(pattern.getResourceId(), userId, null, null);
+			final Response entResponse = resourceDataService.addUserToResource(pattern.getResourceId(), userId, null, null, null, null);
 			Assert.assertTrue(entResponse.isSuccess());
 		});
 		
@@ -205,7 +205,7 @@ public class URIFederationServiceTest extends AbstractURIFederationTest {
 		cp.getPatternSet().forEach(pattern -> {
 			if(pattern.getMethods() != null) {
 				pattern.getMethods().forEach(method -> {
-					final Response entResponse = resourceDataService.addUserToResource(method.getResourceId(), userId, null, null);
+					final Response entResponse = resourceDataService.addUserToResource(method.getResourceId(), userId, null, null, null, null);
 					Assert.assertTrue(entResponse.isSuccess());
 				});
 			}

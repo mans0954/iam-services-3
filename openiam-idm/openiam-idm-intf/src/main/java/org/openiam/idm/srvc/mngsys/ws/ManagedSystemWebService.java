@@ -13,6 +13,7 @@ import org.openiam.idm.srvc.mngsys.bean.ApproverAssocationSearchBean;
 import org.openiam.idm.srvc.mngsys.bean.MngSysPolicyBean;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.dto.*;
+import org.openiam.idm.srvc.msg.dto.ManagedSysSearchBean;
 
 /**
  * Interface for <code>ManagedSystemWebService</code>
@@ -29,7 +30,7 @@ public interface ManagedSystemWebService {
      * @return
      */
     @WebMethod
-    public Integer getManagedSystemsCount(
+    public int getManagedSystemsCount(
             @WebParam(name = "searchBean", targetNamespace = "") ManagedSysSearchBean searchBean);
 
     /**

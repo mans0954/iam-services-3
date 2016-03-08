@@ -157,42 +157,48 @@ public class MailServiceImpl extends AbstractBaseService implements MailService,
     private Message fillMessage(String from, String[] to, String[] cc, String[] bcc, String subject, String msg, boolean isHtmlFormat, String[] attachmentPath, Date executionDateTime) {
         Message message = new Message();
 
-        if (from != null && from.length() > 0) {
+        if (StringUtils.isNotBlank(from)) {
             message.setFrom(from);
         } else {
             message.setFrom(defaultSender);
         }
         if (to != null && to.length > 0) {
             for (String toString : to) {
-                message.addTo(toString);
+            	if(StringUtils.isNotBlank(toString)) {
+            		message.addTo(StringUtils.trimToNull(toString));
+            	}
             }
         }
         if (cc != null && cc.length > 0) {
             for (String ccString : cc) {
-                message.addCc(ccString);
+            	if(StringUtils.isNotBlank(ccString)) {
+            		message.addCc(StringUtils.trimToNull(ccString));
+            	}
             }
         }
 
         if (bcc != null && bcc.length > 0) {
             for (String bccString : bcc) {
-                message.addBcc(bccString);
+            	if(StringUtils.isNotBlank(bccString)) {
+            		message.addBcc(StringUtils.trimToNull(bccString));
+            	}
             }
         }
 
         if (StringUtils.isNotBlank(subjectPrefix)) {
             String subj = subjectPrefix.trim();
-            if (subject != null && subject.length() > 0) {
+            if (StringUtils.isNotBlank(subject)) {
                 subject = subj + " " + subject;
             } else {
                 subject = subj;
             }
         }
 
-        if (subject != null && subject.length() > 0) {
+        if (StringUtils.isNotBlank(subject)) {
             message.setSubject(subject);
         }
 
-        if (msg != null && msg.length() > 0) {
+        if (StringUtils.isNotBlank(msg)) {
             message.setBody(msg);
         }
 
@@ -394,8 +400,8 @@ public class MailServiceImpl extends AbstractBaseService implements MailService,
             DirectMessage message = getTwitterInstance().sendDirectMessage(userid, msg);
             log.info("Direct message successfully sent to " + message.getRecipientScreenName());
         } catch (TwitterException te) {
-            te.printStackTrace();
-            log.error("Failed to send a direct message: " + te.getMessage());
+            //te.printStackTrace();
+            log.error("Failed to send a direct message: ", te);
         }
     }
 
@@ -417,8 +423,8 @@ public class MailServiceImpl extends AbstractBaseService implements MailService,
             log.info("Status successfully Updated  ");
 
         } catch (TwitterException te) {
-            te.printStackTrace();
-            log.error("Failed to update Status: " + te.getMessage());
+            //te.printStackTrace();
+            log.error("Failed to update Status: ", te);
 
         }
     }

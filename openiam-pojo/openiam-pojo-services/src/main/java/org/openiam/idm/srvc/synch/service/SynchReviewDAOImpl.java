@@ -33,15 +33,6 @@ public class SynchReviewDAOImpl extends BaseDaoImpl<SynchReviewEntity, String> i
     }
 
     @Override
-    protected Criteria getExampleCriteria(SynchReviewEntity review) {
-        Example example = Example.create(review);
-        example.excludeProperty("sourceRejected"); // exclude boolean properties
-        example.excludeProperty("skipSourceValid");
-        example.excludeProperty("skipRecordValid");
-        return getCriteria().add(example);
-    }
-
-    @Override
     protected Criteria getExampleCriteria(final SearchBean searchBean) {
         final Criteria criteria = getCriteria();
         if(searchBean != null && (searchBean instanceof SynchReviewSearchBean)) {

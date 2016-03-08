@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-public class AuthorizationManagerHessianClientTest extends AbstractAuthorizationManagerTest {
+public class AuthorizationManagerHessianClientTest extends AbstractAdminAuthorizationManagerTest {
 
 	@Autowired
 	@Qualifier("authorizationManagerHessianClient")

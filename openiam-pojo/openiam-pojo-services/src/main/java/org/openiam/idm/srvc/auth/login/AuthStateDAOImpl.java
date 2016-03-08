@@ -33,40 +33,23 @@ public class AuthStateDAOImpl extends BaseDaoImpl<AuthStateEntity, AuthStateId> 
 	protected Criteria getExampleCriteria(SearchBean searchBean) {
 		Criteria criteria = getCriteria();
 		if(searchBean != null && searchBean instanceof AuthStateSearchBean) {
-			final AuthStateSearchBean authStateSearchBean = (AuthStateSearchBean)searchBean;
-			if(authStateSearchBean.getKey() != null) {
-				if(StringUtils.isNotBlank(authStateSearchBean.getKey().getUserId())) {
-					criteria.add(Restrictions.eq("id.userId", authStateSearchBean.getKey().getUserId()));
+			final AuthStateSearchBean sb = (AuthStateSearchBean)searchBean;
+			if(sb.getKey() != null) {
+				if(StringUtils.isNotBlank(sb.getKey().getUserId())) {
+					criteria.add(Restrictions.eq("id.userId", sb.getKey().getUserId()));
 				}
-				if(StringUtils.isNotBlank(authStateSearchBean.getKey().getTokenType())) {
-					criteria.add(Restrictions.eq("id.tokenType", authStateSearchBean.getKey().getTokenType()));
+				if(StringUtils.isNotBlank(sb.getKey().getTokenType())) {
+					criteria.add(Restrictions.eq("id.tokenType", sb.getKey().getTokenType()));
 				}
 			}
 			
-			if(authStateSearchBean.isOnlyActive()) {
+			if(sb.getAa() != null) {
+				criteria.add(Restrictions.eq("aa", sb.getAa()));
+			}
+			
+			if(sb.isOnlyActive()) {
 				criteria.add(Restrictions.ne("token", "LOGOUT").ignoreCase());
 			}
-		}
-		return criteria;
-	}
-	
-	@Override
-	protected Criteria getExampleCriteria(final AuthStateEntity entity) {
-		final Criteria criteria = super.getCriteria();
-		if(entity != null) {
-			if(entity.getId() != null) {
-				if(entity.getId().getUserId() != null) {
-					criteria.add(Restrictions.eq("id.userId", entity.getId().getUserId()));
-				}
-				if(entity.getId().getTokenType() != null) {
-					criteria.add(Restrictions.eq("id.tokenType", entity.getId().getTokenType()));
-				}
-			}
-			
-			if(entity.getAa() != null) {
-				criteria.add(Restrictions.eq("aa", entity.getAa()));
-			}
-			
 		}
 		return criteria;
 	}

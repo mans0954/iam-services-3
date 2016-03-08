@@ -5,6 +5,7 @@ import javax.persistence.*;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
+import org.openiam.base.domain.KeyEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.mngsys.dto.ReconciliationResourceAttributeMap;
 import org.openiam.idm.srvc.policy.domain.PolicyEntity;
@@ -16,16 +17,10 @@ import org.openiam.idm.srvc.policy.domain.PolicyEntity;
 @Table(name = "RECON_RES_ATTR_MAP")
 @DozerDTOCorrespondence(ReconciliationResourceAttributeMap.class)
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class ReconciliationResourceAttributeMapEntity implements
-        java.io.Serializable {
+@AttributeOverride(name = "id", column = @Column(name = "RECON_RES_ATTR_MAP_ID"))
+public class ReconciliationResourceAttributeMapEntity extends KeyEntity {
 
     private static final long serialVersionUID = 1L;
-
-    @Id
-    @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name = "system-uuid", strategy = "uuid")
-    @Column(name = "RECON_RES_ATTR_MAP_ID", length = 32, nullable = false)
-    private String reconciliationResourceAttributeMapId;
 
     @OneToOne(mappedBy = "reconResAttribute", orphanRemoval = true, cascade = CascadeType.ALL, optional = false)
     private AttributeMapEntity attributeMap;
@@ -37,15 +32,6 @@ public class ReconciliationResourceAttributeMapEntity implements
     @ManyToOne(optional = true)
     @JoinColumn(name = "DEF_RECON_ATTR_MAP_ID", nullable = true, updatable = true)
     private DefaultReconciliationAttributeMapEntity defaultAttributePolicy;
-
-    public String getReconciliationResourceAttributeMapId() {
-        return reconciliationResourceAttributeMapId;
-    }
-
-    public void setReconciliationResourceAttributeMapId(
-            String reconciliationResourceAttributeMapId) {
-        this.reconciliationResourceAttributeMapId = reconciliationResourceAttributeMapId;
-    }
 
     public PolicyEntity getAttributePolicy() {
         return attributePolicy;
@@ -72,28 +58,55 @@ public class ReconciliationResourceAttributeMapEntity implements
         this.attributeMap = attributeMap;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result
+				+ ((attributeMap == null) ? 0 : attributeMap.hashCode());
+		result = prime * result
+				+ ((attributePolicy == null) ? 0 : attributePolicy.hashCode());
+		result = prime
+				* result
+				+ ((defaultAttributePolicy == null) ? 0
+						: defaultAttributePolicy.hashCode());
+		return result;
+	}
 
-        ReconciliationResourceAttributeMapEntity that = (ReconciliationResourceAttributeMapEntity) o;
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ReconciliationResourceAttributeMapEntity other = (ReconciliationResourceAttributeMapEntity) obj;
+		if (attributeMap == null) {
+			if (other.attributeMap != null)
+				return false;
+		} else if (!attributeMap.equals(other.attributeMap))
+			return false;
+		if (attributePolicy == null) {
+			if (other.attributePolicy != null)
+				return false;
+		} else if (!attributePolicy.equals(other.attributePolicy))
+			return false;
+		if (defaultAttributePolicy == null) {
+			if (other.defaultAttributePolicy != null)
+				return false;
+		} else if (!defaultAttributePolicy.equals(other.defaultAttributePolicy))
+			return false;
+		return true;
+	}
 
-        if (attributeMap != null ? !attributeMap.equals(that.attributeMap) : that.attributeMap != null) return false;
-        if (attributePolicy != null ? !attributePolicy.equals(that.attributePolicy) : that.attributePolicy != null)
-            return false;
-        if (defaultAttributePolicy != null ? !defaultAttributePolicy.equals(that.defaultAttributePolicy) : that.defaultAttributePolicy != null)
-            return false;
-        return !(reconciliationResourceAttributeMapId != null ? !reconciliationResourceAttributeMapId.equals(that.reconciliationResourceAttributeMapId) : that.reconciliationResourceAttributeMapId != null);
+	@Override
+	public String toString() {
+		return "ReconciliationResourceAttributeMapEntity [attributeMap="
+				+ attributeMap + ", attributePolicy=" + attributePolicy
+				+ ", defaultAttributePolicy=" + defaultAttributePolicy
+				+ ", id=" + id + "]";
+	}
 
-    }
-
-    @Override
-    public int hashCode() {
-        int result = reconciliationResourceAttributeMapId != null ? reconciliationResourceAttributeMapId.hashCode() : 0;
-        result = 31 * result + (attributeMap != null ? attributeMap.hashCode() : 0);
-        result = 31 * result + (attributePolicy != null ? attributePolicy.hashCode() : 0);
-        result = 31 * result + (defaultAttributePolicy != null ? defaultAttributePolicy.hashCode() : 0);
-        return result;
-    }
+    
 }

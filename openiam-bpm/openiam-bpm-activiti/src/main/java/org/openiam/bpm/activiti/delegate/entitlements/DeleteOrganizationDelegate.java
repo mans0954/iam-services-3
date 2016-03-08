@@ -6,6 +6,7 @@ import org.openiam.bpm.activiti.delegate.core.AbstractActivitiJob;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditSource;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.service.OrganizationDataService;
@@ -24,12 +25,12 @@ public class DeleteOrganizationDelegate extends AbstractActivitiJob {
     public void execute(DelegateExecution execution) throws Exception {
         Response wsResponse = null;
         final Organization organization = getObjectVariable(execution, ActivitiConstants.ORGANIZATION, Organization.class);
-        final IdmAuditLog idmAuditLog = createNewAuditLog(execution);
+        final IdmAuditLogEntity idmAuditLog = createNewAuditLog(execution);
         idmAuditLog.setAction(AuditAction.DELETE_ORG.value());
         try {
         	if (organization != null) {
         		idmAuditLog.setTargetOrg(organization.getId(), organization.getName());
-                wsResponse = organizationService.deleteOrganization(organization.getId());
+                wsResponse = organizationService.deleteOrganization(organization.getId(), systemUserId);
                 if (wsResponse.isSuccess()) {
                     idmAuditLog.succeed();
                 } else {

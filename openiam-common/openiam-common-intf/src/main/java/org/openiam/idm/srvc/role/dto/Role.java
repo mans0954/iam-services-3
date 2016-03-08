@@ -165,6 +165,7 @@ public class Role extends AbstractEntitlementsDTO implements Comparable<Role> {
         this.userAssociationMethod = value;
     }
 
+    @Deprecated
     public void addParentRole(final Role role) {
     	if(role != null) {
     		if(parentRoles == null) {
@@ -174,14 +175,17 @@ public class Role extends AbstractEntitlementsDTO implements Comparable<Role> {
     	}
     }
     
+    @Deprecated
     public Set<Role> getParentRoles() {
 		return parentRoles;
 	}
 
+    @Deprecated
 	public void setParentRoles(Set<Role> parentRoles) {
 		this.parentRoles = parentRoles;
 	}
 
+    @Deprecated
 	public void addChildRole(final Role role) {
     	if(role != null) {
     		if(childRoles == null) {
@@ -191,11 +195,12 @@ public class Role extends AbstractEntitlementsDTO implements Comparable<Role> {
     	}
     }
 
+    @Deprecated
 	public Set<Role> getChildRoles() {
 		return childRoles;
 	}
 
-
+    @Deprecated
 	public void setChildRoles(Set<Role> childRoles) {
 		this.childRoles = childRoles;
 	}

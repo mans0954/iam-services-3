@@ -1,6 +1,7 @@
 package org.openiam.idm.srvc.role.service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -22,7 +23,7 @@ import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.searchbeans.RoleSearchBean;
 import org.openiam.idm.srvc.access.service.AccessRightDAO;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
@@ -157,12 +158,16 @@ public class RoleDataServiceImpl implements RoleDataService {
 	
 	@Override
     @Transactional
-	public void addGroupToRole(String roleId, String groupId, final Set<String> rightIds) {
+	public void addGroupToRole(final String roleId, 
+							   final String groupId, 
+							   final Set<String> rightIds,
+							   final Date startDate,
+							   final Date endDate) {
 		if(roleId != null && groupId != null) {
 			final RoleEntity role = roleDao.findById(roleId);
 			final GroupEntity group = groupDAO.findById(groupId);
 			if(role != null && group != null) {
-				role.addGroup(group, accessRightDAO.findByIds(rightIds));
+				role.addGroup(group, accessRightDAO.findByIds(rightIds), startDate, endDate);
 			}
 		}
 	}
@@ -186,11 +191,15 @@ public class RoleDataServiceImpl implements RoleDataService {
    
     @Override
     @Transactional
-	public void addUserToRole(String roleId, String userId, final Set<String> rightIds) {
+	public void addUserToRole(final String roleId, 
+							  final String userId, 
+							  final Set<String> rightIds,
+							  final Date startDate,
+							  final Date endDate) {
     	final UserEntity user = userDAO.findById(userId);
     	final RoleEntity role = roleDao.findById(roleId);
     	if(user != null && role != null) {
-    		user.addRole(role, accessRightDAO.findByIds(rightIds));
+    		user.addRole(role, accessRightDAO.findByIds(rightIds), startDate, endDate);
     	}
 	}
 	
@@ -241,7 +250,7 @@ public class RoleDataServiceImpl implements RoleDataService {
 			if(StringUtils.isBlank(role.getId())) {
 				roleDao.save(role);
 				role.addApproverAssociation(createDefaultApproverAssociations(role, requestorId));
-				role.addUser(userDAO.findById(requestorId), accessRightDAO.findById(adminRightId));
+				role.addUser(userDAO.findById(requestorId), accessRightDAO.findById(adminRightId), null, null);
                 addRequiredAttributes(role);
 			} else {
 				final RoleEntity dbRole = roleDao.findById(role.getId());
@@ -336,23 +345,23 @@ public class RoleDataServiceImpl implements RoleDataService {
 
     private void auditLogRemoveAttribute(final RoleEntity role, final RoleAttributeEntity roleAttr, final String requesterId){
         // Audit Log -----------------------------------------------------------------------------------
-        IdmAuditLog auditLog = new IdmAuditLog();
+    	IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
         auditLog.setRequestorUserId(requesterId);
         auditLog.setTargetRole(role.getId(), role.getName());
         auditLog.setTargetRoleAttribute(roleAttr.getId(), roleAttr.getName());
         auditLog.setAction(AuditAction.DELETE_ATTRIBUTE.value());
-        auditLog.addCustomRecord(roleAttr.getName(), roleAttr.getValue());
+        auditLog.put(roleAttr.getName(), roleAttr.getValue());
         auditLogService.enqueue(auditLog);
     }
 
     private void auditLogAddAttribute(final RoleEntity role, final RoleAttributeEntity roleAttr, final String requesterId){
         // Audit Log -----------------------------------------------------------------------------------
-        IdmAuditLog auditLog = new IdmAuditLog();
+    	IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
         auditLog.setRequestorUserId(requesterId);
         auditLog.setTargetRole(role.getId(), role.getName());
         auditLog.setTargetRoleAttribute(roleAttr.getId(), roleAttr.getName());
         auditLog.setAction(AuditAction.ADD_ATTRIBUTE.value());
-        auditLog.addCustomRecord(roleAttr.getName(), roleAttr.getValue());
+        auditLog.put(roleAttr.getName(), roleAttr.getValue());
         auditLogService.enqueue(auditLog);
     }
 
@@ -365,13 +374,17 @@ public class RoleDataServiceImpl implements RoleDataService {
     }
 	
 	private ApproverAssociationEntity createDefaultApproverAssociations(final RoleEntity entity, final String requestorId) {
-		final ApproverAssociationEntity association = new ApproverAssociationEntity();
-		association.setAssociationEntityId(entity.getId());
-		association.setAssociationType(AssociationType.ROLE);
-		association.setApproverLevel(Integer.valueOf(0));
-		association.setApproverEntityId(requestorId);
-		association.setApproverEntityType(AssociationType.USER);
-		return association;
+		if(requestorId != null) {
+			final ApproverAssociationEntity association = new ApproverAssociationEntity();
+			association.setAssociationEntityId(entity.getId());
+			association.setAssociationType(AssociationType.ROLE);
+			association.setApproverLevel(Integer.valueOf(0));
+			association.setApproverEntityId(requestorId);
+			association.setApproverEntityType(AssociationType.USER);
+			return association;
+		} else {
+			return null;
+		}
 	}
 	
 	/*
@@ -463,12 +476,16 @@ public class RoleDataServiceImpl implements RoleDataService {
 
 	@Override
     @Transactional
-	public void addChildRole(final String id, final String childRoleId, final Set<String> rights) {
+	public void addChildRole(final String id, 
+							 final String childRoleId, 
+							 final Set<String> rights,
+							 final Date startDate,
+							 final Date endDate) {
 		if(id != null && childRoleId != null && !id.equals(childRoleId)) {
 			final RoleEntity child = roleDao.findById(childRoleId);
 			final RoleEntity parent = roleDao.findById(id);
 			if(parent != null && child != null) {
-				parent.addChild(child, accessRightDAO.findByIds(rights));
+				parent.addChild(child, accessRightDAO.findByIds(rights), startDate, endDate);
 			}
 			roleDao.update(parent);
 		}
@@ -508,7 +525,7 @@ public class RoleDataServiceImpl implements RoleDataService {
     
 	@Override
 	@Transactional
-	public void validateRole2RoleAddition(final String parentId, final String memberId, final Set<String> rights) throws BasicDataServiceException {
+	public void validateRole2RoleAddition(final String parentId, final String memberId, final Set<String> rights, final Date startDate, final Date endDate) throws BasicDataServiceException {
 		final RoleEntity parent = roleDao.findById(parentId);
 		final RoleEntity child = roleDao.findById(memberId);
 		
@@ -520,11 +537,9 @@ public class RoleDataServiceImpl implements RoleDataService {
 			throw new BasicDataServiceException(ResponseCode.CIRCULAR_DEPENDENCY);
 		}
 		
-		/*
-		if(parent.hasChild(child)) {
-			throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS);
-		}
-		*/
+		if(startDate != null && endDate != null && startDate.after(endDate)) {
+        	throw new BasicDataServiceException(ResponseCode.ENTITLEMENTS_DATE_INVALID);
+        }
 		
 		if(StringUtils.equals(parentId, memberId)) {
 			throw new BasicDataServiceException(ResponseCode.CANT_ADD_YOURSELF_AS_CHILD);

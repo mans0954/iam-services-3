@@ -5,17 +5,13 @@ package org.openiam.idm.srvc.recon.service;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.elasticsearch.common.lang3.StringUtils;
 import org.hibernate.Criteria;
-import org.hibernate.HibernateException;
-import org.hibernate.Query;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.searchbeans.ReconConfigSearchBean;
-import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.recon.domain.ReconciliationConfigEntity;
-import org.openiam.idm.srvc.searchbean.converter.ReconConfigSearchBeanConverter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -26,9 +22,6 @@ public class ReconciliationConfigDAOImpl extends
         BaseDaoImpl<ReconciliationConfigEntity, String> implements
         ReconciliationConfigDAO {
 
-    @Autowired
-    private ReconConfigSearchBeanConverter reconConfigSearchBeanConverter;
-
     public ReconciliationConfigEntity get(String id) {
         return (ReconciliationConfigEntity)getSession().get(ReconciliationConfigEntity.class,id);
     }
@@ -38,50 +31,42 @@ public class ReconciliationConfigDAOImpl extends
         Criteria criteria = getCriteria();
         if(searchBean != null && searchBean instanceof ReconConfigSearchBean) {
             final ReconConfigSearchBean reconSearchBean = (ReconConfigSearchBean)searchBean;
-            criteria = getExampleCriteria(reconConfigSearchBeanConverter.convert(reconSearchBean));
+            if(StringUtils.isNotBlank(reconSearchBean.getKey())) {
+            	criteria.add(Restrictions.eq(getPKfieldName(), reconSearchBean.getKey()));
+            }
+            if(StringUtils.isNotBlank(reconSearchBean.getManagedSysId())) {
+            	criteria.add(Restrictions.eq("managedSysId", reconSearchBean.getManagedSysId()));
+            }
+            if(StringUtils.isNotBlank(reconSearchBean.getName())) {
+            	criteria.add(Restrictions.eq("name", reconSearchBean.getName()));
+            }
+            if(StringUtils.isNotBlank(reconSearchBean.getReconType())) {
+            	criteria.add(Restrictions.eq("reconType", reconSearchBean.getReconType()));
+            }
+            if(StringUtils.isNotBlank(reconSearchBean.getResourceId())) {
+            	criteria.add(Restrictions.eq("resourceId", reconSearchBean.getResourceId()));
+            }
         }
         return criteria;
     }
 
-    public ReconciliationConfigEntity findByResourceIdByType(
-            java.lang.String resourceId, String type) throws HibernateException {
-        Criteria criteria = this.getCriteria().add(
-                Restrictions.eq("resourceId", resourceId)).add(Restrictions.eq("reconType",type));
-        List<ReconciliationConfigEntity> result = (List<ReconciliationConfigEntity>) criteria
-                .list();
-        if (CollectionUtils.isEmpty(result)) {
-            return null;
-        } else {
-            return result.get(0);
-        }
+    public ReconciliationConfigEntity findByResourceIdByType(final String resourceId, final String type) {
+        final ReconConfigSearchBean sb = new ReconConfigSearchBean();
+        sb.setResourceId(resourceId);
+        sb.setReconType(type);
+        final List<ReconciliationConfigEntity> results = getByExample(sb);
+        return (CollectionUtils.isNotEmpty(results)) ? results.get(0) : null;
     }
 
-    public List<ReconciliationConfigEntity> findByResourceId(
-            java.lang.String resourceId) throws HibernateException {
-        Criteria criteria = this.getCriteria().add(
-                Restrictions.eq("resourceId", resourceId));
-        List<ReconciliationConfigEntity> result = (List<ReconciliationConfigEntity>) criteria
-                .list();
-        return result;
-    }
-
-    public void removeByResourceId(java.lang.String resourceId) {
-        try {
-
-            Query qry = this.getSession().createQuery(
-                    "delete org.openiam.idm.srvc.recon.dto.ReconciliationConfig rc "
-                            + " where rc.resourceId = :resourceId ");
-            qry.setString("resourceId", resourceId);
-            qry.executeUpdate();
-        } catch (HibernateException re) {
-            log.error("delete failed", re);
-            throw re;
-        }
+    public List<ReconciliationConfigEntity> findByResourceId(final String resourceId) {
+    	final ReconConfigSearchBean sb = new ReconConfigSearchBean();
+    	sb.setResourceId(resourceId);
+    	return getByExample(sb);
     }
 
     @Override
     protected String getPKfieldName() {
-        return "reconConfigId";
+        return "id";
     }
 
 }

@@ -1,17 +1,21 @@
 package org.openiam.provision.service;
 
-import org.apache.commons.collections.CollectionUtils;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.commons.lang.StringUtils;
 import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.connector.type.response.ObjectResponse;
 import org.openiam.connector.type.constant.StatusCodeType;
-import org.openiam.dozer.converter.UserDozerConverter;
+import org.openiam.connector.type.response.ObjectResponse;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
 import org.openiam.idm.srvc.audit.constant.AuditTarget;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
@@ -19,20 +23,16 @@ import org.openiam.idm.srvc.auth.dto.ProvLoginStatusEnum;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.res.dto.Resource;
-import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.provision.dto.ProvOperationEnum;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.util.UserUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
-
-import java.util.*;
 
 /**
  * Helper class that implements functionality required for provisioning a selected set of resources.
@@ -54,7 +54,7 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
                 public ProvisionUserResponse doInTransaction(TransactionStatus status) {
 
                     ProvisionUserResponse tmpRes = new ProvisionUserResponse(ResponseStatus.FAILURE);
-                    final IdmAuditLog auditLog = new IdmAuditLog();
+                    final IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
                     auditLog.setRequestorUserId(requestorUserId);
                     UserEntity requestor = userMgr.getUser(requestorUserId);
 
@@ -71,7 +71,7 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
                             Login primaryIdentity = UserUtils.getUserManagedSysIdentity(sysConfiguration.getDefaultManagedSysId(),
                                     user.getPrincipalList());
 
-                            final IdmAuditLog auditLogChild = new IdmAuditLog();
+                            final IdmAuditLogEntity auditLogChild = new IdmAuditLogEntity();
                             auditLog.setRequestorPrincipal(requestorPrimaryIdentity.getLogin());
                             auditLog.setAction(AuditAction.DE_PROVISIONING.value());
                             auditLog.addTarget(userEntity.getId(), AuditTarget.USER.value(), primaryIdentity.getLogin());

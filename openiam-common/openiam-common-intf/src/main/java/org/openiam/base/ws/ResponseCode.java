@@ -82,6 +82,12 @@ public enum ResponseCode {
 
     @XmlEnumValue("circularDependency")
     CIRCULAR_DEPENDENCY("circularDependency"),
+    
+    @XmlEnumValue("cookiePathRequired")
+    COOKIE_PATH_REQUIRED("cookiePathRequired"),
+    
+    @XmlEnumValue("cookiePathRequiredOnMethod")
+    COOKIE_PATH_REQUIRED_ON_METHOD("cookiePathRequiredOnMethod"),
 
     @XmlEnumValue("objectNotFound")
     OBJECT_NOT_FOUND("objectNotFound"),
@@ -294,9 +300,6 @@ public enum ResponseCode {
 
     @XmlEnumValue("AUTH_ATTRIBUTE_NAME_NOT_SET")
     AUTH_ATTRIBUTE_NAME_NOT_SET("AUTH_PROVIDER_TYPE_NOT_SET"),
-
-    @XmlEnumValue("MANAGED_SYS_NOT_SET")
-    MANAGED_SYS_NOT_SET("MANAGED_SYS_NOT_SET"),
 
     @XmlEnumValue("AUTH_PROVIDER_NAME_NOT_SET")
     AUTH_PROVIDER_NAME_NOT_SET("AUTH_PROVIDER_NAME_NOT_SET"),
@@ -598,6 +601,9 @@ public enum ResponseCode {
 
     @XmlEnumValue("DATE_INVALID")
     DATE_INVALID("DATE_INVALID"),
+    
+    @XmlEnumValue("ENTITLEMENTS_DATE_INVALID")
+    ENTITLEMENTS_DATE_INVALID("ENTITLEMENTS_DATE_INVALID"),
 
     @XmlEnumValue("FILE_DOES_NOT_EXIST")
     FILE_DOES_NOT_EXIST("FILE_DOES_NOT_EXIST"),

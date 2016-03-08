@@ -8,6 +8,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.bpm.request.GenericWorkflowRequest;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
@@ -16,7 +17,7 @@ import org.openiam.idm.srvc.user.domain.UserEntity;
 public class DefaultGenericWorkflowRequestApproverAssociationIdentifier extends AbstractApproverAssociationIdentifier {
 	
 	protected GenericWorkflowRequest request;
-	protected IdmAuditLog idmAuditLog;
+	protected IdmAuditLogEntity idmAuditLog;
 	
 	public DefaultGenericWorkflowRequestApproverAssociationIdentifier() {
 		super();
@@ -24,7 +25,7 @@ public class DefaultGenericWorkflowRequestApproverAssociationIdentifier extends 
 	
 	public final void init(final Map<String, Object> bindingMap) {
 		request = (GenericWorkflowRequest)bindingMap.get("REQUEST");
-        idmAuditLog = (IdmAuditLog)bindingMap.get("BUILDER");
+        idmAuditLog = (IdmAuditLogEntity)bindingMap.get("BUILDER");
 		super.init(bindingMap);
 		calculateApprovers();
 	}

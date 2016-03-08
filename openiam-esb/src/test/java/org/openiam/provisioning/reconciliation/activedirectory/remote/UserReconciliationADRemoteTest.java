@@ -120,7 +120,7 @@ public class UserReconciliationADRemoteTest extends AbstractTestNGSpringContextT
             // Save Connector
             provisionConnectorWebServiceClient.addProvisionConnector(connectorDto);
             ProvisionConnectorSearchBean provisionConnectorSearchBean = new ProvisionConnectorSearchBean();
-            provisionConnectorSearchBean.setConnectorName("TEST-USER-POWERSHELL-AD-CONNECTOR");
+            provisionConnectorSearchBean.setName("TEST-USER-POWERSHELL-AD-CONNECTOR");
             List<ProvisionConnectorDto> provisionConnectorDtoList = provisionConnectorWebServiceClient.getProvisionConnectors(provisionConnectorSearchBean, 0, 10);
             Assert.assertNotNull(provisionConnectorDtoList);
             Assert.assertEquals(provisionConnectorDtoList.size(), 1);
@@ -220,9 +220,9 @@ public class UserReconciliationADRemoteTest extends AbstractTestNGSpringContextT
             Assert.assertTrue(reconciliationConfigResponse.isSuccess());
             Assert.assertNotNull(reconciliationConfigResponse.getConfig());
             reconciliationConfig = reconciliationConfigResponse.getConfig();
-            deleteReconConfigIdsList.add(reconciliationConfig.getReconConfigId());
+            deleteReconConfigIdsList.add(reconciliationConfig.getId());
 
-            reconciliationConfigResponse = reconciliationWebService.getConfigById(reconciliationConfig.getReconConfigId());
+            reconciliationConfigResponse = reconciliationWebService.getConfigById(reconciliationConfig.getId());
             Assert.assertTrue(reconciliationConfigResponse.isSuccess());
             ReconciliationConfig reconciliationConfig1 = reconciliationConfigResponse.getConfig();
             Assert.assertNotNull(reconciliationConfig1);

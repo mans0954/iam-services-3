@@ -32,6 +32,7 @@ public class DeleteIdmExcludeTargetGroupCommand extends BaseReconciliationGroupC
     private static final Log log = LogFactory.getLog(DeleteIdmExcludeTargetGroupCommand.class);
 
     @Autowired
+    @Qualifier("groupWS")
     private GroupDataWebService groupDataWebService;
 
     @Autowired

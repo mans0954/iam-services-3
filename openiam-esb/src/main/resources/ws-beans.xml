@@ -104,4 +104,5 @@
 
     <jaxws:endpoint id="oauthWebServiceEndpoint" implementor="#OAuthWS" address="/OAuthWebService"/>
 
+	<jaxws:endpoint id="elasticSearchWebServiceEndpoint" implementor="#elasticSearchWS" address="/ElasticSearchWebService"/>
 </beans>

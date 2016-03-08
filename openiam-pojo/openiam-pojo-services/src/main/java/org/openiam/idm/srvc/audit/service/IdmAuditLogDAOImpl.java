@@ -2,54 +2,30 @@ package org.openiam.idm.srvc.audit.service;
 
 // Generated Nov 30, 2007 3:01:47 AM by Hibernate Tools 3.2.0.b11
 
+import java.util.List;
+
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
-import org.hibernate.criterion.*;
+import org.hibernate.criterion.Criterion;
+import org.hibernate.criterion.DetachedCriteria;
+import org.hibernate.criterion.Order;
+import org.hibernate.criterion.Projections;
+import org.hibernate.criterion.Restrictions;
+import org.hibernate.criterion.Subqueries;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.searchbeans.AuditLogSearchBean;
 import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.audit.domain.AuditLogTargetEntity;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
-import org.openiam.idm.srvc.searchbean.converter.AuditLogSearchBeanConverter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
-
-import java.util.List;
 
 /**
  * RDMBS implementation the DAO for IdmAudit
  * @author Suneet Shah
  */
+@Deprecated
 @Repository("idmAuditLogDAO")
 public class IdmAuditLogDAOImpl extends BaseDaoImpl<IdmAuditLogEntity, String> implements IdmAuditLogDAO {
-
-    @Autowired
-    private AuditLogSearchBeanConverter converter;
-
-
-    @Override
-    public IdmAuditLogEntity findByRequesterId(String requesterId, String correlationID) {
-        final Criteria criteria = super.getCriteria();
-        IdmAuditLogEntity auditLogEntity = (IdmAuditLogEntity)criteria.add(Restrictions.and(Restrictions.eq("userId",requesterId),Restrictions.eq("coorelationId",correlationID))).uniqueResult();
-        return auditLogEntity;
-    }
-
-    @Override
-    protected Criteria getExampleCriteria(final IdmAuditLogEntity entity) {
-        final Criteria criteria = super.getCriteria();
-        if(entity != null) {
-            if(StringUtils.isNotBlank(entity.getId())) {
-                criteria.add(Restrictions.eq(getPKfieldName(), entity.getId()));
-            }
-            if(StringUtils.isNotEmpty(entity.getAction())) {
-                criteria.add(Restrictions.eq("action",entity.getAction()));
-            }
-            if(StringUtils.isNotEmpty(entity.getResult())) {
-                criteria.add(Restrictions.eq("result",entity.getResult()));
-            }
-        }
-        return criteria;
-    }
 
     @Override
     public List<String> getIDsByExample(SearchBean searchBean, int from, int size) {
@@ -75,7 +51,6 @@ public class IdmAuditLogDAOImpl extends BaseDaoImpl<IdmAuditLogEntity, String> i
         Criteria criteria = super.getCriteria();
         if(searchBean != null && (searchBean instanceof AuditLogSearchBean)) {
             final AuditLogSearchBean auditSearch = (AuditLogSearchBean)searchBean;
-            criteria = getExampleCriteria(converter.convert(auditSearch));
 
             if(auditSearch.getFrom() != null && auditSearch.getTo() != null) {
                 criteria.add(Restrictions.between("timestamp", auditSearch.getFrom(), auditSearch.getTo()));

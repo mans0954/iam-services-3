@@ -34,16 +34,15 @@ import org.dozer.util.ReflectionUtils;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.exception.BasicDataServiceException;
 import org.openiam.dozer.converter.BatchTaskDozerConverter;
 import org.openiam.dozer.converter.BatchTaskScheduleDozerConverter;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.BatchTaskScheduleSearchBean;
 import org.openiam.idm.searchbeans.BatchTaskSearchBean;
 import org.openiam.idm.srvc.batch.domain.BatchTaskEntity;
 import org.openiam.idm.srvc.batch.domain.BatchTaskScheduleEntity;
 import org.openiam.idm.srvc.batch.dto.BatchTask;
 import org.openiam.idm.srvc.batch.dto.BatchTaskSchedule;
-import org.openiam.idm.srvc.searchbean.converter.BatchTaskSearchBeanConverter;
 import org.openiam.script.ScriptIntegration;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,9 +82,6 @@ public class BatchDataServiceImpl implements BatchDataService, ApplicationContex
 	
 	@Autowired
 	private BatchService batchService;
-	
-	@Autowired
-	private BatchTaskSearchBeanConverter searchBeanConverter;
 
 	@Override
 	public Response save(final BatchTask task) {
@@ -194,8 +190,7 @@ public class BatchDataServiceImpl implements BatchDataService, ApplicationContex
 	@Override
     @Transactional(readOnly = true)
 	public List<BatchTask> findBeans(final BatchTaskSearchBean searchBean, final int from, final int size) {
-		final BatchTaskEntity entity = searchBeanConverter.convert(searchBean);
-		final List<BatchTaskEntity> entityList = batchService.findBeans(entity, from, size);
+		final List<BatchTaskEntity> entityList = batchService.findBeans(searchBean, from, size);
 		return converter.convertToDTOList(entityList, (searchBean != null) ? searchBean.isDeepCopy() : false);
 	}
 
@@ -206,8 +201,7 @@ public class BatchDataServiceImpl implements BatchDataService, ApplicationContex
 
 	@Override
 	public int count(BatchTaskSearchBean searchBean) {
-		final BatchTaskEntity entity = searchBeanConverter.convert(searchBean);
-		return batchService.count(entity);
+		return batchService.count(searchBean);
 	}
 
 	@Override

@@ -35,6 +35,7 @@ import org.openiam.idm.parser.csv.UserSearchBeanCSVParser;
 import org.openiam.idm.searchbeans.ManualReconciliationSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
@@ -131,14 +132,14 @@ public class ReconciliationServiceImpl implements ReconciliationService {
 
     public ReconciliationResponse startReconciliation(ReconciliationConfig config) {
 
-		ReconciliationConfig reconConfig = reconConfigService.getConfigById(config.getReconConfigId());
+		ReconciliationConfig reconConfig = reconConfigService.getConfigById(config.getId());
 
-		IdmAuditLog idmAuditLog = new IdmAuditLog();
+		IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
         idmAuditLog.setRequestorUserId(config.getRequesterId());
         idmAuditLog.setAction(AuditAction.RECONCILIATION.value());
         ManagedSysEntity managedSysEntity = managedSysService.getManagedSysById(config.getManagedSysId());
         idmAuditLog.setTargetManagedSys(config.getManagedSysId(), managedSysEntity.getName());
-        idmAuditLog.setSource(config.getReconConfigId());
+        idmAuditLog.setSource(config.getId());
 
         if ("INACTIVE".equalsIgnoreCase(config.getStatus())) {
             idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "WARNING: Reconciliation config is in 'INACTIVE' status");
@@ -148,7 +149,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
             return resp;
         }
 
-        ReconciliationResponse processCheckResponse = addTask(config.getReconConfigId());
+        ReconciliationResponse processCheckResponse = addTask(config.getId());
         if ( processCheckResponse.getStatus() == ResponseStatus.FAILURE &&
                 processCheckResponse.getErrorCode() == ResponseCode.FAIL_PROCESS_ALREADY_RUNNING) {
             idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "WARNING: Previous reconciliation run is not finished yet");
@@ -158,10 +159,10 @@ public class ReconciliationServiceImpl implements ReconciliationService {
 		boolean reconFailed = false;
 		ReconciliationResponse reconciliationResponse = null;
         try {
-            log.debug("Reconciliation started for configId=" + config.getReconConfigId() + " - resource="
+            log.debug("Reconciliation started for configId=" + config.getId() + " - resource="
                     + config.getResourceId());
 
-			reconConfigService.updateExecStatus(reconConfig.getReconConfigId(), ReconExecStatusOptions.STARTED);
+			reconConfigService.updateExecStatus(reconConfig.getId(), ReconExecStatusOptions.STARTED);
 
 			Map<String, Object> bindingMap = new HashMap<String, Object>();
             bindingMap.put("RECONCILIATION_CONFIG", config);
@@ -205,17 +206,17 @@ public class ReconciliationServiceImpl implements ReconciliationService {
             reconFailed = true;
 
         } finally {
-            endTask(config.getReconConfigId());
+            endTask(config.getId());
             auditLogService.enqueue(idmAuditLog);
 
-			ReconExecStatusOptions actualStatus = reconConfigService.getExecStatus(config.getReconConfigId());
+			ReconExecStatusOptions actualStatus = reconConfigService.getExecStatus(config.getId());
 			final ReconExecStatusOptions execStatus =
 					reconFailed ? ReconExecStatusOptions.FAILED :
 					(actualStatus == ReconExecStatusOptions.STOPPING) ? ReconExecStatusOptions.STOPPED :
 					(actualStatus == ReconExecStatusOptions.STARTED) ? ReconExecStatusOptions.FINISHED :
 					null;
 			if (execStatus != null) {
-				reconConfigService.updateExecStatus(config.getReconConfigId(), execStatus);
+				reconConfigService.updateExecStatus(config.getId(), execStatus);
 			}
 
             Map<String, Object> bindingMap = new HashMap<String, Object>();

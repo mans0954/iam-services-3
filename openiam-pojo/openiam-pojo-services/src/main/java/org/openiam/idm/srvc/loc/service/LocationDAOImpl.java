@@ -8,12 +8,12 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
-
 import org.hibernate.Query;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Restrictions;
-
 import org.openiam.core.dao.BaseDaoImpl;
+import org.openiam.idm.searchbeans.LocationSearchBean;
+import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.loc.domain.LocationEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.springframework.stereotype.Repository;
@@ -40,54 +40,52 @@ public class LocationDAOImpl extends BaseDaoImpl<LocationEntity, String> impleme
     public void initSQL() {
         DELETE_BY_ORGANIZATION_ID = String.format(DELETE_BY_ORGANIZATION_ID, domainClass.getSimpleName());
     }
+    
+    
 
     @Override
-    protected Criteria getExampleCriteria(LocationEntity location){
-        final Criteria criteria = getCriteria();
-        if (StringUtils.isNotBlank(location.getId())) {
-            criteria.add(Restrictions.eq(getPKfieldName(), location.getId()));
-        } else {
+	protected Criteria getExampleCriteria(SearchBean searchBean) {
+		final Criteria criteria = getCriteria();
+		if(searchBean != null && searchBean instanceof LocationSearchBean) {
+			final LocationSearchBean sb = (LocationSearchBean)searchBean;
+			if(StringUtils.isNotBlank(sb.getKey())) {
+				criteria.add(Restrictions.eq(getPKfieldName(), sb.getKey()));
+			} else {
+				if (StringUtils.isNotBlank(sb.getOrganizationId())) {
+					criteria.add(Restrictions.eq("organization.id", sb.getOrganizationId()));
+	            }
+	            if (StringUtils.isNotEmpty(sb.getName())) {
+	                String name = sb.getName();
+	                MatchMode matchMode = null;
+	                if (StringUtils.indexOf(name, "*") == 0) {
+	                    matchMode = MatchMode.START;
+	                    name = name.substring(1);
+	                }
+	                if (StringUtils.isNotEmpty(name) && StringUtils.indexOf(name, "*") == name.length() - 1) {
+	                    name = name.substring(0, name.length() - 1);
+	                    matchMode = (matchMode == MatchMode.START) ? MatchMode.ANYWHERE : MatchMode.END;
+	                }
 
-            if (location.getOrganization() != null) {
-                if (StringUtils.isNotBlank(location.getOrganization().getId())) {
-                    criteria.add(Restrictions.eq("organization.id", location.getOrganization().getId()));
-                }
-            }
-            if (StringUtils.isNotEmpty(location.getName())) {
-                String name = location.getName();
-                MatchMode matchMode = null;
-                if (StringUtils.indexOf(name, "*") == 0) {
-                    matchMode = MatchMode.START;
-                    name = name.substring(1);
-                }
-                if (StringUtils.isNotEmpty(name) && StringUtils.indexOf(name, "*") == name.length() - 1) {
-                    name = name.substring(0, name.length() - 1);
-                    matchMode = (matchMode == MatchMode.START) ? MatchMode.ANYWHERE : MatchMode.END;
+	                if (StringUtils.isNotEmpty(name)) {
+	                    if (matchMode != null) {
+	                        criteria.add(Restrictions.ilike("name", name, matchMode));
+	                    } else {
+	                        criteria.add(Restrictions.eq("name", name));
+	                    }
+	                }
+	            }
+
+                if (StringUtils.isNotBlank(sb.getCountry())) {
+                    criteria.add(Restrictions.eq("country", sb.getCountry()));
                 }
 
-                if (StringUtils.isNotEmpty(name)) {
-                    if (matchMode != null) {
-                        criteria.add(Restrictions.ilike("name", name, matchMode));
-                    } else {
-                        criteria.add(Restrictions.eq("name", name));
-                    }
+                if (StringUtils.isNotBlank(sb.getCity())) {
+                    criteria.add(Restrictions.eq("city", sb.getCity()));
                 }
-            }
-
-            if (location.getCountry() != null) {
-                if (StringUtils.isNotBlank(location.getCountry())) {
-                    criteria.add(Restrictions.eq("country", location.getCountry()));
-                }
-            }
-
-            if (location.getCity() != null) {
-                if (StringUtils.isNotBlank(location.getCity())) {
-                    criteria.add(Restrictions.eq("city", location.getCity()));
-                }
-            }
-        }
-        return criteria;
-    }
+			}
+		}
+		return criteria;
+	}
 
     @Override
     public void removeByOrganizationId(final String userId) {

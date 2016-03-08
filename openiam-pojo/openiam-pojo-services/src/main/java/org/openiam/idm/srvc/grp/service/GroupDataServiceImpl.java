@@ -27,7 +27,7 @@ import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.srvc.access.domain.AccessRightEntity;
 import org.openiam.idm.srvc.access.service.AccessRightDAO;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.auth.domain.IdentityEntity;
 import org.openiam.idm.srvc.auth.dto.IdentityTypeEnum;
@@ -272,7 +272,7 @@ public class GroupDataServiceImpl implements GroupDataService {
                 foundGroupsId.add(grp.getId());
             }
         }
-        HashMap<String, SetStringResponse> ownersMap = authorizationManagerAdminService.getOwnerIdsForGroupSet(foundGroupsId);
+        HashMap<String, SetStringResponse> ownersMap = authorizationManagerAdminService.getOwnerIdsForGroupSet(foundGroupsId, new Date());
         for (GroupEntity grp: foundGroups){
             SetStringResponse idsResp = ownersMap.get(grp.getId());
             if(idsResp!=null && CollectionUtils.isNotEmpty(idsResp.getSetString()) && idsResp.getSetString().contains(ownerId)){
@@ -332,7 +332,7 @@ public class GroupDataServiceImpl implements GroupDataService {
                 if(mngSys != null) {
                 	group.setManagedSystem(managedSysDAO.findById(group.getManagedSystem().getId()));
                 	if(mngSys.getResource() != null){
-                		group.addResource(mngSys.getResource(), accessRightDAO.findAll());
+                		group.addResource(mngSys.getResource(), accessRightDAO.findAll(), null, null);
                 	}
                 }
 
@@ -405,7 +405,7 @@ public class GroupDataServiceImpl implements GroupDataService {
                     		dbGroup.getOrganizations().removeIf(e -> {
                     			return !incomingOrganizationIds.contains(e.getEntity().getId());
                     		});
-                    		dbGroup.addOrganization(xref.getEntity(), xref.getRights());
+                    		dbGroup.addOrganization(xref.getEntity(), xref.getRights(), null, null);
                     	});
                     }
                     
@@ -423,11 +423,11 @@ public class GroupDataServiceImpl implements GroupDataService {
             } else {
             	if(groupOwner != null) {
             		if("user".equals(groupOwner.getType())){
-            			group.addUser(userDAO.findById(groupOwner.getId()), accessRightDAO.findById(adminRightId));
+            			group.addUser(userDAO.findById(groupOwner.getId()), accessRightDAO.findById(adminRightId), null, null);
             		} else if("group".equals(groupOwner.getType())){
-            			group.addChildGroup(groupDao.findById(groupOwner.getId()), accessRightDAO.findById(adminRightId));
+            			group.addChildGroup(groupDao.findById(groupOwner.getId()), accessRightDAO.findById(adminRightId), null, null);
             		} else {
-            			group.addUser(userDAO.findById(requestorId), accessRightDAO.findById(adminRightId));
+            			group.addUser(userDAO.findById(requestorId), accessRightDAO.findById(adminRightId), null, null);
             		}
             	}
                 group.setCreatedBy(requestorId);
@@ -465,13 +465,17 @@ public class GroupDataServiceImpl implements GroupDataService {
     }
 
     private ApproverAssociationEntity createDefaultApproverAssociations(final GroupEntity entity, final String requestorId) {
-		final ApproverAssociationEntity association = new ApproverAssociationEntity();
-		association.setAssociationEntityId(entity.getId());
-		association.setAssociationType(AssociationType.GROUP);
-		association.setApproverLevel(Integer.valueOf(0));
-		association.setApproverEntityId(requestorId);
-		association.setApproverEntityType(AssociationType.USER);
-		return association;
+    	if(requestorId != null) {
+			final ApproverAssociationEntity association = new ApproverAssociationEntity();
+			association.setAssociationEntityId(entity.getId());
+			association.setAssociationType(AssociationType.GROUP);
+			association.setApproverLevel(Integer.valueOf(0));
+			association.setApproverEntityId(requestorId);
+			association.setApproverEntityType(AssociationType.USER);
+			return association;
+    	} else {
+    		return null;
+    	}
 	}
 	
 	private void mergeAttribute(final GroupEntity bean, final GroupEntity dbObject, final String requesterId) {
@@ -528,23 +532,23 @@ public class GroupDataServiceImpl implements GroupDataService {
 
     private void auditLogRemoveAttribute(final GroupEntity group, final GroupAttributeEntity groupAttr, final String requesterId){
         // Audit Log -----------------------------------------------------------------------------------
-        IdmAuditLog auditLog = new IdmAuditLog();
+    	IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
         auditLog.setRequestorUserId(requesterId);
         auditLog.setTargetGroup(group.getId(), group.getName());
         auditLog.setTargetGroupAttribute(groupAttr.getId(), groupAttr.getName());
         auditLog.setAction(AuditAction.DELETE_ATTRIBUTE.value());
-        auditLog.addCustomRecord(groupAttr.getName(), groupAttr.getValue());
+        auditLog.put(groupAttr.getName(), groupAttr.getValue());
         auditLogService.enqueue(auditLog);
     }
 
     private void auditLogAddAttribute(final GroupEntity group, final GroupAttributeEntity groupAttr, final String requesterId){
         // Audit Log -----------------------------------------------------------------------------------
-        IdmAuditLog auditLog = new IdmAuditLog();
+    	IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
         auditLog.setRequestorUserId(requesterId);
         auditLog.setTargetGroup(group.getId(), group.getName());
         auditLog.setTargetGroupAttribute(groupAttr.getId(), groupAttr.getName());
         auditLog.setAction(AuditAction.ADD_ATTRIBUTE.value());
-        auditLog.addCustomRecord(groupAttr.getName(), groupAttr.getValue());
+        auditLog.put(groupAttr.getName(), groupAttr.getValue());
         auditLogService.enqueue(auditLog);
     }
 
@@ -601,12 +605,12 @@ public class GroupDataServiceImpl implements GroupDataService {
 	}
 
 	@Override
-	public void addChildGroup(String groupId, String childGroupId, final Set<String> rights) {
+	public void addChildGroup(String groupId, String childGroupId, final Set<String> rights, final Date startDate, final Date endDate) {
 		if(groupId != null && childGroupId != null) {
 			final GroupEntity group = groupDao.findById(groupId);
 			final GroupEntity child = groupDao.findById(childGroupId);
 			if(group != null && child != null) {
-				group.addChildGroup(child, accessRightDAO.findByIds(rights));
+				group.addChildGroup(child, accessRightDAO.findByIds(rights), startDate, endDate);
 			}
 		}
 	}
@@ -648,7 +652,7 @@ public class GroupDataServiceImpl implements GroupDataService {
 
 	@Override
 	@Transactional
-	public void validateGroup2GroupAddition(String parentId, String memberId, final Set<String> rights) throws BasicDataServiceException {
+	public void validateGroup2GroupAddition(String parentId, String memberId, final Set<String> rights, final Date startDate, final Date endDate) throws BasicDataServiceException {
 		final GroupEntity parent = groupDao.findById(parentId);
 		final GroupEntity child = groupDao.findById(memberId);
 		
@@ -659,6 +663,10 @@ public class GroupDataServiceImpl implements GroupDataService {
 		if(causesCircularDependency(parent, child, new HashSet<GroupEntity>())) {
 			throw new BasicDataServiceException(ResponseCode.CIRCULAR_DEPENDENCY);
 		}
+		
+		if(startDate != null && endDate != null && startDate.after(endDate)) {
+        	throw new BasicDataServiceException(ResponseCode.ENTITLEMENTS_DATE_INVALID);
+        }
 		
 		/*
 		if(parent.hasChildGroup(child.getId())) {

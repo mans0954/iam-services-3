@@ -53,9 +53,9 @@ public class OrganizationTypeServiceImpl extends AbstractBaseService implements 
 	
 	@Override
 	public OrganizationTypeEntity findByName(String name) {
-		final OrganizationTypeEntity entity = new OrganizationTypeEntity();
-		entity.setName(name);
-		final List<OrganizationTypeEntity> entityList = organizationTypeDAO.getByExample(entity);
+		final OrganizationTypeSearchBean sb = new OrganizationTypeSearchBean();
+		sb.setName(name);
+		final List<OrganizationTypeEntity> entityList = organizationTypeDAO.getByExample(sb);
 		return (CollectionUtils.isNotEmpty(entityList)) ? entityList.get(0) : null;
 	}
 

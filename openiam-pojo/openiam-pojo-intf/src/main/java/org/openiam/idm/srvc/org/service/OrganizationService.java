@@ -14,6 +14,7 @@ import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -45,7 +46,7 @@ public interface OrganizationService {
     public List<OrganizationEntity> findOrganizationsByAttributeValue(final String attrName, String attrValue, final LanguageEntity langauge);
 
 	public int count(final OrganizationSearchBean searchBean, String requesterId);
-	public void addUserToOrg(final String orgId, final String userId, Set<String> rightIds);
+	public void addUserToOrg(final String orgId, final String userId, Set<String> rightIds, final Date startDate, final Date endDate);
 	public void removeUserFromOrg(String orgId, String userId);
 	public void removeAttribute(final String attributeId);
     public Organization save(final Organization organization, final String requestorId, final boolean skipPrePostProcessors) throws BasicDataServiceException;
@@ -53,7 +54,7 @@ public interface OrganizationService {
     public void addRequiredAttributes(OrganizationEntity organization);
 	public void save(final OrganizationAttributeEntity attribute);
 	public void removeChildOrganization(final String organizationId, final String childOrganizationId);
-	public void addChildOrganization(final String organizationId, final String childOrganizationId, final Set<String> rightIds);
+	public void addChildOrganization(final String organizationId, final String childOrganizationId, final Set<String> rightIds, final Date startDate, final Date endDate);
 	public void deleteOrganization(final String orgId) throws BasicDataServiceException;
     public void deleteOrganization(final String orgId, final boolean skipPrePostProcessors) throws BasicDataServiceException;
 	public void validateOrg2OrgAddition(String parentId, String memberId, final Set<String> rightIds) throws BasicDataServiceException;
@@ -82,12 +83,12 @@ public interface OrganizationService {
     public List<LocationEntity> getLocationListByOrganizationId(Set<String> orgsId, Integer from, Integer size);
     public List<LocationEntity> getLocationListByOrganizationId(Set<String> orgsId);
     
-    public void addGroupToOrganization(final String organizationId, final String groupId, final Set<String> rightIds);
+    public void addGroupToOrganization(final String organizationId, final String groupId, final Set<String> rightIds, final Date startDate, final Date endDate);
     public void removeGroupFromOrganization(final String organizationId, final String groupId);
     
-    public void addResourceToOrganization(final String organizationId, final String groupId, final Set<String> rightIds);
+    public void addResourceToOrganization(final String organizationId, final String groupId, final Set<String> rightIds, final Date startDate, final Date endDate);
     public void removeResourceFromOrganization(final String organizationId, final String groupId);
     
-    public void addRoleToOrganization(final String organizationId, final String roleId, final Set<String> rightIds);
+    public void addRoleToOrganization(final String organizationId, final String roleId, final Set<String> rightIds, final Date startDate, final Date endDate);
     public void removeRoleFromOrganization(final String organizationId, final String roleId);
 }

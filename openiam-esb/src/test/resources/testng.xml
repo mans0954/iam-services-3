@@ -27,9 +27,16 @@
 			
 			<class name="org.openiam.authmanager.service.integration.AuthorizationManagerWebServiceTest"/>
 			<class name="org.openiam.authmanager.service.integration.AuthorizationManagerHessianClientTest"/>
+			<class name="org.openiam.authmanager.service.integration.ActivitiAuthorizationManagerWebServiceTest"/>
             <!--
 			<class name="org.openiam.authmanager.service.integration.AuthorizationManagerMenuWebServiceTest" />
             -->
+		</classes>
+	</test>
+	
+	<test name="integration.connectors">
+		<classes>
+			<class name="org.openiam.service.integration.connector.ConnectorServiceTest" />
 		</classes>
 	</test>
 	
@@ -78,9 +85,28 @@
 		</classes>
 	</test>
 	
+	<test name="elasticsearch.integration">
+		<classes>
+			<class name="org.openiam.elasticsearch.integration.ElasticSearchIntegrationTest" />
+		</classes>
+	</test>
+	
 	<test name="auth.provider">
 		<classes>
 			<class name="org.openiam.service.integration.authprovider.AuthProviderServiceTest" />
+			<class name="org.openiam.service.integration.authprovider.OAuthServiceTest" />
 		</classes>
 	</test>
+	
+	<!--
+	Container runs out of memory if we run these, since we have the ESB running simultaneously.  CircleCI is limited to 4G, which we exceed :(
+	<test name="elasticache">
+		<classes>
+			<class name="org.openiam.elasticsearch.dao.EmailElasticSearchRepositoryTest" />
+			<class name="org.openiam.elasticsearch.dao.LoginElasticSearchRepositoryTest" />
+			<class name="org.openiam.elasticsearch.dao.PhoneElasticSearchRepositoryTest" />
+			<class name="org.openiam.elasticsearch.dao.UserElasticSearchRepositoryTest" />
+		</classes>
+	</test>
+	-->
 </suite>

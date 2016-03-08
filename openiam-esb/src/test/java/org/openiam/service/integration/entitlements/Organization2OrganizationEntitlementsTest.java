@@ -1,5 +1,6 @@
 package org.openiam.service.integration.entitlements;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -28,24 +29,23 @@ public class Organization2OrganizationEntitlementsTest extends AbstractCircularE
 	}
 
 	@Override
-	protected Response addChildToParent(Organization parent, Organization child, final Set<String> rights) {
-		return organizationServiceClient.addChildOrganization(parent.getId(), child.getId(), rights);
+	protected Response addChildToParent(final Organization parent, final Organization child, final String requestorId, final Set<String> rights, final Date startDate, final Date endDate) {
+		return organizationServiceClient.addChildOrganization(parent.getId(), child.getId(), requestorId, rights, startDate, endDate);
 	}
 
 	@Override
-	protected Response removeChildFromParent(Organization parent,
-			Organization child) {
-		return organizationServiceClient.removeChildOrganization(parent.getId(), child.getId());
+	protected Response removeChildFromParent(Organization parent, Organization child, final String requestorId) {
+		return organizationServiceClient.removeChildOrganization(parent.getId(), child.getId(), requestorId);
 	}
 
 	@Override
-	protected Response deleteParent(Organization parent) {
-		return organizationServiceClient.deleteOrganization(parent.getId());
+	protected Response deleteParent(Organization parent, final String requestorId) {
+		return organizationServiceClient.deleteOrganization(parent.getId(), requestorId);
 	}
 
 	@Override
-	protected Response deleteChild(Organization child) {
-		return organizationServiceClient.deleteOrganization(child.getId());
+	protected Response deleteChild(Organization child, final String requestorId) {
+		return organizationServiceClient.deleteOrganization(child.getId(), requestorId);
 	}
 
 	@Override

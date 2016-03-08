@@ -1,38 +1,40 @@
 package org.openiam.idm.srvc.continfo.domain;
 
+import java.util.Date;
+
+import javax.persistence.AttributeOverride;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import javax.validation.constraints.Size;
+import javax.xml.bind.annotation.XmlTransient;
+
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Type;
 import org.openiam.base.domain.AbstractMetdataTypeEntity;
-import org.openiam.base.domain.KeyEntity;
-import org.openiam.core.dao.lucene.LuceneLastUpdate;
 import org.openiam.dozer.DozerDTOCorrespondence;
-import org.openiam.elasticsearch.annotation.ElasticsearchField;
 import org.openiam.elasticsearch.annotation.ElasticsearchFieldBridge;
-import org.openiam.elasticsearch.annotation.ElasticsearchIndex;
-import org.openiam.elasticsearch.annotation.ElasticsearchMapping;
 import org.openiam.elasticsearch.bridge.UserBrigde;
 import org.openiam.elasticsearch.constants.ESIndexName;
 import org.openiam.elasticsearch.constants.ESIndexType;
-import org.openiam.elasticsearch.constants.ElasticsearchStore;
-import org.openiam.elasticsearch.constants.Index;
 import org.openiam.idm.srvc.continfo.dto.Phone;
-import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
-
-import javax.persistence.*;
-import javax.validation.constraints.Size;
-import javax.xml.bind.annotation.XmlTransient;
-
-import java.util.Date;
+import org.springframework.data.elasticsearch.annotations.Document;
+import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldIndex;
+import org.springframework.data.elasticsearch.annotations.FieldType;
 
 @Entity
 @Table(name = "PHONE")
 @DozerDTOCorrespondence(Phone.class)
 //@Indexed
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-@ElasticsearchIndex(indexName = ESIndexName.USERS)
-@ElasticsearchMapping(typeName = ESIndexType.PHONE/*, parent = ESIndexType.USER*/)
+@Document(indexName = ESIndexName.PHONE, type= ESIndexType.PHONE)
 @AttributeOverride(name = "id", column = @Column(name = "PHONE_ID"))
 public class PhoneEntity extends AbstractMetdataTypeEntity {
    
@@ -44,7 +46,8 @@ public class PhoneEntity extends AbstractMetdataTypeEntity {
 //        @Field(analyze = Analyze.NO),
 //        @Field(name = "areaCd", analyze = Analyze.NO, store = Store.YES)
 //    })
-    @ElasticsearchField(name = "areaCd", store = ElasticsearchStore.Yes, index = Index.Not_Analyzed)
+    @Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
+    //@ElasticsearchField(name = "areaCd", store = ElasticsearchStore.Yes, index = Index.Not_Analyzed)
     @Column(name="AREA_CD", length=10)
     @Size(max = 10, message = "validator.phone.area.code.toolong")
     private String areaCd;
@@ -73,20 +76,24 @@ public class PhoneEntity extends AbstractMetdataTypeEntity {
     @XmlTransient
     @ManyToOne
     @JoinColumn(name="PARENT_ID")
-    @ElasticsearchField(name = "userId", bridge=@ElasticsearchFieldBridge(impl = UserBrigde.class), store = ElasticsearchStore.Yes, index = Index.Not_Analyzed/*, mapToParent=true*/)
+    @Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
+    @ElasticsearchFieldBridge(impl = UserBrigde.class)
+    //@ElasticsearchField(name = "userId", bridge=@ElasticsearchFieldBridge(impl = UserBrigde.class), store = ElasticsearchStore.Yes, index = Index.Not_Analyzed/*, mapToParent=true*/)
 //    @Field(name="parent", bridge=@FieldBridge(impl=UserBridge.class), store=Store.YES)
     private UserEntity parent;
 
     @Column(name="PHONE_EXT", length=20)
     @Size(max = 20, message = "validator.phone.extension.toolong")
-    @ElasticsearchField(name = "phoneExt", store = ElasticsearchStore.Yes, index = Index.Not_Analyzed)
+    //@ElasticsearchField(name = "phoneExt", store = ElasticsearchStore.Yes, index = Index.Not_Analyzed)
+    @Field(type = FieldType.String, index = FieldIndex.analyzed, store= true)
     private String phoneExt;
 
 //    @Fields ({
 //        @Field(analyze = Analyze.NO),
 //        @Field(name = "phoneNbr", analyze = Analyze.NO, store = Store.YES)
 //    })
-    @ElasticsearchField(name = "phoneNbr", store = ElasticsearchStore.Yes, index = Index.Not_Analyzed)
+    //@ElasticsearchField(name = "phoneNbr", store = ElasticsearchStore.Yes, index = Index.Not_Analyzed)
+    @Field(type = FieldType.String, index = FieldIndex.analyzed, store= true)
     @Column(name="PHONE_NBR", length=50)
     @Size(max = 50, message = "validator.phone.number.toolong")
     private String phoneNbr;
@@ -101,7 +108,7 @@ public class PhoneEntity extends AbstractMetdataTypeEntity {
     */
     
     @Column(name = "LAST_UPDATE", length = 19)
-    @LuceneLastUpdate
+    //@LuceneLastUpdate
     private Date lastUpdate;
     
     @Column(name="CREATE_DATE",length=19)

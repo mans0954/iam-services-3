@@ -12,10 +12,12 @@ import org.openiam.base.KeyNameDTO;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "AbstractMeta", propOrder = {
         "metaType",
-        "contentType"
+        "contentType",
+        "cookiePath"
 })
 public abstract class AbstractMeta<T extends AbstractPatternMetaValue> extends KeyNameDTO {
 
+	protected String cookiePath;
 	protected String contentType;
 	protected URIPatternMetaType metaType;
 	
@@ -39,6 +41,12 @@ public abstract class AbstractMeta<T extends AbstractPatternMetaValue> extends K
 		this.contentType = contentType;
 	}
 
+	public String getCookiePath() {
+		return cookiePath;
+	}
+	public void setCookiePath(String cookiePath) {
+		this.cookiePath = cookiePath;
+	}
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -47,6 +55,8 @@ public abstract class AbstractMeta<T extends AbstractPatternMetaValue> extends K
 				+ ((contentType == null) ? 0 : contentType.hashCode());
 		result = prime * result
 				+ ((metaType == null) ? 0 : metaType.hashCode());
+		result = prime * result
+				+ ((cookiePath == null) ? 0 : cookiePath.hashCode());
 		return result;
 	}
 
@@ -68,6 +78,12 @@ public abstract class AbstractMeta<T extends AbstractPatternMetaValue> extends K
 			if (other.metaType != null)
 				return false;
 		} else if (!metaType.equals(other.metaType))
+			return false;
+		
+		if (cookiePath == null) {
+			if (other.cookiePath != null)
+				return false;
+		} else if (!cookiePath.equals(other.cookiePath))
 			return false;
 		return true;
 	}

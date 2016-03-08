@@ -2,11 +2,9 @@ package org.openiam.authmanager.dao.impl;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
-
-import javax.persistence.Table;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -17,24 +15,7 @@ import org.openiam.authmanager.common.model.AuthorizationRole;
 import org.openiam.authmanager.common.model.AuthorizationUser;
 import org.openiam.authmanager.common.model.InternalAuthroizationUser;
 import org.openiam.authmanager.dao.MembershipDAO;
-import org.openiam.base.KeyDTO;
-import org.openiam.base.domain.KeyEntity;
 import org.openiam.core.dao.AbstractJDBCDao;
-import org.openiam.idm.srvc.grp.domain.GroupToGroupMembershipXrefEntity;
-import org.openiam.idm.srvc.grp.domain.GroupToResourceMembershipXrefEntity;
-import org.openiam.idm.srvc.org.domain.GroupToOrgMembershipXrefEntity;
-import org.openiam.idm.srvc.org.domain.OrgToOrgMembershipXrefEntity;
-import org.openiam.idm.srvc.org.domain.ResourceToOrgMembershipXrefEntity;
-import org.openiam.idm.srvc.org.domain.RoleToOrgMembershipXrefEntity;
-import org.openiam.idm.srvc.res.domain.ResourceToResourceMembershipXrefEntity;
-import org.openiam.idm.srvc.res.dto.Resource;
-import org.openiam.idm.srvc.role.domain.RoleToGroupMembershipXrefEntity;
-import org.openiam.idm.srvc.role.domain.RoleToResourceMembershipXrefEntity;
-import org.openiam.idm.srvc.role.domain.RoleToRoleMembershipXrefEntity;
-import org.openiam.idm.srvc.user.domain.UserToGroupMembershipXrefEntity;
-import org.openiam.idm.srvc.user.domain.UserToOrganizationMembershipXrefEntity;
-import org.openiam.idm.srvc.user.domain.UserToResourceMembershipXrefEntity;
-import org.openiam.idm.srvc.user.domain.UserToRoleMembershipXrefEntity;
 import org.openiam.membership.MembershipDTO;
 import org.openiam.membership.MembershipRightDTO;
 import org.springframework.dao.DataAccessException;
@@ -51,9 +32,57 @@ public class JdbcMembershipDAO extends AbstractJDBCDao implements MembershipDAO 
 	private static final RowMapper<MembershipRightDTO> rightMapper = new MembershipRightDTOMapper();
 	private static final UserRowMapper urm = new UserRowMapper();
 
-	private static final String GET_MEMBERSHIP = "SELECT %s AS MEMBER_ENTITY_ID, %s AS ENTITY_ID, MEMBERSHIP_ID AS MEMBERSHIP_ID FROM %s.%s";
+	private static final String DATE_CONDITION = "(START_DATE IS NULL AND END_DATE IS NULL) OR "
+											   + "(START_DATE <= ? AND END_DATE IS NULL) OR "
+											   + "(START_DATE IS NULL AND END_DATE >= ?) OR "
+											   + "(START_DATE <= ? AND END_DATE >= ?)";
+	private static final String DATE_CONDITION_PREFIXED = "(%s.START_DATE IS NULL AND %s.END_DATE IS NULL) OR "
+			   											+ "(%s.START_DATE <= ? AND %s.END_DATE IS NULL) OR "
+			   											+ "(%s.START_DATE IS NULL AND %s.END_DATE >= ?) OR "
+			   											+ "(%s.START_DATE <= ? AND %s.END_DATE >= ?)";
+	
+	private static final String GET_MEMBERSHIP_ALL = "SELECT %s AS MEMBER_ENTITY_ID, %s AS ENTITY_ID, MEMBERSHIP_ID AS MEMBERSHIP_ID, START_DATE AS START_DATE, END_DATE AS END_DATE FROM %s.%s";
+	private static final String GET_MEMBERSHIP_RANGE = "SELECT %s AS MEMBER_ENTITY_ID, %s AS ENTITY_ID, MEMBERSHIP_ID AS MEMBERSHIP_ID, START_DATE AS START_DATE, END_DATE AS END_DATE FROM %s.%s WHERE " + DATE_CONDITION;
 	private static final String GET_RIGHTS = "SELECT MEMBERSHIP_ID AS MEMBERSHIP_ID, ACCESS_RIGHT_ID AS ACCESS_RIGHT_ID FROM %s.%s";
 	private static final String GET_ENTITY = "SELECT %S AS ID, %s AS NAME, %s AS DESCRIPTION, %s AS STATUS, %s AS MANAGED_SYS_ID  FROM %s.%s";
+	
+	private static String getDateCondition(final String prefix) {
+		return String.format(DATE_CONDITION_PREFIXED, prefix, prefix, prefix, prefix, prefix, prefix, prefix, prefix);
+	}
+	
+	private String GET_FULLY_POPULATED_USER_RS_RANGE = "SELECT " + 
+													  "	l.USER_ID AS ID, " + 
+													  "	gm.GRP_ID AS GROUP_ID, " + 
+												      " rm.ROLE_ID AS ROLE_ID, " + 
+													  "	resm.RESOURCE_ID AS RESOURCE_ID, " + 
+													  "	orgm.COMPANY_ID AS COMPANY_ID, " + 
+													  "	gmr.ACCESS_RIGHT_ID AS GROUP_ID_RIGHT, " + 
+													  "	rmr.ACCESS_RIGHT_ID AS ROLE_ID_RIGHT, " + 
+													  "	resmr.ACCESS_RIGHT_ID AS RESOURCE_ID_RIGHT, " + 
+													  "	orgmr.ACCESS_RIGHT_ID AS COMPANY_ID_RIGHT " + 
+													  "		FROM " + 
+													  "	%s.LOGIN l " +  	
+													  "	LEFT JOIN %s.USER_GRP gm " +  		
+													  "		ON l.USER_ID=gm.USER_ID " +
+													  "		AND (" + getDateCondition("gm") + ")" + 
+													  "	LEFT JOIN %s.USER_ROLE rm " +  		
+													  "		ON l.USER_ID=rm.USER_ID " +
+													  "		AND (" + getDateCondition("rm") + ")" +
+													  "	LEFT JOIN %s.RESOURCE_USER resm " +  	
+													  "		ON l.USER_ID=resm.USER_ID " + 
+													  "		AND (" + getDateCondition("resm") + ")" +
+													  "	LEFT JOIN %s.USER_AFFILIATION orgm " + 
+													  "		ON l.USER_ID=orgm.USER_ID " +
+													  "		AND (" + getDateCondition("orgm") + ")" +
+													  "	LEFT JOIN %s.USER_GRP_MEMBERSHIP_RIGHTS gmr " +  		
+													  "		ON gm.MEMBERSHIP_ID=gmr.MEMBERSHIP_ID " + 
+													  "	LEFT JOIN %s.USER_ROLE_MEMBERSHIP_RIGHTS rmr " +  		
+													  "		ON rm.MEMBERSHIP_ID=rmr.MEMBERSHIP_ID " + 
+													  "	LEFT JOIN %s.USER_RES_MEMBERSHIP_RIGHTS resmr " +  		
+													  "		ON resm.MEMBERSHIP_ID=resmr.MEMBERSHIP_ID " + 
+													  "	LEFT JOIN %s.USER_AFFILIATION_RIGHTS orgmr " + 	
+													  "		ON orgm.MEMBERSHIP_ID=orgmr.MEMBERSHIP_ID " + 
+													  "	WHERE l.USER_ID=?;";
 	
 	private String GET_FULLY_POPULATED_USER_RS_LIST = "SELECT " + 
 													  "	l.USER_ID AS ID, " + 
@@ -66,22 +95,22 @@ public class JdbcMembershipDAO extends AbstractJDBCDao implements MembershipDAO 
 													  "	resmr.ACCESS_RIGHT_ID AS RESOURCE_ID_RIGHT, " + 
 													  "	orgmr.ACCESS_RIGHT_ID AS COMPANY_ID_RIGHT " + 
 													  "		FROM " + 
-													  "	openiam.LOGIN l " +  	
-													  "	LEFT JOIN openiam.USER_GRP gm " +  		
+													  "	%s.LOGIN l " +  	
+													  "	LEFT JOIN %s.USER_GRP gm " +  		
 													  "		ON l.USER_ID=gm.USER_ID " + 
-													  "	LEFT JOIN openiam.USER_ROLE rm " +  		
+													  "	LEFT JOIN %s.USER_ROLE rm " +  		
 													  "		ON l.USER_ID=rm.USER_ID " + 
-													  "	LEFT JOIN openiam.RESOURCE_USER resm " +  		
+													  "	LEFT JOIN %s.RESOURCE_USER resm " +  		
 													  "		ON l.USER_ID=resm.USER_ID " + 
-													  "	LEFT JOIN openiam.USER_AFFILIATION orgm " + 
+													  "	LEFT JOIN %s.USER_AFFILIATION orgm " + 
 													  "		ON l.USER_ID=orgm.USER_ID " + 
-													  "	LEFT JOIN openiam.USER_GRP_MEMBERSHIP_RIGHTS gmr " +  		
+													  "	LEFT JOIN %s.USER_GRP_MEMBERSHIP_RIGHTS gmr " +  		
 													  "		ON gm.MEMBERSHIP_ID=gmr.MEMBERSHIP_ID " + 
-													  "	LEFT JOIN openiam.USER_ROLE_MEMBERSHIP_RIGHTS rmr " +  		
+													  "	LEFT JOIN %s.USER_ROLE_MEMBERSHIP_RIGHTS rmr " +  		
 													  "		ON rm.MEMBERSHIP_ID=rmr.MEMBERSHIP_ID " + 
-													  "	LEFT JOIN openiam.USER_RES_MEMBERSHIP_RIGHTS resmr " +  		
+													  "	LEFT JOIN %s.USER_RES_MEMBERSHIP_RIGHTS resmr " +  		
 													  "		ON resm.MEMBERSHIP_ID=resmr.MEMBERSHIP_ID " + 
-													  "	LEFT JOIN openiam.USER_AFFILIATION_RIGHTS orgmr " + 	
+													  "	LEFT JOIN %s.USER_AFFILIATION_RIGHTS orgmr " + 	
 													  "		ON orgm.MEMBERSHIP_ID=orgmr.MEMBERSHIP_ID " + 
 													  "	WHERE l.USER_ID=?;";
 
@@ -97,46 +126,69 @@ public class JdbcMembershipDAO extends AbstractJDBCDao implements MembershipDAO 
 	private String GET_ROLES;
 	private String GET_ORGS="SELECT COMPANY_ID AS ID, COMPANY_NAME AS NAME, DESCRIPTION AS DESCRIPTION, STATUS AS STATUS FROM %s.COMPANY";
 
-	private String USER_ROLE_XREFS;
-	private String USER_GRP_XREFS;
-	private String USER_ORG_XREFS;
-	private String USER_RES_XREFS;
+	private String USER_ROLE_XREFS_ALL;
+	private String USER_GRP_XREFS_ALL;
+	private String USER_ORG_XREFS_ALL;
+	private String USER_RES_XREFS_ALL;
 	
-	private String ORG_ORG_XREFS;
-	private String ORG_ROLE_XREFS;
-	private String ORG_GRP_XREFS;
-	private String ORG_RES_XREFS;
+	private String ORG_ORG_XREFS_ALL;
+	private String ORG_ROLE_XREFS_ALL;
+	private String ORG_GRP_XREFS_ALL;
+	private String ORG_RES_XREFS_ALL;
 	
-	private String ROLE_ROLE_XREFS;
-	private String ROLE_GRP_XREFS;
-	private String ROLE_RES_XREFS;
+	private String ROLE_ROLE_XREFS_ALL;
+	private String ROLE_GRP_XREFS_ALL;
+	private String ROLE_RES_XREFS_ALL;
 	
-	private String GRP_GRP_XREFS;
-	private String GRP_RES_XREFS;
+	private String GRP_GRP_XREFS_ALL;
+	private String GRP_RES_XREFS_ALL;
 	
-	private String RES_RES_XREFS;
+	private String RES_RES_XREFS_ALL;
 	
-	private String USER_ROLE_XREFS_RIGHTS;
-	private String USER_GRP_XREFS_RIGHTS;
-	private String USER_ORG_XREFS_RIGHTS;
-	private String USER_RES_XREFS_RIGHTS;
+	private String USER_ROLE_XREFS_RANGE;
+	private String USER_GRP_XREFS_RANGE;
+	private String USER_ORG_XREFS_RANGE;
+	private String USER_RES_XREFS_RANGE;
 	
-	private String ORG_ORG_XREFS_RIGHTS;
-	private String ORG_ROLE_XREFS_RIGHTS;
-	private String ORG_GRP_XREFS_RIGHTS;
-	private String ORG_RES_XREFS_RIGHTS;
+	private String ORG_ORG_XREFS_RANGE;
+	private String ORG_ROLE_XREFS_RANGE;
+	private String ORG_GRP_XREFS_RANGE;
+	private String ORG_RES_XREFS_RANGE;
 	
-	private String ROLE_ROLE_XREFS_RIGHTS;
-	private String ROLE_GRP_XREFS_RIGHTS;
-	private String ROLE_RES_XREFS_RIGHTS;
+	private String ROLE_ROLE_XREFS_RANGE;
+	private String ROLE_GRP_XREFS_RANGE;
+	private String ROLE_RES_XREFS_RANGE;
 	
-	private String GRP_GRP_XREFS_RIGHTS;
-	private String GRP_RES_XREFS_RIGHTS;
+	private String GRP_GRP_XREFS_RANGE;
+	private String GRP_RES_XREFS_RANGE;
 	
-	private String RES_RES_XREFS_RIGHTS;
+	private String RES_RES_XREFS_RANGE;
 	
-	private String getMembershipSQL( final String memberName, final String entity, final String tableName) {
-		return String.format(GET_MEMBERSHIP, memberName, entity, getSchemaName(), tableName);
+	private String USER_ROLE_XREFS_RIGHTS_ALL;
+	private String USER_GRP_XREFS_RIGHTS_ALL;
+	private String USER_ORG_XREFS_RIGHTS_ALL;
+	private String USER_RES_XREFS_RIGHTS_ALL;
+	
+	private String ORG_ORG_XREFS_RIGHTS_ALL;
+	private String ORG_ROLE_XREFS_RIGHTS_ALL;
+	private String ORG_GRP_XREFS_RIGHTS_ALL;
+	private String ORG_RES_XREFS_RIGHTS_ALL;
+	
+	private String ROLE_ROLE_XREFS_RIGHTS_ALL;
+	private String ROLE_GRP_XREFS_RIGHTS_ALL;
+	private String ROLE_RES_XREFS_RIGHTS_ALL;
+	
+	private String GRP_GRP_XREFS_RIGHTS_ALL;
+	private String GRP_RES_XREFS_RIGHTS_ALL;
+	
+	private String RES_RES_XREFS_RIGHTS_ALL;
+	
+	private String getMembershipAllSQL( final String memberName, final String entity, final String tableName) {
+		return String.format(GET_MEMBERSHIP_ALL, memberName, entity, getSchemaName(), tableName);
+	}
+	
+	private String getMembershipRangeSQL( final String memberName, final String entity, final String tableName) {
+		return String.format(GET_MEMBERSHIP_RANGE, memberName, entity, getSchemaName(), tableName);
 	}
 	
 	private String getRightSQL(final String tableName) {
@@ -150,6 +202,7 @@ public class JdbcMembershipDAO extends AbstractJDBCDao implements MembershipDAO 
 	@Override
 	protected void initSqlStatements() {
 		final String schemaName = getSchemaName();
+		GET_FULLY_POPULATED_USER_RS_RANGE = String.format(GET_FULLY_POPULATED_USER_RS_RANGE, schemaName, schemaName, schemaName, schemaName, schemaName, schemaName, schemaName, schemaName, schemaName);
 		GET_FULLY_POPULATED_USER_RS_LIST = String.format(GET_FULLY_POPULATED_USER_RS_LIST, schemaName, schemaName, schemaName, schemaName, schemaName, schemaName, schemaName, schemaName, schemaName);
 		GET_USERS = String.format(GET_USERS, schemaName);
 		GET_USER_IDS_FOR_RESOURCE_WITH_RIGHT = String.format(GET_USER_IDS_FOR_RESOURCE_WITH_RIGHT, schemaName, schemaName);
@@ -161,183 +214,260 @@ public class JdbcMembershipDAO extends AbstractJDBCDao implements MembershipDAO 
 		GET_ROLES = getEntitySQL("ROLE_ID", "ROLE_NAME", "DESCRIPTION", "STATUS", "MANAGED_SYS_ID","ROLE");
 		GET_GROUPS = getEntitySQL("GRP_ID", "GRP_NAME", "GROUP_DESC", "STATUS", "MANAGED_SYS_ID","GRP");
 		
-		USER_ROLE_XREFS = getMembershipSQL("USER_ID", "ROLE_ID", "USER_ROLE");
-		USER_GRP_XREFS = getMembershipSQL("USER_ID", "GRP_ID", "USER_GRP");
-		USER_ORG_XREFS = getMembershipSQL("USER_ID", "COMPANY_ID", "USER_AFFILIATION");
-		USER_RES_XREFS = getMembershipSQL("USER_ID", "RESOURCE_ID", "RESOURCE_USER");
+		USER_ROLE_XREFS_ALL = getMembershipAllSQL("USER_ID", "ROLE_ID", "USER_ROLE");
+		USER_GRP_XREFS_ALL = getMembershipAllSQL("USER_ID", "GRP_ID", "USER_GRP");
+		USER_ORG_XREFS_ALL = getMembershipAllSQL("USER_ID", "COMPANY_ID", "USER_AFFILIATION");
+		USER_RES_XREFS_ALL = getMembershipAllSQL("USER_ID", "RESOURCE_ID", "RESOURCE_USER");
 		
-		ORG_ORG_XREFS = getMembershipSQL("MEMBER_COMPANY_ID", "COMPANY_ID", "COMPANY_TO_COMPANY_MEMBERSHIP");
-		ORG_ROLE_XREFS = getMembershipSQL("ROLE_ID", "COMPANY_ID", "ROLE_ORG_MEMBERSHIP");
-		ORG_GRP_XREFS = getMembershipSQL("GRP_ID", "COMPANY_ID", "GROUP_ORGANIZATION");
-		ORG_RES_XREFS = getMembershipSQL("RESOURCE_ID", "COMPANY_ID", "RES_ORG_MEMBERSHIP");
+		ORG_ORG_XREFS_ALL = getMembershipAllSQL("MEMBER_COMPANY_ID", "COMPANY_ID", "COMPANY_TO_COMPANY_MEMBERSHIP");
+		ORG_ROLE_XREFS_ALL = getMembershipAllSQL("ROLE_ID", "COMPANY_ID", "ROLE_ORG_MEMBERSHIP");
+		ORG_GRP_XREFS_ALL = getMembershipAllSQL("GRP_ID", "COMPANY_ID", "GROUP_ORGANIZATION");
+		ORG_RES_XREFS_ALL = getMembershipAllSQL("RESOURCE_ID", "COMPANY_ID", "RES_ORG_MEMBERSHIP");
 		
-		ROLE_ROLE_XREFS = getMembershipSQL("MEMBER_ROLE_ID", "ROLE_ID", "role_to_role_membership");
-		ROLE_GRP_XREFS = getMembershipSQL("GRP_ID", "ROLE_ID", "GRP_ROLE");
-		ROLE_RES_XREFS = getMembershipSQL("RESOURCE_ID", "ROLE_ID", "RESOURCE_ROLE");
+		ROLE_ROLE_XREFS_ALL = getMembershipAllSQL("MEMBER_ROLE_ID", "ROLE_ID", "role_to_role_membership");
+		ROLE_GRP_XREFS_ALL = getMembershipAllSQL("GRP_ID", "ROLE_ID", "GRP_ROLE");
+		ROLE_RES_XREFS_ALL = getMembershipAllSQL("RESOURCE_ID", "ROLE_ID", "RESOURCE_ROLE");
 		
-		GRP_GRP_XREFS = getMembershipSQL("MEMBER_GROUP_ID", "GROUP_ID", "grp_to_grp_membership");
-		GRP_RES_XREFS = getMembershipSQL("RESOURCE_ID", "GRP_ID", "RESOURCE_GROUP");
+		GRP_GRP_XREFS_ALL = getMembershipAllSQL("MEMBER_GROUP_ID", "GROUP_ID", "grp_to_grp_membership");
+		GRP_RES_XREFS_ALL = getMembershipAllSQL("RESOURCE_ID", "GRP_ID", "RESOURCE_GROUP");
 		
-		RES_RES_XREFS = getMembershipSQL("MEMBER_RESOURCE_ID", "RESOURCE_ID", "res_to_res_membership");
+		RES_RES_XREFS_ALL = getMembershipAllSQL("MEMBER_RESOURCE_ID", "RESOURCE_ID", "res_to_res_membership");
 		
-		USER_ROLE_XREFS_RIGHTS = getRightSQL("USER_ROLE_MEMBERSHIP_RIGHTS");
-		USER_GRP_XREFS_RIGHTS = getRightSQL("USER_GRP_MEMBERSHIP_RIGHTS");
-		USER_ORG_XREFS_RIGHTS = getRightSQL("USER_AFFILIATION_RIGHTS");
-		USER_RES_XREFS_RIGHTS = getRightSQL("USER_RES_MEMBERSHIP_RIGHTS");
+		//ranges
+		USER_ROLE_XREFS_RANGE = getMembershipRangeSQL("USER_ID", "ROLE_ID", "USER_ROLE");
+		USER_GRP_XREFS_RANGE = getMembershipRangeSQL("USER_ID", "GRP_ID", "USER_GRP");
+		USER_ORG_XREFS_RANGE = getMembershipRangeSQL("USER_ID", "COMPANY_ID", "USER_AFFILIATION");
+		USER_RES_XREFS_RANGE = getMembershipRangeSQL("USER_ID", "RESOURCE_ID", "RESOURCE_USER");
 		
-		ORG_ORG_XREFS_RIGHTS = getRightSQL("ORG_TO_ORG_MEMBERSHIP_RIGHTS");
-		ORG_ROLE_XREFS_RIGHTS = getRightSQL("ROLE_ORG_MEMBERSHIP_RIGHTS");
-		ORG_GRP_XREFS_RIGHTS = getRightSQL("GRP_ORG_MEMBERSHIP_RIGHTS");
-		ORG_RES_XREFS_RIGHTS = getRightSQL("RES_ORG_MEMBERSHIP_RIGHTS");
+		ORG_ORG_XREFS_RANGE = getMembershipRangeSQL("MEMBER_COMPANY_ID", "COMPANY_ID", "COMPANY_TO_COMPANY_MEMBERSHIP");
+		ORG_ROLE_XREFS_RANGE = getMembershipRangeSQL("ROLE_ID", "COMPANY_ID", "ROLE_ORG_MEMBERSHIP");
+		ORG_GRP_XREFS_RANGE = getMembershipRangeSQL("GRP_ID", "COMPANY_ID", "GROUP_ORGANIZATION");
+		ORG_RES_XREFS_RANGE = getMembershipRangeSQL("RESOURCE_ID", "COMPANY_ID", "RES_ORG_MEMBERSHIP");
 		
-		ROLE_ROLE_XREFS_RIGHTS = getRightSQL("ROLE_ROLE_MEMBERSHIP_RIGHTS");
-		ROLE_GRP_XREFS_RIGHTS = getRightSQL("GRP_ROLE_MEMBERSHIP_RIGHTS");
-		ROLE_RES_XREFS_RIGHTS = getRightSQL("RES_ROLE_MEMBERSHIP_RIGHTS");
+		ROLE_ROLE_XREFS_RANGE = getMembershipRangeSQL("MEMBER_ROLE_ID", "ROLE_ID", "role_to_role_membership");
+		ROLE_GRP_XREFS_RANGE = getMembershipRangeSQL("GRP_ID", "ROLE_ID", "GRP_ROLE");
+		ROLE_RES_XREFS_RANGE = getMembershipRangeSQL("RESOURCE_ID", "ROLE_ID", "RESOURCE_ROLE");
 		
-		GRP_GRP_XREFS_RIGHTS = getRightSQL("GRP_GRP_MEMBERSHIP_RIGHTS");
-		GRP_RES_XREFS_RIGHTS = getRightSQL("RES_GRP_MEMBERSHIP_RIGHTS");
+		GRP_GRP_XREFS_RANGE = getMembershipRangeSQL("MEMBER_GROUP_ID", "GROUP_ID", "grp_to_grp_membership");
+		GRP_RES_XREFS_RANGE = getMembershipRangeSQL("RESOURCE_ID", "GRP_ID", "RESOURCE_GROUP");
 		
-		RES_RES_XREFS_RIGHTS = getRightSQL("RES_RES_MEMBERSHIP_RIGHTS");
+		RES_RES_XREFS_RANGE = getMembershipRangeSQL("MEMBER_RESOURCE_ID", "RESOURCE_ID", "res_to_res_membership");
+		
+		
+		USER_ROLE_XREFS_RIGHTS_ALL = getRightSQL("USER_ROLE_MEMBERSHIP_RIGHTS");
+		USER_GRP_XREFS_RIGHTS_ALL = getRightSQL("USER_GRP_MEMBERSHIP_RIGHTS");
+		USER_ORG_XREFS_RIGHTS_ALL = getRightSQL("USER_AFFILIATION_RIGHTS");
+		USER_RES_XREFS_RIGHTS_ALL = getRightSQL("USER_RES_MEMBERSHIP_RIGHTS");
+		
+		ORG_ORG_XREFS_RIGHTS_ALL = getRightSQL("ORG_TO_ORG_MEMBERSHIP_RIGHTS");
+		ORG_ROLE_XREFS_RIGHTS_ALL = getRightSQL("ROLE_ORG_MEMBERSHIP_RIGHTS");
+		ORG_GRP_XREFS_RIGHTS_ALL = getRightSQL("GRP_ORG_MEMBERSHIP_RIGHTS");
+		ORG_RES_XREFS_RIGHTS_ALL = getRightSQL("RES_ORG_MEMBERSHIP_RIGHTS");
+		
+		ROLE_ROLE_XREFS_RIGHTS_ALL = getRightSQL("ROLE_ROLE_MEMBERSHIP_RIGHTS");
+		ROLE_GRP_XREFS_RIGHTS_ALL = getRightSQL("GRP_ROLE_MEMBERSHIP_RIGHTS");
+		ROLE_RES_XREFS_RIGHTS_ALL = getRightSQL("RES_ROLE_MEMBERSHIP_RIGHTS");
+		
+		GRP_GRP_XREFS_RIGHTS_ALL = getRightSQL("GRP_GRP_MEMBERSHIP_RIGHTS");
+		GRP_RES_XREFS_RIGHTS_ALL = getRightSQL("RES_GRP_MEMBERSHIP_RIGHTS");
+		
+		RES_RES_XREFS_RIGHTS_ALL = getRightSQL("RES_RES_MEMBERSHIP_RIGHTS");
 	}
 	
 	@Override
 	public List<MembershipRightDTO> getResource2ResourceRights() {
-		return getJdbcTemplate().query(RES_RES_XREFS_RIGHTS, rightMapper);
+		return getJdbcTemplate().query(RES_RES_XREFS_RIGHTS_ALL, rightMapper);
 	}
 
 	@Override
 	public List<MembershipRightDTO> getUser2ResourceRights() {
-		return getJdbcTemplate().query(USER_RES_XREFS_RIGHTS, rightMapper);
+		return getJdbcTemplate().query(USER_RES_XREFS_RIGHTS_ALL, rightMapper);
 	}
 
 	@Override
 	public List<MembershipRightDTO> getGroup2ResourceRights() {
-		return getJdbcTemplate().query(GRP_RES_XREFS_RIGHTS, rightMapper);
+		return getJdbcTemplate().query(GRP_RES_XREFS_RIGHTS_ALL, rightMapper);
 	}
 
 	@Override
 	public List<MembershipRightDTO> getGroup2GroupRights() {
-		return getJdbcTemplate().query(GRP_GRP_XREFS_RIGHTS, rightMapper);
+		return getJdbcTemplate().query(GRP_GRP_XREFS_RIGHTS_ALL, rightMapper);
 	}
 
 	@Override
 	public List<MembershipRightDTO> getUser2GroupRights() {
-		return getJdbcTemplate().query(USER_GRP_XREFS_RIGHTS, rightMapper);
+		return getJdbcTemplate().query(USER_GRP_XREFS_RIGHTS_ALL, rightMapper);
 	}
 
 	@Override
 	public List<MembershipRightDTO> getRole2ResourceRights() {
-		return getJdbcTemplate().query(ROLE_RES_XREFS_RIGHTS, rightMapper);
+		return getJdbcTemplate().query(ROLE_RES_XREFS_RIGHTS_ALL, rightMapper);
 	}
 
 	@Override
 	public List<MembershipRightDTO> getRole2GroupRights() {
-		return getJdbcTemplate().query(ROLE_GRP_XREFS_RIGHTS, rightMapper);
+		return getJdbcTemplate().query(ROLE_GRP_XREFS_RIGHTS_ALL, rightMapper);
 	}
 
 	@Override
 	public List<MembershipRightDTO> getRole2RoleRights() {
-		return getJdbcTemplate().query(ROLE_ROLE_XREFS_RIGHTS, rightMapper);
+		return getJdbcTemplate().query(ROLE_ROLE_XREFS_RIGHTS_ALL, rightMapper);
 	}
 
 	@Override
 	public List<MembershipRightDTO> getUser2RoleRights() {
-		return getJdbcTemplate().query(USER_ROLE_XREFS_RIGHTS, rightMapper);
+		return getJdbcTemplate().query(USER_ROLE_XREFS_RIGHTS_ALL, rightMapper);
 	}
 
 	@Override
 	public List<MembershipRightDTO> getOrg2ResourceRights() {
-		return getJdbcTemplate().query(ORG_RES_XREFS_RIGHTS, rightMapper);
+		return getJdbcTemplate().query(ORG_RES_XREFS_RIGHTS_ALL, rightMapper);
 	}
 
 	@Override
 	public List<MembershipRightDTO> getOrg2GroupRights() {
-		return getJdbcTemplate().query(ORG_GRP_XREFS_RIGHTS, rightMapper);
+		return getJdbcTemplate().query(ORG_GRP_XREFS_RIGHTS_ALL, rightMapper);
 	}
 
 	@Override
 	public List<MembershipRightDTO> getOrg2RoleRights() {
-		return getJdbcTemplate().query(ORG_ROLE_XREFS_RIGHTS, rightMapper);
+		return getJdbcTemplate().query(ORG_ROLE_XREFS_RIGHTS_ALL, rightMapper);
 	}
 
 	@Override
 	public List<MembershipRightDTO> getOrg2OrgRights() {
-		return getJdbcTemplate().query(ORG_ORG_XREFS_RIGHTS, rightMapper);
+		return getJdbcTemplate().query(ORG_ORG_XREFS_RIGHTS_ALL, rightMapper);
 	}
 
 	@Override
 	public List<MembershipRightDTO> getUser2OrgRights() {
-		return getJdbcTemplate().query(USER_ORG_XREFS_RIGHTS, rightMapper);
+		return getJdbcTemplate().query(USER_ORG_XREFS_RIGHTS_ALL, rightMapper);
 	}
 
 	@Override
-	public List<MembershipDTO> getResource2ResourceMembership() {
-		return getJdbcTemplate().query(RES_RES_XREFS, memberMapper);
+	public List<MembershipDTO> getResource2ResourceMembership(final Date date) {
+		if(date != null) {
+			return getJdbcTemplate().query(RES_RES_XREFS_RANGE, new Object[] {date, date, date, date}, memberMapper);
+		} else {
+			return getJdbcTemplate().query(RES_RES_XREFS_ALL, memberMapper);
+		}
 	}
 
 	@Override
-	public List<MembershipDTO> getUser2ResourceMembership() {
-		return getJdbcTemplate().query(USER_RES_XREFS, memberMapper);
+	public List<MembershipDTO> getUser2ResourceMembership(final Date date) {
+		if(date != null) {
+			return getJdbcTemplate().query(USER_RES_XREFS_RANGE, new Object[] {date, date, date, date}, memberMapper);
+		} else {
+			return getJdbcTemplate().query(USER_RES_XREFS_ALL, memberMapper);
+		}
 	}
 
 	@Override
-	public List<MembershipDTO> getGroup2ResourceMembership() {
-		return getJdbcTemplate().query(GRP_RES_XREFS, memberMapper);
+	public List<MembershipDTO> getGroup2ResourceMembership(final Date date) {
+		if(date != null) {
+			return getJdbcTemplate().query(GRP_RES_XREFS_RANGE, new Object[] {date, date, date, date} , memberMapper);
+		} else {
+			return getJdbcTemplate().query(GRP_RES_XREFS_ALL, memberMapper);
+		}
 	}
 
 	@Override
-	public List<MembershipDTO> getGroup2GroupMembership() {
-		return getJdbcTemplate().query(GRP_GRP_XREFS, memberMapper);
+	public List<MembershipDTO> getGroup2GroupMembership(final Date date) {
+		if(date != null) {
+			return getJdbcTemplate().query(GRP_GRP_XREFS_RANGE, new Object[] {date, date, date, date}, memberMapper);
+		} else {
+			return getJdbcTemplate().query(GRP_GRP_XREFS_ALL, memberMapper);
+		}
 	}
 
 	@Override
-	public List<MembershipDTO> getUser2GroupMembership() {
-		return getJdbcTemplate().query(USER_GRP_XREFS, memberMapper);
+	public List<MembershipDTO> getUser2GroupMembership(final Date date) {
+		if(date != null) {
+			return getJdbcTemplate().query(USER_GRP_XREFS_RANGE, new Object[] {date, date, date, date}, memberMapper);
+		} else {
+			return getJdbcTemplate().query(USER_GRP_XREFS_ALL, memberMapper);
+		}
 	}
 
 	@Override
-	public List<MembershipDTO> getRole2ResourceMembership() {
-		return getJdbcTemplate().query(ROLE_RES_XREFS, memberMapper);
+	public List<MembershipDTO> getRole2ResourceMembership(final Date date) {
+		if(date != null) {
+			return getJdbcTemplate().query(ROLE_RES_XREFS_RANGE, new Object[] {date, date, date, date}, memberMapper);
+		} else {
+			return getJdbcTemplate().query(ROLE_RES_XREFS_ALL, memberMapper);
+		}
 	}
 
 	@Override
-	public List<MembershipDTO> getRole2GroupMembership() {
-		return getJdbcTemplate().query(ROLE_GRP_XREFS, memberMapper);
+	public List<MembershipDTO> getRole2GroupMembership(final Date date) {
+		if(date != null) {
+			return getJdbcTemplate().query(ROLE_GRP_XREFS_RANGE, new Object[] {date, date, date, date}, memberMapper);
+		} else {
+			return getJdbcTemplate().query(ROLE_GRP_XREFS_ALL, memberMapper);
+		}
 	}
 
 	@Override
-	public List<MembershipDTO> getRole2RoleMembership() {
-		return getJdbcTemplate().query(ROLE_ROLE_XREFS, memberMapper);
+	public List<MembershipDTO> getRole2RoleMembership(final Date date) {
+		if(date != null) {
+			return getJdbcTemplate().query(ROLE_ROLE_XREFS_RANGE, new Object[] {date, date, date, date}, memberMapper);
+		} else {
+			return getJdbcTemplate().query(ROLE_ROLE_XREFS_ALL, memberMapper);
+		}
 	}
 
 	@Override
-	public List<MembershipDTO> getUser2RoleMembership() {
-		return getJdbcTemplate().query(USER_ROLE_XREFS, memberMapper);
+	public List<MembershipDTO> getUser2RoleMembership(final Date date) {
+		if(date != null) {
+			return getJdbcTemplate().query(USER_ROLE_XREFS_RANGE, new Object[] {date, date, date, date}, memberMapper);
+		} else {
+			return getJdbcTemplate().query(USER_ROLE_XREFS_ALL, memberMapper);
+		}
 	}
 
 	@Override
-	public List<MembershipDTO> getOrg2ResourceMembership() {
-		return getJdbcTemplate().query(ORG_RES_XREFS, memberMapper);
+	public List<MembershipDTO> getOrg2ResourceMembership(final Date date) {
+		if(date != null) {
+			return getJdbcTemplate().query(ORG_RES_XREFS_RANGE, new Object[] {date, date, date, date}, memberMapper);
+		} else {
+			return getJdbcTemplate().query(ORG_RES_XREFS_ALL, memberMapper);
+		}
 	}
 
 	@Override
-	public List<MembershipDTO> getOrg2GroupMembership() {
-		return getJdbcTemplate().query(ORG_GRP_XREFS, memberMapper);
+	public List<MembershipDTO> getOrg2GroupMembership(final Date date) {
+		if(date != null) {
+			return getJdbcTemplate().query(ORG_GRP_XREFS_RANGE, new Object[] {date, date, date, date}, memberMapper);
+		} else {
+			return getJdbcTemplate().query(ORG_GRP_XREFS_ALL, memberMapper);
+		}
 	}
 
 	@Override
-	public List<MembershipDTO> getOrg2RoleMembership() {
-		return getJdbcTemplate().query(ORG_ROLE_XREFS, memberMapper);
+	public List<MembershipDTO> getOrg2RoleMembership(final Date date) {
+		if(date != null) {
+			return getJdbcTemplate().query(ORG_ROLE_XREFS_RANGE, new Object[] {date, date, date, date}, memberMapper);
+		} else {
+			return getJdbcTemplate().query(ORG_ROLE_XREFS_ALL, memberMapper);
+		}
 	}
 
 	@Override
-	public List<MembershipDTO> getOrg2OrgMembership() {
-		return getJdbcTemplate().query(ORG_ORG_XREFS, memberMapper);
+	public List<MembershipDTO> getOrg2OrgMembership(final Date date) {
+		if(date != null) {
+			return getJdbcTemplate().query(ORG_ORG_XREFS_RANGE, new Object[] {date, date, date, date}, memberMapper);
+		} else {
+			return getJdbcTemplate().query(ORG_ORG_XREFS_ALL, memberMapper);
+		}
 	}
 
 	@Override
-	public List<MembershipDTO> getUser2OrgMembership() {
-		return getJdbcTemplate().query(USER_ORG_XREFS, memberMapper);
+	public List<MembershipDTO> getUser2OrgMembership(final Date date) {
+		if(date != null) {
+			return getJdbcTemplate().query(USER_ORG_XREFS_RANGE, new Object[] {date, date, date, date}, memberMapper);
+		} else {
+			return getJdbcTemplate().query(USER_ORG_XREFS_ALL, memberMapper);
+		}
 	}
 	
 	@Override
@@ -394,12 +524,22 @@ public class JdbcMembershipDAO extends AbstractJDBCDao implements MembershipDAO 
 	}
 	
 	@Override
-	public InternalAuthroizationUser getUser(String id) {
+	public InternalAuthroizationUser getUser(String id, final Date date) {
+		final String query = (date != null) ? GET_FULLY_POPULATED_USER_RS_RANGE : GET_FULLY_POPULATED_USER_RS_LIST;
 		if(log.isDebugEnabled()) {
-			log.debug(String.format("Query: " + GET_FULLY_POPULATED_USER_RS_LIST));
+			log.debug(String.format("Query: " + query));
 			log.debug(String.format("Params: " + id));
 		}
-		return getJdbcTemplate().query(GET_FULLY_POPULATED_USER_RS_LIST, new Object[] {id}, urm);
+		if(date != null) {
+			final List<Object> args = new ArrayList<Object>(13);
+			for(int i = 0; i < 4 * 4; i++) {
+				args.add(date);
+			}
+			args.add(id);
+			return getJdbcTemplate().query(GET_FULLY_POPULATED_USER_RS_RANGE, args.toArray(), urm);
+		} else {
+			return getJdbcTemplate().query(GET_FULLY_POPULATED_USER_RS_LIST, new Object[] {id}, urm);
+		}
 	}
 	
 	private static final class UserRowMapper implements ResultSetExtractor<InternalAuthroizationUser> {
@@ -500,27 +640,29 @@ public class JdbcMembershipDAO extends AbstractJDBCDao implements MembershipDAO 
 			dto.setEntityId(rs.getString("ENTITY_ID"));
 			dto.setId(rs.getString("MEMBERSHIP_ID"));
 			dto.setMemberEntityId(rs.getString("MEMBER_ENTITY_ID"));
+			dto.setStartDate(rs.getDate("START_DATE"));
+			dto.setEndDate(rs.getDate("END_DATE"));
 			return dto;
 		}
 	}
 
 	@Override
-	public List<String> getUsersForResource(String resourceId) {
+	public List<String> getUsersForResource(String resourceId, final Date date) {
 		return getJdbcTemplate().queryForList(GET_USER_IDS_FOR_RESOURCE, new Object[] {resourceId}, String.class);
 	}
 
 	@Override
-	public List<String> getUsersForResource(String resourceId, String rightId) {
+	public List<String> getUsersForResource(String resourceId, String rightId, final Date date) {
 		return getJdbcTemplate().queryForList(GET_USER_IDS_FOR_RESOURCE_WITH_RIGHT, new Object[] {resourceId, rightId}, String.class);
 	}
 	
 	@Override
-	public List<String> getUsersForGroup(String groupId) {
+	public List<String> getUsersForGroup(String groupId, final Date date) {
 		return getJdbcTemplate().queryForList(GET_USER_IDS_FOR_GROUP, new Object[] {groupId}, String.class);
 	}
 
 	@Override
-	public List<String> getUsersForGroup(String groupId, String rightId) {
+	public List<String> getUsersForGroup(String groupId, String rightId, final Date date) {
 		return getJdbcTemplate().queryForList(GET_USER_IDS_FOR_GROUP_WITH_RIGHT, new Object[] {groupId, rightId}, String.class);
 	}
 }

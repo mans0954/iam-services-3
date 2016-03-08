@@ -10,6 +10,7 @@ import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -173,7 +174,9 @@ public interface GroupDataWebService {
     public Response addUserToGroup(final @WebParam(name = "groupId", targetNamespace = "") String groupId,
                                    final @WebParam(name = "userId", targetNamespace = "") String userId,
                                    final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
-                                   final @WebParam(name = "rightIds", targetNamespace = "") Set<String> rightIds);
+                                   final @WebParam(name = "rightIds", targetNamespace = "") Set<String> rightIds,
+                                   final @WebParam(name = "startDate", targetNamespace = "") Date startDate,
+                                   final @WebParam(name = "endDate", targetNamespace = "") Date endDate);
 
 
     /**
@@ -391,12 +394,16 @@ public interface GroupDataWebService {
     public Response addChildGroup(final @WebParam(name = "groupId") String groupId, 
     							  final @WebParam(name = "childGroupId") String childGroupId,
                                   final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
-                                  final @WebParam(name = "rights", targetNamespace = "") Set<String> rights);
+                                  final @WebParam(name = "rights", targetNamespace = "") Set<String> rights,
+                                  final @WebParam(name = "startDate", targetNamespace = "") Date startDate,
+                                  final @WebParam(name = "endDate", targetNamespace = "") Date endDate);
 
     @WebMethod
     public Response validateGroup2GroupAddition(final @WebParam(name = "groupId") String groupId, 
 			  									final @WebParam(name = "childGroupId") String childGroupId,
-			  									final @WebParam(name = "rights", targetNamespace = "") Set<String> rights);
+			  									final @WebParam(name = "rights", targetNamespace = "") Set<String> rights,
+			  									final @WebParam(name = "startDate", targetNamespace = "") Date startDate,
+			  		                            final @WebParam(name = "endDate", targetNamespace = "") Date endDate);
     
     /**
      * Remove Group specified by childGroupId from the membership list of Group specified by groupId

@@ -4,7 +4,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import javax.jws.WebParam;
 import javax.jws.WebService;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -17,7 +16,7 @@ import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 import org.openiam.idm.srvc.lang.dto.Language;
@@ -25,10 +24,6 @@ import org.openiam.idm.srvc.lang.dto.LanguageMapping;
 import org.openiam.idm.srvc.lang.service.LanguageDAO;
 import org.openiam.idm.srvc.property.converter.PropertyValueConverter;
 import org.openiam.idm.srvc.property.service.PropertyValueService;
-import org.openiam.idm.srvc.property.service.PropertyValueSweeper;
-import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
-import org.openiam.internationalization.LocalizedServiceGet;
-import org.openiam.property.domain.PropertyType;
 import org.openiam.property.domain.PropertyValueEntity;
 import org.openiam.property.dto.PropertyValue;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -107,7 +102,7 @@ public class PropertyValueWebServiceImpl extends AbstractBaseService implements 
 	 @Override
 	 public Response save(List<PropertyValue> dtoList, final String requestorId) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
-		IdmAuditLog idmAuditLog = new IdmAuditLog();
+		IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
         idmAuditLog.setRequestorUserId(requestorId);
         idmAuditLog.setAction(AuditAction.MODIFY_PROPERTIES.value());
         try {

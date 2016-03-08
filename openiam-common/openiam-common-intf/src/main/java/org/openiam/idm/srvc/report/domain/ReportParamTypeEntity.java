@@ -3,6 +3,7 @@ package org.openiam.idm.srvc.report.domain;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
+import org.openiam.base.domain.AbstractKeyNameEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.report.dto.ReportParamTypeDto;
 
@@ -12,36 +13,16 @@ import javax.persistence.*;
 @Table(name = "REPORT_PARAMETER_TYPE")
 @DozerDTOCorrespondence(ReportParamTypeDto.class)
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class ReportParamTypeEntity {
-    @Id
-    @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name = "system-uuid", strategy = "uuid")
-    @Column(name = "RCPT_ID")
-    private String id;
-
-    @Column(name = "TYPE_NAME")
-    private String name;
-
+@AttributeOverrides({
+	@AttributeOverride(name = "id", column = @Column(name = "RCPT_ID")),
+	@AttributeOverride(name = "name", column = @Column(name = "TYPE_NAME"))
+})
+public class ReportParamTypeEntity extends AbstractKeyNameEntity {
+    
     @Column(name = "TYPE_DESCRIPTION")
     private String description;
 
     public ReportParamTypeEntity() {
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public String getDescription() {
@@ -52,33 +33,37 @@ public class ReportParamTypeEntity {
         this.description = description;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result
+				+ ((description == null) ? 0 : description.hashCode());
+		return result;
+	}
 
-        ReportParamTypeEntity that = (ReportParamTypeEntity) o;
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ReportParamTypeEntity other = (ReportParamTypeEntity) obj;
+		if (description == null) {
+			if (other.description != null)
+				return false;
+		} else if (!description.equals(other.description))
+			return false;
+		return true;
+	}
 
-        if (description != null ? !description.equals(that.description) : that.description != null) return false;
-        if (id != null ? !id.equals(that.id) : that.id != null) return false;
-        return !(name != null ? !name.equals(that.name) : that.name != null);
+	@Override
+	public String toString() {
+		return "ReportParamTypeEntity [description=" + description + ", name="
+				+ name + ", id=" + id + "]";
+	}
 
-    }
-
-    @Override
-    public int hashCode() {
-        int result = id != null ? id.hashCode() : 0;
-        result = 31 * result + (name != null ? name.hashCode() : 0);
-        result = 31 * result + (description != null ? description.hashCode() : 0);
-        return result;
-    }
-
-    @Override
-    public String toString() {
-        return "ReportParamTypeEntity{" +
-                "id='" + id + '\'' +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                '}';
-    }
+   
 }

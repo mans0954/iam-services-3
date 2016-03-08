@@ -202,15 +202,15 @@ public class GroupEntity extends AbstractMetdataTypeEntity {
         return parentGroups;
     }
 
-    public void addChildGroup(final GroupEntity entity, final AccessRightEntity right) {
+    public void addChildGroup(final GroupEntity entity, final AccessRightEntity right, final Date startDate, final Date endDate) {
     	if(entity != null && right != null) {
     		final Set<AccessRightEntity> rights = new HashSet<AccessRightEntity>();
     		rights.add(right);
-    		addChildGroup(entity, rights);
+    		addChildGroup(entity, rights, startDate, endDate);
     	}
     }
     
-    public void addChildGroup(final GroupEntity entity, final Collection<AccessRightEntity> rights) {
+    public void addChildGroup(final GroupEntity entity, final Collection<AccessRightEntity> rights, final Date startDate, final Date endDate) {
     	if(entity != null) {
 			if(this.childGroups == null) {
 				this.childGroups = new LinkedHashSet<GroupToGroupMembershipXrefEntity>();
@@ -231,6 +231,8 @@ public class GroupEntity extends AbstractMetdataTypeEntity {
 			if(rights != null) {
 				theXref.setRights(new HashSet<AccessRightEntity>(rights));
 			}
+			theXref.setStartDate(startDate);
+			theXref.setEndDate(endDate);
 			this.childGroups.add(theXref);
 		}
     }
@@ -323,15 +325,15 @@ public class GroupEntity extends AbstractMetdataTypeEntity {
 		this.roles = roles;
 	}
 	
-	public void addUser(final UserEntity entity, final AccessRightEntity right) {
+	public void addUser(final UserEntity entity, final AccessRightEntity right, final Date startDate, final Date endDate) {
 		if(entity != null && right != null) {
 			final Set<AccessRightEntity> rightSet = new HashSet<AccessRightEntity>();
 			rightSet.add(right);
-			addUser(entity, rightSet);
+			addUser(entity, rightSet, startDate, endDate);
 		}
 	}
 	
-	public void addUser(final UserEntity entity, final Collection<AccessRightEntity> rights) {
+	public void addUser(final UserEntity entity, final Collection<AccessRightEntity> rights, final Date startDate, final Date endDate) {
 		if(entity != null) {
 			if(this.users == null) {
 				this.users = new LinkedHashSet<UserToGroupMembershipXrefEntity>();
@@ -352,6 +354,8 @@ public class GroupEntity extends AbstractMetdataTypeEntity {
 			if(rights != null) {
 				theXref.setRights(new HashSet<AccessRightEntity>(rights));
 			}
+			theXref.setStartDate(startDate);
+			theXref.setEndDate(endDate);
 			this.users.add(theXref);
 		}
 	}
@@ -365,7 +369,7 @@ public class GroupEntity extends AbstractMetdataTypeEntity {
     	return xref.isPresent() ? xref.get() : null;
 	}
 	
-	public void addResource(final ResourceEntity entity, final Collection<AccessRightEntity> rights) {
+	public void addResource(final ResourceEntity entity, final Collection<AccessRightEntity> rights, final Date startDate, final Date endDate) {
 		if(entity != null) {
 			if(this.resources == null) {
 				this.resources = new LinkedHashSet<GroupToResourceMembershipXrefEntity>();
@@ -386,6 +390,8 @@ public class GroupEntity extends AbstractMetdataTypeEntity {
 			if(rights != null) {
 				theXref.setRights(new HashSet<AccessRightEntity>(rights));
 			}
+			theXref.setStartDate(startDate);
+			theXref.setEndDate(endDate);
 			this.resources.add(theXref);
 		}
 	}
@@ -497,7 +503,7 @@ public class GroupEntity extends AbstractMetdataTypeEntity {
 		this.organizations = organizations;
 	}
 	
-	public void addOrganization(final OrganizationEntity entity, final Collection<AccessRightEntity> rights) {
+	public void addOrganization(final OrganizationEntity entity, final Collection<AccessRightEntity> rights, final Date startDate, final Date endDate) {
 		if(entity != null) {
 			if(this.organizations == null) {
 				this.organizations = new LinkedHashSet<GroupToOrgMembershipXrefEntity>();
@@ -518,6 +524,8 @@ public class GroupEntity extends AbstractMetdataTypeEntity {
 			if(rights != null) {
 				theXref.setRights(new HashSet<AccessRightEntity>(rights));
 			}
+			theXref.setStartDate(startDate);
+			theXref.setEndDate(endDate);
 			this.organizations.add(theXref);
 		}
 	}

@@ -23,6 +23,9 @@ public abstract class AbstractMetaEntity extends AbstractKeyNameEntity {
 	
 	@Column(name="CONTENT_TYPE", length=100)
 	protected String contentType;
+	
+	@Column(name="COOKIE_PATH", length=100)
+	protected String cookiePath;
 
 	public URIPatternMetaTypeEntity getMetaType() {
 		return metaType;
@@ -39,6 +42,14 @@ public abstract class AbstractMetaEntity extends AbstractKeyNameEntity {
 	public void setContentType(String contentType) {
 		this.contentType = contentType;
 	}
+	
+	public String getCookiePath() {
+		return cookiePath;
+	}
+
+	public void setCookiePath(String cookiePath) {
+		this.cookiePath = cookiePath;
+	}
 
 	@Override
 	public int hashCode() {
@@ -48,6 +59,8 @@ public abstract class AbstractMetaEntity extends AbstractKeyNameEntity {
 				+ ((contentType == null) ? 0 : contentType.hashCode());
 		result = prime * result
 				+ ((metaType == null) ? 0 : metaType.hashCode());
+		result = prime * result
+				+ ((cookiePath == null) ? 0 : cookiePath.hashCode());
 		return result;
 	}
 
@@ -69,6 +82,12 @@ public abstract class AbstractMetaEntity extends AbstractKeyNameEntity {
 			if (other.metaType != null)
 				return false;
 		} else if (!metaType.equals(other.metaType))
+			return false;
+		
+		if (cookiePath == null) {
+			if (other.cookiePath != null)
+				return false;
+		} else if (!cookiePath.equals(other.cookiePath))
 			return false;
 		return true;
 	}

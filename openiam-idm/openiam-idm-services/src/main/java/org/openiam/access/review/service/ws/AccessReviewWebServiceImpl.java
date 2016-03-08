@@ -1,5 +1,7 @@
 package org.openiam.access.review.service.ws;
 
+import java.util.Date;
+
 import org.openiam.access.review.model.AccessViewFilterBean;
 import org.openiam.access.review.model.AccessViewResponse;
 import org.openiam.access.review.service.AccessReviewService;
@@ -17,12 +19,12 @@ public class AccessReviewWebServiceImpl implements AccessReviewWebService {
     private AccessReviewService accessReviewService;
 
     @Override
-    public AccessViewResponse getAccessReviewTree(AccessViewFilterBean filter, String viewType, Language language) {
-        return accessReviewService.getAccessReviewTree(filter,viewType,language);
+    public AccessViewResponse getAccessReviewTree(AccessViewFilterBean filter, String viewType, Date date, Language language) {
+        return accessReviewService.getAccessReviewTree(filter,viewType,date,language);
     }
 
     @Override
-    public AccessViewResponse getAccessReviewSubTree(String parentId, String parentBeanType, boolean isRootOnly, AccessViewFilterBean filter, String viewType, Language language) {
-        return accessReviewService.getAccessReviewSubTree(parentId,parentBeanType,isRootOnly,filter,viewType,language);
+    public AccessViewResponse getAccessReviewSubTree(String parentId, String parentBeanType, boolean isRootOnly, AccessViewFilterBean filter, String viewType, Date date, Language language) {
+        return accessReviewService.getAccessReviewSubTree(parentId,parentBeanType,isRootOnly,filter,viewType,date,language);
     }
 }

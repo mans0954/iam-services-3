@@ -1,11 +1,15 @@
 package org.openiam.idm.srvc.mngsys.service;
 
+import org.elasticsearch.common.lang3.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Property;
+import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
+import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.mngsys.domain.ProvisionConnectorEntity;
+import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorSearchBean;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -27,4 +31,25 @@ public class ProvisionConnectorDaoImpl extends BaseDaoImpl<ProvisionConnectorEnt
         criteria.add(Property.forName("id").in(ownerCriteria));
         return criteria.list();
     }
+
+	@Override
+	protected Criteria getExampleCriteria(final SearchBean searchBean) {
+		final Criteria criteria = getCriteria();
+		if(searchBean != null && searchBean instanceof ProvisionConnectorSearchBean) {
+			final ProvisionConnectorSearchBean sb = (ProvisionConnectorSearchBean)searchBean;
+			if(StringUtils.isNotBlank(sb.getKey())) {
+				criteria.add(Restrictions.eq(getPKfieldName(), sb.getKey()));
+			} else {
+				if(StringUtils.isNotBlank(sb.getName())) {
+					criteria.add(Restrictions.eq("name", sb.getName()));
+				}
+				if(StringUtils.isNotBlank(sb.getTypeId())) {
+					criteria.add(Restrictions.eq("metadataTypeId", sb.getTypeId()));
+				}
+			}
+		}
+		return criteria;
+	}
+    
+    
 }

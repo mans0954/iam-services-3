@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.org.service;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -24,7 +25,7 @@ import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.srvc.access.service.AccessRightDAO;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
@@ -47,7 +48,6 @@ import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.service.RoleDAO;
-import org.openiam.idm.srvc.searchbean.converter.LocationSearchBeanConverter;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.user.service.UserDAO;
@@ -80,9 +80,6 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     private LocationDozerConverter locationDozerConverter;
     @Autowired
     private LocationDAO locationDao;
-
-    @Autowired
-    private LocationSearchBeanConverter locationSearchBeanConverter;
 
 	@Autowired
 	private MetadataElementDAO metadataDAO;
@@ -209,11 +206,11 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
 
     @Override
     @Transactional
-    public void addUserToOrg(final String orgId, final String userId, final Set<String> rightIds) {
+    public void addUserToOrg(final String orgId, final String userId, final Set<String> rightIds, final Date startDate, final Date endDate) {
         final OrganizationEntity organization = orgDao.findById(orgId);
         final UserEntity user = userDAO.findById(userId);
         if(organization != null && user != null) {
-        	user.addAffiliation(organization, accessRightDAO.findByIds(rightIds));
+        	user.addAffiliation(organization, accessRightDAO.findByIds(rightIds), startDate, endDate);
         }
     }
 
@@ -261,7 +258,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     public Organization save(final Organization organization, final String requestorId, final boolean skipPrePostProcessors) throws BasicDataServiceException {
 
         // Audit Log -----------------------------------------------------------------------------------
-        final IdmAuditLog idmAuditLog = new IdmAuditLog();
+        final IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
         idmAuditLog.setRequestorUserId(requestorId);
         if (StringUtils.isNotBlank(organization.getId())) {
             idmAuditLog.setAction(AuditAction.EDIT_ORG.value());
@@ -286,7 +283,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
             OrganizationEntity curEntity;
             if (StringUtils.isBlank(organization.getId())) {
                 curEntity = newEntity;
-                curEntity.addUser(userDAO.findById(requestorId), accessRightDAO.findById(adminRightId));
+                curEntity.addUser(userDAO.findById(requestorId), accessRightDAO.findById(adminRightId), null, null);
                 curEntity.setCreateDate(Calendar.getInstance().getTime());
                 curEntity.setCreatedBy(requestorId);
                 curEntity.addApproverAssociation(createDefaultApproverAssociations(curEntity, requestorId));
@@ -389,13 +386,17 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     }
 
     private ApproverAssociationEntity createDefaultApproverAssociations(final OrganizationEntity entity, final String requestorId) {
-		final ApproverAssociationEntity association = new ApproverAssociationEntity();
-		association.setAssociationEntityId(entity.getId());
-		association.setAssociationType(AssociationType.ORGANIZATION);
-		association.setApproverLevel(Integer.valueOf(0));
-		association.setApproverEntityId(requestorId);
-		association.setApproverEntityType(AssociationType.USER);
-		return association;
+    	if(requestorId != null) {
+			final ApproverAssociationEntity association = new ApproverAssociationEntity();
+			association.setAssociationEntityId(entity.getId());
+			association.setAssociationType(AssociationType.ORGANIZATION);
+			association.setApproverLevel(Integer.valueOf(0));
+			association.setApproverEntityId(requestorId);
+			association.setApproverEntityType(AssociationType.USER);
+			return association;
+    	} else {
+    		return null;
+    	}
 	}
 
     /*
@@ -735,11 +736,11 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
 
     @Override
     @Transactional
-    public void addChildOrganization(String organizationId, String childOrganizationId, final Set<String> rightIds) {
+    public void addChildOrganization(String organizationId, String childOrganizationId, final Set<String> rightIds, final Date startDate, final Date endDate) {
         final OrganizationEntity parent = orgDao.findById(organizationId);
         final OrganizationEntity child = orgDao.findById(childOrganizationId);
         if (parent != null && child != null) {
-            parent.addChild(child, accessRightDAO.findByIds(rightIds));
+            parent.addChild(child, accessRightDAO.findByIds(rightIds), startDate, endDate);
             orgDao.update(parent);
         }
     }
@@ -755,7 +756,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
     public void deleteOrganization(String orgId, boolean skipPrePostProcessors) throws BasicDataServiceException {
 
         // Audit Log -----------------------------------------------------------------------------------
-        final IdmAuditLog idmAuditLog = new IdmAuditLog();
+        final IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
         idmAuditLog.setAction(AuditAction.DELETE_ORG.value());
 
         try {
@@ -1186,7 +1187,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
         if (searchBean == null)
             throw new NullPointerException("searchBean is null");
 
-        return locationDao.count(locationSearchBeanConverter.convert(searchBean));
+        return locationDao.count(searchBean);
     }
 
     @Override
@@ -1213,7 +1214,7 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
         if (searchBean == null)
             throw new NullPointerException("searchBean is null");
 
-        return locationDao.getByExample(locationSearchBeanConverter.convert(searchBean), from, size);
+        return locationDao.getByExample(searchBean, from, size);
     }
 
     @Override
@@ -1245,12 +1246,15 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
 
 	@Override
 	@Transactional
-	public void addGroupToOrganization(String organizationId, String groupId,
-			Set<String> rightIds) {
+	public void addGroupToOrganization(final String organizationId, 
+									   final String groupId,
+									   final Set<String> rightIds,
+									   final Date startDate, 
+									   final Date endDate) {
 		final OrganizationEntity organization = orgDao.findById(organizationId);
 		final GroupEntity group = groupDAO.findById(groupId);
 		if(organization != null && group != null) {
-			organization.addGroup(group, accessRightDAO.findByIds(rightIds));
+			organization.addGroup(group, accessRightDAO.findByIds(rightIds), startDate, endDate);
 			orgDao.update(organization);
 		}
 	}
@@ -1269,11 +1273,15 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
 
 	@Override
 	@Transactional
-	public void addRoleToOrganization(final String organizationId, final String roleId, final Set<String> rightIds) {
+	public void addRoleToOrganization(final String organizationId, 
+									  final String roleId, 
+									  final Set<String> rightIds, 
+									  final Date startDate, 
+									  final Date endDate) {
 		final OrganizationEntity organization = orgDao.findById(organizationId);
 		final RoleEntity role = roleDAO.findById(roleId);
 		if(organization != null && role != null) {
-			organization.addRole(role, accessRightDAO.findByIds(rightIds));
+			organization.addRole(role, accessRightDAO.findByIds(rightIds), startDate, endDate);
 			orgDao.update(organization);
 		}
 	}
@@ -1290,19 +1298,21 @@ public class OrganizationServiceImpl extends AbstractBaseService implements Orga
 	}
 
 	@Override
-	public void addResourceToOrganization(String organizationId,
-			String resourceId, Set<String> rightIds) {
+	public void addResourceToOrganization(final String organizationId,
+										  final String resourceId, 
+										  final Set<String> rightIds, 
+										  final Date startDate, 
+										  final Date endDate) {
 		final OrganizationEntity organization = orgDao.findById(organizationId);
 		final ResourceEntity resource = resourceDAO.findById(resourceId);
 		if(organization != null && resource != null) {
-			organization.addResource(resource, accessRightDAO.findByIds(rightIds));
+			organization.addResource(resource, accessRightDAO.findByIds(rightIds), startDate, endDate);
 			orgDao.update(organization);
 		}
 	}
 
 	@Override
-	public void removeResourceFromOrganization(String organizationId,
-			String resourceId) {
+	public void removeResourceFromOrganization(final String organizationId, final String resourceId) {
 		final OrganizationEntity organization = orgDao.findById(organizationId);
 		final ResourceEntity resource = resourceDAO.findById(resourceId);
 		if(organization != null && resource != null) {

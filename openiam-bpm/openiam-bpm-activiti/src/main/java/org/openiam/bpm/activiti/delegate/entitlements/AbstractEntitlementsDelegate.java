@@ -5,24 +5,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.activiti.engine.delegate.DelegateExecution;
-import org.activiti.engine.impl.el.FixedValue;
 import org.apache.commons.lang.StringUtils;
-import org.openiam.bpm.activiti.delegate.core.AbstractActivitiJob;
 import org.openiam.bpm.activiti.delegate.core.AbstractNotificationDelegate;
-import org.openiam.bpm.activiti.delegate.core.ActivitiHelper;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.bpm.util.ActivitiRequestType;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
-import org.openiam.idm.srvc.msg.dto.NotificationParam;
-import org.openiam.idm.srvc.msg.dto.NotificationRequest;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
-import org.openiam.idm.srvc.user.dto.User;
-import org.openiam.idm.srvc.user.service.UserDAO;
-import org.openiam.idm.srvc.user.service.UserDataService;
-import org.openiam.provision.service.ProvisionService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 
 public abstract class AbstractEntitlementsDelegate extends AbstractNotificationDelegate {
 
@@ -100,7 +89,7 @@ public abstract class AbstractEntitlementsDelegate extends AbstractNotificationD
 
 	@Override
 	public void execute(DelegateExecution execution) throws Exception {
-		final IdmAuditLog idmAuditLog = createNewAuditLog(execution);
+		final IdmAuditLogEntity idmAuditLog = createNewAuditLog(execution);
         idmAuditLog.setAction(AuditAction.ENTITLEMENTS_DELEGATE.value());
 		try {
 			final String targetUserId = getTargetUserId(execution);

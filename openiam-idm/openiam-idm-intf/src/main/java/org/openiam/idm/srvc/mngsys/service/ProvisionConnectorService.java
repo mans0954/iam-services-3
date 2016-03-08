@@ -9,21 +9,14 @@ import java.util.List;
 
 public interface ProvisionConnectorService {
 
-    List<ProvisionConnectorDto> getProvisionConnectorsByExample(ProvisionConnectorEntity example, Integer from, Integer size);
+    List<ProvisionConnectorDto> getProvisionConnectorsByExample(ProvisionConnectorSearchBean searchBean, int from, int size);
 
-    List<ProvisionConnectorDto> getProvisionConnectorsByExample(ProvisionConnectorSearchBean searchBean, Integer from, Integer size);
-
-    Integer getProvisionConnectorsCountByExample(ProvisionConnectorEntity example);
-
-    Integer getProvisionConnectorsCountByExample(ProvisionConnectorSearchBean searchBean);
+    int getProvisionConnectorsCountByExample(ProvisionConnectorSearchBean searchBean);
 
     List<MetadataTypeEntity> getProvisionConnectorsMetadataTypes();
+    
+    void save(final ProvisionConnectorEntity entity);
+    void delete(final String id);
 
-    void addProvisionConnector(ProvisionConnectorDto connectorDto);
-
-    void updateProvisionConnector(ProvisionConnectorDto connectorDto);
-
-    void removeProvisionConnectorById(String connectorId);
-
-    ProvisionConnectorDto getProvisionConnectorsById(String connectorId);
+    ProvisionConnectorDto getDto(String connectorId);
 }

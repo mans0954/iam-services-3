@@ -1,21 +1,21 @@
 package org.openiam.bpm.activiti.delegate.entitlements;
 
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+
 import org.activiti.engine.delegate.DelegateExecution;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.ws.Response;
 import org.openiam.bpm.activiti.delegate.core.AbstractActivitiJob;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.ws.UserDataWebService;
 import org.openiam.provision.dto.ProvisionUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
 
 public class ReplaceSuperior extends AbstractActivitiJob {
     @Autowired
@@ -37,7 +37,7 @@ public class ReplaceSuperior extends AbstractActivitiJob {
         final User newSuperior = getUser(newSuperiorId);
         final User subordinate = getUser(subordinateId);
 
-        final IdmAuditLog idmAuditLog = createNewAuditLog(execution);
+        final IdmAuditLogEntity idmAuditLog = createNewAuditLog(execution);
         idmAuditLog.setAction(AuditAction.REPLACE_SUPERVISOR.value());
         idmAuditLog.setTargetUser(subordinate.getId(), null);
 
@@ -51,7 +51,7 @@ public class ReplaceSuperior extends AbstractActivitiJob {
                     for (User u: superiors) {
                         if (u.getId() == currSuperior.getId()) {
                             u.setOperation(AttributeOperationEnum.DELETE);
-                            idmAuditLog.addCustomRecord(AuditAction.DELETE_SUPERVISOR.value(), u.getId());
+                            idmAuditLog.put(AuditAction.DELETE_SUPERVISOR.value(), u.getId());
                             break;
                         }
                     }
@@ -68,7 +68,7 @@ public class ReplaceSuperior extends AbstractActivitiJob {
                     if (!exists) {
                         newSuperior.setOperation(AttributeOperationEnum.ADD);
                         superiors.add(newSuperior);
-                        idmAuditLog.addCustomRecord(AuditAction.ADD_SUPERVISOR.value(), newSuperior.getId());
+                        idmAuditLog.put(AuditAction.ADD_SUPERVISOR.value(), newSuperior.getId());
                     }
                 } else {
                     throw new RuntimeException("Supervisor can not be null");

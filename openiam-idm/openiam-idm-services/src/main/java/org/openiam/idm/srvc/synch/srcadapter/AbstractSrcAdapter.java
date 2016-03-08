@@ -62,9 +62,11 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
     protected LoginDozerConverter loginDozerConverter;
     @Autowired
     protected RoleDataService roleDataService;
+    
     @Autowired
     @Qualifier("defaultProvision")
     protected ProvisionService provService;
+    
     @Autowired
     protected UserDozerConverter userDozerConverter;
     @Autowired

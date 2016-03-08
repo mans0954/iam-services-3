@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.synch.dto;
 
+import java.util.Date;
 import java.util.Set;
 
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
@@ -26,6 +27,8 @@ public class BulkMigrationConfig {
     String targetResource;
     
     Set<String> rightIds;
+    private Date startDate;
+    private Date endDate;
 
     public BulkMigrationConfig() {
 
@@ -134,6 +137,22 @@ public class BulkMigrationConfig {
 
 	public void setRightIds(Set<String> rightIds) {
 		this.rightIds = rightIds;
+	}
+
+	public Date getStartDate() {
+		return startDate;
+	}
+
+	public void setStartDate(Date startDate) {
+		this.startDate = startDate;
+	}
+
+	public Date getEndDate() {
+		return endDate;
+	}
+
+	public void setEndDate(Date endDate) {
+		this.endDate = endDate;
 	}
     
     

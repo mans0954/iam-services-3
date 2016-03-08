@@ -65,6 +65,10 @@ public class AuthProviderEntity extends AbstractKeyNameEntity {
     @Type(type = "yes_no")
     private boolean readOnly;
     
+    @Column(name="LAST_MODIFIED",length=19)
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date lastModified;
+    
     @Column(name = "PUBLIC_KEY", nullable = true)
     @Lob
     private byte[] publicKey=null;
@@ -315,6 +319,14 @@ public class AuthProviderEntity extends AbstractKeyNameEntity {
 	public void setReadOnly(boolean readOnly) {
 		this.readOnly = readOnly;
 	}
+	
+	public Date getLastModified() {
+		return lastModified;
+	}
+
+	public void setLastModified(Date lastModified) {
+		this.lastModified = lastModified;
+	}
 
 	@Override
 	public int hashCode() {
@@ -342,6 +354,7 @@ public class AuthProviderEntity extends AbstractKeyNameEntity {
 		result = prime * result + (supportsSMSOTP ? 1231 : 1237);
 		result = prime * result + (supportsTOTP ? 1231 : 1237);
 		result = prime * result + ((smsOTPGroovyScript == null) ? 0 : smsOTPGroovyScript.hashCode());
+		result = prime * result + ((lastModified == null) ? 0 : lastModified.hashCode());
 		return result;
 	}
 
@@ -417,6 +430,12 @@ public class AuthProviderEntity extends AbstractKeyNameEntity {
 			if (other.smsOTPGroovyScript != null)
 				return false;
 		} else if (!smsOTPGroovyScript.equals(other.smsOTPGroovyScript))
+			return false;
+		
+		if (lastModified == null) {
+			if (other.lastModified != null)
+				return false;
+		} else if (!lastModified.equals(other.lastModified))
 			return false;
 		return true;
 	}

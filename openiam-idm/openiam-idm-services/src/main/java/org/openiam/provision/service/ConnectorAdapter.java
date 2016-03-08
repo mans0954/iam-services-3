@@ -29,7 +29,6 @@ import org.apache.cxf.interceptor.LoggingInInterceptor;
 import org.apache.cxf.interceptor.LoggingOutInterceptor;
 import org.apache.cxf.jaxws.JaxWsProxyFactoryBean;
 import org.apache.cxf.jaxws.endpoint.dynamic.JaxWsDynamicClientFactory;
-
 import org.openiam.base.id.UUIDGen;
 import org.openiam.connector.ConnectorService;
 import org.openiam.connector.type.constant.ErrorCode;
@@ -44,8 +43,8 @@ import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
 import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.provision.type.ExtensibleUser;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -64,6 +63,7 @@ public class ConnectorAdapter {
     protected static final Log log = LogFactory.getLog(ConnectorAdapter.class);
 
     @Autowired
+    @Qualifier("provisionConnectorWebService")
     private ProvisionConnectorWebService connectorService;
 
     public ObjectResponse addRequest(ManagedSysDto managedSys,

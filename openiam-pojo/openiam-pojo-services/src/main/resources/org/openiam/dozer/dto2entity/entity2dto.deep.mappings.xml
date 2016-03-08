@@ -697,34 +697,6 @@
 		</field>
 	</mapping>
 	<mapping>
-		<class-a>org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity</class-a>
-		<class-b>org.openiam.idm.srvc.audit.dto.IdmAuditLog</class-b>
-		<field
-			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
-			custom-converter-param="dto2entityShallowDozerMapper">
-			<a>customRecords</a>
-			<b>customRecords</b>
-		</field>
-		<field
-			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
-			custom-converter-param="dto2entityShallowDozerMapper">
-			<a>childLogs</a>
-			<b>childLogs</b>
-		</field>
-		<field
-			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
-			custom-converter-param="dto2entityShallowDozerMapper">
-			<a>parentLogs</a>
-			<b>parentLogs</b>
-		</field>
-		<field
-			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
-			custom-converter-param="dto2entityShallowDozerMapper">
-			<a>targets</a>
-			<b>targets</b>
-		</field>
-	</mapping>
-	<mapping>
 		<class-a>org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity</class-a>
 		<class-b>org.openiam.idm.srvc.mngsys.dto.ManagedSysDto</class-b>
 		<field

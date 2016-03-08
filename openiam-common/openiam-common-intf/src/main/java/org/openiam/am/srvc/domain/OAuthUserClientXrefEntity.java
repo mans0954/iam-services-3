@@ -19,7 +19,7 @@ import java.util.Set;
  * Created by alexander on 01/07/15.
  */
 @Entity
-@Table(name = "OAUTH_USER_CLIENT_AUTHORIZATION")
+@Table(name = "OAUTH_USER_CLIENT_AUTH")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(OAuthUserClientXref.class)
 @AttributeOverride(name = "id", column = @Column(name = "OAUTH_AUTHORIZATION_ID"))

@@ -297,7 +297,7 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 							resourcesToUpdateMap.put(parentId, parent);
 						}
 						final ResourceEntity parent = resourcesToUpdateMap.get(parentId);
-						parent.addChildResource(resource, null);
+						parent.addChildResource(resource, null, null, null);
 					}
 				}
 				

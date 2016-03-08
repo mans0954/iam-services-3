@@ -9,7 +9,7 @@ import org.openiam.base.ws.Response;
 import org.openiam.bpm.activiti.delegate.core.AbstractActivitiJob;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.ws.UserDataWebService;
@@ -42,7 +42,7 @@ public class RemoveSupervisor extends AbstractActivitiJob {
 		final User superior = userDataService.getUserDto(superiorId);
 		final User subordinate = userDataService.getUserDto(subordinateId);
 		
-		final IdmAuditLog idmAuditLog = createNewAuditLog(execution);
+		final IdmAuditLogEntity idmAuditLog = createNewAuditLog(execution);
         idmAuditLog.setAction(AuditAction.DELETE_SUPERVISOR.value());
         try {
 			if(superior != null && subordinate != null) {

@@ -20,7 +20,7 @@ public class ReconciliationSituationDAOImpl extends
 
     @Override
     protected String getPKfieldName() {
-        return "reconSituationId";
+        return "id";
     }
 
 }

@@ -30,7 +30,6 @@ import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
-import org.openiam.idm.srvc.searchbean.converter.MetadataTypeSearchBeanConverter;
 import org.openiam.internationalization.LocalizedServiceGet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -52,9 +51,6 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
     
     @Autowired
     private MetadataElementDAO metadataElementDao;
-    
-    @Autowired
-    private MetadataTypeSearchBeanConverter metadataTypeSearchBeanConverter;
     
     @Autowired
     private ResourceTypeDAO resourceTypeDAO;
@@ -330,8 +326,7 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 			final List<MetadataTypeEntity> entityList = metadataTypeDao.findByIds(searchBean.getKeys());
 			retVal = (entityList != null) ? entityList.size() : 0;
 		} else {
-			final MetadataTypeEntity entity = metadataTypeSearchBeanConverter.convert(searchBean);
-			retVal = metadataTypeDao.count(entity);
+			retVal = metadataTypeDao.count(searchBean);
 		}
 		return retVal;
 	}

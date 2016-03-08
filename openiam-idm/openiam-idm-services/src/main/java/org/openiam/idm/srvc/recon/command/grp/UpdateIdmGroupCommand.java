@@ -28,6 +28,7 @@ public class UpdateIdmGroupCommand extends BaseReconciliationGroupCommand {
     private ObjectProvisionService<ProvisionGroup> provisionService;
 
     @Autowired
+    @Qualifier("groupWS")
     private GroupDataWebService groupDataService;
 
     @Autowired
@@ -51,7 +52,7 @@ public class UpdateIdmGroupCommand extends BaseReconciliationGroupCommand {
 			String groupId = (String) grpResp.getResponseValue();
 			for (Resource res : resources) {
 				if (res.getOperation() == AttributeOperationEnum.ADD) {
-					resourceDataService.addGroupToResource(res.getId(), groupId, DEFAULT_REQUESTER_ID, null);
+					resourceDataService.addGroupToResource(res.getId(), groupId, DEFAULT_REQUESTER_ID, null, null, null);
 				} else if (res.getOperation() == AttributeOperationEnum.DELETE) {
 					resourceDataService.removeGroupToResource(res.getId(), groupId, DEFAULT_REQUESTER_ID);
 				}

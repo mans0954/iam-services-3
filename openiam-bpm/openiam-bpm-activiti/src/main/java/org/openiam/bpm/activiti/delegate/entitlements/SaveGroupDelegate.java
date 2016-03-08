@@ -7,6 +7,7 @@ import org.openiam.bpm.activiti.delegate.core.AbstractActivitiJob;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditSource;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
@@ -18,6 +19,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 public class SaveGroupDelegate extends AbstractActivitiJob {
 
 	@Autowired
+	@Qualifier("groupWS")
 	private GroupDataWebService groupDataService;
 
     @Autowired
@@ -31,7 +33,7 @@ public class SaveGroupDelegate extends AbstractActivitiJob {
 	@Override
 	public void execute(DelegateExecution execution) throws Exception {
 		final Group group = getObjectVariable(execution, ActivitiConstants.GROUP, Group.class);
-		final IdmAuditLog idmAuditLog = createNewAuditLog(execution);
+		final IdmAuditLogEntity idmAuditLog = createNewAuditLog(execution);
         boolean isNew = false;
         if (group.getId() == null) {
             idmAuditLog.setAction(AuditAction.ADD_GROUP.value());

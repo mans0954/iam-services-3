@@ -5,6 +5,8 @@ package org.openiam.elasticsearch.constants;
  * Date: 6/25/14.
  */
 public class ESIndexType {
+	public static final String AUDIT_LOG_TARGETS="auditlogtargets";
+	public static final String AUDIT_LOG="auditlog";
     public static final String USER="user";
     public static final String EMAIL="email";
     public static final String PHONE = "phone";

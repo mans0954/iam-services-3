@@ -21,6 +21,4 @@ public interface ReconciliationConfigDAO extends
 
     ReconciliationConfigEntity get(String id);
 
-    List<ReconciliationConfigEntity> findByResourceId(
-            java.lang.String resourceId);
 }

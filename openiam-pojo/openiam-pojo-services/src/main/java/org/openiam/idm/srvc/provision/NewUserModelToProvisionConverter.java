@@ -115,7 +115,7 @@ public class NewUserModelToProvisionConverter {
 					final RoleEntity entity = roleDataService.getRoleLocalized(roleId, null, null);
 					if(entity != null) {
 						final Role role = roleDozerConverter.convertToDTO(entity, false);
-						user.addRole(role, null);
+						user.addRole(role, null, null, null);
 					}
 					/*
 					final UserRole userRole = new UserRole(null, roleId);
@@ -129,7 +129,7 @@ public class NewUserModelToProvisionConverter {
 					final GroupEntity entity = groupDataService.getGroupLocalize(groupId, null);
 					if(entity != null) {
 						final Group group = groupDozerConverter.convertToDTO(entity, false);
-                        user.addGroup(group, null);
+                        user.addGroup(group, null, null, null);
 					}
 				}
 			}
@@ -139,7 +139,7 @@ public class NewUserModelToProvisionConverter {
 					final OrganizationEntity entity = organizationDataService.getOrganizationLocalized(organizationId, null, null);
 					if(entity != null) {
 						final Organization organization = organizationDozerConverter.convertToDTO(entity, false);
-						user.addAffiliation(organization, null);
+						user.addAffiliation(organization, null, null, null);
 					}
 				}
 			}

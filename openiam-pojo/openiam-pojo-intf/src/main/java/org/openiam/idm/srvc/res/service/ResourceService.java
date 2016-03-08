@@ -1,6 +1,7 @@
 package org.openiam.idm.srvc.res.service;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -34,17 +35,17 @@ public interface ResourceService {
     public ResourcePropEntity findResourcePropById(final String id);
 	public void deleteResourceProp(final String id);
 
-	public void addChildResource(final String parentResourceId, final String childResourceId, final Set<String> rights);
+	public void addChildResource(final String parentResourceId, final String childResourceId, final Set<String> rights, final Date startDate, final Date endDate);
 	public void deleteChildResource(final String resourceId, final String childResourceId);
 
-	public void addResourceGroup(final String resourceId, final String groupId, final Set<String> rightIds);
+	public void addResourceGroup(final String resourceId, final String groupId, final Set<String> rightIds, final Date startDate, final Date endDate);
 	public void deleteResourceGroup(final String resourceId, final String groupId);
 
 	public void deleteResourceRole(final String resourceId, final String roleId);
 	
-    public void addResourceToRole(final String resourceId, final String roleId, final Set<String> rightIds);
+    public void addResourceToRole(final String resourceId, final String roleId, final Set<String> rightIds, final Date startDate, final Date endDate);
     
-    public void validateResource2ResourceAddition(final String parentId, final String memberId, final Set<String> rights) throws BasicDataServiceException;
+    public void validateResource2ResourceAddition(final String parentId, final String memberId, final Set<String> rights, final Date startDate, final Date endDate) throws BasicDataServiceException;
     
     public boolean isMemberOfAnyEntity(final String resourceId);
     

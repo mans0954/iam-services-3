@@ -7,6 +7,7 @@ import org.openiam.idm.srvc.synch.domain.SynchConfigEntity;
 import org.openiam.idm.srvc.synch.domain.SynchReviewEntity;
 import org.openiam.idm.srvc.synch.dto.BulkMigrationConfig;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
+import org.openiam.idm.srvc.synch.dto.SynchConfigSearchBean;
 
 import java.util.*;
 
@@ -69,9 +70,9 @@ public interface IdentitySynchService {
      */
     Response resynchRole(final String roleId);
 
-    Integer getSynchConfigCountByExample(SynchConfigEntity example);
+    int count(SynchConfigSearchBean searchBean);
 
-    List<SynchConfigEntity> getSynchConfigsByExample(SynchConfigEntity example, Integer from, Integer size);
+    List<SynchConfigEntity> findBeans(SynchConfigSearchBean searchBean, Integer from, Integer size);
 
     void deleteSynchReviewList(List<SynchReviewEntity> reviewList);
 

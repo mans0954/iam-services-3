@@ -37,6 +37,7 @@ public class DeleteResourceAccountUserCommand extends BaseReconciliationUserComm
     private static final Log log = LogFactory.getLog(DeleteResourceAccountUserCommand.class);
 
     @Autowired
+    @Qualifier("managedSysService")
     private ManagedSystemWebService managedSysService;
 
     @Autowired

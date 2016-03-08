@@ -43,6 +43,9 @@ public interface AuthProviderWebService {
     int countAuthProviderBeans(@WebParam(name = "searchBean", targetNamespace = "") AuthProviderSearchBean searchBean);
     
     @WebMethod
+    AuthProvider getAuthProvider(@WebParam(name = "providerId", targetNamespace = "") String providerId);
+    
+    @WebMethod
     List<AuthProvider> findAuthProviderBeans(@WebParam(name = "searchBean", targetNamespace = "") AuthProviderSearchBean searchBean,
                                              @WebParam(name = "from", targetNamespace = "") int from,
                                              @WebParam(name = "size", targetNamespace = "") int size);

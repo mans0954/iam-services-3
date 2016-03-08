@@ -1,5 +1,6 @@
 package org.openiam.service.integration.entitlements;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -39,24 +40,23 @@ public class Resource2OrganizationEntitlementsTest extends AbstractEntitlementsT
 	}
 
 	@Override
-	protected Response addChildToParent(Organization parent, Resource child,
-			Set<String> rights) {
-		return organizationServiceClient.addResourceToOrganization(parent.getId(), child.getId(), rights);
+	protected Response addChildToParent(final Organization parent, final Resource child, final String requestorId, final Set<String> rights, final Date startDate, final Date endDate) {
+		return organizationServiceClient.addResourceToOrganization(parent.getId(), child.getId(), requestorId, rights, startDate, endDate);
 	}
 
 	@Override
-	protected Response removeChildFromParent(Organization parent, Resource child) {
-		return organizationServiceClient.removeResourceFromOrganization(parent.getId(), child.getId());
+	protected Response removeChildFromParent(Organization parent, Resource child, final String requestorId) {
+		return organizationServiceClient.removeResourceFromOrganization(parent.getId(), child.getId(), requestorId);
 	}
 
 	@Override
-	protected Response deleteParent(Organization parent) {
-		return organizationServiceClient.deleteOrganization(parent.getId());
+	protected Response deleteParent(Organization parent, final String requestorId) {
+		return organizationServiceClient.deleteOrganization(parent.getId(), requestorId);
 	}
 
 	@Override
-	protected Response deleteChild(Resource child) {
-		return resourceDataService.deleteResource(child.getId(), "3000");
+	protected Response deleteChild(Resource child, final String requestorId) {
+		return resourceDataService.deleteResource(child.getId(), requestorId);
 	}
 
 	@Override

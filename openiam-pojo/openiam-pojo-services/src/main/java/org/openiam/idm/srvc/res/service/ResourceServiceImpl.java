@@ -48,6 +48,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -165,7 +166,7 @@ public class ResourceServiceImpl implements ResourceService {
             mergeAttribute(entity, dbObject);
 
         } else {
-            entity.addUser(userDAO.findById(requestorId), accessRightDAO.findById(adminRightId));
+            entity.addUser(userDAO.findById(requestorId), accessRightDAO.findById(adminRightId), null, null);
             resourceDao.save(entity);
 
             entity.addApproverAssociation(createDefaultApproverAssociations(entity, requestorId));
@@ -196,13 +197,17 @@ public class ResourceServiceImpl implements ResourceService {
 
     private ApproverAssociationEntity createDefaultApproverAssociations(final ResourceEntity entity,
                                                                         final String requestorId) {
-        final ApproverAssociationEntity association = new ApproverAssociationEntity();
-        association.setAssociationEntityId(entity.getId());
-        association.setAssociationType(AssociationType.RESOURCE);
-        association.setApproverLevel(Integer.valueOf(0));
-        association.setApproverEntityId(requestorId);
-        association.setApproverEntityType(AssociationType.USER);
-        return association;
+    	if(requestorId != null) {
+	        final ApproverAssociationEntity association = new ApproverAssociationEntity();
+	        association.setAssociationEntityId(entity.getId());
+	        association.setAssociationType(AssociationType.RESOURCE);
+	        association.setApproverLevel(Integer.valueOf(0));
+	        association.setApproverEntityId(requestorId);
+	        association.setApproverEntityType(AssociationType.USER);
+	        return association;
+    	} else {
+    		return null;
+    	}
     }
 
     private void mergeAttribute(final ResourceEntity bean, final ResourceEntity dbObject) {
@@ -289,8 +294,9 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @Transactional(readOnly = true)
+    @LocalizedServiceGet
     public List<ResourceEntity> findBeans(final ResourceSearchBean searchBean, final int from, final int size, final LanguageEntity language) {
-        return resourceDao.getByExampleNoLocalize(searchBean, from, size);
+    	return resourceDao.getByExample(searchBean, from, size);
     }
 
     @Override
@@ -348,10 +354,14 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @Transactional
-    public void addChildResource(String parentResourceId, String childResourceId, final Set<String> rights) {
+    public void addChildResource(final String parentResourceId, 
+    							 final String childResourceId, 
+    							 final Set<String> rights,
+    							 final Date startDate,
+    							 final Date endDate) {
         final ResourceEntity parent = resourceDao.findById(parentResourceId);
         final ResourceEntity child = resourceDao.findById(childResourceId);
-        parent.addChildResource(child, accessRightDAO.findByIds(rights));
+        parent.addChildResource(child, accessRightDAO.findByIds(rights), startDate, endDate);
         resourceDao.save(parent);
     }
 
@@ -366,11 +376,15 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @Transactional
-    public void addResourceGroup(String resourceId, String groupId, final Set<String> rightIds) {
+    public void addResourceGroup(final String resourceId, 
+    							 final String groupId, 
+    							 final Set<String> rightIds,
+    							 final Date startDate,
+    							 final Date endDate) {
         final ResourceEntity resource = resourceDao.findById(resourceId);
         final GroupEntity group = groupDao.findById(groupId);
         if(resource != null && group != null) {
-        	group.addResource(resource, accessRightDAO.findByIds(rightIds));
+        	group.addResource(resource, accessRightDAO.findByIds(rightIds), startDate, endDate);
         }
     }
 
@@ -386,11 +400,15 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @Transactional
-    public void addResourceToRole(String resourceId, String roleId, final Set<String> rightIds) {
+    public void addResourceToRole(final String resourceId, 
+    							  final String roleId, 
+    							  final Set<String> rightIds,
+    							  final Date startDate,
+     							  final Date endDate) {
         final ResourceEntity resource = resourceDao.findById(resourceId);
         final RoleEntity role = roleDao.findById(roleId);
         if(resource != null & role != null) {
-        	role.addResource(resource, accessRightDAO.findByIds(rightIds));
+        	role.addResource(resource, accessRightDAO.findByIds(rightIds), startDate, endDate);
         	roleDao.save(role);
         }
     }
@@ -414,7 +432,7 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @Transactional
-    public void validateResource2ResourceAddition(final String parentId, final String memberId, final Set<String> rights)
+    public void validateResource2ResourceAddition(final String parentId, final String memberId, final Set<String> rights, final Date startDate, final Date endDate)
             throws BasicDataServiceException {
         if (StringUtils.isBlank(parentId) || StringUtils.isBlank(memberId)) {
             throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS,
@@ -426,6 +444,10 @@ public class ResourceServiceImpl implements ResourceService {
 
         if (parent == null || child == null) {
             throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+        }
+        
+        if(startDate != null && endDate != null && startDate.after(endDate)) {
+        	throw new BasicDataServiceException(ResponseCode.ENTITLEMENTS_DATE_INVALID);
         }
 
         if (causesCircularDependency(parent, child, new HashSet<ResourceEntity>())) {

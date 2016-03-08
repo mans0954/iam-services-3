@@ -65,6 +65,8 @@ public class AccessRightProcessor {
 		if(xref != null && xref.getRights() != null) {
 			final List<String> rightIds = xref.getRights().stream().map(e -> e.getId()).collect(Collectors.toList());
 			dtoMap.get(entity.getId()).setAccessRightIds(rightIds);
+			dtoMap.get(entity.getId()).setAccessRightStartDate(xref.getStartDate());
+			dtoMap.get(entity.getId()).setAccessRightEndDate(xref.getEndDate());
 		}
 	}
 	
@@ -72,6 +74,8 @@ public class AccessRightProcessor {
 		if(xref != null && xref.getRights() != null) {
 			final List<String> rightIds = xref.getRights().stream().map(e -> e.getId()).collect(Collectors.toList());
 			dtoMap.get(entity.getId()).setAccessRightIds(rightIds);
+			dtoMap.get(entity.getId()).setAccessRightStartDate(xref.getStartDate());
+			dtoMap.get(entity.getId()).setAccessRightEndDate(xref.getEndDate());
 		}
 	}
 	

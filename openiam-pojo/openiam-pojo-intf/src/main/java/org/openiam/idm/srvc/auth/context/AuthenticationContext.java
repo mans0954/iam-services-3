@@ -23,24 +23,12 @@ package org.openiam.idm.srvc.auth.context;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.base.ws.ObjectMapAdapter;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.auth.dto.AuthenticationRequest;
-import org.openiam.idm.srvc.auth.dto.Login;
-import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
-import org.openiam.idm.srvc.user.dto.User;
-
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class AuthenticationContext extends AuthenticationRequest {
 
-	private IdmAuditLog event;
+	private IdmAuditLogEntity event;
 	private String authProviderId;
 
 	private static final Log log = LogFactory.getLog(AuthenticationContext.class);
@@ -56,6 +44,7 @@ public class AuthenticationContext extends AuthenticationRequest {
 		super.setPrincipal(request.getPrincipal());
 		super.setRequestSource(request.getRequestSource());
 		super.setSocialUserProfile(request.getSocialUserProfile());
+		super.setKerberosAuth(request.isKerberosAuth());
 	}
 
 	public String getAuthProviderId() {
@@ -66,11 +55,11 @@ public class AuthenticationContext extends AuthenticationRequest {
 		this.authProviderId = authProviderId;
 	}
 
-	public IdmAuditLog getEvent() {
+	public IdmAuditLogEntity getEvent() {
 		return event;
 	}
 
-	public void setEvent(IdmAuditLog event) {
+	public void setEvent(IdmAuditLogEntity event) {
 		this.event = event;
 	}
 	

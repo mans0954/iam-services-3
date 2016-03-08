@@ -41,15 +41,19 @@ import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.dozer.converter.AttributeMapDozerConverter;
 import org.openiam.dozer.converter.SynchConfigDozerConverter;
-import org.openiam.dozer.converter.SynchReviewDozerConverter;
 import org.openiam.idm.parser.csv.CSVHelper;
 import org.openiam.idm.searchbeans.AttributeMapSearchBean;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.mngsys.dto.PolicyMapDataTypeOptions;
 import org.openiam.idm.srvc.synch.domain.SynchConfigEntity;
-import org.openiam.idm.srvc.synch.dto.*;
-import org.openiam.idm.srvc.synch.searchbeans.converter.SynchConfigSearchBeanConverter;
+import org.openiam.idm.srvc.synch.dto.BulkMigrationConfig;
+import org.openiam.idm.srvc.synch.dto.ImportSyncResponse;
+import org.openiam.idm.srvc.synch.dto.SyncResponse;
+import org.openiam.idm.srvc.synch.dto.SynchConfig;
+import org.openiam.idm.srvc.synch.dto.SynchConfigSearchBean;
+import org.openiam.idm.srvc.synch.dto.SynchReviewRequest;
+import org.openiam.idm.srvc.synch.dto.SynchReviewResponse;
 import org.openiam.idm.srvc.synch.service.IdentitySynchService;
 import org.openiam.idm.srvc.synch.service.SynchReviewService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,8 +78,6 @@ public class IdentitySynchWebServiceImpl implements IdentitySynchWebService {
     private SynchConfigDozerConverter synchConfigDozerConverter;
     @Autowired
     protected SynchReviewService synchReviewService;
-    @Autowired
-    private SynchConfigSearchBeanConverter synchConfigSearchBeanConverter;
     @Autowired
     private AttributeMapDozerConverter attributeMapDozerConverter;
 
@@ -257,16 +259,14 @@ public class IdentitySynchWebServiceImpl implements IdentitySynchWebService {
     }
 
     @Override
-    public Integer getSynchConfigCount(@WebParam(name = "searchBean", targetNamespace = "") SynchConfigSearchBean searchBean) {
-        SynchConfigEntity entity = synchConfigSearchBeanConverter.convert(searchBean);
-        return synchService.getSynchConfigCountByExample(entity);
+    public int getSynchConfigCount(@WebParam(name = "searchBean", targetNamespace = "") SynchConfigSearchBean searchBean) {
+        return synchService.count(searchBean);
     }
 
     @Override
     public List<SynchConfig> getSynchConfigs(@WebParam(name = "searchBean", targetNamespace = "") SynchConfigSearchBean searchBean, @WebParam(name = "size", targetNamespace = "") Integer size, @WebParam(name = "from", targetNamespace = "") Integer from) {
         List<SynchConfig> synchConfigDtos = new LinkedList<SynchConfig>();
-        SynchConfigEntity entity = synchConfigSearchBeanConverter.convert(searchBean);
-        List<SynchConfigEntity> entities = synchService.getSynchConfigsByExample(entity, size, from);
+        List<SynchConfigEntity> entities = synchService.findBeans(searchBean, size, from);
         if (entities != null) {
             synchConfigDtos = synchConfigDozerConverter.convertToDTOList(entities, false);
         }

@@ -20,35 +20,29 @@
  */
 package org.openiam.idm.srvc.auth.spi;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.naming.ldap.LdapContext;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.ResponseCode;
-import org.openiam.exception.AuthenticationException;
 import org.openiam.exception.BasicDataServiceException;
-import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.auth.context.AuthenticationContext;
-import org.openiam.idm.srvc.auth.context.PasswordCredential;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
-import org.openiam.idm.srvc.auth.dto.SSOToken;
 import org.openiam.idm.srvc.auth.dto.Subject;
-import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
-import org.openiam.idm.srvc.auth.sso.SSOTokenFactory;
-import org.openiam.idm.srvc.auth.sso.SSOTokenModule;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
-import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
-import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.policy.domain.PolicyEntity;
-import org.openiam.idm.srvc.policy.dto.Policy;
-import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
-import org.openiam.idm.srvc.res.dto.Resource;
-import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.resp.LookupUserResponse;
@@ -56,19 +50,7 @@ import org.openiam.provision.service.ProvisionService;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-
-import javax.naming.Context;
-import javax.naming.NamingEnumeration;
-import javax.naming.NamingException;
-import javax.naming.directory.Attributes;
-import javax.naming.directory.SearchControls;
-import javax.naming.directory.SearchResult;
-import javax.naming.ldap.InitialLdapContext;
-import javax.naming.ldap.LdapContext;
-import java.util.*;
 
 /**
  * LDAPLoginModule provides basic password based authentication using an LDAP directory.
@@ -144,7 +126,7 @@ public class LDAPLoginModule extends AbstractLoginModule {
         String tokenLife = getPolicyAttribute(policy, "TOKEN_LIFE");
         final String tokenIssuer = getPolicyAttribute(policy, "TOKEN_ISSUER");
 
-        final IdmAuditLog newLoginEvent = context.getEvent();
+        final IdmAuditLogEntity newLoginEvent = context.getEvent();
         if(StringUtils.isBlank(tokenType)) {
             final String warning = String.format("Property %s not valid for policy key %s for policy %s", tokenType, "TOKEN_TYPE", policy);
             newLoginEvent.addWarning(warning);
@@ -284,7 +266,7 @@ public class LDAPLoginModule extends AbstractLoginModule {
         sub.setUserId(login.getUserId());
         sub.setPrincipal(principal);
         sub.setSsoToken(token(login.getUserId(), tokenType, tokenLife, tokenParam));
-        setResultCode(login, sub, curDate, policy);
+        setResultCode(login, sub, curDate, policy, false);
 
         newLoginEvent.setSuccessReason("Succssfull authentication into Default Login Module");
         return sub;

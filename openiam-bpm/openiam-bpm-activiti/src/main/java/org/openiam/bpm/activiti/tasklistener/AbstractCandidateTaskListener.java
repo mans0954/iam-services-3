@@ -13,7 +13,7 @@ import org.openiam.bpm.activiti.delegate.core.ActivitiHelper;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.util.SpringContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -32,7 +32,7 @@ public abstract class AbstractCandidateTaskListener extends AbstractActivitiJob 
 	public void notify(DelegateTask delegateTask, final List<String> supervisorIds) {
 		final DelegateExecution execution = delegateTask.getExecution();
 		
-		final IdmAuditLog idmAuditLog = createNewAuditLog(delegateTask);
+		final IdmAuditLogEntity idmAuditLog = createNewAuditLog(delegateTask);
         idmAuditLog.setAction(AuditAction.TASK_LISTENER.value());
 		try {
 			final String targetUserId = getTargetUserId(execution);

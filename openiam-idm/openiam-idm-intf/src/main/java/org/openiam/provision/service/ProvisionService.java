@@ -21,27 +21,30 @@
  */
 package org.openiam.provision.service;
 
+import java.util.List;
+
+import javax.jws.WebMethod;
+import javax.jws.WebParam;
+import javax.jws.WebService;
+
 import org.openiam.base.ws.Response;
 import org.openiam.connector.type.response.ObjectResponse;
-import org.openiam.connector.type.response.ResponseType;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.prov.request.dto.BulkOperationRequest;
 import org.openiam.idm.srvc.pswd.dto.PasswordValidationResponse;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
-import org.openiam.provision.dto.*;
+import org.openiam.provision.dto.AccountLockEnum;
+import org.openiam.provision.dto.PasswordSync;
+import org.openiam.provision.dto.ProvisionActionEvent;
+import org.openiam.provision.dto.ProvisionActionTypeEnum;
+import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.resp.LookupUserResponse;
 import org.openiam.provision.resp.ManagedSystemViewerResponse;
 import org.openiam.provision.resp.PasswordResponse;
 import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleUser;
-
-import javax.jws.WebMethod;
-import javax.jws.WebParam;
-import javax.jws.WebService;
-import java.util.List;
 
 /**
  * <code>ProvisionService</code> Interface for the Provisioning service which is
@@ -380,7 +383,7 @@ public interface ProvisionService {
                                     @WebParam(name = "login", targetNamespace = "") Login login,
                                     @WebParam(name = "isAdd", targetNamespace = "") boolean isAdd,
                                     @WebParam(name = "requestId", targetNamespace = "") String requestId,
-                                    @WebParam(name = "idmAuditLog", targetNamespace = "") final IdmAuditLog idmAuditLog);
+                                    @WebParam(name = "idmAuditLog", targetNamespace = "") final IdmAuditLogEntity idmAuditLog);
 
     @WebMethod
     Response addEvent(@WebParam(name = "event", targetNamespace = "") ProvisionActionEvent event,

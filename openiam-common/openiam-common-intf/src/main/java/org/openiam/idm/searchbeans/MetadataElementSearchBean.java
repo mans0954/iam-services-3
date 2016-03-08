@@ -8,6 +8,7 @@ import org.openiam.idm.srvc.meta.dto.MetadataElement;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -21,10 +22,14 @@ import java.util.Set;
 	"templateId",
 	"keySet",
 	"excludedGroupings",
-	"groupings"
+	"groupings",
+	"dataType",
+	"resourceId"
 })
 public class MetadataElementSearchBean extends AbstractKeyNameSearchBean<MetadataElement, String> {
 
+	private String resourceId;
+	private String dataType;
 	private Set<String> keySet;
 	private Set<String> typeIdSet;
 	private boolean auditable;
@@ -143,6 +148,18 @@ public class MetadataElementSearchBean extends AbstractKeyNameSearchBean<Metadat
 	public String getKey() {
 		return (CollectionUtils.isNotEmpty(keySet)) ? keySet.iterator().next() : null;
 	}
+	public String getDataType() {
+		return dataType;
+	}
+	public void setDataType(String dataType) {
+		this.dataType = dataType;
+	}
+	public String getResourceId() {
+		return resourceId;
+	}
+	public void setResourceId(String resourceId) {
+		this.resourceId = resourceId;
+	}
 
-
+    
 }

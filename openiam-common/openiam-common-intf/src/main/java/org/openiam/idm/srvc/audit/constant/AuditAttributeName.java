@@ -13,7 +13,6 @@ public enum AuditAttributeName {
     LOGIN_ERROR_CODE,
     EXCEPTION,
     RELAY_STATE,
-    SAML_PROVIDER,
     SAML_REQUEST_XML,
     SAML_LOGOUT_RESPONSE_XML,
     SAML_LOGOUT_REQUEST_XML,
@@ -33,6 +32,7 @@ public enum AuditAttributeName {
     ALL_RECONCILE_SITUATION,
     FAIL_COUNT,
     
+    TARGET_CLASS,
     NOTIFICATION_TYPE,
     TASK_NAME,
     TASK_DESCSRIPTION,
@@ -45,8 +45,6 @@ public enum AuditAttributeName {
     GROOVY_SCRIPT,
     PROFILE,
 	EMAIL,
-    CONTENT_PROVIDER_ID,
-    URI_PATTERN_ID,
     PHONE,
     SMS_TOKEN
 }

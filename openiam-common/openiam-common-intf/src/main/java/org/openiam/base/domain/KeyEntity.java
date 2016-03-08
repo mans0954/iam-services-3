@@ -1,13 +1,16 @@
 package org.openiam.base.domain;
 
-import org.hibernate.annotations.GenericGenerator;
-import org.openiam.base.BaseIdentity;
-import org.openiam.elasticsearch.annotation.ElasticsearchId;
+import java.io.Serializable;
 
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
-import java.io.Serializable;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.openiam.base.BaseIdentity;
+import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldIndex;
+import org.springframework.data.elasticsearch.annotations.FieldType;
 
 @MappedSuperclass
 public abstract class KeyEntity implements Serializable, BaseIdentity {
@@ -15,7 +18,8 @@ public abstract class KeyEntity implements Serializable, BaseIdentity {
     @Id
     @GeneratedValue(generator="system-uuid")
     @GenericGenerator(name="system-uuid", strategy = "uuid")
-    @ElasticsearchId
+    @org.springframework.data.annotation.Id
+    @Field(type = FieldType.String, index = FieldIndex.not_analyzed)
     protected String id;
 
 	public String getId() {

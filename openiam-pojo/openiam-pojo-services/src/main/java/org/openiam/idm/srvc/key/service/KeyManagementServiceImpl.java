@@ -1,18 +1,23 @@
 package org.openiam.idm.srvc.key.service;
 
-import org.apache.commons.collections.CollectionUtils;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.annotation.PostConstruct;
+
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.dozer.DozerBeanMapper;
 import org.openiam.core.dao.UserKeyDao;
 import org.openiam.core.domain.UserKey;
 import org.openiam.exception.EncryptionException;
 import org.openiam.hazelcast.HazelcastConfiguration;
-import org.openiam.idm.searchbeans.AuditLogSearchBean;
-import org.openiam.idm.srvc.audit.constant.AuditAction;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.searchbeans.IdentityAnswerSearchBean;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDAO;
@@ -35,7 +40,6 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,12 +51,6 @@ import com.hazelcast.core.EntryEvent;
 import com.hazelcast.core.EntryListener;
 import com.hazelcast.core.IMap;
 import com.hazelcast.core.MapEvent;
-
-import javax.annotation.PostConstruct;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
 
 /**
  * Created by: Alexander Duckardt Date: 09.10.12
@@ -313,9 +311,9 @@ public class KeyManagementServiceImpl extends AbstractBaseService implements Key
         userList.add(user);
         List<LoginEntity> lgList = loginDAO.findUser(user.getId());
         List<UserKey> keyList = userKeyDao.getByUserId(user.getId());
-        UserIdentityAnswerEntity example = new UserIdentityAnswerEntity();
-        example.setUserId(user.getId());
-        List<UserIdentityAnswerEntity> answersList = userIdentityAnswerDAO.getByExample(example);
+        IdentityAnswerSearchBean sb = new IdentityAnswerSearchBean();
+        sb.setUserId(user.getId());
+        List<UserIdentityAnswerEntity> answersList = userIdentityAnswerDAO.getByExample(sb);
 
         List<PasswordHistoryEntity> pwdList = new ArrayList<PasswordHistoryEntity>();
         for (LoginEntity lg : lgList) {
@@ -792,7 +790,7 @@ public class KeyManagementServiceImpl extends AbstractBaseService implements Key
             Set<UserIdentityAnswerEntity> answerList = new HashSet<UserIdentityAnswerEntity>();
             int pageNum = 0;
             do {
-                answerList.addAll(userIdentityAnswerDAO.getByExample(new UserIdentityAnswerEntity(),
+                answerList.addAll(userIdentityAnswerDAO.getByExample(new IdentityAnswerSearchBean(),
                                                                      pageNum * FETCH_COUNT, FETCH_COUNT));
                 fetchedDataCount = (long) answerList.size();
                 pageNum++;

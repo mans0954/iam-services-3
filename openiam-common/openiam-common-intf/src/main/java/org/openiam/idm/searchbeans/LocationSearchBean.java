@@ -13,11 +13,13 @@ import java.io.Serializable;
 @XmlType(name = "LocationSearchBean", propOrder = {
         "organizationId",
         "country",
+        "city",
         "userId",
         "name"
 })
 public class LocationSearchBean extends AbstractSearchBean<Location, String> implements SearchBean<Location, String>,
         Serializable {
+	private String city;
     private String organizationId;
     private String country;
     private String userId;
@@ -55,4 +57,13 @@ public class LocationSearchBean extends AbstractSearchBean<Location, String> imp
         this.name = name;
     }
 
+	public String getCity() {
+		return city;
+	}
+
+	public void setCity(String city) {
+		this.city = city;
+	}
+
+    
 }

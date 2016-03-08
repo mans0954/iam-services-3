@@ -12,11 +12,9 @@ import java.util.List;
 
 public interface BatchService {
 
-    int count(final BatchTaskEntity entity);
-
-    List<BatchTaskEntity> findBeans(final BatchTaskEntity entity, final int from, final int size);
     List<BatchTaskEntity> findBeans(final BatchTaskSearchBean searchBean, final int from, final int size);
     int count(BatchTaskScheduleSearchBean searchBean);
+    int count(BatchTaskSearchBean searchBean);
     
     void save(final BatchTaskEntity entity, final boolean purgeNonExecutedTasks);
 

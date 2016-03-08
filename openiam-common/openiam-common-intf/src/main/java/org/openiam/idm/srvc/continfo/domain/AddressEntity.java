@@ -1,22 +1,25 @@
 package org.openiam.idm.srvc.continfo.domain;
 
+import java.util.Date;
+
+import javax.persistence.AttributeOverride;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import javax.validation.constraints.Size;
+
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.openiam.base.domain.AbstractMetdataTypeEntity;
-import org.openiam.base.domain.KeyEntity;
-import org.openiam.core.dao.lucene.LuceneId;
-import org.openiam.core.dao.lucene.LuceneLastUpdate;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.continfo.dto.Address;
-import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.internationalization.Internationalized;
-
-import javax.persistence.*;
-import javax.validation.constraints.Size;
-import java.util.Date;
 
 @Entity
 @Table(name = "ADDRESS")
@@ -104,7 +107,7 @@ public class AddressEntity extends AbstractMetdataTypeEntity {
     private String name;
     
     @Column(name = "LAST_UPDATE", length = 19)
-    @LuceneLastUpdate
+    //@LuceneLastUpdate
     private Date lastUpdate;
     
     @Column(name="CREATE_DATE",length=19)

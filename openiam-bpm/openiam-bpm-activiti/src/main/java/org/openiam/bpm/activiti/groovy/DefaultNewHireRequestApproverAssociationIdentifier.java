@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
@@ -15,7 +16,7 @@ import org.springframework.beans.factory.annotation.Value;
 public class DefaultNewHireRequestApproverAssociationIdentifier extends AbstractApproverAssociationIdentifier {
 
 	protected NewUserProfileRequestModel request;
-	protected IdmAuditLog idmAuditLog;
+	protected IdmAuditLogEntity idmAuditLog;
 	
 	//@Value("${org.openiam.idm.activiti.new.user.approver.association.order}")
 	//private String newUserApproverAssociationOrder;
@@ -28,7 +29,7 @@ public class DefaultNewHireRequestApproverAssociationIdentifier extends Abstract
 	
 	public final void init(final Map<String, Object> bindingMap) {
 		request = (NewUserProfileRequestModel)bindingMap.get("REQUEST");
-        idmAuditLog = (IdmAuditLog)bindingMap.get("BUILDER");
+        idmAuditLog = (IdmAuditLogEntity)bindingMap.get("BUILDER");
         final String[] newUserApproverTypes = StringUtils.split(propertyValueSweeper.getString("org.openiam.idm.activiti.new.user.approver.association.order"), ",");
         if(newUserApproverTypes != null) {
 			for(final String s : newUserApproverTypes) {

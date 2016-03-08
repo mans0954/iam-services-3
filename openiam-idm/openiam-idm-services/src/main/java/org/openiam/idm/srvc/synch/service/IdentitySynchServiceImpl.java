@@ -23,7 +23,14 @@ package org.openiam.idm.srvc.synch.service;
 
 import java.io.IOException;
 import java.sql.Timestamp;
-import java.util.*;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -44,20 +51,22 @@ import org.openiam.idm.searchbeans.AttributeMapSearchBean;
 import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
-import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.service.AttributeMapDAO;
-import org.openiam.idm.srvc.res.dto.Resource;
+import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.synch.domain.SynchConfigEntity;
 import org.openiam.idm.srvc.synch.domain.SynchReviewEntity;
-import org.openiam.idm.srvc.synch.dto.*;
+import org.openiam.idm.srvc.synch.dto.BulkMigrationConfig;
+import org.openiam.idm.srvc.synch.dto.SyncResponse;
+import org.openiam.idm.srvc.synch.dto.SynchConfig;
+import org.openiam.idm.srvc.synch.dto.SynchConfigSearchBean;
+import org.openiam.idm.srvc.synch.dto.SynchReview;
 import org.openiam.idm.srvc.synch.srcadapter.AdapterFactory;
-import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserToResourceMembershipXref;
-import org.openiam.idm.srvc.role.dto.Role;
+import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.service.AsynchUserProvisionService;
 import org.openiam.provision.service.ProvisionService;
@@ -88,6 +97,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 
     @Autowired
     private UserDataService userManager;
+    
     @Autowired
     @Qualifier("defaultProvision")
     private ProvisionService provisionService;
@@ -199,7 +209,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 
         log.debug("-startSynchronization CALLED.^^^^^^^^");
 
-        IdmAuditLog idmAuditLog = new IdmAuditLog();
+        IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
         idmAuditLog.setRequestorUserId(systemUserId);
         idmAuditLog.setRequestorPrincipal("sysadmin");
         idmAuditLog.setAction(AuditAction.SYNCHRONIZATION.value());
@@ -415,7 +425,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
                     final Role r = parseRole(config.getTargetRole());
                     if ("ADD".equalsIgnoreCase(config.getOperation())) {
                         // add to role
-                    	pUser.addRole(r, config.getRightIds());
+                    	pUser.addRole(r, config.getRightIds(), config.getStartDate(), config.getEndDate());
                     } else {
                     	pUser.removeRole(r.getId());
                     }
@@ -525,7 +535,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 
                 ProvisionUser pUser = new ProvisionUser(user);
 
-                pUser.addRole(rl, null);
+                pUser.addRole(rl, null, null, null);
                 provisionService.modifyUser(pUser);
 
             }
@@ -539,13 +549,13 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 
     @Override
     @Transactional(readOnly = true)
-    public Integer getSynchConfigCountByExample(SynchConfigEntity example) {
+    public int count(SynchConfigSearchBean example) {
         return synchConfigDao.count(example);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<SynchConfigEntity> getSynchConfigsByExample(SynchConfigEntity example, Integer from, Integer size) {
+    public List<SynchConfigEntity> findBeans(SynchConfigSearchBean example, Integer from, Integer size) {
         return synchConfigDao.getByExample(example, from, size);
     }
 

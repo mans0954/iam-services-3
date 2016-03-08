@@ -1,9 +1,9 @@
 package org.openiam.idm.srvc.audit.service;
 
-import org.openiam.idm.searchbeans.AuditLogSearchBean;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
-
 import java.util.List;
+
+import org.openiam.idm.searchbeans.AuditLogSearchBean;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 
 /**
  * Interface for  <code>IdmAuditLogDataService</code>. All audit logging activities
@@ -11,13 +11,13 @@ import java.util.List;
  */
 public interface AuditLogService {
 
-    void enqueue(final IdmAuditLog idmAuditLog);
+    void enqueue(final IdmAuditLogEntity idmAuditLog);
     
-    List<IdmAuditLog> findBeans(final AuditLogSearchBean searchBean, final int from, final int size);
+    List<IdmAuditLogEntity> findBeans(final AuditLogSearchBean searchBean, final int from, final int size);
     List<String> findIDs(final AuditLogSearchBean searchBean, final int from, final int size);
 
     int count(final AuditLogSearchBean searchBean);
-    IdmAuditLog findById(final String id);
-    IdmAuditLog save(IdmAuditLog auditLogEntity);
+    IdmAuditLogEntity findById(final String id);
+    IdmAuditLogEntity save(IdmAuditLogEntity auditLogEntity);
 
 }

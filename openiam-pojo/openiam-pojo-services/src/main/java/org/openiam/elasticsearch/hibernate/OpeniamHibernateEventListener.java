@@ -1,21 +1,27 @@
 package org.openiam.elasticsearch.hibernate;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.SessionFactory;
-import org.hibernate.event.spi.*;
+import org.hibernate.event.spi.EventType;
+import org.hibernate.event.spi.PostDeleteEvent;
+import org.hibernate.event.spi.PostDeleteEventListener;
+import org.hibernate.event.spi.PostInsertEvent;
+import org.hibernate.event.spi.PostInsertEventListener;
+import org.hibernate.event.spi.PostUpdateEvent;
+import org.hibernate.event.spi.PostUpdateEventListener;
 import org.hibernate.internal.util.ReflectHelper;
 import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.persister.entity.EntityPersister;
 import org.openiam.base.domain.KeyEntity;
-import org.openiam.elasticsearch.annotation.ElasticsearchIndex;
 import org.openiam.elasticsearch.model.ElasticsearchReindexRequest;
 import org.openiam.elasticsearch.service.ElasticsearchReindexService;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.stereotype.Component;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Created by: Alexander Duckardt
@@ -101,7 +107,7 @@ public class OpeniamHibernateEventListener implements InitializingBean,
     }
 
     private boolean isEntityIndexed(Class<?> clazz) {
-        ElasticsearchIndex annotation =  clazz.getAnnotation(ElasticsearchIndex.class);
+        final Document annotation =  clazz.getAnnotation(Document.class);
         return annotation != null;
     }
 

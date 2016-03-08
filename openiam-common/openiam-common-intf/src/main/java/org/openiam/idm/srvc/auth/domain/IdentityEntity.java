@@ -1,27 +1,25 @@
 package org.openiam.idm.srvc.auth.domain;
 
+import java.util.Date;
+
+import javax.persistence.AttributeOverride;
+import javax.persistence.Cacheable;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.annotations.GenericGenerator;
 import org.openiam.base.domain.KeyEntity;
-import org.openiam.core.dao.lucene.LuceneId;
-import org.openiam.core.dao.lucene.LuceneLastUpdate;
 import org.openiam.dozer.DozerDTOCorrespondence;
-import org.openiam.elasticsearch.annotation.ElasticsearchField;
-import org.openiam.elasticsearch.annotation.ElasticsearchIndex;
-import org.openiam.elasticsearch.annotation.ElasticsearchMapping;
-import org.openiam.elasticsearch.constants.ESIndexName;
-import org.openiam.elasticsearch.constants.ESIndexType;
-import org.openiam.elasticsearch.constants.ElasticsearchStore;
-import org.openiam.elasticsearch.constants.Index;
 import org.openiam.idm.srvc.auth.dto.IdentityDto;
 import org.openiam.idm.srvc.auth.dto.IdentityTypeEnum;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.auth.dto.ProvLoginStatusEnum;
-
-import javax.persistence.*;
-
-import java.util.Date;
 
 @Entity
 @Table(name="IDENTIFICATION")
@@ -63,7 +61,7 @@ public class IdentityEntity extends KeyEntity  {
     private ProvLoginStatusEnum provStatus;
 
     @Column(name = "LAST_UPDATE", length = 19)
-    @LuceneLastUpdate
+    //@LuceneLastUpdate
     private Date lastUpdate;
 
     public IdentityEntity() {

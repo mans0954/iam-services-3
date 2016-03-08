@@ -1,7 +1,14 @@
 package org.openiam.provision.service;
 
 
-import groovy.lang.MissingPropertyException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
+import javax.jws.WebService;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -28,7 +35,7 @@ import org.openiam.exception.BasicDataServiceException;
 import org.openiam.exception.ScriptEngineException;
 import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.auth.dto.IdentityDto;
 import org.openiam.idm.srvc.auth.dto.IdentityTypeEnum;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
@@ -39,7 +46,11 @@ import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
-import org.openiam.idm.srvc.mngsys.dto.*;
+import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
+import org.openiam.idm.srvc.mngsys.dto.MngSysPolicyDto;
+import org.openiam.idm.srvc.mngsys.dto.PolicyMapObjectTypeOptions;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.res.dto.Resource;
@@ -68,11 +79,6 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
-
-import javax.jws.WebService;
-
-import java.text.SimpleDateFormat;
-import java.util.*;
 
 @Service("groupProvision")
 @WebService(endpointInterface = "org.openiam.provision.service.ObjectProvisionService",
@@ -108,6 +114,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
     private PlatformTransactionManager platformTransactionManager;
 
     @Autowired
+    @Qualifier("managedSysService")
     private ManagedSystemWebService managedSystemService;
 
     @Autowired
@@ -117,6 +124,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
     protected AttributeMapDozerConverter attributeMapDozerConverter;
 
     @Autowired
+    @Qualifier("groupWS")
     private GroupDataWebService groupDataWebService;
 
     @Autowired
@@ -1094,7 +1102,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
     public LookupObjectResponse getTargetSystemObject(final String principalName,
                                                       final String managedSysId,
                                                   final List<ExtensibleAttribute> extensibleAttributes) {
-        final IdmAuditLog idmAuditLog = new IdmAuditLog();
+        final IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
         idmAuditLog.setRequestorUserId(systemUserId);
         idmAuditLog.setAction(AuditAction.PROVISIONING_LOOKUP.value());
 

@@ -178,7 +178,7 @@ public class RoleEntity extends AbstractMetdataTypeEntity {
     	return xref.isPresent() ? xref.get() : null;
     }
 
-	public void addChild(final RoleEntity entity, final Collection<AccessRightEntity> rights) {
+	public void addChild(final RoleEntity entity, final Collection<AccessRightEntity> rights, final Date startDate, final Date endDate) {
 		if(entity != null) {
 			if(this.childRoles == null) {
 				this.childRoles = new LinkedHashSet<RoleToRoleMembershipXrefEntity>();
@@ -199,6 +199,8 @@ public class RoleEntity extends AbstractMetdataTypeEntity {
 			if(rights != null) {
 				theXref.setRights(new HashSet<AccessRightEntity>(rights));
 			}
+			theXref.setStartDate(startDate);
+			theXref.setEndDate(endDate);
 			this.childRoles.add(theXref);
 		}
 	}
@@ -261,15 +263,15 @@ public class RoleEntity extends AbstractMetdataTypeEntity {
     	return xref.isPresent() ? xref.get() : null;
 	}
 	
-	public void addUser(final UserEntity entity, final AccessRightEntity right) {
+	public void addUser(final UserEntity entity, final AccessRightEntity right, final Date startDate, final Date endDate) {
 		if(entity != null && right != null) {
 			final Set<AccessRightEntity> rightSet = new HashSet<AccessRightEntity>();
 			rightSet.add(right);
-			addUser(entity, rightSet);
+			addUser(entity, rightSet, startDate, endDate);
 		}
 	}
 	
-	public void addUser(final UserEntity entity, final Collection<AccessRightEntity> rights) {
+	public void addUser(final UserEntity entity, final Collection<AccessRightEntity> rights, final Date startDate, final Date endDate) {
 		if(entity != null) {
 			if(this.users == null) {
 				this.users = new LinkedHashSet<UserToRoleMembershipXrefEntity>();
@@ -290,11 +292,13 @@ public class RoleEntity extends AbstractMetdataTypeEntity {
 			if(rights != null) {
 				theXref.setRights(new HashSet<AccessRightEntity>(rights));
 			}
+			theXref.setStartDate(startDate);
+			theXref.setEndDate(endDate);
 			this.users.add(theXref);
 		}
 	}
 	
-	public void addResource(final ResourceEntity entity, final Collection<AccessRightEntity> rights) {
+	public void addResource(final ResourceEntity entity, final Collection<AccessRightEntity> rights, final Date startDate, final Date endDate) {
 		if(entity != null) {
 			if(this.resources == null) {
 				this.resources = new LinkedHashSet<RoleToResourceMembershipXrefEntity>();
@@ -315,6 +319,8 @@ public class RoleEntity extends AbstractMetdataTypeEntity {
 			if(rights != null) {
 				theXref.setRights(new HashSet<AccessRightEntity>(rights));
 			}
+			theXref.setStartDate(startDate);
+			theXref.setEndDate(endDate);
 			this.resources.add(theXref);
 		}
 	}
@@ -327,7 +333,7 @@ public class RoleEntity extends AbstractMetdataTypeEntity {
 		}
 	}
 	
-	public void addGroup(final GroupEntity entity, final Collection<AccessRightEntity> rights) {
+	public void addGroup(final GroupEntity entity, final Collection<AccessRightEntity> rights, final Date startDate, final Date endDate) {
 		if(entity != null) {
 			if(this.groups == null) {
 				this.groups = new LinkedHashSet<RoleToGroupMembershipXrefEntity>();
@@ -348,6 +354,8 @@ public class RoleEntity extends AbstractMetdataTypeEntity {
 			if(rights != null) {
 				theXref.setRights(new HashSet<AccessRightEntity>(rights));
 			}
+			theXref.setStartDate(startDate);
+			theXref.setEndDate(endDate);
 			this.groups.add(theXref);
 		}
 	}

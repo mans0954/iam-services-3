@@ -2,6 +2,7 @@ package org.openiam.am.srvc.service;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -35,6 +36,7 @@ import org.openiam.am.srvc.dto.AuthProviderAttribute;
 import org.openiam.am.srvc.dto.OAuthCode;
 import org.openiam.am.srvc.dto.OAuthToken;
 import org.openiam.am.srvc.dto.OAuthUserClientXref;
+import org.openiam.am.srvc.searchbeans.AuthAttributeSearchBean;
 import org.openiam.am.srvc.searchbeans.AuthProviderSearchBean;
 import org.openiam.authmanager.common.model.ResourceAuthorizationRight;
 import org.openiam.authmanager.service.AuthorizationManagerService;
@@ -108,6 +110,7 @@ public class AuthProviderServiceImpl implements AuthProviderService {
     *===================================================
     */
     @Override
+    @Transactional(readOnly=true)
     public AuthProviderTypeEntity getAuthProviderType(String providerType) {
         return authProviderTypeDao.findById(providerType);
     }
@@ -141,7 +144,8 @@ public class AuthProviderServiceImpl implements AuthProviderService {
     *===================================================
     */
     @Override
-    public List<AuthAttributeEntity> findAuthAttributeBeans(AuthAttributeEntity searchBean, Integer size,
+    @Transactional(readOnly=true)
+    public List<AuthAttributeEntity> findAuthAttributeBeans(AuthAttributeSearchBean searchBean, Integer size,
                                                             Integer from) {
         return authAttributeDao.getByExample(searchBean, from, size);
     }
@@ -152,6 +156,7 @@ public class AuthProviderServiceImpl implements AuthProviderService {
     *===================================================
     */
     @Override
+    @Transactional(readOnly=true)
     public List<AuthProviderEntity> findAuthProviderBeans(final AuthProviderSearchBean searchBean, int from, int size) {
         return authProviderDao.getByExample(searchBean,from,size);
     }
@@ -276,6 +281,7 @@ public class AuthProviderServiceImpl implements AuthProviderService {
         }
         */
         
+        provider.setLastModified(new Date());
         if(provider.getId() == null) {
         	authProviderDao.save(provider);
         } else {
@@ -300,11 +306,13 @@ public class AuthProviderServiceImpl implements AuthProviderService {
     }
 
 	@Override
+	@Transactional(readOnly=true)
 	public int countAuthProviderBeans(AuthProviderSearchBean searchBean) {
 		return authProviderDao.count(searchBean);
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public AuthProviderEntity getAuthProvider(String id) {
 		return authProviderDao.findById(id);
 	}
@@ -380,6 +388,7 @@ public class AuthProviderServiceImpl implements AuthProviderService {
     }
 
     @LocalizedServiceGet
+    @Transactional(readOnly=true)
     public List<Resource> getAuthorizedScopes(String clientId, String userId, Language language){
         List<OAuthUserClientXrefEntity> authorizedResources = oauthUserClientXrefDao.getByClientAndUser(clientId, userId, true);
         if(CollectionUtils.isNotEmpty(authorizedResources)){
@@ -389,6 +398,8 @@ public class AuthProviderServiceImpl implements AuthProviderService {
         return null;
     }
 
+    @Override
+    @Transactional
     public void saveClientScopeAuthorization(String providerId, String userId, List<OAuthUserClientXref> oauthUserClientXrefList) throws BasicDataServiceException {
         AuthProviderEntity client = this.getAuthProvider(providerId);
         UserEntity user = userDataService.getUser(userId);
@@ -429,12 +440,14 @@ public class AuthProviderServiceImpl implements AuthProviderService {
     }
 
     @Override
+    @Transactional(readOnly=true)
     public OAuthToken getOAuthToken(String token) {
         OAuthTokenEntity tokenEntity = oAuthTokenDao.getByAccessToken(token);
         return oauthTokenDozerConverter.convertToDTO(tokenEntity, false);
     }
 
     @Override
+    @Transactional(readOnly=true)
     public OAuthToken getOAuthTokenByRefreshToken(String refreshToken){
         OAuthTokenEntity tokenEntity = oAuthTokenDao.getByRefreshToken(refreshToken);
         OAuthToken token = null;
@@ -445,6 +458,8 @@ public class AuthProviderServiceImpl implements AuthProviderService {
         return token;
     }
 
+    @Override
+    @Transactional
     public OAuthToken saveOAuthToken(OAuthToken oAuthToken){
         OAuthTokenEntity entity = oauthTokenDozerConverter.convertToEntity(oAuthToken, true);
         OAuthTokenEntity entityDb = null;

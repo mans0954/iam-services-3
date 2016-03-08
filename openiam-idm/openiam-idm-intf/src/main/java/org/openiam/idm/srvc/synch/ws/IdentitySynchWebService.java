@@ -86,7 +86,7 @@ public interface IdentitySynchWebService {
             SynchReviewRequest synchReviewRequest);
 
     @WebMethod
-    Integer getSynchConfigCount(
+    int getSynchConfigCount(
             @WebParam(name = "searchBean", targetNamespace = "")
             SynchConfigSearchBean searchBean);
 

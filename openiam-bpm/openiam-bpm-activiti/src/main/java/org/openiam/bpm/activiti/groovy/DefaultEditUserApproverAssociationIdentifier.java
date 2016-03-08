@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.UserProfileRequestModel;
@@ -11,11 +12,11 @@ import org.openiam.idm.srvc.user.dto.UserProfileRequestModel;
 public class DefaultEditUserApproverAssociationIdentifier extends AbstractApproverAssociationIdentifier {
 
 	protected UserProfileRequestModel request;
-	protected IdmAuditLog idmAuditLog;
+	protected IdmAuditLogEntity idmAuditLog;
 	
 	public final void init(final Map<String, Object> bindingMap) {
 		request = (UserProfileRequestModel)bindingMap.get("REQUEST");
-        idmAuditLog = (IdmAuditLog)bindingMap.get("BUILDER");
+        idmAuditLog = (IdmAuditLogEntity)bindingMap.get("BUILDER");
 		super.init(bindingMap);
 		postInit();
 		calculateApprovers();

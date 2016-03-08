@@ -1,37 +1,30 @@
 package org.openiam.idm.srvc.audit.dto;
 
-import java.io.Serializable;
-
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
+import org.openiam.base.KeyDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.audit.domain.AuditLogTargetEntity;
 
+@Deprecated
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "AuditLogTarget", propOrder = { 
-	"id",
 	"logId",
 	"targetId",
 	"targetType",
     "objectPrincipal"
 })
 @DozerDTOCorrespondence(AuditLogTargetEntity.class)
-public class AuditLogTarget implements Serializable {
+public class AuditLogTarget extends KeyDTO {
 
-	private String id;
 	private String logId;
 	private String targetId;
     private String objectPrincipal;
 
 	private String targetType;
-	public String getId() {
-		return id;
-	}
-	public void setId(String id) {
-		this.id = id;
-	}
+	
 	public String getLogId() {
 		return logId;
 	}
@@ -58,39 +51,56 @@ public class AuditLogTarget implements Serializable {
     public void setObjectPrincipal(String objectPrincipal) {
         this.objectPrincipal = objectPrincipal;
     }
-
-    // WARNING!  We can't match this object by ID. This object can be equals with different IDs !!!
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        AuditLogTarget logTarget = (AuditLogTarget) o;
-
-        if (logId != null ? !logId.equals(logTarget.logId) : logTarget.logId != null) return false;
-        if (objectPrincipal != null ? !objectPrincipal.equals(logTarget.objectPrincipal) : logTarget.objectPrincipal != null)
-            return false;
-        if (targetId != null ? !targetId.equals(logTarget.targetId) : logTarget.targetId != null) return false;
-		return !(targetType != null ? !targetType.equals(logTarget.targetType) : logTarget.targetType != null);
-
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + ((logId == null) ? 0 : logId.hashCode());
+		result = prime * result
+				+ ((objectPrincipal == null) ? 0 : objectPrincipal.hashCode());
+		result = prime * result
+				+ ((targetId == null) ? 0 : targetId.hashCode());
+		result = prime * result
+				+ ((targetType == null) ? 0 : targetType.hashCode());
+		return result;
 	}
-
-    // WARNING!  We can't match this object by ID. This object can be equals with different IDs !!!
-    @Override
-    public int hashCode() {
-        int result = logId != null ? logId.hashCode() : 0;
-        result = 31 * result + (targetId != null ? targetId.hashCode() : 0);
-        result = 31 * result + (objectPrincipal != null ? objectPrincipal.hashCode() : 0);
-        result = 31 * result + (targetType != null ? targetType.hashCode() : 0);
-        return result;
-    }
-
-    @Override
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		AuditLogTarget other = (AuditLogTarget) obj;
+		if (logId == null) {
+			if (other.logId != null)
+				return false;
+		} else if (!logId.equals(other.logId))
+			return false;
+		if (objectPrincipal == null) {
+			if (other.objectPrincipal != null)
+				return false;
+		} else if (!objectPrincipal.equals(other.objectPrincipal))
+			return false;
+		if (targetId == null) {
+			if (other.targetId != null)
+				return false;
+		} else if (!targetId.equals(other.targetId))
+			return false;
+		if (targetType == null) {
+			if (other.targetType != null)
+				return false;
+		} else if (!targetType.equals(other.targetType))
+			return false;
+		return true;
+	}
+	@Override
 	public String toString() {
-		return String.format(
-				"AuditLogTarget [id=%s, objectPrincipal=%s, logId=%s, targetId=%s, targetType=%s]",
-				id, objectPrincipal, logId, targetId, targetType);
+		return "AuditLogTarget [logId=" + logId + ", targetId=" + targetId
+				+ ", objectPrincipal=" + objectPrincipal + ", targetType="
+				+ targetType + "]";
 	}
-	
-	
+
+    
 }

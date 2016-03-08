@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.report.dto;
 
+import org.openiam.base.KeyNameDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.report.domain.ReportCriteriaParamEntity;
 
@@ -14,9 +15,7 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ReportCriteriaParamDto", propOrder = {
-        "id",
         "reportId",
-        "name",
         "caption",
         "value",
         "typeId",
@@ -29,11 +28,9 @@ import javax.xml.bind.annotation.XmlType;
 		"requestParameters"
 })
 @DozerDTOCorrespondence(ReportCriteriaParamEntity.class)
-public class ReportCriteriaParamDto {
+public class ReportCriteriaParamDto extends KeyNameDTO {
 
-    private String id;
     private String reportId;
-    private String name;
     private String caption;
     private String value;
     private String typeId;
@@ -48,28 +45,13 @@ public class ReportCriteriaParamDto {
     public ReportCriteriaParamDto() {
     }
 
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
+    
     public String getReportId() {
         return reportId;
     }
 
     public void setReportId(String reportId) {
         this.reportId = reportId;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public String getCaption() {
@@ -152,60 +134,106 @@ public class ReportCriteriaParamDto {
 		this.requestParameters = requestParameters;
 	}
 
+
 	@Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        ReportCriteriaParamDto that = (ReportCriteriaParamDto) o;
-
-        if (isMultiple != that.isMultiple) return false;
-        if (isRequired != that.isRequired) return false;
-        if (id != null ? !id.equals(that.id) : that.id != null) return false;
-        if (name != null ? !name.equals(that.name) : that.name != null) return false;
-        if (caption != null ? !caption.equals(that.caption) : that.caption != null) return false;
-        if (reportId != null ? !reportId.equals(that.reportId) : that.reportId != null) return false;
-        if (typeId != null ? !typeId.equals(that.typeId) : that.typeId != null) return false;
-        if (value != null ? !value.equals(that.value) : that.value != null) return false;
-        if (typeName != null ? !typeName.equals(that.typeName) : that.typeName != null) return false;
-        if (metaTypeId != null ? !metaTypeId.equals(that.metaTypeId) : that.metaTypeId != null) return false;
-		if (metaTypeName != null ? !metaTypeName.equals(that.metaTypeName) : that.metaTypeName != null) return false;
-		if (displayOrder != null ? !displayOrder.equals(that.displayOrder) : that.displayOrder != null) return false;
-        return !(requestParameters != null ? !requestParameters.equals(that.requestParameters) : that.requestParameters != null);
-
-    }
-
-    @Override
-    public int hashCode() {
-        int result = id != null ? id.hashCode() : 0;
-        result = 31 * result + (reportId != null ? reportId.hashCode() : 0);
-        result = 31 * result + (name != null ? name.hashCode() : 0);
-        result = 31 * result + (caption != null ? caption.hashCode() : 0);
-        result = 31 * result + (value != null ? value.hashCode() : 0);
-        result = 31 * result + (typeId != null ? typeId.hashCode() : 0);
-        result = 31 * result + (typeName != null ? typeName.hashCode() : 0);
-        result = 31 * result + (metaTypeId != null ? metaTypeId.hashCode() : 0);
-        result = 31 * result + (metaTypeName != null ? metaTypeName.hashCode() : 0);
-        result = 31 * result + (isMultiple ? 1231 : 1237);
-        result = 31 * result + (isRequired ? 1231 : 1237);
-		result = 31 * result + (displayOrder != null ? displayOrder.hashCode() : 0);
-		result = 31 * result + (requestParameters != null ? requestParameters.hashCode() : 0);
-        return result;
-    }
-
-    @Override
-	public String toString() {
-		return "ReportCriteriaParamDto [id=" + id + ", reportId=" + reportId
-				+ ", name=" + name
-                + ", caption=" + caption
-                + ", value=" + value
-                + ", typeId=" + typeId
-                + ", typeName=" + typeName
-                + ", metaTypeId=" + metaTypeId
-                + ", metaTypeName=" + metaTypeName
-                + ", isMultiple=" + isMultiple
-                + ", isRequired=" + isRequired
-				+ ", displayOrder=" + displayOrder
-				+ ", displayOrder=" + requestParameters + "]";
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + ((caption == null) ? 0 : caption.hashCode());
+		result = prime * result
+				+ ((displayOrder == null) ? 0 : displayOrder.hashCode());
+		result = prime * result + (isMultiple ? 1231 : 1237);
+		result = prime * result + (isRequired ? 1231 : 1237);
+		result = prime * result
+				+ ((metaTypeId == null) ? 0 : metaTypeId.hashCode());
+		result = prime * result
+				+ ((metaTypeName == null) ? 0 : metaTypeName.hashCode());
+		result = prime * result
+				+ ((reportId == null) ? 0 : reportId.hashCode());
+		result = prime
+				* result
+				+ ((requestParameters == null) ? 0 : requestParameters
+						.hashCode());
+		result = prime * result + ((typeId == null) ? 0 : typeId.hashCode());
+		result = prime * result
+				+ ((typeName == null) ? 0 : typeName.hashCode());
+		result = prime * result + ((value == null) ? 0 : value.hashCode());
+		return result;
 	}
+
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ReportCriteriaParamDto other = (ReportCriteriaParamDto) obj;
+		if (caption == null) {
+			if (other.caption != null)
+				return false;
+		} else if (!caption.equals(other.caption))
+			return false;
+		if (displayOrder == null) {
+			if (other.displayOrder != null)
+				return false;
+		} else if (!displayOrder.equals(other.displayOrder))
+			return false;
+		if (isMultiple != other.isMultiple)
+			return false;
+		if (isRequired != other.isRequired)
+			return false;
+		if (metaTypeId == null) {
+			if (other.metaTypeId != null)
+				return false;
+		} else if (!metaTypeId.equals(other.metaTypeId))
+			return false;
+		if (metaTypeName == null) {
+			if (other.metaTypeName != null)
+				return false;
+		} else if (!metaTypeName.equals(other.metaTypeName))
+			return false;
+		if (reportId == null) {
+			if (other.reportId != null)
+				return false;
+		} else if (!reportId.equals(other.reportId))
+			return false;
+		if (requestParameters == null) {
+			if (other.requestParameters != null)
+				return false;
+		} else if (!requestParameters.equals(other.requestParameters))
+			return false;
+		if (typeId == null) {
+			if (other.typeId != null)
+				return false;
+		} else if (!typeId.equals(other.typeId))
+			return false;
+		if (typeName == null) {
+			if (other.typeName != null)
+				return false;
+		} else if (!typeName.equals(other.typeName))
+			return false;
+		if (value == null) {
+			if (other.value != null)
+				return false;
+		} else if (!value.equals(other.value))
+			return false;
+		return true;
+	}
+
+
+	@Override
+	public String toString() {
+		return "ReportCriteriaParamDto [reportId=" + reportId + ", caption="
+				+ caption + ", value=" + value + ", typeId=" + typeId
+				+ ", typeName=" + typeName + ", metaTypeName=" + metaTypeName
+				+ ", metaTypeId=" + metaTypeId + ", isMultiple=" + isMultiple
+				+ ", isRequired=" + isRequired + ", displayOrder="
+				+ displayOrder + ", requestParameters=" + requestParameters
+				+ "]";
+	}
+
+	
 }

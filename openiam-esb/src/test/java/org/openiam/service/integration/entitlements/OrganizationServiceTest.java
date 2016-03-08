@@ -72,7 +72,7 @@ public class OrganizationServiceTest extends AbstractAttributeServiceTest<Organi
 
 	@Override
 	protected Response delete(Organization t) {
-		return organizationServiceClient.deleteOrganization(t.getId());
+		return organizationServiceClient.deleteOrganization(t.getId(), null);
 	}
 
 	@Override

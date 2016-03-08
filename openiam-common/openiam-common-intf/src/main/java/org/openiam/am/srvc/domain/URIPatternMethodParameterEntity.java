@@ -36,7 +36,7 @@ public class URIPatternMethodParameterEntity extends AbstractParameterEntity {
 	
     @ElementCollection
     @CollectionTable(name="URI_PATTERN_METHOD_PARAM_VAL", joinColumns=@JoinColumn(name="URI_PATTERN_METHOD_PARAM_ID", referencedColumnName="URI_PATTERN_METHOD_PARAM_ID"))
-    @Column(name="VALUE", length = 255)
+    @Column(name="PARAM_VALUE", length = 255)
     private List<String> values = new ArrayList<String>();
 
 	public URIPatternMethodEntity getPatternMethod() {

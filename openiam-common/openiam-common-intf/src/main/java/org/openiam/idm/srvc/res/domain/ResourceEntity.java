@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.res.domain;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -258,11 +259,11 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
         this.resourceProps = resourceProps;
     }
     
-	public void addUser(final UserEntity entity, final AccessRightEntity right) {
+	public void addUser(final UserEntity entity, final AccessRightEntity right, final Date startDate, final Date endDate) {
 		if(entity != null && right != null) {
 			final Set<AccessRightEntity> rightSet = new HashSet<AccessRightEntity>();
 			rightSet.add(right);
-			addUser(entity, rightSet);
+			addUser(entity, rightSet, startDate, endDate);
 		}
 	}
 	
@@ -274,7 +275,7 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
         this.groups = groups;
     }
     
-    public void addGroup(final GroupEntity entity, final Collection<AccessRightEntity> rights) {
+    public void addGroup(final GroupEntity entity, final Collection<AccessRightEntity> rights, final Date startDate, final Date endDate) {
 		if(entity != null) {
 			if(this.groups == null) {
 				this.groups = new LinkedHashSet<GroupToResourceMembershipXrefEntity>();
@@ -295,6 +296,8 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
 			if(rights != null) {
 				theXref.setRights(new HashSet<AccessRightEntity>(rights));
 			}
+			theXref.setStartDate(startDate);
+			theXref.setEndDate(endDate);
 			this.groups.add(theXref);
 		}
 	}
@@ -331,11 +334,11 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
 		}
     }
     
-    public void addUser(final UserEntity entity) {
-    	addUser(entity, Collections.EMPTY_LIST);
+    public void addUser(final UserEntity entity, final Date startDate, final Date endDate) {
+    	addUser(entity, Collections.EMPTY_LIST, startDate, endDate);
     }
     
-    public void addUser(final UserEntity entity, final Collection<AccessRightEntity> rights) {
+    public void addUser(final UserEntity entity, final Collection<AccessRightEntity> rights, final Date startDate, final Date endDate) {
     	if(entity != null) {
 			if(this.users == null) {
 				this.users = new LinkedHashSet<UserToResourceMembershipXrefEntity>();
@@ -365,6 +368,8 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
 			if(rights != null) {
 				theXref.setRights(new HashSet<AccessRightEntity>(rights));
 			}
+			theXref.setStartDate(startDate);
+			theXref.setEndDate(endDate);
 			this.users.add(theXref);
 		}
     }
@@ -379,7 +384,7 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
 	}
 
     
-	public void addChildResource(final ResourceEntity resource, final Collection<AccessRightEntity> rights) {
+	public void addChildResource(final ResourceEntity resource, final Collection<AccessRightEntity> rights, final Date startDate, final Date endDate) {
 		if(resource != null) {
 			if(this.childResources == null) {
 				this.childResources = new LinkedHashSet<ResourceToResourceMembershipXrefEntity>();
@@ -400,6 +405,8 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
 			if(rights != null) {
 				theXref.setRights(new HashSet<AccessRightEntity>(rights));
 			}
+			theXref.setStartDate(startDate);
+			theXref.setEndDate(endDate);
 			this.childResources.add(theXref);
 		}
 	}

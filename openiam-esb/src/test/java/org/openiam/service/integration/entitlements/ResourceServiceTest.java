@@ -1,10 +1,12 @@
 package org.openiam.service.integration.entitlements;
 
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.junit.Assert;
 import org.openiam.base.Tuple;
 import org.openiam.base.ws.Response;
@@ -79,12 +81,24 @@ public class ResourceServiceTest extends AbstractAttributeServiceTest<Resource, 
 	public List<Resource> find(ResourceSearchBean searchBean, int from, int size) {
 		return resourceDataService.findBeans(searchBean, from, size, null);
 	}
-
+	
 	@Test
-	public void testAddChildResource() {
+	public void testAddChildResourceNoRange() {
+		testAddChildResource(null, null);
+	}
+	
+	@Test
+	public void testAddChildResourceWithRange() {
+		final Date now = new Date();
+		final Date tomorrow = DateUtils.addDays(now, 1);
+		testAddChildResource(now, tomorrow);
+	}
+
+	
+	private void testAddChildResource(final Date startDate, final Date endDate) {
 		Tuple<Resource, Resource> t = null;
 		try {
-			addChildResource();
+			addChildResource(startDate, endDate);
 		} finally {
 			if(t != null) {
 				delete(t.getValue());
@@ -94,10 +108,21 @@ public class ResourceServiceTest extends AbstractAttributeServiceTest<Resource, 
 	}
 	
 	@Test
-	public void testRemoveChildResource() {
+	public void testRemoveChildResourceNoRange() {
+		testRemoveChildResource(null, null);
+	}
+	
+	@Test
+	public void testRemoveChildResourceWithRange() {
+		final Date now = new Date();
+		final Date tomorrow = DateUtils.addDays(now, 1);
+		testRemoveChildResource(now, tomorrow);
+	}
+	
+	private void testRemoveChildResource(final Date startDate, final Date endDate) {
 		Tuple<Resource, Resource> t = null;
 		try {
-			t = addChildResource();
+			t = addChildResource(startDate, endDate);
 			Response response = resourceDataService.deleteChildResource(t.getKey().getId(), t.getValue().getId(), "3000");
 			Assert.assertTrue(String.format("Can't delete resource: %s", response), response.isSuccess());
 		} finally {
@@ -109,8 +134,19 @@ public class ResourceServiceTest extends AbstractAttributeServiceTest<Resource, 
 	}
 	
 	@Test
-	public void testTouchFindBeansWithRights() {
-		final Tuple<Resource, Resource> t = addChildResource();
+	private void testTouchFindBeansWithRightsNoRange() {
+		testTouchFindBeansWithRights(null, null);
+	}
+	
+	@Test
+	private void testTouchFindBeansWithRightsWithRange() {
+		final Date now = new Date();
+		final Date tomorrow = DateUtils.addDays(now, 1);
+		testTouchFindBeansWithRights(now, tomorrow);
+	}
+	
+	private void testTouchFindBeansWithRights(final Date startDate, final Date endDate) {
+		final Tuple<Resource, Resource> t = addChildResource(startDate, endDate);
 		try {
 			
 			/* check parents */
@@ -148,7 +184,7 @@ public class ResourceServiceTest extends AbstractAttributeServiceTest<Resource, 
 		}
 	}
 	
-	private Tuple<Resource, Resource> addChildResource() {
+	private Tuple<Resource, Resource> addChildResource(final Date startDate, final Date endDate) {
 		Resource resource1 = super.createBean();
 		Response response = saveAndAssert(resource1);
 		resource1 = get((String)response.getResponseValue());
@@ -157,7 +193,7 @@ public class ResourceServiceTest extends AbstractAttributeServiceTest<Resource, 
 		response = saveAndAssert(resource2);
 		resource2 = get((String)response.getResponseValue());
 		
-		response = resourceDataService.addChildResource(resource1.getId(), resource2.getId(), "3000", null);
+		response = resourceDataService.addChildResource(resource1.getId(), resource2.getId(), "3000", null, startDate, endDate);
 		Assert.assertTrue(String.format("Could not add child resource: %s", response), response.isSuccess());
 		
 		return new Tuple<Resource, Resource>(resource1, resource2);

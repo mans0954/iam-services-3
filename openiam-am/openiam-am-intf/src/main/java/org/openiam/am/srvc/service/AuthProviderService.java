@@ -8,6 +8,7 @@ import org.openiam.am.srvc.dto.AuthProvider;
 import org.openiam.am.srvc.dto.OAuthCode;
 import org.openiam.am.srvc.dto.OAuthToken;
 import org.openiam.am.srvc.dto.OAuthUserClientXref;
+import org.openiam.am.srvc.searchbeans.AuthAttributeSearchBean;
 import org.openiam.am.srvc.searchbeans.AuthProviderSearchBean;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.srvc.lang.dto.Language;
@@ -32,7 +33,7 @@ public interface AuthProviderService {
     *===================================================
     */
 
-    List<AuthAttributeEntity> findAuthAttributeBeans(AuthAttributeEntity searchBean, Integer size, Integer from);
+    List<AuthAttributeEntity> findAuthAttributeBeans(AuthAttributeSearchBean searchBean, Integer size, Integer from);
 
     /*
     *==================================================

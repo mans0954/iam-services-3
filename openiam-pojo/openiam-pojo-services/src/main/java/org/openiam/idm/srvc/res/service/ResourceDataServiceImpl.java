@@ -1,7 +1,8 @@
 package org.openiam.idm.srvc.res.service;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
@@ -15,16 +16,16 @@ import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.exception.BasicDataServiceException;
 import org.openiam.dozer.converter.LanguageDozerConverter;
 import org.openiam.dozer.converter.ResourceDozerConverter;
 import org.openiam.dozer.converter.ResourcePropDozerConverter;
 import org.openiam.dozer.converter.ResourceTypeDozerConverter;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.searchbeans.ResourceTypeSearchBean;
 import org.openiam.idm.srvc.access.service.AccessRightProcessor;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
@@ -33,9 +34,10 @@ import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
-import org.openiam.idm.srvc.res.domain.ResourceToResourceMembershipXrefEntity;
 import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
-import org.openiam.idm.srvc.res.dto.*;
+import org.openiam.idm.srvc.res.dto.Resource;
+import org.openiam.idm.srvc.res.dto.ResourceProp;
+import org.openiam.idm.srvc.res.dto.ResourceType;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -217,7 +219,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     @Override
     public Response saveResourceType(ResourceType resourceType, final String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLog idmAuditLog = new IdmAuditLog();
+        IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
         idmAuditLog.setAction(AuditAction.SAVE_RESOURCE.value());
         idmAuditLog.setRequestorUserId(requesterId);
         if (StringUtils.isBlank(resourceType.getId())) {
@@ -255,7 +257,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 
     @CacheEvict(value = "resourcePropCache", allEntries=true)
     public Response addResourceProp(final ResourceProp resourceProp, String requesterId) {
-        IdmAuditLog idmAuditLog = new IdmAuditLog();
+        IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
         idmAuditLog.setAction(AuditAction.ADD_RESOURCE_PROP.value());
         idmAuditLog.setRequestorUserId(requesterId);
         return saveOrUpdateResourceProperty(resourceProp, idmAuditLog);
@@ -263,14 +265,14 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 
     @CacheEvict(value = "resourcePropCache", allEntries=true)
     public Response updateResourceProp(final ResourceProp resourceProp, String requesterId) {
-        IdmAuditLog idmAuditLog = new IdmAuditLog();
+    	IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
         idmAuditLog.setAction(AuditAction.UPDATE_RESOURCE_PROP.value());
         idmAuditLog.setRequestorUserId(requesterId);
         return saveOrUpdateResourceProperty(resourceProp, idmAuditLog);
     }
 
     @CacheEvict(value = "resourcePropCache", allEntries=true)
-    private Response saveOrUpdateResourceProperty(final ResourceProp prop, IdmAuditLog idmAuditLog) {
+    private Response saveOrUpdateResourceProperty(final ResourceProp prop, IdmAuditLogEntity idmAuditLog) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
             if (prop == null) {
@@ -323,7 +325,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     @CacheEvict(value = "resourcePropCache", allEntries=true)
     public Response removeResourceProp(String resourcePropId, String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLog idmAuditLog = new IdmAuditLog();
+        IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
         idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.REMOVE_RESOURCE_PROP.value());
         try {
@@ -356,7 +358,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     @CacheEvict(value = "resources", allEntries=true)
     public Response removeUserFromResource(final String resourceId, final String userId, String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLog idmAuditLog = new IdmAuditLog();
+        IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
         idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.REMOVE_USER_FROM_RESOURCE.value());
         UserEntity userEntity = userDataService.getUser(userId);
@@ -394,9 +396,14 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     @Override
     //@Transactional
     @CacheEvict(value = "resources", allEntries=true)
-    public Response addUserToResource(final String resourceId, final String userId, final String requesterId, final Set<String> rightIds) {
+    public Response addUserToResource(final String resourceId, 
+    								  final String userId, 
+    								  final String requesterId, 
+    								  final Set<String> rightIds,
+    								  final Date startDate,
+    								  final Date endDate) {
         final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLog idmAuditLog = new IdmAuditLog ();
+        IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity ();
         idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.ADD_USER_TO_RESOURCE.value());
         UserEntity userEntity = userDataService.getUser(userId);
@@ -410,8 +417,12 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
             if (resourceId == null || userId == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "ResourceId or UserId is not set");
             }
+            
+            if(startDate != null && endDate != null && startDate.after(endDate)) {
+            	throw new BasicDataServiceException(ResponseCode.ENTITLEMENTS_DATE_INVALID);
+            }
 
-            userDataService.addUserToResource(userId, resourceId, rightIds);
+            userDataService.addUserToResource(userId, resourceId, rightIds, startDate, endDate);
             idmAuditLog.succeed();
         } catch (BasicDataServiceException e) {
             response.setErrorCode(e.getCode());
@@ -473,7 +484,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     @Override
     public Response deleteResourceType(final String resourceTypeId, final String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLog idmAuditLog = new IdmAuditLog ();
+        IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity ();
         idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.DELETE_RESOURCE_TYPE.value());
         try {
@@ -539,9 +550,14 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 
     @Override
     @CacheEvict(value = "resources", allEntries=true)
-    public Response addChildResource(final String resourceId, final String childResourceId, final String requesterId, final Set<String> rights) {
+    public Response addChildResource(final String resourceId, 
+    								 final String childResourceId, 
+    								 final String requesterId, 
+    								 final Set<String> rights,
+    								 final Date startDate,
+   								  	 final Date endDate) {
         final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLog idmAuditLog = new IdmAuditLog ();
+        IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity ();
         idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.ADD_CHILD_RESOURCE.value());
         ResourceEntity resourceEntity = resourceService.findResourceById(resourceId);
@@ -552,8 +568,8 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
         idmAuditLog.setAuditDescription(
                         String.format("Add child resource: %s to resource: %s", childResourceId, resourceId));
         try {
-            resourceService.validateResource2ResourceAddition(resourceId, childResourceId, rights);
-            resourceService.addChildResource(resourceId, childResourceId, rights);
+            resourceService.validateResource2ResourceAddition(resourceId, childResourceId, rights, startDate, endDate);
+            resourceService.addChildResource(resourceId, childResourceId, rights, startDate, endDate);
             idmAuditLog.succeed();
         } catch (BasicDataServiceException e) {
             response.setResponseValue(e.getResponseValue());
@@ -578,7 +594,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     @CacheEvict(value = "resources", allEntries=true)
     public Response deleteChildResource(final String resourceId, final String memberResourceId, final String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLog idmAuditLog = new IdmAuditLog ();
+        IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity ();
         idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.REMOVE_CHILD_RESOURCE.value());
         ResourceEntity resourceEntity = resourceService.findResourceById(resourceId);
@@ -617,9 +633,14 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 
     @Override
     @CacheEvict(value = "resources", allEntries=true)
-    public Response addGroupToResource(final String resourceId, final String groupId, final String requesterId, final Set<String> rightIds) {
+    public Response addGroupToResource(final String resourceId, 
+    								   final String groupId, 
+    								   final String requesterId, 
+    								   final Set<String> rightIds,
+    								   final Date startDate,
+     								   final Date endDate) {
         final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLog idmAuditLog = new IdmAuditLog ();
+        IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity ();
         idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.ADD_GROUP_TO_RESOURCE.value());
         Group group = groupDataService.getGroupDTO(groupId);
@@ -632,8 +653,12 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
             if (StringUtils.isBlank(resourceId) || StringUtils.isBlank(groupId)) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "GroupId or ResourceId is null");
             }
+            
+            if(startDate != null && endDate != null && startDate.after(endDate)) {
+            	throw new BasicDataServiceException(ResponseCode.ENTITLEMENTS_DATE_INVALID);
+            }
 
-            resourceService.addResourceGroup(resourceId, groupId, rightIds);
+            resourceService.addResourceGroup(resourceId, groupId, rightIds, startDate, endDate);
             idmAuditLog.succeed();
         } catch (BasicDataServiceException e) {
             response.setErrorCode(e.getCode());
@@ -657,7 +682,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     @CacheEvict(value = "resources", allEntries=true)
     public Response removeGroupToResource(final String resourceId, final String groupId, final String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLog idmAuditLog = new IdmAuditLog ();
+        IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity ();
         idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.REMOVE_GROUP_FROM_RESOURCE.value());
         idmAuditLog.setAuditDescription(String.format("Remove group: %s from resource: %s", groupId, resourceId));
@@ -698,9 +723,14 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 
     @Override
     @CacheEvict(value = "resources", allEntries=true)
-    public Response addRoleToResource(final String resourceId, final String roleId, final String requesterId, final Set<String> rightIds) {
+    public Response addRoleToResource(final String resourceId, 
+    								  final String roleId, 
+    								  final String requesterId, 
+    								  final Set<String> rightIds,
+    								  final Date startDate,
+    								  final Date endDate) {
         final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLog idmAuditLog = new IdmAuditLog ();
+        IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity ();
         idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.ADD_ROLE_TO_RESOURCE.value());
         
@@ -708,6 +738,10 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
         try {
             if (StringUtils.isBlank(resourceId) || StringUtils.isBlank(roleId)) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "RoleId or ResourceId is null");
+            }
+            
+            if(startDate != null && endDate != null && startDate.after(endDate)) {
+            	throw new BasicDataServiceException(ResponseCode.ENTITLEMENTS_DATE_INVALID);
             }
             
             final RoleEntity roleEntity = roleService.getRoleLocalized(roleId, requesterId, null);
@@ -722,7 +756,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
             }
             idmAuditLog.setTargetResource(resourceId, resourceEntity.getName());
 
-            resourceService.addResourceToRole(resourceId, roleId, rightIds);
+            resourceService.addResourceToRole(resourceId, roleId, rightIds, startDate, endDate);
             idmAuditLog.succeed();
         } catch (BasicDataServiceException e) {
             response.setErrorCode(e.getCode());
@@ -746,7 +780,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     @CacheEvict(value = "resources", allEntries=true)
     public Response removeRoleToResource(final String resourceId, final String roleId, final String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLog idmAuditLog = new IdmAuditLog ();
+        IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity ();
         idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.REMOVE_ROLE_FROM_RESOURCE.value());
         RoleEntity roleEntity = roleService.getRole(roleId);
@@ -900,10 +934,10 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     }
 
     @Override
-    public Response validateAddChildResource(String resourceId, String childResourceId, final Set<String> rights) {
+    public Response validateAddChildResource(String resourceId, String childResourceId, final Set<String> rights, final Date startDate, final Date endDate) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
-            resourceService.validateResource2ResourceAddition(resourceId, childResourceId, rights);
+            resourceService.validateResource2ResourceAddition(resourceId, childResourceId, rights, startDate, endDate);
         } catch (BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
