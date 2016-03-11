@@ -3,6 +3,7 @@ package org.openiam.service.integration;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.openiam.base.BaseIdentity;
 import org.openiam.base.KeyDTO;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;

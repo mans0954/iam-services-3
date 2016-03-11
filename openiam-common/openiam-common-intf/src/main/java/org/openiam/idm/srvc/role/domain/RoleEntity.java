@@ -27,6 +27,8 @@ import org.hibernate.annotations.Where;
 import org.openiam.am.srvc.domain.OAuthUserClientXrefEntity;
 import org.openiam.base.domain.AbstractMetdataTypeEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.elasticsearch.constants.ESIndexName;
+import org.openiam.elasticsearch.constants.ESIndexType;
 import org.openiam.idm.srvc.access.domain.AccessRightEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
@@ -37,6 +39,10 @@ import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.domain.UserToRoleMembershipXrefEntity;
 import org.openiam.internationalization.Internationalized;
+import org.springframework.data.elasticsearch.annotations.Document;
+import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldIndex;
+import org.springframework.data.elasticsearch.annotations.FieldType;
 
 @Entity
 @Table(name="ROLE")
@@ -44,10 +50,12 @@ import org.openiam.internationalization.Internationalized;
 @DozerDTOCorrespondence(Role.class)
 @AttributeOverride(name = "id", column = @Column(name = "ROLE_ID"))
 @Internationalized
+@Document(indexName = ESIndexName.ROLE, type= ESIndexType.ROLE)
 public class RoleEntity extends AbstractMetdataTypeEntity {
 
     @Column(name="ROLE_NAME",length=80)
     @Size(max = 80, message = "role.name.too.long")
+    @Field(type = FieldType.String, index = FieldIndex.analyzed, store= true)
     private String name;
     
     @Column(name="DESCRIPTION")
@@ -59,6 +67,7 @@ public class RoleEntity extends AbstractMetdataTypeEntity {
 
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "MANAGED_SYS_ID", referencedColumnName = "MANAGED_SYS_ID", insertable = true, updatable = true, nullable=true)
+    //@Field(type = FieldType.String, index = FieldIndex.not_analyzed, store= true)
     private ManagedSysEntity managedSystem;
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="entity", orphanRemoval=true)

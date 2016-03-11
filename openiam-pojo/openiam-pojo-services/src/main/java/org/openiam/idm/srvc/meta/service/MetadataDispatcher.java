@@ -103,7 +103,9 @@ public class MetadataDispatcher implements Sweepable {
                     final StopWatch sw = new StopWatch();
                     sw.start();
                     try {
-                        log.info("Starting metadataElement sweeper thread");
+                    	if(log.isDebugEnabled()) {
+                    		log.info("Starting metadataElement sweeper thread");
+                    	}
 
                         Enumeration e = browser.getEnumeration();
 
@@ -130,7 +132,9 @@ public class MetadataDispatcher implements Sweepable {
                         }
 
                     } finally {
-                        log.info(String.format("Done with metadataElement sweeper thread.  Took %s ms", sw.getTime()));
+                    	if(log.isDebugEnabled()) {
+                    		log.debug(String.format("Done with metadataElement sweeper thread.  Took %s ms", sw.getTime()));
+                    	}
                     }
                     return null;
                 }

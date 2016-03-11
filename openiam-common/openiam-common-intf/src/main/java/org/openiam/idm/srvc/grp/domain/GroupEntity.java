@@ -22,6 +22,8 @@ import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Where;
 import org.openiam.base.domain.AbstractMetdataTypeEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.elasticsearch.constants.ESIndexName;
+import org.openiam.elasticsearch.constants.ESIndexType;
 import org.openiam.idm.srvc.access.domain.AccessRightEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
@@ -41,6 +43,10 @@ import org.openiam.idm.srvc.user.domain.UserToGroupMembershipXrefEntity;
 import org.openiam.idm.srvc.user.domain.UserToResourceMembershipXrefEntity;
 import org.openiam.idm.srvc.user.domain.UserToRoleMembershipXrefEntity;
 import org.openiam.internationalization.Internationalized;
+import org.springframework.data.elasticsearch.annotations.Document;
+import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldIndex;
+import org.springframework.data.elasticsearch.annotations.FieldType;
 
 @Entity
 @Table(name = "GRP")
@@ -48,10 +54,12 @@ import org.openiam.internationalization.Internationalized;
 @AttributeOverride(name = "id", column = @Column(name = "GRP_ID"))
 @DozerDTOCorrespondence(Group.class)
 @Internationalized
+@Document(indexName = ESIndexName.GROUP, type= ESIndexType.GROUP)
 public class GroupEntity extends AbstractMetdataTypeEntity {
 
     @Column(name = "GRP_NAME", length = 255)
     @Size(max = 255, message = "group.name.too.long")
+    @Field(type = FieldType.String, index = FieldIndex.analyzed, store= true)
     private String name;
 
     @Column(name = "CREATE_DATE", length = 19)

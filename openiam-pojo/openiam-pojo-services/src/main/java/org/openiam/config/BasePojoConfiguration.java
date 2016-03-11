@@ -18,7 +18,7 @@ import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 @Configuration
-@Import({BaseConfiguration.class, JMXConfig.class, ElasticSearchConfig.class})
+@Import({BaseConfiguration.class, JMXConfig.class, ElasticSearchConfig.class, RedisConfig.class})
 public class BasePojoConfiguration {
 	
 	@Value("${mail.host}")

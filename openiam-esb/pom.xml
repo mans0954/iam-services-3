@@ -262,6 +262,18 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-tomcat</artifactId>
 		</dependency>
+		
+		<!--
+        <dependency>
+    		<groupId>org.apache.commons</groupId>
+    		<artifactId>commons-pool2</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>redis.clients</groupId>
+			<artifactId>jedis</artifactId>
+			<optional>false</optional>
+		</dependency>
+		-->
 
         <dependency>
             <groupId>commons-lang</groupId>

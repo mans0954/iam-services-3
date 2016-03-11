@@ -77,7 +77,7 @@ public abstract class AbstractElasticSearchRepositoryTest<E extends BaseIdentity
 		final List<E> entities = getDAO().find(0, 1);
 		Assert.assertTrue(CollectionUtils.isNotEmpty(entities));
 		final E dbEntity = entities.get(0);
-		//final Iterable<E> all = getRepository().findAll();
+		final Iterable<E> all = getRepository().findAll();
 		final E repoEntity = (E)getRepository().findOne(dbEntity.getId());
 		Assert.assertNotNull(repoEntity);
 		Assert.assertNotNull(dbEntity);

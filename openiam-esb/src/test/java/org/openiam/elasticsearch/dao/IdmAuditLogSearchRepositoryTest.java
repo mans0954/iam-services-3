@@ -80,6 +80,12 @@ public class IdmAuditLogSearchRepositoryTest extends AbstractElasticSearchReposi
 		entity.setUserId(randomString());
 		return entity;
 	}
+	
+	@Test
+	public void testEnqueue() {
+		final IdmAuditLogEntity entity = newEntity();
+		service.enqueue(entity);
+	}
 
 	@Test
 	public void testFind() {
