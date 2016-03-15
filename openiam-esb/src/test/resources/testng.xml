@@ -88,6 +88,7 @@
 	<test name="elasticsearch.integration">
 		<classes>
 			<class name="org.openiam.elasticsearch.integration.ElasticSearchIntegrationTest" />
+			<class name="org.openiam.service.integration.log.IdmAuditLogServiceTest" />
 		</classes>
 	</test>
 	
