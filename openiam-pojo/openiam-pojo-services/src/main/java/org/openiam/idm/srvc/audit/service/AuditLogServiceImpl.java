@@ -9,7 +9,6 @@ import javax.annotation.PostConstruct;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.time.StopWatch;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.SysConfiguration;
@@ -34,7 +33,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,10 +43,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Service("auditDataService")
 public class AuditLogServiceImpl implements AuditLogService {
     
-	/*
-	@Autowired
-    private JmsTemplate jmsTemplate;
-    */
 	
 	@Autowired
 	private AuditLogElasticSearchRepository auditLogRepo;
@@ -67,9 +61,6 @@ public class AuditLogServiceImpl implements AuditLogService {
 
     @Autowired
     protected SysConfiguration sysConfiguration;
-    
-    @Autowired
-    private RedisMessageListenerContainer listener;
     
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;

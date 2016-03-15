@@ -1,14 +1,10 @@
 package org.openiam.provision.service;
 
-import java.util.ArrayList;
-import java.util.Enumeration;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import javax.jms.JMSException;
-import javax.jms.ObjectMessage;
-import javax.jms.QueueBrowser;
-import javax.jms.Session;
+import javax.annotation.PostConstruct;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -16,20 +12,19 @@ import org.openiam.base.AttributeOperationEnum;
 import org.openiam.idm.srvc.mngsys.service.ProvisionConnectorService;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
-import org.openiam.thread.Sweepable;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jms.core.BrowserCallback;
-import org.springframework.jms.core.JmsTemplate;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.data.redis.connection.Message;
+import org.springframework.data.redis.connection.MessageListener;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.listener.ChannelTopic;
+import org.springframework.data.redis.listener.RedisMessageListenerContainer;
+import org.springframework.data.redis.listener.Topic;
 import org.springframework.stereotype.Component;
 
 @Component("provDispatcher")
-public class ProvisionDispatcher implements Sweepable {
+public class ProvisionDispatcher {
 
     private static final Log log = LogFactory.getLog(ProvisionDispatcher.class);
-
-    @Autowired
-    private JmsTemplate jmsTemplate;
 
     @Autowired
     protected ProvisionConnectorService connectorService;
@@ -37,44 +32,22 @@ public class ProvisionDispatcher implements Sweepable {
     @Autowired
     protected ProvisionDispatcherTransactionHelper provisionTransactionHelper;
 
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
+    
+    @Autowired
+    private RedisMessageListenerContainer listener;
 
-    private final Object mutex = new Object();
-
-
-    @Override
-    @Scheduled(fixedRateString="${org.openiam.prov.threadsweep}", initialDelayString="${org.openiam.prov.threadsweep}")
-    public void sweep() {
-
-        jmsTemplate.browse("provQueue", new BrowserCallback<Object>() {
-            @Override
-            public Object doInJms(Session session, QueueBrowser browser) throws JMSException {
-                synchronized (mutex) {
-                    final List<ProvisionDataContainer> list = new ArrayList<ProvisionDataContainer>();
-                    Enumeration e = browser.getEnumeration();
-                    while (e.hasMoreElements()) {
-                        list.add((ProvisionDataContainer) ((ObjectMessage) jmsTemplate.receive("provQueue")).getObject());
-                        e.nextElement();
-                    }
-
-                    process(list);
-
-                    return Boolean.TRUE;
-                }
-            }
-        });
-
-    }
-
-    public void process(final List<ProvisionDataContainer> entities) {
-        for (final ProvisionDataContainer data : entities) {
-            provisionTransactionHelper.process(data);
-            try {
-                //chance to other threads to be executed
-                Thread.sleep(200);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
+    @PostConstruct
+    public void init() {
+    	listener.addMessageListener(new MessageListener() {
+			
+			@Override
+			public void onMessage(Message message, byte[] pattern) {
+				final ProvisionDataContainer entity = (ProvisionDataContainer)redisTemplate.getDefaultSerializer().deserialize(message.getBody());
+				provisionTransactionHelper.process(entity);
+			}
+		}, Arrays.asList(new Topic[] { new ChannelTopic("provQueue")}));
     }
 
     /**

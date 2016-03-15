@@ -4,8 +4,6 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
 
-import javax.jms.JMSException;
-import javax.jms.Session;
 import javax.jws.WebService;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -26,9 +24,7 @@ import org.openiam.idm.srvc.report.dto.ReportSubCriteriaParamDto;
 import org.openiam.idm.srvc.report.dto.ReportSubscriptionDto;
 import org.openiam.idm.srvc.report.service.ReportDataService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jms.JmsException;
-import org.springframework.jms.core.JmsTemplate;
-import org.springframework.jms.core.MessageCreator;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 /**
@@ -43,6 +39,9 @@ import org.springframework.stereotype.Service;
 		serviceName = "ReportWebService")
 @Service("reportWS")
 public class ReportWebServiceImpl implements ReportWebService {
+	
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
 
 	private static final Log log = LogFactory
 			.getLog(ReportWebServiceImpl.class);
@@ -53,8 +52,6 @@ public class ReportWebServiceImpl implements ReportWebService {
 
 	@Autowired
 	private ReportDataService reportDataService;
-	@Autowired
-	private JmsTemplate jmsTemplate;
 
 	@Override
 	public GetReportDataResponse executeQuery(final ReportQueryDto reportQuery) {
@@ -652,14 +649,11 @@ public class ReportWebServiceImpl implements ReportWebService {
 		Response response = new Response();
 		if (reportSubscription != null) {
 			try {
-				jmsTemplate.send("subsQueue", new MessageCreator() {
-					public javax.jms.Message createMessage(Session session) throws JMSException {
-						return session.createObjectMessage(reportSubscription);
-					}
-				});
-				response.setStatus(ResponseStatus.SUCCESS);
-				return response;
-			} catch (JmsException e) {
+				redisTemplate.convertAndSend("subsQueue", reportSubscription);
+				response.succeed();
+			} catch(Throwable e) {
+				log.error("can't add subs queue message", e);
+				response.fail();
 			}
 		}
 		response.setStatus(ResponseStatus.FAILURE);
@@ -674,13 +668,9 @@ public class ReportWebServiceImpl implements ReportWebService {
 
 			if (reportSubscription != null) {
 				try {
-					jmsTemplate.send("subsQueue", new MessageCreator() {
-						public javax.jms.Message createMessage(Session session) throws JMSException {
-							return session.createObjectMessage(reportSubscription);
-						}
-					});
-				} catch (JmsException e) {
-					log.error("Failed to schedule report generation ", e);
+					redisTemplate.convertAndSend("subsQueue", reportSubscription);
+				} catch(Throwable e) {
+					log.error("can't add subs queue message", e);
 				}
 			}
 		}

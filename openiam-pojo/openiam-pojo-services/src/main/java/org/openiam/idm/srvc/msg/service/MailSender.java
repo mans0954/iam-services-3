@@ -1,29 +1,44 @@
 package org.openiam.idm.srvc.msg.service;
 
-import javax.jms.JMSException;
-import javax.jms.Session;
+import javax.annotation.PostConstruct;
 
+import org.apache.commons.lang.RandomStringUtils;
+import org.openiam.redis.RedisTaskScheduler;
+import org.openiam.redis.TaskTriggerListener;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jms.core.JmsTemplate;
-import org.springframework.jms.core.MessageCreator;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.stereotype.Component;
 
 @Component("mailSender")
-public class MailSender {
+public class MailSender implements TaskTriggerListener {
 
+    private RedisTaskScheduler mailTaskScheduler;
+    
     @Autowired
-    private JmsTemplate jmsTemplate;
+    private RedisTemplate<String, Object> redisTemplate;
+    
+    @Autowired
+    private RedisMessageListenerContainer listener;
+    
+    @PostConstruct
+    public void init() {
+    	mailTaskScheduler = new RedisTaskScheduler();
+    	mailTaskScheduler.setRedisTemplate(redisTemplate);
+    	mailTaskScheduler.setTaskTriggerListener(this);
+    }
 
     public void send(final Message mail) {
-        jmsTemplate.send("mailQueue", new MessageCreator() {
-            public javax.jms.Message createMessage(Session session) throws JMSException {
-                javax.jms.Message message = session.createObjectMessage(mail);
-                if (mail.getProcessingTime() != null) {
-                    message.setLongProperty("_HQ_SCHED_DELIVERY", mail.getProcessingTime().getTime()); //HornetQ Scheduled Delivery Property
-                }
-                return message;
-            }
-        });
+    	if(mail.getProcessingTime() != null) {
+    		mailTaskScheduler.schedule(String.format("mailTask-%s", RandomStringUtils.randomAlphanumeric(10)), mail, mail.getProcessingTime());
+    	} else {
+    		redisTemplate.convertAndSend("mailQueue", mail);
+    	}
     }
+
+	@Override
+	public void taskTriggered(String taskId, Object object) {
+		redisTemplate.convertAndSend("mailQueue", (Message)object);
+	}
 
 }

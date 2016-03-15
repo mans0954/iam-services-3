@@ -39,13 +39,6 @@ public class BasePojoConfiguration {
 	@Value("${mail.smtp.starttls.enable}")
 	private String startTlsEnabled;
 
-	@Bean(name="jmsReceiverThreadPoolTaskExecutor")
-	public ThreadPoolTaskExecutor jmsReceiverThreadPoolTaskExecutor() {
-		final ThreadPoolTaskExecutor e = new ThreadPoolTaskExecutor();
-		e.setDaemon(true);
-		return e;
-	}
-	
 	@Bean(name="emailSender")
 	public JavaMailSenderImpl emailSender() {
 		final JavaMailSenderImpl s = new JavaMailSenderImpl();

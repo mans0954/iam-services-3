@@ -1,28 +1,38 @@
 package org.openiam.idm.srvc.msg.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jms.listener.SessionAwareMessageListener;
+import java.util.Arrays;
 
-import javax.jms.*;
+import javax.annotation.PostConstruct;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.connection.MessageListener;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.listener.ChannelTopic;
+import org.springframework.data.redis.listener.RedisMessageListenerContainer;
+import org.springframework.data.redis.listener.Topic;
 import org.springframework.stereotype.Component;
 
-import java.util.Date;
-
 @Component("mailDispatcher")
-public class MailDispatcher implements SessionAwareMessageListener {
+public class MailDispatcher {
 
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
+    
+    @Autowired
+    private RedisMessageListenerContainer listener;
+    
     @Autowired
     MailSenderClient mailSenderClient;
-    @Autowired
-    private MailSender mailSender;
-    @Override
-    public void onMessage(javax.jms.Message message, Session session) throws JMSException {
-        Message mail = (Message)((ObjectMessage)message).getObject();
-        if(mail.getProcessingTime() == null
-                || new Date().after(mail.getProcessingTime())) {
-            mailSenderClient.send(mail);
-        } else {
-            mailSender.send(mail);
-        }
-    }
+	
+	@PostConstruct
+    public void init() {
+		listener.addMessageListener(new MessageListener() {
+			
+			@Override
+			public void onMessage(org.springframework.data.redis.connection.Message message, byte[] pattern) {
+				final Message entity = (Message)redisTemplate.getDefaultSerializer().deserialize(message.getBody());
+				mailSenderClient.send(entity);
+			}
+		}, Arrays.asList(new Topic[] { new ChannelTopic("mailQueue")}));
+	}
 }
