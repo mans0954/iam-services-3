@@ -17,10 +17,6 @@
   	</properties>
 
     <dependencies>
-    	<dependency>
-			<groupId>org.hornetq</groupId>
-			<artifactId>hornetq-jms-server</artifactId>
-		</dependency>
     
         <!-- OpenIAM Dependencies -->
          <dependency>
