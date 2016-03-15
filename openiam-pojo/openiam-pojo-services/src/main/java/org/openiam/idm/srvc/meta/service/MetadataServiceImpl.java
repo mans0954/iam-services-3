@@ -33,6 +33,7 @@ import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.internationalization.LocalizedServiceGet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.core.MessageCreator;
 import org.springframework.stereotype.Service;
@@ -74,7 +75,7 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
     private String uiWidgetResourceType;
 
     @Autowired
-    private JmsTemplate jmsTemplate;
+    private RedisTemplate<String, Object> redisTemplate;
 
     private static final Log log = LogFactory.getLog(MetadataServiceImpl.class);
 
@@ -192,12 +193,7 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 	}
 
     private void send(final MetadataElementEntity entity) {
-        jmsTemplate.send("metaElementQueue", new MessageCreator() {
-            public javax.jms.Message createMessage(Session session) throws JMSException {
-                javax.jms.Message message = session.createObjectMessage(entity);
-                return message;
-            }
-        });
+    	redisTemplate.convertAndSend("metaElementQueue", entity);
     }
 	
 	private void mergeValidValues(final MetadataElementEntity bean, final MetadataElementEntity dbObject) {

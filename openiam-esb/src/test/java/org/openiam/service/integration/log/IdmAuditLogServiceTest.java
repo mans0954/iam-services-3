@@ -37,7 +37,7 @@ public class IdmAuditLogServiceTest extends AbstractServiceTest {
 	@Test(threadPoolSize=1, invocationCount=1000)
 	public void testEnqueue() throws InterruptedException {
 		final List<IdmAuditLogEntity> logs = new LinkedList<IdmAuditLogEntity>();
-		for(int i = 0; i < 1000; i++) {
+		for(int i = 0; i < 200; i++) {
 			logs.add(newInstance());
 		}
 		service.addLogs(logs);
