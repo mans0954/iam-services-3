@@ -188,6 +188,7 @@
         <spring.data.redis.version>1.6.4.RELEASE</spring.data.redis.version>
         <apache.commons.pool.version>2.2</apache.commons.pool.version>
         <redis.client.version>2.7.3</redis.client.version>
+        <redis.scheduler.version>1.0.0-SNAPSHOT</redis.scheduler.version>
 		<skipTests>true</skipTests>
 	</properties>
 
@@ -265,11 +266,6 @@
 			<dependency>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-starter-ws</artifactId>
-				<version>${spring.boot.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-starter-hornetq</artifactId>
 				<version>${spring.boot.version}</version>
 			</dependency>
 			<dependency>
