@@ -93,24 +93,13 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
                                     // prevent bindingMap rewrite in dataList
                                     Map<String, Object> tmpMap = new HashMap<>(bindingMap);
                                     ProvisionDataContainer data = provisionResource(res, userEntity, new ProvisionUser(user), tmpMap,
-                                            primaryIdentity, requestorUserId, false);
+                                            primaryIdentity, requestorUserId);
 
                                     auditLog.addAttribute(AuditAttributeName.DESCRIPTION,
                                             "Provisioning for resource: " + res.getName());
                                     if (data != null) {
                                         data.setParentAuditLogId(auditLog.getId());
                                         dataList.add(data);
-                                    }
-
-                                    // Additional operation is required for managed system with property ON_DELETE = DISABLE
-                                    String onDeleteProp = resourceDataService.getResourcePropValueByName(res.getId(), "ON_DELETE");
-                                    if (onDeleteProp != null && "DISABLE".equalsIgnoreCase(onDeleteProp)) {
-                                        ProvisionDataContainer enableData = provisionResource(res, userEntity, new ProvisionUser(user), bindingMap,
-                                                primaryIdentity, requestorUserId, true);
-                                        if (enableData != null) {
-                                            enableData.setParentAuditLogId(auditLog.getId());
-                                            dataList.add(enableData);
-                                        }
                                     }
 
                                 } catch (Throwable tw) {
@@ -147,8 +136,7 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
                                                     final ProvisionUser pUser,
                                                     final Map<String, Object> tmpMap,
                                                     final Login primaryIdentity,
-                                                    final String requestId,
-                                                    boolean doEnable) {
+                                                    final String requestId) {
 
         Map<String, Object> bindingMap = new HashMap<>(tmpMap); // prevent data rewriting
         if(log.isDebugEnabled()) {
@@ -293,10 +281,7 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
             }
 
             ProvisionDataContainer data = new ProvisionDataContainer();
-            if (doEnable) {
-                data.setOperation(ProvOperationEnum.ENABLE);
-                bindingMap.put("operation", "RESUME");
-            } else if (isMngSysIdentityExistsInOpeniam) {
+            if (isMngSysIdentityExistsInOpeniam) {
                 data.setOperation(ProvOperationEnum.UPDATE);
                 bindingMap.put("operation", "MODIFY");
             } else {

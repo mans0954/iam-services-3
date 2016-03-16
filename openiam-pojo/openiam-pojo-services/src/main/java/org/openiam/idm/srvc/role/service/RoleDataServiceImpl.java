@@ -168,7 +168,7 @@ public class RoleDataServiceImpl implements RoleDataService, ApplicationContextA
     @Override
     @Transactional
     @Caching(evict = {
-            @CacheEvict(value = "roleEntities", allEntries=true),
+            @CacheEvict(value = "roleEntities", allEntries = true),
     })
     public void removeRole(String roleId) {
         if (roleId != null) {
@@ -294,7 +294,7 @@ public class RoleDataServiceImpl implements RoleDataService, ApplicationContextA
     @Override
     @Transactional
     @Caching(evict = {
-            @CacheEvict(value = "roleEntities", allEntries=true),
+            @CacheEvict(value = "roleEntities", allEntries = true),
     })
     public void saveRole(final RoleEntity role, final String requestorId) throws BasicDataServiceException {
         if (role != null && entityValidator.isValid(role)) {
@@ -502,7 +502,7 @@ public class RoleDataServiceImpl implements RoleDataService, ApplicationContextA
 	*/
 
 	/*
-	@Override
+    @Override
     @Transactional
 	public void removeAttribute(final String roleAttributeId) {
 		if(roleAttributeId != null) {
@@ -561,7 +561,7 @@ public class RoleDataServiceImpl implements RoleDataService, ApplicationContextA
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value="roleEntities", key="{ #searchBean.cacheUniqueBeanKey, #requesterId, #from, #size}")
+    @Cacheable(value = "roleEntities", key = "{ #searchBean.cacheUniqueBeanKey, #requesterId, #from, #size}")
     public List<RoleEntity> findBeans(RoleSearchBean searchBean, final String requesterId, int from, int size) {
         Set<String> filter = getDelegationFilter(requesterId);
         if (StringUtils.isBlank(searchBean.getKey()))
@@ -610,8 +610,12 @@ public class RoleDataServiceImpl implements RoleDataService, ApplicationContextA
     @Override
     @Transactional(readOnly = true)
     public List<Role> findRolesDtoByAttributeValue(String attrName, String attrValue) {
+        return findRolesDtoByAttributeValue(attrName, attrValue, true);
+    }
+
+    public List<Role> findRolesDtoByAttributeValue(String attrName, String attrValue, boolean deepCopy) {
         List<RoleEntity> roleEntityList = roleDao.findRolesByAttributeValue(attrName, attrValue);
-        return roleDozerConverter.convertToDTOList(roleEntityList, true);
+        return roleDozerConverter.convertToDTOList(roleEntityList, deepCopy);
     }
 
     @Override

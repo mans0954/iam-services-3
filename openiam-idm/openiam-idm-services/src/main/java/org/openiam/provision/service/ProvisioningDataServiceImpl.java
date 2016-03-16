@@ -1390,7 +1390,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                         }
                         // Protects other resources if one resource failed
                         ProvisionDataContainer data = provisionSelectedResourceHelper.provisionResource(res, userEntity, pUser, bindingMap,
-                                primaryIdentity, requestId, false);
+                                primaryIdentity, requestId);
                         auditLog.addAttribute(AuditAttributeName.DESCRIPTION,
                                 "Provisioning for resource: " + res.getName());
                         if (data != null) {
@@ -1398,16 +1398,6 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                             dataList.add(data);
                         }
 
-                        // Additional operation is required for managed system with property ON_DELETE = DISABLE
-                        String onDeleteProp = resourceService.getResourcePropValueByName(res.getId(), "ON_DELETE");
-                        if (onDeleteProp != null && "DISABLE".equalsIgnoreCase(onDeleteProp)) {
-                            ProvisionDataContainer enableData = provisionSelectedResourceHelper.provisionResource(res, userEntity, pUser, bindingMap,
-                                    primaryIdentity, requestId, true);
-                            if (enableData != null) {
-                                enableData.setParentAuditLogId(auditLog.getId());
-                                dataList.add(enableData);
-                            }
-                        }
                     } catch (Throwable tw) {
                         auditLog.fail();
                         auditLog.setFailureReason(
