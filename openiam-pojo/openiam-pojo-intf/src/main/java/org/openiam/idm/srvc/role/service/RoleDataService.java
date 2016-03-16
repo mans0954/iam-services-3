@@ -178,7 +178,9 @@ public interface RoleDataService {
     public List<RoleEntity> findRolesByAttributeValue(String attrName, String attrValue);
 
     public List<Role> findRolesDtoByAttributeValue(String attrName, String attrValue);
-    
+
+    public List<Role> findRolesDtoByAttributeValue(String attrName, String attrValue,boolean deepCopy);
+
     public List<RoleEntity> getRolesForResource(final String resourceId, final String requesterId, final int from, final int size);
 
     public List<Role> getRolesDtoForResource(final String resourceId, final String requesterId, final int from, final int size);
