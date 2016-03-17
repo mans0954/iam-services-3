@@ -79,14 +79,14 @@ public class DefaultMatchObjectRule implements MatchObjectRule {
 
         } else if (matchAttrName.equalsIgnoreCase("PRINCIPAL")) {
             LoginSearchBean lsb = new LoginSearchBean();
-            lsb.setLoginMatchToken(new SearchParam(matchAttrValue, MatchType.EXACT));
+            lsb.setLoginMatchToken(new SearchParam(matchAttrValue.toLowerCase(), MatchType.EXACT));
             lsb.setManagedSysId(sysConfiguration.getDefaultManagedSysId());
             searchBean.setPrincipal(lsb);
             //search.setPrincipal(matchAttrValue);
 
         } else if (matchAttrName.equalsIgnoreCase("MANAGED_SYS_PRINCIPAL")) {
             LoginSearchBean lsb = new LoginSearchBean();
-            lsb.setLoginMatchToken(new SearchParam(matchAttrValue, MatchType.EXACT));
+            lsb.setLoginMatchToken(new SearchParam(matchAttrValue.toLowerCase(), MatchType.EXACT));
             lsb.setManagedSysId(matchConfig.getManagedSysId());
             searchBean.setPrincipal(lsb);
             //search.setPrincipal(matchAttrValue);
