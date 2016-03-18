@@ -860,7 +860,7 @@ public class SourceAdapterDispatcher implements Runnable {
                 if (user == null || user.getId() == null) {
                     warnings.append(getWarning("No such manager in system=" + superUser.getValue() + " Skip this!"));
                     String value = superUser.getName() + "=" + superUser.getValue();
-                    UserAttribute supervisorDetails = user.getAttribute("SUPERVISOR_DETAILS");
+                    UserAttribute supervisorDetails = pUser.getAttribute("SUPERVISOR_DETAILS");
                     if (supervisorDetails == null) {
                         supervisorDetails = new UserAttribute();
                         supervisorDetails.setName("SUPERVISOR_DETAILS");
