@@ -21,6 +21,7 @@
  */
 package org.openiam.provision.service;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.cxf.endpoint.Client;
@@ -29,6 +30,7 @@ import org.apache.cxf.interceptor.LoggingInInterceptor;
 import org.apache.cxf.interceptor.LoggingOutInterceptor;
 import org.apache.cxf.jaxws.JaxWsProxyFactoryBean;
 import org.apache.cxf.jaxws.endpoint.dynamic.JaxWsDynamicClientFactory;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.openiam.base.id.UUIDGen;
 import org.openiam.connector.ConnectorService;
 import org.openiam.connector.type.constant.ErrorCode;
@@ -45,8 +47,17 @@ import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.provision.type.ExtensibleUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -66,6 +77,9 @@ public class ConnectorAdapter {
     @Qualifier("provisionConnectorWebService")
     private ProvisionConnectorWebService connectorService;
 
+    @Value("${org.openiam.location.simulation.ldap.result}")
+    protected String locationStorageSimulationLdapFile;
+
     public ObjectResponse addRequest(ManagedSysDto managedSys,
                                      CrudRequest addReqType) {
         ObjectResponse resp = new ObjectResponse();
@@ -83,22 +97,24 @@ public class ConnectorAdapter {
             ProvisionConnectorDto connector = connectorService
                     .getProvisionConnector(managedSys.getConnectorId());
             log.info("Connector found for " + connector.getConnectorId());
-            if (connector != null
-                    && (connector.getServiceUrl() != null && connector
-                    .getServiceUrl().length() > 0)) {
 
-                JaxWsProxyFactoryBean factory = new JaxWsProxyFactoryBean();
-                factory.getInInterceptors().add(new LoggingInInterceptor());
-                factory.getOutInterceptors().add(new LoggingOutInterceptor());
-                factory.setServiceClass(ConnectorService.class);
-                factory.setAddress(connector.getServiceUrl());
-                ConnectorService connectorService = (ConnectorService) factory.create();
-                ObjectResponse objectResponse = connectorService.add(addReqType);
+            if (managedSys.isSimulationMode()) {
+                return simulationMode(addReqType, "ADD");
+            } else {
+                if (connector != null
+                        && (connector.getServiceUrl() != null && connector
+                        .getServiceUrl().length() > 0)) {
 
-                return objectResponse;
+                    JaxWsProxyFactoryBean factory = new JaxWsProxyFactoryBean();
+                    factory.getInInterceptors().add(new LoggingInInterceptor());
+                    factory.getOutInterceptors().add(new LoggingOutInterceptor());
+                    factory.setServiceClass(ConnectorService.class);
+                    factory.setAddress(connector.getServiceUrl());
+                    ConnectorService connectorService = (ConnectorService) factory.create();
+                    resp = connectorService.add(addReqType);
+                }
+                return resp;
             }
-            return resp;
-
         } catch (Exception e) {
 
             resp.setError(ErrorCode.OTHER_ERROR);
@@ -125,18 +141,23 @@ public class ConnectorAdapter {
             ProvisionConnectorDto connector = connectorService
                     .getProvisionConnector(managedSys.getConnectorId());
             log.info("Connector found for " + connector.getConnectorId());
-            if ((connector.getServiceUrl() != null && connector
-                    .getServiceUrl().length() > 0)) {
 
-                JaxWsProxyFactoryBean factory = new JaxWsProxyFactoryBean();
-                factory.getInInterceptors().add(new LoggingInInterceptor());
-                factory.getOutInterceptors().add(new LoggingOutInterceptor());
-                factory.setServiceClass(ConnectorService.class);
-                factory.setAddress(connector.getServiceUrl());
-                ConnectorService connectorService = (ConnectorService) factory.create();
-                resp = connectorService.modify(modReqType);
+            if (managedSys.isSimulationMode()) {
+                return simulationMode(modReqType, "MODIFY");
+            } else {
+                if ((connector.getServiceUrl() != null && connector
+                        .getServiceUrl().length() > 0)) {
+
+                    JaxWsProxyFactoryBean factory = new JaxWsProxyFactoryBean();
+                    factory.getInInterceptors().add(new LoggingInInterceptor());
+                    factory.getOutInterceptors().add(new LoggingOutInterceptor());
+                    factory.setServiceClass(ConnectorService.class);
+                    factory.setAddress(connector.getServiceUrl());
+                    ConnectorService connectorService = (ConnectorService) factory.create();
+                    resp = connectorService.modify(modReqType);
+                }
+                return resp;
             }
-            return resp;
         } catch (Exception e) {
             log.debug("Exception caught in ConnectorAdaptor:modifyRequest");
             log.error(e);
@@ -248,19 +269,23 @@ public class ConnectorAdapter {
 
             log.debug("Connector found for " + connector.getConnectorId());
 
-            if (connector != null
-                    && (connector.getServiceUrl() != null && connector
-                    .getServiceUrl().length() > 0)) {
-                JaxWsProxyFactoryBean factory = new JaxWsProxyFactoryBean();
-                factory.getInInterceptors().add(new LoggingInInterceptor());
-                factory.getOutInterceptors().add(new LoggingOutInterceptor());
-                factory.setServiceClass(ConnectorService.class);
-                factory.setAddress(connector.getServiceUrl());
-                ConnectorService connectorService = (ConnectorService) factory.create();
-                ResponseType resp = connectorService.reconcileResource(config);
-                return resp;
+            if (managedSys.isSimulationMode()) {
+                ObjectMapper mapper = new ObjectMapper();
+                return simulationMode(mapper.writeValueAsString(config), "RECONCILE");
+            } else {
+                if (connector != null
+                        && (connector.getServiceUrl() != null && connector
+                        .getServiceUrl().length() > 0)) {
+                    JaxWsProxyFactoryBean factory = new JaxWsProxyFactoryBean();
+                    factory.getInInterceptors().add(new LoggingInInterceptor());
+                    factory.getOutInterceptors().add(new LoggingOutInterceptor());
+                    factory.setServiceClass(ConnectorService.class);
+                    factory.setAddress(connector.getServiceUrl());
+                    ConnectorService connectorService = (ConnectorService) factory.create();
+                    type = connectorService.reconcileResource(config);
+                }
+                return type;
             }
-            return type;
         } catch (Exception e) {
             log.error(e);
 
@@ -297,8 +322,7 @@ public class ConnectorAdapter {
                 factory.setServiceClass(ConnectorService.class);
                 factory.setAddress(connector.getServiceUrl());
                 ConnectorService connectorService = (ConnectorService) factory.create();
-                LookupAttributeResponse resp = connectorService.lookupAttributeNames(config);
-                return resp;
+                type = connectorService.lookupAttributeNames(config);
             }
             return type;
         } catch (Exception e) {
@@ -329,18 +353,23 @@ public class ConnectorAdapter {
             ProvisionConnectorDto connector = connectorService
                     .getProvisionConnector(managedSys.getConnectorId());
             log.info("Connector found for " + connector.getConnectorId());
-            if ((connector.getServiceUrl() != null && connector
-                    .getServiceUrl().length() > 0)) {
-                JaxWsProxyFactoryBean factory = new JaxWsProxyFactoryBean();
-                factory.getInInterceptors().add(new LoggingInInterceptor());
-                factory.getOutInterceptors().add(new LoggingOutInterceptor());
-                factory.setServiceClass(ConnectorService.class);
-                factory.setAddress(connector.getServiceUrl());
-                ConnectorService connectorService = (ConnectorService) factory.create();
-                resp = connectorService.delete(delReqType);
+
+            if (managedSys.isSimulationMode()) {
+                return simulationMode(delReqType, "DELETE");
+            } else {
+                if ((connector.getServiceUrl() != null && connector
+                        .getServiceUrl().length() > 0)) {
+                    JaxWsProxyFactoryBean factory = new JaxWsProxyFactoryBean();
+                    factory.getInInterceptors().add(new LoggingInInterceptor());
+                    factory.getOutInterceptors().add(new LoggingOutInterceptor());
+                    factory.setServiceClass(ConnectorService.class);
+                    factory.setAddress(connector.getServiceUrl());
+                    ConnectorService connectorService = (ConnectorService) factory.create();
+                    resp = connectorService.delete(delReqType);
+                }
                 return resp;
             }
-            return resp;
+
         } catch (Exception e) {
             log.error(e);
 
@@ -411,18 +440,22 @@ public class ConnectorAdapter {
             ProvisionConnectorDto connector = connectorService
                     .getProvisionConnector(managedSys.getConnectorId());
             log.debug("Connector found for " + connector.getConnectorId());
-            if ((connector.getServiceUrl() != null && connector
-                    .getServiceUrl().length() > 0)) {
-                JaxWsProxyFactoryBean factory = new JaxWsProxyFactoryBean();
-                factory.getInInterceptors().add(new LoggingInInterceptor());
-                factory.getOutInterceptors().add(new LoggingOutInterceptor());
-                factory.setServiceClass(ConnectorService.class);
-                factory.setAddress(connector.getServiceUrl());
-                ConnectorService connectorService = (ConnectorService) factory.create();
-                resp = connectorService.resetPassword(request);
+
+            if (managedSys.isSimulationMode()) {
+                return simulationMode(request, "RESET_PASSWORD");
+            } else {
+                if ((connector.getServiceUrl() != null && connector
+                        .getServiceUrl().length() > 0)) {
+                    JaxWsProxyFactoryBean factory = new JaxWsProxyFactoryBean();
+                    factory.getInInterceptors().add(new LoggingInInterceptor());
+                    factory.getOutInterceptors().add(new LoggingOutInterceptor());
+                    factory.setServiceClass(ConnectorService.class);
+                    factory.setAddress(connector.getServiceUrl());
+                    ConnectorService connectorService = (ConnectorService) factory.create();
+                    resp = connectorService.resetPassword(request);
+                }
                 return resp;
             }
-            return resp;
         } catch (Exception e) {
             log.error(e);
 
@@ -453,19 +486,21 @@ public class ConnectorAdapter {
                     .getProvisionConnector(managedSys.getConnectorId());
             log.debug("Connector found for " + connector.getConnectorId());
 
-            if ((connector.getServiceUrl() != null && connector
-                    .getServiceUrl().length() > 0)) {
-                JaxWsProxyFactoryBean factory = new JaxWsProxyFactoryBean();
-                factory.getInInterceptors().add(new LoggingInInterceptor());
-                factory.getOutInterceptors().add(new LoggingOutInterceptor());
-                factory.setServiceClass(ConnectorService.class);
-                factory.setAddress(connector.getServiceUrl());
-                ConnectorService connectorService = (ConnectorService) factory.create();
-                resp = connectorService.suspend(request);
+            if (managedSys.isSimulationMode()) {
+                return simulationMode(request, "SUSPEND");
+            } else {
+                if ((connector.getServiceUrl() != null && connector
+                        .getServiceUrl().length() > 0)) {
+                    JaxWsProxyFactoryBean factory = new JaxWsProxyFactoryBean();
+                    factory.getInInterceptors().add(new LoggingInInterceptor());
+                    factory.getOutInterceptors().add(new LoggingOutInterceptor());
+                    factory.setServiceClass(ConnectorService.class);
+                    factory.setAddress(connector.getServiceUrl());
+                    ConnectorService connectorService = (ConnectorService) factory.create();
+                    resp = connectorService.suspend(request);
+                }
                 return resp;
             }
-            return resp;
-
         } catch (Exception e) {
             log.error(e);
 
@@ -493,18 +528,21 @@ public class ConnectorAdapter {
                     .getProvisionConnector(managedSys.getConnectorId());
             log.debug("Connector found for " + connector.getConnectorId());
 
-            if ((connector.getServiceUrl() != null && connector
-                    .getServiceUrl().length() > 0)) {
-                JaxWsProxyFactoryBean factory = new JaxWsProxyFactoryBean();
-                factory.getInInterceptors().add(new LoggingInInterceptor());
-                factory.getOutInterceptors().add(new LoggingOutInterceptor());
-                factory.setServiceClass(ConnectorService.class);
-                factory.setAddress(connector.getServiceUrl());
-                ConnectorService connectorService = (ConnectorService) factory.create();
-                type = connectorService.resume(request);
+            if (managedSys.isSimulationMode()) {
+                return simulationMode(request, "RESUME");
+            } else {
+                if ((connector.getServiceUrl() != null && connector
+                        .getServiceUrl().length() > 0)) {
+                    JaxWsProxyFactoryBean factory = new JaxWsProxyFactoryBean();
+                    factory.getInInterceptors().add(new LoggingInInterceptor());
+                    factory.getOutInterceptors().add(new LoggingOutInterceptor());
+                    factory.setServiceClass(ConnectorService.class);
+                    factory.setAddress(connector.getServiceUrl());
+                    ConnectorService connectorService = (ConnectorService) factory.create();
+                    type = connectorService.resume(request);
+                }
                 return type;
             }
-            return type;
         } catch (Exception e) {
             log.error(e);
 
@@ -527,14 +565,14 @@ public class ConnectorAdapter {
             resp.setError(ErrorCode.INVALID_MANAGED_SYS_ID);
             return resp;
         }
-        if(log.isDebugEnabled()) {
+        if (log.isDebugEnabled()) {
             log.debug("ConnectorAdapter:testCredentials called. Managed sys ="
                     + managedSys.getId());
         }
         try {
             ProvisionConnectorDto connector = connectorService
                     .getProvisionConnector(managedSys.getConnectorId());
-            if(log.isDebugEnabled()) {
+            if (log.isDebugEnabled()) {
                 log.debug("Connector found for " + connector.getConnectorId());
             }
             if (connector != null
@@ -548,12 +586,10 @@ public class ConnectorAdapter {
                 factory.setAddress(connector.getServiceUrl());
                 ConnectorService connectorService = (ConnectorService) factory.create();
                 resp = connectorService.validatePassword(request);
-                return resp;
-
             }
             return resp;
         } catch (Exception e) {
-            if(log.isDebugEnabled()) {
+            if (log.isDebugEnabled()) {
                 log.debug("Exception caught in ConnectorAdapter:validatePassword"); //SIA 2015-08-01
             }
             log.error(e);
@@ -600,7 +636,6 @@ public class ConnectorAdapter {
                 factory.setAddress(connector.getServiceUrl());
                 ConnectorService connectorService = (ConnectorService) factory.create();
                 type = connectorService.testConnection(rt);
-                return type;
             }
             return type;
         } catch (Exception e) {
@@ -612,6 +647,60 @@ public class ConnectorAdapter {
 
         }
 
+    }
+
+    private ObjectResponse simulationMode(RequestType obj, String type) throws IOException {
+
+        if (obj == null) {
+            ObjectResponse res = new ObjectResponse();
+            res.setStatus(StatusCodeType.FAILURE);
+            //TODO Added message
+            return res;
+        }
+
+        ObjectMapper mapper = new ObjectMapper();
+        StringBuilder sb = new StringBuilder();
+        sb.append("ExtensibleObject = ").append(obj.getExtensibleObject().getAttributesAsJSON(new String[]{})).append("\n");
+        sb.append("ObjectIdentity = ").append(mapper.writeValueAsString(obj.getObjectIdentity())).append("\n\n");
+
+        return simulationMode(sb.toString(), type);
+    }
+
+    private ObjectResponse simulationMode(String body, String type) throws IOException {
+        ObjectResponse res = new ObjectResponse();
+
+        if (StringUtils.isEmpty(body)) {
+            res.setStatus(StatusCodeType.FAILURE);
+            res.setError(ErrorCode.NO_SUCH_REQUEST);
+            //TODO Added message
+            return res;
+        } else {
+            res.setStatus(StatusCodeType.SUCCESS);
+        }
+
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+        String time = formatter.format(System.currentTimeMillis());
+
+        Path path = Paths.get(locationStorageSimulationLdapFile, "ldap_" + time + ".csv");
+        PrintWriter writer = null;
+
+        try {
+            writer = new PrintWriter(Files.newBufferedWriter(path, Charset.forName("UTF-8"), StandardOpenOption.WRITE,
+                    StandardOpenOption.APPEND, StandardOpenOption.CREATE));
+        } catch (IOException ex) {
+            res.setStatus(StatusCodeType.FAILURE);
+            log.error("Can not insert to file");
+        }
+
+        if (writer != null) {
+            formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            time = formatter.format(System.currentTimeMillis());
+
+            writer.append("<---------- " + time + " Type request = " + type + " ---------->").append("\n").append(body);
+            writer.close();
+        }
+
+        return res;
     }
 
 }
