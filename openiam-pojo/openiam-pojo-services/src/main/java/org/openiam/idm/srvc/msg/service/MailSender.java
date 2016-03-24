@@ -2,18 +2,16 @@ package org.openiam.idm.srvc.msg.service;
 
 import javax.annotation.PostConstruct;
 
-import org.apache.commons.lang.RandomStringUtils;
-import org.openiam.redis.RedisTaskScheduler;
-import org.openiam.redis.TaskTriggerListener;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Component;
 
 @Component("mailSender")
-public class MailSender implements TaskTriggerListener {
-
-    private RedisTaskScheduler mailTaskScheduler;
+public class MailSender {
     
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
@@ -21,24 +19,35 @@ public class MailSender implements TaskTriggerListener {
     @Autowired
     private RedisMessageListenerContainer listener;
     
+    @Autowired
+    @Qualifier("scheduler")
+    private ThreadPoolTaskScheduler scheduler;
+    
     @PostConstruct
     public void init() {
-    	mailTaskScheduler = new RedisTaskScheduler();
-    	mailTaskScheduler.setRedisTemplate(redisTemplate);
-    	mailTaskScheduler.setTaskTriggerListener(this);
+
     }
 
     public void send(final Message mail) {
     	if(mail.getProcessingTime() != null) {
-    		mailTaskScheduler.schedule(String.format("mailTask-%s", RandomStringUtils.randomAlphanumeric(10)), mail, mail.getProcessingTime());
+    		scheduler.schedule(new ScheduledMail(mail), mail.getProcessingTime());
     	} else {
     		redisTemplate.convertAndSend("mailQueue", mail);
     	}
     }
+    
+    private class ScheduledMail implements Runnable {
+    	
+    	Message mail;
+    	
+    	ScheduledMail(final Message mail) {
+    		this.mail = mail;
+    	}
 
-	@Override
-	public void taskTriggered(String taskId, Object object) {
-		redisTemplate.convertAndSend("mailQueue", (Message)object);
-	}
-
+		@Override
+		public void run() {
+			redisTemplate.convertAndSend("mailQueue", mail);
+		}
+    	
+    }
 }

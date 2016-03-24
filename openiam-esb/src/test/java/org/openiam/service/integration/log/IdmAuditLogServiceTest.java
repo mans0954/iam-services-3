@@ -34,7 +34,7 @@ public class IdmAuditLogServiceTest extends AbstractServiceTest {
 	}
 
 
-	@Test(threadPoolSize=1, invocationCount=10, enabled=false)
+	@Test(threadPoolSize=1, invocationCount=10)
 	public void testEnqueue() throws InterruptedException {
 		final List<IdmAuditLogEntity> logs = new LinkedList<IdmAuditLogEntity>();
 		for(int i = 0; i < 200; i++) {

@@ -30,10 +30,10 @@ public class TestRedisTaskScheduler extends AbstractTransactionalTestNGSpringCon
 	public void testMailTaskScheduler() throws InterruptedException {
 		final Message mail = new Message();
 		mail.setBody(RandomStringUtils.randomAlphanumeric(10));
-		//mail.setExecutionDateTime(DateUtils.addSeconds(new Date(), 10));
+		mail.setExecutionDateTime(DateUtils.addSeconds(new Date(), 10));
 		mail.setSubject(RandomStringUtils.randomAlphanumeric(10));
 		mail.addTo("sdfds@dsfdsf.com");
 		sender.send(mail);
-		Thread.sleep(5000L);
+		Thread.sleep(30000L);
 	}
 }
