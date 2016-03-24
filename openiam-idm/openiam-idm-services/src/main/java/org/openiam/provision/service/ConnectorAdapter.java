@@ -651,13 +651,16 @@ public class ConnectorAdapter {
 
     private ObjectResponse simulationMode(RequestType obj, String type) throws IOException {
 
+        log.debug("Simulation mode. Check RequestType");
+
         if (obj == null) {
             ObjectResponse res = new ObjectResponse();
             res.setStatus(StatusCodeType.FAILURE);
-            //TODO Added message
+            log.debug("Simulation mode. RequestType is null");
             return res;
         }
 
+        log.debug("Simulation mode. Start build data from RequestType");
         ObjectMapper mapper = new ObjectMapper();
         StringBuilder sb = new StringBuilder();
         sb.append("ExtensibleObject = ").append(obj.getExtensibleObject().getAttributesAsJSON(new String[]{})).append("\n");
@@ -669,10 +672,12 @@ public class ConnectorAdapter {
     private ObjectResponse simulationMode(String body, String type) throws IOException {
         ObjectResponse res = new ObjectResponse();
 
+        log.debug("Simulation mode. Check body");
+
         if (StringUtils.isEmpty(body)) {
             res.setStatus(StatusCodeType.FAILURE);
             res.setError(ErrorCode.NO_SUCH_REQUEST);
-            //TODO Added message
+            log.debug("Simulation mode. Body is null");
             return res;
         } else {
             res.setStatus(StatusCodeType.SUCCESS);
@@ -681,23 +686,30 @@ public class ConnectorAdapter {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
         String time = formatter.format(System.currentTimeMillis());
 
+        log.debug("Simulation mode. Build Paths locationStorage = '" + locationStorageSimulationLdapFile + "' name file = 'ldap_" + time + ".csv");
         Path path = Paths.get(locationStorageSimulationLdapFile, "ldap_" + time + ".csv");
+        log.debug("Simulation mode. Paths = " + path);
         PrintWriter writer = null;
 
         try {
+            log.debug("Simulation mode. Try create new PrintWriter");
             writer = new PrintWriter(Files.newBufferedWriter(path, Charset.forName("UTF-8"), StandardOpenOption.WRITE,
                     StandardOpenOption.APPEND, StandardOpenOption.CREATE));
         } catch (IOException ex) {
             res.setStatus(StatusCodeType.FAILURE);
             log.error("Can not insert to file");
+            log.error(ex);
         }
 
         if (writer != null) {
             formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             time = formatter.format(System.currentTimeMillis());
 
+            log.debug("Simulation mode. Append data in file");
             writer.append("<---------- " + time + " Type request = " + type + " ---------->").append("\n").append(body);
             writer.close();
+        } else {
+            log.debug("Simulation mode. PrintWriter is null");
         }
 
         return res;
