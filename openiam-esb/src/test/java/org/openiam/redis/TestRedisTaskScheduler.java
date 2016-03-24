@@ -26,7 +26,7 @@ public class TestRedisTaskScheduler extends AbstractTransactionalTestNGSpringCon
 	@Autowired
 	private MailSender sender;
 	
-	@Test
+	@Test(enabled=false)
 	public void testMailTaskScheduler() throws InterruptedException {
 		final Message mail = new Message();
 		mail.setBody(RandomStringUtils.randomAlphanumeric(10));
