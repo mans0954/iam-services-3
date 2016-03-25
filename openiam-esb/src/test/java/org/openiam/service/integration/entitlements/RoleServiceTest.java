@@ -4,9 +4,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.annotation.Resource;
+
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.idm.searchbeans.RoleSearchBean;
+import org.openiam.idm.srvc.grp.dto.Group;
+import org.openiam.idm.srvc.grp.dto.GroupAttribute;
+import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.dto.RoleAttribute;
 import org.openiam.idm.srvc.role.ws.RoleDataWebService;
@@ -119,4 +124,15 @@ public class RoleServiceTest extends AbstractAttributeServiceTest<Role, RoleSear
 		response = roleServiceClient.saveRole(r2, getRequestorId());
 		assertSuccess(response);
 	}
+
+/*	@Override
+	protected String getName(Role bean) {
+		return bean.getName();
+	}
+
+	@Override
+	protected void setNameForSearch(RoleSearchBean searchBean, String name) {
+		searchBean.setName(name);
+	}*/
+
 }

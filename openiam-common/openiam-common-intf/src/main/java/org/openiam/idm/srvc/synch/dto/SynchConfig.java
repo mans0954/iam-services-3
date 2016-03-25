@@ -20,6 +20,7 @@ import java.util.List;
 		"managedSysId",
 		"loadMatchOnly",
 		"updateAttribute",
+        "synchFrequency",
 		"runOn",
 		"cronExpression",
         "companyId",
@@ -52,6 +53,11 @@ import java.util.List;
         "lastRecProcessed",
         "wsScript",
         "wsUrl",
+		"wsUri",
+        "wsNameSpace",
+        "wsOperation",
+        "wsAttributes",
+        "wsTargetEntityPath",
         "synchReviews",
         "parentAuditLogId"
 })
@@ -70,6 +76,7 @@ public class SynchConfig extends KeyNameDTO implements MatchConfig {
 	private Integer updateAttribute;
 	private Date runOn;
 	private String cronExpression;
+    private String synchFrequency;
     private String companyId;
 	private String synchType;
 	//private String deleteRule;
@@ -102,6 +109,11 @@ public class SynchConfig extends KeyNameDTO implements MatchConfig {
     private SearchScopeType searchScope = SearchScopeType.SUBTREE_SCOPE;
     private String wsUrl;
     private String wsScript;
+    private String wsUri;
+    private String wsNameSpace;
+    private String wsOperation;
+    private String wsAttributes;
+    private String wsTargetEntityPath;
     private List<SynchReview> synchReviews;
     private String parentAuditLogId;
 
@@ -162,6 +174,14 @@ public class SynchConfig extends KeyNameDTO implements MatchConfig {
 	public void setUpdateAttribute(Integer updateAttribute) {
 		this.updateAttribute = updateAttribute;
 	}
+
+    public String getSynchFrequency() {
+        return this.synchFrequency;
+    }
+
+    public void setSynchFrequency(String synchFrequency) {
+        this.synchFrequency = synchFrequency;
+    }
 
 	public Date getRunOn() {
 		return runOn;
@@ -436,6 +456,45 @@ public class SynchConfig extends KeyNameDTO implements MatchConfig {
     public void setSynchReviews(List<SynchReview> synchReviews) {
         this.synchReviews = synchReviews;
     }
+    public String getWsNameSpace() {
+        return wsNameSpace;
+    }
+
+    public String getWsUri() {
+        return wsUri;
+    }
+
+    public void setWsUri(String wsUri) {
+        this.wsUri = wsUri;
+    }
+
+    public void setWsNameSpace(String wsNameSpace) {
+        this.wsNameSpace = wsNameSpace;
+    }
+
+    public String getWsOperation() {
+        return wsOperation;
+    }
+
+    public void setWsOperation(String wsOperation) {
+        this.wsOperation = wsOperation;
+    }
+
+    public String getWsAttributes() {
+        return wsAttributes;
+    }
+
+    public void setWsAttributes(String wsAttributes) {
+        this.wsAttributes = wsAttributes;
+    }
+
+    public String getWsTargetEntityPath() {
+        return wsTargetEntityPath;
+    }
+
+    public void setWsTargetEntityPath(String wsTargetEntityPath) {
+        this.wsTargetEntityPath = wsTargetEntityPath;
+    }
 
     @Override
     public String toString() {
@@ -451,6 +510,7 @@ public class SynchConfig extends KeyNameDTO implements MatchConfig {
                 ", updateAttribute=" + updateAttribute +
 				", runOn='" + runOn + '\'' +
 				", cronExpression='" + cronExpression + '\'' +
+                ", synchFrequency='" + synchFrequency + '\'' +
                 ", companyId='" + companyId + '\'' +
                 ", synchType='" + synchType + '\'' +
                 ", processRule='" + processRule + '\'' +

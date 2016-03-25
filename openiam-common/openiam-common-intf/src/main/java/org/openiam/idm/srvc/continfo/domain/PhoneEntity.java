@@ -2,14 +2,7 @@ package org.openiam.idm.srvc.continfo.domain;
 
 import java.util.Date;
 
-import javax.persistence.AttributeOverride;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
+import javax.persistence.*;
 import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlTransient;
 
@@ -23,6 +16,7 @@ import org.openiam.elasticsearch.bridge.UserBrigde;
 import org.openiam.elasticsearch.constants.ESIndexName;
 import org.openiam.elasticsearch.constants.ESIndexType;
 import org.openiam.idm.srvc.continfo.dto.Phone;
+import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
@@ -317,7 +311,7 @@ public class PhoneEntity extends AbstractMetdataTypeEntity {
 			if (other.totpSecret != null)
 				return false;
 		} else if (!totpSecret.equals(other.totpSecret))
-			return false;
+            return false;
 		return true;
 	}
 

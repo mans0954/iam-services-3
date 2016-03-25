@@ -5,6 +5,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
 import org.openiam.idm.searchbeans.AbstractSearchBean;
+import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.dto.ApproverAssociation;
 
@@ -21,7 +22,7 @@ import org.openiam.idm.srvc.mngsys.dto.ApproverAssociation;
         "approverEntityType",
         "approverLevel"
 })
-public class ApproverAssocationSearchBean extends AbstractSearchBean<ApproverAssociation, String> {
+public class ApproverAssocationSearchBean extends AbstractSearchBean<ApproverAssociation, String> implements SearchBean {
 	private AssociationType associationType;
 	private String associationEntityId;
 	private String requestType;
@@ -93,5 +94,18 @@ public class ApproverAssocationSearchBean extends AbstractSearchBean<ApproverAss
 		this.approverLevel = approverLevel;
 	}
 
-	
+
+	@Override
+	public String getCacheUniqueBeanKey() {
+		return new StringBuilder()
+				.append(associationType != null ? associationType : "")
+				.append(associationEntityId != null ? associationEntityId : "")
+				.append(approverEntityId != null ? approverEntityId : "")
+				.append(approverEntityType != null ? approverEntityType : "")
+				.append(onApproveEntityId != null ? onApproveEntityId : "")
+				.append(onApproveEntityType != null ? onApproveEntityType : "")
+				.append(onRejectEntityId != null ? onRejectEntityId : "")
+				.append(onRejectEntityType != null ? onRejectEntityType : "")
+				.append(getKey() != null ? getKey() : "")
+				.toString();	}
 }

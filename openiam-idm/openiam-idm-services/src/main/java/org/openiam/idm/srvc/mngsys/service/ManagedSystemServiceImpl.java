@@ -16,13 +16,16 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.am.srvc.dao.AuthProviderDao;
 import org.openiam.am.srvc.domain.AuthProviderEntity;
 import org.openiam.base.AttributeOperationEnum;
+import org.openiam.base.OrderConstants;
 import org.openiam.base.ws.ResponseCode;
+import org.openiam.base.ws.SortParam;
 import org.openiam.dozer.converter.AttributeMapDozerConverter;
 import org.openiam.dozer.converter.ManagedSysDozerConverter;
 import org.openiam.dozer.converter.ManagedSystemObjectMatchDozerConverter;
 import org.openiam.dozer.converter.MngSysPolicyDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.AttributeMapSearchBean;
+import org.openiam.idm.searchbeans.ManagedSysSearchBean;
 import org.openiam.idm.searchbeans.MngSysPolicySearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
@@ -39,7 +42,6 @@ import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.DefaultReconciliationAttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
-import org.openiam.idm.srvc.mngsys.domain.ManagedSysRuleEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
 import org.openiam.idm.srvc.mngsys.domain.MngSysPolicyEntity;
 import org.openiam.idm.srvc.mngsys.domain.ReconciliationResourceAttributeMapEntity;
@@ -47,7 +49,6 @@ import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.mngsys.dto.MngSysPolicyDto;
-import org.openiam.idm.srvc.msg.dto.ManagedSysSearchBean;
 import org.openiam.idm.srvc.policy.domain.PolicyEntity;
 import org.openiam.idm.srvc.policy.service.PolicyDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
@@ -62,6 +63,8 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -89,9 +92,6 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
 
     @Autowired
     protected DefaultReconciliationAttributeMapDAO defaultReconciliationAttributeMapDAO;
-
-    @Autowired
-    protected ManagedSysRuleDAO managedSysRuleDAO;
 
     @Autowired
     protected PolicyDAO policyDAO;
@@ -152,6 +152,7 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
         return managedSysDtos;
     }
 
+
     @Override
     @Transactional(readOnly = true)
     public ManagedSysEntity getManagedSysById(String id) {
@@ -167,7 +168,9 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     @Override
     @Transactional(readOnly = true)
     public List<ManagedSysEntity> getManagedSysByConnectorId(String connectorId) {
-        return managedSysDAO.findbyConnectorId(connectorId);
+        ManagedSysSearchBean searchBean = getDefaultSearchBean();
+        searchBean.setConnectorId(connectorId);
+        return managedSysDAO.getByExample(searchBean);
     }
 
 //    @Override
@@ -179,7 +182,8 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     @Override
     @Transactional(readOnly = true)
     public List<ManagedSysEntity> getAllManagedSys() {
-        return managedSysDAO.findAllManagedSys();
+        ManagedSysSearchBean searchBean = getDefaultSearchBean();
+        return managedSysDAO.getByExample(searchBean);
     }
 
     @Override
@@ -200,9 +204,7 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
             for (final ManagedSystemObjectMatchEntity matchEntity : sysEntity.getMngSysObjectMatchs()) {
                 matchDAO.delete(matchEntity);
             }
-            for (final ManagedSysRuleEntity ruleEntity : sysEntity.getRules()) {
-                managedSysRuleDAO.delete(ruleEntity);
-            }
+
             if (CollectionUtils.isNotEmpty(sysEntity.getGroups())) {
                 for (final GroupEntity group : sysEntity.getGroups()) {
                     group.setManagedSystem(null);
@@ -416,30 +418,6 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     }
 
     @Override
-    public List<ManagedSysRuleEntity> getRulesByManagedSysId(String managedSysId) {
-        return managedSysRuleDAO.findbyManagedSystemId(managedSysId);
-    }
-
-    @Override
-    @Transactional
-    public ManagedSysRuleEntity addRules(ManagedSysRuleEntity entity) {
-        if (entity.getManagedSysRuleId() != null) {
-            return entity;
-        }
-        entity.setManagedSysRuleId(managedSysRuleDAO.add(entity)
-                .getManagedSysRuleId());
-        return entity;
-    }
-
-    @Override
-    public void deleteRules(String ruleId) {
-        ManagedSysRuleEntity entity = managedSysRuleDAO.findById(ruleId);
-        if (entity == null)
-            return;
-        managedSysRuleDAO.delete(entity);
-    }
-
-    @Override
     @Transactional(readOnly = true)
     public List<ManagedSystemObjectMatchEntity> managedSysObjectParam(
             String managedSystemId, String objectType) {
@@ -465,6 +443,12 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     public MngSysPolicyDto getManagedSysPolicyByMngSysIdAndMetadataType(String mngSysId, String metadataTypeId) {
         MngSysPolicyEntity mngSysPolicyEntity = mngSysPolicyDAO.findPrimaryByMngSysIdAndType(mngSysId, metadataTypeId);
         return mngSysPolicyDozerConverter.convertToDTO(mngSysPolicyEntity, true);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<AttributeMapEntity> getAttributeMapsByManagedSysId(String managedSysId) {
+        return attributeMapDAO.findByManagedSysId(managedSysId);
     }
 
     @Override
@@ -594,6 +578,7 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
         return mngSysPolicyDAO.count(searchBean);
     }
 
+    @Cacheable(value = "decryptManagedSysPassword", key = "{ #managedSys.id}")
     public String getDecryptedPassword(ManagedSysDto managedSys) {
         String result = null;
         if (managedSys.getPswd() != null) {
@@ -734,4 +719,17 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
 	public int count(ManagedSysSearchBean searchBean) {
 		return managedSysDAO.count(searchBean);
 	}
+
+    private ManagedSysSearchBean getDefaultSearchBean(){
+        ManagedSysSearchBean searchBean = new ManagedSysSearchBean();
+        addDefaultSortParam(searchBean);
+        return searchBean;
+    }
+
+    private void addDefaultSortParam(ManagedSysSearchBean searchBean){
+        SortParam sort = new SortParam();
+        sort.setSortBy("name");
+        sort.setOrderBy(OrderConstants.ASC);
+        searchBean.addSortParam(sort);
+    }
 }

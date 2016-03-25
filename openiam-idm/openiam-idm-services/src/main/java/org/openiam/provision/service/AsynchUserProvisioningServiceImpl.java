@@ -77,44 +77,48 @@ public class AsynchUserProvisioningServiceImpl implements AsynchUserProvisionSer
         log.debug("END PROVISIONING - ADD USER ---------------------");
 
     }
-
-
     /* (non-Javadoc)
       * @see org.openiam.provision.service.ProvisionService#modifyUser(org.openiam.provision.dto.ProvisionUser)
       */
-    @Override
-    public void modifyUser(final ProvisionUser user) {
-        log.debug("START PROVISIONING - MODIFY USER CALLED...................");
-
-        Executors.newSingleThreadExecutor().execute(new Runnable() {
-            public void run() {
-                try {
-                    provisionService.modifyUser(user);
-                } catch (Exception e) {
-                    log.debug("EXCEPTION:AsynchUserProvisionService.modifyUser");
-                    log.error(e);
-                }
+        @Override
+        public void modifyUser (ProvisionUser user){
+            if (log.isDebugEnabled()) {
+                log.debug("START PROVISIONING - MODIFY USER CALLED...................");
             }
-        });
 
-        log.debug("END PROVISIONING - MODIFY USER ---------------------");
-    }
-
-    @Override
-    public void startBulkOperation(final BulkOperationRequest bulkRequest) {
-        log.debug("START BULK OPERATION CALLED...................");
-
-        Executors.newSingleThreadExecutor().execute(new Runnable() {
-            public void run() {
-                try {
-                    provisionService.startBulkOperation(bulkRequest);
-                } catch (Exception e) {
-                    log.debug("EXCEPTION:AsynchUserProvisionService.startBulkOperation");
-                    log.error(e);
+            Executors.newSingleThreadExecutor().execute(new Runnable() {
+                public void run() {
+                    try {
+                        provisionService.modifyUser(user);
+                    } catch (Exception e) {
+                        log.debug("EXCEPTION:AsynchUserProvisionService.modifyUser");
+                        log.error(e);
+                    }
                 }
-            }
-        });
-        log.debug("END BULK OPERATION CALLED ---------------------");
-    }
+            });
 
-}
+            if (log.isDebugEnabled()) {
+                log.debug("END PROVISIONING - MODIFY USER ---------------------");
+            }
+        }
+
+        @Override
+        public void startBulkOperation ( final BulkOperationRequest bulkRequest){
+            if (log.isDebugEnabled()) {
+                log.debug("START BULK OPERATION CALLED...................");
+            }
+
+            Executors.newSingleThreadExecutor().execute(new Runnable() {
+                public void run() {
+                    try {
+                        provisionService.startBulkOperation(bulkRequest);
+                    } catch (Exception e) {
+                        log.debug("EXCEPTION:AsynchUserProvisionService.startBulkOperation");
+                        log.error(e);
+                    }
+                }
+            });
+            log.debug("END BULK OPERATION CALLED ---------------------");
+        }
+
+    }

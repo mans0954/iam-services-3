@@ -15,12 +15,12 @@ import java.util.Date;
 @XmlType(name = "IdentitySearchBean", propOrder = {
         "identity",
         "referredObjectId",
-        "managedSysId",
         "status",
         "type",
         "createFromDate",
         "createToDate",
-        "createdBy"
+        "createdBy",
+        "managedSysId"
 })
 public class IdentitySearchBean extends AbstractSearchBean<IdentityDto, String> implements SearchBean<IdentityDto, String>, Serializable {
     private static final long serialVersionUID = 1L;
@@ -110,4 +110,17 @@ public class IdentitySearchBean extends AbstractSearchBean<IdentityDto, String> 
         this.type = type;
     }
 
+    @Override
+    public String getCacheUniqueBeanKey() {
+        return new StringBuilder()
+                .append(identity != null ? identity : "")
+                .append(managedSysId != null ? managedSysId : "")
+                .append(referredObjectId != null ? referredObjectId : "")
+                .append(createFromDate != null ? createFromDate.hashCode() : "")
+                .append(createToDate != null ? createToDate.hashCode() : "")
+                .append(createdBy != null ? createdBy.hashCode() : "")
+                .append(status != null ? status.getValue().hashCode() : "")
+                .append(type != null ? type.getValue().hashCode() : "")
+                .append(getKey() != null ? getKey() : "")
+                .toString();    }
 }

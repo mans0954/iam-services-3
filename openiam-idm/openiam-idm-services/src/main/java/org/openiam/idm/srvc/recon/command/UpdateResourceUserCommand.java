@@ -27,8 +27,10 @@ public class UpdateResourceUserCommand extends BaseReconciliationUserCommand {
 
 	@Override
     public boolean execute(ReconciliationSituation config, String principal, String mSysID, User user, List<ExtensibleAttribute> attributes) {
-		log.debug("Entering UpdateResourceUserCommand");
-		log.debug("Update Resource for user: " + user.getId());
+		if(log.isDebugEnabled()) {
+			log.debug("Entering UpdateResourceUserCommand");
+			log.debug("Update Resource for user: " + user.getId());
+		}
 		try {
 			ProvisionUser pUser = new ProvisionUser(user);
 			pUser.setSrcSystemId(mSysID);

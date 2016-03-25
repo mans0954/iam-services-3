@@ -4,7 +4,10 @@ import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.dto.GroupAttribute;
+import org.openiam.idm.srvc.grp.dto.GroupOwner;
+import org.openiam.idm.srvc.grp.dto.GroupRequestModel;
 import org.openiam.idm.srvc.lang.dto.Language;
+import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
@@ -412,9 +415,10 @@ public interface GroupDataWebService {
      * @return a Response Object, containing the status of this operation.
      */
     @WebMethod
-    public Response removeChildGroup(final @WebParam(name = "groupId") String groupId, 
-    							 	 final @WebParam(name = "childGroupId") String childGroupId,
-                                      final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+    public Response removeChildGroup(final @WebParam(name = "groupId") String groupId,
+                                     final @WebParam(name = "childGroupId") String childGroupId,
+                                     final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+
 
     /**
      * Checks if User specified by userId can be added to the Group specified by groupId as a member
@@ -444,7 +448,20 @@ public interface GroupDataWebService {
                                                   final @WebParam(name = "attrValue", targetNamespace = "") String attrValue,
                                                   final @WebParam(name = "language", targetNamespace = "") Language language);
     
-    
+    @WebMethod
+    Response removeRoleFromGroup(@WebParam(name = "roleId", targetNamespace = "") String roleId,
+                                 @WebParam(name = "groupId", targetNamespace = "") String groupId,
+                                 final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+    @WebMethod
+    public SaveTemplateProfileResponse saveGroupRequest(final @WebParam(name = "request", targetNamespace = "")  GroupRequestModel request);
+    @WebMethod
+    public SaveTemplateProfileResponse validateGroupRequest(final @WebParam(name = "request", targetNamespace = "")  GroupRequestModel request);
+
+    /*
+    HOW TO DO IT???
+    @WebMethod
+    List<GroupOwner> getOwnersBeansForGroup(final @WebParam(name = "groupId", targetNamespace = "") String groupId);*/
+
     /**
      * Does this group have any children?
      * @param groupId

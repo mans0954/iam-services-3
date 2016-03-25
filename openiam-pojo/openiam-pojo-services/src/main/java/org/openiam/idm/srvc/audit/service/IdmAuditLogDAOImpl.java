@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.audit.service;
 
 // Generated Nov 30, 2007 3:01:47 AM by Hibernate Tools 3.2.0.b11
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
@@ -17,6 +18,7 @@ import org.openiam.idm.searchbeans.AuditLogSearchBean;
 import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.audit.domain.AuditLogTargetEntity;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -26,6 +28,26 @@ import org.springframework.stereotype.Repository;
 @Deprecated
 @Repository("idmAuditLogDAO")
 public class IdmAuditLogDAOImpl extends BaseDaoImpl<IdmAuditLogEntity, String> implements IdmAuditLogDAO {
+
+/*    @Autowired
+    private AuditLogSearchBeanConverter converter;*/
+
+    @Override
+    protected Criteria getExampleCriteria(final IdmAuditLogEntity entity) {
+        final Criteria criteria = super.getCriteria();
+        if(entity != null) {
+            if(StringUtils.isNotBlank(entity.getId())) {
+                criteria.add(Restrictions.eq(getPKfieldName(), entity.getId()));
+            }
+            if(StringUtils.isNotEmpty(entity.getAction())) {
+                criteria.add(Restrictions.eq("action",entity.getAction()));
+            }
+            if(StringUtils.isNotEmpty(entity.getResult())) {
+                criteria.add(Restrictions.eq("result",entity.getResult()));
+            }
+        }
+        return criteria;
+    }
 
     @Override
     public List<String> getIDsByExample(SearchBean searchBean, int from, int size) {
@@ -46,12 +68,28 @@ public class IdmAuditLogDAOImpl extends BaseDaoImpl<IdmAuditLogEntity, String> i
         return resultList;
     }
 
+    private Criteria buildCriteriaForInActions(Criteria criteria,AuditLogSearchBean auditLogSearchBean) {
+        if(auditLogSearchBean != null) {
+            if(auditLogSearchBean.getActions() != null) {
+                List<String> actions = new ArrayList<String>(auditLogSearchBean.getActions().length);
+                for(String action : auditLogSearchBean.getActions()) {
+                    if(StringUtils.isNotEmpty(action)) {
+                        actions.add(action);
+                    }
+                }
+                if(!actions.isEmpty())
+                    criteria.add(Restrictions.in("action",actions));
+            }
+        }
+        return criteria;
+    }
+
     @Override
     protected Criteria getExampleCriteria(SearchBean searchBean) {
         Criteria criteria = super.getCriteria();
         if(searchBean != null && (searchBean instanceof AuditLogSearchBean)) {
             final AuditLogSearchBean auditSearch = (AuditLogSearchBean)searchBean;
-
+            criteria = buildCriteriaForInActions(criteria,auditSearch);
             if(auditSearch.getFrom() != null && auditSearch.getTo() != null) {
                 criteria.add(Restrictions.between("timestamp", auditSearch.getFrom(), auditSearch.getTo()));
             } else if(auditSearch.getFrom() != null) {
@@ -77,8 +115,11 @@ public class IdmAuditLogDAOImpl extends BaseDaoImpl<IdmAuditLogEntity, String> i
                 DetachedCriteria subquery = DetachedCriteria.forClass(AuditLogTargetEntity.class);
                 subquery.add(Restrictions.eq("targetId",auditSearch.getTargetId()));
                 subquery.setProjection(Projections.property("log.id"));
-                criteria.add(Restrictions.or(sourceCriterion, Subqueries.propertyIn("id",subquery)));
-
+                if (((AuditLogSearchBean) searchBean).getUserVsTargetAndFlag()) {
+                    criteria.add(Restrictions.and(sourceCriterion, Subqueries.propertyIn("id",subquery)));
+                } else {
+                    criteria.add(Restrictions.or(sourceCriterion, Subqueries.propertyIn("id",subquery)));
+                }
             } else {
                 if(StringUtils.isNotBlank(auditSearch.getUserId())) {
                     criteria.add(Restrictions.eq("userId", auditSearch.getUserId()));

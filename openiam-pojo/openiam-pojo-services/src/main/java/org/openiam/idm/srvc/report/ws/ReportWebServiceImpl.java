@@ -53,6 +53,8 @@ public class ReportWebServiceImpl implements ReportWebService {
 	@Autowired
 	private ReportDataService reportDataService;
 
+
+
 	@Override
 	public GetReportDataResponse executeQuery(final ReportQueryDto reportQuery) {
 		GetReportDataResponse response = new GetReportDataResponse();
@@ -81,9 +83,12 @@ public class ReportWebServiceImpl implements ReportWebService {
 	public String getReportUrl(final ReportQueryDto reportQuery,
 							   final String taskName, final String reportBaseUrl, String locale) {
 		try {
+
 			ReportInfoDto report = reportDataService.getReportByName(reportQuery.getReportName());
 			if (report == null) {
-				log.debug("Report couldn't be found. Report name = " + reportQuery.getReportName());
+				if(log.isDebugEnabled()) {
+					log.debug("Report couldn't be found. Report name = " + reportQuery.getReportName());
+				}
 				return null;
 			}
 			String taskPath = StringUtils.isNotBlank(taskName) ? taskName : DEFAULT_REPORT_TASK;
@@ -205,7 +210,9 @@ public class ReportWebServiceImpl implements ReportWebService {
 
 	@Override
 	public Response createOrUpdateReportInfoParam(final ReportCriteriaParamDto reportParam) {
-		log.debug("In createOrUpdateReportInfoParam:" + reportParam);
+		if(log.isDebugEnabled()) {
+			log.debug("In createOrUpdateReportInfoParam:" + reportParam);
+		}
 		Response response = new Response();
 		String paramId = null;
 
@@ -599,7 +606,9 @@ public class ReportWebServiceImpl implements ReportWebService {
 
 	@Override
 	public Response createOrUpdateSubCriteriaParam(final ReportSubCriteriaParamDto subCriteriaParamReport) {
-		log.debug("In createOrUpdateSubCriteriaParam:" + subCriteriaParamReport);
+		if(log.isDebugEnabled()) {
+			log.debug("In createOrUpdateSubCriteriaParam:" + subCriteriaParamReport);
+		}
 		Response response = new Response();
 		String paramId = null;
 

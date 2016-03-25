@@ -85,6 +85,10 @@ public interface RoleDataWebService {
                                final @WebParam(name = "from", targetNamespace = "") int from,
                                final @WebParam(name = "size", targetNamespace = "") int size);
 
+    @WebMethod
+    Role getRole(@WebParam(name = "roleId", targetNamespace = "") String roleId,
+                 @WebParam(name="requesterId", targetNamespace="") String requesterId);
+
 
     /**
      * This method adds particular roleId to a particular group.<br>
@@ -337,9 +341,9 @@ public interface RoleDataWebService {
     Response canRemoveUserFromRole(final @WebParam(name = "userId", targetNamespace = "") String userId,
                                    final @WebParam(name = "roleId", targetNamespace = "") String roleId);
 
-    @WebMethod
+/*    @WebMethod
     List<Role> findRolesByAttributeValue(final @WebParam(name = "attrName", targetNamespace = "") String attrName,
-                                         final @WebParam(name = "attrValue", targetNamespace = "") String attrValue);
+                                         final @WebParam(name = "attrValue", targetNamespace = "") String attrValue);*/
 
     @WebMethod
     List<TreeObjectId> getRolesWithSubRolesIds(final @WebParam(name = "roleIds", targetNamespace = "") List<String> roleIds,

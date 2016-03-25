@@ -52,14 +52,14 @@ public class OrganizationTypeEntity extends AbstractKeyNameEntity {
     @JoinTable(name="ORG_TYPE_VALID_MEMBERSHIP",
         joinColumns={@JoinColumn(name="MEMBER_ORG_TYPE_ID")},
         inverseJoinColumns={@JoinColumn(name="ORG_TYPE_ID")})
-    @Fetch(FetchMode.SUBSELECT)
+//    @Fetch(FetchMode.SUBSELECT)
     private Set<OrganizationTypeEntity> parentTypes;
     
 	@ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
     @JoinTable(name="ORG_TYPE_VALID_MEMBERSHIP",
         joinColumns={@JoinColumn(name="ORG_TYPE_ID")},
         inverseJoinColumns={@JoinColumn(name="MEMBER_ORG_TYPE_ID")})
-    @Fetch(FetchMode.SUBSELECT)
+//    @Fetch(FetchMode.SUBSELECT)
     private Set<OrganizationTypeEntity> childTypes;
 	
 	@OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "organizationType", fetch = FetchType.LAZY)
@@ -71,6 +71,9 @@ public class OrganizationTypeEntity extends AbstractKeyNameEntity {
 	    
 	@Transient
 	private String displayName;
+
+	@OneToMany(mappedBy = "referenceId")
+	private Set<LanguageMappingEntity> languageMappings;
 
 	public Map<String, LanguageMappingEntity> getDisplayNameMap() {
 		return displayNameMap;
@@ -132,7 +135,15 @@ public class OrganizationTypeEntity extends AbstractKeyNameEntity {
 	public void setOrganizations(Set<OrganizationEntity> organizations) {
 		this.organizations = organizations;
 	}
-	
+
+	public Set<LanguageMappingEntity> getLanguageMappings() {
+		return languageMappings;
+	}
+
+	public void setLanguageMappings(Set<LanguageMappingEntity> languageMappings) {
+		this.languageMappings = languageMappings;
+	}
+
 	public boolean containsChild(final String childId) {
 		boolean retVal = false;
 		if(StringUtils.isBlank(childId)) {

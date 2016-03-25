@@ -27,8 +27,10 @@ public class CreateResourceAccountUserCommand extends BaseReconciliationUserComm
 
 	@Override
 	public boolean execute(ReconciliationSituation config, String principal, String mSysID, User user, List<ExtensibleAttribute> attributes) {
-        log.debug("Entering CreateResourceAccountCommand");
-        log.debug("Create Resource Account for user: " + user.getId());
+		if(log.isDebugEnabled()) {
+	        log.debug("Entering CreateResourceAccountCommand");
+	        log.debug("Create Resource Account for user: " + user.getId());
+		}
 		try {
 			ProvisionUser pUser = new ProvisionUser(user);
 			pUser.setSrcSystemId(mSysID);

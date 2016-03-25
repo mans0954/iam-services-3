@@ -43,6 +43,13 @@ public class AuthStateSearchBean extends AbstractSearchBean<AuthStateEntity, Aut
 	}
 
 	@Override
+	public String getCacheUniqueBeanKey() {
+		return new StringBuilder()
+				.append(onlyActive)
+				.append(getKey() != null ? getKey() : "")
+				.toString();	}
+
+	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();

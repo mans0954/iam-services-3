@@ -91,7 +91,9 @@ public class CSVAdapterForGenericObject implements SourceAdapter {
     @Override
     public SyncResponse startSynch(SynchConfig config, SynchReviewEntity sourceReview, SynchReviewEntity resultReview) {
 
-        log.debug("Starting to Sync CSV File..^^^^^^^^");
+    	if(log.isDebugEnabled()) {
+    		log.debug("Starting to Sync CSV File..^^^^^^^^");
+    	}
 
         File file = new File(config.getFileName());
         InputStream input = null;
@@ -114,7 +116,9 @@ public class CSVAdapterForGenericObject implements SourceAdapter {
 
             int ctr = 0;
             for (String[] lineAry : fileContentAry) {
-                log.debug("File Row #= " + lineAry[0]);
+            	if(log.isDebugEnabled()) {
+            		log.debug("File Row #= " + lineAry[0]);
+            	}
 
                 if (ctr == 0) {
                     populateTemplate(lineAry);
@@ -141,7 +145,9 @@ public class CSVAdapterForGenericObject implements SourceAdapter {
                                     .createValidationScript(config, review);
                             int retval = script.isValid(rowObj);
                             if (retval == ValidationScript.NOT_VALID) {
-                                log.debug("Validation failed...");
+                            	if(log.isDebugEnabled()) {
+                            		log.debug("Validation failed...");
+                            	}
                                 // log this object in the exception log
                             }
                             if (retval == ValidationScript.SKIP) {
@@ -199,7 +205,9 @@ public class CSVAdapterForGenericObject implements SourceAdapter {
             }
         }
 
-        log.debug("CSV SYNCHRONIZATION COMPLETE^^^^^^^^");
+        if(log.isDebugEnabled()) {
+        	log.debug("CSV SYNCHRONIZATION COMPLETE^^^^^^^^");
+        }
 
         SyncResponse resp = new SyncResponse(ResponseStatus.SUCCESS);
         return resp;

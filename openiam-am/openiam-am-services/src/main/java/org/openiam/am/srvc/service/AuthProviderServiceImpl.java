@@ -138,6 +138,14 @@ public class AuthProviderServiceImpl implements AuthProviderService {
         return selectedTypes;
     }
 
+    @Override
+    @Transactional
+    public void addProviderType(AuthProviderTypeEntity entity) {
+        if(entity==null)
+            throw new NullPointerException("provider type is null");
+        authProviderTypeDao.save(entity);
+    }
+
     /*
     *==================================================
     * AuthAttributeEntity section

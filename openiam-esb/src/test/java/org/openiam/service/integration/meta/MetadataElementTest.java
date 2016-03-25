@@ -4,10 +4,12 @@ import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.openiam.base.ws.Response;
+import org.openiam.idm.searchbeans.MetadataElementPageTemplateSearchBean;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
 import org.openiam.idm.srvc.meta.dto.MetadataElement;
+import org.openiam.idm.srvc.meta.dto.MetadataElementPageTemplate;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.meta.ws.MetadataWebService;
 import org.openiam.service.integration.AbstractKeyNameServiceTest;
@@ -21,8 +23,17 @@ public class MetadataElementTest extends AbstractKeyNameServiceTest<MetadataElem
 	protected MetadataElement newInstance() {
 		final MetadataElement element = new MetadataElement();
 		element.setAttributeName(getRandomName());
-		element.setMetadataTypeId(metadataServiceClient.findTypeBeans(null, 0, 1, null).get(0).getId());
+		element.setMetadataTypeId(metadataServiceClient.findTypeBeans(new MetadataTypeSearchBean(), 0, 1, null).get(0).getId());
 		return element;
+	}
+	
+	@Test
+	public void clusterTest() throws Exception {
+		final ClusterKey<MetadataElement, MetadataElementSearchBean> key = doClusterTest();
+		final MetadataElement instance = key.getDto();
+		if(instance != null && instance.getId() != null) {
+			deleteAndAssert(instance);
+    	}
 	}
 
 	@Override
@@ -64,4 +75,25 @@ public class MetadataElementTest extends AbstractKeyNameServiceTest<MetadataElem
 		e.setRequired(true);
 		assertSuccess(save(e));
 	}
+
+/*	@Override
+	protected void setId(MetadataElement bean, String id) {
+		bean.setId(id);
+	}
+
+	@Override
+	protected void setName(MetadataElement bean, String name) {
+		bean.setAttributeName(name);
+	}
+
+	@Override
+	protected String getName(MetadataElement bean) {
+		return bean.getAttributeName();
+	}
+
+	@Override
+	protected void setNameForSearch(MetadataElementSearchBean searchBean, String name) {
+		searchBean.setAttributeName(name);
+	}*/
+
 }

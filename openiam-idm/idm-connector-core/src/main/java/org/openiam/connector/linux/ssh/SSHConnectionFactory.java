@@ -27,7 +27,9 @@ public class SSHConnectionFactory {
         SSHAgent ssh = connections.get(id);
 
         if (ssh != null) {
-            log.debug("Using previously-opened connection: " + id);
+        	if(log.isDebugEnabled()) {
+        		log.debug("Using previously-opened connection: " + id);
+        	}
 
             if (!ssh.isAuthenticationComplete()) {
                 try {
@@ -68,7 +70,9 @@ public class SSHConnectionFactory {
      * @return The newly added SSH agent
      */
     public SSHAgent addSSH(String id, String host, Integer port, String username, String password) {
-        log.debug("Creating new SSH connection for ID:" + id);
+    	if(log.isDebugEnabled()) {
+    		log.debug("Creating new SSH connection for ID:" + id);
+    	}
         SSHAgent ssh = new SSHAgent(host, port, username, password);
         try {
             if (!ssh.connect())
@@ -84,7 +88,9 @@ public class SSHConnectionFactory {
     }
 
     public SSHAgent addSSH(String id, String host, Integer port, String username, File f) {
-        log.debug("Creating new SSH connection for ID:" + id);
+    	if(log.isDebugEnabled()) {
+    		log.debug("Creating new SSH connection for ID:" + id);
+    	}
         SSHAgent ssh = new SSHAgent(host, port, username, f);
         try {
             if (!ssh.connect())

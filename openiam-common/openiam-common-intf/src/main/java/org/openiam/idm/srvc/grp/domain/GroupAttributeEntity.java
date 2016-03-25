@@ -26,6 +26,7 @@ public class GroupAttributeEntity extends AbstractAttributeEntity {
     @ElementCollection
     @CollectionTable(name="GROUP_ATTRIBUTE_VALUES", joinColumns=@JoinColumn(name="GROUP_ATTRIBUTE_ID", referencedColumnName="ID"))
     @Column(name="VALUE", length = 4000)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private List<String> values = new ArrayList<String>();
 
     @Column(name = "IS_MULTIVALUED", nullable = false)
@@ -39,6 +40,7 @@ public class GroupAttributeEntity extends AbstractAttributeEntity {
     
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "GRP_ID", referencedColumnName = "GRP_ID", insertable = true, updatable = false)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private GroupEntity group;
 
     public List<String> getValues() {

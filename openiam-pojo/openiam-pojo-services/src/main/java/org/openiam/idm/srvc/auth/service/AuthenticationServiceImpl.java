@@ -50,6 +50,7 @@ import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
 import org.openiam.idm.srvc.audit.constant.AuditTarget;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
+import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.auth.context.AuthenticationContext;
 import org.openiam.idm.srvc.auth.domain.AuthStateEntity;
 import org.openiam.idm.srvc.auth.domain.AuthStateId;
@@ -101,11 +102,8 @@ import org.springframework.transaction.annotation.Transactional;
  * @author suneet
  */
 
-@Service("authenticate")
-@WebService(endpointInterface = "org.openiam.idm.srvc.auth.service.AuthenticationService", targetNamespace = "urn:idm.openiam.org/srvc/auth/service", portName = "AuthenticationServicePort", serviceName = "AuthenticationService")
-@ManagedResource(objectName = "openiam:name=authenticationService", description = "Authentication Service")
-@Transactional
-public class AuthenticationServiceImpl extends AbstractBaseService implements AuthenticationService, ApplicationContextAware, BeanFactoryAware {
+@Service
+public class AuthenticationServiceImpl implements AuthenticationServiceService, BeanFactoryAware, ApplicationContextAware {
 
     @Autowired
     private AuthStateDAO authStateDao;
@@ -137,10 +135,14 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
     private ScriptIntegration scriptRunner;
 
     private ApplicationContext ctx;
+
     private BeanFactory beanFactory;
 
     @Autowired
     private CustomJacksonMapper jacksonMapper;
+
+    @Autowired
+    protected AuditLogService auditLogService;
 
     private static final Log log = LogFactory.getLog(AuthenticationServiceImpl.class);
 
@@ -270,7 +272,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
         globalLogoutRequest(request);
     }
 
-    @Override
+    /*@Override
     @Transactional
     public AuthenticationResponse login(final AuthenticationRequest request) {
         final IdmAuditLogEntity newLoginEvent = new IdmAuditLogEntity();
@@ -292,6 +294,130 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
             	newLoginEvent.setAuthProviderId(authProvider.getId());
             }
             
+            final AuthenticationContext authenticationContext = new AuthenticationContext(request);
+            authenticationContext.setAuthProviderId(authProvider.getId());
+            authenticationContext.setEvent(newLoginEvent);
+
+            final String principal = request.getPrincipal();
+            final String clientIP = request.getClientIP();
+
+            newLoginEvent.setClientIP(clientIP);
+            newLoginEvent.setRequestorPrincipal(principal);
+
+            final String springBeanName = authProvider.getSpringBeanName();
+            final String groovyScript = authProvider.getGroovyScriptURL();
+            AuthenticationModule loginModule = null;
+            if (StringUtils.isNotBlank(springBeanName)) {
+                try {
+                    loginModule = (AuthenticationModule) ctx.getBean(springBeanName, AuthenticationModule.class);
+                } catch (Throwable e) {
+                    log.error(String.format("Error while getting spring bean: %s", springBeanName), e);
+                }
+            } else if (StringUtils.isNotBlank(groovyScript)) {
+                loginModule = (AbstractScriptableLoginModule) scriptRunner.instantiateClass(null, groovyScript);
+            }
+
+            if (loginModule == null) {
+                loginModule = ctx.getBean(sysConfiguration.getDefaultLoginModule(), AuthenticationModule.class);
+            }
+
+            final Subject sub = loginModule.login(authenticationContext);
+            updateAuthState(sub);
+            newLoginEvent.succeed();
+            authResp.setSubject(sub);
+            authResp.succeed();
+        *//*
+        } catch (AuthenticationException ae) {
+        	final String erroCodeAsString = Integer.valueOf(ae.getErrorCode()).toString();
+            newLoginEvent.fail();
+            newLoginEvent.setFailureReason(erroCodeAsString);
+            newLoginEvent.addAttribute(AuditAttributeName.LOGIN_ERROR_CODE, erroCodeAsString);
+            int errCode = ae.getErrorCode();
+            switch (errCode) {
+                case AuthenticationConstants.RESULT_INVALID_DOMAIN:
+                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_DOMAIN);
+                    break;
+                case AuthenticationConstants.RESULT_INVALID_LOGIN:
+                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_LOGIN);
+                    break;
+                case AuthenticationConstants.RESULT_INVALID_PASSWORD:
+                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_PASSWORD);
+                    break;
+                case AuthenticationConstants.RESULT_INVALID_USER_STATUS:
+                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_USER_STATUS);
+                    break;
+                case AuthenticationConstants.RESULT_LOGIN_DISABLED:
+                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_LOGIN_DISABLED);
+                    break;
+                case AuthenticationConstants.RESULT_LOGIN_LOCKED:
+                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_LOGIN_LOCKED);
+                    break;
+                case AuthenticationConstants.RESULT_PASSWORD_EXPIRED:
+                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_PASSWORD_EXPIRED);
+                    break;
+                case AuthenticationConstants.RESULT_SERVICE_NOT_FOUND:
+                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_SERVICE_NOT_FOUND);
+                    break;
+                case AuthenticationConstants.RESULT_INVALID_CONFIGURATION:
+                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_CONFIGURATION);
+                    break;
+                case AuthenticationConstants.RESULT_SUCCESS_PASSWORD_EXP:
+                	authResp.setAuthErrorCode(AuthenticationConstants.RESULT_SUCCESS_PASSWORD_EXP);
+                	break;
+                case AuthenticationConstants.RESULT_PASSWORD_CHANGE_AFTER_RESET:
+                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_PASSWORD_CHANGE_AFTER_RESET);
+                    break;
+                default:
+                    authResp.setAuthErrorCode(AuthenticationConstants.INTERNAL_ERROR);
+                    break;
+            }
+		*//*
+        } catch (BasicDataServiceException e) {
+            log.warn("Can't log in", e);
+            authResp.fail();
+            authResp.setErrorCode(e.getCode());
+            authResp.setErrorTokenList(e.getErrorTokenList());
+            //authResp.setErrorCode(AuthenticationConstants.INTERNAL_ERROR);
+            newLoginEvent.fail();
+            newLoginEvent.setFailureReason(e.getMessage());
+            newLoginEvent.setException(e);
+            newLoginEvent.setFailureReason(e.getCode());
+        } catch (Throwable e) {
+            log.error("Can't login", e);
+            authResp.fail();
+            authResp.setErrorText(e.getMessage());
+            authResp.setErrorCode(ResponseCode.INTERNAL_ERROR);
+            newLoginEvent.fail();
+            newLoginEvent.setFailureReason(e.getMessage());
+            newLoginEvent.setException(e);
+        } finally {
+            auditLogService.enqueue(newLoginEvent);
+        }
+        return authResp;
+    }*/
+
+    @Override
+    @Transactional
+    public AuthenticationResponse login(final AuthenticationRequest request) {
+        final IdmAuditLogEntity newLoginEvent = new IdmAuditLogEntity();
+        newLoginEvent.setUserId(null);
+        newLoginEvent.setAction(AuditAction.LOGIN.value());
+
+        final AuthenticationResponse authResp = new AuthenticationResponse(ResponseStatus.FAILURE);
+        try {
+            if (request == null) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+            }
+
+            if (StringUtils.isBlank(request.getLanguageId())) {
+                throw new BasicDataServiceException(ResponseCode.LANGUAGE_REQUIRED);
+            }
+
+            final AuthProviderEntity authProvider = getAuthProvider(request.getPatternId(), newLoginEvent);
+            if(authProvider != null) {
+                newLoginEvent.setAuthProviderId(authProvider.getId());
+            }
+
             final AuthenticationContext authenticationContext = new AuthenticationContext(request);
             authenticationContext.setAuthProviderId(authProvider.getId());
             authenticationContext.setEvent(newLoginEvent);

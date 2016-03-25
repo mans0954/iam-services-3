@@ -36,7 +36,8 @@ import org.openiam.internationalization.InternationalizedCollection;
 	"displayNameMap",
 	"displayName",
 	"sensitive",
-	"usedForSMSOTP"
+	"usedForSMSOTP",
+    "languageMappings"
 })
 @DozerDTOCorrespondence(MetadataTypeEntity.class)
 @Internationalized
@@ -55,7 +56,9 @@ public class MetadataType extends KeyNameDTO {
     private Map<String, LanguageMapping> displayNameMap;
 	    
     private String displayName;
-    
+
+    private Set<LanguageMapping> languageMappings=new HashSet<LanguageMapping>(0);;
+
     public MetadataType() {
     	super();
     }
@@ -141,6 +144,14 @@ public class MetadataType extends KeyNameDTO {
 	public void setUsedForSMSOTP(boolean usedForSMSOTP) {
 		this.usedForSMSOTP = usedForSMSOTP;
 	}
+
+    public Set<LanguageMapping> getLanguageMappings() {
+        return languageMappings;
+    }
+
+    public void setLanguageMappings(Set<LanguageMapping> languageMappings) {
+        this.languageMappings = languageMappings;
+    }
 
 	@Override
 	public int hashCode() {

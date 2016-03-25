@@ -382,6 +382,9 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 			}
 			
 			final String password = loginDS.decryptPassword(primaryLogin.getUserId(), primaryLogin.getPassword());
+			if(StringUtils.isBlank(password)) {
+				LOG.warn(String.format("Null password for user %s:%s.  This user will likely not be allowed to succesfully login", primaryLogin.getUserId(), primaryLogin.getLogin()));
+			}
 			request.setPassword(password);
 			return request;
 		} catch(BasicDataServiceException e) {

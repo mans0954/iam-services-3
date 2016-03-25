@@ -14,7 +14,10 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class MetadataTemplateTypeEntityDAOImpl extends BaseDaoImpl<MetadataTemplateTypeEntity, String> implements MetadataTemplateTypeEntityDAO {
 
-	
+	    @Override
+    protected boolean cachable() {
+        return true;
+    }
 	
 	@Override
 	protected Criteria getExampleCriteria(SearchBean searchBean) {

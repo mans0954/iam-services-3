@@ -42,6 +42,7 @@ public class MetadataTemplateTypeFieldEntity extends AbstractKeyNameEntity {
 	@ManyToOne(fetch=FetchType.EAGER)
     @JoinColumn(name = "TEMPLATE_TYPE_ID", insertable=true, updatable=false, nullable=false)
     @Fetch(FetchMode.JOIN)
+    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	private MetadataTemplateTypeEntity templateType;
 	
     @Column(name = "IS_REQUIRED")
@@ -49,6 +50,7 @@ public class MetadataTemplateTypeFieldEntity extends AbstractKeyNameEntity {
 	private boolean required;
     
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "field", fetch = FetchType.LAZY)
+    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<MetadataFieldTemplateXrefEntity> fieldXrefs;
 
 	public String getDescription() {

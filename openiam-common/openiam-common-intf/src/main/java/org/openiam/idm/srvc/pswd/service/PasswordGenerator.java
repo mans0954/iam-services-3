@@ -41,11 +41,12 @@ public class PasswordGenerator {
     private static final char[] lowerChars = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
     private static final char[] upperChars = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'};
     private static final char[] numericChars = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
-    private static final char[] specialChars = {'!', '$', '@', '%', '&', '{', '}', '*', '#', '%', '+', '-', '_', '/', '?'};
+    private static final char[] specialChars = {'!', '\"', '#', '$', '%', '&', '\'', '(', ')', '*', '+', ',', '-', '.', '/',
+                                                ':', ';', '<', '=', '>', '?', '@', '[', '\\', ']', '^', '_', '`', '{', '|', '}', '~'};
 
-    private static final String charset = "!$@%&{}*#%+-_/?0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    private static final String charset = "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
-    private static final String specialCharset = "!$@%&{}*#%+-_/?";
+    private static final String specialCharset = "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~";
     private static final String numericCharset = "0123456789";
     private static final String upperCharset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     private static final String lowerCharset = "abcdefghijklmnopqrstuvwxyz";
@@ -128,7 +129,9 @@ public class PasswordGenerator {
     }
 
     public static String generatePassword(Policy policy) {
-        log.debug("Start password generation!");
+    	if(log.isDebugEnabled()) {
+    		log.debug("Start password generation!");
+    	}
         Random rand = new Random(UUID.randomUUID().getLeastSignificantBits());
         PolicyAttribute paLength = policy.getAttribute(PWD_LEN);
         PolicyAttribute paSpecialChars = policy.getAttribute(NON_ALPHA_CHARS);
@@ -218,15 +221,21 @@ public class PasswordGenerator {
         if (intUpperMax == null) { intUpperMax = intLengthMax; }
 
         Integer repeats = toInteger(repeatLimit.getValue1());
-        log.debug("Fill initially!");
+        if(log.isDebugEnabled()) {
+        	log.debug("Fill initially!");
+        }
         List<String> passwordAsList = new ArrayList<>();
         List<String> specialAsList = getArrayOfGroup(intSpecialMin, intSpecialMax, notAllowedChar, repeats, listSpecialChars, rand);
         List<String> numericAsList = getArrayOfGroup(intNumberMin, intNumberMax, notAllowedChar, repeats, listNumericChars, rand);
         List<String> upperAsList = getArrayOfGroup(intUpperMin, intUpperMax, notAllowedChar, repeats, listUpperChars, rand);
         List<String> lowerAsList = getArrayOfGroup(intLowerMin, intLowerMax, notAllowedChar, repeats, listLowerChars, rand);
-        log.debug("End Fill initially!");
+        if(log.isDebugEnabled()) {
+        	log.debug("End Fill initially!");
+        }
         int used = specialAsList.size() + upperAsList.size() + numericAsList.size() + lowerAsList.size();
-        log.debug("Calculate password length!");
+        if(log.isDebugEnabled()) {
+        	log.debug("Calculate password length!");
+        }
         if (!(used >= intLengthMin && used <= toInt(intLengthMax))) {
             int passwordLength = 0;
             if (intLengthMin == 0 && (intLengthMax == null || intLengthMax == 0)) {
@@ -241,7 +250,9 @@ public class PasswordGenerator {
             }
             if (used < intLengthMin) {
                 while (used != passwordLength) {
-                    log.debug("Adding more chars!");
+                	if(log.isDebugEnabled()) {
+                		log.debug("Adding more chars!");
+                	}
                     if (!addAtGroup(upperAsList, intUpperMax, notAllowedChar, repeats, listUpperChars, rand)) {
                         if (!addAtGroup(lowerAsList, intLowerMax, notAllowedChar, repeats, listLowerChars, rand))
                             if (!addAtGroup(numericAsList, intNumberMax, notAllowedChar, repeats, listNumericChars, rand)) {
@@ -252,7 +263,9 @@ public class PasswordGenerator {
                 }
             } else if (intLengthMax != null && used > intLengthMax) {
                 while (used != passwordLength) {
-                    log.debug("Deleting of chars!");
+                	if(log.isDebugEnabled()) {
+                		log.debug("Deleting of chars!");
+                	}
                     int random = rand.nextInt(4);
                     boolean flag1 = true;
                     boolean flag2 = true;
@@ -308,7 +321,9 @@ public class PasswordGenerator {
         for (String s : passwordAsList) {
             sb.append(s);
         }
-        log.debug("Finish password generation!");
+        if(log.isDebugEnabled()) {
+        	log.debug("Finish password generation!");
+        }
         return sb.toString();
     }
 

@@ -40,7 +40,8 @@ public class AuthorizationManagerHessianClient implements AuthorizationManagerHe
 			throw new IllegalArgumentException(e.getMessage());
 		}
 	}
-	
+
+
 	@Override
 	public boolean isUserEntitledToResource(final String userId, final String resourceId) {
 		preflightCheck();
@@ -56,7 +57,6 @@ public class AuthorizationManagerHessianClient implements AuthorizationManagerHe
 		}
 		return retval;
 	}
-	
 
 	@Override
 	public boolean isUserEntitledToResourceWithRight(final String userId, final String resourceId, final String rightId) {
@@ -67,10 +67,12 @@ public class AuthorizationManagerHessianClient implements AuthorizationManagerHe
 		}
 		boolean retval = client.isUserEntitledToResourceWithRight(userId, resourceId, rightId);
 		if(isTimingEnabled) {
+if(log.isDebugEnabled()) {
 			long time = System.currentTimeMillis() - start;
 			final String logMessage = String.format("isUserEntitledToResourceWithRight: userId: %s, resourceId: %s, rightId: %s, time: %s ms", 
 					userId, resourceId, rightId, time);
 			log.debug(logMessage);
+}
 		}
 		return retval;
 	}
@@ -85,9 +87,11 @@ public class AuthorizationManagerHessianClient implements AuthorizationManagerHe
 		}
 		boolean retval = client.isUserMemberOfGroup(userId, groupId);
 		if(isTimingEnabled) {
+if(log.isDebugEnabled()) {
 			long time = System.currentTimeMillis() - start;
 			final String logMessage = String.format("isUserMemberOfGroup: userId: %s, groupId: %s, time: %s ms", userId, groupId, time);
 			log.debug(logMessage);
+}
 		}
 		return retval;
 	}
@@ -102,10 +106,12 @@ public class AuthorizationManagerHessianClient implements AuthorizationManagerHe
 		}
 		boolean retval = client.isUserMemberOfGroupWithRight(userId, groupId, rightId);
 		if(isTimingEnabled) {
+if(log.isDebugEnabled()) {
 			long time = System.currentTimeMillis() - start;
 			final String logMessage = String.format("isUserMemberOfGroupWithRight: userId: %s, groupId: %s, rightId: %s, time: %s ms", 
 					userId, groupId, rightId, time);
 			log.debug(logMessage);
+}
 		}
 		return retval;
 	}
@@ -120,9 +126,11 @@ public class AuthorizationManagerHessianClient implements AuthorizationManagerHe
 		}
 		boolean retval = client.isUserMemberOfRole(userId, roleId);
 		if(isTimingEnabled) {
+if(log.isDebugEnabled()) {
 			long time = System.currentTimeMillis() - start;
 			final String logMessage = String.format("isUserMemberOfRole: userId: %s, roleId: %s, time: %s ms", userId, roleId, time);
 			log.debug(logMessage);
+}
 		}
 		return retval;
 	}
@@ -137,10 +145,12 @@ public class AuthorizationManagerHessianClient implements AuthorizationManagerHe
 		}
 		boolean retval = client.isUserMemberOfRoleWithRight(userId, roleId, rightId);
 		if(isTimingEnabled) {
+if(log.isDebugEnabled()) {
 			long time = System.currentTimeMillis() - start;
 			final String logMessage = String.format("isUserMemberOfRoleWithRight: userId: %s, roleId: %s, rightId: %s, time: %s ms", 
 					userId, roleId, rightId, time);
 			log.debug(logMessage);
+}
 		}
 		return retval;
 	}

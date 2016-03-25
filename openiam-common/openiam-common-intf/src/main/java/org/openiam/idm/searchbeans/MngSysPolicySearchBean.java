@@ -11,7 +11,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "MngSysPolicySearchBean", propOrder = {
         "managedSystemId", "metadataTypeId"
 })
-public class MngSysPolicySearchBean extends AbstractKeyNameSearchBean<MngSysPolicyDto, String> {
+public class MngSysPolicySearchBean extends AbstractKeyNameSearchBean<MngSysPolicyDto, String> implements SearchBean {
 
     private String managedSystemId;
     private String metadataTypeId;
@@ -30,5 +30,12 @@ public class MngSysPolicySearchBean extends AbstractKeyNameSearchBean<MngSysPoli
 
     public void setMetadataTypeId(String metadataTypeId) {
         this.metadataTypeId = metadataTypeId;
+    }
+
+    @Override
+    public String getCacheUniqueBeanKey() {
+        return new StringBuilder()
+                .append(getKey() != null ? getKey() : "")
+                .toString();
     }
 }

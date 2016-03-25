@@ -3,6 +3,8 @@ package org.openiam.service.integration.login;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.openiam.am.srvc.dto.ContentProvider;
+import org.openiam.am.srvc.searchbeans.ContentProviderSearchBean;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.LoginSearchBean;
@@ -31,6 +33,10 @@ public class LoginServiceTest extends AbstractKeyServiceTest<Login, LoginSearchB
 	public void _destroy() {
 		userServiceClient.removeUser(user.getId());
 	}
+
+	@Autowired
+	@Qualifier("loginServiceClient")
+	private LoginDataWebService loginServiceClient;
 	
 	@Override
 	protected Login newInstance() {
@@ -67,6 +73,16 @@ public class LoginServiceTest extends AbstractKeyServiceTest<Login, LoginSearchB
 		return loginServiceClient.findBeans(searchBean, from, size);
 	}
 
+/*	@Override
+	protected String getId(Login bean) {
+		return bean.getLoginId();
+	}
+
+	@Override
+	protected void setId(Login bean, String id) {
+		bean.setLoginId(id);
+	}*/
+
 	@Test
 	public void testElasticSearch() {
 		final LoginSearchBean sb = newSearchBean();
@@ -75,5 +91,37 @@ public class LoginServiceTest extends AbstractKeyServiceTest<Login, LoginSearchB
 		
 		sb.setManagedSysId("0");
 		Assert.assertTrue(CollectionUtils.isNotEmpty(find(sb, 0, 1)));
+	}
+	
+	@Test
+	public void clusterTest() throws Exception {
+		final ClusterKey<Login, LoginSearchBean> key = doClusterTest();
+		final Login instance = key.getDto();
+		if(instance != null && instance.getId() != null) {
+			deleteAndAssert(instance);
+    	}
+	}
+	
+	public ClusterKey<Login, LoginSearchBean> doClusterTest() throws Exception {
+/*
+ create and save
+*/
+
+		Login instance = createBean();
+		Response response = saveAndAssert(instance);
+		instance.setId((String)response.getResponseValue());
+
+ /*find*/
+
+		final LoginSearchBean searchBean = newSearchBean();
+		searchBean.setDeepCopy(useDeepCopyOnFindBeans());
+		searchBean.setKey(instance.getId());
+
+/*
+ confirm save on both nodes
+*/
+
+		instance = assertClusteredSave(searchBean);
+		return new ClusterKey<Login, LoginSearchBean>(instance, searchBean);
 	}
 }

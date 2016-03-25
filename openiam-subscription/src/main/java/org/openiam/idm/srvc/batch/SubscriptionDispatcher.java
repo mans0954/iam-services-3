@@ -34,12 +34,16 @@ public class SubscriptionDispatcher implements Sweepable {
         jmsTemplate.browse(queue, new BrowserCallback<Object>() {
             @Override
             public Object doInJms(Session session, QueueBrowser browser) throws JMSException {
+                int numMsg = 0;
                 Enumeration e = browser.getEnumeration();
                 while (e.hasMoreElements()) {
+                    e.nextElement();
+                    numMsg++;
+                }
+                for (int i = 0; i < numMsg; i++) {
                     final ReportSubscriptionDto report = ((ReportSubscriptionDto) ((ObjectMessage) jmsTemplate.receive(queue)).getObject());
                     log.debug("Report browsed " + report.getReportName());
                     reportingTask.asyncExecuteReport(report);
-                    e.nextElement();
                 }
                 return null;
             }

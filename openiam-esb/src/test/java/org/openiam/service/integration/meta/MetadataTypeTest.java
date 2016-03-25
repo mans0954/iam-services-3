@@ -11,9 +11,19 @@ import org.openiam.idm.srvc.meta.ws.MetadataWebService;
 import org.openiam.service.integration.AbstractKeyNameServiceTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.testng.annotations.Test;
 
 public class MetadataTypeTest extends AbstractKeyNameServiceTest<MetadataType, MetadataTypeSearchBean> {
 
+	@Test
+	public void clusterTest() throws Exception {
+		final ClusterKey<MetadataType, MetadataTypeSearchBean> key = doClusterTest();
+		final MetadataType instance = key.getDto();
+		if(instance != null && instance.getId() != null) {
+			deleteAndAssert(instance);
+    	}
+	}
+	
 	@Override
 	protected MetadataType newInstance() {
 		final MetadataType type = new MetadataType();
@@ -51,5 +61,30 @@ public class MetadataTypeTest extends AbstractKeyNameServiceTest<MetadataType, M
 		searchBean.setDeepCopy(true);
 		return metadataServiceClient.findTypeBeans(searchBean, from, size, getDefaultLanguage());
 	}
+
+/*	@Override
+	protected String getId(MetadataType bean) {
+		return bean.getId();
+	}
+
+	@Override
+	protected void setId(MetadataType bean, String id) {
+		bean.setId(id);
+	}
+
+	@Override
+	protected void setName(MetadataType bean, String name) {
+		bean.setDescription(name);
+	}
+
+	@Override
+	protected String getName(MetadataType bean) {
+		return bean.getDescription();
+	}
+
+	@Override
+	protected void setNameForSearch(MetadataTypeSearchBean searchBean, String name) {
+		searchBean.setName(name);
+	}*/
 
 }

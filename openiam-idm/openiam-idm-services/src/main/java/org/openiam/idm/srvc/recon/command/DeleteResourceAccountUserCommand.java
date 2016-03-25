@@ -52,9 +52,10 @@ public class DeleteResourceAccountUserCommand extends BaseReconciliationUserComm
 
 	@Override
 	public boolean execute(ReconciliationSituation config, String principal, String mSysID, User user, List<ExtensibleAttribute> attributes) {
-        log.debug("Entering DeleteResourceAccountCommand");
-		log.debug("Delete Resource for principal: " + principal);
-
+		if(log.isDebugEnabled()) {
+	        log.debug("Entering DeleteResourceAccountCommand");
+			log.debug("Delete Resource for principal: " + principal);
+		}
 		if(user == null) {
             ManagedSysDto mSys = managedSysService.getManagedSys(mSysID);
 

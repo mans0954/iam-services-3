@@ -78,7 +78,9 @@ public class LdapConnectionMgr implements ConnectionMgr {
         }
 
         if (managedSys == null) {
-            log.debug("ManagedSys is null");
+        	if(log.isDebugEnabled()) {
+        		log.debug("ManagedSys is null");
+        	}
             return null;
         }
 
@@ -93,19 +95,21 @@ public class LdapConnectionMgr implements ConnectionMgr {
             decryptedPassword = managedSys.getPswd();
             log.error("connect", e);
         }
-        log.debug("connect: Connecting to target system: " + managedSys.getId() );
-        log.debug("connect: Managed System object : " + managedSys);
-
-		log.info(" directory login = " + managedSys.getUserId() );
-		log.info(" directory login passwrd= *****" ); //IDMAPPS-1846
-        log.info(" javax.net.ssl.trustStore= " + System.getProperty("javax.net.ssl.trustStore"));
-        log.info(" javax.net.ssl.keyStorePassword= " + System.getProperty("javax.net.ssl.keyStorePassword"));
-
+        if(log.isDebugEnabled()) {
+	        log.debug("connect: Connecting to target system: " + managedSys.getId() );
+	        log.debug("connect: Managed System object : " + managedSys);
+        }
+        if(log.isInfoEnabled()) {
+			log.info(" directory login = " + managedSys.getUserId() );
+			log.info(" directory login passwrd= *****" ); //IDMAPPS-1846
+	        log.info(" javax.net.ssl.trustStore= " + System.getProperty("javax.net.ssl.trustStore"));
+	        log.info(" javax.net.ssl.keyStorePassword= " + System.getProperty("javax.net.ssl.keyStorePassword"));
+        }
 		envDC.put(Context.PROVIDER_URL,hostUrl);
 		envDC.put(Context.INITIAL_CONTEXT_FACTORY,"com.sun.jndi.ldap.LdapCtxFactory");		
 		envDC.put(Context.SECURITY_AUTHENTICATION, "simple" ); // simple
 		envDC.put(Context.SECURITY_PRINCIPAL,managedSys.getUserId() != null ? managedSys.getUserId() : "");  //"administrator@diamelle.local"
-		envDC.put(Context.SECURITY_CREDENTIALS,decryptedPassword);
+		envDC.put(Context.SECURITY_CREDENTIALS, (decryptedPassword != null) ? decryptedPassword : "");
 
         //Connections Pool configuration
         envDC.put("com.sun.jndi.ldap.connect.pool", "true");
@@ -131,7 +135,9 @@ public class LdapConnectionMgr implements ConnectionMgr {
             // check if there is a secondary connection linked to this
             String secondarySysID =  managedSys.getSecondaryRepositoryId();
 
-            log.debug("Secondary Sys ID is " + secondarySysID);
+            if(log.isDebugEnabled()) {
+            	log.debug("Secondary Sys ID is " + secondarySysID);
+            }
 
             if (secondarySysID != null && !secondarySysID.isEmpty()) {
 
@@ -142,7 +148,9 @@ public class LdapConnectionMgr implements ConnectionMgr {
 
             }
             // no secondary repository
-            log.debug("Throw communication exception.", ce);
+            if(log.isDebugEnabled()) {
+            	log.debug("Throw communication exception.", ce);
+            }
             throw ce;
 
 

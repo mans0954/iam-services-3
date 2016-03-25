@@ -1,12 +1,9 @@
 package org.openiam.access.review.service;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.StopWatch;
 import org.openiam.access.review.constant.AccessReviewConstant;
 import org.openiam.access.review.constant.AccessReviewData;
@@ -20,6 +17,7 @@ import org.openiam.authmanager.service.AuthorizationManagerAdminService;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.TreeNode;
 import org.openiam.bpm.activiti.ActivitiService;
+import org.openiam.bpm.response.TaskWrapper;
 import org.openiam.idm.searchbeans.AccessRightSearchBean;
 import org.openiam.idm.srvc.access.dto.AccessRight;
 import org.openiam.idm.srvc.access.ws.AccessRightDataService;
@@ -34,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
@@ -60,6 +59,9 @@ public class AccessReviewServiceImpl implements AccessReviewService {
     @Qualifier("accessRightWS")
     private AccessRightDataService accessRightDataService;
 
+    @Value("${org.openiam.attestation.exclude.menus}")
+    private Boolean excludeMenus;
+
     @Override
     public AccessViewResponse getAccessReviewTree(AccessViewFilterBean filter, String viewType, final Date date, final Language language) {
         final StopWatch sw = new StopWatch();
@@ -71,10 +73,14 @@ public class AccessReviewServiceImpl implements AccessReviewService {
             dataList = strategy.buildView();
             exceptionList = strategy.getExceptionsList();
 
-            log.debug("========ACCESS VIEW TREE============");
+            if(log.isDebugEnabled()) {
+            	log.debug("========ACCESS VIEW TREE============");
+            }
             TreeNode<AccessViewBean> rootElement = new TreeNode<>(new AccessViewBean(), null);
             rootElement.add(dataList);
-            log.debug(rootElement.toString());
+            if(log.isDebugEnabled()) {
+            	log.debug(rootElement.toString());
+            }
         }
         sw.stop();
         log.info(String.format("Done building access review tree. Took: %s ms", sw.getTime()));
@@ -121,6 +127,13 @@ public class AccessReviewServiceImpl implements AccessReviewService {
         final List<AccessRight> accessRights = accessRightDataService.findBeans(new AccessRightSearchBean(), 0, Integer.MAX_VALUE, language);
         UserEntitlementsMatrix userEntitlementsMatrix = adminService.getUserEntitlementsMatrix(filter.getUserId(), date);
 
+        if(StringUtils.isNotBlank(filter.getAttestationTaskId())){
+            TaskWrapper attestationTask = activitiService.getTask(filter.getAttestationTaskId());
+            if(attestationTask!=null){
+                filter.setAttestationManagedSysFilter(new HashSet<String>(attestationTask.getAttestationManagedSysFilter()));
+            }
+        }
+
         AccessReviewData accessReviewData = new AccessReviewData();
         accessReviewData.setMatrix(userEntitlementsMatrix);
         accessReviewData.setFilter(filter);
@@ -136,6 +149,7 @@ public class AccessReviewServiceImpl implements AccessReviewService {
         searchBean.setMemberAssociationId(filter.getUserId());
 
         accessReviewData.setWorkflowsMaps(activitiService.findTasks(searchBean, 0, Integer.MAX_VALUE));
+        accessReviewData.setExcludeMenus(this.excludeMenus);
 
         AccessReviewStrategy strategy = null;
         if(AccessReviewConstant.ROLE_VIEW.equals(viewType)){

@@ -8,12 +8,13 @@ import javax.jws.WebService;
 
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.AttributeMapSearchBean;
+import org.openiam.idm.searchbeans.ManagedSysSearchBean;
 import org.openiam.idm.searchbeans.MngSysPolicySearchBean;
 import org.openiam.idm.srvc.mngsys.bean.ApproverAssocationSearchBean;
 import org.openiam.idm.srvc.mngsys.bean.MngSysPolicyBean;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
+import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.dto.*;
-import org.openiam.idm.srvc.msg.dto.ManagedSysSearchBean;
 
 /**
  * Interface for <code>ManagedSystemWebService</code>
@@ -58,6 +59,9 @@ public interface ManagedSystemWebService {
     
     @WebMethod
     List<ManagedSysDto> getAllManagedSys();
+
+    @WebMethod
+    List<AttributeMapEntity> getAttributeMapsByManagedSysId(@WebParam(name = "managedSysId", targetNamespace = "") String managedSysId);
 
     /**
      * Gets the managed sys by resource.
@@ -254,20 +258,9 @@ public interface ManagedSystemWebService {
             final @WebParam(name = "size", targetNamespace = "") int size);
 
     @WebMethod
-    List<ManagedSysRuleDto> getRulesByManagedSysId(
-            final @WebParam(name = "managedSysId", targetNamespace = "") String managedSysId);
-
-    @WebMethod
-    ManagedSysRuleDto addRules(
-            final @WebParam(name = "entity", targetNamespace = "") ManagedSysRuleDto entity);
-
-    @WebMethod
     void removeMngSysPolicy(
             final @WebParam(name = "mngSysPolicyId", targetNamespace = "") String mngSysPolicyId) throws Exception;
 
-    @WebMethod
-    void deleteRules(
-            final @WebParam(name = "ruleId", targetNamespace = "") String ruleId);
 
     @WebMethod
     List<AttributeMap> saveAttributesMap(

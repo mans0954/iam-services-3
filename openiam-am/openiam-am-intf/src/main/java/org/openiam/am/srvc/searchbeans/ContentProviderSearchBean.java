@@ -3,6 +3,7 @@ package org.openiam.am.srvc.searchbeans;
 import org.openiam.am.srvc.dto.ContentProvider;
 import org.openiam.idm.searchbeans.AbstractKeyNameSearchBean;
 import org.openiam.idm.searchbeans.AbstractSearchBean;
+import org.openiam.idm.searchbeans.SearchBean;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -15,7 +16,7 @@ import javax.xml.bind.annotation.XmlType;
         "isSSL",
         "resourceId"
 })
-public class ContentProviderSearchBean extends AbstractKeyNameSearchBean<ContentProvider, String> {
+public class ContentProviderSearchBean extends AbstractKeyNameSearchBean<ContentProvider, String> implements SearchBean {
 
     private static final long serialVersionUID = 4085178050605918460L;
     private String domainPattern;
@@ -58,6 +59,14 @@ public class ContentProviderSearchBean extends AbstractKeyNameSearchBean<Content
 	public void setResourceId(String resourceId) {
 		this.resourceId = resourceId;
 	}
+
+	@Override
+	public String getCacheUniqueBeanKey() {
+		return new StringBuilder()
+				.append(domainPattern != null ? domainPattern : "")
+				.append(isSSL != null ? isSSL : "")
+				.append(getKey() != null ? getKey() : "")
+				.toString();	}
 
 	@Override
 	public int hashCode() {

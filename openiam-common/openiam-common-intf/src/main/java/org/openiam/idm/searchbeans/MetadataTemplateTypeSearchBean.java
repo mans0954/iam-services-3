@@ -11,7 +11,14 @@ import org.openiam.idm.srvc.meta.dto.MetadataTemplateType;
 @XmlType(name = "MetadataTemplateTypeSearchBean", propOrder = {
 
 })
-public class MetadataTemplateTypeSearchBean extends AbstractKeyNameSearchBean<MetadataTemplateType, String> {
+public class MetadataTemplateTypeSearchBean extends AbstractKeyNameSearchBean<MetadataTemplateType, String> implements SearchBean {
 
-	
+
+    @Override
+    public String getCacheUniqueBeanKey() {
+        return new StringBuilder()
+                .append(getKey() != null ? getKey() : "")
+                .toString();
+
+    }
 }

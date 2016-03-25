@@ -37,11 +37,14 @@ public class CreateIdmAccountUserCommand extends BaseReconciliationUserCommand {
 
 	@Override
     public boolean execute(ReconciliationSituation config, String principal, String mSysID, User user, List<ExtensibleAttribute> attributes)  {
-        log.debug("Entering CreateIdmAccountCommand");
-		log.debug("Create account for principal: " + principal);
-
+		if(log.isDebugEnabled()) {
+	        log.debug("Entering CreateIdmAccountCommand");
+			log.debug("Create account for principal: " + principal);
+		}
 		if(attributes == null){
-            log.debug("Can't create IDM user without attributes");
+			if(log.isDebugEnabled()) {
+				log.debug("Can't create IDM user without attributes");
+			}
         } else {
 			try {
 				ProvisionUser pUser = new ProvisionUser(user);
@@ -64,7 +67,9 @@ public class CreateIdmAccountUserCommand extends BaseReconciliationUserCommand {
                     provisionService.addUser(pUser);
 					return true;
 				} else {
-					log.debug("Couldn't populate ProvisionUser. User not added");
+					if(log.isDebugEnabled()) {
+						log.debug("Couldn't populate ProvisionUser. User not added");
+					}
 				}
             } catch (Exception e) {
                 e.printStackTrace();

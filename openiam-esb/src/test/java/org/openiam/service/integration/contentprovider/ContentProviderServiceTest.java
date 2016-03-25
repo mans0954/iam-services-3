@@ -180,16 +180,22 @@ public class ContentProviderServiceTest extends AbstractContentProviderServiceTe
 				templateRequest.setLanguageId(getDefaultLanguage().getId());
 				//templateRequest.setRequestURI(URIUtils.getRequestURL(request));
 				templateRequest.setPatternId(e.getId());
-				templateRequest.setUserId("3000");
+				templateRequest.setTargetObjectId("3000");
 				final PageTempate template = metadataTemplateServiceClient.getTemplate(templateRequest);
 				Assert.assertNotNull(template);
 				Assert.assertTrue(StringUtils.isNotBlank(template.getTemplateId()));
 				
-				/* the current UI Field size is based on # of elemtns in defualt.page.template.fields.json */
+/*
+ the current UI Field size is based on # of elemtns in defualt.page.template.fields.json
+*/
+
 				Assert.assertTrue(template.getUiFields() != null && template.getUiFields().size() == 3);
 			});
 			
-			/* b/c default patterns were created in setup */
+/*
+ b/c default patterns were created in setup
+*/
+
 			Assert.assertTrue(CollectionUtils.isNotEmpty(provider.getPatternSet()));
 		} finally {
 			if(provider != null && StringUtils.isNotBlank(provider.getId())) {
@@ -206,13 +212,19 @@ public class ContentProviderServiceTest extends AbstractContentProviderServiceTe
 			cp.setServerSet(null);
 			Set<ContentProviderServer> serverSet = new HashSet<ContentProviderServer>();
 			
-			/* add 4 */
+/*
+ add 4
+*/
+
 			addServers(4, serverSet);
 			cp.setServerSet(serverSet);
 			cp = assertContentProviderServer(cp, serverSet.size());
 			serverSet = cp.getServerSet();
 			
-			/* delete all but 1 */
+/*
+ delete all but 1
+*/
+
 			final Iterator<ContentProviderServer> it1 = serverSet.iterator();
 			IntStream.range(0, 2).forEach( i -> {
 				it1.next();
@@ -221,17 +233,26 @@ public class ContentProviderServiceTest extends AbstractContentProviderServiceTe
 			cp = assertContentProviderServer(cp, serverSet.size());
 			serverSet = cp.getServerSet();
 			
-			/* add 2 */
+/*
+ add 2
+*/
+
 			addServers(2, serverSet);
 			cp = assertContentProviderServer(cp, serverSet.size());
 			serverSet = cp.getServerSet();
 			
-			/* add 2 more */
+/*
+ add 2 more
+*/
+
 			addServers(2, serverSet);
 			cp = assertContentProviderServer(cp, serverSet.size());
 			serverSet = cp.getServerSet();
 			
-			/* remove 2, and add 3 more */
+/*
+ remove 2, and add 3 more
+*/
+
 			final Iterator<ContentProviderServer> it2 = serverSet.iterator();
 			IntStream.range(0, 2).forEach( (int nbr) -> {
 				it2.next();

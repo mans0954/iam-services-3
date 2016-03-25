@@ -31,7 +31,9 @@ public abstract class AbstractGenericDao<Entity, PrimaryKey extends Serializable
 
     @Override
     public Entity findById(PrimaryKey id) throws Exception {
-        log.debug("getting instance with id: " + String.valueOf(id));
+    	if(log.isDebugEnabled()) {
+    		log.debug("getting instance with id: " + String.valueOf(id));
+    	}
         if (id != null) {
             return (Entity)this.sessionFactory.getCurrentSession().get(getPersistentClass(), id);
         }
@@ -40,7 +42,9 @@ public abstract class AbstractGenericDao<Entity, PrimaryKey extends Serializable
 
     @Override
     public List<Entity> getAll() throws Exception {
-        log.debug("getting all data from table: "+getPersistentClass().getName());
+    	if(log.isDebugEnabled()) {
+    		log.debug("getting all data from table: "+getPersistentClass().getName());
+    	}
         Query qry = sessionFactory.getCurrentSession().createQuery("from "+ getPersistentClass().getName() +" log");
         return (List<Entity>)qry.list();
     }

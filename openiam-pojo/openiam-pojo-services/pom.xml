@@ -174,6 +174,11 @@
             <artifactId>aspectjweaver</artifactId>
         </dependency>
 
+<!--        <dependency>
+            <groupId>asm</groupId>
+            <artifactId>asm</artifactId>
+        </dependency>-->
+
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-core</artifactId>
@@ -397,6 +402,18 @@
 			<groupId>com.hazelcast</groupId>
 			<artifactId>hazelcast-hibernate4</artifactId>
 		</dependency>
+        <dependency>
+            <groupId>wsdl4j</groupId>
+            <artifactId>wsdl4j</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-rt-transports-http</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

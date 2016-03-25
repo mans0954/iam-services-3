@@ -62,6 +62,7 @@
         <javax.servlet.version>3.0.1</javax.servlet.version>
         <openiam.version>3.0.0</openiam.version>
         <maven.build.timestamp.format>yyyy/MM/dd HH:mm Z</maven.build.timestamp.format>
+        <openiam.version>3.4.0.RELEASE</openiam.version>
     </properties>
     <!-- Dependencies -->
     <dependencies>

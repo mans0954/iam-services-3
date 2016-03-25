@@ -54,7 +54,7 @@ import com.hazelcast.core.MapEvent;
 
 /**
  * Created by: Alexander Duckardt Date: 09.10.12
- * 
+ *
  * Depends on dozer, b/c audit log check requires dozer to be present, when checking if key management
  * was ever run or not.
  */
@@ -79,7 +79,7 @@ public class KeyManagementServiceImpl extends AbstractBaseService implements Key
 
     @Value("${org.openiam.idm.system.user.id}")
     private String systemUserId;
-    
+
     @Autowired
     private HazelcastConfiguration hazelcastConfiguration;
 
@@ -97,9 +97,9 @@ public class KeyManagementServiceImpl extends AbstractBaseService implements Key
     private ManagedSysDAO managedSysDAO;
     @Autowired
     private UserIdentityAnswerDAO userIdentityAnswerDAO;
-    
+
     private JKSEntryListener jksListener = null;
-    
+
     @Autowired
     @Qualifier("transactionTemplate")
     private TransactionTemplate transactionTemplate;
@@ -123,88 +123,88 @@ public class KeyManagementServiceImpl extends AbstractBaseService implements Key
         } else {
             jksManager = new JksManager(this.jksFile, this.iterationCount);
         }
-        
+
         final IMap<String, byte[]> keyMap = hazelcastConfiguration.getMap("keyManagementCache");
         jksListener = new JKSEntryListener();
         keyMap.addEntryListener(jksListener, "jksFileKey", true);
-        
+
         final File file = new File(jksFile);
         if(file.exists()) {
-        	keyMap.put("jksFileKey", FileUtils.readFileToByteArray(file));
+            keyMap.put("jksFileKey", FileUtils.readFileToByteArray(file));
         } else {
-        	final byte[] key = keyMap.get("jksFileKey");
-        	jksListener.addOrUpdate(key);
+            final byte[] key = keyMap.get("jksFileKey");
+            jksListener.addOrUpdate(key);
         }
     }
-    
+
     private boolean hasKeyManagementToolBeenRun() {
-		return (userKeyDao.countAll().intValue() > 0);
-	}
-    
+        return (userKeyDao.countAll().intValue() > 0);
+    }
+
     private class JKSEntryListener implements EntryListener<String, byte[]> {
-    	
-    	void addOrUpdate(final byte[] value) {
-    		log.warn("Received add or update JKS event");
-    		if(value != null && value.length > 0) {
-	    		try {
-					final File file = new File(jksFile);
-					boolean updateFile = false;
-					if(!file.exists()) {
-						file.createNewFile();
-						log.warn("jks file does not exists - creating it due to cache event");
-						updateFile = true;
-					} else {
-						final byte[] fileBytes = FileUtils.readFileToByteArray(file);
-						if(!Arrays.equals(fileBytes, value)) {
-							log.warn("jks file does not exists - creating it an updated jks file on another node");
-							updateFile = true;
-						}
-					}
-					if(updateFile) {
-						FileUtils.writeByteArrayToFile(file, value);
-					}
-				} catch(Throwable e) {
-					throw new RuntimeException("Could not create or update key", e);
-				}
-    		}
-    	}
 
-		@Override
-		public void entryAdded(EntryEvent<String, byte[]> event) {
-			log.warn("entryAdded() event called for jks key");
-			addOrUpdate(event.getValue());
-		}
+        void addOrUpdate(final byte[] value) {
+            log.warn("Received add or update JKS event");
+            if(value != null && value.length > 0) {
+                try {
+                    final File file = new File(jksFile);
+                    boolean updateFile = false;
+                    if(!file.exists()) {
+                        file.createNewFile();
+                        log.warn("jks file does not exists - creating it due to cache event");
+                        updateFile = true;
+                    } else {
+                        final byte[] fileBytes = FileUtils.readFileToByteArray(file);
+                        if(!Arrays.equals(fileBytes, value)) {
+                            log.warn("jks file does not exists - creating it an updated jks file on another node");
+                            updateFile = true;
+                        }
+                    }
+                    if(updateFile) {
+                        FileUtils.writeByteArrayToFile(file, value);
+                    }
+                } catch(Throwable e) {
+                    throw new RuntimeException("Could not create or update key", e);
+                }
+            }
+        }
 
-		@Override
-		public void entryUpdated(EntryEvent<String, byte[]> event) {
-			log.warn("entryUpdated() event called for jks key");
-			addOrUpdate(event.getValue());
-		}
-		
+        @Override
+        public void entryAdded(EntryEvent<String, byte[]> event) {
+            log.warn("entryAdded() event called for jks key");
+            addOrUpdate(event.getValue());
+        }
 
-		@Override
-		public void entryRemoved(EntryEvent<String, byte[]> event) {
-			// TODO Auto-generated method stub
-		}
+        @Override
+        public void entryUpdated(EntryEvent<String, byte[]> event) {
+            log.warn("entryUpdated() event called for jks key");
+            addOrUpdate(event.getValue());
+        }
 
-		@Override
-		public void entryEvicted(EntryEvent<String, byte[]> event) {
-			// TODO Auto-generated method stub
 
-		}
+        @Override
+        public void entryRemoved(EntryEvent<String, byte[]> event) {
+            // TODO Auto-generated method stub
+        }
 
-		@Override
-		public void mapCleared(MapEvent arg0) {
-			// TODO Auto-generated method stub
-			
-		}
+        @Override
+        public void entryEvicted(EntryEvent<String, byte[]> event) {
+            // TODO Auto-generated method stub
 
-		@Override
-		public void mapEvicted(MapEvent arg0) {
-			// TODO Auto-generated method stub
-			
-		}
-    	
+        }
+
+        @Override
+        public void mapCleared(MapEvent arg0) {
+            // TODO Auto-generated method stub
+
+        }
+
+        @Override
+        public void mapEvicted(MapEvent arg0) {
+            // TODO Auto-generated method stub
+
+        }
+
     }
 
     @Override
@@ -240,7 +240,7 @@ public class KeyManagementServiceImpl extends AbstractBaseService implements Key
         this.generateMasterKey();
         this.generateCookieKey();
         this.generateCommonKey();
-        
+
         /* notifies other nodes that the JKS file has been created/modified */
         final IMap<String, byte[]> keyMap = hazelcastConfiguration.getMap("keyManagementCache");
         final byte[] fileTypes = FileUtils.readFileToByteArray(new File(jksFile));
@@ -287,7 +287,7 @@ public class KeyManagementServiceImpl extends AbstractBaseService implements Key
         userKeyDao.deleteAll();
         addUserKeys(newUserKeyList);
         log.warn("End generating new master key...");
-        
+
     }
 
     @Override
@@ -356,7 +356,7 @@ public class KeyManagementServiceImpl extends AbstractBaseService implements Key
                 // decrypt user data
                 if (!"0001".equals(userId)) {
                     decryptOldData(jksManager.decodeKey(oldSecretKey), userSecurityMap.get(userId));
-                  //  decryptSecurityDataForUser(jksManager.decodeKey(oldSecretKey), userSecurityMap.get(userId));
+                    //  decryptSecurityDataForUser(jksManager.decodeKey(oldSecretKey), userSecurityMap.get(userId));
                 }
                 // reencrypt user data
                 encryptUserData(masterKey, userSecurityMap.get(userId), newUserKeyList);
@@ -436,7 +436,7 @@ public class KeyManagementServiceImpl extends AbstractBaseService implements Key
         if(dataKey==null)
             throw new Exception("Cannot decrypt data, due to invalid secret key");
         if(!StringUtils.hasText(encryptedData))
-           return encryptedData;
+            return encryptedData;
         return this.decrypt(dataKey, encryptedData);
     }
     @Override
@@ -526,8 +526,8 @@ public class KeyManagementServiceImpl extends AbstractBaseService implements Key
             for (UserIdentityAnswerEntity answer : userSecurityWrapper.getUserIdentityAnswerList()) {
                 if(StringUtils.hasText(answer.getQuestionAnswer()))
                     answer.setQuestionAnswer(this.encrypt(key, answer.getQuestionAnswer()));
-                    answer.setIsEncrypted(true);
-                    userIdentityAnswerDAO.update(answer);
+                answer.setIsEncrypted(true);
+                userIdentityAnswerDAO.update(answer);
             }
         }
         log.warn("Encrypt user ChallengeResponses FINISHED...");
@@ -791,7 +791,7 @@ public class KeyManagementServiceImpl extends AbstractBaseService implements Key
             int pageNum = 0;
             do {
                 answerList.addAll(userIdentityAnswerDAO.getByExample(new IdentityAnswerSearchBean(),
-                                                                     pageNum * FETCH_COUNT, FETCH_COUNT));
+                        pageNum * FETCH_COUNT, FETCH_COUNT));
                 fetchedDataCount = (long) answerList.size();
                 pageNum++;
             } while (fetchedDataCount < answCount);
@@ -861,24 +861,24 @@ public class KeyManagementServiceImpl extends AbstractBaseService implements Key
         return pwdHistoryMap;
     }
 
-	@Override
-	public void afterPropertiesSet() throws Exception {
+    @Override
+    public void afterPropertiesSet() throws Exception {
 
         /* we're in Spring 4 world, so any initialization needs to be wrapped in a transaction */
         transactionTemplate.execute(new TransactionCallback<Void>() {
             @Override
             public Void doInTransaction(TransactionStatus status) {
-		        if(!hasKeyManagementToolBeenRun()) {
-		        	try {
-						initKeyManagement();
-					} catch (Throwable e) {
-						throw new RuntimeException(e);
-					}
-		        } else {
-		        	log.warn("Key management was already setup.  Doing nothing.  This message is normal; it will show on every server startup");
-		        }
-		        return null;
+                if(!hasKeyManagementToolBeenRun()) {
+                    try {
+                        initKeyManagement();
+                    } catch (Throwable e) {
+                        throw new RuntimeException(e);
+                    }
+                } else {
+                    log.warn("Key management was already setup.  Doing nothing.  This message is normal; it will show on every server startup");
+                }
+                return null;
             }
         });
-	}
+    }
 }

@@ -62,6 +62,14 @@ public class AuthenticationContext extends AuthenticationRequest {
 	public void setEvent(IdmAuditLogEntity event) {
 		this.event = event;
 	}
-	
-	
+
+
+	public void setSkipPasswordCheck(boolean skipPasswordCheck) {
+
+	}
+
+	public boolean isSkipPasswordCheck() {
+		return false;
+	}
+
 }

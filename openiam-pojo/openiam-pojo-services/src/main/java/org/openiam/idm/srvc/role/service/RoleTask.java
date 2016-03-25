@@ -27,7 +27,7 @@ public class RoleTask implements Sweepable {
     private RoleDataService roleDataService;
 
     //TODO change when Spring 3.2.2 @Scheduled(fixedDelayString = "${org.openiam.org.manager.threadsweep}")
-    @Scheduled(fixedDelay=600000)
+    @Scheduled(cron="0 30 3 * * ?")
     public void sweep() {
         final StopWatch sw = new StopWatch();
         sw.start();
@@ -44,7 +44,9 @@ public class RoleTask implements Sweepable {
         });
 
         sw.stop();
-        log.debug(String.format("Done roles HierarchyCache rebuild. Took: %s ms", sw.getTime()));
+        if(log.isDebugEnabled()) {
+        	log.debug(String.format("Done roles HierarchyCache rebuild. Took: %s ms", sw.getTime()));
+        }
     }
 
 }

@@ -161,6 +161,29 @@ public class ResourceSearchBean extends EntitlementsSearchBean<Resource, String>
 		keySet.add(key);
 	}
 
+	@Override
+	public String getCacheUniqueBeanKey() {
+		return new StringBuilder()
+				.append(name != null ? name : "")
+				.append(rootsOnly)
+				.append(ownerId != null ? ownerId : "")
+				.append(risk != null ? risk.name() : "")
+				.append(metadataType != null ? metadataType : "")
+				.append(URL != null ? URL : "")
+				.append(coorelatedName != null ? coorelatedName : "")
+				.append(attributes != null ? attributes.toString().hashCode() : "")
+				.append(getKey() != null ? getKey() : "")
+				.append(excludeResourceTypes != null ? excludeResourceTypes.toString().hashCode() : "")
+				.append(groupIdSet != null ? groupIdSet.toString().hashCode() : "")
+				.append(roleIdSet != null ? roleIdSet.toString().hashCode() : "")
+				.append(resourceIdSet != null ? resourceIdSet.toString().hashCode() : "")
+				.append(organizationIdSet != null ? organizationIdSet.toString().hashCode() : "")
+				.append(userIdSet != null ? userIdSet.toString().hashCode() : "")
+				.append(getParentIdSet() != null ? getParentIdSet().toString().hashCode() : "")
+				.append(getChildIdSet() != null ? getChildIdSet().toString().hashCode() : "")
+				.append(getSortKeyForCache())
+				.toString();	}
+
 	public Set<String> getKeys() {
 		return keySet;
 	}

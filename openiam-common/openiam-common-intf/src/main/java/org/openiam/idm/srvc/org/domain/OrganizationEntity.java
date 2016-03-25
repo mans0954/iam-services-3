@@ -104,6 +104,7 @@ public class OrganizationEntity extends AbstractMetdataTypeEntity {
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "ORG_TYPE_ID", referencedColumnName = "ORG_TYPE_ID", insertable = true, updatable = true)
     @Internationalized
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private OrganizationTypeEntity organizationType;
 
     @Column(name="ABBREVIATION", length=20)

@@ -5,6 +5,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
 import org.openiam.idm.searchbeans.AbstractSearchBean;
+import org.openiam.idm.searchbeans.SearchBean;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "LanguageMappingSearchBean", propOrder = {
@@ -13,7 +14,7 @@ import org.openiam.idm.searchbeans.AbstractSearchBean;
         "referenceType",
         "value"
 })
-public class LanguageMappingSearchBean extends AbstractSearchBean<LanguageMapping, String> {
+public class LanguageMappingSearchBean extends AbstractSearchBean<LanguageMapping, String> implements SearchBean {
 
 	private String languageId;
 	private String referenceId;
@@ -53,6 +54,13 @@ public class LanguageMappingSearchBean extends AbstractSearchBean<LanguageMappin
 	public void setValue(String value) {
 		this.value = value;
 	}
-	
-	
+
+
+	@Override
+	public String getCacheUniqueBeanKey() {
+		return new StringBuilder()
+				.append(getKey() != null ? getKey() : "")
+				.toString();
+
+	}
 }

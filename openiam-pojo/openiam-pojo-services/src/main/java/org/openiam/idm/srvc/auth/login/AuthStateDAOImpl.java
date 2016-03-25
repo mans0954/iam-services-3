@@ -28,7 +28,12 @@ public class AuthStateDAOImpl extends BaseDaoImpl<AuthStateEntity, AuthStateId> 
 	protected String getPKfieldName() {
 		return "id";
 	}
-	
+
+    @Override
+    protected boolean cachable() {
+        return false;
+    }
+
 	@Override
 	protected Criteria getExampleCriteria(SearchBean searchBean) {
 		Criteria criteria = getCriteria();

@@ -6,27 +6,41 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.MatchMode;
+import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.base.Tuple;
 import org.openiam.core.dao.BaseDaoImpl;
+import org.openiam.core.dao.OrderDaoImpl;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
 import org.openiam.internationalization.LocalizedDatabaseGet;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 /**
  * DAO Implementation for Resources.
  */
 @Repository("resourceDAO")
-public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
+public class ResourceDAOImpl extends OrderDaoImpl<ResourceEntity, String>
 		implements ResourceDAO {
 
 	private static final Log log = LogFactory.getLog(ResourceDAOImpl.class);
+	
+/*	@Autowired
+    private ResourceSearchBeanConverter resourceSearchBeanConverter;*/
 
 	@Value("${org.openiam.ui.admin.right.id}")
 	private String adminRightId;
+
+    @Override
+    protected boolean cachable() {
+        return true;
+    }
+
 
 	@Override
 	protected Criteria getExampleCriteria(SearchBean searchBean) {
@@ -192,5 +206,112 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 			}
 		}
 	}
+
+	protected String getReferenceType() {
+		return "ResourceEntity.displayNameMap";
+	}
+
+	@Override
+	@LocalizedDatabaseGet
+	public List<ResourceEntity> getResourcesForGroup(final String groupId,
+													 final int from, final int size, final ResourceSearchBean searchBean) {
+		final Criteria criteria = getCriteria()
+				.createAlias("groups", "rg")
+				.add(Restrictions.eq("rg.id", groupId))
+				.addOrder(Order.asc("name"));
+		addSearchBeanCriteria(criteria, searchBean);
+
+		if (from > -1) {
+			criteria.setFirstResult(from);
+		}
+
+		if (size > -1) {
+			criteria.setMaxResults(size);
+		}
+
+		final List<ResourceEntity> retVal = (List<ResourceEntity>) criteria
+				.list();
+		return retVal;
+	}
+
+
+	@Override
+	/**
+	 * For internal system use, without @LocalizedDatabaseGet
+	 */
+	public List<ResourceEntity> getResourcesForGroupNoLocalized(String groupId, int from, int size, ResourceSearchBean searchBean) {
+		return this.getResourcesForGroup(groupId, from, size, searchBean);
+	}
+
+	@Override
+	@LocalizedDatabaseGet
+	public List<ResourceEntity> getResourcesByType(String id) {
+		Criteria criteria = getCriteria().createAlias("resourceType", "rt")
+				.add(Restrictions.eq("rt.id", id))
+				.addOrder(Order.asc("displayOrder"));
+		return (List<ResourceEntity>) criteria.list();
+	}
+
+	@Override
+	@LocalizedDatabaseGet
+	public List<ResourceEntity> getResourcesForRole(final String roleId,
+													final int from, final int size, final ResourceSearchBean searchBean) {
+		final Criteria criteria = getCriteria()
+				.createAlias("roles", "rr")
+				.add(Restrictions.eq("rr.id", roleId))
+				.addOrder(Order.asc("name"));
+		addSearchBeanCriteria(criteria, searchBean);
+
+		if (from > -1) {
+			criteria.setFirstResult(from);
+		}
+
+		if (size > -1) {
+			criteria.setMaxResults(size);
+		}
+
+		final List<ResourceEntity> retVal = (List<ResourceEntity>) criteria
+				.list();
+		return retVal;
+	}
+
+	@Override
+	@LocalizedDatabaseGet
+	public List<ResourceEntity> getResourcesForUser(final String userId,
+													final int from, final int size, final ResourceSearchBean searchBean) {
+		final Criteria criteria = getResourceForUserCriteria(userId);
+		addSearchBeanCriteria(criteria, searchBean);
+
+		if (from > -1) {
+			criteria.setFirstResult(from);
+		}
+
+		if (size > -1) {
+			criteria.setMaxResults(size);
+		}
+
+		return criteria.list();
+	}
+
+	private Criteria getResourceForUserCriteria(final String userId) {
+		final Criteria criteria = getCriteria().createAlias("users", "ru").add(Restrictions.eq("ru.id", userId));
+		return criteria;
+	}
+
+	@Override
+	@LocalizedDatabaseGet
+	public List<ResourceEntity> getResourcesForUserByType(final String userId, String resourceTypeId, final ResourceSearchBean searchBean){
+		final Criteria criteria = getResourceForUserCriteria(userId);
+		addSearchBeanCriteria(criteria, searchBean);
+		criteria.createAlias("resourceType", "rt").add(Restrictions.eq("rt.id", resourceTypeId));
+		return criteria.list();
+	}
+
+	@Override
+	public List<ResourceEntity> getResourcesForRoleNoLocalized(String roleId, int from, int size, ResourceSearchBean searchBean) {
+		return getResourcesForRole(roleId, from, size, searchBean);
+	}
+
+
 
 }

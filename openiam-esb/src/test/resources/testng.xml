@@ -28,9 +28,7 @@
 			<class name="org.openiam.authmanager.service.integration.AuthorizationManagerWebServiceTest"/>
 			<class name="org.openiam.authmanager.service.integration.AuthorizationManagerHessianClientTest"/>
 			<class name="org.openiam.authmanager.service.integration.ActivitiAuthorizationManagerWebServiceTest"/>
-            <!--
 			<class name="org.openiam.authmanager.service.integration.AuthorizationManagerMenuWebServiceTest" />
-            -->
 		</classes>
 	</test>
 	
@@ -58,6 +56,9 @@
 	<test name="integration.user">
 		<classes>
 			<class name="org.openiam.service.integration.login.LoginServiceTest" />
+<!--
+			<class name="org.openiam.service.integration.provisioning.UserManagmentServiceTest" />
+-->
 		</classes>
 	</test>
 	
@@ -70,9 +71,9 @@
 	
 	<test name="integration.mail">
 		<classes>
-			<!--
+<!--
 			<class name="org.openiam.service.integration.mail.MailTemplateServiceTest" />
-			-->
+-->
 		</classes>
 	</test>
 	
@@ -87,7 +88,9 @@
 	
 	<test name="elasticsearch.integration">
 		<classes>
+<!--
 			<class name="org.openiam.elasticsearch.integration.ElasticSearchIntegrationTest" />
+-->
 			<class name="org.openiam.service.integration.log.IdmAuditLogServiceTest" />
 		</classes>
 	</test>
@@ -98,6 +101,12 @@
 			<class name="org.openiam.service.integration.authprovider.OAuthServiceTest" />
 		</classes>
 	</test>
+
+    <test name="integration.group">
+        <classes>
+            <class name="org.openiam.service.integration.provisioning.GroupManagementServiceTest" />
+        </classes>
+    </test>
 	
 	<!--
 	Container runs out of memory if we run these, since we have the ESB running simultaneously.  CircleCI is limited to 4G, which we exceed :(

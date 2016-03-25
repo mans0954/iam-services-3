@@ -46,7 +46,7 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 
 @Entity
 @Table(name="ROLE")
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "RoleEntity")
 @DozerDTOCorrespondence(Role.class)
 @AttributeOverride(name = "id", column = @Column(name = "ROLE_ID"))
 @Internationalized
@@ -106,6 +106,7 @@ public class RoleEntity extends AbstractMetdataTypeEntity {
 	
 	@OneToMany(cascade = {CascadeType.ALL}, fetch = FetchType.LAZY, mappedBy="associationEntityId", orphanRemoval=true)
 	@Where(clause="ASSOCIATION_TYPE='ROLE'")
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	private Set<ApproverAssociationEntity> approverAssociations;
 	
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="memberEntity", orphanRemoval=true)

@@ -47,10 +47,12 @@ import org.openiam.dozer.converter.UserAttributeDozerConverter;
 import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.exception.ObjectNotFoundException;
+import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
 import org.openiam.idm.srvc.access.service.AccessRightDAO;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
+import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
@@ -69,6 +71,7 @@ import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.membership.dto.AbstractMembershipXref;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
+import org.openiam.idm.srvc.meta.service.MetadataService;
 import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
@@ -109,12 +112,7 @@ import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.domain.UserToGroupMembershipXrefEntity;
 import org.openiam.idm.srvc.user.domain.UserToRoleMembershipXrefEntity;
-import org.openiam.idm.srvc.user.dto.User;
-import org.openiam.idm.srvc.user.dto.UserAttribute;
-import org.openiam.idm.srvc.user.dto.UserToGroupMembershipXref;
-import org.openiam.idm.srvc.user.dto.UserToOrganizationMembershipXref;
-import org.openiam.idm.srvc.user.dto.UserToResourceMembershipXref;
-import org.openiam.idm.srvc.user.dto.UserToRoleMembershipXref;
+import org.openiam.idm.srvc.user.dto.*;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.PasswordSync;
 import org.openiam.provision.dto.ProvOperationEnum;
@@ -136,14 +134,15 @@ import org.springframework.beans.factory.annotation.Value;
  * Base class for the provisioning service
  * User: suneetshah
  */
-public abstract class AbstractProvisioningService extends AbstractBaseService implements ProvisionService {
+public abstract class AbstractProvisioningService extends AbstractBaseService {
 
     protected static final Log log = LogFactory.getLog(AbstractProvisioningService.class);
 
     public static final String NEW_USER_EMAIL_SUPERVISOR_NOTIFICATION = "NEW_USER_EMAIL_SUPERVISOR";
     public static final String NEW_USER_EMAIL_NOTIFICATION = "NEW_USER_EMAIL";
     public static final String NEW_USER_ACTIVATION_NOTIFICATION="NEW_USER_ACTIVATION_NOTIFICATION";
-    public static final String PASSWORD_EMAIL_NOTIFICATION = "USER_PASSWORD_EMAIL";
+	    public static final String USER_RESET_PASSWORD_ACTIVATION_NOTIFICATION = "USER_RESET_PASSWORD_ACTIVATION_NOTIFICATION";    
+	public static final String PASSWORD_EMAIL_NOTIFICATION = "USER_PASSWORD_EMAIL";
 
     public static final String MATCH_PARAM = "matchParam";
     public static final String TARGET_SYSTEM_IDENTITY_STATUS = "targetSystemIdentityStatus";
@@ -163,6 +162,15 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     public static final String USER = "user";
     public static final String USER_ATTRIBUTES = "userAttributes";
     public static final String GROUP = "group";
+
+    @Value("${openiam.audit.default.email.change}")
+    protected String saveEmailChange;
+
+    @Value("${openiam.audit.rehire}")
+    protected String saveRehireChange;
+
+    @Value("${openiam.audit.default.principal.change}")
+    protected String savePrincipalChange;
 
     @Value("${org.openiam.idm.system.user.id}")
     protected String systemUserId;
@@ -186,9 +194,6 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     @Autowired
     @Qualifier("managedSysService")
     protected ManagedSystemWebService managedSysService;
-
-    @Autowired
-    protected ManagedSystemService managedSysDataService;
     @Autowired
     protected RoleDataService roleDataService;
     @Autowired
@@ -289,6 +294,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     
     @Autowired
     private AccessRightDAO accessRightDAO;
+    @Autowired
+    protected MetadataService metadataService;
 
     @Autowired
     private ManagedSystemObjectMatchDozerConverter managedSystemObjectMatchDozerConverter;
@@ -362,7 +369,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     		if(xref.getStartDate() != null && xref.getEndDate() != null && xref.getStartDate().after(xref.getEndDate())) {
     			throw new BasicDataServiceException(ResponseCode.ENTITLEMENTS_DATE_INVALID);
     		}
-    	};
+    	}
     }
 
     protected void sendResetPasswordToUser(LoginEntity identity, String password) {
@@ -472,11 +479,14 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         List<AttributeMapEntity> amEList = (defaultManagedSys.getResource() != null) ? managedSystemService.getResourceAttributeMaps(defaultManagedSys.getResource().getId()) : null;
         List<AttributeMap> policyAttrMap = (amEList == null) ? null : attributeMapDozerConverter.convertToDTOList(amEList, true);
 
-        log.debug("Building primary identity. ");
+        if(log.isDebugEnabled()) {
+        	log.debug("Building primary identity. ");
+        }
 
         if (policyAttrMap != null) {
-
-            log.debug("- policyAttrMap IS NOT null");
+        	if(log.isDebugEnabled()) {
+        		log.debug("- policyAttrMap IS NOT null");
+        	}
 
             Login primaryIdentity = new Login();
             primaryIdentity.setOperation(AttributeOperationEnum.ADD);
@@ -523,7 +533,9 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
             return primaryIdentity;
 
         } else {
-            log.debug("- policyAttrMap IS null");
+        	if(log.isDebugEnabled()) {
+        		log.debug("- policyAttrMap IS null");
+        	}
             return null;
         }
     }
@@ -556,12 +568,16 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
 
     protected void buildPrimaryIDPassword(Login primaryIdentity, Map<String, Object> bindingMap,
                                           ScriptIntegration se) {
-        log.debug("setPrimaryIDPassword() ");
+    	if(log.isDebugEnabled()) {
+    		log.debug("setPrimaryIDPassword() ");
+    	}
         ManagedSysEntity defaultManagedSys = managedSystemService.getManagedSysById(sysConfiguration.getDefaultManagedSysId());
         List<AttributeMapEntity> amEList = (defaultManagedSys != null) ? managedSystemService.getResourceAttributeMaps(defaultManagedSys.getResource().getId()) : Collections.EMPTY_LIST;
         List<AttributeMap> policyAttrMap = (amEList == null) ? null : attributeMapDozerConverter.convertToDTOList(amEList, true);
         if (policyAttrMap != null) {
-            log.debug("- policyAttrMap IS NOT null");
+        	if(log.isDebugEnabled()) {
+        		log.debug("- policyAttrMap IS NOT null");
+        	}
             try {
                 for (AttributeMap attr : policyAttrMap) {
                     String output = (String) provisionServiceUtil.getOutputFromAttrMap(attr, bindingMap, se);
@@ -578,7 +594,9 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                 log.error(e.getMessage(), e);
             }
         } else {
-            log.debug("- policyAttrMap IS null");
+        	if(log.isDebugEnabled()) {
+        		log.debug("- policyAttrMap IS null");
+        	}
         }
     }
 
@@ -1102,6 +1120,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         MetadataTypeEntity type = null;
         MetadataTypeEntity jobCode = null;
         MetadataTypeEntity employeeType = null;
+        MetadataTypeEntity userSubType = null;
         if (StringUtils.isNotBlank(pUser.getMdTypeId())) {
             type = metadataTypeDAO.findById(pUser.getMdTypeId());
         }
@@ -1110,6 +1129,10 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         }
         if (StringUtils.isNotBlank(pUser.getEmployeeTypeId())) {
             employeeType = metadataTypeDAO.findById(pUser.getEmployeeTypeId());
+        }
+
+        if (StringUtils.isNotBlank(pUser.getUserSubTypeId())) {
+            userSubType = metadataTypeDAO.findById(pUser.getUserSubTypeId());
         }
 
         Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
@@ -1319,11 +1342,102 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
             // ---------------------------------------------------------------------------------------------
         }
 
+        if (!StringUtils.equals(pUser.getPrefixLastName(), userEntity.getPrefixLastName())) {
+            // Audit Log -----------------------------------------------------------------------------------
+            IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
+            auditLog.setRequestorUserId(pUser.getRequestorUserId());
+            auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
+            auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
+            auditLog.setAction(AuditAction.REPLACE_PROP.value());
+            auditLog.put("Prefix Last Name", "old='" + userEntity.getPrefixLastName() + "' new='" + pUser.getPrefixLastName() + "'");
+            parentLog.addChild(auditLog);
+            // ---------------------------------------------------------------------------------------------
+        }
+
+        if (!StringUtils.equals(pUser.getPartnerName(), userEntity.getPartnerName())) {
+            // Audit Log -----------------------------------------------------------------------------------
+            IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
+            auditLog.setRequestorUserId(pUser.getRequestorUserId());
+            auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
+            auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
+            auditLog.setAction(AuditAction.REPLACE_PROP.value());
+            auditLog.put("Partner Name", "old='" + userEntity.getPartnerName() + "' new='" + pUser.getPartnerName() + "'");
+            parentLog.addChild(auditLog);
+            // ---------------------------------------------------------------------------------------------
+        }
+
+        if (!StringUtils.equals(pUser.getPrefixPartnerName(), userEntity.getPrefixPartnerName())) {
+            // Audit Log -----------------------------------------------------------------------------------
+            IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
+            auditLog.setRequestorUserId(pUser.getRequestorUserId());
+            auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
+            auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
+            auditLog.setAction(AuditAction.REPLACE_PROP.value());
+            auditLog.put("Preffix Partner Name", "old='" + userEntity.getPrefixPartnerName() + "' new='" + pUser.getPrefixPartnerName() + "'");
+            parentLog.addChild(auditLog);
+            // ---------------------------------------------------------------------------------------------
+        }
+        if (StringUtils.isNotEmpty(pUser.getUserSubTypeId()) && (userEntity.getSubType() == null || !pUser.getUserSubTypeId().equals(userEntity.getSubType().getId()))) {
+            // Audit Log -----------------------------------------------------------------------------------
+            IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
+            auditLog.setRequestorUserId(pUser.getRequestorUserId());
+            auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
+            auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
+            auditLog.setAction(AuditAction.REPLACE_PROP.value());
+            MetadataTypeEntity metadataType = metadataTypeDAO.findById(pUser.getUserSubTypeId());
+            auditLog.put("JobCode", "old='" + (userEntity.getSubType() != null ? userEntity.getSubType() : "N/A") + "' new='" + metadataType + "'");
+            parentLog.addChild(auditLog);
+            // ---------------------------------------------------------------------------------------------
+        }
+
+        if((( pUser.getSecondaryStatus() == null && userEntity.getSecondaryStatus() == UserStatusEnum.DISABLED)
+                || (pUser.getStatus() == UserStatusEnum.ACTIVE && userEntity.getStatus() == UserStatusEnum.INACTIVE )
+                || (pUser.getStatus() == UserStatusEnum.ACTIVE && userEntity.getStatus() == UserStatusEnum.DELETED )) && saveRehireChange.equalsIgnoreCase("true")) {
+            IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
+            auditLog.setUserId(parentLog.getUserId());
+            auditLog.setPrincipal(parentLog.getPrincipal());
+            auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
+            auditLog.setAction(AuditAction.USER_REHIRED.value());
+            auditLog.setAuditDescription(pUser.getDisplayName()+" User rehired");
+            parentLog.addChild(auditLog);
+        }
+
+        if(pUser.getStatus() == UserStatusEnum.INACTIVE && saveRehireChange.equalsIgnoreCase("true")) {
+            IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
+            auditLog.setUserId(parentLog.getUserId());
+            auditLog.setPrincipal(parentLog.getPrincipal());
+            auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
+            auditLog.setAction(AuditAction.USER_LEAVER.value());
+            auditLog.setAuditDescription(pUser.getDisplayName()+" User inactived");
+            parentLog.addChild(auditLog);
+        }
+
+        if(pUser.getSecondaryStatus() == UserStatusEnum.DISABLED && saveRehireChange.equalsIgnoreCase("true")) {
+            IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
+            auditLog.setUserId(parentLog.getUserId());
+            auditLog.setPrincipal(parentLog.getPrincipal());
+            auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
+            auditLog.setAction(AuditAction.USER_LEAVER.value());
+            auditLog.setAuditDescription(pUser.getDisplayName()+" User disabled");
+            parentLog.addChild(auditLog);
+        }
+
+        if(pUser.getStatus() == UserStatusEnum.DELETED && saveRehireChange.equalsIgnoreCase("true")) {
+            IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
+            auditLog.setUserId(parentLog.getUserId());
+            auditLog.setPrincipal(parentLog.getPrincipal());
+            auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
+            auditLog.setAction(AuditAction.USER_LEAVER.value());
+            auditLog.setAuditDescription(pUser.getDisplayName()+" User deleted");
+            parentLog.addChild(auditLog);
+        }
+
         userEntity.updateUser(userDozerConverter.convertToEntity(pUser.getUser(), false));
 
         userEntity.setType(type);
         userEntity.setJobCode(jobCode);
         userEntity.setEmployeeType(employeeType);
+        userEntity.setSubType(userSubType);
     }
 
     public void updateUserAttributes(final UserEntity userEntity, final ProvisionUser pUser, final IdmAuditLogEntity parentLog) {
@@ -1333,11 +1447,19 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     throw new IllegalArgumentException("Name can not be empty");
                 }
                 AttributeOperationEnum operation = entry.getValue().getOperation();
+
+                if (operation == AttributeOperationEnum.ADD && userEntity.getUserAttributes().containsKey(entry.getKey())) {
+                    log.warn("Attribute with this name alreday exists");
+                    entry.getValue().setOperation(AttributeOperationEnum.REPLACE);
+                    operation = AttributeOperationEnum.REPLACE;
+                }
+
                 if (operation == AttributeOperationEnum.DELETE) {
                     userEntity.getUserAttributes().remove(entry.getKey());
                     // Audit Log -----------------------------------------------------------------------------------
                     IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
-                    Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
+                    auditLog.setRequestorUserId(pUser.getRequestorUserId()); //SIA 2015-08-01                    
+					Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
                     auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
                     auditLog.setAction(AuditAction.DELETE_ATTRIBUTE.value());
                     auditLog.put(entry.getKey(), entry.getValue().getValue());
@@ -1352,7 +1474,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     userEntity.getUserAttributes().put(entry.getKey(), e);
                     // Audit Log -----------------------------------------------------------------------------------
                     IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
-                    Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
+                    auditLog.setRequestorUserId(pUser.getRequestorUserId()); //SIA 2015-08-01                    
+					Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
                     auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
                     auditLog.setAction(AuditAction.ADD_ATTRIBUTE.value());
                     auditLog.put(entry.getKey(), entry.getValue().getValue());
@@ -1365,7 +1488,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                         entity.copyValues(entry.getValue());
                         // Audit Log -----------------------------------------------------------------------------------
                         IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
-                        Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
+                        auditLog.setRequestorUserId(pUser.getRequestorUserId()); //SIA 2015-08-01                        
+						Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
                         auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
                         auditLog.setAction(AuditAction.REPLACE_ATTRIBUTE.value());
                         auditLog.put(entry.getKey(), ("old= '" + oldValue +
@@ -1399,6 +1523,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                                 // Audit Log
                                 //--------------------------------------------------
                                 IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
+                                auditLog.setRequestorUserId(pUser.getRequestorUserId()); //SIA 2015-08-01
                                 Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
                                 String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
                                 LoginEntity loginSupervisor = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), se.getPrincipalList());
@@ -1420,7 +1545,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     // Audit Log
                     //--------------------------------------------------
                     IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
-                    User se = userMgr.getUserDto(e.getId());
+                    auditLog.setRequestorUserId(pUser.getRequestorUserId()); //SIA 2015-08-01                    
+					User se = userMgr.getUserDto(e.getId());
                     Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
                     String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
                     Login loginSupervisor = UserUtils.getUserManagedSysIdentity(sysConfiguration.getDefaultManagedSysId(), se.getPrincipalList());
@@ -1465,7 +1591,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     deleteGroupSet.add(dg);
                     // Audit Log ---------------------------------------------------
                     final IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
-                    auditLog.setAction(AuditAction.DELETE_GROUP.value());
+                    auditLog.setRequestorUserId(pUser.getRequestorUserId()); //SIA 2015-08-01                    
+					auditLog.setAction(AuditAction.DELETE_GROUP.value());
                     final Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
                     final String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
                     auditLog.setTargetUser(pUser.getId(), loginStr);
@@ -1609,7 +1736,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     resourceSet.add(r);
                     // Audit Log ---------------------------------------------------
                     final IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
-                    auditLog.setAction(AuditAction.ADD_USER_TO_RESOURCE.value());
+                    auditLog.setRequestorUserId(pUser.getRequestorUserId()); //SIA 2015-08-01                    
+					auditLog.setAction(AuditAction.ADD_USER_TO_RESOURCE.value());
 
                     String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
                     auditLog.setTargetUser(pUser.getId(), loginStr);
@@ -1626,7 +1754,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     // Audit Log ---------------------------------------------------
                     final IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
                     auditLog.setAction(AuditAction.REMOVE_USER_FROM_RESOURCE.value());
-                    final String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
+                    auditLog.setRequestorUserId(pUser.getRequestorUserId()); //SIA 2015-08-01                    
+					final String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
                     auditLog.setTargetUser(pUser.getId(), loginStr);
                     auditLog.setTargetResource(re.getId(), re.getName());
                     auditLog.put("RESOURCE", re.getName());
@@ -1666,7 +1795,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                                 it.remove();
                                 // Audit Log ---------------------------------------------------
                                 IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
-                                auditLog.setAction(AuditAction.DELETE_PRINCIPAL.value());
+                                auditLog.setRequestorUserId(pUser.getRequestorUserId()); //SIA 2015-08-01                                
+								auditLog.setAction(AuditAction.DELETE_PRINCIPAL.value());
                                 Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
                                 String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
                                 auditLog.setTargetUser(pUser.getId(), loginStr);
@@ -1690,6 +1820,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     // Audit Log ---------------------------------------------------
                     IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
                     auditLog.setAction(AuditAction.ADD_PRINCIPAL.value());
+                    auditLog.setRequestorUserId(pUser.getRequestorUserId()); //SIA 2015-08-01
                     Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
                     String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
                     auditLog.setTargetUser(pUser.getId(), loginStr);
@@ -1704,6 +1835,23 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
 
                                 if (!en.getLogin().equals(e.getLogin())) {
                                     e.setOrigPrincipalName(en.getLogin());
+                                    if(log.isDebugEnabled()) {
+	                                    log.debug("--------------- en.getManagedSysId() : "+en.getManagedSysId()+" ---------------");
+	                                    log.debug("--------------- savePrincipalChange : "+savePrincipalChange+" ---------------");
+                                    }
+                                    if(savePrincipalChange.equalsIgnoreCase("true")) {
+                                    	if(log.isDebugEnabled()) {
+                                    		log.debug("-------------- changing AD User principal ----------");
+                                    	}
+                                        IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
+                                        auditLog.setUserId(parentLog.getUserId());
+                                        auditLog.setPrincipal(parentLog.getPrincipal());
+                                        auditLog.setManagedSysId(en.getManagedSysId());
+                                        auditLog.setTargetUser(userEntity.getId(), en.getLogin() != null ? en.getLogin() : StringUtils.EMPTY);
+                                        auditLog.setAction(AuditAction.USER_PRINCIPAL_CHANGED.value());
+                                        auditLog.setAuditDescription("User Principal changed for "+pUser.getDisplayName());
+                                        parentLog.addChild(auditLog);
+                                    }
                                 }
                                 String logOld = en.toString();
                                 en.copyProperties(e);
@@ -1711,6 +1859,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                                 // Audit Log ---------------------------------------------------
                                 IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
                                 auditLog.setAction(AuditAction.REPLACE_PRINCIPAL.value());
+                                auditLog.setRequestorUserId(pUser.getRequestorUserId()); //SIA 2015-08-01
                                 Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
                                 String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
                                 auditLog.setTargetUser(pUser.getId(), loginStr);
@@ -1738,8 +1887,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
             response.setError(ErrorCode.INVALID_MANAGED_SYS_ID);
             return response;
         }
-        ManagedSysDto mSys = managedSysDozerConverter.convertToDTO(
-                managedSystemService.getManagedSysById(managedSysId), true);
+        final ManagedSysEntity mSys = managedSystemService.getManagedSysById(managedSysId);
+        final ManagedSysDto mSysDto = managedSysDozerConverter.convertToDTO(mSys, false);
 
         MngSysPolicyDto mngSysPolicy = managedSystemService.getManagedSysPolicyByMngSysIdAndMetadataType(managedSysId, "USER_OBJECT");
         List<AttributeMap> attrMap = managedSystemService.getAttributeMapsByMngSysPolicyId(mngSysPolicy.getId());
@@ -1757,7 +1906,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         userReq.setRequestID(requestId);
         userReq.setTargetID(managedSysId);
         userReq.setHostLoginId(mSys.getUserId());
-        String passwordDecoded = managedSysDataService.getDecryptedPassword(mSys);
+        String passwordDecoded = managedSystemService.getDecryptedPassword(mSysDto);
 
         userReq.setHostLoginPassword(passwordDecoded);
         userReq.setHostUrl(mSys.getHostUrl());
@@ -1779,9 +1928,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         userReq.setExtensibleObject(extUser);
         userReq.setScriptHandler(mSys.getAddHandler());
 
-        response = isAdd ? connectorAdapter.addRequest(mSys, userReq)
-              : connectorAdapter.modifyRequest(mSys, userReq);
-
+        response = isAdd ? connectorAdapter.addRequest(mSysDto, userReq)
+                : connectorAdapter.modifyRequest(mSysDto, userReq);
         idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, (isAdd ? "ADD IDENTITY = "
                 : "MODIFY IDENTITY = ") + response.getStatus() + " details:" + response.getErrorMsgAsStr());
 
@@ -1791,7 +1939,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         idmAuditLogChild1.setRequestorUserId(lRequestor.getUserId());
         idmAuditLogChild1.setRequestorPrincipal(lRequestor.getLogin());
         idmAuditLogChild1.setTargetUser(mLg.getUserId(), mLg.getLogin());
-        idmAuditLogChild1.setTargetResource(mSys.getResourceId(), mSys.getName());
+        idmAuditLogChild1.setTargetResource(mSys.getResource().getId(), mSys.getName());
         idmAuditLogChild1.setManagedSysId(mSys.getId());
         boolean successResult = response.getStatus() != StatusCodeType.FAILURE;
         if (successResult) {
@@ -1823,8 +1971,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
 
         ExtensibleUser extensibleUser = buildPolicyMapHelper.buildMngSysAttributes(mLg, ProvOperationEnum.DELETE.name());
         request.setExtensibleObject(extensibleUser);
-
-        String passwordDecoded = managedSysDataService.getDecryptedPassword(mSys);
+        String passwordDecoded = managedSystemService.getDecryptedPassword(mSys);
 
         request.setHostLoginPassword(passwordDecoded);
         request.setHostUrl(mSys.getHostUrl());
@@ -1850,19 +1997,22 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         req.setTargetID(login.getManagedSysId());
         req.setHostLoginId(mSys.getUserId());
         req.setExtensibleObject(extensibleUser);
-        String passwordDecoded = managedSysDataService.getDecryptedPassword(mSys);
+        String passwordDecoded = managedSystemService.getDecryptedPassword(mSys);
 
         req.setHostLoginPassword(passwordDecoded);
         req.setHostUrl(mSys.getHostUrl());
         if (matchObj != null) {
             req.setBaseDN(matchObj.getBaseDn());
         }
+//        "RESET_PASSWORD"
         req.setOperation(operation);
         req.setPassword(password);
 
         req.setScriptHandler(mSys.getPasswordHandler());
 
-        log.debug("Reset password request will be sent for user login " + login.getLogin());
+        if(log.isDebugEnabled()) {
+        	log.debug("Reset password request will be sent for user login " + login.getLogin());
+        }
         return connectorAdapter.resetPasswordRequest(mSys, req);
     }
 
@@ -1912,17 +2062,17 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         resumeReq.setHostLoginId(mSys.getUserId());
         resumeReq.setExtensibleObject(extensibleUser);
 
-        String passwordDecoded = managedSysDataService.getDecryptedPassword(mSys);
+        String passwordDecoded = managedSystemService.getDecryptedPassword(mSys);
 
         resumeReq.setHostLoginPassword(passwordDecoded);
         resumeReq.setHostUrl(mSys.getHostUrl());
-
-        log.debug("Resume request will be sent for user login " + login.getLogin());
+        if(log.isDebugEnabled()) {
+        	log.debug((operation ? "Suspend" : "Resume") + " request will be sent for user login " + login.getLogin());
+        }
         return operation ? connectorAdapter.suspendRequest(mSys, resumeReq) :
                 connectorAdapter.resumeRequest(mSys, resumeReq);
     }
 
-    @Override
     public Response addEvent(ProvisionActionEvent event, ProvisionActionTypeEnum type) {
         Map<String, Object> bindingMap = new HashMap<>();
         Response response = new Response(ResponseStatus.SUCCESS);
@@ -1945,5 +2095,332 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         return null;
     }
 
+
+    //SIA 2015-08-01: Method added
+    public void addUserProperties(final UserEntity userEntity, final ProvisionUser pUser) {
+        MetadataTypeEntity type = null;
+        MetadataTypeEntity jobCode = null;
+        MetadataTypeEntity employeeType = null;
+        MetadataTypeEntity subtype = null;
+
+        MetadataTypeSearchBean sb = new MetadataTypeSearchBean();
+        if(StringUtils.isNotBlank(pUser.getMdTypeId())){
+            sb.addKey(pUser.getMdTypeId());
+        }
+        if(StringUtils.isNotBlank(pUser.getJobCodeId())){
+            sb.addKey(pUser.getJobCodeId());
+        }
+        if(StringUtils.isNotBlank(pUser.getEmployeeTypeId())){
+            sb.addKey(pUser.getEmployeeTypeId());
+        }
+        if(StringUtils.isNotBlank(pUser.getUserSubTypeId())){
+            sb.addKey(pUser.getUserSubTypeId());
+        }
+
+
+        List<MetadataTypeEntity> metaDataTypes = metadataService.findEntityBeans(sb, -1, -1, null);
+
+        if(CollectionUtils.isNotEmpty(metaDataTypes)){
+            for(MetadataTypeEntity typeEntity: metaDataTypes){
+                if(typeEntity.getId().equals(pUser.getMdTypeId())){
+                    type = typeEntity;
+                } else if(typeEntity.getId().equals(pUser.getJobCodeId())){
+                    jobCode = typeEntity;
+                }else if(typeEntity.getId().equals(pUser.getEmployeeTypeId())){
+                    employeeType = typeEntity;
+                }else if(typeEntity.getId().equals(pUser.getUserSubTypeId())){
+                    subtype = typeEntity;
+                }
+            }
+        }
+
+        Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
+        if (login == null && StringUtils.isNotEmpty(pUser.getId())) {
+            login = loginDozerConverter.convertToDTO(loginManager.getByUserIdManagedSys(pUser.getId(), sysConfiguration.getDefaultManagedSysId()), false);
+        }
+
+        userEntity.updateUser(userDozerConverter.convertToEntity(pUser.getUser(), false));
+        userEntity.setType(type);
+        userEntity.setJobCode(jobCode);
+        userEntity.setEmployeeType(employeeType);
+        userEntity.setSubType(subtype);
+    }
+
+
+    //SIA 2015-08-01: Method added
+
+    public void auditUserProperties(final UserEntity userEntity, final ProvisionUser pUser, final IdmAuditLogEntity parentLog) {
+        MetadataTypeEntity type = null;
+        MetadataTypeEntity jobCode = null;
+        MetadataTypeEntity employeeType = null;
+        MetadataTypeEntity subtype = null;
+
+        MetadataTypeSearchBean sb = new MetadataTypeSearchBean();
+        if(StringUtils.isNotBlank(pUser.getMdTypeId())){
+            sb.addKey(pUser.getMdTypeId());
+        }
+        if(StringUtils.isNotBlank(pUser.getJobCodeId())){
+            sb.addKey(pUser.getJobCodeId());
+        }
+        if(StringUtils.isNotBlank(pUser.getEmployeeTypeId())){
+            sb.addKey(pUser.getEmployeeTypeId());
+        }
+        if(StringUtils.isNotBlank(pUser.getUserSubTypeId())){
+            sb.addKey(pUser.getUserSubTypeId());
+        }
+
+        List<MetadataTypeEntity> metaDataTypes = metadataService.findEntityBeans(sb, -1, -1, null);
+
+        if(CollectionUtils.isNotEmpty(metaDataTypes)){
+            for(MetadataTypeEntity typeEntity: metaDataTypes){
+                if(typeEntity.getId().equals(pUser.getMdTypeId())){
+                    type = typeEntity;
+                } else if(typeEntity.getId().equals(pUser.getJobCodeId())){
+                    jobCode = typeEntity;
+                }else if(typeEntity.getId().equals(pUser.getEmployeeTypeId())){
+                    employeeType = typeEntity;
+                }else if(typeEntity.getId().equals(pUser.getUserSubTypeId())){
+                    subtype = typeEntity;
+                }
+            }
+        }
+
+        Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
+
+        if (login == null && StringUtils.isNotEmpty(pUser.getId())) {
+            login = loginDozerConverter.convertToDTO(loginManager.getByUserIdManagedSys(pUser.getId(), sysConfiguration.getDefaultManagedSysId()), false);
+        }
+
+        String tgId = userEntity.getId();
+        String strLogin = (login != null ? login.getLogin() : StringUtils.EMPTY);
+
+        if (StringUtils.isNotEmpty(pUser.getFirstName())) {
+            // Audit Log -----------------------------------------------------------------------------------
+            IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
+            auditLog.setRequestorUserId(pUser.getRequestorUserId());
+            auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
+            auditLog.setTargetUser(tgId, strLogin);
+            auditLog.setAction(AuditAction.REPLACE_PROP.value());
+            auditLog.addCustomRecord("FirstName", "New='" + pUser.getFirstName() + "'");
+            parentLog.addChild(auditLog);
+            // ---------------------------------------------------------------------------------------------
+        }
+        if (StringUtils.isNotEmpty(pUser.getLastName())) {
+            // Audit Log -----------------------------------------------------------------------------------
+            IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
+            auditLog.setRequestorUserId(pUser.getRequestorUserId());
+            auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
+            auditLog.setTargetUser(tgId, strLogin);
+            auditLog.setAction(AuditAction.REPLACE_PROP.value());
+            auditLog.addCustomRecord("LastName", "New='" + pUser.getLastName() + "'");
+            parentLog.addChild(auditLog);
+            // ---------------------------------------------------------------------------------------------
+        }
+
+        if (pUser.getBirthdate() != null) {
+            // Audit Log -----------------------------------------------------------------------------------
+            IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
+            auditLog.setRequestorUserId(pUser.getRequestorUserId());
+            auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
+            auditLog.setTargetUser(tgId, strLogin);
+            auditLog.setAction(AuditAction.REPLACE_PROP.value());
+            auditLog.addCustomRecord("Birthdate", "New='" + pUser.getBirthdate() + "'");
+            parentLog.addChild(auditLog);
+            // ---------------------------------------------------------------------------------------------
+        }
+
+
+        if (StringUtils.isNotEmpty(pUser.getCostCenter())) {
+            // Audit Log -----------------------------------------------------------------------------------
+            IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
+            auditLog.setRequestorUserId(pUser.getRequestorUserId());
+            auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
+            auditLog.setTargetUser(tgId, strLogin);
+            auditLog.setAction(AuditAction.REPLACE_PROP.value());
+            auditLog.addCustomRecord("CostCenter", "New='" + pUser.getCostCenter() + "'");
+            parentLog.addChild(auditLog);
+            // ---------------------------------------------------------------------------------------------
+        }
+
+        if (StringUtils.isNotEmpty(pUser.getDisplayName())) {
+            // Audit Log -----------------------------------------------------------------------------------
+            IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
+            auditLog.setRequestorUserId(pUser.getRequestorUserId());
+            auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
+            auditLog.setTargetUser(tgId, strLogin);
+            auditLog.setAction(AuditAction.REPLACE_PROP.value());
+            auditLog.addCustomRecord("DisplayName", "New='" + pUser.getDisplayName() + "'");
+            parentLog.addChild(auditLog);
+            // ---------------------------------------------------------------------------------------------
+        }
+
+
+        if (StringUtils.isNotEmpty(pUser.getMaidenName())) {
+            // Audit Log -----------------------------------------------------------------------------------
+            IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
+            auditLog.setRequestorUserId(pUser.getRequestorUserId());
+            auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
+            auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
+            auditLog.setAction(AuditAction.REPLACE_PROP.value());
+            auditLog.addCustomRecord("MaidenName", "New='" + pUser.getMaidenName() + "'");
+            parentLog.addChild(auditLog);
+            // ---------------------------------------------------------------------------------------------
+        }
+
+        if (StringUtils.isNotEmpty(pUser.getNickname())) {
+            // Audit Log -----------------------------------------------------------------------------------
+            IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
+            auditLog.setRequestorUserId(pUser.getRequestorUserId());
+            auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
+            auditLog.setTargetUser(tgId, strLogin);
+            auditLog.setAction(AuditAction.REPLACE_PROP.value());
+            auditLog.addCustomRecord("Nickname", "New='" + pUser.getNickname() + "'");
+            parentLog.addChild(auditLog);
+            // ---------------------------------------------------------------------------------------------
+        }
+
+        if (StringUtils.isNotEmpty(pUser.getMiddleInit())) {
+            // Audit Log -----------------------------------------------------------------------------------
+            IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
+            auditLog.setRequestorUserId(pUser.getRequestorUserId());
+            auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
+            auditLog.setTargetUser(tgId, strLogin);
+            auditLog.setAction(AuditAction.REPLACE_PROP.value());
+            auditLog.addCustomRecord("MiddleInit", "New='" + pUser.getMiddleInit() + "'");
+            parentLog.addChild(auditLog);
+            // ---------------------------------------------------------------------------------------------
+        }
+
+
+        if (StringUtils.isNotEmpty(pUser.getEmployeeId())) {
+
+            // Audit Log -----------------------------------------------------------------------------------
+            IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
+            auditLog.setRequestorUserId(pUser.getRequestorUserId());
+            auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
+            auditLog.setTargetUser(tgId, strLogin);
+            auditLog.setAction(AuditAction.REPLACE_PROP.value());
+            auditLog.addCustomRecord("EmployeeId", "New='" + pUser.getEmployeeId() + "'");
+            parentLog.addChild(auditLog);
+            // ---------------------------------------------------------------------------------------------
+        }
+
+
+        if (StringUtils.isNotEmpty(pUser.getEmployeeTypeId())) {
+            // Audit Log -----------------------------------------------------------------------------------
+            IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
+            auditLog.setRequestorUserId(pUser.getRequestorUserId());
+            auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
+            auditLog.setTargetUser(tgId, strLogin);
+            auditLog.setAction(AuditAction.REPLACE_PROP.value());
+//            MetadataTypeEntity metadataType = metadataTypeDAO.findByIdNoLocalized(pUser.getEmployeeTypeId());
+            //auditLog.addCustomRecord("EmployeeType", "New='" + employeeType.getDescription() + "'");
+            parentLog.addChild(auditLog);
+            // ---------------------------------------------------------------------------------------------
+        }
+
+
+        if (StringUtils.isNotEmpty(pUser.getUserTypeInd())) {
+            // Audit Log -----------------------------------------------------------------------------------
+            IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
+            auditLog.setRequestorUserId(pUser.getRequestorUserId());
+            auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
+            auditLog.setTargetUser(tgId, strLogin);
+            auditLog.setAction(AuditAction.REPLACE_PROP.value());
+            //MetadataTypeEntity metadataType =  metadataTypeDAO.findById(pUser.getUserTypeInd());
+            auditLog.addCustomRecord("UserType", "New='" + pUser.getUserTypeInd() + "'");
+            parentLog.addChild(auditLog);
+            // ---------------------------------------------------------------------------------------------
+        }
+
+
+        if (userEntity.getJobCode() != null && StringUtils.isNotEmpty(pUser.getJobCodeId())) {
+            // Audit Log -----------------------------------------------------------------------------------
+            IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
+            auditLog.setRequestorUserId(pUser.getRequestorUserId());
+            auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
+            auditLog.setTargetUser(tgId, strLogin);
+            auditLog.setAction(AuditAction.REPLACE_PROP.value());
+//            MetadataTypeEntity metadataType = metadataTypeDAO.findByIdNoLocalized(pUser.getJobCodeId());
+            //auditLog.addCustomRecord("JobCode", "New='" + jobCode.getDescription() + "'");
+            parentLog.addChild(auditLog);
+            // ---------------------------------------------------------------------------------------------
+        }
+
+
+        if (pUser.getStartDate() != null) {
+            // Audit Log -----------------------------------------------------------------------------------
+            IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
+            auditLog.setRequestorUserId(pUser.getRequestorUserId());
+            auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
+            auditLog.setTargetUser(tgId, strLogin);
+            auditLog.setAction(AuditAction.REPLACE_PROP.value());
+            auditLog.addCustomRecord("StartDate", "New='" + pUser.getStartDate() + "'");
+            parentLog.addChild(auditLog);
+            // ---------------------------------------------------------------------------------------------
+        }
+
+        if (pUser.getLastDate() != null) {
+            // Audit Log -----------------------------------------------------------------------------------
+            IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
+            auditLog.setRequestorUserId(pUser.getRequestorUserId());
+            auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
+            auditLog.setTargetUser(tgId, strLogin);
+            auditLog.setAction(AuditAction.REPLACE_PROP.value());
+            auditLog.addCustomRecord("LastDate", "New='" + pUser.getLastDate() + "'");
+            parentLog.addChild(auditLog);
+            // ---------------------------------------------------------------------------------------------
+
+        }
+
+
+        if (pUser.getStatus() != null) {
+            // Audit Log -----------------------------------------------------------------------------------
+            IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
+            auditLog.setRequestorUserId(pUser.getRequestorUserId());
+            auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
+            auditLog.setTargetUser(tgId, strLogin);
+            auditLog.setAction(AuditAction.REPLACE_PROP.value());
+            auditLog.addCustomRecord("Status", "New='" + pUser.getStatus() + "'");
+            parentLog.addChild(auditLog);
+            // ---------------------------------------------------------------------------------------------
+        }
+
+        if (pUser.getSecondaryStatus() != null) {
+            // Audit Log -----------------------------------------------------------------------------------
+            IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
+            auditLog.setRequestorUserId(pUser.getRequestorUserId());
+            auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
+            auditLog.setTargetUser(tgId, strLogin);
+            auditLog.setAction(AuditAction.REPLACE_PROP.value());
+            auditLog.addCustomRecord("SecondaryStatus", "New='" + pUser.getSecondaryStatus() + "'");
+            parentLog.addChild(auditLog);
+            // ---------------------------------------------------------------------------------------------
+        }
+
+        if (StringUtils.isNotEmpty(pUser.getSuffix())) {
+            // Audit Log -----------------------------------------------------------------------------------
+            IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
+            auditLog.setRequestorUserId(pUser.getRequestorUserId());
+            auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
+            auditLog.setTargetUser(tgId, strLogin);
+            auditLog.setAction(AuditAction.REPLACE_PROP.value());
+            auditLog.addCustomRecord("Suffix", "New='" + pUser.getSuffix() + "'");
+            parentLog.addChild(auditLog);
+            // ---------------------------------------------------------------------------------------------
+        }
+
+        if (StringUtils.isNotEmpty(pUser.getTitle())) {
+            // Audit Log -----------------------------------------------------------------------------------
+            IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
+            auditLog.setRequestorUserId(pUser.getRequestorUserId());
+            auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
+            auditLog.setTargetUser(tgId, strLogin);
+            auditLog.setAction(AuditAction.REPLACE_PROP.value());
+            auditLog.addCustomRecord("Title", "New='" + pUser.getTitle() + "'");
+            parentLog.addChild(auditLog);
+            // ---------------------------------------------------------------------------------------------
+        }
+    }
 
 }

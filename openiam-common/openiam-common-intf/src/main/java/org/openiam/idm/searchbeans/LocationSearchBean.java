@@ -65,5 +65,14 @@ public class LocationSearchBean extends AbstractSearchBean<Location, String> imp
 		this.city = city;
 	}
 
-    
+
+    @Override
+    public String getCacheUniqueBeanKey() {
+        return new StringBuilder()
+                .append(organizationId != null ? organizationId : "")
+                .append(userId != null ? userId : "")
+                .append(country != null ? country : "")
+                .append(name != null ? name : "")
+                .append(getKey() != null ? getKey() : "")
+                .toString();    }
 }

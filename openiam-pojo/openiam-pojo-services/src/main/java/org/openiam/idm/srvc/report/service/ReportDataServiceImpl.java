@@ -174,7 +174,9 @@ public class ReportDataServiceImpl implements ReportDataService, InitializingBea
 	public String createOrUpdateReportParamInfo(ReportCriteriaParamDto reportParam){
 
 		ReportCriteriaParamEntity entity = criteriaParamDozerConverter.convertToEntity(reportParam, true);
-		log.debug("In createOrUpdateReportParamInfo, converted entity:" + entity);
+		if(log.isDebugEnabled()) {
+			log.debug("In createOrUpdateReportParamInfo, converted entity:" + entity);
+		}
 
 		// put new param to the end of the parameters list
 		if (entity.getDisplayOrder() == null) {
@@ -373,7 +375,9 @@ public class ReportDataServiceImpl implements ReportDataService, InitializingBea
 
 		ReportSubCriteriaParamEntity entity = criteriaSubParamDozerConverter.convertToEntity(
 				subCriteriaParamReport, true);
-		log.debug("In createOrUpdateReportParamInfo, converted entity:" + entity);
+		if(log.isDebugEnabled()) {
+			log.debug("In createOrUpdateReportParamInfo, converted entity:" + entity);
+		}
 
 		if (StringUtils.isBlank(entity.getRscpId())) {
 			entity = subCriteriaParamDao.add(entity);

@@ -1,5 +1,6 @@
 package org.openiam.connector.ldap.command.group;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.base.BaseAttribute;
 import org.openiam.connector.ldap.command.base.AbstractCrudLdapCommand;
@@ -20,7 +21,11 @@ import org.springframework.stereotype.Service;
 import javax.naming.NameNotFoundException;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
-import javax.naming.directory.*;
+import javax.naming.directory.Attribute;
+import javax.naming.directory.BasicAttribute;
+import javax.naming.directory.DirContext;
+import javax.naming.directory.ModificationItem;
+import javax.naming.directory.SearchResult;
 import javax.naming.ldap.LdapContext;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -77,15 +82,18 @@ public class ModifyGroupLdapCommand extends AbstractCrudLdapCommand<ExtensibleGr
             List<ExtensibleAttribute> attrList = obj.getAttributes();
             List<ModificationItem> modItemList = new ArrayList<ModificationItem>();
             for (ExtensibleAttribute att : attrList) {
-
-                log.debug("Extensible Attribute: " + att.getName() + " " + att.getDataType());
+            	if(log.isDebugEnabled()) {
+            		log.debug("Extensible Attribute: " + att.getName() + " " + att.getDataType());
+            	}
 
                 if (att.getDataType() == null) {
                     continue;
                 }
 
                 if (att.getName().equalsIgnoreCase(matchObj.getKeyField())) {
-                    log.debug("Attr Name=" + att.getName() + " Value=" + att.getValue() + " ignored");
+                	if(log.isDebugEnabled()) {
+                		log.debug("Attr Name=" + att.getName() + " Value=" + att.getValue() + " ignored");
+                	}
                     continue;
                 }
 
@@ -101,6 +109,10 @@ public class ModifyGroupLdapCommand extends AbstractCrudLdapCommand<ExtensibleGr
 
                     modItemList.add(new ModificationItem(att.getOperation(), new BasicAttribute(att.getName(), att.getValueAsByteArray())));
 
+                } else if (att.getAttributeContainer() != null && CollectionUtils.isNotEmpty(att.getAttributeContainer().getAttributeList())) {
+                    for (BaseAttribute attribute : att.getAttributeContainer().getAttributeList()) {
+                        modItemList.add(new ModificationItem(attribute.getOperationEnum().getValue(), new BasicAttribute(att.getName(), attribute.getValue())));
+                    }
                 } else if (att.getOperation() > 0 && att.getName() != null) {
 
                     if ((att.getValue() == null || att.getValue().equals("null")) &&
@@ -148,20 +160,25 @@ public class ModifyGroupLdapCommand extends AbstractCrudLdapCommand<ExtensibleGr
             }
             ModificationItem[] mods = new ModificationItem[modItemList.size()];
             modItemList.toArray(mods);
-
-            log.debug("ModifyAttribute array=" + mods);
+            if(log.isDebugEnabled()) {
+            	log.debug("ModifyAttribute array=" + mods);
+            }
 
             //Important!!! For save and modify we need to create DN format
 //            String identityDN = matchObj.getKeyField() + "=" + identity + "," + objectBaseDN;
 
             NamingEnumeration results = null;
             try {
-                log.debug("Looking for user with identity=" +  identity + " in " +  objectBaseDN);
+            	if(log.isDebugEnabled()) {
+            		log.debug("Looking for user with identity=" +  identity + " in " +  objectBaseDN);
+            	}
                 results = lookupSearch(managedSys, matchObj, ldapctx, identity, null, objectBaseDN);
 
             } catch (NameNotFoundException nnfe) {
-                log.debug("results=NULL");
-                log.debug(" results has more elements=0");
+            	if(log.isDebugEnabled()) {
+	                log.debug("results=NULL");
+	                log.debug(" results has more elements=0");
+            	}
                 return;
             }
 
@@ -184,7 +201,9 @@ public class ModifyGroupLdapCommand extends AbstractCrudLdapCommand<ExtensibleGr
             }
 
             if (StringUtils.isNotEmpty(identityDN)) {
-                log.debug("Modifying user in ldap.." + identityDN);
+            	if(log.isDebugEnabled()) {
+            		log.debug("Modifying user in ldap.." + identityDN);
+            	}
                 ldapctx.modifyAttributes(identityDN, mods);
 
                 if (groupMembershipEnabled) {
@@ -199,11 +218,15 @@ public class ModifyGroupLdapCommand extends AbstractCrudLdapCommand<ExtensibleGr
             }
 
             if (origIdentity != null) {
-                log.debug("Renaming identity: " + identityDN);
+            	if(log.isDebugEnabled()) {
+            		log.debug("Renaming identity: " + identityDN);
+            	}
 
                 try {
                     ldapctx.rename(identityDN, crudRequest.getObjectIdentity());
-                    log.debug("Renaming : " + identityDN);
+                    if(log.isDebugEnabled()) {
+                    	log.debug("Renaming : " + identityDN);
+                    }
 
                 } catch (NamingException ne) {
                     log.error(ne.getMessage(), ne);
@@ -219,8 +242,9 @@ public class ModifyGroupLdapCommand extends AbstractCrudLdapCommand<ExtensibleGr
     }
 
     private ExtensibleAttribute isRename(ExtensibleObject obj) {
-
-        log.debug("ReName Object:" + obj.getName() + " - operation=" + obj.getOperation());
+    	if(log.isDebugEnabled()) {
+    		log.debug("ReName Object:" + obj.getName() + " - operation=" + obj.getOperation());
+    	}
 
         List<ExtensibleAttribute> attrList = obj.getAttributes();
         for (ExtensibleAttribute att : attrList) {

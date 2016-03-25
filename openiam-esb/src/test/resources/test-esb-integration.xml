@@ -342,6 +342,9 @@
                   serviceClass="org.openiam.idm.srvc.grp.ws.GroupDataWebService"
                   address="${openiam.service_host}${openiam.idm.ws.path}GroupDataWebService" />
 
+    <jaxws:client id="sourceAdapterClient"
+                  serviceClass="org.openiam.provision.service.SourceAdapter"
+                  address="${openiam.service_host}/openiam-esb/source/SourceAdapterService" />
 
 	 <jaxws:client id="authManagerAdminClient"
                   serviceClass="org.openiam.authmanager.service.AuthorizationManagerAdminWebService"
@@ -354,5 +357,9 @@
     <jaxws:client id="connectorServiceClient"
                   serviceClass="org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService"
                   address="${openiam.service_host}${openiam.idm.ws.path}ConnectorWebService" />
+
+    <jaxws:client id="syncServiceClient"
+                  serviceClass="org.openiam.idm.srvc.synch.ws.IdentitySynchWebService"
+                  address="${openiam.service_host}${openiam.idm.ws.path}IdentitySynchWebService" />
 
 </beans>

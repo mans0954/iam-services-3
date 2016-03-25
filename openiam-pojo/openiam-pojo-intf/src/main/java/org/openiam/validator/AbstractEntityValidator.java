@@ -1,13 +1,21 @@
 package org.openiam.validator;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.log4j.Logger;
+import org.openiam.base.ws.ResponseCode;
+import org.openiam.exception.BasicDataServiceException;
+import org.openiam.exception.EsbErrorToken;
 
 import javax.annotation.PostConstruct;
+import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Created with IntelliJ IDEA.
@@ -25,4 +33,6 @@ public abstract class AbstractEntityValidator implements EntityValidator {
         ValidatorFactory factory = Validation.byDefaultProvider().configure().traversableResolver(new IgnoreTraversableResolver()).buildValidatorFactory();
         validator = factory.getValidator();
     }
+
+
 }

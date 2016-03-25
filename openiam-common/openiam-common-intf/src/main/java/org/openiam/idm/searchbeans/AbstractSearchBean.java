@@ -1,23 +1,27 @@
 package org.openiam.idm.searchbeans;
 
+import org.apache.commons.lang.StringUtils;
 import org.openiam.base.ws.SortParam;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "AbstractSearchBean", propOrder = {
         "key",
         "deepCopy",
-        "sortBy"
+        "sortBy",
+        "findInCache"
 })
-public class AbstractSearchBean<T, KeyType> implements SearchBean<T, KeyType>, Serializable {
+public abstract class AbstractSearchBean<T, KeyType> {
 
 	private boolean deepCopy = true;
 	private KeyType key;
+	private boolean findInCache;
 
     private List<SortParam> sortBy;
 	
@@ -45,12 +49,50 @@ public class AbstractSearchBean<T, KeyType> implements SearchBean<T, KeyType>, S
         this.sortBy = sortBy;
     }
 
-    @Override
+	public void addSortParam(SortParam sortParam){
+		if(sortParam!=null && StringUtils.isNotBlank(sortParam.getSortBy())) {
+			if (this.sortBy == null) {
+				this.sortBy = new ArrayList<>();
+			}
+			this.sortBy.add(sortParam);
+		}
+	}
+
+	public boolean isFindInCache() {
+		return findInCache;
+	}
+
+	public void setFindInCache(boolean findInCache) {
+		this.findInCache = findInCache;
+	}
+
+	/**
+     * This method must be used only for as a key for secondary level cache
+     * @return
+     */
+    public abstract String getCacheUniqueBeanKey();
+
+	protected String getSortKeyForCache(){
+		StringBuilder sb = new StringBuilder();
+		if (sortBy != null) {
+			for (SortParam sort : sortBy) {
+				if (sort.getSortBy() != null)
+					sb.append(sort.getSortBy().toString());
+				if (sort.getOrderBy() != null)
+					sb.append(sort.getOrderBy().toString());
+			}
+		}
+		return StringUtils.isNotBlank(sb.toString()) ? sb.toString() : "";
+	}
+
+	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + (deepCopy ? 1231 : 1237);
+		result = prime * result + (findInCache ? 1231 : 1237);
 		result = prime * result + ((key == null) ? 0 : key.hashCode());
+		result = prime * result + ((sortBy == null) ? 0 : sortBy.hashCode());
 		return result;
 	}
 
@@ -65,10 +107,17 @@ public class AbstractSearchBean<T, KeyType> implements SearchBean<T, KeyType>, S
 		AbstractSearchBean other = (AbstractSearchBean) obj;
 		if (deepCopy != other.deepCopy)
 			return false;
+		if (findInCache != other.findInCache)
+			return false;
 		if (key == null) {
 			if (other.key != null)
 				return false;
 		} else if (!key.equals(other.key))
+			return false;
+		if (sortBy == null) {
+			if (other.sortBy != null)
+				return false;
+		} else if (!sortBy.equals(other.sortBy))
 			return false;
 		return true;
 	}

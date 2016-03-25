@@ -35,7 +35,8 @@ public class PolicyAttributeEntity extends KeyEntity {
 
     @ManyToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
     @JoinColumn(name = "DEF_PARAM_ID", insertable = true, updatable = true, nullable = true)
-    private PolicyDefParamEntity defParam;
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)    
+	private PolicyDefParamEntity defParam;
 
 
     @Column(name = "VALUE1", length = 2048)

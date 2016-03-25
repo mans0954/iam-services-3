@@ -29,6 +29,7 @@ public class UserAttributeEntity extends AbstractAttributeEntity {
     @ElementCollection
     @CollectionTable(name="USER_ATTRIBUTE_VALUES", joinColumns=@JoinColumn(name="USER_ATTRIBUTE_ID", referencedColumnName="ID"))
     @Column(name="VALUE", length = 255)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private List<String> values = new ArrayList<String>();
 
     @Column(name = "IS_MULTIVALUED", nullable = false)

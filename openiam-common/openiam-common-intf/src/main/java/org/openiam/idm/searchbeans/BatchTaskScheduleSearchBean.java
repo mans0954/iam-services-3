@@ -18,7 +18,7 @@ import org.openiam.idm.srvc.batch.dto.BatchTaskSchedule;
 	"nextScheduledRunFrom",
 	"nextScheduledRunTo"
 })
-public class BatchTaskScheduleSearchBean extends AbstractSearchBean<BatchTaskSchedule, String> {
+public class BatchTaskScheduleSearchBean extends AbstractSearchBean<BatchTaskSchedule, String> implements SearchBean {
 	
 	public BatchTaskScheduleSearchBean() {}
 
@@ -65,6 +65,12 @@ public class BatchTaskScheduleSearchBean extends AbstractSearchBean<BatchTaskSch
 	public void setNextScheduledRunTo(Date nextScheduledRunTo) {
 		this.nextScheduledRunTo = nextScheduledRunTo;
 	}
-	
-	
+
+
+	@Override
+	public String getCacheUniqueBeanKey() {
+		return new StringBuilder()
+				.append(getKey() != null ? getKey() : "")
+				.toString();
+	}
 }

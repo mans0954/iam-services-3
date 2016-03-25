@@ -60,4 +60,14 @@ public class ApproverAssociationServiceTest extends AbstractKeyServiceTest<Appro
 		return managedSysServiceClient.getApproverAssociations(searchBean, from, size);
 	}
 
+/*	@Override
+	protected String getId(ApproverAssociation bean) {
+		return bean.getId();
+	}
+
+	@Override
+	protected void setId(ApproverAssociation bean, String id) {
+		bean.setId(id);
+	}*/
+
 }

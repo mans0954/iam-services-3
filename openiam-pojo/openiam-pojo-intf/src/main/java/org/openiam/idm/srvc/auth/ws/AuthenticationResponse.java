@@ -39,13 +39,13 @@ import javax.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "AuthenticationResponse", propOrder = {
         "subject",
-        //"authErrorCode",
+        "authErrorCode",
         "authErrorMessage"
 })
 public class AuthenticationResponse extends Response {
 
     protected Subject subject;
-    //protected int authErrorCode;
+    protected int authErrorCode;
     protected String authErrorMessage;
 
     public AuthenticationResponse() {
@@ -68,7 +68,6 @@ public class AuthenticationResponse extends Response {
         this.subject = subject;
     }
 
-    /*
     public int getAuthErrorCode() {
         return authErrorCode;
     }
@@ -76,7 +75,6 @@ public class AuthenticationResponse extends Response {
     public void setAuthErrorCode(int authErrorCode) {
         this.authErrorCode = authErrorCode;
     }
-    */
 
     public String getAuthErrorMessage() {
         return authErrorMessage;
