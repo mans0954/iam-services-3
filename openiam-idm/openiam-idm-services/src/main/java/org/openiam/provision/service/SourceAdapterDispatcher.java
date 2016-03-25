@@ -180,66 +180,6 @@ public class SourceAdapterDispatcher implements Runnable {
         }
 
     }
-//    @Autowired
-//    private JmsTemplate jmsTemplate;
-//
-//    @Autowired
-//    @Qualifier(value = "sourceAdapterQueue")
-//    private Queue queue;
-//
-//    @Autowired
-//    @Qualifier("transactionManager")
-//    private PlatformTransactionManager platformTransactionManager;
-//    private final Object mutex = new Object();
-
-//    @Override
-//    //TODO change when Spring 3.2.2 @Scheduled(fixedDelayString = "${org.openiam.metadata.threadsweep}")
-//    @Scheduled(fixedDelay = 10000)
-//    public void sweep() {
-//        jmsTemplate.browse(queue, new BrowserCallback<Object>() {
-//            @Override
-//            public Object doInJms(Session session, QueueBrowser browser) throws JMSException {
-//                synchronized (mutex) {
-//
-//                    final StopWatch sw = new StopWatch();
-//                    sw.start();
-//                    try {
-//                        log.info("Starting SourceAdapterRequest sweeper thread");
-//
-//                        Enumeration e = browser.getEnumeration();
-//
-//                        while (e.hasMoreElements()) {
-//                            final SourceAdapterRequest request = (SourceAdapterRequest) ((ObjectMessage) jmsTemplate.receive(queue)).getObject();
-//
-//                            TransactionTemplate transactionTemplate = new TransactionTemplate(platformTransactionManager);
-//                            transactionTemplate.setPropagationBehavior(TransactionTemplate.PROPAGATION_REQUIRED);
-//                            Boolean result = transactionTemplate.execute(new TransactionCallback<Boolean>() {
-//                                @Override
-//                                public Boolean doInTransaction(TransactionStatus status) {
-//                                    process(request);
-//
-//                                    //stupid
-//                                    try {
-//                                        // to give other threads chance to be executed
-//                                        Thread.sleep(100);
-//                                    } catch (InterruptedException e1) {
-//                                        log.warn(e1.getMessage());
-//                                    }
-//                                    return true;
-//                                }
-//                            });
-//
-//                            e.nextElement();
-//                        }
-//
-//                    } finally {
-//                        log.info(String.format("Done with SourceAdapterRequest sweeper thread.  Took %s ms", sw.getTime()));
-//                    }
-//                    return null;
-//                }
-//            }
-//        });
-//    }
 
     private void process(SourceAdapterRequest request) {
 //        MuleContextProvider.getCtx().getDefaultMessageReceiverThreadingProfile().get
@@ -269,7 +209,7 @@ public class SourceAdapterDispatcher implements Runnable {
                 request.setAction(SourceAdapterOperationEnum.MODIFY);
             }
 
-            User requestor = this.getUser(request.getRequestor(), request);
+            User requestor = this.getUser(request.getRequestor(), request, false);
             if (requestor != null && StringUtils.isNotBlank(requestor.getId())) {
                 requestorId = requestor.getId();
             }
@@ -278,15 +218,12 @@ public class SourceAdapterDispatcher implements Runnable {
             }
             idmAuditLog.setRequestorUserId(requestorId);
         } catch (Exception e) {
-//            response.setStatus(ResponseStatus.FAILURE);
-//            response.setError(e.getMessage());
             idmAuditLog.fail();
             idmAuditLog.setFailureReason(e.getMessage());
             idmAuditLog.setException(e);
             idmAuditLog.addCustomRecord(WARNING, warnings.toString());
             auditLogService.enqueue(idmAuditLog);
             return;
-//            return response;
         }
         ProvisionUser pUser = null;
         try {
@@ -295,23 +232,18 @@ public class SourceAdapterDispatcher implements Runnable {
                 throw new Exception("Such user exists. Can't add! User=" + pUser.getDisplayName());
             }
         } catch (Exception e) {
-//            response.setStatus(ResponseStatus.FAILURE);
-//            response.setError(e.toString());
             idmAuditLog.fail();
             idmAuditLog.setFailureReason(e.getMessage());
             idmAuditLog.setException(e);
             idmAuditLog.addCustomRecord(WARNING, warnings.toString());
             auditLogService.enqueue(idmAuditLog);
             return;
-//            return response;
         }
         idmAuditLog.setUserId(pUser.getId());
         idmAuditLog.setAction(AuditAction.SOURCE_ADAPTER_CALL.value());
         idmAuditLog.setSource("Source Adapter");
         idmAuditLog.setAuditDescription("Operation:" + request.getAction().name());
         if (warnings.length() > 0 && !request.isForceMode()) {
-//            response.setStatus(ResponseStatus.FAILURE);
-//            response.setError(warnings.toString());
             idmAuditLog.fail();
             idmAuditLog.setFailureReason(warnings.toString());
             auditLogService.enqueue(idmAuditLog);
@@ -323,33 +255,23 @@ public class SourceAdapterDispatcher implements Runnable {
             case ADD: {
                 pUser.setOperation(AttributeOperationEnum.ADD);
                 ProvisionUserResponse provisionUserResponse = provisioningDataService.addUser(pUser);
-//                response.setStatus(provisionUserResponse.getStatus());
-//                response.setError(provisionUserResponse.getErrorText());
                 break;
             }
             case MODIFY: {
                 pUser.setOperation(AttributeOperationEnum.REPLACE);
                 ProvisionUserResponse provisionUserResponse = provisioningDataService.modifyUser(pUser);
-//                response.setStatus(provisionUserResponse.getStatus());
-//                response.setError(provisionUserResponse.getErrorText());
                 break;
             }
             case DELETE: {
                 ProvisionUserResponse provisionUserResponse = provisioningDataService.deleteByUserWithSkipManagedSysList(pUser.getId(), UserStatusEnum.REMOVE, requestorId, null);
-//                response.setStatus(provisionUserResponse.getStatus());
-//                response.setError(provisionUserResponse.getErrorText());
                 break;
             }
             case ENABLE: {
                 Response resp = provisioningDataService.disableUser(pUser.getId(), false, requestorId);
-//                response.setStatus(resp.getStatus());
-//                response.setError(resp.getErrorText());
                 break;
             }
             case DISABLE: {
                 Response resp = provisioningDataService.disableUser(pUser.getId(), true, requestorId);
-//                response.setStatus(resp.getStatus());
-//                response.setError(resp.getErrorText());
                 break;
             }
             case CHANGE_PASSWORD: {
@@ -364,10 +286,7 @@ public class SourceAdapterDispatcher implements Runnable {
                     PasswordValidationResponse resetPasswordResponse = provisioningDataService.setPassword(passwordSync);
                     idmAuditLog.fail();
                     idmAuditLog.setFailureReason(warnings.toString());
-//                    response.setStatus(resetPasswordResponse.getStatus());
-//                    response.setError(resetPasswordResponse.getErrorText());
                 } else {
-//                    response.setStatus(ResponseStatus.FAILURE);
                     warnings.append("Change password request is empty");
                     idmAuditLog.fail();
                     idmAuditLog.setFailureReason(warnings.toString());
@@ -384,10 +303,7 @@ public class SourceAdapterDispatcher implements Runnable {
                     passwordSync.setSendPasswordToUser(request.getPasswordRequest().isSendToUser());
                     passwordSync.setUserActivateFlag(request.getPasswordRequest().isActivate());
                     PasswordResponse resetPasswordResponse = provisioningDataService.resetPassword(passwordSync);
-//                    response.setStatus(resetPasswordResponse.getStatus());
-//                    response.setError(resetPasswordResponse.getErrorText());
                 } else {
-//                    response.setStatus(ResponseStatus.FAILURE);
                     warnings.append("Reset password request is empty");
                     idmAuditLog.fail();
                     idmAuditLog.setFailureReason(warnings.toString());
@@ -398,14 +314,11 @@ public class SourceAdapterDispatcher implements Runnable {
                 break;
             }
             default:
-//                response.setStatus(ResponseStatus.FAILURE);
-//                response.setError("Operation not supported");
                 idmAuditLog.fail();
                 idmAuditLog.setFailureReason("Operation not supported");
                 idmAuditLog.fail();
                 idmAuditLog.setFailureReason(warnings.toString());
         }
-//        response.setError(warnings.toString());
         idmAuditLog.addCustomRecord(WARNING, warnings.toString());
         idmAuditLog.setAuditDescription("Processing time=" + ((System.currentTimeMillis() - time) / 1000) + "s");
         auditLogService.enqueue(idmAuditLog);
@@ -433,7 +346,7 @@ public class SourceAdapterDispatcher implements Runnable {
             }
         }
         if (u == null)
-            u = this.getUser(request.getKey(), request);
+            u = this.getUser(request.getKey(), request, true);
         if (u == null)
             throw new Exception("Can't find user!");
         ProvisionUser pUser = new ProvisionUser(u);
@@ -583,6 +496,8 @@ public class SourceAdapterDispatcher implements Runnable {
                     GroupSearchBean gsb = new GroupSearchBean();
                     gsb.setName(group.getName());
                     gsb.setManagedSysId(group.getManagedSystemId());
+                    gsb.setDeepCopy(false);
+                    gsb.setFindInCache(true);
                     List<Group> dbGroups = groupDataWebService.findBeans(gsb, requestorId, -1, -1);
                     if (CollectionUtils.isNotEmpty(dbGroups)) {
                         if (dbGroups.size() > 1) {
@@ -686,6 +601,8 @@ public class SourceAdapterDispatcher implements Runnable {
         if (StringUtils.isNotBlank(org.getName()) && StringUtils.isNotBlank(org.getOrganizationTypeId())) {
             osb.setName(org.getName());
             osb.setOrganizationTypeId(org.getOrganizationTypeId());
+            osb.setFindInCache(true);
+            osb.setDeepCopy(false);
         } else if (org.getAttributeLookup() != null && StringUtils.isNotBlank(org.getAttributeLookup().getName()) && StringUtils.isNotBlank(org.getAttributeLookup().getValue())) {
             osb.addAttribute(org.getAttributeLookup().getName(), org.getAttributeLookup().getValue());
         }
@@ -828,7 +745,7 @@ public class SourceAdapterDispatcher implements Runnable {
             return;
         }
 
-        User alternativeUser = this.getUser(alternativeContact, request);
+        User alternativeUser = this.getUser(alternativeContact, request, false);
         if (alternativeUser != null) {
             pUser.setAlternateContactId(alternativeUser.getId());
         }
@@ -853,7 +770,7 @@ public class SourceAdapterDispatcher implements Runnable {
                     continue;
                 }
                 isFound = false;
-                User user = this.getUser(superUser, request);
+                User user = this.getUser(superUser, request, false);
                 if (superUser.getOperation() == null) {
                     superUser.setOperation(AttributeOperationEnum.ADD);
                 }
@@ -921,6 +838,8 @@ public class SourceAdapterDispatcher implements Runnable {
                     RoleSearchBean rsb = new RoleSearchBean();
                     rsb.setName(role.getName());
                     rsb.setManagedSysId(role.getManagedSystemId());
+                    rsb.setDeepCopy(false);
+                    rsb.setFindInCache(true);
                     List<Role> dbRoles = roleDataWebService.findBeans(rsb, requestorId, -1, -1);
                     if (CollectionUtils.isNotEmpty(dbRoles)) {
                         if (dbRoles.size() > 1) {
@@ -1163,7 +1082,7 @@ public class SourceAdapterDispatcher implements Runnable {
         return (source == null || "NULL".equals(source)) ? null : source;
     }
 
-    private User getUser(SourceAdapterKey keyPair, SourceAdapterRequest request) throws Exception {
+    private User getUser(SourceAdapterKey keyPair, SourceAdapterRequest request, boolean deepCopy) throws Exception {
         if (keyPair == null && SourceAdapterOperationEnum.ADD.equals(request.getAction())) {
             //create
             return new User();
@@ -1173,7 +1092,7 @@ public class SourceAdapterDispatcher implements Runnable {
         } else if (keyPair != null && keyPair.getName() == null && StringUtils.isNotBlank(keyPair.getValue())) {
             User u = null;
             for (SourceAdapterKeyEnum keyEnum : SourceAdapterKeyEnum.values()) {
-                u = this.findByKey(keyEnum, keyPair.getValue(), request);
+                u = this.findByKey(keyEnum, keyPair.getValue(), request, deepCopy);
                 if (u != null) {
                     break;
                 }
@@ -1181,14 +1100,14 @@ public class SourceAdapterDispatcher implements Runnable {
             //try to find by all keys
             return u;
         } else if (keyPair != null && keyPair.getName() != null && StringUtils.isNotBlank(keyPair.getValue())) {
-            return this.findByKey(keyPair.getName(), keyPair.getValue(), request);
+            return this.findByKey(keyPair.getName(), keyPair.getValue(), request, deepCopy);
         } else {
             return null;
         }
     }
 
 
-    private User findByKey(SourceAdapterKeyEnum matchAttrName, String matchAttrValue, SourceAdapterRequest request) throws Exception {
+    private User findByKey(SourceAdapterKeyEnum matchAttrName, String matchAttrValue, SourceAdapterRequest request, boolean deepCopy) throws Exception {
         UserSearchBean searchBean = new UserSearchBean();
         if (SourceAdapterKeyEnum.USERID.equals(matchAttrName)) {
             searchBean.setKey(matchAttrValue);
@@ -1203,7 +1122,8 @@ public class SourceAdapterDispatcher implements Runnable {
         } else if (SourceAdapterKeyEnum.EMPLOYEE_ID.equals(matchAttrName)) {
             searchBean.setEmployeeIdMatchToken(new SearchParam(matchAttrValue, MatchType.EXACT));
         }
-        searchBean.setDeepCopy(true);
+        searchBean.setDeepCopy(deepCopy);
+        searchBean.setFindInCache(true);
         List<User> userList = userDataService.findBeans(searchBean, 0, Integer.MAX_VALUE);
         if (CollectionUtils.isNotEmpty(userList)) {
             if (userList.size() > 1) {
