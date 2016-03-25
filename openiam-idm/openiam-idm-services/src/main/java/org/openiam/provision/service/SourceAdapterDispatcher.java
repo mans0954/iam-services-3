@@ -284,7 +284,7 @@ public class SourceAdapterDispatcher implements Runnable {
             idmAuditLog.setFailureReason(e.getMessage());
             idmAuditLog.setException(e);
             idmAuditLog.addCustomRecord(WARNING, warnings.toString());
-            auditLogService.save(idmAuditLog);
+            auditLogService.enqueue(idmAuditLog);
             return;
 //            return response;
         }
@@ -301,7 +301,7 @@ public class SourceAdapterDispatcher implements Runnable {
             idmAuditLog.setFailureReason(e.getMessage());
             idmAuditLog.setException(e);
             idmAuditLog.addCustomRecord(WARNING, warnings.toString());
-            auditLogService.save(idmAuditLog);
+            auditLogService.enqueue(idmAuditLog);
             return;
 //            return response;
         }
@@ -314,7 +314,7 @@ public class SourceAdapterDispatcher implements Runnable {
 //            response.setError(warnings.toString());
             idmAuditLog.fail();
             idmAuditLog.setFailureReason(warnings.toString());
-            auditLogService.save(idmAuditLog);
+            auditLogService.enqueue(idmAuditLog);
             idmAuditLog.addCustomRecord(WARNING, warnings.toString());
             return;
 //            return response;
@@ -408,7 +408,7 @@ public class SourceAdapterDispatcher implements Runnable {
 //        response.setError(warnings.toString());
         idmAuditLog.addCustomRecord(WARNING, warnings.toString());
         idmAuditLog.setAuditDescription("Processing time=" + ((System.currentTimeMillis() - time) / 1000) + "s");
-        auditLogService.save(idmAuditLog);
+        auditLogService.enqueue(idmAuditLog);
     }
 
     private ProvisionUser convertToProvisionUser(SourceAdapterRequest request, StringBuilder warnings, String requestorId) throws Exception {

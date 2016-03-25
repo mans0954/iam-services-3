@@ -529,6 +529,7 @@ public class RoleDataServiceImpl implements RoleDataService, ApplicationContextA
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "roleEntities", key = "{ #userId, #requesterId, #from, #size}")
     public List<RoleEntity> getUserRoles(String userId, final String requesterId, int from, int size) {
         return roleDao.getRolesForUser(userId, getDelegationFilter(requesterId), from, size);
     }
@@ -711,6 +712,7 @@ public class RoleDataServiceImpl implements RoleDataService, ApplicationContextA
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "roleEntities", key = "{ #userId, #requesterId, #from, #size}")
     public List<RoleEntity> getRolesForUser(final String userId, final String requesterId, final int from, final int size) {
         return roleDao.getRolesForUser(userId, getDelegationFilter(requesterId), from, size);
     }
