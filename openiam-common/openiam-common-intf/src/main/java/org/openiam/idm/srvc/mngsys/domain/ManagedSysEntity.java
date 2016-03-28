@@ -96,6 +96,10 @@ public class ManagedSysEntity implements Serializable {
     @Type(type = "yes_no")
     private boolean changedByEndUser = true;
 
+    @Column(name = "SIMULATION_MODE", nullable = false)
+    @Type(type = "yes_no")
+    private boolean simulationMode = false;
+
     @OneToMany(mappedBy = "managedSys")
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<ManagedSystemObjectMatchEntity> mngSysObjectMatchs = new HashSet<ManagedSystemObjectMatchEntity>();
@@ -407,6 +411,14 @@ public class ManagedSysEntity implements Serializable {
 
     public void setAttributeMaps(Set<AttributeMapEntity> attributeMaps) {
         this.attributeMaps = attributeMaps;
+    }
+
+    public boolean isSimulationMode() {
+        return simulationMode;
+    }
+
+    public void setSimulationMode(boolean simulationMode) {
+        this.simulationMode = simulationMode;
     }
 
     @Override
