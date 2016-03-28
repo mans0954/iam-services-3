@@ -585,8 +585,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         if (CollectionUtils.isNotEmpty(roleIds)) {
 
 
-            final Criteria criteria = getCriteria().add(createInClauseForList(new ArrayList<>(roleIds)));
-
+            final Criteria criteria = getCriteria().add(createInClauseForList("role.id",new ArrayList<>(roleIds)));
 //            final Criteria criteria = getCriteria().createAlias("roles", "role").add(Restrictions.in("role.id", roleIds))
 //                            .setProjection(Projections.property("id"));
             if (from > -1) {
@@ -806,16 +805,16 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
     	}
         if (fromDate != null && toDate != null ) {
             final Criteria criteria = getCriteria()
-                    .add(Restrictions.ge("lastDate",fromDate))
-                    .add(Restrictions.lt("lastDate",toDate));
+                    .add(Restrictions.ge("lastDate", fromDate))
+                    .add(Restrictions.lt("lastDate", toDate));
             return criteria.list();
         } else if(fromDate != null) {
             final Criteria criteria = getCriteria()
-                    .add(Restrictions.ge("lastDate",fromDate));
+                    .add(Restrictions.ge("lastDate", fromDate));
             return criteria.list();
         } else if(toDate != null) {
             final Criteria criteria = getCriteria()
-                    .add(Restrictions.lt("lastDate",toDate));
+                    .add(Restrictions.lt("lastDate", toDate));
             return criteria.list();
         } else
             return null;
@@ -900,4 +899,19 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
             }
         }
     }
-}
+     protected Disjunction createInClauseForList(String fieldName, List idCollection) {
+        Disjunction orClause = Restrictions.disjunction();
+        int start = 0;
+        int end = 0;
+        while (start < idCollection.size()) {
+            end = start + MAX_IN_CLAUSE;
+            if (end > idCollection.size()) {
+                end = idCollection.size();
+            }
+            orClause.add(Restrictions.in(fieldName, idCollection.subList(start, end)));
+            start = end;
+        }
+        return orClause;
+    }
+
+    }
