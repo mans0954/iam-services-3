@@ -896,18 +896,5 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
             }
         }
     }
-    protected Disjunction createInClauseForList(String fieldName, List idCollection) {
-        Disjunction orClause = Restrictions.disjunction();
-        int start = 0;
-        int end = 0;
-        while (start < idCollection.size()) {
-            end = start + MAX_IN_CLAUSE;
-            if (end > idCollection.size()) {
-                end = idCollection.size();
-            }
-            orClause.add(Restrictions.in(fieldName, idCollection.subList(start, end)));
-            start = end;
-        }
-        return orClause;
-    }
+
 }
