@@ -582,10 +582,9 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
     @Override
     public List<String> getUserIdsForRoles(final Set<String> roleIds, final int from, final int size) {
         List<String> retVal = null;
-        if (CollectionUtils.isNotEmpty(roleIds) && roleIds.size()<2100) {
-//            final Criteria criteria = getCriteria().createAlias("roles", "role").add(Restrictions.in("role.id", roleIds))
-//                            .setProjection(Projections.property("id"));
-            final Criteria criteria =  getCriteria().createAlias("roles", "role").add(createInClauseForList("role.id",new ArrayList<>(roleIds)));
+        if (CollectionUtils.isNotEmpty(roleIds)) {
+            final Criteria criteria = getCriteria().createAlias("roles", "role").add(Restrictions.in("role.id", roleIds))
+                    .setProjection(Projections.property("id"));
             if (from > -1) {
                 criteria.setFirstResult(from);
             }
