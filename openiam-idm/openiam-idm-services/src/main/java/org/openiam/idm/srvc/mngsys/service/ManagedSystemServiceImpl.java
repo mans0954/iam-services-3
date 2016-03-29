@@ -128,8 +128,8 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     @Override
     @Transactional(readOnly = true)
     @Cacheable(value = "managedSysRegion", key = "{#managedSysId}")
-    public ManagedSysEntity getManagedSysById(String id) {
-        return managedSysDAO.findById(id);
+    public ManagedSysEntity getManagedSysById(String managedSysId) {
+        return managedSysDAO.findById(managedSysId);
     }
 
     @Cacheable(value = "resource-managedSys", key = "{#managedSysId}")
@@ -189,7 +189,7 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     @Override
     @Caching(evict = {
             @CacheEvict(value = "decryptManagedSysPassword", allEntries = true),
-            @CacheEvict(value = "managedSysRegion", key = "{#id}")
+            @CacheEvict(value = "managedSysRegion", key = "{#sys.id}")
     })
 
     @Transactional
@@ -217,7 +217,7 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     @Override
     @Caching(evict = {
             @CacheEvict(value = "decryptManagedSysPassword", allEntries = true),
-            @CacheEvict(value = "managedSysRegion", key = "{#id}")
+            @CacheEvict(value = "managedSysRegion", key = "{#sys.id}")
     })
     @Transactional
     public void updateManagedSys(ManagedSysDto sys) {
@@ -246,7 +246,7 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     @Override
     @Caching(evict = {
             @CacheEvict(value = "decryptManagedSysPassword", allEntries = true),
-            @CacheEvict(value = "managedSysRegion", key = "{#id}")
+            @CacheEvict(value = "managedSysRegion", key = "{#objectMatch.managedSys}")
     })
     @Transactional
     public String saveManagedSystemObjectMatch(ManagedSystemObjectMatch objectMatch) {
@@ -259,7 +259,7 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     @Transactional
     @Caching(evict = {
             @CacheEvict(value = "decryptManagedSysPassword", allEntries = true),
-            @CacheEvict(value = "managedSysRegion", key = "{#id}")
+            @CacheEvict(value = "managedSysRegion", key = "{#objectMatch.managedSys}")
     })
     public void updateManagedSystemObjectMatch(ManagedSystemObjectMatch objectMatch) {
         ManagedSystemObjectMatchEntity entity = managedSystemObjectMatchDozerConverter.convertToEntity(objectMatch, false);
@@ -270,7 +270,7 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     @Transactional
     @Caching(evict = {
             @CacheEvict(value = "decryptManagedSysPassword", allEntries = true),
-            @CacheEvict(value = "managedSysRegion", key = "{#id}")
+            @CacheEvict(value = "managedSysRegion", allEntries = true)
     })
     public void deleteManagedSystemObjectMatch(String objectMatchId) {
         ManagedSystemObjectMatchEntity entity = matchDAO.findById(objectMatchId);
