@@ -137,8 +137,14 @@ public class RoleDataServiceImpl implements RoleDataService, ApplicationContextA
     @Override
     @Transactional(readOnly = true)
     public Role getRoleDtoByName(String roleName, String requesterId) {
+        return getRoleDtoByName(roleName, requesterId, true);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Role getRoleDtoByName(String roleName, String requesterId, boolean deepCopy) {
         RoleEntity roleEntity = getRoleByName(roleName, requesterId);
-        return roleDozerConverter.convertToDTO(roleEntity, true);
+        return roleDozerConverter.convertToDTO(roleEntity, deepCopy);
     }
 
     @Override
@@ -529,6 +535,7 @@ public class RoleDataServiceImpl implements RoleDataService, ApplicationContextA
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "roleEntities", key = "{ #userId, #requesterId, #from, #size}")
     public List<RoleEntity> getUserRoles(String userId, final String requesterId, int from, int size) {
         return roleDao.getRolesForUser(userId, getDelegationFilter(requesterId), from, size);
     }
@@ -576,7 +583,7 @@ public class RoleDataServiceImpl implements RoleDataService, ApplicationContextA
     @Transactional(readOnly = true)
     public List<Role> findBeansDto(RoleSearchBean searchBean, final String requesterId, int from, int size) {
 /*		Set<String> filter = getDelegationFilter(requesterId);
-		if(StringUtils.isBlank(searchBean.getKey()))
+        if(StringUtils.isBlank(searchBean.getKey()))
 			searchBean.setKeys(filter);
 		else if(!DelegationFilterHelper.isAllowed(searchBean.getKey(), filter)){
 			return new ArrayList<Role>(0);
@@ -711,6 +718,7 @@ public class RoleDataServiceImpl implements RoleDataService, ApplicationContextA
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "roleEntities", key = "{ #userId, #requesterId, #from, #size}")
     public List<RoleEntity> getRolesForUser(final String userId, final String requesterId, final int from, final int size) {
         return roleDao.getRolesForUser(userId, getDelegationFilter(requesterId), from, size);
     }
@@ -788,7 +796,14 @@ public class RoleDataServiceImpl implements RoleDataService, ApplicationContextA
     @Override
     @Transactional(readOnly = true)
     public Role getRoleDTO(String id) {
-        return roleDozerConverter.convertToDTO(roleDao.findByIdNoLocalized(id), true);
+        return getRoleDTO(id, true);
+    }
+
+
+    @Override
+    @Transactional(readOnly = true)
+    public Role getRoleDTO(String id, boolean deepCopy) {
+        return roleDozerConverter.convertToDTO(roleDao.findByIdNoLocalized(id), deepCopy);
     }
 
     @Override

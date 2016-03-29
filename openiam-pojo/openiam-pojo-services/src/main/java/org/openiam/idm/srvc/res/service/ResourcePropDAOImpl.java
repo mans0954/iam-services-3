@@ -11,6 +11,8 @@ import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository("resourcePropDAO")
 public class ResourcePropDAOImpl extends BaseDaoImpl<ResourcePropEntity, String> implements ResourcePropDAO  {
 
