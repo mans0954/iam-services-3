@@ -84,4 +84,6 @@ public interface ManagedSystemService {
     public void saveApproverAssociations(final List<ApproverAssociationEntity> entityList, final AssociationType type, final String id);
 
     List<ManagedSysEntity> getAllManagedSysNames();
+
+    public String getResourceIdByManagedSysId(final String managedSysId);
 }
