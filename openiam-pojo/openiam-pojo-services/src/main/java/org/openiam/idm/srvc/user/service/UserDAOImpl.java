@@ -583,8 +583,9 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
     public List<String> getUserIdsForRoles(final Set<String> roleIds, final int from, final int size) {
         List<String> retVal = null;
         if (CollectionUtils.isNotEmpty(roleIds)) {
-            final Criteria criteria = getCriteria().createAlias("roles", "role").add(Restrictions.in("role.id", roleIds))
-                            .setProjection(Projections.property("id"));
+//            final Criteria criteria = getCriteria().createAlias("roles", "role").add(Restrictions.in("role.id", roleIds))
+//                            .setProjection(Projections.property("id"));
+            final Criteria criteria =  getCriteria().createAlias("roles", "role").add(createInClauseForList("role.id",new ArrayList<>(roleIds)));
             if (from > -1) {
                 criteria.setFirstResult(from);
             }
@@ -800,16 +801,16 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
 	        log.debug("--------- lastDate fromDate ----------- : " + fromDate);
 	        log.debug("--------- lastDate toDate ----------- : " + toDate);
     	}
-        if (fromDate != null && toDate != null ) {
+        if (fromDate != null && toDate != null) {
             final Criteria criteria = getCriteria()
                     .add(Restrictions.ge("lastDate",fromDate))
                     .add(Restrictions.lt("lastDate",toDate));
             return criteria.list();
-        } else if(fromDate != null) {
+        } else if (fromDate != null) {
             final Criteria criteria = getCriteria()
                     .add(Restrictions.ge("lastDate",fromDate));
             return criteria.list();
-        } else if(toDate != null) {
+        } else if (toDate != null) {
             final Criteria criteria = getCriteria()
                     .add(Restrictions.lt("lastDate",toDate));
             return criteria.list();
@@ -895,5 +896,19 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
                 criteria.addOrder(createOrder(sort.getSortBy(),orderDir));
             }
         }
+    }
+    protected Disjunction createInClauseForList(String fieldName, List idCollection) {
+        Disjunction orClause = Restrictions.disjunction();
+        int start = 0;
+        int end = 0;
+        while (start < idCollection.size()) {
+            end = start + MAX_IN_CLAUSE;
+            if (end > idCollection.size()) {
+                end = idCollection.size();
+            }
+            orClause.add(Restrictions.in(fieldName, idCollection.subList(start, end)));
+            start = end;
+        }
+        return orClause;
     }
 }
