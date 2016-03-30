@@ -96,6 +96,7 @@ import org.springframework.transaction.annotation.Transactional;
  */
 
 @Service("groupManager")
+@Transactional
 public class GroupDataServiceImpl implements GroupDataService, ApplicationContextAware {
     @Autowired
     protected SysConfiguration sysConfiguration;

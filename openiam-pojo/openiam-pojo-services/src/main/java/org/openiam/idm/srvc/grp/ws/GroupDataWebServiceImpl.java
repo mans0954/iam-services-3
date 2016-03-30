@@ -584,10 +584,10 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
         final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
         auditLog.setAction(AuditAction.ADD_CHILD_GROUP.value());
-        GroupEntity groupEntity = groupManager.getGroup(groupId);
-        auditLog.setTargetGroup(groupId, groupEntity.getName());
-        GroupEntity groupEntityChild = groupManager.getGroup(childGroupId);
-        auditLog.setTargetGroup(childGroupId, groupEntityChild.getName());
+        //GroupEntity groupEntity = groupManager.getGroup(groupId);
+        //auditLog.setTargetGroup(groupId, groupEntity.getName());
+        //GroupEntity groupEntityChild = groupManager.getGroup(childGroupId);
+        //auditLog.setTargetGroup(childGroupId, groupEntityChild.getName());
         auditLog.setRequestorUserId(requesterId);
         auditLog.setAuditDescription(String.format("Add child group: %s to group: %s", childGroupId, groupId));
 
@@ -596,14 +596,14 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
             	throw new BasicDataServiceException(ResponseCode.ENTITLEMENTS_DATE_INVALID);
             }
         	
-/*        	GroupEntity groupEntity = groupManager.getGroupLocalize(groupId, null);
+        	GroupEntity groupEntity = groupManager.getGroupLocalize(groupId, null);
         	GroupEntity groupEntityChild = groupManager.getGroupLocalize(childGroupId, null);
         	if(groupEntity == null || groupEntityChild == null) {
         		throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
         	}
         	
         	auditLog.setTargetGroup(groupId, groupEntity.getName());
-            auditLog.setTargetGroup(childGroupId, groupEntityChild.getName());*/
+            auditLog.setTargetGroup(childGroupId, groupEntityChild.getName());
         	
             if (groupId == null || childGroupId == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "GroupId or child groupId is null");
@@ -687,14 +687,14 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
                         "User %s has already been added to group: %s", userId, groupId));
             }
 
-            GroupEntity groupEntity = groupManager.getGroup(groupId);
+/*            GroupEntity groupEntity = groupManager.getGroup(groupId);
             if (groupEntity != null) {
                 if (!((groupEntity.getMaxUserNumber() == null) || (userManager.getNumOfUsersForGroup(groupId, null) < groupEntity.getMaxUserNumber()))) {
                     throw new BasicDataServiceException(ResponseCode.GROUP_LIMIT_OF_USERS_EXCEEDED, "group's limit of user count exceeded");
                 }
             } else {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "groupEntity is null");
-            }
+            }*/
 
         } catch (BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);

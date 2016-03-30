@@ -455,17 +455,17 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     }
 
     @Override
-    /*@CacheEvict(value = "resources", allEntries=true)*/
+    @CacheEvict(value = "resources", allEntries=true)
     public Response deleteResource(final String resourceId, final String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
-            /*if (resourceId == null) {
+            if (resourceId == null) {
                 throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND, "Resource ID is not specified");
             }
 
             resourceService.validateResourceDeletion(resourceId);
-            resourceService.deleteResource(resourceId);*/
-            resourceService.deleteResourceWeb(resourceId, requesterId);
+            resourceService.deleteResource(resourceId);
+            //resourceService.deleteResourceWeb(resourceId, requesterId);
 
         } catch (BasicDataServiceException e) {
             response.setErrorCode(e.getCode());

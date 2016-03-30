@@ -129,7 +129,7 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
         return super.getByExample(searchBean, from, size);
      }
 
-@Override
+/*@Override
     protected Criteria getExampleCriteria(GroupEntity group) {
         final Criteria criteria = getCriteria();
         if (StringUtils.isNotBlank(group.getId())) {
@@ -158,7 +158,7 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
 //				criteria.add(Restrictions.eq("company.id", group.getCompany().getId()));
 //			}
 
-/*            if (CollectionUtils.isNotEmpty(group.getOrganizationSet())) {
+*//*            if (CollectionUtils.isNotEmpty(group.getOrganizationSet())) {
                 final Set<String> orgIds = new HashSet<String>();
                 for (final OrganizationEntity org : group.getOrganizationSet()) {
                     if (org != null && StringUtils.isNotBlank(org.getId())) {
@@ -167,7 +167,7 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
                 }
                 criteria.createAlias("organizationSet", "orgs");
                 criteria.add(Restrictions.in("orgs.id", orgIds));
-            }*/
+            }*//*
 
             if (CollectionUtils.isNotEmpty(group.getResources())) {
                 final Set<String> resourceIds = new HashSet<String>();
@@ -183,7 +183,7 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
             }
         }
         return criteria;
-    }
+    }*/
 
     private void fillCriteriaSingleName(String groupName, Criteria criteria) {
         MatchMode matchMode = null;
