@@ -595,7 +595,8 @@
 						"groupingId" : "PASSWORD_AUTH"
 					}
 				}
-			]
+			],
+			"cacheTTL" : 30
 		}
 	]
 }
