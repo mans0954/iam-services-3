@@ -586,7 +586,7 @@
 			"cacheable" : true,
 			"cacheTTL" : 30
 		},
-{
+		{
 			"pattern" : "/webconsole/editGroup.html",
 			"isPublic" : true,
 			"groupingXrefs" : [
