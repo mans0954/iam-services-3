@@ -187,7 +187,7 @@ public class AuthorizationManagerMenuWebServiceTest extends AbstractServiceTest 
 			organization = super.createOrganization();
 			child = super.createOrganization();
 			organizationServiceClient.addUserToOrg(child.getId(), user.getId(), getRequestorId(), null, startDate, endDate);
-			organizationServiceClient.addChildOrganization(organization.getId(), getRequestorId(), child.getId(), null, startDate, endDate);
+			organizationServiceClient.addChildOrganization(organization.getId(), child.getId(), getRequestorId(), null, startDate, endDate);
 			assertAccessIndirect(organization, child);
 		} finally {
 			if(tuple != null && tuple.getKey() != null && tuple.getKey().getId() != null) {
