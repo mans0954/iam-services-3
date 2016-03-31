@@ -1341,7 +1341,7 @@ public class ProvisioningDataServiceImpl extends AbstractProvisioningService imp
                     try {
                         // Protects other resources if one resource failed
 
-                        ProvisionDataContainer data = deprovisionSelectedResource.deprovisionResourceDataPrepare(res, userEntity, pUser, requestId, bindingMap);
+                        ProvisionDataContainer data = deprovisionSelectedResource.deprovisionResourceDataPrepare(res, finalProvUser, pUser, requestId, bindingMap);
 
                         auditLog.addAttribute(AuditAttributeName.DESCRIPTION,
                                 "De-Provisioning for resource: " + res.getName());
