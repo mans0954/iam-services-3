@@ -26,6 +26,7 @@ import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
+import org.openiam.idm.srvc.property.service.PropertyValueSweeper;
 import org.openiam.idm.srvc.res.dto.ResourceType;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.slf4j.Logger;
@@ -58,9 +59,15 @@ public class AccessReviewServiceImpl implements AccessReviewService {
     @Autowired
     @Qualifier("accessRightWS")
     private AccessRightDataService accessRightDataService;
+    @Autowired
+    private PropertyValueSweeper propertyValueSweeper;
 
-    @Value("${org.openiam.attestation.exclude.menus}")
-    private Boolean excludeMenus;
+/*    @Value("${org.openiam.attestation.exclude.menus}")
+    private Boolean excludeMenus;*/
+
+    private Boolean isExcludeMenus() {
+        return propertyValueSweeper.getBoolean("org.openiam.attestation.exclude.menus");
+    }
 
     @Override
     public AccessViewResponse getAccessReviewTree(AccessViewFilterBean filter, String viewType, final Date date, final Language language) {
@@ -149,7 +156,7 @@ public class AccessReviewServiceImpl implements AccessReviewService {
         searchBean.setMemberAssociationId(filter.getUserId());
 
         accessReviewData.setWorkflowsMaps(activitiService.findTasks(searchBean, 0, Integer.MAX_VALUE));
-        accessReviewData.setExcludeMenus(this.excludeMenus);
+        accessReviewData.setExcludeMenus(this.isExcludeMenus());
 
         AccessReviewStrategy strategy = null;
         if(AccessReviewConstant.ROLE_VIEW.equals(viewType)){
