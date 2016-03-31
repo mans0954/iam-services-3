@@ -30,33 +30,38 @@ public interface MetadataService {
 
     MetadataType findMetadataTypeByNameAndGrouping(String name, MetadataTypeGrouping grouping, final Language language);
 
-	public List<MetadataElement> findElementByName(final String name);
+    public List<MetadataElement> findElementByName(final String name);
 
     public MetadataElement findElementById(final String id, Language language);
 
     public MetadataType findById(final String id);
 
-	public List<MetadataElement> findBeans(final MetadataElementSearchBean searchBean, final int from, final int size, final Language language);
+    public List<MetadataElement> findBeans(final MetadataElementSearchBean searchBean, final int from, final int size, final Language language);
 
     public List<MetadataElement> findBeans(final MetadataElementSearchBean searchBean, final int from, final int size);
-	public List<MetadataElementEntity> findEntityBeans(final MetadataElementSearchBean searchBean, final int from, final int size);
 
-	public List<MetadataType> findBeans(final MetadataTypeSearchBean searchBean, final int from, final int size, final Language language);
-	public List<MetadataTypeEntity> findEntityBeans(final MetadataTypeSearchBean searchBean, final int from, final int size, final Language language);
+    public List<MetadataElementEntity> findEntityBeans(final MetadataElementSearchBean searchBean, final int from, final int size);
+
+    public List<MetadataType> findBeans(final MetadataTypeSearchBean searchBean, final int from, final int size, final Language language);
+
+    public List<MetadataTypeEntity> findEntityBeans(final MetadataTypeSearchBean searchBean, final int from, final int size, final Language language);
+
     public List<MetadataType> findBeansNoLocalize(final MetadataTypeSearchBean searchBean, final int from, final int size);
 
-	public int count(final MetadataElementSearchBean searchBean);
-	
-	public int count(final MetadataTypeSearchBean searchBean);
-	
-	public String save(final MetadataElement entity);
+    public int count(final MetadataElementSearchBean searchBean);
 
-	public void deleteMetdataElement(final String id);
-	
-	public String save(final MetadataTypeEntity entity);
-	
-	public void deleteMetdataType(final String id);
-	
-	//public void save(final MetadataValidValueEntity entity);
-	public void delteMetaValidValue(final String validValueId);
+    public int count(final MetadataTypeSearchBean searchBean);
+
+    public String save(final MetadataElement entity);
+
+    public void deleteMetdataElement(final String id);
+
+    public String save(final MetadataTypeEntity entity);
+
+    public void deleteMetdataType(final String id);
+
+    //public void save(final MetadataValidValueEntity entity);
+    public void delteMetaValidValue(final String validValueId);
+
+    public MetadataTypeEntity getById(String id);
 }

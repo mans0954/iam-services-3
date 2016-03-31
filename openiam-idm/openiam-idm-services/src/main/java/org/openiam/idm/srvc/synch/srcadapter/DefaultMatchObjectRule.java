@@ -59,23 +59,23 @@ public class DefaultMatchObjectRule implements MatchObjectRule {
     @Autowired
     private IdentityService identityService;
 
-	private String matchAttrName = null;
-	private String matchAttrValue = null;
+    private String matchAttrName = null;
+    private String matchAttrValue = null;
 
-	public User lookup(MatchConfig matchConfig, Map<String, Attribute> rowAttr) throws IllegalArgumentException {
-		final UserSearchBean searchBean = new UserSearchBean();
-		//UserSearch search = new UserSearch();
-		//Map<String, UserAttribute> atMap = user.getUserAttributes();
+    public User lookup(MatchConfig matchConfig, Map<String, Attribute> rowAttr) throws IllegalArgumentException {
+        final UserSearchBean searchBean = new UserSearchBean();
+        //UserSearch search = new UserSearch();
+        //Map<String, UserAttribute> atMap = user.getUserAttributes();
         matchAttrName = matchConfig.getMatchFieldName();
-		matchAttrValue = (StringUtils.isNotBlank(matchConfig.getCustomMatchAttr())) ? rowAttr.get(matchConfig.getCustomMatchAttr()).getValue() : null;
+        matchAttrValue = (StringUtils.isNotBlank(matchConfig.getCustomMatchAttr())) ? rowAttr.get(matchConfig.getCustomMatchAttr()).getValue() : null;
 
         if (StringUtils.isBlank(matchAttrName) || StringUtils.isBlank(matchAttrValue)) {
             throw new IllegalArgumentException("matchAttrName and matchAttrValue can not be blank");
         }
 
-		if (matchAttrName.equalsIgnoreCase("USERID")) {
-			searchBean.setUserId(matchAttrValue);
-			//search.setUserId(matchAttrValue);
+        if (matchAttrName.equalsIgnoreCase("USERID")) {
+            searchBean.setUserId(matchAttrValue);
+            //search.setUserId(matchAttrValue);
 
         } else if (matchAttrName.equalsIgnoreCase("PRINCIPAL")) {
             LoginSearchBean lsb = new LoginSearchBean();
@@ -92,34 +92,37 @@ public class DefaultMatchObjectRule implements MatchObjectRule {
             //search.setPrincipal(matchAttrValue);
 
         } else if (matchAttrName.equalsIgnoreCase("EMAIL")) {
-			searchBean.setEmailAddressMatchToken(new SearchParam(matchAttrValue, MatchType.EXACT));
-			//search.setEmailAddress(matchAttrValue);
+            searchBean.setEmailAddressMatchToken(new SearchParam(matchAttrValue, MatchType.EXACT));
+            //search.setEmailAddress(matchAttrValue);
 
-		} else if (matchAttrName.equalsIgnoreCase("EMPLOYEE_ID")) {
-			searchBean.setEmployeeIdMatchToken(new SearchParam(matchAttrValue, MatchType.EXACT));
-			//search.setEmployeeId(matchAttrValue);
+        } else if (matchAttrName.equalsIgnoreCase("EMPLOYEE_ID")) {
+            searchBean.setEmployeeIdMatchToken(new SearchParam(matchAttrValue, MatchType.EXACT));
+            //search.setEmployeeId(matchAttrValue);
 
-		} else if (matchAttrName.equalsIgnoreCase("ATTRIBUTE")) {
-			System.out.println("- cofiguring search by attribute..");
-			System.out.println("- match attr=.." + matchConfig.getMatchSrcFieldName());
+        } else if (matchAttrName.equalsIgnoreCase("ATTRIBUTE")) {
+            if (log.isDebugEnabled()) {
+                log.debug("- cofiguring search by attribute..");
+                log.debug("- match attr=.." + matchConfig.getMatchSrcFieldName());
+                log.debug("- src field value=.." + matchAttrValue);
+            }
+            matchAttrName = matchConfig.getMatchSrcFieldName();
 
-			// get the attribute value from the data_set
-			System.out.println("- src field value=.." + matchAttrValue);
-			matchAttrName = matchConfig.getMatchSrcFieldName();
+            searchBean.addAttribute(matchAttrName, matchAttrValue);
 
-			searchBean.addAttribute(matchAttrName, matchAttrValue);
-
-		}
-
-        List<User> userList = userDataWebService.findBeans(searchBean, 0, Integer.MAX_VALUE);
+        }
+        searchBean.setDeepCopy(true);
+        searchBean.setFindInCache(true);
+        List<User> userList = userDataWebService.findBeans(searchBean, 0, 1);
 
 
         if (userList != null && !userList.isEmpty()) {
-			System.out.println("User matched with existing user...");
-            return userDataWebService.getUserWithDependent(userList.get(0).getId(),null,true);
-		}
-		return null;
-	}
+            if (log.isDebugEnabled()) {
+                log.debug("User matched with existing user...");
+            }
+            return userList.get(0);
+        }
+        return null;
+    }
 
     @Override
     public Group lookupGroup(MatchConfig matchConfig, Map<String, Attribute> rowAttr) {
@@ -135,33 +138,35 @@ public class DefaultMatchObjectRule implements MatchObjectRule {
             searchBean = new GroupSearchBean();
             searchBean.setName(matchAttrValue);
         } else if (matchAttrName.equalsIgnoreCase("ATTRIBUTE")) {
-            System.out.println("- cofiguring search by attribute..");
-            System.out.println("- match attr=.." + matchConfig.getMatchSrcFieldName());
-
-            // get the attribute value from the data_set
-            System.out.println("- src field value=.." + matchAttrValue);
+            if (log.isDebugEnabled()) {
+                log.debug("- cofiguring search by attribute..");
+                log.debug("- match attr=.." + matchConfig.getMatchSrcFieldName());
+                log.debug("- src field value=.." + matchAttrValue);
+            }
             matchAttrName = matchConfig.getMatchSrcFieldName();
 
             searchBean = new GroupSearchBean();
             searchBean.addAttribute(matchAttrName, matchAttrValue);
 
-        } else  if (matchAttrName.equalsIgnoreCase("IDENTITY")) {
+        } else if (matchAttrName.equalsIgnoreCase("IDENTITY")) {
             IdentitySearchBean identitySearchBean = new IdentitySearchBean();
             identitySearchBean.setType(IdentityTypeEnum.GROUP);
             identitySearchBean.setManagedSysId(matchConfig.getManagedSysId());
             identitySearchBean.setIdentity(matchAttrValue);
             List<IdentityDto> dtos = identityService.findByExample(identitySearchBean, null, 0, Integer.MAX_VALUE);
-            if(dtos != null && !dtos.isEmpty()) {
+            if (dtos != null && !dtos.isEmpty()) {
                 searchBean = new GroupSearchBean();
-                for(IdentityDto dto : dtos) {
+                for (IdentityDto dto : dtos) {
                     searchBean.addKey(dto.getReferredObjectId());
                 }
             }
         }
-        if(searchBean != null){
-            List<GroupEntity> groupEntities = groupManager.findBeans(searchBean,null,0,Integer.MAX_VALUE);
+        if (searchBean != null) {
+            List<GroupEntity> groupEntities = groupManager.findBeans(searchBean, null, 0, Integer.MAX_VALUE);
             if (groupEntities != null && !groupEntities.isEmpty()) {
-                System.out.println("Group matched with existing group...");
+                if (log.isDebugEnabled()) {
+                    log.debug("Group matched with existing group...");
+                }
                 return groupDozerConverter.convertToDTO(groupEntities.get(0), true);
             }
         }
@@ -181,31 +186,33 @@ public class DefaultMatchObjectRule implements MatchObjectRule {
         if (matchAttrName.equalsIgnoreCase("NAME")) {
             searchBean.setName(matchAttrValue);
         } else if (matchAttrName.equalsIgnoreCase("ATTRIBUTE")) {
-            System.out.println("- cofiguring search by attribute..");
-            System.out.println("- match attr=.." + matchConfig.getMatchSrcFieldName());
-
-            // get the attribute value from the data_set
-            System.out.println("- src field value=.." + matchAttrValue);
+            if (log.isDebugEnabled()) {
+                log.debug("- cofiguring search by attribute..");
+                log.debug("- match attr=.." + matchConfig.getMatchSrcFieldName());
+                log.debug("- src field value=.." + matchAttrValue);
+            }
             matchAttrName = matchConfig.getMatchSrcFieldName();
 
             searchBean.addAttribute(matchAttrName, matchAttrValue);
 
-        } else  if (matchAttrName.equalsIgnoreCase("IDENTITY")) {
+        } else if (matchAttrName.equalsIgnoreCase("IDENTITY")) {
             IdentitySearchBean identitySearchBean = new IdentitySearchBean();
             identitySearchBean.setType(IdentityTypeEnum.ROLE);
             identitySearchBean.setManagedSysId(matchConfig.getManagedSysId());
             identitySearchBean.setIdentity(matchAttrValue);
             List<IdentityDto> dtos = identityService.findByExample(identitySearchBean, null, 0, Integer.MAX_VALUE);
-            if(dtos != null && !dtos.isEmpty()) {
-                for(IdentityDto dto : dtos) {
+            if (dtos != null && !dtos.isEmpty()) {
+                for (IdentityDto dto : dtos) {
                     searchBean.addKey(dto.getReferredObjectId());
                 }
             }
         }
 
-        List<RoleEntity> roleEntities = roleManager.findBeans(searchBean,null,0,Integer.MAX_VALUE);
+        List<RoleEntity> roleEntities = roleManager.findBeans(searchBean, null, 0, Integer.MAX_VALUE);
         if (roleEntities != null && !roleEntities.isEmpty()) {
-            System.out.println("Role matched with existing role...");
+            if (log.isDebugEnabled()) {
+                log.debug("Role matched with existing role...");
+            }
             return roleDozerConverter.convertToDTO(roleEntities.get(0), true);
         }
         return null;
@@ -224,51 +231,54 @@ public class DefaultMatchObjectRule implements MatchObjectRule {
         if (matchAttrName.equalsIgnoreCase("NAME")) {
             searchBean.setName(matchAttrValue);
         } else if (matchAttrName.equalsIgnoreCase("ATTRIBUTE")) {
-            System.out.println("- cofiguring search by attribute..");
-            System.out.println("- match attr=.." + matchConfig.getMatchSrcFieldName());
-
-            // get the attribute value from the data_set
-            System.out.println("- src field value=.." + matchAttrValue);
+            if (log.isDebugEnabled()) {
+                log.debug("- cofiguring search by attribute..");
+                log.debug("- match attr=.." + matchConfig.getMatchSrcFieldName());
+                // get the attribute value from the data_set
+                log.debug("- src field value=.." + matchAttrValue);
+            }
             matchAttrName = matchConfig.getMatchSrcFieldName();
 
             searchBean.addAttribute(matchAttrName, matchAttrValue);
 
-        } else  if (matchAttrName.equalsIgnoreCase("IDENTITY")) {
+        } else if (matchAttrName.equalsIgnoreCase("IDENTITY")) {
             IdentitySearchBean identitySearchBean = new IdentitySearchBean();
             identitySearchBean.setType(IdentityTypeEnum.ORG);
             identitySearchBean.setManagedSysId(matchConfig.getManagedSysId());
             identitySearchBean.setIdentity(matchAttrValue);
             List<IdentityDto> dtos = identityService.findByExample(identitySearchBean, null, 0, Integer.MAX_VALUE);
-            if(dtos != null && !dtos.isEmpty()) {
-                for(IdentityDto dto : dtos) {
+            if (dtos != null && !dtos.isEmpty()) {
+                for (IdentityDto dto : dtos) {
                     searchBean.addKey(dto.getReferredObjectId());
                 }
             }
         }
 
-        List<Organization> orgEntities = orgManager.findBeans(searchBean,null,0,Integer.MAX_VALUE);
+        List<Organization> orgEntities = orgManager.findBeans(searchBean, null, 0, Integer.MAX_VALUE);
         if (orgEntities != null && !orgEntities.isEmpty()) {
-            System.out.println("Organization matched with existing role...");
+            if (log.isDebugEnabled()) {
+                log.debug("Organization matched with existing role...");
+            }
             return orgEntities.get(0);
         }
         return null;
     }
 
     public String getMatchAttrName() {
-		return matchAttrName;
-	}
+        return matchAttrName;
+    }
 
-	public void setMatchAttrName(String matchAttrName) {
-		this.matchAttrName = matchAttrName;
-	}
+    public void setMatchAttrName(String matchAttrName) {
+        this.matchAttrName = matchAttrName;
+    }
 
-	public String getMatchAttrValue() {
-		return matchAttrValue;
-	}
+    public String getMatchAttrValue() {
+        return matchAttrValue;
+    }
 
-	public void setMatchAttrValue(String matchAttrValue) {
-		this.matchAttrValue = matchAttrValue;
-	}
+    public void setMatchAttrValue(String matchAttrValue) {
+        this.matchAttrValue = matchAttrValue;
+    }
 
     @Override
     public String toString() {
