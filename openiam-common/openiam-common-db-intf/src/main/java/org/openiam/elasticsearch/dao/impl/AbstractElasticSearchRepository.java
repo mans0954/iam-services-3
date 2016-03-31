@@ -1,6 +1,7 @@
 package org.openiam.elasticsearch.dao.impl;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -74,6 +75,60 @@ implements AbstractCustomElasticSearchRepository<S, ID>{
 	protected Criteria eq(String term, final String value) {
 		return getWhereCriteria(term, value, MatchType.EXACT);
 	}
+	
+	private List<String> parse(final String str) {
+		final List<String> query;
+		if (str == null) {
+			query = Collections.<String>emptyList();
+		} else {
+			query = Arrays.asList(StringUtils.split(str, " ")).stream().filter(e -> StringUtils.isNotBlank(e)).collect(Collectors.toList());
+		}
+		return query;
+	}
+	
+	protected Criteria buildStartsWithCritria(final String field, final String value) {
+		Criteria conditions = null;
+		if (StringUtils.isNotBlank(value)) {
+			if (StringUtils.contains(value, " ")) {
+				final List<String> parsed = parse(value);
+				for(int i = 0; i < parsed.size(); i++) {
+					final String term = StringUtils.trimToNull(parsed.get(i));
+					if(term != null) {
+						if(conditions == null) {
+							conditions = new Criteria(field).startsWith(term).boost(parsed.size() - i);
+						} else {
+							conditions.and(new Criteria(field).contains(term)).boost(parsed.size() - i);
+						}
+					}
+				}
+			} else {
+				conditions = new Criteria(field).startsWith(value);
+			}
+		}
+		return conditions;
+	}
+	
+	protected Criteria buildContainsCriteria(final String field, final String value) {
+		Criteria conditions = null;
+		if (StringUtils.isNotBlank(value)) {
+			if (StringUtils.contains(value, " ")) {
+				final List<String> parsed = parse(value);
+				for(int i = 0; i < parsed.size(); i++) {
+					final String term = StringUtils.trimToNull(parsed.get(i));
+					if(term != null) {
+						if(conditions == null) {
+							conditions = new Criteria(field).contains(term).boost(parsed.size() - i);
+						} else {
+							conditions.and(new Criteria(field).contains(term)).boost(parsed.size() - i);
+						}
+					}
+				}
+			} else {
+				conditions = new Criteria(field).startsWith(value);
+			}
+		}
+		return conditions;
+	}
 
 	protected Criteria getWhereCriteria(String term, final String value, MatchType matchType) {
 		Criteria criteria = null;
@@ -84,10 +139,10 @@ implements AbstractCustomElasticSearchRepository<S, ID>{
 		            	criteria = Criteria.where(term).endsWith(StringUtils.trimToNull(value));
 		            	break;
 		            case STARTS_WITH:
-		            	criteria = Criteria.where(term).startsWith(StringUtils.trimToNull(value));
+		            	criteria = buildStartsWithCritria(term, value);
 		            	break;
 		            case CONTAINS:
-		            	criteria = Criteria.where(term).contains(StringUtils.trimToNull(value));
+		            	criteria = buildContainsCriteria(term, value);
 		            	break;
 		            case EXACT:
 		            	criteria = exactCriteria(term, StringUtils.trimToNull(value));
