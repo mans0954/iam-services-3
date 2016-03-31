@@ -124,7 +124,7 @@ implements AbstractCustomElasticSearchRepository<S, ID>{
 					}
 				}
 			} else {
-				conditions = new Criteria(field).startsWith(value);
+				conditions = new Criteria(field).contains(value);
 			}
 		}
 		return conditions;
