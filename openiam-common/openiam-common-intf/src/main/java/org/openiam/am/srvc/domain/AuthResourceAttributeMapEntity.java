@@ -36,11 +36,13 @@ public class AuthResourceAttributeMapEntity extends AbstractKeyNameEntity {
 
     @ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH})
     @JoinColumn(name="PROVIDER_ID", referencedColumnName = "PROVIDER_ID", insertable = true, updatable = false)
-    private AuthProviderEntity provider;
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)    
+	private AuthProviderEntity provider;
 
     @ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH}, optional = true)
     @JoinColumn(name="AM_RES_ATTRIBUTE_ID", referencedColumnName = "AM_RES_ATTRIBUTE_ID", insertable = true, updatable = true, nullable=true)
-    private AuthResourceAMAttributeEntity amAttribute;
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)    
+	private AuthResourceAMAttributeEntity amAttribute;
 
     public AuthProviderEntity getProvider() {
         return provider;

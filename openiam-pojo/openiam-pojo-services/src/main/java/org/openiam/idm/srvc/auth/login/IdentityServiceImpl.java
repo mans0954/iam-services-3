@@ -87,7 +87,7 @@ public class IdentityServiceImpl implements IdentityService {
     @Override
     @Transactional
     public List<IdentityDto> findByExample(IdentitySearchBean searchBean, String requesterId, int from, int size) {
-        List<IdentityEntity> entities = identityDAO.getByExample(searchBean,from,size);
+        List<IdentityEntity> entities = identityDAO.getByExampleNoLocalize(searchBean,from,size);
         return identityDozerConverter.convertToDTOList(entities, false);
     }
 

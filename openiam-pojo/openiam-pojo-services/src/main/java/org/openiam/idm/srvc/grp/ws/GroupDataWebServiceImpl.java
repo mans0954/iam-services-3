@@ -5,15 +5,19 @@ import java.util.List;
 import java.util.Set;
 
 import javax.jws.WebMethod;
+import javax.jws.WebParam;
 import javax.jws.WebService;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.Logger;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.dozer.converter.LanguageDozerConverter;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.dozer.converter.GroupAttributeDozerConverter;
 import org.openiam.dozer.converter.GroupDozerConverter;
 import org.openiam.dozer.converter.LanguageDozerConverter;
@@ -23,20 +27,29 @@ import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.srvc.access.service.AccessRightProcessor;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
+import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.dto.GroupAttribute;
+import org.openiam.idm.srvc.grp.dto.GroupOwner;
+import org.openiam.idm.srvc.grp.dto.GroupRequestModel;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.lang.service.LanguageDataService;
+import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
+import org.openiam.idm.srvc.meta.exception.PageTemplateException;
+import org.openiam.idm.srvc.role.domain.RoleEntity;
+import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.internationalization.LocalizedServiceGet;
 import org.openiam.util.UserUtils;
+import org.openiam.validator.EntityValidator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -55,6 +68,9 @@ import org.springframework.transaction.annotation.Transactional;
 public class GroupDataWebServiceImpl extends AbstractBaseService implements GroupDataWebService {
     @Autowired
     private GroupDataService groupManager;
+
+    @Autowired
+    private RoleDataService roleDataService;
 
     @Autowired
     private UserDataService userManager;
@@ -78,6 +94,9 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     
     @Autowired
     private AccessRightProcessor accessRightProcessor;
+    @Autowired
+    @Qualifier("groupEntityValidator")
+    private EntityValidator groupEntityValidator;
 
     public GroupDataWebServiceImpl() {
 
@@ -565,6 +584,10 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
         final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLogEntity auditLog = new IdmAuditLogEntity();
         auditLog.setAction(AuditAction.ADD_CHILD_GROUP.value());
+        //GroupEntity groupEntity = groupManager.getGroup(groupId);
+        //auditLog.setTargetGroup(groupId, groupEntity.getName());
+        //GroupEntity groupEntityChild = groupManager.getGroup(childGroupId);
+        //auditLog.setTargetGroup(childGroupId, groupEntityChild.getName());
         auditLog.setRequestorUserId(requesterId);
         auditLog.setAuditDescription(String.format("Add child group: %s to group: %s", childGroupId, groupId));
 
@@ -663,6 +686,16 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
                 throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS, String.format(
                         "User %s has already been added to group: %s", userId, groupId));
             }
+
+/*            GroupEntity groupEntity = groupManager.getGroup(groupId);
+            if (groupEntity != null) {
+                if (!((groupEntity.getMaxUserNumber() == null) || (userManager.getNumOfUsersForGroup(groupId, null) < groupEntity.getMaxUserNumber()))) {
+                    throw new BasicDataServiceException(ResponseCode.GROUP_LIMIT_OF_USERS_EXCEEDED, "group's limit of user count exceeded");
+                }
+            } else {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "groupEntity is null");
+            }*/
+
         } catch (BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
@@ -726,4 +759,94 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
 	public boolean hasAttachedEntities(String groupId) {
 		return groupManager.hasAttachedEntities(groupId);
 	}
+
+    @Override
+    public Response removeRoleFromGroup(String roleId, String groupId, String requesterId) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
+        idmAuditLog.setRequestorUserId(requesterId);
+        idmAuditLog.setAction(AuditAction.REMOVE_ROLE_FROM_GROUP.value());
+        GroupEntity groupEntity = groupManager.getGroup(groupId);
+        idmAuditLog.setTargetGroup(groupId, groupEntity.getName());
+        RoleEntity roleEntity = roleDataService.getRole(roleId);
+        idmAuditLog.setTargetRole(roleId, roleEntity.getName());
+        idmAuditLog.setAuditDescription(String.format("Remove role %s from group: %s", roleId, groupId));
+        try {
+            if(groupId == null || roleId == null) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "GroupId or RoleId  is null or empty");
+            }
+
+            groupManager.removeRoleFromGroup(roleId, groupId);
+            idmAuditLog.succeed();
+        } catch(BasicDataServiceException e) {
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(e.getCode());
+            idmAuditLog.setException(e);
+        } catch(Throwable e) {
+            log.error("Exception", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+            idmAuditLog.fail();
+            idmAuditLog.setException(e);
+        }finally {
+            auditLogService.enqueue(idmAuditLog);
+        }
+        return response;
+    }
+
+    public SaveTemplateProfileResponse saveGroupRequest(final GroupRequestModel request){
+        final SaveTemplateProfileResponse response = new SaveTemplateProfileResponse(ResponseStatus.SUCCESS);
+        try {
+            if(request == null) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "GroupId or RoleId  is null or empty");
+            }
+
+            groupManager.saveGroupRequest(request);
+            response.setResponseValue(request.getTargetObject().getId());
+        } catch(BasicDataServiceException e) {
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+        } catch (PageTemplateException e){
+            response.setCurrentValue(e.getCurrentValue());
+            response.setElementName(e.getElementName());
+            response.setErrorCode(e.getCode());
+            response.setStatus(ResponseStatus.FAILURE);
+        }catch(Throwable e) {
+            log.error("Exception", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+        }
+        return response;
+    }
+
+    public SaveTemplateProfileResponse validateGroupRequest(final GroupRequestModel request) {
+        final SaveTemplateProfileResponse response = new SaveTemplateProfileResponse(ResponseStatus.SUCCESS);
+        try {
+            groupManager.validateGroupRequest(request);
+        } catch (BasicDataServiceException e) {
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+            response.setErrorTokenList(e.getErrorTokenList());
+        } catch (PageTemplateException e){
+            response.setCurrentValue(e.getCurrentValue());
+            response.setElementName(e.getElementName());
+            response.setErrorCode(e.getCode());
+            response.setStatus(ResponseStatus.FAILURE);
+        } catch (Throwable e) {
+            log.error("Can't validate", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+            response.setErrorCode(ResponseCode.INTERNAL_ERROR);
+            response.addErrorToken(new EsbErrorToken(e.getMessage()));
+        }
+        return response;
+    }
+
+/*
+        HOW TO DO IT???
+    public List<GroupOwner> getOwnersBeansForGroup(final @WebParam(name = "groupId", targetNamespace = "") String groupId){
+        return groupManager.getOwnersBeansForGroup(groupId);
+    }*/
 }

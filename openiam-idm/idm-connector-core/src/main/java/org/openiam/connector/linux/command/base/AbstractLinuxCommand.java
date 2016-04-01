@@ -47,7 +47,9 @@ public abstract class AbstractLinuxCommand<Request extends RequestType, Response
 
     protected SSHAgent getSSHAgent(String targetId)
             throws ConnectorDataException {
-        log.debug("Getting SSH for managed sys with id=" + targetId);
+    	if(log.isDebugEnabled()) {
+    		log.debug("Getting SSH for managed sys with id=" + targetId);
+    	}
         return getSSHAgent(managedSysService.getManagedSysById(targetId));
     }
 
@@ -70,8 +72,11 @@ public abstract class AbstractLinuxCommand<Request extends RequestType, Response
         SSHAgent ssh = null;
         if (managedSys != null) {
             String managedSysId = managedSys.getId();
-            if (!(managedSys.getResource() == null || org.apache.commons.lang.StringUtils.isBlank(managedSys.getResource().getId()))) {
-                log.debug("ManagedSys found; Name=" + managedSys.getName());
+            if (!(managedSys.getResource().getId() == null || managedSys
+                    .getResource().getId().length() == 0)) {
+            	if(log.isDebugEnabled()) {
+            		log.debug("ManagedSys found; Name=" + managedSys.getName());
+            	}
 
                 if ((ssh = sshConnectionFactory.getSSH(managedSysId)) == null) {
                     File f = null;
@@ -114,8 +119,14 @@ public abstract class AbstractLinuxCommand<Request extends RequestType, Response
     protected void sendPassword(SSHAgent sshAgent, LinuxUser user,
                                 String sudoPassword) throws SSHException {
         String pass = user.getPassword();
-        String doubledPass = pass + "\n" + pass + "\n" + sudoPassword + "\n";
-        sshAgent.executeCommand(user.getUserSetPasswordCommand(), doubledPass);
+        StringBuilder doubledPass = new StringBuilder();
+        if (org.apache.commons.lang.StringUtils.isNotBlank(sudoPassword)){
+            doubledPass.append(sudoPassword).append("\n");
+        }
+            doubledPass.append(pass).append("\n");
+            doubledPass.append(pass).append("\n");
+
+        sshAgent.executeCommand(user.getUserSetPasswordCommand(), doubledPass.toString());
     }
 
     /**
@@ -139,7 +150,9 @@ public abstract class AbstractLinuxCommand<Request extends RequestType, Response
         LinuxGroup group = null;
 
         if (StringUtils.hasText(name)) {
-            log.debug("Object: group" + name);
+        	if(log.isDebugEnabled()) {
+        		log.debug("Object: group" + name);
+        	}
             group = new LinuxGroup(name);
         } else {
             log.error("Login name for Linux user not specified");

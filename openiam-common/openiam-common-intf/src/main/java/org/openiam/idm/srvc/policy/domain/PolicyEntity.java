@@ -77,6 +77,7 @@ public class PolicyEntity extends AbstractKeyNameEntity {
     private Set<AuthProviderEntity> authenticationPolicyProviders;
 
     @OneToMany(fetch = FetchType.LAZY, orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "attributePolicy")
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<ReconciliationResourceAttributeMapEntity> attributeMaps = new HashSet<ReconciliationResourceAttributeMapEntity>(0);
 
     public PolicyEntity() {

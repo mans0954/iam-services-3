@@ -7,6 +7,7 @@ import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.loc.dto.Location;
 import org.openiam.idm.srvc.org.dto.Organization;
+import org.openiam.idm.srvc.org.dto.OrganizationAttribute;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
@@ -234,14 +235,14 @@ public interface OrganizationDataService {
                                                                    final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
                                                                    final @WebParam(name = "language", targetNamespace = "") Language language);
 
-    @WebMethod
+    /*@WebMethod
     @Deprecated
     public List<Organization> findOrganizationsByAttributeValue(final @WebParam(name = "attrName", targetNamespace = "") String attrName,
-                                                                         final @WebParam(name = "attrValue", targetNamespace = "") String attrValue);
-    @WebMethod
+                                                                         final @WebParam(name = "attrValue", targetNamespace = "") String attrValue);*/
+    /*@WebMethod
     public List<Organization> findOrganizationsByAttributeValueLocalized(final @WebParam(name = "attrName", targetNamespace = "") String attrName,
                                                                 final @WebParam(name = "attrValue", targetNamespace = "") String attrValue,
-                                                                final @WebParam(name = "language", targetNamespace = "") Language language);
+                                                                final @WebParam(name = "language", targetNamespace = "") Language language);*/
 
 
     @WebMethod
@@ -285,4 +286,15 @@ public interface OrganizationDataService {
     public List<Location> getLocationListByPageForUser(@WebParam(name = "userId", targetNamespace = "") String organizationId,
                                                        @WebParam(name = "from", targetNamespace = "") Integer from,
                                                        @WebParam(name = "size", targetNamespace = "") Integer size);
+
+    @WebMethod
+    public List<Organization> getUserAffiliationsByType(@WebParam(name = "userId", targetNamespace = "") final String userId,
+                                                        @WebParam(name = "typeId", targetNamespace = "") final String typeId,
+                                                        @WebParam(name = "from", targetNamespace = "") int from,
+                                                        @WebParam(name = "size", targetNamespace = "") int size,
+                                                        @WebParam(name = "requesterId", targetNamespace = "") final String requesterId,
+                                                        @WebParam(name = "language", targetNamespace = "") final Language language);
+    @WebMethod
+    public List<OrganizationAttribute> getOrganizationAttributes(@WebParam(name = "orgId", targetNamespace = "") final String orgId);
+
 }

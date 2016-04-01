@@ -17,7 +17,7 @@ import org.openiam.idm.srvc.meta.dto.MetadataElementPageTemplate;
 		"patternIds",
 		"resourceId"
 })
-public class MetadataElementPageTemplateSearchBean extends AbstractKeyNameSearchBean<MetadataElementPageTemplate, String> {
+public class MetadataElementPageTemplateSearchBean extends AbstractKeyNameSearchBean<MetadataElementPageTemplate, String> implements SearchBean {
 
 	private Set<String> patternIds;
 	private Set<String> keySet;
@@ -30,7 +30,16 @@ public class MetadataElementPageTemplateSearchBean extends AbstractKeyNameSearch
 		}
 		keySet.add(key);
 	}
-	
+
+	@Override
+	public String getCacheUniqueBeanKey() {
+		return new StringBuilder()
+				.append(patternIds != null ? patternIds.toString().hashCode() : "")
+				.append(keySet != null ? keySet.toString().hashCode() : "")
+				.append(name != null ? name.toString().hashCode() : "")
+				.append(getKey() != null ? getKey() : "")
+				.toString();	}
+
 	public Set<String> getKeys() {
 		return keySet;
 	}

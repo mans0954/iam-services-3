@@ -4,8 +4,11 @@ import org.apache.commons.lang.StringUtils;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import java.io.Serializable;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Created by: Alexander Duckardt
@@ -22,19 +25,23 @@ import java.io.Serializable;
         "showRolesFlag",
         "showGroupsFlag",
         "showManagesSysFlag",
-        "compiledFlag"
+        "compiledFlag",
+        "attestationTaskId"
 })
 public class AccessViewFilterBean implements Serializable {
     private String userId;
     private String name;
     private String description;
     private String risk;
+    private String attestationTaskId;
     private Integer maxHierarchyLevel = 10;
     private Boolean showExceptionsFlag=false;
     private Boolean showRolesFlag=false;
     private Boolean showGroupsFlag=false;
     private Boolean showManagesSysFlag=false;
     private int compiledFlag =0;
+    @XmlTransient
+    private Set<String> attestationManagedSysFilter;
 
     public String getUserId() {
         return userId;
@@ -128,4 +135,19 @@ public class AccessViewFilterBean implements Serializable {
         return StringUtils.isBlank(this.name) && StringUtils.isBlank(this.description);
     }
 
+    public String getAttestationTaskId() {
+        return attestationTaskId;
+    }
+
+    public void setAttestationTaskId(String attestationTaskId) {
+        this.attestationTaskId = attestationTaskId;
+    }
+
+    public Set<String> getAttestationManagedSysFilter() {
+        return attestationManagedSysFilter;
+    }
+
+    public void setAttestationManagedSysFilter(Set<String> attestationManagedSysFilter) {
+        this.attestationManagedSysFilter = attestationManagedSysFilter;
+    }
 }

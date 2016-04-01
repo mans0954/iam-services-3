@@ -219,6 +219,10 @@
 			<artifactId>force-wsc</artifactId>
 			<version>22.0.0</version>
 		</dependency>
+		<dependency>
+			<groupId>org.openiam</groupId>
+			<artifactId>openiam-idm-intf</artifactId>
+		</dependency>
 
 
 	</dependencies>

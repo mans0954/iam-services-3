@@ -7,10 +7,7 @@ import java.util.List;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
-import org.hibernate.criterion.DetachedCriteria;
-import org.hibernate.criterion.Projections;
-import org.hibernate.criterion.Restrictions;
-import org.hibernate.criterion.Subqueries;
+import org.hibernate.criterion.*;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.Tuple;
 import org.openiam.base.ws.SortParam;
@@ -20,8 +17,15 @@ import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
+import org.openiam.idm.srvc.grp.domain.GroupToResourceMembershipXrefEntity;
+import org.openiam.idm.srvc.org.domain.OrganizationEntity;
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+
+import java.util.*;
+
+import static org.hibernate.criterion.Projections.rowCount;
 
 @Repository("groupDAO")
 public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements GroupDAO {
@@ -125,6 +129,82 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
         return super.getByExample(searchBean, from, size);
      }
 
+/*@Override
+    protected Criteria getExampleCriteria(GroupEntity group) {
+        final Criteria criteria = getCriteria();
+        if (StringUtils.isNotBlank(group.getId())) {
+            criteria.add(Restrictions.eq(getPKfieldName(), group.getId()));
+        } else {
+            if (StringUtils.isNotEmpty(group.getName())) {
+                //try to check: do a lot of group names come?
+                String names = group.getName();
+                String[] nameArray = names.split("\r\n");
+                if (nameArray == null || nameArray.length < 2) {
+                    nameArray = names.split("\n");
+                }
+                if (nameArray == null || nameArray.length < 2) {
+                    this.fillCriteriaSingleName(group.getName(), criteria);
+                } else {
+                    //collect all group names to colleaction
+                    criteria.add(Restrictions.in("name", Arrays.asList(nameArray)));
+                }
+            }
+
+            if (group.getManagedSystem() != null && StringUtils.isNotBlank(group.getManagedSystem().getId())) {
+                criteria.add(Restrictions.eq("managedSystem.id", group.getManagedSystem().getId()));
+            }
+
+//			if(group.getCompany() != null && StringUtils.isNotBlank(group.getCompany().getId())) {
+//				criteria.add(Restrictions.eq("company.id", group.getCompany().getId()));
+//			}
+
+*//*            if (CollectionUtils.isNotEmpty(group.getOrganizationSet())) {
+                final Set<String> orgIds = new HashSet<String>();
+                for (final OrganizationEntity org : group.getOrganizationSet()) {
+                    if (org != null && StringUtils.isNotBlank(org.getId())) {
+                        orgIds.add(org.getId());
+                    }
+                }
+                criteria.createAlias("organizationSet", "orgs");
+                criteria.add(Restrictions.in("orgs.id", orgIds));
+            }*//*
+
+            if (CollectionUtils.isNotEmpty(group.getResources())) {
+                final Set<String> resourceIds = new HashSet<String>();
+                for (final GroupToResourceMembershipXrefEntity resourceEntity : group.getResources()) {
+                    if (resourceEntity != null && StringUtils.isNotBlank(resourceEntity.getMemberEntity().getId())) {
+                        resourceIds.add(resourceEntity.getMemberEntity().getId());
+                    }
+                }
+
+                if (CollectionUtils.isNotEmpty(resourceIds)) {
+                    criteria.createAlias("resources", "resources").add(Restrictions.in("resources.id", resourceIds));
+                }
+            }
+        }
+        return criteria;
+    }*/
+
+    private void fillCriteriaSingleName(String groupName, Criteria criteria) {
+        MatchMode matchMode = null;
+        if (StringUtils.indexOf(groupName, "*") == 0) {
+            matchMode = MatchMode.END;
+            groupName = groupName.substring(1);
+        }
+        if (StringUtils.isNotEmpty(groupName) && StringUtils.indexOf(groupName, "*") == groupName.length() - 1) {
+            groupName = groupName.substring(0, groupName.length() - 1);
+            matchMode = (matchMode == MatchMode.END) ? MatchMode.ANYWHERE : MatchMode.START;
+        }
+
+        if (StringUtils.isNotEmpty(groupName)) {
+            if (matchMode != null) {
+                criteria.add(Restrictions.ilike("name", groupName, matchMode));
+            } else {
+                criteria.add(Restrictions.eq("name", groupName));
+            }
+        }
+    }
+
     protected void setOderByCriteria(Criteria criteria, AbstractSearchBean sb) {
         List<SortParam> sortParamList = sb.getSortBy();
         for (SortParam sort: sortParamList){
@@ -162,7 +242,133 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
         }
         return criteria.list();
     }
-    
+
+    public List<GroupEntity> getGroupsForUser(final String userId, Set<String> filter, final int from, final int size) {
+        final Criteria criteria = getEntitlementGroupsCriteria(userId, null, null, filter);
+        return getList(criteria, from, size);
+    }
+
+
+    @Override
+    public List<GroupEntity> getGroupsForRole(final String roleId, Set<String> filter, int from, int size) {
+        final Criteria criteria = getEntitlementGroupsCriteria(null, roleId, null, filter);
+        return getList(criteria, from, size);
+    }
+
+
+    @Override
+    public List<GroupEntity> getGroupsForResource(final String resourceId, Set<String> filter, int from, int size) {
+        final Criteria criteria = getEntitlementGroupsCriteria(null, null, resourceId, filter);
+        return getList(criteria, from, size);
+    }
+
+
+    @Override
+    public List<GroupEntity> getChildGroups(final String groupId, Set<String> filter, int from, int size) {
+        final Criteria criteria = getChildGroupsCriteria(groupId, filter);
+        return getList(criteria, from, size);
+    }
+
+    @Override
+    public List<GroupEntity> getParentGroups(final String groupId, Set<String> filter, int from, int size) {
+        final Criteria criteria = getParentGroupsCriteria(groupId, filter);
+        return getList(criteria, from, size);
+    }
+
+    @Override
+    public int getNumOfGroupsForUser(final String userId, Set<String> filter) {
+        final Criteria criteria = getEntitlementGroupsCriteria(userId, null, null, filter).setProjection(rowCount());
+        return ((Number) criteria.uniqueResult()).intValue();
+    }
+
+    @Override
+    public int getNumOfGroupsForRole(final String roleId, Set<String> filter) {
+        final Criteria criteria = getEntitlementGroupsCriteria(null, roleId, null, filter);
+        criteria.setProjection(rowCount());
+        return ((Number) criteria.uniqueResult()).intValue();
+    }
+
+    @Override
+    public int getNumOfGroupsForResource(final String resourceId, Set<String> filter) {
+        final Criteria criteria = getEntitlementGroupsCriteria(null, null, resourceId, filter);
+        criteria.setProjection(rowCount());
+        return ((Number) criteria.uniqueResult()).intValue();
+    }
+
+    @Override
+    public int getNumOfChildGroups(final String groupId, Set<String> filter) {
+        final Criteria criteria = getChildGroupsCriteria(groupId, filter);
+        criteria.setProjection(rowCount());
+        return ((Number) criteria.uniqueResult()).intValue();
+    }
+
+    @Override
+    public int getNumOfParentGroups(final String groupId, Set<String> filter) {
+        final Criteria criteria = getParentGroupsCriteria(groupId, filter);
+        criteria.setProjection(rowCount());
+        return ((Number) criteria.uniqueResult()).intValue();
+    }
+
+    private Criteria getEntitlementGroupsCriteria(String userId, String roleId, String resourceId, Set<String> filter) {
+        final Criteria criteria = super.getCriteria();
+
+        if (StringUtils.isNotBlank(userId)) {
+            criteria.createAlias("users", "u")
+                    .add(Restrictions.eq("u.id", userId));
+        }
+
+        if (StringUtils.isNotBlank(roleId)) {
+            criteria.createAlias("roles", "roles").add(Restrictions.eq("roles.id", roleId));
+        }
+
+        if (StringUtils.isNotBlank(resourceId)) {
+            criteria.createAlias("resources", "resources").add(Restrictions.eq("resources.id", resourceId));
+        }
+
+        if (filter != null && !filter.isEmpty()) {
+            criteria.add(Restrictions.in(getPKfieldName(), filter));
+        }
+
+        return criteria;
+    }
+
+
+    private Criteria getParentGroupsCriteria(final String groupId, Set<String> filter) {
+        final Criteria criteria = getCriteria().createAlias("childGroups", "group").add(Restrictions.eq("group.id", groupId));
+        if (filter != null && !filter.isEmpty()) {
+            criteria.add(Restrictions.in(getPKfieldName(), filter));
+        }
+        return criteria;
+    }
+
+    private Criteria getChildGroupsCriteria(final String groupId, Set<String> filter) {
+        final Criteria criteria = getCriteria().createAlias("parentGroups", "group").add(Restrictions.eq("group.id", groupId));
+        if (filter != null && !filter.isEmpty()) {
+            criteria.add(Restrictions.in(getPKfieldName(), filter));
+        }
+        return criteria;
+    }
+
+/*    private List<GroupEntity> getList(Criteria criteria, int from, int size) {
+        if (from > -1) {
+            criteria.setFirstResult(from);
+        }
+
+        if (size > -1) {
+            criteria.setMaxResults(size);
+        }
+        return criteria.list();
+    }*/
+
+/*    public List<GroupEntity> findGroupsByAttributeValue(final String attrName, final String attrValue) {
+        List ret = new ArrayList<GroupEntity>();
+        if (StringUtils.isNotBlank(attrName)) {
+            // Can't use Criteria for @ElementCollection due to Hibernate bug
+            // (org.hibernate.MappingException: collection was not an association)
+            ret = getHibernateTemplate().find("select ga.group from GroupAttributeEntity ga left join ga.values av where ga.name = ? and ((ga.isMultivalued = false and ga.value = ?) or (ga.isMultivalued = true and av in ?))", attrName, attrValue, attrValue);
+        }
+        return ret;
+    }*/
 }
 
 

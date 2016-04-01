@@ -14,18 +14,32 @@ import org.openiam.am.srvc.uriauth.dto.URIFederationResponse;
 import org.openiam.base.Tuple;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
+import org.openiam.base.ws.ResponseStatus;
+import org.openiam.idm.srvc.auth.dto.AuthenticationRequest;
+import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
+import org.openiam.idm.srvc.auth.service.AuthenticationService;
+import org.openiam.idm.srvc.auth.ws.AuthenticationResponse;
 import org.openiam.idm.srvc.user.dto.User;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpMethod;
+import org.springframework.test.context.ContextConfiguration;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+@ContextConfiguration(locations={"classpath:test-integration-environment.xml","classpath:test-esb-integration.xml"})
 public class URIFederationServiceTest extends AbstractURIFederationTest {	
 	
 	private ContentProvider cp = null;
 	private User user = null;
-	
+
+
+	@Autowired
+    @Qualifier("authServiceClient")
+    private AuthenticationService authServiceClient;
+
 	@BeforeClass
 	protected void _setUp() throws Exception {
 		Response response = null;
@@ -48,14 +62,14 @@ public class URIFederationServiceTest extends AbstractURIFederationTest {
 	    final String id = (String)response.getResponseValue();
 	    cp = contentProviderServiceClient.getContentProvider(id);
 	    Assert.assertNotNull(cp);
-	    
-	    final List<Tuple<String, PatternMatchMode>> tuples = new LinkedList<Tuple<String,PatternMatchMode>>();
-	    tuples.add(new Tuple<String, PatternMatchMode>("/*", PatternMatchMode.IGNORE));
-	    tuples.add(new Tuple<String, PatternMatchMode>("/ignore/*", PatternMatchMode.IGNORE));
-	    tuples.add(new Tuple<String, PatternMatchMode>("/any/*", PatternMatchMode.ANY_PARAMS));
-	    tuples.add(new Tuple<String, PatternMatchMode>("/none/*", PatternMatchMode.NO_PARAMS));
-	    tuples.add(new Tuple<String, PatternMatchMode>("/paramsWithNoMethod/*", PatternMatchMode.SPECIFIC_PARAMS));
-	    tuples.add(new Tuple<String, PatternMatchMode>("/paramsWithMethod/*", PatternMatchMode.SPECIFIC_PARAMS));
+
+        final List<Tuple<String, PatternMatchMode>> tuples = new LinkedList<Tuple<String,PatternMatchMode>>();
+        tuples.add(new Tuple<String, PatternMatchMode>("/*", PatternMatchMode.IGNORE));
+        tuples.add(new Tuple<String, PatternMatchMode>("/ignore/*", PatternMatchMode.IGNORE));
+        tuples.add(new Tuple<String, PatternMatchMode>("/any/*", PatternMatchMode.ANY_PARAMS));
+        tuples.add(new Tuple<String, PatternMatchMode>("/none/*", PatternMatchMode.NO_PARAMS));
+        tuples.add(new Tuple<String, PatternMatchMode>("/paramsWithNoMethod/*", PatternMatchMode.SPECIFIC_PARAMS));
+        tuples.add(new Tuple<String, PatternMatchMode>("/paramsWithMethod/*", PatternMatchMode.SPECIFIC_PARAMS));
 	    
 	    for(final Tuple<String, PatternMatchMode> tuple : tuples) {
 	    	final URIPattern pattern = new URIPattern();
@@ -107,6 +121,26 @@ public class URIFederationServiceTest extends AbstractURIFederationTest {
     	if(user != null) {
     		userServiceClient.removeUser(user.getId());
     	}
+    }
+    
+    @Test
+    public void testKerberosAuthentication() {
+    	final AuthenticationRequest request = new AuthenticationRequest();
+    	request.setPrincipal("snelson");
+    	request.setKerberosAuth(true);
+    	request.setAuthPolicyId(null);
+		request.setLanguageId(getDefaultLanguage().getId());
+    	AuthenticationResponse response = authServiceClient.login(request);
+    	Assert.assertNotNull(response);
+    	Assert.assertTrue(response.getStatus().equals(ResponseStatus.SUCCESS));
+    	Assert.assertNotNull(response.getSubject());
+    	Assert.assertNotNull(response.getSubject().getSsoToken());
+    	
+/*    	request.setKerberosAuth(false);
+    	response = authServiceClient.login(request);
+    	Assert.assertNotNull(response);
+    	Assert.assertTrue(response.getStatus().equals(ResponseStatus.FAILURE));
+    	Assert.assertEquals(response.getAuthErrorCode(), AuthenticationConstants.RESULT_INVALID_PASSWORD);*/
     }
 	
 	@Test
@@ -223,10 +257,13 @@ public class URIFederationServiceTest extends AbstractURIFederationTest {
 		Assert.assertTrue(response.isConfigured());
 		Assert.assertNotNull(response.getCacheTTL());
 		
-		/* all auth level groupings should have been added by the code that created the cp */
+
+/* all auth level groupings should have been added by the code that created the cp */
+
 		Assert.assertTrue(CollectionUtils.isNotEmpty(response.getAuthLevelTokenList()));
 		Assert.assertTrue(response.getAuthLevelTokenList().stream().filter(e -> e.getAuthLevelId().equals("OAUTH")).count() > 0, 
 				"OAuth Auth Level shoudl have been present");
 	}
 	
 }
+

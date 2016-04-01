@@ -109,7 +109,9 @@ public class AuthResourceAttributeServiceImpl implements AuthResourceAttributeSe
     public List<SSOAttribute> getSSOAttributes(String providerId, String userId) {
         List<SSOAttribute> resultList = new ArrayList<SSOAttribute>();
         try {
-            log.debug("try to get attribute list by provider id:" + providerId);
+        	if(log.isDebugEnabled()) {
+        		log.debug("try to get attribute list by provider id:" + providerId);
+        	}
             AuthProviderEntity provider = authProviderDao.findById(providerId);
 
             if(provider==null)

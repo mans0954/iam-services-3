@@ -19,12 +19,16 @@ public class UserUtils {
         for (LoginEntity l  : principalList) {
             if (l.getManagedSysId().equalsIgnoreCase(managedSysId)) {
 
-                log.debug("getUserManagedSysIdentityEntity() return ->" + l);
+            	if(log.isDebugEnabled()) {
+            		log.debug("getUserManagedSysIdentityEntity() return ->" + l);
+            	}
 
                 return l;
             }
         }
-        log.debug("getUserManagedSysIdentityEntity() not found. returning null" );
+        if(log.isDebugEnabled()) {
+        	log.debug("getUserManagedSysIdentityEntity() not found. returning null" );
+        }
         return null;
     }
 
@@ -35,13 +39,15 @@ public class UserUtils {
         }
         for (Login l  : principalList) {
             if (l.getManagedSysId().equalsIgnoreCase(managedSysId)) {
-
-                log.debug("getUserManagedSysIdentityEntity() return ->" + l);
-
+            	if(log.isDebugEnabled()) {
+            		log.debug("getUserManagedSysIdentityEntity() return ->" + l);
+            	}
                 return l;
             }
         }
-        log.debug("getUserManagedSysIdentityEntity() not found. returning null" );
+        if(log.isDebugEnabled()) {
+        	log.debug("getUserManagedSysIdentityEntity() not found. returning null" );
+        }
         return null;
     }
 }

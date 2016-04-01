@@ -25,7 +25,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.Restrictions;
-import org.openiam.core.dao.BaseDaoImpl;
+import org.openiam.core.dao.OrderDaoImpl;
 import org.openiam.idm.searchbeans.LanguageSearchBean;
 import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
@@ -39,7 +39,7 @@ import org.springframework.stereotype.Repository;
  * @author Suneet Shah
  */
 @Repository("languageDAO")
-public class LanguageDAOImpl extends BaseDaoImpl<LanguageEntity, String> implements LanguageDAO {
+public class LanguageDAOImpl extends OrderDaoImpl<LanguageEntity, String> implements LanguageDAO {
     private static final Log log = LogFactory.getLog(LanguageDAOImpl.class);
 
     @Override
@@ -93,5 +93,9 @@ public class LanguageDAOImpl extends BaseDaoImpl<LanguageEntity, String> impleme
         final Criteria criteria = getCriteria();
         criteria.add(Restrictions.eq("isUsed", true));
         return (List<LanguageEntity>) criteria.list();
+    }
+
+    protected String getReferenceType() {
+        return "LanguageEntity.displayNameMap";
     }
 }

@@ -12,12 +12,13 @@ import java.io.Serializable;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "GroupOwner", propOrder = {
         "type",
-        "id"
+        "id",
+		"name"
 })
 public class GroupOwner implements Serializable {
     private String type;
     private String id;
-
+	private String name;
 
 
     public String getType() {
@@ -36,35 +37,31 @@ public class GroupOwner implements Serializable {
         this.id = id;
     }
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		result = prime * result + ((type == null) ? 0 : type.hashCode());
-		return result;
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		GroupOwner other = (GroupOwner) obj;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
-			return false;
-		if (type == null) {
-			if (other.type != null)
-				return false;
-		} else if (!type.equals(other.type))
-			return false;
-		return true;
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+
+		GroupOwner that = (GroupOwner) o;
+
+		if (type != null ? !type.equals(that.type) : that.type != null) return false;
+		return id != null ? id.equals(that.id) : that.id == null;
+
+	}
+
+	@Override
+	public int hashCode() {
+		int result = type != null ? type.hashCode() : 0;
+		result = 31 * result + (id != null ? id.hashCode() : 0);
+		return result;
 	}
 
 	@Override

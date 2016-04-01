@@ -21,6 +21,9 @@ import org.openiam.idm.srvc.policy.domain.*;
 import org.openiam.idm.srvc.policy.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,11 +41,17 @@ public class PolicyServiceImpl implements PolicyService {
 	@Autowired
 	private PolicyDefDAO policyDefDAO;
 
+/*    @Autowired
+    PolicyObjectAssocDAO policyObjectAssocDAO;*/
+
     /**
      * The policy dozer converter.
      */
     @Autowired
     private PolicyDozerConverter policyDozerConverter;
+
+/*    @Autowired
+    private PolicyObjectAssocDozerConverter policyAssocObjectDozerConverter;*/
 
     @Autowired
     private ITPolicyDozerConverter itPolicyDozerConverter;
@@ -63,15 +72,19 @@ public class PolicyServiceImpl implements PolicyService {
     private String passwordExpirationBatchTaskId;
 
 
-	@Override
-	@Transactional(readOnly=true)
-	public Policy getPolicy(String policyId) {
+    @Override
+    @Transactional(readOnly = true)
+    @Cacheable(value = "policies", key = "{#policyId}")
+    public Policy getPolicy(String policyId) {
         PolicyEntity policyEntity = policyDao.findById(policyId);
         return policyDozerConverter.convertToDTO(policyEntity, true);
 	}
 
 	@Override
-	@Transactional
+    @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "policies", allEntries = true)
+    })
 	public void save(final Policy policy) {
 		final PolicyEntity pe = policyDozerConverter.convertToEntity(policy, true);
 		if(CollectionUtils.isNotEmpty(pe.getPolicyAttributes())) {
@@ -120,15 +133,20 @@ public class PolicyServiceImpl implements PolicyService {
         }
     }
 
-	@Override
-	@Transactional(readOnly=true)
-	public List<Policy> findPolicyByName(String policyDefId, String policyName) {
+    @Override
+    @Transactional(readOnly = true)
+    @Cacheable(value = "policies", key = "{#policyDefId, #policyName}")
+    public List<Policy> findPolicyByName(String policyDefId, String policyName) {
         List<PolicyEntity> policyEntities = policyDao.findPolicyByName(policyDefId, policyName);
         return policyDozerConverter.convertToDTOList(policyEntities, false);
 	}
 
 	@Override
 	@Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "policies", allEntries = true),
+            @CacheEvict(value = "policyObjectAssoc", allEntries = true)
+    })
 	public void delete(final String policyId) throws BasicDataServiceException {
 		final PolicyEntity entity = policyDao.findById(policyId);
 		if(entity != null) {
@@ -144,22 +162,24 @@ public class PolicyServiceImpl implements PolicyService {
 		}
 	}
 
-	@Override
-	@Transactional(readOnly=true)
-	public int count(PolicySearchBean searchBean) {
-		return policyDao.count(searchBean);
-	}
+    @Override
+    @Transactional(readOnly = true)
+    public int count(PolicySearchBean searchBean) {
+        return policyDao.count(searchBean);
+    }
 
 	@Override
 	@Transactional(readOnly=true)
+    @Cacheable(value = "policies", key = "{#searchBean, #from, #size}")
 	public List<Policy> findBeans(PolicySearchBean searchBean, int from,
 			int size) {
-        List<PolicyEntity> entities = policyDao.getByExample(searchBean, from, size);
+        List<PolicyEntity> entities = policyDao.getByExampleNoLocalize(searchBean, from, size);
         return policyDozerConverter.convertToDTOList(entities, true);
 	}
 	
 	@Override
 	@Transactional(readOnly=true)
+    @Cacheable(value = "policyDefParams", key = "{#policyDefId, #pswdGroup}")
 	public List<PolicyDefParam> findPolicyDefParamByGroup(final String policyDefId, final String pswdGroup) {
 		List<PolicyDefParamEntity> entities =  policyDefParamDao.findPolicyDefParamByGroup(policyDefId, pswdGroup);
         return policyDefParamDozerConverter.convertToDTOList(entities, true);
@@ -179,6 +199,43 @@ public class PolicyServiceImpl implements PolicyService {
             itPolicyDao.delete(itPolicyEntity);
         }
     }
+
+/* @Override
+    @Transactional(readOnly = true)
+    @Cacheable(value = "policyObjectAssoc", key = "{#policyId}")
+    public List<PolicyObjectAssoc> getAssociationsForPolicy(String policyId) {
+        return policyAssocObjectDozerConverter
+                .convertToDTOList(policyObjectAssocDAO.findByPolicy(policyId),
+                        true);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    @Cacheable(value = "policyObjectAssoc", key = "{#level, #value}")
+    public PolicyObjectAssoc findAssociationByLevel(String level, String value) {
+        return policyAssocObjectDozerConverter
+                .convertToDTO(policyObjectAssocDAO.findAssociationByLevel(level, value), true);
+    }
+
+    @Override
+    @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "policyObjectAssoc", allEntries = true)
+    })
+    public String savePolicyAssoc(PolicyObjectAssoc poa) {
+        if (poa == null) {
+            return null;
+        }
+        PolicyObjectAssocEntity poaEntity = policyAssocObjectDozerConverter
+                .convertToEntity(poa, true);
+        if (poaEntity.getPolicyObjectId() == null) {
+            poaEntity.setObjectId(null);
+            poaEntity = policyObjectAssocDAO.add(poaEntity);
+        } else {
+            policyObjectAssocDAO.update(poaEntity);
+        }
+        return poaEntity.getPolicyObjectId();
+    }*/
 
     @Override
     @Transactional

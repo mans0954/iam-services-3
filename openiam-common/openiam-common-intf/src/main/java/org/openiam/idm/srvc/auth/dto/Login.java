@@ -52,7 +52,8 @@ import java.util.*;
         "passwordHistory",
         "smsCodeExpiration",
         "smsActive",
-        "toptActive"
+        "toptActive",
+        "challengeResponseFailCount"
 })
 @XmlSeeAlso({
         Subject.class,
@@ -73,7 +74,7 @@ public class Login extends KeyDTO {
     protected String password;
 
     protected String pwdEquivalentToken;
-
+    private Integer challengeResponseFailCount = new Integer(0);
     @XmlSchemaType(name = "dateTime")
     private Date pwdChanged;
 
@@ -435,6 +436,14 @@ public class Login extends KeyDTO {
         if(lowerCaseLogin != null) {
             this.lowerCaseLogin = lowerCaseLogin.toLowerCase();
         }
+    }
+
+    public Integer getChallengeResponseFailCount() {
+        return challengeResponseFailCount;
+    }
+
+    public void setChallengeResponseFailCount(Integer challengeResponseFailCount) {
+        this.challengeResponseFailCount = challengeResponseFailCount;
     }
 
     public LoginStatusEnum getInitialStatus() {

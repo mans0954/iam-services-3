@@ -43,7 +43,7 @@ import java.util.Set;
         "searchScope", "resource", "primaryRepository", "secondaryRepositoryId", "updateSecondary",
         "mngSysObjectMatchs", "driverUrl", "connectionString", "addHandler", "modifyHandler", "deleteHandler",
         "passwordHandler", "suspendHandler", "resumeHandler", "searchHandler", "lookupHandler",
-        "testConnectionHandler", "reconcileResourceHandler", "attributeNamesHandler", "handler5", "rules", "groups",
+        "testConnectionHandler", "reconcileResourceHandler", "attributeNamesHandler", "handler5", "groups",
         "roles", "skipGroupProvision", "changedByEndUser"})
 @XmlSeeAlso({KeyDTO.class, KeyNameDTO.class, BaseObject.class})
 @DozerDTOCorrespondence(ManagedSysEntity.class)
@@ -84,7 +84,7 @@ public class ManagedSysDto extends KeyNameDTO {
     private Boolean skipGroupProvision;
     private boolean changedByEndUser = true;
 
-    private List<ManagedSysRuleDto> rules = new ArrayList<ManagedSysRuleDto>(0);
+    //private List<ManagedSysRuleDto> rules = new ArrayList<ManagedSysRuleDto>(0);
 
     private Set<ManagedSystemObjectMatch> mngSysObjectMatchs = new HashSet<ManagedSystemObjectMatch>(0);
 
@@ -421,13 +421,13 @@ public class ManagedSysDto extends KeyNameDTO {
         this.handler5 = handler5;
     }
     
-    public List<ManagedSysRuleDto> getRules() {
+/*    public List<ManagedSysRuleDto> getRules() {
         return rules;
     }
 
     public void setRules(List<ManagedSysRuleDto> rules) {
         this.rules = rules;
-    }
+    }*/
 
     public Set<Group> getGroups() {
         return groups;

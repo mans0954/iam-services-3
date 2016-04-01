@@ -9,8 +9,8 @@ import java.util.List;
 
 public interface ChallengeResponseService {
 
-	Integer getNumOfRequiredQuestions(String userId);
-    Integer getNumOfCorrectAnswers(String userId);
+	public Integer getNumOfRequiredQuestions(String userId,boolean isEnterprise);
+    public Integer getNumOfCorrectAnswers(String userId,boolean isEnterprise);
 	Integer count(final IdentityQuestionSearchBean searchBean);
 	List<IdentityQuestionEntity> findQuestionBeans(final IdentityQuestionSearchBean searchBean, final int from, final int size);
 	List<UserIdentityAnswerEntity> findAnswerBeans(final IdentityAnswerSearchBean searchBean, String requesterId, final int from, final int size)  throws Exception;

@@ -357,10 +357,11 @@ public abstract class AbstractPeoplesoftCommand<Request extends RequestType, Res
             if (StringUtils.isNotBlank(principalName)) {
                 String sql = String.format(UPDATE_LOCK, schemaName);
 
-                log.debug("Update User Lock SQL:" + sql);
-                log.debug("Status:" + status);
-                log.debug("principalName:" + principalName);
-
+                if(log.isDebugEnabled()) {
+	                log.debug("Update User Lock SQL:" + sql);
+	                log.debug("Status:" + status);
+	                log.debug("principalName:" + principalName);
+                }
                 PreparedStatement statement = connection.prepareStatement(sql);
                 statement.setInt(1, status);
                 statement.setString(2, principalName);

@@ -193,7 +193,9 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
             try {
                 decPassword = loginManager.decryptPassword(mLg.getUserId(), mLg.getPassword());
             } catch (Exception e) {
-                log.debug(" - Failed to decrypt password for " + mLg.getUserId());
+            	if(log.isDebugEnabled()) {
+            		log.debug(" - Failed to decrypt password for " + mLg.getUserId());
+            	}
             }
             bindingMap.put("password", decPassword);
 
@@ -225,8 +227,9 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
 
     @Deprecated
     public ProvisionUserResponse deprovisionSelectedResources( String userId, String requestorUserId, List<String> resourceList)  {
-
-        log.debug("deprovisionSelectedResources().....for userId=" + userId);
+    	if(log.isDebugEnabled()) {
+    		log.debug("deprovisionSelectedResources().....for userId=" + userId);
+    	}
 
         ProvisionUserResponse response = new ProvisionUserResponse(ResponseStatus.SUCCESS);
         Map<String, Object> bindingMap = new HashMap<String, Object>();
@@ -286,19 +289,24 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
                 }
             }
 
-            log.debug("Resource object = " + res);
+            if(log.isDebugEnabled()) {
+            	log.debug("Resource object = " + res);
+            }
 
             ManagedSysDto managedSys = managedSysService.getManagedSysByResource(res.getId());
             String mSysId = (managedSys != null) ? managedSys.getId() : null;
             if (mSysId != null)  {
 
                 if (!mSysId.equalsIgnoreCase(sysConfiguration.getDefaultManagedSysId())) {
-
-                    log.debug("Looking up identity for : " + mSysId);
+                	if(log.isDebugEnabled()) {
+                		log.debug("Looking up identity for : " + mSysId);
+                	}
 
                     LoginEntity l = getLoginForManagedSys(mSysId, principalList);
 
-                    log.debug("Identity for Managedsys =" + l);
+                    if(log.isDebugEnabled()) {
+                    	log.debug("Identity for Managedsys =" + l);
+                    }
 
                     if (l != null) {
 
@@ -315,8 +323,10 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
                         if (matchObjAry != null && matchObjAry.length > 0) {
                             matchObj = matchObjAry[0];
                         }
-                        log.debug("Deleting id=" + l.getLogin());
-                        log.debug("- delete using managed sys id=" + mSys.getId());
+                        if(log.isDebugEnabled()) {
+                        	log.debug("Deleting id=" + l.getLogin());
+                        	log.debug("- delete using managed sys id=" + mSys.getId());
+                        }
 
                         boolean connectorSuccess = false;
 

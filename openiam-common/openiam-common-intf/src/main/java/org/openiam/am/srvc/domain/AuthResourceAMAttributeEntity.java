@@ -26,6 +26,7 @@ public class AuthResourceAMAttributeEntity extends AbstractKeyNameEntity {
     private String reflectionKey;
 
     @OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "amAttribute")
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<URIPatternMetaValueEntity> metaValues;
 
     public String getReflectionKey() {

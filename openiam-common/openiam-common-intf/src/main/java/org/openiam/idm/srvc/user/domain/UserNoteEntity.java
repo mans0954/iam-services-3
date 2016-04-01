@@ -43,6 +43,7 @@ public class UserNoteEntity {
 
     @ManyToOne
     @JoinColumn(name="USER_ID", referencedColumnName = "USER_ID", insertable = false, updatable = false)
+//    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private UserEntity user;
 
     public UserNoteEntity() {

@@ -9,8 +9,11 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.MappedSuperclass;
 
+import org.hibernate.annotations.Type;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.internationalization.Internationalized;
+
+import java.util.List;
 
 @MappedSuperclass
 @AttributeOverrides(value={
@@ -32,6 +35,14 @@ public abstract class AbstractAttributeEntity extends AbstractKeyNameValueEntity
 	public void setElement(MetadataElementEntity element) {
 		this.element = element;
 	}
+
+
+	public abstract boolean getIsMultivalued();
+
+	public abstract void setIsMultivalued(boolean isMultivalued);
+
+	public abstract List<String> getValues();
+    public abstract void setValues(List<String> values);
 
 	@Override
 	public int hashCode() {

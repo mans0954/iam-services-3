@@ -28,9 +28,10 @@ public class CreateResourceGroupCommand extends BaseReconciliationGroupCommand {
 
 	@Override
 	public boolean execute(ReconciliationSituation config, String principal, String mSysId, Group group, List<ExtensibleAttribute> attributes) {
-        log.debug("Entering CreateResourceGroupCommand");
-        log.debug("Create Resource Account for group: " + group.getId());
-
+		if(log.isDebugEnabled()) {
+	        log.debug("Entering CreateResourceGroupCommand");
+	        log.debug("Create Resource Account for group: " + group.getId());
+		}
 		try {
 			ProvisionGroup pGroup = new ProvisionGroup(group);
 			pGroup.setSrcSystemId(mSysId);

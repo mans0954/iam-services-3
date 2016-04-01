@@ -22,8 +22,12 @@ public interface AuthProviderWebService {
     * AuthProviderType section
     *===================================================
     */
-	
-	@WebMethod
+
+    @WebMethod
+    public Response addProviderType(@WebParam(name = "entity", targetNamespace = "")AuthProviderType entity);
+
+
+    @WebMethod
     List<AuthAttribute> findAuthAttributeBeans(@WebParam(name = "searchBean", targetNamespace = "") AuthAttributeSearchBean searchBean,
                                                @WebParam(name = "from", targetNamespace = "") int from,
                                                @WebParam(name = "size", targetNamespace = "") int size);

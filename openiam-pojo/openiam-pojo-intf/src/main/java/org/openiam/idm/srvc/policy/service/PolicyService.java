@@ -20,4 +20,7 @@ public interface PolicyService {
     ITPolicy findITPolicy();
     void resetITPolicy();
     void saveITPolicy(ITPolicy itPolicy);
+/*    List<PolicyObjectAssoc> getAssociationsForPolicy(String policyId);
+	public PolicyObjectAssoc findAssociationByLevel(String level, String value);
+    String savePolicyAssoc(PolicyObjectAssoc poa);*/
 }

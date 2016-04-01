@@ -46,7 +46,7 @@ public class AccessReviewData {
     private Map<String, TaskWrapper> resourceWorkflowMap;
     private Map<String, TaskWrapper> roleWorkflowMap;
     private Map<String, TaskWrapper> groupWorkflowMap;
-
+    private boolean excludeMenus=false;
     private Map<String, AccessRight> accessRightsMap;
 
     public UserEntitlementsMatrix getMatrix() {
@@ -288,5 +288,13 @@ public class AccessReviewData {
             });
         }
         return rightList;
+    }
+
+    public boolean isExcludeMenus() {
+        return excludeMenus;
+    }
+
+    public void setExcludeMenus(boolean excludeMenus) {
+        this.excludeMenus = excludeMenus;
     }
 }

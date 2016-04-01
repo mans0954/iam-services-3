@@ -68,6 +68,12 @@
             <version>${openiam.esb.version}</version>
             <type>war</type>
         </dependency>
+        <dependency>
+            <groupId>org.openiam</groupId>
+            <artifactId>openiam-subscription</artifactId>
+            <version>${openiam.esb.version}</version>
+            <type>war</type>
+        </dependency>
 
 
 

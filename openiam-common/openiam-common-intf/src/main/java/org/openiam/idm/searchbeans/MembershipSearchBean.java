@@ -14,7 +14,7 @@ import org.openiam.idm.srvc.membership.dto.AbstractMembershipXref;
         "memberEntityId",
         "rightIds"
 })
-public class MembershipSearchBean extends AbstractSearchBean<AbstractMembershipXref, String> {
+public class MembershipSearchBean extends AbstractSearchBean<AbstractMembershipXref, String> implements SearchBean {
 
 	private String entityId;
 	private String memberEntityId;
@@ -37,6 +37,14 @@ public class MembershipSearchBean extends AbstractSearchBean<AbstractMembershipX
 	public void setRightIds(Set<String> rightIds) {
 		this.rightIds = rightIds;
 	}
+
+	@Override
+	public String getCacheUniqueBeanKey() {
+		return new StringBuilder()
+				.append(getKey() != null ? getKey() : "")
+				.toString();
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;

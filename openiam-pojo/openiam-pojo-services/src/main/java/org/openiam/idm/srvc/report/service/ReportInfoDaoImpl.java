@@ -39,7 +39,9 @@ public class ReportInfoDaoImpl extends BaseDaoImpl<ReportInfoEntity, String> imp
 	@SuppressWarnings("unchecked")
 	@Override
 	public List<ReportInfoEntity> findAllReports( int startAt, int size) {
-		log.debug("finding all Report instances");
+		if(log.isDebugEnabled()) {
+			log.debug("finding all Report instances");
+		}
 		try {
 
 			Criteria cr = this.getCriteria()

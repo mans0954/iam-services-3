@@ -56,10 +56,12 @@ public class CategoryEntity extends KeyEntity {
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "PARENT_ID", insertable = false, updatable = false)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<CategoryEntity> childCategories = new HashSet<CategoryEntity>(0);
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "CATEGORY_ID", insertable = false, updatable = false)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<CategoryLanguageEntity> categoryLanguages = new HashSet<CategoryLanguageEntity>(
             0);
 

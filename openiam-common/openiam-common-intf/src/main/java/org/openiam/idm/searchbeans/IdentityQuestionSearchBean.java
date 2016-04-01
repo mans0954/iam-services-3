@@ -33,4 +33,13 @@ public class IdentityQuestionSearchBean extends AbstractSearchBean<IdentityQuest
 	}
 
 
+    @Override
+    public String getCacheUniqueBeanKey() {
+        return new StringBuilder()
+                .append(groupId != null ? groupId : "")
+                .append(active != null ? active.booleanValue() : "")
+                .append(getKey() != null ? getKey() : "")
+				.append(getSortKeyForCache())
+                .toString();
+    }
 }

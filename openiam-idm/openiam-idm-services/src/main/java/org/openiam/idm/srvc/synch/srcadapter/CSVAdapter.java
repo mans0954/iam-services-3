@@ -91,8 +91,9 @@ public class CSVAdapter extends AbstractSrcAdapter {
 
     @Override
     public SyncResponse startSynch(final SynchConfig config, SynchReviewEntity sourceReview, final SynchReviewEntity resultReview) {
-
-        log.debug("CSV startSynch CALLED.^^^^^^^^");
+    	if(log.isDebugEnabled()) {
+    		log.debug("CSV startSynch CALLED.^^^^^^^^");
+    	}
         System.out.println("CSV startSynch CALLED.^^^^^^^^");
 
         SyncResponse res = new SyncResponse(ResponseStatus.SUCCESS);
@@ -212,7 +213,9 @@ public class CSVAdapter extends AbstractSrcAdapter {
 //            auditLogProvider.persist(auditBuilder);
             SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.FILE_EXCEPTION);
-            log.debug("CSV SYNCHRONIZATION COMPLETE WITH ERRORS ^^^^^^^^");
+            if(log.isDebugEnabled()) {
+            	log.debug("CSV SYNCHRONIZATION COMPLETE WITH ERRORS ^^^^^^^^");
+            }
             return resp;
 
         } catch (IOException io) {
@@ -223,7 +226,9 @@ public class CSVAdapter extends AbstractSrcAdapter {
 			*/
             SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.IO_EXCEPTION);
-            log.debug("CSV SYNCHRONIZATION COMPLETE WITH ERRORS ^^^^^^^^");
+            if(log.isDebugEnabled()) {
+            	log.debug("CSV SYNCHRONIZATION COMPLETE WITH ERRORS ^^^^^^^^");
+            }
             return resp;
         } catch (SftpException sftpe) {
             log.error(sftpe);
@@ -234,7 +239,9 @@ public class CSVAdapter extends AbstractSrcAdapter {
             SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.FILE_EXCEPTION);
             sftpe.printStackTrace();
-            log.debug("CSV SYNCHRONIZATION COMPLETE WITH ERRORS ^^^^^^^^");
+            if(log.isDebugEnabled()) {
+            	log.debug("CSV SYNCHRONIZATION COMPLETE WITH ERRORS ^^^^^^^^");
+            }
         } catch (JSchException jsche) {
             log.error(jsche);
             /*
@@ -244,7 +251,9 @@ public class CSVAdapter extends AbstractSrcAdapter {
             SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.FILE_EXCEPTION);
             jsche.printStackTrace();
-            log.debug("CSV SYNCHRONIZATION COMPLETE WITH ERRORS ^^^^^^^^");
+            if(log.isDebugEnabled()) {
+            	log.debug("CSV SYNCHRONIZATION COMPLETE WITH ERRORS ^^^^^^^^");
+            }
         } finally {
             if (resultReview != null) {
                 if (CollectionUtils.isNotEmpty(resultReview.getReviewRecords())) { // add header row
@@ -260,8 +269,9 @@ public class CSVAdapter extends AbstractSrcAdapter {
             }
         }
 
-        log.debug("CSV SYNCHRONIZATION COMPLETE^^^^^^^^");
-
+        if(log.isDebugEnabled()) {
+        	log.debug("CSV SYNCHRONIZATION COMPLETE^^^^^^^^");
+        }
 //        auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "CSV SYNCHRONIZATION COMPLETE^^^^^^^^");
         return new SyncResponse(ResponseStatus.SUCCESS);
     }

@@ -64,18 +64,21 @@ public class AddGroupLdapCommand extends AbstractCrudLdapCommand<ExtensibleGroup
                 }
             }
 
-            log.debug("baseDN=" + objectBaseDN);
-            log.debug("ID field=" + matchObj.getKeyField());
-            log.debug("Group Membership enabled? " + groupMembershipEnabled);
-
-            log.debug("Checking if the identity exists: " + identity);
-
+            if(log.isDebugEnabled()) {
+	            log.debug("baseDN=" + objectBaseDN);
+	            log.debug("ID field=" + matchObj.getKeyField());
+	            log.debug("Group Membership enabled? " + groupMembershipEnabled);
+	
+	            log.debug("Checking if the identity exists: " + identity);
+            }
             BasicAttributes basicAttr = getBasicAttributes(addRequestType.getExtensibleObject(), matchObj.getKeyField(),
                     targetMembershipList, groupMembershipEnabled, supervisorMembershipList, supervisorMembershipEnabled);
 
             //Important!!! For add new record in LDAP we must to create identity in DN format
             String identityDN = matchObj.getKeyField() + "=" + identity + "," + objectBaseDN;
-            log.debug("Creating groups in ldap.." + identityDN);
+            if(log.isDebugEnabled()) {
+            	log.debug("Creating groups in ldap.." + identityDN);
+            }
             ldapctx.createSubcontext(identityDN, basicAttr);
 
             if (groupMembershipEnabled) {

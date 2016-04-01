@@ -5,6 +5,8 @@ import org.apache.cxf.jaxws.JaxWsProxyFactoryBean;
 import org.openiam.idm.srvc.auth.service.AuthenticationService;
 import org.openiam.idm.srvc.auth.ws.LoginDataWebService;
 import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
+import org.openiam.idm.srvc.key.service.KeyManagementService;
+import org.openiam.idm.srvc.key.ws.KeyManagementWS;
 import org.openiam.idm.srvc.org.service.OrganizationDataService;
 import org.openiam.idm.srvc.role.ws.RoleDataWebService;
 import org.openiam.idm.srvc.user.ws.UserDataWebService;
@@ -17,6 +19,10 @@ public class ServiceLookupHelper {
 
     public static AuthenticationService getAuthenticationService() {
         return getServceInstance("AuthenticationService","AuthenticationServicePort", AuthenticationService.class);
+    }
+    
+    public static KeyManagementWS getKeyManagementService() {
+    	return getServceInstance("KeyManagementWS","KeyManagementWSPort", KeyManagementWS.class);
     }
 
     public static LoginDataWebService getLoginService() {

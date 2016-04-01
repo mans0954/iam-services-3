@@ -51,22 +51,10 @@ public class DESedeCryptor implements Cryptor {
 		return encValue;
 	
 	}
-	
-	public byte[] encryptTobyte(byte[] key, String input) {
-		KeyParameter kp = new KeyParameter(key);
-        BufferedBlockCipher cipher = new PaddedBufferedBlockCipher(	new CBCBlockCipher(new DESedeEngine()));
-		cipher.init(true, kp);
-		
-		byte[] inputByteAry = input.getBytes();
-		byte[] result = new byte[cipher.getOutputSize(inputByteAry.length)];
-		int len = cipher.processBytes(inputByteAry, 0, inputByteAry.length, result, 0);
 
-		try {
-		 len += cipher.doFinal(result, len);
-		}catch (Exception e) {
-			e.printStackTrace();
-		}
-		return result;
+	@Override
+	public byte[] encryptTobyte(byte[] key, String input) throws EncryptionException {
+		return new byte[0];
 	}
 
 	public String decrypt(byte[] key, String input) throws EncryptionException {

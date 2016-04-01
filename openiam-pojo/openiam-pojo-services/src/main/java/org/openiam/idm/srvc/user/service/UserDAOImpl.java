@@ -35,6 +35,7 @@ import org.openiam.idm.srvc.user.dto.DelegationFilterSearch;
 import org.openiam.idm.srvc.user.dto.SearchAttribute;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -47,6 +48,8 @@ import org.springframework.stereotype.Repository;
  */
 @Repository("userDAO")
 public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements UserDAO {
+    @Value("${openiam.dbType}")
+    private String dbType;
     @Autowired
     private SysConfiguration sysConfiguration;
 
@@ -807,6 +810,109 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         return 0;
     }
 
+    @Override
+    public List<UserEntity> getUserBetweenCreateDate(Date fromDate, Date toDate) {
+    	if(log.isDebugEnabled()) {
+	        log.debug("--------- created createDate ----------- : " + fromDate);
+	        log.debug("--------- created toDate ----------- : " + toDate);
+    	}
+        if (fromDate != null && toDate != null ) {
+            final Criteria criteria = getCriteria()
+                    .add(Restrictions.ge("createDate",fromDate))
+                    .add(Restrictions.lt("createDate",toDate));
+            return criteria.list();
+        } else if(fromDate != null) {
+            final Criteria criteria = getCriteria()
+                    .add(Restrictions.ge("createDate",fromDate));
+            return criteria.list();
+        } else if(toDate != null) {
+            final Criteria criteria = getCriteria()
+                    .add(Restrictions.lt("createDate",toDate));
+            return criteria.list();
+        } else
+            return null;
+    }
+
+
+    @Override
+    public List<UserEntity> getUserBetweenStartDate(Date fromDate, Date toDate) {
+    	if(log.isDebugEnabled()) {
+	        log.debug("--------- created startDate ----------- : " + fromDate);
+	        log.debug("--------- created toDate ----------- : " + toDate);
+    	}
+        if (fromDate != null && toDate != null ) {
+            final Criteria criteria = getCriteria()
+                    .add(Restrictions.ge("startDate",fromDate))
+                    .add(Restrictions.lt("startDate",toDate));
+            return criteria.list();
+        } else if(fromDate != null) {
+            final Criteria criteria = getCriteria()
+                    .add(Restrictions.ge("startDate",fromDate));
+            return criteria.list();
+        } else if(toDate != null) {
+            final Criteria criteria = getCriteria()
+                    .add(Restrictions.lt("startDate",toDate));
+            return criteria.list();
+        } else
+            return null;
+    }
+
+    @Override
+    public List<UserEntity> getUserByIds(Set<String> ids) {
+        if(ids != null && !ids.isEmpty()) {
+            final Criteria criteria = getCriteria()
+                    .add(Restrictions.in("id", ids));
+            return criteria.list();
+        }
+        return new ArrayList<UserEntity>(0);
+    }
+
+    @Override
+    public List<UserEntity> getUserBetweenLastDate(Date fromDate, Date toDate) {
+    	if(log.isDebugEnabled()) {
+	        log.debug("--------- lastDate fromDate ----------- : " + fromDate);
+	        log.debug("--------- lastDate toDate ----------- : " + toDate);
+    	}
+        if (fromDate != null && toDate != null ) {
+            final Criteria criteria = getCriteria()
+                    .add(Restrictions.ge("lastDate",fromDate))
+                    .add(Restrictions.lt("lastDate",toDate));
+            return criteria.list();
+        } else if(fromDate != null) {
+            final Criteria criteria = getCriteria()
+                    .add(Restrictions.ge("lastDate",fromDate));
+            return criteria.list();
+        } else if(toDate != null) {
+            final Criteria criteria = getCriteria()
+                    .add(Restrictions.lt("lastDate",toDate));
+            return criteria.list();
+        } else
+            return null;
+    }
+
+    @Override
+    public List<UserEntity> getUserBetweenUpdatedDate(Date fromDate, Date toDate) {
+    	if(log.isDebugEnabled()) {
+	        log.debug("--------- updated user fromdate ----------- : "+fromDate);
+	        log.debug("--------- updated user todate ----------- : "+toDate);
+    	}
+        if (fromDate != null && toDate != null) {
+            final Criteria criteria = getCriteria().add(
+                    Restrictions.lt("lastUpdate", toDate)).add(
+                    Restrictions.gt("lastUpdate", fromDate));
+            return criteria.list();
+        } else if (fromDate != null ) {
+            final Criteria criteria = getCriteria().add(
+                    Restrictions.gt("lastUpdate", fromDate));
+            return criteria.list();
+        } else if (toDate != null ) {
+            final Criteria criteria = getCriteria().add(
+                    Restrictions.lt("lastUpdate", toDate));
+            return criteria.list();
+        } else
+            return null;
+    }
+
     private Criterion createInClauseForIds(Criteria criteria, List<String> idCollection) {
         if (idCollection.size() <= MAX_IN_CLAUSE) {
             return Restrictions.in(getPKfieldName(), idCollection);
@@ -826,5 +932,4 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
             return orClause;
         }
     }
-
 }

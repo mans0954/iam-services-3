@@ -516,6 +516,55 @@ public class ConnectorAdapter {
 
     }
 
+    public ResponseType validatePassword(
+            ManagedSysDto managedSys,
+            PasswordRequest request) {
+        ResponseType resp = new ResponseType();
+        resp.setStatus(StatusCodeType.FAILURE);
+
+        if (managedSys == null) {
+            resp.setStatus(StatusCodeType.FAILURE);
+            resp.setError(ErrorCode.INVALID_MANAGED_SYS_ID);
+            return resp;
+        }
+        if(log.isDebugEnabled()) {
+            log.debug("ConnectorAdapter:testCredentials called. Managed sys ="
+                    + managedSys.getId());
+        }
+        try {
+            ProvisionConnectorDto connector = connectorService
+                    .getProvisionConnector(managedSys.getId());
+            if(log.isDebugEnabled()) {
+                log.debug("Connector found for " + connector.getId());
+            }
+            if (connector != null
+                    && (connector.getServiceUrl() != null && connector
+                    .getServiceUrl().length() > 0)) {
+
+                JaxWsProxyFactoryBean factory = new JaxWsProxyFactoryBean();
+                factory.getInInterceptors().add(new LoggingInInterceptor());
+                factory.getOutInterceptors().add(new LoggingOutInterceptor());
+                factory.setServiceClass(ConnectorService.class);
+                factory.setAddress(connector.getServiceUrl());
+                ConnectorService connectorService = (ConnectorService) factory.create();
+                resp = connectorService.validatePassword(request);
+                return resp;
+
+            }
+            return resp;
+        } catch (Exception e) {
+            if(log.isDebugEnabled()) {
+                log.debug("Exception caught in ConnectorAdapter:validatePassword"); //SIA 2015-08-01
+            }
+            log.error(e);
+            log.error(e.getStackTrace()); //SIA 2015-08-01
+            resp.setError(ErrorCode.OTHER_ERROR);
+            resp.addErrorMessage(e.toString());
+            return resp;
+
+        }
+    }
+
     public ResponseType testConnection(ManagedSysDto managedSys) {
 
         ResponseType type = new ResponseType();

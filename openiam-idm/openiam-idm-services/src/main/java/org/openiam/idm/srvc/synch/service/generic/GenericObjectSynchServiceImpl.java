@@ -41,7 +41,9 @@ public class GenericObjectSynchServiceImpl implements GenericObjectSynchService 
     private static final Log log = LogFactory.getLog(GenericObjectSynchServiceImpl.class);
 
     public SyncResponse startSynchronization(SynchConfig config) {
+    	if(log.isDebugEnabled()) {
         log.debug("- Generic Object Synchronization started..^^^^^^^^");
+		}
         IdmAuditLogEntity idmAuditLog = new IdmAuditLogEntity();
         idmAuditLog.setRequestorUserId(systemUserId);
         idmAuditLog.setAction(AuditAction.SYNCHRONIZATION.value());
@@ -54,7 +56,9 @@ public class GenericObjectSynchServiceImpl implements GenericObjectSynchService 
 
             SyncResponse resp = adapt.startSynch(config);
 
-            log.debug("SyncResponse updateTime value=" + resp.getLastRecordTime());
+            if(log.isDebugEnabled()) {
+            	log.debug("SyncResponse updateTime value=" + resp.getLastRecordTime());
+            }
 
             if (resp.getLastRecordTime() == null) {
 
@@ -68,8 +72,9 @@ public class GenericObjectSynchServiceImpl implements GenericObjectSynchService 
                 synchConfigDao.updateLastRecProcessed(config.getId(),resp.getLastRecProcessed() );
             }
 
-
-            log.debug("-Generic Object Synchronization COMPLETE.^^^^^^^^");
+            if(log.isDebugEnabled()) {
+            	log.debug("-Generic Object Synchronization COMPLETE.^^^^^^^^");
+            }
             idmAuditLog.succeed();
             idmAuditLog.setAuditDescription("-Generic Object Synchronization COMPLETE.^^^^^^^^");
             return resp;

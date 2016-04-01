@@ -24,13 +24,10 @@ package org.openiam.idm.srvc.pswd.rule;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
-import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.pswd.dto.PasswordRule;
-import org.openiam.idm.srvc.pswd.service.PasswordHistoryDAO;
 import org.openiam.idm.srvc.user.domain.UserEntity;
-import org.openiam.util.encrypt.Cryptor;
 
 /**
  * All password validation rules must extend AbstractPasswordRule
@@ -46,9 +43,7 @@ public abstract class AbstractPasswordRule {
     protected String managedSysId;
     protected UserEntity user;
     protected LoginEntity lg;
-    protected PasswordHistoryDAO passwordHistoryDao;
-    protected Cryptor cryptor;
-    protected KeyManagementService keyManagementService;
+
 
     public abstract void validate(PolicyAttribute pe) throws PasswordRuleException;
 
@@ -182,30 +177,6 @@ public abstract class AbstractPasswordRule {
 
     public void setLg(LoginEntity lg) {
         this.lg = lg;
-    }
-
-    public PasswordHistoryDAO getPasswordHistoryDao() {
-        return passwordHistoryDao;
-    }
-
-    public void setPasswordHistoryDao(PasswordHistoryDAO passwordHistoryDao) {
-        this.passwordHistoryDao = passwordHistoryDao;
-    }
-
-    public Cryptor getCryptor() {
-        return cryptor;
-    }
-
-    public void setCryptor(Cryptor cryptor) {
-        this.cryptor = cryptor;
-    }
-
-    public KeyManagementService getKeyManagementService() {
-        return keyManagementService;
-    }
-
-    public void setKeyManagementService(KeyManagementService keyManagementService) {
-        this.keyManagementService = keyManagementService;
     }
 
     public boolean isSkipPasswordFrequencyCheck() {

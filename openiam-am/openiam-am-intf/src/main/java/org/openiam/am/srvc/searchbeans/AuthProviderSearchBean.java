@@ -4,6 +4,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.openiam.am.srvc.dto.AuthProvider;
 import org.openiam.idm.searchbeans.AbstractKeyNameSearchBean;
 import org.openiam.idm.searchbeans.AbstractSearchBean;
+import org.openiam.idm.searchbeans.SearchBean;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -19,9 +20,10 @@ import java.util.Set;
         "contentProviderIds",
         "uriPatternIds",
         "linkableToContentProvider",
-        "resourceId"
+        "resourceId",
+        "nextAuthProviderId"
 })
-public class AuthProviderSearchBean extends AbstractKeyNameSearchBean<AuthProvider, String> {
+public class AuthProviderSearchBean extends AbstractKeyNameSearchBean<AuthProvider, String> implements SearchBean {
     private String managedSysId;
     private String providerType;
     private Boolean defaultAuthProvider;
@@ -29,6 +31,7 @@ public class AuthProviderSearchBean extends AbstractKeyNameSearchBean<AuthProvid
     private Set<String> contentProviderIds;
     private Set<String> uriPatternIds;
     private String resourceId;
+    private String nextAuthProviderId;
 
     public String getManagedSysId() {
         return managedSysId;
@@ -57,6 +60,14 @@ public class AuthProviderSearchBean extends AbstractKeyNameSearchBean<AuthProvid
     public Set<String> getContentProviderIds() {
         return contentProviderIds;
     }
+
+    public String getNextAuthProviderId() {
+		return nextAuthProviderId;
+	}
+
+	public void setNextAuthProviderId(String nextAuthProviderId) {
+		this.nextAuthProviderId = nextAuthProviderId;
+	}
 
     public void setContentProviderIds(Set<String> contentProviderIds) {
         this.contentProviderIds = contentProviderIds;
@@ -97,6 +108,13 @@ public class AuthProviderSearchBean extends AbstractKeyNameSearchBean<AuthProvid
 	public void setResourceId(String resourceId) {
 		this.resourceId = resourceId;
 	}
-    
-    
+
+
+    @Override
+    public String getCacheUniqueBeanKey() {
+        return new StringBuilder()
+                .append(managedSysId != null ? managedSysId : "")
+                .append(providerType != null ? providerType : "")
+                .append(getKey() != null ? getKey() : "")
+                .toString();    }
 }

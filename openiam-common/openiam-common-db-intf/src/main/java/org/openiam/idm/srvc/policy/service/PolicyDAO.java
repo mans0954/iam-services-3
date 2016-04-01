@@ -50,4 +50,5 @@ public interface PolicyDAO extends BaseDao<PolicyEntity, String> {
 	List<PolicyEntity> findPolicyByName(String policyDefId,
 										String policyName);
 
+
 }

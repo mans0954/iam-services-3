@@ -28,7 +28,8 @@ import java.util.Set;
         "supportsTOTP",
         "hasAuthnPolicy",
         "authnPolicyRequired",
-        "linkableToContentProvider"
+        "linkableToContentProvider",
+		"chainable"
 })
 @DozerDTOCorrespondence(AuthProviderTypeEntity.class)
 public class AuthProviderType extends KeyNameDTO {
@@ -45,6 +46,7 @@ public class AuthProviderType extends KeyNameDTO {
     private boolean hasAuthnPolicy;
     private boolean authnPolicyRequired;
     private boolean linkableToContentProvider;
+    private boolean chainable;
     
     @XmlTransient
     private Set<AuthAttributeEntity> attributeSet;
@@ -172,6 +174,14 @@ public class AuthProviderType extends KeyNameDTO {
 		this.linkableToContentProvider = linkableToContentProvider;
 	}
 
+	public boolean isChainable() {
+		return chainable;
+	}
+
+	public void setChainable(boolean chainable) {
+		this.chainable = chainable;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -189,6 +199,7 @@ public class AuthProviderType extends KeyNameDTO {
 		result = prime * result + (hasAuthnPolicy ? 1231 : 1237);
 		result = prime * result + (authnPolicyRequired ? 1231 : 1237);
 		result = prime * result + (linkableToContentProvider ? 1231 : 1237);
+		result = prime * result + (chainable ? 1231 : 1237);		
 		return result;
 	}
 
@@ -224,6 +235,8 @@ public class AuthProviderType extends KeyNameDTO {
 		if (hasAuthnPolicy != other.hasAuthnPolicy)
 			return false;
 		if (linkableToContentProvider != other.linkableToContentProvider)
+			return false;
+		if (chainable != other.chainable)
 			return false;
 		return authnPolicyRequired == other.authnPolicyRequired;
 	}

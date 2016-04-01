@@ -10,6 +10,7 @@ import javax.xml.bind.annotation.XmlType;
 
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.KeyDTO;
+import org.openiam.base.KeyNameDTO;
 import org.openiam.idm.srvc.access.dto.AccessRight;
 
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -21,7 +22,7 @@ import org.openiam.idm.srvc.access.dto.AccessRight;
 	"endDate",
 	"operation"
 })
-public class AbstractMembershipXref extends KeyDTO {
+public class AbstractMembershipXref extends KeyNameDTO {
 
 	private Date startDate;
 	private Date endDate;

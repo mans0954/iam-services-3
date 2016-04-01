@@ -23,11 +23,13 @@ public class ReconciliationResourceAttributeMapEntity extends KeyEntity {
     private static final long serialVersionUID = 1L;
 
     @OneToOne(mappedBy = "reconResAttribute", orphanRemoval = true, cascade = CascadeType.ALL, optional = false)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private AttributeMapEntity attributeMap;
 
     @ManyToOne(optional = true)
     @JoinColumn(name = "ATTR_POLICY_ID", nullable = true, updatable = true)
-    private PolicyEntity attributePolicy;
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)    
+	private PolicyEntity attributePolicy;
 
     @ManyToOne(optional = true)
     @JoinColumn(name = "DEF_RECON_ATTR_MAP_ID", nullable = true, updatable = true)

@@ -20,7 +20,7 @@ import org.openiam.idm.srvc.meta.dto.MetadataType;
 	"keySet",
 	"usedForSMSOTP"
 })
-public class MetadataTypeSearchBean extends AbstractKeyNameSearchBean<MetadataType, String> implements SearchBean<MetadataType, String> {
+public class MetadataTypeSearchBean extends AbstractLanguageSearchBean<MetadataType, String> implements SearchBean<MetadataType, String> {
 
     private Set<String> keySet;
     private Boolean active;
@@ -59,6 +59,18 @@ public class MetadataTypeSearchBean extends AbstractKeyNameSearchBean<MetadataTy
         }
         keySet.add(key);
     }
+
+    @Override
+    public String getCacheUniqueBeanKey() {
+        return new StringBuilder()
+                .append(active != null ? active.booleanValue() : "")
+                .append(usedForSMSOTP != null ? usedForSMSOTP.booleanValue() : "")
+                .append(syncManagedSys != null ? syncManagedSys.booleanValue() : "")
+                .append(getKeys() != null ? getKeys().toString().hashCode() : "")
+                .append(grouping != null ? grouping.toString().hashCode() : "")
+                .append(getKey() != null ? getKey() : "")
+                .append(getSortKeyForCache())
+                .toString();    }
 
     public Set<String> getKeys() {
         return keySet;

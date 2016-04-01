@@ -36,6 +36,12 @@ public class UserAttributeDAOImpl extends BaseDaoImpl<UserAttributeEntity, Strin
         return "id";
     }
 
+	@Override
+	@LocalizedDatabaseGet
+	public List<UserAttributeEntity> findUserAttributesLocalized(String userId) {
+		return findUserAttributes(userId);
+	}
+
     @LocalizedDatabaseGet
     public List<UserAttributeEntity> findUserAttributes(String userId) {
 		return (List<UserAttributeEntity>)getCriteria().add(Restrictions.eq("user.id",userId)).addOrder(Order.asc("name")).list();
