@@ -80,6 +80,16 @@ public class ResourceTypeSearchBean extends AbstractSearchBean<ResourceType, Str
 	public void setSelectAll(Boolean selectAll) {
 		this.selectAll = selectAll;
 	}
-    
-    
+
+
+    @Override
+    public String getCacheUniqueBeanKey() {
+        return new StringBuilder()
+                .append(provisionResource != null ? provisionResource : "")
+                .append(processName != null ? processName : "")
+                .append(searchable != null ? searchable.booleanValue() : "")
+                .append(description != null ? description.hashCode() : "")
+                .append(getKey() != null ? getKey() : "")
+                .append(getSortKeyForCache())
+                .toString();    }
 }

@@ -10,6 +10,7 @@ import org.openiam.access.review.model.AccessViewFilterBean;
 import org.openiam.access.review.model.AccessViewResponse;
 import org.openiam.access.review.service.AccessReviewService;
 import org.openiam.base.AttributeOperationEnum;
+import org.openiam.base.SysConfiguration;
 import org.openiam.base.TreeNode;
 import org.openiam.base.ws.Response;
 import org.openiam.bpm.util.ActivitiRequestType;
@@ -20,6 +21,7 @@ import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
 import org.openiam.idm.srvc.org.dto.Organization;
+import org.openiam.idm.srvc.org.dto.OrganizationUserDTO;
 import org.openiam.idm.srvc.org.service.OrganizationDataService;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
@@ -37,6 +39,8 @@ import java.util.Set;
 public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
     @Autowired
     private AccessReviewService accessReviewService;
+    @Autowired
+    protected SysConfiguration sysConfiguration;
 
 	public EntityMembershipDelegate() {
 		super();

@@ -117,6 +117,14 @@
             <a>groups</a>
             <b>groups</b>
         </field>
+        <field-exclude>
+            <a>users</a>
+            <b>users</b>
+        </field-exclude>
+        <field-exclude>
+            <a>approverAssociations</a>
+            <b>approverAssociations</b>
+        </field-exclude>
         <field
             custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
             custom-converter-param="dto2entityShallowDozerMapper">
@@ -710,12 +718,6 @@
 			custom-converter-param="dto2entityShallowDozerMapper">
 			<a>mngSysObjectMatchs</a>
 			<b>mngSysObjectMatchs</b>
-		</field>
-		<field
-			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentListConverter"
-			custom-converter-param="dto2entityShallowDozerMapper">
-			<a>rules</a>
-			<b>rules</b>
 		</field>
 		<field-exclude>
 			<a>groups</a>

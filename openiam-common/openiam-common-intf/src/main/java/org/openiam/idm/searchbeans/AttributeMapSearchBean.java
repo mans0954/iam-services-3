@@ -35,4 +35,12 @@ public class AttributeMapSearchBean extends AbstractSearchBean<AttributeMap, Str
         this.synchConfigId = synchConfigId;
     }
 
+    @Override
+    public String getCacheUniqueBeanKey() {
+        return new StringBuilder()
+                .append(resourceId != null ? resourceId : "")
+                .append(synchConfigId != null ? synchConfigId : "")
+                .append(getKey() != null ? getKey() : "")
+                .toString();
+    }
 }

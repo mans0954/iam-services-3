@@ -1,16 +1,13 @@
 package org.openiam.idm.srvc.org.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
-import org.hibernate.criterion.DetachedCriteria;
-import org.hibernate.criterion.MatchMode;
-import org.hibernate.criterion.Projections;
-import org.hibernate.criterion.Restrictions;
-import org.hibernate.criterion.Subqueries;
+import org.hibernate.criterion.*;
 import org.openiam.base.Tuple;
 import org.openiam.base.ws.SortParam;
 import org.openiam.core.dao.BaseDaoImpl;
@@ -21,14 +18,104 @@ import org.openiam.idm.srvc.org.domain.OrgToOrgMembershipXrefEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.internationalization.LocalizedDatabaseGet;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import static org.hibernate.criterion.Projections.rowCount;
 
 /**
  * Data access object implementation for OrganizationEntity.
  */
 @Repository("organizationDAO")
-public class OrganizationDAOImpl extends
-        BaseDaoImpl<OrganizationEntity, String> implements OrganizationDAO {
+public class OrganizationDAOImpl extends BaseDaoImpl<OrganizationEntity, String> implements OrganizationDAO {
+
+    @Override
+    @LocalizedDatabaseGet
+    public int getNumOfOrganizationsForUser(final String userId,
+                                            final Set<String> filter) {
+        final Criteria criteria = getOrganizationsForUserCriteria(userId,
+                filter).setProjection(rowCount());
+        return ((Number) criteria.uniqueResult()).intValue();
+    }
+
+    @Override
+    @LocalizedDatabaseGet
+    public List<OrganizationEntity> getOrganizationsForUser(
+            final String userId, final Set<String> filter, final int from,
+            final int size) {
+        final Criteria criteria = getOrganizationsForUserCriteria(userId,
+                filter);
+
+        if (from > -1) {
+            criteria.setFirstResult(from);
+        }
+
+        if (size > -1) {
+            criteria.setMaxResults(size);
+        }
+        return criteria.list();
+    }
+
+    @Override
+    @LocalizedDatabaseGet
+    public List<OrganizationEntity> getUserAffiliationsByType(
+            final String userId, final String typeId, final Set<String> filter, final int from,
+            final int size) {
+        final Criteria criteria = getUserAffiliationsByTypeCriteria(userId, typeId,
+                filter);
+
+        if (from > -1) {
+            criteria.setFirstResult(from);
+        }
+
+        if (size > -1) {
+            criteria.setMaxResults(size);
+        }
+        return criteria.list();
+    }
+
+    private Criteria getOrganizationsForUserCriteria(final String userId,
+                                                     final Set<String> filter) {
+
+        final Criteria criteria = getCriteria();
+        if (StringUtils.isNotBlank(userId)) {
+            criteria.createAlias("organizationUser", "ou").
+                    add(Restrictions.eq("ou.primaryKey.user.id", userId));
+        }
+
+        if (filter != null && !filter.isEmpty()) {
+            criteria.add(Restrictions.in(getPKfieldName(), filter));
+        }
+        return criteria;
+    }
+
+    private Criteria getUserAffiliationsByTypeCriteria(final String userId, final String typeId,
+                                                       final Set<String> filter) {
+
+        final Criteria criteria = getCriteria();
+        if (StringUtils.isNotBlank(userId) && StringUtils.isNotBlank(typeId)) {
+            criteria.createAlias("organizationUser", "ou", Criteria.LEFT_JOIN).
+                    add(Restrictions.and(Restrictions.eq("ou.primaryKey.user.id", userId), Restrictions.eq("ou.metadataTypeEntity.id", typeId)));
+        }
+
+        if (filter != null && !filter.isEmpty()) {
+            criteria.add(Restrictions.in(getPKfieldName(), filter));
+        }
+        return criteria;
+    }
+
+    private Criteria getLocationsForOrganizationsCriteria(final String userId,
+                                                          final Set<String> filter) {
+        final Criteria criteria = getCriteria();
+        if (StringUtils.isNotBlank(userId)) {
+            criteria.createAlias("organizationUser", "ou").
+                    add(Restrictions.eq("ou.primaryKey.user.id", userId));
+        }
+
+        if (filter != null && !filter.isEmpty()) {
+            criteria.add(Restrictions.in(getPKfieldName(), filter));
+        }
+        return criteria;
+    }
 
     @Override
     protected Criteria getExampleCriteria(final SearchBean searchBean) {
@@ -160,8 +247,76 @@ public class OrganizationDAOImpl extends
     }
 
     @Override
+    protected Criteria getExampleCriteria(final OrganizationEntity organization) {
+        final Criteria criteria = getCriteria();
+        if (StringUtils.isNotBlank(organization.getId())) {
+            criteria.add(Restrictions.eq(getPKfieldName(), organization.getId()));
+        } else {
+            if (StringUtils.isNotEmpty(organization.getName())) {
+                String name = organization.getName();
+                MatchMode matchMode = null;
+                if (StringUtils.indexOf(name, "*") == 0) {
+                    matchMode = MatchMode.START;
+                    name = name.substring(1);
+                }
+                if (StringUtils.isNotEmpty(name) && StringUtils.indexOf(name, "*") == name.length() - 1) {
+                    name = name.substring(0, name.length() - 1);
+                    matchMode = (matchMode == MatchMode.START) ? MatchMode.ANYWHERE : MatchMode.END;
+                }
+
+                if (StringUtils.isNotEmpty(name)) {
+                    if (matchMode != null) {
+                        criteria.add(Restrictions.ilike("name", name, matchMode));
+                    } else {
+                        criteria.add(Restrictions.eq("name", name));
+                    }
+                }
+            }
+
+//			if (organization.getOrganizationType() != null && StringUtils.isNotBlank(organization.getOrganizationType().getId())) {
+//				criteria.add(Restrictions.eq("organizationType.id", organization.getOrganizationType().getId()));
+//			}
+
+            if (StringUtils.isNotBlank(organization.getInternalOrgId())) {
+                criteria.add(Restrictions.eq("internalOrgId", organization.getInternalOrgId()));
+            }
+        }
+//		criteria.addOrder(Order.asc("name"));
+        return criteria;
+    }
+
+    @Override
     protected String getPKfieldName() {
         return "id";
+    }
+
+ @Override
+    @LocalizedDatabaseGet
+    public List<OrganizationEntity> getChildOrganizations(String orgId,
+                                                          Set<String> filter, final int from, final int size) {
+        return getList(getChildOrganizationsCriteria(orgId, filter), from, size);
+    }
+
+    @Override
+    @LocalizedDatabaseGet
+    public List<OrganizationEntity> getParentOrganizations(String orgId,
+                                                           Set<String> filter, final int from, final int size) {
+        return getList(getParentOrganizationsCriteria(orgId, filter), from,
+                size);
+    }
+
+    @Override
+    public int getNumOfParentOrganizations(String orgId, Set<String> filter) {
+        final Criteria criteria = getParentOrganizationsCriteria(orgId, filter)
+                .setProjection(rowCount());
+        return ((Number) criteria.uniqueResult()).intValue();
+    }
+
+    @Override
+    public int getNumOfChildOrganizations(String orgId, Set<String> filter) {
+        final Criteria criteria = getChildOrganizationsCriteria(orgId, filter)
+                .setProjection(rowCount());
+        return ((Number) criteria.uniqueResult()).intValue();
     }
 
     // BUG in Hibernate!! count() fails for some queries, while the normal
@@ -174,6 +329,39 @@ public class OrganizationDAOImpl extends
         final Criteria criteria = getExampleCriteria(searchBean);
         // criteria.setProjection(Projections.property("id"));
         return criteria.list().size();
+    }
+
+    private List<OrganizationEntity> getList(Criteria criteria, final int from,
+                                             final int size) {
+        if (from > -1) {
+            criteria.setFirstResult(from);
+        }
+
+        if (size > -1) {
+            criteria.setMaxResults(size);
+        }
+        criteria.addOrder(Order.asc("name"));
+        return criteria.list();
+    }
+
+    private Criteria getParentOrganizationsCriteria(String orgId,
+                                                    Set<String> filter) {
+        Criteria criteria = getCriteria().createAlias("childOrganizations",
+                "organization").add(Restrictions.eq("organization.id", orgId));
+        if (filter != null && !filter.isEmpty()) {
+            criteria.add(Restrictions.in(getPKfieldName(), filter));
+        }
+        return criteria;
+    }
+
+    private Criteria getChildOrganizationsCriteria(String orgId,
+                                                   Set<String> filter) {
+        Criteria criteria = getCriteria().createAlias("parentOrganizations",
+                "organization").add(Restrictions.eq("organization.id", orgId));
+        if (filter != null && !filter.isEmpty()) {
+            criteria.add(Restrictions.in(getPKfieldName(), filter));
+        }
+        return criteria;
     }
 
     @Override
@@ -191,10 +379,28 @@ public class OrganizationDAOImpl extends
         return criteria.list();
     }
 
+    @Override
+    public void deleteOrganizationUserDependency(final String orgId) {
+        if (StringUtils.isNotBlank(orgId)) {
+            this.getSession().createSQLQuery("DELETE FROM USER_AFFILIATION WHERE COMPANY_ID='" + orgId + "'").executeUpdate();
+        }
+    }
 
 	@Override
 	public List<OrgToOrgMembershipXrefEntity> getOrg2OrgXrefs() {
 		return getSession().createCriteria(OrgToOrgMembershipXrefEntity.class).list();
 	}
+
+/*    @Override
+    @LocalizedDatabaseGet
+    public List<OrganizationEntity> findOrganizationsByAttributeValue(final String attrName, final String attrValue) {
+        List ret = new ArrayList<OrganizationEntity>();
+        if (StringUtils.isNotBlank(attrName)) {
+            // Can't use Criteria for @ElementCollection due to Hibernate bug
+            // (org.hibernate.MappingException: collection was not an association)
+            ret = getHibernateTemplate().find("select oa.organization from OrganizationAttributeEntity oa left join oa.values av where oa.name = ? and ((oa.isMultivalued = false and oa.value = ?) or (oa.isMultivalued = true and av in ?))", attrName, attrValue, attrValue);
+        }
+        return ret;
+    }*/
 
 }

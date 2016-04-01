@@ -133,9 +133,9 @@ public class ExtensibleAttribute extends Attribute implements Serializable {
 
         this.attributeContainer = val;
         this.dataType = dataType;
-
-        log.debug("Extensible attribute created: multivalue");
-
+        if(log.isDebugEnabled()) {
+        	log.debug("Extensible attribute created: multivalue");
+        }
     }
 
     public ExtensibleAttribute(String name, BaseAttributeContainer val, String dataType) {
@@ -144,9 +144,9 @@ public class ExtensibleAttribute extends Attribute implements Serializable {
 
         this.attributeContainer = val;
         this.dataType = dataType;
-
-        log.debug("Extensible attribute created: multivalue");
-
+        if(log.isDebugEnabled()) {
+        	log.debug("Extensible attribute created: multivalue");
+        }
     }
 
     public ExtensibleAttribute(String name, byte[] val, int operation, String dataType) {
@@ -155,9 +155,9 @@ public class ExtensibleAttribute extends Attribute implements Serializable {
         this.operation = operation;
         this.valueAsByteArray = val;
         this.dataType = dataType;
-
-        log.debug("Extensible attribute created: multivalue");
-
+        if(log.isDebugEnabled()) {
+        	log.debug("Extensible attribute created: multivalue");
+        }
     }
     public String getName() {
         return name;

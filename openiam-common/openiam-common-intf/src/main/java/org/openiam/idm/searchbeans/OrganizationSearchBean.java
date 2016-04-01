@@ -32,7 +32,10 @@ import java.util.Set;
         "attributes",
         "metadataType",
         "isSelectable",
-        "abbreviation"
+        "abbreviation",
+        "forCurrentUsersOnly",
+        "domainName",
+        "uncoverParents"
 })
 public class OrganizationSearchBean extends EntitlementsSearchBean<Organization, String> implements SearchBean<Organization, String>,
         Serializable {
@@ -45,6 +48,10 @@ public class OrganizationSearchBean extends EntitlementsSearchBean<Organization,
     private List<Tuple<String, String>> attributes;
     private Boolean isSelectable = null;
     private String abbreviation;
+    private boolean forCurrentUsersOnly = false;
+    private String domainName;
+    private Boolean uncoverParents = false;
+
 
     public String getOrganizationTypeId() {
         return (CollectionUtils.isNotEmpty(organizationTypeIdSet)) ? organizationTypeIdSet.iterator().next() : null;
@@ -85,6 +92,19 @@ public class OrganizationSearchBean extends EntitlementsSearchBean<Organization,
         this.addKey(key);
     }
 
+    @Override
+    public String getCacheUniqueBeanKey() {
+        return new StringBuilder()
+                .append(name != null ? name : "")
+                .append(validParentTypeId != null ? validParentTypeId : "")
+                .append(internalOrgId != null ? internalOrgId : "")
+                .append(attributes != null ? attributes.toString().hashCode() : "")
+                .append(uncoverParents != null ? uncoverParents.hashCode() : "")
+                .append(getKey() != null ? getKey() : "")
+                .append(getKeys() != null ? getKeys().hashCode() : "")
+                .toString();
+    }
+
     public String getMetadataType() {
         return metadataType;
     }
@@ -112,6 +132,13 @@ public class OrganizationSearchBean extends EntitlementsSearchBean<Organization,
         if (keySet != null) {
             setKeys(new HashSet<String>(keySet));
         }
+    }
+    public Boolean getUncoverParents() {
+        return uncoverParents;
+    }
+
+        public void setUncoverParents(Boolean uncoverParents) {
+        this.uncoverParents = uncoverParents;
     }
 
     public void setKeys(final Set<String> keySet) {
@@ -160,12 +187,28 @@ public class OrganizationSearchBean extends EntitlementsSearchBean<Organization,
         this.attributes = attributes;
     }
 
+    public boolean isForCurrentUsersOnly() {
+        return forCurrentUsersOnly;
+    }
+
+    public void setForCurrentUsersOnly(boolean forCurrentUserOnly) {
+        this.forCurrentUsersOnly = forCurrentUserOnly;
+    }
+
     public String getAbbreviation() {
         return abbreviation;
     }
 
     public void setAbbreviation(String abbreviation) {
         this.abbreviation = abbreviation;
+    }
+
+    public String getDomainName() {
+        return domainName;
+    }
+
+    public void setDomainName(String domainName) {
+        this.domainName = domainName;
     }
 
     @Override
@@ -187,6 +230,7 @@ public class OrganizationSearchBean extends EntitlementsSearchBean<Organization,
         int result = super.hashCode();
         result = 31 * result + (validParentTypeId != null ? validParentTypeId.hashCode() : 0);
         result = 31 * result + (internalOrgId != null ? internalOrgId.hashCode() : 0);
+        result = 31 * result + ((uncoverParents == null) ? 0 : uncoverParents.hashCode());
         return result;
     }
 

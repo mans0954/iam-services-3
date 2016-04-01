@@ -18,6 +18,7 @@ public enum ActivitiConstants {
 	TASK_NAME("TaskName", "taskName", false),
 	TASK_DESCRIPTION("TaskDescription", "taskDescription", false),
 	REQUESTOR("TaskOwner", "requestor", false),
+	REQUESTOR_NAME("TaskOwnerName", "taskOwnerName", false),
 	EXECUTOR_ID("ExecutorId", "executorId", true),
 	APPROVER_ASSOCIATION_IDS("ApproverAssociationIds", "approverAssociationIds", false),
 	ASSOCIATION_ID("AssociationId", "associationId", false),
@@ -53,6 +54,9 @@ public enum ActivitiConstants {
 	
 	IS_REQUESTOR_ONLY_APROVER("IsRequestorOnlyApprover", null, false),
 	IS_REQUESTOR_CANDIDATE("IsRequestorCandidate", null, false),
+
+	CANDIDATE_USER_IDS("CandidateUserIds", null, false),
+	ATTESTATION_MANAGED_SYS_RESOURCES("ATTESTATION_MANAGED_SYS_RESOURCES", null, false),
 
 	// TODO: need to fix field name once start/end date will be added to the entity model
 	START_DATE("StartDate", null, false),

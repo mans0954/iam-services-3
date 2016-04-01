@@ -53,14 +53,20 @@ public class SetPasswordShellCommand extends AbstractShellCommand<PasswordReques
         strBuf.append("'" + userName + "' ");
         strBuf.append("'" + passwordRequest.getPassword() + "' \" ");
 
-        log.debug("Command line string= " + strBuf.toString());
+        if(log.isDebugEnabled()) {
+        	log.debug("Command line string= " + strBuf.toString());
+        }
         String[] cmdarray = { "cmd", strBuf.toString() };
         try {
             // Runtime.getRuntime().exec(cmdarray); //exec(strBuf.toString());
             Process p = Runtime.getRuntime().exec(strBuf.toString());
-            log.debug("Process =" + p);
+            if(log.isDebugEnabled()) {
+            	log.debug("Process =" + p);
+            }
             OutputStream stream = p.getOutputStream();
-            log.debug("stream=" + stream.toString());
+            if(log.isDebugEnabled()) {
+            	log.debug("stream=" + stream.toString());
+            }
             return respType;
         } catch (Exception e) {
             log.error(e.getMessage(), e);

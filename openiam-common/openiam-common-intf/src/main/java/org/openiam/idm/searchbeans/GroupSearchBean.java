@@ -124,7 +124,19 @@ public class GroupSearchBean extends EntitlementsSearchBean<Group, String> imple
         keySet.add(key);
     }
 
-    public Set<String> getKeys() {
+	@Override
+	public String getCacheUniqueBeanKey() {
+		return new StringBuilder()
+				.append(name != null ? name : "")
+				.append(managedSysId != null ? managedSysId : "")
+				.append(type != null ? type : "")
+				.append(isRootsOnly)
+				.append(attributes != null ? attributes.toString().hashCode() : "")
+				.append(getKey() != null ? getKey() : "")
+				.append(getKeys() != null ? getKeys().hashCode() : "")
+				.toString();	}
+
+	public Set<String> getKeys() {
         return keySet;
     }
 

@@ -16,9 +16,14 @@ import org.openiam.idm.srvc.policy.domain.PolicyEntity;
 import org.openiam.idm.srvc.policy.dto.PasswordPolicyAssocSearchBean;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.service.PolicyDataService;
+import org.openiam.idm.srvc.policy.service.PolicyService;
+import org.openiam.idm.srvc.role.domain.RoleEntity;
+import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,7 +48,14 @@ public class PasswordPolicyProviderImpl implements PasswordPolicyProvider {
     protected UserDataService userManager;
     
     @Autowired
+    private PolicyService policyDataService;
+    @Autowired
     private AuthProviderDao authProviderDAO;
+
+    @Autowired
+    protected org.openiam.idm.srvc.role.service.RoleDAO roleDAO;
+    @Autowired
+    protected UserDAO userDAO;
 
     @Autowired
     private SysConfiguration sysConfiguration;
@@ -54,40 +66,40 @@ public class PasswordPolicyProviderImpl implements PasswordPolicyProvider {
     @Override
     @Transactional
     public Policy getGlobalPasswordPolicy() {
-    	Policy retVal = null;
-    	final AuthProviderEntity authProvider = authProviderDAO.findById(sysConfiguration.getDefaultAuthProviderId());
-    	if(authProvider != null) {
-    		final PolicyEntity policyEntity = authProvider.getPasswordPolicy();
-    		if(policyEntity != null) {
-    			retVal = policyDozerConverter.convertToDTO(policyEntity, true);
-    		}
-    	}
-    	return retVal;
+        Policy retVal = null;
+        final AuthProviderEntity authProvider = authProviderDAO.findById(sysConfiguration.getDefaultAuthProviderId());
+        if(authProvider != null) {
+            final PolicyEntity policyEntity = authProvider.getPasswordPolicy();
+            if(policyEntity != null) {
+                retVal = policyDozerConverter.convertToDTO(policyEntity, true);
+            }
+        }
+        return retVal;
     }
-    
+
     @Override
     @Transactional
     public Policy getPasswordPolicyByUser(final PasswordPolicyAssocSearchBean searchBean) {
-    	return getPasswordPolicyByUser(userManager.getUser(searchBean.getUserId()), searchBean.getContentProviderId());
+        return getPasswordPolicyByUser(userManager.getUser(searchBean.getUserId()), searchBean.getContentProviderId());
     }
-    
-	private Policy getPasswordPolicyByUser(final UserEntity user, final String contentProviderId) {
-		Policy retVal = null;
-		if(StringUtils.isNotBlank(contentProviderId)) {
-			final ContentProviderEntity contentProvider = contentProviderDAO.findById(contentProviderId);
-			if(contentProvider != null) {
-				final AuthProviderEntity authProvider = contentProvider.getAuthProvider();
-				if(authProvider != null) {
-					final PolicyEntity policyEntity = authProvider.getPasswordPolicy();
-					if(policyEntity != null) {
-						retVal = policyDozerConverter.convertToDTO(policyEntity, true);
-					}
-				}
-			}
-		}
-		if(retVal == null) {
-			retVal = getGlobalPasswordPolicy();
-		}
-		return retVal;
-	}
+
+    private Policy getPasswordPolicyByUser(final UserEntity user, final String contentProviderId) {
+        Policy retVal = null;
+        if(StringUtils.isNotBlank(contentProviderId)) {
+            final ContentProviderEntity contentProvider = contentProviderDAO.findById(contentProviderId);
+            if(contentProvider != null) {
+                final AuthProviderEntity authProvider = contentProvider.getAuthProvider();
+                if(authProvider != null) {
+                    final PolicyEntity policyEntity = authProvider.getPasswordPolicy();
+                    if(policyEntity != null) {
+                        retVal = policyDozerConverter.convertToDTO(policyEntity, true);
+                    }
+                }
+            }
+        }
+        if(retVal == null) {
+            retVal = getGlobalPasswordPolicy();
+        }
+        return retVal;
+    }
 }

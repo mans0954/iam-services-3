@@ -54,7 +54,7 @@ public class PassphraseRepeatWordRule extends AbstractPasswordRule {
 				enabled = false;
 			}
 		}
-		if (!enabled){
+		if (enabled){
 			// should not allow repetition of words in passphrase
 			StringTokenizer tokenizer = new StringTokenizer(password);
 			List<String> words = new ArrayList<String>();
@@ -81,7 +81,7 @@ public class PassphraseRepeatWordRule extends AbstractPasswordRule {
 				enabled = false;
 			}
 		}
-		if (!enabled){
+		if (enabled){
 			return new PasswordRuleException(ResponseCode.PASSPHRASE_WORD_REPEAT_RULE);
 		} else {
 			return null;
@@ -97,7 +97,7 @@ public class PassphraseRepeatWordRule extends AbstractPasswordRule {
 				enabled = false;
 			}
 		}
-		if (!enabled){
+		if (enabled){
 			return new PasswordRule(ResponseCode.PASSPHRASE_WORD_REPEAT_RULE);
 		} else {
 			return null;

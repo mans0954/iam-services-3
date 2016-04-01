@@ -2,14 +2,7 @@ package org.openiam.idm.srvc.continfo.domain;
 
 import java.util.Date;
 
-import javax.persistence.AttributeOverride;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
+import javax.persistence.*;
 import javax.validation.constraints.Size;
 
 import org.hibernate.annotations.Cache;
@@ -18,6 +11,7 @@ import org.hibernate.annotations.Type;
 import org.openiam.base.domain.AbstractMetdataTypeEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.continfo.dto.Address;
+import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.internationalization.Internationalized;
 
@@ -113,6 +107,9 @@ public class AddressEntity extends AbstractMetdataTypeEntity {
     @Column(name="CREATE_DATE",length=19)
     @Temporal(TemporalType.TIMESTAMP)
     protected Date createDate;
+
+    @Column(name = "COPY_FROM_LOCATION_ID", length = 32, nullable = true)
+    private String locationId;
 
     public AddressEntity() {
     }
@@ -285,6 +282,15 @@ public class AddressEntity extends AbstractMetdataTypeEntity {
 		this.createDate = createDate;
 	}
 
+    public String getLocationId() {
+        return locationId;
+    }
+
+    public void setLocationId(String locationId) {
+        this.locationId = locationId;
+    }
+
+
     @Override
 	public int hashCode() {
 		final int prime = 31;
@@ -322,6 +328,7 @@ public class AddressEntity extends AbstractMetdataTypeEntity {
 		result = prime * result
 				+ ((streetDirection == null) ? 0 : streetDirection.hashCode());
 		result = prime * result + ((suite == null) ? 0 : suite.hashCode());
+        result = prime * result + ((locationId == null) ? 0 : locationId.hashCode());
 		return result;
 	}
 
@@ -430,6 +437,12 @@ public class AddressEntity extends AbstractMetdataTypeEntity {
 				return false;
 		} else if (!suite.equals(other.suite))
 			return false;
+        if (locationId == null) {
+            if (other.locationId != null)
+                return false;
+        } else if (!locationId.equals(other.locationId))
+            return false;
+
 		return true;
 	}
 
@@ -458,6 +471,7 @@ public class AddressEntity extends AbstractMetdataTypeEntity {
         sb.append(", name='").append(name).append('\'');
         sb.append(", lastUpdate=").append(lastUpdate);
         sb.append(", createDate=").append(createDate);
+        sb.append(", locationId=").append(locationId);
         sb.append(", ").append(super.toString());
         sb.append('}');
         return sb.toString();

@@ -20,16 +20,18 @@ import java.util.List;
 @AttributeOverride(name = "id", column = @Column(name = "COMPANY_ATTR_ID"))
 @DozerDTOCorrespondence(OrganizationAttribute.class)
 @Internationalized
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class OrganizationAttributeEntity extends AbstractAttributeEntity {
    
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "COMPANY_ID", referencedColumnName = "COMPANY_ID", insertable = true, updatable = false)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private OrganizationEntity organization;
 
     @ElementCollection
     @CollectionTable(name="COMPANY_ATTRIBUTE_VALUES", joinColumns=@JoinColumn(name="COMPANY_ATTRIBUTE_ID", referencedColumnName="COMPANY_ATTR_ID"))
     @Column(name="VALUE", length = 255)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private List<String> values = new ArrayList<String>();
 
     @Column(name = "IS_MULTIVALUED", nullable = false)

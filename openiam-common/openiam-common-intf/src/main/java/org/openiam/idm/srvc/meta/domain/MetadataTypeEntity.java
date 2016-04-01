@@ -25,8 +25,7 @@ import java.util.Set;
 
 @Entity
 @Table(name = "METADATA_TYPE")
-@Cacheable
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region="MetadataTypeEntity")
 @DozerDTOCorrespondence(MetadataType.class)
 @Internationalized
 @AttributeOverrides({
@@ -43,7 +42,7 @@ public class MetadataTypeEntity extends AbstractKeyNameEntity {
 
     @Column(name = "ACTIVE")
     @Type(type = "yes_no")
-    private boolean active;
+    private Boolean active = Boolean.FALSE;
 
     @Column(name = "SYNC_MANAGED_SYS")
     @Type(type = "yes_no")
@@ -65,6 +64,7 @@ public class MetadataTypeEntity extends AbstractKeyNameEntity {
     @JoinColumn(name = "TYPE_ID", referencedColumnName = "TYPE_ID")
     @MapKeyColumn(name = "ATTRIBUTE_NAME")
     @Fetch(FetchMode.SUBSELECT)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Map<String, MetadataElementEntity> elementAttributes = new HashMap<String, MetadataElementEntity>(0);
     /*
      * @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, fetch =
@@ -77,6 +77,7 @@ public class MetadataTypeEntity extends AbstractKeyNameEntity {
     @ManyToMany(cascade = { CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH }, fetch = FetchType.LAZY)
     @JoinTable(name = "CATEGORY_TYPE", joinColumns = { @JoinColumn(name = "TYPE_ID") }, inverseJoinColumns = { @JoinColumn(name = "CATEGORY_ID") })
     @Fetch(FetchMode.SUBSELECT)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<CategoryEntity> categories = new HashSet<CategoryEntity>(0);
     
     @Transient
@@ -85,8 +86,12 @@ public class MetadataTypeEntity extends AbstractKeyNameEntity {
 
     @OneToMany(mappedBy = "employeeType")
 //    @ContainedIn
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<UserEntity> userEntitySet;
-    
+
+	@OneToMany(mappedBy = "referenceId")
+	private Set<LanguageMappingEntity> languageMappings;
+
     @Transient
     private String displayName;
 
@@ -180,6 +185,14 @@ public class MetadataTypeEntity extends AbstractKeyNameEntity {
 
 	public void setUsedForSMSOTP(boolean usedForSMSOTP) {
 		this.usedForSMSOTP = usedForSMSOTP;
+	}
+
+	public Set<LanguageMappingEntity> getLanguageMappings() {
+		return languageMappings;
+	}
+
+	public void setLanguageMappings(Set<LanguageMappingEntity> languageMappings) {
+		this.languageMappings = languageMappings;
 	}
 
 	@Override

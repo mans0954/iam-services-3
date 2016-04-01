@@ -45,10 +45,10 @@ import java.util.List;
 public interface ChallengeResponseWebService {
     
 	@WebMethod
-	Integer getNumOfRequiredQuestions(@WebParam(name = "userId", targetNamespace = "") final String userId);
+	public Integer getNumOfRequiredQuestions(@WebParam(name = "userId", targetNamespace = "") String userId, @WebParam(name = "isEnterprise", targetNamespace = "")boolean isEnterprise);
 
     @WebMethod
-	Integer getNumOfCorrectAnswers(@WebParam(name = "userId", targetNamespace = "") final String userId);
+	public Integer getNumOfCorrectAnswers(@WebParam(name = "userId", targetNamespace = "") String userId, @WebParam(name = "isEnterprise", targetNamespace = "") boolean isEnterprise);
 
 	@WebMethod
 	Integer count(@WebParam(name = "searchBean", targetNamespace = "") final IdentityQuestionSearchBean searchBean);

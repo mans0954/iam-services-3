@@ -23,7 +23,6 @@ import org.openiam.idm.srvc.auth.dto.ProvLoginStatusEnum;
 
 @Entity
 @Table(name="IDENTIFICATION")
-@Cacheable
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(IdentityDto.class)
 @AttributeOverride(name = "id", column = @Column(name = "IDENTITY_ID"))

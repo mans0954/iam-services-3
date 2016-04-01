@@ -44,7 +44,8 @@ import java.util.Set;
         "userAttributes",
         "organizationAttributes",
         "isPublic",
-        "displayName"
+        "displayName",
+		"dataModelUrl"
 })
 @DozerDTOCorrespondence(MetadataElementEntity.class)
 @Internationalized
@@ -70,6 +71,7 @@ public class MetadataElement extends KeyNameDTO {
     private boolean isPublic = true;
     private Set<OrganizationAttribute> organizationAttributes;
     private String displayName;
+	private String dataModelUrl;
 
     public MetadataElement() {
     }
@@ -248,6 +250,14 @@ public class MetadataElement extends KeyNameDTO {
 		this.metadataTypeName = metadataTypeName;
 	}
 
+	public String getDataModelUrl() {
+		return dataModelUrl;
+	}
+
+	public void setDataModelUrl(String dataModelUrl) {
+		this.dataModelUrl = dataModelUrl;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -271,6 +281,7 @@ public class MetadataElement extends KeyNameDTO {
 				* result
 				+ ((staticDefaultValue == null) ? 0 : staticDefaultValue
 						.hashCode());
+		result = prime * result + ((dataModelUrl == null) ?0 : dataModelUrl.hashCode());
 		return result;
 	}
 
@@ -320,6 +331,11 @@ public class MetadataElement extends KeyNameDTO {
 			if (other.staticDefaultValue != null)
 				return false;
 		} else if (!staticDefaultValue.equals(other.staticDefaultValue))
+			return false;
+		if (dataModelUrl == null) {
+			if (other.dataModelUrl != null)
+				return false;
+		} else if (!dataModelUrl.equals(other.dataModelUrl))
 			return false;
 		return true;
 	}

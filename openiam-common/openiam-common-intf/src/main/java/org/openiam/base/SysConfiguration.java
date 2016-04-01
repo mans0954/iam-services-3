@@ -32,6 +32,14 @@ public class SysConfiguration {
 	
     @Value("${org.openiam.idm.system.user.id}")
     private String systemUserId;
+
+    public String getAffiliationPrimaryTypeId() {
+        return propertyValueSweeper.getString("org.openiam.affiliation.primary.type.id");
+    }
+
+    public String getAffiliationDefaultTypeId() {
+        return propertyValueSweeper.getString("org.openiam.affiliation.default.type.id");
+    }
     
     public boolean isCaseInSensitiveDatabase() {
     	return "ORACLE_INSENSITIVE".equalsIgnoreCase(dbType);
@@ -76,6 +84,5 @@ public class SysConfiguration {
 	public void setDefaultLoginModule(String defaultLoginModule) {
 		this.defaultLoginModule = defaultLoginModule;
 	}
-    
     
 }

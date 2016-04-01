@@ -10,7 +10,7 @@ import org.openiam.idm.srvc.batch.dto.BatchTask;
 @XmlType(name = "BatchTaskSearchBean", propOrder = {
 	"enabled"
 })
-public class BatchTaskSearchBean extends AbstractKeyNameSearchBean<BatchTask, String> {
+public class BatchTaskSearchBean extends AbstractKeyNameSearchBean<BatchTask, String> implements SearchBean {
     /**
      * 
      */
@@ -25,6 +25,13 @@ public class BatchTaskSearchBean extends AbstractKeyNameSearchBean<BatchTask, St
 	public void setEnabled(Boolean enabled) {
 		this.enabled = enabled;
 	}
+
+	@Override
+	public String getCacheUniqueBeanKey() {
+		return new StringBuilder()
+				.append(name != null ? name : "")
+				.append(getKey() != null ? getKey() : "")
+				.toString();	}
 
 	@Override
 	public int hashCode() {

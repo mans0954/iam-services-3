@@ -55,6 +55,7 @@ import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
+import org.openiam.idm.srvc.policy.dto.ResetPasswordTypeEnum;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.user.dto.User;
@@ -264,21 +265,26 @@ public class UserEntity extends KeyEntity {
     private Date dateITPolicyApproved;
 
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "user", fetch = FetchType.LAZY)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<UserNoteEntity> userNotes = new HashSet<UserNoteEntity>(0);
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @MapKeyColumn(name = "name")
     @JoinColumn(name="USER_ID")
     @Fetch(FetchMode.SUBSELECT)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Map<String, UserAttributeEntity> userAttributes = new HashMap<String, UserAttributeEntity>(0);
 
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "parent", fetch = FetchType.LAZY)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<AddressEntity> addresses = new HashSet<AddressEntity>(0);
 
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "parent", fetch = FetchType.LAZY)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<PhoneEntity> phones = new HashSet<PhoneEntity>(0);
 
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "parent", fetch = FetchType.LAZY)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<EmailAddressEntity> emailAddresses = new HashSet<EmailAddressEntity>(0);
 
     @Column(name = "SYSTEM_FLAG",length = 1)
@@ -288,6 +294,7 @@ public class UserEntity extends KeyEntity {
     @OneToMany(orphanRemoval = true, cascade=CascadeType.ALL,fetch=FetchType.LAZY)
     @JoinColumn(name="USER_ID", referencedColumnName="USER_ID")
     @Fetch(FetchMode.SUBSELECT)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private List<LoginEntity> principalList = new LinkedList<LoginEntity>();
 
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "user", fetch = FetchType.LAZY)
@@ -327,6 +334,25 @@ public class UserEntity extends KeyEntity {
 
     @Transient
     private String defaultLogin;
+
+    @Column(name = "RESET_PASSWORD_TYPE", length = 20)
+    @Enumerated(EnumType.STRING)
+    private ResetPasswordTypeEnum resetPasswordType;
+
+    @ManyToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "SUB_TYPE_ID", insertable = true, updatable = true, nullable = true)
+    @Internationalized
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    protected MetadataTypeEntity subType;
+
+    @Column(name = "PARTNER_NAME", length = 60)
+    private String partnerName;
+
+    @Column(name = "PREFIX_PARTNER_NAME", length = 10)
+    private String prefixPartnerName;
+
+    @Column(name = "LASTNAME_PREFIX", length = 10)
+    private String prefixLastName;
 
     public UserEntity() {
     }
@@ -1249,9 +1275,48 @@ public class UserEntity extends KeyEntity {
         this.claimDate = claimDate;
     }
 
+    public ResetPasswordTypeEnum getResetPasswordType() {
+        return resetPasswordType;
+    }
+
+    public void setResetPasswordType(ResetPasswordTypeEnum resetPasswordType) {
+        this.resetPasswordType = resetPasswordType;
+    }
 
     public Set<OAuthUserClientXrefEntity> getAuthorizedOAuthClients() {
         return authorizedOAuthClients;
+    }
+
+    public MetadataTypeEntity getSubType() {
+        return subType;
+    }
+
+    public void setSubType(MetadataTypeEntity subType) {
+        this.subType = subType;
+    }
+
+    public String getPartnerName() {
+        return partnerName;
+    }
+
+    public void setPartnerName(String partnerName) {
+        this.partnerName = partnerName;
+    }
+
+    public String getPrefixPartnerName() {
+        return prefixPartnerName;
+    }
+
+    public void setPrefixPartnerName(String prefixPartnerName) {
+        this.prefixPartnerName = prefixPartnerName;
+    }
+
+    public String getPrefixLastName() {
+        return prefixLastName;
+    }
+
+    public void setPrefixLastName(String prefixLastName) {
+        this.prefixLastName = prefixLastName;
     }
 
     public void setAuthorizedOAuthClients(Set<OAuthUserClientXrefEntity> authorizedOAuthClients) {

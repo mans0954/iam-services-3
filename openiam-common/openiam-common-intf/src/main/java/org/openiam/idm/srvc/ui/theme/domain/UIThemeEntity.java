@@ -47,10 +47,20 @@ public class UIThemeEntity extends KeyEntity {
 	private String url;
 	
 	@OneToMany(orphanRemoval = false, cascade = {CascadeType.DETACH, CascadeType.REFRESH}, mappedBy = "uiTheme", fetch = FetchType.LAZY)
+    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	private Set<ContentProviderEntity> contentProviders;
 	
 	@OneToMany(orphanRemoval = false, cascade = {CascadeType.DETACH, CascadeType.REFRESH}, mappedBy = "uiTheme", fetch = FetchType.LAZY)
+    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	private Set<URIPatternEntity> uriPatterns;
+
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
 
 	public String getName() {
 		return name;

@@ -19,35 +19,57 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class MetadataTemplateTypeFieldEntityDAOImpl extends BaseDaoImpl<MetadataTemplateTypeFieldEntity, String> implements MetadataTemplateTypeFieldEntityDAO {
 
-	
-	
-	 @Override
-	protected Criteria getExampleCriteria(SearchBean searchBean) {
-		final Criteria criteria = getCriteria();
-		if(searchBean != null && searchBean instanceof MetadataTemplateTypeFieldSearchBean) {
-			final MetadataTemplateTypeFieldSearchBean bean = (MetadataTemplateTypeFieldSearchBean)searchBean;
-			if(StringUtils.isNotBlank(bean.getKey())) {
-				criteria.add(Restrictions.eq(getPKfieldName(), bean.getKey()));
-			} else {
-				if(StringUtils.isNotBlank(bean.getName())) {
-					criteria.add(Restrictions.eq("name", bean.getName()));
-				}
-				
-				if(StringUtils.isNotBlank(bean.getTemplateTypeId())) {
-					criteria.add(Restrictions.eq("templateType.id", bean.getTemplateTypeId()));
-				}
-				
-				if(StringUtils.isNotBlank(bean.getTemplateId())) {
-					criteria.createAlias("fieldXrefs", "xref").add(Restrictions.eq("xref.template.id", bean.getTemplateId()));
-				}
-			}
-		}
-		return criteria;
-	}
-	
-	@Override
-	protected String getPKfieldName() {
-		return "id";
-	}
+    @Override
+    protected boolean cachable() {
+        return true;
+    }
+
+    @Override
+    protected Criteria getExampleCriteria(SearchBean searchBean) {
+        final Criteria criteria = getCriteria();
+        if (searchBean != null && searchBean instanceof MetadataTemplateTypeFieldSearchBean) {
+            final MetadataTemplateTypeFieldSearchBean bean = (MetadataTemplateTypeFieldSearchBean) searchBean;
+            if (StringUtils.isNotBlank(bean.getKey())) {
+                criteria.add(Restrictions.eq(getPKfieldName(), bean.getKey()));
+            } else {
+                if (StringUtils.isNotBlank(bean.getName())) {
+                    criteria.add(Restrictions.eq("name", bean.getName()));
+                }
+
+                if (StringUtils.isNotBlank(bean.getTemplateTypeId())) {
+                    criteria.add(Restrictions.eq("templateType.id", bean.getTemplateTypeId()));
+                }
+
+                if (StringUtils.isNotBlank(bean.getTemplateId())) {
+                    criteria.createAlias("fieldXrefs", "xref").add(Restrictions.eq("xref.template.id", bean.getTemplateId()));
+                }
+            }
+        }
+        return criteria;
+    }
+
+    @Override
+    protected Criteria getExampleCriteria(final MetadataTemplateTypeFieldEntity entity) {
+        final Criteria criteria = getCriteria();
+        if (entity != null) {
+            if (StringUtils.isNotBlank(entity.getId())) {
+                criteria.add(Restrictions.eq(getPKfieldName(), entity.getId()));
+            } else {
+                if (entity.getTemplateType() != null && StringUtils.isNotBlank(entity.getTemplateType().getId())) {
+                    criteria.add(Restrictions.eq("templateType.id", entity.getTemplateType().getId()));
+                }
+
+                if (StringUtils.isNotBlank(entity.getName())) {
+                    criteria.add(Restrictions.eq("name", entity.getName()));
+                }
+            }
+        }
+        return criteria;
+    }
+
+    @Override
+    protected String getPKfieldName() {
+        return "id";
+    }
 
 }

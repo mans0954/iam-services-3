@@ -51,6 +51,7 @@ import java.util.*;
         "requesterId",
         "updatedSince",
         "firstNameMatchToken",
+        "nickNameMatchToken",
         "lastNameMatchToken",
         "maidenNameMatchToken",
         "employeeIdMatchToken",
@@ -193,6 +194,11 @@ public class UserSearchBean extends EntitlementsSearchBean<User, String> impleme
      * First name token to search by
      */
     private SearchParam firstNameMatchToken = null;
+
+    /**
+     * Nick name token to search by
+     */
+    private SearchParam nickNameMatchToken = null;
     
     /**
      * Last Name token to search by
@@ -223,6 +229,12 @@ public class UserSearchBean extends EntitlementsSearchBean<User, String> impleme
 	public void setFirstNameMatchToken(SearchParam firstNameMatchToken) {
 		this.firstNameMatchToken = firstNameMatchToken;
 	}
+
+    public SearchParam getNickNameMatchToken() {
+        return nickNameMatchToken;
+    }
+
+    public void setNickNameMatchToken(SearchParam nickNameMatchToken) { this.nickNameMatchToken = nickNameMatchToken; }
 
 	public SearchParam getLastNameMatchToken() {
 		return lastNameMatchToken;
@@ -575,4 +587,12 @@ public class UserSearchBean extends EntitlementsSearchBean<User, String> impleme
         this.userType = userType;
     }
 
+    @Override
+    public String getCacheUniqueBeanKey() {
+        return new StringBuilder()
+                .append(firstName != null ? firstName : "")
+                .append(lastName != null ? lastName : "")
+                .append(hashCode())
+                .append(getKey() != null ? getKey() : "")
+                .toString();    }
 }

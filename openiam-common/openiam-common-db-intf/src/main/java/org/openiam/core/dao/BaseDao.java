@@ -51,10 +51,17 @@ public interface BaseDao<T, PrimaryKey extends Serializable> {
   List<T> getByExample(SearchBean searchBean);
   List<T> getByExample(SearchBean searchBean, int from, int size);
   List<String> getIDsByExample(SearchBean searchBean, int from, int size);
+  List<T> getByExample(T t, int startAt, int size);
+  List<T> getByExampleNoLocalize(T t);
+  List<T> getByExampleNoLocalize(SearchBean searchBean, int from, int size);
+
 
   int count(SearchBean searchBean);
   
   void flush();
   void clear();
   List<T> find(int from, int size);
+    void evictCollectionRegions();
+    public void evictCache();
+
 }

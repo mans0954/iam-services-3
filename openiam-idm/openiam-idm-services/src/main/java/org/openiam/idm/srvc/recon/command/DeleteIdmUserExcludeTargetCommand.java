@@ -28,8 +28,10 @@ public class DeleteIdmUserExcludeTargetCommand extends BaseReconciliationUserCom
 
 	@Override
 	public boolean execute(ReconciliationSituation config, String principal, String mSysID, User user, List<ExtensibleAttribute> attributes) {
-        log.debug("Entering DeleteIdmUserExcludeTargetCommand");
-        log.debug("Delete user: " + user.getId());
+		if(log.isDebugEnabled()) {
+	        log.debug("Entering DeleteIdmUserExcludeTargetCommand");
+	        log.debug("Delete user: " + user.getId());
+		}
 		try {
 			ProvisionUser pUser = new ProvisionUser(user);
 			pUser.setSrcSystemId(mSysID);

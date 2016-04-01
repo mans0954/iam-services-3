@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -28,12 +29,14 @@ import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
+import org.openiam.idm.srvc.lang.service.LanguageDAO;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
 import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.idm.srvc.role.domain.RoleAttributeEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
@@ -47,9 +50,15 @@ import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
 import org.openiam.internationalization.LocalizedServiceGet;
 import org.openiam.util.AttributeUtil;
 import org.openiam.validator.EntityValidator;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -101,6 +110,17 @@ public class RoleDataServiceImpl implements RoleDataService {
 	@Value("${org.openiam.ui.admin.right.id}")
 	private String adminRightId;
 
+
+    private ApplicationContext ac;
+
+
+    public void setApplicationContext(final ApplicationContext ac) throws BeansException {
+        this.ac = ac;
+    }
+
+    @Autowired
+    protected LanguageDAO languageDAO;
+
     /**
      * Cache for whole roles hierarchy
      * Used when Roles number > 250k records
@@ -143,9 +163,26 @@ public class RoleDataServiceImpl implements RoleDataService {
         }
         return null;
 	}
+
+    @Override
+    @LocalizedServiceGet
+    @Transactional(readOnly = true)
+    public Role getRoleDtoLocalized(final String roleId, final String requesterId, final LanguageEntity language) {
+
+        //RoleDataService bean = (RoleDataService)ac.getBean("roleDataService");
+        RoleEntity roleEntity = this.getProxyService().getRoleLocalized(roleId, requesterId, language);
+
+        if (roleEntity != null) {
+            return roleDozerConverter.convertToDTO(roleEntity, true);
+        }
+        return null;
+    }
 	
 	@Override
 	@Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "roleEntities", allEntries=true),
+    })
 	public void removeRole(String roleId) {
 		if(roleId != null) {
 			final RoleEntity roleEntity = roleDao.findById(roleId);
@@ -230,9 +267,12 @@ public class RoleDataServiceImpl implements RoleDataService {
 			}
 		}
 	}
-	
+
 	@Override
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "roleEntities", allEntries=true),
+    })
 	public void saveRole(final RoleEntity role, final String requestorId) throws BasicDataServiceException {
 		if(role != null && entityValidator.isValid(role)) {
 			if(role.getManagedSystem() != null && role.getManagedSystem().getId() != null) {
@@ -413,13 +453,34 @@ public class RoleDataServiceImpl implements RoleDataService {
 		}
 	}
 	*/
-	
+/*
     @Override
     @Transactional(readOnly = true)
     public List<Role> getRolesDtoForUser(String userId, String requesterId, int from, int size) {
     	final RoleSearchBean sb = new RoleSearchBean();
     	sb.addUserId(userId);
         final List<RoleEntity> entityList = findBeans(sb, requesterId, from, size);
+        return roleDozerConverter.convertToDTOList(entityList, false);
+    }*/
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<RoleEntity> getRolesInGroup(final String groupId, final String requesterId, int from, int size) {
+        return roleDao.getRolesForGroup(groupId, getDelegationFilter(requesterId), from, size);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Role> getRolesDtoInGroup(final String groupId, final String requesterId, int from, int size) {
+        List<RoleEntity> roleEntityList = roleDao.getRolesForGroup(groupId, getDelegationFilter(requesterId), from, size);
+        return roleDozerConverter.convertToDTOList(roleEntityList, false);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Role> getRolesDtoForUser(String userId, String requesterId, int from, int size) {
+        //final List<RoleEntity> entityList = getRolesForUser(userId, requesterId, from, size);
+        final List<RoleEntity> entityList = this.getProxyService().getRolesForUser(userId, requesterId, from, size);
         return roleDozerConverter.convertToDTOList(entityList, false);
     }
 
@@ -444,7 +505,10 @@ public class RoleDataServiceImpl implements RoleDataService {
 
 	@Override
     @Transactional(readOnly = true)
-	public List<RoleEntity> findBeans(RoleSearchBean searchBean, final String requesterId, int from, int size) {
+/*
+    @Cacheable(value="roleEntities", key="{ #searchBean.cacheUniqueBeanKey, #requesterId, #from, #size}")
+*/
+    public List<RoleEntity> findBeans(RoleSearchBean searchBean, final String requesterId, int from, int size) {
         Set<String> filter = getDelegationFilter(requesterId);
         if(StringUtils.isBlank(searchBean.getKey()))
             searchBean.setKeys(filter);
@@ -453,6 +517,23 @@ public class RoleDataServiceImpl implements RoleDataService {
         }
         return roleDao.getByExample(searchBean, from, size);
 	}
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Role> findBeansDto(RoleSearchBean searchBean, final String requesterId, int from, int size) {
+/*		Set<String> filter = getDelegationFilter(requesterId);
+		if(StringUtils.isBlank(searchBean.getKey()))
+			searchBean.setKeys(filter);
+		else if(!DelegationFilterHelper.isAllowed(searchBean.getKey(), filter)){
+			return new ArrayList<Role>(0);
+		}
+		List<RoleEntity> roleEntityList = roleDao.getByExample(searchBean, from, size);*/
+
+        //RoleDataService bean = (RoleDataService)ac.getBean("roleDataService");
+        List<RoleEntity> roleEntityList = this.getProxyService().findBeans(searchBean, requesterId, from, size);
+
+        return roleDozerConverter.convertToDTOList(roleEntityList, false);
+    }
 
 	@Override
     @Transactional(readOnly = true)
@@ -474,7 +555,71 @@ public class RoleDataServiceImpl implements RoleDataService {
         return roleDao.getByExample(searchBean);
     }
 
-	@Override
+/*    @Override
+    @Transactional(readOnly = true)
+    public List<Role> findRolesDtoByAttributeValue(String attrName, String attrValue) {
+        List<RoleEntity> roleEntityList = roleDao.findRolesByAttributeValue(attrName, attrValue);
+        return roleDozerConverter.convertToDTOList(roleEntityList, true);
+    }*/
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<RoleEntity> getRolesForResource(final String resourceId, final String requesterId, final int from, final int size) {
+        return roleDao.getRolesForResource(resourceId, getDelegationFilter(requesterId), from, size);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Role> getRolesDtoForResource(final String resourceId, final String requesterId, final int from, final int size) {
+        List<RoleEntity> roleEntityList = roleDao.getRolesForResource(requesterId, getDelegationFilter(requesterId), from, size);
+        return roleDozerConverter.convertToDTOList(roleEntityList, false);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public int getNumOfRolesForResource(final String resourceId, final String requesterId) {
+        return roleDao.getNumOfRolesForResource(resourceId, getDelegationFilter(requesterId));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<RoleEntity> getChildRoles(final String id, final String requesterId, int from, int size) {
+        return roleDao.getChildRoles(id, getDelegationFilter(requesterId), from, size);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Role> getChildRolesDto(final String id, final String requesterId, int from, int size) {
+        List<RoleEntity> roleEntityList = roleDao.getChildRoles(id, getDelegationFilter(requesterId), from, size);
+        return roleDozerConverter.convertToDTOList(roleEntityList, false);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public int getNumOfChildRoles(final String id, final String requesterId) {
+        return roleDao.getNumOfChildRoles(id, getDelegationFilter(requesterId));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<RoleEntity> getParentRoles(final String id, final String requesterId, int from, int size) {
+        return roleDao.getParentRoles(id, getDelegationFilter(requesterId), from, size);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Role> getParentRolesDto(final String id, final String requesterId, int from, int size) {
+        List<RoleEntity> roleEntityList = roleDao.getParentRoles(id, getDelegationFilter(requesterId), from, size);
+        return roleDozerConverter.convertToDTOList(roleEntityList, false);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public int getNumOfParentRoles(final String id, final String requesterId) {
+        return roleDao.getNumOfParentRoles(id, getDelegationFilter(requesterId));
+    }
+
+    @Override
     @Transactional
 	public void addChildRole(final String id, 
 							 final String childRoleId, 
@@ -507,14 +652,36 @@ public class RoleDataServiceImpl implements RoleDataService {
 	@Deprecated
 	@Override
     @Transactional(readOnly = true)
-	public RoleEntity getRoleByName(String roleName, final String requesterId) {
+    public int getNumOfRolesForGroup(String groupId, final String requesterId) {
+        return roleDao.getNumOfRolesForGroup(groupId, getDelegationFilter(requesterId));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<RoleEntity> getRolesForUser(final String userId, final String requesterId, final int from, final int size) {
+        return roleDao.getRolesForUser(userId, getDelegationFilter(requesterId), from, size);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public int getNumOfRolesForUser(final String userId, final String requesterId) {
+        return roleDao.getNumOfRolesForUser(userId, getDelegationFilter(requesterId));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public RoleEntity getRoleByName(String roleName, final String requesterId) {
         final RoleSearchBean searchBean = new RoleSearchBean();
         searchBean.setName(roleName);
         final List<RoleEntity> foundList = this.findBeans(searchBean, requesterId, 0, 1);
 		return (CollectionUtils.isNotEmpty(foundList)) ? foundList.get(0) : null;
 	}
 
-    private Set<String> getDelegationFilter(String requesterId){
+    protected LanguageEntity getDefaultLanguage() {
+        return languageDAO.getDefaultLanguage();
+    }
+
+    private Set<String> getDelegationFilter(String requesterId) {
         Set<String> filterData = null;
         if(StringUtils.isNotBlank(requesterId)){
             filterData = new HashSet<String>(
@@ -678,4 +845,13 @@ public class RoleDataServiceImpl implements RoleDataService {
 			return null;
 		}
 	}
+
+    private RoleDataService getProxyService() {
+        RoleDataService service = (RoleDataService) ac.getBean("roleDataService");
+        return service;
+    }
+
+    public List<RoleEntity> getUserRoles(String userId, final String requesterId, int from, int size) {
+        return roleDao.getRolesForUser(userId, getDelegationFilter(requesterId), from, size);
+    }
 }

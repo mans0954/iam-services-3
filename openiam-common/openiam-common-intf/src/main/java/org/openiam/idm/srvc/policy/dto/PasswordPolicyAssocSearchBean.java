@@ -16,13 +16,24 @@ import java.util.Set;
  * <code>Policy</code> represents a policy object that is used by the policy service.
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "Policy", propOrder = {"userId", "contentProviderId"})
+@XmlType(name = "Policy", propOrder = {
+        "userId",
+        "contentProviderId",
+         "managedSystemId"})
 @DozerDTOCorrespondence(PolicyEntity.class)
 public class PasswordPolicyAssocSearchBean implements java.io.Serializable {
 
     private static final long serialVersionUID = 5733143745301294956L;
     private String userId;
     private String contentProviderId;
+    private String managedSystemId;
+
+    public PasswordPolicyAssocSearchBean() {}
+
+    public PasswordPolicyAssocSearchBean(String userId, String managedSystemId) {
+        this.userId = userId;
+        this.managedSystemId = managedSystemId;
+    }
 
     public String getUserId() {
         return userId;
@@ -40,5 +51,11 @@ public class PasswordPolicyAssocSearchBean implements java.io.Serializable {
 		this.contentProviderId = contentProviderId;
 	}
 
-    
+    public String getManagedSystemId() {
+        return managedSystemId;
+        }
+
+    public void setManagedSystemId(String managedSystemId) {
+        this.managedSystemId = managedSystemId;
+    }
 }

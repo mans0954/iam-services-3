@@ -67,7 +67,9 @@ public class SSHAgent {
                 result = connection.authenticateWithPublicKey(username, f, null);
             }
 
-            log.debug("Connection result: " + result);
+            if(log.isDebugEnabled()) {
+            	log.debug("Connection result: " + result);
+            }
             return result;
         } catch (Exception e) {
             throw new SSHException(
@@ -93,14 +95,13 @@ public class SSHAgent {
         try {
             // Open a session
             Session session = connection.openSession();
-
-            log.debug("Sending SSH command: " + command);
-
             // Execute the command
             session.execCommand(command);
 
             if (moreArgs != null) {
-                log.debug(".. piping arguments to STDIN");
+            	if(log.isDebugEnabled()) {
+            		log.debug(".. piping arguments to STDIN");
+            	}
                 BufferedWriter bf = new BufferedWriter(new OutputStreamWriter(
                         session.getStdin()));
                 String[] args = moreArgs.split("\\n");
@@ -125,7 +126,9 @@ public class SSHAgent {
             }
 
             // DEBUG: dump the exit code
-            log.debug("ExitCode: " + session.getExitStatus());
+            if(log.isDebugEnabled()) {
+            	log.debug("ExitCode: " + session.getExitStatus());
+            }
 
             // Close the session
             session.close();

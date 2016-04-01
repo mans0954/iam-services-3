@@ -44,6 +44,10 @@ public class AuthProviderTypeEntity extends AbstractKeyNameEntity {
     @Column(name="HAS_PASSWORD_POLICY")
     @Type(type = "yes_no")
     private boolean hasPasswordPolicy;
+
+    @Column(name="IS_CHAINABLE")
+    @Type(type = "yes_no")
+    private boolean chainable;
     
     @Column(name="HAS_AUTHN_POLICY")
     @Type(type = "yes_no")
@@ -204,6 +208,14 @@ public class AuthProviderTypeEntity extends AbstractKeyNameEntity {
 		this.linkableToContentProvider = linkableToContentProvider;
 	}
 
+	public boolean isChainable() {
+		return chainable;
+	}
+
+	public void setChainable(boolean chainable) {
+		this.chainable = chainable;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -211,6 +223,7 @@ public class AuthProviderTypeEntity extends AbstractKeyNameEntity {
 		result = prime * result + (hasPasswordPolicy ? 1231 : 1237);
 		result = prime * result + (hasPrivateKey ? 1231 : 1237);
 		result = prime * result + (hasPublicKey ? 1231 : 1237);
+		result = prime * result + (chainable ? 1231 : 1237);
 		result = prime * result + (isActive ? 1231 : 1237);
 		result = prime * result + (passwordPolicyRequired ? 1231 : 1237);
 		result = prime * result + (usesGroovyScript ? 1231 : 1237);
@@ -238,6 +251,8 @@ public class AuthProviderTypeEntity extends AbstractKeyNameEntity {
 		if (hasPrivateKey != other.hasPrivateKey)
 			return false;
 		if (hasPublicKey != other.hasPublicKey)
+			return false;
+		if (chainable != other.chainable)
 			return false;
 		if (isActive != other.isActive)
 			return false;

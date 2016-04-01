@@ -5,10 +5,17 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
 import org.openiam.idm.searchbeans.AbstractKeyNameSearchBean;
+import org.openiam.idm.searchbeans.SearchBean;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "MailTemplateSearchBean", propOrder = {
 })
-public class MailTemplateSearchBean extends AbstractKeyNameSearchBean<MailTemplateDto, String> {
+public class MailTemplateSearchBean extends AbstractKeyNameSearchBean<MailTemplateDto, String> implements SearchBean {
 
+    @Override
+    public String getCacheUniqueBeanKey() {
+        return new StringBuilder()
+                .append(name != null ? name : "")
+                .append(getKey() != null ? getKey() : "")
+                .toString();    }
 }

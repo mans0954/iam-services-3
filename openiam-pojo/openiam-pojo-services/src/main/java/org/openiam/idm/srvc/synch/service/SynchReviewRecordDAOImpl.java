@@ -33,7 +33,6 @@ public class SynchReviewRecordDAOImpl extends BaseDaoImpl<SynchReviewRecordEntit
 
     @Override
     public SynchReviewRecordEntity getHeaderReviewRecord(String synchReviewId) {
-        log.debug("getting header SynchReviewRecordEntity instance for SynchReviewEntity with id: " + synchReviewId);
 
         try {
             SynchReviewRecordEntity instance = (SynchReviewRecordEntity)getCriteria()
@@ -49,7 +48,6 @@ public class SynchReviewRecordDAOImpl extends BaseDaoImpl<SynchReviewRecordEntit
 
     @Override
     public List<SynchReviewRecordEntity> getRecordsBySynchReviewId(String synchReviewId, int from, int size) {
-        log.debug("getting SynchReviewRecordEntities for SynchReviewEntity with id: " + synchReviewId);
         try {
             Criteria criteria = getCriteria()
                     .add(Restrictions.eq("synchReview.id", synchReviewId))
@@ -69,7 +67,6 @@ public class SynchReviewRecordDAOImpl extends BaseDaoImpl<SynchReviewRecordEntit
 
     @Override
     public int getRecordsCountBySynchReviewId(String synchReviewId) {
-        log.debug("getting SynchReviewRecordEntities count for SynchReviewEntity with id: " + synchReviewId);
         try {
             return ((Number)getCriteria()
                     .add(Restrictions.eq("synchReview.id", synchReviewId))

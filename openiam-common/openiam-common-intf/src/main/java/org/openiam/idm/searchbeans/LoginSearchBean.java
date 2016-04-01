@@ -60,5 +60,12 @@ public class LoginSearchBean extends AbstractSearchBean<Login, String> implement
 	public void setUserId(String userId) {
 		this.userId = userId;
 	}
-	
+
+	@Override
+	public String getCacheUniqueBeanKey() {
+		return new StringBuilder()
+				.append(managedSysId != null ? managedSysId : "")
+				.append(userId != null ? userId : "")
+				.append(loginMatchToken != null ? loginMatchToken.hashCode() : "")
+				.toString();	}
 }

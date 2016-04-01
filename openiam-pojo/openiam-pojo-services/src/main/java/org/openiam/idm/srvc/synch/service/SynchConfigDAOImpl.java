@@ -25,10 +25,8 @@ public class SynchConfigDAOImpl extends BaseDaoImpl<SynchConfigEntity, String> i
 	private static final Log log = LogFactory.getLog(SynchConfigDAOImpl.class);
 
 	public SynchConfigEntity add(SynchConfigEntity transientInstance) {
-		log.debug("persisting SynchConfig instance");
 		try {
             getSession().persist(transientInstance);
-			log.debug("persist successful");
 			return transientInstance;
 		} catch (RuntimeException re) {
 			log.error("persist failed", re);
@@ -37,10 +35,8 @@ public class SynchConfigDAOImpl extends BaseDaoImpl<SynchConfigEntity, String> i
 	}
 
 	public void remove(SynchConfigEntity persistentInstance) {
-		log.debug("deleting SynchConfig instance");
 		try {
             getSession().delete(persistentInstance);
-			log.debug("delete successful");
 		} catch (RuntimeException re) {
 			log.error("delete failed", re);
 			throw re;
@@ -48,10 +44,8 @@ public class SynchConfigDAOImpl extends BaseDaoImpl<SynchConfigEntity, String> i
 	}
 
 	public SynchConfigEntity merge(SynchConfigEntity detachedInstance) {
-		log.debug("merging SynchConfig instance");
 		try {
             SynchConfigEntity ret = (SynchConfigEntity) getSession().merge(detachedInstance);
-			log.debug("merge successful");
             return ret;
 
 		} catch (RuntimeException re) {
@@ -61,16 +55,10 @@ public class SynchConfigDAOImpl extends BaseDaoImpl<SynchConfigEntity, String> i
 	}
 
 	public SynchConfigEntity findById(java.lang.String id) {
-		log.debug("getting SynchConfig instance with id: " + id);
 
 		try {
             SynchConfigEntity instance = (SynchConfigEntity)getCriteria()
                     .add(Restrictions.idEq(id)).uniqueResult();
-			if (instance == null) {
-				log.debug("get successful, no instance found");
-			} else {
-				log.debug("get successful, instance found");
-			}
 			return instance;
 		} catch (RuntimeException re) {
 			log.error("get failed", re);
@@ -82,14 +70,11 @@ public class SynchConfigDAOImpl extends BaseDaoImpl<SynchConfigEntity, String> i
 	 * @see org.openiam.idm.srvc.synch.service.SynchConfigDAO#findAllConfig()
 	 */
 	public List<SynchConfigEntity> findAllConfig() {
-		log.debug("getting all synchronization configurations  "  );
         Criteria criteria = getCriteria().addOrder(Order.asc("name"));
         return (List<SynchConfigEntity>)criteria.list();
 	}
 
 	public int updateExecTime(String configId, Timestamp execTime) {
-		log.debug("Updates the last execution   "  );
-
 		Query qry = getSession().createQuery("UPDATE org.openiam.idm.srvc.synch.domain.SynchConfigEntity sc " +
                 " 					SET  sc.lastExecTime = :execTime  " +
                 " 					WHERE  sc.id = :configId	");
@@ -101,8 +86,6 @@ public class SynchConfigDAOImpl extends BaseDaoImpl<SynchConfigEntity, String> i
 	}
 
     public int updateLastRecProcessed(String configId,String processTime) {
-		log.debug("Updates the last execution   "  );
-
 		Query qry = getSession().createQuery(" UPDATE org.openiam.idm.srvc.synch.domain.SynchConfigEntity sc " +
                 " 					SET  sc.lastRecProcessed = :processTime  " +
                 " 					WHERE  sc.id = :configId	");

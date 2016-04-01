@@ -24,6 +24,9 @@ public class ContentProviderDaoImpl extends BaseDaoImpl<ContentProviderEntity, S
 		return "id";
 	}
 	
+    protected boolean cachable() {
+        return true;
+    }
 	
 
     @Override
@@ -68,6 +71,7 @@ public class ContentProviderDaoImpl extends BaseDaoImpl<ContentProviderEntity, S
 	            }
 	        }
 		}
+        criteria.setCacheable(this.cachable());
 		return criteria;
 	}
 
@@ -88,6 +92,7 @@ public class ContentProviderDaoImpl extends BaseDaoImpl<ContentProviderEntity, S
             criteria.add(Restrictions.isNull("isSSL"));
         else
             criteria.add(Restrictions.eq("isSSL", isSSL));
+        criteria.setCacheable(this.cachable());
         return criteria.list();
     }
 

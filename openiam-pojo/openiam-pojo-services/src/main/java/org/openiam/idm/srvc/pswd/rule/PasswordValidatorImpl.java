@@ -36,7 +36,9 @@ import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.policy.domain.PolicyDefParamEntity;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
+import org.openiam.idm.srvc.policy.dto.PolicyDefParam;
 import org.openiam.idm.srvc.policy.service.PolicyDefParamDAO;
+import org.openiam.idm.srvc.policy.service.PolicyService;
 import org.openiam.idm.srvc.pswd.dto.Password;
 import org.openiam.idm.srvc.pswd.dto.PasswordRule;
 import org.openiam.idm.srvc.pswd.service.PasswordHistoryDAO;
@@ -63,6 +65,10 @@ public class PasswordValidatorImpl implements PasswordValidator {
     protected LoginDAO loginDao;
     @Autowired
     protected PasswordHistoryDAO passwordHistoryDao;
+
+    @Autowired
+    protected PolicyService policyService;
+
     @Autowired
     @Qualifier("cryptor")
     protected Cryptor cryptor;
@@ -80,6 +86,43 @@ public class PasswordValidatorImpl implements PasswordValidator {
         LoginEntity lg = loginDao.getRecord(password.getPrincipal(), password.getManagedSysId());
         UserEntity usr = userDao.findById(lg.getUserId());
         validateForUser(pswdPolicy, password, usr, lg);
+    }
+
+    @Override
+    public List<PasswordRuleException> getAllViolatingRules(Policy pswdPolicy, Password password)
+            throws ObjectNotFoundException, IOException {
+        // get the user object for the principal
+        LoginEntity lg = loginDao.getRecord(password.getPrincipal(), password.getManagedSysId());
+        UserEntity usr = userDao.findById(lg.getUserId());
+
+        return getAllPossibleFailures(pswdPolicy, password, usr, lg);
+    }
+
+    public List<PasswordRuleException> getAllPossibleFailures(Policy pswdPolicy, Password password, UserEntity user, LoginEntity login) throws ObjectNotFoundException, IOException {
+        final List<PasswordRuleException> retVal = new LinkedList<>();
+        final List<AbstractPasswordRule> rules = getRules(pswdPolicy, password, user, login);
+        if (CollectionUtils.isNotEmpty(rules)) {
+            for (final AbstractPasswordRule rule : rules) {
+                try {
+                    rule.validate();
+                } catch (PasswordRuleException e) {
+                    retVal.add(e);
+                }
+            }
+        }
+        return retVal;
+    }
+
+    public void validateForUser(Policy policy, Password password, UserEntity usr, LoginEntity lg, List<AbstractPasswordRule> pwdRules) throws ObjectNotFoundException, IOException, PasswordRuleException{
+        if(CollectionUtils.isEmpty(pwdRules)){
+            pwdRules = getRules(policy, password, usr, lg);
+        }
+        if (CollectionUtils.isNotEmpty(pwdRules)) {
+            for (final AbstractPasswordRule rule : pwdRules) {
+                rule.validate();
+                log.info(String.format("Passed validation for: %s", rule));
+            }
+        }
     }
 
     @Override
@@ -118,7 +161,8 @@ public class PasswordValidatorImpl implements PasswordValidator {
         return exceptions;
     }
 
-    private List<AbstractPasswordRule> getRules(Policy pswdPolicy, Password password, UserEntity user, LoginEntity login)
+    @Override
+    public List<AbstractPasswordRule> getRules(Policy pswdPolicy, Password password, UserEntity user, LoginEntity login)
             throws ObjectNotFoundException, IOException {
         final List<AbstractPasswordRule> rules = new LinkedList<>();
         final List<PolicyDefParamEntity> defParam = policyDefParamDao.findPolicyDefParamByGroup(pswdPolicy.getPolicyDefId(), "PSWD_COMPOSITION");
@@ -156,9 +200,14 @@ public class PasswordValidatorImpl implements PasswordValidator {
                         rule.setUser(usr);
                         rule.setLg(lg);
                         rule.setPolicy(pswdPolicy);
-                        rule.setPasswordHistoryDao(passwordHistoryDao);
-                        rule.setCryptor(cryptor);
-                        rule.setKeyManagementService(keyManagementService);
+
+                        if(rule instanceof PasswordHistoryRule){
+                            PasswordHistoryRule pwdHistRule = (PasswordHistoryRule)rule;
+                            pwdHistRule.setPasswordHistoryDao(passwordHistoryDao);
+                            pwdHistRule.setCryptor(cryptor);
+                            pwdHistRule.setKeyManagementService(keyManagementService);
+                        }
+
                         rules.add(rule);
                     }
                 }

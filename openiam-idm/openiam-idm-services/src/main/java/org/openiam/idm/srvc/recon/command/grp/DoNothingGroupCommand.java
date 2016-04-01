@@ -19,8 +19,10 @@ public class DoNothingGroupCommand extends BaseReconciliationGroupCommand {
 
     @Override
     public boolean execute(ReconciliationSituation config, String principal, String mSysID, Group group, List<ExtensibleAttribute> attributes) {
-        log.debug("Entering DoNothingCommand");
-        log.debug("Do nothing for Group: " + principal);
+    	if(log.isDebugEnabled()) {
+	        log.debug("Entering DoNothingCommand");
+	        log.debug("Do nothing for Group: " + principal);
+    	}
 		try {
 			ProvisionGroup pGroup = new ProvisionGroup(group);
 			pGroup.setSrcSystemId(mSysID);

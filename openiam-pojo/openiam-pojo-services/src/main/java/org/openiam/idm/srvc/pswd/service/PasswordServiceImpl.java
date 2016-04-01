@@ -21,7 +21,9 @@
 package org.openiam.idm.srvc.pswd.service;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.collections.CollectionUtils;
@@ -30,6 +32,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.dozer.converter.LoginDozerConverter;
+import org.openiam.dozer.converter.PasswordHistoryDozerConverter;
 import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.exception.ObjectNotFoundException;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
@@ -43,12 +46,8 @@ import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.policy.service.PolicyDAO;
 import org.openiam.idm.srvc.policy.service.PolicyDataService;
-import org.openiam.idm.srvc.pswd.dto.Password;
-import org.openiam.idm.srvc.pswd.dto.PasswordResetTokenRequest;
-import org.openiam.idm.srvc.pswd.dto.PasswordResetTokenResponse;
-import org.openiam.idm.srvc.pswd.dto.PasswordRule;
-import org.openiam.idm.srvc.pswd.dto.PasswordValidationResponse;
-import org.openiam.idm.srvc.pswd.dto.ValidatePasswordResetTokenResponse;
+import org.openiam.idm.srvc.pswd.domain.PasswordHistoryEntity;
+import org.openiam.idm.srvc.pswd.dto.*;
 import org.openiam.idm.srvc.pswd.rule.PasswordRuleException;
 import org.openiam.idm.srvc.pswd.rule.PasswordRuleViolation;
 import org.openiam.idm.srvc.pswd.rule.PasswordValidator;
@@ -108,6 +107,9 @@ public class PasswordServiceImpl implements PasswordService {
 
     @Autowired
     protected PasswordPolicyProvider passwordPolicyProvider;
+
+    @Autowired
+    private PasswordHistoryDozerConverter passwordHistoryDozerConverter;
 
     private static final Log log = LogFactory.getLog(PasswordServiceImpl.class);
     private static final long DAY_AS_MILLIS = 86400000l;
@@ -219,6 +221,13 @@ public class PasswordServiceImpl implements PasswordService {
         return retVal;
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see
+     * org.openiam.idm.srvc.pswd.service.PasswordService#daysToPasswordExpiration
+     * (java.lang.String, java.lang.String, java.lang.String)
+     */
     @Override
     public int daysToPasswordExpiration(String principal,
                                         String managedSysId) {
@@ -240,6 +249,13 @@ public class PasswordServiceImpl implements PasswordService {
         return (int) diffInDays;
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see
+     * org.openiam.idm.srvc.pswd.service.PasswordService#isPasswordChangeAllowed
+     * (java.lang.String, java.lang.String, java.lang.String)
+     */
     @Override
     public boolean isPasswordChangeAllowed(String principal, String managedSysId) {
         boolean enabled = false;
@@ -368,5 +384,30 @@ public class PasswordServiceImpl implements PasswordService {
     	searchBean.setUserId(lg.getUserId());
     	searchBean.setContentProviderId(contentProviderId);
         return passwordPolicyProvider.getPasswordPolicyByUser(searchBean);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Set<PasswordHistory> getPasswordHistory(String id, Integer from, Integer count) {
+        Set<PasswordHistoryEntity> phESet = new HashSet<PasswordHistoryEntity>(passwordHistoryDao.getPasswordHistoryByLoginId(id, 0, count));
+        return passwordHistoryDozerConverter.convertToDTOSet(phESet, false);
+    }
+
+    @Override
+    public Policy getPasswordPolicy(LoginEntity lg) {
+        // Find a password policy for this user
+        // order of search, type, classification, domain, global
+
+        // get the user for this principal
+        log.info(String.format("login=%s", lg));
+//		final UserEntity user = userManager.getUser(lg.getUserId());
+        PasswordPolicyAssocSearchBean searchBean = new PasswordPolicyAssocSearchBean();
+        if (lg != null) {
+            searchBean.setUserId(lg.getUserId());
+            searchBean.setManagedSystemId(lg.getManagedSysId());
+            return passwordPolicyProvider.getPasswordPolicyByUser(searchBean);
+        } else {
+            return passwordPolicyProvider.getGlobalPasswordPolicy();
+        }
     }
 }

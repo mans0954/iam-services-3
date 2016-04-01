@@ -1,18 +1,9 @@
 package org.openiam.idm.srvc.pswd.domain;
 
 import java.util.Map;
+import java.util.Set;
 
-import javax.persistence.AttributeOverride;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import javax.persistence.*;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -51,6 +42,9 @@ public class IdentityQuestionEntity extends KeyEntity {
     
     @Transient
     private String displayName;
+
+	@OneToMany(mappedBy = "referenceId")
+	private Set<LanguageMappingEntity> languageMappings;
 	
 	public IdentityQuestGroupEntity getIdentityQuestGrp() {
 		return identityQuestGrp;
@@ -76,6 +70,15 @@ public class IdentityQuestionEntity extends KeyEntity {
 	public void setDisplayName(String displayName) {
 		this.displayName = displayName;
 	}
+
+	public Set<LanguageMappingEntity> getLanguageMappings() {
+		return languageMappings;
+	}
+
+	public void setLanguageMappings(Set<LanguageMappingEntity> languageMappings) {
+		this.languageMappings = languageMappings;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;

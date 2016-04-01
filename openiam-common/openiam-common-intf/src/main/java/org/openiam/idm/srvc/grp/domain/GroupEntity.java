@@ -14,6 +14,7 @@ import javax.persistence.*;
 import javax.validation.constraints.Size;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Fetch;
@@ -300,6 +301,31 @@ public class GroupEntity extends AbstractMetdataTypeEntity {
     				.findFirst();
     	return xref.isPresent() ? xref.get() : null;
     }
+
+	public void removeAttribute(final String id) {
+		if (id != null && this.attributes != null) {
+			final Set<GroupAttributeEntity> entrySet = this.attributes;
+			if (this.attributes != null) {
+				for (final Iterator<GroupAttributeEntity> it = this.attributes.iterator(); it.hasNext(); ) {
+					final GroupAttributeEntity entry = it.next();
+					if (entry != null && StringUtils.equals(entry.getId(), id)) {
+						it.remove();
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	public void addAttribute(final GroupAttributeEntity entity) {
+		if (entity != null) {
+			if (this.attributes == null) {
+				this.attributes = new HashSet<>();
+			}
+			entity.setGroup(this);
+			this.attributes.add(entity);
+		}
+	}
 
     public Set<GroupToGroupMembershipXrefEntity> getChildGroups() {
         return childGroups;

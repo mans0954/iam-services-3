@@ -37,6 +37,7 @@ import org.openiam.base.TreeObjectId;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.dozer.converter.LanguageDozerConverter;
 import org.openiam.dozer.converter.RoleDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
@@ -259,8 +260,8 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	}
 	
 	@Override
-	@LocalizedServiceGet
-	@Transactional(readOnly=true)
+	//@LocalizedServiceGet
+	//@Transactional(readOnly=true)
 	public Role getRoleLocalized(final String roleId, final String requesterId, final Language language) {
 		Role retVal = null;
 		 if (StringUtils.isNotBlank(roleId)) {
@@ -268,6 +269,15 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 			 retVal = roleDozerConverter.convertToDTO(entity, true);
 		 }
 		 return retVal;
+	}
+
+	@Override
+	public Role getRole(String roleId, String requesterId) {
+        Role retVal = null;
+        if (StringUtils.isNotBlank(roleId)) {
+            retVal = roleDataService.getRoleDTO(roleId);
+        }
+        return retVal;
 	}
 
 	@Override
@@ -415,12 +425,20 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 		return response;
 	}
 
-	@Override
+/*	@Override
 	public List<Role> findBeans(final RoleSearchBean searchBean, String requesterId, final int from, final int size) {
-        final List<RoleEntity> entityList = roleDataService.findBeans(searchBean, requesterId, from, size);
-        final List<Role> dtoList = roleDozerConverter.convertToDTOList(entityList, searchBean.isDeepCopy());
+		final List<RoleEntity> entityList = roleDataService.findBeans(searchBean, requesterId, from, size);
+        final List<Role> dtoList = roleDataService.findBeansDto(searchBean, requesterId, from, size);
         accessRightProcessor.process(searchBean, dtoList, entityList);
         return dtoList;
+	}*/
+
+	@Override
+	public List<Role> findBeans(final RoleSearchBean searchBean, String requesterId, final int from, final int size) {
+		final List<RoleEntity> entityList = roleDataService.findBeans(searchBean, requesterId, from, size);
+		final List<Role> dtoList = roleDozerConverter.convertToDTOList(entityList, searchBean.isDeepCopy());
+		accessRightProcessor.process(searchBean, dtoList, entityList);
+		return dtoList;
 	}
 
 	@Override
@@ -432,54 +450,39 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	@Override
 	@Deprecated
 	public List<Role> getRolesForResource(final String resourceId, String requesterId, boolean deepFlag,  final int from, final int size) {
-		final RoleSearchBean sb = new RoleSearchBean();
-		sb.addResourceId(resourceId);
-		sb.setDeepCopy(deepFlag);
-		return findBeans(sb, requesterId, from, size);
+        return roleDataService.getRolesDtoForResource(resourceId, requesterId, from, size);
 	}
 
 	@Override
 	@Deprecated
 	public int getNumOfRolesForResource(final String resourceId, String requesterId) {
-		final RoleSearchBean sb = new RoleSearchBean();
-		sb.addResourceId(resourceId);
-		return countBeans(sb, requesterId);
+        return roleDataService.getNumOfRolesForResource(resourceId, requesterId);
 	}
 
 	@Override
 	@Deprecated
 	public List<Role> getChildRoles(final String roleId, String requesterId, Boolean deepFlag, final  int from, final int size) {
-		final RoleSearchBean sb = new RoleSearchBean();
-		sb.addParentId(roleId);
-		sb.setDeepCopy(deepFlag);
-		return findBeans(sb, requesterId, from, size);
+        return roleDataService.getChildRolesDto(roleId, requesterId, from, size);
 	}
 
 	@Override
 	@Deprecated
 	public int getNumOfChildRoles(final String roleId, String requesterId) {
-		final RoleSearchBean sb = new RoleSearchBean();
-		sb.addParentId(roleId);
-		return countBeans(sb, requesterId);
+        return roleDataService.getNumOfChildRoles(roleId, requesterId);
 	}
 
 	@Override
 	@WebMethod
 	@Deprecated
 	public List<Role> getParentRoles(final String roleId, String requesterId, final int from, final int size) {
-		final RoleSearchBean sb = new RoleSearchBean();
-		sb.addChildId(roleId);
-		sb.setDeepCopy(false);
-		return findBeans(sb, requesterId, from, size);
+        return roleDataService.getParentRolesDto(roleId, requesterId, from, size);
 	}
 
 	@Override
 	@WebMethod
 	@Deprecated
 	public int getNumOfParentRoles(final String roleId, String requesterId) {
-		final RoleSearchBean sb = new RoleSearchBean();
-		sb.addChildId(roleId);
-		return countBeans(sb, requesterId);
+        return roleDataService.getNumOfParentRoles(roleId, requesterId);
 	}
 
 	@Override
@@ -539,9 +542,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	@Override
 	@Deprecated
 	public int getNumOfRolesForGroup(final String groupId, String requesterId) {
-		final RoleSearchBean sb = new RoleSearchBean();
-		sb.addGroupId(groupId);
-		return countBeans(sb, requesterId);
+        return roleDataService.getNumOfRolesForGroup(groupId, requesterId);
 	}
 
 	@Override
@@ -616,12 +617,11 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 		return response;
 	}
 
-    @Override
-    @Transactional(readOnly = true)
+/*    @Override
+    //@Transactional(readOnly = true)
     public List<Role> findRolesByAttributeValue(String attrName, String attrValue) {
-        return roleDozerConverter.convertToDTOList(
-                roleDataService.findRolesByAttributeValue(attrName, attrValue), true);
-    }
+        return roleDataService.findRolesDtoByAttributeValue(attrName, attrValue);
+    }*/
 
     @Override
     public List<TreeObjectId> getRolesWithSubRolesIds(List<String> roleIds, String requesterId) {

@@ -172,7 +172,9 @@ public abstract class AbstractAppTableCommand<Request extends RequestType, Respo
                 throw new ConnectorDataException(ErrorCode.INVALID_CONFIGURATION, "No PRINCIPAL_PASSWORD property found");
             }
         } else {
-            log.debug("Password will not be synced, set and reset");
+        	if(log.isDebugEnabled()) {
+        		log.debug("Password will not be synced, set and reset");
+        	}
         }
 
         final ResourceProp incudeInStatusSync = configuration.getResource().getResourceProperty(INCLUDE_IN_STATUS_SYNC);
@@ -199,7 +201,9 @@ public abstract class AbstractAppTableCommand<Request extends RequestType, Respo
                 throw new ConnectorDataException(ErrorCode.INVALID_CONFIGURATION, "No USER_STATUS_INACTIVE property found");
             }
         } else {
-            log.debug("Status will not be synced. Suspend and resume will not work!");
+        	if(log.isDebugEnabled()) {
+        		log.debug("Status will not be synced. Suspend and resume will not work!");
+        	}
         }
         final ResourceProp userGroupTName = configuration.getResource().getResourceProperty(USER_GROUP_MEMBERSHIP);
         if (userGroupTName != null)
@@ -622,7 +626,9 @@ public abstract class AbstractAppTableCommand<Request extends RequestType, Respo
                 grouptIdsClause.append(")");
                 sql += grouptIdsClause.toString();
 
-                log.debug("SQL CLAUSE TO DELETE MAMBERSHIP OF " + childObjectType + "=" + sql);
+                if(log.isDebugEnabled()) {
+                	log.debug("SQL CLAUSE TO DELETE MAMBERSHIP OF " + childObjectType + "=" + sql);
+                }
                 // check is exist
                 sql = String.format(sql, membershipTable, membershipUserColumn);
                 ps = con.prepareStatement(sql);

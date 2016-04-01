@@ -34,7 +34,8 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "UserIdentityAnswer", propOrder = {
         "questionId",
         "userId",
-        "questionAnswer"
+        "questionAnswer",
+        "questionText"
 })
 @DozerDTOCorrespondence(UserIdentityAnswerEntity.class)
 public class UserIdentityAnswer extends KeyDTO {
@@ -48,6 +49,7 @@ public class UserIdentityAnswer extends KeyDTO {
     protected String questionAnswer;
     @XmlTransient
     private boolean isEncrypted=false;
+    private String questionText;
 
     public UserIdentityAnswer() {
     }
@@ -82,5 +84,13 @@ public class UserIdentityAnswer extends KeyDTO {
 
     public void setIsEncrypted(boolean isEncrypted) {
         this.isEncrypted = isEncrypted;
+    }
+
+    public String getQuestionText() {
+        return questionText;
+    }
+
+    public void setQuestionText(String questionText) {
+        this.questionText = questionText;
     }
 }

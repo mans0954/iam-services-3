@@ -46,7 +46,9 @@ import org.openiam.idm.srvc.org.domain.OrganizationEntity;
         "operation",
         "parentOrganizations",
         "childOrganizations",
-        "selectable"
+        "selectable",
+        "organizationUserDTOs",
+        "classification"
 })
 @DozerDTOCorrespondence(OrganizationEntity.class)
 public class Organization extends AbstractEntitlementsDTO implements Serializable, Comparable<Organization> {
@@ -84,9 +86,13 @@ public class Organization extends AbstractEntitlementsDTO implements Serializabl
 
     protected String abbreviation;
 
+    protected String classification;
+
     protected String symbol;
 
     protected Boolean selected = Boolean.FALSE;
+
+    private Set<OrganizationUserDTO> organizationUserDTOs;
 
     protected AttributeOperationEnum operation = AttributeOperationEnum.NO_CHANGE;
 
@@ -351,6 +357,14 @@ public class Organization extends AbstractEntitlementsDTO implements Serializabl
         return getName().compareTo(o.getName());
     }
 
+	public Set<OrganizationUserDTO> getOrganizationUserDTOs() {
+        return organizationUserDTOs;
+    }
+
+    public void setOrganizationUserDTOs(Set<OrganizationUserDTO> organizationUserDTOs) {
+        this.organizationUserDTOs = organizationUserDTOs;
+    }
+
 	public String getOrganizationTypeId() {
 		return organizationTypeId;
 	}
@@ -379,6 +393,14 @@ public class Organization extends AbstractEntitlementsDTO implements Serializabl
 	public void setSelectable(boolean selectable) {
 		this.selectable = selectable;
 	}
+
+    public String getClassification() {
+        return classification;
+    }
+
+    public void setClassification(String classification) {
+        this.classification = classification;
+    }
 
 	@Override
     public boolean equals(Object o) {

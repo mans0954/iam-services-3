@@ -16,6 +16,7 @@ import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 	"from",
 	"to",
     "action",
+    "actions",
     "managedSysId",
     "source",
     "userId",
@@ -27,7 +28,8 @@ import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
     "secondaryTargetType",
     "authProviderId",
     "contentProviderId",
-    "uriPatternId"
+    "uriPatternId",
+    "userVsTargetAndFlag"
 })
 public class AuditLogSearchBean extends AbstractSearchBean<IdmAuditLogEntity, String> implements SearchBean<IdmAuditLogEntity, String> {
 
@@ -37,7 +39,8 @@ public class AuditLogSearchBean extends AbstractSearchBean<IdmAuditLogEntity, St
 	private String userId;
 	private Date from;
 	private Date to;
-	private String action;
+    private String action;
+	private String[] actions;
     private String result;
     private String managedSysId;
     private String source;
@@ -46,6 +49,11 @@ public class AuditLogSearchBean extends AbstractSearchBean<IdmAuditLogEntity, St
     private String parentId;
     private String secondaryTargetId;
     private String secondaryTargetType;
+    private Boolean userVsTargetAndFlag;
+
+    public AuditLogSearchBean() {
+        userVsTargetAndFlag = false;
+    }
 
     public void setParentOnly(){
         parentId = "null";
@@ -74,6 +82,14 @@ public class AuditLogSearchBean extends AbstractSearchBean<IdmAuditLogEntity, St
 
     public void setAction(String action) {
         this.action = action;
+    }
+
+    public String[] getActions() {
+        return actions;
+    }
+
+    public void setActions(String[] actions) {
+        this.actions = actions;
     }
 
     public String getManagedSysId() {
@@ -170,5 +186,31 @@ public class AuditLogSearchBean extends AbstractSearchBean<IdmAuditLogEntity, St
 		this.uriPatternId = uriPatternId;
 	}
 
-    
+    public Boolean getUserVsTargetAndFlag() {
+        return userVsTargetAndFlag;
+    }
+
+    public void setUserVsTargetAndFlag(Boolean userVsTargetAndFlag) {
+        this.userVsTargetAndFlag = userVsTargetAndFlag;
+    }
+
+
+    @Override
+    public String getCacheUniqueBeanKey() {
+        return new StringBuilder()
+                .append(userId != null ? userId : "")
+                .append(from != null ? from.hashCode() : "")
+                .append(to != null ? to.hashCode() : "")
+                .append(action != null ? action : "")
+                .append(result != null ? result : "")
+                .append(managedSysId != null ? managedSysId : "")
+                .append(source != null ? source : "")
+                .append(targetId != null ? targetId : "")
+                .append(targetType != null ? targetType : "")
+                .append(parentId != null ? parentId : "")
+                .append(secondaryTargetId != null ? secondaryTargetId : "")
+                .append(secondaryTargetType != null ? secondaryTargetType : "")
+                .append(userVsTargetAndFlag != null ? userVsTargetAndFlag : "")
+                .append(getKey() != null ? getKey() : "")
+                .toString();    }
 }

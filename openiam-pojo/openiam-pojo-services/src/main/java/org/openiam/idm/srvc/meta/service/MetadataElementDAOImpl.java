@@ -7,6 +7,7 @@ import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
+import org.openiam.core.dao.OrderDaoImpl;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
@@ -22,17 +23,22 @@ import java.util.Set;
  * DAO Implementation for MetadataElement
  */
 @Repository("metadataElementDAO")
-public class MetadataElementDAOImpl extends BaseDaoImpl<MetadataElementEntity, String> implements MetadataElementDAO {
+public class MetadataElementDAOImpl extends OrderDaoImpl<MetadataElementEntity, String> implements MetadataElementDAO {
 
 
     @Override
+    protected boolean cachable() {
+        return true;
+    }
+
+    @Override
     public MetadataElementEntity findByAttrNameTypeId(String attrName, String typeId) {
-        return (MetadataElementEntity)getCriteria().add(Restrictions.eq("attributeName",attrName)).add(Restrictions.eq("metadataType.id",typeId)).uniqueResult();
+        return (MetadataElementEntity) getCriteria().setCacheable(cachable()).add(Restrictions.eq("attributeName", attrName)).add(Restrictions.eq("metadataType.id", typeId)).uniqueResult();
     }
 
     @Override
     public String findIdByAttrNameTypeId(String attrName, String typeId) {
-        return (String)getCriteria().add(Restrictions.eq("attributeName", attrName)).add(Restrictions.eq("metadataType.id", typeId)).setProjection(Projections.id()).uniqueResult();
+        return (String) getCriteria().setCacheable(cachable()).add(Restrictions.eq("attributeName", attrName)).add(Restrictions.eq("metadataType.id", typeId)).setProjection(Projections.id()).uniqueResult();
     }
 
     @Override
@@ -77,6 +83,42 @@ public class MetadataElementDAOImpl extends BaseDaoImpl<MetadataElementEntity, S
 		return criteria;
 	}
 	
+	@Override
+    protected Criteria getExampleCriteria(final MetadataElementEntity entity) {
+        final Criteria criteria = getCriteria();
+        if (StringUtils.isNotBlank(entity.getId())) {
+            criteria.add(Restrictions.eq("id", entity.getId()));
+        } else {
+            setAttributeNameCriteria(criteria, entity.getAttributeName());
+            if (StringUtils.isNotBlank(entity.getDataType())) {
+                criteria.add(Restrictions.eq("dataType", entity.getDataType()));
+            }
+
+            if (entity.getMetadataType() != null && StringUtils.isNotBlank(entity.getMetadataType().getId())) {
+                final String metadataTypeId = entity.getMetadataType().getId();
+                criteria.add(Restrictions.eq("metadataType.id", metadataTypeId));
+            }
+
+            if (CollectionUtils.isNotEmpty(entity.getTemplateSet())) {
+                final Set<String> templateIdSet = new HashSet<String>();
+                for (final MetadataElementPageTemplateXrefEntity xref : entity.getTemplateSet()) {
+                    if (xref.getTemplate() != null && StringUtils.isNotBlank(xref.getTemplate().getId())) {
+                        templateIdSet.add(xref.getTemplate().getId());
+                    }
+                }
+
+                setTemplateCriteria(criteria, templateIdSet);
+            }
+
+            if (entity.getResource() != null && StringUtils.isNotEmpty(entity.getResource().getId())) {
+                criteria.add(Restrictions.eq("resource.id", entity.getResource().getId()));
+            }
+        }
+        criteria.setCacheable(this.cachable());
+        return criteria;
+    }
+
+
 	private void setTemplateCriteria(final Criteria criteria, final Set<String> templateIdSet) {
 		if(CollectionUtils.isNotEmpty(templateIdSet)) {
 			criteria.createAlias("templateSet", "xref")
@@ -86,6 +128,7 @@ public class MetadataElementDAOImpl extends BaseDaoImpl<MetadataElementEntity, S
 	}
 	
 	private void setAttributeNameCriteria(final Criteria criteria, final String attributeName) {
+        criteria.setCacheable(cachable());		
 		if (StringUtils.isNotBlank(attributeName)) {
             String name = attributeName;
             MatchMode matchMode = null;

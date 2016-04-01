@@ -10,9 +10,9 @@ import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
+import org.openiam.idm.searchbeans.ManagedSysSearchBean;
 import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
-import org.openiam.idm.srvc.msg.dto.ManagedSysSearchBean;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -89,6 +89,7 @@ public class ManagedSysDAOImpl extends BaseDaoImpl<ManagedSysEntity, String> imp
 	 */
     @Override
     @SuppressWarnings(value = "unchecked")
+    @Deprecated
     public ManagedSysEntity findByName(String name) {
         Criteria criteria = getCriteria().add(Restrictions.eq("name",name)).addOrder(Order.asc("name")).addOrder(Order.asc(getPKfieldName()));
         List<ManagedSysEntity> results = (List<ManagedSysEntity>)criteria.list();
@@ -103,6 +104,7 @@ public class ManagedSysDAOImpl extends BaseDaoImpl<ManagedSysEntity, String> imp
 
     @Override
     @SuppressWarnings(value = "unchecked")
+    @Deprecated
     public ManagedSysEntity findByResource(String resourceId, String status) {
         Criteria criteria = getCriteria()
                 .add(Restrictions.eq("resource.id",resourceId))
@@ -123,6 +125,7 @@ public class ManagedSysDAOImpl extends BaseDaoImpl<ManagedSysEntity, String> imp
 
     @Override
     @SuppressWarnings(value = "unchecked")
+    @Deprecated
     public String findIdByResource(String resourceId, String status) {
         Criteria criteria = getCriteria()
                 .add(Restrictions.eq("resourceId",resourceId))
