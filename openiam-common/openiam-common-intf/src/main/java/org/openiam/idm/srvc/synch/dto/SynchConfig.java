@@ -51,7 +51,6 @@ import java.util.List;
         "attributeNamesLookup",
         "searchScope",
         "lastRecProcessed",
-        "wsScript",
         "wsUrl",
 		"wsUri",
         "wsNameSpace",
@@ -108,7 +107,6 @@ public class SynchConfig extends KeyNameDTO implements MatchConfig {
     private String attributeNamesLookup;
     private SearchScopeType searchScope = SearchScopeType.SUBTREE_SCOPE;
     private String wsUrl;
-    private String wsScript;
     private String wsUri;
     private String wsNameSpace;
     private String wsOperation;
@@ -439,14 +437,6 @@ public class SynchConfig extends KeyNameDTO implements MatchConfig {
 
     public void setWsUrl(String wsUrl) {
         this.wsUrl = wsUrl;
-    }
-
-    public String getWsScript() {
-        return wsScript;
-    }
-
-    public void setWsScript(String wsScript) {
-        this.wsScript = wsScript;
     }
 
     public List<SynchReview> getSynchReviews() {

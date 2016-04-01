@@ -122,8 +122,8 @@ public class SynchConfigEntity extends AbstractKeyNameEntity {
     private String wsAttributes;
     @Column(name = "WS_TARGET_ENTITY_PATH", length = 255)
     private String wsTargetEntityPath;
-    @Column(name="WS_SCRIPT",length=100)
-    private String wsScript;
+/*    @Column(name="WS_SCRIPT",length=100)
+    private String wsScript;*/
     @OneToMany(mappedBy="synchConfig", cascade=CascadeType.ALL, fetch=FetchType.LAZY, orphanRemoval=true)
     private List<SynchReviewEntity> synchReviews;
 
@@ -445,13 +445,13 @@ public class SynchConfigEntity extends AbstractKeyNameEntity {
         this.wsUrl = wsUrl;
     }
 
-    public String getWsScript() {
+/*    public String getWsScript() {
         return wsScript;
     }
 
     public void setWsScript(String wsScript) {
         this.wsScript = wsScript;
-    }
+    }*/
 
     public List<SynchReviewEntity> getSynchReviews() {
         return synchReviews;
@@ -601,7 +601,9 @@ public class SynchConfigEntity extends AbstractKeyNameEntity {
         if (!preSyncScript.equals(that.preSyncScript)) return false;
         if (!postSyncScript.equals(that.postSyncScript)) return false;
         if (!validationRule.equals(that.validationRule)) return false;
+/*
         if (wsScript != null ? !wsScript.equals(that.wsScript) : that.wsScript != null) return false;
+*/
         return !(wsUrl != null ? !wsUrl.equals(that.wsUrl) : that.wsUrl != null);
 
     }
@@ -647,7 +649,9 @@ public class SynchConfigEntity extends AbstractKeyNameEntity {
         result = 31 * result + (attributeNamesLookup != null ? attributeNamesLookup.hashCode() : 0);
         result = 31 * result + (searchScope != null ? searchScope.hashCode() : 0);
         result = 31 * result + (wsUrl != null ? wsUrl.hashCode() : 0);
+/*
         result = 31 * result + (wsScript != null ? wsScript.hashCode() : 0);
+*/
 		result = 31 * result + (wsUri != null ? wsUri.hashCode() : 0);
         result = 31 * result + (wsNameSpace != null ? wsNameSpace.hashCode() : 0);
         result = 31 * result + (wsOperation != null ? wsOperation.hashCode() : 0);

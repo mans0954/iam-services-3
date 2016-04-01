@@ -285,13 +285,13 @@ public class WSAdapter extends AbstractSrcAdapter { // implements SourceAdapter
                 return startSynchReview(config, sourceReview, resultReview, validationScript, transformScripts, matchRule);
             }
 
-            WSOperationCommand serviceCmd = getServiceCommand(config.getWsScript());
+/*            WSOperationCommand serviceCmd = getServiceCommand(config.getWsScript());
             if (serviceCmd == null) {
                 SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
                 resp.setErrorCode(ResponseCode.CLASS_NOT_FOUND);
                 return resp;
-            }
-            List<LineObject> lineObjectList = serviceCmd.execute(config);
+            }*/
+            List<LineObject> lineObjectList = this.getObjects(config);
 
             if (CollectionUtils.isNotEmpty(lineObjectList)) {
                 lineHeader = lineObjectList.get(0);
@@ -374,12 +374,12 @@ public class WSAdapter extends AbstractSrcAdapter { // implements SourceAdapter
     }
 
     public Response testConnection(SynchConfig config) {
-        WSOperationCommand serviceCmd = getServiceCommand(config.getWsScript());
+/*        WSOperationCommand serviceCmd = getServiceCommand(config.getWsScript());
         if (serviceCmd == null) {
             Response resp = new Response(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.CLASS_NOT_FOUND);
             return resp;
-        }
+        }*/
         Response resp = new Response(ResponseStatus.SUCCESS);
         return resp;
     }
