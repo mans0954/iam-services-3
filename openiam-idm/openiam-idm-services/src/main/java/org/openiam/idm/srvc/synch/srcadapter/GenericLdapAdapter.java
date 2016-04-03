@@ -62,7 +62,7 @@ public abstract class GenericLdapAdapter extends AbstractSrcAdapter {
         LineObject lineHeader = null;
         double mostRecentRecord = 0L;
         String lastRecProcessed = null;
-        if(log.isDebugEnabled()) {
+        if (log.isDebugEnabled()) {
             log.debug("LDAP startSynch CALLED.^^^^^^^^");
         }
 
@@ -107,6 +107,10 @@ public abstract class GenericLdapAdapter extends AbstractSrcAdapter {
                 resp.setErrorCode(ResponseCode.CLASS_NOT_FOUND);
                 return resp;
             }
+            if (StringUtils.isNotBlank(config.getQuery()) && config.getQuery().startsWith("--file=")) {
+                config.setQuery(fileWebService.getFile(config.getQuery().replace("--file=", "")).replace("\n",""));
+            }
+
             // get the last execution time
             if ("INCREMENTAL".equalsIgnoreCase(config.getSynchType())) {
                 lastRecProcessed = config.getLastRecProcessed();
@@ -116,7 +120,7 @@ public abstract class GenericLdapAdapter extends AbstractSrcAdapter {
                 //looking for filter like (&(objectclass=user)(modifyTimeStamp>=?))
                 String ldapFilterQuery = config.getQuery();
                 config.setQuery(ldapFilterQuery.replace("?", lastRecProcessed));
-                if(log.isDebugEnabled()) {
+                if (log.isDebugEnabled()) {
                     log.debug("Updated ldap filter = " + config.getQuery());
                 }
             }
@@ -138,7 +142,7 @@ public abstract class GenericLdapAdapter extends AbstractSrcAdapter {
             List<LineObject> processingData = new LinkedList<LineObject>();
             for (String baseou : ouByParent) {
                 int recordsInOUCounter = 0;
-                if(log.isDebugEnabled()) {
+                if (log.isDebugEnabled()) {
                     log.debug("========== Processed: " + totalRecords + " records");
                 }
                 //TimeOut Error String attrIds[] = {"objectClass",""1.1,"+","*"};
@@ -154,7 +158,7 @@ public abstract class GenericLdapAdapter extends AbstractSrcAdapter {
                 searchCtls.setCountLimit(SIZE_LIMIT);
                 searchCtls.setSearchScope(config.getSearchScope().ordinal());
                 searchCtls.setReturningAttributes(attrIds);
-                if(log.isDebugEnabled()) {
+                if (log.isDebugEnabled()) {
                     log.debug("Search: base dn=" + baseou + ", filter= " + config.getQuery() + ", attributes=" + attrIds);
                 }
                 byte[] cookie = null;
@@ -164,9 +168,9 @@ public abstract class GenericLdapAdapter extends AbstractSrcAdapter {
                 do {
                     pageCounter++;
                     pageRowCount = 0;
-                    try{
+                    try {
                         results = ctx.search(baseou, config.getQuery(), searchCtls);
-                    } catch(ServiceUnavailableException sux){
+                    } catch (ServiceUnavailableException sux) {
                         log.error(sux);
                         break;
                     }
@@ -174,16 +178,16 @@ public abstract class GenericLdapAdapter extends AbstractSrcAdapter {
                         pageRowCount++;
                         totalRecords++;
                         recordsInOUCounter++;
-                        if(log.isDebugEnabled()) {
-                            log.debug("LAST LDAP SYNC COUNTERS: TotalRecords="+totalRecords+"");
+                        if (log.isDebugEnabled()) {
+                            log.debug("LAST LDAP SYNC COUNTERS: TotalRecords=" + totalRecords + "");
                         }
                         SearchResult sr = (SearchResult) results.nextElement();
-                        if(log.isDebugEnabled()) {
+                        if (log.isDebugEnabled()) {
                             log.debug("SearchResultElement   : " + sr.getName());
                             log.debug("Attributes: " + sr.getAttributes());
                         }
                         LineObject rowObj = new LineObject();
-                        if(log.isDebugEnabled()) {
+                        if (log.isDebugEnabled()) {
                             log.debug("-New Row to Synchronize --" + ctr++);
                         }
                         Attributes attrs = sr.getAttributes();
@@ -193,19 +197,19 @@ public abstract class GenericLdapAdapter extends AbstractSrcAdapter {
                                 javax.naming.directory.Attribute attr = (javax.naming.directory.Attribute) ae.next();
                                 List<String> valueList = new ArrayList<String>();
                                 String key = attr.getID();
-                                if(log.isDebugEnabled()) {
+                                if (log.isDebugEnabled()) {
                                     log.debug("attribute id=: " + key);
                                 }
                                 for (NamingEnumeration e = attr.getAll(); e.hasMore(); ) {
                                     Object o = e.next();
-                                    if(o instanceof byte[]){
-                                        valueList.add(Hex.encodeHexString((byte[])o));
-                                        if(log.isDebugEnabled()) {
+                                    if (o instanceof byte[]) {
+                                        valueList.add(Hex.encodeHexString((byte[]) o));
+                                        if (log.isDebugEnabled()) {
                                             log.debug("- value:=" + Hex.encodeHexString((byte[]) o));
                                         }
                                     } else if (o.toString() != null) {
                                         valueList.add(o.toString());
-                                        if(log.isDebugEnabled()) {
+                                        if (log.isDebugEnabled()) {
                                             log.debug("- value:=" + o.toString());
                                         }
                                     }
@@ -215,7 +219,7 @@ public abstract class GenericLdapAdapter extends AbstractSrcAdapter {
                                     rowAttr.populateAttribute(key, valueList);
                                     rowObj.put(key, rowAttr);
                                 } else {
-                                    if(log.isDebugEnabled()) {
+                                    if (log.isDebugEnabled()) {
                                         log.debug("- value is null");
                                     }
                                 }
@@ -233,7 +237,7 @@ public abstract class GenericLdapAdapter extends AbstractSrcAdapter {
                         processingData.add(rowObj);
 
                     }
-                    if(log.isDebugEnabled()) {
+                    if (log.isDebugEnabled()) {
                         log.debug("LDAP Search PAGE RESULT: Page=" + pageCounter + ", rows= " + pageRowCount + " have been processed.");
                     }
                     Control[] controls = ctx.getResponseControls();
@@ -249,7 +253,7 @@ public abstract class GenericLdapAdapter extends AbstractSrcAdapter {
                     ctx.setRequestControls(new Control[]{new PagedResultsControl(PAGE_SIZE, cookie, Control.CRITICAL)});
                 } while (cookie != null);
 
-                if(log.isDebugEnabled()) {
+                if (log.isDebugEnabled()) {
                     log.debug("Search ldap result OU=" + baseou + " found = " + recordsInOUCounter + " records.");
                 }
             }
@@ -257,8 +261,8 @@ public abstract class GenericLdapAdapter extends AbstractSrcAdapter {
                 processLineObject(rowObj, config, resultReview, validationScript, transformScripts, matchRule);
                 Thread.sleep(100);
             }
-            if(log.isDebugEnabled()) {
-                log.debug("EXECUTION TIME: "+(System.currentTimeMillis()-startTime));
+            if (log.isDebugEnabled()) {
+                log.debug("EXECUTION TIME: " + (System.currentTimeMillis() - startTime));
             }
 
         } catch (ClassNotFoundException cnfe) {
@@ -274,12 +278,12 @@ public abstract class GenericLdapAdapter extends AbstractSrcAdapter {
 //            auditLogProvider.persist(auditBuilder);
             SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.FILE_EXCEPTION);
-            if(log.isDebugEnabled()) {
+            if (log.isDebugEnabled()) {
                 log.debug("LDAP SYNCHRONIZATION COMPLETE WITH ERRORS ^^^^^^^^");
             }
             return resp;
 
-        }  catch (NamingException ne) {
+        } catch (NamingException ne) {
             log.error(ne);
             SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.CLASS_NOT_FOUND);
@@ -304,7 +308,7 @@ public abstract class GenericLdapAdapter extends AbstractSrcAdapter {
             }
             closeConnection(ctx);
         }
-        if(log.isDebugEnabled()) {
+        if (log.isDebugEnabled()) {
             log.debug("LDAP SYNCHRONIZATION COMPLETE^^^^^^^^");
         }
 
@@ -384,7 +388,7 @@ public abstract class GenericLdapAdapter extends AbstractSrcAdapter {
         System.setProperty("javax.net.ssl.trustStore", keystore);
 
         String hostUrl = config.getSrcHost(); //   managedSys.getHostUrl();
-        if(log.isDebugEnabled()) {
+        if (log.isDebugEnabled()) {
             log.debug("Directory host url:" + hostUrl);
         }
 
