@@ -53,17 +53,21 @@ public class ProvisionDispatcher implements Sweepable {
             @Override
             public Object doInJms(Session session, QueueBrowser browser) throws JMSException {
                 synchronized (mutex) {
-                    final List<ProvisionDataContainer> list = new ArrayList<ProvisionDataContainer>();
+                    //final List<ProvisionDataContainer> list = new ArrayList<ProvisionDataContainer>();
                     Enumeration e = browser.getEnumeration();
-                    int numMsg = 0;
+                    //int numMsg = 0;
                     while (e.hasMoreElements()) {
+                        //numMsg++;
+                        final ProvisionDataContainer data = (ProvisionDataContainer) ((ObjectMessage) jmsTemplate.receive(queue)).getObject();
+                        provisionTransactionHelper.process(data);
                         e.nextElement();
-                        numMsg++;
                     }
+                    /*
                     for (int i = 0; i < numMsg; i++) {
                         list.add((ProvisionDataContainer) ((ObjectMessage) jmsTemplate.receive(queue)).getObject());
                     }
                     process(list);
+                    */
                     return Boolean.TRUE;
                 }
             }

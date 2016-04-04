@@ -290,7 +290,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     private void mergeAttribute(final ResourceEntity bean, final ResourceEntity dbObject) {
 
     	/* 
-    	 * if the incoming bean is from the database, there is no reason to do any merging 
+         * if the incoming bean is from the database, there is no reason to do any merging
     	 * This was written to avoid merging  of attributes when you call findById on the resourceService,
     	 * and then save the same object (see ManagedSystemServiceImpl.updateMangagedSys)
     	 */
@@ -412,7 +412,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "resources", key = "{ #searchBean.cacheUniqueBeanKey, #from, #size, #language}")
+    @Cacheable(value = "resources-hack", key = "{ #searchBean.cacheUniqueBeanKey, #from, #size, #language}")
     public List<Resource> findBeansLocalizedDto(final ResourceSearchBean searchBean, final int from, final int size, final LanguageEntity language) {
         //List<ResourceEntity> resourceEntityList = this.findBeansLocalized(searchBean, from, size, language);
 
@@ -873,6 +873,7 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     public Resource getResourceDTO(String resourceId) {
         return getResourceDTO(resourceId, true);
     }
+
     @Override
     @Transactional(readOnly = true)
     @Cacheable(value = "resources", key = "{ #resourceId, #isDeepCopy}")
@@ -930,7 +931,8 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     @Override
     @Caching(evict = {
             @CacheEvict(value = "resources", allEntries = true),
-            @CacheEvict(value = "resourcePropCache", allEntries = true)
+            @CacheEvict(value = "resourcePropCache", allEntries = true),
+            @CacheEvict(value = "resources-hack", allEntries = true)
     })
     @Transactional
     public ResourceEntity saveResource(Resource resource, final String requesterId) throws BasicDataServiceException {
@@ -993,9 +995,17 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     }
 
     @Override
-    @CacheEvict(value = "resources", allEntries = true)
+    @Caching(evict = {
+            @CacheEvict(value = "resources", allEntries = true),
+            @CacheEvict(value = "resources-hack", allEntries = true)
+    })
     @Transactional
     public void removeUserFromResource(String resourceId, String userId, String requesterId, IdmAuditLog idmAuditLog) throws BasicDataServiceException {
+
+        if (resourceId == null || userId == null) {
+            throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "ResourceId or UserId is not set");
+        }
+
         idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.REMOVE_USER_FROM_RESOURCE.value());
         UserEntity userEntity = userDataService.getUser(userId);
@@ -1006,16 +1016,23 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
 
         idmAuditLog.setAuditDescription(String.format("Remove user %s from resource: %s", userId, resourceId));
 
-        if (resourceId == null || userId == null) {
-            throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "ResourceId or UserId is not set");
-        }
+
         userDataService.removeUserFromResource(userId, resourceId);
     }
 
     @Override
     @Transactional
-    @CacheEvict(value = "resources", allEntries = true)
+    @Caching(evict = {
+            @CacheEvict(value = "resources", allEntries = true),
+            @CacheEvict(value = "resources-hack", allEntries = true)
+    })
     public void addUserToResource(String resourceId, String userId, String requesterId, IdmAuditLog idmAuditLog) throws BasicDataServiceException {
+
+
+        if (resourceId == null || userId == null) {
+            throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "ResourceId or UserId is not set");
+        }
+
         idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.ADD_USER_TO_RESOURCE.value());
         UserEntity userEntity = userDataService.getUser(userId);
@@ -1026,15 +1043,15 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
 
         idmAuditLog.setAuditDescription(String.format("Add user %s to resource: %s", userId, resourceId));
 
-        if (resourceId == null || userId == null) {
-            throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "ResourceId or UserId is not set");
-        }
 
         userDataService.addUserToResource(userId, resourceId);
     }
 
     @Override
-    @CacheEvict(value = "resources", allEntries = true)
+    @Caching(evict = {
+            @CacheEvict(value = "resources", allEntries = true),
+            @CacheEvict(value = "resources-hack", allEntries = true)
+    })
     @Transactional
     public void deleteResourceWeb(String resourceId, String requesterId) throws BasicDataServiceException {
         if (resourceId == null) {
@@ -1046,7 +1063,10 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     }
 
     @Override
-    @CacheEvict(value = "resources", allEntries = true)
+    @Caching(evict = {
+            @CacheEvict(value = "resources", allEntries = true),
+            @CacheEvict(value = "resources-hack", allEntries = true)
+    })
     @Transactional
     public void addChildResourceWeb(String resourceId, String childResourceId, String requesterId, IdmAuditLog idmAuditLog) throws BasicDataServiceException {
         idmAuditLog.setRequestorUserId(requesterId);
@@ -1064,7 +1084,10 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     }
 
     @Override
-    @CacheEvict(value = "resources", allEntries = true)
+    @Caching(evict = {
+            @CacheEvict(value = "resources", allEntries = true),
+            @CacheEvict(value = "resources-hack", allEntries = true)
+    })
     @Transactional
     public void deleteChildResourceWeb(String resourceId, String memberResourceId, String requesterId, IdmAuditLog idmAuditLog) throws BasicDataServiceException {
         idmAuditLog.setRequestorUserId(requesterId);
@@ -1086,7 +1109,10 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     }
 
     @Override
-    @CacheEvict(value = "resources", allEntries = true)
+    @Caching(evict = {
+            @CacheEvict(value = "resources", allEntries = true),
+            @CacheEvict(value = "resources-hack", allEntries = true)
+    })
     @Transactional
     public void addGroupToResourceWeb(String resourceId, String groupId, String requesterId, IdmAuditLog idmAuditLog) throws BasicDataServiceException {
         idmAuditLog.setRequestorUserId(requesterId);
@@ -1104,8 +1130,21 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
         this.addResourceGroup(resourceId, groupId);
     }
 
+    //TODO fix me
+    @Caching(evict = {
+            @CacheEvict(value = "resources", key = "{#roleId}"),
+            @CacheEvict(value = "resources-hack", allEntries = true)
+    })
+    public void invalidateCache(String roleId) {
+        //TODO fix me
+        //FIXME we added this together to fix UI USER-Resource entitlements. (IDM-3179)
+    }
+
     @Override
-    @CacheEvict(value = "resources", allEntries = true)
+    @Caching(evict = {
+            @CacheEvict(value = "resources", allEntries = true),
+            @CacheEvict(value = "resources-hack", allEntries = true)
+    })
     @Transactional
     public void removeGroupToResource(String resourceId, String groupId, String requesterId, IdmAuditLog idmAuditLog) throws BasicDataServiceException {
         idmAuditLog.setRequestorUserId(requesterId);
@@ -1124,7 +1163,10 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     }
 
     @Override
-    @CacheEvict(value = "resources", allEntries = true)
+    @Caching(evict = {
+            @CacheEvict(value = "resources", allEntries = true),
+            @CacheEvict(value = "resources-hack", allEntries = true)
+    })
     @Transactional
     public void addRoleToResourceWeb(String resourceId, String roleId, String requesterId, IdmAuditLog idmAuditLog) throws BasicDataServiceException {
         idmAuditLog.setRequestorUserId(requesterId);
@@ -1144,7 +1186,10 @@ public class ResourceServiceImpl implements ResourceService, ApplicationContextA
     }
 
     @Override
-    @CacheEvict(value = "resources", allEntries = true)
+    @Caching(evict = {
+            @CacheEvict(value = "resources", allEntries = true),
+            @CacheEvict(value = "resources-hack", allEntries = true)
+    })
     @Transactional
     public void removeRoleToResource(String resourceId, String roleId, String requesterId, IdmAuditLog idmAuditLog) throws BasicDataServiceException {
         idmAuditLog.setRequestorUserId(requesterId);

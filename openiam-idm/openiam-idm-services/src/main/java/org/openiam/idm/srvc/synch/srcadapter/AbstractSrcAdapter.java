@@ -17,6 +17,7 @@ import org.openiam.dozer.converter.LoginDozerConverter;
 import org.openiam.dozer.converter.SynchReviewDozerConverter;
 import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
+import org.openiam.idm.srvc.file.ws.FileWebService;
 import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.synch.domain.SynchReviewEntity;
 import org.openiam.idm.srvc.synch.domain.SynchReviewRecordEntity;
@@ -73,6 +74,10 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
     protected IdentitySynchService synchService;
     @Autowired
     protected SynchReviewDozerConverter synchReviewDozerConverter;
+
+    @Autowired
+    protected FileWebService fileWebService;
+
     @Autowired
     @Qualifier("configurableGroovyScriptEngine")
     protected ScriptIntegration scriptRunner;

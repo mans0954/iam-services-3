@@ -22,19 +22,23 @@ import java.util.List;
 public interface RoleDataService {
 
     public RoleEntity getRole(String roleId);
+
     public RoleEntity getRole(String roleId, String requesterId);
+
     public RoleEntity getRoleByName(final String roleName, String requesterId);
 
     public Role getRoleDtoByName(final String roleName, String requesterId);
 
+    public Role getRoleDtoByName(String roleName, String requesterId, boolean deepCopy);
+
     public RoleEntity getRoleLocalized(final String roleId, final String requestorId, final LanguageEntity language);
 
     public Role getRoleDtoLocalized(final String roleId, final String requesterId, final LanguageEntity language);
-    
+
     public void saveRole(final RoleEntity role, final String requestorId) throws BasicDataServiceException;
 
     public void addRequiredAttributes(RoleEntity role);
-    
+
     public void removeRole(String roleId);
 
     public void savePolicy(RolePolicyEntity rPolicy);
@@ -80,11 +84,11 @@ public interface RoleDataService {
      * @param groupId
      * @return
      */
-     public List<RoleEntity> getRolesInGroup(String groupId, String requesterId, final int from, final int size);
+    public List<RoleEntity> getRolesInGroup(String groupId, String requesterId, final int from, final int size);
 
-     public List<Role> getRolesDtoInGroup(final String groupId, final String requesterId, int from, int size);
+    public List<Role> getRolesDtoInGroup(final String groupId, final String requesterId, int from, int size);
 
-     public int getNumOfRolesForGroup(final String groupId, String requesterId);
+    public int getNumOfRolesForGroup(final String groupId, String requesterId);
 
 
     /**
@@ -95,11 +99,11 @@ public interface RoleDataService {
      * roleService.addRoleToGroup(roleId, groupId);<br>
      * </code>
      *
-     * @param groupId  The group for which the roleId is to be added .
-     * @param roleId The roleId which is to be added to the group.
+     * @param groupId The group for which the roleId is to be added .
+     * @param roleId  The roleId which is to be added to the group.
      */
     public void addGroupToRole(String roleId, String groupId);
-    
+
     public void validateGroup2RoleAddition(String roleId, String groupId) throws BasicDataServiceException;
 
     /**
@@ -130,8 +134,8 @@ public interface RoleDataService {
      * roleService.addUserToRole(roleId, userId);<br>
      * </code>
      *
-     * @param roleId   The roleId to which the user will be associated.
-     * @param userId   The userId to which the roleId is to be added .
+     * @param roleId The roleId to which the user will be associated.
+     * @param userId The userId to which the roleId is to be added .
      */
     public void addUserToRole(String roleId, String userId);
 
@@ -168,33 +172,35 @@ public interface RoleDataService {
      * @return
      */
     public List<Role> getUserRolesAsFlatList(final String userId);
-    
+
     public List<RoleEntity> findBeans(final RoleSearchBean searchBean, final String requesterId, final int from, final int size);
 
     public List<Role> findBeansDto(RoleSearchBean searchBean, final String requesterId, int from, int size);
-    
+
     public int countBeans(final RoleSearchBean searchBean, final String requesterId);
 
     public List<RoleEntity> findRolesByAttributeValue(String attrName, String attrValue);
 
     public List<Role> findRolesDtoByAttributeValue(String attrName, String attrValue);
 
-    public List<Role> findRolesDtoByAttributeValue(String attrName, String attrValue,boolean deepCopy);
+    public List<Role> findRolesDtoByAttributeValue(String attrName, String attrValue, boolean deepCopy);
 
     public List<RoleEntity> getRolesForResource(final String resourceId, final String requesterId, final int from, final int size);
 
     public List<Role> getRolesDtoForResource(final String resourceId, final String requesterId, final int from, final int size);
 
     public int getNumOfRolesForResource(final String resourceId, final String requesterId);
-    
+
     public List<RoleEntity> getChildRoles(final String roleId, final String requesterId, final int from, final int size);
 
     public List<Role> getChildRolesDto(final String id, final String requesterId, int from, int size);
 
     public int getNumOfChildRoles(final String roleId, final String requesterId);
+
     public void addChildRole(final String roleId, final String childRoleId);
+
     public void removeChildRole(final String roleId, final String childRoleId);
-    
+
     public List<RoleEntity> getParentRoles(final String roleId, final String requesterId, final int from, final int size);
 
     public List<Role> getParentRolesDto(final String id, final String requesterId, int from, int size);
@@ -202,12 +208,15 @@ public interface RoleDataService {
     public int getNumOfParentRoles(final String roleId, final String requesterId);
 
     public void validateRole2RoleAddition(final String parentId, final String memberId) throws BasicDataServiceException;
-    
+
     public Role getRoleDTO(final String roleId);
+
+    public Role getRoleDTO(String id, boolean deepCopy);
 
     public List<RoleAttribute> getRoleAttributes(final String roleId);
 
     public void addAttribute(RoleAttributeEntity attribute);
+
     public void updateAttribute(RoleAttributeEntity attribute);
 
 

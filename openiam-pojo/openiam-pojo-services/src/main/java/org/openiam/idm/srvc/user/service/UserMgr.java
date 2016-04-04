@@ -622,7 +622,7 @@ public class UserMgr implements UserDataService, ApplicationContextAware {
             nonEmptyListOfLists.add(userDao.getUserIdsForAttributes(searchBean.getAttributeList(), -1, -1));
         }
 
-        if (CollectionUtils.isNotEmpty(searchBean.getRoleIdSet())) {
+        if (CollectionUtils.isNotEmpty(searchBean.getRoleIdSet()) && searchBean.getRoleIdSet().size()<2100) {
             nonEmptyListOfLists.add(userDao.getUserIdsForRoles(searchBean.getRoleIdSet(), -1, -1));
         }
 
