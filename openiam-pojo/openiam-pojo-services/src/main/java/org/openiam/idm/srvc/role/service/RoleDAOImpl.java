@@ -59,7 +59,15 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
             criteria = this.getExampleCriteria(exampleEnity);
 
             if (roleSearchBean.hasMultipleKeys()) {
-                criteria.add(Restrictions.in(getPKfieldName(), roleSearchBean.getKeys()));
+                //FIXME prevent ms-SQL fall
+                //max allowed 2100
+                if (roleSearchBean.getKeys().size() > 2099) {
+                    List<String> keys = new ArrayList<String>(roleSearchBean.getKeys());
+                    keys = new ArrayList<String>(keys.subList(0, 2099));
+                    criteria.add(Restrictions.in(getPKfieldName(), keys));
+                } else {
+                    criteria.add(Restrictions.in(getPKfieldName(), roleSearchBean.getKeys()));
+                }
             } else if (StringUtils.isNotBlank(roleSearchBean.getKey())) {
                 criteria.add(Restrictions.eq(getPKfieldName(), roleSearchBean.getKey()));
             }
