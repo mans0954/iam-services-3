@@ -19,11 +19,11 @@ public class CSVHelper {
         this(input, null, null);
     }
 
-    public CSVHelper(InputStream input, String charsetName)  {
+    public CSVHelper(InputStream input, String charsetName) {
         this(input, charsetName, null);
     }
 
-    public CSVHelper(InputStream input, CSVStrategy strategy)  {
+    public CSVHelper(InputStream input, CSVStrategy strategy) {
         this(input, null, strategy);
     }
 
@@ -55,8 +55,8 @@ public class CSVHelper {
             } else {
                 String[][] result = new String[values.length - cntEmpty][];
                 int ctr = 0;
-                for(String[] row : values) {
-                    if (row.length == 0 || (row.length == 1 && StringUtils.isEmpty(row[0]))) {
+                for (String[] row : values) {
+                    if (row.length > 1 || (row.length == 1 && !StringUtils.isEmpty(row[0]))) {
                         result[ctr++] = row;
                     }
                 }
@@ -76,7 +76,7 @@ public class CSVHelper {
 
     private int countEmptyRows(String[][] values) {
         int ctr = 0;
-        for(String[] row : values) {
+        for (String[] row : values) {
             if (row.length == 0 || (row.length == 1 && StringUtils.isEmpty(row[0]))) {
                 ++ctr;
             }
@@ -101,8 +101,8 @@ public class CSVHelper {
             int result = super.read(cbuf, off, len);
             if (result >= 0) {
                 int last = off + result - 1;
-                for(int i = off; i < last; ++i) {
-                    if (cbuf[i] == '\r' && cbuf[i+1] != '\n') {
+                for (int i = off; i < last; ++i) {
+                    if (cbuf[i] == '\r' && cbuf[i + 1] != '\n') {
                         cbuf[i] = '\n';
                         isCR = true;
                     }
