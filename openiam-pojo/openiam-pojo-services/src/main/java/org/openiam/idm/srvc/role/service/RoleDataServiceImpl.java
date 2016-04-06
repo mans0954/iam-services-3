@@ -881,9 +881,21 @@ public class RoleDataServiceImpl implements RoleDataService, ApplicationContextA
         roleDao.rolesHierarchyRebuild();
         log.info("Role Hierarchy Cache preparation done.");
     }
+    @Override
+    @Cacheable(value = "roleEntities", key = "{#ids}")
+    public List<RoleEntity> getRolesByIdSet(Set<String> ids) {
+        return roleDao.getRolesByIdSet(ids);
+    }
+
+    @Override
+    public List<Role> getRolesDtoByIdSet(Set<String> ids, boolean deepCopy) {
+        return roleDozerConverter.convertToDTOList(this.getRolesByIdSet(ids), deepCopy);
+    }
 
     private RoleDataService getProxyService() {
         RoleDataService service = (RoleDataService) ac.getBean("roleDataService");
         return service;
     }
+
+
 }

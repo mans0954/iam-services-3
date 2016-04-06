@@ -11,6 +11,7 @@ import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.dto.RoleAttribute;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Interface permitting the management of Roles and related objects such as
@@ -223,4 +224,8 @@ public interface RoleDataService {
     List<TreeObjectId> getRolesWithSubRolesIds(List<String> roleIds, final String requesterId);
 
     void rebuildRoleHierarchyCache();
+
+    public List<RoleEntity> getRolesByIdSet(Set<String> ids);
+
+    public List<Role> getRolesDtoByIdSet(Set<String> ids, boolean deepCopy);
 }
