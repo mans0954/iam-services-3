@@ -101,11 +101,9 @@ public class ManagedSysEntity implements Serializable {
     private boolean simulationMode = false;
 
     @OneToMany(mappedBy = "managedSys")
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<ManagedSystemObjectMatchEntity> mngSysObjectMatchs = new HashSet<ManagedSystemObjectMatchEntity>();
 
     @OneToMany(fetch = FetchType.LAZY, orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "managedSystem")
-    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<AttributeMapEntity> attributeMaps = new HashSet<AttributeMapEntity>(0);
 
     @OneToMany(orphanRemoval = false, cascade = {CascadeType.DETACH, CascadeType.REFRESH}, mappedBy = "managedSystem", fetch = FetchType.LAZY)
