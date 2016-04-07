@@ -73,6 +73,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
@@ -82,7 +83,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 @Service("organizationService")
 @Transactional
-public class OrganizationServiceImpl extends AbstractBaseService implements OrganizationService, InitializingBean, Sweepable {
+public class OrganizationServiceImpl extends AbstractBaseService implements OrganizationService, InitializingBean, Sweepable, ApplicationContextAware {
     private static final Log log = LogFactory.getLog(OrganizationServiceImpl.class);
 	@Autowired
 	private OrganizationTypeDAO orgTypeDAO;
