@@ -2,13 +2,12 @@ package org.openiam.provision.service;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.time.StopWatch;
 import org.apache.log4j.Logger;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.SysConfiguration;
-import org.openiam.base.ws.*;
-import org.openiam.exception.BasicDataServiceException;
-import org.openiam.hibernate.HibernateUtils;
+import org.openiam.base.ws.MatchType;
+import org.openiam.base.ws.Response;
+import org.openiam.base.ws.SearchParam;
 import org.openiam.idm.searchbeans.*;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
@@ -17,66 +16,35 @@ import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
-import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
-import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
-import org.openiam.idm.srvc.grp.service.GroupAttributeDAO;
-import org.openiam.idm.srvc.grp.service.GroupDAO;
 import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
-import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.ws.MetadataWebService;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
-import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
-import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.dto.OrganizationAttribute;
 import org.openiam.idm.srvc.org.dto.OrganizationUserDTO;
-import org.openiam.idm.srvc.org.service.OrganizationAttributeDAO;
-import org.openiam.idm.srvc.org.service.OrganizationDAO;
 import org.openiam.idm.srvc.org.service.OrganizationDataService;
 import org.openiam.idm.srvc.pswd.dto.PasswordValidationResponse;
-import org.openiam.idm.srvc.res.domain.ResourceEntity;
-import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
-import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
-import org.openiam.idm.srvc.res.service.ResourcePropDAO;
-import org.openiam.idm.srvc.role.domain.RoleAttributeEntity;
-import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.dto.Role;
-import org.openiam.idm.srvc.role.service.RoleAttributeDAO;
-import org.openiam.idm.srvc.role.service.RoleDAO;
 import org.openiam.idm.srvc.role.ws.RoleDataWebService;
-import org.openiam.idm.srvc.synch.dto.SyncResponse;
-import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
-import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
-import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.ws.UserDataWebService;
 import org.openiam.provision.dto.PasswordSync;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.dto.srcadapter.*;
 import org.openiam.provision.resp.PasswordResponse;
 import org.openiam.provision.resp.ProvisionUserResponse;
-import org.openiam.thread.Sweepable;
-import org.openiam.util.AttributeUtil;
-import org.openiam.util.MuleContextProvider;
+import org.openiam.script.ScriptIntegration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.jms.core.BrowserCallback;
-import org.springframework.jms.core.JmsTemplate;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallback;
-import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.annotation.PostConstruct;
-import javax.jms.*;
-import javax.jms.Queue;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 import javax.xml.transform.OutputKeys;
@@ -85,8 +53,6 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
-import java.beans.XMLEncoder;
-import java.io.ByteArrayOutputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.text.SimpleDateFormat;
@@ -121,6 +87,12 @@ public class SourceAdapterDispatcher implements Runnable {
 
     @Autowired
     protected AuditLogService auditLogService;
+    @Autowired
+    @Qualifier("configurableGroovyScriptEngine")
+    protected ScriptIntegration scriptRunner;
+
+    @Value("${org.openiam.idm.source.adapter.pre.processor}")
+    protected String preProcessorFile;
 
     final static SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
     final static String WARNING = "Warning! %s.\n";
@@ -191,6 +163,19 @@ public class SourceAdapterDispatcher implements Runnable {
             log.error("Can't serialize request to XML");
         }
         long time = System.currentTimeMillis();
+        //call Pre processor
+        SourceAdapterPreProcessor preProcessor = this.getSourceAdapterPreProcessor(preProcessorFile);
+        try {
+            int retVal = 0;
+            if (preProcessor != null) {
+                retVal = preProcessor.perform(request);
+                if (retVal != 0) {
+                    this.getWarning("Source Adapter Pre processor fail");
+                }
+            }
+        } catch (Exception e) {
+            this.getWarning("Source Adapter Pre processor fail. " + e);
+        }
         if (request.isForceMode()) {
             idmAuditLog.addCustomRecord("Skip Warnings", "true");
             warnings.append(getWarning("Warnings will be skipped!"));
@@ -1174,4 +1159,15 @@ public class SourceAdapterDispatcher implements Runnable {
             throw new RuntimeException(e); // simple exception handling, please review it
         }
     }
+
+    protected SourceAdapterPreProcessor getSourceAdapterPreProcessor(String scriptName) {
+        Map<String, Object> bindingMap = new HashMap<String, Object>();
+        try {
+            return (SourceAdapterPreProcessor) scriptRunner.instantiateClass(bindingMap, scriptName);
+        } catch (Exception ce) {
+            log.error(ce);
+            return null;
+        }
+    }
+
 }
