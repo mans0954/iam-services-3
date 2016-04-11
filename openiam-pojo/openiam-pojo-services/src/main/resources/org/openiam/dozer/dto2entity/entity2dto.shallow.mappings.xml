@@ -617,6 +617,10 @@
         <class-a>org.openiam.idm.srvc.auth.domain.LoginEntity</class-a>
         <class-b>org.openiam.idm.srvc.auth.dto.Login</class-b>
         <field-exclude>
+            <a>loginAttributes</a>
+            <b>loginAttributes</b>
+        </field-exclude>
+        <field-exclude>
             <a>passwordHistory</a>
             <b>passwordHistory</b>
         </field-exclude>
@@ -865,6 +869,12 @@
         <field>
             <a>resource.id</a>
             <b>resourceId</b>
+        </field>
+        <field
+                custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentObjectConverter"
+                custom-converter-param="dto2entityShallowDozerMapper">
+            <a>resource</a>
+            <b>resource</b>
         </field>
         <field>
 			<a>type.id</a>

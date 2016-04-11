@@ -76,6 +76,32 @@ public class GroupServiceTest extends AbstractAttributeServiceTest<Group, GroupS
 		return groupServiceClient.findBeansLocalize(searchBean, null, from, size, null);
 	}
 
+/*	@Override
+	protected String getId(Group bean) {
+		return bean.getId();
+	}
+
+	@Override
+	protected void setId(Group bean, String id) {
+		bean.setId(id);
+	}
+
+	@Override
+	protected void setName(Group bean, String name) {
+		bean.setName(name);
+	}
+
+	@Override
+	protected String getName(Group bean) {
+		return bean.getName();
+	}
+
+	@Override
+	protected void setNameForSearch(GroupSearchBean searchBean, String name) {
+		searchBean.setName(name);
+	}*/
+
+
 	@Override
 	protected Response delete(Group t) {
 		return (t != null && t.getId() != null) ? groupServiceClient.deleteGroup(t.getId(), null) : null;

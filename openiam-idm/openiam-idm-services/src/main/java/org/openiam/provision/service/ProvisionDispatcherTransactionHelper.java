@@ -164,6 +164,7 @@ public class ProvisionDispatcherTransactionHelper {
                     if (StatusCodeType.SUCCESS.equals(statusCodeType)) {
                         loginChanges.setProvStatus(ProvLoginStatusEnum.DELETED);
                         loginChanges.setAuthFailCount(0);
+                        loginChanges.setChallengeResponseFailCount(0);
                         loginChanges.setPasswordChangeCount(0);
                         loginChanges.setIsLocked(0);
 
@@ -285,6 +286,7 @@ public class ProvisionDispatcherTransactionHelper {
                     } else {
                         idmAuditLog.fail();
                         idmAuditLog.setFailureReason(resp.getErrorMsgAsStr());
+                        idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "DISABLE IDENTITY = FAILURE, details:" + resp.getErrorMsgAsStr());
                         loginChanges.setProvStatus(ProvLoginStatusEnum.FAIL_DISABLE);
                     }
                 } catch (Throwable th) {
@@ -294,6 +296,10 @@ public class ProvisionDispatcherTransactionHelper {
                             + " from MANAGED_SYS_ID=" + identity.getManagedSysId() + " status="
                             + ProvLoginStatusEnum.FAIL_DISABLE + " details=" + th.getMessage());
                     loginChanges.setProvStatus(ProvLoginStatusEnum.FAIL_DISABLE);
+                } finally {
+                    if (!"FAILURE".equals(idmAuditLog.getResult())) {
+                        idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "DISABLE IDENTITY = SUCCESS");
+                    }
                 }
 
             } else if (data.getOperation() == ProvOperationEnum.ENABLE) {
@@ -303,7 +309,7 @@ public class ProvisionDispatcherTransactionHelper {
                 Resource res = resourceDozerConverter.convertToDTO(resEntity, true);
                 ManagedSysDto mSys = managedSystemWebService.getManagedSysByResource(res.getId());
                 String managedSysId = (mSys != null) ? mSys.getId() : null;
-
+                idmAuditLog.setTargetManagedSys(mSys.getId(), mSys.getName());
                 Login targetSysLogin = data.getIdentity();
 
                 SuspendResumeRequest suspendReq = new SuspendResumeRequest();
@@ -332,6 +338,7 @@ public class ProvisionDispatcherTransactionHelper {
                     } else {
                         idmAuditLog.fail();
                         idmAuditLog.setFailureReason(resp.getErrorMsgAsStr());
+                        idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "ENABLE IDENTITY = FAILURE, details:" + resp.getErrorMsgAsStr());
                         loginChanges.setProvStatus(ProvLoginStatusEnum.FAIL_ENABLE);
                     }
                 } catch (Throwable th) {
@@ -341,6 +348,10 @@ public class ProvisionDispatcherTransactionHelper {
                             + " from MANAGED_SYS_ID=" + identity.getManagedSysId() + " status="
                             + ProvLoginStatusEnum.FAIL_ENABLE + " details=" + th.getMessage());
                     loginChanges.setProvStatus(ProvLoginStatusEnum.FAIL_ENABLE);
+                } finally {
+                    if (!"FAILURE".equals(idmAuditLog.getResult())) {
+                        idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "ENABLE IDENTITY = SUCCESS");
+                    }
                 }
             }
 
@@ -532,6 +543,9 @@ public class ProvisionDispatcherTransactionHelper {
                 matchObj = objArr[0];
             }
 
+            String preProcessScript = resourceService.getResourcePropValueByName(data.getResourceId(),"PRE_PROCESS");
+            String postProcessScript = resourceService.getResourcePropValueByName(data.getResourceId(),"POST_PROCESS");
+
             // get the attributes at the target system
             // this lookup only for getting attributes from the
             // system
@@ -553,7 +567,7 @@ public class ProvisionDispatcherTransactionHelper {
 
             // pre-processing
             ResourceProp preProcessProp = res.getResourceProperty("PRE_PROCESS");
-            String preProcessScript = preProcessProp != null ? preProcessProp.getValue() : null;
+            //String preProcessScript = preProcessProp != null ? preProcessProp.getValue() : null;
             if (StringUtils.isNotBlank(preProcessScript)) {
                 PreProcessor ppScript = createPreProcessScript(preProcessScript, bindingMap);
                 if (ppScript != null) {
@@ -596,7 +610,7 @@ public class ProvisionDispatcherTransactionHelper {
 
             // post processing
             ResourceProp postProcessProp = res.getResourceProperty("POST_PROCESS");
-            String postProcessScript = postProcessProp != null ? postProcessProp.getValue() : null;
+            //String postProcessScript = postProcessProp != null ? postProcessProp.getValue() : null;
             if (StringUtils.isNotBlank(postProcessScript)) {
                 PostProcessor ppScript = createPostProcessScript(postProcessScript, bindingMap);
                 if (ppScript != null) {
@@ -694,7 +708,9 @@ public class ProvisionDispatcherTransactionHelper {
                     curValueMap.put(attr.getName(), attr);
                 }
             } else {
-                log.debug(" - NO attributes found in target system lookup ");
+            	if(log.isDebugEnabled()) {
+            		log.debug(" - NO attributes found in target system lookup ");
+            	}
             }
             return true;
         }

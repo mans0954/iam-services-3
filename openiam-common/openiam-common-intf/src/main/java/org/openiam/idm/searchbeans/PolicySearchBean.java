@@ -17,7 +17,7 @@ import org.openiam.idm.srvc.policy.dto.Policy;
         "policyDefId",
         "attributes"
 })
-public class PolicySearchBean extends AbstractKeyNameSearchBean<Policy, String> {
+public class PolicySearchBean extends AbstractKeyNameSearchBean<Policy, String> implements SearchBean {
 
 	private String policyDefId;
 	
@@ -48,6 +48,15 @@ public class PolicySearchBean extends AbstractKeyNameSearchBean<Policy, String> 
     public void setAttributes(List<Tuple<String, String>> attributes) {
         this.attributes = attributes;
     }
+
+	@Override
+	public String getCacheUniqueBeanKey() {
+		return new StringBuilder()
+				.append(name != null ? name : "")
+				.append(policyDefId != null ? policyDefId : "")
+				.append(attributes != null ? attributes.toString().hashCode() : "")
+				.append(getKey() != null ? getKey() : "")
+				.toString();	}
 
 	@Override
 	public int hashCode() {

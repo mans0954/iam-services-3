@@ -18,16 +18,18 @@ import org.openiam.dozer.converter.ApproverAssociationDozerConverter;
 import org.openiam.dozer.converter.AttributeMapDozerConverter;
 import org.openiam.dozer.converter.DefaultReconciliationAttributeMapDozerConverter;
 import org.openiam.dozer.converter.ManagedSysDozerConverter;
-import org.openiam.dozer.converter.ManagedSysRuleDozerConverter;
 import org.openiam.dozer.converter.ManagedSystemObjectMatchDozerConverter;
 import org.openiam.dozer.converter.MngSysPolicyDozerConverter;
 import org.openiam.dozer.converter.ResourcePropDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.AttributeMapSearchBean;
+import org.openiam.idm.searchbeans.ManagedSysSearchBean;
 import org.openiam.idm.searchbeans.MngSysPolicySearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
+import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.mngsys.bean.ApproverAssocationSearchBean;
@@ -37,19 +39,18 @@ import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.DefaultReconciliationAttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
-import org.openiam.idm.srvc.mngsys.domain.ManagedSysRuleEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
 import org.openiam.idm.srvc.mngsys.domain.MngSysPolicyEntity;
 import org.openiam.idm.srvc.mngsys.dto.ApproverAssociation;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.mngsys.dto.DefaultReconciliationAttributeMap;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSysRuleDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.mngsys.dto.MngSysPolicyDto;
+import org.openiam.idm.srvc.mngsys.domain.*;
+import org.openiam.idm.srvc.mngsys.dto.*;
 import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
-import org.openiam.idm.srvc.msg.dto.ManagedSysSearchBean;
 import org.openiam.idm.util.SSLCert;
 import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,6 +75,9 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     @Value("${KEYSTORE_PSWD}")
     private String keystorePasswd;
 
+    @Value("${openiam.default_managed_sys}")
+    private String defaultManagedSystemId;
+
     @Autowired
     private ManagedSystemService managedSystemService;
 
@@ -85,9 +89,6 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
 
     @Autowired
     private MngSysPolicyDozerConverter mngSysPolicyDozerConverter;
-
-    @Autowired
-    private ManagedSysRuleDozerConverter managedSysRuleDozerConverter;
 
     @Autowired
     private ManagedSysDozerConverter managedSysDozerConverter;
@@ -109,6 +110,9 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     
     @Autowired
     private ResourcePropDozerConverter resourcePropConverter;
+
+    @Autowired
+    private LoginDataService loginManager;
 
     private static final Log log = LogFactory
             .getLog(ManagedSystemWebServiceImpl.class);
@@ -158,44 +162,45 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
             @WebParam(name = "searchBean", targetNamespace = "") ManagedSysSearchBean searchBean,
             @WebParam(name = "size", targetNamespace = "") Integer size,
             @WebParam(name = "from", targetNamespace = "") Integer from) {
-        final List<ManagedSysDto> managedSysDtos = managedSystemService.getManagedSystemsByExample(searchBean, from, size);
-        return managedSysDtos;
+        final List<ManagedSysDto> sysDtos = managedSystemService.getManagedSystemsByExample(searchBean, from, size);
+        return sysDtos;
     }
 
     @Override
     public Response saveManagedSystem(final ManagedSysDto sys) {
-    	final Response response = new Response(ResponseStatus.SUCCESS);
-    	try {
-    		if(sys == null) {
-    			throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
-    		}
-    		
-    		if(StringUtils.isBlank(sys.getName())) {
-    			throw new BasicDataServiceException(ResponseCode.NO_NAME);
-    		}
-    		
-    		if(StringUtils.isBlank(sys.getConnectorId())) {
-    			throw new BasicDataServiceException(ResponseCode.CONNECTOR_REQUIRED);
-    		}
-    		
-    		if (encrypt && sys.getPswd() != null) {
-    			sys.setPswd(cryptor.encrypt(keyManagementService.getUserKey(systemUserId, KeyName.password.name()), sys.getPswd()));
-    		}
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            if(sys == null) {
+                throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+            }
 
-    		final ManagedSysEntity entity = managedSysDozerConverter.convertToEntity(sys, true);
-    		managedSystemService.save(entity);
-    		response.setResponseValue(entity.getId());
-    	} catch (BasicDataServiceException e) {
-			response.setErrorCode(e.getCode());
-			response.setStatus(ResponseStatus.FAILURE);
-		} catch (Throwable e) {
-			log.error("Can't remove managed system", e);
-			response.setErrorText(e.getMessage());
-			response.setStatus(ResponseStatus.FAILURE);
-		}
-        
-    	return response;
+            if(StringUtils.isBlank(sys.getName())) {
+                throw new BasicDataServiceException(ResponseCode.NO_NAME);
+            }
+
+            if(StringUtils.isBlank(sys.getConnectorId())) {
+                throw new BasicDataServiceException(ResponseCode.CONNECTOR_REQUIRED);
+            }
+
+            if (encrypt && sys.getPswd() != null) {
+                sys.setPswd(cryptor.encrypt(keyManagementService.getUserKey(systemUserId, KeyName.password.name()), sys.getPswd()));
+            }
+
+            final ManagedSysEntity entity = managedSysDozerConverter.convertToEntity(sys, true);
+            managedSystemService.save(entity);
+            response.setResponseValue(entity.getId());
+        } catch (BasicDataServiceException e) {
+            response.setErrorCode(e.getCode());
+            response.setStatus(ResponseStatus.FAILURE);
+        } catch (Throwable e) {
+            log.error("Can't remove managed system", e);
+            response.setErrorText(e.getMessage());
+            response.setStatus(ResponseStatus.FAILURE);
+        }
+
+        return response;
     }
+
 
     @Override
     @Transactional(readOnly = true)
@@ -226,6 +231,14 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    @Cacheable(value = "managedSysAttributeMaps", key = "{#managedSysId}")
+    public List<AttributeMapEntity> getAttributeMapsByManagedSysId(final String managedSysId) {
+        List<AttributeMapEntity> attributeMaps = managedSystemService.getAttributeMapsByManagedSysId(managedSysId);
+        return attributeMaps;
+    }
+
+    @Override
     public Response removeManagedSystem(String sysId) {
     	final Response response = new Response(ResponseStatus.SUCCESS);
     	try {
@@ -235,6 +248,10 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
             List<AuthProviderEntity> authProviderEntities = managedSystemService.findAuthProvidersByManagedSysId(sysId);
             if (CollectionUtils.isNotEmpty(authProviderEntities)) {
                 throw new BasicDataServiceException(ResponseCode.LINKED_TO_AUTHENTICATION_PROVIDER, authProviderEntities.get(0).getName());
+            }
+            List<LoginEntity> loginEntities = loginManager.getAllLoginByManagedSys(sysId);
+            if (CollectionUtils.isNotEmpty(loginEntities)) {
+                throw new BasicDataServiceException(ResponseCode.LINKED_TO_USERS, String.valueOf(loginEntities.size()));
             }
     		managedSystemService.removeManagedSysById(sysId);
     	} catch (BasicDataServiceException e) {
@@ -497,13 +514,13 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value="resourceAttributeMaps", key="{#id}")
-    public AttributeMap getAttributeMap(String id) {
-        if (id == null) {
+    @Cacheable(value = "resourceAttributeMaps", key = "{ #attributeMapId}")
+    public AttributeMap getAttributeMap(String attributeMapId) {
+        if (attributeMapId == null) {
             throw new IllegalArgumentException("attributeMapId is null");
         }
         AttributeMapEntity obj = managedSystemService
-                .getAttributeMap(id);
+                .getAttributeMap(attributeMapId);
         return obj == null ? null : attributeMapDozerConverter.convertToDTO(
                 obj, true);
     }
@@ -622,29 +639,12 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
                         .convertToDTOList(list, false);
     }
 
+/*    @Transactional(readOnly = true)
     @Override
-    public List<ManagedSysRuleDto> getRulesByManagedSysId(String managedSysId) {
-        List<ManagedSysRuleEntity> resList = managedSystemService
-                .getRulesByManagedSysId(managedSysId);
-        return resList == null ? null : managedSysRuleDozerConverter
-                .convertToDTOList(resList, false);
-    }
-
-    @Override
-    public ManagedSysRuleDto addRules(ManagedSysRuleDto entity) {
-        if (entity == null)
-            return null;
-        ManagedSysRuleEntity res = managedSystemService
-                .addRules(managedSysRuleDozerConverter.convertToEntity(entity,
-                        false));
-        return res == null ? null : managedSysRuleDozerConverter.convertToDTO(
-                res, false);
-    }
-
-    @Override
-    public void deleteRules(String ruleId) {
-        managedSystemService.deleteRules(ruleId);
-    }
+    public List<ManagedSysDto> getAllManagedSysNames() {
+        final List<ManagedSysEntity> sysList = managedSystemService.getAllManagedSysNames();
+        return managedSysDozerConverter.convertToDTOList(sysList, true);
+    }*/
 
     @Override
     public void removeMngSysPolicy(String mngSysPolicyId) throws Exception {

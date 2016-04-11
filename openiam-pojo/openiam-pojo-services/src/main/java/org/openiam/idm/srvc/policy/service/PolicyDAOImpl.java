@@ -13,7 +13,10 @@ import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.searchbeans.PolicySearchBean;
 import org.openiam.idm.searchbeans.SearchBean;
+import org.openiam.idm.srvc.policy.domain.PolicyAttributeEntity;
 import org.openiam.idm.srvc.policy.domain.PolicyEntity;
+import org.openiam.idm.srvc.policy.dto.PolicyConstants;
+import org.openiam.idm.srvc.role.domain.RoleAttributeEntity;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -21,7 +24,13 @@ import org.springframework.stereotype.Repository;
  */
 @Repository("policyDAO")
 public class PolicyDAOImpl extends BaseDaoImpl<PolicyEntity, String> implements PolicyDAO {
-	@SuppressWarnings("unchecked")
+
+    @Override
+    protected boolean cachable() {
+        return true;
+    }	
+
+@SuppressWarnings("unchecked")
 	@Override
 	public List<PolicyEntity> findAllPolicies(String policyDefId, int startAt, int size) {
 		log.debug("finding all PolicyEntities instances");

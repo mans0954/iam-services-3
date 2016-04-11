@@ -6,6 +6,8 @@ import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
 import org.openiam.idm.srvc.lang.dto.Language;
+import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
+import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
 import org.openiam.idm.srvc.meta.dto.MetadataElement;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
@@ -21,6 +23,8 @@ import org.openiam.idm.srvc.meta.dto.MetadataType;
 
 public interface MetadataService {
 // new in 3.3.1
+    String findElementIdByAttrNameAndTypeId(String attrName, String typeId);
+
     MetadataElement findElementByAttrNameAndTypeId(String attrName, String typeId, final Language language);
 // new in 3.3.1
     MetadataType findMetadataTypeByNameAndGrouping(String name, MetadataTypeGrouping grouping, final Language language);
@@ -34,9 +38,11 @@ public interface MetadataService {
 	List<MetadataElement> findBeans(final MetadataElementSearchBean searchBean, final int from, final int size, final Language language);
 
 	List<MetadataType> findBeans(final MetadataTypeSearchBean searchBean, final int from, final int size, final Language language);
-
-	int count(final MetadataElementSearchBean searchBean);
-	
+	public List<MetadataElement> findBeans(MetadataElementSearchBean searchBean, int from, int size);
+		public List<MetadataElementEntity> findEntityBeans(final MetadataElementSearchBean searchBean, final int from, final int size);
+	public List<MetadataTypeEntity> findEntityBeans(final MetadataTypeSearchBean searchBean, final int from, final int size, final Language language);
+		int count(final MetadataElementSearchBean searchBean);
+	    public List<MetadataType> findBeansNoLocalize(final MetadataTypeSearchBean searchBean, final int from, final int size);
 	int count(final MetadataTypeSearchBean searchBean);
 	
 	void save(final MetadataElement entity);

@@ -18,6 +18,7 @@ import javax.xml.bind.annotation.XmlType;
         "patternId",
         "methodId",
         "socialUserProfile",
+        "authPolicyId",
         "kerberosAuth"
 })
 public class AuthenticationRequest {
@@ -29,6 +30,7 @@ public class AuthenticationRequest {
     private String requestSource; // where did this request come from
     private String patternId;
     private String methodId;
+    String authPolicyId; // auth policy for connection
     private String socialUserProfile; // user profile in socials networks
     
     private boolean kerberosAuth; //IDMAPPS-3590 - kerberos auth means no password checking
@@ -116,5 +118,12 @@ public class AuthenticationRequest {
 		this.kerberosAuth = kerberosAuth;
 	}
     
+    public String getAuthPolicyId() {
+        return authPolicyId;
+    }
+
+    public void setAuthPolicyId(String authPolicyId) {
+        this.authPolicyId = authPolicyId;
+    }
     
 }

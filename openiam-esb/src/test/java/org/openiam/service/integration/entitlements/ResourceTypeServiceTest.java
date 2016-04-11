@@ -52,4 +52,14 @@ public class ResourceTypeServiceTest extends AbstractKeyServiceTest<ResourceType
 		return resourceDataService.findResourceTypes(searchBean, from, size, getDefaultLanguage());
 	}
 
+/*	@Override
+	protected String getId(ResourceType bean) {
+		return bean.getId();
+	}
+
+	@Override
+	protected void setId(ResourceType bean, String id) {
+		bean.setId(id);
+	}*/
+
 }

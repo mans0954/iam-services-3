@@ -153,14 +153,17 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
         idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION,
 				"Reconciliation for target system: " + mSys.getName() + " is started..." + startDate);
 
-        log.debug("ManagedSys: Id = " + mSys.getId() + ", Name " + mSys.getName());
-        log.debug("Getting identities for managedSys");
-
+        if(log.isDebugEnabled()) {
+	        log.debug("ManagedSys: Id = " + mSys.getId() + ", Name " + mSys.getName());
+	        log.debug("Getting identities for managedSys");
+        }
         // have situations
         Map<String, ReconciliationSituation> situations = new HashMap<String, ReconciliationSituation>();
         for (ReconciliationSituation situation : config.getSituationSet()) {
             situations.put(situation.getSituation().trim(),situation);
-            log.debug("Created Command for: " + situation.getSituation());
+            if(log.isDebugEnabled()) {
+            	log.debug("Created Command for: " + situation.getSituation());
+            }
         }
         // have resource connector
         ProvisionConnectorDto connector = connectorService.getProvisionConnector(mSys.getConnectorId());
@@ -170,9 +173,13 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
                     + config.getId() + " - resource=" + config.getResourceId());
 
             // reconciliation into TargetSystem directional
-            log.debug("Start recon");
+            if(log.isDebugEnabled()) {
+            	log.debug("Start recon");
+            }
             connectorAdapter.reconcileResource(mSys, config);
-            log.debug("end recon");
+            if(log.isDebugEnabled()) {
+            	log.debug("end recon");
+            }
             idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "CSV Processing finished for configId="
                     + config.getId() + " - resource=" + config.getResourceId());
             return new ReconciliationResponse(ResponseStatus.SUCCESS);
@@ -333,7 +340,9 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
             log.error("SearchQuery not defined for this reconciliation config.");
             return new ReconciliationResponse(ResponseStatus.FAILURE);
         }
-        log.debug("processingTargetToIDM: mSys=" + mSys);
+        if(log.isDebugEnabled()) {
+        	log.debug("processingTargetToIDM: mSys=" + mSys);
+        }
         SearchRequest<ExtensibleUser> searchRequest = new SearchRequest<>();
         String requestId = "R" + UUIDGen.getUUID();
         searchRequest.setRequestID(requestId);
@@ -349,7 +358,9 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
         searchRequest.setExtensibleObject(new ExtensibleUser());
         SearchResponse searchResponse;
 
-        log.debug("Calling reconcileResource with Local connector");
+        if(log.isDebugEnabled()) {
+        	log.debug("Calling reconcileResource with Local connector");
+        }
         searchResponse = connectorAdapter.search(searchRequest, connector);
 
         if (searchResponse != null && searchResponse.getStatus() == StatusCodeType.SUCCESS) {
@@ -387,7 +398,9 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
                 }
             }
         } else {
-            log.debug(searchResponse.getErrorMessage());
+        	if(log.isDebugEnabled()) {
+        		log.debug(searchResponse.getErrorMessage());
+        	}
             idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "Error: " + searchResponse);
         }
         return new ReconciliationResponse(ResponseStatus.SUCCESS);
@@ -453,7 +466,9 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
                     }
                     newUser.setSrcSystemId(mSys.getId());
 
-                    log.debug("Call command for IDM Match Found");
+                    if(log.isDebugEnabled()) {
+                    	log.debug("Call command for IDM Match Found");
+                    }
                     idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "IDM_EXISTS__SYS_EXISTS for user= "
                             + targetUserPrincipal);
                     // AUDIT LOG Y user processing IDM_EXISTS__SYS_EXISTS
@@ -482,7 +497,9 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
                         newUser.getPrincipalList().add(loginResponse.getPrincipal());
                     }
 
-                    log.debug("Call command for Match Not Found");
+                    if(log.isDebugEnabled()) {
+                    	log.debug("Call command for Match Not Found");
+                    }
                     idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "SYS_EXISTS__IDM_NOT_EXISTS for user= "
                             + targetUserPrincipal);
 
@@ -503,7 +520,9 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
                                                      final Map<String, ReconciliationSituation> situations, boolean isManualRecon, IdmAuditLogEntity idmAuditLog) throws IOException {
 
         User user = userManager.getUserDto(identity.getUserId());
-        log.debug("1 Reconciliation for user " + user);
+        if(log.isDebugEnabled()) {
+        	log.debug("1 Reconciliation for user " + user);
+        }
 
         List<ExtensibleAttribute> requestedExtensibleAttributes = new ArrayList<ExtensibleAttribute>();
 
@@ -514,13 +533,17 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
         }
 
         String principal = identity.getLogin();
-        log.debug("looking up identity in resource: " + principal);
+        if(log.isDebugEnabled()) {
+        	log.debug("looking up identity in resource: " + principal);
+        }
         idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "looking up identity in resource: " + principal);
 
         LookupUserResponse lookupResp = provisionService.getTargetSystemUser(principal, mSys.getId(),
                 requestedExtensibleAttributes);
 
-        log.debug("Lookup status for " + principal + " =" + lookupResp.getStatus());
+        if(log.isDebugEnabled()) {
+        	log.debug("Lookup status for " + principal + " =" + lookupResp.getStatus());
+        }
         idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION,
                 "Lookup status for " + principal + " =" + lookupResp.getStatus());
 
@@ -548,7 +571,9 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
                     ReconciliationObjectCommand<User> command = commandFactory.createUserCommand(situation.getSituationResp(), situation, mSys.getId());
 
                     if (command != null) {
-                        log.debug("Call command for: Record in resource but deleted in IDM");
+                    	if(log.isDebugEnabled()) {
+                    		log.debug("Call command for: Record in resource but deleted in IDM");
+                    	}
                         ProvisionUser provisionUser = new ProvisionUser(user);
                         provisionUser.setParentAuditLogId(idmAuditLog.getId());
                         provisionUser.setSrcSystemId(mSys.getId());
@@ -567,7 +592,9 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
                 ReconciliationObjectCommand<User> command = commandFactory.createUserCommand(situation.getSituationResp(), situation, mSys.getId());
 
                     if (command != null) {
-                        log.debug("Call command for: Record in resource and in IDM");
+                    	if(log.isDebugEnabled()) {
+                    		log.debug("Call command for: Record in resource and in IDM");
+                    	}
                         ProvisionUser provisionUser = new ProvisionUser(user);
                         provisionUser.setParentAuditLogId(idmAuditLog.getId());
                         provisionUser.setSrcSystemId(mSys.getId());
@@ -590,10 +617,12 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
                 ReconciliationObjectCommand<User>  command = commandFactory.createUserCommand(situation.getSituationResp(), situation, mSys.getId());
 
                 if (command != null) {
-                    log.debug("Call command for: Record in resource and in IDM");
-                        ProvisionUser provisionUser = new ProvisionUser(user);
-                        provisionUser.setParentAuditLogId(idmAuditLog.getId());
-                        provisionUser.setSrcSystemId(mSys.getId());
+                	if(log.isDebugEnabled()) {
+                		log.debug("Call command for: Record in resource and in IDM");
+                	}
+                    ProvisionUser provisionUser = new ProvisionUser(user);
+                    provisionUser.setParentAuditLogId(idmAuditLog.getId());
+                    provisionUser.setSrcSystemId(mSys.getId());
 
                         idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION,
                                 "IDM_EXISTS__SYS_NOT_EXISTS for user= " + principal);

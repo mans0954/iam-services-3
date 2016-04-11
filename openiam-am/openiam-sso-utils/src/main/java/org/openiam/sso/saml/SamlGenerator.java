@@ -47,7 +47,9 @@ public class SamlGenerator {
             default:
                 throw new IllegalArgumentException("Unknown or unimplemented SAML Generator for type: " + type.name());
         }
-        log.debug("Original SAML request: \n" + samlData);
+        if(log.isDebugEnabled()) {
+        	log.debug("Original SAML request: \n" + samlData);
+        }
         byte[] deflatedSaml = SSOUtils.deflate(samlData);
         String deflatedRequest =   new String(deflatedSaml, 0, deflatedSaml.length, "UTF-8") ;
         log.debug("deflated SAML request: \n" + deflatedRequest);

@@ -135,6 +135,20 @@ public class RoleSearchBean extends EntitlementsSearchBean<Role, String> impleme
         keySet.add(key);
     }
 
+    @Override
+    public String getCacheUniqueBeanKey() {
+        return new StringBuilder()
+                .append(name != null ? name : "")
+                .append(description != null ? description : "")
+                .append(managedSysId != null ? managedSysId : "")
+                .append(isRootsOnly)
+                .append(type != null ? type : "")
+                .append(attributes != null ? attributes.toString().hashCode() : "")
+                .append(getKey() != null ? getKey() : "")
+                .append(getKeys() != null ? getKeys().toString().hashCode() : "")
+                .append(super.hashCode())
+                .toString();    }
+
     public Set<String> getKeys() {
         return keySet;
     }

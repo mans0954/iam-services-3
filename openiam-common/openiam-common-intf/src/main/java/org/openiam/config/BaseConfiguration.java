@@ -24,6 +24,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.SchedulingConfigurer;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.client.RestTemplate;
@@ -69,7 +70,7 @@ public class BaseConfiguration implements SchedulingConfigurer {
 	@Bean(name="taskExecutor")
 	public ThreadPoolTaskExecutor taskExecutor() {
 		final ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-		executor.setCorePoolSize(10);
+		executor.setCorePoolSize(100);
 		return executor;
 	}
 
@@ -88,14 +89,17 @@ public class BaseConfiguration implements SchedulingConfigurer {
 		return restTemplate;
 	}
 	
-	@Bean(destroyMethod="shutdown", name="myScheduler")
-    public Executor myScheduler() {
-        return Executors.newScheduledThreadPool(taskSchedulerSize);
-    }
-
+	
+	@Bean(destroyMethod="shutdown", name="scheduler")
+	public ThreadPoolTaskScheduler scheduler() {
+		final ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
+		scheduler.setPoolSize(taskSchedulerSize);
+		return scheduler;
+	}
+	
 	@Override
 	public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
-		taskRegistrar.setScheduler(myScheduler());
+		taskRegistrar.setScheduler(scheduler());
 	}
 	
 	@Bean(name="batchTaskThreadExecutor")

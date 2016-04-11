@@ -54,13 +54,15 @@ public class DeleteResourceGroupCommand extends BaseReconciliationGroupCommand {
 
     @Override
     public boolean execute(ReconciliationSituation config, String principal, String mSysID, Group group, List<ExtensibleAttribute> attributes) {
-        log.debug("Entering DeleteResourceGroupCommand");
-        log.debug("Do delete for Group: " + principal);
-
+    	if(log.isDebugEnabled()) {
+	        log.debug("Entering DeleteResourceGroupCommand");
+	        log.debug("Do delete for Group: " + principal);
+    	}
 		if(group == null) {
             ManagedSysDto mSys = managedSysService.getManagedSys(mSysID);
-
-            log.debug("Calling delete with Remote connector");
+            if(log.isDebugEnabled()) {
+            	log.debug("Calling delete with Remote connector");
+            }
             CrudRequest<ExtensibleUser> request = new CrudRequest<ExtensibleUser>();
             request.setObjectIdentity(principal);
             request.setTargetID(mSysID);
@@ -68,7 +70,9 @@ public class DeleteResourceGroupCommand extends BaseReconciliationGroupCommand {
             request.setHostLoginPassword(mSys.getDecryptPassword());
             request.setHostUrl(mSys.getHostUrl());
             request.setScriptHandler(mSys.getDeleteHandler());
-            log.debug("Calling delete local connector");
+            if(log.isDebugEnabled()) {
+            	log.debug("Calling delete local connector");
+            }
             connectorAdapter.deleteRequest(mSys, request);
 
             return true;

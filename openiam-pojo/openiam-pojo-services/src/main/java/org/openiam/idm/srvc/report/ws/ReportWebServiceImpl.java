@@ -4,8 +4,6 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
 
-import javax.jms.JMSException;
-import javax.jms.Session;
 import javax.jws.WebService;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -26,9 +24,7 @@ import org.openiam.idm.srvc.report.dto.ReportSubCriteriaParamDto;
 import org.openiam.idm.srvc.report.dto.ReportSubscriptionDto;
 import org.openiam.idm.srvc.report.service.ReportDataService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jms.JmsException;
-import org.springframework.jms.core.JmsTemplate;
-import org.springframework.jms.core.MessageCreator;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 /**
@@ -43,6 +39,9 @@ import org.springframework.stereotype.Service;
 		serviceName = "ReportWebService")
 @Service("reportWS")
 public class ReportWebServiceImpl implements ReportWebService {
+	
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
 
 	private static final Log log = LogFactory
 			.getLog(ReportWebServiceImpl.class);
@@ -53,8 +52,8 @@ public class ReportWebServiceImpl implements ReportWebService {
 
 	@Autowired
 	private ReportDataService reportDataService;
-	@Autowired
-	private JmsTemplate jmsTemplate;
+
+
 
 	@Override
 	public GetReportDataResponse executeQuery(final ReportQueryDto reportQuery) {
@@ -84,9 +83,12 @@ public class ReportWebServiceImpl implements ReportWebService {
 	public String getReportUrl(final ReportQueryDto reportQuery,
 							   final String taskName, final String reportBaseUrl, String locale) {
 		try {
+
 			ReportInfoDto report = reportDataService.getReportByName(reportQuery.getReportName());
 			if (report == null) {
-				log.debug("Report couldn't be found. Report name = " + reportQuery.getReportName());
+				if(log.isDebugEnabled()) {
+					log.debug("Report couldn't be found. Report name = " + reportQuery.getReportName());
+				}
 				return null;
 			}
 			String taskPath = StringUtils.isNotBlank(taskName) ? taskName : DEFAULT_REPORT_TASK;
@@ -208,7 +210,9 @@ public class ReportWebServiceImpl implements ReportWebService {
 
 	@Override
 	public Response createOrUpdateReportInfoParam(final ReportCriteriaParamDto reportParam) {
-		log.debug("In createOrUpdateReportInfoParam:" + reportParam);
+		if(log.isDebugEnabled()) {
+			log.debug("In createOrUpdateReportInfoParam:" + reportParam);
+		}
 		Response response = new Response();
 		String paramId = null;
 
@@ -602,7 +606,9 @@ public class ReportWebServiceImpl implements ReportWebService {
 
 	@Override
 	public Response createOrUpdateSubCriteriaParam(final ReportSubCriteriaParamDto subCriteriaParamReport) {
-		log.debug("In createOrUpdateSubCriteriaParam:" + subCriteriaParamReport);
+		if(log.isDebugEnabled()) {
+			log.debug("In createOrUpdateSubCriteriaParam:" + subCriteriaParamReport);
+		}
 		Response response = new Response();
 		String paramId = null;
 
@@ -652,14 +658,11 @@ public class ReportWebServiceImpl implements ReportWebService {
 		Response response = new Response();
 		if (reportSubscription != null) {
 			try {
-				jmsTemplate.send("subsQueue", new MessageCreator() {
-					public javax.jms.Message createMessage(Session session) throws JMSException {
-						return session.createObjectMessage(reportSubscription);
-					}
-				});
-				response.setStatus(ResponseStatus.SUCCESS);
-				return response;
-			} catch (JmsException e) {
+				redisTemplate.convertAndSend("subsQueue", reportSubscription);
+				response.succeed();
+			} catch(Throwable e) {
+				log.error("can't add subs queue message", e);
+				response.fail();
 			}
 		}
 		response.setStatus(ResponseStatus.FAILURE);
@@ -674,13 +677,9 @@ public class ReportWebServiceImpl implements ReportWebService {
 
 			if (reportSubscription != null) {
 				try {
-					jmsTemplate.send("subsQueue", new MessageCreator() {
-						public javax.jms.Message createMessage(Session session) throws JMSException {
-							return session.createObjectMessage(reportSubscription);
-						}
-					});
-				} catch (JmsException e) {
-					log.error("Failed to schedule report generation ", e);
+					redisTemplate.convertAndSend("subsQueue", reportSubscription);
+				} catch(Throwable e) {
+					log.error("can't add subs queue message", e);
 				}
 			}
 		}

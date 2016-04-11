@@ -131,7 +131,9 @@ public class CategoryDataServiceImpl implements CategoryDataService {
                 }
                 catIdBuf.append(catStr);
             }
-            log.debug("Category ids after = " + catIdBuf.toString());
+            if(log.isDebugEnabled()) {
+            	log.debug("Category ids after = " + catIdBuf.toString());
+            }
         }
         return catIdBuf.toString();
     }

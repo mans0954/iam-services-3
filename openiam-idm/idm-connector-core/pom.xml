@@ -173,10 +173,6 @@
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-hornetq</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-logging</artifactId>
 		</dependency>
 		<dependency>
@@ -222,6 +218,10 @@
 			<groupId>com.force.api</groupId>
 			<artifactId>force-wsc</artifactId>
 			<version>22.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.openiam</groupId>
+			<artifactId>openiam-idm-intf</artifactId>
 		</dependency>
 
 

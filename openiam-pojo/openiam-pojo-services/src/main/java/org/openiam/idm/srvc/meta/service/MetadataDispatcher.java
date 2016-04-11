@@ -1,18 +1,14 @@
 package org.openiam.idm.srvc.meta.service;
 
-import java.util.Enumeration;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.jms.JMSException;
-import javax.jms.ObjectMessage;
-import javax.jms.QueueBrowser;
-import javax.jms.Session;
+import javax.annotation.PostConstruct;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.time.StopWatch;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.exception.BasicDataServiceException;
@@ -42,13 +38,15 @@ import org.openiam.idm.srvc.role.service.RoleDAO;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDataService;
-import org.openiam.thread.Sweepable;
 import org.openiam.util.AttributeUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.jms.core.BrowserCallback;
-import org.springframework.jms.core.JmsTemplate;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.data.redis.connection.Message;
+import org.springframework.data.redis.connection.MessageListener;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.listener.ChannelTopic;
+import org.springframework.data.redis.listener.RedisMessageListenerContainer;
+import org.springframework.data.redis.listener.Topic;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
@@ -60,7 +58,7 @@ import org.springframework.transaction.support.TransactionTemplate;
  * Date: 7/22/14.
  */
 @Component("metadataDispatcher")
-public class MetadataDispatcher implements Sweepable {
+public class MetadataDispatcher {
 	private static final Log log = LogFactory.getLog(MetadataDispatcher.class);
     @Autowired
     private UserDataService userManager;
@@ -85,57 +83,43 @@ public class MetadataDispatcher implements Sweepable {
     private ResourcePropDAO resourcePropDAO;
 
     @Autowired
-    private JmsTemplate jmsTemplate;
-
-    @Autowired
     @Qualifier("transactionManager")
     private PlatformTransactionManager platformTransactionManager;
     private final Object mutex = new Object();
-
-    @Override
-    @Scheduled(fixedRateString="${org.openiam.metadata.threadsweep}", initialDelayString="${org.openiam.metadata.threadsweep}")
-    public void sweep() {
-        jmsTemplate.browse("metaElementQueue", new BrowserCallback<Object>() {
-            @Override
-            public Object doInJms(Session session, QueueBrowser browser) throws JMSException {
-                synchronized (mutex){
-
-                    final StopWatch sw = new StopWatch();
-                    sw.start();
-                    try {
-                        log.info("Starting metadataElement sweeper thread");
-
-                        Enumeration e = browser.getEnumeration();
-
-                        while (e.hasMoreElements()) {
-                            final MetadataElementEntity metadataElementEntity = (MetadataElementEntity)((ObjectMessage) jmsTemplate.receive("metaElementQueue")).getObject();
-
-                            TransactionTemplate transactionTemplate = new TransactionTemplate(platformTransactionManager);
-                            transactionTemplate.setPropagationBehavior(TransactionTemplate.PROPAGATION_REQUIRED);
-                            Boolean result = transactionTemplate.execute(new TransactionCallback<Boolean>() {
-                                @Override
-                                public Boolean doInTransaction(TransactionStatus status) {
-                                    process(metadataElementEntity);
-                                    try {
-                                        // to give other threads chance to be executed
-                                        Thread.sleep(100);
-                                    } catch (InterruptedException e1) {
-                                        log.warn(e1.getMessage());
-                                    }
-
-                                    return true;
-                                }});
-
-                            e.nextElement();
+    
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
+    
+    @Autowired
+    private RedisMessageListenerContainer listener;
+    
+    @PostConstruct
+    public void init() {
+    	listener.addMessageListener(new MessageListener() {
+			
+			@Override
+			public void onMessage(Message message, byte[] pattern) {
+				final MetadataElementEntity entity = (MetadataElementEntity)redisTemplate.getDefaultSerializer().deserialize(message.getBody());
+				final TransactionTemplate transactionTemplate = new TransactionTemplate(platformTransactionManager);
+                transactionTemplate.setPropagationBehavior(TransactionTemplate.PROPAGATION_REQUIRED);
+                Boolean result = transactionTemplate.execute(new TransactionCallback<Boolean>() {
+                    @Override
+                    public Boolean doInTransaction(TransactionStatus status) {
+                        process(entity);
+                        /*
+                         * I'm keeping this commented out here, in memory of our friends at Minsk
+                         * 
+                        try {
+                            // to give other threads chance to be executed
+                            Thread.sleep(100);
+                        } catch (InterruptedException e1) {
+                            log.warn(e1.getMessage());
                         }
-
-                    } finally {
-                        log.info(String.format("Done with metadataElement sweeper thread.  Took %s ms", sw.getTime()));
-                    }
-                    return null;
-                }
-            }
-        });
+						*/
+                        return true;
+                    }});
+			}
+		}, Arrays.asList(new Topic[] { new ChannelTopic("metaElementQueue")}));
     }
 
     private void process(MetadataElementEntity metadataElementEntity){

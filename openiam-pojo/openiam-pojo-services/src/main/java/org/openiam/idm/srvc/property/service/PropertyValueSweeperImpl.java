@@ -42,7 +42,7 @@ public class PropertyValueSweeperImpl implements Sweepable, PropertyValueSweeper
     @Autowired
 	private PropertyValueConverter converter;
     
-    private Map<String, PropertyValue> valueCache;
+    private Map<String, PropertyValue> valueCache = new HashMap<String, PropertyValue>();
 	
 	@Override
 	@Scheduled(fixedRateString="${org.openiam.property.value.threadsweep}", initialDelay=0)

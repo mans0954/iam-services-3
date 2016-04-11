@@ -7,12 +7,17 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
+import org.openiam.idm.searchbeans.MetadataElementSearchBean;
+import org.openiam.idm.searchbeans.SearchBean;
+import org.openiam.idm.searchbeans.SupervisorSearchBean;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.SupervisorIDEntity;
 import org.springframework.stereotype.Repository;
@@ -20,7 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Data Access Object implementation for domain model class Supervisor.
- * 
+ *
  * @see org.openiam.idm.srvc.user.dto.Supervisor
  */
 @Repository("supervisorDAO")
@@ -30,23 +35,43 @@ public class SupervisorDAOImpl extends BaseDaoImpl<SupervisorEntity, SupervisorI
         return "id";
     }
 
+    @Override
+    protected boolean cachable() {
+        return false;
+    }
+
     @Transactional
     public void deleteById(SupervisorIDEntity id) {
-        Query qry = getSession().createQuery("delete "+this.domainClass.getName()+ " s where s.id = :pk ");
+        Query qry = getSession().createQuery("delete " + this.domainClass.getName() + " s where s.id = :pk ");
         qry.setParameter("pk", id);
         qry.executeUpdate();
+    }
+
+    @Override
+    protected Criteria getExampleCriteria(final SearchBean searchBean) {
+        final Criteria criteria = getCriteria();
+        if (searchBean != null && searchBean instanceof SupervisorSearchBean) {
+            final SupervisorSearchBean sb = (SupervisorSearchBean) searchBean;
+
+            if(sb.getEmployee() != null && StringUtils.isNotBlank(sb.getEmployee().getId())) {
+                criteria.createAlias("employee", "e").add(Restrictions.eq("e.id", sb.getEmployee().getId()));
+            }
+        }
+
+        criteria.setCacheable(cachable());
+        return criteria;
     }
 
     /**
      * Returns a list of Supervisor objects that represents the employees or
      * users for this supervisor
-     * 
+     *
      * @param supervisorId
      * @return
      */
     public List<SupervisorEntity> findEmployees(String supervisorId) {
         Criteria criteria = getCriteria().createAlias("supervisor", "s").add(Restrictions.eq("s.id", supervisorId))
-                        .addOrder(Order.asc("supervisor.id"));
+                .addOrder(Order.asc("supervisor.id"));
 
         List<SupervisorEntity> results = (List<SupervisorEntity>) criteria.list();
 
@@ -82,7 +107,7 @@ public class SupervisorDAOImpl extends BaseDaoImpl<SupervisorEntity, SupervisorI
 
     public SupervisorEntity findPrimarySupervisor(String employeeId) {
         Criteria criteria = getCriteria().createAlias("employee", "e").add(Restrictions.eq("e.id", employeeId))
-                        .add(Restrictions.eq("isPrimarySuper", 1)).addOrder(Order.asc("supervisor"));
+                .add(Restrictions.eq("isPrimarySuper", 1)).addOrder(Order.asc("supervisor"));
 
         SupervisorEntity supr = (SupervisorEntity) criteria.uniqueResult();
         if (supr == null)
@@ -98,7 +123,7 @@ public class SupervisorDAOImpl extends BaseDaoImpl<SupervisorEntity, SupervisorI
 
     public SupervisorEntity findSupervisor(String superiorId, String subordinateId) {
         Criteria criteria = getCriteria().add(Restrictions.eq("supervisor.id", superiorId))
-                        .add(Restrictions.eq("employee.id", subordinateId));
+                .add(Restrictions.eq("employee.id", subordinateId));
 
         SupervisorEntity supr = (SupervisorEntity) criteria.uniqueResult();
         if (supr == null)

@@ -66,6 +66,13 @@ public class AttributeMapDAOImpl extends
                 .addOrder(Order.asc("resourceId")).list();
     }
 
+    public List<AttributeMapEntity> findByManagedSysId(String managedSysId) {
+        return (List<AttributeMapEntity>) this.getCriteria()
+                .add(Restrictions.eq("managedSystem.id", managedSysId))
+                .addOrder(Order.asc("mapForObjectType"))
+                .addOrder(Order.asc("managedSystem.id")).list();
+    }
+
     public void removeResourceAttributeMaps(String resourceId) {
         AttributeMapEntity ame = (AttributeMapEntity) getCriteria()
                 .add(Restrictions.eq("id", resourceId)).uniqueResult();

@@ -49,7 +49,10 @@ public interface PasswordValidator {
      * @param password
      * @return
      */
+    public List<PasswordRuleException> getAllViolatingRules(Policy policy, Password password) throws ObjectNotFoundException, IOException;
     void validateForUser(Policy policy, Password password, UserEntity usr, LoginEntity lg) throws ObjectNotFoundException, IOException, PasswordRuleException;
+	public void validateForUser(Policy policy, Password password, UserEntity usr, LoginEntity lg, List<AbstractPasswordRule> rules) throws ObjectNotFoundException, IOException, PasswordRuleException;
     List<PasswordRule> getPasswordRules(Policy policy, Password password, UserEntity usr, LoginEntity lg) throws ObjectNotFoundException, IOException;
     List<PasswordRule> getPasswordRules(Policy policy, Password password) throws ObjectNotFoundException, IOException;
+		public List<AbstractPasswordRule> getRules(Policy pswdPolicy, Password password, UserEntity user, LoginEntity login) throws ObjectNotFoundException, IOException ;
 }

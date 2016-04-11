@@ -5,19 +5,31 @@ import org.hibernate.Criteria;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
+import org.openiam.core.dao.OrderDaoImpl;
 import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
 import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 /**
  * DAO implementation for MetadataType
  */
 @Repository("metadataTypeDAO")
-public class MetadataTypeDAOImpl extends BaseDaoImpl<MetadataTypeEntity, String> implements MetadataTypeDAO {
+public class MetadataTypeDAOImpl extends OrderDaoImpl<MetadataTypeEntity, String> implements MetadataTypeDAO {
 
-	@Override
+
+    protected boolean cachable() {
+        return true;
+    }
+
+    @Override
+    public MetadataTypeEntity findByNameGrouping(String name, MetadataTypeGrouping grouping) {
+        return (MetadataTypeEntity) getCriteria().setCacheable(cachable()).add(Restrictions.eq("description", name)).add(Restrictions.eq("grouping", grouping)).uniqueResult();
+    }
+
+    @Override
     protected Criteria getExampleCriteria(final SearchBean searchBean) {
 		Criteria criteria = getCriteria();
 		if(searchBean != null) {
@@ -70,13 +82,13 @@ public class MetadataTypeDAOImpl extends BaseDaoImpl<MetadataTypeEntity, String>
 //		return criteria.list();
 //    }
 //
-	@Override
-	public MetadataTypeEntity findByNameGrouping(String name, MetadataTypeGrouping grouping) {
-		return (MetadataTypeEntity)getCriteria().add(Restrictions.eq("description",name)).add(Restrictions.eq("grouping",grouping)).uniqueResult();
-	}
+
     @Override
     protected String getPKfieldName() {
     	return "id";
+    }
+    protected String getReferenceType() {
+        return "MetadataTypeEntity.displayNameMap";
     }
 
 }

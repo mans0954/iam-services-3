@@ -233,7 +233,9 @@ public class LDAPLoginModule extends AbstractLoginModule {
             }
         }
 
-        log.debug("-login successful");
+        if(log.isDebugEnabled()) {
+        	log.debug("-login successful");
+        }
         // good login - reset the counters
         Date curTime = new Date(System.currentTimeMillis());
 
@@ -249,7 +251,9 @@ public class LDAPLoginModule extends AbstractLoginModule {
 
         login.setAuthFailCount(0);
         login.setFirstTimeLogin(0);
-        log.debug("-Good Authn: Login object updated.");
+        if(log.isDebugEnabled()) {
+        	log.debug("-Good Authn: Login object updated.");
+        }
         loginManager.updateLogin(login);
 
         // check the user status
@@ -261,7 +265,9 @@ public class LDAPLoginModule extends AbstractLoginModule {
         }
 
         // Successful login
-        log.debug("-Populating subject after authentication");
+        if(log.isDebugEnabled()) {
+        	log.debug("-Populating subject after authentication");
+        }
 
         sub.setUserId(login.getUserId());
         sub.setPrincipal(principal);

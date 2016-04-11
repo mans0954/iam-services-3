@@ -264,10 +264,23 @@
             <a>type.id</a>
             <b>mdTypeId</b>
         </field>
-        <field>
-            <a>type.displayName</a>
-            <b>metadataTypeName</b>
-        </field>
+    </mapping>
+
+
+<!--    <mapping>
+        <class-a>org.openiam.idm.srvc.auth.domain.LoginAttributeEntity
+        </class-a>
+        <class-b>org.openiam.idm.srvc.auth.dto.LoginAttribute</class-b>
+    </mapping>-->
+
+    <mapping>
+        <class-a>org.openiam.idm.srvc.pswd.domain.PasswordHistoryEntity
+        </class-a>
+        <class-b>org.openiam.idm.srvc.pswd.dto.PasswordHistory</class-b>
+		<field>
+			<a>login.id</a>
+			<b>loginId</b>
+		</field>
 	</mapping>
 
 	<mapping>
@@ -338,19 +351,43 @@
             <a>defParam.name</a>
             <b>name</b>
         </field>
-	</mapping>
-	
-	<mapping>
-		<class-a>org.openiam.idm.srvc.mngsys.domain.ManagedSysRuleEntity
-		</class-a>
-		<class-b>org.openiam.idm.srvc.mngsys.dto.ManagedSysRuleDto
-		</class-b>
-	</mapping>
-	<mapping>
-		<class-a>org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity
-		</class-a>
-		<class-b>org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch
-		</class-b>
+    </mapping>
+<!--    <mapping>
+        <class-a>org.openiam.idm.srvc.policy.domain.PolicyObjectAssocEntity
+        </class-a>
+        <class-b>org.openiam.idm.srvc.policy.dto.PolicyObjectAssoc</class-b>
+    </mapping>-->
+    <mapping>
+        <class-a>org.openiam.idm.srvc.audit.domain.IdmAuditLogCustomEntity
+        </class-a>
+        <class-b>org.openiam.idm.srvc.audit.dto.IdmAuditLogCustom</class-b>
+        <field>
+            <a>log.id</a>
+            <b>logId</b>
+        </field>
+    </mapping>
+
+    <mapping>
+        <class-a>org.openiam.idm.srvc.audit.domain.AuditLogTargetEntity
+        </class-a>
+        <class-b>org.openiam.idm.srvc.audit.dto.AuditLogTarget</class-b>
+        <field>
+            <a>log.id</a>
+            <b>logId</b>
+        </field>
+    </mapping>
+
+    <!--<mapping>-->
+    <!--<class-a>org.openiam.idm.srvc.mngsys.domain.ManagedSysRuleEntity-->
+    <!--</class-a>-->
+    <!--<class-b>org.openiam.idm.srvc.mngsys.dto.ManagedSysRuleDto-->
+    <!--</class-b>-->
+    <!--</mapping>-->
+    <mapping>
+        <class-a>org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity
+        </class-a>
+        <class-b>org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch
+        </class-b>
         <field>
             <a>managedSys.id</a>
             <b>managedSys</b>
@@ -372,6 +409,20 @@
             <a>managedSystem.id</a>
             <b>managedSysId</b>
         </field>
+    </mapping>
+    <mapping>
+        <class-a>org.openiam.idm.srvc.recon.domain.ReconciliationSituationEntity
+        </class-a>
+        <class-b>
+            org.openiam.idm.srvc.recon.dto.ReconciliationSituation
+        </class-b>
+    </mapping>
+    <mapping>
+        <class-a>org.openiam.idm.srvc.mngsys.domain.DefaultReconciliationAttributeMapEntity
+        </class-a>
+        <class-b>
+            org.openiam.idm.srvc.mngsys.dto.DefaultReconciliationAttributeMap
+        </class-b>
     </mapping>
 
 	<mapping>
@@ -408,20 +459,6 @@
 			<a>language.id</a>
 			<b>languageId</b>
 		</field>
-	</mapping>
-	<mapping>
-		<class-a>org.openiam.idm.srvc.recon.domain.ReconciliationSituationEntity
-		</class-a>
-		<class-b>
-			org.openiam.idm.srvc.recon.dto.ReconciliationSituation
-		</class-b>
-	</mapping>
-	<mapping>
-		<class-a>org.openiam.idm.srvc.mngsys.domain.DefaultReconciliationAttributeMapEntity
-		</class-a>
-		<class-b>
-			org.openiam.idm.srvc.mngsys.dto.DefaultReconciliationAttributeMap
-		</class-b>
 	</mapping>
 	
 	
@@ -505,6 +542,10 @@
     	<field>
             <a>id</a>
             <b>id</b>
+        </field>
+        <field>
+            <a>serverURL</a>
+            <b>serverURL</b>
         </field>
         <field>
             <a>serverURL</a>

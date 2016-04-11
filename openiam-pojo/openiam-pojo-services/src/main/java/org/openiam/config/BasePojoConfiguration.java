@@ -18,7 +18,7 @@ import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 @Configuration
-@Import({BaseConfiguration.class, JMXConfig.class, ElasticSearchConfig.class})
+@Import({BaseConfiguration.class, JMXConfig.class, ElasticSearchConfig.class, RedisConfig.class})
 public class BasePojoConfiguration {
 	
 	@Value("${mail.host}")
@@ -39,13 +39,6 @@ public class BasePojoConfiguration {
 	@Value("${mail.smtp.starttls.enable}")
 	private String startTlsEnabled;
 
-	@Bean(name="jmsReceiverThreadPoolTaskExecutor")
-	public ThreadPoolTaskExecutor jmsReceiverThreadPoolTaskExecutor() {
-		final ThreadPoolTaskExecutor e = new ThreadPoolTaskExecutor();
-		e.setDaemon(true);
-		return e;
-	}
-	
 	@Bean(name="emailSender")
 	public JavaMailSenderImpl emailSender() {
 		final JavaMailSenderImpl s = new JavaMailSenderImpl();

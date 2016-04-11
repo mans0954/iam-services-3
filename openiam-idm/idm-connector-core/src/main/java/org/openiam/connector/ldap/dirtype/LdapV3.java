@@ -44,6 +44,21 @@ public class LdapV3 implements Directory {
     Map<String, Object> objectMap = new HashMap<String, Object>();
     private static final Log log = LogFactory.getLog(LdapV3.class);
 
+    // Should be any way to split set password and reset password
+    public ModificationItem[] resetPassword(PasswordRequest reqType) throws UnsupportedEncodingException {
+
+        ModificationItem[] mods = new ModificationItem[1];
+        String userPassword = getUserPassword(reqType.getExtensibleObject());
+        if (StringUtils.isEmpty(userPassword)) {
+            userPassword = reqType.getPassword();
+        }
+        mods[0] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute(PASSWORD_ATTRIBUTE, userPassword));
+        //skip for now for LDAP
+//        mods[1] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute(PASSWORD_LAST_SET, "0"));
+
+        return mods;
+    }
+
     public ModificationItem[] setPassword(PasswordRequest reqType) throws UnsupportedEncodingException {
 
         ModificationItem[] mods = new ModificationItem[1];
@@ -139,7 +154,9 @@ public class LdapV3 implements Directory {
 
             for (String s : currentSupervisorMembershipList) {
                 try {
-                    log.debug("Removing supervisor: " + s + " from " + identityDN);
+                	if(log.isDebugEnabled()) {
+                		log.debug("Removing supervisor: " + s + " from " + identityDN);
+                	}
                     ModificationItem mods[] = new ModificationItem[1];
                     mods[0] = new ModificationItem(DirContext.REMOVE_ATTRIBUTE, new BasicAttribute("manager", s));
                     ldapctx.modifyAttributes(identityDN, mods);
@@ -156,7 +173,9 @@ public class LdapV3 implements Directory {
 
         List<String> currentMembershipList = userMembershipList(managedSys, identityDN, matchObj, ldapctx);
 
-        log.debug("Current ldap role membership:" + currentMembershipList);
+        if(log.isDebugEnabled()) {
+        	log.debug("Current ldap role membership:" + currentMembershipList);
+        }
 
         if (targetMembershipList == null && currentMembershipList != null) {
 
@@ -212,13 +231,17 @@ public class LdapV3 implements Directory {
 
         List<String> currentSupervisorMembershipList = userSupervisorMembershipList(managedSys, identity, matchObj, ldapctx);
 
-        log.debug("Current ldap supervisor membership:" + currentSupervisorMembershipList);
+        if(log.isDebugEnabled()) {
+        	log.debug("Current ldap supervisor membership:" + currentSupervisorMembershipList);
+        }
 
         if (supervisorMembershipList == null && currentSupervisorMembershipList != null) {
 
             for (String s : currentSupervisorMembershipList) {
                 try {
-                    log.debug("Removing supervisor: " + s + " from " + identityDN);
+                	if(log.isDebugEnabled()) {
+                		log.debug("Removing supervisor: " + s + " from " + identityDN);
+                	}
                     ModificationItem mods[] = new ModificationItem[1];
                     mods[0] = new ModificationItem(DirContext.REMOVE_ATTRIBUTE, new BasicAttribute("manager", s));
                     ldapctx.modifyAttributes(identityDN, mods);
@@ -284,10 +307,11 @@ public class LdapV3 implements Directory {
 
         List<String> currentMembershipList = new ArrayList<String>();
 
-        log.debug("isMemberOf()...");
-        log.debug(" - userDN =" + userDN);
-        log.debug(" - MembershipObjectDN=" + matchObj.getSearchBaseDn());
-
+        if(log.isDebugEnabled()) {
+	        log.debug("isMemberOf()...");
+	        log.debug(" - userDN =" + userDN);
+	        log.debug(" - MembershipObjectDN=" + matchObj.getSearchBaseDn());
+        }
         String userSearchFilter = "(&(objectClass=groupOfUniqueNames)(uniqueMember=" + userDN + "))";
         String searchBase = matchObj.getSearchBaseDn();
 
@@ -306,7 +330,9 @@ public class LdapV3 implements Directory {
                 SearchResult sr = (SearchResult)answer.next();
 
                 String objectName = sr.getNameInNamespace();
-                log.debug("Adding to current membership list " + objectName);
+                if(log.isDebugEnabled()) {
+                	log.debug("Adding to current membership list " + objectName);
+                }
                 currentMembershipList.add(objectName);
             }
 
@@ -326,10 +352,11 @@ public class LdapV3 implements Directory {
 
         List<String> currentSupervisorMembershipList = new ArrayList<String>();
 
-        log.debug("isManager()...");
-        log.debug(" - userDN =" + userDN);
-        log.debug(" - MembershipObjectDN=" + matchObj.getSearchBaseDn());
-
+        if(log.isDebugEnabled()) {
+	        log.debug("isManager()...");
+	        log.debug(" - userDN =" + userDN);
+	        log.debug(" - MembershipObjectDN=" + matchObj.getSearchBaseDn());
+        }
         String searchBase = matchObj.getSearchBaseDn();
         String userSearchFilter = matchObj.getSearchFilterUnescapeXml();
         // replace the place holder in the search filter

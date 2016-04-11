@@ -10,6 +10,7 @@ import org.openiam.idm.srvc.audit.constant.AuditSource;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.grp.dto.Group;
+import org.openiam.idm.srvc.grp.dto.GroupRequestModel;
 import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
 import org.openiam.provision.dto.ProvisionGroup;
 import org.openiam.provision.service.ObjectProvisionService;
@@ -32,10 +33,10 @@ public class SaveGroupDelegate extends AbstractActivitiJob {
 	
 	@Override
 	public void execute(DelegateExecution execution) throws Exception {
-		final Group group = getObjectVariable(execution, ActivitiConstants.GROUP, Group.class);
+		final GroupRequestModel groupRequestModel = getObjectVariable(execution, ActivitiConstants.GROUP, GroupRequestModel.class);
 		final IdmAuditLogEntity idmAuditLog = createNewAuditLog(execution);
         boolean isNew = false;
-        if (group.getId() == null) {
+        if (groupRequestModel.getTargetObject().getId() == null) {
             idmAuditLog.setAction(AuditAction.ADD_GROUP.value());
             idmAuditLog.setAuditDescription("Create new group");
             isNew = true;
@@ -44,8 +45,9 @@ public class SaveGroupDelegate extends AbstractActivitiJob {
             idmAuditLog.setAuditDescription("Edit group");
         }
         try {
-        	idmAuditLog.setTargetGroup(group.getId(), group.getName());
-            final Response wsResponse =  groupDataService.saveGroup(group, getRequestorId(execution));
+        	idmAuditLog.setTargetGroup(groupRequestModel.getTargetObject().getId(), groupRequestModel.getTargetObject().getName());
+            groupRequestModel.setRequesterId(getRequestorId(execution));
+            final Response wsResponse =  groupDataService.saveGroupRequest(groupRequestModel);
             if (wsResponse.isSuccess()) {
                 String groupId = (String) wsResponse.getResponseValue();
 
@@ -55,7 +57,7 @@ public class SaveGroupDelegate extends AbstractActivitiJob {
                         groupProvisionService.modify(provisionGroup);
                 //TODO group provisioning processing the result
 
-                idmAuditLog.setTargetGroup(groupId, group.getName());
+                idmAuditLog.setTargetGroup(groupId, groupRequestModel.getTargetObject().getName());
                 idmAuditLog.succeed();
             } else {
                 idmAuditLog.fail();

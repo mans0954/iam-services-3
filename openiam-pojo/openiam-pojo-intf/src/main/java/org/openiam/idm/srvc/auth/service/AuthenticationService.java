@@ -27,6 +27,9 @@ import javax.xml.bind.annotation.XmlSeeAlso;
  * various methods </font>
  * </p>
  */
+/*
+@WebService(targetNamespace = "urn:idm.openiam.org/srvc/auth/service", name = "AuthenticationService")
+*/
 @WebService
 @XmlSeeAlso({
         Group.class
@@ -39,7 +42,6 @@ public interface AuthenticationService {
 	 * @throws Throwable
 	 */
     @WebMethod
-    @Deprecated
     void globalLogout(
             @WebParam(name = "userId", targetNamespace = "")
             String userId) throws Throwable;
@@ -55,7 +57,10 @@ public interface AuthenticationService {
      * @param userId The id of the user.
      * @param contentProviderId the id of the content provider
      */
-    Response globalLogoutRequest(final LogoutRequest request);
+    @WebMethod
+    Response globalLogoutRequest(
+            @WebParam(name = "request", targetNamespace = "")
+                    LogoutRequest request);
 
     /**
      * This method logs in a user.  It updates his Login record to reflect this fact.  Unsuccessful logins attempts are counted.  If the user

@@ -50,7 +50,7 @@ public class UserElasticSearchRepositoryTest extends AbstractElasticSearchReposi
 			public Void doInTransaction(TransactionStatus status) {
 				user = new UserEntity();
 				user.setFirstName(random());
-				user.setLastName(random());
+				user.setLastName(String.format("%s %s", random(), random()));
 				user.setMaidenName(random());
 				user.setEmployeeId(random());
 				user.setStatus(UserStatusEnum.LEAVE);
@@ -179,6 +179,23 @@ public class UserElasticSearchRepositoryTest extends AbstractElasticSearchReposi
 		
 		sb.setUserType(user.getType().getId());
 		page = repo.findIds(sb, new PageRequest(0, 10));
+		Assert.assertTrue(CollectionUtils.isNotEmpty(page));
+		Assert.assertEquals(page.get(0), user.getId());
+	}
+	
+	@Test
+	public void testMultipleSearchTerms() {
+		final int endIndex = user.getLastName().split(" ")[0].length() + (user.getLastName().split(" ")[1].length() / 2);
+		final String searchTerm = user.getLastName().substring(0, endIndex);
+		
+		final UserSearchBean sb = new UserSearchBean();
+		sb.setLastNameMatchToken(new SearchParam(searchTerm, MatchType.STARTS_WITH));
+		List<String> page = page = repo.findIds(sb, new PageRequest(0, 10));
+		Assert.assertTrue(CollectionUtils.isNotEmpty(page));
+		Assert.assertEquals(page.get(0), user.getId());
+		
+		sb.setLastNameMatchToken(new SearchParam(searchTerm, MatchType.CONTAINS));
+		page = page = repo.findIds(sb, new PageRequest(0, 10));
 		Assert.assertTrue(CollectionUtils.isNotEmpty(page));
 		Assert.assertEquals(page.get(0), user.getId());
 	}

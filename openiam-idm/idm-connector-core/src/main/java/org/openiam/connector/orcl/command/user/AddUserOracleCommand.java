@@ -48,7 +48,9 @@ public class AddUserOracleCommand extends AbstractAddOracleCommand<ExtensibleUse
             throw new ConnectorDataException(ErrorCode.INVALID_ATTRIBUTE, "No identity specified");
         }
 
-        log.debug("Create user:" + crudRequest.getObjectIdentity());
+        if(log.isDebugEnabled()) {
+        	log.debug("Create user:" + crudRequest.getObjectIdentity());
+        }
 
         // Extract attributes
         for (ExtensibleAttribute att : obj.getAttributes()) {

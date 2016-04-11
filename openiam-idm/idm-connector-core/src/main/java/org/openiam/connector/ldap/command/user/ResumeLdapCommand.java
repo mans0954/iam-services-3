@@ -78,12 +78,16 @@ public class ResumeLdapCommand extends AbstractLdapCommand<SuspendResumeRequest,
 
             NamingEnumeration results = null;
             try {
-                log.debug("Looking for user with identity=" +  identity + " in " +  objectBaseDN);
+            	if(log.isDebugEnabled()) {
+            		log.debug("Looking for user with identity=" +  identity + " in " +  objectBaseDN);
+            	}
                 results = lookupSearch(managedSys, matchObj, ldapctx, identity, null, objectBaseDN);
 
             } catch (NameNotFoundException nnfe) {
-                log.debug("results=NULL");
-                log.debug(" results has more elements=0");
+            	if(log.isDebugEnabled()) {
+	                log.debug("results=NULL");
+	                log.debug(" results has more elements=0");
+            	}
                 respType.setStatus(StatusCodeType.FAILURE);
                 return respType;
             }
@@ -125,7 +129,7 @@ public class ResumeLdapCommand extends AbstractLdapCommand<SuspendResumeRequest,
 
         } catch(Exception ne) {
             log.error(ne.getMessage(), ne);
-            throw new ConnectorDataException(ErrorCode.NO_SUCH_IDENTIFIER);
+            throw new ConnectorDataException(ErrorCode.NO_SUCH_IDENTIFIER,ne.getMessage());
         } finally {
 	 		/* close the connection to the directory */
            this.closeContext(ldapctx);

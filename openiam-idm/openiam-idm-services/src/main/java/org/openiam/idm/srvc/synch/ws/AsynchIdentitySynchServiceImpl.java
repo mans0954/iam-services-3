@@ -65,7 +65,9 @@ public class AsynchIdentitySynchServiceImpl implements AsynchIdentitySynchServic
             final SynchConfig config) {
 
 
-        log.debug("A-START SYNCH CALLED...................");
+    	if(log.isDebugEnabled()) {
+    		log.debug("A-START SYNCH CALLED...................");
+    	}
         try {
             Executors.newSingleThreadExecutor().execute(new Runnable() {
                 public void run() {
@@ -91,16 +93,22 @@ public class AsynchIdentitySynchServiceImpl implements AsynchIdentitySynchServic
                 }
             });
         } catch (Exception e) {
+        	if(log.isDebugEnabled()) {
             log.debug("EXCEPTION:AsynchIdentitySynchService:startCustomSynchronization");
-            log.error(e);
+			}            
+			log.error(e);
         }
-        log.debug("A-START SYNCH END ---------------------");
+        if(log.isDebugEnabled()) {
+        	log.debug("A-START SYNCH END ---------------------");
+        }
     }
 
     @Override
     public void executeSynchReview(
             final SynchReviewRequest synchReviewRequest) {
-        log.debug("START SYNCH REVIEW CALLED...................");
+    	if(log.isDebugEnabled()) {
+    		log.debug("START SYNCH REVIEW CALLED...................");
+    	}
         try {
             Executors.newSingleThreadExecutor().execute(new Runnable() {
                 public void run() {
@@ -108,10 +116,14 @@ public class AsynchIdentitySynchServiceImpl implements AsynchIdentitySynchServic
                 }
             });
         } catch (Exception e) {
-            log.debug("EXCEPTION:AsynchIdentitySynchService:executeSynchReview");
+        	if(log.isDebugEnabled()) {
+        		log.debug("EXCEPTION:AsynchIdentitySynchService:executeSynchReview");
+        	}
             log.error(e);
         }
-        log.debug("FINISHED SYNCH REVIEW ---------------------");
+        if(log.isDebugEnabled()) {
+        	log.debug("FINISHED SYNCH REVIEW ---------------------");
+        }
 
     }
 
@@ -125,7 +137,9 @@ public class AsynchIdentitySynchServiceImpl implements AsynchIdentitySynchServic
                 }
             });
         } catch (Exception e) {
-            log.debug("EXCEPTION:AsynchIdentitySynchService:bulkUserMigration");
+        	if(log.isDebugEnabled()) {
+        		log.debug("EXCEPTION:AsynchIdentitySynchService:bulkUserMigration");
+        	}
             log.error(e);
         }
     }
@@ -140,7 +154,9 @@ public class AsynchIdentitySynchServiceImpl implements AsynchIdentitySynchServic
                 }
             });
         } catch (Exception e) {
-            log.debug("EXCEPTION:AsynchIdentitySynchService:resynchRole");
+        	if(log.isDebugEnabled()) {
+        		log.debug("EXCEPTION:AsynchIdentitySynchService:resynchRole");
+        	}
             log.error(e);
         }
     }

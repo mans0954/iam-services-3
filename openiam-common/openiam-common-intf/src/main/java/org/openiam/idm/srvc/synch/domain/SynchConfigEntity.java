@@ -41,6 +41,8 @@ public class SynchConfigEntity extends AbstractKeyNameEntity {
     private Integer loadMatchOnly;
     @Column(name="UPDATE_ATTRIBUTE")
     private Integer updateAttribute;
+/*    @Column(name = "SYNCH_FREQUENCY", length = 20)
+    private String synchFrequency;*/
     @Column(name = "RUN_ON", length=19)
     @Temporal(TemporalType.TIMESTAMP)
     private Date runOn;
@@ -110,8 +112,18 @@ public class SynchConfigEntity extends AbstractKeyNameEntity {
     private SearchScopeType searchScope = SearchScopeType.SUBTREE_SCOPE;
     @Column(name="WS_URL",length=100)
     private String wsUrl;
-    @Column(name="WS_SCRIPT",length=100)
-    private String wsScript;
+    @Column(name = "WS_URI", length = 100)
+    private String wsUri;
+    @Column(name = "WS_NAME_SPACE", length = 100)
+    private String wsNameSpace;
+    @Column(name = "WS_OPERATION", length = 100)
+    private String wsOperation;
+    @Column(name = "WS_ATTRIBUTES_STRING", length = 255)
+    private String wsAttributes;
+    @Column(name = "WS_TARGET_ENTITY_PATH", length = 255)
+    private String wsTargetEntityPath;
+/*    @Column(name="WS_SCRIPT",length=100)
+    private String wsScript;*/
     @OneToMany(mappedBy="synchConfig", cascade=CascadeType.ALL, fetch=FetchType.LAZY, orphanRemoval=true)
     private List<SynchReviewEntity> synchReviews;
 
@@ -185,6 +197,14 @@ public class SynchConfigEntity extends AbstractKeyNameEntity {
         this.cronExpression = cronExpression;
     }
 
+    /*public String getSynchFrequency() {
+        return this.synchFrequency;
+    }
+
+    public void setSynchFrequency(String synchFrequency) {
+        this.synchFrequency = synchFrequency;
+    }
+*/
     public String getCompanyId() {
         return companyId;
     }
@@ -425,13 +445,13 @@ public class SynchConfigEntity extends AbstractKeyNameEntity {
         this.wsUrl = wsUrl;
     }
 
-    public String getWsScript() {
+/*    public String getWsScript() {
         return wsScript;
     }
 
     public void setWsScript(String wsScript) {
         this.wsScript = wsScript;
-    }
+    }*/
 
     public List<SynchReviewEntity> getSynchReviews() {
         return synchReviews;
@@ -439,6 +459,46 @@ public class SynchConfigEntity extends AbstractKeyNameEntity {
 
     public void setSynchReviews(List<SynchReviewEntity> synchReviews) {
         this.synchReviews = synchReviews;
+    }
+
+    public String getWsAttributes() {
+        return wsAttributes;
+    }
+
+    public void setWsAttributes(String wsAttributes) {
+        this.wsAttributes = wsAttributes;
+    }
+
+    public String getWsUri() {
+        return wsUri;
+    }
+
+    public void setWsUri(String wsUri) {
+        this.wsUri = wsUri;
+    }
+
+    public String getWsNameSpace() {
+        return wsNameSpace;
+    }
+
+    public void setWsNameSpace(String wsNameSpace) {
+        this.wsNameSpace = wsNameSpace;
+    }
+
+    public String getWsOperation() {
+        return wsOperation;
+    }
+
+    public void setWsOperation(String wsOperation) {
+        this.wsOperation = wsOperation;
+    }
+
+    public String getWsTargetEntityPath() {
+        return wsTargetEntityPath;
+    }
+
+    public void setWsTargetEntityPath(String wsTargetEntityPath) {
+        this.wsTargetEntityPath = wsTargetEntityPath;
     }
 
     @Override
@@ -541,7 +601,9 @@ public class SynchConfigEntity extends AbstractKeyNameEntity {
         if (!preSyncScript.equals(that.preSyncScript)) return false;
         if (!postSyncScript.equals(that.postSyncScript)) return false;
         if (!validationRule.equals(that.validationRule)) return false;
+/*
         if (wsScript != null ? !wsScript.equals(that.wsScript) : that.wsScript != null) return false;
+*/
         return !(wsUrl != null ? !wsUrl.equals(that.wsUrl) : that.wsUrl != null);
 
     }
@@ -587,7 +649,15 @@ public class SynchConfigEntity extends AbstractKeyNameEntity {
         result = 31 * result + (attributeNamesLookup != null ? attributeNamesLookup.hashCode() : 0);
         result = 31 * result + (searchScope != null ? searchScope.hashCode() : 0);
         result = 31 * result + (wsUrl != null ? wsUrl.hashCode() : 0);
+/*
         result = 31 * result + (wsScript != null ? wsScript.hashCode() : 0);
+*/
+		result = 31 * result + (wsUri != null ? wsUri.hashCode() : 0);
+        result = 31 * result + (wsNameSpace != null ? wsNameSpace.hashCode() : 0);
+        result = 31 * result + (wsOperation != null ? wsOperation.hashCode() : 0);
+        result = 31 * result + (wsAttributes != null ? wsAttributes.hashCode() : 0);
+        result = 31 * result + (synchReviews != null ? synchReviews.hashCode() : 0);
+
         return result;
     }
 }

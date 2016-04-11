@@ -6,10 +6,14 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public class AuthLevelAttributeDAOImpl extends BaseDaoImpl<AuthLevelAttributeEntity, String> implements AuthLevelAttributeDAO {
+    @Override
+    protected boolean cachable() {
+        return true;
+    }
 
-	@Override
-	protected String getPKfieldName() {
-		return "id";
-	}
+    @Override
+    protected String getPKfieldName() {
+        return "id";
+    }
 
 }

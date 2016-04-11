@@ -103,8 +103,10 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
             List<TransformScript> transformScripts,
             MatchObjectRule matchRule) {
 
-        log.debug("SynchReview startSynch CALLED.^^^^^^^^");
-        final SynchReviewService synchReviewService = (SynchReviewService) SpringContextProvider.getBean("synchReviewService");
+    	if(log.isDebugEnabled()) {
+    		log.debug("SynchReview startSynch CALLED.^^^^^^^^");
+    	}
+        final SynchReviewService synchReviewService = (SynchReviewService)SpringContextProvider.getBean("synchReviewService");
         final LineObject rowHeader = genHeaderFromRecord(synchReviewService.getHeaderReviewRecord(sourceReview.getId()));
         try {
             for (SynchReviewRecordEntity record : sourceReview.getReviewRecords()) {
@@ -121,7 +123,9 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
                 }
             }
         }
-        log.debug("SYNCH REVIEW SYNCHRONIZATION COMPLETE^^^^^^^^");
+        if(log.isDebugEnabled()) {
+        	log.debug("SYNCH REVIEW SYNCHRONIZATION COMPLETE^^^^^^^^");
+        }
         return new SyncResponse(ResponseStatus.SUCCESS);
     }
 
@@ -146,8 +150,9 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
         msgPropMap.put("SERVICE_HOST", serviceHost);
         msgPropMap.put("SERVICE_CONTEXT", serviceContext);
         long endTime = System.currentTimeMillis();
-        log.debug("--ModifyUser:SynchAdapter execution time="
-                + (endTime - startTime));
+        if(log.isDebugEnabled()) {
+        	log.debug("--ModifyUser:SynchAdapter execution time=" + (endTime - startTime));
+        }
     }
 
     /**
@@ -192,8 +197,10 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
                 try {
                     int retval = validationScript.isValid(rowObj);
                     if (retval == ValidationScript.NOT_VALID) {
+                    if(log.isDebugEnabled()) {
                         log.info(" - Validation failed...transformation will not be called.");
-                        mutex.notifyAll();
+					}                        
+						mutex.notifyAll();
                         return;
                     }
                     if (retval == ValidationScript.SKIP) {
@@ -217,7 +224,9 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
         }
 
         Map<String, Attribute> rowAttr = rowObj.getColumnMap();
+        if(log.isDebugEnabled()) {
         log.info(" - Row Attr..." + rowAttr);
+		}
         User usr = null;
         synchronized (mutex) {
             try {
@@ -257,22 +266,30 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
                             transformScript.setUserRoleList(null);
                         }
 
-                        log.info(" - Execute transform script");
+                    if(log.isDebugEnabled()) {
+                        log.debug(" - Execute transform script");
+                    }
 
                         //Disable PRE and POST processors/performance optimizations
                         pUser.setSkipPreprocessor(true);
                         pUser.setSkipPostProcessor(true);
                         retval = transformScript.execute(rowObj, pUser);
+                    if(log.isDebugEnabled()) {
                         log.debug("Transform result=" + retval);
+                    }
                     } catch (Exception e) {
                         log.error(e);
                     } finally {
                         mutex.notifyAll();
                     }
                 }
-                log.info(" - Execute complete transform script");
+                if(log.isInfoEnabled()) {
+                    log.debug(" - Execute complete transform script");
+                }
             }
-            System.out.println("================ After Transformation => " + (System.currentTimeMillis() - startTime));
+            if(log.isDebugEnabled()) {
+                log.debug("================ After Transformation => "+(System.currentTimeMillis()-startTime));
+            }
 
             if (retval != -1) {
                 if (retval == TransformScript.SKIP_TO_REVIEW) {
@@ -287,22 +304,29 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
                     // call prov service
                     if (retval != TransformScript.DELETE) {
                         if (usr != null) {
-                            log.info(" - Updating existing user");
+                            if(log.isDebugEnabled()) {
+                                log.debug(" - Updating existing user");
+                            }
                             pUser.setId(usr.getId());
                             try {
 
                                 provService.modifyUser(pUser);
-
-                                System.out.println("================ After Modify => " + (System.currentTimeMillis() - startTime));
+                                if(log.isDebugEnabled()) {
+                                    log.debug("================ After Modify => "+(System.currentTimeMillis()-startTime));
+                                }
                             } catch (Throwable e) {
                                 log.error(e);
                             }
                         } else {
-                            log.info(" - New user is being provisioned");
+                            if(log.isDebugEnabled()) {
+                                log.debug(" - New user is being provisioned");
+                            }
                             pUser.setId(null);
                             try {
                                 provService.addUser(pUser);
-                                System.out.println("================ After Add => " + (System.currentTimeMillis() - startTime));
+                                if(log.isDebugEnabled()) {
+                                    log.debug("================ After Add => "+(System.currentTimeMillis()-startTime));
+                                }
                             } catch (Exception e) {
                                 log.error(e);
                             }

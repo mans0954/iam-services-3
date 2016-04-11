@@ -1,5 +1,7 @@
 package org.openiam.elasticsearch.dao;
 
+import java.util.List;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.openiam.base.ws.MatchType;
 import org.openiam.base.ws.SearchParam;
@@ -34,6 +36,12 @@ public class LoginElasticSearchRepositoryTest extends AbstractElasticSearchRepos
 	@BeforeClass
 	public void init() {
         testReindex();
+	}
+	
+	@Test
+	public void testFindByUserId() {
+		final List<LoginEntity> logins = repo.findByUserId("3000");
+		Assert.assertTrue(CollectionUtils.isNotEmpty(logins));
 	}
 
 	@Test

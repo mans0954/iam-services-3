@@ -67,14 +67,14 @@ public class ChallengeResponseWebServiceImpl implements ChallengeResponseWebServ
 			.getLog(ChallengeResponseWebServiceImpl.class);
 
 	@Override
-	public Integer getNumOfRequiredQuestions(String userId) {
-		return challengeResponseService.getNumOfRequiredQuestions(userId);
+	public Integer getNumOfRequiredQuestions(String userId, boolean isEnterprise) {
+		return challengeResponseService.getNumOfRequiredQuestions(userId, isEnterprise);
 	}
 
-    @Override
-    public Integer getNumOfCorrectAnswers(String userId) {
-        return challengeResponseService.getNumOfCorrectAnswers(userId);
-    }
+	@Override
+	public Integer getNumOfCorrectAnswers(String userId, boolean isEnterprise) {
+		return challengeResponseService.getNumOfCorrectAnswers(userId, isEnterprise);
+	}
 
 	@Override
 	public Integer count(final IdentityQuestionSearchBean searchBean) {
@@ -102,8 +102,7 @@ public class ChallengeResponseWebServiceImpl implements ChallengeResponseWebServ
     @Transactional(readOnly = true)
 	public List<UserIdentityAnswer> findAnswerBeans(final IdentityAnswerSearchBean searchBean, final  String requesterId, final int from, final int size)
             throws Exception {
-		final List<UserIdentityAnswerEntity> resultList = challengeResponseService
-				.findAnswerBeans(searchBean, requesterId, from, size);
+		final List<UserIdentityAnswerEntity> resultList = challengeResponseService.findAnswerBeans(searchBean, requesterId, from, size);
 		return (resultList != null) ? answerDozerConverter.convertToDTOList(
 				resultList, searchBean.isDeepCopy()) : null;
 	}
@@ -192,20 +191,23 @@ public class ChallengeResponseWebServiceImpl implements ChallengeResponseWebServ
 						ResponseCode.NO_IDENTITY_QUESTION);
 			}
 
-			final UserIdentityAnswerEntity entity = answerDozerConverter
-					.convertToEntity(answer, true);
-			challengeResponseService.saveAnswer(entity);
-			response.setResponseValue(entity.getId());
-		} catch (BasicDataServiceException e) {
-			response.setErrorCode(e.getCode());
-			response.setStatus(ResponseStatus.FAILURE);
-		} catch (Throwable e) {
-			log.error("Can't save or update resource", e);
-			response.setErrorText(e.getMessage());
-			response.setStatus(ResponseStatus.FAILURE);
-		}
-		return response;
-	}
+            final UserIdentityAnswerEntity entity = answerDozerConverter
+                    .convertToEntity(answer, true);
+            if (answer.getQuestionId() == null) {
+                entity.setIdentityQuestion(null);
+            }
+            challengeResponseService.saveAnswer(entity);
+            response.setResponseValue(entity.getId());
+        } catch (BasicDataServiceException e) {
+            response.setErrorCode(e.getCode());
+            response.setStatus(ResponseStatus.FAILURE);
+        } catch (Throwable e) {
+            log.error("Can't save or update resource", e);
+            response.setErrorText(e.getMessage());
+            response.setStatus(ResponseStatus.FAILURE);
+        }
+        return response;
+    }
 
 	@Override
 	public Response deleteAnswer(final String answerId) {
@@ -239,12 +241,17 @@ public class ChallengeResponseWebServiceImpl implements ChallengeResponseWebServ
 
 			/* check for duplicates */
             final Set<String> questionIdSet = new HashSet<String>();
+            final Set<String> questionTextSet = new HashSet<String>();
             for (final UserIdentityAnswer answer : answerList) {
-                if (questionIdSet.contains(answer.getQuestionId())) {
+                if (StringUtils.isNotBlank(answer.getQuestionId()) && questionIdSet.contains(answer.getQuestionId())) {
                     throw new BasicDataServiceException(
                             ResponseCode.IDENTICAL_QUESTIONS);
                 }
-                if(StringUtils.isBlank(answer.getQuestionId())){
+                if (StringUtils.isNotBlank(answer.getQuestionText()) && questionTextSet.contains(answer.getQuestionText())) {
+                    throw new BasicDataServiceException(
+                            ResponseCode.IDENTICAL_QUESTIONS);
+                }
+                if (StringUtils.isBlank(answer.getQuestionId()) && StringUtils.isBlank(answer.getQuestionText())) {
                     throw new BasicDataServiceException(
                             ResponseCode.QUEST_NOT_SELECTED);
                 }
@@ -253,7 +260,11 @@ public class ChallengeResponseWebServiceImpl implements ChallengeResponseWebServ
                     throw new BasicDataServiceException(
                             ResponseCode.ANSWER_NOT_TAKEN);
                 }
-                questionIdSet.add(answer.getQuestionId());
+                if (StringUtils.isNotBlank(answer.getQuestionId()))
+                    questionIdSet.add(answer.getQuestionId());
+
+                if (StringUtils.isNotBlank(answer.getQuestionText()))
+                    questionTextSet.add(answer.getQuestionText());
             }
 
         } catch (BasicDataServiceException e) {
@@ -277,6 +288,8 @@ public class ChallengeResponseWebServiceImpl implements ChallengeResponseWebServ
                 for (final UserIdentityAnswer answer : answerList) {
                     final UserIdentityAnswerEntity entity = answerDozerConverter
                             .convertToEntity(answer, true);
+                    if (answer.getQuestionId() == null)
+                        entity.setIdentityQuestion(null);
                     answerEntityList.add(entity);
                 }
                 challengeResponseService.saveAnswers(answerEntityList);

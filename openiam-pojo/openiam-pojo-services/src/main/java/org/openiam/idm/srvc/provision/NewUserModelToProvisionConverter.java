@@ -8,6 +8,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.base.AttributeOperationEnum;
+import org.openiam.base.SysConfiguration;
 import org.openiam.dozer.converter.GroupDozerConverter;
 import org.openiam.dozer.converter.OrganizationDozerConverter;
 import org.openiam.dozer.converter.RoleDozerConverter;
@@ -24,10 +25,12 @@ import org.openiam.idm.srvc.meta.dto.PageTemplateAttributeToken;
 import org.openiam.idm.srvc.meta.service.MetadataElementTemplateService;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
+import org.openiam.idm.srvc.org.dto.OrganizationUserDTO;
 import org.openiam.idm.srvc.org.service.OrganizationService;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.service.RoleDataService;
+import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;
 import org.openiam.idm.srvc.user.dto.User;
@@ -36,6 +39,7 @@ import org.openiam.idm.srvc.user.dto.UserToGroupMembershipXref;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.ProvisionUser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -72,6 +76,11 @@ public class NewUserModelToProvisionConverter {
 	@Autowired
 	private OrganizationDozerConverter organizationDozerConverter;
 	
+
+    @Autowired
+    @Qualifier("sysConfiguration")
+    private SysConfiguration sysConfiguration;
+
 	@Transactional
 	public ProvisionUser convertNewProfileModel(final NewUserProfileRequestModel request) {
 		ProvisionUser user = null;
@@ -167,7 +176,7 @@ public class NewUserModelToProvisionConverter {
 			final HashMap<String, UserAttribute> userAttributes = new HashMap<String, UserAttribute>();
 			final PageTemplateAttributeToken token = templateService.getAttributesFromTemplate(request);
 			if(token != null && CollectionUtils.isNotEmpty(token.getSaveList())) {
-				final List<UserAttribute> userAttributeList = userAttributeDozerConverter.convertToDTOList(token.getSaveList(), true);
+				final List<UserAttribute> userAttributeList = userAttributeDozerConverter.convertToDTOList(((List<UserAttributeEntity>)token.getSaveList()), true);
 				for(final UserAttribute attribute : userAttributeList) {
 					if(attribute != null) {
 						attribute.setOperation(AttributeOperationEnum.ADD);

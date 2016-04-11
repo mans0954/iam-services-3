@@ -69,7 +69,9 @@ public abstract class AbstractCommand<Request extends RequestType, Response exte
         if (matchObjList != null && matchObjList.size() > 0) {
             matchObj = managedSystemObjectMatchDozerConverter.convertToDTO(matchObjList.get(0), false);
         }
-        log.debug("matchObj = " + matchObj);
+        if(log.isDebugEnabled()) {
+        	log.debug("matchObj = " + matchObj);
+        }
 
         if (matchObj == null) {
             throw new ConfigurationException("Configuration is missing Match Object information");
@@ -89,9 +91,13 @@ public abstract class AbstractCommand<Request extends RequestType, Response exte
 
             attributes.put("login", login);
             if (obj == null) {
-                log.debug("Object: not provided, just identity, seems it is delete operation");
+            	if(log.isDebugEnabled()) {
+            		log.debug("Object: not provided, just identity, seems it is delete operation");
+            	}
             } else {
-                log.debug("Object:" + obj.getName() + " - operation=" + obj.getOperation());
+            	if(log.isDebugEnabled()) {
+            		log.debug("Object:" + obj.getName() + " - operation=" + obj.getOperation());
+            	}
                 // Extract attributes
                 for (ExtensibleAttribute att : obj.getAttributes()) {
                     if (att != null) {

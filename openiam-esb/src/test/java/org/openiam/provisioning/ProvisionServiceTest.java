@@ -96,7 +96,7 @@ public class ProvisionServiceTest extends AbstractTestNGSpringContextTests {
     }
 	
 	@Test
-	public void testAuditLogJMS() throws Exception {
+	public void testAuditLogElasticSearch() throws Exception {
 		final SimpleAsyncTaskExecutor e = new SimpleAsyncTaskExecutor();
 		final ThreadGroup g = new ThreadGroup("test");
 		e.setThreadGroup(g);

@@ -4,11 +4,8 @@ import java.net.InetAddress;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
 import javax.annotation.PostConstruct;
-import javax.jms.JMSException;
-import javax.jms.Session;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.collections.CollectionUtils;
@@ -18,26 +15,25 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.id.UUIDGen;
 import org.openiam.elasticsearch.dao.AuditLogElasticSearchRepository;
+import org.openiam.elasticsearch.dao.GroupElasticSearchRepository;
+import org.openiam.elasticsearch.dao.LoginElasticSearchRepository;
+import org.openiam.elasticsearch.dao.OrganizationElasticSearchRepository;
+import org.openiam.elasticsearch.dao.ResourceElasticSearchRepository;
+import org.openiam.elasticsearch.dao.RoleElasticSearchRepository;
 import org.openiam.idm.searchbeans.AuditLogSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditTarget;
 import org.openiam.idm.srvc.audit.domain.AuditLogTargetEntity;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
-import org.openiam.idm.srvc.auth.login.LoginDAO;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
-import org.openiam.idm.srvc.grp.service.GroupDAO;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
-import org.openiam.idm.srvc.org.service.OrganizationDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
-import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
-import org.openiam.idm.srvc.role.service.RoleDAO;
 import org.openiam.util.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.jms.core.JmsTemplate;
-import org.springframework.jms.core.MessageCreator;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,33 +44,40 @@ import org.springframework.transaction.annotation.Transactional;
 @Service("auditDataService")
 public class AuditLogServiceImpl implements AuditLogService {
     
-	@Autowired
-    private JmsTemplate jmsTemplate;
 	
 	@Autowired
 	private AuditLogElasticSearchRepository auditLogRepo;
 
     @Autowired
-    private LoginDAO loginDAO;
+    private RoleElasticSearchRepository roleDAO;
 
     @Autowired
-    private RoleDAO roleDAO;
+    private GroupElasticSearchRepository groupDAO;
 
     @Autowired
-    private GroupDAO groupDAO;
+    private OrganizationElasticSearchRepository organizationDAO;
 
     @Autowired
-    private OrganizationDAO organizationDAO;
-
-    @Autowired
-    private ResourceDAO resourceDAO;
+    private ResourceElasticSearchRepository resourceDAO;
 
     @Autowired
     protected SysConfiguration sysConfiguration;
+    
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
+    
+    @Autowired
+    private LoginElasticSearchRepository loginDAO;
 
     private static final Log LOG = LogFactory.getLog(AuditLogServiceImpl.class);
 
     private String nodeIP = null;
+
+/*    @Autowired
+    private IdmAuditLogDozerConverter auditLogDozerConverter;
+
+    @Autowired
+    private IdmAuditLogCustomDozerConverter idmAuditLogCustomDozerConverter;*/
 
     @PostConstruct
     public void init() {
@@ -107,22 +110,28 @@ public class AuditLogServiceImpl implements AuditLogService {
     				target.setLogId(auditLogEntity.getId());
                     if(StringUtils.isNotEmpty(target.getTargetId()) && StringUtils.isEmpty(target.getObjectPrincipal())) {
                         if(AuditTarget.USER.value().equals(target.getTargetType())) {
-                            final List<LoginEntity> principals = loginDAO.findUser(target.getTargetId());
+                            final List<LoginEntity> principals = loginDAO.findByUserId(target.getTargetId());
                             final LoginEntity loginEntity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), principals);
                             if(loginEntity != null) {
                             	target.setObjectPrincipal(loginEntity.getLogin());
                             }
                         } else if(AuditTarget.ROLE.value().equals(target.getTargetType())) {
-                        	final RoleEntity role = roleDAO.findById(target.getTargetId());
-                            target.setObjectPrincipal(role.getName());
+                        	final RoleEntity role = roleDAO.findOne(target.getTargetId());
+                        	if(role != null) {
+                        		target.setObjectPrincipal(role.getName());
+                        	}
                         } else if(AuditTarget.GROUP.value().equals(target.getTargetType())) {
-                        	final GroupEntity role = groupDAO.findById(target.getTargetId());
-                            target.setObjectPrincipal(role.getName());
+                        	final GroupEntity role = groupDAO.findOne(target.getTargetId());
+                        	if(role != null) {
+                        		target.setObjectPrincipal(role.getName());
+                        	}
                         } else if(AuditTarget.ORG.value().equals(target.getTargetType())) {
-                        	final OrganizationEntity org = organizationDAO.findById(target.getTargetId());
-                            target.setObjectPrincipal(org.getName());
+                        	final OrganizationEntity org = organizationDAO.findOne(target.getTargetId());
+                        	if(org != null) {
+                        		target.setObjectPrincipal(org.getName());
+                        	}
                         } else if(AuditTarget.RESOURCE.value().equals(target.getTargetType())) {
-                        	final ResourceEntity res = resourceDAO.findById(target.getTargetId());
+                        	final ResourceEntity res = resourceDAO.findOne(target.getTargetId());
                             target.setObjectPrincipal(res.getName());
                         }
                     }
@@ -131,7 +140,7 @@ public class AuditLogServiceImpl implements AuditLogService {
 
     		}
             if(StringUtils.isEmpty(auditLogEntity.getPrincipal()) && StringUtils.isNotEmpty(auditLogEntity.getUserId())) {
-                List<LoginEntity> principals = loginDAO.findUser(auditLogEntity.getUserId());
+                List<LoginEntity> principals = loginDAO.findByUserId(auditLogEntity.getUserId());
                 LoginEntity loginEntity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), principals);
                 if (loginEntity != null) {
                     auditLogEntity.setPrincipal(loginEntity.getLogin());
@@ -142,6 +151,39 @@ public class AuditLogServiceImpl implements AuditLogService {
         return null;
     }
 
+    private boolean logExists(Set<IdmAuditLogEntity> logEntitySet, IdmAuditLogEntity logEntity) {
+        if(CollectionUtils.isNotEmpty(logEntitySet)){
+
+            for(IdmAuditLogEntity log : logEntitySet){
+                if(log!=null){
+//                    StringBuilder sb = new StringBuilder();
+//                    sb.append("====================================================\n");
+//                    sb.append(String.format("       LOG: %s\n", log));
+//                    sb.append(String.format("SOURCE LOG: %s\n", log));
+//
+//                    sb.append(String.format("LOG.equals(SOURCE LOG): %s\n", log.equals(logEntity)));
+//                    sb.append(String.format("logTargetsEquals(LOG, SOURCE LOG): %s\n", logTargetsEquals(log.getTargets(), logEntity.getTargets())));
+//
+//                    sb.append("====================================================\n");
+//
+//                    System.out.println(sb.toString());
+
+                    if(log.equals(logEntity)
+                        && logTargetsEquals(log.getTargets(), logEntity.getTargets())) {
+//                        System.out.println("LOG EXISTS");
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+    private boolean logTargetsEquals(Set<AuditLogTargetEntity> target, Set<AuditLogTargetEntity> source) {
+        if(CollectionUtils.isNotEmpty(target) ? !target.equals(source) : CollectionUtils.isNotEmpty(source))
+            return false;
+        return true;
+    }
+
     @Override
 	public void enqueue(final IdmAuditLogEntity event) {
         if(event != null){
@@ -150,12 +192,7 @@ public class AuditLogServiceImpl implements AuditLogService {
 	}
 	
 	 private void send(final IdmAuditLogEntity log) {
-		 jmsTemplate.send("logQueue", new MessageCreator() {
-			 public javax.jms.Message createMessage(Session session) throws JMSException {
-				 javax.jms.Message message = session.createObjectMessage(log);
-				 return message;
-			 }
-		 });
+		 redisTemplate.convertAndSend("logQueue", log);
 	 }
 
 	@Override
@@ -187,7 +224,7 @@ public class AuditLogServiceImpl implements AuditLogService {
 	}
 
     @Override
-    @Transactional
+    //@Transactional
     public IdmAuditLogEntity save(IdmAuditLogEntity auditLog) {
         IdmAuditLogEntity auditLogEntity = prepare(auditLog);
         try {

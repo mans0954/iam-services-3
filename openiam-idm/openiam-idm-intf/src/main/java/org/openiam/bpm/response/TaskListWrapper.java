@@ -12,6 +12,7 @@ import javax.xml.bind.annotation.XmlType;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.task.Task;
 import org.apache.commons.collections.CollectionUtils;
+import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.util.DozerMappingType;
 
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -39,23 +40,31 @@ public class TaskListWrapper {
 	}
 	
 	public void addAssignedTasks(final List<Task> assignedTasks, final RuntimeService runtimeService) {
-		if(CollectionUtils.isNotEmpty(assignedTasks)) {
-			for(final Task task : assignedTasks) {
-				if(this.assignedTasks == null) {
-					this.assignedTasks = new LinkedList<TaskWrapper>();
-				}
-				this.assignedTasks.add(new TaskWrapper(task, runtimeService));
-			}
-		}
-	}
+        addAssignedTasks(assignedTasks, runtimeService, null);
+    }
+
+    public void addAssignedTasks(final List<Task> assignedTasks, final RuntimeService runtimeService,LoginDataService loginService) {
+        if(CollectionUtils.isNotEmpty(assignedTasks)) {
+            for(final Task task : assignedTasks) {
+                if(this.assignedTasks == null) {
+                    this.assignedTasks = new LinkedList<TaskWrapper>();
+                }
+                this.assignedTasks.add(new TaskWrapper(task, runtimeService,loginService));
+            }
+        }
+    }
+
+    public void addCandidateTasks(final List<Task> candidateTasks, final RuntimeService runtimeService) {
+        addCandidateTasks(candidateTasks,runtimeService,null);
+    }
 	
-	public void addCandidateTasks(final List<Task> candidateTasks, final RuntimeService runtimeService) {
+	public void addCandidateTasks(final List<Task> candidateTasks, final RuntimeService runtimeService,LoginDataService loginService) {
 		if(CollectionUtils.isNotEmpty(candidateTasks)) {
 			for(final Task task : candidateTasks) {
 				if(this.candidateTasks == null) {
 					this.candidateTasks = new LinkedList<TaskWrapper>();
 				}
-				this.candidateTasks.add(new TaskWrapper(task, runtimeService));
+				this.candidateTasks.add(new TaskWrapper(task, runtimeService,loginService));
 			}
 		}
 	}

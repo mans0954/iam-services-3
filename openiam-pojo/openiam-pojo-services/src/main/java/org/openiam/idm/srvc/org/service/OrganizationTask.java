@@ -45,7 +45,9 @@ public class OrganizationTask implements Sweepable {
         });
 
         sw.stop();
-        log.debug(String.format("Done creating orgs trees. Took: %s ms", sw.getTime()));
+        if(log.isDebugEnabled()) {
+        	log.debug(String.format("Done creating orgs trees. Took: %s ms", sw.getTime()));
+        }
     }
 
 }

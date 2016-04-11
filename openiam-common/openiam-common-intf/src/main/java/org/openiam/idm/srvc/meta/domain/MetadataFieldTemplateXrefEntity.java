@@ -44,10 +44,12 @@ public class MetadataFieldTemplateXrefEntity extends KeyEntity {
 
 	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name="UI_FIELD_ID", referencedColumnName = "UI_FIELD_ID", insertable = true, updatable = true)
+    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	private MetadataTemplateTypeFieldEntity field;
 	
 	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name="TEMPLATE_ID", referencedColumnName = "ID", insertable = true, updatable = true)
+    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	private MetadataElementPageTemplateEntity template;
 	
 	@Column(name = "IS_REQUIRED")

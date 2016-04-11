@@ -34,7 +34,9 @@ import java.util.Date;
         "operation",
         "lastUpdate",
         "createDate",
-        "totpSecret"
+        "totpSecret",
+        "metadataTypeId",
+        "typeDescription"
 })
 @DozerDTOCorrespondence(PhoneEntity.class)
 public class Phone extends AbstractMetadataTypeDTO {
@@ -59,6 +61,11 @@ public class Phone extends AbstractMetadataTypeDTO {
     private Date createDate;
     
     private String totpSecret;
+
+
+    private String metadataTypeId;
+
+    private String typeDescription;
 
     /**
      * default constructor
@@ -222,6 +229,22 @@ public class Phone extends AbstractMetadataTypeDTO {
 		this.totpSecret = totpSecret;
 	}
 
+    public String getMetadataTypeId() {
+        return metadataTypeId;
+    }
+
+    public void setMetadataTypeId(String metadataTypeId) {
+        this.metadataTypeId = metadataTypeId;
+    }
+
+    public String getTypeDescription() {
+        return typeDescription;
+    }
+
+    public void setTypeDescription(String typeDescription) {
+        this.typeDescription = typeDescription;
+    }
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -251,6 +274,8 @@ public class Phone extends AbstractMetadataTypeDTO {
 		
 		result = prime * result
 				+ ((totpSecret == null) ? 0 : totpSecret.hashCode());
+result = prime * result
+                + ((metadataTypeId == null) ? 0 : metadataTypeId.hashCode());
 		return result;
 	}
 
@@ -324,6 +349,11 @@ public class Phone extends AbstractMetadataTypeDTO {
 				return false;
 		} else if (!totpSecret.equals(other.totpSecret))
 			return false;
+        if (metadataTypeId == null) {
+            if (other.metadataTypeId != null)
+                return false;
+        } else if (!metadataTypeId.equals(other.metadataTypeId))
+            return false;
 		return true;
 	}
 

@@ -48,9 +48,13 @@ public class CreateIdmGroupCommand  extends BaseReconciliationGroupCommand {
 
 	@Override
 	public boolean execute(ReconciliationSituation config, String principal, String mSysID, Group group, List<ExtensibleAttribute> attributes) {
-        log.debug("Entering CreateIdmGroupCommand");
+		if(log.isDebugEnabled()) {
+			log.debug("Entering CreateIdmGroupCommand");
+		}
         if(attributes == null){
-            log.debug("Can't create IDM group without attributes");
+        	if(log.isDebugEnabled()) {
+        		log.debug("Can't create IDM group without attributes");
+        	}
         } else {
             try {
 				ProvisionGroup pGroup = new ProvisionGroup(group);
@@ -73,12 +77,16 @@ public class CreateIdmGroupCommand  extends BaseReconciliationGroupCommand {
                             UserEntity user = userManager.getUserByPrincipal(memberPrincipal, mSysID, false);
                             if(user != null) {
                                 Response response = groupDataWebService.addUserToGroup(groupId, user.getId(), DEFAULT_REQUESTER_ID, null, null, null);
-                                log.debug("User Member with principal = "+memberPrincipal+" was added to Group = "+identity.getIdentity() + " Managed Sys = "+identity.getManagedSysId() + ". \nResponse = "+response);
+                                if(log.isDebugEnabled()) {
+                                	log.debug("User Member with principal = "+memberPrincipal+" was added to Group = "+identity.getIdentity() + " Managed Sys = "+identity.getManagedSysId() + ". \nResponse = "+response);
+                                }
                             }
                         }
                     }
                 }else{
-                    log.debug("Couldn't populate ProvisionGroup. Group not added");
+                	if(log.isDebugEnabled()) {
+                		log.debug("Couldn't populate ProvisionGroup. Group not added");
+                	}
                     return false;
                 }
                 return true;

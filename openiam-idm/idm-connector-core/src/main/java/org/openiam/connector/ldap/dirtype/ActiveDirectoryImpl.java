@@ -38,8 +38,9 @@ public class ActiveDirectoryImpl implements Directory {
     protected static final Log log = LogFactory.getLog(ActiveDirectoryImpl.class);
 
     final static String PASSWORD_ATTRIBUTE = "unicodePwd";
+    final static String PASSWORD_LAST_SET  = "pwdLastSet";
 
-    public ModificationItem[] setPassword(PasswordRequest reqType) throws UnsupportedEncodingException {
+    public ModificationItem[] resetPassword(PasswordRequest reqType) throws UnsupportedEncodingException {
 
         String password = getUnicodePassword(reqType.getExtensibleObject());
         if (StringUtils.isEmpty(password)) {
@@ -48,16 +49,23 @@ public class ActiveDirectoryImpl implements Directory {
 
         byte[] passwordBytes = ("\"" + password + "\"").getBytes("UTF-16LE");
 
-        ModificationItem[] mods = new ModificationItem[1];
+        String pwdLastSet = readAttributeValue(reqType.getExtensibleObject(), PASSWORD_LAST_SET);
+        ModificationItem[] mods = new ModificationItem[pwdLastSet != null ? 2 : 1];
         mods[0] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute(PASSWORD_ATTRIBUTE, passwordBytes));
+        if (pwdLastSet != null) {
+            mods[1] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute(PASSWORD_LAST_SET, pwdLastSet));
+        }
         return mods;
+    }
 
-
+    public ModificationItem[] setPassword(PasswordRequest reqType) throws UnsupportedEncodingException {
+        return resetPassword(reqType);
     }
 
     public ModificationItem[] suspend(SuspendResumeRequest request) {
-
-        log.debug("suspending AD user.");
+    	if(log.isDebugEnabled()) {
+    		log.debug("suspending AD user.");
+    	}
 
         ModificationItem[] mods = new ModificationItem[1];
 
@@ -68,8 +76,9 @@ public class ActiveDirectoryImpl implements Directory {
     }
 
     public ModificationItem[] resume(SuspendResumeRequest request) {
-
-        log.debug("Enabling AD user.");
+    	if(log.isDebugEnabled()) {
+    		log.debug("Enabling AD user.");
+    	}
 
         ModificationItem[] mods = new ModificationItem[1];
 
@@ -127,7 +136,9 @@ public class ActiveDirectoryImpl implements Directory {
 
             for (String s : currentSupervisorMembershipList) {
                 try {
-                    log.debug("Removing supervisor: " + s + " from " + identityDN);
+                	if(log.isDebugEnabled()) {
+                		log.debug("Removing supervisor: " + s + " from " + identityDN);
+                	}
                     ModificationItem mods[] = new ModificationItem[1];
                     mods[0] = new ModificationItem(DirContext.REMOVE_ATTRIBUTE, new BasicAttribute("manager", s));
                     ldapctx.modifyAttributes(identityDN, mods);
@@ -145,8 +156,10 @@ public class ActiveDirectoryImpl implements Directory {
 
         List<String> currentMembershipList = userMembershipList(managedSys, identity, matchObj, ldapctx);
 
-        log.debug("- Current Active Dir group membership:" + currentMembershipList);
-        log.debug("- Target Active Dir group membership:"  + targetMembershipList);
+        if(log.isDebugEnabled()) {
+	        log.debug("- Current Active Dir group membership:" + currentMembershipList);
+	        log.debug("- Target Active Dir group membership:"  + targetMembershipList);
+        }
 
         if (targetMembershipList == null && currentMembershipList != null) {
             // remove all associations
@@ -202,13 +215,17 @@ public class ActiveDirectoryImpl implements Directory {
 
         List<String> currentSupervisorMembershipList = userSupervisorMembershipList(managedSys, identity, matchObj, ldapctx);
 
-        log.debug("Current ldap supervisor membership:" + currentSupervisorMembershipList);
+        if(log.isDebugEnabled()) {
+        	log.debug("Current ldap supervisor membership:" + currentSupervisorMembershipList);
+        }
 
         if (supervisorMembershipList == null && currentSupervisorMembershipList != null) {
 
             for (String s : currentSupervisorMembershipList) {
                 try {
-                    log.debug("Removing supervisor: " + s + " from " + identityDN);
+                	if(log.isDebugEnabled()) {
+                		log.debug("Removing supervisor: " + s + " from " + identityDN);
+                	}
                     ModificationItem mods[] = new ModificationItem[1];
                     mods[0] = new ModificationItem(DirContext.REMOVE_ATTRIBUTE, new BasicAttribute("manager", s));
                     ldapctx.modifyAttributes(identityDN, mods);
@@ -379,15 +396,17 @@ public class ActiveDirectoryImpl implements Directory {
     }
 
     private String getUnicodePassword(ExtensibleObject extObject) {
-        String scrambledPswd = null;
+        return readAttributeValue(extObject, PASSWORD_ATTRIBUTE);
+    }
+
+    protected String readAttributeValue(final ExtensibleObject extObject, final String attributeName) {
         if (extObject != null && CollectionUtils.isNotEmpty(extObject.getAttributes())) {
             for(final ExtensibleAttribute attr : extObject.getAttributes()) {
-                if (attr.getName().equalsIgnoreCase(PASSWORD_ATTRIBUTE)) {
-                    scrambledPswd = attr.getValue();
-                    break;
+                if (attr.getName().equalsIgnoreCase(attributeName)) {
+                    return attr.getValue();
                 }
             }
         }
-        return scrambledPswd;
+        return null;
     }
 }

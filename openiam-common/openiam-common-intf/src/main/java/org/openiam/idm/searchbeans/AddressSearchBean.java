@@ -46,4 +46,11 @@ public class AddressSearchBean  extends AbstractSearchBean<Address, String> impl
         this.metadataTypeId = metadataTypeId;
     }
 
+    @Override
+    public String getCacheUniqueBeanKey() {
+        return new StringBuilder()
+                .append(parentId != null ? parentId : "")
+                .append(metadataTypeId != null ? metadataTypeId : "")
+                .append(getKey() != null ? getKey() : "")
+                .toString();    }
 }

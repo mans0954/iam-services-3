@@ -33,6 +33,8 @@ import org.hibernate.annotations.Where;
 import org.openiam.am.srvc.domain.OAuthUserClientXrefEntity;
 import org.openiam.base.domain.AbstractMetdataTypeEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.elasticsearch.constants.ESIndexName;
+import org.openiam.elasticsearch.constants.ESIndexType;
 import org.openiam.idm.srvc.access.domain.AccessRightEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.domain.GroupToResourceMembershipXrefEntity;
@@ -47,13 +49,18 @@ import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.domain.UserToResourceMembershipXrefEntity;
 import org.openiam.internationalization.Internationalized;
 import org.openiam.internationalization.InternationalizedCollection;
+import org.springframework.data.elasticsearch.annotations.Document;
+import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldIndex;
+import org.springframework.data.elasticsearch.annotations.FieldType;
 
 @Entity
 @Table(name = "RES")
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "ResourceEntity")
 @DozerDTOCorrespondence(Resource.class)
 @AttributeOverride(name = "id", column = @Column(name = "RESOURCE_ID"))
 @Internationalized
+@Document(indexName = ESIndexName.RESOURCE, type= ESIndexType.RESOURCE)
 public class ResourceEntity extends AbstractMetdataTypeEntity {
 
     @ManyToOne(fetch = FetchType.EAGER)
@@ -63,6 +70,7 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
 
     @Column(name = "NAME", length = 255)
     @Size(max = 255, message = "resource.name.too.long")
+    @Field(type = FieldType.String, index = FieldIndex.analyzed, store= true)
     private String name;
 
     @Column(name = "DESCRIPTION", length = 512)
@@ -144,6 +152,8 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
 	@Fetch(FetchMode.SUBSELECT)
 	private Set<OAuthUserClientXrefEntity> oAuthClientAuthorizations = new HashSet<OAuthUserClientXrefEntity>(0);
 
+    @OneToMany(mappedBy = "referenceId")
+    private Set<LanguageMappingEntity> languageMappings;
 
 	public ResourceRisk getRisk() {
         return risk;
@@ -547,6 +557,14 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
 	public void setGroovyScript(String groovyScript) {
 		this.groovyScript = groovyScript;
 	}
+
+    public Set<LanguageMappingEntity> getLanguageMappings() {
+        return languageMappings;
+    }
+
+    public void setLanguageMappings(Set<LanguageMappingEntity> languageMappings) {
+        this.languageMappings = languageMappings;
+    }
 
 	@Override
     public boolean equals(Object o) {

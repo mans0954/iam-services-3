@@ -20,29 +20,26 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.authmanager.service.AuthorizationManagerService;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseConstants;
+import org.openiam.base.OrderConstants;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.SearchMode;
 import org.openiam.base.ws.SearchParam;
+import org.openiam.base.ws.SortParam;
 import org.openiam.core.dao.UserKeyDao;
-import org.openiam.dozer.converter.AddressDozerConverter;
-import org.openiam.dozer.converter.EmailAddressDozerConverter;
-import org.openiam.dozer.converter.PhoneDozerConverter;
-import org.openiam.dozer.converter.UserAttributeDozerConverter;
-import org.openiam.dozer.converter.UserDozerConverter;
+import org.openiam.dozer.converter.*;
 import org.openiam.elasticsearch.dao.EmailElasticSearchRepository;
 import org.openiam.elasticsearch.dao.LoginElasticSearchRepository;
 import org.openiam.elasticsearch.dao.PhoneElasticSearchRepository;
 import org.openiam.elasticsearch.dao.UserElasticSearchRepository;
 import org.openiam.exception.BasicDataServiceException;
-import org.openiam.idm.searchbeans.AddressSearchBean;
-import org.openiam.idm.searchbeans.DelegationFilterSearchBean;
-import org.openiam.idm.searchbeans.EmailSearchBean;
-import org.openiam.idm.searchbeans.MetadataElementSearchBean;
-import org.openiam.idm.searchbeans.PhoneSearchBean;
-import org.openiam.idm.searchbeans.PotentialSupSubSearchBean;
-import org.openiam.idm.searchbeans.UserSearchBean;
+import org.openiam.idm.searchbeans.*;
 import org.openiam.idm.srvc.access.service.AccessRightDAO;
+import org.openiam.idm.srvc.audit.domain.AuditLogTargetEntity;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
+import org.openiam.idm.srvc.audit.dto.AuditLogTarget;
+import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.auth.login.AuthStateDAO;
@@ -66,6 +63,7 @@ import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
+import org.openiam.idm.srvc.meta.service.MetadataService;
 import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
@@ -82,16 +80,16 @@ import org.openiam.idm.srvc.user.domain.SupervisorIDEntity;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.domain.UserNoteEntity;
-import org.openiam.idm.srvc.user.dto.DelegationFilterSearch;
-import org.openiam.idm.srvc.user.dto.User;
-import org.openiam.idm.srvc.user.dto.UserAttribute;
-import org.openiam.idm.srvc.user.dto.UserStatusEnum;
+import org.openiam.idm.srvc.user.dto.*;
 import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
 import org.openiam.internationalization.LocalizedServiceGet;
 import org.openiam.util.AttributeUtil;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -106,7 +104,7 @@ import org.springframework.transaction.annotation.Transactional;
  */
 
 @Service("userManager")
-public class UserMgr extends AbstractBaseService implements UserDataService {
+public class UserMgr implements UserDataService, ApplicationContextAware {
     @Autowired
     @Qualifier("userDAO")
     private UserDAO userDao;
@@ -156,6 +154,14 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
     private KeyManagementService keyManagementService;
     @Autowired
     private LoginDataService loginManager;
+/*
+    @Autowired
+    private EmailAddressSearchBeanConverter emailAddressSearchBeanConverter;
+    @Autowired
+    private AddressSearchBeanConverter addressSearchBeanConverter;
+    @Autowired
+    private PhoneSearchBeanConverter phoneSearchBeanConverter;
+*/
 
     @Autowired
     private UserAttributeDozerConverter userAttributeDozerConverter;
@@ -192,8 +198,28 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
     private int MAX_USER_SEARCH_RESULTS;
 
     @Autowired
+    private SupervisorDozerConverter supervisorDozerConverter;
+
+    @Autowired
+    private MetadataService metadataService;
+
+    @Autowired
+    protected AuditLogService auditLogService;
+/*
+    @Value("${org.openiam.usersearch.lucene.enabled}")
+    private Boolean isLuceneEnabled;*/
+
+
+    @Autowired
     @Qualifier("authorizationManagerService")
     private AuthorizationManagerService authorizationManagerService;
+
+    private ApplicationContext ac;
+
+
+    public void setApplicationContext(final ApplicationContext ac) throws BeansException {
+        this.ac = ac;
+    }
 
     private static final Log log = LogFactory.getLog(UserMgr.class);
 
@@ -217,6 +243,14 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
 
     @Override
     @Transactional(readOnly = true)
+    public User getUserDto(String id, String requestorId, Boolean isDeep) {
+        //UserEntity userEntity = userDao.findByIdDelFlt(id, getDelegationFilterForUserSearch(requestorId));
+        UserEntity userEntity = this.getProxyService().getUser(id, requestorId);
+        return userDozerConverter.convertToDTO(userEntity, isDeep);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public UserEntity getUserByPrincipal(String principal, String managedSysId, boolean dependants) {
         LoginEntity login = loginDao.getRecord(principal, managedSysId);
         if (login == null) {
@@ -224,6 +258,18 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
         }
         return getUser(login.getUserId(), null);
 
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public User getUserDtoByPrincipal(String principal, String managedSysId, boolean dependants) {
+        /*LoginEntity login = loginDao.getRecord(principal, managedSysId);
+        if (login == null) {
+            return null;
+        }
+        UserEntity userEntity = getUser(login.getUserId(), null);*/
+        UserEntity userEntity = this.getProxyService().getUserByPrincipal(principal, managedSysId, dependants);
+        return userDozerConverter.convertToDTO(userEntity, dependants);
     }
 
     @Override
@@ -539,6 +585,15 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<User> findUserDtoByOrganization(String orgId) throws BasicDataServiceException {
+        UserSearchBean searchBean = new UserSearchBean();
+        searchBean.addOrganizationId(orgId);
+        List<UserEntity> userEntityList = findBeans(searchBean);
+        return userDozerConverter.convertToDTOList(userEntityList, false);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<UserEntity> searchByDelegationProperties(DelegationFilterSearch search) {
         return userDao.findByDelegationProperties(search);
     }
@@ -564,7 +619,7 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
 
             validateSearchBean(searchBean,  requesterAttributes);
 
-            Set<String> orgDelFilter = organizationService.getDelegationFilter(requesterAttributes, null);
+            Set<String> orgDelFilter = organizationService.getDelegationFilter(requesterAttributes);
 
             isOrgFilterSet = CollectionUtils.isNotEmpty(orgDelFilter);//DelegationFilterHelper.isOrgFilterSet(requesterAttributes);
             isGroupFilterSet = DelegationFilterHelper.isGroupFilterSet(requesterAttributes);
@@ -697,6 +752,7 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
         if(searchBean!=null){
 
             result = result || checkSearchParam(searchBean.getFirstNameMatchToken())
+                    || checkSearchParam(searchBean.getNickNameMatchToken())
                     || checkSearchParam(searchBean.getLastNameMatchToken())
                     || checkSearchParam(searchBean.getMaidenNameMatchToken())
                     || checkSearchParam(searchBean.getEmployeeIdMatchToken())
@@ -736,6 +792,28 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
         }
 
         return entityList;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<User> findBeansDto(UserSearchBean searchBean, int from, int size) throws BasicDataServiceException {
+        List<UserEntity> entityList = null;
+        if (StringUtils.isNotBlank(searchBean.getKey())) {
+            final UserEntity entity = userDao.findById(searchBean.getKey());
+            if (entity != null) {
+                entityList = new ArrayList<UserEntity>(1);
+                entityList.add(entity);
+            }
+        } else {
+            entityList = userDao.findByIds(getUserIds(searchBean), searchBean, from, size);
+        }
+
+        if (CollectionUtils.isNotEmpty(entityList)
+                && searchBean.getInitDefaulLoginFlag()) {
+            setDefaultLogin(entityList);
+        }
+
+        return userDozerConverter.convertToDTOList(entityList, searchBean.isDeepCopy());
     }
 
     private void setDefaultLogin(List<UserEntity> entityList) {
@@ -794,6 +872,74 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
             attribute.setElement(userAttribute.getElement());
             userAttributeDao.merge(attribute);
         }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<User> getUsersDtoForResource(String resourceId, String requesterId, int from, int size) {
+//        DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch(requesterId);
+//        return userDao.getUsersForResource(resourceId, delegationFilter, from, size);
+        UserSearchBean userSearchBean = new UserSearchBean();
+        userSearchBean.setRequesterId(requesterId);
+        userSearchBean.addResourceId(resourceId);
+
+        List<SortParam> sortParamList = new ArrayList<>();
+        sortParamList.add(new SortParam(OrderConstants.ASC, "name"));
+        userSearchBean.setSortBy(sortParamList);
+
+
+        List<UserEntity> userEntityList = getUsersForResource(userSearchBean, from, size);
+        return userDozerConverter.convertToDTOList(userEntityList, false);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<UserEntity> getUsersForResource(UserSearchBean userSearchBean, int from, int size) {
+        DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch(userSearchBean.getRequesterId());
+
+        String resourceId = userSearchBean.getResourceIdSet().iterator().next();
+
+        return userDao.getUsersForResource(resourceId, delegationFilter, userSearchBean.getSortBy(), from, size);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<User> getUsersDtoForGroup(String groupId, String requesterId, int from, int size) {
+        DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch(requesterId);
+        if (DelegationFilterHelper.isAllowed(groupId, delegationFilter.getGroupIdSet())) {
+            List<UserEntity> userEntityList = userDao.getUsersForGroup(groupId, delegationFilter, from, size);
+            return userDozerConverter.convertToDTOList(userEntityList, false);
+        }
+        return new ArrayList<User>(0);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<User> getUsersDtoForRole(String roleId, String requesterId, int from, int size) {
+        DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch(requesterId);
+        if (DelegationFilterHelper.isAllowed(roleId, delegationFilter.getRoleIdSet())) {
+            List<UserEntity> userEntityList = userDao.getUsersForRole(roleId, delegationFilter, from, size);
+            return userDozerConverter.convertToDTOList(userEntityList, false);
+        }
+        return new ArrayList<User>(0);
+    }
+
+    @Transactional(readOnly = true)
+    @LocalizedServiceGet
+    public List<UserAttribute> getUserAttributeDtoList(String userId, final LanguageEntity language) {
+        //List<UserAttributeEntity> userAttributeEntityList =  userAttributeDao.findUserAttributes(userId);
+        List<UserAttributeEntity> userAttributeEntityList = this.getProxyService().getUserAttributeList(userId, language);
+        return userAttributeDozerConverter.convertToDTOList(userAttributeEntityList, true);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public int getNumOfUsersForRole(String roleId, String requesterId) {
+        DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch(requesterId);
+        if (DelegationFilterHelper.isAllowed(roleId, delegationFilter.getRoleIdSet())) {
+            return userDao.getNumOfUsersForRole(roleId, delegationFilter);
+        }
+        return 0;
     }
 
     @Override
@@ -1062,6 +1208,18 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
 
     @Override
     @Transactional(readOnly = true)
+    public Address getAddressDtoById(String addressId) {
+        /*if (addressId == null)
+            throw new NullPointerException("addressId is null");
+
+        AddressEntity addressEntity = addressDao.findById(addressId);*/
+        AddressEntity addressEntity = this.getProxyService().getAddressById(addressId);
+
+        return addressDozerConverter.convertToDTO(addressEntity, false);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<AddressEntity> getAddressList(String userId) {
         return this.getAddressList(userId, Integer.MAX_VALUE, 0);
     }
@@ -1086,43 +1244,25 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<Address> getAddressDtoList(String userId, Integer size, Integer from) {
+        /*if (userId == null)
+            throw new NullPointerException("userId is null");
+
+        AddressSearchBean searchBean = new AddressSearchBean();
+        searchBean.setParentId(userId);*/
+        /* searchBean.setParentType(ContactConstants.PARENT_TYPE_USER); */
+        //List<AddressEntity> addressEntityList = getAddressList(searchBean, size, from);
+        List<AddressEntity> addressEntityList = this.getProxyService().getAddressList(userId, size, from);
+        return addressDozerConverter.convertToDTOList(addressEntityList, false);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<AddressEntity> getAddressList(AddressSearchBean searchBean, Integer size, Integer from) {
         if (searchBean == null)
             throw new NullPointerException("searchBean is null");
 
         return addressDao.getByExample(searchBean, from ,size);
-    }
-    
-    @Override
-    @Transactional
-    public void updatePhone(PhoneEntity val) {
-        if (val == null)
-            throw new NullPointerException("val is null");
-        if (val.getId() == null)
-            throw new NullPointerException("PhoneId is null");
-        if (val.getParent() == null)
-            throw new NullPointerException("parentId for the address is not defined.");
-
-        final PhoneEntity entity = phoneDao.findById(val.getId());
-        final UserEntity parent = userDao.findById(val.getParent().getId());
-        final MetadataTypeEntity metadataType = (val.getType() != null && StringUtils.isNotBlank(val.getType().getId())) ? metadataTypeDAO
-                        .findById(val.getType().getId()) : null;
-
-        if (entity != null && metadataType != null) {
-            entity.setAreaCd(val.getAreaCd());
-            entity.setName(val.getName());
-            entity.setIsActive(val.getIsActive());
-            entity.setParent(parent);
-            entity.setPhoneExt(val.getPhoneExt());
-            entity.setPhoneNbr(val.getPhoneNbr());
-            entity.setType(metadataType);
-            //entity.setValidated(val.isValidated());
-
-            if (entity.getIsDefault() != val.getIsDefault()) {
-                updateDefaultFlagForPhone(entity, val.getIsDefault(), parent);
-            }
-            phoneDao.update(entity);
-        }
     }
     
 	@Override
@@ -1213,6 +1353,38 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
 
     @Override
     @Transactional
+    public void updatePhone(PhoneEntity val) {
+        if (val == null)
+            throw new NullPointerException("val is null");
+        if (val.getId() == null)
+            throw new NullPointerException("PhoneId is null");
+        if (val.getParent() == null)
+            throw new NullPointerException("parentId for the address is not defined.");
+
+        final PhoneEntity entity = phoneDao.findById(val.getId());
+        final UserEntity parent = userDao.findById(val.getParent().getId());
+        final MetadataTypeEntity metadataType = (val.getType() != null && StringUtils.isNotBlank(val.getType().getId())) ? metadataTypeDAO
+                .findById(val.getType().getId()) : null;
+
+        if (entity != null && metadataType != null) {
+            entity.setCountryCd(val.getCountryCd());
+            entity.setAreaCd(val.getAreaCd());
+            entity.setName(val.getName());
+            entity.setIsActive(val.getIsActive());
+            entity.setParent(parent);
+            entity.setPhoneExt(val.getPhoneExt());
+            entity.setPhoneNbr(val.getPhoneNbr());
+            entity.setType(metadataType);
+
+            if (entity.getIsDefault() != val.getIsDefault()) {
+                updateDefaultFlagForPhone(entity, val.getIsDefault(), parent);
+            }
+            phoneDao.update(entity);
+        }
+    }
+
+    @Override
+    @Transactional
     public void removePhone(final String phoneId) {
         final PhoneEntity entity = phoneDao.findById(phoneId, "parent");
 
@@ -1253,6 +1425,16 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
 
     @Override
     @Transactional(readOnly = true)
+    public Phone getPhoneDtoById(String addressId) {
+        /*if (addressId == null)
+            throw new NullPointerException("addressId is null");
+        PhoneEntity phoneEntity = phoneDao.findById(addressId);*/
+        PhoneEntity phoneEntity = this.getProxyService().getPhoneById(addressId);
+        return phoneDozerConverter.convertToDTO(phoneEntity, false);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<PhoneEntity> getPhoneList(String userId) {
         return this.getPhoneList(userId, Integer.MAX_VALUE, 0);
     }
@@ -1273,6 +1455,20 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
         searchBean.setParentId(userId);
         // searchBean.setParentType(ContactConstants.PARENT_TYPE_USER);
         return getPhoneList(searchBean, size, from);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Phone> getPhoneDtoList(String userId, Integer size, Integer from) {
+        /*if (userId == null)
+            throw new NullPointerException("userId is null");
+
+        PhoneSearchBean searchBean = new PhoneSearchBean();
+        searchBean.setParentId(userId);
+        // searchBean.setParentType(ContactConstants.PARENT_TYPE_USER);
+        List<PhoneEntity> phoneEntityList = getPhoneList(searchBean, size, from);*/
+        List<PhoneEntity> phoneEntityList = this.getProxyService().getPhoneList(userId, size, from);
+        return phoneDozerConverter.convertToDTOList(phoneEntityList, false);
     }
 
     @Override
@@ -1418,6 +1614,16 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
 
     @Override
     @Transactional(readOnly = true)
+    public EmailAddress getEmailAddressDtoById(String addressId) {
+        /*if (addressId == null)
+            throw new NullPointerException("addressId is null");
+        EmailAddressEntity emailAddressEntity = emailAddressDao.findById(addressId);*/
+        EmailAddressEntity emailAddressEntity = this.getProxyService().getEmailAddressById(addressId);
+        return emailAddressDozerConverter.convertToDTO(emailAddressEntity, false);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<EmailAddressEntity> getEmailAddressList(String userId) {
         return this.getEmailAddressList(userId, Integer.MAX_VALUE, 0);
     }
@@ -1536,6 +1742,16 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
 
     @Override
     @Transactional(readOnly = true)
+    public User getPrimarySupervisorDto(String employeeId) {
+        /*if (employeeId == null)
+            throw new NullPointerException("employeeId is null");
+        UserEntity userEntity = userDao.findPrimarySupervisor(employeeId);*/
+        UserEntity userEntity = this.getProxyService().getPrimarySupervisor(employeeId);
+        return userDozerConverter.convertToDTO(userEntity, false);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public SupervisorEntity findSupervisor(String superiorId, String subordinateId) {
         if (superiorId == null)
             throw new NullPointerException("superiorId is null");
@@ -1550,10 +1766,35 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
 
     @Override
     @Transactional(readOnly = true)
+    public Supervisor findSupervisorDto(String superiorId, String subordinateId) {
+        if (superiorId == null)
+            throw new NullPointerException("superiorId is null");
+        if (superiorId == null)
+            throw new NullPointerException("subordinateId is null");
+        SupervisorIDEntity id = new SupervisorIDEntity();
+        id.setSupervisorId(superiorId);
+        id.setEmployeeId(subordinateId);
+
+        SupervisorEntity supervisorEntity = supervisorDao.findById(id);
+        return supervisorDozerConverter.convertToDTO(supervisorEntity, true);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<UserEntity> getSuperiors(String userId, Integer from, Integer size) {
         if (userId == null)
             throw new NullPointerException("userId is null");
         return userDao.getSuperiors(userId, from, size);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<User> getSuperiorsDto(String userId, Integer from, Integer size) {
+        /*if (userId == null)
+            throw new NullPointerException("userId is null");
+        List<UserEntity> userEntity = userDao.getSuperiors(userId, from, size);*/
+        List<UserEntity> userEntity = this.getProxyService().getSuperiors(userId, from, size);
+        return userDozerConverter.convertToDTOList(userEntity, false);
     }
 
     @Override
@@ -1572,6 +1813,14 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<User> getAllSuperiorsDto(Integer from, Integer size) {
+        //List<UserEntity> userEntityList = userDao.getAllSuperiors(from, size);
+        List<UserEntity> userEntityList = this.getProxyService().getAllSuperiors(from, size);
+        return userDozerConverter.convertToDTOList(userEntityList, true);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public int getAllSuperiorsCount() {
         return userDao.getAllSuperiorsCount();
     }
@@ -1582,6 +1831,16 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
         if (userId == null)
             throw new NullPointerException("userId is null");
         return userDao.getSubordinates(userId, from, size);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<User> getSubordinatesDto(String userId, Integer from, Integer size) {
+        /*if (userId == null)
+            throw new NullPointerException("userId is null");
+        List<UserEntity> userEntity = userDao.getSubordinates(userId, from, size);*/
+        List<UserEntity> userEntity = this.getProxyService().getSubordinates(userId, from, size);
+        return userDozerConverter.convertToDTOList(userEntity, false);
     }
 
     @Override
@@ -1610,6 +1869,23 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<User> findPotentialSupSubsDto(PotentialSupSubSearchBean searchBean, Integer from, Integer size) throws BasicDataServiceException {
+        List<UserEntity> entityList = findAllPotentialSupSubs(searchBean);
+
+        if (entityList != null && entityList.size() >= from) {
+            int to = from + size;
+            if (to > entityList.size()) {
+                to = entityList.size();
+            }
+            entityList = entityList.subList(from, to);
+        }
+
+
+        return userDozerConverter.convertToDTOList(entityList, true);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public int findPotentialSupSubsCount(PotentialSupSubSearchBean searchBean) throws BasicDataServiceException {
         return findAllPotentialSupSubs(searchBean).size();
     }
@@ -1632,6 +1908,16 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public int getNumOfUsersForGroup(String groupId, String requesterId) {
+        DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch(requesterId);
+        if (DelegationFilterHelper.isAllowed(groupId, delegationFilter.getGroupIdSet())) {
+            return userDao.getNumOfUsersForGroup(groupId, delegationFilter);
+        }
+        return 0;
+    }
+
+    @Override
     @Transactional
     public String saveUserInfo(UserEntity newUserEntity, String supervisorId) throws Exception {
         String userId = newUserEntity.getId();
@@ -1648,13 +1934,17 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
             // update supervisor
             List<UserEntity> supervisorList = this.getSuperiors(newUserEntity.getId(), 0, Integer.MAX_VALUE);
             for (UserEntity s : supervisorList) {
+            	if(log.isDebugEnabled()) {
                 log.debug("looking to match supervisor ids = " + s.getId() + " " + supervisorId);
-                if (s.getId().equalsIgnoreCase(supervisorId)) {
+            	}                
+				if (s.getId().equalsIgnoreCase(supervisorId)) {
                     break;
                 }
                 // this.removeSupervisor(s.getOrgStructureId());
             }
+            if(log.isDebugEnabled()) {
             log.debug("adding supervisor: " + supervisorId);
+            }
             this.addSuperior(supervisorId, newUserEntity.getId());
         }
         return userId;
@@ -2359,7 +2649,7 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
     public boolean validateSearchBean(UserSearchBean searchBean, Map<String, UserAttribute> requesterAttributes) throws BasicDataServiceException {
         if (requesterAttributes!=null && CollectionUtils.isNotEmpty(requesterAttributes.keySet())) {
 
-            Set<String> orgDelFilter = organizationService.getDelegationFilter(requesterAttributes, null);
+            Set<String> orgDelFilter = organizationService.getDelegationFilter(requesterAttributes);
 
             boolean isOrgFilterSet = CollectionUtils.isNotEmpty(orgDelFilter);// DelegationFilterHelper.isOrgFilterSet(requesterAttributes);
             boolean isGroupFilterSet = DelegationFilterHelper.isGroupFilterSet(requesterAttributes);
@@ -2402,6 +2692,104 @@ public class UserMgr extends AbstractBaseService implements UserDataService {
     @Transactional(readOnly = true)
     public List<UserEntity> getUserByLastDate(Date lastDate) {
         return userDao.getUserByLastDate(lastDate);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<User> getUserDtoByLastDate(Date lastDate) {
+        List<UserEntity> userEntityList = userDao.getUserByLastDate(lastDate);
+        return userDozerConverter.convertToDTOList(userEntityList, true);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<User> getUserDtoBetweenCreateDate(Date fromDate, Date toDate) {
+        List<UserEntity> userEntityList = userDao.getUserBetweenCreateDate( fromDate, toDate );
+        return userDozerConverter.convertToDTOList(userEntityList, true);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<User> getUserDtoBetweenStartDate(Date fromDate, Date toDate) {
+        List<UserEntity> userEntityList = userDao.getUserBetweenStartDate(fromDate, toDate);
+        return userDozerConverter.convertToDTOList(userEntityList, true);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<User> getUserDtoBetweenLastDate(Date fromDate, Date toDate) {
+        List<UserEntity> userEntityList = userDao.getUserBetweenLastDate( fromDate, toDate );
+
+        return userDozerConverter.convertToDTOList(userEntityList, true);
+    }
+
+    @Override
+	@Transactional(readOnly = true)
+    public List<User> getUserDtoBySearchBean(AuditLogSearchBean searchBean) {
+        List<IdmAuditLogEntity> auditLogs = auditLogService.findBeans(searchBean, -1, -1);
+        Set<String> userIds = new HashSet<String>();
+        for (IdmAuditLogEntity log : auditLogs) {
+            String userId = null;
+            Set<AuditLogTargetEntity> targets = log.getTargets();
+            if(targets != null) {
+                for (AuditLogTargetEntity target : targets) {
+                    if (target.getTargetType().equalsIgnoreCase("user")) {
+                        userId = target.getTargetId();
+                        break;
+                    }
+                }
+            }
+            userIds.add(userId);
+        }
+        List<UserEntity> userEntityList = userDao.getUserByIds(userIds);
+
+        return userDozerConverter.convertToDTOList(userEntityList, true);
+    }
+
+    private UserDataService getProxyService() {
+        UserDataService service = (UserDataService)ac.getBean("userManager");
+        return service;
+    }
+
+    @Override
+    public List<Supervisor> findSupervisors(SupervisorSearchBean sb) {
+        List<SupervisorEntity> supers = supervisorDao.getByExample(sb);
+        return supervisorDozerConverter.convertToDTOList(supers, true);
+    }
+
+
+    @Override
+    @Transactional(readOnly = true)
+    public UserAttribute getAttributeDto(String attrId) {
+        /*if (attrId == null) {
+            throw new NullPointerException("attrId is null");
+        }
+        UserAttributeEntity attributeEntity = userAttributeDao.findById(attrId);*/
+        UserAttributeEntity attributeEntity = this.getProxyService().getAttribute(attrId);
+        return userAttributeDozerConverter.convertToDTO(attributeEntity, false);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<EmailAddress> getEmailAddressDtoList(String userId, Integer size, Integer from) {
+        /*if (userId == null)
+            throw new NullPointerException("userId is null");
+        EmailSearchBean searchBean = new EmailSearchBean();
+        searchBean.setParentId(userId);
+        // searchBean.setParentType(ContactConstants.PARENT_TYPE_USER);
+        List<EmailAddressEntity> emailAddressEntityList = getEmailAddressList(searchBean, size, from);*/
+        List<EmailAddressEntity> emailAddressEntityList = this.getProxyService().getEmailAddressList(userId, size, from);
+        return emailAddressDozerConverter.convertToDTOList(emailAddressEntityList, false);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<EmailAddress> getEmailAddressDtoList(EmailSearchBean searchBean, Integer size, Integer from) {
+        /*if (searchBean == null)
+            throw new NullPointerException("searchBean is null");
+        List<EmailAddressEntity> emailAddressEntityList = emailAddressDao.getByExample(emailAddressSearchBeanConverter.convert(searchBean), from, size);*/
+        List<EmailAddressEntity> emailAddressEntityList = this.getProxyService().getEmailAddressList(searchBean, size, from);
+        return emailAddressDozerConverter.convertToDTOList(emailAddressEntityList, searchBean.isDeepCopy());
     }
 
 }

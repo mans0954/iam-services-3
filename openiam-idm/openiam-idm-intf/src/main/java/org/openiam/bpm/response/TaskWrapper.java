@@ -3,6 +3,7 @@ package org.openiam.bpm.response;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -12,12 +13,17 @@ import javax.xml.bind.annotation.XmlType;
 
 import org.activiti.engine.ActivitiException;
 import org.activiti.engine.RuntimeService;
+import org.activiti.engine.history.HistoricActivityInstance;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.task.Task;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.bpm.util.ActivitiConstants;
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
+import org.openiam.idm.srvc.auth.login.LoginDataService;
+import org.openiam.provision.dto.ProvisionUser;
+import org.springframework.validation.beanvalidation.CustomValidatorBean;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "TaskWrapper", propOrder = {
@@ -46,7 +52,8 @@ import org.openiam.bpm.util.ActivitiConstants;
     "memberAssociationType",
 	"startMembershipDate",
 	"endMembershipDate",
-	"userNotes"
+	"userNotes",
+	"attestationManagedSysFilter"
 })
 public class TaskWrapper implements Serializable {
 	
@@ -89,11 +96,30 @@ public class TaskWrapper implements Serializable {
 	@XmlSchemaType(name = "dateTime")
 	private Date endMembershipDate;
 	private String userNotes;
+	private List<String> attestationManagedSysFilter;
+
 
 	public TaskWrapper() {
 		
 	}
-	
+
+	public TaskWrapper(final Task task, final RuntimeService runtimeService, LoginDataService login) {
+		id = task.getId();
+		name = task.getName();
+		owner = task.getOwner();
+		priority = task.getPriority();
+		processDefinitionId = task.getProcessDefinitionId();
+		processInstanceId = task.getProcessInstanceId();
+		taskDefinitionKey = task.getTaskDefinitionKey();
+		parentTaskId = task.getParentTaskId();
+		assignee = task.getAssignee();
+		createdTime = task.getCreateTime();
+		description = task.getDescription();
+		dueDate = task.getDueDate();
+		executionId = task.getExecutionId();
+		setCustomVariables(runtimeService, login);
+	}
+
 	public TaskWrapper(final Task task, final RuntimeService runtimeService) {
 		id = task.getId();
 		name = task.getName();
@@ -133,7 +159,7 @@ public class TaskWrapper implements Serializable {
 	 * sets the custom variable objects that were given to Activiti throughout this task
 	 * @param runtimeService
 	 */
-	private void setCustomVariables(final RuntimeService runtimeService) {
+	private void setCustomVariables(final RuntimeService runtimeService, LoginDataService loginService) {
 		if(StringUtils.isNotEmpty(executionId)) {
 			try {
 				final Map<String, Object> customVariables = runtimeService.getVariables(executionId);
@@ -141,6 +167,15 @@ public class TaskWrapper implements Serializable {
 					if(customVariables.containsKey(ActivitiConstants.REQUEST_METADATA_MAP.getName())) {
 						requestMetadataMap = (LinkedHashMap<String, String>)customVariables.get(ActivitiConstants.REQUEST_METADATA_MAP.getName());
 					}
+
+                    if(customVariables.containsKey(ActivitiConstants.REQUESTOR_NAME.getName())) {
+                        name = (String)customVariables.get(ActivitiConstants.REQUESTOR_NAME.getName());
+                    } else {
+                        if(customVariables.containsKey(ActivitiConstants.REQUESTOR.getName()) && loginService != null) {
+                            LoginEntity loginEntity = loginService.getPrimaryIdentity((String)customVariables.get(ActivitiConstants.REQUESTOR.getName()));
+                            name = loginEntity!=null ? loginEntity.getLogin():"";
+                        }
+                    }
 					
 					if(customVariables.containsKey(ActivitiConstants.EMPLOYEE_ID.getName())) {
 						employeeId = (String)customVariables.get(ActivitiConstants.EMPLOYEE_ID.getName());
@@ -174,6 +209,68 @@ public class TaskWrapper implements Serializable {
                     if(customVariables.containsKey(ActivitiConstants.MEMBER_ASSOCIATION_ID.getName())) {
                         memberAssociationId = (String)customVariables.get(ActivitiConstants.MEMBER_ASSOCIATION_ID.getName());
                     }
+
+					if(customVariables.containsKey(ActivitiConstants.START_DATE.getName())) {
+						startMembershipDate = (Date)customVariables.get(ActivitiConstants.START_DATE.getName());
+					}
+					if(customVariables.containsKey(ActivitiConstants.END_DATE.getName())) {
+						endMembershipDate = (Date)customVariables.get(ActivitiConstants.END_DATE.getName());
+					}
+					if(customVariables.containsKey(ActivitiConstants.USER_NOTE.getName())) {
+						userNotes = (String)customVariables.get(ActivitiConstants.USER_NOTE.getName());
+					}
+					if(customVariables.containsKey(ActivitiConstants.ATTESTATION_MANAGED_SYS_RESOURCES.getName())) {
+						attestationManagedSysFilter = (List<String>)customVariables.get(ActivitiConstants.ATTESTATION_MANAGED_SYS_RESOURCES.getName());
+					}
+				}
+			} catch(ActivitiException e) {
+				LOG.warn(String.format("Could not fetch variables for Execution ID: %s.  Changes are that the task is completed.", executionId));
+			} catch(Throwable e) {
+			}
+		}
+	}
+
+	private void setCustomVariables(final RuntimeService runtimeService) {
+		if(StringUtils.isNotEmpty(executionId)) {
+			try {
+				final Map<String, Object> customVariables = runtimeService.getVariables(executionId);
+				if(customVariables != null) {
+					if(customVariables.containsKey(ActivitiConstants.REQUEST_METADATA_MAP.getName())) {
+						requestMetadataMap = (LinkedHashMap<String, String>)customVariables.get(ActivitiConstants.REQUEST_METADATA_MAP.getName());
+					}
+
+					if(customVariables.containsKey(ActivitiConstants.EMPLOYEE_ID.getName())) {
+						employeeId = (String)customVariables.get(ActivitiConstants.EMPLOYEE_ID.getName());
+					}
+
+					if(customVariables.containsKey(ActivitiConstants.ATTESTATION_URL.getName())) {
+						customObjectURI = (String)customVariables.get(ActivitiConstants.ATTESTATION_URL.getName());
+						customObjectURI = new StringBuilder(customObjectURI).append(String.format("?id=%s&taskId=%s", employeeId, id)).toString();
+					}
+
+					if(customVariables.containsKey(ActivitiConstants.DELETABLE.getName())) {
+						deletable = ((Boolean)customVariables.get(ActivitiConstants.DELETABLE.getName())).booleanValue();
+					}
+
+					if(customVariables.containsKey(ActivitiConstants.WORKFLOW_NAME.getName())) {
+						workflowName = (String)customVariables.get(ActivitiConstants.WORKFLOW_NAME.getName());
+					}
+
+					if(customVariables.containsKey(ActivitiConstants.ASSOCIATION_TYPE.getName())) {
+						associationType = (String)customVariables.get(ActivitiConstants.ASSOCIATION_TYPE.getName());
+					}
+
+					if(customVariables.containsKey(ActivitiConstants.ASSOCIATION_ID.getName())) {
+						associationId = (String)customVariables.get(ActivitiConstants.ASSOCIATION_ID.getName());
+					}
+
+					if(customVariables.containsKey(ActivitiConstants.MEMBER_ASSOCIATION_TYPE.getName())) {
+						memberAssociationType = (String)customVariables.get(ActivitiConstants.MEMBER_ASSOCIATION_TYPE.getName());
+					}
+
+					if(customVariables.containsKey(ActivitiConstants.MEMBER_ASSOCIATION_ID.getName())) {
+						memberAssociationId = (String)customVariables.get(ActivitiConstants.MEMBER_ASSOCIATION_ID.getName());
+					}
 
 					if(customVariables.containsKey(ActivitiConstants.START_DATE.getName())) {
 						startMembershipDate = (Date)customVariables.get(ActivitiConstants.START_DATE.getName());
@@ -407,7 +504,11 @@ public class TaskWrapper implements Serializable {
         return memberAssociationId;
     }
 
-    @Override
+	public List<String> getAttestationManagedSysFilter() {
+		return attestationManagedSysFilter;
+	}
+
+	@Override
 	public String toString() {
 		return String
 				.format("TaskWrapper [id=%s, name=%s, owner=%s, priority=%s, processDefinitionId=%s, processInstanceId=%s, taskDefinitionKey=%s, parentTaskId=%s, assignee=%s, createdTime=%s, description=%s, dueDate=%s, executionId=%s]",

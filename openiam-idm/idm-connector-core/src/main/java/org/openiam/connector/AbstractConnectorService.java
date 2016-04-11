@@ -23,8 +23,10 @@ import org.springframework.context.ApplicationContextAware;
 
 import javax.annotation.PostConstruct;
 import javax.jws.WebParam;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-public abstract class AbstractConnectorService implements ConnectorService,ApplicationContextAware {
+public abstract class AbstractConnectorService implements ConnectorService, ApplicationContextAware {
     protected final Log log = LogFactory.getLog(this.getClass());
 
     protected ConnectorType connectorType;
@@ -74,7 +76,7 @@ public abstract class AbstractConnectorService implements ConnectorService,Appli
     }
 
     @Override
-    public SearchResponse search(@WebParam(name = "searchRequest", targetNamespace = "") SearchRequest<? extends ExtensibleObject> searchRequest){
+    public SearchResponse search(@WebParam(name = "searchRequest", targetNamespace = "") SearchRequest<? extends ExtensibleObject> searchRequest) {
         return manageRequest(CommandType.SEARCH, searchRequest, SearchResponse.class);
     }
 
@@ -107,6 +109,7 @@ public abstract class AbstractConnectorService implements ConnectorService,Appli
     public ResponseType resume(@WebParam(name = "request", targetNamespace = "") SuspendResumeRequest request) {
         return manageRequest(CommandType.RESUME, request, ResponseType.class);
     }
+
     @Override
     public ResponseType reconcileResource(@WebParam(name = "config", targetNamespace = "") ReconciliationConfig config) {
         ResponseType response = new ResponseType();
@@ -116,34 +119,54 @@ public abstract class AbstractConnectorService implements ConnectorService,Appli
         return response;
     }
 
-    private  <Response extends ResponseType> Response manageRequest(CommandType commandType, RequestType requestType, Class<Response> responseClass){
+    private <Response extends ResponseType> Response manageRequest(CommandType commandType, RequestType requestType, Class<Response> responseClass) {
+
         Response response = null;
         try {
             response = responseClass.newInstance();
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
-        if(response!=null){
-            //log.debug(String.format("%s request proceed in %s connector for %s object", commandType, connectorType, requestType.getExtensibleObject().getExtensibleObjectType()));
+        if (response != null) {
             try {
                 ConnectorCommand cmd = null;
                 //in delete the object is null, setting USER as only USER is implemented now
-                //TODO needs to be fixed.
                 if (requestType.getExtensibleObject() == null) {
-                	cmd = connectorCommandFactory.getConnectorCommand(commandType, ExtensibleObjectType.USER, this.connectorType);
+                    cmd = connectorCommandFactory.getConnectorCommand(commandType, ExtensibleObjectType.USER, this.connectorType);
                 } else {
-                	cmd = connectorCommandFactory.getConnectorCommand(commandType, requestType.getExtensibleObject().getExtensibleObjectType(), this.connectorType);
+                    cmd = connectorCommandFactory.getConnectorCommand(commandType, requestType.getExtensibleObject().getExtensibleObjectType(), this.connectorType);
                 }
-                response = (Response)cmd.execute(requestType);
+                response = (Response) cmd.execute(requestType);
             } catch (ConnectorDataException e) {
+                log.error("ConnectorDataException:"+e.getMessage(), e);
                 response.setStatus(StatusCodeType.FAILURE);
                 response.setError(e.getCode());
-                response.addErrorMessage(e.getMessage());
+                String cleanXMLString = "";
+                Pattern pattern = null;
+                Matcher matcher = null;
+                if (e!=null && e.getMessage()!=null && !"".equals(e.getMessage())) {
+                    pattern = Pattern.compile("[\\000]*");
+                    matcher = pattern.matcher(e.getMessage());
+                    if (matcher.find()) {
+                        cleanXMLString = matcher.replaceAll("");
+                    }
+                }
+                response.addErrorMessage(cleanXMLString);
             } catch (Throwable t) {
-                log.error(t.getMessage(), t);
+                log.error("Throwable:"+t.getMessage(), t);
                 response.setStatus(StatusCodeType.FAILURE);
                 response.setError(ErrorCode.CONNECTOR_ERROR);
-                response.addErrorMessage(t.getMessage());
+                String cleanXMLString = "";
+                Pattern pattern = null;
+                Matcher matcher = null;
+                if (t!=null && t.getMessage()!=null && !"".equals(t.getMessage())) {
+                    pattern = Pattern.compile("[\\000]*");
+                    matcher = pattern.matcher(t.getMessage());
+                    if (matcher.find()) {
+                        cleanXMLString = matcher.replaceAll("");
+                    }
+                }
+                response.addErrorMessage(cleanXMLString);
             }
         }
         return response;

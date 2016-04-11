@@ -93,7 +93,7 @@ public abstract class AbstractCrudLinuxCommand<ExtObject extends ExtensibleObjec
     }
 
     private void performObjectOperation(CrudRequest<ExtObject> crudRequest,
-            SSHAgent ssh) throws ConnectorDataException {
+                                        SSHAgent ssh) throws ConnectorDataException {
         Map<String, String> user = objectToAttributes(
                 crudRequest.getObjectIdentity(),
                 crudRequest.getExtensibleObject());
@@ -117,9 +117,9 @@ public abstract class AbstractCrudLinuxCommand<ExtObject extends ExtensibleObjec
                 command.append(remoteDirectory);
                 command.append(scriptName);
                 command.append(" ");
+                log.info("Command=" + commandHandler);
                 command.append(argsName);
                 log.info(ssh.executeCommand(command.toString(), sudoPassword));
-                log.info(command.toString());
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
                 throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR,
@@ -129,7 +129,7 @@ public abstract class AbstractCrudLinuxCommand<ExtObject extends ExtensibleObjec
     }
 
     private String userAttributesToFormatString(String argsString,
-            Map<String, String> attributes) {
+                                                Map<String, String> attributes) {
         StringBuilder result = new StringBuilder();
         String[] argsName = argsString.split(" ");
         if (argsName != null) {

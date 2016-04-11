@@ -25,6 +25,8 @@ import javax.validation.constraints.Size;
 import org.openiam.base.domain.AbstractMetdataTypeEntity;
 import org.openiam.base.domain.KeyEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.elasticsearch.constants.ESIndexName;
+import org.openiam.elasticsearch.constants.ESIndexType;
 import org.openiam.idm.srvc.access.domain.AccessRightEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.loc.domain.LocationEntity;
@@ -44,6 +46,7 @@ import org.openiam.idm.srvc.user.domain.UserToGroupMembershipXrefEntity;
 import org.openiam.idm.srvc.user.domain.UserToOrganizationMembershipXrefEntity;
 import org.openiam.idm.srvc.user.domain.UserToRoleMembershipXrefEntity;
 import org.openiam.internationalization.Internationalized;
+import org.springframework.data.elasticsearch.annotations.Document;
 
 @Entity
 @Table(name = "COMPANY")
@@ -51,6 +54,7 @@ import org.openiam.internationalization.Internationalized;
 @DozerDTOCorrespondence(Organization.class)
 @AttributeOverride(name = "id", column = @Column(name = "COMPANY_ID"))
 @Internationalized
+@Document(indexName = ESIndexName.ORGANIZATION, type= ESIndexType.ORGANIZATION)
 public class OrganizationEntity extends AbstractMetdataTypeEntity {
     
     @Column(name="ALIAS", length=100)
@@ -100,6 +104,7 @@ public class OrganizationEntity extends AbstractMetdataTypeEntity {
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "ORG_TYPE_ID", referencedColumnName = "ORG_TYPE_ID", insertable = true, updatable = true)
     @Internationalized
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private OrganizationTypeEntity organizationType;
 
     @Column(name="ABBREVIATION", length=20)

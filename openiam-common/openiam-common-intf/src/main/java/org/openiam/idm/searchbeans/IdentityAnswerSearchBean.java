@@ -33,4 +33,11 @@ public class IdentityAnswerSearchBean extends AbstractSearchBean<UserIdentityAns
 		this.questionId = questionId;
 	}
 
+	@Override
+	public String getCacheUniqueBeanKey() {
+		return new StringBuilder()
+				.append(questionId != null ? questionId : "")
+				.append(userId != null ? userId : "")
+				.append(getKey() != null ? getKey() : "")
+				.toString();	}
 }

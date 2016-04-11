@@ -6,19 +6,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.persistence.AttributeOverride;
-import javax.persistence.Cacheable;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
+import javax.persistence.*;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -124,6 +112,9 @@ public class LoginEntity extends KeyEntity {
     @Column(name="AUTH_FAIL_COUNT")
     protected Integer authFailCount = 0;
 
+    @Column(name = "CHALLENGE_RESPONSE_FAIL_COUNT")
+    protected Integer challengeResponseFailCount = 0;
+
     @Column(name="LAST_AUTH_ATTEMPT",length = 19)
     @Temporal(TemporalType.TIMESTAMP)
     private Date lastAuthAttempt;
@@ -157,6 +148,12 @@ public class LoginEntity extends KeyEntity {
     @Column(name="PSWD_RESET_TOKEN_EXP",length = 19)
     @Temporal(TemporalType.TIMESTAMP)
     private Date pswdResetTokenExp;
+
+    /*@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "LOGIN_ID")
+    @Fetch(FetchMode.SUBSELECT)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    protected Set<LoginAttributeEntity> loginAttributes = new HashSet<LoginAttributeEntity>(0);*/
 
     @Column(name = "LAST_UPDATE", length = 19)
     //@LuceneLastUpdate
@@ -289,6 +286,14 @@ public class LoginEntity extends KeyEntity {
         this.createdBy = createdBy;
     }
 
+    public Integer getChallengeResponseFailCount() {
+        return challengeResponseFailCount;
+    }
+
+    public void setChallengeResponseFailCount(Integer challengeResponseFailCount) {
+        this.challengeResponseFailCount = challengeResponseFailCount;
+    }
+
     public String getCurrentLoginHost() {
         return this.currentLoginHost;
     }
@@ -389,6 +394,13 @@ public class LoginEntity extends KeyEntity {
     public void setIsDefault(Integer isDefault) {
         this.isDefault = isDefault;
     }
+/*    public Set<LoginAttributeEntity> getLoginAttributes() {
+        return this.loginAttributes;
+    }
+
+    public void setLoginAttributes(Set<LoginAttributeEntity> loginAttributes) {
+        this.loginAttributes = loginAttributes;
+    }*/
 
 	public String getLogin() {
 		return login;
@@ -714,7 +726,8 @@ public class LoginEntity extends KeyEntity {
 		setAuthFailCount(login.getAuthFailCount());
 		setCanonicalName(login.getCanonicalName());
 		setCreateDate(login.getCreateDate());
-		setCreatedBy(login.getCreatedBy());
+        setChallengeResponseFailCount(login.getChallengeResponseFailCount());
+        setCreatedBy(login.getCreatedBy());
 		setCurrentLoginHost(login.getCurrentLoginHost());
 		setFirstTimeLogin(login.getFirstTimeLogin());
 		setGracePeriod(login.getGracePeriod());

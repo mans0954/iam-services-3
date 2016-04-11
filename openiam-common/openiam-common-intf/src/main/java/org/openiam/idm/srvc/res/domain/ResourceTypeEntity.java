@@ -1,14 +1,9 @@
 package org.openiam.idm.srvc.res.domain;
 
 import java.util.Map;
+import java.util.Set;
 
-import javax.persistence.AttributeOverride;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import javax.persistence.*;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -57,10 +52,14 @@ public class ResourceTypeEntity extends KeyEntity {
     
     @Transient
     @InternationalizedCollection(targetField="displayName")
+    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Map<String, LanguageMappingEntity> displayNameMap;
     
     @Transient
     private String displayName;
+
+    @OneToMany(mappedBy = "referenceId")
+    private Set<LanguageMappingEntity> languageMappings;
 
     public ResourceTypeEntity() {
     }
@@ -137,7 +136,15 @@ public class ResourceTypeEntity extends KeyEntity {
 		this.displayName = displayName;
 	}
 
-	@Override
+    public Set<LanguageMappingEntity> getLanguageMappings() {
+        return languageMappings;
+    }
+
+    public void setLanguageMappings(Set<LanguageMappingEntity> languageMappings) {
+        this.languageMappings = languageMappings;
+    }
+
+    @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;

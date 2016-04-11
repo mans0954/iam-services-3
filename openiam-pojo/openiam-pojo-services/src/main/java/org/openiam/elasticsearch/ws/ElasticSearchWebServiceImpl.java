@@ -5,8 +5,10 @@ import java.util.Set;
 import javax.jws.WebMethod;
 import javax.jws.WebService;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.runtime.StackTraceUtils;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.elasticsearch.service.ElasticsearchReindexProcessor;
@@ -42,6 +44,7 @@ public class ElasticSearchWebServiceImpl extends AbstractBaseService implements 
 		} catch(Throwable e) {
 			auditLog.fail();
 			response.fail();
+			response.setErrorText(ExceptionUtils.getFullStackTrace(e));
 			logger.error(String.format("Can't reindex %s", entityClass), e);
 		} finally {
 			auditLogService.enqueue(auditLog);

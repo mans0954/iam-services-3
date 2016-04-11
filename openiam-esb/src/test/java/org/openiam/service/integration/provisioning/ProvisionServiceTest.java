@@ -1,21 +1,38 @@
+/*
+
+DUPLICATE TEST
 package org.openiam.service.integration.provisioning;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.ws.Response;
+import org.openiam.idm.searchbeans.GroupSearchBean;
+import org.openiam.idm.searchbeans.OrganizationSearchBean;
+import org.openiam.idm.searchbeans.RoleSearchBean;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.ws.LoginDataWebService;
 import org.openiam.idm.srvc.auth.ws.LoginResponse;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
+import org.openiam.idm.srvc.grp.dto.Group;
+import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
+import org.openiam.idm.srvc.org.dto.Organization;
+import org.openiam.idm.srvc.org.dto.OrganizationUserDTO;
+import org.openiam.idm.srvc.org.service.OrganizationDataService;
 import org.openiam.idm.srvc.provision.NewUserModelToProvisionConverter;
+import org.openiam.idm.srvc.role.dto.Role;
+import org.openiam.idm.srvc.role.ws.RoleDataWebService;
 import org.openiam.idm.srvc.user.dto.User;
+import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.resp.ProvisionUserResponse;
@@ -35,6 +52,26 @@ public class ProvisionServiceTest extends AbstractServiceTest {
 	@Autowired
 	@Qualifier("loginServiceClient")
 	private LoginDataWebService loginServiceClient;
+	
+	@Autowired
+	@Qualifier("roleServiceClient")
+	protected RoleDataWebService roleServiceClient;
+	
+    @Autowired
+    @Qualifier("groupServiceClient")
+    private GroupDataWebService groupServiceClient;
+    
+	@Autowired
+	@Qualifier("organizationServiceClient")
+	private OrganizationDataService organizationServiceClient;
+	
+	@Test(threadPoolSize = 1, invocationCount = 6000)
+	public void stressTestForAkzo() throws Exception {
+		final ProvisionUser pUser = getPUser();
+		final ProvisionUserResponse pResponse = provisionService.addUser(pUser);
+		Assert.assertNotNull(pResponse);
+		Assert.assertTrue(pResponse.isSuccess());
+	}
 	
 	@Test
 	public void testIDMAPPS2488() throws Exception {
@@ -118,7 +155,6 @@ public class ProvisionServiceTest extends AbstractServiceTest {
 			Assert.assertNotNull(pResponse);
 			Assert.assertTrue(pResponse.isSuccess());
 		
-			/*
 			final LoginResponse loginResponse = loginServiceClient.getLoginByManagedSys(login.getLogin(), login.getManagedSysId());
 			Assert.assertNotNull(loginResponse);
 			Assert.assertTrue(loginResponse.isSuccess());
@@ -126,7 +162,9 @@ public class ProvisionServiceTest extends AbstractServiceTest {
 			final Response userResponse = userServiceClient.removeUser(loginResponse.getPrincipal().getUserId());
 			Assert.assertNotNull(userResponse);
 			Assert.assertTrue(userResponse.isSuccess());
-			*/
+
+
 		}
 	}
 }
+*/

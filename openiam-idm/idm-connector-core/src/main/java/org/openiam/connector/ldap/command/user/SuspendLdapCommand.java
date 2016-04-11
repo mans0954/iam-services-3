@@ -69,12 +69,16 @@ public class SuspendLdapCommand extends AbstractLdapCommand<SuspendResumeRequest
 
             NamingEnumeration results = null;
             try {
-                log.debug("Looking for user with identity=" +  identity + " in " +  objectBaseDN);
+            	if(log.isDebugEnabled()) {
+            		log.debug("Looking for user with identity=" +  identity + " in " +  objectBaseDN);
+            	}
                 results = lookupSearch(managedSys, matchObj, ldapctx, identity, null, objectBaseDN);
 
             } catch (NameNotFoundException nnfe) {
-                log.debug("results=NULL");
-                log.debug(" results has more elements=0");
+            	if(log.isDebugEnabled()) {
+	                log.debug("results=NULL");
+	                log.debug(" results has more elements=0");
+            	}
                 respType.setStatus(StatusCodeType.FAILURE);
                 return respType;
             }
@@ -102,10 +106,14 @@ public class SuspendLdapCommand extends AbstractLdapCommand<SuspendResumeRequest
             if (StringUtils.isNotEmpty(identityDN)) {
                 // Each directory
                 Directory dirSpecificImp  = DirectorySpecificImplFactory.create(config.getManagedSys().getHandler5());
-                log.debug("Directory specific object name = " + dirSpecificImp.getClass().getName());
+                if(log.isDebugEnabled()) {
+                	log.debug("Directory specific object name = " + dirSpecificImp.getClass().getName());
+                }
                 ModificationItem[] mods = dirSpecificImp.suspend(suspendRequestType);
 
-                log.debug("Modifying for Suspend.. users in ldap.." + identityDN);
+                if(log.isDebugEnabled()) {
+                	log.debug("Modifying for Suspend.. users in ldap.." + identityDN);
+                }
                 ldapctx.modifyAttributes(identityDN, mods);
             }
 
@@ -113,7 +121,7 @@ public class SuspendLdapCommand extends AbstractLdapCommand<SuspendResumeRequest
 
         } catch(Exception ne) {
             log.error(ne.getMessage(), ne);
-            throw new ConnectorDataException(ErrorCode.NO_SUCH_IDENTIFIER);
+            throw new ConnectorDataException(ErrorCode.NO_SUCH_IDENTIFIER,ne.getMessage());
         } finally {
 	 		/* close the connection to the directory */
             this.closeContext(ldapctx);

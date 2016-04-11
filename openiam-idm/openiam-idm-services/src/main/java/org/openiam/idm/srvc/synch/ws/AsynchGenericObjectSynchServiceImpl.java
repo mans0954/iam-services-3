@@ -57,7 +57,9 @@ public class AsynchGenericObjectSynchServiceImpl implements AsynchGenericObjectS
 
 
     public void startSynchronization(final SynchConfig config) {
-        log.debug("A-START SYNCH CALLED...................");
+    	if(log.isDebugEnabled()) {
+    		log.debug("A-START SYNCH CALLED...................");
+    	}
         Executors.newSingleThreadExecutor().execute(new Runnable() {
             public void run() {
                 try {
@@ -69,7 +71,9 @@ public class AsynchGenericObjectSynchServiceImpl implements AsynchGenericObjectS
             }
         });
 
-        log.debug("A-START SYNCH END ---------------------");
+        if(log.isDebugEnabled()) {
+        	log.debug("A-START SYNCH END ---------------------");
+        }
     }
 
 }

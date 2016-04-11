@@ -2,6 +2,7 @@ package org.openiam.am.srvc.searchbeans;
 
 import org.openiam.am.srvc.dto.AuthAttribute;
 import org.openiam.idm.searchbeans.AbstractSearchBean;
+import org.openiam.idm.searchbeans.SearchBean;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -13,7 +14,7 @@ import javax.xml.bind.annotation.XmlType;
         "attributeName",
         "providerType"
 })
-public class AuthAttributeSearchBean extends AbstractSearchBean<AuthAttribute, String> {
+public class AuthAttributeSearchBean extends AbstractSearchBean<AuthAttribute, String> implements SearchBean {
     private String attributeName;
     private String providerType;
 
@@ -31,5 +32,14 @@ public class AuthAttributeSearchBean extends AbstractSearchBean<AuthAttribute, S
 
     public void setAttributeName(String attributeName) {
         this.attributeName = attributeName;
+    }
+
+    @Override
+    public String getCacheUniqueBeanKey() {
+        return new StringBuilder()
+                .append(attributeName != null ? attributeName : "")
+                .append(providerType != null ? providerType : "")
+                .append(getKey() != null ? getKey() : "")
+                .toString();
     }
 }

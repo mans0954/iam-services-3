@@ -69,12 +69,15 @@ public class AsynchReconciliationServiceImpl implements AsynchReconciliationServ
                 }
             });
 		}catch(Exception e) {
-			log.debug("EXCEPTION:AsynchReconciliationServiceImpl");
+			if(log.isDebugEnabled()) {
+				log.debug("EXCEPTION:AsynchReconciliationServiceImpl");
+			}
 			log.error(e);
 			//e.printStackTrace();
 		}
-		log.debug("A-RECONCILIATION COMPLETED ---------------------");
-
+		if(log.isDebugEnabled()) {
+			log.debug("A-RECONCILIATION COMPLETED ---------------------");
+		}
 	}
 
 }

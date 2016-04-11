@@ -1,6 +1,7 @@
 package org.openiam.idm.srvc.synch.dto;
 
 import org.openiam.idm.searchbeans.AbstractSearchBean;
+import org.openiam.idm.searchbeans.SearchBean;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -12,7 +13,7 @@ import javax.xml.bind.annotation.XmlType;
         "synchType",
         "excludeBooleanProperties"
 })
-public class SynchConfigSearchBean extends AbstractSearchBean<SynchConfig, String> {
+public class SynchConfigSearchBean extends AbstractSearchBean<SynchConfig, String> implements SearchBean {
     private String name;
     private String synchType;
     private boolean excludeBooleanProperties;
@@ -41,5 +42,12 @@ public class SynchConfigSearchBean extends AbstractSearchBean<SynchConfig, Strin
 		this.excludeBooleanProperties = excludeBooleanProperties;
 	}
 
-    
+
+    @Override
+    public String getCacheUniqueBeanKey() {
+        return new StringBuilder()
+                .append(name != null ? name : "")
+                .append(synchType != null ? synchType : "")
+                .append(getKey() != null ? getKey() : "")
+                .toString();    }
 }

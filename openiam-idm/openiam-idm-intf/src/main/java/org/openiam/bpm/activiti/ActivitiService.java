@@ -1,5 +1,6 @@
 package org.openiam.bpm.activiti;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -52,6 +53,12 @@ public interface ActivitiService {
 	@WebMethod
 	TaskListWrapper getTasksForUser(final String userId, final int from, final int size);
     
+    @WebMethod
+    public TaskListWrapper getTasksForCandidateUserWithFilter(final String userId, final int from, final int size, String description, Date fromDate, Date toDate);
+
+    @WebMethod
+    public TaskListWrapper getTasksForAssignedUserWithFilter(final String userId, final int from, final int size, String description, String requesterId, Date fromDate, Date toDate);
+
     /* use findTasks */
     @Deprecated
     @WebMethod
@@ -66,6 +73,12 @@ public interface ActivitiService {
     @Deprecated
 	@WebMethod
 	int getNumOfCandidateTasks(final String userId);
+
+	@WebMethod
+    public int getNumOfAssignedTasksWithFilter(final String userId, String description, String requesterId, Date fromDate, Date toDate);
+
+    @WebMethod
+    public int getNumOfCandidateTasksWithFilter(final String userId, String description, Date fromDate, Date toDate);
 	
 	@WebMethod
 	TaskWrapper getTask(final String taskId);
@@ -99,4 +112,8 @@ public interface ActivitiService {
 	
 	@WebMethod
 	String getProcessInstanceIdByExecutionId(final String executionId);
+
+	@WebMethod
+	public List<String> getApproverUserIds(List<String> associationIds, final String targetUserId);
+
 }

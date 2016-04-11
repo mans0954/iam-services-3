@@ -7,10 +7,12 @@ import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.openiam.am.srvc.dto.URIPattern;
+import org.openiam.am.srvc.searchbeans.URIPatternSearchBean;
 import org.openiam.am.srvc.ws.ContentProviderWebService;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.MetadataElementPageTemplateSearchBean;
 import org.openiam.idm.searchbeans.MetadataTemplateTypeFieldSearchBean;
+import org.openiam.idm.searchbeans.MetadataTemplateTypeSearchBean;
 import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
 import org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateEntity;
 import org.openiam.idm.srvc.meta.dto.MetadataElement;
@@ -40,11 +42,11 @@ public class MetadataElementTemplateServiceTest extends AbstractKeyNameServiceTe
 	private MetadataElementTemplateWebService metadataTemplateServiceClient;
 
 	private MetadataTemplateType getFirstType() {
-		return metadataTemplateServiceClient.findTemplateTypes(null, 0, 1).get(0);
+		return metadataTemplateServiceClient.findTemplateTypes(new MetadataTemplateTypeSearchBean(), 0, 1).get(0);
 	}
 	
 	private List<MetadataTemplateTypeField> getAllUIFields(final int from, final int size) {
-		return metadataTemplateServiceClient.findUIFIelds(null, from, size);
+		return metadataTemplateServiceClient.findUIFIelds(new MetadataTemplateTypeFieldSearchBean(), from, size);
 	}
 	
 	private List<MetadataElement> getAllMetadataElement(final int from, final int size) {
@@ -52,7 +54,7 @@ public class MetadataElementTemplateServiceTest extends AbstractKeyNameServiceTe
 	}
 	
 	private List<URIPattern> getAllURIPatterns(final int from, final int size) {
-		return contentProviderServiceClient.findUriPatterns(null, from, size);
+		return contentProviderServiceClient.findUriPatterns(new URIPatternSearchBean(), from, size);
 	}
 	
 	@Override
@@ -93,6 +95,40 @@ public class MetadataElementTemplateServiceTest extends AbstractKeyNameServiceTe
 		return metadataTemplateServiceClient.findBeans(searchBean, from, size);
 	}
 
+/*	@Override
+	protected String getId(MetadataElementPageTemplate bean) {
+		return bean.getId();
+	}
+
+	@Override
+	protected void setId(MetadataElementPageTemplate bean, String id) {
+		bean.setId(id);
+	}
+
+	@Override
+	protected void setName(MetadataElementPageTemplate bean, String name) {
+		bean.setName(name);
+	}
+
+	@Override
+	protected String getName(MetadataElementPageTemplate bean) {
+		return bean.getName();
+	}
+
+	@Override
+	protected void setNameForSearch(MetadataElementPageTemplateSearchBean searchBean, String name) {
+		searchBean.setName(name);
+	}*/
+	
+	@Test
+	public void clusterTest() throws Exception {
+		final ClusterKey<MetadataElementPageTemplate, MetadataElementPageTemplateSearchBean> key = doClusterTest();
+		final MetadataElementPageTemplate instance = key.getDto();
+		if(instance != null && instance.getId() != null) {
+			deleteAndAssert(instance);
+    	}
+	}
+	
 	@Test
 	public void fullSaveUpdateTest() throws Exception {
 		MetadataElementPageTemplate test = newInstance();
@@ -103,7 +139,10 @@ public class MetadataElementTemplateServiceTest extends AbstractKeyNameServiceTe
 			Thread.sleep(2000L);
 			test = get((String)wsResponse.getResponseValue());
 			
-			/* second simple save */
+/*
+ second simple save
+*/
+
 			wsResponse = saveAndAssert(test);
 			Thread.sleep(2000L);
 			test = get((String)wsResponse.getResponseValue());
@@ -118,7 +157,10 @@ public class MetadataElementTemplateServiceTest extends AbstractKeyNameServiceTe
 			addMetadataElements(test, 3, 3);
 			test = assertFullClusteredSave(test);
 			
-			/* remove 2 */
+/*
+ remove 2
+*/
+
 			test = assertFullClusteredSave(test);
 			
 			//test.setUriPatterns(null);

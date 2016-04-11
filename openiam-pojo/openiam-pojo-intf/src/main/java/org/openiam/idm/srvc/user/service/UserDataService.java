@@ -20,10 +20,7 @@ import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.domain.UserNoteEntity;
-import org.openiam.idm.srvc.user.dto.DelegationFilterSearch;
-import org.openiam.idm.srvc.user.dto.User;
-import org.openiam.idm.srvc.user.dto.UserAttribute;
-import org.openiam.idm.srvc.user.dto.UserStatusEnum;
+import org.openiam.idm.srvc.user.dto.*;
 
 /**
  * Service interface that clients will access to gain information about users
@@ -45,6 +42,8 @@ public interface UserDataService {
      * @return
      */
     public UserEntity getUserByPrincipal(String principal, String managedSysId, boolean dependants);
+
+    public User getUserDtoByPrincipal(String principal, String managedSysId, boolean dependants);
 
     public void addUser(UserEntity user) throws Exception;
 
@@ -68,11 +67,15 @@ public interface UserDataService {
 
     public List<UserEntity> findUserByOrganization(String orgId) throws BasicDataServiceException;
 
+    public List<User> findUserDtoByOrganization(String orgId) throws BasicDataServiceException;
+
     public List<UserEntity> searchByDelegationProperties(DelegationFilterSearch search);
 
     public List<UserEntity> findBeans(UserSearchBean searchBean) throws BasicDataServiceException;
 
     public List<UserEntity> findBeans(UserSearchBean searchBean, int from, int size) throws BasicDataServiceException;
+
+    public List<User> findBeansDto(UserSearchBean searchBean, int from, int size) throws BasicDataServiceException;
 
     int count(UserSearchBean searchBean) throws BasicDataServiceException;
 
@@ -81,6 +84,8 @@ public interface UserDataService {
     public void updateAttribute(UserAttributeEntity attribute);
 
     public UserAttributeEntity getAttribute(String attrId);
+
+    public UserAttribute getAttributeDto(String attrId);
 
     public void removeAttribute(String userAttributeId);
 
@@ -110,11 +115,15 @@ public interface UserDataService {
 
     public AddressEntity getAddressById(String addressId);
 
+    public Address getAddressDtoById(String addressId);
+
     public List<AddressEntity> getAddressList(String userId);
 
     public List<Address> getAddressDtoList(String userId, boolean isDeep);
 
     public List<AddressEntity> getAddressList(String userId, Integer size, Integer from);
+
+    public List<Address> getAddressDtoList(String userId, Integer size, Integer from);
 
     public List<AddressEntity> getAddressList(AddressSearchBean searchBean, Integer size, Integer from);
 
@@ -132,11 +141,15 @@ public interface UserDataService {
 
     public PhoneEntity getPhoneById(String addressId);
 
+    public Phone getPhoneDtoById(String addressId);
+
     public List<PhoneEntity> getPhoneList(String userId);
 
     public List<Phone> getPhoneDtoList(String userId, boolean isDeep);
 
     public List<PhoneEntity> getPhoneList(String userId, Integer size, Integer from);
+
+    public List<Phone> getPhoneDtoList(String userId, Integer size, Integer from);
 
     public List<PhoneEntity> getPhoneList(PhoneSearchBean searchBean, Integer size, Integer from);
 
@@ -152,13 +165,19 @@ public interface UserDataService {
 
     public EmailAddressEntity getEmailAddressById(String addressId);
 
+    public EmailAddress getEmailAddressDtoById(String addressId);
+
     public List<EmailAddressEntity> getEmailAddressList(String userId);
 
     public List<EmailAddress> getEmailAddressDtoList(String userId, boolean isDeep);
 
     public List<EmailAddressEntity> getEmailAddressList(String userId, Integer size, Integer from);
 
+    public List<EmailAddress> getEmailAddressDtoList(String userId, Integer size, Integer from);
+
     public List<EmailAddressEntity> getEmailAddressList(EmailSearchBean searchBean, Integer size, Integer from);
+
+    public List<EmailAddress> getEmailAddressDtoList(EmailSearchBean searchBean, Integer size, Integer from);
 
     public void addSupervisor(SupervisorEntity supervisor);
 
@@ -183,19 +202,29 @@ public interface UserDataService {
 
     public SupervisorEntity findSupervisor(String superiorId, String subordinateId);
 
+    public Supervisor findSupervisorDto(String superiorId, String subordinateId);
+
     public List<UserEntity> getSuperiors(String userId, Integer from, Integer size);
+
+    public List<User> getSuperiorsDto(String userId, Integer from, Integer size);
 
     public int getSuperiorsCount(String userId);
 
     public List<UserEntity> getAllSuperiors(Integer from, Integer size);
 
+    public List<User> getAllSuperiorsDto(Integer from, Integer size);
+
     public int getAllSuperiorsCount();
 
     public List<UserEntity> getSubordinates(String userId, Integer from, Integer size);
 
+    public List<User> getSubordinatesDto(String userId, Integer from, Integer size);
+
     public int getSubordinatesCount(String userId);
 
     public List<UserEntity> findPotentialSupSubs(PotentialSupSubSearchBean searchBean, Integer from, Integer size) throws BasicDataServiceException;
+
+    public List<User> findPotentialSupSubsDto(PotentialSupSubSearchBean searchBean, Integer from, Integer size) throws BasicDataServiceException;
 
     public int findPotentialSupSubsCount(PotentialSupSubSearchBean searchBean)  throws BasicDataServiceException;
 
@@ -217,13 +246,39 @@ public interface UserDataService {
      */
     public UserEntity getPrimarySupervisor(String employeeId);
 
+    public User getPrimarySupervisorDto(String employeeId);
+
     public UserEntity getUser(String id);
 
     public User getUserDto(String id);
 
     public UserEntity getUser(String id, String requestorId);
 
+    public User getUserDto(String id, String requestorId, Boolean isDeep);
+
     public Map<String, UserAttributeEntity> getAllAttributes(String userId);
+
+    //public List<UserEntity> getUsersForResource(final String resourceId, String requesterId, final int from, final int size);
+
+    public List<User> getUsersDtoForResource(String resourceId, String requesterId, int from, int size);
+
+    public List<UserEntity> getUsersForResource(UserSearchBean userSearchBean, int from, int size);
+
+    //public List<User> getUsersDtoForResource(UserSearchBean userSearchBean, int from, int size);
+
+    //public int getNumOfUsersForResource(final String resourceId, String requesterId);
+
+    //public List<UserEntity> getUsersForGroup(final String groupId, String requesterId, final int from, final int size);
+
+    public List<User> getUsersDtoForGroup(String groupId, String requesterId, int from, int size);
+
+    public int getNumOfUsersForGroup(final String groupId, String requesterId);
+
+    //public List<UserEntity> getUsersForRole(final String roleId, String requesterId, final int from, final int size);
+
+    public List<User> getUsersDtoForRole(String roleId, String requesterId, int from, int size);
+
+    public int getNumOfUsersForRole(final String roleId, String requesterId);
 
     public String saveUserInfo(UserEntity userEntity, String supervisorId) throws Exception;
 
@@ -243,15 +298,21 @@ public interface UserDataService {
 
     public void mergeUserFields(UserEntity origUserEntity, UserEntity newUserEntity);
 
+    List<UserEntity> getUsersForMSys(String mSysId);
+
     public Map<String, UserAttribute> getUserAttributesDto(String userId);
     
     public List<UserAttributeEntity> getUserAttributeList(String userId, final LanguageEntity language);
+
+    public List<UserAttribute> getUserAttributeDtoList(String userId, final LanguageEntity language);
 
     public List<UserAttribute> getUserAttributesDtoList(String userId);
 
     public Map<String, UserAttributeEntity> getUserAttributes(String userId);
 
     List<UserEntity> getByExample(UserSearchBean searchBean, int start, int size);
+
+    //boolean isRoleInUser(String userId, String roleId);
 
     List<String> getUserIdsInRole(String roleId, String requestrId);
 
@@ -277,4 +338,14 @@ public interface UserDataService {
 
     List<UserEntity> getUserByLastDate(Date lastDate);
 
+    public List<User> getUserDtoByLastDate(Date lastDate);
+
+    public List<User> getUserDtoBetweenCreateDate(Date fromDate, Date toDate);
+
+    public List<User> getUserDtoBetweenLastDate(Date fromDate, Date toDate);
+
+    public List<User> getUserDtoBySearchBean(AuditLogSearchBean searchBean);
+    public List<User> getUserDtoBetweenStartDate(Date fromDate, Date toDate);
+
+    public List<Supervisor> findSupervisors(SupervisorSearchBean sb);
 }

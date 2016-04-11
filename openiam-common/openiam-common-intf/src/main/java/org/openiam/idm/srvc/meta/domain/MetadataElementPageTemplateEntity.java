@@ -45,6 +45,11 @@ import org.openiam.internationalization.Internationalized;
 })
 public class MetadataElementPageTemplateEntity extends AbstractKeyNameEntity {
 	
+	@Column(name="DATA_MODEL_URL", nullable = true, length = 255)
+	private String dataModelUrl;
+	@Column(name="CUSTOM_JS", nullable = true, columnDefinition = "text")
+	private String customJS;
+
 	@ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
     @JoinColumn(name = "RESOURCE_ID", insertable=true, updatable=false)
 	private ResourceEntity resource;
@@ -146,11 +151,29 @@ public class MetadataElementPageTemplateEntity extends AbstractKeyNameEntity {
 		this.fieldXrefs = fieldXrefs;
 	}
 
+	public String getDataModelUrl() {
+		return dataModelUrl;
+	}
+
+	public void setDataModelUrl(String dataModelUrl) {
+		this.dataModelUrl = dataModelUrl;
+	}
+
+	public String getCustomJS() {
+		return customJS;
+	}
+
+	public void setCustomJS(String customJS) {
+		this.customJS = customJS;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
 		result = prime * result + (isPublic ? 1231 : 1237);
+		result = prime * result + ((dataModelUrl == null) ? 0 : dataModelUrl.hashCode());
+		result = prime * result + ((customJS == null) ? 0 : customJS.hashCode());
 		result = prime * result
 				+ ((resource == null) ? 0 : resource.hashCode());
 		result = prime * result
@@ -178,6 +201,16 @@ public class MetadataElementPageTemplateEntity extends AbstractKeyNameEntity {
 			if (other.templateType != null)
 				return false;
 		} else if (!templateType.equals(other.templateType))
+			return false;
+		if (dataModelUrl == null) {
+			if (other.dataModelUrl != null)
+				return false;
+		} else if (!dataModelUrl.equals(other.dataModelUrl))
+			return false;
+		if (customJS == null) {
+			if (other.customJS != null)
+				return false;
+		} else if (!customJS.equals(other.customJS))
 			return false;
 		return true;
 	}

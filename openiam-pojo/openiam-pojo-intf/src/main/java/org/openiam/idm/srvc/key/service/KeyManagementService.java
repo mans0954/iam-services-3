@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.key.service;
 
+import org.openiam.core.domain.UserKey;
 import org.openiam.exception.EncryptionException;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -10,6 +11,7 @@ import org.openiam.idm.srvc.user.domain.UserEntity;
  */
 public interface KeyManagementService {
     byte[] getUserKey(String userId, String keyName) throws EncryptionException;
+    //public byte[] getUserKey(UserKey uk) throws EncryptionException;
     byte[] getSystemUserKey(String keyName) throws EncryptionException;
 
     Long generateUserKeys(String userId)throws Exception;

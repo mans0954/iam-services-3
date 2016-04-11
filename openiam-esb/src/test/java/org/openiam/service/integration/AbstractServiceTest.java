@@ -210,6 +210,14 @@ public abstract class AbstractServiceTest extends AbstractTestNGSpringContextTes
         return types;
     }
 	
+	protected void sleep(final int numOfSeconds) {
+		try {
+			Thread.sleep(numOfSeconds * 1000);
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
 	protected ContentProvider createContentProvider() {
 		final ContentProvider cp = new ContentProvider();
 		cp.setName(getRandomName());

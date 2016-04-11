@@ -50,8 +50,11 @@ implements BaseDao<T, PrimaryKey> {
      * by default we set isCachable to false to prevent problems with invalidation of results. 
      * a caller should explicitly set cacheable to true if he wants to cache query results
      */
-    protected boolean isCachable() {
+/*    protected boolean isCachable() {
     	return false;
+    }*/
+    protected boolean cachable() {
+        return true;
     }
 
 	@Autowired
@@ -85,6 +88,10 @@ implements BaseDao<T, PrimaryKey> {
                             + "'! ");
         }
     }
+    @Deprecated
+    protected Criteria getExampleCriteria(T t) {
+        return getCriteria().add(Example.create(t));
+    }
 
     @Override
 	public Class<T> getDomainClass() {
@@ -94,6 +101,7 @@ implements BaseDao<T, PrimaryKey> {
     protected Criteria getExampleCriteria(final SearchBean searchBean) {
         throw new UnsupportedOperationException("Method must be overridden");
     }
+
     protected void setOderByCriteria(Criteria criteria, AbstractSearchBean sb) {
         List<SortParam> sortParamList = sb.getSortBy();
         for (SortParam sort: sortParamList){
@@ -142,7 +150,7 @@ implements BaseDao<T, PrimaryKey> {
     public void clear() {
         getSession().clear();
     }
-    
+
     protected Session getSession() {
     	return sessionFactory.getCurrentSession();
     }
@@ -157,7 +165,7 @@ implements BaseDao<T, PrimaryKey> {
         if (size > -1) {
             criteria.setMaxResults(size);
         }
-
+        criteria.setCacheable(this.cachable());
         criteria.setProjection(Projections.id());
         return (List<String>)criteria.list();
     }
@@ -166,6 +174,31 @@ implements BaseDao<T, PrimaryKey> {
     @LocalizedDatabaseGet
     public List<T> getByExample(final SearchBean searchBean) {
     	return getByExample(searchBean, -1, -1);
+    }
+
+    @Override
+    @LocalizedDatabaseGet
+    @Deprecated
+    public List<T> getByExample(T t, int startAt, int size) {
+        final Criteria criteria = getExampleCriteria(t);
+        if (startAt > -1) {
+            criteria.setFirstResult(startAt);
+        }
+
+        if (size > -1) {
+            criteria.setMaxResults(size);
+        }
+        criteria.setCacheable(this.cachable());
+        return (List<T>) criteria.list();
+    }
+
+    @Deprecated
+    public List<T> getByExampleNoLocalize(T t) {
+        return getByExample(t, -1, -1);
+    }
+
+    public List<T> getByExampleNoLocalize(SearchBean searchBean, int from, int size) {
+        return this.getByExample(searchBean, from, size);
     }
 
     @Override
@@ -182,21 +215,24 @@ implements BaseDao<T, PrimaryKey> {
 
         if (searchBean instanceof AbstractSearchBean) {
             AbstractSearchBean sb = (AbstractSearchBean)searchBean;
-//            if (StringUtils.isNotBlank(sb.getSortBy())) {
-//                criteria.addOrder(sb.getOrderBy().equals(OrderConstants.DESC) ?
-//                        Order.desc(sb.getSortBy()) :
-//                        Order.asc(sb.getSortBy()));
-//            }
+/*
+            if (StringUtils.isNotBlank(sb.getSortBy())) {
+                criteria.addOrder(sb.getOrderBy().equals(OrderConstants.DESC) ?
+                        Order.desc(sb.getSortBy()) :
+                        Order.asc(sb.getSortBy()));
+            }
+*/
 
             if(CollectionUtils.isNotEmpty(sb.getSortBy())){
                 this.setOderByCriteria(criteria, sb);
             }
         }
+        criteria.setCacheable(this.cachable());
          return (List<T>) criteria.list();
     }
 
     protected Criteria getCriteria() {
-        return getSession().createCriteria(domainClass).setCacheable(isCachable());
+        return getSession().createCriteria(domainClass).setCacheable(cachable());
     }
 
     @SuppressWarnings({ "unchecked" })
@@ -214,6 +250,14 @@ implements BaseDao<T, PrimaryKey> {
         return findByIds(idCollection,-1,-1);
     }
 
+    @SuppressWarnings({"unchecked"})
+    public T findByIdNoLocalized(PrimaryKey id, String... fetchFields) {
+        if (id == null) {
+            return null;
+        }
+        return (T) getCriteria().add(eq(getPKfieldName(), id)).setCacheable(cachable()).uniqueResult(); //this.getSession().get(domainClass, id);
+    }
+
     @SuppressWarnings("unchecked")
     @LocalizedDatabaseGet
     public List<T> findByIds(Collection<PrimaryKey> idCollection,  final int from, final int size) {
@@ -229,6 +273,7 @@ implements BaseDao<T, PrimaryKey> {
         if (size > -1) {
             criteria.setMaxResults(size);
         }
+        criteria.setCacheable(this.cachable());
         return criteria.list();
     }
 
@@ -245,6 +290,7 @@ implements BaseDao<T, PrimaryKey> {
                 criteria.setFetchMode(field, FetchMode.JOIN);
             }
         }
+        criteria.setCacheable(this.cachable());
         return (T) criteria.uniqueResult();
     }
 
@@ -253,7 +299,7 @@ implements BaseDao<T, PrimaryKey> {
     @SuppressWarnings({ "unchecked" })
     @LocalizedDatabaseGet
     public List<T> findAll() {
-        return getCriteria().list();
+        return getCriteria().setCacheable(this.cachable()).list();
     }
 
     public List<PrimaryKey> getAllIds(){
@@ -265,6 +311,7 @@ implements BaseDao<T, PrimaryKey> {
         return ((Number) getCriteria().setProjection(rowCount())
                 .uniqueResult()).longValue();
     }
+
     @Transactional
     @LocalizedDatabaseOperation(saveOrUpdate=true)
     public void save(T entity) {
@@ -413,6 +460,12 @@ implements BaseDao<T, PrimaryKey> {
 
         return (List<T>) criteria.list();
 	}
-    
+        public void evictCache() {
+        this.getSession().getSessionFactory().getCache().evictDefaultQueryRegion();
+    }
+
+    public void evictCollectionRegions() {
+        this.getSession().getSessionFactory().getCache().evictCollectionRegions();
+    }
     
 }
