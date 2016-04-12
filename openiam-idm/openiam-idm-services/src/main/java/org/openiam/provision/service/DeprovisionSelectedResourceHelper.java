@@ -86,7 +86,7 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
                                 Resource res = resourceDataService.getResource(resId, null);
                                 try {
                                     Map<String, Object> bindingMap = new HashMap<String, Object>(); //TODO: check if enough bindingMap data for UPDATE
-                                    ProvisionDataContainer data = deprovisionResourceDataPrepare(res, new ProvisionUser(user), new ProvisionUser(user), requestorUserId, bindingMap);
+                                    ProvisionDataContainer data = deprovisionResourceDataPrepare(res, userEntity, new ProvisionUser(user), requestorUserId, bindingMap);
 
                                     auditLog.addAttribute(AuditAttributeName.DESCRIPTION,
                                             "De-Provisioning for resource: " + res.getName());
@@ -123,14 +123,18 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
         return res;
     }
 
-    public ProvisionDataContainer deprovisionResourceDataPrepare(Resource res, ProvisionUser targetSysProvUser, ProvisionUser pUser,
+    public ProvisionDataContainer deprovisionResourceDataPrepare(Resource res, UserEntity userEntity, ProvisionUser pUser,
                                                                  String requestId, Map<String, Object> tmpMap) {
 
         Map<String, Object> bindingMap = new HashMap<String, Object>(tmpMap); // prevent data rewriting
 
         // ManagedSysDto mSys = managedSysService.getManagedSys(managedSysId);
-//        ManagedSysDto mSys = managedSysService.getManagedSysByResource(res.getId());
-        String managedSysId = managedSysDaoService.getManagedSysIdByResource(res.getId(), "ACTIVE");
+        ManagedSysDto mSys = managedSysService.getManagedSysByResource(res.getId());
+        if (mSys == null || mSys.getConnectorId() == null) {
+            return null;
+        }
+        String managedSysId = mSys.getId();
+        ProvisionUser targetSysProvUser = new ProvisionUser(userDozerConverter.convertToDTO(userEntity, true));
 //        ProvisionUser targetSysProvUser = new ProvisionUser(userDozerConverter.convertToDTO(userEntity, true));
         setCurrentSuperiors(targetSysProvUser);
         targetSysProvUser.setStatus(pUser.getStatus());

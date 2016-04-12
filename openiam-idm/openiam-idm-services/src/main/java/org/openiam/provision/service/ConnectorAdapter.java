@@ -97,7 +97,6 @@ public class ConnectorAdapter {
             }
             log.info("ConnectorAdapter:addRequest called. Managed sys ="
                     + managedSys.getId());
-
             ProvisionConnectorDto connector = connectorService
                     .getProvisionConnector(managedSys.getConnectorId());
             log.info("Connector found for " + connector.getConnectorId());
